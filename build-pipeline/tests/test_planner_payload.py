@@ -33,7 +33,9 @@ class PlannerPayloadTests(unittest.TestCase):
         self.conn = sqlite3.connect(":memory:")
         for table in ("items", "skills", "pets", "classes"):
             self.conn.execute(f"CREATE TABLE {table} (id TEXT PRIMARY KEY)")
-        self.conn.execute("INSERT INTO items VALUES ('sword')")
+        self.conn.executemany(
+            "INSERT INTO items VALUES (?)", [("sword",), ("forgotten_tome",)]
+        )
         self.conn.execute("INSERT INTO skills VALUES ('strike')")
         self.conn.execute("INSERT INTO pets VALUES ('warrior_mercenary')")
         self.conn.execute("INSERT INTO classes VALUES ('warrior')")
@@ -52,7 +54,18 @@ class PlannerPayloadTests(unittest.TestCase):
                     "name": "Sword",
                     "item_type": "weapon",
                     "stats": {"damage": 2},
-                }
+                },
+                {
+                    "id": "forgotten_tome",
+                    "name": "Forgotten Tome",
+                    "item_type": "book",
+                    "book_strength_gain": 1,
+                    "book_dexterity_gain": 0,
+                    "book_constitution_gain": 2,
+                    "book_intelligence_gain": 0,
+                    "book_wisdom_gain": 0,
+                    "book_charisma_gain": 0,
+                },
             ],
             "skills.json": [
                 {
@@ -114,7 +127,32 @@ class PlannerPayloadTests(unittest.TestCase):
         first_raw = first.raw_path.read_bytes()
         first_compressed = first.compressed_path.read_bytes()
         payload = json.loads(first_raw)
+        self.assertEqual(2, payload["build"]["serializedSchemaVersion"])
         self.assertEqual(2, len(payload["equipmentSlots"]))
+        self.assertEqual(1, len(payload["learnedBooks"]))
+        self.assertEqual(
+            {
+                "id": "forgotten_tome",
+                "name": "Forgotten Tome",
+                "gains": {
+                    "strength": 1,
+                    "dexterity": 0,
+                    "constitution": 2,
+                    "intelligence": 0,
+                    "wisdom": 0,
+                    "charisma": 0,
+                },
+            },
+            payload["learnedBooks"][0],
+        )
+        self.assertIn(
+            {
+                "kind": "item_effect:learned_book_attributes",
+                "status": "modelled",
+                "reason": "Adds permanent catalog-defined attributes once",
+            },
+            payload["effectClassifications"],
+        )
 
         second = self._write()
 

@@ -7,7 +7,7 @@ namespace CombatVerification.Fixtures
     /// <summary>Versions understood by this harness and the planner adapters.</summary>
     public static class BuildContract
     {
-        public const int SerializedSchemaVersion = 1;
+        public const int SerializedSchemaVersion = 2;
         public const int CaptureSchemaVersion = 1;
         public const string ModelVersion = "1";
 

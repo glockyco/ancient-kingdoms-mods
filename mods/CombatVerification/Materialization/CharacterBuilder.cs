@@ -50,15 +50,19 @@ namespace CombatVerification.Materialization
         /// spinning. One step yields one level or one veteran point.
         /// </summary>
         private const int StepSlack = 4;
+        private static readonly string[] AttributeNames =
+            { "strength", "constitution", "dexterity", "intelligence", "wisdom", "charisma" };
 
         public static BuildOutcome Run(
             ICharacterUnderConstruction character,
             CharacterSpec spec,
-            IReadOnlyList<CompanionSpec> companions = null)
+            IReadOnlyList<CompanionSpec> companions = null,
+            IReadOnlyList<string> learnedBookIds = null)
         {
             var steps = new List<BuildStep>();
+            var books = learnedBookIds ?? Array.Empty<string>();
 
-            if (!CheckUntouched(character, steps))
+            if (!CheckUntouched(character, steps) || !CheckLearnedBooks(character, books, steps))
                 return new BuildOutcome { Steps = steps };
 
             // The order is fixed and each step depends on the one before it: progression grants
@@ -72,6 +76,7 @@ namespace CombatVerification.Materialization
                 () => AdvanceVeteran(character, spec, steps),
                 () => SpendAttributes(character, spec, steps),
                 () => SpendSkills(character, spec, steps),
+                () => LearnBooks(character, books, steps),
                 () => EquipItems(character, spec, steps),
                 () => HireCompanions(character, companions, steps),
             };
@@ -88,9 +93,9 @@ namespace CombatVerification.Materialization
         /// </summary>
         /// <remarks>
         /// A fixture declares the points it allocates, not the totals it ends with, so spending
-        /// them twice produces a character that no fixture describes and no error reports. A
-        /// newly created character is at level one with nothing granted, and points come only
-        /// from levels, so nothing can have been bought yet either.
+        /// them twice produces a character no fixture describes and no error reports. Books
+        /// are permanent and also cannot be applied twice. A newly created character is at
+        /// level one with nothing granted, so neither points nor books can have been used.
         /// </remarks>
         private static bool CheckUntouched(
             ICharacterUnderConstruction character, List<BuildStep> steps)
@@ -98,13 +103,15 @@ namespace CombatVerification.Materialization
             if (character.Level == 1
                 && character.UnspentAttributePoints == 0
                 && character.UnspentSkillPoints == 0
-                && character.TotalVeteranPoints == 0)
+                && character.TotalVeteranPoints == 0
+                && character.LearnedBookIds.Count == 0)
                 return true;
 
             return Fail(steps, "untouched",
                 $"The character is already at level {character.Level} with "
                 + $"{character.UnspentAttributePoints} attribute and "
-                + $"{character.UnspentSkillPoints} skill points unspent. A build allocates what a "
+                + $"{character.UnspentSkillPoints} skill points unspent and "
+                + $"{character.LearnedBookIds.Count} learned books. A build allocates what a "
                 + "fixture declares, so it runs once on a newly created character.");
         }
 
@@ -279,6 +286,75 @@ namespace CombatVerification.Materialization
             return Pass(steps, "skills",
                 $"Bought {bought} levels across {requested.Count} skills.");
         }
+
+        // --- permanent books ---
+
+        private static bool CheckLearnedBooks(
+            ICharacterUnderConstruction character,
+            IReadOnlyList<string> learnedBookIds,
+            List<BuildStep> steps)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < learnedBookIds.Count; i++)
+            {
+                var id = learnedBookIds[i];
+                if (string.IsNullOrWhiteSpace(id))
+                    return Fail(steps, "learnedBooks", $"Entry {i} has no stable item identifier.");
+                if (!seen.Add(id))
+                    return Fail(steps, "learnedBooks", $"'{id}' is declared more than once.");
+                if (!character.IsBook(id))
+                    return Fail(steps, "learnedBooks",
+                        $"'{id}' does not resolve to a permanent book asset.");
+            }
+            return true;
+        }
+
+        private static bool LearnBooks(
+            ICharacterUnderConstruction character,
+            IReadOnlyList<string> learnedBookIds,
+            List<BuildStep> steps)
+        {
+            if (learnedBookIds.Count == 0)
+                return Pass(steps, "learnedBooks", "None requested. " + AttributeSummary(character));
+            if (!character.ItemOperationsAllowed)
+                return Fail(steps, "learnedBooks",
+                    "Books must first enter inventory, but item operations are unavailable while "
+                    + $"the character state is {character.ActivityState}.");
+
+            foreach (var id in learnedBookIds)
+            {
+                character.GrantItem(id, character.MaxDurability(id), null);
+                if (character.FindInInventory(id, null) < 0)
+                    return Fail(steps, "learnedBooks",
+                        $"Granting '{id}' left no matching book in inventory.");
+
+                var beforeIds = character.LearnedBookIds.ToList();
+                var beforeAttributes = new Dictionary<string, int>();
+                foreach (var name in AttributeNames)
+                    beforeAttributes[name] = character.AttributeValue(name);
+                character.LearnBook(id);
+                var afterIds = character.LearnedBookIds;
+
+                if (afterIds.Count != beforeIds.Count + 1
+                    || !afterIds.Contains(id, StringComparer.OrdinalIgnoreCase))
+                    return Fail(steps, "learnedBooks",
+                        $"Learning '{id}' did not add its stable identifier. Before: "
+                        + $"{string.Join(", ", beforeIds)}. After: {string.Join(", ", afterIds)}.");
+
+                var changed = AttributeNames.Any(
+                    name => character.AttributeValue(name) != beforeAttributes[name]);
+                if (!changed)
+                    return Fail(steps, "learnedBooks",
+                        $"Learning '{id}' added its identity but changed no live attribute.");
+            }
+
+            return Pass(steps, "learnedBooks",
+                $"Learned {string.Join(", ", learnedBookIds)}. {AttributeSummary(character)}");
+        }
+
+        private static string AttributeSummary(ICharacterUnderConstruction character)
+            => "Attributes: " + string.Join(", ", AttributeNames.Select(
+                name => $"{name}={character.AttributeValue(name)}"));
 
         // --- equipment ---
 

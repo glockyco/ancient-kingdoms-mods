@@ -15,11 +15,19 @@ from compendium.redactions.verify import Subject
 
 RAW_PAYLOAD_NAME = "planner-data.json"
 COMPRESSED_PAYLOAD_NAME = f"{RAW_PAYLOAD_NAME}.gz"
-SERIALIZED_SCHEMA_VERSION = 1
+SERIALIZED_SCHEMA_VERSION = 2
 CAPTURE_SCHEMA_VERSION = 1
 MODEL_VERSION = "1"
 ADMITTED_ITEM_TYPES = frozenset(
-    {"equipment", "weapon", "augment", "food", "potion", "ammo"}
+    {"equipment", "weapon", "augment", "food", "potion", "ammo", "book"}
+)
+BOOK_GAIN_FIELDS = (
+    "book_strength_gain",
+    "book_dexterity_gain",
+    "book_constitution_gain",
+    "book_intelligence_gain",
+    "book_wisdom_gain",
+    "book_charisma_gain",
 )
 
 ClassificationStatus = Literal["modelled", "excluded", "unsupported"]
@@ -140,6 +148,12 @@ SKILL_FLAG_CLASSIFICATIONS.update(
     }
 )
 
+BOOK_EFFECT_CLASSIFICATION = EffectClassification(
+    "item_effect:learned_book_attributes",
+    "modelled",
+    "Adds permanent catalog-defined attributes once",
+)
+
 ITEM_EFFECT_CLASSIFICATIONS = {
     "stats": EffectClassification(
         "item_effect:stats", "modelled", "Changes character stats"
@@ -179,6 +193,9 @@ ITEM_EFFECT_CLASSIFICATIONS = {
         "item_effect:restore_energy", "modelled", "Changes the resource timeline"
     ),
 }
+ITEM_EFFECT_CLASSIFICATIONS.update(
+    {field: BOOK_EFFECT_CLASSIFICATION for field in BOOK_GAIN_FIELDS}
+)
 
 
 def write_planner_payload(
@@ -337,6 +354,20 @@ def _build_payload(
         ),
         "ammunition": _sorted_rows(
             [item for item in admitted_items if item.get("item_type") == "ammo"]
+        ),
+        "learnedBooks": _sorted_rows(
+            [
+                {
+                    "id": item["id"],
+                    "name": item["name"],
+                    "gains": {
+                        field.removeprefix("book_").removesuffix("_gain"): item[field]
+                        for field in BOOK_GAIN_FIELDS
+                    },
+                }
+                for item in admitted_items
+                if item.get("item_type") == "book"
+            ]
         ),
         "effectClassifications": [
             {

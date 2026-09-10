@@ -39,6 +39,15 @@ SKILL_FIELDS = {
     "cast_range",
 }
 
+BOOK_GAIN_FIELDS = {
+    "book_strength_gain",
+    "book_dexterity_gain",
+    "book_constitution_gain",
+    "book_intelligence_gain",
+    "book_wisdom_gain",
+    "book_charisma_gain",
+}
+
 CLASS_COMBAT_FIELDS = {
     "id",
     "resource_type",
@@ -201,8 +210,22 @@ def verify_planner_inputs(export_dir: Path) -> None:
     foods = [row for row in items if row["item_type"] == "food"]
     potions = [row for row in items if row["item_type"] == "potion"]
     ammunition = [row for row in items if row["item_type"] == "ammo"]
+    books = [row for row in items if row["item_type"] == "book"]
     if not foods or not potions or not ammunition:
         raise ValueError("Planner requires food, potion, and ammunition item rows")
+    if not books:
+        raise ValueError("Planner requires permanent learned-book item rows")
+    _require_fields(books, {"id", "name", *BOOK_GAIN_FIELDS}, "learned book")
+    book_ids = [row["id"] for row in books]
+    if len(book_ids) != len(set(book_ids)):
+        raise ValueError("Planner learned-book identifiers must be unique")
+    for index, book in enumerate(books):
+        for field in BOOK_GAIN_FIELDS:
+            value = book[field]
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(
+                    f"Planner learned book row {index} field {field} must be a non-negative integer"
+                )
     _require_fields(foods, {"food_buff_id", "food_buff_level", "food_type"}, "food")
     _require_fields(
         potions,

@@ -8,20 +8,15 @@ namespace CombatVerification.Dtos
     /// <summary>What to build the spawned player into.</summary>
     public sealed class BuildCharacterArgs
     {
-        /// <summary>
-        /// The character section of a fixture descriptor. The same shape a fixture carries, so a
-        /// caller passes what it already holds.
-        /// </summary>
-        [JsonProperty("character", Required = Required.Always)]
-        public CharacterSpec Character { get; set; }
+        /// <summary>Version and catalog identity used to validate the shared build data.</summary>
+        [JsonProperty("build", Required = Required.Always)]
+        public BuildEnvelope Build { get; set; }
 
         /// <summary>
-        /// Companions the fixture declares. A fixture keeps these beside the character rather than
-        /// inside it, so they are named separately here too. Absent means the fixture states
-        /// nothing about companions, and an empty list means it states that there are none.
+        /// The complete logical build section. Execution controls do not belong in this command.
         /// </summary>
-        [JsonProperty("companions", Required = Required.Default)]
-        public List<CompanionSpec> Companions { get; set; }
+        [JsonProperty("buildData", Required = Required.Always)]
+        public LogicalBuildData BuildData { get; set; }
     }
 
     /// <summary>One step of the build and what it achieved.</summary>
@@ -42,6 +37,12 @@ namespace CombatVerification.Dtos
     /// </summary>
     public sealed class BuildCharacterResult
     {
+        [JsonProperty("build", Required = Required.Default)]
+        public BuildEnvelope Build { get; set; }
+
+        [JsonProperty("provenance", Required = Required.Default)]
+        public BuildProvenance Provenance { get; set; }
+
         [JsonProperty("ok", Required = Required.Default)]
         public bool Ok { get; set; }
 
@@ -63,5 +64,12 @@ namespace CombatVerification.Dtos
 
         [JsonProperty("unspentVeteranPoints", Required = Required.Default)]
         public int UnspentVeteranPoints { get; set; }
+
+        [JsonProperty("learnedBookIds", Required = Required.Default)]
+        public List<string> LearnedBookIds { get; set; }
+
+        /// <summary>Live totals after progression, allocation, books, and equipment.</summary>
+        [JsonProperty("attributes", Required = Required.Default)]
+        public Dictionary<string, int> Attributes { get; set; }
     }
 }

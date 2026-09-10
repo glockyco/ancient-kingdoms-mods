@@ -8,7 +8,7 @@
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 1
+    "serializedSchemaVersion": 2
   },
   "name": "D-companion-ranger-equipped",
   "tier": "D",
@@ -58,7 +58,8 @@
         ]
       }
     ],
-    "consumables": []
+    "consumables": [],
+    "learnedBookIds": []
   },
   "execution": {
     "durationSeconds": 20,

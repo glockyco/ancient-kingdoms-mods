@@ -48,7 +48,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [x] 3.7 Add reproducibility tests for stable raw bytes, compressed bytes, content hash, stale-output deletion, and missing-output failure.
 - [x] 3.8 Compare every emitted effect kind with modelled, excluded, and unsupported registries; fail publication for an unclassified admitted kind.
 - [x] 3.9 Measure and record the raw and compressed payload baseline for the non-book domains then present; do not treat it as book-inclusive.
-- [ ] 3.10 Publish required learned-book definitions/effect classifications with preflight/publication checks and refreshed payload measurement.
+- [x] 3.10 Publish required learned-book definitions/effect classifications with preflight/publication checks and refreshed payload measurement.
 
 ## 4. Numeric kernel and evaluation scenario
 
@@ -78,7 +78,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [x] 5.7 Implement resource-burn damage, weapon-category gates, archetype-specific offhands, wielder-specific offhand damage, and engine skill refusals.
 - [x] 5.8 Add per-skill-class tests, including the populated fields the engine ignores, and cover normal, poison, fire, cold, magic, and disease damage.
 - [x] 5.9 Add hit tests for resource-burn bypass, assassination health gate, slot 13 category selection, offhand wielders, and known game defects.
-- [ ] 5.10 Model catalog-resolved learned-book gains without budget consumption or double counting.
+- [x] 5.10 Model catalog-resolved learned-book gains without budget consumption or double counting.
 
 ## 6. Timing, effects, resources, and companions
 

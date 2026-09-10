@@ -28,6 +28,10 @@ namespace CombatVerification.Fixtures
                 && buildData.Consumables.All(value => !string.IsNullOrWhiteSpace(value)))
                 ValidateConsumables(problems, "buildData.consumables", buildData.Consumables, rules);
 
+            if (buildData.LearnedBookIds != null)
+                ValidateLearnedBooks(
+                    problems, "buildData.learnedBookIds", buildData.LearnedBookIds, rules);
+
             return Result(problems);
         }
 
@@ -364,6 +368,25 @@ namespace CombatVerification.Fixtures
                 if (!rules.ConsumableExists(consumable))
                     Add(problems, field,
                         $"'{consumable}' is not a consumable the game defines.");
+            }
+        }
+
+        private static void ValidateLearnedBooks(
+            List<FixtureProblem> problems,
+            string field,
+            IReadOnlyList<string> learnedBookIds,
+            IFixtureRules rules)
+        {
+            for (var i = 0; i < learnedBookIds.Count; i++)
+            {
+                var id = learnedBookIds[i];
+                if (string.IsNullOrWhiteSpace(id))
+                    continue;
+
+                if (!rules.TryGetItem(id, out var item))
+                    Add(problems, $"{field}[{i}]", $"'{id}' is not an item the game defines.");
+                else if (!item.IsBook)
+                    Add(problems, $"{field}[{i}]", $"'{id}' is not a permanent learned book.");
             }
         }
 

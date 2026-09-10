@@ -8,7 +8,7 @@
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 1
+    "serializedSchemaVersion": 2
   },
   "name": "B-ignored-caster-stat",
   "tier": "B",
@@ -61,7 +61,8 @@
       ]
     },
     "companions": null,
-    "consumables": []
+    "consumables": [],
+    "learnedBookIds": []
   },
   "execution": {
     "durationSeconds": null,

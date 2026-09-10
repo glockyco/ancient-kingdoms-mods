@@ -8,7 +8,7 @@
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 1
+    "serializedSchemaVersion": 2
   },
   "name": "D-class-wizard",
   "tier": "D",
@@ -45,7 +45,8 @@
       ]
     },
     "companions": null,
-    "consumables": []
+    "consumables": [],
+    "learnedBookIds": []
   },
   "execution": {
     "durationSeconds": 60,

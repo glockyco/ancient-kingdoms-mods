@@ -356,6 +356,7 @@ namespace CombatVerification.Fixtures
                     Classes = ReadItemClasses(asset),
                     Category = category,
                     IsTwoHanded = IsTwoHanded(category),
+                    IsBook = asset.TryCast<BookItem>() != null,
                 };
             }
 

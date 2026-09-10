@@ -580,12 +580,12 @@ evaluating one that does overstates output.
 ### Client-side compute, no server endpoint
 
 The measured equipment subset was 21,488 B gzipped for all 887 equippable non-costume items. The
-pre-book planner payload from Ancient Kingdoms 0.9.31.1 contains 889 surviving equipment items, 54
-augments, 295 skills, six mercenary archetypes, 120 consumables, two ammunition items, 192 equipment
-slots, and 59 effect classifications. Deterministic serialization of that pre-book payload produces
-3,515,206 raw bytes and 155,858 gzip bytes. These are baseline measurements, not book-inclusive
-measurements. After the required book fields, definitions, and classifications are added, task 3.10
-must remeasure raw and compressed sizes; browser budgets use that refreshed measurement.
+book-aware planner payload from Ancient Kingdoms 0.9.31.1 contains 889 surviving equipment items, 54
+augments, 295 skills, six mercenary archetypes, 120 consumables, two ammunition items, 17 learned-book
+definitions, 192 equipment slots, and 60 effect classifications. Deterministic serialization produces
+3,551,418 raw bytes and 157,069 gzip bytes. These measurements replace the pre-book baseline for browser
+budgets. The build discovers the learned-book count from the current catalog; it does not enforce 17 as
+a permanent count.
 
 A Cloudflare Worker endpoint is possible but unnecessary. Static assets plus a dedicated optimizer
 worker avoid per-request CPU limits and keep local capture data on the reader's machine.

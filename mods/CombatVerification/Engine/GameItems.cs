@@ -54,5 +54,17 @@ namespace CombatVerification.Engine
 
             return null;
         }
+
+        /// <summary>Resolves the display name persisted by the game to its stable asset ID.</summary>
+        public static string StableIdForDisplayName(string displayName)
+        {
+            foreach (var pair in Enumerate())
+                if (string.Equals(pair.Value.nameItem, displayName,
+                        System.StringComparison.Ordinal))
+                    return pair.Key;
+
+            throw new System.InvalidOperationException(
+                $"The learned book '{displayName}' does not resolve to a current item asset.");
+        }
     }
 }

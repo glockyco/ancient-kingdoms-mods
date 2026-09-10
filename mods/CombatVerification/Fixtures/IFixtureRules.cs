@@ -107,5 +107,8 @@ namespace CombatVerification.Fixtures
         /// rather than from a flag, so this is derived the same way.
         /// </summary>
         public bool IsTwoHanded { get; set; }
+
+        /// <summary>Whether the asset is a permanent learned book.</summary>
+        public bool IsBook { get; set; }
     }
 }

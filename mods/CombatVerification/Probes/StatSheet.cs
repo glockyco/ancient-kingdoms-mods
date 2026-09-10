@@ -70,9 +70,18 @@ namespace CombatVerification.Probes
                     health: player.health,
                     mana: player.mana,
                     energy: player.energy,
-                    equipment: player.equipment),
+                    equipment: player.equipment,
+                    learnedBookIds: LearnedBookIds(player)),
                 Companions = companions,
             };
+        }
+
+        private static List<string> LearnedBookIds(Player player)
+        {
+            var ids = new List<string>();
+            foreach (var learnedName in player.books)
+                ids.Add(GameItems.StableIdForDisplayName(learnedName));
+            return ids;
         }
 
         private static EntitySheet Of(
@@ -85,7 +94,8 @@ namespace CombatVerification.Probes
             Health health,
             Mana mana,
             Energy energy,
-            ItemContainer equipment)
+            ItemContainer equipment,
+            IReadOnlyList<string> learnedBookIds = null)
         {
             var attributes = new Dictionary<string, int>();
             foreach (var name in GameAttributes.NamesOn(owner.GetType()))
@@ -102,6 +112,7 @@ namespace CombatVerification.Probes
                 Race = race,
                 Level = level,
                 Attributes = attributes,
+                LearnedBookIds = learnedBookIds == null ? null : new List<string>(learnedBookIds),
                 Combat = CombatStats.Read(combat),
                 Resources = new ResourceSheet
                 {

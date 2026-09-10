@@ -91,6 +91,23 @@ namespace CombatVerification.Fixtures
                     Require(problems, "buildData.consumables", consumable);
             }
 
+            if (buildData.LearnedBookIds == null)
+                Add(problems, "buildData.learnedBookIds",
+                    "Required. State an empty list to declare that no books are learned.");
+            else
+            {
+                var duplicates = buildData.LearnedBookIds
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .GroupBy(id => id)
+                    .Where(group => group.Count() > 1);
+                foreach (var duplicate in duplicates)
+                    Add(problems, $"buildData.learnedBookIds.{duplicate.Key}",
+                        "Named more than once; a permanent book is learned once.");
+
+                for (var i = 0; i < buildData.LearnedBookIds.Count; i++)
+                    Require(problems, $"buildData.learnedBookIds[{i}]", buildData.LearnedBookIds[i]);
+            }
+
             if (buildData.Provenance == null)
             {
                 Add(problems, "buildData.provenance", "Build provenance is required.");

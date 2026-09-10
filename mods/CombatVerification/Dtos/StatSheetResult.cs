@@ -97,6 +97,11 @@ namespace CombatVerification.Dtos
 
         [JsonProperty("attributes")] public Dictionary<string, int> Attributes { get; set; }
 
+        /// <summary>
+        /// Stable permanent-book IDs for a player. Null for a companion, which has no book state.
+        /// </summary>
+        [JsonProperty("learnedBookIds")] public List<string> LearnedBookIds { get; set; }
+
         /// <summary>Every stat the combat component computes, keyed by its own name.</summary>
         [JsonProperty("combat")] public Dictionary<string, double> Combat { get; set; }
 

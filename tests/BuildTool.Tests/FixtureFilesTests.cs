@@ -11,7 +11,7 @@ public sealed class FixtureFilesTests : IDisposable
         {
           "schemaVersion": 2,
           "build": {
-            "serializedSchemaVersion": 1,
+            "serializedSchemaVersion": 2,
             "captureSchemaVersion": 1,
             "modelVersion": "1",
             "gameData": {
@@ -35,6 +35,7 @@ public sealed class FixtureFilesTests : IDisposable
             },
             "companions": [],
             "consumables": [],
+            "learnedBookIds": [],
             "provenance": { "kind": "authored", "source": "test" }
           },
           "execution": { "seed": 7 }

@@ -55,6 +55,13 @@ namespace CombatVerification.Fixtures
         [JsonProperty("consumables", Required = Required.Default)]
         public List<string> Consumables { get; set; }
 
+        /// <summary>
+        /// Stable asset identifiers for permanent books already learned. The catalog owns their
+        /// gains; this declaration does not spend attribute points or imply inventory ownership.
+        /// </summary>
+        [JsonProperty("learnedBookIds", Required = Required.Default)]
+        public List<string> LearnedBookIds { get; set; }
+
         [JsonProperty("provenance", Required = Required.Default)]
         public BuildProvenance Provenance { get; set; }
     }

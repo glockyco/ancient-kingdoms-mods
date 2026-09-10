@@ -73,6 +73,17 @@ export interface ArmorSetDefinition {
   attributeBonuses: Partial<AttributeSet>;
 }
 
+export interface LearnedBookDefinition {
+  id: string;
+  name: string;
+  gains: AttributeSet;
+}
+
+export interface LearnedBookProgression {
+  ids: readonly string[];
+  catalog: readonly LearnedBookDefinition[];
+}
+
 export interface CasterStatInput {
   kind: "player" | "companion";
   level: number;
@@ -80,6 +91,7 @@ export interface CasterStatInput {
   curves: CasterBaseCurves;
   equipment: readonly CasterEquipmentPiece[];
   armorSets?: readonly ArmorSetDefinition[];
+  learnedBooks: LearnedBookProgression;
   extraBonuses?: Partial<CasterBonuses>;
   passives?: readonly PassiveDamageBonus[];
   damagePercentBuffs?: readonly number[];
@@ -160,6 +172,42 @@ const ATTRIBUTE_KEYS: Array<keyof AttributeSet> = [
   "charisma",
 ];
 
+function resolveLearnedBookGains(input: CasterStatInput): AttributeSet {
+  const gains: AttributeSet = {
+    strength: 0,
+    constitution: 0,
+    dexterity: 0,
+    intelligence: 0,
+    wisdom: 0,
+    charisma: 0,
+  };
+  const progression = input.learnedBooks;
+  if (input.kind !== "player" && progression.ids.length > 0) {
+    throw new Error(
+      "Permanent learned books belong to the player, not a companion",
+    );
+  }
+
+  const catalog = new Map<string, LearnedBookDefinition>();
+  for (const definition of progression.catalog) {
+    if (catalog.has(definition.id)) {
+      throw new Error(`Duplicate learned-book catalog id '${definition.id}'`);
+    }
+    catalog.set(definition.id, definition);
+  }
+
+  const seen = new Set<string>();
+  for (const id of progression.ids) {
+    if (seen.has(id)) throw new Error(`Duplicate learned book id '${id}'`);
+    seen.add(id);
+    const definition = catalog.get(id);
+    if (definition === undefined)
+      throw new Error(`Unknown learned book id '${id}'`);
+    for (const key of ATTRIBUTE_KEYS) gains[key] += definition.gains[key];
+  }
+  return gains;
+}
+
 /** Builds the properties read from Combat, Health, Mana, and Energy. */
 export function buildCasterStatSheet(input: CasterStatInput): CasterStatSheet {
   const equipment = aggregateActiveEquipment(input.equipment);
@@ -171,9 +219,10 @@ export function buildCasterStatSheet(input: CasterStatInput): CasterStatSheet {
     )
     .map((definition) => definition.attributeBonuses);
   const extra = sumBonuses(input.extraBonuses ?? {}, ...activeSetBonuses);
+  const learnedBookGains = resolveLearnedBookGains(input);
   const attributes = { ...input.attributes };
   for (const key of ATTRIBUTE_KEYS) {
-    attributes[key] += equipment[key] + extra[key];
+    attributes[key] += learnedBookGains[key] + equipment[key] + extra[key];
   }
 
   const strength = Math.max(0, attributes.strength);

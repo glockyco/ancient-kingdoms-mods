@@ -35,6 +35,7 @@ namespace CombatVerification.Tests
                     },
                     Companions = new(),
                     Consumables = new(),
+                    LearnedBookIds = new(),
                     Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
                 },
                 Execution = new FixtureExecution { Seed = 1 },

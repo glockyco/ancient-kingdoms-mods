@@ -167,6 +167,84 @@ namespace CombatVerification.Tests
             Assert.Contains("did not accept", StepNamed(outcome, "attributes").Detail);
         }
 
+        // --- permanent books ---
+
+        [Fact]
+        public void LearnedBooksUseInventoryCommandAndReportLiveAttributeTotals()
+        {
+            var character = new FakeCharacter().WithBook(
+                "forgotten_tome",
+                new Dictionary<string, int> { ["strength"] = 2, ["wisdom"] = 1 });
+
+            var outcome = CharacterBuilder.Run(
+                character,
+                Spec(),
+                learnedBookIds: new[] { "forgotten_tome" });
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("forgotten_tome", Assert.Single(character.LearnedBookIds));
+            Assert.Equal(3, character.AttributeValue("strength"));
+            Assert.Equal(2, character.AttributeValue("wisdom"));
+            var detail = StepNamed(outcome, "learnedBooks").Detail;
+            Assert.Contains("strength=3", detail);
+            Assert.Contains("wisdom=2", detail);
+        }
+
+        [Fact]
+        public void DuplicateBooksAreRefusedBeforeProgressionMutatesTheCharacter()
+        {
+            var character = new FakeCharacter().WithBook(
+                "forgotten_tome",
+                new Dictionary<string, int> { ["strength"] = 2 });
+
+            var outcome = CharacterBuilder.Run(
+                character,
+                Spec(level: 10),
+                learnedBookIds: new[] { "forgotten_tome", "forgotten_tome" });
+
+            Assert.False(outcome.Ok);
+            Assert.Equal("learnedBooks", outcome.Failure?.Name);
+            Assert.Equal(1, character.Level);
+            Assert.Equal(0, character.AwardCalls);
+        }
+
+        [Fact]
+        public void UnknownBookIdsAreRefusedBeforeProgressionMutatesTheCharacter()
+        {
+            var character = new FakeCharacter();
+
+            var outcome = CharacterBuilder.Run(
+                character,
+                Spec(level: 10),
+                learnedBookIds: new[] { "missing_tome" });
+
+            Assert.False(outcome.Ok);
+            Assert.Equal("learnedBooks", outcome.Failure?.Name);
+            Assert.Equal(0, character.AwardCalls);
+        }
+
+        [Fact]
+        public void ASecondBuildCannotReapplyAPreviouslyLearnedBook()
+        {
+            var character = new FakeCharacter().WithBook(
+                "forgotten_tome",
+                new Dictionary<string, int> { ["strength"] = 2 });
+            var first = CharacterBuilder.Run(
+                character,
+                Spec(),
+                learnedBookIds: new[] { "forgotten_tome" });
+
+            var second = CharacterBuilder.Run(
+                character,
+                Spec(),
+                learnedBookIds: new[] { "forgotten_tome" });
+
+            Assert.True(first.Ok, first.Failure?.ToString());
+            Assert.False(second.Ok);
+            Assert.Equal("untouched", second.Failure?.Name);
+            Assert.Equal(3, character.AttributeValue("strength"));
+        }
+
         // --- skills ---
 
         [Fact]
@@ -275,7 +353,11 @@ namespace CombatVerification.Tests
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(
-                new[] { "level", "veteran", "attributes", "skills", "equipment", "companions" },
+                new[]
+                {
+                    "level", "veteran", "attributes", "skills", "learnedBooks", "equipment",
+                    "companions",
+                },
                 outcome.Steps.Select(step => step.Name).ToArray());
         }
 

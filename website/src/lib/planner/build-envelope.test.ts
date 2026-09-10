@@ -6,7 +6,7 @@ import {
 } from "./build-envelope";
 
 const matchingBuild = (): BuildEnvelope => ({
-  serializedSchemaVersion: 1,
+  serializedSchemaVersion: 2,
   captureSchemaVersion: 1,
   modelVersion: "1",
   gameData: {
@@ -19,7 +19,7 @@ const matchingBuild = (): BuildEnvelope => ({
 
 describe("parseBuildEnvelope", () => {
   it.each([
-    ["serializedSchemaVersion", 2, "Unsupported serialized schema"],
+    ["serializedSchemaVersion", 3, "Unsupported serialized schema"],
     ["captureSchemaVersion", 2, "Unsupported capture schema"],
   ] as const)("refuses an unknown %s", (field, value, message) => {
     const build = { ...matchingBuild(), [field]: value };

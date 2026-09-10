@@ -8,7 +8,7 @@
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 1
+    "serializedSchemaVersion": 2
   },
   "name": "A-consumables",
   "tier": "A",
@@ -31,7 +31,8 @@
     "consumables": [
       "bread",
       "minor_potion_of_rage"
-    ]
+    ],
+    "learnedBookIds": []
   },
   "execution": {
     "durationSeconds": null,

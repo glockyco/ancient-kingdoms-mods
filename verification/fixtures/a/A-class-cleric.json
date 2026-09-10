@@ -8,7 +8,7 @@
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 1
+    "serializedSchemaVersion": 2
   },
   "name": "A-class-cleric",
   "tier": "A",
@@ -28,7 +28,8 @@
       "equipment": []
     },
     "companions": null,
-    "consumables": []
+    "consumables": [],
+    "learnedBookIds": []
   },
   "execution": {
     "durationSeconds": null,

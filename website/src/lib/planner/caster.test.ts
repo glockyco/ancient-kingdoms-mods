@@ -37,6 +37,7 @@ function input(): CasterStatInput {
       charisma: 0,
     },
     curves,
+    learnedBooks: { ids: [], catalog: [] },
     equipment: [
       {
         slot: 12,
@@ -108,6 +109,69 @@ describe("buildCasterStatSheet", () => {
     expect(sheet.criticalResist).toBeCloseTo(0.05);
     expect(sheet.haste).toBe(0.8);
     expect(sheet.spellHaste).toBe(-0.5);
+  });
+
+  it("applies catalogued learned books once without mutating base attributes", () => {
+    const base = input();
+    base.learnedBooks = {
+      ids: ["forgotten_tome"],
+      catalog: [
+        {
+          id: "forgotten_tome",
+          name: "Forgotten Tome",
+          gains: {
+            strength: 3,
+            constitution: 2,
+            dexterity: 0,
+            intelligence: 0,
+            wisdom: 1,
+            charisma: 0,
+          },
+        },
+      ],
+    };
+
+    expect(buildCasterStatSheet(base).attributes).toEqual({
+      strength: 15,
+      constitution: 22,
+      dexterity: 100,
+      intelligence: 30,
+      wisdom: 1,
+      charisma: 0,
+    });
+    expect(buildCasterStatSheet(base).attributes.strength).toBe(15);
+    expect(base.attributes.strength).toBe(10);
+  });
+
+  it("refuses duplicate and unknown learned-book identities", () => {
+    const definition = {
+      id: "forgotten_tome",
+      name: "Forgotten Tome",
+      gains: {
+        strength: 1,
+        constitution: 0,
+        dexterity: 0,
+        intelligence: 0,
+        wisdom: 0,
+        charisma: 0,
+      },
+    };
+
+    expect(() =>
+      buildCasterStatSheet({
+        ...input(),
+        learnedBooks: {
+          ids: ["forgotten_tome", "forgotten_tome"],
+          catalog: [definition],
+        },
+      }),
+    ).toThrow("Duplicate learned book id 'forgotten_tome'");
+    expect(() =>
+      buildCasterStatSheet({
+        ...input(),
+        learnedBooks: { ids: ["missing_tome"], catalog: [definition] },
+      }),
+    ).toThrow("Unknown learned book id 'missing_tome'");
   });
 
   it("ignores the stored energy multiplier for capacity", () => {

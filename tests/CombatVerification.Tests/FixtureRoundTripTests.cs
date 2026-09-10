@@ -16,7 +16,7 @@ namespace CombatVerification.Tests
         {
           "schemaVersion": 2,
           "build": {
-            "serializedSchemaVersion": 1,
+            "serializedSchemaVersion": 2,
             "captureSchemaVersion": 1,
             "modelVersion": "1",
             "gameData": {
@@ -46,6 +46,7 @@ namespace CombatVerification.Tests
             },
             "companions": [],
             "consumables": [ "roast_boar" ],
+            "learnedBookIds": [ "forgotten_tome" ],
             "provenance": { "kind": "capture", "source": "player-save" }
           },
           "execution": {
@@ -62,7 +63,7 @@ namespace CombatVerification.Tests
             var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(FixturePayload)!;
 
             Assert.Equal(2, fixture.SchemaVersion);
-            Assert.Equal(1, fixture.Build.SerializedSchemaVersion);
+            Assert.Equal(2, fixture.Build.SerializedSchemaVersion);
             Assert.Equal(1, fixture.Build.CaptureSchemaVersion);
             Assert.Equal("1", fixture.Build.ModelVersion);
             Assert.Equal("1.4.2", fixture.Build.GameData.GameVersion);
@@ -87,6 +88,7 @@ namespace CombatVerification.Tests
 
             Assert.Empty(fixture.BuildData.Companions);
             Assert.Equal("roast_boar", Assert.Single(fixture.BuildData.Consumables));
+            Assert.Equal("forgotten_tome", Assert.Single(fixture.BuildData.LearnedBookIds));
             Assert.Equal("front", Assert.Single(fixture.Execution.Actions).Facing);
             Assert.Equal("dummy", fixture.Execution.Target.Spawn);
             Assert.Equal(55, fixture.Execution.Target.Level);
@@ -146,7 +148,8 @@ namespace CombatVerification.Tests
 
             var rules = new SyntheticRules()
                 .WithSkill("Melee Attack", classes: new[] { "Warrior" })
-                .WithItem("rusty_sword", slot: 12);
+                .WithItem("rusty_sword", slot: 12)
+                .WithItem("forgotten_tome", slot: 0, isBook: true);
             rules.Augments.Add("jagged_shard");
             rules.Consumables.Add("roast_boar");
 
@@ -180,7 +183,8 @@ namespace CombatVerification.Tests
 
             var rules = new SyntheticRules()
                 .WithSkill("Melee Attack", classes: new[] { "Warrior" })
-                .WithItem("rusty_sword", slot: 12);
+                .WithItem("rusty_sword", slot: 12)
+                .WithItem("forgotten_tome", slot: 0, isBook: true);
             rules.Augments.Add("jagged_shard");
             rules.Consumables.Add("roast_boar");
 

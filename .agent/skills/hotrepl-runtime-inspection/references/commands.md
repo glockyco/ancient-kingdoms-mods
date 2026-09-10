@@ -24,7 +24,7 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 | `probe.targetState` | job | `{}` |
 | `probe.perHitDamage` | job | `{"windowSeconds": number, "seed": int?}` |
 | `probe.actionInterval` | job | `{"windowSeconds": number?}` |
-| `fixture.buildCharacter` | job | `{"character": {...}, "companions": [...]}` |
+| `fixture.buildCharacter` | job | `{"build": {...}, "buildData": {"character": {...}, "companions": [...], "consumables": [...], "learnedBookIds": [...], "provenance": {...}}}` |
 
 ## Caveats
 

@@ -28,6 +28,7 @@ public sealed class FixtureShapeValidatorTests
             },
             Companions = new List<CompanionSpec>(),
             Consumables = new List<string>(),
+            LearnedBookIds = new List<string>(),
             Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
         },
         Execution = new FixtureExecution { Seed = 7 },
@@ -55,6 +56,7 @@ public sealed class FixtureShapeValidatorTests
         fixture.BuildData.Character.Skills = null!;
         fixture.BuildData.Character.Equipment = null!;
         fixture.BuildData.Consumables = null!;
+        fixture.BuildData.LearnedBookIds = null!;
         fixture.BuildData.Provenance = null!;
         fixture.Execution = null!;
 
@@ -68,6 +70,7 @@ public sealed class FixtureShapeValidatorTests
         Assert.Contains("buildData.character.skills", fields);
         Assert.Contains("buildData.character.equipment", fields);
         Assert.Contains("buildData.consumables", fields);
+        Assert.Contains("buildData.learnedBookIds", fields);
         Assert.Contains("buildData.provenance", fields);
         Assert.Contains("execution", fields);
     }

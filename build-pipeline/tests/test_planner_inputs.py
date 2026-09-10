@@ -96,6 +96,18 @@ class PlannerInputTests(unittest.TestCase):
                     "max_stack": 1,
                     "weapon_required_ammo_id": "arrow",
                 },
+                {
+                    "id": "forgotten_tome",
+                    "name": "Forgotten Tome",
+                    "item_type": "book",
+                    "max_stack": 1,
+                    "book_strength_gain": 1,
+                    "book_dexterity_gain": 0,
+                    "book_constitution_gain": 2,
+                    "book_intelligence_gain": 0,
+                    "book_wisdom_gain": 0,
+                    "book_charisma_gain": 0,
+                },
             ],
         }
 
@@ -128,6 +140,13 @@ class PlannerInputTests(unittest.TestCase):
                 "items.json",
                 [row for row in data["items.json"] if row["item_type"] != "ammo"],
             ),
+            "learned book": lambda data: data.__setitem__(
+                "items.json",
+                [row for row in data["items.json"] if row["item_type"] != "book"],
+            ),
+            "learned book gain": lambda data: next(
+                row for row in data["items.json"] if row["item_type"] == "book"
+            ).pop("book_wisdom_gain"),
             "effect classification": lambda data: data["skills.json"][0].__setitem__(
                 "skill_type", ""
             ),

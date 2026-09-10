@@ -161,7 +161,8 @@ namespace CombatVerification.Tests
             string[]? classes = null,
             bool twoHanded = false,
             string? category = null,
-            string archetype = "Warrior")
+            string archetype = "Warrior",
+            bool isBook = false)
         {
             // A test that names no category means "an item belonging in this slot", so the
             // category that slot requires is used, which is how the game decides where it fits.
@@ -176,6 +177,7 @@ namespace CombatVerification.Tests
                 LevelRequired = levelRequired,
                 Classes = classes ?? System.Array.Empty<string>(),
                 IsTwoHanded = twoHanded,
+                IsBook = isBook,
                 Category = derived!,
             };
             return this;

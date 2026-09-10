@@ -24,7 +24,7 @@ namespace CombatVerification.Commands
         : IControlCommandHandler<StatSheetArgs, StatSheetResult>
     {
         public string Name => "probe.statSheet";
-        public int Version => 1;
+        public int Version => 2;
         public ControlCommandKind Kind => ControlCommandKind.Sync;
         public bool MutatesState => false;
 

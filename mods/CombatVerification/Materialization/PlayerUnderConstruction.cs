@@ -119,6 +119,33 @@ namespace CombatVerification.Materialization
             method?.Invoke(_player, Array.Empty<object>());
         }
 
+        // --- permanent books ---
+
+        public IReadOnlyList<string> LearnedBookIds
+        {
+            get
+            {
+                var ids = new List<string>();
+                foreach (var learnedName in _player.books)
+                    ids.Add(GameItems.StableIdForDisplayName(learnedName));
+                return ids;
+            }
+        }
+
+        public bool IsBook(string itemId)
+        {
+            var asset = GameItems.Find(itemId);
+            return asset != null && asset.TryCast<BookItem>() != null;
+        }
+
+        public void LearnBook(string itemId)
+        {
+            var asset = Required(itemId);
+            if (asset.TryCast<BookItem>() == null)
+                return;
+            _player.CmdTryLearnBook(asset.nameItem);
+        }
+
         // --- skills ---
 
         public int UnspentSkillPoints => _skills.skillPoints;

@@ -24,7 +24,7 @@ namespace CombatVerification.Commands
         : IControlCommandHandler<BuildCharacterArgs, BuildCharacterResult>
     {
         public string Name => "fixture.buildCharacter";
-        public int Version => 1;
+        public int Version => 2;
         public ControlCommandKind Kind => ControlCommandKind.Job;
         public bool MutatesState => true;
 
@@ -44,13 +44,18 @@ namespace CombatVerification.Commands
             BuildCharacterArgs args,
             TaskCompletionSource<ControlCommandResult<BuildCharacterResult>> completion)
         {
-            if (args?.Character == null)
+            if (args?.Build == null
+                || args.BuildData?.Character == null
+                || args.BuildData.LearnedBookIds == null
+                || args.BuildData.Provenance == null)
             {
                 completion.TrySetResult(context.PreconditionFailed(
-                    "argumentMissing", "A character specification is required."));
+                    "argumentMissing",
+                    "A build envelope, logical character, learnedBookIds declaration, and provenance are required."));
                 yield break;
             }
 
+            var buildData = args.BuildData;
             var character = PlayerUnderConstruction.Wrap(out var unavailable);
             if (character == null)
             {
@@ -65,7 +70,11 @@ namespace CombatVerification.Commands
             BuildOutcome outcome;
             try
             {
-                outcome = CharacterBuilder.Run(character, args.Character, args.Companions);
+                outcome = CharacterBuilder.Run(
+                    character,
+                    buildData.Character,
+                    buildData.Companions,
+                    buildData.LearnedBookIds);
             }
             catch (Exception exception)
             {
@@ -81,6 +90,8 @@ namespace CombatVerification.Commands
 
             var result = new BuildCharacterResult
             {
+                Build = args.Build,
+                Provenance = buildData.Provenance,
                 Ok = outcome.Ok,
                 Steps = steps,
                 Level = character.Level,
@@ -88,6 +99,16 @@ namespace CombatVerification.Commands
                 UnspentAttributePoints = character.UnspentAttributePoints,
                 UnspentSkillPoints = character.UnspentSkillPoints,
                 UnspentVeteranPoints = character.UnspentVeteranPoints,
+                LearnedBookIds = new List<string>(character.LearnedBookIds),
+                Attributes = new Dictionary<string, int>
+                {
+                    ["strength"] = character.AttributeValue("strength"),
+                    ["constitution"] = character.AttributeValue("constitution"),
+                    ["dexterity"] = character.AttributeValue("dexterity"),
+                    ["intelligence"] = character.AttributeValue("intelligence"),
+                    ["wisdom"] = character.AttributeValue("wisdom"),
+                    ["charisma"] = character.AttributeValue("charisma"),
+                },
             };
 
             completion.TrySetResult(ControlCommandResult.Ok(result));

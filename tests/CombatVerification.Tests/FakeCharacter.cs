@@ -159,12 +159,38 @@ namespace CombatVerification.Tests
         private int SpentInPool(bool veteran)
             => _skills.Where(skill => skill.IsVeteran == veteran).Sum(skill => skill.Level);
 
+        // --- permanent books ---
+
+        public IReadOnlyList<string> LearnedBookIds => _learnedBookIds;
+
+        public bool IsBook(string itemId)
+            => itemId != null
+               && Items.TryGetValue(itemId, out var item)
+               && item.BookGains != null;
+
+        public void LearnBook(string itemId)
+        {
+            if (!IsBook(itemId) || _learnedBookIds.Contains(itemId))
+                return;
+            var inventoryIndex = FindInInventory(itemId, null!);
+            if (inventoryIndex < 0)
+                return;
+
+            var gains = Items[itemId].BookGains!;
+            foreach (var pair in gains)
+                if (_attributes.ContainsKey(pair.Key))
+                    _attributes[pair.Key] += pair.Value;
+            _learnedBookIds.Add(itemId);
+            _inventory.RemoveAt(inventoryIndex);
+        }
+
         // --- equipment ---
 
         /// <summary>One item as the game would define it.</summary>
         internal sealed class FakeItem
         {
             public int MaxDurability { get; set; } = 100;
+            public Dictionary<string, int>? BookGains { get; set; }
 
             /// <summary>Slots the game would let it occupy. Empty means none.</summary>
             public HashSet<int> Slots { get; set; } = new();
@@ -254,6 +280,7 @@ namespace CombatVerification.Tests
         }
 
         private readonly List<EquippedSlot> _inventory = new();
+        private readonly List<string> _learnedBookIds = new();
 
         private FakeEquipment? _equipment;
 
@@ -282,6 +309,12 @@ namespace CombatVerification.Tests
                 MaxDurability = maxDurability,
                 Slots = new HashSet<int>(slots),
             };
+            return this;
+        }
+
+        public FakeCharacter WithBook(string id, Dictionary<string, int> gains)
+        {
+            Items[id] = new FakeItem { MaxDurability = 0, BookGains = gains };
             return this;
         }
 

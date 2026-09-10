@@ -100,6 +100,17 @@ namespace CombatVerification.Materialization
         /// <summary>Spends one point on an attribute through the engine's own command.</summary>
         void SpendAttributePoint(string attribute);
 
+        // --- permanent books ---
+
+        /// <summary>Stable asset identifiers for books the character has already learned.</summary>
+        IReadOnlyList<string> LearnedBookIds { get; }
+
+        /// <summary>Whether the identifier resolves to a permanent book asset.</summary>
+        bool IsBook(string itemId);
+
+        /// <summary>Learns an inventory book through the engine's own command.</summary>
+        void LearnBook(string itemId);
+
         // --- skills ---
 
         int UnspentSkillPoints { get; }

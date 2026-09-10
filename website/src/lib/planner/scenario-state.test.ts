@@ -8,7 +8,7 @@ import {
 import { parseEvaluationScenario } from "./scenario";
 
 const build: BuildEnvelope = {
-  serializedSchemaVersion: 1,
+  serializedSchemaVersion: 2,
   captureSchemaVersion: 1,
   modelVersion: "1",
   gameData: {

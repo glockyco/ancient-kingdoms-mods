@@ -9,7 +9,7 @@ import type { DamageSkillSpec } from "./hit";
 import { createDefaultEvaluationScenario } from "./scenario";
 
 const build: BuildEnvelope = {
-  serializedSchemaVersion: 1,
+  serializedSchemaVersion: 2,
   captureSchemaVersion: 1,
   modelVersion: "1",
   gameData: {
@@ -48,6 +48,7 @@ const caster: CasterStatInput = {
     charisma: 0,
   },
   curves,
+  learnedBooks: { ids: [], catalog: [] },
   equipment: [],
 };
 

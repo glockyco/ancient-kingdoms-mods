@@ -55,7 +55,11 @@ function state(args: {
       resourceMultiplier: 1,
       baseCombat: 10,
     },
-    caster: { curves, equipment: args.equipment ?? [] },
+    caster: {
+      curves,
+      learnedBooks: { ids: [], catalog: [] },
+      equipment: args.equipment ?? [],
+    },
   });
 }
 

@@ -23,7 +23,8 @@ namespace CombatVerification.Tests
             .WithItem("Rusty Shield", slot: 13)
             .WithItem("Great Axe", slot: 12, twoHanded: true)
             .WithItem("Wizard Hat", slot: 0, classes: new[] { "Wizard" })
-            .WithItem("Epic Blade", slot: 12, levelRequired: 45);
+            .WithItem("Epic Blade", slot: 12, levelRequired: 45)
+            .WithItem("forgotten_tome", slot: 0, isBook: true);
 
         /// <summary>A fixture that passes, which every test below mutates in one way.</summary>
         private static FixtureDescriptor Valid() => new FixtureDescriptor
@@ -48,6 +49,7 @@ namespace CombatVerification.Tests
                 },
                 Companions = new List<CompanionSpec>(),
                 Consumables = new List<string> { "Roast Boar" },
+                LearnedBookIds = new List<string>(),
                 Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
             },
             Execution = new FixtureExecution { Seed = 7 },
@@ -88,6 +90,7 @@ namespace CombatVerification.Tests
         [InlineData("buildData.character.skills")]
         [InlineData("buildData.character.equipment")]
         [InlineData("buildData.consumables")]
+        [InlineData("buildData.learnedBookIds")]
         public void AnAbsentStatBearingSectionIsRefused(string field)
         {
             var f = Valid();
@@ -97,6 +100,7 @@ namespace CombatVerification.Tests
                 case "buildData.character.skills": f.BuildData.Character.Skills = null; break;
                 case "buildData.character.equipment": f.BuildData.Character.Equipment = null; break;
                 case "buildData.consumables": f.BuildData.Consumables = null; break;
+                case "buildData.learnedBookIds": f.BuildData.LearnedBookIds = null; break;
             }
 
             // Absent is not empty: it means nobody read the section.
@@ -142,6 +146,42 @@ namespace CombatVerification.Tests
         {
             var f = Valid(); f.BuildData.Character = null;
             AssertRefused(f, "buildData.character");
+        }
+
+        [Fact]
+        public void DuplicateLearnedBookIdsAreRefusedWithoutDeduplication()
+        {
+            var f = Valid();
+            f.BuildData.LearnedBookIds = new List<string> { "forgotten_tome", "forgotten_tome" };
+
+            AssertRefused(f, "buildData.learnedBookIds.forgotten_tome");
+        }
+
+        [Fact]
+        public void UnknownLearnedBookIdsAreRefused()
+        {
+            var f = Valid();
+            f.BuildData.LearnedBookIds = new List<string> { "missing_tome" };
+
+            AssertRefused(f, "buildData.learnedBookIds[0]");
+        }
+
+        [Fact]
+        public void NonBookItemsCannotBeDeclaredAsLearnedBooks()
+        {
+            var f = Valid();
+            f.BuildData.LearnedBookIds = new List<string> { "Rusty Sword" };
+
+            AssertRefused(f, "buildData.learnedBookIds[0]");
+        }
+
+        [Fact]
+        public void CataloguedLearnedBooksAreAccepted()
+        {
+            var f = Valid();
+            f.BuildData.LearnedBookIds = new List<string> { "forgotten_tome" };
+
+            Assert.Empty(Check(f));
         }
 
         // --- class, race, level ---

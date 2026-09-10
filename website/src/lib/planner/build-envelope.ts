@@ -1,4 +1,4 @@
-export const SERIALIZED_SCHEMA_VERSION = 1 as const;
+export const SERIALIZED_SCHEMA_VERSION = 2 as const;
 export const CAPTURE_SCHEMA_VERSION = 1 as const;
 export const MODEL_VERSION = "1" as const;
 
