@@ -43,6 +43,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
       capture completeness/container metadata separate. Verify a fixture and capture round-trip build
       contents and reach the same production evaluation path without silent defaults; reject unknown or
       duplicate book identities and keep catalog gains out of authored build records.
+      Keep this end-to-end gate open until tasks 3.11 through 3.15 pass.
 - [x] 3.2 Define the evaluation-scenario record for target, horizon, initial resources and cooldowns, buffs, consumables, ammunition, incoming events, roster, and target count.
 - [x] 3.3 Define explicit refusal policies for unknown schemas, unsupported target counts, incompatible game data, stale model markers, and incomplete captures.
 - [x] 3.4 Add one owned build-pipeline writer for the deterministic planner payload path, stale-output deletion, required-output assertion, and deterministic serialization.
@@ -52,6 +53,47 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [x] 3.8 Compare every emitted effect kind with modelled, excluded, and unsupported registries; fail publication for an unclassified admitted kind.
 - [x] 3.9 Measure and record the raw and compressed payload baseline for the non-book domains then present; do not treat it as book-inclusive.
 - [x] 3.10 Publish required learned-book definitions/effect classifications with preflight/publication checks and refreshed payload measurement.
+
+Task 3.1 is the acceptance gate for tasks 3.11 through 3.15, not a prerequisite for starting them.
+Complete the schema in 3.11 before migration, catalog resolution, and capture production.
+Task 3.14 brings the required capture work from section 10 before adapter parity acceptance.
+Schema and serialization checks can precede runtime qualification; they do not complete task 3.1.
+
+- [ ] 3.11 Define the complete versioned logical-build schema and its checked C# and TypeScript boundaries.
+      Use stable asset IDs for skills, items, augments, and learned books. Retain displayed names only as context.
+      Include progression, allocations, equipment instance state, companion rolls/equipment, and consumable and ammunition identities with quantities.
+      Distinguish raw observed attributes, base/class-race progression, allocated points, and derived totals.
+      Keep fixture execution and capture completeness, containers, integrity, and producer metadata outside logical build data.
+      Preserve complete-empty versus missing/unread state and keep book gain definitions catalog-owned.
+      Verify serialization preserves these distinctions and rejects unknown schemas or failed capture integrity.
+- [ ] 3.12 Migrate every existing producer and consumer to the schema from 3.11 in one versioned cutover.
+      Update the fixture corpus, C# validation/materialization, TypeScript parsing, and affected tests and documentation.
+      Migrate existing capture contracts and use the same schema for the capture producer in 3.14.
+      Remove obsolete fields and compatibility shims. Do not maintain a second logical-build contract.
+      Verify field-specific refusal of missing required inputs before mutation or evaluation.
+      Verify declared empty sections cannot silently preserve previous runtime state.
+- [ ] 3.13 Implement catalog-to-evaluator resolution through the shared contract from 3.11.
+      Resolve build identities and declared state through the versioned catalog.
+      Include class/race progression, allocations, learned books, equipment/augments, skills/passives, companion inputs, consumables, and ammunition.
+      Reuse production stat and combat formulas. Do not copy formulas into adapters.
+      Keep measured totals as observations, never prediction inputs or substitutes for missing base state.
+      Reject unknown or duplicate book IDs, unresolved required identities, missing definitions, and unsupported admitted effects.
+      Verify catalog-derived inputs reach the production evaluator without manually assembled stats/actions or silent defaults.
+      Verify learned-book gains apply once without consuming allocation budgets.
+- [ ] 3.14 Implement complete read-only capture production against the schema from 3.11.
+      Complete the shared capture core and required build reads in tasks 10.1 through 10.5 and 10.10.
+      Use the local-file transport in 10.7 and retain the deployment and runtime evidence required by 10.9.
+      Preserve raw/base/allocated/derived meanings, skill allocations, instance state, companion state, quantities, and learned identities.
+      Verify observed-empty sections remain distinct from absent or unread sections.
+      Verify partial captures remain inspectable while missing required state blocks dependent evaluation.
+      Record independent runtime proof that capture changes neither gameplay state nor meter state.
+- [ ] 3.15 Prove fixture/capture parity through the migrated adapters and catalog resolver.
+      Round-trip equivalent authored fixture and runtime-produced capture builds while preserving their distinct outer metadata.
+      Supply the same complete scenario and verify both reach the same production evaluator with matching predictions and evaluation identities.
+      Verify unknown schemas, corrupt containers, missing required sections, and unknown or duplicate book IDs refuse dependent evaluation.
+      Retain task 7.1's explicit-schedule integration and tasks 4.4 and 6.14's dynamic timeline as prerequisites to full combat comparison.
+      Do not replace a requested fixture schedule with a solved rotation.
+      Keep maintained-effect, autonomous-companion, and persisted running-game comparison acceptance in task 7.9. Adapter parity alone does not qualify those gates.
 
 ## 4. Numeric kernel and evaluation scenario
 
@@ -279,8 +321,8 @@ Each requirement has an implementation task and a distinct verification task.
 |---|---|---|
 | State-dependent decisions follow the ordered event timeline | 4.4, 6.14 | 4.6, 7.9 |
 | Verified claims require a complete qualified harness report | 7.1, 7.3, 7.5, 10.10 | 7.9, 7.10, 7.11, 12.5, 12.7 |
-| Shared build data and checked adapters preserve provenance | 3.1, 10.1, 10.10, 11.3 | 7.9, 10.5, 11.8, 11.9 |
-| Learned-book gains are catalog-owned and applied once | 3.1, 3.10, 5.10 | 7.11, 12.7 |
+| Shared build data and checked adapters preserve provenance | 3.11-3.14, 10.1, 10.10, 11.3 | 3.1, 3.15, 7.9, 10.5, 11.8, 11.9 |
+| Learned-book gains are catalog-owned and applied once | 3.10, 3.11, 3.13, 5.10 | 3.15, 7.11, 12.7 |
 | Every formula traces to decompiled source | 3.10, 4.1, 5.1, 5.2, 5.4, 5.6, 5.10, 6.1-6.8 | 7.2, 7.11, 12.4 |
 | Evaluation is deterministic without overstating stochastic exactness | 4.1, 5.10, 7.1 | 4.6, 7.2, 7.10, 7.11 |
 | Accuracy claims are scoped and independently validated | 7.5, 7.6 | 7.10, 7.11, 12.5, 12.7 |
@@ -322,7 +364,7 @@ Each requirement has an implementation task and a distinct verification task.
 | Consumables and ammunition are part of the coupled search | 6.5, 8.3, 8.4 | 6.11, 8.12 |
 | Dynamic state drives displayed evaluation | 4.4, 6.14 | 4.5, 7.9 |
 | Recommendations prefer intended behaviour | 6.16, 8.3 | 7.10, 8.12 |
-| Captured builds pass checked adapters and completeness gates | 3.1, 10.10, 11.3 | 10.5, 11.8, 11.9 |
+| Captured builds pass checked adapters and completeness gates | 3.11-3.14, 10.10, 11.3 | 3.1, 3.15, 10.5, 11.8, 11.9 |
 | The search states search quality separately from prediction accuracy | 8.8, 8.11 | 8.12 |
 | Discrete branches are enumerated, not searched locally | 8.1 | 8.8, 8.12 |
 | The local search uses multiple independent starts | 8.2 | 8.8, 8.12 |
@@ -362,13 +404,13 @@ Each requirement has an implementation task and a distinct verification task.
 ### `character-state-export`
 | Requirement | Implementation | Verification |
 |---|---|---|
-| Logical build data is separate from capture metadata | 3.1, 10.1, 10.2, 10.10 | 7.9, 10.5, 11.9 |
+| Logical build data is separate from capture metadata | 3.11, 3.12, 3.14, 10.1, 10.2, 10.10 | 3.1, 3.15, 7.9, 10.5, 11.9 |
 | Learned-book state uses stable identities | 3.1, 10.10 | 7.11, 10.5, 11.9 |
 | The export is read-only | 10.4, 10.10 | 10.5, 10.9, 11.9 |
 | Producer and evaluator provenance remain distinct | 3.1, 10.1 | 10.5, 11.3 |
 | Completeness and adapter checks gate dependent evaluation | 3.1, 10.3, 10.10 | 10.5, 11.9 |
 | Items are identified by stable identifier | 10.2 | 10.5 |
-| The export covers the logical build inputs | 10.2, 10.3, 10.10 | 10.5, 10.9, 11.9 |
+| The export covers the logical build inputs | 3.14, 10.2, 10.3, 10.10 | 3.15, 10.5, 10.9, 11.9 |
 | Companion roll and state contents are captured or explicitly excluded | 10.3 | 10.5, 10.9 |
 | Measured combat output is capturable | 10.6 | 11.7, 12.5 |
 | The player transport is one local file | 10.7, 11.1 | 10.9, 11.8 |
