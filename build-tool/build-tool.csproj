@@ -18,6 +18,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\mods\CombatVerification\Builds\LogicalBuildData.cs"
+             Link="CombatVerification\LogicalBuildData.cs" />
+    <Compile Include="..\mods\CombatVerification\Builds\LogicalBuildAdapter.cs"
+             Link="CombatVerification\LogicalBuildAdapter.cs" />
+    <Compile Include="..\mods\CombatVerification\Capture\CaptureBuildRecord.cs"
+             Link="CombatVerification\CaptureBuildRecord.cs" />
+    <Compile Include="..\mods\CombatVerification\Capture\CaptureBuildAdapter.cs"
+             Link="CombatVerification\CaptureBuildAdapter.cs" />
     <Compile Include="..\mods\CombatVerification\Fixtures\BuildEnvelope.cs"
              Link="CombatVerification\BuildEnvelope.cs" />
     <Compile Include="..\mods\CombatVerification\Fixtures\FixtureDescriptor.cs"

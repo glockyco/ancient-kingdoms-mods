@@ -59,7 +59,7 @@ Complete the schema in 3.11 before migration, catalog resolution, and capture pr
 Task 3.14 brings the required capture work from section 10 before adapter parity acceptance.
 Schema and serialization checks can precede runtime qualification; they do not complete task 3.1.
 
-- [ ] 3.11 Define the complete versioned logical-build schema and its checked C# and TypeScript boundaries.
+- [x] 3.11 Define the complete versioned logical-build schema and its checked C# and TypeScript boundaries.
       Use stable asset IDs for skills, items, augments, and learned books. Retain displayed names only as context.
       Include progression, allocations, equipment instance state, companion rolls/equipment, and consumable and ammunition identities with quantities.
       Distinguish raw observed attributes, base/class-race progression, allocated points, and derived totals.

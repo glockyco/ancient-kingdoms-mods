@@ -20,6 +20,14 @@
   <ItemGroup>
     <Compile Include="..\..\mods\DataExporter\GameIds.cs"
              Link="GameIds.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Builds\LogicalBuildData.cs"
+             Link="Builds\LogicalBuildData.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Builds\LogicalBuildAdapter.cs"
+             Link="Builds\LogicalBuildAdapter.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Capture\CaptureBuildRecord.cs"
+             Link="Capture\CaptureBuildRecord.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Capture\CaptureBuildAdapter.cs"
+             Link="Capture\CaptureBuildAdapter.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\BuildEnvelope.cs"
              Link="Fixtures\BuildEnvelope.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\FixtureDescriptor.cs"
