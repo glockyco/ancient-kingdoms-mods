@@ -14,7 +14,10 @@ The prior simulator is removed only after the replacement passes runtime and rel
       matrix execution.
 - [x] 1.2 Complete harness task 7.8 for debuff landing across defense, accuracy, and level difference, then record the fitted terms and bounds.
 - [x] 1.3 Complete harness task 7.9 for effective debuff uptime, then record whether duration times landing probability is valid.
-- [x] 1.4 Complete harness tasks 7.10 and 7.11 for same-entity replacement and cross-entity category isolation, then record the event rules.
+- [ ] 1.4 Complete harness evidence for category replacement on one recipient, including two distinct
+      sources targeting the same recipient. Retain the existing same-recipient and different-recipient
+      experiments as component evidence only; they do not prove shared-target behavior or roster
+      separability.
 - [x] 1.5 Add and run a harness experiment for integer-schedule gaps at cooldowns of 45 seconds and above, then set the rotation policy from the result.
 - [x] 1.6 Add and run a harness experiment that compares Rogue and Warrior resource behavior, then set their separate model policies.
 - [x] 1.7 Add and run companion-output experiments by archetype, range style, initial distance, target movement, haste, and cooldown reduction.
@@ -87,14 +90,17 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [x] 6.3 Implement source-cited steady-state refresh and cooldown-reduction helpers with local
       behavior checks. Finite-window integration and evidence-qualified bounds remain subject to
       tasks 6.14 and 7.4 through 7.6.
-- [x] 6.4 Implement buff-category exclusivity within each controlled entity, cross-entity isolation, stronger-effect replacement, and deliberate action omission.
+- [x] 6.4 Implement the previously measured category replacement and different-recipient isolation
+      behavior as component logic; this task does not close the shared-recipient requirement.
 - [x] 6.5 Implement declared consumables, ammunition consumption, and the default scenario's no-durability-loss policy.
 - [x] 6.6 Implement normal and veteran skill budget, tier, prerequisite, level, weapon, assassination, and other engine precondition gates.
 - [x] 6.7 Implement player rotation solving with explicit skill inclusion and exclusion and no free-form action-priority language.
 - [x] 6.8 Implement mercenary state, equipment, autonomous action expectation, two-gate cadence, movement policy, and healer reserve.
 - [x] 6.9 Add timing tests for haste, spell haste, flat refractory, reduced cooldown, follow-up attacks, and long-cooldown integer schedules.
 - [x] 6.10 Add resource tests for mana, energy, Rogue Fury, Warrior behavior, damage return, burn skills, and the inert mercenary energy multiplier defect.
-- [x] 6.11 Add effect tests for proc refresh, cooldown reduction, consumables, ammunition, category replacement, cross-entity isolation, and excluded durability loss.
+- [x] 6.11 Add component effect tests for proc refresh, cooldown reduction, consumables, ammunition,
+      category replacement, different-recipient isolation, and excluded durability loss. Shared-target
+      replacement remains open under tasks 6.17 and 7.12.
 - [x] 6.12 Add skill-legality and rotation tests for every gate and for deliberate omission of an available skill.
 - [x] 6.13 Add companion tests for each archetype, melee and ranged behavior, movement state, cadence bound, healer reserve, and equipment contribution.
 
@@ -108,6 +114,10 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [ ] 6.16 Implement explicit raw and evidenced known-defect-normalized evaluation modes in the same
       production engine. Verify affected quantities and evidence references are retained, raw game
       behavior is preserved, and recommendations cannot gain from a defect-only advantage.
+- [ ] 6.17 Implement effect source and recipient IDs and resolve category exclusivity in each
+      recipient's `Skills` list. Preserve independent per-entity stat aggregation, allow different
+      recipients to retain same-category effects, and replace the older effect when two sources target
+      one recipient. Add source/recipient attribution to replacement and expiry events.
 
 ## 7. Model verification and calibration
 
@@ -146,6 +156,10 @@ The prior simulator is removed only after the replacement passes runtime and rel
       predeclared protocol. Verify mode separation, failed-baseline rejection, nonlinear
       approximation scope, and out-of-domain unverified status; retain complete report identities.
 - [ ] 7.11 Qualify book-aware stat/damage parity with complete, independently sourced inputs and current catalog identities. For captured inputs, link runtime qualification of the read-only capture producer.
+- [ ] 7.12 Run a shared-target effect experiment with two sources and one recipient, then repeat with
+      different recipients as the control. Verify newest-wins replacement by recipient `Skills` list,
+      source/recipient IDs in the event report, and the limit of the different-recipient evidence.
+      Verify the result does not authorize independent full-roster scoring.
 
 ## 8. Build optimizer
 
@@ -156,20 +170,28 @@ The prior simulator is removed only after the replacement passes runtime and rel
       any incompatible boundary and recommendations do not value defect exploitation.
 - [ ] 8.4 Enforce level, class, race, slot, weapon, point-budget, tier, prerequisite, consumable, ammunition, and scenario constraints.
 - [ ] 8.5 Solve weapon choice and rotation jointly and re-solve the rotation after every weapon-branch change.
-- [ ] 8.6 Solve category-exclusive effects per entity and allow an action to be omitted when it would replace that entity's stronger effect.
+- [ ] 8.6 Solve category-exclusive effects per recipient `Skills` list, retain source and recipient IDs,
+      and allow an action to be omitted when it would replace that recipient's stronger effect.
 - [ ] 8.7 Optimize the player and each active mercenary, capture pets for accounting only, and label every entity included in the total.
 - [ ] 8.8 Compare the heuristic with the exact reference search on a bounded current objective
       corpus. Record objective gap, fixed-point spread, missed branches, and benchmark scope
       separately. Verify no search observation is presented as combat-model accuracy.
 - [ ] 8.9 Measure any surrogate against the display objective and justify the number of candidates carried forward; reject rank correlation alone.
-- [ ] 8.10 Enforce owned-item quantities across slots and entities while allowing independent full-catalog searches.
-- [ ] 8.11 Derive ranking equivalence from measured search-gap evidence for the stated benchmark
-      domain. Verify grouping uses that band rather than a prediction boundary, and unverified
-      search domains do not inherit a numeric gap claim.
+- [ ] 8.10 Enforce owned-item quantities across slots and entities. Full-catalog searches MAY remove
+      item-assignment constraints and reuse per-entity stat aggregation, but roster scoring remains
+      joint unless the scenario records a proven encounter-separability condition.
+- [ ] 8.11 Report search-gap evidence as missed-optimum distance to a reference search for the stated
+      benchmark domain. Preserve deterministic model score order; do not group candidates or derive
+      pairwise equivalence from the gap. If product requirements add practical alternatives, record a
+      separately named product tolerance and its independent evidence.
 - [ ] 8.12 Add optimizer tests for every branch, constraint, interaction, unsupported effect, owned-item conflict, and scenario-version change.
 - [ ] 8.13 Report wasted stat allocation and the cap or threshold that caused it.
 - [ ] 8.14 Verify the explanation against a candidate with each capped stat and each thresholded set bonus.
 - [ ] 8.15 Hold declared learned-book progression fixed in optimization; do not silently grant books.
+- [ ] 8.16 Verify a full-catalog roster search against shared target health, mitigation, recipient
+      effects, and autonomous companion actions. Permit separate entity scoring only when the scenario
+      contains a documented encounter-separability proof; otherwise retain joint scoring and per-entity
+      stat attribution.
 
 ## 9. Planner page and worker
 
@@ -264,7 +286,7 @@ Each requirement has an implementation task and a distinct verification task.
 | Accuracy claims are scoped and independently validated | 7.5, 7.6 | 7.10, 7.11, 12.5, 12.7 |
 | Resource generation and spending follow the event state | 4.4, 5.10, 6.2, 6.14 | 4.5, 6.10, 7.9, 7.11 |
 | Buff timing distinguishes finite windows from steady state | 6.3-6.5, 6.14 | 6.11, 7.4, 7.9 |
-| A buff category holds at most one buff | 6.4 | 1.4, 6.11 |
+| A buff category holds at most one effect per recipient | 6.4, 6.17 | 1.4, 6.11, 7.12 |
 | The refractory a skill sets is selected by the skill's own fields | 6.1 | 6.9 |
 | One hit is derived in the engine's own order | 5.6 | 5.8, 5.9 |
 | A prediction is derived from the target's own state | 5.1, 5.2 | 5.3, 7.4 |
@@ -307,14 +329,15 @@ Each requirement has an implementation task and a distinct verification task.
 | The search covers equipment, attributes, and skill allocation | 8.3, 8.4 | 8.12 |
 | Declared learned-book progression is fixed | 3.1, 8.15 | 7.11, 8.12, 12.7 |
 | The player and active mercenaries are optimized | 8.7 | 6.13, 8.12 |
-| Categorised effects are solved within their owning entity | 8.6 | 6.11, 8.12 |
+| Categorised effects are solved within each recipient's `Skills` list | 6.17, 8.6 | 1.4, 6.11, 7.12, 8.12 |
+| Full-catalog roster scoring requires encounter separability evidence | 8.10, 8.16 | 7.12, 8.12 |
 | Owned-gear planning treats inventory as shared | 8.10, 11.4 | 8.12, 11.8 |
 | Weapon choice and rotation are solved together | 8.5 | 8.12 |
 | Ranking uses a surrogate whose fidelity is measured | 8.9 | 8.12 |
 | Wasted stat allocation is reported | 8.13 | 8.14 |
 | The optimization objective is bound to one evaluation identity | 8.3 | 8.12 |
 | Unsupported effects cannot win a ranking | 3.8, 3.10, 8.12 | 7.2, 9.11, 11.9 |
-| Search-gap evidence defines ranking equivalence | 8.11 | 8.8, 8.12 |
+| Search-gap evidence reports missed-optimum distance, not ranking equivalence | 8.8, 8.11 | 8.12 |
 
 ### `gear-planner`
 | Requirement | Implementation | Verification |

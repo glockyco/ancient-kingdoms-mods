@@ -209,7 +209,9 @@ be resolved from the versioned catalog rather than copied into the capture.
 The payload SHALL carry each active mercenary and pet where it is available. For each captured companion,
 it SHALL carry the entity identity and kind, race as observed or drawn, archetype, level or progression,
 equipped items and augments, learned skills, current resources and effects, and the rolled health
-multiplier, resource multiplier, and base combat value when the game exposes them. A value that the game
+multiplier, resource multiplier, and base combat value when the game exposes them. Captured effect
+records SHALL retain source and recipient IDs so consumers can apply category rules to the recipient's
+`Skills` list rather than infer ownership from the caster. A value that the game
 does not expose SHALL be marked unavailable rather than inferred. Where companion state is not captured,
 the payload SHALL mark it excluded. Pet state is captured for provenance and meter accounting; this
 change SHALL NOT optimize a pet build.

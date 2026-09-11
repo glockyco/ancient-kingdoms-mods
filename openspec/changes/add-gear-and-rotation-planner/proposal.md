@@ -31,11 +31,20 @@ reproducible model possible without Monte Carlo ranking or fitted stat weights.
   is fixed input, not a fourth allocation dimension, and the optimizer never silently grants books.
   The optimizer enumerates the discrete weapon and hand branches, then runs multi-start block
   coordinate ascent inside each branch. Weapon choice and rotation are constrained jointly, because a
-  damaging skill can require a weapon category.
+  damaging skill can require a weapon category. Effect events carry source and recipient IDs; category
+  exclusivity is resolved in the recipient's `Skills` list, so sources can collide on one target while
+  effects on different recipients remain isolated.
+- Keep search-gap evidence as missed-optimum evidence against a named reference search. Preserve the
+  deterministic score order for a fixed evaluation tuple. Do not group candidates or claim a global
+  tolerance from a search gap. A practical alternatives view, if product work later requires one,
+  uses a separately named product tolerance with its own evidence.
 - Optimize the equipment of each active mercenary as well as the player. A mercenary's equipment
   component inherits the player equipment stat pipeline, so mercenary gear contributes its full stat
-  set and not attributes alone. A solo player with four mercenaries therefore has 64 further
-  equipment decisions that change total output.
+  set and not attributes alone. Per-entity stat aggregation remains independent, but full-catalog
+  roster scoring remains joint when shared target state or autonomous companion actions couple the
+  encounter. Separate scoring requires a proven encounter-separability condition in the scenario. A
+  solo player with four mercenaries therefore has 64 further equipment decisions that change total
+  output.
 - Add a planner page that renders a default build and its numbers in prerendered HTML. Interactive
   controls edit class, progression, learned-book declarations, equipment, attributes, skills,
   consumables, mercenaries, target, and scenario. The editor permits explicit hypothetical book

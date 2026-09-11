@@ -117,10 +117,11 @@ and model domain. An unsupported or unverified domain SHALL have no numeric pred
 When a measured finite run is compared with a prediction, the planner SHALL show finite-run variance
 under a declared sampling protocol separately from model error. Event count and duration alone SHALL
 NOT establish variance; insufficient evidence SHALL remain unverified. For ranked candidates, the
-planner SHALL group candidates only when their objective difference falls inside the measured search-gap
-band for the named benchmark domain. The search-gap band SHALL describe ranking equivalence, not model
-accuracy. The planner SHALL keep these three quantities separate and SHALL NOT merge them into one
-number.
+planner SHALL report search-gap evidence as the distance from the returned result to a reference-search
+result for the named benchmark domain. It SHALL preserve deterministic score order and SHALL NOT group
+candidates or claim pairwise ranking equivalence from that gap. The planner SHALL keep model error,
+finite-run variance, and search evidence separate and SHALL NOT merge them into one number. A practical
+alternatives view MAY use a separately named product tolerance only with independent evidence.
 
 The planner SHALL NOT present stat weights as its primary recommendation. If offered as advanced
 detail, stat weights SHALL state that a local gradient can misrank complete builds.
@@ -146,8 +147,14 @@ detail, stat weights SHALL state that a local gradient can misrank complete buil
 #### Scenario: Ranked candidates are close
 
 - **WHEN** candidate objective values fall inside the measured search-gap band for the same benchmark domain
-- **THEN** the planner presents them as ranking-equivalent alternatives
-- **AND** it does not call them equivalent because of a prediction boundary
+- **THEN** the planner preserves their deterministic score order and reports the search evidence separately
+- **AND** it does not group them or call them equivalent because of the search gap
+
+#### Scenario: A practical alternatives tolerance is named
+
+- **WHEN** product requirements define a named alternatives tolerance with independent evidence
+- **THEN** the planner MAY label candidates within that tolerance as practical alternatives
+- **AND** it keeps that tolerance separate from search-gap evidence and prediction accuracy
 
 #### Scenario: A reader views stat weights
 

@@ -9,10 +9,11 @@ not a search dimension. The search is a heuristic, so this capability constrains
 ### Requirement: The search states search quality separately from prediction accuracy
 
 The search SHALL NOT describe a returned build as optimal or best. It SHALL state that the result is
-the best build the search found. It SHALL report measured search-gap evidence against a reference search
-on the same objective and named benchmark domain. Search-gap evidence SHALL describe ranking quality,
-not the accuracy of the combat model. A prediction accuracy boundary SHALL come only from an adequate
-current corpus and independent validation; an unverified domain SHALL have no numeric boundary.
+the best build the search found. It SHALL report measured search-gap evidence as the distance from
+that result to a reference-search result on the same objective and named benchmark domain. Search-gap
+evidence SHALL describe a potentially missed optimum, not pairwise ranking equivalence or the accuracy
+of the combat model. A prediction accuracy boundary SHALL come only from an adequate current corpus
+and independent validation; an unverified domain SHALL have no numeric boundary.
 
 #### Scenario: A result is presented
 
@@ -176,14 +177,16 @@ Companion rolls, skills, and autonomous action policy SHALL NOT become new optim
 - **THEN** the reported figure is labelled as the player's own output
 - **AND** pet state remains provenance rather than an optimization choice
 
-### Requirement: Categorised effects are solved within their owning entity
+### Requirement: Categorised effects are solved within each recipient's `Skills` list
 
-Each controlled entity owns a separate `Skills` list. Category exclusivity SHALL apply within one list
-and SHALL NOT make an owner's effect replace a companion's effect.
+Each effect event SHALL carry a source entity ID and a recipient entity ID. Category exclusivity SHALL
+apply to the recipient's `Skills` list, not to the source or caster identity. Two sources can therefore
+replace one another when they apply the same category to one recipient. Effects with different
+recipients SHALL remain isolated.
 
 The search SHALL be able to omit an action when it would replace a stronger effect held by the same
-entity. Where a companion selects its own actions and the model cannot schedule them, the search SHALL
-evaluate the expectation over that selection and state that the figure is an expectation.
+recipient. Where a companion selects its own actions and the model cannot schedule them, the search
+SHALL evaluate the expectation over that selection and state that the figure is an expectation.
 
 #### Scenario: A player action would replace the player's stronger effect
 
@@ -191,10 +194,18 @@ evaluate the expectation over that selection and state that the figure is an exp
 - **THEN** the search can return a rotation that omits the weaker player skill
 - **AND** the report explains that the omission avoids replacing the stronger effect
 
-#### Scenario: An owner and companion use one category name
+#### Scenario: Two sources target one recipient
 
-- **WHEN** the owner and a companion each contribute an effect in the same named category
-- **THEN** both effects contribute from their separate skill lists
+- **WHEN** an owner and a companion apply the same category to one target with different source IDs and
+  one recipient ID
+- **THEN** the newest application replaces the earlier effect regardless of source
+- **AND** the result records both IDs and the replacement event
+
+#### Scenario: Sources target different recipients
+
+- **WHEN** an owner and a companion apply the same category to different recipients
+- **THEN** each recipient keeps its own effect
+- **AND** this isolation does not prove that a full roster is separable for scoring
 
 #### Scenario: Companion actions cannot be scheduled
 
@@ -210,7 +221,11 @@ slot: a character has two ring slots and two ear slots, so one owned ring cannot
 
 Where an item is available in more than one copy, the search MAY use as many copies as are owned.
 
-When the search is not limited to owned items, entities MAY be optimized independently.
+When the search is not limited to owned items, the search MAY remove physical-item assignment
+constraints and MAY aggregate each entity's stats independently. It SHALL still score the roster jointly
+against shared target state, recipient effects, and autonomous companion actions unless the scenario
+records a proven encounter-separability condition. A full published catalogue alone does not establish
+that condition.
 
 #### Scenario: One copy of an item is owned
 
@@ -231,7 +246,8 @@ When the search is not limited to owned items, entities MAY be optimized indepen
 #### Scenario: Planning is not limited to owned items
 
 - **WHEN** the full published item set is available
-- **THEN** each entity is optimized without an assignment constraint
+- **THEN** physical-item assignment constraints are removed
+- **AND** the roster remains jointly scored unless the scenario records encounter separability
 
 ### Requirement: Consumables and ammunition are part of the coupled search
 
@@ -430,26 +446,35 @@ learned-book section as an empty declaration.
 - **THEN** the search refuses the capture before scoring
 - **AND** it reports the failed check
 
-### Requirement: Search-gap evidence defines ranking equivalence
+### Requirement: Search-gap evidence reports a potentially missed optimum
 
-The search SHALL report a measured search-gap bound for its named benchmark domain. Candidates whose
-objective values differ by no more than that bound SHALL be grouped as ranking-equivalent alternatives
-for the same evaluator, model, data, scenario, and objective mode. This band SHALL not be used as a
-model-accuracy claim, and there SHALL be no global 2.5 percent bound.
+The search SHALL report a measured search-gap bound for its named benchmark domain as the distance
+between the best-found result and a reference-search result under the same objective and evaluation
+tuple. This evidence concerns a potentially missed optimum. It SHALL NOT define pairwise ranking
+equivalence, reorder deterministic model scores, or establish model accuracy. It SHALL NOT become a
+global 2.5 percent bound.
 
-#### Scenario: Two candidates fall inside the bound
+#### Scenario: Two candidates have close scores
 
-- **WHEN** the objective difference is no greater than the measured search-gap bound for the same tuple
-- **THEN** neither candidate is presented as the unique better build
+- **WHEN** two candidates share one evaluator, model, data, scenario, and objective mode
+- **THEN** the planner preserves their deterministic score order and reports both scores
+- **AND** it does not group them because their difference falls inside a search gap
+
+#### Scenario: A product tolerance is explicitly defined
+
+- **WHEN** product requirements name a practical alternatives tolerance and independent evidence supports
+  it for the stated domain
+- **THEN** the planner MAY label candidates within that tolerance as practical alternatives
+- **AND** it names the product tolerance separately from search-gap evidence
 
 #### Scenario: Candidates use different tuples
 
 - **WHEN** two candidates use different scenario, evaluator, model, data, or objective-mode identities
-- **THEN** the search does not group them as ranking-equivalent
+- **THEN** the search does not compare their scores
 - **AND** it requires one evaluation tuple before comparison
 
 #### Scenario: The benchmark domain is not supported
 
 - **WHEN** the search-gap benchmark lacks a current bounded corpus
-- **THEN** the search withholds a numeric search-gap band
+- **THEN** the search withholds a numeric search-gap bound
 - **AND** it does not convert another domain's gap into a guarantee

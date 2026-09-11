@@ -46,7 +46,7 @@ level 55 Northern Wastes dummy. They support the search decisions below, not cur
 | Naive equipment search space, one class at level 50 | 2.5 x 10^25 |
 | Exact Pareto dynamic program, 6 stat dimensions | 86,584 frontier points, 204 s |
 | Branch and bound pruning of that frontier | 0 points removed |
-| Heuristic search optimality gap against the same objective | 0.00 to 0.42 % |
+| Heuristic-to-reference search score gap against the same objective | 0.00 to 0.42 % |
 | Auto-attack-only surrogate rank fidelity | rho 0.975, K = 188 |
 | Analytic steady-state surrogate rank fidelity | rho 0.998, K = 1 to 3 |
 | Steady state against event timeline, long horizon | ratio 0.9034, coefficient of variation 2.86 % |
@@ -257,10 +257,13 @@ cleans up errors without replacing the last complete result.
 
 ### Uncertainty has separate evidence domains
 
-Finite-run variation, model accuracy, and search quality answer different questions. The ranking
-equivalence band derives only from reference-search gap evidence for its benchmark domain. Fixed-point
-spread is a separate search observation, not proof of the gap to an optimum. Neither establishes the
-accuracy of the combat model.
+Finite-run variation, model accuracy, and search quality answer different questions. Search-gap
+evidence estimates the distance from the returned score to a reference-search result for its named
+benchmark domain. It concerns a potentially missed optimum, not pairwise ranking equivalence. The
+production evaluator preserves deterministic score order for a fixed tuple and does not group scores
+by the search gap. Fixed-point spread is a separate search observation, not proof of the gap to an
+optimum. Neither search measure establishes the accuracy of the combat model. Any practical
+alternatives view requires a separately named product tolerance and independent evidence.
 
 A prediction accuracy boundary requires an adequate current corpus and independent validation not
 used to fit that boundary. Record build/mechanic/version scope, units, denominators, sampling protocol,
@@ -410,26 +413,32 @@ updates the target defenses or caster bonuses while the effect is active. It acc
 expiry boundaries before a dependent action. Verify maintained-effect damage and resource output in a
 finite-window spike; a binary subset calculation alone cannot close that task.
 
-### A buff category holds one buff, and the newest wins
+### A buff category holds one effect per recipient, and the newest wins
 
+`TargetDebuffSkill.cs:288-331` applies an effect to its recipient, and `Skills.cs:1103-1116`
+expires every existing effect in that recipient's category before adding the incoming effect.
 `Skills.AddOrRefreshBuff` refreshes a buff of the same name in place. Otherwise, when the incoming buff
-carries a non-empty category, the engine expires **every** buff already in that category and then adds
-the incoming one. It compares category names only. It never compares magnitude, level, or remaining
-duration.
+carries a non-empty category, the engine expires **every** buff already in that category on the
+recipient's `Skills` list and then adds the incoming one. It compares category names only. It never
+compares magnitude, level, source, or remaining duration.
 
-A weaker buff therefore destroys a stronger one in the same category. This was measured: applying a
-125-point defence debuff over a 340-point debuff in the same category expired the stronger one.
+Each effect event therefore carries a source entity ID and a recipient entity ID. A weaker buff destroys
+a stronger buff when both target the same recipient, even when different sources apply them. A self-buff
+has the same entity as source and recipient. The measured different-recipient experiment proves only
+that effects on different recipient lists do not collide; it does not prove that a full roster can be
+scored as independent.
 
 Two consequences shape the model.
 
 The subset enumeration cannot treat same-category effects as independent. One category contributes at
-most one effect, so the enumeration selects at most one member per category.
+most one effect per recipient, so the enumeration selects at most one member per recipient category.
+The event timeline records source and recipient IDs for application, replacement, expiry, and attribution.
 
-The collision does not cross entity boundaries. A mercenary and its owner draw from separate `Skills`
-lists. A runtime measurement placed `Hunter's Sigil` on the owner and `Tangle Trap` on the companion;
-both effects use `Debuff AC`, and both retained their full 30-second duration. The optimizer therefore
-enforces category exclusivity within each entity. It can omit an entity's weaker action when that action
-would replace the same entity's stronger effect, but it adds effects held by separate entities.
+A runtime measurement placed `Hunter's Sigil` on the owner and `Tangle Trap` on the companion; both
+effects use `Debuff AC`, and both retained their full 30-second duration because their recipients
+differed. If the owner and companion target the same recipient, the newer application replaces the
+older one regardless of source. The optimizer may omit an action when it would replace that recipient's
+stronger effect, but it must not use caster ownership as the collision key.
 
 Expiry is lazy. An expired buff can contribute until the engine cleanup pass removes it, and that
 pass depends on entity updates. The timeline must represent the relevant boundary or label a measured
@@ -453,7 +462,7 @@ timeline applies the engine return, current resource cap, and relevant rounding.
 incoming damage, recovery ticks, costs, burns, and active class effects. Average income is a
 ranking-layer approximation, not a replacement for event-state affordability.
 
-### Each controlled entity is solved by the same solver
+### Each controlled entity uses the same stat pipeline; roster scoring is joint
 
 A mercenary equipment component inherits the player equipment stat pipeline. It overrides only the
 four Mirror lifecycle methods, so every stat channel is wired
@@ -465,10 +474,13 @@ equipment decisions. Their output is not a rounding error, so a total-output fig
 wrong.
 
 The design shares equipment evaluation across controlled entities. Player actions use an executable
-schedule; companion output uses the autonomous policy rather than the player rotation solver. For a best-in-slot plan the entities
-are independent, because each draws from the full published item set. For an owned-gear plan they are
-coupled by a shared inventory, because one physical item cannot be equipped twice. The owned-gear case
-is therefore an assignment problem across entities rather than five independent searches.
+schedule; companion output uses the autonomous policy rather than the player rotation solver. Per-entity
+stat aggregation remains independent and uses the same equipment pipeline. Scoring is not automatically
+independent, even when every entity draws from the full published item set: shared target health,
+mitigation, effect recipients, and autonomous companion actions can couple the roster through one event
+timeline. The production search therefore scores the roster jointly unless the scenario records a
+proven encounter-separability proof. An owned-gear plan is additionally coupled by shared inventory,
+because one physical item cannot be equipped twice; it remains an assignment problem across entities.
 
 Two mercenary properties resist a fixed rotation. Action selection is uniformly random among ready
 damage and debuff skills every 2 to 4 seconds, and a healer archetype refuses a cast that would drop
@@ -805,9 +817,10 @@ terms. Neither appeared in this design before it was measured.
   → The relaxation ranks candidates only. The event timeline produces every displayed number.
 - A game patch can silently invalidate a formula. → The citation ledger already fails on drift, and
   the derived payload regenerates from the pipeline.
-- Displayed precision can imply false confidence. → Use measured search-gap evidence for ranking
-  equivalence. Report prediction accuracy and finite-run variance separately, with no numeric claim
-  outside their validated domains.
+- Displayed precision can imply false confidence. → Report measured search-gap evidence as distance
+  from the returned score to a reference-search result. Preserve deterministic score order and do not
+  group candidates by that gap. Report prediction accuracy and finite-run variance separately. If a
+  practical alternatives view is added, name its product tolerance and qualify it independently.
 
 ## Planner prerequisite evidence
 
@@ -825,8 +838,8 @@ Do not attribute them all to this snapshot.
 | 3.3, six-class selection lifecycle | Six classes, one selected character per session | Every class reached its named fixture through the existing world-entry selector | Run one loaded character per session; do not add another selector |
 | 7.8, `Hunter's Sigil` landing | Six conditions, 1,000 attempts each | Observed landing 0.607 to 0.958; maximum absolute prediction error 0.016 | Include 0.005 resistance per level difference, capped at 0.1, and subtract caster accuracy |
 | 7.9, `Wyrmbrand Hex (A)` refresh | 60 attempts over 120 seconds, seed 7901 | Uptime 0.9001 against finite-horizon expectation 0.9057 | Duration times landing probability is not valid for repeated refresh attempts; model the refresh process |
-| 7.10, same-entity `Debuff AC` replacement | One stronger-then-weaker application | Stronger remaining time fell from 30 seconds to zero | The newest non-empty category member replaces every existing member in that entity's list |
-| 7.11, owner and companion `Debuff AC` | One simultaneous owner-companion pair | Both effects retained 30 seconds | Category ownership is local to each entity's `Skills` list |
+| 7.10, same-recipient `Debuff AC` replacement | One stronger-then-weaker application | Stronger remaining time fell from 30 seconds to zero | The newest non-empty category member replaces every existing member in the recipient's `Skills` list |
+| 7.11, owner and companion `Debuff AC` on different recipients | One simultaneous owner-companion pair | Both effects retained 30 seconds | Different-recipient isolation is component evidence only; it does not prove shared-target collision or roster separability |
 | 7.12, long cooldown schedule matrix | 36 cooldown-horizon pairs | Fractional gap 0 to 0.75 casts | Use the relaxation for search only; use executable integer schedules for displayed output |
 | 7.13, matched Warrior and Rogue resource transition | One transition per class and three recovery ticks | Both reached 4 resource after returns and cost; Warrior stayed at 4, Rogue fell to 1 | Apply combat returns identically, then apply each class's active recovery effects separately |
 | 7.14, companion cadence and output | Eleven accepted 20-second windows | Damage 0 to 688; observed hit gaps 0.834 to 11.232 seconds | Model output as an action-selection expectation with movement-qualified bounds, not a reachable fixed rate |

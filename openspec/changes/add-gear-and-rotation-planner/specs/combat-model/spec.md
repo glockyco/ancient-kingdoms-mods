@@ -62,8 +62,8 @@ statistical rejection SHALL NOT by itself identify the model term that caused it
 #### Scenario: Two close builds are evaluated repeatedly
 
 - **WHEN** two builds have close deterministic objective values
-- **THEN** each evaluation repeats the same values and ordering
-- **AND** any reported ranking equivalence cites search-gap evidence rather than sampling variance
+- **THEN** each evaluation repeats the same values and deterministic score ordering
+- **AND** search-gap evidence remains separate from model repeatability and sampling variance
 
 ### Requirement: Accuracy claims are scoped and independently validated
 
@@ -210,27 +210,37 @@ unless the result labels and validates that approximation.
 - **THEN** the delayed hit contributes no damage
 - **AND** the report records the cast and arrival separately
 
-### Requirement: A buff category holds at most one buff
+### Requirement: A buff category holds at most one effect per recipient
 
-The model SHALL treat a non-empty buff category as exclusive. When a category holds more than one
-candidate effect, at most one SHALL contribute.
+The model SHALL treat a non-empty buff category as exclusive in the recipient entity's `Skills` list.
+`TargetDebuffSkill.cs:288-331` and `Skills.cs:1103-1116` are the source evidence for this recipient
+scoping. When a category holds more than one candidate effect for one recipient, at most one SHALL
+contribute. Every effect event SHALL carry a source entity ID and a recipient entity ID. The source or
+caster ID SHALL NOT partition the collision domain.
 
 Selection SHALL follow the engine, which keeps the buff applied most recently and expires every other
-buff in that category. The engine compares category names only, so the model SHALL NOT assume that the
-larger effect survives.
+buff in that category on the recipient. The engine compares category names only, so the model SHALL NOT
+assume that the larger effect survives.
 
-The model SHALL apply this rule to every categorised effect held in one entity's `Skills` list,
-including skills and consumables. Category ownership is local to that list. An owner's effect and a
-companion's effect SHALL NOT replace one another.
+The model SHALL apply this rule to every categorised effect, including skills and consumables. Effects
+with different recipients SHALL remain isolated. The model SHALL retain source and recipient IDs for
+application, replacement, expiry, and attribution.
 
 #### Scenario: A weaker effect is applied over a stronger one in the same category
 
-- **WHEN** two effects share a category and the weaker one is applied second
+- **WHEN** two effects share a category and the weaker one is applied second to the same recipient
 - **THEN** only the weaker effect contributes
+- **AND** the source IDs do not prevent replacement
+
+#### Scenario: Two sources target one recipient
+
+- **WHEN** an owner and a companion apply the same category to one recipient
+- **THEN** the newest effect replaces the earlier effect regardless of source
+- **AND** the event record retains both source IDs and the recipient ID
 
 #### Scenario: Two effects occupy different categories
 
-- **WHEN** two effects carry different non-empty categories
+- **WHEN** two effects carry different non-empty categories for one recipient
 - **THEN** both contribute
 
 #### Scenario: An effect carries no category
@@ -238,10 +248,11 @@ companion's effect SHALL NOT replace one another.
 - **WHEN** an effect has an empty category
 - **THEN** it does not expire any other effect
 
-#### Scenario: An owner and companion use the same category
+#### Scenario: Sources target different recipients
 
-- **WHEN** an owner and a companion each hold an effect with the same category
-- **THEN** both effects remain active in their separate skill lists
+- **WHEN** an owner and a companion apply the same category to different recipients
+- **THEN** both effects remain active in their separate recipient lists
+- **AND** this narrower isolation result does not establish full-roster scoring independence
 
 ### Requirement: The refractory a skill sets is selected by the skill's own fields
 
@@ -1134,18 +1145,21 @@ damage alone.
 A result SHALL report model error, finite-window variation, and search gap as separate quantities when
 they apply. Model error SHALL come only from qualified current validation. Finite-window variation
 SHALL come from the declared observation protocol. Search gap SHALL come only from independent search
-comparison for a named benchmark domain and SHALL describe ranking equivalence, not model accuracy or
-a prediction boundary.
+comparison for a named benchmark domain and SHALL describe the distance from the best-found result to a
+reference-search result. It SHALL concern a potentially missed optimum, not pairwise ranking
+equivalence, model accuracy, or a prediction boundary.
 
-A ranking equivalence band SHALL apply only to candidates with the same evaluator, model, game-data,
-scenario, and objective mode. It SHALL not be reused as a numeric prediction boundary. An intentional
-game-defect normalization SHALL remain separate from all three quantities and from raw parity.
+The evaluator SHALL preserve deterministic score order for candidates with the same evaluator, model,
+game-data, scenario, and objective mode. It SHALL NOT group candidates by a search gap. A separately
+named product tolerance MAY support a practical alternatives view only when independently evidenced.
+An intentional game-defect normalization SHALL remain separate from all three quantities and from raw
+parity.
 
 #### Scenario: Two candidates fall inside a measured search gap
 
 - **WHEN** candidates share the comparison tuple and their objective difference falls inside the named search-gap band
-- **THEN** the planner presents them as ranking-equivalent alternatives
-- **AND** it does not describe the band as model accuracy
+- **THEN** the evaluator preserves their deterministic score order and reports both scores
+- **AND** it does not present them as equivalent because of the search gap
 
 #### Scenario: A measured rate is compared with a prediction
 
@@ -1156,11 +1170,11 @@ game-defect normalization SHALL remain separate from all three quantities and fr
 #### Scenario: Search evidence lacks model validation
 
 - **WHEN** a search-gap benchmark exists without current independent model validation
-- **THEN** it can support ranking equivalence only
+- **THEN** it can report distance to the reference-search result only
 - **AND** the result has no numeric model-accuracy boundary
 
 #### Scenario: Objective modes differ
 
 - **WHEN** candidates use raw and known-defect-normalized modes
-- **THEN** no shared equivalence band is applied
+- **THEN** no shared search-gap comparison is applied
 - **AND** each mode remains separately reported
