@@ -510,6 +510,8 @@ function parseCompanion(value: unknown, path: string): CompanionBuild {
   if (kind !== "mercenary" && kind !== "pet") {
     throw new TypeError(`${path}.kind must be mercenary or pet`);
   }
+  const currentResources = parseOptionalCompanionResources(companion, path);
+  const effects = parseOptionalEffects(companion, path);
   return {
     entityId: requireString(companion, "entityId", `${path}.entityId`),
     kind,
@@ -531,8 +533,8 @@ function parseCompanion(value: unknown, path: string): CompanionBuild {
       "baseCombat",
       `${path}.baseCombat`,
     ),
-    currentResources: parseOptionalCompanionResources(companion, path),
-    effects: parseOptionalEffects(companion, path),
+    ...(currentResources === undefined ? {} : { currentResources }),
+    ...(effects === undefined ? {} : { effects }),
     skills: parseSkills(companion, "skills", `${path}.skills`),
     equipment: parseEquipment(companion, "equipment", `${path}.equipment`),
   };

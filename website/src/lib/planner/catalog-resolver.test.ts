@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { BuildEnvelope } from "./build-envelope";
 import { buildCasterStatSheet } from "./caster";
+import { adaptCompleteCapture, parseCaptureBuildRecord } from "./capture-build";
 import { createDefaultEvaluationScenario } from "./scenario";
 import { evaluateLogicalBuild, resolveLogicalBuild } from "./catalog-resolver";
 
@@ -426,6 +427,65 @@ describe("catalog logical-build resolver", () => {
         scenario: scenario(),
       }).caster.attributes.strength,
     ).toBe(7);
+  });
+
+  it("evaluates equivalent authored and captured builds identically", () => {
+    const authored = logicalBuild();
+    const capturedBuild = structuredClone(authored);
+    capturedBuild.provenance = {
+      kind: "capture",
+      source: "character-capture",
+    };
+    const capture = parseCaptureBuildRecord({
+      captureSchemaVersion: 1,
+      producer: {
+        id: "character-capture",
+        version: "1.0.0",
+        capturedAtUtc: "2026-09-11T13:07:49Z",
+      },
+      gameData: buildEnvelope.gameData,
+      modelCompatibility: buildEnvelope.modelVersion,
+      buildData: capturedBuild,
+      completeness: {
+        player: "complete",
+        "player.attributes": "complete",
+        "player.skills": "complete",
+        "player.equipment": "complete",
+        companions: "complete",
+        consumables: "complete",
+        ammunition: "complete",
+        learnedBookIds: "complete",
+      },
+      containers: [],
+      ownedItems: [],
+    });
+    const captured = adaptCompleteCapture(capture);
+    const sharedScenario = scenario();
+
+    const authoredResult = evaluateLogicalBuild({
+      id: "authored",
+      buildData: authored,
+      catalog: catalog(),
+      scenario: sharedScenario,
+    });
+    const capturedResult = evaluateLogicalBuild({
+      id: "captured",
+      buildData: captured,
+      catalog: catalog(),
+      scenario: sharedScenario,
+    });
+
+    expect(captured.provenance).toEqual({
+      kind: "capture",
+      source: "character-capture",
+    });
+    expect(capture.producer.id).toBe("character-capture");
+    expect(authoredResult.fixtureId).toBe("authored");
+    expect(capturedResult.fixtureId).toBe("captured");
+    expect({ ...capturedResult, fixtureId: "shared" }).toEqual({
+      ...authoredResult,
+      fixtureId: "shared",
+    });
   });
 
   it("resolves inherent armor sets by exported stable identity", () => {

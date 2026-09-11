@@ -87,7 +87,7 @@ Schema and serialization checks can precede runtime qualification; they do not c
       Verify observed-empty sections remain distinct from absent or unread sections.
       Verify partial captures remain inspectable while missing required state blocks dependent evaluation.
       Record independent runtime proof that capture changes neither gameplay state nor meter state.
-- [ ] 3.15 Prove fixture/capture parity through the migrated adapters and catalog resolver.
+- [x] 3.15 Prove fixture/capture parity through the migrated adapters and catalog resolver.
       Round-trip equivalent authored fixture and runtime-produced capture builds while preserving their distinct outer metadata.
       Supply the same complete scenario and verify both reach the same production evaluator with matching predictions and evaluation identities.
       Verify unknown schemas, corrupt containers, missing required sections, and unknown or duplicate book IDs refuse dependent evaluation.
