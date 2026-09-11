@@ -40,9 +40,10 @@ Detail routes and the titles they emit today:
 | `/classes/[id]` | `{class.name} - Ancient Kingdoms` |
 | `/chests/[id]` | `Chest - {zone_name} - Ancient Kingdoms` |
 
-Summons and mercenaries share `lib/components/PetDetail.svelte`, whose `<Seo>` is
-the single title for both routes, so one generator branching on
-`pet.kind` covers them. Faction names are unique, so their existing title remains
+Summons and mercenaries share `lib/server/pet-page.ts:loadPetPage` and `PetDetail.svelte`.
+Generate the title in `loadPetPage` beside the description, then pass it through both route pages to
+`PetDetail`. Never import the server-only generator into a Svelte component. One generator branches on
+all three `pet.kind` values: `Companion`, `Familiar`, and `Mercenary`. Faction names are unique, so their existing title remains
 unchanged. Classes are also unique and remain unchanged. Chests are named after
 their zone and already carry that context. `/traps` is an overview, not a detail
 route, and is out of scope.
@@ -59,7 +60,7 @@ suffix remains at the end.
 | `/npcs/[id]` | `{name} ({Primary Role}) - Ancient Kingdoms` | `Talindra Norqirelle (Quest Giver) - Ancient Kingdoms` |
 | `/zones/[id]` | `{name} ({Type}, Level X-Y) - Ancient Kingdoms` | `The Molten Summit (Dungeon, Level 30-40) - Ancient Kingdoms` |
 | `/skills/[id]` | `{name} ({Class} Tier I) - Ancient Kingdoms` | `Fireball (Wizard Tier I) - Ancient Kingdoms` |
-| `/summons/[id]` | `{name} ({Class} Familiar) - Ancient Kingdoms` | `Spectral Wolf (Druid Familiar) - Ancient Kingdoms` |
+| `/summons/[id]` | `{name} ({Class} {Kind}) - Ancient Kingdoms` | Kind is `Companion` or `Familiar`, as loaded |
 | `/mercenaries/[id]` | `{name} ({Class} Mercenary) - Ancient Kingdoms` | `Iron Guard (Warrior Mercenary) - Ancient Kingdoms` |
 | `/altars/[id]` | `{name} ({Type}) - Ancient Kingdoms` | `Altar of Fire (Forgotten Altar) - Ancient Kingdoms` |
 | `/gather-items/[id]` | `{name} (Tier II {Type}) - Ancient Kingdoms` | `Iron Ore (Tier II Mineral) - Ancient Kingdoms` |
@@ -72,9 +73,8 @@ suffix remains at the end.
   `lib/server/meta-description.ts`, which defines the role priority.
 - Zones with both `level_min` and `level_max` set to `null` omit the level range
   and retain the zone type, such as `{name} (Dungeon) - Ancient Kingdoms`.
-- Skills without a class use `Monster` as the class when that context is available,
-  producing `{name} (Monster Tier I) - Ancient Kingdoms`. If no class context exists,
-  the class segment is omitted.
+- Classless skills can belong to pets, items, or monsters. Use only verified ownership; absence of a class does not imply `Monster`. Omit ownership when no reliable context exists.
+- Pet titles use their actual kind and omit class context when unavailable. The current database has two companions, three familiars, and six mercenaries.
 - Tier 0 skills omit the tier numeral.
 - Quests with `level_required = 0` omit the level segment.
 - Titles should stay under 60 characters when possible and never exceed 70 characters
@@ -96,7 +96,7 @@ visible text.
 - [ ] Add an NPC title generator and wire `/npcs/[id]` to it.
 - [ ] Add a zone title generator and wire `/zones/[id]` to it.
 - [ ] Add a skill title generator and wire `/skills/[id]` to it.
-- [ ] Add the shared summon and mercenary title generator, branching on `pet.kind`, and wire `lib/components/PetDetail.svelte` to it.
+- [ ] Add the shared pet title generator for all three kinds; call it from `loadPetPage` and pass its result through both route pages to `PetDetail`.
 - [ ] Add an altar title generator and wire `/altars/[id]` to it.
 - [ ] Add a gather-resource title generator and wire `/gather-items/[id]` to it.
 - [ ] Add unit coverage for each generator and its missing level, tier, and class edge cases.

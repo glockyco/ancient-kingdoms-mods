@@ -10,118 +10,78 @@ archived:
 
 # Per-Entity Open Graph Images
 
-## Goal
+## Goal and scope
 
-Generate branded Open Graph images for high-traffic entity detail pages so shared
-links identify the entity with its name, type information, and artwork instead of
-showing the generic site logo. Version one covers items and monsters.
+Generate item and monster share images with accurate names, context, and available artwork.
+`add-per-entity-og-images` owns this work. Other entity families and overview routes retain the default
+image. Additional templates are not a prerequisite or a predesigned contract.
 
 ## Current state
 
-`lib/seo/site.ts` defines one `OG_IMAGE_PATH = "/og-default.png"`. `ogImageUrl()`
-takes no arguments, and `Seo.svelte:25` has no `ogImagePath` prop. The same default
-image is therefore used for every page that emits Open Graph metadata.
+`lib/seo/site.ts` owns `/og-default.png` and its dimensions. `Seo.svelte` uses the same image and generic
+alt text for every page. `scripts/generate-og-image.mjs` already uses `@resvg/resvg-js` in `prebuild`.
+The 0.9.31.1 database has artwork for 1,655 items and 361 monsters.
 
-The 0.9.31.1 database contains artwork rows for 1,655 items, 695 skills, 361 monsters,
-234 NPCs, 24 zones, 19 gathering resources, 6 classes, and 133 chests. Recipe cards can
-reuse result-item art. Quests and altars still need motif templates. Profession image export
-has not produced usable rows. Skills, NPCs, and the other available domains remain outside
-the first version.
+## Generation
 
-## Version-one scope
+Use the existing resvg dependency and default card visual language. Render 1200 by 630 PNGs from the
+built database and pipeline-owned artwork. Do not create another artwork discovery or path convention.
+Item cards show name, item type, and quality; monster cards show name and verified level/classification.
 
-Generate entity-specific images for items and monsters only. They are the largest artwork-backed
-entity domains and provide a bounded first release. No current traffic measurement supports the old
-90 percent share estimate. All other entity types continue to use `/og-default.png` through the
-existing fallback, including entities whose source art is available but which are not in this version.
+Escape every database-derived value before inserting it into SVG text or attributes. Use a deterministic
+font asset rather than host font discovery. Define wrapping and overflow behavior for long names and
+verify glyph coverage. The same inputs must produce the same image bytes across build hosts.
 
-The fallback must also apply when an entity image is unavailable or generation fails.
-A generic preview is preferable to a broken Open Graph image URL.
+Write generated files under `static/og/{entity-type}/` with filenames derived from a hash of the final
+PNG bytes. This includes changes from artwork, fonts, renderer, and templates without a separate manual
+cache-version list. Publish a server-only lookup mapping entity identity to image path and descriptive
+alt text. Complete generation and lookup validation before route prerendering.
 
-## Generation pipeline
+The generator owns only its generated directory and lookup. Remove stale owned files without touching
+the default image or pipeline-owned source art. Do not retain partial successful output from a failed
+run as a valid release.
 
-Use `@resvg/resvg-js`, following the pattern in
-`website/scripts/generate-og-image.mjs`, to render parameterized SVG templates to
-1200x630 PNGs. The generator reads entity data from the built database and source
-art from the visual-asset output. Each template receives the entity name, a subtitle
-such as type or level, and an optional icon or portrait. Compose the result with the
-existing background card design from `og-default.png` so entity cards remain part of
-the site's visual system.
+## Failure and absence policy
 
-Write generated files beneath `static/og/{entity-type}/` using content-hashed names
-such as `/og/items/{id}.{hash}.png`. The hash covers the rendered inputs, including
-the entity data, selected source art, and template version. This makes a changed
-entity produce a new URL without leaving social platforms dependent on an old cached
-file.
+- An unsupported entity family uses the default image.
+- A valid item or monster without source artwork gets a text/motif card, not a broken artwork reference.
+- An absent entity follows the route's normal not-found behavior; it is not a metadata fallback case.
+- An expected artwork file that is missing or unreadable is a build error.
+- A rendering failure or missing generated lookup entry for a supported entity fails the build.
+- The published site retains its previous successful deployment when a new build fails.
 
-Add `website/scripts/generate-og-images.mjs` to the website `prebuild` chain beside
-`generate-og-image.mjs`. The script should emit only the version-one item and monster
-images, while the default image remains available for every other route.
-
-## Templates
-
-| Entity | Visual elements |
-| --- | --- |
-| Item | Large icon on the left, name on the top right, type suffix as the subtitle, and a quality-colored stripe along the bottom |
-| Monster | Portrait when available, otherwise a silhouette, plus name and level with classification |
-| NPC | Sprite or silhouette, name, and primary role |
-| Quest | Scroll motif, name, and tier with level |
-| Zone | Map crop or zone preview, name, and type with level range |
-| Skill | Skill icon, name, and class with tier |
-| Pet | Sprite, name, class, and kind |
-| Altar | Generic altar motif, name, and type |
-| Recipe | Result-item icon, `Recipe: {result}`, and recipe family |
-| Gather resource | Tier-colored ore or plant icon, name, and type with tier |
-| Class | Class crest, name, role, and resource |
-
-Only the item and monster templates are required for version one. The remaining
-rows define the visual contract for later entity coverage and do not require source
-art generation in this version.
+Fallback is a policy for valid absence, not a way to conceal generator defects.
 
 ## SEO integration
 
-Change `ogImageUrl()` to accept an entity type and identifier, returning the hashed
-entity path when a generated image exists and `OG_IMAGE_PATH` otherwise. Keep the
-Open Graph image dimensions at 1200 by 630 for both generated and default images.
+Resolve entity-image lookup entries in server loaders. Pass resolved image path and alt text through
+page data into `Seo.svelte`. Keep `lib/seo/site.ts` limited to shared identity and pure URL formatting;
+it must not import a server-only lookup, database, or filesystem module.
 
-Add an optional `ogImagePath` prop to `Seo.svelte` and use it for the image metadata
-when supplied. Detail-page loaders pass the generated path through to `Seo` for item
-and monster routes. Overview pages, unsupported detail routes, and failed or missing
-asset lookups omit the prop and retain the default image.
+`Seo` uses the provided path and alt text for both Open Graph and Twitter metadata. Callers without an
+entity image retain the existing default path and default alt text. Both image variants use the same
+1200 by 630 dimensions and absolute public URLs.
 
-## Cache invalidation and fallback
+## Asset and build budget
 
-A content hash belongs in every generated filename, for example
-`/og/items/{id}.{hash}.png`, so a change to an entity, its art, or its template
-produces a fresh URL. This is necessary because social platforms cache Open Graph
-images aggressively, especially Twitter and Facebook. Old hashed files can be
-removed during the next build once no deployed page references them.
-
-Generation failures, missing artwork, and absent entity rows must resolve to the
-same default image rather than emitting a 404. The generator should report failures
-for the build while preserving a valid fallback path for metadata.
-
-## Static-asset budget
-
-The current file-count and share-traffic baselines have not been remeasured. Before implementation,
-record the deployed asset count, compressed and uncompressed output size, and full build time. Then
-run the item-and-monster generation against the complete current database. Treat 100 MB of generated
-OG storage and 60 seconds of added full-build time as provisional limits that must be confirmed against
-the active deployment platform.
+Measure the deployed file count, output bytes, and full build time before implementation. Run generation
+against the complete database, not a sample. The provisional limits are 100 MB of generated OG storage
+and 60 seconds of added full-build time; confirm them against the active deployment platform.
 
 ## Acceptance
 
-- Item and monster detail pages emit entity-specific 1200x630 images with the
-  expected name, type or level information, and artwork when available.
-- Every other route continues to emit `/og-default.png` unless a later template is
-  explicitly enabled.
-- Missing artwork and generation failures never produce a broken image URL.
-- Hashed filenames change when the rendered entity inputs or template change.
-- The prebuild pipeline generates the version-one images from the built data and
-  stays within the build-time, output-size, and static-file budgets.
+- Every published item and monster has a valid generated image and a matching server lookup entry.
+- Unsupported routes retain the default image and alt text.
+- Valid absent artwork renders a readable card; required-input and generation failures stop the build.
+- Names containing markup characters cannot inject SVG, and long names remain readable.
+- Fonts and output hashes are deterministic; changed PNG bytes produce a changed public URL.
+- Prerendered metadata points to existing images and describes each image accurately.
+- A complete build stays within the confirmed platform, byte, and time limits.
 
 ## Tasks
 
-- [ ] Add the item and monster SVG templates and wire `generate-og-images.mjs` into the website `prebuild` chain.
-- [ ] Update `ogImageUrl()` and add `Seo.svelte` `ogImagePath` plumbing with the default fallback.
-- [ ] Wire item and monster detail routes to pass the generated image path through `Seo`.
+- [ ] Implement the two templates, deterministic font loading, escaping, and name overflow rules.
+- [ ] Add complete generation, content-hashed paths, owned-output cleanup, and the server-only lookup before prerendering.
+- [ ] Wire loader-resolved image metadata into `Seo` without importing server data into shared modules.
+- [ ] Exercise valid missing artwork, required missing files, hostile text, long names, and renderer failure.
+- [ ] Inspect generated cards and prerendered metadata, then measure the complete output and build cost.

@@ -44,15 +44,13 @@ construct a separate URL.
 
 - Item, NPC and skill art renders at the surfaces listed under Tasks, sized from
   `visual_assets` so no layout shift occurs on load.
-- Entities without an asset render the monster page's placeholder.
+- Fixed image slots use the existing domain-appropriate placeholder when art is absent. Optional NPC and skill appearance sections remain omitted when no asset exists; do not add empty cards solely for parity.
 - No new call site builds an image path from an id.
 
-**Refinement (2026-08-10).** That last rule targets ad-hoc string building of the kind in
-`ItemTooltip.svelte:12-14`, which carries its own sanitiser and its own extension. It is not
-a prohibition on the single shared URL helper introduced by
-[2026-08-10-entity-artwork-pipeline](2026-08-10-entity-artwork-pipeline.md) §3.2, which is
-the one implementation the loader itself uses and which a pipeline test pins against
-`public_path`. Existence and intrinsic dimensions still come from the table, always.
+The shared `entityImageUrl()` helper remains valid for fixed-size surfaces with an availability
+sentinel. This rule prohibits local sanitizers and path formatters, not that shared implementation.
+`finish-entity-image-surfacing` owns the item-detail implementation and its present/absent-art checks.
+The artwork pipeline plan references this owner rather than scheduling the same UI work.
 
 ## Tasks
 

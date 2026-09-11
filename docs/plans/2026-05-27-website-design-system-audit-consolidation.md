@@ -38,8 +38,10 @@ baseline.
 
 ### Audit before adding abstractions
 
-Add a shared component only when at least three surfaces share an observable contract or when a domain
-rule requires one owner. Two similar fragments do not justify a component.
+Extract a shared component from demonstrated consumers when it carries shared semantics and expected
+evolution, or when a domain rule requires one owner. Use those consumers to define the contract. Do not
+prebuild a component inventory or require three call sites. Keep a fragment route-local until its shared
+semantics are demonstrated or an owner rule requires extraction.
 
 ### Preserve specialized surfaces
 
@@ -62,6 +64,12 @@ that need.
 
 Core facts, navigation, and default results must render without JavaScript. Client interaction may add
 search, filtering, optimization, and progressive detail.
+
+## Replacement owner
+
+`consolidate-website-design-system` owns the remaining measured interface drift and enforcement.
+The profession migration owns its route-specific repairs and adoption. Export, map, and search changes
+remain outside this plan.
 
 ## Remaining audit
 

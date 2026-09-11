@@ -23,8 +23,9 @@ database table. Within Stage 3 the four validation professions gate the remainin
 Audit baseline: Ancient Kingdoms 0.9.31.1.
 
 The correctness wave is complete. The shared mechanics record, `ProfessionHeader`, `PageSections`,
-`MasteryCurve`, and the long-table convention exist. Radiant Seeker, Mining, and Slayer use the new
-system. Fishing remains the validation gate before the other nine profession routes.
+`MasteryCurve`, and the long-table convention exist. Radiant Seeker and Mining use the new system.
+Slayer uses the new content and table implementation, but its no-JS and completion gate is incomplete.
+Fishing remains the validation gate before the other nine profession routes.
 
 The data defects remain. `ProfessionExporter.cs` still publishes 45 Exploring entries and 13 Lore
 Keeping entries. The profession index overrides only Exploring from `zone_triggers`. The gathering
@@ -34,6 +35,14 @@ non-cooking crafting station to `unknown`.
 The exporter now attempts to publish profession icons through `visual_assets`, but the current database
 contains no `profession` artwork rows. Treat the source as unread until a game-backed export proves
 otherwise.
+
+### Open Slayer gate
+
+Slayer is not complete. Its `DataTable` uses a page size of 20 with `paginateStaticHtml=true`, but pagination
+is hydration-only. This conflicts with the requirement that no-JS HTML contain all 143 targets and the
+completion data. Repair the implementation before marking the task complete. Then verify rendered HTML
+with JavaScript disabled and confirm that rows beyond the first page and the completion denominator are
+present.
 
 ## Tasks
 
@@ -74,19 +83,19 @@ Pipeline work only. Does not gate Stage 2.
 - [x] Build `lib/data/professions/mechanics.ts`, re-verifying every formula against current `server-scripts/` and citing each in symbol form
 - [x] Fold the existing `lib/utils/{alchemy,cooking,fishing,treasureHunter}` formulas into that record, keeping their public helper signatures
 - [x] Add a unit test asserting the record's tier tables against the payoff list in the spec
-- [ ] Create `lib/queries/professions.ts` owning the profession row, replacing the 13 local interfaces
+- [ ] `consolidate-server-read-models`: create `lib/queries/professions.ts` owning the typed SQL rows for profession metadata, replacing the 13 local interfaces; it does not own the cited TypeScript mechanics record
 - [x] Build `ProfessionHeader` — icon, title, category, purpose, payoff line, achievement line, optional jump list
 - [x] Wire `PageSections` into the profession header for pages with 4+ sections
 - [x] Drop the standalone progression sections: the achievement moved into `ProfessionHeader`, and the remaining progression facts sit with the mechanic they describe
-- [ ] Extract `RangeBar` from `mechanics/mercenary-stats`, which is currently its only user
+- [ ] Extract `RangeBar` from the demonstrated `mechanics/mercenary-stats` consumer when shared bar semantics and expected evolution are established
 - [x] Extract the validated Mining curve renderer into `MasteryCurve`: tier success functions, the reader's slider position, and shaded no-gain regions, rendered as inline SVG so it survives without JS
-- [ ] Extract `Timeline` from `mechanics/monster-spawns` for respawn and cooldown ranges
-- [ ] Build `LocationTable`, `ResourceTable`, `RecipeTable`
+- [ ] Extract `Timeline` from the demonstrated `mechanics/monster-spawns` consumer when shared timeline semantics and expected evolution are established
+- [ ] Use `DataTable` or route-local tables until demonstrated consumers share row semantics; do not build speculative `LocationTable`, `ResourceTable`, or `RecipeTable` prerequisites
 - [x] Settle the long-table convention on the monster overview: fixed widths, truncation with `title`, shared `monster-table` respawn columns, equal row heights
-- [ ] Build `RelatedProfessions` with typed, reasoned links
+- [ ] Add typed, reasoned related-profession links where the page has an evidenced relationship; keep the rendering route-local until a shared contract is demonstrated
 - [ ] Delete the bordered hero, metric strip and generic "How It Works" wrappers from the four newest pages, preserving their step content
 - [ ] Replace the inline `grid-template-columns` tier matrices on the four middle-generation pages with `MasteryCurve`
-- [ ] Add a loader test for the shared query module, following `fishing-page-data.test.ts`
+- [ ] Add behavioral coverage for the shared query module's typed SQL-row boundary, following `fishing-page-data.test.ts`; a loader split alone does not require a test
 
 ### Stage 3 — Validation professions
 
@@ -94,10 +103,10 @@ Each is complete when it satisfies every acceptance criterion in the spec.
 
 - [x] **radiant_seeker** — add the Aether combat payoff, 227 spawns with map links, the real 100–3600s respawn, the 5–25% yield rule, the Fire Goblin start, and the explicit "no crafting use" finding
 - [x] **mining** — add 102 spawns with map links, node rewards and random gem pools, the 60 recipe consumers, the 9 gather quests, the vendor alternative, the pickaxe durability rule, and the Dwarf start
-- [x] **slayer** — add the 10%-threshold damage-reduction chart, the account-wide capped formula and nearby-party credit; surface special-spawn requirements and exact target map links; migrate all 143 targets to a compact `DataTable` with stable row heights
+- [ ] **slayer** — the 10%-threshold damage-reduction chart, account-wide capped formula, nearby-party credit, special-spawn requirements, exact target map links, and compact `DataTable` with stable row heights are implemented; keep this task open until the no-JS and completion gate passes
 - [ ] **fishing** — reduce to the new model: strip hero and metric strip, promote the loop content, surface required tool and drop chances, merge fallback and trash into disclosures, unify foods and potions as fish uses, and link to cooking
-- [ ] Review all four at 1440×900 and 390×844 against the density and overflow criteria — mining, radiant_seeker and slayer pass; fishing outstanding
-- [ ] Confirm no-JS rendering for all four — mining, radiant_seeker and slayer confirmed; fishing outstanding
+- [ ] Review all four at 1440×900 and 390×844 against the density and overflow criteria — mining and radiant_seeker pass; Slayer remains open; fishing outstanding
+- [ ] Confirm no-JS rendering for all four — mining and radiant_seeker confirmed; Slayer remains open until rendered HTML verification; fishing outstanding
 
 ### Stage 4 — Remaining professions
 
@@ -126,7 +135,7 @@ Same card-stack failure, same components. Runs after Stage 3 proves them.
 - [ ] Verify bidirectional profession links resolve in both directions
 - [ ] Regenerate per-profession SEO descriptions from the payoff line
 - [ ] Add profession structured data, following `2026-07-31-entity-structured-data`
-- [ ] Measure all 14 routes at both viewports and confirm the density and overflow criteria
+- [ ] Measure all 14 hydrated default views at both viewports and confirm the density and overflow criteria; do not use truncated static HTML for the density budget
 - [ ] Run `pnpm check && pnpm lint && pnpm build`
 - [ ] Run `pnpm check:citations`
 - [ ] Update the profession small items in `2026-07-31-ancient-kingdoms-overview`
@@ -147,7 +156,10 @@ The Slayer wave changed two spec decisions, both recorded in
 `2026-07-31-profession-page-system`. The achievement is a header element, because a
 trailing progression section restated the loop and the calculator on every page it
 touched. Long tables follow the monster overview instead of a bespoke layout, because
-variable row heights moved the pagination controls between pages.
+variable row heights moved the pagination controls between pages. The content migration is done,
+but the no-JS and completion gate remains open because the current `DataTable` pagination contract
+has not been verified.
 
-Next session starts with **fishing**, the last Stage 3 profession. Reduce it to the new
-model, then review all four together before Stage 4 migrates the remaining nine.
+Fishing remains the last Stage 3 profession and its validation gate is preserved. First repair and
+verify the open Slayer gate, then reduce Fishing to the new model and review all four together before
+Stage 4 migrates the remaining nine.

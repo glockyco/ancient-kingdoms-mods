@@ -10,42 +10,62 @@ archived:
 
 # Entity Structured Data
 
-Add schema.org JSON-LD for entity detail pages so search engines can identify game-world entities, their relationships, and their navigation context. Each detail route should emit a primary entity node with a canonical `@id`, alongside the breadcrumb data already emitted by rendered breadcrumbs.
+## Goal
 
-## Schema mapping
+Describe entity detail pages without asserting unsupported real-world types or relationships.
+The replacement owner is `add-entity-structured-data`.
 
-Use the closest first-party schema.org type for each entity. The primary node should include the listed properties when the loaded entity data provides them.
+## Current surfaces
 
-| Entity | Primary `@type` | Key properties to emit |
-|---|---|---|
-| Item | `Product` | `name`, `description`, `image` (icon), `brand: { "@type": "Brand", "name": "Ancient Kingdoms" }`, `category` (item type) |
-| Monster | `CreativeWork` with `genre: "Monster"` | `name`, `description`, `image`, `isPartOf: { "@type": "VideoGame", "name": "Ancient Kingdoms" }` |
-| NPC | `Person` | `name`, `description`, `worksFor: { "@type": "Organization", "name": faction }` when a faction is present |
-| Quest | `CreativeWork` with `genre: "Quest"` | `name`, `description`, `position` (chain index when known), `isPartOf: { "@type": "VideoGame", "name": "Ancient Kingdoms" }` |
-| Zone | `Place` | `name`, `description`, `containedInPlace: { "@type": "Place", "name": "Eratiath" }` |
-| Skill | `CreativeWork` with `genre: "Skill"` | `name`, `description` |
-| Pet | `CreativeWork` with `genre: "Pet"` | `name`, `description`, `isPartOf: { "@type": "VideoGame", "name": "Ancient Kingdoms" }` |
-| Altar | `Place` | `name`, `description`, `containedInPlace` (zone) |
-| Recipe | `Recipe` | `name`, `description`, `recipeIngredient`, `recipeYield`, `recipeCategory` |
-| Chest | `CreativeWork` with `genre: "Chest"` | `description`, `containedInPlace` (zone) |
-| Gather resource | `CreativeWork` with `genre: "Resource"` | `name`, `description` |
-| Class | `CreativeWork` with `genre: "Class"` | `name`, `description` |
+`lib/seo/jsonld.ts` owns the shared builders and safe serialization. `JsonLd.svelte` emits their output.
+The layout emits site, organization, and author nodes. Overview routes emit collection nodes, and
+rendered breadcrumbs emit breadcrumb lists. Detail routes do not emit primary entity nodes.
 
-`Product` is the closest available schema.org type for an item, but it is a stretch because items are loot and game-world objects rather than goods being sold. Keep the mapping honest with a category such as `video-game-item` and do not imply commercial pricing or availability.
+## Design
 
-## Current structured-data surfaces
+Each detail page emits a `WebPage` node with a canonical `url`, a distinct `@id` ending in `#webpage`,
+and `mainEntity` pointing to an entity node whose `@id` ends in `#entity`. Keep page identity separate
+from the fictional entity it describes. Link the page to the existing website node with `isPartOf`.
 
-`lib/seo/jsonld.ts` exports `serializeJsonLd`, `buildWebSite`, `buildOrganization`, `buildPerson`, and `buildCollectionPage`. `lib/components/JsonLd.svelte` emits JSON-LD script tags using the shared helper. `routes/+layout.svelte` emits `WebSite`, `Organization`, and `Person` nodes site-wide. Overview routes emit `CollectionPage`. `lib/components/Breadcrumb.svelte` emits `BreadcrumbList` for rendered breadcrumb trails. No detail route emits a primary entity node.
+Use `Thing` for game entities by default. Include their name, canonical page URL, accurate description,
+and available artwork. A narrower type needs a verified semantic fit, not merely a matching word.
+Do not label game loot as commercial products or non-food crafting as culinary recipes.
 
-## Remaining scope
+A verified fictional location may use `Place`. Use `containedInPlace` only between location nodes,
+not on a generic chest or a `CreativeWork`. Do not infer employment from faction membership.
+Keep recipe ingredients, quest chains, and other gameplay relationships in visible content unless a
+verified schema property describes them accurately. Do not invent properties to encode every database join.
 
-Add the per-entity node builders beside the existing builders in `lib/seo/jsonld.ts`. Do not create a separate `structured-data.ts` module. Wire each detail route's loader to build the appropriate node and pass it to the page's JSON-LD output. Add `potentialAction.SearchAction` only after the site has a public global search URL contract. The local search database and map search interface do not satisfy that requirement. The entity builders and detail-route wiring are independent of the global search interface.
+Builders stay beside existing builders in `lib/seo/jsonld.ts`; no parallel structured-data module.
+Server loaders assemble nodes from already-loaded data. They do not add queries solely to decorate
+metadata. Use the existing safe serializer, including protection against script-closing text.
+Image URLs and graph references must be absolute and canonical. Omit optional absent values rather
+than fabricating artwork, relationships, prices, availability, or reviews.
 
-All nodes should include `@context: "https://schema.org"` and a stable canonical URL in `@id`. Entity-specific structured data should add relationships such as factions, zones, quest-chain position, and recipe ingredients rather than merely duplicating the page description meta tag.
+## Search action
+
+`SearchAction` is not a prerequisite or acceptance criterion. Google removed the sitelinks search box
+in November 2024. A future search action needs both a real public search URL and a named consumer.
+Do not create a search route solely for unsupported search-result markup.
+
+## Acceptance
+
+- Every supported detail family emits distinct page and entity identities with a valid `mainEntity` reference.
+- Names, descriptions, and images agree with the rendered page and loaded data.
+- Specialized types and properties pass semantic review against Schema.org, not just JSON parsing.
+- Missing optional values are omitted, and hostile text cannot terminate the JSON-LD script.
+- Representative prerendered output passes the Schema.org validator.
+- No claim of rankings or rich-result eligibility follows merely from valid markup.
 
 ## Tasks
 
-- [ ] Add typed per-entity JSON-LD node builders to `lib/seo/jsonld.ts` for items, monsters, NPCs, quests, zones, skills, pets, altars, recipes, chests, gather resources, and classes using the mapping above.
-- [ ] Ensure each builder emits the schema context, a canonical `@id`, the entity name, available descriptions and images, and the applicable structured relationships.
-- [ ] Wire every entity detail route loader to build and provide its corresponding JSON-LD node through `JsonLd.svelte`.
-- [ ] Add `potentialAction.SearchAction` to the homepage `WebSite` node after a public global search URL exists, including its target and `query-input`.
+- [ ] Add typed page/entity builders using the conservative type policy and existing serializer.
+- [ ] Wire the item, monster, NPC, quest, zone, skill, pet, altar, recipe, chest, resource, and class detail loaders.
+- [ ] Verify canonical graph references, absent values, and script-closing text through observable output checks.
+- [ ] Validate representative rendered pages and compare metadata with visible content.
+
+## References
+
+- [Schema.org Recipe](https://schema.org/Recipe): culinary semantics and properties.
+- [Schema.org containedInPlace](https://schema.org/containedInPlace): a containment relation between places.
+- [Google sitelinks search box retirement](https://developers.google.com/search/blog/2024/10/sitelinks-search-box).

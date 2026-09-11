@@ -97,15 +97,35 @@ Node run initialized it in a 4.498 ms median and opened the earlier 16.9 MB data
 The global palette must measure network transfer, decompression, worker startup, first-result latency,
 and keyboard interaction in a browser before release.
 
+## Routing design gate
+
+No routing implementation starts until these design decisions have written contracts and evidence:
+
+- **Node granularity:** define whether nodes represent zones, sub-zone endpoints, physical portals,
+  bound destinations, or another unit. Keep portal identity distinct from any graph-node identity.
+- **Cost units and objective:** define cost units and the route objective before comparing edges. State
+  how the objective handles transfers, walking, requirements, and unavailable edges.
+- **Walking evidence:** publish walking edges only when source evidence proves connectivity between the
+  selected nodes. A shared parent zone does not prove that two nodes connect by walking.
+- **Dynamic bind destinations:** model destinations resolved at runtime from `TravelItem.cs:24-29`.
+  Do not publish one static destination for a travel item whose bind target can change.
+- **Conditional availability and redactions:** represent requirements and current availability as
+  separate conditions. Exclude unreleased or redacted nodes and edges from public routes.
+
+The gate must record the chosen node granularity, cost units, objective, walking evidence, dynamic bind
+resolution, and conditional-availability policy. Until that record exists, the project may document
+providers and source evidence, but it must not publish edge providers, route tables, route search, or
+itinerary UI.
+
 ## Wayfinding model
 
-Travel is not a portal-only graph. Day-one edge providers are:
+Travel is not a portal-only graph. Candidate day-one edge providers are:
 
 - physical portals;
 - NPC teleporters;
 - the Wizard-only `Evacuate` path;
 - travel items;
-- walking within a non-dungeon parent zone.
+- walking within a non-dungeon parent zone, only when connectivity evidence passes the routing gate.
 
 A class-blind route cannot depend on `Evacuate`. The Gate Scroll and death or bind behavior provide
 separate escape semantics and must not be hidden inside portal reachability.
@@ -116,9 +136,9 @@ zones can be on different dungeon floors. Sub-zone endpoint names are part of th
 Each edge records direction, mechanism, source and destination, requirements, cost, and availability.
 Requirements are conditions, not a guarantee that the route works in current server state.
 
-Build-time checks must cover provider completeness, endpoint resolution, and route reachability.
-Unreleased or redacted content must not become a public route merely because an edge survives in raw
-data.
+After the routing gate passes, build-time checks must cover provider completeness, endpoint resolution,
+and route reachability. Unreleased or redacted content must not become a public route merely because an
+edge survives in raw data.
 
 ## Portal arc decision
 
@@ -137,7 +157,10 @@ the zone filter extensions.
 
 ## Remaining work
 
-### Map completion
+The following three changes have independent ownership. They share the registry and search contracts,
+but one change does not absorb another change's implementation tasks.
+
+### `complete-map-registry-ownership`
 
 - [ ] Move physical selection to registry-owned strategies and delete the legacy index switches.
 - [ ] Split centralized popup bodies and route dispatch behind entity or marker ownership.
@@ -145,7 +168,7 @@ the zone filter extensions.
 - [ ] Remove zone focus and its URL, component, state, and GPU filter plumbing.
 - [ ] Preserve golden URL keys, paint order, selection outcomes, and popup behavior.
 
-### Global search
+### `add-global-entity-search`
 
 - [ ] Add one global Cmd-K palette in `+layout.svelte` using `searchEntities()`.
 - [ ] Replace the development-only `HomeSearch` stub with a working global-search entry point.
@@ -154,13 +177,14 @@ the zone filter extensions.
 - [ ] Remove the 14 legacy FTS tables, triggers, optimization list, and last old reader in one cutover.
 - [ ] Measure browser cold start, first result, transfer bytes, worker memory, and main-thread responsiveness.
 
-### Wayfinding and portal UX
+### `add-map-wayfinding`
 
-- [ ] Publish source-cited `Evacuate` destinations and every other required non-database rule.
-- [ ] Implement typed travel-edge providers for portals, NPC teleporters, travel items, and `Evacuate`.
-- [ ] Implement guarded walking edges for non-dungeon parent zones.
-- [ ] Build deterministic directed route tables with explicit requirement and availability metadata.
-- [ ] Add route search and itinerary presentation to the map.
+- [ ] Resolve and record the routing design gate before any routing implementation.
+- [ ] Publish source-cited `Evacuate` destinations and every other required non-database rule only after the gate passes.
+- [ ] Implement typed travel-edge providers for portals, NPC teleporters, travel items, and `Evacuate` only after the gate passes.
+- [ ] Implement guarded walking edges for non-dungeon parent zones only after connectivity evidence passes the gate.
+- [ ] Build deterministic directed route tables with explicit requirement and availability metadata only after the gate passes.
+- [ ] Add route search and itinerary presentation to the map only after the gate passes.
 - [ ] Replace portal `LineLayer` chords with the approved curved, interactive arc presentation.
 - [ ] Add game-version and graph-completeness checks.
 
@@ -177,4 +201,5 @@ the zone filter extensions.
 - Do not allocate marker data or accessors per deck.gl frame.
 - Do not replace explicit complex marker behavior with exception flags in a generic helper.
 - Do not infer travel completeness from database tables alone.
+- Do not implement or publish routing before the routing design gate passes.
 - Do not claim browser performance from local Node measurements.

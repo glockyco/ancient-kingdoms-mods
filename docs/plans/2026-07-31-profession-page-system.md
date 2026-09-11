@@ -97,7 +97,7 @@ retire the two idioms that fight it: the uniform card stack and the decorative h
 | Metric-card strip | 4 newest | **Revise into `PageSections`** | It reports section counts without linking to sections — a table of contents that forgot to be clickable. Replaced by the existing jump list it should have been. |
 | "How It Works" | 4 newest | **Keep content, discard name and panel** | The content is the best writing on the site (fishing's tier timings and roll order are excellent). The generic heading and bordered panel demote it to chrome. Promote it, name it for the mechanic. |
 | Numbered step rows | 4 newest | **Keep** | Ordered procedure genuinely helps for multi-step loops (cast, dig, queue). Restrict to professions with a real sequence. |
-| Split loader + test | fishing | **Keep, extend** | `fishing-page-data.server.ts` plus its test is the right architecture for data-heavy pages. Adopt wherever a loader exceeds ~150 lines. |
+| Split loader + test | fishing | **Keep, extend** | `fishing-page-data.server.ts` plus its test demonstrates a useful data boundary. Split loaders when ownership or lifecycle requires it, and add behavioral coverage for meaningful boundaries rather than for a line-count threshold. |
 | Anchored sections | scroll_mastery, fishing | **Keep** | Stable anchors are a prerequisite for the jump list. |
 | Interactive calculators | 8 pages | **Keep, re-encode** | The most valuable thing these pages do, and the closest existing relative of the two exemplar mechanics pages. The inputs stay; the five-column percentage grid becomes a curve. |
 | Uniform card stack | `mechanics/combat`, `mechanics/inventory` | **Discard** | Nine identical card-and-table blocks in a row. The container carries no information, so the reader gets no signal about which section matters or how one relates to the next. |
@@ -230,7 +230,13 @@ instead of leaning on the card to do the visual work.
   fixed column widths, one line per cell with truncation and a `title`, and the shared
   `monster-table` respawn columns where the rows are monsters. Equal row heights keep the
   pagination controls still between pages. Slayer's 143 rows and exploring's 46 need
-  filtering, not scrolling. Prerender all rows for no-JS, enhance on hydration.
+  filtering, not scrolling. Static HTML MUST contain every row, including rows beyond the first
+  page. No-JS readers must be able to inspect the inventory and completion UI must use the full
+  denominator. The hydrated default view MAY paginate to a page size of 20 for density, but pagination MUST
+  NOT remove rows from static output. The current Slayer wiring sets a page size of 20 and `paginateStaticHtml=true`
+  while pagination is hydration-only, so this contract is not proven. Keep the Slayer gate open until
+  the implementation is repaired and rendered HTML verification confirms rows beyond the first page
+  and completion data without JavaScript.
 - **Timings and cooldowns** — a timeline in the `monster-spawns` idiom. Radiant Seeker's
   100 to 3600 second window and every gathering respawn are ranges on a scale, not two
   numbers in a cell.
@@ -239,8 +245,11 @@ instead of leaning on the card to do the visual work.
 
 ## Density and disclosure
 
-- **Desktop** — target under 4 screens for the densest page. Fishing's 7.6 is failure.
-- **Mobile** — target under 6 screens. Fishing's 12.5 and slayer's 8.9 are failures.
+- **Desktop** — target under 4 screens for the densest hydrated default view. Fishing's 7.6 is failure.
+- **Mobile** — target under 6 screens for the hydrated default view. Fishing's 12.5 and slayer's 8.9 are failures.
+- The density budget applies to the hydrated default view, not truncated or paginated static HTML.
+  Static HTML may be longer when it preserves every row for no-JS readers; it must still contain all
+  facts and the completion data.
 - **First fact within one mobile viewport.** Currently 2.3 to 3.7 screens on the newest
   pages.
 - **Vary the rhythm.** No page runs more than three consecutive sections in the same
@@ -261,18 +270,22 @@ instead of leaning on the card to do the visual work.
 
 ## Component boundaries
 
-Extract only where 3+ pages share a real contract.
+Extract a component from demonstrated consumers when shared semantics define a stable contract. Extract
+one when a domain rule requires one owner. Use expected evolution to test whether the contract will remain
+useful. Do not prebuild a component inventory as a prerequisite. A route-local fragment remains valid
+until another consumer or a domain owner provides evidence for extraction.
 
-| Component | Contract | Call sites |
+| Component | Contract | Evidence and expected evolution |
 | --- | --- | --- |
-| `ProfessionHeader` | profession row + payoff line + achievement + optional jump list | 13 |
-| `MasteryCurve` | tier success functions + reader position + shaded no-gain regions | 10 |
-| `LocationTable` | rows of zone / sub-zone / coordinates | 5 |
-| `ResourceTable` | tier, entity link, per-tier derived values as bars, map link | 5 |
-| `RecipeTable` | tier, output, materials, success, obtainability | 4 |
-| `RelatedProfessions` | typed links with the reason for the link | 13 |
-| `RangeBar` | value or range within its possible range, colour by role | 6 |
-| `Timeline` | ordered durations on one scale | 4 |
+| `ProfessionHeader` | profession row + payoff line + achievement + optional jump list | Existing shared contract across the profession routes |
+| `MasteryCurve` | tier success functions + reader position + shaded no-gain regions | Existing Mining renderer with calculator consumers |
+| `RangeBar` | value or range within its possible range, colour by role | Extract from the demonstrated `mechanics/mercenary-stats` consumer when the profession consumers require the same semantics |
+| `Timeline` | ordered durations on one scale | Extract from the demonstrated `mechanics/monster-spawns` consumer when the profession consumers require the same semantics |
+
+Tables use `DataTable` or remain route-local until demonstrated consumers share row semantics. Do not
+mandate `LocationTable`, `ResourceTable`, `RecipeTable`, or `RelatedProfessions` as speculative
+prerequisites. Extract table, bar, and timeline components only after their consumers establish the
+contract and its expected evolution.
 
 Reuse unchanged: `Seo`, `Breadcrumb`, `PageSections`, `ItemLink`, `MapLink`,
 `MechanicsLink`, `ObtainabilityTree`, `QuestTypeBadge`, `QuestFlagBadges`, `DataTable`,
@@ -281,9 +294,11 @@ Reuse unchanged: `Seo`, `Breadcrumb`, `PageSections`, `ItemLink`, `MapLink`,
 Do **not** extract a `MetricStrip`, a `HeroPanel`, or a generic `HowItWorks` — those are
 the devices being retired.
 
-Server side: one shared `professions.ts` query module owning the profession row and the
-mechanics record, replacing 13 locally redeclared interfaces. Loaders above ~150 lines
-split into `<profession>-page-data.server.ts` with a test, following fishing.
+Server side: one shared `professions.ts` query module owns the typed SQL rows for profession metadata.
+It does not own the mechanics record. The mechanics record remains the cited TypeScript module in
+`lib/data/professions/mechanics.ts`. Replace the 13 locally redeclared SQL-row interfaces. Split a
+loader when a separate data boundary improves ownership or lifecycle, not when it crosses a line-count
+threshold. Add behavioral coverage for meaningful boundaries; a split alone does not require a test.
 
 ## Where the mechanics record lives
 
@@ -386,10 +401,12 @@ reward patterns.
 
 - Every page states its payoff line above the fold, or explicitly states there is none.
 - Every page's progression section is generated from shared data, not hand-written.
-- No page exceeds 6 mobile screens or 4 desktop screens.
+- No hydrated default view exceeds 6 mobile screens or 4 desktop screens. Static HTML may be longer
+  when it preserves all rows for no-JS readers.
 - First data fact within one mobile viewport on every page.
 - Zero horizontal overflow at 390px on every page.
-- Every fact renders without JavaScript.
+- Every fact renders without JavaScript, including rows beyond the first hydrated page and completion
+  data.
 - Every mechanical claim carries a machine-checked citation; `pnpm check:citations`
   passes.
 - No fabricated content. Facts the audit marked unknown remain absent.

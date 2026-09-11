@@ -82,14 +82,19 @@ implement feature work discovered during an audit.
 - [ ] 4.5 Reject or defer uncertain work explicitly. Do not treat missing evidence as permission to
       delete a wanted requirement.
 - [ ] 4.6 Create and strictly validate `consolidate-website-design-system`.
-- [ ] 4.7 Create and strictly validate `simplify-entity-addition-workflow`.
+- [ ] 4.7 Create and strictly validate `harden-export-sessions`, including curated-input composition.
 - [ ] 4.8 Create and strictly validate `add-detail-page-title-suffixes`.
 - [ ] 4.9 Create and strictly validate `finish-entity-image-surfacing`.
 - [ ] 4.10 Create and strictly validate `add-entity-structured-data`.
 - [ ] 4.11 Create and strictly validate `add-per-entity-og-images`.
 - [ ] 4.12 Create and strictly validate `complete-entity-artwork-pipeline`.
 - [ ] 4.13 Create and strictly validate `complete-profession-page-system`.
-- [ ] 4.14 Create and strictly validate `complete-map-search-and-wayfinding`.
+- [ ] 4.14 Create and strictly validate `complete-map-registry-ownership`.
+- [ ] 4.15 Create and strictly validate `simplify-pipeline-loader-registration`.
+- [ ] 4.16 Create and strictly validate `consolidate-server-read-models`.
+- [ ] 4.17 Create and strictly validate `add-global-entity-search`, including search artwork adoption.
+- [ ] 4.18 Create and strictly validate `add-map-wayfinding`, including the routing design gate.
+- [ ] 4.19 Confirm item-detail and search artwork have one implementation owner each; remove duplicate tasks from replacement changes.
 
 ## 5. Delete migrated records
 
@@ -149,7 +154,7 @@ implement feature work discovered during an audit.
       requirement for every original record.
 - [ ] 7.2 Verify tasks 3.1 through 3.5 cover current behavior and durable rationale without copying
       obsolete prose.
-- [ ] 7.3 Verify tasks 4.1 through 4.5 produce complete, independently scoped changes for all
+- [ ] 7.3 Verify tasks 4.1 through 4.19 produce complete, independently scoped changes for all
       still-wanted work without implementing it.
 - [ ] 7.4 Verify tasks 5.1 through 5.14 delete migrated records instead of creating a second
       historical archive.

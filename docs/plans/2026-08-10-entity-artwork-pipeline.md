@@ -108,15 +108,22 @@ A list uses entity art only when nearly every row has it. Sparse families keep a
 Compact map chips and mechanics tables also keep glyphs because category recognition is more useful
 than miniature artwork there.
 
+## Related implementation owners
+
+`finish-entity-image-surfacing` owns the item-detail artwork surface. `add-global-entity-search` owns
+palette artwork. Their implementation tasks and acceptance checks do not belong to this checklist.
+
 ## Remaining work
 
 - [ ] Run a current game export that proves whether all 13 profession icons are readable.
+- [ ] Repeat the profession export from the same game state and compare source identity, dimensions, and
+  content hashes to prove repeatability.
 - [ ] If profession icons are readable, publish them through `visual_assets` and consume them on profession surfaces.
 - [ ] If profession icons are unreadable, record the runtime reason and retain semantic profession glyphs.
-- [ ] Render the existing item `visualAsset` prominently on the item detail page.
 - [ ] Complete class, zone, recipe-result, treasure-map, chest, and gathering-art adoption where the current route still uses only a glyph.
-- [ ] Use entity artwork in the global search palette after that palette exists.
 - [ ] Verify every new intrinsic-size surface reserves layout from database dimensions.
+- [ ] Run the pipeline twice against identical exported and curated inputs. Compare the artwork
+  manifest, paths, dimensions, and content hashes to prove repeatability.
 - [ ] Run a full pipeline build and assert the artwork invariants against the published database and files.
 - [ ] Measure final output bytes and perform browser checks for each adopted family.
 

@@ -98,7 +98,7 @@ Keep the visual system neutral and durable: dark/light responsive layout, one co
 ## Migration sequence
 
 1. Create and deploy `compendiums-site` to `compendiums.org`.
-2. Add a Cloudflare Redirect Rule for `www.compendiums.org` to `https://compendiums.org` if `www` should be supported.
+2. If `www` should be supported, create or verify its proxied DNS record, then add the redirect to `https://compendiums.org`. The apex Custom Domain does not provision `www`.
 3. Keep Ancient Kingdoms unchanged.
 4. Deploy Ardenfall to its already-declared `ardenfall.compendiums.org` custom domain when production artifacts are ready.
 5. Add a custom domain route for Erenshor maps in `Erenshor/src/maps/wrangler.jsonc`, then deploy it to `erenshor-maps.compendiums.org` when its current host migration is ready.
@@ -122,7 +122,7 @@ For implementation, verify:
 - accessibility smoke check passes for links/headings/contrast;
 - `wrangler deploy` creates the `compendiums.org` Custom Domain from config;
 - `https://compendiums.org` returns the landing page;
-- `https://www.compendiums.org` redirects only if the Redirect Rule is configured;
+- if `www` is enabled, its DNS record is proxied and an HTTPS request reaches the configured apex redirect;
 - every project card points to a reachable public site;
 - cards using pre-migration URLs clearly show the eventual `compendiums.org` hostname.
 

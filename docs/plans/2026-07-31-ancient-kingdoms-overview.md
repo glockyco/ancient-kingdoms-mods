@@ -40,7 +40,18 @@ owning spec, not here.
 | P3.3 | Entity structured data | `2026-07-31-entity-structured-data` | Shared and overview nodes exist; no detail route emits an entity node |
 | P3.4 | Per-entity OG images | `2026-07-31-per-entity-og-images` | Every route still uses `/og-default.png`; source art now covers more entity families |
 
-## Small items — no doc needed
+## Independent implementation owners
+
+The migration creates separate changes for map registry completion, global search, and wayfinding.
+Global search owns its palette artwork; the artwork pipeline is not a prerequisite once its assets exist.
+Export-session integrity, pipeline loader registration, and server read models also have separate owners.
+The migration ledger names these changes. None is created by this planning revision.
+
+The active planner must correct shared-target effect ownership and keep search gaps separate from model
+score ordering. The profession migration must repair Slayer's static row coverage before it passes its
+validation gate. These are open implementation requirements, not completed fixes.
+
+## Small items — no separate legacy doc needed
 
 - **Compact map links** — add `<MapLink … compact />` to the monsters, npcs, altars,
   gather-items and quests overviews plus the hunter, slayer, herbalism and mining
