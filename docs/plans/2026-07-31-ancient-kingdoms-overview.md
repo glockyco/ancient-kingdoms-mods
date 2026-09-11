@@ -17,11 +17,34 @@ This repo extracts Ancient Kingdoms game data and publishes it as a public compe
 legacy child records. Active OpenSpec changes own project implementation priorities and task status.
 When an item ships, it leaves this queue.
 
-## Strategy sequence
+## Execution sequence
 
-1. Complete the active combat-verification and planner changes under `openspec/changes/`.
-2. Finish the global search interface and remaining discovery links.
-3. Complete the remaining entity-art and SEO surfaces.
+1. Complete planner task `3.1`: checked C# and TypeScript adapters for shared fixture and capture build
+   data. Preserve learned-book completeness, catalog ownership, and distinct attribute meanings.
+2. Complete harness materialization and the planner's dynamic event/state evaluation together. Include
+   recipient-owned effects, autonomous companions, learned-book reload, and nonlinear expectation checks.
+3. Prove one complete fixture-to-game-to-production-evaluator comparison, then expand the matrix and
+   qualify calibration, independent validation, raw/normalized modes, and reviewed baselines.
+4. Implement and qualify optimizer search, the capture workflow, and the planner interface. Retire the
+   prior simulator only after runtime, browser, and release gates pass.
+5. Deliver global search and discovery links using the existing index. Keep map-registry completion
+   independently deliverable rather than making every map improvement a search prerequisite.
+6. Complete the profession system: repair Slayer's static rows, validate Fishing and the four-route set,
+   then migrate the remaining professions. Slayer's isolated correctness fix can land earlier.
+7. Finish item-detail artwork, contextual titles, justified artwork consumers, per-entity Open Graph
+   images, and conservative structured data, in that order unless a concrete dependency changes it.
+8. Schedule export-session integrity with export-workflow changes. Refactor loader registration and
+   server read models only around demonstrated needs. Wayfinding starts with its routing design gate.
+9. Resolve the apex site's external ownership and deployment evidence before implementation.
+10. Complete the legacy authority cutover after active harness/planner archival and verified ownership
+    of every retained requirement. Create replacement changes as their subjects approach implementation,
+    not all at once.
+
+This is milestone order, not a second implementation checklist. Active OpenSpec task files own progress
+and acceptance. A completed component does not close an end-to-end gate. When new evidence changes a
+contract or dependency, update the affected design, specifications, tasks, and this ordering before
+relying on the revised assumption. Record missing evidence explicitly; do not bypass it with defaults
+or relax acceptance to match the implementation.
 
 ## Priority queue
 
