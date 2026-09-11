@@ -58,6 +58,7 @@ public class PetExporter : BaseExporter
                 level = pet.level?.current ?? 0,
                 health = pet.health?.max ?? 0,
                 mana = pet.mana?.max ?? 0,
+                energy = pet.energy?.max ?? 0,
                 damage = pet.combat?.damage ?? 0,
                 magic_damage = pet.combat?.magicDamage ?? 0,
                 defense = pet.combat?.defense ?? 0,
@@ -67,6 +68,7 @@ public class PetExporter : BaseExporter
                 cold_resist = pet.combat?.coldResist ?? 0,
                 disease_resist = pet.combat?.diseaseResist ?? 0,
                 block_chance = pet.combat?.blockChance ?? 0,
+                accuracy = pet.combat?.accuracy ?? 0,
                 critical_chance = pet.combat?.criticalChance ?? 0,
 
                 // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
@@ -74,6 +76,8 @@ public class PetExporter : BaseExporter
                 health_per_level = pet.health?.baseHealth.bonusPerLevel ?? 0,
                 mana_base = pet.mana?.baseMana.baseValue ?? 0,
                 mana_per_level = pet.mana?.baseMana.bonusPerLevel ?? 0,
+                energy_base = pet.energy?.baseEnergy.baseValue ?? 0,
+                energy_per_level = pet.energy?.baseEnergy.bonusPerLevel ?? 0,
                 damage_base = pet.combat?.baseDamage.baseValue ?? 0,
                 damage_per_level = pet.combat?.baseDamage.bonusPerLevel ?? 0,
                 magic_damage_base = pet.combat?.baseMagicDamage.baseValue ?? 0,
@@ -92,6 +96,8 @@ public class PetExporter : BaseExporter
                 disease_resist_per_level = pet.combat?.baseDiseaseResist.bonusPerLevel ?? 0,
                 block_chance_base = pet.combat?.baseBlockChance.baseValue ?? 0,
                 block_chance_per_level = pet.combat?.baseBlockChance.bonusPerLevel ?? 0,
+                accuracy_base = pet.combat?.baseAccuracy.baseValue ?? 0,
+                accuracy_per_level = pet.combat?.baseAccuracy.bonusPerLevel ?? 0,
                 critical_chance_base = pet.combat?.baseCriticalChance.baseValue ?? 0,
                 critical_chance_per_level = pet.combat?.baseCriticalChance.bonusPerLevel ?? 0,
 

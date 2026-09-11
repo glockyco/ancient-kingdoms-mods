@@ -93,6 +93,7 @@ export interface CasterStatInput {
   armorSets?: readonly ArmorSetDefinition[];
   learnedBooks: LearnedBookProgression;
   extraBonuses?: Partial<CasterBonuses>;
+  bonusSources?: readonly Partial<CasterBonuses>[];
   passives?: readonly PassiveDamageBonus[];
   damagePercentBuffs?: readonly number[];
   magicDamagePercentBuffs?: readonly number[];
@@ -218,7 +219,11 @@ export function buildCasterStatSheet(input: CasterStatInput): CasterStatSheet {
         setStates.find((state) => state.id === definition.id)?.attributesActive,
     )
     .map((definition) => definition.attributeBonuses);
-  const extra = sumBonuses(input.extraBonuses ?? {}, ...activeSetBonuses);
+  const extra = sumBonuses(
+    input.extraBonuses ?? {},
+    ...(input.bonusSources ?? []),
+    ...activeSetBonuses,
+  );
   const learnedBookGains = resolveLearnedBookGains(input);
   const attributes = { ...input.attributes };
   for (const key of ATTRIBUTE_KEYS) {

@@ -81,6 +81,8 @@ public class ClassExporter : BaseExporter
                 // Energy scaling (from Energy component)
                 base_energy_value = player.energy?.baseEnergy.baseValue ?? 0,
                 base_energy_per_level = player.energy?.baseEnergy.bonusPerLevel ?? 0,
+                base_mana_recovery_rate = player.mana?.baseRecoveryRate ?? 0,
+                base_energy_recovery_rate = player.energy?.baseRecoveryRate ?? 0,
 
                 // Combat stat scaling (from Combat component)
                 base_damage_value = player.combat?.baseDamage.baseValue ?? 0,

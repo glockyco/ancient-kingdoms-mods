@@ -292,6 +292,9 @@ public class ItemExporter : BaseExporter
             speed_bonus = equipItem.speedBonus,
             max_durability = equipItem.maxDurability,
             augment_bonus_set = equipItem.augmentArmorBonusSet != null ? equipItem.augmentArmorBonusSet.name : null,
+            augment_bonus_set_id = equipItem.augmentArmorBonusSet != null
+                ? SanitizeId(equipItem.augmentArmorBonusSet.name)
+                : null,
             has_serenity = equipItem.hasSerenity,
             is_costume = equipItem.isCostume,
             resist_fear_chance = equipItem.resistFearChanceBonus

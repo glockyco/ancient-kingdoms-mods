@@ -16,6 +16,8 @@ public class ClassCombatData
     public int base_mana_per_level { get; set; }
     public int base_energy_value { get; set; }
     public int base_energy_per_level { get; set; }
+    public int base_mana_recovery_rate { get; set; }
+    public int base_energy_recovery_rate { get; set; }
     public int base_damage_value { get; set; }
     public int base_damage_per_level { get; set; }
     public int base_magic_damage_value { get; set; }

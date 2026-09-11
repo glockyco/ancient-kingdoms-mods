@@ -290,7 +290,7 @@ def _build_payload(
         )
     ]
     mercenaries = [
-        pet
+        _with_mercenary_class_id(pet, classes)
         for pet in pets
         if pet.get("id") in surviving_pets and pet.get("is_mercenary") is True
     ]
@@ -473,6 +473,20 @@ def _require_effect_references(
             "Planner item effects reference skills outside the payload: "
             + ", ".join(missing)
         )
+
+
+def _with_mercenary_class_id(
+    pet: dict[str, Any], classes: list[dict[str, Any]]
+) -> dict[str, Any]:
+    pet_id = pet.get("id")
+    matches = [
+        str(row["id"]) for row in classes if pet_id == f"{row.get('id')}_mercenary"
+    ]
+    if len(matches) != 1:
+        raise PlannerPayloadError(
+            f"Mercenary {pet_id!r} does not resolve to exactly one class"
+        )
+    return {**pet, "class_id": matches[0]}
 
 
 def _ids(conn: sqlite3.Connection, table: str) -> set[str]:

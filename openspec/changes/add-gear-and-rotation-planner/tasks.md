@@ -72,7 +72,7 @@ Schema and serialization checks can precede runtime qualification; they do not c
       Remove obsolete fields and compatibility shims. Do not maintain a second logical-build contract.
       Verify field-specific refusal of missing required inputs before mutation or evaluation.
       Verify declared empty sections cannot silently preserve previous runtime state.
-- [ ] 3.13 Implement catalog-to-evaluator resolution through the shared contract from 3.11.
+- [x] 3.13 Implement catalog-to-evaluator resolution through the shared contract from 3.11.
       Resolve build identities and declared state through the versioned catalog.
       Include class/race progression, allocations, learned books, equipment/augments, skills/passives, companion inputs, consumables, and ammunition.
       Reuse production stat and combat formulas. Do not copy formulas into adapters.

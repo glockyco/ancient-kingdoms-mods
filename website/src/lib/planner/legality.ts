@@ -49,6 +49,8 @@ export interface SkillAllocationInput {
   classId: string;
   level: number;
   veteranPoints: number;
+  normalPointBudget?: number;
+  veteranPointBudget?: number;
   skills: readonly AllocatableSkill[];
   requestedLevels: Readonly<Record<string, number>>;
 }
@@ -60,7 +62,10 @@ const TIER_LIMITS: Readonly<Record<number, number>> = {
   4: 1,
 };
 
-function curveAt(curve: SkillGateCurve, level: number): number {
+export function skillValueAtLevel(
+  curve: SkillGateCurve,
+  level: number,
+): number {
   return curve.base_value + curve.bonus_per_level * (level - 1);
 }
 
@@ -146,9 +151,15 @@ export function evaluateSkillAllocation(
   }
 
   const budgets = {
-    normal: Math.max(0, input.level - 1),
-    veteran: Math.max(0, input.veteranPoints),
+    normal: input.normalPointBudget ?? Math.max(0, input.level - 1),
+    veteran: input.veteranPointBudget ?? Math.max(0, input.veteranPoints),
   };
+  if (!Number.isInteger(budgets.normal) || budgets.normal < 0) {
+    throw new RangeError("normalPointBudget must be a non-negative integer");
+  }
+  if (!Number.isInteger(budgets.veteran) || budgets.veteran < 0) {
+    throw new RangeError("veteranPointBudget must be a non-negative integer");
+  }
   let normalPointsSpent = 0;
   let veteranPointsSpent = 0;
   let upgradesRemaining = classSkills.reduce(
@@ -163,8 +174,9 @@ export function evaluateSkillAllocation(
       const nextLevel = levels[skill.id] + 1;
       const spent = skill.is_veteran ? veteranPointsSpent : normalPointsSpent;
       const budget = skill.is_veteran ? budgets.veteran : budgets.normal;
-      const cost = curveAt(skill.skill_point_cost, nextLevel);
-      if (input.level < curveAt(skill.level_requirement, nextLevel)) continue;
+      const cost = skillValueAtLevel(skill.skill_point_cost, nextLevel);
+      if (input.level < skillValueAtLevel(skill.level_requirement, nextLevel))
+        continue;
       if (spent < skill.required_spent_points || spent + cost > budget)
         continue;
       if (!tierIsOpen(skill, levels, classSkills)) continue;
@@ -198,9 +210,9 @@ export function evaluateSkillAllocation(
       const nextLevel = levels[skill.id] + 1;
       const spent = skill.is_veteran ? veteranPointsSpent : normalPointsSpent;
       const budget = skill.is_veteran ? budgets.veteran : budgets.normal;
-      const cost = curveAt(skill.skill_point_cost, nextLevel);
+      const cost = skillValueAtLevel(skill.skill_point_cost, nextLevel);
       let code: SkillAllocationFailureCode;
-      if (input.level < curveAt(skill.level_requirement, nextLevel))
+      if (input.level < skillValueAtLevel(skill.level_requirement, nextLevel))
         code = "level_requirement";
       else if (spent + cost > budget) code = "point_budget";
       else if (spent < skill.required_spent_points) code = "spent_requirement";

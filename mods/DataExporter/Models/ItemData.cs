@@ -195,6 +195,7 @@ public class ItemStats
     // Equipment-specific
     public int max_durability { get; set; }
     public string augment_bonus_set { get; set; }
+    public string augment_bonus_set_id { get; set; }
     public bool has_serenity { get; set; }
     public bool is_costume { get; set; }
 

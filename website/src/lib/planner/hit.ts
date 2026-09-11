@@ -260,7 +260,7 @@ function hitRefusal(
     return `skill ${skill.id} requires target health at or below one quarter`;
   }
   if (skill.skillClass === "target_projectile") {
-    const ammunition = requiredAmmunition(caster, skill);
+    const ammunition = requiredAmmunitionForSkill(caster, skill);
     if (ammunition && (caster.ammunition?.[ammunition] ?? 0) <= 0) {
       return `skill ${skill.id} requires ammunition ${ammunition}`;
     }
@@ -521,9 +521,9 @@ function offhandDamageForMelee(
   return offhand.damageBonus;
 }
 
-function requiredAmmunition(
-  caster: HitCaster,
-  skill: DamageSkillSpec,
+export function requiredAmmunitionForSkill(
+  caster: Pick<HitCaster, "kind" | "classId" | "weapons">,
+  skill: Pick<DamageSkillSpec, "requiredWeaponCategory">,
 ): string | null {
   if (
     caster.kind !== "player" ||
@@ -541,7 +541,7 @@ function requiredAmmunition(
 function ammunitionPerCast(caster: HitCaster, skill: DamageSkillSpec): number {
   if (
     skill.skillClass !== "target_projectile" ||
-    !requiredAmmunition(caster, skill)
+    !requiredAmmunitionForSkill(caster, skill)
   ) {
     return 0;
   }
@@ -549,7 +549,7 @@ function ammunitionPerCast(caster: HitCaster, skill: DamageSkillSpec): number {
 }
 
 function occupiedWeapon(
-  caster: HitCaster,
+  caster: Pick<HitCaster, "weapons">,
   slot: number,
 ): EquippedWeapon | undefined {
   return caster.weapons.find(
@@ -565,7 +565,9 @@ function activeWeapon(
   return weapon && weapon.durability > 0 ? weapon : undefined;
 }
 
-function firstOccupiedWeapon(caster: HitCaster): EquippedWeapon | undefined {
+function firstOccupiedWeapon(
+  caster: Pick<HitCaster, "weapons">,
+): EquippedWeapon | undefined {
   return [...caster.weapons]
     .sort((left, right) => left.slot - right.slot)
     .find((weapon) => weapon.amount > 0);

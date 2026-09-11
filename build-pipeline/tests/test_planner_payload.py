@@ -130,6 +130,7 @@ class PlannerPayloadTests(unittest.TestCase):
         self.assertEqual(3, payload["build"]["serializedSchemaVersion"])
         self.assertNotIn("captureSchemaVersion", payload["build"])
         self.assertEqual(2, len(payload["equipmentSlots"]))
+        self.assertEqual("warrior", payload["mercenaryArchetypes"][0]["class_id"])
         self.assertEqual(1, len(payload["learnedBooks"]))
         self.assertEqual(
             {

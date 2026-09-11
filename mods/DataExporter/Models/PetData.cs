@@ -21,6 +21,7 @@ public class PetData
     public int level { get; set; }
     public int health { get; set; }
     public int mana { get; set; }
+    public int energy { get; set; }
 
     // Combat stats (calculated at current level)
     public int damage { get; set; }
@@ -32,6 +33,7 @@ public class PetData
     public int cold_resist { get; set; }
     public int disease_resist { get; set; }
     public float block_chance { get; set; }
+    public float accuracy { get; set; }
     public float critical_chance { get; set; }
 
     // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
@@ -39,6 +41,8 @@ public class PetData
     public int health_per_level { get; set; }
     public int mana_base { get; set; }
     public int mana_per_level { get; set; }
+    public int energy_base { get; set; }
+    public int energy_per_level { get; set; }
     public int damage_base { get; set; }
     public int damage_per_level { get; set; }
     public int magic_damage_base { get; set; }
@@ -57,6 +61,8 @@ public class PetData
     public int disease_resist_per_level { get; set; }
     public float block_chance_base { get; set; }
     public float block_chance_per_level { get; set; }
+    public float accuracy_base { get; set; }
+    public float accuracy_per_level { get; set; }
     public float critical_chance_base { get; set; }
     public float critical_chance_per_level { get; set; }
 

@@ -66,15 +66,15 @@
           "pool": "normal"
         },
         {
-          "skillId": "pool_of_mana",
-          "skillName": "Pool of Mana",
-          "level": 5,
+          "skillId": "mana_shield",
+          "skillName": "Mana Shield",
+          "level": 1,
           "pool": "normal"
         },
         {
-          "skillId": "spellrend",
-          "skillName": "Spellrend",
-          "level": 5,
+          "skillId": "invoke_red_familiar",
+          "skillName": "Invoke Red Familiar",
+          "level": 8,
           "pool": "normal"
         },
         {
