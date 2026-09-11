@@ -228,12 +228,12 @@ internal sealed class HotReplVerificationRunner
     {
         using var matrix = JsonDocument.Parse(_options.FixtureMatrixJson!);
         var fixture = matrix.RootElement.GetProperty("fixtures")[0].GetProperty("fixture");
-        var character = fixture.GetProperty("buildData").GetProperty("character");
+        var character = fixture.GetProperty("buildData").GetProperty("player");
         return JsonSerializer.Serialize(new System.Collections.Generic.Dictionary<string, string>
         {
             ["characterName"] = "Verifier",
-            ["class"] = character.GetProperty("class").GetString()!,
-            ["race"] = character.GetProperty("race").GetString()!,
+            ["class"] = character.GetProperty("classId").GetString()!,
+            ["race"] = character.GetProperty("raceId").GetString()!,
         });
     }
 

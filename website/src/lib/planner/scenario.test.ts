@@ -9,8 +9,7 @@ import {
 import type { BuildEnvelope } from "./build-envelope";
 
 const build: BuildEnvelope = {
-  serializedSchemaVersion: 2,
-  captureSchemaVersion: 1,
+  serializedSchemaVersion: 3,
   modelVersion: "1",
   gameData: {
     gameVersion: "0.9.31.1",

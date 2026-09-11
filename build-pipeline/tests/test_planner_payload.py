@@ -127,7 +127,8 @@ class PlannerPayloadTests(unittest.TestCase):
         first_raw = first.raw_path.read_bytes()
         first_compressed = first.compressed_path.read_bytes()
         payload = json.loads(first_raw)
-        self.assertEqual(2, payload["build"]["serializedSchemaVersion"])
+        self.assertEqual(3, payload["build"]["serializedSchemaVersion"])
+        self.assertNotIn("captureSchemaVersion", payload["build"])
         self.assertEqual(2, len(payload["equipmentSlots"]))
         self.assertEqual(1, len(payload["learnedBooks"]))
         self.assertEqual(

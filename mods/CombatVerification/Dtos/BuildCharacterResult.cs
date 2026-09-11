@@ -1,5 +1,6 @@
 #nullable disable
 using System.Collections.Generic;
+using CombatVerification.Builds;
 using CombatVerification.Fixtures;
 using Newtonsoft.Json;
 

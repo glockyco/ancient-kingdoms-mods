@@ -1,61 +1,93 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "build": {
-    "captureSchemaVersion": 1,
     "gameData": {
       "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0",
       "gameVersion": "0.9.31.1",
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 2
+    "serializedSchemaVersion": 3
   },
   "name": "B-area-damage",
   "tier": "B",
   "coverage": "B.skill.areaDamage",
   "buildData": {
-    "provenance": {
-      "kind": "authored",
-      "source": "verification/fixtures/b/B-area-damage.json"
-    },
-    "character": {
-      "class": "Wizard",
-      "race": "Human",
+    "schemaVersion": 1,
+    "player": {
+      "entityId": "player",
+      "classId": "wizard",
+      "raceId": "human",
       "level": 50,
       "veteranPoints": 200,
-      "allocatedAttributes": {},
+      "attributes": {
+        "rawObserved": null,
+        "baseProgression": {
+          "strength": 10,
+          "constitution": 11,
+          "dexterity": 18,
+          "intelligence": 26,
+          "wisdom": 13,
+          "charisma": 9
+        },
+        "allocated": {
+          "strength": 0,
+          "constitution": 0,
+          "dexterity": 0,
+          "intelligence": 0,
+          "wisdom": 0,
+          "charisma": 0
+        },
+        "derivedObserved": null
+      },
       "skills": [
         {
-          "name": "Fire Blast",
-          "level": 5
+          "skillId": "fire_blast",
+          "skillName": "Fire Blast",
+          "level": 5,
+          "pool": "normal"
         },
         {
-          "name": "Slow",
-          "level": 5
+          "skillId": "slow",
+          "skillName": "Slow",
+          "level": 5,
+          "pool": "normal"
         },
         {
-          "name": "Frozen Barrier",
-          "level": 5
+          "skillId": "frozen_barrier",
+          "skillName": "Frozen Barrier",
+          "level": 5,
+          "pool": "normal"
         },
         {
-          "name": "Icestrike",
-          "level": 5
+          "skillId": "icestrike",
+          "skillName": "Icestrike",
+          "level": 5,
+          "pool": "normal"
         },
         {
-          "name": "Pool of Mana",
-          "level": 5
+          "skillId": "pool_of_mana",
+          "skillName": "Pool of Mana",
+          "level": 5,
+          "pool": "normal"
         },
         {
-          "name": "Spellrend",
-          "level": 5
+          "skillId": "spellrend",
+          "skillName": "Spellrend",
+          "level": 5,
+          "pool": "normal"
         },
         {
-          "name": "Mystic Spark",
-          "level": 1
+          "skillId": "mystic_spark",
+          "skillName": "Mystic Spark",
+          "level": 1,
+          "pool": "normal"
         },
         {
-          "name": "Dragon's Breath",
-          "level": 1
+          "skillId": "dragons_breath",
+          "skillName": "Dragon's Breath",
+          "level": 1,
+          "pool": "normal"
         }
       ],
       "equipment": [
@@ -64,13 +96,19 @@
           "itemId": "rusty_staff",
           "itemName": null,
           "augmentId": null,
-          "durability": 100
+          "durability": 100,
+          "amount": 1
         }
       ]
     },
-    "companions": null,
+    "companions": [],
     "consumables": [],
-    "learnedBookIds": []
+    "ammunition": [],
+    "learnedBookIds": [],
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-area-damage.json"
+    }
   },
   "execution": {
     "durationSeconds": null,

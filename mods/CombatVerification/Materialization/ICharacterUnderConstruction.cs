@@ -139,14 +139,11 @@ namespace CombatVerification.Materialization
         /// <summary>Whether the game defines an item under this identifier.</summary>
         bool ItemExists(string itemId);
 
-        /// <summary>
-        /// The durability a new instance of this item carries. A fixture that states no
-        /// durability gets an undamaged item, which is the only value a player can obtain.
-        /// </summary>
+        /// <summary>The durability a newly granted instance of this item carries.</summary>
         int MaxDurability(string itemId);
 
-        /// <summary>Puts an item into the character's inventory, carrying its augment.</summary>
-        void GrantItem(string itemId, int durability, string augmentId);
+        /// <summary>Puts an item into the character's inventory with its amount and augment.</summary>
+        void GrantItem(string itemId, int amount, int durability, string augmentId);
 
         /// <summary>
         /// Where the inventory holds this item, or -1 when it holds none. The grant reports

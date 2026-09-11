@@ -44,7 +44,7 @@ namespace CombatVerification.Fixtures
         /// <summary>Offhand slot index, used to enforce that a two-handed weapon leaves it empty.</summary>
         int OffhandSlot { get; }
 
-        bool ClassExists(string className);
+        bool ClassExists(string classId);
 
         /// <summary>Attribute points allocatable at this level, from levels and veteran awards.</summary>
         int AllocatableAttributePoints(int level, int veteranPoints);
@@ -52,22 +52,15 @@ namespace CombatVerification.Fixtures
         /// <summary>Skill points granted by reaching this level.</summary>
         int SkillPointsAtLevel(int level);
 
-        /// <summary>
-        /// Finds a skill by the name the game displays or by its asset identifier.
-        /// </summary>
-        /// <remarks>
-        /// A fixture authored by hand carries display names, and a build captured from a game
-        /// carries identifiers, so both resolve. An implementation that accepts only one form
-        /// makes a fixture fail for a reason that has nothing to do with the game.
-        /// </remarks>
-        bool TryGetSkill(string skillName, out SkillRule rule);
+        /// <summary>Finds a skill by its stable asset identifier.</summary>
+        bool TryGetSkill(string skillId, out SkillRule rule);
 
-        /// <summary>Finds an item by display name or asset identifier, as for a skill.</summary>
-        bool TryGetItem(string itemName, out ItemRule rule);
+        /// <summary>Finds an item by its stable asset identifier.</summary>
+        bool TryGetItem(string itemId, out ItemRule rule);
 
-        bool AugmentExists(string augmentName);
+        bool AugmentExists(string augmentId);
 
-        bool ConsumableExists(string consumableName);
+        bool ConsumableExists(string itemId);
     }
 
     /// <summary>What a fixture needs to know about one skill to be checked.</summary>

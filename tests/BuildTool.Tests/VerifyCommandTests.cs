@@ -119,7 +119,6 @@ public sealed class VerifyCommandTests : IDisposable
           "schemaVersion": 99,
           "build": {
             "serializedSchemaVersion": 99,
-            "captureSchemaVersion": 1,
             "modelVersion": "1",
             "gameData": {
               "gameVersion": "0.9.31.1",
@@ -129,11 +128,26 @@ public sealed class VerifyCommandTests : IDisposable
           },
           "name": "invalid",
           "buildData": {
-            "character": {
-              "class": "Warrior",
-              "race": "Human",
-              "level": -1
+            "schemaVersion": 1,
+            "player": {
+              "entityId": "player",
+              "classId": "warrior",
+              "raceId": "human",
+              "level": -1,
+              "veteranPoints": 0,
+              "attributes": {
+                "rawObserved": null,
+                "baseProgression": { "strength": 0, "constitution": 0, "dexterity": 0, "intelligence": 0, "wisdom": 0, "charisma": 0 },
+                "allocated": { "strength": 0, "constitution": 0, "dexterity": 0, "intelligence": 0, "wisdom": 0, "charisma": 0 },
+                "derivedObserved": null
+              },
+              "skills": [],
+              "equipment": []
             },
+            "companions": [],
+            "consumables": [],
+            "ammunition": [],
+            "learnedBookIds": [],
             "provenance": { "kind": "authored", "source": "test" }
           },
           "execution": { "seed": 7 }
@@ -145,9 +159,7 @@ public sealed class VerifyCommandTests : IDisposable
         Assert.NotEqual(ExitCodes.Success, exit);
         Assert.Contains("Fixture shape validation failed before launch", store.ErrorDetails?.ToString());
         Assert.Contains("verification/fixtures/invalid.json", store.ErrorDetails?.ToString());
-        Assert.Contains("buildData.character.level", store.ErrorDetails?.ToString());
-        Assert.Contains("buildData.character.skills", store.ErrorDetails?.ToString());
-        Assert.Contains("buildData.consumables", store.ErrorDetails?.ToString());
+        Assert.Contains("buildData.player.level", store.ErrorDetails?.ToString());
         Assert.Empty(runner.Calls);
     }
 

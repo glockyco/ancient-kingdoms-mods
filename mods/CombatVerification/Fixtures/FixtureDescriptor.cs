@@ -36,44 +36,10 @@ namespace CombatVerification.Fixtures
         public string Coverage { get; set; }
 
         [JsonProperty("buildData", Required = Required.Default)]
-        public LogicalBuildData BuildData { get; set; }
+        public CombatVerification.Builds.LogicalBuildData BuildData { get; set; }
 
         [JsonProperty("execution", Required = Required.Default)]
         public FixtureExecution Execution { get; set; }
-    }
-
-    /// <summary>Character, companion, consumable, and provenance inputs for a fixture.</summary>
-    public sealed class LogicalBuildData
-    {
-        [JsonProperty("character", Required = Required.Default)]
-        public CharacterSpec Character { get; set; }
-
-        [JsonProperty("companions", Required = Required.Default)]
-        public List<CompanionSpec> Companions { get; set; }
-
-        /// <summary>Consumables the build declares. An empty list means none are assumed.</summary>
-        [JsonProperty("consumables", Required = Required.Default)]
-        public List<string> Consumables { get; set; }
-
-        /// <summary>
-        /// Stable asset identifiers for permanent books already learned. The catalog owns their
-        /// gains; this declaration does not spend attribute points or imply inventory ownership.
-        /// </summary>
-        [JsonProperty("learnedBookIds", Required = Required.Default)]
-        public List<string> LearnedBookIds { get; set; }
-
-        [JsonProperty("provenance", Required = Required.Default)]
-        public BuildProvenance Provenance { get; set; }
-    }
-
-    /// <summary>Source marker for the logical build data.</summary>
-    public sealed class BuildProvenance
-    {
-        [JsonProperty("kind", Required = Required.Default)]
-        public string Kind { get; set; }
-
-        [JsonProperty("source", Required = Required.Default)]
-        public string Source { get; set; }
     }
 
     /// <summary>Target and measurement controls for a fixture run.</summary>
@@ -95,69 +61,6 @@ namespace CombatVerification.Fixtures
         /// <summary>Actions to drive. Empty for a fixture that measures the stat sheet only.</summary>
         [JsonProperty("actions", Required = Required.Default)]
         public List<ActionSpec> Actions { get; set; }
-    }
-
-    public sealed class CharacterSpec
-    {
-        [JsonProperty("class", Required = Required.Default)] public string Class { get; set; }
-        [JsonProperty("race", Required = Required.Default)] public string Race { get; set; }
-        [JsonProperty("level", Required = Required.Default)] public int Level { get; set; }
-
-        /// <summary>Veteran points to award. Only reachable at the level cap.</summary>
-        [JsonProperty("veteranPoints", Required = Required.Default)]
-        public int VeteranPoints { get; set; }
-
-        /// <summary>
-        /// Attribute points the fixture spends, by attribute name. These are the points
-        /// allocated on top of the progression the class grants for its level.
-        /// </summary>
-        [JsonProperty("allocatedAttributes", Required = Required.Default)]
-        public Dictionary<string, int> AllocatedAttributes { get; set; }
-
-        [JsonProperty("skills", Required = Required.Default)]
-        public List<SkillSpec> Skills { get; set; }
-
-        [JsonProperty("equipment", Required = Required.Default)]
-        public List<EquipmentSpec> Equipment { get; set; }
-    }
-
-    public sealed class SkillSpec
-    {
-        [JsonProperty("name", Required = Required.Default)] public string Name { get; set; }
-        [JsonProperty("level", Required = Required.Default)] public int Level { get; set; }
-    }
-
-    public sealed class EquipmentSpec
-    {
-        /// <summary>Equipment slot index, as the game orders its slots.</summary>
-        [JsonProperty("slot", Required = Required.Default)] public int Slot { get; set; }
-
-        /// <summary>
-        /// Identifier the game uses for the item. Resolution is by identifier, never by
-        /// display name, so a stored fixture survives a rename in a game update.
-        /// </summary>
-        [JsonProperty("itemId", Required = Required.Default)] public string ItemId { get; set; }
-
-        /// <summary>Display name, carried as human-readable context only.</summary>
-        [JsonProperty("itemName", Required = Required.Default)] public string ItemName { get; set; }
-
-        /// <summary>Augment identifier socketed into this item, or null for none.</summary>
-        [JsonProperty("augmentId", Required = Required.Default)] public string AugmentId { get; set; }
-
-        [JsonProperty("durability", Required = Required.Default)] public int? Durability { get; set; }
-    }
-
-    public sealed class CompanionSpec
-    {
-        [JsonProperty("archetype", Required = Required.Default)] public string Archetype { get; set; }
-        [JsonProperty("race", Required = Required.Default)] public string Race { get; set; }
-
-        [JsonProperty("healthMultiplier", Required = Required.Default)] public float? HealthMultiplier { get; set; }
-        [JsonProperty("resourceMultiplier", Required = Required.Default)] public float? ResourceMultiplier { get; set; }
-        [JsonProperty("baseCombat", Required = Required.Default)] public int? BaseCombat { get; set; }
-
-        [JsonProperty("equipment", Required = Required.Default)]
-        public List<EquipmentSpec> Equipment { get; set; }
     }
 
     public sealed class TargetSpec

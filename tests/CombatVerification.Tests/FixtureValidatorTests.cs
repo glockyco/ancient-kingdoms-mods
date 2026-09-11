@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using CombatVerification.Builds;
 using CombatVerification.Fixtures;
 using Xunit;
 
@@ -34,21 +35,31 @@ namespace CombatVerification.Tests
             Name = "warrior-cap",
             BuildData = new LogicalBuildData
             {
-                Character = new CharacterSpec
+                SchemaVersion = LogicalBuildAdapter.SchemaVersion,
+                Player = new PlayerBuild
                 {
-                    Class = "Warrior",
-                    Race = "Human",
+                    EntityId = "player",
+                    ClassId = "warrior",
+                    RaceId = "human",
                     Level = 50,
                     VeteranPoints = 200,
-                    AllocatedAttributes = new Dictionary<string, int> { ["strength"] = 40 },
-                    Skills = new List<SkillSpec> { new SkillSpec { Name = "Melee Attack", Level = 3 } },
-                    Equipment = new List<EquipmentSpec>
+                    Attributes = BuildEnvelopeTestData.Attributes(
+                        new Dictionary<string, int> { ["strength"] = 40 }),
+                    Skills = new List<AllocatedSkill>
                     {
-                        new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", Durability = 10 },
+                        new() { SkillId = "melee_attack", Level = 3, Pool = "normal" },
+                    },
+                    Equipment = new List<EquippedItem>
+                    {
+                        new() { Slot = 12, ItemId = "rusty_sword", Durability = 10, Amount = 1 },
                     },
                 },
-                Companions = new List<CompanionSpec>(),
-                Consumables = new List<string> { "Roast Boar" },
+                Companions = new List<CompanionBuild>(),
+                Consumables = new List<ItemQuantity>
+                {
+                    new() { ItemId = "roast_boar", Quantity = 1 },
+                },
+                Ammunition = new List<ItemQuantity>(),
                 LearnedBookIds = new List<string>(),
                 Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
             },
@@ -75,32 +86,37 @@ namespace CombatVerification.Tests
         public void AFixtureThatDeclaresEmptySectionsIsAccepted()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec>();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>();
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int>();
-            f.BuildData.Consumables = new List<string>();
+            f.BuildData.Player.Skills = new List<AllocatedSkill>();
+            f.BuildData.Player.Equipment = new List<EquippedItem>();
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes();
+            f.BuildData.Consumables = new List<ItemQuantity>();
+            f.BuildData.Ammunition = new List<ItemQuantity>();
             f.Execution.Actions = null;      // no actions: a stat-sheet fixture
-            f.BuildData.Companions = null;   // no companions
+            f.BuildData.Companions = new List<CompanionBuild>();
 
             Assert.Empty(Check(f));
         }
 
         [Theory]
-        [InlineData("buildData.character.allocatedAttributes")]
-        [InlineData("buildData.character.skills")]
-        [InlineData("buildData.character.equipment")]
+        [InlineData("buildData.player.attributes.allocated")]
+        [InlineData("buildData.player.skills")]
+        [InlineData("buildData.player.equipment")]
+        [InlineData("buildData.companions")]
         [InlineData("buildData.consumables")]
+        [InlineData("buildData.ammunition")]
         [InlineData("buildData.learnedBookIds")]
         public void AnAbsentStatBearingSectionIsRefused(string field)
         {
             var f = Valid();
             switch (field)
             {
-                case "buildData.character.allocatedAttributes": f.BuildData.Character.AllocatedAttributes = null; break;
-                case "buildData.character.skills": f.BuildData.Character.Skills = null; break;
-                case "buildData.character.equipment": f.BuildData.Character.Equipment = null; break;
-                case "buildData.consumables": f.BuildData.Consumables = null; break;
-                case "buildData.learnedBookIds": f.BuildData.LearnedBookIds = null; break;
+                case "buildData.player.attributes.allocated": f.BuildData.Player.Attributes.Allocated = null!; break;
+                case "buildData.player.skills": f.BuildData.Player.Skills = null!; break;
+                case "buildData.player.equipment": f.BuildData.Player.Equipment = null!; break;
+                case "buildData.companions": f.BuildData.Companions = null!; break;
+                case "buildData.consumables": f.BuildData.Consumables = null!; break;
+                case "buildData.ammunition": f.BuildData.Ammunition = null!; break;
+                case "buildData.learnedBookIds": f.BuildData.LearnedBookIds = null!; break;
             }
 
             // Absent is not empty: it means nobody read the section.
@@ -144,8 +160,8 @@ namespace CombatVerification.Tests
         [Fact]
         public void AMissingCharacterIsRefused()
         {
-            var f = Valid(); f.BuildData.Character = null;
-            AssertRefused(f, "buildData.character");
+            var f = Valid(); f.BuildData.Player = null;
+            AssertRefused(f, "buildData.player");
         }
 
         [Fact]
@@ -154,7 +170,7 @@ namespace CombatVerification.Tests
             var f = Valid();
             f.BuildData.LearnedBookIds = new List<string> { "forgotten_tome", "forgotten_tome" };
 
-            AssertRefused(f, "buildData.learnedBookIds.forgotten_tome");
+            AssertRefused(f, "buildData.learnedBookIds[1]");
         }
 
         [Fact]
@@ -189,39 +205,37 @@ namespace CombatVerification.Tests
         [Fact]
         public void AMissingClassIsRefused()
         {
-            var f = Valid(); f.BuildData.Character.Class = null;
-            AssertRefused(f, "buildData.character.class");
+            var f = Valid(); f.BuildData.Player.ClassId = null;
+            AssertRefused(f, "buildData.player.classId");
         }
 
         [Fact]
         public void AMissingRaceIsRefused()
         {
-            var f = Valid(); f.BuildData.Character.Race = null;
-            AssertRefused(f, "buildData.character.race");
+            var f = Valid(); f.BuildData.Player.RaceId = null;
+            AssertRefused(f, "buildData.player.raceId");
         }
 
         [Fact]
         public void AnUnknownClassIsRefused()
         {
-            var f = Valid(); f.BuildData.Character.Class = "Necromancer";
-            AssertRefused(f, "buildData.character.class");
+            var f = Valid(); f.BuildData.Player.ClassId = "necromancer";
+            AssertRefused(f, "buildData.player.classId");
         }
 
         [Fact]
-        public void APrerequisiteNamedInEitherFormIsAccepted()
+        public void AStablePrerequisiteIdIsAccepted()
         {
-            // The game names a skill for display and identifies an asset by a slug. A fixture may
-            // carry either, so a prerequisite must resolve rather than string-match.
             var rules = Rules()
                 .WithSkill("Charge", maxLevel: 1, classes: new[] { "Warrior" })
                 .WithSkill("Vindication", maxLevel: 8, classes: new[] { "Warrior" },
                     prerequisite: "charge", prerequisiteLevel: 1);
 
             var f = Valid();
-            f.BuildData.Character.Skills = new System.Collections.Generic.List<SkillSpec>
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
             {
-                new() { Name = "Charge", Level = 1 },
-                new() { Name = "Vindication", Level = 1 },
+                new() { SkillId = "charge", Level = 1, Pool = "normal" },
+                new() { SkillId = "vindication", Level = 1, Pool = "normal" },
             };
 
             Assert.Empty(FixtureValidator.Validate(f, rules).Problems);
@@ -234,7 +248,7 @@ namespace CombatVerification.Tests
             // the time these rules are readable. Refusing here would need a second copy of that
             // table. Creation checks it against the creator instead, so a race that names
             // something is accepted at this stage.
-            var f = Valid(); f.BuildData.Character.Race = "Elf";
+            var f = Valid(); f.BuildData.Player.RaceId = "elf";
             Assert.Empty(FixtureValidator.Validate(f, Rules()).Problems);
         }
 
@@ -244,12 +258,12 @@ namespace CombatVerification.Tests
         public void ALevelOutsideTheReachableRangeIsRefused(int level)
         {
             var f = Valid();
-            f.BuildData.Character.Level = level;
-            f.BuildData.Character.VeteranPoints = 0;
-            f.BuildData.Character.Skills = new List<SkillSpec>();
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int>();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>();
-            AssertRefused(f, "buildData.character.level");
+            f.BuildData.Player.Level = level;
+            f.BuildData.Player.VeteranPoints = 0;
+            f.BuildData.Player.Skills = new List<AllocatedSkill>();
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes();
+            f.BuildData.Player.Equipment = new List<EquippedItem>();
+            AssertRefused(f, "buildData.player.level");
         }
 
         // --- veteran progression ---
@@ -258,36 +272,28 @@ namespace CombatVerification.Tests
         public void VeteranPointsBelowTheLevelCapAreRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Level = 40;
-            f.BuildData.Character.Skills = new List<SkillSpec>();
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int>();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>();
-            AssertRefused(f, "buildData.character.veteranPoints");
+            f.BuildData.Player.Level = 40;
+            f.BuildData.Player.Skills = new List<AllocatedSkill>();
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes();
+            f.BuildData.Player.Equipment = new List<EquippedItem>();
+            AssertRefused(f, "buildData.player.veteranPoints");
         }
 
         [Fact]
         public void VeteranPointsAboveTheObtainableTotalAreRefused()
         {
-            var f = Valid(); f.BuildData.Character.VeteranPoints = 201;
-            AssertRefused(f, "buildData.character.veteranPoints");
+            var f = Valid(); f.BuildData.Player.VeteranPoints = 201;
+            AssertRefused(f, "buildData.player.veteranPoints");
         }
 
         // --- attributes ---
 
         [Fact]
-        public void AnUnknownAttributeIsRefused()
-        {
-            var f = Valid();
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int> { ["luck"] = 1 };
-            AssertRefused(f, "buildData.character.allocatedAttributes.luck");
-        }
-
-        [Fact]
         public void ANegativeAttributeAllocationIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int> { ["strength"] = -1 };
-            AssertRefused(f, "buildData.character.allocatedAttributes.strength");
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes(new Dictionary<string, int> { ["strength"] = -1 });
+            AssertRefused(f, "buildData.player.attributes.allocated.strength");
         }
 
         [Fact]
@@ -295,15 +301,15 @@ namespace CombatVerification.Tests
         {
             var f = Valid();
             // 49 from levels + 200 veteran = 249 allocatable
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int> { ["strength"] = 250 };
-            AssertRefused(f, "buildData.character.allocatedAttributes");
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes(new Dictionary<string, int> { ["strength"] = 250 });
+            AssertRefused(f, "buildData.player.attributes.allocated");
         }
 
         [Fact]
         public void SpendingExactlyTheAttributeBudgetIsAccepted()
         {
             var f = Valid();
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int> { ["strength"] = 249 };
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes(new Dictionary<string, int> { ["strength"] = 249 });
             Assert.Empty(Check(f));
         }
 
@@ -313,82 +319,82 @@ namespace CombatVerification.Tests
         public void ASkillNamedTwiceIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec>
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
             {
-                new SkillSpec { Name = "Melee Attack", Level = 1 },
-                new SkillSpec { Name = "Melee Attack", Level = 2 },
+                new AllocatedSkill { SkillId = "melee_attack", Level = 1, Pool = "normal" },
+                new AllocatedSkill { SkillId = "melee_attack", Level = 2, Pool = "normal" },
             };
-            AssertRefused(f, "buildData.character.skills.Melee Attack");
+            AssertRefused(f, "buildData.player.skills[1].skillId");
         }
 
         [Fact]
         public void AnUnnamedSkillIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec> { new SkillSpec { Name = null, Level = 1 } };
-            AssertRefused(f, "buildData.character.skills.<unnamed>");
+            f.BuildData.Player.Skills = new List<AllocatedSkill> { new AllocatedSkill { SkillId = null, Level = 1, Pool = "normal" } };
+            AssertRefused(f, "buildData.player.skills[0].skillId");
         }
 
         [Fact]
         public void AnUnknownSkillIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec> { new SkillSpec { Name = "Fireball", Level = 1 } };
-            AssertRefused(f, "buildData.character.skills.Fireball");
+            f.BuildData.Player.Skills = new List<AllocatedSkill> { new AllocatedSkill { SkillId = "fireball", Level = 1, Pool = "normal" } };
+            AssertRefused(f, "buildData.player.skills.fireball");
         }
 
         [Fact]
         public void ASkillAboveItsMaximumLevelIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec>
-                { new SkillSpec { Name = "Melee Attack", Level = 6 } };
-            AssertRefused(f, "buildData.character.skills.Melee Attack");
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
+                { new AllocatedSkill { SkillId = "melee_attack", Level = 6, Pool = "normal" } };
+            AssertRefused(f, "buildData.player.skills.melee_attack");
         }
 
         [Fact]
         public void ASkillTheClassCannotLearnIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Class = "Wizard";
-            f.BuildData.Character.Race = "Human";
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>();
-            AssertRefused(f, "buildData.character.skills.Melee Attack");
+            f.BuildData.Player.ClassId = "wizard";
+            f.BuildData.Player.RaceId = "human";
+            f.BuildData.Player.Equipment = new List<EquippedItem>();
+            AssertRefused(f, "buildData.player.skills.melee_attack");
         }
 
         [Fact]
         public void AVeteranSkillBelowTheLevelCapIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Level = 40;
-            f.BuildData.Character.VeteranPoints = 0;
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int>();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>();
-            f.BuildData.Character.Skills = new List<SkillSpec>
-                { new SkillSpec { Name = "Runebound Aegis", Level = 1 } };
-            AssertRefused(f, "buildData.character.skills.Runebound Aegis");
+            f.BuildData.Player.Level = 40;
+            f.BuildData.Player.VeteranPoints = 0;
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes();
+            f.BuildData.Player.Equipment = new List<EquippedItem>();
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
+                { new AllocatedSkill { SkillId = "runebound_aegis", Level = 1, Pool = "veteran" } };
+            AssertRefused(f, "buildData.player.skills.runebound_aegis");
         }
 
         [Fact]
         public void AnUnmetPrerequisiteIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec>
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
             {
-                new SkillSpec { Name = "Melee Attack", Level = 1 },   // needs 2
-                new SkillSpec { Name = "Follow Up", Level = 1 },
+                new AllocatedSkill { SkillId = "melee_attack", Level = 1, Pool = "normal" },   // needs 2
+                new AllocatedSkill { SkillId = "follow_up", Level = 1, Pool = "normal" },
             };
-            AssertRefused(f, "buildData.character.skills.Follow Up");
+            AssertRefused(f, "buildData.player.skills.follow_up");
         }
 
         [Fact]
         public void AMetPrerequisiteIsAccepted()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec>
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
             {
-                new SkillSpec { Name = "Melee Attack", Level = 2 },
-                new SkillSpec { Name = "Follow Up", Level = 1 },
+                new AllocatedSkill { SkillId = "melee_attack", Level = 2, Pool = "normal" },
+                new AllocatedSkill { SkillId = "follow_up", Level = 1, Pool = "normal" },
             };
             Assert.Empty(Check(f));
         }
@@ -397,44 +403,44 @@ namespace CombatVerification.Tests
         public void ExceedingTheNormalSkillPoolIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Level = 2;              // 1 point available
-            f.BuildData.Character.VeteranPoints = 0;
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int>();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>();
-            f.BuildData.Character.Skills = new List<SkillSpec>
-                { new SkillSpec { Name = "Melee Attack", Level = 5 } };  // costs 5
-            AssertRefused(f, "buildData.character.skills");
+            f.BuildData.Player.Level = 2;              // 1 point available
+            f.BuildData.Player.VeteranPoints = 0;
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes();
+            f.BuildData.Player.Equipment = new List<EquippedItem>();
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
+                { new AllocatedSkill { SkillId = "melee_attack", Level = 5, Pool = "normal" } };  // costs 5
+            AssertRefused(f, "buildData.player.skills");
         }
 
         [Fact]
         public void ExceedingTheVeteranSkillPoolIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.VeteranPoints = 1;
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int>();
-            f.BuildData.Character.Skills = new List<SkillSpec>
-                { new SkillSpec { Name = "Runebound Aegis", Level = 5 } };  // costs 5
-            AssertRefused(f, "buildData.character.skills");
+            f.BuildData.Player.VeteranPoints = 1;
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes();
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
+                { new AllocatedSkill { SkillId = "runebound_aegis", Level = 5, Pool = "veteran" } };  // costs 5
+            AssertRefused(f, "buildData.player.skills");
         }
 
         [Fact]
         public void AnUnmetSpentPointGateIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec>
-                { new SkillSpec { Name = "Gated Skill", Level = 1 } };   // needs 10 spent elsewhere
-            AssertRefused(f, "buildData.character.skills.Gated Skill");
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
+                { new AllocatedSkill { SkillId = "gated_skill", Level = 1, Pool = "normal" } };   // needs 10 spent elsewhere
+            AssertRefused(f, "buildData.player.skills.gated_skill");
         }
 
         [Fact]
         public void AMetSpentPointGateIsAccepted()
         {
             var f = Valid();
-            f.BuildData.Character.Skills = new List<SkillSpec>
+            f.BuildData.Player.Skills = new List<AllocatedSkill>
             {
-                new SkillSpec { Name = "Melee Attack", Level = 5 },   // 5
-                new SkillSpec { Name = "Rupture", Level = 5 },        // 5  -> 10 spent
-                new SkillSpec { Name = "Gated Skill", Level = 1 },
+                new AllocatedSkill { SkillId = "melee_attack", Level = 5, Pool = "normal" },   // 5
+                new AllocatedSkill { SkillId = "rupture", Level = 5, Pool = "normal" },        // 5  -> 10 spent
+                new AllocatedSkill { SkillId = "gated_skill", Level = 1, Pool = "normal" },
             };
             Assert.Empty(Check(f));
         }
@@ -447,38 +453,38 @@ namespace CombatVerification.Tests
         public void ASlotOutsideTheRangeIsRefused(int slot)
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = slot, ItemId = "Rusty Sword", Durability = 10 } };
-            AssertRefused(f, $"buildData.character.equipment[{slot}]");
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = slot, ItemId = "rusty_sword", Durability = 10, Amount = 1 } };
+            AssertRefused(f, slot < 0 ? "buildData.player.equipment[0].slot" : $"buildData.player.equipment[{slot}]");
         }
 
         [Fact]
         public void ASlotFilledTwiceIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
+            f.BuildData.Player.Equipment = new List<EquippedItem>
             {
-                new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", Durability = 10 },
-                new EquipmentSpec { Slot = 12, ItemId = "Great Axe", Durability = 10 },
+                new EquippedItem { Slot = 12, ItemId = "rusty_sword", Durability = 10, Amount = 1 },
+                new EquippedItem { Slot = 12, ItemId = "great_axe", Durability = 10, Amount = 1 },
             };
-            AssertRefused(f, "buildData.character.equipment[12]");
+            AssertRefused(f, "buildData.player.equipment[1].slot");
         }
 
         [Fact]
         public void AMissingItemNameIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec> { new EquipmentSpec { Slot = 12, Durability = 10 } };
-            AssertRefused(f, "buildData.character.equipment[12].itemId");
+            f.BuildData.Player.Equipment = new List<EquippedItem> { new EquippedItem { Slot = 12, ItemId = null, Durability = 10, Amount = 1 } };
+            AssertRefused(f, "buildData.player.equipment[0].itemId");
         }
 
         [Fact]
         public void AnUnknownItemIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Sword of Nothing", Durability = 10 } };
-            AssertRefused(f, "buildData.character.equipment[12].itemId");
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = 12, ItemId = "sword_of_nothing", Durability = 10, Amount = 1 } };
+            AssertRefused(f, "buildData.player.equipment[12].itemId");
         }
 
         [Fact]
@@ -490,8 +496,8 @@ namespace CombatVerification.Tests
             foreach (var slot in new[] { 4, 10 })
             {
                 var f = Valid();
-                f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                    { new EquipmentSpec { Slot = slot, ItemId = "Signet", Durability = 10 } };
+                f.BuildData.Player.Equipment = new List<EquippedItem>
+                    { new EquippedItem { Slot = slot, ItemId = "signet", Durability = 10, Amount = 1 } };
 
                 Assert.Empty(Check(f, rules));
             }
@@ -501,69 +507,69 @@ namespace CombatVerification.Tests
         public void AnItemInASlotItDoesNotFitIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 5, ItemId = "Rusty Sword", Durability = 10 } };   // fits 12 only
-            AssertRefused(f, "buildData.character.equipment[5]");
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = 5, ItemId = "rusty_sword", Durability = 10, Amount = 1 } };   // fits 12 only
+            AssertRefused(f, "buildData.player.equipment[5]");
         }
 
         [Fact]
         public void AnItemAboveTheCharacterLevelIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Level = 40;
-            f.BuildData.Character.VeteranPoints = 0;
-            f.BuildData.Character.AllocatedAttributes = new Dictionary<string, int>();
-            f.BuildData.Character.Skills = new List<SkillSpec>();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Epic Blade", Durability = 10 } };   // needs 45
-            AssertRefused(f, "buildData.character.equipment[12].itemId");
+            f.BuildData.Player.Level = 40;
+            f.BuildData.Player.VeteranPoints = 0;
+            f.BuildData.Player.Attributes = BuildEnvelopeTestData.Attributes();
+            f.BuildData.Player.Skills = new List<AllocatedSkill>();
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = 12, ItemId = "epic_blade", Durability = 10, Amount = 1 } };   // needs 45
+            AssertRefused(f, "buildData.player.equipment[12].itemId");
         }
 
         [Fact]
         public void AnItemTheClassCannotEquipIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 0, ItemId = "Wizard Hat", Durability = 10 } };
-            AssertRefused(f, "buildData.character.equipment[0].itemId");
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = 0, ItemId = "wizard_hat", Durability = 10, Amount = 1 } };
+            AssertRefused(f, "buildData.player.equipment[0].itemId");
         }
 
         [Fact]
         public void AnUnknownAugmentIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", AugmentId = "Gem of Lies", Durability = 10 } };
-            AssertRefused(f, "buildData.character.equipment[12].augmentId");
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = 12, ItemId = "rusty_sword", AugmentId = "gem_of_lies", Durability = 10, Amount = 1 } };
+            AssertRefused(f, "buildData.player.equipment[12].augmentId");
         }
 
         [Fact]
         public void ZeroDurabilityIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", Durability = 0 } };
-            AssertRefused(f, "buildData.character.equipment[12].durability");
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = 12, ItemId = "rusty_sword", Durability = 0, Amount = 1 } };
+            AssertRefused(f, "buildData.player.equipment[0].durability");
         }
 
         [Fact]
         public void ATwoHandedWeaponWithAFilledOffhandIsRefused()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
+            f.BuildData.Player.Equipment = new List<EquippedItem>
             {
-                new EquipmentSpec { Slot = 12, ItemId = "Great Axe", Durability = 10 },
-                new EquipmentSpec { Slot = 13, ItemId = "Rusty Shield", Durability = 10 },
+                new EquippedItem { Slot = 12, ItemId = "great_axe", Durability = 10, Amount = 1 },
+                new EquippedItem { Slot = 13, ItemId = "rusty_shield", Durability = 10, Amount = 1 },
             };
-            AssertRefused(f, "buildData.character.equipment[13]");
+            AssertRefused(f, "buildData.player.equipment[13]");
         }
 
         [Fact]
         public void ATwoHandedWeaponWithAnEmptyOffhandIsAccepted()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Great Axe", Durability = 10 } };
+            f.BuildData.Player.Equipment = new List<EquippedItem>
+                { new EquippedItem { Slot = 12, ItemId = "great_axe", Durability = 10, Amount = 1 } };
             Assert.Empty(Check(f));
         }
 
@@ -571,10 +577,10 @@ namespace CombatVerification.Tests
         public void AOneHandedWeaponWithAShieldIsAccepted()
         {
             var f = Valid();
-            f.BuildData.Character.Equipment = new List<EquipmentSpec>
+            f.BuildData.Player.Equipment = new List<EquippedItem>
             {
-                new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", Durability = 10 },
-                new EquipmentSpec { Slot = 13, ItemId = "Rusty Shield", Durability = 10 },
+                new EquippedItem { Slot = 12, ItemId = "rusty_sword", Durability = 10, Amount = 1 },
+                new EquippedItem { Slot = 13, ItemId = "rusty_shield", Durability = 10, Amount = 1 },
             };
             Assert.Empty(Check(f));
         }
@@ -584,15 +590,15 @@ namespace CombatVerification.Tests
         [Fact]
         public void ABlankConsumableIsRefused()
         {
-            var f = Valid(); f.BuildData.Consumables = new List<string> { " " };
-            AssertRefused(f, "buildData.consumables");
+            var f = Valid(); f.BuildData.Consumables = new List<ItemQuantity> { new() { ItemId = " ", Quantity = 1 } };
+            AssertRefused(f, "buildData.consumables[0].itemId");
         }
 
         [Fact]
         public void AnUnknownConsumableIsRefused()
         {
-            var f = Valid(); f.BuildData.Consumables = new List<string> { "Elixir of Fiction" };
-            AssertRefused(f, "buildData.consumables");
+            var f = Valid(); f.BuildData.Consumables = new List<ItemQuantity> { new() { ItemId = "elixir_of_fiction", Quantity = 1 } };
+            AssertRefused(f, "buildData.consumables.elixir_of_fiction");
         }
 
         [Fact]
@@ -625,9 +631,9 @@ namespace CombatVerification.Tests
         [Fact]
         public void AProblemNamesTheFieldAndThePermittedRange()
         {
-            var f = Valid(); f.BuildData.Character.Level = 99;
+            var f = Valid(); f.BuildData.Player.Level = 99;
 
-            var problem = Check(f).First(p => p.Field == "buildData.character.level");
+            var problem = Check(f).First(p => p.Field == "buildData.player.level");
 
             Assert.Contains("99", problem.Message);
             Assert.Contains("50", problem.Message);
@@ -639,13 +645,13 @@ namespace CombatVerification.Tests
             var f = Valid();
             f.Name = null;
             f.Execution.Seed = null;
-            f.BuildData.Character.Level = 99;
+            f.BuildData.Player.Level = 99;
 
             var fields = Check(f).Select(p => p.Field).ToList();
 
             Assert.Contains("name", fields);
             Assert.Contains("execution.seed", fields);
-            Assert.Contains("buildData.character.level", fields);
+            Assert.Contains("buildData.player.level", fields);
         }
     }
 }

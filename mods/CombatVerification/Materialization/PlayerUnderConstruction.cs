@@ -203,14 +203,14 @@ namespace CombatVerification.Materialization
             return equipment == null ? 0 : equipment.maxDurability;
         }
 
-        public void GrantItem(string itemId, int durability, string augmentId)
+        public void GrantItem(string itemId, int amount, int durability, string augmentId)
         {
             var asset = Required(itemId);
             var augment = string.IsNullOrWhiteSpace(augmentId) ? null : Required(augmentId);
 
             // The augment name rides in the inventory slot, and equipping moves the whole slot,
             // so granting it here is what carries it onto the equipped item.
-            _inventory.Add(new Item(asset), 1, durability, augment == null ? null : augment.nameItem);
+            _inventory.Add(new Item(asset), amount, durability, augment == null ? null : augment.nameItem);
         }
 
         public int FindInInventory(string itemId, string augmentId)
@@ -316,8 +316,8 @@ namespace CombatVerification.Materialization
         private static int HireIndexOf(string archetype)
         {
             for (var index = 1; index < HireArchetypes.Length; index++)
-                if (string.Equals(HireArchetypes[index], archetype,
-                        StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(GameIds.Sanitize(HireArchetypes[index]), archetype,
+                        StringComparison.Ordinal))
                     return index;
 
             return -1;

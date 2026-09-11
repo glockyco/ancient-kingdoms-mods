@@ -25,6 +25,9 @@ namespace CombatVerification.Engine
         /// <summary>Remaining durability, or zero when the slot is empty.</summary>
         public int Durability { get; set; }
 
+        /// <summary>Number of items held in the slot.</summary>
+        public int Amount { get; set; }
+
         /// <summary>Whether the slot holds anything at all.</summary>
         public bool Occupied => ItemId != null;
 

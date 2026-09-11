@@ -1,4 +1,5 @@
 using System.Linq;
+using CombatVerification.Builds;
 using CombatVerification.Fixtures;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace CombatVerification.Tests
     /// </remarks>
     public class ArchetypeSlotTests
     {
-        private static FixtureDescriptor Fixture(string className, params EquipmentSpec[] worn)
+        private static FixtureDescriptor Fixture(string className, params EquippedItem[] worn)
             => new()
             {
                 SchemaVersion = FixtureShapeValidator.SupportedFixtureSchemaVersion,
@@ -24,17 +25,20 @@ namespace CombatVerification.Tests
                 Name = "slots",
                 BuildData = new LogicalBuildData
                 {
-                    Character = new CharacterSpec
+                    SchemaVersion = LogicalBuildAdapter.SchemaVersion,
+                    Player = new PlayerBuild
                     {
-                        Class = className,
-                        Race = "Human",
+                        EntityId = "player",
+                        ClassId = className.ToLowerInvariant(),
+                        RaceId = "human",
                         Level = 50,
-                        AllocatedAttributes = new(),
+                        Attributes = BuildEnvelopeTestData.Attributes(),
                         Skills = new(),
                         Equipment = worn.ToList(),
                     },
                     Companions = new(),
                     Consumables = new(),
+                    Ammunition = new(),
                     LearnedBookIds = new(),
                     Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
                 },
@@ -49,7 +53,7 @@ namespace CombatVerification.Tests
             var rules = Rules().WithItem("Warbow", slot: 13, category: "Bow", classes: new[] { "Ranger" });
 
             var validation = FixtureValidator.Validate(
-                Fixture("Ranger", new EquipmentSpec { Slot = 13, ItemId = "Warbow", Durability = 10 }),
+                Fixture("Ranger", new EquippedItem { Slot = 13, ItemId = "warbow", Durability = 10, Amount = 1 }),
                 rules);
 
             Assert.True(validation.Ok, string.Join(" | ", validation.Problems.Select(p => p.Message)));
@@ -61,11 +65,11 @@ namespace CombatVerification.Tests
             var rules = Rules().WithItem("Warbow", slot: 13, category: "Bow");
 
             var validation = FixtureValidator.Validate(
-                Fixture("Warrior", new EquipmentSpec { Slot = 13, ItemId = "Warbow", Durability = 10 }),
+                Fixture("Warrior", new EquippedItem { Slot = 13, ItemId = "warbow", Durability = 10, Amount = 1 }),
                 rules);
 
             Assert.False(validation.Ok);
-            Assert.Contains("does not fit slot 13 of a Warrior",
+            Assert.Contains("does not fit slot 13 of a warrior",
                 string.Join(" ", validation.Problems.Select(p => p.Message)));
         }
 
@@ -76,7 +80,7 @@ namespace CombatVerification.Tests
                 .WithItem("War Shard", slot: 12, category: "WeaponDagger", classes: new[] { "Rogue" });
 
             var validation = FixtureValidator.Validate(
-                Fixture("Rogue", new EquipmentSpec { Slot = 13, ItemId = "War Shard", Durability = 10 }),
+                Fixture("Rogue", new EquippedItem { Slot = 13, ItemId = "war_shard", Durability = 10, Amount = 1 }),
                 rules);
 
             Assert.True(validation.Ok, string.Join(" | ", validation.Problems.Select(p => p.Message)));
@@ -85,14 +89,14 @@ namespace CombatVerification.Tests
         [Fact]
         public void AShieldFitsNoSlotOfARogue()
         {
-            var rules = Rules().WithItem("Bulwark", slot: 13, category: "Shield", archetype: "Warrior");
+            var rules = Rules().WithItem("Bulwark", slot: 13, category: "Shield", archetype: "warrior");
 
             var validation = FixtureValidator.Validate(
-                Fixture("Rogue", new EquipmentSpec { Slot = 13, ItemId = "Bulwark", Durability = 10 }),
+                Fixture("Rogue", new EquippedItem { Slot = 13, ItemId = "bulwark", Durability = 10, Amount = 1 }),
                 rules);
 
             Assert.False(validation.Ok);
-            Assert.Contains("does not fit slot 13 of a Rogue",
+            Assert.Contains("does not fit slot 13 of a rogue",
                 string.Join(" ", validation.Problems.Select(p => p.Message)));
         }
 
@@ -103,7 +107,7 @@ namespace CombatVerification.Tests
             rules.Classes["Cleric"] = new[] { "Human" };
 
             var validation = FixtureValidator.Validate(
-                Fixture("Cleric", new EquipmentSpec { Slot = 13, ItemId = "Warbow", Durability = 10 }),
+                Fixture("Cleric", new EquippedItem { Slot = 13, ItemId = "warbow", Durability = 10, Amount = 1 }),
                 rules);
 
             Assert.False(validation.Ok);
@@ -120,8 +124,8 @@ namespace CombatVerification.Tests
 
             var validation = FixtureValidator.Validate(
                 Fixture("Ranger",
-                    new EquipmentSpec { Slot = 12, ItemId = "Greatsword", Durability = 10 },
-                    new EquipmentSpec { Slot = 13, ItemId = "Warbow", Durability = 10 }),
+                    new EquippedItem { Slot = 12, ItemId = "greatsword", Durability = 10, Amount = 1 },
+                    new EquippedItem { Slot = 13, ItemId = "warbow", Durability = 10, Amount = 1 }),
                 rules);
 
             Assert.False(validation.Ok);
@@ -136,7 +140,7 @@ namespace CombatVerification.Tests
                 .WithItem("Warbow", slot: 13, category: "Bow", classes: new[] { "ranger" });
 
             var validation = FixtureValidator.Validate(
-                Fixture("Ranger", new EquipmentSpec { Slot = 13, ItemId = "Warbow", Durability = 10 }),
+                Fixture("Ranger", new EquippedItem { Slot = 13, ItemId = "warbow", Durability = 10, Amount = 1 }),
                 rules);
 
             Assert.True(validation.Ok, string.Join(" | ", validation.Problems.Select(p => p.Message)));

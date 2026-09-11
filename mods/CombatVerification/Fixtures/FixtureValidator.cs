@@ -1,5 +1,6 @@
 #nullable disable
 using System.Collections.Generic;
+using CombatVerification.Builds;
 using DataExporter;
 using System.Linq;
 
@@ -16,16 +17,16 @@ namespace CombatVerification.Fixtures
         {
             var shape = FixtureShapeValidator.Validate(fixture);
             var problems = shape.Problems.ToList();
-            if (fixture?.BuildData?.Character == null)
+            if (fixture?.BuildData?.Player == null)
                 return Result(problems);
 
             var buildData = fixture.BuildData;
-            var character = buildData.Character;
-            ValidateCharacter(problems, "buildData.character", character, rules);
+            var character = buildData.Player;
+            ValidateCharacter(problems, "buildData.player", character, rules);
             ValidateCompanions(
-                problems, "buildData.companions", buildData.Companions, character.Level, rules);
+                problems, "buildData.companions", buildData.Companions, rules);
             if (buildData.Consumables != null
-                && buildData.Consumables.All(value => !string.IsNullOrWhiteSpace(value)))
+                && buildData.Consumables.All(value => value != null && !string.IsNullOrWhiteSpace(value.ItemId)))
                 ValidateConsumables(problems, "buildData.consumables", buildData.Consumables, rules);
 
             if (buildData.LearnedBookIds != null)
@@ -38,12 +39,12 @@ namespace CombatVerification.Fixtures
         private static void ValidateCharacter(
             List<FixtureProblem> problems,
             string field,
-            CharacterSpec character,
+            PlayerBuild character,
             IFixtureRules rules)
         {
-            if (!string.IsNullOrWhiteSpace(character.Class)
-                && !rules.ClassExists(character.Class))
-                Add(problems, $"{field}.class", $"'{character.Class}' is not a class the game defines.");
+            if (!string.IsNullOrWhiteSpace(character.ClassId)
+                && !rules.ClassExists(character.ClassId))
+                Add(problems, $"{field}.classId", $"'{character.ClassId}' is not a class the game defines.");
 
             // Whether a class accepts a race is checked when the character is created, because the
             // character creator is the only place that holds the pairing and it is gone by now.
@@ -54,13 +55,13 @@ namespace CombatVerification.Fixtures
 
             ValidateVeteranPoints(problems, field, character, rules);
 
-            if (character.AllocatedAttributes != null
-                && character.AllocatedAttributes.Values.All(value => value >= 0))
+            if (character.Attributes?.Allocated != null
+                && AttributeValues(character.Attributes.Allocated).All(value => value >= 0))
                 ValidateAttributes(problems, field, character, rules);
 
             if (character.Skills != null
                 && character.Skills.All(skill => skill != null
-                    && !string.IsNullOrWhiteSpace(skill.Name)
+                    && !string.IsNullOrWhiteSpace(skill.SkillId)
                     && skill.Level >= 0))
                 ValidateSkills(problems, field, character, rules);
 
@@ -68,7 +69,7 @@ namespace CombatVerification.Fixtures
                 ValidateEquipment(
                     problems,
                     $"{field}.equipment",
-                    character.Class,
+                    character.ClassId,
                     character.Level,
                     character.Equipment,
                     rules);
@@ -77,7 +78,7 @@ namespace CombatVerification.Fixtures
         private static void ValidateVeteranPoints(
             List<FixtureProblem> problems,
             string field,
-            CharacterSpec character,
+            PlayerBuild character,
             IFixtureRules rules)
         {
             if (character.VeteranPoints <= 0)
@@ -96,24 +97,17 @@ namespace CombatVerification.Fixtures
         private static void ValidateAttributes(
             List<FixtureProblem> problems,
             string field,
-            CharacterSpec character,
+            PlayerBuild character,
             IFixtureRules rules)
         {
-            if (character.AllocatedAttributes.Count == 0)
+            var allocated = character.Attributes?.Allocated;
+            if (allocated == null)
                 return;
 
-            foreach (var pair in character.AllocatedAttributes)
-            {
-                if (!rules.AttributeNames.Contains(pair.Key))
-                    Add(problems, $"{field}.allocatedAttributes.{pair.Key}",
-                        $"Not an attribute the game defines. Defined: "
-                        + $"{string.Join(", ", rules.AttributeNames)}.");
-            }
-
             var budget = rules.AllocatableAttributePoints(character.Level, character.VeteranPoints);
-            var spent = character.AllocatedAttributes.Values.Where(v => v > 0).Sum();
+            var spent = AttributeValues(allocated).Where(value => value > 0).Sum();
             if (spent > budget)
-                Add(problems, $"{field}.allocatedAttributes",
+                Add(problems, $"{field}.attributes.allocated",
                     $"Spends {spent} points against {budget} allocatable at level {character.Level} "
                     + $"with {character.VeteranPoints} veteran points. Shortfall: {spent - budget}.");
         }
@@ -121,7 +115,7 @@ namespace CombatVerification.Fixtures
         private static void ValidateSkills(
             List<FixtureProblem> problems,
             string field,
-            CharacterSpec character,
+            PlayerBuild character,
             IFixtureRules rules)
         {
             if (character.Skills.Count == 0)
@@ -132,13 +126,18 @@ namespace CombatVerification.Fixtures
 
             foreach (var skill in character.Skills)
             {
-                var skillField = $"{field}.skills.{skill.Name}";
+                var skillField = $"{field}.skills.{skill.SkillId}";
 
-                if (!rules.TryGetSkill(skill.Name, out var rule))
+                if (!rules.TryGetSkill(skill.SkillId, out var rule))
                 {
                     Add(problems, skillField, "Not a skill the game defines.");
                     continue;
                 }
+
+                var expectedPool = rule.IsVeteran ? "veteran" : "normal";
+                if (skill.Pool != expectedPool)
+                    Add(problems, $"{skillField}.pool",
+                        $"Declares '{skill.Pool}', but the game defines this skill in the {expectedPool} pool.");
 
                 if (skill.Level > rule.MaxLevel)
                 {
@@ -147,9 +146,9 @@ namespace CombatVerification.Fixtures
                     continue;
                 }
 
-                if (rule.Classes.Count > 0 && !Includes(rule.Classes, character.Class))
+                if (rule.Classes.Count > 0 && !Includes(rule.Classes, character.ClassId))
                     Add(problems, skillField,
-                        $"A {character.Class} cannot learn it. Classes: "
+                        $"A {character.ClassId} cannot learn it. Classes: "
                         + $"{string.Join(", ", rule.Classes)}.");
 
                 if (rule.IsVeteran && character.Level < rules.MaxLevel)
@@ -159,21 +158,13 @@ namespace CombatVerification.Fixtures
 
                 if (skill.Level > 0 && !string.IsNullOrWhiteSpace(rule.PrerequisiteSkill))
                 {
-                    // Both sides resolve through the same lookup. A fixture may name a skill as
-                    // the game displays it while a rule names it by identifier, and comparing the
-                    // two strings directly reports a prerequisite the fixture actually declares.
-                    var wanted = rules.TryGetSkill(rule.PrerequisiteSkill, out var prerequisiteRule)
-                        ? prerequisiteRule.Name
-                        : rule.PrerequisiteSkill;
-
+                    var prerequisiteId = GameIds.Sanitize(rule.PrerequisiteSkill);
                     var declared = character.Skills.FirstOrDefault(s =>
-                        !string.IsNullOrWhiteSpace(s.Name)
-                        && rules.TryGetSkill(s.Name, out var declaredRule)
-                        && declaredRule.Name == wanted);
+                        s.SkillId == prerequisiteId);
 
                     if (declared == null || declared.Level < rule.PrerequisiteLevel)
                         Add(problems, skillField,
-                            $"Requires '{wanted}' at level {rule.PrerequisiteLevel} or above.");
+                            $"Requires '{prerequisiteId}' at level {rule.PrerequisiteLevel} or above.");
                 }
 
                 var cost = CostOf(rule, skill.Level);
@@ -191,26 +182,26 @@ namespace CombatVerification.Fixtures
         private static void CheckTierAndSpendGates(
             List<FixtureProblem> problems,
             string field,
-            CharacterSpec character,
+            PlayerBuild character,
             IFixtureRules rules)
         {
             foreach (var skill in character.Skills)
             {
-                if (skill.Level <= 0 || string.IsNullOrWhiteSpace(skill.Name)) continue;
-                if (!rules.TryGetSkill(skill.Name, out var rule)) continue;
+                if (skill.Level <= 0 || string.IsNullOrWhiteSpace(skill.SkillId)) continue;
+                if (!rules.TryGetSkill(skill.SkillId, out var rule)) continue;
                 if (rule.RequiredSpentPoints <= 0) continue;
 
                 // Points spent in the same pool on other skills unlock this one.
                 var spentElsewhere = character.Skills
-                    .Where(s => s.Name != skill.Name && s.Level > 0
-                                && !string.IsNullOrWhiteSpace(s.Name))
-                    .Select(s => rules.TryGetSkill(s.Name, out var other)
+                    .Where(s => s.SkillId != skill.SkillId && s.Level > 0
+                                && !string.IsNullOrWhiteSpace(s.SkillId))
+                    .Select(s => rules.TryGetSkill(s.SkillId, out var other)
                         && other.IsVeteran == rule.IsVeteran
                         ? CostOf(other, s.Level) : 0)
                     .Sum();
 
                 if (spentElsewhere < rule.RequiredSpentPoints)
-                    Add(problems, $"{field}.skills.{skill.Name}",
+                    Add(problems, $"{field}.skills.{skill.SkillId}",
                         $"Needs {rule.RequiredSpentPoints} points already spent in its pool; the "
                         + $"fixture spends {spentElsewhere} elsewhere.");
             }
@@ -219,8 +210,7 @@ namespace CombatVerification.Fixtures
         private static void ValidateCompanions(
             List<FixtureProblem> problems,
             string field,
-            IReadOnlyList<CompanionSpec> companions,
-            int level,
+            IReadOnlyList<CompanionBuild> companions,
             IFixtureRules rules)
         {
             if (companions == null)
@@ -230,26 +220,27 @@ namespace CombatVerification.Fixtures
             {
                 var companion = companions[i];
                 if (companion == null
-                    || string.IsNullOrWhiteSpace(companion.Archetype)
+                    || string.IsNullOrWhiteSpace(companion.ArchetypeId)
                     || !EquipmentHasValidShape(companion.Equipment))
                     continue;
 
                 ValidateEquipment(
                     problems,
                     $"{field}[{i}].equipment",
-                    companion.Archetype,
-                    level,
+                    companion.ArchetypeId,
+                    companion.Level,
                     companion.Equipment,
                     rules);
             }
         }
 
-        private static bool EquipmentHasValidShape(IReadOnlyList<EquipmentSpec> equipment)
+        private static bool EquipmentHasValidShape(IReadOnlyList<EquippedItem> equipment)
             => equipment != null
                && equipment.All(entry => entry != null
                    && entry.Slot >= 0
                    && !string.IsNullOrWhiteSpace(entry.ItemId)
-                   && entry.Durability > 0)
+                   && entry.Durability > 0
+                   && entry.Amount > 0)
                && equipment.Select(entry => entry.Slot).Distinct().Count() == equipment.Count;
 
         private static void ValidateEquipment(
@@ -257,7 +248,7 @@ namespace CombatVerification.Fixtures
             string field,
             string archetype,
             int level,
-            IReadOnlyList<EquipmentSpec> equipment,
+            IReadOnlyList<EquippedItem> equipment,
             IFixtureRules rules)
         {
             if (equipment.Count == 0)
@@ -272,7 +263,7 @@ namespace CombatVerification.Fixtures
                 return;
             }
 
-            var occupied = new Dictionary<int, EquipmentSpec>();
+            var occupied = new Dictionary<int, EquippedItem>();
             foreach (var entry in equipment)
             {
                 var entryField = $"{field}[{entry.Slot}]";
@@ -320,13 +311,12 @@ namespace CombatVerification.Fixtures
         /// Whether a class list names this class.
         /// </summary>
         /// <remarks>
-        /// The game holds identifiers and a fixture is authored with the name a player reads, so
-        /// both sides are reduced to the identifier before they are compared. Comparing the two
-        /// forms directly made every Ranger fixture fail on an item only a Ranger can equip.
+        /// Catalog class restrictions can carry game display names. Normalize those names before
+        /// comparing them with the fixture's stable class identifier.
         /// </remarks>
-        private static bool Includes(IReadOnlyCollection<string> classes, string className)
+        private static bool Includes(IReadOnlyCollection<string> classes, string classId)
         {
-            var wanted = GameIds.ClassId(className ?? "");
+            var wanted = GameIds.ClassId(classId ?? "");
             foreach (var candidate in classes)
             {
                 if (GameIds.ClassId(candidate ?? "") == wanted)
@@ -339,7 +329,7 @@ namespace CombatVerification.Fixtures
         private static void CheckTwoHandedOffhand(
             List<FixtureProblem> problems,
             string field,
-            Dictionary<int, EquipmentSpec> occupied,
+            Dictionary<int, EquippedItem> occupied,
             IFixtureRules rules)
         {
             var twoHanded = occupied.Values.FirstOrDefault(e =>
@@ -358,16 +348,16 @@ namespace CombatVerification.Fixtures
         private static void ValidateConsumables(
             List<FixtureProblem> problems,
             string field,
-            List<string> consumables,
+            IReadOnlyList<ItemQuantity> consumables,
             IFixtureRules rules)
         {
             if (consumables == null) return;
 
             foreach (var consumable in consumables)
             {
-                if (!rules.ConsumableExists(consumable))
-                    Add(problems, field,
-                        $"'{consumable}' is not a consumable the game defines.");
+                if (!rules.ConsumableExists(consumable.ItemId))
+                    Add(problems, $"{field}.{consumable.ItemId}",
+                        $"'{consumable.ItemId}' is not a consumable the game defines.");
             }
         }
 
@@ -388,6 +378,16 @@ namespace CombatVerification.Fixtures
                 else if (!item.IsBook)
                     Add(problems, $"{field}[{i}]", $"'{id}' is not a permanent learned book.");
             }
+        }
+
+        private static IEnumerable<int> AttributeValues(AttributeValues values)
+        {
+            yield return values.Strength;
+            yield return values.Constitution;
+            yield return values.Dexterity;
+            yield return values.Intelligence;
+            yield return values.Wisdom;
+            yield return values.Charisma;
         }
 
         private static int CostOf(SkillRule rule, int level)

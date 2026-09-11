@@ -9,10 +9,9 @@ public sealed class FixtureFilesTests : IDisposable
 {
     private const string ValidFixture = """
         {
-          "schemaVersion": 2,
+          "schemaVersion": 3,
           "build": {
-            "serializedSchemaVersion": 2,
-            "captureSchemaVersion": 1,
+            "serializedSchemaVersion": 3,
             "modelVersion": "1",
             "gameData": {
               "gameVersion": "0.9.31.0",
@@ -24,17 +23,25 @@ public sealed class FixtureFilesTests : IDisposable
           "tier": "A",
           "coverage": "A.class.Warrior",
           "buildData": {
-            "character": {
-              "class": "Warrior",
-              "race": "Human",
+            "schemaVersion": 1,
+            "player": {
+              "entityId": "player",
+              "classId": "warrior",
+              "raceId": "human",
               "level": 1,
               "veteranPoints": 0,
-              "allocatedAttributes": { "strength": 2 },
+              "attributes": {
+                "rawObserved": null,
+                "baseProgression": { "strength": 2, "constitution": 2, "dexterity": 1, "intelligence": 1, "wisdom": 1, "charisma": 1 },
+                "allocated": { "strength": 2, "constitution": 0, "dexterity": 0, "intelligence": 0, "wisdom": 0, "charisma": 0 },
+                "derivedObserved": null
+              },
               "skills": [],
               "equipment": []
             },
             "companions": [],
             "consumables": [],
+            "ammunition": [],
             "learnedBookIds": [],
             "provenance": { "kind": "authored", "source": "test" }
           },
@@ -48,7 +55,7 @@ public sealed class FixtureFilesTests : IDisposable
 
     [Theory]
     [InlineData(false, "unknownRoot")]
-    [InlineData(true, "buildData.character.unknownNested")]
+    [InlineData(true, "buildData.player.unknownNested")]
     public void ReadMatrixRejectsUnknownFields(bool nested, string expectedPath)
     {
         WriteFixture(WithUnknownField(nested));
@@ -61,7 +68,7 @@ public sealed class FixtureFilesTests : IDisposable
 
     [Theory]
     [InlineData(false, "unknownRoot")]
-    [InlineData(true, "buildData.character.unknownNested")]
+    [InlineData(true, "buildData.player.unknownNested")]
     public void ValidateShapesReportsUnknownFieldsWithRelativePath(
         bool nested, string expectedPath)
     {
@@ -75,6 +82,15 @@ public sealed class FixtureFilesTests : IDisposable
     }
 
     [Fact]
+    public void RepositoryFixtureCorpusUsesTheSupportedShape()
+    {
+        var repoRoot = Path.GetFullPath(
+            Path.Combine(AppContext.BaseDirectory, "../../../../.."));
+
+        Assert.Empty(BuildTool.CombatVerification.FixtureFiles.ValidateShapes(repoRoot));
+    }
+
+    [Fact]
     public void ReadMatrixRetainsSupportedFieldsAndDictionaryKeys()
     {
         WriteFixture(ValidFixture);
@@ -83,7 +99,7 @@ public sealed class FixtureFilesTests : IDisposable
         var entry = Assert.Single(matrix.Fixtures);
         var fixture = entry.Fixture;
 
-        Assert.Equal(2, fixture.BuildData.Character.AllocatedAttributes["strength"]);
+        Assert.Equal(2, fixture.BuildData.Player.Attributes.Allocated.Strength);
 
         var problems = BuildTool.CombatVerification.FixtureFiles.ValidateShapes(_root);
         Assert.DoesNotContain(problems, problem => problem.Contains("Invalid JSON", StringComparison.Ordinal));
@@ -91,8 +107,8 @@ public sealed class FixtureFilesTests : IDisposable
 
     private string WithUnknownField(bool nested) => nested
         ? ValidFixture.Replace(
-            "\"class\": \"Warrior\",",
-            "\"class\": \"Warrior\",\n    \"unknownNested\": true,")
+            "\"classId\": \"warrior\",",
+            "\"classId\": \"warrior\",\n    \"unknownNested\": true,")
         : ValidFixture.Replace(
             "\"name\": \"strict-fixture\",",
             "\"name\": \"strict-fixture\",\n  \"unknownRoot\": true,");

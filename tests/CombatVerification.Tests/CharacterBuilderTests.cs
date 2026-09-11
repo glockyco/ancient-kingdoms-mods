@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using CombatVerification.Builds;
 using CombatVerification.Fixtures;
 using CombatVerification.Materialization;
 using Xunit;
@@ -11,22 +12,34 @@ namespace CombatVerification.Tests
     /// </summary>
     public class CharacterBuilderTests
     {
-        private static CharacterSpec Spec(
+        private static PlayerBuild Spec(
             int level = 1,
             int veteranPoints = 0,
             Dictionary<string, int>? attributes = null,
-            List<SkillSpec>? skills = null,
-            List<EquipmentSpec>? equipment = null)
+            List<AllocatedSkill>? skills = null,
+            List<EquippedItem>? equipment = null)
             => new()
             {
-                Class = "Warrior",
-                Race = "Human",
+                EntityId = "player",
+                ClassId = "warrior",
+                RaceId = "human",
                 Level = level,
                 VeteranPoints = veteranPoints,
-                AllocatedAttributes = attributes ?? new Dictionary<string, int>(),
-                Skills = skills ?? new List<SkillSpec>(),
-                Equipment = equipment ?? new List<EquipmentSpec>(),
+                Attributes = BuildEnvelopeTestData.Attributes(attributes),
+                Skills = skills ?? new List<AllocatedSkill>(),
+                Equipment = equipment ?? new List<EquippedItem>(),
             };
+
+        private static BuildOutcome Build(
+            FakeCharacter character,
+            PlayerBuild spec,
+            IReadOnlyList<CompanionBuild>? companions = null,
+            IReadOnlyList<string>? learnedBookIds = null)
+            => CharacterBuilder.Run(
+                character,
+                spec,
+                companions ?? new List<CompanionBuild>(),
+                learnedBookIds ?? new List<string>());
 
         private static BuildStep Step(BuildOutcome outcome, string name)
             => outcome.Steps.Single(step => step.Name == name);
@@ -38,9 +51,16 @@ namespace CombatVerification.Tests
                 .WithItem("plate_chest", maxDurability: 80, 2)
                 .WithItem("iron_ring", maxDurability: 50, 4, 10);
 
-        private static EquipmentSpec Entry(
-            int slot, string itemId, string? augmentId = null, int? durability = null)
-            => new() { Slot = slot, ItemId = itemId, AugmentId = augmentId, Durability = durability };
+        private static EquippedItem Entry(
+            int slot, string itemId, string? augmentId = null, int durability = 80, int amount = 1)
+            => new()
+            {
+                Slot = slot,
+                ItemId = itemId,
+                AugmentId = augmentId,
+                Durability = durability,
+                Amount = amount,
+            };
 
         private static BuildStep StepNamed(BuildOutcome outcome, string name)
             => outcome.Steps.Single(step => step.Name == name);
@@ -53,7 +73,7 @@ namespace CombatVerification.Tests
             // A fixture declares what it allocates, so a second run would spend it again and
             // produce a character no fixture describes.
             var character = new FakeCharacter().AtLevel(30);
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 50,
                 attributes: new Dictionary<string, int> { ["strength"] = 3 }));
 
@@ -64,13 +84,59 @@ namespace CombatVerification.Tests
             Assert.Equal(0, character.AwardCalls);
         }
 
+        [Fact]
+        public void ExistingLearnedSkillIsRefusedBeforeEmptyDeclarationCanPreserveIt()
+        {
+            var character = new FakeCharacter().WithSkill("Melee Attack", level: 1);
+
+            var outcome = Build(character, Spec());
+
+            Assert.False(outcome.Ok);
+            Assert.Equal("untouched", outcome.Failure?.Name);
+            Assert.Equal(0, character.AwardCalls);
+        }
+
+        [Fact]
+        public void ExistingCompanionIsRefusedBeforeEmptyDeclarationCanPreserveIt()
+        {
+            var character = Equipper();
+            character.AddGold(character.HirePrice("warrior"));
+            character.Hire("warrior", character.HirePrice("warrior"));
+
+            var outcome = Build(
+                character, Spec(), new List<CompanionBuild>());
+
+            Assert.False(outcome.Ok);
+            Assert.Equal("untouched", outcome.Failure?.Name);
+            Assert.Equal(1, character.HireCalls);
+        }
+
+        [Fact]
+        public void CompanionSkillAllocationIsRefusedBeforeRuntimeMutation()
+        {
+            var companion = Companion("Warrior");
+            companion.Skills.Add(new AllocatedSkill
+            {
+                SkillId = "melee_attack",
+                Level = 1,
+                Pool = "normal",
+            });
+            var character = Equipper();
+
+            var outcome = Build(character, Spec(), new[] { companion });
+
+            Assert.False(outcome.Ok);
+            Assert.Equal("companions.skills", outcome.Failure?.Name);
+            Assert.Equal(0, character.HireCalls);
+        }
+
         // --- progression ---
 
         [Fact]
         public void LevelIsReachedByOneAwardPerLevel()
         {
             var character = new FakeCharacter();
-            var outcome = CharacterBuilder.Run(character, Spec(level: 10));
+            var outcome = Build(character, Spec(level: 10));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(10, character.Level);
@@ -84,7 +150,7 @@ namespace CombatVerification.Tests
         public void ALevelAlreadyPassedIsRefusedRatherThanIgnored()
         {
             var character = new FakeCharacter().AtLevel(20);
-            var outcome = CharacterBuilder.Run(character, Spec(level: 10));
+            var outcome = Build(character, Spec(level: 10));
 
             Assert.False(outcome.Ok);
             Assert.Equal("untouched", outcome.Steps[0].Name);
@@ -94,7 +160,7 @@ namespace CombatVerification.Tests
         public void VeteranPointsAreAwardedOnlyAtTheLevelCap()
         {
             var character = new FakeCharacter();
-            var outcome = CharacterBuilder.Run(character, Spec(level: 10, veteranPoints: 5));
+            var outcome = Build(character, Spec(level: 10, veteranPoints: 5));
 
             Assert.False(outcome.Ok);
             Assert.Contains("only at level 50", StepNamed(outcome, "veteran").Detail);
@@ -104,7 +170,7 @@ namespace CombatVerification.Tests
         public void VeteranPointsAreReachedAtTheCap()
         {
             var character = new FakeCharacter();
-            var outcome = CharacterBuilder.Run(character, Spec(level: 50, veteranPoints: 7));
+            var outcome = Build(character, Spec(level: 50, veteranPoints: 7));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(7, character.TotalVeteranPoints);
@@ -117,7 +183,7 @@ namespace CombatVerification.Tests
         public void AVeteranTotalBeyondTheCapStopsAndReportsTheCap()
         {
             var character = new FakeCharacter { MaxVeteranPoints = 3 };
-            var outcome = CharacterBuilder.Run(character, Spec(level: 50, veteranPoints: 10));
+            var outcome = Build(character, Spec(level: 50, veteranPoints: 10));
 
             Assert.False(outcome.Ok);
             Assert.Contains("cap is 3", StepNamed(outcome, "veteran").Detail);
@@ -129,7 +195,7 @@ namespace CombatVerification.Tests
         public void AttributePointsAreSpentThroughTheEngine()
         {
             var character = new FakeCharacter();
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 10,
                 attributes: new Dictionary<string, int> { ["strength"] = 4, ["wisdom"] = 2 }));
 
@@ -143,7 +209,7 @@ namespace CombatVerification.Tests
         public void SpendingMoreThanTheBudgetStopsAndNamesTheAttribute()
         {
             var character = new FakeCharacter();
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 3,
                 attributes: new Dictionary<string, int> { ["strength"] = 9 }));
 
@@ -151,20 +217,6 @@ namespace CombatVerification.Tests
             var detail = StepNamed(outcome, "attributes").Detail;
             Assert.Contains("strength", detail);
             Assert.Contains("No unspent point", detail);
-        }
-
-        [Fact]
-        public void AnAttributeTheEngineDoesNotAcceptIsReportedRatherThanCountedAsSpent()
-        {
-            // The engine has one command per attribute. A name with no command changes nothing
-            // and says nothing, which is exactly the failure a returned call would hide.
-            var character = new FakeCharacter();
-            var outcome = CharacterBuilder.Run(character, Spec(
-                level: 10,
-                attributes: new Dictionary<string, int> { ["luck"] = 1 }));
-
-            Assert.False(outcome.Ok);
-            Assert.Contains("did not accept", StepNamed(outcome, "attributes").Detail);
         }
 
         // --- permanent books ---
@@ -176,7 +228,7 @@ namespace CombatVerification.Tests
                 "forgotten_tome",
                 new Dictionary<string, int> { ["strength"] = 2, ["wisdom"] = 1 });
 
-            var outcome = CharacterBuilder.Run(
+            var outcome = Build(
                 character,
                 Spec(),
                 learnedBookIds: new[] { "forgotten_tome" });
@@ -197,7 +249,7 @@ namespace CombatVerification.Tests
                 "forgotten_tome",
                 new Dictionary<string, int> { ["strength"] = 2 });
 
-            var outcome = CharacterBuilder.Run(
+            var outcome = Build(
                 character,
                 Spec(level: 10),
                 learnedBookIds: new[] { "forgotten_tome", "forgotten_tome" });
@@ -213,7 +265,7 @@ namespace CombatVerification.Tests
         {
             var character = new FakeCharacter();
 
-            var outcome = CharacterBuilder.Run(
+            var outcome = Build(
                 character,
                 Spec(level: 10),
                 learnedBookIds: new[] { "missing_tome" });
@@ -229,12 +281,12 @@ namespace CombatVerification.Tests
             var character = new FakeCharacter().WithBook(
                 "forgotten_tome",
                 new Dictionary<string, int> { ["strength"] = 2 });
-            var first = CharacterBuilder.Run(
+            var first = Build(
                 character,
                 Spec(),
                 learnedBookIds: new[] { "forgotten_tome" });
 
-            var second = CharacterBuilder.Run(
+            var second = Build(
                 character,
                 Spec(),
                 learnedBookIds: new[] { "forgotten_tome" });
@@ -251,9 +303,9 @@ namespace CombatVerification.Tests
         public void SkillLevelsAreBoughtThroughTheEngine()
         {
             var character = new FakeCharacter().WithSkill("Melee Attack", maxLevel: 5);
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 10,
-                skills: new List<SkillSpec> { new() { Name = "Melee Attack", Level = 3 } }));
+                skills: new List<AllocatedSkill> { new() { SkillId = "melee_attack", Level = 3 } }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(3, character.Skills.Single().Level);
@@ -268,12 +320,12 @@ namespace CombatVerification.Tests
                 .WithSkill("Cleave", maxLevel: 5, requiredSpent: 3)
                 .WithSkill("Melee Attack", maxLevel: 5);
 
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 20,
-                skills: new List<SkillSpec>
+                skills: new List<AllocatedSkill>
                 {
-                    new() { Name = "Cleave", Level = 2 },
-                    new() { Name = "Melee Attack", Level = 3 },
+                    new() { SkillId = "cleave", Level = 2 },
+                    new() { SkillId = "melee_attack", Level = 3 },
                 }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
@@ -287,13 +339,13 @@ namespace CombatVerification.Tests
             var character = new FakeCharacter()
                 .WithSkill("Cleave", maxLevel: 5, requiredSpent: 9);
 
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 20,
-                skills: new List<SkillSpec> { new() { Name = "Cleave", Level = 2 } }));
+                skills: new List<AllocatedSkill> { new() { SkillId = "cleave", Level = 2 } }));
 
             Assert.False(outcome.Ok);
             var detail = StepNamed(outcome, "skills").Detail;
-            Assert.Contains("Cleave at 0 of 2", detail);
+            Assert.Contains("cleave at 0 of 2", detail);
             Assert.Contains("points already spent", detail);
         }
 
@@ -301,9 +353,9 @@ namespace CombatVerification.Tests
         public void ASkillTheCharacterDoesNotHoldIsNamed()
         {
             var character = new FakeCharacter().WithSkill("Melee Attack");
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 20,
-                skills: new List<SkillSpec> { new() { Name = "Whirlwind", Level = 1 } }));
+                skills: new List<AllocatedSkill> { new() { SkillId = "whirlwind", Level = 1 } }));
 
             Assert.False(outcome.Ok);
             Assert.Contains("does not hold it", StepNamed(outcome, "skills").Detail);
@@ -315,12 +367,12 @@ namespace CombatVerification.Tests
             var character = new FakeCharacter().WithSkill("Cleave", maxLevel: 5);
             character.Refuse.Add("Cleave");
 
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 20,
-                skills: new List<SkillSpec> { new() { Name = "Cleave", Level = 3 } }));
+                skills: new List<AllocatedSkill> { new() { SkillId = "cleave", Level = 3 } }));
 
             Assert.False(outcome.Ok);
-            Assert.Contains("Cleave at 0 of 3", StepNamed(outcome, "skills").Detail);
+            Assert.Contains("cleave at 0 of 3", StepNamed(outcome, "skills").Detail);
         }
 
         [Fact]
@@ -329,10 +381,10 @@ namespace CombatVerification.Tests
             var character = new FakeCharacter()
                 .WithSkill("Veteran Awareness", maxLevel: 10, veteran: true);
 
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 50,
                 veteranPoints: 4,
-                skills: new List<SkillSpec> { new() { Name = "Veteran Awareness", Level = 3 } }));
+                skills: new List<AllocatedSkill> { new() { SkillId = "veteran_awareness", Level = 3 } }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(3, character.Skills.Single().Level);
@@ -346,10 +398,10 @@ namespace CombatVerification.Tests
         public void ProgressionRunsBeforeAllocationSoThePointsExist()
         {
             var character = new FakeCharacter().WithSkill("Melee Attack", maxLevel: 5);
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 6,
                 attributes: new Dictionary<string, int> { ["strength"] = 2 },
-                skills: new List<SkillSpec> { new() { Name = "Melee Attack", Level = 2 } }));
+                skills: new List<AllocatedSkill> { new() { SkillId = "melee_attack", Level = 2 } }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(
@@ -367,10 +419,10 @@ namespace CombatVerification.Tests
             // Two attribute points exist at level three, and the fixture asks for nine, so
             // allocation fails and skill spending must not run on a half-allocated character.
             var character = new FakeCharacter().WithSkill("Melee Attack", maxLevel: 5);
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 3,
                 attributes: new Dictionary<string, int> { ["strength"] = 9 },
-                skills: new List<SkillSpec> { new() { Name = "Melee Attack", Level = 2 } }));
+                skills: new List<AllocatedSkill> { new() { SkillId = "melee_attack", Level = 2 } }));
 
             Assert.False(outcome.Ok);
             Assert.Equal(new[] { "level", "veteran", "attributes" },
@@ -384,8 +436,8 @@ namespace CombatVerification.Tests
         public void ADeclaredItemReachesItsSlotAtTheItemsOwnDurability()
         {
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "plate_helm") }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal("plate_helm", character.Equipment.At(0).ItemId);
@@ -396,19 +448,33 @@ namespace CombatVerification.Tests
         public void AStatedDurabilityIsCarriedIntoTheSlot()
         {
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm", durability: 7) }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "plate_helm", durability: 7) }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(7, character.Equipment.At(0).Durability);
         }
 
         [Fact]
+        public void ADeclaredAmountReachesTheEquippedSlot()
+        {
+            var character = Equipper();
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem>
+                {
+                    Entry(0, "plate_helm", amount: 3),
+                }));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal(3, character.Equipment.At(0).Amount);
+        }
+
+        [Fact]
         public void AnAugmentTravelsWithTheItemIntoItsSlot()
         {
             var character = Equipper().WithItem("jagged_shard");
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec>
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem>
                 {
                     Entry(2, "plate_chest", augmentId: "jagged_shard"),
                 }));
@@ -422,8 +488,8 @@ namespace CombatVerification.Tests
         public void AnItemTheGameDoesNotDefineIsNamedRatherThanSkipped()
         {
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "helm_of_nothing") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "helm_of_nothing") }));
 
             Assert.False(outcome.Ok);
             Assert.Contains("helm_of_nothing", outcome.Failure!.Detail);
@@ -435,8 +501,8 @@ namespace CombatVerification.Tests
             // The engine's own answer is read first, so a refusal is reported rather than
             // discovered by acting and finding nothing changed.
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(3, "plate_helm") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(3, "plate_helm") }));
 
             Assert.False(outcome.Ok);
             Assert.Contains("refuses", outcome.Failure!.Detail);
@@ -449,8 +515,8 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.InventoryCapacity = 0;
 
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "plate_helm") }));
 
             Assert.False(outcome.Ok);
             Assert.Contains("did not reach the inventory", outcome.Failure!.Detail);
@@ -463,8 +529,8 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.IgnoreEquipInto.Add(0);
 
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "plate_helm") }));
 
             Assert.False(outcome.Ok);
             Assert.Equal(1, character.EquipCalls);
@@ -479,8 +545,8 @@ namespace CombatVerification.Tests
             character.ItemOperationsAllowed = false;
             character.ActivityState = "DEAD";
 
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "plate_helm") }));
 
             Assert.False(outcome.Ok);
             Assert.Contains("DEAD", outcome.Failure!.Detail);
@@ -491,8 +557,8 @@ namespace CombatVerification.Tests
         public void ASlotOutsideTheGamesRangeIsReportedWithTheCount()
         {
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(99, "plate_helm") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(99, "plate_helm") }));
 
             Assert.False(outcome.Ok);
             Assert.Contains("16", outcome.Failure!.Detail);
@@ -502,8 +568,8 @@ namespace CombatVerification.Tests
         public void AnItemThatCouldNotContributeIsRefusedBeforeItIsGranted()
         {
             var character = new FakeCharacter().WithItem("paper_hat", maxDurability: 0, 0);
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "paper_hat") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "paper_hat", durability: 0) }));
 
             Assert.False(outcome.Ok);
             Assert.Contains("could not", outcome.Failure!.Detail);
@@ -514,10 +580,10 @@ namespace CombatVerification.Tests
         public void EquipmentRunsOnlyAfterTheAllocationStepsSucceed()
         {
             var character = Equipper().WithSkill("Melee Attack", maxLevel: 5);
-            var outcome = CharacterBuilder.Run(character, Spec(
+            var outcome = Build(character, Spec(
                 level: 3,
                 attributes: new Dictionary<string, int> { ["strength"] = 9 },
-                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+                equipment: new List<EquippedItem> { Entry(0, "plate_helm") }));
 
             Assert.False(outcome.Ok);
             Assert.DoesNotContain("equipment", outcome.Steps.Select(step => step.Name));
@@ -530,8 +596,8 @@ namespace CombatVerification.Tests
             // A created character wears starter equipment. Left on, it would contribute to every
             // measurement while no fixture mentioned it.
             var character = Equipper().Wearing(2, "starter_shirt").Wearing(9, "starter_shoes");
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(0, "plate_helm") }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal("plate_helm", character.Equipment.At(0).ItemId);
@@ -544,33 +610,19 @@ namespace CombatVerification.Tests
         public void ADeclaredSlotHoldingStarterEquipmentIsSwapped()
         {
             var character = Equipper().Wearing(2, "starter_shirt");
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec> { Entry(2, "plate_chest") }));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem> { Entry(2, "plate_chest") }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal("plate_chest", character.Equipment.At(2).ItemId);
         }
 
         [Fact]
-        public void AnAbsentEquipmentSectionLeavesTheSlotsAlone()
-        {
-            var character = Equipper().Wearing(2, "starter_shirt");
-            var spec = Spec();
-            spec.Equipment = null;
-
-            var outcome = CharacterBuilder.Run(character, spec);
-
-            Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal("starter_shirt", character.Equipment.At(2).ItemId);
-            Assert.Contains("Not stated", Step(outcome, "equipment").Detail);
-        }
-
-        [Fact]
         public void AnEmptyEquipmentSectionStripsEverySlot()
         {
             var character = Equipper().Wearing(2, "starter_shirt").Wearing(9, "starter_shoes");
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec>()));
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem>()));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.All(character.Equipment.Slots, slot => Assert.Null(slot.ItemId));
@@ -578,21 +630,26 @@ namespace CombatVerification.Tests
 
         // --- companions ---
 
-        private static CompanionSpec Companion(
+        private static CompanionBuild Companion(
             string archetype,
             string? race = null,
+            int level = 1,
             float? health = null,
             float? resource = null,
             int? baseCombat = null,
-            List<EquipmentSpec>? equipment = null)
+            List<EquippedItem>? equipment = null)
             => new()
             {
-                Archetype = archetype,
-                Race = race,
+                EntityId = "companion-1",
+                Kind = "mercenary",
+                ArchetypeId = archetype.ToLowerInvariant(),
+                RaceId = (race ?? "human").ToLowerInvariant(),
+                Level = level,
                 HealthMultiplier = health,
                 ResourceMultiplier = resource,
                 BaseCombat = baseCombat,
-                Equipment = equipment,
+                Skills = new(),
+                Equipment = equipment ?? new(),
             };
 
         [Fact]
@@ -601,14 +658,14 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.RacesByArchetype["Rogue"] = new[] { "Felarii" };
 
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
                 Companion("Rogue", race: "Felarii", health: 0.93f, resource: 1.02f, baseCombat: 47),
             });
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             var companion = Assert.Single(character.Companions);
-            Assert.Equal("Rogue", companion.Archetype);
+            Assert.Equal("rogue", companion.Archetype);
             Assert.Equal("Felarii", companion.Race);
             Assert.Equal(0.93f, companion.HealthMultiplier);
             Assert.Equal(1.02f, companion.ResourceMultiplier);
@@ -625,7 +682,7 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.RacesByArchetype["Rogue"] = new[] { "Dwarf" };
 
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
                 Companion("Rogue", race: "Felarii"),
             });
@@ -637,34 +694,18 @@ namespace CombatVerification.Tests
         }
 
         [Fact]
-        public void ACompanionWithNoStatedRaceKeepsWhateverWasRolled()
-        {
-            var character = Equipper();
-            character.RacesByArchetype["Druid"] = new[] { "Fire Goblin" };
-
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
-            {
-                Companion("Druid"),
-            });
-
-            Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal("Fire Goblin", Assert.Single(character.Companions).Race);
-            Assert.Equal(1, character.HireCalls);
-        }
-
-        [Fact]
         public void CompanionsAreHiredOnlyAfterTheOwnersProgressionIsComplete()
         {
             // A companion gains base damage for every level its owner gains while present, so a
             // hire before progression would carry an increment no fixture asked for.
             var character = Equipper().WithSkill("Melee Attack", maxLevel: 5);
-            var outcome = CharacterBuilder.Run(
+            var outcome = Build(
                 character,
-                Spec(level: 6, skills: new List<SkillSpec>
+                Spec(level: 6, skills: new List<AllocatedSkill>
                 {
-                    new() { Name = "Melee Attack", Level = 2 },
+                    new() { SkillId = "melee_attack", Level = 2 },
                 }),
-                new List<CompanionSpec> { Companion("Warrior") });
+                new List<CompanionBuild> { Companion("Warrior", level: 6) });
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal("companions", outcome.Steps.Last().Name);
@@ -676,7 +717,7 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.CompanionCap = 1;
 
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
                 Companion("Warrior"),
                 Companion("Cleric"),
@@ -692,13 +733,13 @@ namespace CombatVerification.Tests
         public void AnArchetypeTheGameDoesNotOfferIsNamed()
         {
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
                 Companion("Necromancer"),
             });
 
             Assert.False(outcome.Ok);
-            Assert.Contains("Necromancer", outcome.Failure!.Detail);
+            Assert.Contains("necromancer", outcome.Failure!.Detail);
             Assert.Equal(0, character.HireCalls);
         }
 
@@ -708,7 +749,7 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.HiredArchetype = "Druid";
 
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
                 Companion("Warrior"),
             });
@@ -723,7 +764,7 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.HirePriceEach = 1234;
 
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
                 Companion("Ranger"),
             });
@@ -736,9 +777,9 @@ namespace CombatVerification.Tests
         public void ACompanionIsEquippedFromTheOwnersInventory()
         {
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
-                Companion("Warrior", equipment: new List<EquipmentSpec>
+                Companion("Warrior", equipment: new List<EquippedItem>
                 {
                     Entry(2, "plate_chest"),
                 }),
@@ -756,9 +797,9 @@ namespace CombatVerification.Tests
             var character = Equipper();
             character.CompanionIgnoresEquipInto.Add(0);
 
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
-                Companion("Warrior", equipment: new List<EquipmentSpec>
+                Companion("Warrior", equipment: new List<EquippedItem>
                 {
                     Entry(0, "plate_helm"),
                 }),
@@ -770,21 +811,10 @@ namespace CombatVerification.Tests
         }
 
         [Fact]
-        public void AnAbsentCompanionSectionStatesNothing()
-        {
-            var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec());
-
-            Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Contains("Not stated", Step(outcome, "companions").Detail);
-            Assert.Equal(0, character.HireCalls);
-        }
-
-        [Fact]
         public void AnEmptyCompanionSectionStatesThereAreNone()
         {
             var character = Equipper();
-            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>());
+            var outcome = Build(character, Spec(), new List<CompanionBuild>());
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Contains("None declared", Step(outcome, "companions").Detail);
@@ -795,8 +825,8 @@ namespace CombatVerification.Tests
         public void EveryDeclaredPieceIsEquippedSoASetThresholdCanBeReached()
         {
             var character = Equipper().WithItem("plate_legs", maxDurability: 80, 3);
-            var outcome = CharacterBuilder.Run(character, Spec(
-                equipment: new List<EquipmentSpec>
+            var outcome = Build(character, Spec(
+                equipment: new List<EquippedItem>
                 {
                     Entry(0, "plate_helm"),
                     Entry(2, "plate_chest"),

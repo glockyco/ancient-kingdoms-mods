@@ -66,7 +66,7 @@ Schema and serialization checks can precede runtime qualification; they do not c
       Keep fixture execution and capture completeness, containers, integrity, and producer metadata outside logical build data.
       Preserve complete-empty versus missing/unread state and keep book gain definitions catalog-owned.
       Verify serialization preserves these distinctions and rejects unknown schemas or failed capture integrity.
-- [ ] 3.12 Migrate every existing producer and consumer to the schema from 3.11 in one versioned cutover.
+- [x] 3.12 Migrate every existing producer and consumer to the schema from 3.11 in one versioned cutover.
       Update the fixture corpus, C# validation/materialization, TypeScript parsing, and affected tests and documentation.
       Migrate existing capture contracts and use the same schema for the capture producer in 3.14.
       Remove obsolete fields and compatibility shims. Do not maintain a second logical-build contract.

@@ -1,37 +1,57 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "build": {
-    "captureSchemaVersion": 1,
     "gameData": {
       "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0",
       "gameVersion": "0.9.31.1",
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 2
+    "serializedSchemaVersion": 3
   },
   "name": "D-class-druid",
   "tier": "D",
   "coverage": "D.class.Druid",
   "buildData": {
-    "provenance": {
-      "kind": "authored",
-      "source": "verification/fixtures/d/D-class-druid.json"
-    },
-    "character": {
-      "class": "Druid",
-      "race": "Human",
+    "schemaVersion": 1,
+    "player": {
+      "entityId": "player",
+      "classId": "druid",
+      "raceId": "human",
       "level": 50,
       "veteranPoints": 200,
-      "allocatedAttributes": {},
+      "attributes": {
+        "rawObserved": null,
+        "baseProgression": {
+          "strength": 10,
+          "constitution": 11,
+          "dexterity": 14,
+          "intelligence": 17,
+          "wisdom": 26,
+          "charisma": 9
+        },
+        "allocated": {
+          "strength": 0,
+          "constitution": 0,
+          "dexterity": 0,
+          "intelligence": 0,
+          "wisdom": 0,
+          "charisma": 0
+        },
+        "derivedObserved": null
+      },
       "skills": [
         {
-          "name": "Wind Shock",
-          "level": 5
+          "skillId": "wind_shock",
+          "skillName": "Wind Shock",
+          "level": 5,
+          "pool": "normal"
         },
         {
-          "name": "Staff Strike",
-          "level": 1
+          "skillId": "staff_strike",
+          "skillName": "Staff Strike",
+          "level": 1,
+          "pool": "normal"
         }
       ],
       "equipment": [
@@ -40,13 +60,19 @@
           "itemId": "natures_staff",
           "itemName": null,
           "augmentId": null,
-          "durability": 100
+          "durability": 100,
+          "amount": 1
         }
       ]
     },
-    "companions": null,
+    "companions": [],
     "consumables": [],
-    "learnedBookIds": []
+    "ammunition": [],
+    "learnedBookIds": [],
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/d/D-class-druid.json"
+    }
   },
   "execution": {
     "durationSeconds": 60,

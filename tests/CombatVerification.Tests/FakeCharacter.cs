@@ -231,6 +231,7 @@ namespace CombatVerification.Tests
                     Index = slot,
                     ItemId = itemId,
                     Durability = durability,
+                    Amount = 1,
                 };
                 return this;
             }
@@ -260,6 +261,7 @@ namespace CombatVerification.Tests
                     ItemId = held.ItemId,
                     AugmentId = held.AugmentId,
                     Durability = held.Durability,
+                    Amount = held.Amount,
                 };
             }
 
@@ -330,7 +332,7 @@ namespace CombatVerification.Tests
         public int MaxDurability(string itemId)
             => Items.TryGetValue(itemId ?? "", out var item) ? item.MaxDurability : 0;
 
-        public void GrantItem(string itemId, int durability, string augmentId)
+        public void GrantItem(string itemId, int amount, int durability, string augmentId)
         {
             if (!ItemExists(itemId) || !HasInventoryRoom)
                 return;
@@ -341,6 +343,7 @@ namespace CombatVerification.Tests
                 ItemId = itemId,
                 AugmentId = string.IsNullOrWhiteSpace(augmentId) ? null : augmentId,
                 Durability = durability,
+                Amount = amount,
             });
         }
 
@@ -378,6 +381,7 @@ namespace CombatVerification.Tests
                 ItemId = slot.ItemId,
                 AugmentId = slot.AugmentId,
                 Durability = slot.Durability,
+                Amount = slot.Amount,
             });
 
         // --- companions ---
@@ -453,6 +457,7 @@ namespace CombatVerification.Tests
             var companion = new FakeCompanion(this, produced)
             {
                 Name = $"Hire{HireCalls}",
+                Level = Level,
             };
 
             if (RacesByArchetype.TryGetValue(produced, out var races) && races.Length > 0)

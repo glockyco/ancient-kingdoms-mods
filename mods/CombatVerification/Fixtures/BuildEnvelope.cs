@@ -7,15 +7,12 @@ namespace CombatVerification.Fixtures
     /// <summary>Versions understood by this harness and the planner adapters.</summary>
     public static class BuildContract
     {
-        public const int SerializedSchemaVersion = 2;
-        public const int CaptureSchemaVersion = 1;
+        public const int SerializedSchemaVersion = 3;
         public const string ModelVersion = "1";
 
         public static IReadOnlyCollection<int> SupportedSerializedSchemas { get; }
             = new[] { SerializedSchemaVersion };
 
-        public static IReadOnlyCollection<int> SupportedCaptureSchemas { get; }
-            = new[] { CaptureSchemaVersion };
     }
 
     /// <summary>Version axes that determine whether two planner builds are comparable.</summary>
@@ -23,9 +20,6 @@ namespace CombatVerification.Fixtures
     {
         [JsonProperty("serializedSchemaVersion", Required = Required.Default)]
         public int SerializedSchemaVersion { get; set; }
-
-        [JsonProperty("captureSchemaVersion", Required = Required.Default)]
-        public int CaptureSchemaVersion { get; set; }
 
         [JsonProperty("modelVersion", Required = Required.Default)]
         public string ModelVersion { get; set; }

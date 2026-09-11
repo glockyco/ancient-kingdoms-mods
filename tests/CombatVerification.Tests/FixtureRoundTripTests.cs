@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CombatVerification.Builds;
 using CombatVerification.Fixtures;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,10 +15,9 @@ namespace CombatVerification.Tests
     {
         private const string FixturePayload = """
         {
-          "schemaVersion": 2,
+          "schemaVersion": 3,
           "build": {
-            "serializedSchemaVersion": 2,
-            "captureSchemaVersion": 1,
+            "serializedSchemaVersion": 3,
             "modelVersion": "1",
             "gameData": {
               "gameVersion": "1.4.2",
@@ -27,25 +27,34 @@ namespace CombatVerification.Tests
           },
           "name": "reported-build-4821",
           "buildData": {
-            "character": {
-              "class": "Warrior",
-              "race": "Human",
+            "schemaVersion": 1,
+            "player": {
+              "entityId": "player",
+              "classId": "warrior",
+              "raceId": "human",
               "level": 50,
               "veteranPoints": 200,
-              "allocatedAttributes": { "strength": 120, "constitution": 129 },
-              "skills": [ { "name": "Melee Attack", "level": 3 } ],
+              "attributes": {
+                "rawObserved": null,
+                "baseProgression": { "strength": 0, "constitution": 0, "dexterity": 0, "intelligence": 0, "wisdom": 0, "charisma": 0 },
+                "allocated": { "strength": 120, "constitution": 129, "dexterity": 0, "intelligence": 0, "wisdom": 0, "charisma": 0 },
+                "derivedObserved": null
+              },
+              "skills": [ { "skillId": "melee_attack", "skillName": "Melee Attack", "level": 3, "pool": "normal" } ],
               "equipment": [
                 {
                   "slot": 12,
                   "itemId": "rusty_sword",
                   "itemName": "Rusty Sword",
                   "augmentId": "jagged_shard",
-                  "durability": 100
+                  "durability": 100,
+                  "amount": 1
                 }
               ]
             },
             "companions": [],
-            "consumables": [ "roast_boar" ],
+            "consumables": [ { "itemId": "roast_boar", "itemName": "Roast Boar", "quantity": 1 } ],
+            "ammunition": [],
             "learnedBookIds": [ "forgotten_tome" ],
             "provenance": { "kind": "capture", "source": "player-save" }
           },
@@ -62,9 +71,8 @@ namespace CombatVerification.Tests
         {
             var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(FixturePayload)!;
 
-            Assert.Equal(2, fixture.SchemaVersion);
-            Assert.Equal(2, fixture.Build.SerializedSchemaVersion);
-            Assert.Equal(1, fixture.Build.CaptureSchemaVersion);
+            Assert.Equal(3, fixture.SchemaVersion);
+            Assert.Equal(3, fixture.Build.SerializedSchemaVersion);
             Assert.Equal("1", fixture.Build.ModelVersion);
             Assert.Equal("1.4.2", fixture.Build.GameData.GameVersion);
             Assert.Equal("4821", fixture.Build.GameData.SteamBuildId);
@@ -73,13 +81,13 @@ namespace CombatVerification.Tests
             Assert.Equal("player-save", fixture.BuildData.Provenance.Source);
             Assert.Equal(1234, fixture.Execution.Seed);
 
-            Assert.Equal("Warrior", fixture.BuildData.Character.Class);
-            Assert.Equal(50, fixture.BuildData.Character.Level);
-            Assert.Equal(200, fixture.BuildData.Character.VeteranPoints);
-            Assert.Equal(120, fixture.BuildData.Character.AllocatedAttributes["strength"]);
-            Assert.Equal(3, Assert.Single(fixture.BuildData.Character.Skills).Level);
+            Assert.Equal("warrior", fixture.BuildData.Player.ClassId);
+            Assert.Equal(50, fixture.BuildData.Player.Level);
+            Assert.Equal(200, fixture.BuildData.Player.VeteranPoints);
+            Assert.Equal(120, fixture.BuildData.Player.Attributes.Allocated.Strength);
+            Assert.Equal(3, Assert.Single(fixture.BuildData.Player.Skills).Level);
 
-            var slot = Assert.Single(fixture.BuildData.Character.Equipment);
+            var slot = Assert.Single(fixture.BuildData.Player.Equipment);
             Assert.Equal(12, slot.Slot);
             Assert.Equal("rusty_sword", slot.ItemId);
             Assert.Equal("Rusty Sword", slot.ItemName);
@@ -87,7 +95,7 @@ namespace CombatVerification.Tests
             Assert.Equal(100, slot.Durability);
 
             Assert.Empty(fixture.BuildData.Companions);
-            Assert.Equal("roast_boar", Assert.Single(fixture.BuildData.Consumables));
+            Assert.Equal("roast_boar", Assert.Single(fixture.BuildData.Consumables).ItemId);
             Assert.Equal("forgotten_tome", Assert.Single(fixture.BuildData.LearnedBookIds));
             Assert.Equal("front", Assert.Single(fixture.Execution.Actions).Facing);
             Assert.Equal("dummy", fixture.Execution.Target.Spawn);
@@ -123,7 +131,7 @@ namespace CombatVerification.Tests
             Assert.True(provenance.ContainsKey("source"));
             Assert.True(emitted.ContainsKey("execution"));
             Assert.False(emitted.ContainsKey("capturedAt"));
-            var slot = (JObject)emitted["buildData"]!["character"]!["equipment"]![0]!;
+            var slot = (JObject)emitted["buildData"]!["player"]!["equipment"]![0]!;
             Assert.True(slot.ContainsKey("itemId"));
             Assert.True(slot.ContainsKey("itemName"));
         }
@@ -133,7 +141,7 @@ namespace CombatVerification.Tests
         {
             // The distinction is the contract: absent means unread, empty means nothing.
             var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>("""
-            { "schemaVersion": 2, "build": {}, "name": "n" }
+            { "schemaVersion": 3, "build": {}, "name": "n" }
             """)!;
 
             Assert.Null(fixture.BuildData);

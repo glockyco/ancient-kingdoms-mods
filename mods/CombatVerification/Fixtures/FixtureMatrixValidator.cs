@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CombatVerification.Builds;
 using CombatVerification.Dtos;
+using DataExporter;
 
 namespace CombatVerification.Fixtures
 {
@@ -158,18 +160,19 @@ namespace CombatVerification.Fixtures
             if (classAt >= 0)
             {
                 string expected = entry.Coverage.Substring(classAt + classPrefix.Length);
-                if (!string.Equals(entry.Fixture.BuildData?.Character?.Class, expected, StringComparison.Ordinal))
-                    Add(problems, prefix + ".fixture.buildData.character.class",
+                if (!string.Equals(entry.Fixture.BuildData?.Player?.ClassId,
+                        GameIds.ClassId(expected), StringComparison.Ordinal))
+                    Add(problems, prefix + ".fixture.buildData.player.classId",
                         "Class does not match the coverage branch '" + expected + "'.");
             }
             if (entry.Coverage == "D.companion.Ranger.bare" ||
                 entry.Coverage == "D.companion.Ranger.equipped")
             {
-                CompanionSpec companion = entry.Fixture.BuildData?.Companions != null &&
+                CompanionBuild companion = entry.Fixture.BuildData?.Companions != null &&
                     entry.Fixture.BuildData.Companions.Count == 1
                     ? entry.Fixture.BuildData.Companions[0]
                     : null;
-                if (companion == null || companion.Archetype != "Ranger")
+                if (companion == null || companion.ArchetypeId != "ranger")
                     Add(problems, prefix + ".fixture.buildData.companions", "The companion branch needs one Ranger.");
                 else
                 {
@@ -185,8 +188,8 @@ namespace CombatVerification.Fixtures
         private static string BuildTuple(BuildEnvelope build)
         {
             if (build?.GameData == null) return string.Empty;
-            return build.SerializedSchemaVersion + "|" + build.CaptureSchemaVersion + "|" +
-                build.ModelVersion + "|" + build.GameData.GameVersion + "|" +
+            return build.SerializedSchemaVersion + "|" + build.ModelVersion + "|"
+                + build.GameData.GameVersion + "|" +
                 build.GameData.SteamBuildId + "|" + build.GameData.AssemblySha256;
         }
 

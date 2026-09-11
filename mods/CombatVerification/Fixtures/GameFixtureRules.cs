@@ -221,8 +221,8 @@ namespace CombatVerification.Fixtures
         /// <summary>Classes the game defines, reported so a result names what it checked against.</summary>
         public IReadOnlyCollection<string> ClassNames => _classes.Keys;
 
-        public bool ClassExists(string className)
-            => className != null && _classes.ContainsKey(GameIds.ClassId(className));
+        public bool ClassExists(string classId)
+            => classId != null && _classes.ContainsKey(classId);
 
         /// <summary>One point per level after the first, plus one per veteran award.</summary>
         public int AllocatableAttributePoints(int level, int veteranPoints)
@@ -230,19 +230,17 @@ namespace CombatVerification.Fixtures
 
         public int SkillPointsAtLevel(int level) => level < 1 ? 0 : level - 1;
 
-        public bool TryGetSkill(string skillName, out SkillRule rule)
-            => _skills.TryGetValue(GameIds.Sanitize(skillName), out rule)
-               || _skills.TryGetValue(skillName, out rule);
+        public bool TryGetSkill(string skillId, out SkillRule rule)
+            => _skills.TryGetValue(skillId, out rule);
 
-        public bool TryGetItem(string itemName, out ItemRule rule)
-            => _items.TryGetValue(GameIds.Sanitize(itemName), out rule)
-               || _items.TryGetValue(itemName, out rule);
+        public bool TryGetItem(string itemId, out ItemRule rule)
+            => _items.TryGetValue(itemId, out rule);
 
-        public bool AugmentExists(string augmentName)
-            => _augments.Contains(GameIds.Sanitize(augmentName));
+        public bool AugmentExists(string augmentId)
+            => _augments.Contains(augmentId);
 
-        public bool ConsumableExists(string consumableName)
-            => _consumables.Contains(GameIds.Sanitize(consumableName));
+        public bool ConsumableExists(string itemId)
+            => _consumables.Contains(itemId);
 
         // ---- reading the game's definitions ----
 

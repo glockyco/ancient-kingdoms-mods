@@ -1,53 +1,81 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "build": {
-    "captureSchemaVersion": 1,
     "gameData": {
       "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0",
       "gameVersion": "0.9.31.1",
       "steamBuildId": "24986533"
     },
     "modelVersion": "1",
-    "serializedSchemaVersion": 2
+    "serializedSchemaVersion": 3
   },
   "name": "B-ignored-caster-stat",
   "tier": "B",
   "coverage": "B.special.ignoresCasterCombatStat",
   "buildData": {
-    "provenance": {
-      "kind": "authored",
-      "source": "verification/fixtures/b/B-ignored-caster-stat.json"
-    },
-    "character": {
-      "class": "Wizard",
-      "race": "Human",
+    "schemaVersion": 1,
+    "player": {
+      "entityId": "player",
+      "classId": "wizard",
+      "raceId": "human",
       "level": 50,
       "veteranPoints": 200,
-      "allocatedAttributes": {},
+      "attributes": {
+        "rawObserved": null,
+        "baseProgression": {
+          "strength": 10,
+          "constitution": 11,
+          "dexterity": 18,
+          "intelligence": 26,
+          "wisdom": 13,
+          "charisma": 9
+        },
+        "allocated": {
+          "strength": 0,
+          "constitution": 0,
+          "dexterity": 0,
+          "intelligence": 0,
+          "wisdom": 0,
+          "charisma": 0
+        },
+        "derivedObserved": null
+      },
       "skills": [
         {
-          "name": "Battlefield Restoration",
-          "level": 10
+          "skillId": "battlefield_restoration",
+          "skillName": "Battlefield Restoration",
+          "level": 10,
+          "pool": "veteran"
         },
         {
-          "name": "Innate Constitution",
-          "level": 10
+          "skillId": "innate_constitution",
+          "skillName": "Innate Constitution",
+          "level": 10,
+          "pool": "veteran"
         },
         {
-          "name": "Innate Intelligence",
-          "level": 10
+          "skillId": "innate_intelligence",
+          "skillName": "Innate Intelligence",
+          "level": 10,
+          "pool": "veteran"
         },
         {
-          "name": "Innate Strength",
-          "level": 10
+          "skillId": "innate_strength",
+          "skillName": "Innate Strength",
+          "level": 10,
+          "pool": "veteran"
         },
         {
-          "name": "Innate Wisdom",
-          "level": 10
+          "skillId": "innate_wisdom",
+          "skillName": "Innate Wisdom",
+          "level": 10,
+          "pool": "veteran"
         },
         {
-          "name": "Mana Burn",
-          "level": 1
+          "skillId": "mana_burn",
+          "skillName": "Mana Burn",
+          "level": 1,
+          "pool": "veteran"
         }
       ],
       "equipment": [
@@ -56,13 +84,19 @@
           "itemId": "rusty_staff",
           "itemName": null,
           "augmentId": null,
-          "durability": 100
+          "durability": 100,
+          "amount": 1
         }
       ]
     },
-    "companions": null,
+    "companions": [],
     "consumables": [],
-    "learnedBookIds": []
+    "ammunition": [],
+    "learnedBookIds": [],
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-ignored-caster-stat.json"
+    }
   },
   "execution": {
     "durationSeconds": null,

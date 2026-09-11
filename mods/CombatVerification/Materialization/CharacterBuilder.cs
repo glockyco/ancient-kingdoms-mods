@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CombatVerification.Builds;
 using CombatVerification.Fixtures;
+using DataExporter;
 
 namespace CombatVerification.Materialization
 {
@@ -55,14 +57,35 @@ namespace CombatVerification.Materialization
 
         public static BuildOutcome Run(
             ICharacterUnderConstruction character,
-            CharacterSpec spec,
-            IReadOnlyList<CompanionSpec> companions = null,
-            IReadOnlyList<string> learnedBookIds = null)
+            PlayerBuild spec,
+            IReadOnlyList<CompanionBuild> companions,
+            IReadOnlyList<string> learnedBookIds)
         {
             var steps = new List<BuildStep>();
-            var books = learnedBookIds ?? Array.Empty<string>();
+            if (spec?.Attributes?.Allocated == null
+                || spec.Skills == null
+                || spec.Equipment == null
+                || companions == null
+                || companions.Any(companion => companion?.Skills == null || companion.Equipment == null)
+                || learnedBookIds == null)
+            {
+                Fail(steps, "buildData",
+                    "Player attributes, skills, equipment, companions, and learnedBookIds are required.");
+                return new BuildOutcome { Steps = steps };
+            }
 
-            if (!CheckUntouched(character, steps) || !CheckLearnedBooks(character, books, steps))
+            var companionWithSkills = companions.FirstOrDefault(companion =>
+                companion?.Skills != null && companion.Skills.Any(skill => skill.Level > 0));
+            if (companionWithSkills != null)
+            {
+                Fail(steps, "companions.skills",
+                    $"Companion '{companionWithSkills.EntityId}' declares allocated skills, but "
+                    + "the game exposes no companion skill-allocation command.");
+                return new BuildOutcome { Steps = steps };
+            }
+
+            if (!CheckUntouched(character, steps)
+                || !CheckLearnedBooks(character, learnedBookIds, steps))
                 return new BuildOutcome { Steps = steps };
 
             // The order is fixed and each step depends on the one before it: progression grants
@@ -76,7 +99,7 @@ namespace CombatVerification.Materialization
                 () => AdvanceVeteran(character, spec, steps),
                 () => SpendAttributes(character, spec, steps),
                 () => SpendSkills(character, spec, steps),
-                () => LearnBooks(character, books, steps),
+                () => LearnBooks(character, learnedBookIds, steps),
                 () => EquipItems(character, spec, steps),
                 () => HireCompanions(character, companions, steps),
             };
@@ -104,21 +127,25 @@ namespace CombatVerification.Materialization
                 && character.UnspentAttributePoints == 0
                 && character.UnspentSkillPoints == 0
                 && character.TotalVeteranPoints == 0
-                && character.LearnedBookIds.Count == 0)
+                && character.LearnedBookIds.Count == 0
+                && character.Skills.All(skill => skill.Level == 0)
+                && character.Companions.Count == 0)
                 return true;
 
             return Fail(steps, "untouched",
                 $"The character is already at level {character.Level} with "
                 + $"{character.UnspentAttributePoints} attribute and "
                 + $"{character.UnspentSkillPoints} skill points unspent and "
-                + $"{character.LearnedBookIds.Count} learned books. A build allocates what a "
-                + "fixture declares, so it runs once on a newly created character.");
+                + $"{character.LearnedBookIds.Count} learned books, "
+                + $"{character.Skills.Count(skill => skill.Level > 0)} learned skills, and "
+                + $"{character.Companions.Count} companions. A build allocates what a fixture "
+                + "declares, so it runs once on a newly created character.");
         }
 
         // --- progression ---
 
         private static bool AdvanceLevel(
-            ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
+            ICharacterUnderConstruction character, PlayerBuild spec, List<BuildStep> steps)
         {
             var target = spec.Level;
             if (character.Level > target)
@@ -147,7 +174,7 @@ namespace CombatVerification.Materialization
         }
 
         private static bool AdvanceVeteran(
-            ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
+            ICharacterUnderConstruction character, PlayerBuild spec, List<BuildStep> steps)
         {
             var target = spec.VeteranPoints;
             if (target <= 0)
@@ -186,13 +213,14 @@ namespace CombatVerification.Materialization
         // --- attributes ---
 
         private static bool SpendAttributes(
-            ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
+            ICharacterUnderConstruction character, PlayerBuild spec, List<BuildStep> steps)
         {
-            var requested = spec.AllocatedAttributes;
-            if (requested == null || requested.Count == 0)
-                return Pass(steps, "attributes", "None requested.");
+            var requested = spec.Attributes?.Allocated;
+            if (requested == null)
+                return Fail(steps, "attributes", "The allocated attribute layer is required.");
 
-            foreach (var pair in requested.Where(pair => pair.Value > 0))
+            var allocations = AttributeAllocations(requested);
+            foreach (var pair in allocations.Where(pair => pair.Value > 0))
             {
                 for (var spent = 0; spent < pair.Value; spent++)
                 {
@@ -212,18 +240,29 @@ namespace CombatVerification.Materialization
             }
 
             var summary = string.Join(", ",
-                requested.Where(pair => pair.Value > 0)
+                allocations.Where(pair => pair.Value > 0)
                     .Select(pair => $"{pair.Key} +{pair.Value}"));
             return Pass(steps, "attributes", summary);
         }
 
+        private static IReadOnlyDictionary<string, int> AttributeAllocations(AttributeValues values)
+            => new Dictionary<string, int>
+            {
+                ["strength"] = values.Strength,
+                ["constitution"] = values.Constitution,
+                ["dexterity"] = values.Dexterity,
+                ["intelligence"] = values.Intelligence,
+                ["wisdom"] = values.Wisdom,
+                ["charisma"] = values.Charisma,
+            };
+
         // --- skills ---
 
         private static bool SpendSkills(
-            ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
+            ICharacterUnderConstruction character, PlayerBuild spec, List<BuildStep> steps)
         {
-            var requested = (spec.Skills ?? new List<SkillSpec>())
-                .Where(skill => skill.Level > 0 && !string.IsNullOrWhiteSpace(skill.Name))
+            var requested = (spec.Skills ?? new List<AllocatedSkill>())
+                .Where(skill => skill.Level > 0 && !string.IsNullOrWhiteSpace(skill.SkillId))
                 .ToList();
             if (requested.Count == 0)
                 return Pass(steps, "skills", "None requested.");
@@ -238,7 +277,7 @@ namespace CombatVerification.Materialization
 
                 foreach (var wanted in requested)
                 {
-                    var state = Find(character, wanted.Name);
+                    var state = Find(character, wanted.SkillId);
                     if (state == null)
                         continue;
 
@@ -253,7 +292,7 @@ namespace CombatVerification.Materialization
                         var before = state.Level;
                         character.UpgradeSkill(state.Index, state.IsVeteran);
 
-                        state = Find(character, wanted.Name);
+                        state = Find(character, wanted.SkillId);
                         if (state == null || state.Level == before)
                             break;
 
@@ -269,11 +308,11 @@ namespace CombatVerification.Materialization
             var unreached = new List<string>();
             foreach (var wanted in requested)
             {
-                var state = Find(character, wanted.Name);
+                var state = Find(character, wanted.SkillId);
                 if (state == null)
-                    unreached.Add($"{wanted.Name} (the character does not hold it)");
+                    unreached.Add($"{wanted.SkillId} (the character does not hold it)");
                 else if (state.Level < wanted.Level)
-                    unreached.Add($"{wanted.Name} at {state.Level} of {wanted.Level}");
+                    unreached.Add($"{wanted.SkillId} at {state.Level} of {wanted.Level}");
             }
 
             if (unreached.Count > 0)
@@ -323,7 +362,7 @@ namespace CombatVerification.Materialization
 
             foreach (var id in learnedBookIds)
             {
-                character.GrantItem(id, character.MaxDurability(id), null);
+                character.GrantItem(id, 1, character.MaxDurability(id), null);
                 if (character.FindInInventory(id, null) < 0)
                     return Fail(steps, "learnedBooks",
                         $"Granting '{id}' left no matching book in inventory.");
@@ -368,13 +407,8 @@ namespace CombatVerification.Materialization
         /// whichever piece happens to be third or fifth.
         /// </remarks>
         private static bool EquipItems(
-            ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
+            ICharacterUnderConstruction character, PlayerBuild spec, List<BuildStep> steps)
         {
-            if (spec.Equipment == null)
-                // An absent section was never read, so it states nothing about the slots. An empty
-                // one states that nothing is worn, which is a different measurement.
-                return Pass(steps, "equipment", "Not stated, so the slots are left as they are.");
-
             var requested = spec.Equipment
                 .Where(entry => !string.IsNullOrWhiteSpace(entry.ItemId))
                 .ToList();
@@ -419,14 +453,14 @@ namespace CombatVerification.Materialization
                 if (!character.ItemExists(entry.ItemId))
                     return Fail(steps, "equipment", $"The game defines no item '{entry.ItemId}'.");
 
-                var durability = entry.Durability ?? character.MaxDurability(entry.ItemId);
+                var durability = entry.Durability;
                 if (durability <= 0)
                     return Fail(steps, "equipment",
                         $"'{entry.ItemId}' would be worn at durability {durability}, and the engine "
                         + "counts a slot's bonuses only above zero, so the piece could not "
                         + "contribute and no measurement would say so.");
 
-                character.GrantItem(entry.ItemId, durability, entry.AugmentId);
+                character.GrantItem(entry.ItemId, entry.Amount, durability, entry.AugmentId);
 
                 var inventoryIndex = character.FindInInventory(entry.ItemId, entry.AugmentId);
                 if (inventoryIndex < 0)
@@ -452,6 +486,11 @@ namespace CombatVerification.Materialization
                     return Fail(steps, "equipment",
                         $"Slot {entry.Slot} holds '{entry.ItemId}' at durability "
                         + $"{after.Durability}, not the {durability} it was granted with.");
+
+                if (after.Amount != entry.Amount)
+                    return Fail(steps, "equipment",
+                        $"Slot {entry.Slot} holds {after.Amount} of '{entry.ItemId}', not the "
+                        + $"declared {entry.Amount}.");
 
                 // The augment rides in the slot, so equipping moves it with the item. Asserting it
                 // here is what proves the augment needs no separate path.
@@ -487,25 +526,22 @@ namespace CombatVerification.Materialization
         /// </remarks>
         private static bool HireCompanions(
             ICharacterUnderConstruction character,
-            IReadOnlyList<CompanionSpec> companions,
+            IReadOnlyList<CompanionBuild> companions,
             List<BuildStep> steps)
         {
-            if (companions == null)
-                return Pass(steps, "companions", "Not stated.");
-
             var requested = companions
-                .Where(companion => !string.IsNullOrWhiteSpace(companion.Archetype))
+                .Where(companion => !string.IsNullOrWhiteSpace(companion.ArchetypeId))
                 .ToList();
             if (requested.Count == 0)
                 return Pass(steps, "companions", "None declared.");
 
             foreach (var wanted in requested)
             {
-                if (!character.ArchetypeExists(wanted.Archetype))
+                if (!character.ArchetypeExists(wanted.ArchetypeId))
                     return Fail(steps, "companions",
-                        $"The game offers no companion archetype '{wanted.Archetype}'.");
+                        $"The game offers no companion archetype '{wanted.ArchetypeId}'.");
 
-                var price = character.HirePrice(wanted.Archetype);
+                var price = character.HirePrice(wanted.ArchetypeId);
 
                 var companion = HireOne(character, wanted, price, steps);
                 if (companion == null)
@@ -540,7 +576,7 @@ namespace CombatVerification.Materialization
         /// </remarks>
         private static ICompanionUnderConstruction HireOne(
             ICharacterUnderConstruction character,
-            CompanionSpec wanted,
+            CompanionBuild wanted,
             long price,
             List<BuildStep> steps)
         {
@@ -548,12 +584,12 @@ namespace CombatVerification.Materialization
                 character.AddGold(price - character.Gold);
 
             var before = character.Companions.Count;
-            character.Hire(wanted.Archetype, price);
+            character.Hire(wanted.ArchetypeId, price);
 
             if (character.Companions.Count == before)
             {
                 Fail(steps, "companions",
-                    $"Hiring a {wanted.Archetype} left {before} companions. The engine caps how many "
+                    $"Hiring a {wanted.ArchetypeId} left {before} companions. The engine caps how many "
                     + "an owner may hold, and it charges the price and records the hire without "
                     + "producing one.");
                 return null;
@@ -561,23 +597,31 @@ namespace CombatVerification.Materialization
 
             var companion = character.Companions[character.Companions.Count - 1];
 
-            if (!string.Equals(companion.Archetype, wanted.Archetype,
-                    System.StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(GameIds.Sanitize(companion.Archetype), wanted.ArchetypeId,
+                    StringComparison.Ordinal))
             {
                 Fail(steps, "companions",
-                    $"Hiring a {wanted.Archetype} produced a {companion.Archetype}.");
+                    $"Hiring a {wanted.ArchetypeId} produced a {companion.Archetype}.");
                 return null;
             }
 
-            if (!string.IsNullOrWhiteSpace(wanted.Race)
-                && !string.Equals(companion.Race, wanted.Race,
-                    System.StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(wanted.RaceId)
+                && !string.Equals(GameIds.Sanitize(companion.Race), wanted.RaceId,
+                    StringComparison.Ordinal))
             {
                 Fail(steps, "companions",
-                    $"The fixture states a {wanted.Race} {wanted.Archetype} and the engine rolled a "
+                    $"The fixture states a {wanted.RaceId} {wanted.ArchetypeId} and the engine rolled a "
                     + $"{companion.Race} one. A companion's race is drawn from a list its archetype "
                     + "allows, so a fixture that names one depends on the seed that governs the "
                     + "draw.");
+                return null;
+            }
+
+            if (companion.Level != wanted.Level)
+            {
+                Fail(steps, "companions",
+                    $"Hiring '{wanted.EntityId}' produced level {companion.Level}, not the declared "
+                    + $"level {wanted.Level}.");
                 return null;
             }
 
@@ -589,7 +633,7 @@ namespace CombatVerification.Materialization
         /// from as literals inside the hire, so nothing can be asked whether a value is reachable.
         /// </summary>
         private static bool AssignCompanionValues(
-            ICompanionUnderConstruction companion, CompanionSpec wanted, List<BuildStep> steps)
+            ICompanionUnderConstruction companion, CompanionBuild wanted, List<BuildStep> steps)
         {
             if (wanted.HealthMultiplier.HasValue)
             {
@@ -628,7 +672,7 @@ namespace CombatVerification.Materialization
         private static bool EquipCompanion(
             ICharacterUnderConstruction character,
             ICompanionUnderConstruction companion,
-            CompanionSpec wanted,
+            CompanionBuild wanted,
             List<BuildStep> steps)
         {
             if (wanted.Equipment == null || wanted.Equipment.Count == 0)
@@ -648,13 +692,13 @@ namespace CombatVerification.Materialization
                 if (!character.ItemExists(entry.ItemId))
                     return Fail(steps, "companions", $"The game defines no item '{entry.ItemId}'.");
 
-                var durability = entry.Durability ?? character.MaxDurability(entry.ItemId);
+                var durability = entry.Durability;
                 if (durability <= 0)
                     return Fail(steps, "companions",
                         $"'{entry.ItemId}' would be worn at durability {durability}, which the "
                         + "engine counts as contributing nothing.");
 
-                character.GrantItem(entry.ItemId, durability, entry.AugmentId);
+                character.GrantItem(entry.ItemId, entry.Amount, durability, entry.AugmentId);
 
                 var inventoryIndex = character.FindInInventory(entry.ItemId, entry.AugmentId);
                 if (inventoryIndex < 0)
@@ -674,14 +718,23 @@ namespace CombatVerification.Materialization
                         $"A companion's slot {entry.Slot} holds "
                         + $"{(after.ItemId == null ? "nothing" : $"'{after.ItemId}'")} after "
                         + $"equipping '{entry.ItemId}'.");
+                if (after.Durability != durability || after.Amount != entry.Amount)
+                    return Fail(steps, "companions",
+                        $"A companion's slot {entry.Slot} holds amount {after.Amount} at durability "
+                        + $"{after.Durability}, not amount {entry.Amount} at durability {durability}.");
+                if (!string.Equals(after.AugmentId ?? "", entry.AugmentId ?? "",
+                        StringComparison.OrdinalIgnoreCase))
+                    return Fail(steps, "companions",
+                        $"A companion's slot {entry.Slot} does not hold augment "
+                        + $"'{entry.AugmentId}'.");
             }
 
             return true;
         }
 
-        private static SkillState Find(ICharacterUnderConstruction character, string name)
+        private static SkillState Find(ICharacterUnderConstruction character, string skillId)
             => character.Skills.FirstOrDefault(
-                skill => string.Equals(skill.Name, name, System.StringComparison.OrdinalIgnoreCase));
+                skill => string.Equals(GameIds.Sanitize(skill.Name), skillId, StringComparison.Ordinal));
 
         private static bool Pass(List<BuildStep> steps, string name, string detail)
         {

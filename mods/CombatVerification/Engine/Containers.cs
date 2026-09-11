@@ -43,6 +43,7 @@ namespace CombatVerification.Engine
                     ? GameIds.Sanitize(slot.augmentName)
                     : null,
                 Durability = occupied ? slot.durability : 0,
+                Amount = occupied ? slot.amount : 0,
             };
         }
 

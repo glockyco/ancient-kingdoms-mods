@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using CombatVerification.Builds;
 using CombatVerification.Dtos;
 using CombatVerification.Fixtures;
 using CombatVerification.Materialization;
@@ -24,7 +25,7 @@ namespace CombatVerification.Commands
         : IControlCommandHandler<BuildCharacterArgs, BuildCharacterResult>
     {
         public string Name => "fixture.buildCharacter";
-        public int Version => 2;
+        public int Version => 3;
         public ControlCommandKind Kind => ControlCommandKind.Job;
         public bool MutatesState => true;
 
@@ -44,18 +45,21 @@ namespace CombatVerification.Commands
             BuildCharacterArgs args,
             TaskCompletionSource<ControlCommandResult<BuildCharacterResult>> completion)
         {
-            if (args?.Build == null
-                || args.BuildData?.Character == null
-                || args.BuildData.LearnedBookIds == null
-                || args.BuildData.Provenance == null)
+            if (args?.Build == null)
             {
                 completion.TrySetResult(context.PreconditionFailed(
-                    "argumentMissing",
-                    "A build envelope, logical character, learnedBookIds declaration, and provenance are required."));
+                    "argumentMissing", "A build envelope is required."));
                 yield break;
             }
 
             var buildData = args.BuildData;
+            var buildProblems = LogicalBuildAdapter.Validate(buildData);
+            if (buildProblems.Count > 0)
+            {
+                completion.TrySetResult(context.PreconditionFailed(
+                    "invalidBuildData", string.Join("; ", buildProblems)));
+                yield break;
+            }
             var character = PlayerUnderConstruction.Wrap(out var unavailable);
             if (character == null)
             {
@@ -72,7 +76,7 @@ namespace CombatVerification.Commands
             {
                 outcome = CharacterBuilder.Run(
                     character,
-                    buildData.Character,
+                    buildData.Player,
                     buildData.Companions,
                     buildData.LearnedBookIds);
             }

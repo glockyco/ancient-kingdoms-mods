@@ -15,8 +15,7 @@ from compendium.redactions.verify import Subject
 
 RAW_PAYLOAD_NAME = "planner-data.json"
 COMPRESSED_PAYLOAD_NAME = f"{RAW_PAYLOAD_NAME}.gz"
-SERIALIZED_SCHEMA_VERSION = 2
-CAPTURE_SCHEMA_VERSION = 1
+SERIALIZED_SCHEMA_VERSION = 3
 MODEL_VERSION = "1"
 ADMITTED_ITEM_TYPES = frozenset(
     {"equipment", "weapon", "augment", "food", "potion", "ammo", "book"}
@@ -448,7 +447,6 @@ def _build_envelope(export_dir: Path, snapshot_path: Path) -> dict[str, Any]:
 
     return {
         "serializedSchemaVersion": SERIALIZED_SCHEMA_VERSION,
-        "captureSchemaVersion": CAPTURE_SCHEMA_VERSION,
         "modelVersion": MODEL_VERSION,
         "gameData": {
             "gameVersion": _required_snapshot_value(snapshot, "game_version"),

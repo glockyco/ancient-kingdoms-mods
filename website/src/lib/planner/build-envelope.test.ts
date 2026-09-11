@@ -6,8 +6,7 @@ import {
 } from "./build-envelope";
 
 const matchingBuild = (): BuildEnvelope => ({
-  serializedSchemaVersion: 2,
-  captureSchemaVersion: 1,
+  serializedSchemaVersion: 3,
   modelVersion: "1",
   gameData: {
     gameVersion: "0.9.31.1",
@@ -18,13 +17,12 @@ const matchingBuild = (): BuildEnvelope => ({
 });
 
 describe("parseBuildEnvelope", () => {
-  it.each([
-    ["serializedSchemaVersion", 3, "Unsupported serialized schema"],
-    ["captureSchemaVersion", 2, "Unsupported capture schema"],
-  ] as const)("refuses an unknown %s", (field, value, message) => {
-    const build = { ...matchingBuild(), [field]: value };
+  it("refuses an unknown serialized schema", () => {
+    const build = { ...matchingBuild(), serializedSchemaVersion: 4 };
 
-    expect(() => parseBuildEnvelope(build)).toThrow(message);
+    expect(() => parseBuildEnvelope(build)).toThrow(
+      "Unsupported serialized schema",
+    );
   });
 
   it("refuses incomplete game-data identity", () => {
@@ -40,6 +38,10 @@ describe("parseBuildEnvelope", () => {
   });
 
   it.each([
+    [
+      "build.captureSchemaVersion",
+      () => ({ ...matchingBuild(), captureSchemaVersion: 1 }),
+    ],
     ["build.policy", () => ({ ...matchingBuild(), policy: "ignore" })],
     [
       "build.gameData.state",

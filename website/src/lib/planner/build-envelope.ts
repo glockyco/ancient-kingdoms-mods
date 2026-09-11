@@ -1,5 +1,4 @@
-export const SERIALIZED_SCHEMA_VERSION = 2 as const;
-export const CAPTURE_SCHEMA_VERSION = 1 as const;
+export const SERIALIZED_SCHEMA_VERSION = 3 as const;
 export const MODEL_VERSION = "1" as const;
 
 export interface GameDataVersion {
@@ -10,7 +9,6 @@ export interface GameDataVersion {
 
 export interface BuildEnvelope {
   serializedSchemaVersion: typeof SERIALIZED_SCHEMA_VERSION;
-  captureSchemaVersion: typeof CAPTURE_SCHEMA_VERSION;
   modelVersion: string;
   gameData: GameDataVersion;
 }
@@ -24,7 +22,6 @@ export interface BuildCompatibility {
 
 const BUILD_FIELDS = {
   serializedSchemaVersion: true,
-  captureSchemaVersion: true,
   modelVersion: true,
   gameData: true,
 } as const satisfies Readonly<Record<keyof BuildEnvelope, true>>;
@@ -47,17 +44,6 @@ export function parseBuildEnvelope(value: unknown): BuildEnvelope {
     );
   }
 
-  const captureSchemaVersion = requireInteger(
-    build,
-    "captureSchemaVersion",
-    "build.captureSchemaVersion",
-  );
-  if (captureSchemaVersion !== CAPTURE_SCHEMA_VERSION) {
-    throw new Error(
-      `Unsupported capture schema ${captureSchemaVersion}; expected ${CAPTURE_SCHEMA_VERSION}`,
-    );
-  }
-
   const gameData = requireRecord(
     build.gameData,
     "build.gameData",
@@ -65,7 +51,6 @@ export function parseBuildEnvelope(value: unknown): BuildEnvelope {
   );
   return {
     serializedSchemaVersion,
-    captureSchemaVersion,
     modelVersion: requireString(build, "modelVersion", "build.modelVersion"),
     gameData: {
       gameVersion: requireString(

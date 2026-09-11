@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CombatVerification.Fixtures;
+using DataExporter;
 
 namespace CombatVerification.Tests
 {
@@ -18,10 +19,10 @@ namespace CombatVerification.Tests
 
         public Dictionary<string, string[]> Classes { get; } = new()
         {
-            ["Warrior"] = new[] { "Human", "Dwarf" },
-            ["Wizard"] = new[] { "Human", "Elf" },
-            ["Ranger"] = new[] { "Human", "Elf" },
-            ["Rogue"] = new[] { "Human", "Dark Elf" },
+            ["warrior"] = new[] { "Human", "Dwarf" },
+            ["wizard"] = new[] { "Human", "Elf" },
+            ["ranger"] = new[] { "Human", "Elf" },
+            ["rogue"] = new[] { "Human", "Dark Elf" },
         };
 
         /// <summary>
@@ -31,10 +32,10 @@ namespace CombatVerification.Tests
         /// </summary>
         public Dictionary<string, string[]> SlotTables { get; } = new()
         {
-            ["Warrior"] = SlotsWithOffhand("Shield"),
-            ["Wizard"] = SlotsWithOffhand("Shield"),
-            ["Ranger"] = SlotsWithOffhand("Bow"),
-            ["Rogue"] = SlotsWithOffhand("Weapon"),
+            ["warrior"] = SlotsWithOffhand("Shield"),
+            ["wizard"] = SlotsWithOffhand("Shield"),
+            ["ranger"] = SlotsWithOffhand("Bow"),
+            ["rogue"] = SlotsWithOffhand("Weapon"),
         };
 
         private static string[] SlotsWithOffhand(string offhand) => new[]
@@ -62,21 +63,15 @@ namespace CombatVerification.Tests
             return accepting;
         }
 
-        private string[]? TableFor(string? archetype)
-        {
-            foreach (var pair in SlotTables)
-            {
-                if (Key(pair.Key) == Key(archetype))
-                    return pair.Value;
-            }
-
-            return null;
-        }
+        private string[]? TableFor(string? archetypeId)
+            => archetypeId != null && SlotTables.TryGetValue(archetypeId, out var table)
+                ? table
+                : null;
 
         public Dictionary<string, SkillRule> Skills { get; } = new();
         public Dictionary<string, ItemRule> Items { get; } = new();
-        public HashSet<string> Augments { get; } = new() { "Jagged Shard" };
-        public HashSet<string> Consumables { get; } = new() { "Roast Boar" };
+        public HashSet<string> Augments { get; } = new() { "jagged_shard" };
+        public HashSet<string> Consumables { get; } = new() { "roast_boar" };
 
         /// <summary>Levels grant one point each after the first.</summary>
         public int SkillPointsAtLevel(int level) => level < 1 ? 0 : level - 1;
@@ -84,49 +79,20 @@ namespace CombatVerification.Tests
         public int AllocatableAttributePoints(int level, int veteranPoints)
             => (level < 1 ? 0 : level - 1) + veteranPoints;
 
-        public bool ClassExists(string className)
-            => Classes.Keys.Any(name => Key(name) == Key(className));
+        public bool ClassExists(string classId)
+            => classId != null && Classes.ContainsKey(classId);
 
-        /// <summary>
-        /// Resolution accepts a display name or an identifier, as the port requires. A double
-        /// that accepted only one form would be more permissive than the game in one direction
-        /// and stricter in the other.
-        /// </summary>
-        private static string Key(string? name)
-            => name == null
-                ? string.Empty
-                : name.ToLowerInvariant().Replace(" ", "").Replace("_", "").Replace("-", "");
+        public bool TryGetSkill(string skillId, out SkillRule rule)
+            => Skills.TryGetValue(skillId ?? string.Empty, out rule!);
 
-        private static bool Lookup<T>(Dictionary<string, T> source, string name, out T found)
-        {
-            if (source.TryGetValue(name ?? string.Empty, out found!))
-                return true;
+        public bool TryGetItem(string itemId, out ItemRule rule)
+            => Items.TryGetValue(itemId ?? string.Empty, out rule!);
 
-            var key = Key(name);
-            foreach (var pair in source)
-            {
-                if (Key(pair.Key) == key)
-                {
-                    found = pair.Value;
-                    return true;
-                }
-            }
+        public bool AugmentExists(string augmentId)
+            => augmentId != null && Augments.Contains(augmentId);
 
-            found = default!;
-            return false;
-        }
-
-        public bool TryGetSkill(string skillName, out SkillRule rule)
-            => Lookup(Skills, skillName, out rule!);
-
-        public bool TryGetItem(string itemName, out ItemRule rule)
-            => Lookup(Items, itemName, out rule!);
-
-        public bool AugmentExists(string augmentName)
-            => Augments.Any(name => Key(name) == Key(augmentName));
-
-        public bool ConsumableExists(string consumableName)
-            => Consumables.Any(name => Key(name) == Key(consumableName));
+        public bool ConsumableExists(string itemId)
+            => itemId != null && Consumables.Contains(itemId);
 
         // --- builders ---
 
@@ -140,7 +106,7 @@ namespace CombatVerification.Tests
             string? prerequisite = null,
             int prerequisiteLevel = 0)
         {
-            Skills[name] = new SkillRule
+            Skills[GameIds.Sanitize(name)] = new SkillRule
             {
                 Name = name,
                 MaxLevel = maxLevel,
@@ -161,7 +127,7 @@ namespace CombatVerification.Tests
             string[]? classes = null,
             bool twoHanded = false,
             string? category = null,
-            string archetype = "Warrior",
+            string archetype = "warrior",
             bool isBook = false)
         {
             // A test that names no category means "an item belonging in this slot", so the
@@ -171,7 +137,7 @@ namespace CombatVerification.Tests
                 ? table[slot]
                 : null);
 
-            Items[name] = new ItemRule
+            Items[GameIds.Sanitize(name)] = new ItemRule
             {
                 Name = name,
                 LevelRequired = levelRequired,

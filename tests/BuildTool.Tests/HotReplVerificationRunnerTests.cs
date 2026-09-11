@@ -202,7 +202,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
             VerificationWinePrefix = _prefix,
             ReadinessTimeout = TimeSpan.FromSeconds(5),
             PollInterval = TimeSpan.FromMilliseconds(1),
-            FixtureMatrixJson = @"{""schemaVersion"":1,""fixtures"":[{""fixture"":{""schemaVersion"":2,""buildData"":{""character"":{""class"":""Warrior"",""race"":""Human""}}}}]}",
+            FixtureMatrixJson = @"{""schemaVersion"":1,""fixtures"":[{""fixture"":{""schemaVersion"":3,""buildData"":{""player"":{""classId"":""warrior"",""raceId"":""human""}}}}]}",
         };
 
         var result = await new HotReplVerificationRunner(transport, options)
@@ -212,7 +212,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         var sent = string.Join("\n", transport.SentMessages);
         Assert.Contains("fixture.createCharacter", sent);
         Assert.Contains("\"characterName\":\"Verifier\"", sent);
-        Assert.Contains("\"class\":\"Warrior\"", sent);
+        Assert.Contains("\"class\":\"warrior\"", sent);
     }
 
     [Fact]
