@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>CharacterCapture</AssemblyName>
+    <RootNamespace>CharacterCapture</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.SceneManagementModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.SceneManagementModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppMirror">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HotRepl.Core">
+      <HintPath>$(HotReplCoreOutput)\HotRepl.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HotRepl.Protocol">
+      <HintPath>$(HotReplCoreOutput)\HotRepl.Protocol.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(HotReplCoreOutput)\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Compile Include="..\DataExporter\GameIds.cs"
+             Link="Shared\GameIds.cs" />
+    <Compile Include="..\DataExporter\Models\ProgressionData.cs"
+             Link="Shared\ProgressionData.cs" />
+    <Compile Include="..\DataExporter\Exporters\ProgressionRows.cs"
+             Link="Shared\ProgressionRows.cs" />
+
+    <Compile Include="..\CombatVerification\Builds\LogicalBuildData.cs"
+             Link="Shared\LogicalBuildData.cs" />
+    <Compile Include="..\CombatVerification\Builds\LogicalBuildAdapter.cs"
+             Link="Shared\LogicalBuildAdapter.cs" />
+    <Compile Include="..\CombatVerification\Capture\CaptureBuildRecord.cs"
+             Link="Shared\CaptureBuildRecord.cs" />
+    <Compile Include="..\CombatVerification\Capture\CaptureBuildAdapter.cs"
+             Link="Shared\CaptureBuildAdapter.cs" />
+  </ItemGroup>
+</Project>

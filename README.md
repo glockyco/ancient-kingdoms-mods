@@ -76,6 +76,7 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 
 | Mod                | Summary                                                                                                                                                                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CharacterCapture` | Writes the local player's versioned planner build to `UserData/CharacterCapture/character-capture.json`. The `character.capture` command reads progression, skills, learned books, equipment, owned items, and active companions. The `combatMeter.capture` command reads player and companion meter totals without resetting them. |
 | `CombatVerification` | Registers typed HotRepl commands for checking, building, and measuring a combat fixture against the running game: `fixture.validate` (needs the world loaded, because the game's class definitions arrive with it), `fixture.createCharacter` (needs character selection open), `fixture.buildCharacter` (brings a newly created character to a declared level, attribute allocation, skill levels, permanent learned books, equipment, and companions), `probe.statSheet` (the complete combat state of the player and its companions), `probe.targetState` (what a hit will meet on the target, and the timed effects changing it), `probe.actionInterval` (how often the player can act, stilling its attack loop first), and `probe.perHitDamage` (every hit inside a window, each naming its skill). Harmony-patches `Combat.DealDamageAt` to name the skill behind a hit, which is why a measurement can tell two rotations apart; the patch keeps nothing while no probe is reading. Used by the combat verification harness, not during play. |
 | `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                                                                 |
 | `FieldDefaultValueHookFix` | Harmony-patches Il2CppInterop's `Class_GetFieldDefaultValue_Hook.FindTargetMethod` so the byte-signature scan does not land on the wrong function and crash the game on world entry. |
@@ -231,6 +232,8 @@ hotrepl --url ws://127.0.0.1:18590 info --json
 hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
 hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json
 hotrepl --url ws://127.0.0.1:18590 run world.enter '{}' --json
+hotrepl --url ws://127.0.0.1:18590 run character.capture '{}' --json
+hotrepl --url ws://127.0.0.1:18590 run combatMeter.capture '{}' --json
 hotrepl --url ws://127.0.0.1:18590 describe compendium.export --json
 hotrepl --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
 ```

@@ -80,7 +80,7 @@ Schema and serialization checks can precede runtime qualification; they do not c
       Reject unknown or duplicate book IDs, unresolved required identities, missing definitions, and unsupported admitted effects.
       Verify catalog-derived inputs reach the production evaluator without manually assembled stats/actions or silent defaults.
       Verify learned-book gains apply once without consuming allocation budgets.
-- [ ] 3.14 Implement complete read-only capture production against the schema from 3.11.
+- [x] 3.14 Implement complete read-only capture production against the schema from 3.11.
       Complete the shared capture core and required build reads in tasks 10.1 through 10.5 and 10.10.
       Use the local-file transport in 10.7 and retain the deployment and runtime evidence required by 10.9.
       Preserve raw/base/allocated/derived meanings, skill allocations, instance state, companion state, quantities, and learned identities.
@@ -254,25 +254,25 @@ Schema and serialization checks can precede runtime qualification; they do not c
 
 ## 10. Character capture mod
 
-- [ ] 10.1 Create the distributable mod project and shared capture core for versioned build data
+- [x] 10.1 Create the distributable mod project and shared capture core for versioned build data
       with separate capture metadata. Verify exported data is consumable through the checked
       production adapter without requiring the capture producer to generate harness reports or
       predict evaluator output.
-- [ ] 10.2 Capture player progression, raw attributes and allocations with explicit meaning,
+- [x] 10.2 Capture player progression, raw attributes and allocations with explicit meaning,
       per-pool skill levels, equipment, inventory/storage, stable item identities, quantities,
       containers, augments, durability, consumables, and ammunition. Verify readback preserves each
       required build input without converting unread fields to empty values.
-- [ ] 10.3 Capture active mercenary and pet state with completeness and explicit exclusions.
+- [x] 10.3 Capture active mercenary and pet state with completeness and explicit exclusions.
       Distinguish companion live rolls/combat state from saved hire values; pets remain
       accounting-only. Verify dependent evaluation stops for missing required state while a partial
       capture can still be inspected.
-- [ ] 10.4 Implement read-only character and meter capture paths that refuse missing runtime objects and cannot mutate gameplay or meter state.
-- [ ] 10.5 Add game-free core tests and game-backed checks for schema rejection, completeness, containers, duplicate items, missing runtime state, and mutation absence.
+- [x] 10.4 Implement read-only character and meter capture paths that refuse missing runtime objects and cannot mutate gameplay or meter state.
+- [x] 10.5 Add game-free core tests and game-backed checks for schema rejection, completeness, containers, duplicate items, missing runtime state, and mutation absence.
 - [ ] 10.6 Add separate typed commands for read-only meter capture and explicit mutating meter reset, with reset prohibited as a capture side effect.
-- [ ] 10.7 Write one local JSON file, report its exact path, and register the same file as an optional HotRepl automation artifact.
-- [ ] 10.8 Add the mod to the solution, build tool, package output, and player-facing download registry.
-- [ ] 10.9 Build and deploy the mod, invoke it in a loaded game, inspect the file, and confirm the player's build and game state before and after capture.
-- [ ] 10.10 Capture actual learned-book state read-only, using stable IDs and completeness, without inferring learning from inventory ownership or invoking learning/reset/mutation paths; record independent runtime proof of the read-only behavior.
+- [x] 10.7 Write one local JSON file, report its exact path, and register the same file as an optional HotRepl automation artifact.
+- [x] 10.8 Add the mod to the solution, build tool, package output, and player-facing download registry.
+- [x] 10.9 Build and deploy the mod, invoke it in a loaded game, inspect the file, and confirm the player's build and game state before and after capture.
+- [x] 10.10 Capture actual learned-book state read-only, using stable IDs and completeness, without inferring learning from inventory ownership or invoking learning/reset/mutation paths; record independent runtime proof of the read-only behavior.
 
 ## 11. Import and measured comparison
 

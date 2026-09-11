@@ -45,6 +45,26 @@ export interface PlayerBuild {
   equipment: EquippedItem[];
 }
 
+export interface ResourceValue {
+  current: number;
+  max: number;
+}
+
+export interface CompanionResources {
+  health: ResourceValue;
+  mana: ResourceValue | null;
+  energy: ResourceValue | null;
+}
+
+export interface CapturedEffect {
+  skillId: string;
+  skillName: string | null;
+  level: number;
+  sourceEntityId: string | null;
+  recipientEntityId: string;
+  expiresAtServerTime: number;
+}
+
 export interface CompanionBuild {
   entityId: string;
   kind: "mercenary" | "pet";
@@ -54,6 +74,8 @@ export interface CompanionBuild {
   healthMultiplier: number | null;
   resourceMultiplier: number | null;
   baseCombat: number | null;
+  currentResources?: CompanionResources;
+  effects?: CapturedEffect[];
   skills: AllocatedSkill[];
   equipment: EquippedItem[];
 }
@@ -135,8 +157,24 @@ const COMPANION_FIELDS = fields<CompanionBuild>([
   "healthMultiplier",
   "resourceMultiplier",
   "baseCombat",
+  "currentResources",
+  "effects",
   "skills",
   "equipment",
+]);
+const RESOURCE_VALUE_FIELDS = fields<ResourceValue>(["current", "max"]);
+const COMPANION_RESOURCES_FIELDS = fields<CompanionResources>([
+  "health",
+  "mana",
+  "energy",
+]);
+const CAPTURED_EFFECT_FIELDS = fields<CapturedEffect>([
+  "skillId",
+  "skillName",
+  "level",
+  "sourceEntityId",
+  "recipientEntityId",
+  "expiresAtServerTime",
 ]);
 const ITEM_QUANTITY_FIELDS = fields<ItemQuantity>([
   "itemId",
@@ -375,6 +413,97 @@ function parseEquipment(
   return equipment;
 }
 
+function parseOptionalCompanionResources(
+  companion: Record<string, unknown>,
+  path: string,
+): CompanionResources | undefined {
+  if (!Object.prototype.hasOwnProperty.call(companion, "currentResources")) {
+    return undefined;
+  }
+  const resources = requireRecord(
+    companion.currentResources,
+    `${path}.currentResources`,
+    COMPANION_RESOURCES_FIELDS,
+  );
+  const resource = (value: unknown, resourcePath: string): ResourceValue => {
+    const parsed = requireRecord(value, resourcePath, RESOURCE_VALUE_FIELDS);
+    return {
+      current: requireNonNegativeInteger(
+        parsed,
+        "current",
+        `${resourcePath}.current`,
+      ),
+      max: requirePositiveInteger(parsed, "max", `${resourcePath}.max`),
+    };
+  };
+  const nullableResource = (key: "mana" | "energy"): ResourceValue | null => {
+    const value = requireField(
+      resources,
+      key,
+      `${path}.currentResources.${key}`,
+    );
+    return value === null
+      ? null
+      : resource(value, `${path}.currentResources.${key}`);
+  };
+  return {
+    health: resource(
+      requireField(resources, "health", `${path}.currentResources.health`),
+      `${path}.currentResources.health`,
+    ),
+    mana: nullableResource("mana"),
+    energy: nullableResource("energy"),
+  };
+}
+
+function parseOptionalEffects(
+  companion: Record<string, unknown>,
+  path: string,
+): CapturedEffect[] | undefined {
+  if (!Object.prototype.hasOwnProperty.call(companion, "effects")) {
+    return undefined;
+  }
+  return requireArray(companion, "effects", `${path}.effects`).map(
+    (value, index) => {
+      const effectPath = `${path}.effects[${index}]`;
+      const effect = requireRecord(value, effectPath, CAPTURED_EFFECT_FIELDS);
+      const expiresAtServerTime = requireField(
+        effect,
+        "expiresAtServerTime",
+        `${effectPath}.expiresAtServerTime`,
+      );
+      if (
+        typeof expiresAtServerTime !== "number" ||
+        !Number.isFinite(expiresAtServerTime)
+      ) {
+        throw new TypeError(
+          `${effectPath}.expiresAtServerTime must be a finite number`,
+        );
+      }
+      return {
+        skillId: requireString(effect, "skillId", `${effectPath}.skillId`),
+        skillName: requireNullableString(
+          effect,
+          "skillName",
+          `${effectPath}.skillName`,
+        ),
+        level: requirePositiveInteger(effect, "level", `${effectPath}.level`),
+        sourceEntityId: requireNullableString(
+          effect,
+          "sourceEntityId",
+          `${effectPath}.sourceEntityId`,
+        ),
+        recipientEntityId: requireString(
+          effect,
+          "recipientEntityId",
+          `${effectPath}.recipientEntityId`,
+        ),
+        expiresAtServerTime,
+      };
+    },
+  );
+}
+
 function parseCompanion(value: unknown, path: string): CompanionBuild {
   const companion = requireRecord(value, path, COMPANION_FIELDS);
   const kind = requireString(companion, "kind", `${path}.kind`);
@@ -402,6 +531,8 @@ function parseCompanion(value: unknown, path: string): CompanionBuild {
       "baseCombat",
       `${path}.baseCombat`,
     ),
+    currentResources: parseOptionalCompanionResources(companion, path),
+    effects: parseOptionalEffects(companion, path),
     skills: parseSkills(companion, "skills", `${path}.skills`),
     equipment: parseEquipment(companion, "equipment", `${path}.equipment`),
   };

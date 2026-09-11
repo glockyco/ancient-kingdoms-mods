@@ -24,6 +24,12 @@
       "project": "BossTracker",
       "name": "Boss Tracker",
       "description": "Shows nearby bosses, elites, and fabled monsters with their status, direction, distance, and respawn time."
+    },
+    {
+      "id": "character-capture",
+      "project": "CharacterCapture",
+      "name": "Character Capture",
+      "description": "Exports local character, owned gear, companion, and combat meter state for the planner."
     }
   ]
 }

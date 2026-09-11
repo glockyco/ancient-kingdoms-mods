@@ -100,8 +100,33 @@ namespace CombatVerification.Builds
         [JsonProperty("healthMultiplier", Required = Required.AllowNull)] public float? HealthMultiplier { get; set; }
         [JsonProperty("resourceMultiplier", Required = Required.AllowNull)] public float? ResourceMultiplier { get; set; }
         [JsonProperty("baseCombat", Required = Required.AllowNull)] public int? BaseCombat { get; set; }
+        [JsonProperty("currentResources", Required = Required.Default)] public CompanionResources CurrentResources { get; set; }
+        [JsonProperty("effects", Required = Required.Default)] public List<CapturedEffect> Effects { get; set; }
         [JsonProperty("skills", Required = Required.Always)] public List<AllocatedSkill> Skills { get; set; }
         [JsonProperty("equipment", Required = Required.Always)] public List<EquippedItem> Equipment { get; set; }
+    }
+
+    public sealed class CompanionResources
+    {
+        [JsonProperty("health", Required = Required.Always)] public ResourceValue Health { get; set; }
+        [JsonProperty("mana", Required = Required.AllowNull)] public ResourceValue Mana { get; set; }
+        [JsonProperty("energy", Required = Required.AllowNull)] public ResourceValue Energy { get; set; }
+    }
+
+    public sealed class ResourceValue
+    {
+        [JsonProperty("current", Required = Required.Always)] public int Current { get; set; }
+        [JsonProperty("max", Required = Required.Always)] public int Max { get; set; }
+    }
+
+    public sealed class CapturedEffect
+    {
+        [JsonProperty("skillId", Required = Required.Always)] public string SkillId { get; set; }
+        [JsonProperty("skillName", Required = Required.AllowNull)] public string SkillName { get; set; }
+        [JsonProperty("level", Required = Required.Always)] public int Level { get; set; }
+        [JsonProperty("sourceEntityId", Required = Required.AllowNull)] public string SourceEntityId { get; set; }
+        [JsonProperty("recipientEntityId", Required = Required.Always)] public string RecipientEntityId { get; set; }
+        [JsonProperty("expiresAtServerTime", Required = Required.Always)] public double ExpiresAtServerTime { get; set; }
     }
 
     public sealed class ItemQuantity

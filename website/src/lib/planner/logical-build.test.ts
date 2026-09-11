@@ -128,6 +128,44 @@ describe("parseLogicalBuildData", () => {
     expect(parsed.ammunition[0]?.quantity).toBe(40);
   });
 
+  it("preserves captured companion resources and effect attribution", () => {
+    const input = build();
+    input.companions = [
+      {
+        entityId: "mercenary:1",
+        kind: "mercenary",
+        archetypeId: "cleric",
+        raceId: "elf",
+        level: 50,
+        healthMultiplier: 1.1,
+        resourceMultiplier: 1.05,
+        baseCombat: 18,
+        currentResources: {
+          health: { current: 900, max: 1000 },
+          mana: { current: 200, max: 400 },
+          energy: null,
+        },
+        effects: [
+          {
+            skillId: "leadership",
+            skillName: "Leadership",
+            level: 2,
+            sourceEntityId: "player",
+            recipientEntityId: "mercenary:1",
+            expiresAtServerTime: 123.5,
+          },
+        ],
+        skills: [],
+        equipment: [],
+      },
+    ];
+
+    const parsed = parseLogicalBuildData(input);
+
+    expect(parsed.companions[0]?.currentResources?.health.current).toBe(900);
+    expect(parsed.companions[0]?.effects?.[0]?.sourceEntityId).toBe("player");
+  });
+
   it("refuses missing observations, unknown fields, and duplicate books", () => {
     const missing = structuredClone(build()) as unknown as Record<
       string,

@@ -219,8 +219,62 @@ namespace CombatVerification.Builds
                     problems.Add($"{entry}.resourceMultiplier must not be negative");
                 if (companion.BaseCombat < 0)
                     problems.Add($"{entry}.baseCombat must not be negative");
+                ValidateCompanionResources(problems, $"{entry}.currentResources", companion.CurrentResources);
+                ValidateEffects(problems, $"{entry}.effects", companion.Effects, companion.EntityId);
                 ValidateSkills(problems, $"{entry}.skills", companion.Skills);
                 ValidateEquipment(problems, $"{entry}.equipment", companion.Equipment);
+            }
+        }
+
+        private static void ValidateCompanionResources(
+            List<string> problems, string path, CompanionResources resources)
+        {
+            if (resources == null)
+                return;
+            ValidateResource(problems, $"{path}.health", resources.Health, required: true);
+            ValidateResource(problems, $"{path}.mana", resources.Mana, required: false);
+            ValidateResource(problems, $"{path}.energy", resources.Energy, required: false);
+        }
+
+        private static void ValidateResource(
+            List<string> problems, string path, ResourceValue resource, bool required)
+        {
+            if (resource == null)
+            {
+                if (required)
+                    problems.Add($"{path} is required");
+                return;
+            }
+            if (resource.Max < 1)
+                problems.Add($"{path}.max must be at least 1");
+            if (resource.Current < 0 || resource.Current > resource.Max)
+                problems.Add($"{path}.current must be between zero and max");
+        }
+
+        private static void ValidateEffects(
+            List<string> problems,
+            string path,
+            IReadOnlyList<CapturedEffect> effects,
+            string recipientEntityId)
+        {
+            if (effects == null)
+                return;
+            for (var i = 0; i < effects.Count; i++)
+            {
+                var effect = effects[i];
+                var entry = $"{path}[{i}]";
+                if (effect == null)
+                {
+                    problems.Add($"{entry} is required");
+                    continue;
+                }
+                Require(problems, $"{entry}.skillId", effect.SkillId);
+                if (effect.Level < 1)
+                    problems.Add($"{entry}.level must be at least 1");
+                if (!Require(problems, $"{entry}.recipientEntityId", effect.RecipientEntityId))
+                    continue;
+                if (effect.RecipientEntityId != recipientEntityId)
+                    problems.Add($"{entry}.recipientEntityId must match the companion entityId");
             }
         }
 

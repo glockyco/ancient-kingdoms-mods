@@ -28,6 +28,10 @@
              Link="Capture\CaptureBuildRecord.cs" />
     <Compile Include="..\..\mods\CombatVerification\Capture\CaptureBuildAdapter.cs"
              Link="Capture\CaptureBuildAdapter.cs" />
+    <Compile Include="..\..\mods\CharacterCapture\CaptureDocumentBuilder.cs"
+             Link="Capture\CaptureDocumentBuilder.cs" />
+    <Compile Include="..\..\mods\CharacterCapture\CharacterCaptureCommandCatalog.cs"
+             Link="Capture\CharacterCaptureCommandCatalog.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\BuildEnvelope.cs"
              Link="Fixtures\BuildEnvelope.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\FixtureDescriptor.cs"
