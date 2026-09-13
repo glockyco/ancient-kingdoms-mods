@@ -32,6 +32,8 @@ public static class ExportConfig
   </Target>
 
   <ItemGroup>
+    <EmbeddedResource Include="Curated/classes.json" LogicalName="DataExporter.Curated.classes.json" />
+
     <!-- MelonLoader -->
     <Reference Include="MelonLoader">
       <HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath>

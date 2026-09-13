@@ -9,7 +9,7 @@ public sealed class ProgressionRowsTests
 {
     private static readonly string[] Classes =
     {
-        "warrior", "ranger", "cleric", "rogue", "wizard", "druid",
+        "warrior", "ranger", "cleric", "rogue", "wizard", "druid", "bard",
     };
 
     [Fact]
@@ -73,13 +73,29 @@ public sealed class ProgressionRowsTests
     }
 
     [Fact]
+    public void BardLevelFiftyCarriesEveryAutomaticAttributeGrant()
+    {
+        var progression = ProgressionRows.Create(50, 200, Classes);
+        var row = Assert.Single(
+            progression.class_levels,
+            row => row.class_id == "bard" && row.level == 50);
+
+        Assert.Equal(16, row.automatic_attributes.strength);
+        Assert.Equal(10, row.automatic_attributes.constitution);
+        Assert.Equal(12, row.automatic_attributes.dexterity);
+        Assert.Equal(8, row.automatic_attributes.intelligence);
+        Assert.Equal(8, row.automatic_attributes.wisdom);
+        Assert.Equal(25, row.automatic_attributes.charisma);
+    }
+
+    [Fact]
     public void AnUnmodelledRuntimeClassIsRefused()
     {
-        var classes = Classes.Append("bard");
+        var classes = Classes.Append("necromancer");
 
         var error = Assert.Throws<InvalidOperationException>(() =>
             ProgressionRows.Create(50, 200, classes));
 
-        Assert.Contains("unexpected: bard", error.Message, StringComparison.Ordinal);
+        Assert.Contains("unexpected: necromancer", error.Message, StringComparison.Ordinal);
     }
 }

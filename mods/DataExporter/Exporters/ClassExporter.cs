@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using DataExporter.Models;
 using MelonLoader;
 
@@ -12,6 +14,7 @@ public class ClassExporter : BaseExporter
 
     public override void Export()
     {
+        WriteCuratedClasses();
         Logger.Msg("Exporting class combat stats...");
 
         var networkManager = Il2CppMirror.NetworkManager.singleton;
@@ -55,10 +58,12 @@ public class ClassExporter : BaseExporter
             // Derive display name from the class ID portion
             var displayName = rawName.Replace("Player ", "");
 
-            // Determine resource type from which resource pool has meaningful scaling
-            // Warriors and Rogues use energy; Clerics, Wizards, Druids, Rangers use mana
-            var resourceType = "mana";
-            if (player.energy != null && player.energy.baseEnergy.bonusPerLevel > 0
+            // Bard uses simultaneous active songs instead of mana or energy.
+            // Source: server-scripts/PlayerSkills.cs:GetMaximumActiveBardSongs
+            var resourceType = classId == "bard" ? "songs" : "mana";
+            if (classId != "bard"
+                && player.energy != null
+                && player.energy.baseEnergy.bonusPerLevel > 0
                 && (player.mana == null || player.mana.baseMana.bonusPerLevel == 0))
             {
                 resourceType = "energy";
@@ -128,5 +133,14 @@ public class ClassExporter : BaseExporter
         // Write to classes_combat.json (separate from manually curated classes.json)
         WriteJson(classList, "classes_combat.json");
         Logger.Msg($"Exported {classList.Count} class combat stat sets");
+    }
+
+    private void WriteCuratedClasses()
+    {
+        const string resourceName = "DataExporter.Curated.classes.json";
+        using var source = typeof(ClassExporter).Assembly.GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException($"Embedded resource '{resourceName}' is unavailable.");
+        using var destination = File.Create(Path.Combine(ExportPath, "classes.json"));
+        source.CopyTo(destination);
     }
 }

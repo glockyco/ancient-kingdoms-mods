@@ -116,6 +116,7 @@ public class SkillExporter : BaseExporter
             PopulateTargetBuffSkillFields(skill, skillData);  // TargetBuffSkill-specific fields
             PopulateBonusSkillFields(skill, skillData);  // Covers BuffSkill and PassiveSkill
             PopulateSummonSkillFields(skill, skillData);
+            PopulateBardSkillFields(skill, skillData);
 
             VisualAssets?.ExportSprite(
                 "skill",
@@ -199,6 +200,7 @@ public class SkillExporter : BaseExporter
             if (skill.TryCast<Il2Cpp.FrontalProjectilesSkill>() != null) return "frontal_projectiles";
             if (skill.TryCast<Il2Cpp.TargetDamageSkill>() != null) return "target_damage";
             if (skill.TryCast<Il2Cpp.TargetProjectileSkill>() != null) return "target_projectile";
+            if (skill.TryCast<Il2Cpp.BardFinalCadenceSkill>() != null) return "area_damage";
             return "damage";  // Generic DamageSkill
         }
 
@@ -222,6 +224,7 @@ public class SkillExporter : BaseExporter
             if (skill.TryCast<Il2Cpp.AreaDebuffSkill>() != null) return "area_debuff";
             if (skill.TryCast<Il2Cpp.TargetBuffSkill>() != null) return isDebuff ? "target_debuff" : "target_buff";
             if (skill.TryCast<Il2Cpp.TargetDebuffSkill>() != null) return "target_debuff";
+            if (skill.TryCast<Il2Cpp.BardSongSkill>() != null) return "area_buff";
             return isDebuff ? "debuff" : "buff";
         }
 
@@ -427,6 +430,7 @@ public class SkillExporter : BaseExporter
             skillData.is_permanent = buffSkill.isPermanent;
             skillData.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
             skillData.is_decrease_resists_skill = buffSkill.isDecreaseResistsSkill;
+            skillData.scales_with_charisma = buffSkill.scalesWithCharisma;
 
             var areaBuffSkill = skill.TryCast<Il2Cpp.AreaBuffSkill>();
             if (areaBuffSkill != null)
@@ -452,6 +456,10 @@ public class SkillExporter : BaseExporter
         if (passiveSkill != null)
         {
             skillData.is_enrage = passiveSkill.isEnrage;
+            skillData.additional_active_bard_songs = passiveSkill.additionalActiveBardSongs;
+            skillData.bard_song_duration_bonus_per_level = passiveSkill.bardSongDurationBonusPerLevel;
+            skillData.extra_gather_item_chance = passiveSkill.extraGatherItemChance;
+            skillData.food_and_drink_buff_duration_bonus_per_level = passiveSkill.foodAndDrinkBuffDurationBonusPerLevel;
         }
     }
 
@@ -477,6 +485,37 @@ public class SkillExporter : BaseExporter
             skillData.summon_count_per_cast = summonMonstersSkill.numberPetsBySummon;
             skillData.max_active_summons = summonMonstersSkill.maxActivePets;
         }
+    }
+
+    private void PopulateBardSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)
+    {
+        var bardSong = skill.TryCast<Il2Cpp.BardSongSkill>();
+        var bardAreaSong = skill.TryCast<Il2Cpp.BardAreaSongSkill>();
+        var bardCharm = skill.TryCast<Il2Cpp.BardCharmSongSkill>();
+        skillData.is_bard_song = bardSong != null || bardAreaSong != null || bardCharm != null;
+
+        if (bardCharm != null)
+        {
+            skillData.is_bard_charm = true;
+            skillData.charmed_damage_percent = new LinearStatBonusFloat
+            {
+                base_value = bardCharm.charmedDamagePercent.baseValue,
+                bonus_per_level = bardCharm.charmedDamagePercent.bonusPerLevel,
+            };
+        }
+
+        var finalCadence = skill.TryCast<Il2Cpp.BardFinalCadenceSkill>();
+        if (finalCadence != null)
+        {
+            skillData.is_bard_final_cadence = true;
+            skillData.heals_health = new LinearStatBonus
+            {
+                base_value = finalCadence.healsHealth.baseValue,
+                bonus_per_level = finalCadence.healsHealth.bonusPerLevel,
+            };
+        }
+
+        skillData.is_bard_virtuosity = skill.TryCast<Il2Cpp.BardVirtuositySkill>() != null;
     }
 
     private Dictionary<string, List<string>> BuildSkillToClassesMapping()
