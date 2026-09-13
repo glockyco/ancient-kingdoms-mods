@@ -219,6 +219,10 @@ export const FORMULA_EXPRS = {
 
   // ── Special ──────────────────────────────────────────────────────────────────
 
+  // Source: BardFinalCadenceSkill.cs:45-54 and Charisma.cs:21-36.
+  bard_final_cadence: special(
+    "round(skillDamage(level) × (1 + min(max(CHA, 0) × 0.001, 2)))",
+  ),
   manaburn: special("Current Rage or Mana × 2 — bypasses mitigation"),
   monster_melee: special("baseDamage(level)"),
   monster_magic: special("baseMagicDamage(level)"),
@@ -368,6 +372,13 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
 
   switch (kind) {
     // ── Special prose ────────────────────────────────────────────────────────
+
+    case "bard_final_cadence":
+      return {
+        preMitigation: "Charisma-scaled Skill Damage",
+        terms: [],
+        specialNote: renderFormula(expr),
+      };
 
     case "manaburn":
       return {

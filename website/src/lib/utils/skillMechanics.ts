@@ -13,6 +13,7 @@ import type {
   DebuffContext,
   SkillMechanicsSpec,
 } from "$lib/types/skills";
+import { ALL_CLASS_IDS } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 
 // ---------------------------------------------------------------------------
@@ -99,6 +100,58 @@ function groupDebuff(
   }));
 }
 
+/** Integer fields scaled by Buff.cs:45-275 and rounded by Charisma.cs:28-31. */
+export function hasCharismaScaledIntegerEffect(
+  skill: SkillDetailView,
+): boolean {
+  return (
+    hasNonZeroField(skill.health_max_bonus) ||
+    hasNonZeroField(skill.mana_max_bonus) ||
+    hasNonZeroField(skill.energy_max_bonus) ||
+    hasNonZeroField(skill.damage_bonus) ||
+    hasNonZeroField(skill.magic_damage_bonus) ||
+    hasNonZeroField(skill.defense_bonus) ||
+    hasNonZeroField(skill.ward_bonus) ||
+    hasNonZeroField(skill.magic_resist_bonus) ||
+    hasNonZeroField(skill.poison_resist_bonus) ||
+    hasNonZeroField(skill.fire_resist_bonus) ||
+    hasNonZeroField(skill.cold_resist_bonus) ||
+    hasNonZeroField(skill.disease_resist_bonus) ||
+    hasNonZeroField(skill.healing_per_second_bonus) ||
+    hasNonZeroField(skill.mana_per_second_bonus) ||
+    hasNonZeroField(skill.energy_per_second_bonus)
+  );
+}
+
+/** Percentage fields scaled by Buff.cs:59-275 and Charisma.cs:33-36. */
+export function hasCharismaScaledPercentageEffect(
+  skill: SkillDetailView,
+): boolean {
+  return (
+    hasNonZeroField(skill.health_max_percent_bonus) ||
+    hasNonZeroField(skill.damage_percent_bonus) ||
+    hasNonZeroField(skill.magic_damage_percent_bonus) ||
+    hasNonZeroField(skill.block_chance_bonus) ||
+    hasNonZeroField(skill.fear_resist_chance_bonus) ||
+    hasNonZeroField(skill.critical_resist_bonus) ||
+    hasNonZeroField(skill.accuracy_bonus) ||
+    hasNonZeroField(skill.critical_chance_bonus) ||
+    hasNonZeroField(skill.haste_bonus) ||
+    hasNonZeroField(skill.spell_haste_bonus) ||
+    hasNonZeroField(skill.health_percent_per_second_bonus) ||
+    hasNonZeroField(skill.mana_percent_per_second_bonus) ||
+    hasNonZeroField(skill.energy_percent_per_second_bonus) ||
+    hasNonZeroField(skill.cooldown_reduction_percent)
+  );
+}
+
+function hasCharismaScaledEffect(skill: SkillDetailView): boolean {
+  return (
+    hasCharismaScaledIntegerEffect(skill) ||
+    hasCharismaScaledPercentageEffect(skill)
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Damage formula dispatch
 // ---------------------------------------------------------------------------
@@ -112,6 +165,9 @@ function playerDamageFormula(
   skill: SkillDetailView,
   cls: string,
 ): DamageFormulaKind {
+  // Source: BardFinalCadenceSkill.cs — bypasses player magic damage and scales its base with Charisma.
+  if (skill.is_bard_final_cadence) return "bard_final_cadence";
+
   // Source: TargetDamageSkill.cs — is_manaburn check precedes everything
   if (skill.is_manaburn_skill) return "manaburn";
 
@@ -321,30 +377,22 @@ export function computeMechanicsSpec(
       });
     }
     // Source: TargetDamageSkill.cs — weapon procs fire through the full player damage
-    // pipeline at level 1 via weaponItem.procEffect.Apply(player, 1). Enumerate all 6
-    // player classes so class-specific formulas (e.g. Poison+Rogue) are handled correctly.
+    // pipeline at level 1 via weaponItem.procEffect.Apply(player, 1). Enumerate every
+    // player class so class-specific formulas (e.g. Poison+Rogue) are handled correctly.
     // Guarded on isWeaponProc only; weapon procs always have player_classes=[] so
     // damagePairs is always empty at this point when isWeaponProc is true.
     if (isWeaponProc) {
-      const allClasses = [
-        "warrior",
-        "rogue",
-        "ranger",
-        "wizard",
-        "druid",
-        "cleric",
-      ];
       const formulaMap = new Map<DamageFormulaKind, string[]>();
-      for (const cls of allClasses) {
+      for (const cls of ALL_CLASS_IDS) {
         const f = playerDamageFormula(skill, cls);
         const group = formulaMap.get(f) ?? [];
         group.push(cls);
         formulaMap.set(f, group);
       }
       for (const [formula, classes] of formulaMap) {
-        // All 6 classes on the same formula → one clean label.
+        // Every class on the same formula produces one clean label.
         const label =
-          classes.length === allClasses.length
+          classes.length === ALL_CLASS_IDS.length
             ? "Player (weapon proc)"
             : classes
                 .map(
@@ -403,7 +451,12 @@ export function computeMechanicsSpec(
     isAreaBuff: boolean;
   }> = [];
 
-  if (isBuffSkill) {
+  const hasBardScaling =
+    skill.is_bard_song &&
+    skill.scales_with_charisma &&
+    hasCharismaScaledEffect(skill);
+
+  if (isBuffSkill && (!skill.is_bard_song || hasBardScaling)) {
     const isAreaBuff = skill.skill_type === "area_buff";
 
     if (skill.is_relic) {
@@ -420,7 +473,10 @@ export function computeMechanicsSpec(
       for (const cls of playerClasses) {
         const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
         let src: BuffBonusAttrSource;
-        if (isAreaBuff && skill.is_mercenary_skill) {
+        if (hasBardScaling) {
+          // Source: BardSongSkill.cs — Bard songs use the caster's Charisma.
+          src = "player_cha";
+        } else if (isAreaBuff && skill.is_mercenary_skill) {
           // Source: AreaBuffSkill.cs:46-50 — isMercenarySkill → num2 = round((WIS+CON)/2)
           src = "player_wis_con_avg";
         } else if (isAreaBuff) {
@@ -516,7 +572,8 @@ export function computeMechanicsSpec(
   // Use hasNonZeroField to avoid false positives from all-zero JSON objects in DB.
   const hasDebuffScaling =
     isDebuffSkill &&
-    (hasNonZeroField(skill.healing_per_second_bonus) ||
+    ((skill.scales_with_charisma && hasCharismaScaledEffect(skill)) ||
+      hasNonZeroField(skill.healing_per_second_bonus) ||
       hasNonZeroField(skill.defense_bonus) ||
       hasNonZeroField(skill.magic_resist_bonus) ||
       hasNonZeroField(skill.poison_resist_bonus) ||

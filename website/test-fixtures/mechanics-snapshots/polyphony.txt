@@ -1,0 +1,1 @@
+Mechanics Song Capacity maximumActiveSongs = 2 + learned passive bonuses This passive adds 1 while it is learned.

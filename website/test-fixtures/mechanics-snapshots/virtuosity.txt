@@ -1,0 +1,1 @@
+Mechanics Virtuosity bonusActive = activeSongs >= maximumActiveSongs

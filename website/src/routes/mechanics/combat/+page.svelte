@@ -33,6 +33,9 @@
     ranged_merc: "STR×1.0 + bow + melee weapon + other equip + DEX×1.5",
     poison_rogue: "rogue_melee component + DEX×2.5",
     magic_spell: "INT×1.5 + wand magic stat + other magic equip",
+    // Source: BardFinalCadenceSkill.cs:45-54 and Charisma.cs:21-36.
+    bard_final_cadence:
+      "round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2)))",
     magic_weapon:
       "INT×1.5 + STR×1.0 + equipment, physical and magic components mitigated separately",
     magic_weapon_ranger:
@@ -52,6 +55,7 @@
     ranged_merc: "Ranged",
     poison_rogue: "Poison",
     magic_spell: "Magic",
+    bard_final_cadence: "Magic",
     magic_weapon: "Magic",
     magic_weapon_ranger: "Magic",
     manaburn: "Special",
@@ -69,6 +73,7 @@
     "ranged_merc",
     "poison_rogue",
     "magic_spell",
+    "bard_final_cadence",
     "magic_weapon",
     "magic_weapon_ranger",
     "manaburn",
@@ -387,13 +392,16 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
+        <!-- Source: BuffSkill.cs:252-259, Skills.cs:1583-1602, and BardFinalCadenceSkill.cs:78-103 -->
         <h3 class="font-semibold mb-1">Critical Heal</h3>
         <p class="text-sm text-muted-foreground">
-          Direct critical heals apply only to skills that can target other
+          Most direct critical heals apply only to skills that can target other
           players (shown as "Others Only" or "Self &amp; Others" on the skill
-          page). When they crit: 90%→×2.0, 10%→×3.0. Heal-over-time ticks can
-          also crit for ×1.5. The chance is based on the caster's Critical
-          Chance when the buff was applied.
+          page). When they crit, 90% use a 2.0 multiplier and 10% use a 3.0
+          multiplier. Final Cadence uses the same multipliers, but one roll
+          based on the Bard's Critical Chance applies to every recipient.
+          Heal-over-time ticks can also crit for a 1.5 multiplier. Their chance
+          is based on the caster's Critical Chance when the buff was applied.
         </p>
       </div>
 
@@ -423,10 +431,32 @@ finalDamage = damage − reduction</pre>
     <Card.Header>
       <Card.Title>Buff Scaling</Card.Title>
       <Card.Description
-        >How WIS (or Player Level) scales buff field values.</Card.Description
+        >How CHA, WIS, or Player Level scales buff field values.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-5">
+      <div>
+        <!-- Source: server-scripts/Charisma.cs:21-36 and Buff.cs:45-275 -->
+        <h3 class="font-semibold mb-2">Bard Song Scaling</h3>
+        <pre
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">songPower = 1 + min(max(CHA, 0) × 0.001, 2)
+wholeNumberValue = round(baseValue × songPower)
+percentageValue = baseValue × songPower</pre>
+        <p class="text-sm text-muted-foreground mt-2">
+          Each Charisma point adds 0.1% of the base value. The bonus stops at
+          2000 Charisma, where the final value is three times the base value.
+          Whole-number fields include Ward, Defense, flat damage, resists, and
+          flat resource regeneration. Percentage fields include damage,
+          Accuracy, Critical Chance, Haste, Spell Haste, and percentage resource
+          regeneration.
+        </p>
+        <p class="text-sm text-muted-foreground mt-2">
+          Charisma does not scale movement Speed, primary attribute bonuses,
+          maximum Mana percentage, Damage Shield, or Heal on Hit. A song page
+          shows only the formula that applies to that song's fields.
+        </p>
+      </div>
+
       <div>
         <h3 class="font-semibold mb-2">Per-Field WIS Multipliers</h3>
         <div class="overflow-x-auto">
@@ -537,6 +567,17 @@ finalDamage = damage − reduction</pre>
       <Card.Title>Debuff Mechanics</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-5">
+      <div>
+        <!-- Source: server-scripts/Buff.cs:70-275 and Charisma.cs:21-36 -->
+        <h3 class="font-semibold mb-1">Bard Debuff Songs</h3>
+        <p class="text-sm text-muted-foreground">
+          A Bard debuff song with Charisma scaling multiplies each eligible
+          whole-number or percentage field by Song Power. It does not use the
+          STR, DEX, or INT rules below. Movement Speed is not an eligible field,
+          so Song of Varensea does not become stronger with Charisma.
+        </p>
+      </div>
+
       <div>
         <h3 class="font-semibold mb-2">Attribute Dispatch</h3>
         <div class="overflow-x-auto">

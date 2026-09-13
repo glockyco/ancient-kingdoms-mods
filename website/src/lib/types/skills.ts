@@ -292,6 +292,7 @@ export type DamageFormulaKind =
   | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric) — e.g. holy_wrath
   | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (Ranger) — e.g. wild_strike
   // Special
+  | "bard_final_cadence" // round(skillDamage(level) × Bard Charisma multiplier)
   | "manaburn" // energy/mana ×2, bypasses mitigation — e.g. rageblow
   // Monster / NPC (level-scaled, no player stats)
   | "monster_melee" // baseDamage(level) — e.g. ant_attack
@@ -317,6 +318,7 @@ export interface HealContext {
 }
 
 export type BuffBonusAttrSource =
+  | "player_cha" // Bard songs multiply eligible buff values by Charisma-derived Bard power
   | "player_ranger_wis" // WIS×3 (TargetBuffSkill only, not AreaBuffSkill) — e.g. ancestral_spirits
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf

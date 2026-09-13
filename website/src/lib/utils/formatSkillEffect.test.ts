@@ -49,6 +49,42 @@ describe("formatSkillEffect scaling formulas", () => {
   });
 });
 
+describe("formatSkillEffect Bard summaries", () => {
+  it("places the Virtuosity condition after its damage bonuses", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "passive",
+        is_bard_virtuosity: true,
+        damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
+        magic_damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
+      } as Skill),
+    ).toBe(
+      "+20% phys dmg, +20% magic dmg, while performing the maximum number of songs you can sustain",
+    );
+  });
+
+  it("leaves Charisma scaling to the mechanics section", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "area_buff",
+        is_bard_song: true,
+        scales_with_charisma: true,
+        accuracy_bonus: { base_value: 0.1, bonus_per_level: 0 },
+      } as Skill),
+    ).toBe("Bard song, +10% accuracy");
+  });
+
+  it("identifies charm damage as a base value", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "area_debuff",
+        is_bard_charm: true,
+        charmed_damage_percent: { base_value: 0.45, bonus_per_level: 0 },
+      } as Skill),
+    ).toBe("charms target at 45% base damage");
+  });
+});
+
 describe("formatSkillEffect enrage passives", () => {
   const enrageSkill = {
     skill_type: "passive",

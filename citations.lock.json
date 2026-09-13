@@ -78,9 +78,13 @@
       "sha256": "a86273c97a2fbd04185b8ae8ada63be74fae6a3fd7f8ca6e7c9e2adf2f5a6d99",
       "span": 1
     },
-    "Buff.cs:271-288": {
-      "sha256": "794cf2bfc2aa3ce1b503ec584c23adf271c3e5998602c67429af2c734feb38de",
-      "span": 18
+    "Buff.cs:45-275": {
+      "sha256": "0be5166739dc4575b4b68cb7193fb8450bd8b1a68c17aed4892a3087a53cec4f",
+      "span": 231
+    },
+    "Buff.cs:70-275": {
+      "sha256": "b70182445536523bdb58061a135b7b8ce8eda48cbe7b7dd854f9940d751b7704",
+      "span": 206
     },
     "Buff.cs:97-111": {
       "sha256": "bfe166efaaf5af733c72a2a96884bf9ad1aff31b8a94e01e2eb8d2bc501286d5",
@@ -1611,10 +1615,6 @@
       "sha256": "3e13b7703edced5f3016e98239a2d0b353d8a643e0e3de51f08fcf462931d42f",
       "span": 1
     },
-    "RelicItem.cs:12": {
-      "sha256": "d6dd31322a51e5351ee8186ceded4515bee1a58075719f5bb964e20fc328e292",
-      "span": 1
-    },
     "RelicItem.cs:12-13": {
       "sha256": "bd9b584a79c3542b75d4d262dfba52709430d46e913f70c93670d6b68ff3c495",
       "span": 2
@@ -2219,9 +2219,9 @@
       "sha256": "2fad3cfa84fd4ec7390a42a05541fe2c4c7481d21e32a329f09577579a7c2159",
       "span": 4
     },
-    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40": {
-      "sha256": "df922b864fd95c98cc3102cc8e415f35d9788c3a278a0a043ac8605f4762e2dc",
-      "span": 14
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:21-36": {
+      "sha256": "d8e44db44b13b292891edac778d8a34a58ea289eaeb384f9dae2a742fcc68f83",
+      "span": 16
     },
     "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48": {
       "sha256": "7c6b83cd92a51305c5555c1a2e39f5b071d6cb21e2d51b7846c44499397bdaa5",

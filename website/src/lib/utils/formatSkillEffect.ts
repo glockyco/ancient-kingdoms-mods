@@ -916,7 +916,7 @@ export function formatSkillEffect(
     );
     parts.push(
       charmedDamage
-        ? `charms target at ${formatLinearPercent(charmedDamage, options)} damage`
+        ? `charms target at ${formatLinearPercent(charmedDamage, options)} base damage`
         : "charms target",
     );
   }
@@ -938,10 +938,6 @@ export function formatSkillEffect(
       `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per skill lvl`,
     );
   }
-  if (skill.is_bard_virtuosity) {
-    parts.push("damage bonuses require the active-song limit");
-  }
-  if (skill.scales_with_charisma) parts.push("scales with CHA");
 
   // 6. Buffs/debuffs
   // Always show buff/debuff stats (fixes bug where stats were suppressed if damage was present)
@@ -954,6 +950,9 @@ export function formatSkillEffect(
   ) {
     const buffStats = formatBuffDebuffStats(skill, options);
     parts.push(...buffStats);
+  }
+  if (skill.is_bard_virtuosity) {
+    parts.push("while performing the maximum number of songs you can sustain");
   }
 
   // Special mechanics

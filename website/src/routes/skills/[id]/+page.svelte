@@ -38,6 +38,10 @@
     renderWildStrikeFormulaDisplay,
   } from "$lib/utils/formula-eval";
   import { petHref } from "$lib/utils/pets";
+  import {
+    hasCharismaScaledIntegerEffect,
+    hasCharismaScaledPercentageEffect,
+  } from "$lib/utils/skillMechanics";
   import { formatEquipmentCategory } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
   import Seo from "$lib/components/Seo.svelte";
@@ -229,16 +233,13 @@
       hasAttributeBonuses,
   );
 
-  // Fields that actually scale with WIS (or, for Leadership, (WIS+CON)/2) at runtime
-  // via Buff.cs bonusAttribute. Excludes: speed_bonus, damage_percent_bonus,
-  // magic_damage_percent_bonus, haste_bonus, spell_haste_bonus, critical_chance_bonus,
-  // accuracy_bonus, block_chance_bonus, mana_max_bonus, energy_max_bonus,
-  // *_percent_bonus, cooldown_reduction_percent, heal_on_hit_percent.
-  // damage_bonus / magic_damage_bonus only use bonusAttribute on the negative branch
-  // (Buff.cs:60-62, 80-82) — except Leadership, where positive values also scale
-  // (Buff.cs:64-67, 84-87 — name-keyed special case).
-  const hasWisScaledBonuses = $derived(
-    hasNonZeroField(skill.health_max_bonus) ||
+  // Fields that use the generic Buff bonus attribute. Bard songs instead scale
+  // every eligible effect through their Charisma multiplier.
+  const hasAttributeScaledBonuses = $derived(
+    data.mechanicsSpec.buffContexts.some(
+      (ctx) => ctx.bonusAttrSource === "player_cha",
+    ) ||
+      hasNonZeroField(skill.health_max_bonus) ||
       hasNonZeroField(skill.defense_bonus) ||
       hasNonZeroField(skill.magic_resist_bonus) ||
       hasNonZeroField(skill.poison_resist_bonus) ||
@@ -251,6 +252,13 @@
       (skill.id === "leadership" &&
         (hasNonZeroField(skill.damage_bonus) ||
           hasNonZeroField(skill.magic_damage_bonus))),
+  );
+
+  const hasBardIntegerScaling = $derived(
+    skill.scales_with_charisma && hasCharismaScaledIntegerEffect(skill),
+  );
+  const hasBardPercentageScaling = $derived(
+    skill.scales_with_charisma && hasCharismaScaledPercentageEffect(skill),
   );
 
   const hasCrowdControl = $derived(
@@ -703,10 +711,15 @@
   // No isPlayerUsable dependency — monster-only skills are included when the spec
   // has computed contexts for them.
   const showMechanics = $derived(
-    // A. Damage formula + pipeline
-    (isDamageType &&
-      data.mechanicsSpec.damageContexts.length > 0 &&
-      hasActualDamage) ||
+    skill.is_bard_song ||
+      skill.is_bard_final_cadence ||
+      skill.is_bard_virtuosity ||
+      skill.additional_active_bard_songs > 0 ||
+      skill.bard_song_duration_bonus_per_level > 0 ||
+      // A. Damage formula + pipeline
+      (isDamageType &&
+        data.mechanicsSpec.damageContexts.length > 0 &&
+        hasActualDamage) ||
       // B. Heal formula
       (isHealType &&
         !skill.is_resurrect_skill &&
@@ -714,7 +727,7 @@
       // C. Buff scaling (passives excluded: PassiveSkill.Apply is a no-op)
       (isBuffType &&
         skill.skill_type !== "passive" &&
-        hasWisScaledBonuses &&
+        hasAttributeScaledBonuses &&
         data.mechanicsSpec.buffContexts.length > 0) ||
       // Mana shield and dispel have dedicated mechanics sections
       skill.is_mana_shield ||
@@ -1979,6 +1992,123 @@
             </p>
           </div>
         {/if}
+
+        {#if skill.additional_active_bard_songs > 0}
+          <!-- Source: PassiveSkill.cs:12-13 and PlayerSkills.cs:986-997 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Song Capacity</h3>
+            <p class="font-mono">
+              maximumActiveSongs = 2 + learned passive bonuses
+            </p>
+            <p class="text-muted-foreground">
+              This passive adds {skill.additional_active_bard_songs} while it is learned.
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.bard_song_duration_bonus_per_level > 0}
+          <!-- Source: PassiveSkill.cs:15-27 and PlayerSkills.cs:999-1010 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Song Duration Bonus</h3>
+            <p class="font-mono">
+              contribution = skillLevel &times; {formatPercent(
+                skill.bard_song_duration_bonus_per_level,
+              )}
+            </p>
+            <p class="font-mono">
+              activeDuration = baseDuration &times; (1 + total learned bonuses)
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.is_bard_virtuosity}
+          <!-- Source: BardVirtuositySkill.cs:7-12 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Virtuosity</h3>
+            <p class="font-mono">
+              bonusActive = activeSongs &gt;= maximumActiveSongs
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.is_bard_song}
+          <!-- Source: PlayerSkills.cs:999-1010 and BuffSkill.cs:164-170 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Song Duration</h3>
+            <p class="font-mono">
+              activeDuration = baseDuration &times; (1 + total learned song
+              duration bonuses)
+            </p>
+          </div>
+          <!-- Source: PlayerSkills.cs:865-895,986-997. Current exported Polyphony data sets additional_active_bard_songs to 1. -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Active Song Limit</h3>
+            <p class="font-mono">
+              maximumActiveSongs = 2 + learned Polyphony bonus
+            </p>
+            <p class="text-muted-foreground">
+              A Bard can sustain two songs by default. Learning Polyphony raises
+              the limit to three. Starting a song while at the current limit
+              ends the oldest active song.
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.is_bard_charm}
+          <!-- Source: BardCharmSongSkill.cs:7-47,75-117 and Combat.cs:1538-1542 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Charm</h3>
+            <p class="font-mono">
+              songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
+            </p>
+            <p class="font-mono">
+              charmedDamage = min(100%, skillValue(level) &times; songPower)
+            </p>
+            <p class="font-mono">
+              levelDifference = targetLevel &minus; BardLevel
+            </p>
+            <p class="font-mono">
+              baseResistChance = clamp(targetMagicResist &times; 0.0005 +
+              clamp(levelDifference &times; 0.005, &minus;0.1, 0.1), 0, 0.9)
+            </p>
+            <p class="font-mono">
+              resistChance = clamp(baseResistChance + max(levelDifference, 0)
+              &times; 0.05 &minus; max(CHA, 0) &times; 0.0002, 0, 0.95)
+            </p>
+            <p class="text-muted-foreground">
+              Only living monsters that are not bosses, elites, training
+              dummies, or returning home can be charmed. A Bard can control one
+              charmed monster at a time.
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.is_bard_final_cadence}
+          <!-- Source: BardFinalCadenceSkill.cs:17-68,78-135 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Final Cadence</h3>
+            <p class="font-mono">
+              Requirement: activeSongs &gt;= maximumActiveSongs
+            </p>
+            <p class="font-mono">
+              baseHealing = round(skillHealing(level) &times; (1 + min(max(CHA,
+              0) &times; 0.001, 2)))
+            </p>
+            <p class="font-mono">
+              criticalMultiplier = 1 normally, 2 on a critical heal, or 3 on 10%
+              of critical heals
+            </p>
+            <p class="font-mono">
+              finalHealing = baseHealing &times; criticalMultiplier
+            </p>
+            <p class="text-muted-foreground">
+              The Bard's critical chance determines one roll shared by every
+              recipient. Damage uses the same Charisma multiplier before the
+              normal magic damage pipeline.
+            </p>
+          </div>
+        {/if}
+
         <!-- A. Damage Formula (spec-driven, one block per distinct formula/context) -->
         {#if isDamageType && !isWildStrike && data.mechanicsSpec.damageContexts.length > 0 && hasActualDamage}
           <div class="space-y-3">
@@ -2145,9 +2275,11 @@
 
         <!-- C. Buff Scaling (spec-driven, per caster context) -->
         <!-- Source: PassiveSkill.cs:20-22 — Apply() is a no-op; passives grant flat values, no WIS scaling -->
-        {#if isBuffType && hasWisScaledBonuses && skill.skill_type !== "passive" && data.mechanicsSpec.buffContexts.length > 0}
+        {#if isBuffType && hasAttributeScaledBonuses && skill.skill_type !== "passive" && data.mechanicsSpec.buffContexts.length > 0}
           <div class="space-y-3">
-            <h3 class="font-semibold">Buff Scaling</h3>
+            <h3 class="font-semibold">
+              {skill.is_bard_song ? "Song Scaling" : "Buff Scaling"}
+            </h3>
             {#each data.mechanicsSpec.buffContexts as ctx (`${ctx.bonusAttrSource}:${ctx.isAreaBuff}`)}
               <div class="space-y-1">
                 {#if data.mechanicsSpec.buffContexts.length > 1}
@@ -2159,6 +2291,28 @@
                   <p class="text-muted-foreground">
                     No attribute scaling (bonus = 0).
                   </p>
+                {:else if ctx.bonusAttrSource === "player_cha"}
+                  <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, and Charisma.cs:21-36 -->
+                  <p class="font-mono">
+                    songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
+                  </p>
+                  {#if hasBardIntegerScaling}
+                    <p class="font-mono">
+                      final value = round(base value at skill level &times;
+                      songPower)
+                    </p>
+                  {/if}
+                  {#if hasBardPercentageScaling}
+                    <p class="font-mono">
+                      final value = base value at skill level &times; songPower
+                    </p>
+                  {/if}
+                  {#if hasNonZeroField(skill.healing_per_second_bonus)}
+                    <p class="text-muted-foreground">
+                      Each healing tick can critically heal for 1.5&times; at
+                      the Bard's critical chance.
+                    </p>
+                  {/if}
                 {:else}
                   {#if ctx.bonusAttrSource === "player_ranger_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 — Ranger → wisdom.value * 3 -->
@@ -2333,7 +2487,9 @@
         <!-- Non-Player casters (monsters, NPCs, non-merc pets) fall through to bonusAttribute = 0. -->
         {#if isDebuffType && data.mechanicsSpec.debuffContexts.length > 0}
           <div class="space-y-3">
-            <h3 class="font-semibold">Debuff Scaling</h3>
+            <h3 class="font-semibold">
+              {skill.is_bard_song ? "Song Scaling" : "Debuff Scaling"}
+            </h3>
             {#each data.mechanicsSpec.debuffContexts as ctx (ctx.bonusAttrKind)}
               <div class="space-y-1">
                 {#if data.mechanicsSpec.debuffContexts.length > 1}
@@ -2346,22 +2502,31 @@
                     No attribute scaling (bonusAttribute = 0).
                   </p>
                 {:else}
-                  <p class="font-mono">
-                    bonusAttribute = {ctx.bonusAttrKind === "str"
-                      ? "STR"
-                      : ctx.bonusAttrKind === "dex"
-                        ? "DEX"
-                        : ctx.bonusAttrKind === "cha"
-                          ? "CHA"
-                          : "INT"}
-                  </p>
                   {#if skill.scales_with_charisma}
-                    <!-- Source: server-scripts/Buff.cs:271-288; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40 — eligible Bard effects multiply their base value by 1 + min(CHA × 0.001, 2). -->
+                    <!-- Source: Buff.cs:70-275 and Charisma.cs:21-36 -->
                     <p class="font-mono">
-                      scaledValue = skillValue(level) &times; (1 + min(CHA
-                      &times; 0.001, 2))
+                      songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
                     </p>
+                    {#if hasBardIntegerScaling}
+                      <p class="font-mono">
+                        final value = round(base value at skill level &times;
+                        songPower)
+                      </p>
+                    {/if}
+                    {#if hasBardPercentageScaling}
+                      <p class="font-mono">
+                        final value = base value at skill level &times;
+                        songPower
+                      </p>
+                    {/if}
                   {:else}
+                    <p class="font-mono">
+                      bonusAttribute = {ctx.bonusAttrKind === "str"
+                        ? "STR"
+                        : ctx.bonusAttrKind === "dex"
+                          ? "DEX"
+                          : "INT"}
+                    </p>
                     <!-- Source: server-scripts/Buff.cs:97-111 — defense getter, negative branch: bonusAttribute × 0.4 -->
                     <dl
                       class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
@@ -2438,9 +2603,9 @@
           </div>
         {/if}
 
-        <!-- D2. Resist Chance — shown for debuffs and dispels (both roll to resist); hidden for cleanse (no resist roll) -->
+        <!-- D2. Resist Chance — shown for debuffs and dispels; cleanse has no resist roll, and Bard charm uses its custom formula above. -->
         <!-- Source: server-scripts/Combat.cs:1523-1556 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:104-139 -->
-        {#if isDebuffType && !skill.is_cleanse && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
+        {#if isDebuffType && !skill.is_cleanse && !skill.is_bard_charm && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
             <p class="font-mono">

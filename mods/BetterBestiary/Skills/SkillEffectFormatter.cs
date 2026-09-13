@@ -56,7 +56,7 @@ internal static class SkillEffectFormatter
         {
             var charmedDamage = ParseLinearValue(skill.charmed_damage_percent);
             parts.Add(charmedDamage != null
-                ? $"charms target at {FormatLinearPercent(charmedDamage)} damage"
+                ? $"charms target at {FormatLinearPercent(charmedDamage)} base damage"
                 : "charms target");
         }
         if (skill.additional_active_bard_songs != 0)
@@ -67,13 +67,11 @@ internal static class SkillEffectFormatter
             parts.Add($"{FormatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item");
         if (skill.food_and_drink_buff_duration_bonus_per_level != 0)
             parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per skill lvl");
-        if (skill.is_bard_virtuosity)
-            parts.Add("damage bonuses require the active-song limit");
-        if (skill.scales_with_charisma)
-            parts.Add("scales with CHA");
-
         if (skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff" or "passive")
             FormatBuffDebuffStats(skill, parts);
+
+        if (skill.is_bard_virtuosity)
+            parts.Add("while performing the maximum number of songs you can sustain");
 
         if (skill.is_assassination_skill)
             parts.Add("execute <25% hp");
