@@ -64,5 +64,16 @@
     "resource_type": "mana",
     "compatible_races": ["human", "elf", "fire_goblin", "felarii"],
     "game_version": "0.9.7.1"
+  },
+  {
+    "id": "bard",
+    "name": "Bard",
+    "description": "Bards are versatile performers who weave brief songs into battle, strengthening allies and weakening enemies while fighting with weapons and instruments. Skilled Bards can sustain several melodies at once, but must keep performing to maintain their effects.",
+    "primary_role": "Support",
+    "secondary_role": "Debuffer",
+    "difficulty": 3,
+    "resource_type": "songs",
+    "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii"],
+    "game_version": "0.9.32.2"
   }
 ]
