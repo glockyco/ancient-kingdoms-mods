@@ -50,6 +50,15 @@ describe("formatSkillEffect scaling formulas", () => {
 });
 
 describe("formatSkillEffect Bard summaries", () => {
+  it.each(["detect_traps", "sharp_senses"])(
+    "describes %s without a redundant class label",
+    (id) => {
+      expect(formatSkillEffect({ id, skill_type: "passive" } as Skill)).toBe(
+        "reveal and disarm traps",
+      );
+    },
+  );
+
   it("places the Virtuosity condition after its damage bonuses", () => {
     expect(
       formatSkillEffect({

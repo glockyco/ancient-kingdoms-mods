@@ -535,7 +535,9 @@ internal static class SkillEffectFormatter
         ["emerald_pop"] = "cosmetic visual effect",
         ["golden_whirl"] = "cosmetic visual effect",
         ["skyflare"] = "cosmetic visual effect",
-        ["detect_traps"] = "passive — reveal and disarm traps (Rogue only)",
+        ["detect_traps"] = "reveal and disarm traps",
+        // Source: Player.cs:8425-8442 — Sharp Senses uses the same trap-detection gate.
+        ["sharp_senses"] = "reveal and disarm traps",
         ["halloween_event"] = "2× XP from kills, event duration",
         ["winter_festival"] = "2× XP from kills, event duration",
         ["elixir_of_enlightened_learning"] = "2× XP from kills, 1740s + 60s × skill lvl",

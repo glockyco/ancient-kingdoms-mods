@@ -839,7 +839,9 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/PassiveSkill.cs (0.9.18.0+) — Detect Traps is now a passive skill.
   // Source: server-scripts/Player.cs:HasDetectTraps and Trap.cs:142-146,182-194,199-209,
   // TrapDetection.cs:25-31 — passive grants trap visibility/disarm to Rogues at any rank.
-  detect_traps: "passive — reveal and disarm traps (Rogue only)",
+  detect_traps: "reveal and disarm traps",
+  // Source: server-scripts/Player.cs:8425-8442 — Sharp Senses uses the same trap-detection gate.
+  sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",
   winter_festival: "2× XP from kills, event duration",
