@@ -34,6 +34,7 @@ export interface FactionNpcKillRow {
   name: string;
   visual_public_path: string | null;
   level: number;
+  is_notable: boolean;
   improve_faction: string[];
   decrease_faction: string[];
 }
@@ -206,8 +207,9 @@ function getMonsters(
 
 interface RawNpcKillRow extends Omit<
   FactionNpcKillRow,
-  "improve_faction" | "decrease_faction"
+  "improve_faction" | "decrease_faction" | "is_notable"
 > {
+  is_notable: number;
   improve_faction: string;
   decrease_faction: string;
 }
@@ -220,7 +222,7 @@ function getNpcKills(
     direction === "improve" ? "n.improve_faction" : "n.decrease_faction";
   return query<RawNpcKillRow>(
     `SELECT n.id, n.name, va.public_path AS visual_public_path,
-            n.level, n.improve_faction, n.decrease_faction
+            n.level, n.is_notable, n.improve_faction, n.decrease_faction
      FROM npcs n
      LEFT JOIN visual_assets va
        ON va.domain = 'npc' AND va.entity_id = n.id AND va.kind = 'primary'
@@ -229,6 +231,7 @@ function getNpcKills(
     [factionName],
   ).map((row) => ({
     ...row,
+    is_notable: Boolean(row.is_notable),
     improve_faction: JSON.parse(row.improve_faction) as string[],
     decrease_faction: JSON.parse(row.decrease_faction) as string[],
   }));

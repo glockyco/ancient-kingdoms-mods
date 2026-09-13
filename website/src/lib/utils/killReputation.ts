@@ -28,6 +28,7 @@ interface MonsterKillReputationInput {
 
 interface NpcKillReputationInput {
   level: number;
+  is_notable: boolean;
   improve_faction: string[];
   decrease_faction: string[];
 }
@@ -95,8 +96,9 @@ export function monsterKillReputation(
 /**
  * Reputation changed per kill for an NPC.
  *
- * Source: server-scripts/Npc.cs:1606-1616 (solo) / 1573-1583 (party share).
- * Improve adds level.current * 1.5; decrease subtracts level.current * 5.
+ * Source: server-scripts/Npc.cs:1552-1584 (party) / 1599-1631 (solo).
+ * Improve adds level.current * 1.5, multiplied by 60 for a notable NPC.
+ * Decrease subtracts level.current * 5.
  */
 export function npcKillReputation(
   npc: NpcKillReputationInput,
@@ -105,7 +107,9 @@ export function npcKillReputation(
   if (npc.improve_faction.length > 0) {
     effects.push({
       direction: "improve",
-      amount: reputationAmountFormat.format(npc.level * 1.5),
+      amount: reputationAmountFormat.format(
+        npc.level * 1.5 * (npc.is_notable ? 60 : 1),
+      ),
       factions: npc.improve_faction,
     });
   }

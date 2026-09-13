@@ -99,6 +99,7 @@ describe("npcKillReputation", () => {
   it("uses improve 1.5 and decrease 5 multipliers", () => {
     const npc = {
       level: 8,
+      is_notable: false,
       improve_faction: ["Army of Order"],
       decrease_faction: ["The Forsaken"],
     };
@@ -108,9 +109,27 @@ describe("npcKillReputation", () => {
     ]);
   });
 
+  it("multiplies only a notable NPC's positive reputation by 60", () => {
+    const npc = {
+      level: 60,
+      is_notable: true,
+      improve_faction: ["The Forsaken"],
+      decrease_faction: ["Children of Illithor"],
+    };
+    expect(npcKillReputation(npc)).toEqual([
+      { direction: "improve", amount: "5,400", factions: ["The Forsaken"] },
+      {
+        direction: "decrease",
+        amount: "300",
+        factions: ["Children of Illithor"],
+      },
+    ]);
+  });
+
   it("preserves the half-point from the improve multiplier", () => {
     const npc = {
       level: 7,
+      is_notable: false,
       improve_faction: ["Army of Order"],
       decrease_faction: [],
     };

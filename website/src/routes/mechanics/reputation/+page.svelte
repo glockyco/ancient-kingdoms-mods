@@ -303,33 +303,30 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1606-1616 — the aggro player's faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1552-1584 and 1599-1631 — party and solo faction changes on an NPC death. -->
       <p>
         Every faction on the NPC's improve list goes up by
-        <span class="font-mono">NPC level × 1.5</span>
-        and every faction on its decrease list goes down by
-        <span class="font-mono">NPC level × 5</span>. Health and rank do not
-        matter.
+        <span class="font-mono">NPC level × 1.5</span>. A Notable NPC multiplies
+        this positive amount by 60. Every faction on the decrease list goes down
+        by <span class="font-mono">NPC level × 5</span>.
       </p>
       <p>
-        In the current data the only faction an NPC death <em>improves</em> is
+        In the current data,
+        <a
+          href="/npcs/king_darin"
+          class="text-blue-600 hover:underline dark:text-blue-400">King Darin</a
+        >
+        is the only Notable NPC. Killing him gives +5,400
         <a
           href="/factions/the_forsaken"
           class="text-blue-600 hover:underline dark:text-blue-400"
           >The Forsaken</a
-        >, and the one it lowers is the NPC's own. Both amounts are small. The
-        highest-level NPCs are level 50, so they give +75 to The Forsaken and
-        cost −250 with their own faction.
+        > reputation and costs −300 Children of Illithor reputation. Health, loot,
+        and the Notable classification do not change the negative amount.
       </p>
-      <!-- Source: website/data/compendium.db monsters table — spirit_of_the_forest is a level 55 boss with 500,000 health and improves The Forsaken. -->
       <p>
-        Killing NPCs is not the quickest way to raise The Forsaken either. The
-        <a
-          href="/monsters/spirit_of_the_forest"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >Spirit of the Forest</a
-        >
-        is worth +6,100 a kill.
+        Every nearby party member receives the full reputation changes. The game
+        does not divide them among party members.
       </p>
     </Card.Content>
   </Card.Root>

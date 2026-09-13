@@ -931,9 +931,13 @@
     "Npc.cs": {
       "span": 0
     },
-    "Npc.cs:1573-1583": {
-      "sha256": "d0f525f1cc47c2ca17170f719f65cb9299cd0d6f4607bb26398b63383cf520b1",
-      "span": 11
+    "Npc.cs:1552-1584": {
+      "sha256": "76dcfa78b91af9fe384dc0317672c5e72f097933657d34d44f468cac80acfb1f",
+      "span": 33
+    },
+    "Npc.cs:1599-1631": {
+      "sha256": "5862840289e4e9d4e6b04ca4916faa01591222a116fdf75248e7f1aa4dfa3542",
+      "span": 33
     },
     "Npc.cs:16": {
       "sha256": "fc2a0c6a66b57a70d5ecc710001a0e1d1edeb09597c1a7a897a72f2d3550ab30",

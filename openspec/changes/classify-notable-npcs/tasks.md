@@ -6,9 +6,9 @@
 
 ## 2. Correct reputation behavior
 
-- [ ] 2.1 Extend the shared NPC kill-reputation calculation with the 60-times positive multiplier and verify ordinary, notable, and negative cases in focused tests.
-- [ ] 2.2 Pass the classification through NPC detail and faction queries; verify King Darin displays `+5,400` and `−300` on the applicable prerendered pages.
-- [ ] 2.3 Revise the Killing NPCs mechanics section and source citations; verify its mechanics snapshot against the built page.
+- [x] 2.1 Extend the shared NPC kill-reputation calculation with the 60-times positive multiplier and verify ordinary, notable, and negative cases in focused tests.
+- [x] 2.2 Pass the classification through NPC detail and faction queries; verify King Darin displays `+5,400` and `−300` on the applicable prerendered pages.
+- [x] 2.3 Revise the Killing NPCs mechanics section and source citations; verify its mechanics snapshot against the built page.
 
 ## 3. Present the classification
 
