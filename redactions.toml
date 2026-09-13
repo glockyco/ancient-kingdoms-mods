@@ -67,7 +67,7 @@ zone_ids = ["old_valorath"]
 # reaches. Without this entry the compendium publishes a key that no player can
 # obtain, for a door it does not show.
 #
-# The six Old Valorath armour sets: no drop table names them yet, so no monster,
+# The seven Old Valorath armour sets: no drop table names them yet, so no monster,
 # vendor, chest or recipe gives them and nothing in a row says Old Valorath.
 # A rule over the references cannot select them either. They carry
 # is_bestiary_drop, but that flag marks what the bestiary shows when a boss,
@@ -122,4 +122,10 @@ ids = [
     "hallowed_keeper_greaves",
     "hallowed_keeper_helm",
     "hallowed_keeper_sabatons",
+
+    "valorathian_minstrel_boots",
+    "valorathian_minstrel_breastplate",
+    "valorathian_minstrel_gloves",
+    "valorathian_minstrel_helm",
+    "valorathian_minstrel_leggings",
 ]
