@@ -162,6 +162,7 @@ def _parse_tooltip(item: dict) -> str:
 
     # Build replacements dict for placeholders
     replacements: dict[str, str] = {
+        "CATEGORY": item.get("slot") or "",
         # Equipment stats
         "DURABILITY": (
             "<color=#DA4ADC>Durability: 100%</color>"
@@ -315,6 +316,7 @@ def run(conn: sqlite3.Connection) -> None:
         SELECT
             id,
             tooltip,
+            slot,
             stats,
             item_level,
             sellable,

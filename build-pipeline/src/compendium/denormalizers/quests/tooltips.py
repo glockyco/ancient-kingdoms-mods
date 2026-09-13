@@ -16,9 +16,6 @@ from rich.console import Console
 
 console = Console()
 
-# All playable classes in the game
-CLASSES = ["Warrior", "Cleric", "Ranger", "Rogue", "Wizard", "Druid"]
-
 
 def _convert_unity_markup_to_html(text: str) -> str:
     """Convert Unity TextMeshPro markup tags to HTML."""
@@ -314,9 +311,16 @@ def run(conn: sqlite3.Connection) -> None:
     """)
 
     columns = [desc[0] for desc in cursor.description]
+    quest_rows = cursor.fetchall()
+    player_classes = [
+        row[0] for row in conn.execute("SELECT name FROM classes ORDER BY name")
+    ]
+    if not player_classes:
+        raise ValueError("Quest tooltip generation requires playable classes")
+
     updated_count = 0
 
-    for row in cursor.fetchall():
+    for row in quest_rows:
         quest = dict(zip(columns, row))
 
         # Check if quest has class-specific rewards
@@ -327,7 +331,7 @@ def run(conn: sqlite3.Connection) -> None:
             tooltip_html_dict = {}
             tooltip_complete_html_dict = {}
 
-            for player_class in CLASSES:
+            for player_class in player_classes:
                 html = _parse_quest_tooltip(
                     conn, quest, player_class, is_complete=False
                 )
