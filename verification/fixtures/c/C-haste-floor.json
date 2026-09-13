@@ -16,19 +16,19 @@
     "schemaVersion": 1,
     "player": {
       "entityId": "player",
-      "classId": "warrior",
+      "classId": "bard",
       "raceId": "human",
       "level": 50,
       "veteranPoints": 200,
       "attributes": {
         "rawObserved": null,
         "baseProgression": {
-          "strength": 18,
-          "constitution": 26,
-          "dexterity": 14,
-          "intelligence": 11,
-          "wisdom": 9,
-          "charisma": 9
+          "strength": 16,
+          "constitution": 10,
+          "dexterity": 12,
+          "intelligence": 8,
+          "wisdom": 8,
+          "charisma": 25
         },
         "allocated": {
           "strength": 0,
@@ -42,8 +42,8 @@
       },
       "skills": [
         {
-          "skillId": "melee_attack",
-          "skillName": "Melee Attack",
+          "skillId": "bardic_strike",
+          "skillName": "Bardic Strike",
           "level": 1,
           "pool": "normal"
         }
@@ -59,7 +59,7 @@
         },
         {
           "slot": 2,
-          "itemId": "elven_hero_chestplate",
+          "itemId": "cinderchant_chestplate",
           "itemName": null,
           "augmentId": null,
           "durability": 100,
@@ -115,7 +115,7 @@
         },
         {
           "slot": 12,
-          "itemId": "waveforged_hammer",
+          "itemId": "blade_of_destruction",
           "itemName": null,
           "augmentId": null,
           "durability": 100,
@@ -158,7 +158,7 @@
     },
     "actions": [
       {
-        "skill": "Melee Attack",
+        "skill": "Bardic Strike",
         "facing": "front"
       }
     ]

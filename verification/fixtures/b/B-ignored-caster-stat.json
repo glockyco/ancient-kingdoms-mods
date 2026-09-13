@@ -66,8 +66,8 @@
           "pool": "veteran"
         },
         {
-          "skillId": "innate_wisdom",
-          "skillName": "Innate Wisdom",
+          "skillId": "innate_dexterity",
+          "skillName": "Innate Dexterity",
           "level": 10,
           "pool": "veteran"
         },
