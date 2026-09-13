@@ -1,6 +1,6 @@
 import { query } from "$lib/db";
 
-const METADATA_FIELDS = `('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set')`;
+const METADATA_FIELDS = `('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set', 'augment_bonus_set_id')`;
 
 /**
  * Get count of items for each stat key.

@@ -7,4 +7,5 @@ export const STATS_METADATA_FIELDS = [
   "has_serenity",
   "is_costume",
   "augment_bonus_set",
+  "augment_bonus_set_id",
 ] as const;

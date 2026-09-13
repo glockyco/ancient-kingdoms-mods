@@ -382,7 +382,7 @@ export function getClassItemsWithSources(
       (
         SELECT json_group_array(json_each.key)
         FROM json_each(i.stats)
-        WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set')
+        WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set', 'augment_bonus_set_id')
           AND json_each.value != 0
           AND json_each.value != 0.0
           AND json_each.value != 'false'

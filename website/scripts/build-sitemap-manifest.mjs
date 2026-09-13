@@ -489,7 +489,7 @@ function addOverviewHashes(db, hashes) {
               (
                 SELECT COUNT(*)
                 FROM json_each(stats)
-                WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set')
+                WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set', 'augment_bonus_set_id')
                   AND json_each.value != 0
                   AND json_each.value != 0.0
                   AND json_each.value != 'false'
@@ -497,7 +497,7 @@ function addOverviewHashes(db, hashes) {
               (
                 SELECT json_group_array(json_each.key)
                 FROM json_each(stats)
-                WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set')
+                WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set', 'augment_bonus_set_id')
                   AND json_each.value != 0
                   AND json_each.value != 0.0
                   AND json_each.value != 'false'
