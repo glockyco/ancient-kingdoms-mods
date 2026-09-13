@@ -216,7 +216,7 @@
 
     <div class="space-y-5 rounded-lg border p-4 md:p-5">
       <div class="flex flex-wrap gap-x-8 gap-y-4">
-        <div class="flex items-baseline gap-3">
+        <div class="flex items-center gap-3">
           <label
             for="skill"
             class="text-xs uppercase tracking-wider text-muted-foreground"
@@ -234,7 +234,7 @@
             >{skillLevel}%</output
           >
         </div>
-        <div class="flex items-baseline gap-3">
+        <div class="flex items-center gap-3">
           <label
             for="pickaxe"
             class="text-xs uppercase tracking-wider text-muted-foreground"
