@@ -59,7 +59,16 @@ Set `COMPENDIUM_VERSION` in `website/src/lib/constants/version.ts` last. The liv
 
 The ledger version and `COMPENDIUM_VERSION` describe different things. The ledger names the snapshot the anchors describe, and `COMPENDIUM_VERSION` names the published data. The two differ from phase 2 until this step.
 
-Run focused tests as each concern lands. Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
+Run focused tests as each concern lands. Before the release gate, run the citation check and the model verification against a new scratch database:
+
+```bash
+uv run compendium citations check
+dotnet run --project build-tool -- verify --fresh-scratch --json
+```
+
+The verification command must accept the committed fixture matrix, preserve the player save, and report the current game build. A reused scratch database does not satisfy this update check.
+
+Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 
 Commit coherent concerns as they pass, in this order:
 
