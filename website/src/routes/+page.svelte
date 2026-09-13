@@ -79,7 +79,7 @@
     },
     {
       title: "Classes",
-      description: "The six playable classes",
+      description: "Playable classes and skill trees",
       href: "/classes",
       icon: Star,
       badge: "bg-indigo-500/10 text-indigo-500",

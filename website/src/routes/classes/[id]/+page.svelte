@@ -29,7 +29,10 @@
   } from "$lib/utils/classes";
   import { QUALITY_NAMES } from "$lib/constants/quality";
   import Seo from "$lib/components/Seo.svelte";
-  import { getQualityTextColorClass } from "$lib/utils/format";
+  import {
+    formatEquipmentCategory,
+    getQualityTextColorClass,
+  } from "$lib/utils/format";
   import {
     formatLinearDuration,
     formatLinearValue,
@@ -136,13 +139,12 @@
   }
 
   // untrack: resource_type is static (prerendered), never changes at runtime
-  const costColumnHeader = untrack(() => {
-    if (data.class.resource_type === "energy") return "Rage Cost";
-    if (data.class.resource_type === "songs") return "Active Song Slot";
-    return "Mana Cost";
-  });
+  const costColumnHeader = untrack(() =>
+    data.class.resource_type === "energy" ? "Rage Cost" : "Mana Cost",
+  );
+  const showSkillCost = untrack(() => data.class.resource_type !== "songs");
 
-  // Which consumable cost field to use. Bard songs occupy a slot instead.
+  // Which consumable cost field to use.
   const costField = untrack(() =>
     data.class.resource_type === "energy" ? "energy_cost" : "mana_cost",
   );
@@ -250,19 +252,19 @@
       enableSorting: false,
       accessorFn: (row) => formatSkillEffect(row),
     },
-    {
-      id: "cost",
-      header: costColumnHeader,
-      enableSorting: false,
-      accessorFn: (row) =>
-        data.class.resource_type === "songs"
-          ? row.is_bard_song
-            ? "1"
-            : "—"
-          : formatSkillCost(
-              costField === "energy_cost" ? row.energy_cost : row.mana_cost,
-            ),
-    },
+    ...(!showSkillCost
+      ? []
+      : [
+          {
+            id: "cost",
+            header: costColumnHeader,
+            enableSorting: false,
+            accessorFn: (row: ClassSkill) =>
+              formatSkillCost(
+                costField === "energy_cost" ? row.energy_cost : row.mana_cost,
+              ),
+          },
+        ]),
     {
       id: "cooldown",
       header: "Cooldown",
@@ -659,6 +661,8 @@
         <span class="text-muted-foreground">—</span>
       {/if}
     </span>
+  {:else if cell.column.id === "slot"}
+    {row.original.slot ? formatEquipmentCategory(row.original.slot) : "—"}
   {:else if cell.column.id === "min_source_level"}
     <span class="ml-auto">
       {#if row.original.min_source_level !== null}
@@ -708,7 +712,10 @@
     <DataTableFacetedFilter
       column={slotCol}
       title="Slot"
-      options={uniqueSlots.map((s) => ({ label: s, value: s }))}
+      options={uniqueSlots.map((s) => ({
+        label: formatEquipmentCategory(s),
+        value: s,
+      }))}
     />
   {/if}
   {@const srcLevelCol = table.getColumn("min_source_level")}

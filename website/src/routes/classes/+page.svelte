@@ -10,6 +10,7 @@
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Leaf from "@lucide/svelte/icons/leaf";
+  import Music from "@lucide/svelte/icons/music";
   import Crosshair from "@lucide/svelte/icons/crosshair";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { base } from "$app/paths";
@@ -36,6 +37,7 @@
     rogue: Swords,
     wizard: Sparkles,
     druid: Leaf,
+    bard: Music,
   };
 
   function getClassIcon(classId: string) {
@@ -57,7 +59,7 @@
 
 <Seo
   title="Classes - Ancient Kingdoms"
-  description="The six playable classes — Warrior, Rogue, Ranger, Cleric, Druid, and Wizard. Roles, resources, and full skill trees."
+  description="The seven playable classes — Bard, Cleric, Druid, Ranger, Rogue, Warrior, and Wizard. Roles, resources, and full skill trees."
   path="/classes"
 />
 

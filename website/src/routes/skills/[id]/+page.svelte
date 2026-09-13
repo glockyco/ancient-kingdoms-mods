@@ -38,6 +38,8 @@
     renderWildStrikeFormulaDisplay,
   } from "$lib/utils/formula-eval";
   import { petHref } from "$lib/utils/pets";
+  import { formatEquipmentCategory } from "$lib/utils/format";
+  import { formatClassName } from "$lib/utils/classes";
   import Seo from "$lib/components/Seo.svelte";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
 
@@ -132,15 +134,6 @@
       .replace(/<\/color>/g, "</span>")
       .replace(/\n/g, "<br>");
   }
-
-  const CLASS_LABELS: Record<string, string> = {
-    warrior: "Warrior",
-    ranger: "Ranger",
-    cleric: "Cleric",
-    rogue: "Rogue",
-    wizard: "Wizard",
-    druid: "Druid",
-  };
 
   const SKILL_TYPE_LABELS: Record<string, string> = {
     target_damage: "Target Damage",
@@ -287,13 +280,8 @@
     ),
   );
 
-  // "Weapon" means any melee weapon (StartsWith match) — not a meaningful restriction
+  // "Weapon" means any melee weapon (StartsWith match) — not a meaningful restriction.
   // Source: server-scripts/ScriptableSkill.cs — CheckWeapon(), line 100
-  const WEAPON_LABELS: Record<string, string> = {
-    WeaponDagger: "Dagger",
-    WeaponSword: "Sword",
-  };
-
   const meaningfulWeapon = $derived(
     skill.required_weapon_category &&
       skill.required_weapon_category !== "Weapon",
@@ -1153,8 +1141,7 @@
             <div>
               <dt class="text-muted-foreground">Required Weapon</dt>
               <dd class="font-medium">
-                {WEAPON_LABELS[skill.required_weapon_category] ??
-                  skill.required_weapon_category}
+                {formatEquipmentCategory(skill.required_weapon_category)}
               </dd>
             </div>
           {/if}
@@ -1164,7 +1151,7 @@
   {/if}
 
   <!-- Cost & Timing -->
-  {#if skill.mana_cost || skill.energy_cost || skill.cooldown || skill.cast_time || skill.cast_range}
+  {#if skill.is_bard_song || skill.mana_cost || skill.energy_cost || skill.cooldown || skill.cast_time || skill.cast_range}
     <Card.Root id="cost-timing" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
@@ -1174,7 +1161,13 @@
       </Card.Header>
       <Card.Content>
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-          {#if skill.mana_cost}
+          {#if skill.is_bard_song}
+            <div>
+              <dt class="text-muted-foreground">Song Slot Cost</dt>
+              <dd class="font-medium">1</dd>
+            </div>
+          {/if}
+          {#if skill.mana_cost && !skill.is_bard_song}
             <div>
               <dt class="text-muted-foreground">Mana Cost</dt>
               <dd class="font-medium">{formatLinear(skill.mana_cost)}</dd>
@@ -2929,7 +2922,7 @@
                 href="/classes/{cls}"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
               >
-                {CLASS_LABELS[cls] ?? cls}
+                {formatClassName(cls)}
               </a>
             </div>
           {/each}

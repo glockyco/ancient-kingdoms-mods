@@ -72,6 +72,41 @@ export function formatItemType(type: string | null | undefined): string {
   );
 }
 
+const equipmentCategoryDisplayNames: Record<string, string> = {
+  Ammo: "Ammunition",
+  Artifact: "Artifact",
+  Belt: "Belt",
+  Bow: "Bow",
+  Bracers: "Bracers",
+  Charm: "Charm",
+  Chest: "Chest",
+  Ear: "Earring",
+  Feet: "Feet",
+  "Fishing Rod": "Fishing Rod",
+  Hands: "Hands",
+  Head: "Head",
+  Instrument: "Instrument",
+  Legs: "Legs",
+  Neck: "Necklace",
+  Pickaxe: "Pickaxe",
+  Ring: "Ring",
+  Shield: "Shield",
+  Shovel: "Shovel",
+  WeaponDagger: "1H Weapon (Light)",
+  WeaponSword: "1H Weapon",
+  WeaponSword2H: "2H Weapon",
+  WeaponWand: "Casting Weapon",
+};
+
+/** Convert the game's equipment category to neutral user-facing terminology. */
+export function formatEquipmentCategory(category: string): string {
+  const displayName = equipmentCategoryDisplayNames[category];
+  if (displayName) return displayName;
+  throw new Error(
+    `Unknown equipment category: "${category}". Add it to equipmentCategoryDisplayNames.`,
+  );
+}
+
 /**
  * Format spawn time window (e.g., "18:00-06:00")
  * Returns null if spawn time is not limited (0-0 or both same)

@@ -670,7 +670,7 @@
         {:else if attackMode === "player" && selectedClass === "rogue"}
           <!-- Rogue player: main + off-hand -->
           <div class="space-y-1">
-            <p class="text-sm font-medium">Main-hand Dagger</p>
+            <p class="text-sm font-medium">Main-hand 1H Weapon (Light)</p>
             <div
               class="max-h-44 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
             >
@@ -698,7 +698,7 @@
             </div>
           </div>
           <div class="space-y-1">
-            <p class="text-sm font-medium">Off-hand Dagger</p>
+            <p class="text-sm font-medium">Off-hand 1H Weapon (Light)</p>
             <p class="text-xs text-muted-foreground">
               Contributes floor(dmg×0.5) but full STR bonus. Comparison table
               uses selected off-hand.
@@ -732,7 +732,7 @@
         {:else if attackMode === "merc" && selectedClass === "rogue"}
           <!-- Rogue merc: main + off-hand (both at full damage — no 0.5× penalty for mercs) -->
           <div class="space-y-1">
-            <p class="text-sm font-medium">Main-hand Dagger</p>
+            <p class="text-sm font-medium">Main-hand 1H Weapon (Light)</p>
             <div
               class="max-h-44 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
             >
@@ -760,9 +760,9 @@
             </div>
           </div>
           <div class="space-y-1">
-            <p class="text-sm font-medium">Off-hand Dagger</p>
+            <p class="text-sm font-medium">Off-hand 1H Weapon (Light)</p>
             <p class="text-xs text-muted-foreground">
-              Both daggers deal full damage (no off-hand penalty for mercs).
+              Both weapons deal full damage (no off-hand penalty for mercs).
               Comparison table uses the selected off-hand.
             </p>
             <div
@@ -952,7 +952,7 @@
         {:else}
           <!-- Caster modes: wand -->
           <div class="space-y-1">
-            <p class="text-sm font-medium">Wand</p>
+            <p class="text-sm font-medium">Casting Weapon</p>
             {#if attackMode === "spell_player" || attackMode === "spell_merc"}
               <p class="text-xs text-muted-foreground">
                 Ranked by magic damage. Physical dmg stat is unused in spell

@@ -12,8 +12,8 @@
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import FishIcon from "@lucide/svelte/icons/fish";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
-  import { formatItemType } from "$lib/utils/format";
-  import { formatClassName } from "$lib/utils/classes";
+  import { formatEquipmentCategory, formatItemType } from "$lib/utils/format";
+  import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import { isHouseChestItemId } from "$lib/inventory/house-chests";
   import { getItemSpecialMechanics } from "$lib/special-mechanics";
@@ -46,6 +46,17 @@
     } catch {
       return null;
     }
+  }
+
+  function hasSpecificClassRestriction(
+    classes: string[] | null | undefined,
+  ): classes is string[] {
+    return Boolean(
+      classes &&
+      classes.length > 0 &&
+      classes.length < ALL_CLASS_IDS.length &&
+      !classes.includes("all"),
+    );
   }
 
   function formatFishingChanceRange(
@@ -411,7 +422,7 @@
         </div>
       {/if}
 
-      {#if computed.classRequired.length > 0 && computed.classRequired.length < 6 && !computed.classRequired.includes("all")}
+      {#if hasSpecificClassRestriction(computed.classRequired)}
         <div>
           <div class={styles.label}>Class Required</div>
           <div class={styles.value}>
@@ -423,7 +434,9 @@
       {#if data.item.slot}
         <div>
           <div class={styles.label}>Equipment Slot</div>
-          <div class={styles.value}>{data.item.slot}</div>
+          <div class={styles.value}>
+            {formatEquipmentCategory(data.item.slot)}
+          </div>
         </div>
       {/if}
 
@@ -1693,7 +1706,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
                           {quest.class_restrictions
                             .map(formatClassName)
                             .join(", ")}{/if})
@@ -1717,7 +1730,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
                           {quest.class_restrictions
                             .map(formatClassName)
                             .join(", ")}{/if})
@@ -1757,7 +1770,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
                           {quest.class_restrictions
                             .map(formatClassName)
                             .join(", ")}{/if})
@@ -1781,7 +1794,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
                           {quest.class_restrictions
                             .map(formatClassName)
                             .join(", ")}{/if})
@@ -2233,7 +2246,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
                           {quest.class_restrictions
                             .map(formatClassName)
                             .join(", ")}{/if})
@@ -2260,7 +2273,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if hasSpecificClassRestriction(quest.class_restrictions)},
                           {quest.class_restrictions
                             .map(formatClassName)
                             .join(", ")}{/if})

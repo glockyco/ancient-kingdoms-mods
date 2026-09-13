@@ -21,7 +21,7 @@
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import ClassPills from "$lib/components/ClassPills.svelte";
-  import { formatItemType } from "$lib/utils/format";
+  import { formatEquipmentCategory, formatItemType } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
   import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
   import { getItemTooltips } from "$lib/queries/items";
@@ -135,7 +135,7 @@
   // Get unique slots for filter
   const uniqueSlots = $derived(
     Array.from(
-      new Set(data.items.map((item) => item.slot).filter((s) => s != null)),
+      new Set(data.items.map((item) => item.slot).filter((s) => Boolean(s))),
     ).sort() as string[],
   );
 
@@ -365,7 +365,9 @@
     <span class="ml-auto">{row.original.level_required || "-"}</span>
   {:else if cell.column.id === "slot"}
     <span class={row.original.slot ? "" : "text-muted-foreground"}
-      >{row.original.slot || "-"}</span
+      >{row.original.slot
+        ? formatEquipmentCategory(row.original.slot)
+        : "-"}</span
     >
   {:else if cell.column.id === "class"}
     {@const classes = itemClassKeys[row.original.id] ?? []}
@@ -425,7 +427,7 @@
       column={slotCol}
       title="Slot"
       options={uniqueSlots.map((s) => ({
-        label: s,
+        label: formatEquipmentCategory(s),
         value: s,
       }))}
     />

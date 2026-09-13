@@ -10,15 +10,17 @@
 import {
   toRomanNumeral,
   formatItemType,
+  formatEquipmentCategory,
   formatDuration,
 } from "$lib/utils/format";
 
 import { QUALITY_NAMES } from "$lib/constants/quality";
+import { ALL_CLASS_IDS } from "$lib/utils/classes";
 
 // =============================================================================
 // Items
 //
-// Title pattern: `{Name} ({Type-suffix}) - Ancient Kingdoms`
+// Title pattern: `{Name} - Ancient Kingdoms`
 // Description pattern is per-branch (one per item_type, with sub-branches for
 // flag- and field-driven distinctions). Every gameplay claim cites its source
 // in the game scripts to keep the wiki honest about what these items actually
@@ -65,40 +67,6 @@ function quality(item: Pick<Item, "quality">): string {
   return QUALITY_NAMES[item.quality] ?? "Common";
 }
 
-/**
- * Convert a weapon_category enum value (e.g. "WeaponSword2H") to the noun
- * that goes inside the title parenthetical and into the description body.
- * The DB enum is the asset prefix the game scripts use, not display copy.
- */
-function humanizeWeaponCategory(cat: string): string {
-  switch (cat) {
-    case "WeaponSword":
-      return "sword";
-    case "WeaponSword2H":
-      return "two-handed sword";
-    case "WeaponDagger":
-      return "dagger";
-    case "WeaponWand":
-      return "wand";
-    case "Bow":
-      return "bow";
-    case "Shield":
-      return "shield";
-    case "Pickaxe":
-      return "pickaxe";
-    case "Shovel":
-      return "shovel";
-    default:
-      return cat.toLowerCase();
-  }
-}
-
-/** Title-case form of the weapon category for the title parenthetical. */
-function titleCaseWeaponCategory(cat: string): string {
-  const word = humanizeWeaponCategory(cat);
-  return word.replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
 const ARMOR_SLOTS = new Set([
   "Chest",
   "Legs",
@@ -110,17 +78,6 @@ const ARMOR_SLOTS = new Set([
   "Shield",
 ]);
 const JEWELRY_SLOTS = new Set(["Ring", "Neck", "Ear", "Charm", "Artifact"]);
-
-/** Lower-cased noun form of an equipment slot for description bodies. */
-function slotNoun(slot: string): string {
-  if (slot === "Neck") return "necklace";
-  if (slot === "Ear") return "earring";
-  if (slot === "Charm") return "charm";
-  if (slot === "Artifact") return "artifact";
-  if (slot === "Ring") return "ring";
-  if (slot === "Shield") return "shield";
-  return slot.toLowerCase();
-}
 
 /**
  * Capitalize-and-join class-required JSON. The DB stores lowercase class ids
@@ -162,75 +119,9 @@ function classRestrictionPhrase(
 // Title
 // ---------------------------------------------------------------------------
 
-/**
- * Compute the page <title> for an item detail page.
- * Format: `{name} ({type-suffix}) - Ancient Kingdoms`
- */
+/** Compute the page title for an item detail page. */
 export function itemTitle(item: Item): string {
-  return `${item.name} (${itemTypeSuffix(item)}) - Ancient Kingdoms`;
-}
-
-/** The parenthetical that immediately follows the name in the page title. */
-export function itemTypeSuffix(item: Item): string {
-  const q = quality(item);
-  switch (item.item_type) {
-    case "weapon": {
-      const cat = item.weapon_category
-        ? titleCaseWeaponCategory(item.weapon_category)
-        : "Weapon";
-      return `${q} ${cat}`;
-    }
-    case "equipment": {
-      const slot = item.slot ?? "Equipment";
-      return `${q} ${slot}`;
-    }
-    case "costume":
-      return "Costume";
-    case "ammo":
-      return "Ammunition";
-    case "potion":
-      return "Potion";
-    case "food":
-      return item.food_type === "Drink" ? "Drink" : "Food";
-    case "scroll":
-      return item.is_repair_kit ? "Repair Scroll" : "Cast Scroll";
-    case "relic":
-      // Source: server-scripts/RelicItem.cs:12,39-46 — isOrnamentationToken splits the type
-      return item.is_ornamentation_token ? "Ornamentation Token" : `${q} Relic`;
-    case "book":
-      return "Tome";
-    case "mount":
-      return "Mount";
-    case "backpack":
-      return "Bag";
-    case "pack":
-      return "Pack";
-    case "travel":
-      return "Travel Scroll";
-    case "treasure_map":
-      return "Treasure Map";
-    case "chest":
-      return "Loot Container";
-    case "random":
-      return "Mystery Container";
-    case "augment":
-      return `${q} Augment`;
-    case "fragment":
-      return "Fragment";
-    case "recipe":
-      return "Recipe";
-    case "merge":
-      return "Combine Token";
-    case "structure":
-      return "Furniture";
-    case "general":
-      if (item.is_chest_key) return "Chest Key";
-      if (item.is_key) return "Key";
-      if (item.is_quest_item) return "Quest Item";
-      return `${q} Item`;
-    default:
-      return formatItemType(item.item_type);
-  }
+  return `${item.name} - Ancient Kingdoms`;
 }
 
 // ---------------------------------------------------------------------------
@@ -291,7 +182,7 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
 function weaponDescription(item: Item): string {
   const q = quality(item);
   const cat = item.weapon_category
-    ? humanizeWeaponCategory(item.weapon_category)
+    ? formatEquipmentCategory(item.weapon_category).toLowerCase()
     : "weapon";
   const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
@@ -305,16 +196,19 @@ function weaponDescription(item: Item): string {
 function equipmentDescription(item: Item): string {
   const q = quality(item);
   const slot = item.slot ?? "";
+  const displaySlot = slot
+    ? formatEquipmentCategory(slot).toLowerCase()
+    : "equipment";
   const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
   if (ARMOR_SLOTS.has(slot)) {
-    const noun = slot === "Shield" ? "shield" : `${slotNoun(slot)} armor`;
+    const noun = slot === "Shield" ? "shield" : `${displaySlot} armor`;
     return `${q} ${noun}${classes}.${level}`;
   }
   if (JEWELRY_SLOTS.has(slot)) {
-    return `${q} ${slotNoun(slot)}${classes}.${level}`;
+    return `${q} ${displaySlot}${classes}.${level}`;
   }
-  return `${q} ${slot || "equipment"}${classes}.${level}`;
+  return `${q} ${displaySlot}${classes}.${level}`;
 }
 
 function ammoDescription(item: Item): string {
@@ -1408,7 +1302,7 @@ function humanizeSkillType(skillType: string): string {
 
 function classesPhrase(classes: string[]): string {
   if (classes.length === 0) return "";
-  if (classes.length === 6) return "Universal";
+  if (classes.length === ALL_CLASS_IDS.length) return "Universal";
   const titled = classes.map((c) => capitalizeFirst(c));
   if (titled.length === 1) return titled[0];
   return joinList(titled);
