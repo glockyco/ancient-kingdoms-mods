@@ -24,6 +24,7 @@
     getActiveRoleKeys,
   } from "$lib/utils/roles";
   import Castle from "@lucide/svelte/icons/castle";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
   import Trees from "@lucide/svelte/icons/trees";
 
   let { data } = $props();
@@ -79,6 +80,7 @@
         new Set((npcZoneMap.get(n.id) || []).map((z) => z.zone_id)),
       ),
       role_keys: getActiveRoleKeys(n.roles),
+      classification: n.is_notable ? "notable" : "ordinary",
       faction_filter: n.faction || "",
     })),
   );
@@ -144,6 +146,17 @@
       },
     },
     {
+      id: "classification",
+      accessorKey: "classification",
+      header: "Classification",
+      enableHiding: false,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const classification = row.getValue(columnId) as string;
+        if (!filterValue || filterValue.length === 0) return true;
+        return filterValue.includes(classification);
+      },
+    },
+    {
       id: "faction_filter",
       accessorKey: "faction_filter",
       header: "Faction Filter",
@@ -164,12 +177,13 @@
     zones: "Zone",
     zone_ids: "Zone Filter",
     role_keys: "Role Filter",
+    classification: "Classification",
     faction_filter: "Faction Filter",
   };
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<NpcRow, unknown> })}
-  {#if header.id === "zone_ids" || header.id === "role_keys" || header.id === "faction_filter"}
+  {#if header.id === "zone_ids" || header.id === "role_keys" || header.id === "classification" || header.id === "faction_filter"}
     <span></span>
   {:else}
     {columnLabels[header.id] ?? header.id}
@@ -184,18 +198,24 @@
   row: Row<NpcRow>;
 })}
   {#if cell.column.id === "name"}
-    <EntityLink
-      href="/npcs/{row.original.id}"
-      name={row.original.name}
-      variant="reference"
-      domain="npc"
-      entityId={row.original.id}
-      imageKind="primary"
-      imageAvailable={row.original.visual_public_path}
-      fallback={Users}
-      size={32}
-      class="flex whitespace-nowrap"
-    />
+    <div class="flex items-center gap-2 whitespace-nowrap">
+      <EntityLink
+        href="/npcs/{row.original.id}"
+        name={row.original.name}
+        variant="reference"
+        domain="npc"
+        entityId={row.original.id}
+        imageKind="primary"
+        imageAvailable={row.original.visual_public_path}
+        fallback={Users}
+        size={32}
+        class="flex"
+      />
+      {#if row.original.is_notable}
+        <IconBadge icon={Sparkles} iconClass="text-amber-500">Notable</IconBadge
+        >
+      {/if}
+    </div>
   {:else if cell.column.id === "faction"}
     <span class="whitespace-nowrap">{row.original.faction || "-"}</span>
   {:else if cell.column.id === "race"}
@@ -222,7 +242,7 @@
         <span class="text-muted-foreground">-</span>
       {/if}
     </div>
-  {:else if cell.column.id === "zone_ids" || cell.column.id === "role_keys" || cell.column.id === "faction_filter"}
+  {:else if cell.column.id === "zone_ids" || cell.column.id === "role_keys" || cell.column.id === "classification" || cell.column.id === "faction_filter"}
     <!-- Hidden filter columns -->
   {:else}
     {cell.getValue()}
@@ -230,9 +250,20 @@
 {/snippet}
 
 {#snippet renderToolbar({ table }: { table: TanstackTable<NpcRow> })}
+  {@const classificationCol = table.getColumn("classification")}
   {@const factionCol = table.getColumn("faction_filter")}
   {@const roleKeysCol = table.getColumn("role_keys")}
   {@const zoneIdsCol = table.getColumn("zone_ids")}
+  {#if classificationCol}
+    <DataTableFacetedFilter
+      column={classificationCol}
+      title="Classification"
+      options={[
+        { label: "Notable", value: "notable" },
+        { label: "Ordinary", value: "ordinary" },
+      ]}
+    />
+  {/if}
   {#if factionCol}
     <DataTableFacetedFilter
       column={factionCol}
@@ -290,6 +321,7 @@
     initialColumnVisibility={{
       zone_ids: false,
       role_keys: false,
+      classification: false,
       faction_filter: false,
     }}
     urlKey="npcs"

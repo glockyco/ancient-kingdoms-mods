@@ -197,6 +197,7 @@ export interface NpcListView {
   visual_public_path: string | null;
   faction: string | null;
   race: string | null;
+  is_notable: boolean;
   roles: NpcRoles;
 }
 

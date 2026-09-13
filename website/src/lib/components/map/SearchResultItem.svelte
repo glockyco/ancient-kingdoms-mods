@@ -138,6 +138,14 @@
       </div>
     {/if}
   </div>
+  {#if result.category === "npc" && result.subcategory === "notable"}
+    <span
+      class="flex shrink-0 items-center gap-1 text-xs text-amber-600 dark:text-amber-400"
+    >
+      <Sparkles size={14} />
+      Notable
+    </span>
+  {/if}
   {#if roleCategories.length > 0}
     <div class="flex shrink-0 gap-1">
       {#each roleCategories as category (category)}

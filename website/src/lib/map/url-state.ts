@@ -212,6 +212,7 @@ export function urlStateToLayerVisibility(
     creatures: urlLayers.includes("creatures"),
     hunts: urlLayers.includes("hunts"),
     // NPCs
+    notableNpcs: urlLayers.includes("notableNpcs"),
     npcVendors: urlLayers.includes("npcVendors"),
     npcQuestGivers: urlLayers.includes("npcQuestGivers"),
     npcRepair: urlLayers.includes("npcRepair"),

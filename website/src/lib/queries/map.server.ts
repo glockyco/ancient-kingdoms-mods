@@ -430,6 +430,7 @@ interface NpcSpawnRow {
   zone_id: string | null;
   zone_name: string;
   role_bitmask: number;
+  is_notable: number;
   respawn_dungeon_id: number;
   renewal_dungeon_name: string | null;
   renewal_dungeon_zone_id: string | null;
@@ -457,6 +458,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       ns.zone_id,
       COALESCE(z.name, 'Unknown') as zone_name,
       COALESCE(ns.role_bitmask, 0) as role_bitmask,
+      n.is_notable,
       n.respawn_dungeon_id,
       rz.name as renewal_dungeon_name,
       rz.id as renewal_dungeon_zone_id,
@@ -522,6 +524,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       zoneId: r.zone_id,
       zoneName: r.zone_name,
       roleBitmask: r.role_bitmask,
+      isNotable: Boolean(r.is_notable),
       renewalDungeonName:
         r.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID
           ? "World Bosses"

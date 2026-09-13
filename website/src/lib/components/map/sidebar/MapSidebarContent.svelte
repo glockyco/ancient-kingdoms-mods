@@ -129,13 +129,16 @@
   const craftingLayers = registryLayerOptions("crafting");
   const gatheringLayers = registryLayerOptions("gathering");
 
-  // NPC role layers derive labels and visibility keys from the marker registry.
-  const npcLayers: LayerOption[] = NPC_FACETS.map((facet) => ({
-    key: facet.visibilityKey,
-    label: facet.label,
-    color: MARKER_COLORS.npc,
-    icon: facet.id === "isTeleporter" ? Compass : Users,
-  }));
+  // NPC classification and role layers derive from the marker registry.
+  const npcLayers: LayerOption[] = [
+    ...registryLayerOptions("npcs"),
+    ...NPC_FACETS.map((facet) => ({
+      key: facet.visibilityKey,
+      label: facet.label,
+      color: MARKER_COLORS.npc,
+      icon: facet.id === "isTeleporter" ? Compass : Users,
+    })),
+  ];
 
   const zoneLayers: LayerOption[] = [
     {

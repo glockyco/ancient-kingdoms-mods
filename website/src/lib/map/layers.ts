@@ -114,7 +114,9 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     grouped[MARKER_FILTERED_DATA_KEYS[markerId]] as T[];
 
   const renderablePortals = markerRows<PortalMapEntity>("portals");
-  const renderableNpcs = markerRows<NpcMapEntity>("npc");
+  const ordinaryNpcs = markerRows<NpcMapEntity>("npc");
+  const notableNpcs = markerRows<NpcMapEntity>("notableNpcs");
+  const renderableNpcs = [...ordinaryNpcs, ...notableNpcs];
   const renderableTraps = markerRows<TrapMapEntity>("traps");
 
   return {
@@ -123,7 +125,8 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     fabled: markerRows<MonsterMapEntity>("fabled"),
     bosses: markerRows<MonsterMapEntity>("bosses"),
     hunts: markerRows<MonsterMapEntity>("hunts"),
-    npcs: renderableNpcs,
+    notableNpcs,
+    npcs: ordinaryNpcs,
     portals: renderablePortals,
     chests: markerRows<ChestMapEntity>("chests"),
     treasure: markerRows<TreasureMapEntity>("treasure"),

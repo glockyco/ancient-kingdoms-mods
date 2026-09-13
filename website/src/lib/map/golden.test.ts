@@ -1,11 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { createLayers } from "./layers";
+import { createFilteredData, createLayers } from "./layers";
 import {
   EMPTY_PATROL_DATA,
   EMPTY_RELATION_ARCS,
   EMPTY_SELECTION,
 } from "./selection";
 import { getDefaultLayerVisibility } from "./url-state";
+import type { MapEntityData, NpcMapEntity } from "$lib/types/map";
 import type { ZoneFocusedData } from "./zone-filter";
 
 // This array is a golden baseline: layer order is deck.gl paint order, so a diff
@@ -39,6 +40,7 @@ const emptyFilteredData = {
   portalsWithDestinations: [],
   teleportersWithDestinations: [],
   parentZones: [],
+  notableNpcs: [],
   npcs: [],
   portals: [],
   chests: [],
@@ -125,6 +127,7 @@ describe("map golden invariants", () => {
       "trap-teleport-destinations",
       "teleporter-destinations",
       "npcs",
+      "notable-npcs",
       "altars",
       "traps",
       "elites",
@@ -140,6 +143,60 @@ describe("map golden invariants", () => {
       "hover-highlight",
       "zone-hover-highlight",
     ]);
+  });
+
+  test("partitions each NPC spawn into one marker layer", () => {
+    const npc = (id: string, isNotable: boolean): NpcMapEntity => ({
+      id,
+      type: "npc",
+      name: id,
+      position: [1, 2],
+      zoneId: "zone",
+      zoneName: "Zone",
+      roleBitmask: 1,
+      isNotable,
+      renewalDungeonName: null,
+      renewalDungeonZoneId: null,
+      isWorldBossReset: false,
+      isPatrolling: false,
+      patrolWaypoints: null,
+      moveDistance: 0,
+      questCount: 0,
+      itemsSoldCount: 0,
+      hasTeleport: false,
+      teleportDestName: null,
+      teleportZoneId: null,
+      teleportDestination: null,
+      teleportPrice: 0,
+    });
+    const data = {
+      monsters: [],
+      npcs: [npc("ordinary", false), npc("notable", true)],
+      portals: [],
+      chests: [],
+      treasure: [],
+      altars: [],
+      traps: [],
+      gathering: [],
+      crafting: [],
+      houses: [],
+      subZones: [],
+      parentZones: [],
+      levelRanges: {
+        monsterMin: 0,
+        monsterMax: 0,
+        gatheringMin: 0,
+        gatheringMax: 0,
+      },
+    } satisfies MapEntityData;
+
+    const filtered = createFilteredData(data);
+
+    expect(filtered.npcs.map(({ id }) => id)).toEqual(["ordinary"]);
+    expect(filtered.notableNpcs.map(({ id }) => id)).toEqual(["notable"]);
+    expect(filtered.npcs.length + filtered.notableNpcs.length).toBe(
+      data.npcs.length,
+    );
   });
 
   test("default layer visibility keeps the shared URL key grammar", () => {
@@ -160,6 +217,7 @@ describe("map golden invariants", () => {
       "gatheringSparks",
       "houses",
       "hunts",
+      "notableNpcs",
       "npcAdventurerTasks",
       "npcAdventurerVendors",
       "npcAttributeReset",
@@ -204,6 +262,7 @@ describe("map golden invariants", () => {
       "bosses",
       "elites",
       "fabled",
+      "notableNpcs",
       "npcRenewalSages",
       "tiles",
       "traps",

@@ -57,17 +57,15 @@ def _generate_monster_keywords(
     return " ".join(keywords) if keywords else None
 
 
-def _generate_npc_keywords(roles_json: str | None) -> str | None:
-    """Generate keywords for an NPC based on their roles."""
-    if not roles_json:
-        return None
+def _generate_npc_keywords(roles_json: str | None, is_notable: bool) -> str | None:
+    """Generate keywords for an NPC based on its classification and roles."""
+    keywords = ["notable"] if is_notable else []
 
-    roles = json.loads(roles_json)
-    keywords = []
-
-    for role_field, keyword in NPC_ROLE_KEYWORDS.items():
-        if roles.get(role_field):
-            keywords.append(keyword)
+    if roles_json:
+        roles = json.loads(roles_json)
+        for role_field, keyword in NPC_ROLE_KEYWORDS.items():
+            if roles.get(role_field):
+                keywords.append(keyword)
 
     return " ".join(keywords) if keywords else None
 
@@ -125,14 +123,14 @@ def run(conn: sqlite3.Connection) -> None:
     npc_teleport_zones = {row[0]: row[1] for row in cursor.fetchall()}
 
     cursor.execute("""
-        SELECT n.id, n.roles, n.respawn_dungeon_id, z.name as dungeon_name
+        SELECT n.id, n.roles, n.is_notable, n.respawn_dungeon_id, z.name as dungeon_name
         FROM npcs n
         LEFT JOIN zones z ON z.zone_id = n.respawn_dungeon_id
     """)
     npcs = cursor.fetchall()
     npc_count = 0
-    for npc_id, roles_json, respawn_dungeon_id, dungeon_name in npcs:
-        keywords = _generate_npc_keywords(roles_json)
+    for npc_id, roles_json, is_notable, respawn_dungeon_id, dungeon_name in npcs:
+        keywords = _generate_npc_keywords(roles_json, bool(is_notable))
         if roles_json:
             roles = json.loads(roles_json)
             # Add dungeon name for renewal sages (or "world boss" for special ID)

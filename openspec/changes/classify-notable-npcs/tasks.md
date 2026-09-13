@@ -12,16 +12,16 @@
 
 ## 3. Present the classification
 
-- [ ] 3.1 Add Notable classification data, badges, and filtering to NPC list and detail pages; verify it remains separate from Quest Giver and other service roles.
-- [ ] 3.2 Add Notable NPC search keywords and result presentation; rebuild search data and verify a `notable` search returns the classified NPCs.
+- [x] 3.1 Add Notable classification data, badges, and filtering to NPC list and detail pages; verify it remains separate from Quest Giver and other service roles.
+- [x] 3.2 Add Notable NPC search keywords and result presentation; rebuild search data and verify a `notable` search returns the classified NPCs.
 
 ## 4. Distinguish Notable NPCs on the map
 
-- [ ] 4.1 Add the Notable field and visibility state to the map data contract and server loader; verify the serialized map data preserves King Darin's existing identity and coordinates.
-- [ ] 4.2 Register the Notable NPC marker presentation and precedence in the existing registry; verify registry and layer tests produce one marker per spawn.
-- [ ] 4.3 Show the classification and service roles in map tooltips and popups; verify marker visibility, search selection, and the NPC detail map link in the browser.
+- [x] 4.1 Add the Notable field and visibility state to the map data contract and server loader; verify the serialized map data preserves King Darin's existing identity and coordinates.
+- [x] 4.2 Register the Notable NPC marker presentation and precedence in the existing registry; verify registry and layer tests produce one marker per spawn.
+- [x] 4.3 Show the classification and service roles in map tooltips and popups; verify marker visibility, search selection, and the NPC detail map link in the browser.
 
 ## 5. Validate and publish the change
 
-- [ ] 5.1 Run the affected DataExporter, pipeline, reputation, search, and map tests; then run the website check, lint, and production build.
-- [ ] 5.2 Run `openspec validate classify-notable-npcs --strict`, inspect the task-owned diff, and commit coherent verified units without staging unrelated local changes.
+- [x] 5.1 Run the affected DataExporter, pipeline, reputation, search, and map tests; then run the website check, lint, and production build.
+- [x] 5.2 Run `openspec validate classify-notable-npcs --strict`, inspect the task-owned diff, and commit coherent verified units without staging unrelated local changes.

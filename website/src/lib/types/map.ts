@@ -124,6 +124,7 @@ export const NPC_ROLE_BITS = {
 export interface NpcMapEntity extends MapEntity {
   type: "npc";
   roleBitmask: number;
+  isNotable: boolean;
   renewalDungeonName: string | null;
   renewalDungeonZoneId: string | null;
   isWorldBossReset: boolean;
@@ -291,7 +292,8 @@ export interface LayerVisibility {
   creatures: boolean; // renamed from "monsters"
   hunts: boolean;
 
-  // NPC role toggles
+  // NPC classification and role toggles
+  notableNpcs: boolean;
   npcVendors: boolean;
   npcQuestGivers: boolean;
   npcRepair: boolean;
@@ -411,6 +413,7 @@ export interface FilteredMapData {
   fabled: MonsterMapEntity[];
   bosses: MonsterMapEntity[];
   hunts: MonsterMapEntity[];
+  notableNpcs: NpcMapEntity[];
   npcs: NpcMapEntity[];
   portals: PortalMapEntity[];
   chests: ChestMapEntity[];

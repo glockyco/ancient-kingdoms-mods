@@ -523,6 +523,12 @@
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.npc.name}</h1>
       <MapLink entityId={data.npc.id} entityType="npc" />
+      {#if data.npc.is_notable}
+        <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
+          <Sparkles class="{ICON_BADGE.iconSize} text-amber-500" />
+          Notable
+        </span>
+      {/if}
       <RoleBadges roles={data.npc.roles} />
       {#if data.npc.is_christmas_npc}
         <span class="{ICON_BADGE.base} {ICON_BADGE.static}">

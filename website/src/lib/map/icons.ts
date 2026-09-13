@@ -51,6 +51,7 @@ const ENTITY_ICONS: Record<
   fabled: { icon: Star, markerId: "fabled" },
   hunt: { icon: Crosshair, markerId: "hunts" },
   npc: { icon: User, markerId: "npc" },
+  notable_npc: { icon: Sparkles, markerId: "notableNpcs" },
   portal: { icon: CircleDot, markerId: "portals" },
   chest: { icon: Box, markerId: "chests" },
   altar: { icon: Flame, markerId: "altars" },

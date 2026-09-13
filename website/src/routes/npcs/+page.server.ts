@@ -21,6 +21,7 @@ export const load: PageServerLoad = (): NpcsPageData => {
       n.name,
       n.faction,
       n.race,
+      n.is_notable,
       n.roles,
       va.public_path as visual_public_path
     FROM npcs n
@@ -36,6 +37,7 @@ export const load: PageServerLoad = (): NpcsPageData => {
     name: string;
     faction: string | null;
     race: string | null;
+    is_notable: number;
     roles: string;
     visual_public_path: string | null;
   }>;
@@ -45,6 +47,7 @@ export const load: PageServerLoad = (): NpcsPageData => {
     name: npc.name,
     faction: npc.faction,
     race: npc.race,
+    is_notable: Boolean(npc.is_notable),
     roles: JSON.parse(npc.roles) as NpcRoles,
     visual_public_path: npc.visual_public_path,
   }));

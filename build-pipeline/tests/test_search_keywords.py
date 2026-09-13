@@ -54,6 +54,33 @@ class SearchKeywordTests(unittest.TestCase):
         self.assertEqual(barber_matches, [("borin_ironbeard",)])
         self.assertEqual(appearance_matches, [("borin_ironbeard",)])
 
+    def test_notable_classification_is_searchable_without_a_service_role(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            conn = create_database(Path(tmp) / "test.db", SCHEMA_PATH)
+            try:
+                conn.executemany(
+                    "INSERT INTO npcs (id, name, is_notable) VALUES (?, ?, ?)",
+                    [
+                        ("king_darin", "King Darin", True),
+                        ("villager", "Ordinary Villager", False),
+                    ],
+                )
+
+                keywords.run(conn)
+
+                matches = conn.execute(
+                    """
+                    SELECT n.id
+                    FROM npcs_fts
+                    JOIN npcs n ON n.rowid = npcs_fts.rowid
+                    WHERE npcs_fts MATCH '"notable"*'
+                    """
+                ).fetchall()
+            finally:
+                conn.close()
+
+        self.assertEqual(matches, [("king_darin",)])
+
 
 if __name__ == "__main__":
     unittest.main()

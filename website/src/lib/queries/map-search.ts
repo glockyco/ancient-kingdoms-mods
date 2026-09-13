@@ -146,8 +146,8 @@ const GEOMETRY_QUERY: Partial<Record<SearchResult["entityType"], string>> = {
       MIN(ns.position_x) min_x, MAX(ns.position_x) max_x,
       MIN(ns.position_y) min_y, MAX(ns.position_y) max_y,
       ns.zone_id, z.name zone_name, n.level, COUNT(ns.id) spawn_count,
-      CASE WHEN json_extract(n.roles, '$.is_vendor') = 1
-                  OR json_extract(n.roles, '$.isVendor') = 1 THEN 'vendor'
+      CASE WHEN n.is_notable THEN 'notable'
+           WHEN json_extract(n.roles, '$.is_merchant') = 1 THEN 'vendor'
            WHEN json_extract(n.roles, '$.is_quest_giver') = 1
                   OR json_extract(n.roles, '$.isQuestGiver') = 1 THEN 'quest' END subcategory,
       n.keywords, n.roles,

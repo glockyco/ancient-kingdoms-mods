@@ -75,6 +75,7 @@ describe("marker registry", () => {
       "elites",
       "fabled",
       "bosses",
+      "notableNpcs",
       "npc",
       "portals",
       "chests",
@@ -102,6 +103,7 @@ describe("marker registry", () => {
       "fabled",
       "bosses",
     ]);
+    expect(MARKERS_BY_ENTITY.npc).toEqual(["notableNpcs", "npc"]);
     expect(MARKERS_BY_ENTITY.gathering_resource).toEqual([
       "gatheringPlants",
       "gatheringMinerals",
@@ -132,6 +134,7 @@ describe("marker registry", () => {
     expect(MARKER_BORDER_CLASSES.chests).toBe("border-l-sky-500");
     expect(MARKER_RADII.gatheringFishing).toBe(3);
     expect(MARKER_FILTERED_DATA_KEYS).toMatchObject({
+      notableNpcs: "notableNpcs",
       npc: "npcs",
       portals: "portals",
       gatheringPlants: "plants",
@@ -147,6 +150,7 @@ describe("marker registry", () => {
       fabled: [16, 185, 129],
       elites: [168, 85, 247],
       hunts: [234, 179, 8],
+      notableNpcs: [245, 158, 11],
       npc: [59, 130, 246],
       portals: [34, 197, 94],
       chests: [14, 165, 233],
@@ -170,6 +174,7 @@ describe("marker registry", () => {
       elites: { base: 26, min: 24, max: 56 },
       altars: { base: 26, min: 24, max: 56 },
       traps: { base: 20, min: 18, max: 44 },
+      notableNpcs: { base: 22, min: 20, max: 48 },
       npc: { base: 18, min: 16, max: 40 },
       portals: { base: 22, min: 20, max: 48 },
       chests: { base: 20, min: 18, max: 44 },
@@ -222,6 +227,22 @@ describe("marker registry", () => {
     expect(resolveMarker(monster({ isBoss: true, isFabled: true }))).toBe(
       "fabled",
     );
+  });
+
+  test("partitions notable NPCs from ordinary NPCs", () => {
+    const ordinary = {
+      type: "npc",
+      isNotable: false,
+    } as NpcMapEntity;
+    const notable = {
+      type: "npc",
+      isNotable: true,
+    } as NpcMapEntity;
+
+    expect(resolveMarker(ordinary)).toBe("npc");
+    expect(resolveMarker(notable)).toBe("notableNpcs");
+    expect(markerRegistry.notableNpcs.defaultVisible).toBe(true);
+    expect(markerRegistry.notableNpcs.layer.visibilityKey).toBe("notableNpcs");
   });
 
   test("keeps NPC roles as facets over one marker layer", () => {
