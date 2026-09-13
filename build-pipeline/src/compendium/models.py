@@ -719,6 +719,16 @@ class SkillData(BaseModel):
     is_aura: bool = False
     is_teleport: bool = False
     is_relic: bool = False
+    scales_with_charisma: bool = False
+    is_bard_song: bool = False
+    is_bard_charm: bool = False
+    is_bard_final_cadence: bool = False
+    is_bard_virtuosity: bool = False
+    charmed_damage_percent: SkillBonus | None = None
+    additional_active_bard_songs: int = 0
+    bard_song_duration_bonus_per_level: float = 0.0
+    extra_gather_item_chance: float = 0.0
+    food_and_drink_buff_duration_bonus_per_level: float = 0.0
     area_object_size: float = 0.0
     area_object_delay_damage: float = 0.0
     area_objects_to_spawn: int = 0
@@ -932,6 +942,7 @@ EquipmentCategory = Literal[
     "Bracers",
     "Charm",
     "Bow",
+    "Instrument",
 ]
 
 

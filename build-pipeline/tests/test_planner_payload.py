@@ -165,6 +165,49 @@ class PlannerPayloadTests(unittest.TestCase):
             hashlib.sha256(first_compressed).hexdigest(), second.content_sha256
         )
 
+    def test_non_consumable_resource_class_stays_out_of_planner_catalog(self):
+        self.conn.execute("INSERT INTO classes VALUES ('bard')")
+        self.conn.execute("INSERT INTO skills VALUES ('anthem_of_focus')")
+
+        def append_row(filename, row):
+            path = self.exports / filename
+            rows = json.loads(path.read_text(encoding="utf-8"))
+            rows.append(row)
+            path.write_text(json.dumps(rows), encoding="utf-8")
+
+        append_row(
+            "classes.json",
+            {"id": "bard", "name": "Bard", "game_version": "0.9.32.2"},
+        )
+        append_row("classes_combat.json", {"id": "bard", "resource_type": "songs"})
+        append_row(
+            "skills.json",
+            {
+                "id": "anthem_of_focus",
+                "skill_type": "area_buff",
+                "player_classes": ["bard"],
+                "is_bard_song": True,
+            },
+        )
+        append_row(
+            "equipment_slots.json",
+            {
+                "owner_type": "player",
+                "owner_id": "bard",
+                "slot_index": 12,
+                "accepted_category": "Instrument",
+            },
+        )
+        progression_path = self.exports / "progression.json"
+        progression = json.loads(progression_path.read_text(encoding="utf-8"))
+        progression["class_levels"].append({"class_id": "bard", "level": 1})
+        progression_path.write_text(json.dumps(progression), encoding="utf-8")
+
+        payload = json.loads(self._write().raw_path.read_bytes())
+
+        self.assertNotIn("bard", {row["id"] for row in payload["classes"]})
+        self.assertNotIn("anthem_of_focus", {row["id"] for row in payload["skills"]})
+
     def test_failure_deletes_stale_and_partial_outputs(self):
         self.output.mkdir()
         for name in (RAW_PAYLOAD_NAME, COMPRESSED_PAYLOAD_NAME):

@@ -123,6 +123,40 @@ class PlannerInputTests(unittest.TestCase):
             export_dir = self._write(Path(tmp), self._valid_exports())
             verify_planner_inputs(export_dir)
 
+    def test_player_class_without_mercenary_archetype_is_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            exports = self._valid_exports()
+            exports["classes.json"].append(
+                {"id": "bard", "compatible_races": ["human"]}
+            )
+            bard_combat = {field: 0 for field in CLASS_COMBAT_FIELDS}
+            bard_combat.update({"id": "bard", "resource_type": "songs"})
+            exports["classes_combat.json"].append(bard_combat)
+            bard_skill = dict(exports["skills.json"][0])
+            bard_skill.update(
+                {
+                    "id": "anthem_of_focus",
+                    "player_classes": ["bard"],
+                    "required_weapon_category": "Instrument",
+                }
+            )
+            exports["skills.json"].append(bard_skill)
+            exports["progression.json"]["class_levels"].append(
+                {"class_id": "bard", "level": 1}
+            )
+            exports["equipment_slots.json"].extend(
+                {
+                    "owner_type": "player",
+                    "owner_id": "bard",
+                    "slot_index": slot_index,
+                    "accepted_category": "Instrument" if slot_index == 12 else "Head",
+                }
+                for slot_index in range(16)
+            )
+
+            export_dir = self._write(Path(tmp), exports)
+            verify_planner_inputs(export_dir)
+
     def test_missing_required_domains_and_fields_are_refused(self):
         mutations = {
             "game version": lambda data: data["game_config.json"].pop("game_version"),

@@ -171,11 +171,10 @@ def verify_planner_inputs(export_dir: Path) -> None:
         "mercenary",
     )
     mercenary_class_ids = {row["type_monster"].lower() for row in mercenaries}
-    if mercenary_class_ids != class_ids:
+    if not mercenary_class_ids <= class_ids:
         raise ValueError(
-            "Planner mercenary archetypes do not match classes; "
-            f"missing={sorted(class_ids - mercenary_class_ids)}, "
-            f"unexpected={sorted(mercenary_class_ids - class_ids)}"
+            "Planner mercenary archetypes contain unknown classes: "
+            + ", ".join(sorted(mercenary_class_ids - class_ids))
         )
 
     slots = _require_rows(exports["equipment_slots.json"], "equipment_slots.json")
@@ -184,15 +183,19 @@ def verify_planner_inputs(export_dir: Path) -> None:
         {"owner_type", "owner_id", "slot_index", "accepted_category"},
         "equipment slot",
     )
-    for owner_type in ("player", "mercenary"):
+    expected_slot_owners = {
+        "player": class_ids,
+        "mercenary": mercenary_class_ids,
+    }
+    for owner_type, expected_owner_ids in expected_slot_owners.items():
         owner_ids = {
             row["owner_id"] for row in slots if row["owner_type"] == owner_type
         }
-        if owner_ids != class_ids:
+        if owner_ids != expected_owner_ids:
             raise ValueError(
-                f"Planner {owner_type} slot owners do not match classes; "
-                f"missing={sorted(class_ids - owner_ids)}, "
-                f"unexpected={sorted(owner_ids - class_ids)}"
+                f"Planner {owner_type} slot owners do not match archetypes; "
+                f"missing={sorted(expected_owner_ids - owner_ids)}, "
+                f"unexpected={sorted(owner_ids - expected_owner_ids)}"
             )
         for owner_id in owner_ids:
             indices = {

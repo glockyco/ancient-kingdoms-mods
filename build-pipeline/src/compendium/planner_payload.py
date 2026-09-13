@@ -266,6 +266,17 @@ def _build_payload(
     surviving_skills = _ids(conn, "skills")
     surviving_pets = _ids(conn, "pets")
     surviving_classes = _ids(conn, "classes")
+    # The combat evaluator currently models consumable mana and energy pools.
+    # Classes with another resource remain in the compendium but are not emitted
+    # into the planner catalog until that resource engine is modelled.
+    combat_resource_by_class = {
+        str(row.get("id")): row.get("resource_type") for row in classes_combat
+    }
+    planner_class_ids = {
+        class_id
+        for class_id in surviving_classes
+        if combat_resource_by_class.get(class_id) in {"mana", "energy"}
+    }
 
     admitted_items = [
         item
@@ -284,7 +295,13 @@ def _build_payload(
         for skill in skills
         if skill.get("id") in surviving_skills
         and (
-            bool(skill.get("player_classes"))
+            bool(
+                {
+                    str(class_id).lower()
+                    for class_id in skill.get("player_classes") or ()
+                }
+                & planner_class_ids
+            )
             or bool(skill.get("is_mercenary_skill"))
             or skill.get("id") in effect_skill_ids
         )
@@ -298,25 +315,25 @@ def _build_payload(
     classifications = _classify_effects(admitted_items, emitted_skills)
     _require_effect_references(effect_skill_ids, emitted_skills)
 
-    class_rows = [row for row in classes if row.get("id") in surviving_classes]
-    combat_rows = [row for row in classes_combat if row.get("id") in surviving_classes]
+    class_rows = [row for row in classes if row.get("id") in planner_class_ids]
+    combat_rows = [row for row in classes_combat if row.get("id") in planner_class_ids]
     slot_rows = [
         row
         for row in equipment_slots
         if (
             row.get("owner_type") == "player"
-            and row.get("owner_id") in surviving_classes
+            and row.get("owner_id") in planner_class_ids
         )
         or (
             row.get("owner_type") == "mercenary"
-            and row.get("owner_id") in surviving_classes
+            and row.get("owner_id") in planner_class_ids
         )
     ]
     progression = dict(progression)
     progression["class_levels"] = [
         row
         for row in progression.get("class_levels", [])
-        if row.get("class_id") in surviving_classes
+        if row.get("class_id") in planner_class_ids
     ]
 
     return {

@@ -1219,6 +1219,16 @@ CREATE TABLE skills (
     is_aura BOOLEAN DEFAULT 0,
     is_teleport BOOLEAN DEFAULT 0,
     is_relic BOOLEAN DEFAULT 0,
+    scales_with_charisma BOOLEAN DEFAULT 0,
+    is_bard_song BOOLEAN DEFAULT 0,
+    is_bard_charm BOOLEAN DEFAULT 0,
+    is_bard_final_cadence BOOLEAN DEFAULT 0,
+    is_bard_virtuosity BOOLEAN DEFAULT 0,
+    charmed_damage_percent TEXT,
+    additional_active_bard_songs INTEGER DEFAULT 0,
+    bard_song_duration_bonus_per_level REAL DEFAULT 0.0,
+    extra_gather_item_chance REAL DEFAULT 0.0,
+    food_and_drink_buff_duration_bonus_per_level REAL DEFAULT 0.0,
 
     -- Stat bonuses (all stored as JSON for SkillBonusValue)
     health_max_bonus TEXT,
