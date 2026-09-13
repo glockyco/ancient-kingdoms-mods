@@ -166,7 +166,7 @@ export function fitBoundsToViewState(
     width,
     height,
     padding = FLY_TO_CONFIG.padding,
-    maxZoom = FLY_TO_CONFIG.maxZoom,
+    maxZoom: fitMaxZoom = FLY_TO_CONFIG.maxZoom,
     rightPadding = 0,
   } = options;
 
@@ -189,11 +189,12 @@ export function fitBoundsToViewState(
   const boundsHeight = (bounds.maxY - bounds.minY) * padding;
 
   const zoomX =
-    boundsWidth > 0 ? Math.log2(effectiveWidth / boundsWidth) : maxZoom;
-  const zoomY = boundsHeight > 0 ? Math.log2(height / boundsHeight) : maxZoom;
+    boundsWidth > 0 ? Math.log2(effectiveWidth / boundsWidth) : fitMaxZoom;
+  const zoomY =
+    boundsHeight > 0 ? Math.log2(height / boundsHeight) : fitMaxZoom;
   let zoom = Math.min(zoomX, zoomY);
 
-  zoom = Math.max(INITIAL_VIEW_STATE.minZoom, Math.min(zoom, maxZoom));
+  zoom = Math.max(INITIAL_VIEW_STATE.minZoom, Math.min(zoom, fitMaxZoom));
 
   if (rightPadding > 0) {
     centerX += rightPadding / 2 / Math.pow(2, zoom);
@@ -205,7 +206,7 @@ export function fitBoundsToViewState(
     zoom,
     target: [centerX, centerY, 0],
     minZoom: INITIAL_VIEW_STATE.minZoom,
-    maxZoom,
+    maxZoom: INITIAL_VIEW_STATE.maxZoom,
   };
 }
 

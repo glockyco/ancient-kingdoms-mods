@@ -31,7 +31,10 @@ export function createInitialViewState({
   if (urlState && hasPositionParams) {
     return {
       target: [urlState.x, urlState.y, 0],
-      zoom: urlState.zoom,
+      zoom: Math.max(
+        INITIAL_VIEW_STATE.minZoom,
+        Math.min(urlState.zoom, INITIAL_VIEW_STATE.maxZoom),
+      ),
       minZoom: INITIAL_VIEW_STATE.minZoom,
       maxZoom: INITIAL_VIEW_STATE.maxZoom,
     };

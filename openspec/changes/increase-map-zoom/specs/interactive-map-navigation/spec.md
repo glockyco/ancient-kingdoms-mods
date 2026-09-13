@@ -6,13 +6,14 @@ Defines the interactive map viewport range and its behavior when users zoom beyo
 
 ### Requirement: Closer map inspection
 
-The interactive map MUST allow users to zoom to level 6 and MUST prevent zoom beyond level 6.
+The interactive map MUST allow users to zoom to level 4 and MUST prevent zoom beyond level 4, including after bounds navigation.
 
 #### Scenario: User zooms into a dense area
 
-- **WHEN** the user increases the map zoom
-- **THEN** the viewport can reach zoom level 6
-- **AND** further zoom input does not move the viewport beyond level 6
+- **WHEN** the user selects or focuses an entity and then increases the map zoom
+- **THEN** bounds navigation initially fits the entity at no more than zoom level 2
+- **AND** the viewport can subsequently reach zoom level 4
+- **AND** further zoom input does not move the viewport beyond level 4
 
 ### Requirement: Existing tile set remains authoritative
 

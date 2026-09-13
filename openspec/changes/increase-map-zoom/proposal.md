@@ -1,12 +1,13 @@
 ## Why
 
-The interactive map stops at zoom level 4, which prevents close inspection of dense areas. The existing tiles can support a closer view through client-side overzooming.
+Bounds navigation can replace the map's zoom ceiling with its zoom-2 fit limit. After users select or focus an entity, they cannot manually zoom to the intended level 4.
 
 ## What Changes
 
-- Increase the interactive map maximum zoom from 4 to 6.
-- Keep the tile source, tile zoom range, and fly-to zoom behavior unchanged.
-- Verify that users can zoom to level 6 without requesting new tile levels.
+- Preserve the interactive map maximum zoom at level 4 after bounds navigation.
+- Keep the zoom-2 fit limit separate from the viewport's zoom ceiling.
+- Keep the tile source and tile zoom range unchanged.
+- Verify that users can manually zoom to level 4 after selecting an entity.
 
 ## Capabilities
 
@@ -20,5 +21,5 @@ None.
 
 ## Impact
 
-- `website/src/lib/map/config.ts`: viewport maximum zoom.
-- Interactive map verification and focused view-state tests.
+- `website/src/lib/map/flyto.ts`: bounds-fitting view state.
+- Interactive map verification and focused fly-to tests.

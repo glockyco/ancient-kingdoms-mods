@@ -81,8 +81,30 @@ describe("createInitialViewState", () => {
       target: [12, -34, 0],
       zoom: 1.5,
       minZoom: INITIAL_VIEW_STATE.minZoom,
-      maxZoom: INITIAL_VIEW_STATE.maxZoom,
+      maxZoom: 4,
     });
+  });
+
+  test("clamps explicit URL zoom to the viewport range", () => {
+    expect(
+      createInitialViewState({
+        urlState: { ...urlState, zoom: 5 },
+        hasPositionParams: true,
+        bounds,
+        width: 400,
+        height: 200,
+      }).zoom,
+    ).toBe(4);
+
+    expect(
+      createInitialViewState({
+        urlState: { ...urlState, zoom: -4 },
+        hasPositionParams: true,
+        bounds,
+        width: 400,
+        height: 200,
+      }).zoom,
+    ).toBe(-3);
   });
 
   test("fits initial bounds with measured container dimensions", () => {
@@ -101,7 +123,7 @@ describe("createInitialViewState", () => {
       target: [100, 25, 0],
       zoom: 1,
       minZoom: INITIAL_VIEW_STATE.minZoom,
-      maxZoom: 10,
+      maxZoom: 4,
     });
   });
 

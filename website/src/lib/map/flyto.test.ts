@@ -24,7 +24,7 @@ describe("fitBoundsToViewState", () => {
       zoom: 2,
       target: [50, 25, 0],
       minZoom: -3,
-      maxZoom: 10,
+      maxZoom: 4,
     });
   });
 
@@ -43,7 +43,7 @@ describe("fitBoundsToViewState", () => {
       zoom: 1,
       target: [100, 25, 0],
       minZoom: -3,
-      maxZoom: 10,
+      maxZoom: 4,
     });
   });
 
