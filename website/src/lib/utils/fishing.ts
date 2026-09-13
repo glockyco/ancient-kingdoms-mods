@@ -66,7 +66,7 @@ const FISHING_SUCCESS_FLOOR = mechanics.success.floor;
 const CEILING_FISHERMAN_PIECES = 3;
 
 // Source: server-scripts/Utils.cs:567-576 — GetSuccessProbFishing.
-// Source: server-scripts/GatherItem.cs:650-653 — values below 0.2 show "skill too low" and do not fish.
+// Source: server-scripts/GatherItem.cs:657-660 — values below 0.2 show "skill too low" and do not fish.
 export function fishingSpotSuccessChance({
   rodQuality,
   fishingPercent,
@@ -83,7 +83,7 @@ export function fishingSpotSuccessChance({
   return clamped < FISHING_SUCCESS_FLOOR ? 0 : normalizeChance(clamped);
 }
 
-// Source: server-scripts/GatherItem.cs:659-677 — one random fish drop is selected, then probability is drop probability + Fishing/2 + 2 pp per Fisherman costume piece.
+// Source: server-scripts/GatherItem.cs:666-684 — one random fish drop is selected, then probability is drop probability + Fishing/2 + 2 pp per Fisherman costume piece.
 export function fishDropChancePerSuccessfulHook({
   configuredDropRate,
   fishCountAtSpot,
@@ -106,7 +106,7 @@ export function fishDropChancePerCast(params: FishDropParams): number {
   );
 }
 
-// Source: server-scripts/GatherItem.cs:748-754 — mastery gain chance is Random.value > 0.4 + Fishing/2, with low-tier caps.
+// Source: server-scripts/GatherItem.cs:751-764 — mastery gain chance is Lerp(0.65, 0.1, Fishing²), with low-tier caps.
 export function fishingMasteryGainChance({
   fishingPercent,
   spotTier,
@@ -121,7 +121,7 @@ export function fishingMasteryGainChance({
   return skillGainChance(mechanics.skillGain, fishingPercent);
 }
 
-// Source: server-scripts/GatherItem.cs:747-749 — Random.Range(1, 4) divided by the
+// Source: server-scripts/GatherItem.cs:758-760 — Random.Range(1, 4) divided by the
 // catch chance times 5000. Unity's int upper bound is exclusive, so 1-3.
 export function fishingMasteryGainRange(successChance: number): {
   min: number;
@@ -141,7 +141,7 @@ export function fishingMasteryGainRange(successChance: number): {
   };
 }
 
-// Source: server-scripts/GatherItem.cs:759-766 — fishing XP by levelItem.
+// Source: server-scripts/GatherItem.cs:766-773 — fishing XP by levelItem.
 export function fishingExperienceForTier(spotTier: number): number {
   switch (spotTier) {
     case 1:
@@ -157,7 +157,7 @@ export function fishingExperienceForTier(spotTier: number): number {
   }
 }
 
-// Source: server-scripts/GatherItem.cs:929-935 — click window length per tier (seconds).
+// Source: server-scripts/GatherItem.cs:936-942 — click window length per tier (seconds).
 export function fishingClickWindowSeconds(spotTier: number): number {
   switch (spotTier) {
     case 0:
@@ -198,7 +198,7 @@ function averageSelectedFishChance({
   return totalCappedP / spotDrops.length;
 }
 
-// Source: server-scripts/GatherItem.cs:672-683,685-702,704-720,722-739 — fallback split after a failed primary
+// Source: server-scripts/GatherItem.cs:679-690,692-709,711-727,729-746 — fallback split after a failed primary
 // configured-fish roll, by spot level (levelItem). Of the (1 − A) failed mass, each tier
 // awards trash / a random lower-quality fish / nothing (escape). Rates per tier sum to 1;
 // tiers beyond 3 have no in-game fallback.
@@ -227,7 +227,7 @@ export function fishTrashChancePerHook(params: FishOutcomeParams): number {
   return failedPrimaryFallbackRates(params.spotTier).trash * failedMass;
 }
 
-// Source: server-scripts/GatherItem.cs:685-702,704-720,722-739 — higher-tier spots also award a random
+// Source: server-scripts/GatherItem.cs:692-709,711-727,729-746 — higher-tier spots also award a random
 // lower-quality fish (uniform from the tier's quality pool) when the primary roll fails.
 export function fishLowerTierFishChancePerHook(
   params: FishOutcomeParams,
@@ -326,7 +326,7 @@ function chanceBounds(a: number, b: number): FishChanceRangeBounds {
   };
 }
 
-// Source: server-scripts/GatherItem.cs:650-653 — fishing needs success >= 0.2.
+// Source: server-scripts/GatherItem.cs:657-660 — fishing needs success >= 0.2.
 // Smallest Fishing skill (percent) at which the given rod clears that floor.
 export function lowestCatchableSkillPercent(
   rodQuality: number,

@@ -12,16 +12,16 @@ const EXPECTED_CRAFTING_TIERS = [
   [1, 0, 0],
   [0.4, 0, 2],
   [0.2, 0, 1],
-  [0, 0, 0.95],
-  [0, 0, 0.9],
+  [0, 0, 1.05],
+  [0, 0, 1],
 ];
 
 const EXPECTED_GATHERING_TIERS = [
   [0.8, 1, 1],
   [0.3, 0.2, 1],
-  [0, 0.15, 0.6],
-  [0, 0.1, 0.5],
-  [0, 0.05, 0.4],
+  [0, 0.15, 0.7],
+  [0, 0.1, 0.6],
+  [0, 0.05, 0.5],
 ];
 
 function tierValues(
@@ -77,10 +77,10 @@ describe("profession mechanics record", () => {
   test("computes record-driven success, skill gain, and proc chances", () => {
     expect(
       rawTierSuccessChance(PROFESSION_MECHANICS.mining.success, 4, 100, 4),
-    ).toBeCloseTo(0.6);
+    ).toBeCloseTo(0.7);
     expect(
       skillGainChance(PROFESSION_MECHANICS.fishing.skillGain, 0),
-    ).toBeCloseTo(0.6);
+    ).toBeCloseTo(0.65);
     expect(
       linearProcChance(PROFESSION_MECHANICS.radiant_seeker.procChance, 100),
     ).toBeCloseTo(0.25);

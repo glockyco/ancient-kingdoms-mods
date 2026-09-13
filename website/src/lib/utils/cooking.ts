@@ -53,7 +53,7 @@ export function cookingSuccessPercent(
     : 100;
 }
 
-// Source: server-scripts/Player.cs:13158 — a high enough Cooking skill turns
+// Source: server-scripts/Player.cs:13457-13460 — a high enough Cooking skill turns
 // low-tier recipes into "simple tasks" that grant no skill gain (strict >).
 export function isCookingEffortless(
   quality: number,
@@ -62,8 +62,8 @@ export function isCookingEffortless(
   return isEffortlessAtTier(mechanics.effortless, quality, cookingPercent);
 }
 
-// Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — skill gain fires when
-// Random.value > 0.1 + cookingLevel/2, i.e. with probability 0.9 - cookingLevel/2.
+// Source: server-scripts/Player.cs:13462-13464 — skill gain chance is
+// Lerp(0.95, 0.35, cookingLevel²).
 export function cookingSkillGainChancePercent(cookingPercent: number): number {
   return skillGainChance(mechanics.skillGain, cookingPercent) * 100;
 }

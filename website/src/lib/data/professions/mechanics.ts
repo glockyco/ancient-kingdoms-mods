@@ -11,9 +11,10 @@ export interface EffortlessThreshold {
 }
 
 export interface SkillGainRule {
-  /** Chance = base + skill fraction × skillFactor. */
+  /** Chance = base + skillFactor × skill fraction ^ skillExponent. */
   readonly base: number;
   readonly skillFactor: number;
+  readonly skillExponent?: number;
   readonly range: readonly [min: number, max: number];
   readonly divisor: number;
 }
@@ -50,8 +51,8 @@ const CRAFTING_SUCCESS_TIERS = [
   { constant: 1, toolFactor: 0, skillFactor: 0 },
   { constant: 0.4, toolFactor: 0, skillFactor: 2 },
   { constant: 0.2, toolFactor: 0, skillFactor: 1 },
-  { constant: 0, toolFactor: 0, skillFactor: 0.95 },
-  { constant: 0, toolFactor: 0, skillFactor: 0.9 },
+  { constant: 0, toolFactor: 0, skillFactor: 1.05 },
+  { constant: 0, toolFactor: 0, skillFactor: 1 },
 ] as const satisfies readonly SuccessTier[];
 
 // Source: server-scripts/Utils.cs:GetSuccessProbMining
@@ -59,9 +60,9 @@ const CRAFTING_SUCCESS_TIERS = [
 const GATHERING_SUCCESS_TIERS = [
   { constant: 0.8, toolFactor: 1, skillFactor: 1 },
   { constant: 0.3, toolFactor: 0.2, skillFactor: 1 },
-  { constant: 0, toolFactor: 0.15, skillFactor: 0.6 },
-  { constant: 0, toolFactor: 0.1, skillFactor: 0.5 },
-  { constant: 0, toolFactor: 0.05, skillFactor: 0.4 },
+  { constant: 0, toolFactor: 0.15, skillFactor: 0.7 },
+  { constant: 0, toolFactor: 0.1, skillFactor: 0.6 },
+  { constant: 0, toolFactor: 0.05, skillFactor: 0.5 },
 ] as const satisfies readonly SuccessTier[];
 
 const STANDARD_EFFORTLESS_THRESHOLDS = [
@@ -78,7 +79,13 @@ export const PROFESSION_MECHANICS = {
     success: { floor: 0.1, tiers: CRAFTING_SUCCESS_TIERS },
     // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
-    skillGain: { base: 0.9, skillFactor: -0.5, range: [1, 3], divisor: 1000 },
+    skillGain: {
+      base: 0.95,
+      skillFactor: -0.6,
+      skillExponent: 2,
+      range: [1, 3],
+      divisor: 1000,
+    },
   },
   cooking: {
     capPercent: 100,
@@ -87,7 +94,13 @@ export const PROFESSION_MECHANICS = {
     success: { floor: 0.1, tiers: CRAFTING_SUCCESS_TIERS },
     // Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
-    skillGain: { base: 0.9, skillFactor: -0.5, range: [1, 3], divisor: 3000 },
+    skillGain: {
+      base: 0.95,
+      skillFactor: -0.6,
+      skillExponent: 2,
+      range: [1, 3],
+      divisor: 3000,
+    },
   },
   fishing: {
     capPercent: 100,
@@ -95,7 +108,13 @@ export const PROFESSION_MECHANICS = {
     // Source: server-scripts/GatherItem.cs:OnInteractServer
     success: { floor: 0.2, tiers: GATHERING_SUCCESS_TIERS },
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
-    skillGain: { base: 0.6, skillFactor: -0.5, range: [1, 3], divisor: 5000 },
+    skillGain: {
+      base: 0.65,
+      skillFactor: -0.55,
+      skillExponent: 2,
+      range: [1, 3],
+      divisor: 5000,
+    },
   },
   mining: {
     capPercent: 100,
@@ -103,7 +122,13 @@ export const PROFESSION_MECHANICS = {
     // Source: server-scripts/GatherItem.cs:OnInteractServer
     success: { floor: 0.2, tiers: GATHERING_SUCCESS_TIERS },
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
-    skillGain: { base: 0.9, skillFactor: -0.5, range: [1, 3], divisor: 1000 },
+    skillGain: {
+      base: 0.95,
+      skillFactor: -0.6,
+      skillExponent: 2,
+      range: [1, 3],
+      divisor: 1000,
+    },
     // Source: server-scripts/Database.cs:CharacterCreate
     startingBonus: { race: "Dwarf", percent: 5 },
   },
@@ -172,9 +197,13 @@ export function skillGainChance(
   rule: SkillGainRule,
   skillPercent: number,
 ): number {
+  const skill = skillFraction(skillPercent);
   return Math.max(
     0,
-    Math.min(1, rule.base + skillFraction(skillPercent) * rule.skillFactor),
+    Math.min(
+      1,
+      rule.base + Math.pow(skill, rule.skillExponent ?? 1) * rule.skillFactor,
+    ),
   );
 }
 

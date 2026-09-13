@@ -43,14 +43,14 @@ describe("fishing utilities", () => {
         fishingPercent: 50,
         spotTier: 2,
       }),
-    ).toBe(0.6);
+    ).toBe(0.65);
     expect(
       fishingSpotSuccessChance({
         rodQuality: 4,
         fishingPercent: 100,
         spotTier: 4,
       }),
-    ).toBe(0.6);
+    ).toBe(0.7);
     expect(
       fishingSpotSuccessChance({
         rodQuality: 4,
@@ -97,19 +97,19 @@ describe("fishing utilities", () => {
   it("matches mastery chance and tier caps", () => {
     expect(
       fishingMasteryGainChance({ fishingPercent: 0, spotTier: 0 }),
-    ).toBeCloseTo(0.6);
+    ).toBeCloseTo(0.65);
     expect(fishingMasteryGainChance({ fishingPercent: 26, spotTier: 0 })).toBe(
       0,
     );
     expect(
       fishingMasteryGainChance({ fishingPercent: 49, spotTier: 1 }),
-    ).toBeCloseTo(0.355);
+    ).toBeCloseTo(0.517945);
     expect(fishingMasteryGainChance({ fishingPercent: 51, spotTier: 1 })).toBe(
       0,
     );
     expect(
       fishingMasteryGainChance({ fishingPercent: 74, spotTier: 2 }),
-    ).toBeCloseTo(0.23);
+    ).toBeCloseTo(0.34882);
     expect(fishingMasteryGainChance({ fishingPercent: 76, spotTier: 2 })).toBe(
       0,
     );
@@ -233,17 +233,17 @@ describe("fishing utilities", () => {
 
 describe("fishing chance ranges", () => {
   it("returns the lowest skill where a rod can hook a fish", () => {
-    expect(lowestCatchableSkillPercent(0, 3)).toBeCloseTo(40);
+    expect(lowestCatchableSkillPercent(0, 3)).toBeCloseTo(100 / 3);
     expect(lowestCatchableSkillPercent(4, 3)).toBe(0);
     expect(lowestCatchableSkillPercent(0, 0)).toBe(0);
-    expect(lowestCatchableSkillPercent(0, 2)).toBeCloseTo(100 / 3);
+    expect(lowestCatchableSkillPercent(0, 2)).toBeCloseTo(200 / 7);
   });
 
   it("spans the per-cast drop chance from worst to best loadout", () => {
     // Crimson Octopus: 10% configured rate, 5 fish, Tier IV (level 3),
     // Rusty rod required (q0), Gilded Wyrmhook best (q4).
-    // floor: success(q0,40%)=0.2 x (0.10+0.20)/5 = 0.012
-    // ceiling: success(q4,100%)=0.9 x (0.10+0.56)/5 = 0.1188
+    // floor: success(q0,33.33%)=0.2 x (0.10+0.1667)/5 = 0.01067
+    // ceiling: success(q4,100%)=1 x (0.10+0.56)/5 = 0.132
     expect(
       fishDropChanceRange({
         configuredDropRate: 0.1,
@@ -252,7 +252,7 @@ describe("fishing chance ranges", () => {
         requiredRodQuality: 0,
         bestRodQuality: 4,
       }),
-    ).toEqual({ min: 0.012, max: 0.1188 });
+    ).toEqual({ min: 0.010666666667, max: 0.132 });
   });
 
   it("spans the per-cast trash chance and divides by the trash pool", () => {
@@ -272,8 +272,8 @@ describe("fishing chance ranges", () => {
 
   it("spans the per-cast fallback chance and divides by the fallback pool", () => {
     // Tier IV (level 3): lower-tier fish rate 0.9, fallback pool of 3.
-    // floor: success(q0,40%)=0.2 x 0.9x(1-0.40) / 3 = 0.036
-    // ceiling: success(q4,100%)=0.9 x 0.9x(1-0.76) / 3 = 0.0648
+    // floor: success(q0,33.33%)=0.2 x 0.9x(1-0.3667) / 3 = 0.038
+    // ceiling: success(q4,100%)=1 x 0.9x(1-0.76) / 3 = 0.072
     expect(
       fishFallbackChanceRange({
         spotDrops: [{ probability: 0.2 }, { probability: 0.2 }],
@@ -282,7 +282,7 @@ describe("fishing chance ranges", () => {
         requiredRodQuality: 0,
         bestRodQuality: 4,
       }),
-    ).toEqual({ min: 0.036, max: 0.0648 });
+    ).toEqual({ min: 0.038, max: 0.072 });
   });
 
   it("builds per-cast spot outcome ranges with a no-catch remainder", () => {
@@ -319,14 +319,14 @@ describe("fishing chance ranges", () => {
     expect(kinds[kinds.length - 1]).toBe("no_catch");
 
     const noCatch = rows.find((row) => row.kind === "no_catch")!;
-    // success ranges 0.2 (floor) .. 0.9 (ceiling) -> no-catch 0.1 .. 0.8
-    expect(noCatch.chancePerCastMin).toBeCloseTo(0.1);
+    // success ranges 0.2 (floor) .. 1 (ceiling) -> no-catch 0 .. 0.8
+    expect(noCatch.chancePerCastMin).toBe(0);
     expect(noCatch.chancePerCastMax).toBeCloseTo(0.8);
 
     const primary = rows.find((row) => row.kind === "primary_fish")!;
-    // single configured fish: floor 0.2x0.40=0.08 ; ceiling 0.9x0.76=0.684
-    expect(primary.chancePerCastMin).toBeCloseTo(0.08);
-    expect(primary.chancePerCastMax).toBeCloseTo(0.684);
+    // single configured fish: floor 0.2x0.3667=0.0733; ceiling 1x0.76=0.76
+    expect(primary.chancePerCastMin).toBeCloseTo(0.073333333333);
+    expect(primary.chancePerCastMax).toBeCloseTo(0.76);
   });
 
   it("counts fallback fish strictly below the spot tier", () => {

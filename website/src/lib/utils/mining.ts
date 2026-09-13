@@ -69,8 +69,8 @@ export function isMiningEffortless(
   return isEffortlessAtTier(mechanics.effortless, tier, skillPercent);
 }
 
-// Source: server-scripts/GatherItem.cs:OnInteractServer — skill gain fires when
-// Random.value > 0.1 + miningLevel/2, i.e. with probability 0.9 - miningLevel/2.
+// Source: server-scripts/GatherItem.cs:540-542 — skill gain chance is
+// Lerp(0.95, 0.35, miningLevel²).
 export function miningSkillGainChancePercent(skillPercent: number): number {
   return skillGainChance(mechanics.skillGain, skillPercent) * 100;
 }
