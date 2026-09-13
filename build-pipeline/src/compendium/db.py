@@ -81,7 +81,7 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
 
     values = {}
     skip_fields = JUNCTION_ONLY_FIELDS.get(table, set())
-    for field_name in model.model_fields:
+    for field_name in type(model).model_fields:
         if field_name in skip_fields:
             continue
 

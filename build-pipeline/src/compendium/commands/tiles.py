@@ -19,6 +19,7 @@ import json
 import math
 import shutil
 from pathlib import Path
+from typing import cast
 
 import typer
 from PIL import Image, ImageDraw
@@ -240,7 +241,7 @@ def sample_blank_ratio(
     right = min(image.size[0], center_x + sample_radius + 1)
     bottom = min(image.size[1], center_y + sample_radius + 1)
     crop = image.crop((left, top, right, bottom)).convert("RGB")
-    pixels = list(crop.getdata())
+    pixels = cast(list[tuple[int, int, int]], crop.get_flattened_data())
     if not pixels:
         return 1.0
 
