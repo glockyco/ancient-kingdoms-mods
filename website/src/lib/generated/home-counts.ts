@@ -24,11 +24,11 @@ export interface HomeCounts {
 }
 
 export const HOME_COUNTS: HomeCounts = {
-  items: 1678,
+  items: 1716,
   monsters: 360,
   npcs: 234,
-  classes: 6,
-  skills: 698,
+  classes: 7,
+  skills: 729,
   mercenaries: 6,
   summons: 5,
   zones: 25,
