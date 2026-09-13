@@ -19,11 +19,12 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-CLASSES = ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid")
+CLASSES = ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard")
 
 _RACE_METHOD = re.compile(r"public void changeRace(\w+)\s*\(")
 _MEMBER = re.compile(r"^\t(?:public|private|protected|internal)\s")
 _BUTTON_STATE = re.compile(r"(\w+)Button\.interactable = (true|false)")
+_BARD_STATE = re.compile(r"SetBardAvailability\(raceAllowsBard:\s*(true|false)\)")
 
 
 class PairingUnreadableError(RuntimeError):
@@ -70,6 +71,9 @@ def read_pairing(source: str) -> Pairing:
         )
         body = "\n".join(lines[index:end])
         states = dict(_BUTTON_STATE.findall(body))
+        bard_state = _BARD_STATE.search(body)
+        if bard_state is not None:
+            states["Bard"] = bard_state.group(1)
 
         missing = [name for name in CLASSES if name not in states]
         if missing:

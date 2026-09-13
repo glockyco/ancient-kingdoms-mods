@@ -27,7 +27,8 @@ def creator(*races: tuple[str, dict[str, bool]]) -> str:
 
 
 ALL_ENABLED = {
-    name: True for name in ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid")
+    name: True
+    for name in ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard")
 }
 
 
@@ -44,8 +45,20 @@ def test_a_race_that_enables_every_button_allows_every_class():
         "Rogue",
         "Wizard",
         "Druid",
+        "Bard",
     ]
     assert pairing.races_by_class["Druid"] == ["human"]
+
+
+def test_bard_availability_helper_sets_the_bard_rule():
+    source = creator(("Dwarf", ALL_ENABLED)).replace(
+        "\t\tBardButton.interactable = true;",
+        "\t\tSetBardAvailability(raceAllowsBard: false);",
+    )
+
+    pairing = read_pairing(source)
+
+    assert pairing.races_by_class["Bard"] == []
 
 
 def test_a_disabled_button_removes_that_class_for_that_race():
@@ -94,6 +107,7 @@ def test_a_matching_published_table_reports_nothing():
         "Rogue": ["dwarf", "human"],
         "Wizard": ["dwarf", "human"],
         "Druid": ["human"],
+        "Bard": ["dwarf", "human"],
     }
     assert compare(published, pairing) == []
 
