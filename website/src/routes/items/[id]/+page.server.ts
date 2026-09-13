@@ -260,7 +260,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .get(params.id) as { name: string } | undefined;
     mergeResultName = row?.name ?? null;
   }
-  // Source: server-scripts/BuffSkill.cs:6-11 — buffTime is a LinearFloat with
+  // Source: server-scripts/BuffSkill.cs:7-12 — buffTime is a LinearFloat with
   // baseValue = duration_base. Potion buff level is resolved at use time by
   // GetBuffLevelWithElixirEndurance (server-scripts/PotionItem.cs:24-39,
   // 143-145); mercenary utility potions pass Networkowner

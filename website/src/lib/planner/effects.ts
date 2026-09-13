@@ -24,7 +24,7 @@ export interface InventoryStack {
   infinite: boolean;
 }
 
-/** Source: server-scripts/Skills.cs:1077-1120. */
+/** Source: server-scripts/Skills.cs:1159-1202. */
 export function applyTimedEffect(
   effects: readonly TimedEffect[],
   incoming: TimedEffect,

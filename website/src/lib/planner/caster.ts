@@ -387,7 +387,7 @@ export interface ArmorSetState {
   skillsActive: boolean;
 }
 
-/** Source: server-scripts/PlayerEquipment.cs:186-327,1615-1627. */
+/** Source: server-scripts/PlayerEquipment.cs:186-327,1614-1626. */
 export function activeArmorSetStates(
   equipment: readonly CasterEquipmentPiece[],
 ): ArmorSetState[] {

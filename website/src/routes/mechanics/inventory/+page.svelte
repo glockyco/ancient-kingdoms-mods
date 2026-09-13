@@ -270,14 +270,14 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:403 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:12938-12963 and 12973-13001 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:13240-13265 and 13275-13303 — bank gold withdraw and deposit commands. -->
         New characters start with tab 1 unlocked. Additional tabs unlock in order.
         Banked gold is stored separately from carried gold. Depositing moves carried
         gold into the account vault and withdrawing moves it back to the character.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:12894-12907 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:13196-13209 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -335,7 +335,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:12700-12712 — move mode hides the structure, then repositions the same one without charging gold. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:13002-13014 — move mode hides the structure, then repositions the same one without charging gold. -->
           Place the selected chest with left click or
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-foreground"
@@ -345,7 +345,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9666-9699 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9904-9937 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           Individual chests can be destroyed, but there is no chest resale flow. Selling
           the house removes placed furniture, while the account-wide chest items remain
           retrievable if you buy another house.
@@ -534,7 +534,7 @@
           is not consumed by that quest update.
         </li>
         <li>
-          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2618-2631 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
+          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2623-2636 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
           <!-- Source: server-scripts/Monster.cs:UserCode_CmdLootMonster — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more
@@ -550,7 +550,7 @@
     <Card.Header>
       <Card.Title>Equipment Templates</Card.Title>
       <Card.Description>
-        <!-- Source: server-scripts/PlayerEquipment.cs:32,42-47,396-398,1670-1692 — each character can use up to five equipment templates and switch between stored loadouts. -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:32,42-47,396-398,1669-1691 — each character can use up to five equipment templates and switch between stored loadouts. -->
         Store up to five gear loadouts per character and swap between them.
       </Card.Description>
     </Card.Header>
@@ -571,7 +571,7 @@
 
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:57-58,476-482,1670-1692 — template entries store an item hash and augment name, and switching applies all sixteen stored equipment slots. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:57-58,476-482,1669-1691 — template entries store an item hash and augment name, and switching applies all sixteen stored equipment slots. -->
           Swapping a template re-equips all 16 equipment slots at once, augments included.
         </li>
         <li>
@@ -608,7 +608,7 @@
           starts with 10 durability.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:3300-3322 — death reduces each equipped item's durability and warns when broken. -->Death
+          <!-- Source: server-scripts/Player.cs:3389-3411 — death reduces each equipped item's durability and warns when broken. -->Death
           reduces equipped item durability by 1.
         </li>
         <li>

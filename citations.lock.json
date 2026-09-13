@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.31.1",
+    "game_version": "0.9.32.2",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -29,19 +29,19 @@
     "AreaDamageSkill.cs:Apply": {
       "span": 0
     },
-    "AreaDebuffSkill.cs:103-138": {
+    "AreaDebuffSkill.cs:104-139": {
       "sha256": "414ae17c2a08c02f2380837671d4dd705a94dbce4870e4467ba7a0b3abacbba8",
       "span": 36
     },
-    "AreaDebuffSkill.cs:163-204": {
+    "AreaDebuffSkill.cs:164-205": {
       "sha256": "9e6fb5ce46551038e0dec667b7eea8d7e7f66b795c1449073de324e8d90b1a9f",
       "span": 42
     },
-    "AreaDebuffSkill.cs:208-232": {
+    "AreaDebuffSkill.cs:209-233": {
       "sha256": "7b96c6a723ac67802b9307c57d6fc5e35dd71af20628f8dc4a7b4b7d5ac7c79d",
       "span": 25
     },
-    "AreaDebuffSkill.cs:237-257": {
+    "AreaDebuffSkill.cs:238-258": {
       "sha256": "a1d5f47a4dcf4d758671c2b5a9d32776396b3d8206d86e6e984a8f516b8f98cb",
       "span": 21
     },
@@ -74,29 +74,33 @@
     "BookItem.cs": {
       "span": 0
     },
-    "Buff.cs:18": {
+    "Buff.cs:19": {
       "sha256": "a86273c97a2fbd04185b8ae8ada63be74fae6a3fd7f8ca6e7c9e2adf2f5a6d99",
       "span": 1
     },
+    "Buff.cs:271-288": {
+      "sha256": "794cf2bfc2aa3ce1b503ec584c23adf271c3e5998602c67429af2c734feb38de",
+      "span": 18
+    },
     "Buff.cs:97-111": {
-      "sha256": "b13868306c73b93bad2e518f2852ef086a328a492d32ca0ab0540b36f0d59f89",
+      "sha256": "bfe166efaaf5af733c72a2a96884bf9ad1aff31b8a94e01e2eb8d2bc501286d5",
       "span": 15
     },
-    "BuffSkill.cs:139-161": {
-      "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
-      "span": 23
-    },
-    "BuffSkill.cs:28": {
+    "BuffSkill.cs:32": {
       "sha256": "5c5234712e6c42f9a196742db4236ebde94ed463b0ef5fc56081ecfbde7fdd4b",
       "span": 1
     },
-    "BuffSkill.cs:6-11": {
-      "sha256": "a81cd66dd210393e8c6b716d753b564a77d542dc6125726368901f5a547a561c",
-      "span": 6
+    "BuffSkill.cs:441-463": {
+      "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
+      "span": 23
     },
-    "BuffSkill.cs:61-71": {
+    "BuffSkill.cs:65-75": {
       "sha256": "8b32d6149a986adc58660e3c21b38464076bc60972581c5e59be8429643d9afa",
       "span": 11
+    },
+    "BuffSkill.cs:7-12": {
+      "sha256": "a81cd66dd210393e8c6b716d753b564a77d542dc6125726368901f5a547a561c",
+      "span": 6
     },
     "ChestHouse.cs:173-176": {
       "sha256": "13314e6c427b5e812b2350342e52de7c91188da986ed0364021ad738393ab2f4",
@@ -145,70 +149,70 @@
       "span": 0
     },
     "Combat.cs:1005-1012": {
-      "sha256": "596bb77cb81f9d5ce1f21a0ec90b17e953805ff05e03ac62b4637791965d0692",
+      "sha256": "b6ce793dfa51019d66a85d80c19137115fd7e76b08a668c1d692bd34ba37f179",
       "span": 8
     },
-    "Combat.cs:1018": {
-      "sha256": "feae588cd7010377ff87f53db7cd3170cce1a1e9c4a25ae8e55f94ef0b535ac8",
-      "span": 1
-    },
     "Combat.cs:1056-1060": {
-      "sha256": "fc2285ca3c2e6be577c682480bb06f340f600b6a3f5a720f265e8489fdd1ba21",
+      "sha256": "efebe77e0a08640f3885e84bdb93cb00bb69c4786b4f5f4bca0cae493d4bc39c",
       "span": 5
     },
     "Combat.cs:1106-1119": {
-      "sha256": "7cd5f4b748a633b404360985881a68abfb67008fbfd06ca8834e4114da042a0a",
+      "sha256": "8a337b202c8b4b76c081528ffd9c97a3e8ebeb41898f40a82bff4b903ea2a28c",
       "span": 14
     },
+    "Combat.cs:1235": {
+      "sha256": "feae588cd7010377ff87f53db7cd3170cce1a1e9c4a25ae8e55f94ef0b535ac8",
+      "span": 1
+    },
     "Combat.cs:1252-1262": {
-      "sha256": "28933260da584345ca44d68b1c08e4df0995e477018bc0d4a5a39ebf5f98a704",
+      "sha256": "9561dd9a5543f812d94161b233f5c78f2cc52177b94c3e6f1e60088aaee91962",
       "span": 11
     },
     "Combat.cs:1348-1369": {
-      "sha256": "3988b2e519881414e4d632576be01c4cc06507b92fbe42ee752c48a3d9638322",
+      "sha256": "8494cf04b0e715732fc30da14b0e1999598f9e69d4205db8c98afef89a630f46",
       "span": 22
     },
-    "Combat.cs:1416-1419": {
+    "Combat.cs:1438-1441": {
       "sha256": "d137709b59f337588b73f56120fd1cec4336ea26cc41d42f5d837a87a665565b",
       "span": 4
     },
-    "Combat.cs:1501-1534": {
+    "Combat.cs:1523-1556": {
       "sha256": "e7b8e23942cc7535cf07d2f111966d9e7603ba5ce2d687afa863d66c6b1ac365",
       "span": 34
     },
-    "Combat.cs:1506-1509": {
+    "Combat.cs:1528-1531": {
       "sha256": "a65a91c2f7ea032231332940b2eccb15366bf92cb26a7366abf34772c7d4dbf8",
       "span": 4
     },
-    "Combat.cs:1506-1545": {
+    "Combat.cs:1528-1567": {
       "sha256": "2a7bc5839fb9100f63383d3f60dd8f65fcc45b7f1e819b85f0245cabff2e7bcc",
       "span": 40
     },
-    "Combat.cs:1507-1534": {
+    "Combat.cs:1529-1556": {
       "sha256": "9b0842b14d2ce46030e5fffeb143379a7a0a1013386df2f399fc4ea989a59f1d",
       "span": 28
     },
-    "Combat.cs:1512-1515": {
+    "Combat.cs:1534-1537": {
       "sha256": "1be7e79bf0ed54c6986b035ba7116ad5ffe821267bc44d491697c15262b680f2",
       "span": 4
     },
-    "Combat.cs:1518-1521": {
+    "Combat.cs:1540-1543": {
       "sha256": "83ae1ffbe32c465526b27e402cb53e46ca3222490b7629b3aba2d3b92275a1fd",
       "span": 4
     },
-    "Combat.cs:1524-1527": {
+    "Combat.cs:1546-1549": {
       "sha256": "f240f5a35cbc51b4b621e4ae95b95c374975ccde60fc76c320bfb3f33f2b268d",
       "span": 4
     },
-    "Combat.cs:1530-1533": {
+    "Combat.cs:1552-1555": {
       "sha256": "978fa227948a2225f64de0ca70e299e87751196628ded867d366fa2d4d0f64a2",
       "span": 4
     },
-    "Combat.cs:1534-1544": {
+    "Combat.cs:1556-1566": {
       "sha256": "47dd0cea639dce5e99e5fa46ebd98cc6be718f3ccfc9964324f61a661ea32c6f",
       "span": 11
     },
-    "Combat.cs:1561-1568": {
+    "Combat.cs:1583-1590": {
       "sha256": "240a38eb27d311639b4e4d58e8ef72fc266231b4eb9c9dcd808061c6c28b4715",
       "span": 8
     },
@@ -253,51 +257,51 @@
       "span": 6
     },
     "Combat.cs:539-567": {
-      "sha256": "39ba128baf97d607522769f36268581e213ea06ea83b8dd207916a75a8fc7d2d",
+      "sha256": "184aef9af0ce805a369dd6d2dd20f63101484d5f0ae8dd056088cb49468e4a94",
       "span": 29
     },
     "Combat.cs:632-639": {
-      "sha256": "e2d4747d5bf13353e2388d495523270253c2f8ce8d9ae8948a976b5b13b71e87",
+      "sha256": "253857df4642f89fd08760cbd068c09338784cecb036a8b82d861fe258a63302",
       "span": 8
     },
     "Combat.cs:635-643": {
-      "sha256": "9f8409806295be06d911b32ffe1cb15a6fd9bb3f42cf53c8488addb4820b62fa",
+      "sha256": "d9d90eb819bd10cd8e41865591bd8b064bab5335e9e385ab99943b48b59e5e3c",
       "span": 9
     },
     "Combat.cs:652-659": {
-      "sha256": "f1c9ceadb7f16c7da7f56fedf0fc374adbb60719fbd80ec5aee0056f5fb88ea8",
+      "sha256": "646f5a5e6e6d84d938617ad919b44440b5f39fc0ca15e34bfdebb2f330c22dc6",
       "span": 8
     },
-    "Combat.cs:752": {
+    "Combat.cs:770-803": {
+      "sha256": "c8043431a140936cc2e4d514414f227e93c2dba8eb4cef447b5c80edf812df79",
+      "span": 34
+    },
+    "Combat.cs:774": {
       "sha256": "1f003cfd7baac216e54a0e7f9cd3b45dd2d9abe1ab31a018b6c22cd646020854",
       "span": 1
     },
-    "Combat.cs:770-803": {
-      "sha256": "5fb3023ce1f0df6f7b3a345d16e0aac33755f14e431781ac07852be7f62696a6",
-      "span": 34
-    },
     "Combat.cs:796-820": {
-      "sha256": "91ba529acfe34f1c342c080b4542ebc9b3853f063cbdec0f83cd2ec1cbe70a70",
+      "sha256": "b6d15db3cf8fb6b14c0b1b582f990d72ba8f8cd460466ce52d596f11adfd48eb",
       "span": 25
     },
-    "Combat.cs:812-838": {
+    "Combat.cs:834-860": {
       "sha256": "df1e5b06049c7b545a6c9f09dc93f75774b35f9774949111583625308ced664a",
       "span": 27
     },
-    "Combat.cs:818-825": {
+    "Combat.cs:840-847": {
       "sha256": "33bc369656e46d2aeba5721b5b019e4897c27fe36aa4cb1bc23ad41d7528706e",
       "span": 8
     },
-    "Combat.cs:820-837": {
+    "Combat.cs:842-859": {
       "sha256": "27346174649e7bdde412da23759b741d997bb760c098ff679ad875a1dd5daf85",
       "span": 18
     },
     "Combat.cs:847-884": {
-      "sha256": "de63b81be1c1d13921e95b280ca985f509f912212f2aa838b122f5ca054ef613",
+      "sha256": "d6c29bce784e5bdd7caa850607dd6979be0467eb3bd7ee86f3ff36a036c673c6",
       "span": 38
     },
     "Combat.cs:852-867": {
-      "sha256": "cdbd95bad4655c377ffe7447b632aa64b203414427c164b25cd2b514aab9d049",
+      "sha256": "1ad404b5a61084946fb0534fd3af80d4f80230403a78b1668a83def9536cd745",
       "span": 16
     },
     "Combat.cs:86": {
@@ -309,35 +313,35 @@
       "span": 1
     },
     "Combat.cs:883-897": {
-      "sha256": "c7f90d22a4afb5d6417ee423ffb465278d7adf4ff8ae7666280ef3d15acbdbab",
+      "sha256": "a62e4b64ff887c95eb6f577ae098b2a0657d7623e63e0c5f609a646863b4c8be",
       "span": 15
     },
     "Combat.cs:885-910": {
-      "sha256": "c7363e71559953f34f45fbf9bcbb7aa2674a4c3c431ef352ed650ecb28f1e355",
+      "sha256": "faf46748e527dac15a5596c047bc92c32f7c42f3ea40b7546a15d792e0c93455",
       "span": 26
     },
     "Combat.cs:886-896": {
-      "sha256": "8369d842d21c02a6095bbac9599ca04c24e44261387b4d88576863a0822b2347",
+      "sha256": "70245a2ba88d22604e4ba0c1782f8238d7f730f8c048f9f27203cda1078f137c",
       "span": 11
     },
     "Combat.cs:891-919": {
-      "sha256": "5e009bb93f988916ca9e3bdd15dfead13f5d1c4db0f06a0fe46f5772e50b0751",
+      "sha256": "6f681ee9ab96487b9109729defa7e7be116023ed0100028389cb4cbcd3f1f6be",
       "span": 29
     },
     "Combat.cs:898-919": {
-      "sha256": "155086d6ce2386992ae67bfd274e0c2936ac777d53afc8b037e0b8289eeac031",
+      "sha256": "5ad1008461194a9204d2dc4a2dbbc42297944c80f225c4d94aef91561933b4c9",
       "span": 22
     },
     "Combat.cs:934-944": {
-      "sha256": "2a5511ddce50e8c42707f424da91c7d2bb0368e11637e4d3ce3328c08653efc0",
+      "sha256": "dc804044bda4e525e6b4902cea770a21ee2a404b7840ba0f92c04f1cbc5eeeb0",
       "span": 11
     },
     "Combat.cs:944-955": {
-      "sha256": "3603cdd388df7a84c82844869673f80965d1f2aa1697ccd5cfe8555b2bf1b321",
+      "sha256": "db84af1d6da8272a336e5a19c5bab30595cdb057c53fcd17a7e023fda7d64a02",
       "span": 12
     },
     "Combat.cs:978-1011": {
-      "sha256": "b28d9671d10c5e5059e0c721847f8309e231fb7e9c076051d8213041abef6dd7",
+      "sha256": "e989221d6cfce28ccaaff9c2c11ff7088142515126d58c0fec08b27ecf7e0862",
       "span": 34
     },
     "Combat.cs:DealDamageAt": {
@@ -430,8 +434,8 @@
       "sha256": "23734c664b5a574cd9d409f800c556456df6ef660a79f41055ea390d89fe33ec",
       "span": 3
     },
-    "Database.cs:3677-3685": {
-      "sha256": "936930b2d3a19daa54ac425a326d93b58441790815ed845e0dfa4a2b32ae55d6",
+    "Database.cs:3683-3691": {
+      "sha256": "1285044f3a2584daa5b709ebc85e9d36144af2f9598904b39ca66afb91fd30bd",
       "span": 9
     },
     "Database.cs:425-435": {
@@ -472,7 +476,7 @@
       "sha256": "19a470b34ecbb99e1d10ebfc6e37f3b15dde43caeea0c145cbe696ad7572b791",
       "span": 9
     },
-    "Entity.cs:341-357": {
+    "Entity.cs:346-362": {
       "sha256": "771419fd2a3b5863479be1c7896d02fb7fd670bc1b8e9b1cc1ab95bba320b4b6",
       "span": 17
     },
@@ -480,88 +484,72 @@
       "sha256": "e06909378027c44e01cdceb731dab3b5ce34f8696cc4e800bbecbb6e293a0a5d",
       "span": 1
     },
-    "EquipmentItem.cs:674-682": {
+    "EquipmentItem.cs:703-711": {
       "sha256": "ace3350470cf9821cc9da999bc577b66e51199c15ca88ca2f8f8a57faa218bed",
       "span": 9
     },
-    "Experience.cs:112-140": {
-      "sha256": "f7595e8d4493740128af8bed0da18ae2561ed16ef903ef1ed34e52d505291632",
-      "span": 29
-    },
-    "Experience.cs:141-169": {
-      "sha256": "85cf8cf66cc3a8e28867f2a0c805b31678ad555b16922ee752ee56ae494ce3b5",
-      "span": 29
-    },
-    "Experience.cs:170-198": {
-      "sha256": "7d4a9c86d8700ff9d13404bf04fdd3db499fd8850bb61214b498e4d604691cdf",
-      "span": 29
-    },
-    "Experience.cs:199-227": {
-      "sha256": "2047f1ebe7ed212e46f814a92a7e3635b81e0287c47da0e7ad5a3754332a4ce8",
-      "span": 29
-    },
-    "Experience.cs:228-256": {
-      "sha256": "1a0a9e3188c726f7377f37637a07911d79a813583e870e4d57fd78b9f21814dc",
-      "span": 29
-    },
-    "Experience.cs:257-285": {
-      "sha256": "c7529a475a867f9f86ad6b81cd7758742ecec0946ef58c85cc117f0a4e371f52",
-      "span": 29
+    "Experience.cs:112-320": {
+      "sha256": "bfc1a68fb6585d8d71429f92d0a651e02422e7cce895352e20dcff5b22b0ffe1",
+      "span": 209
     },
     "Experience.cs:26-36": {
       "sha256": "46f4a08d530647b7645b3f328be7d6b90718fb93de8e3287321478d3e7d15491",
       "span": 11
     },
     "Experience.cs:281-291": {
-      "sha256": "8e19a77dcf9f19c5b8e2e2a5915b4f9d3c4b59b02dfae5eea264795012897c99",
+      "sha256": "c01dccc3a4a83820458689e350a46e04991c520c5d16bb0e834fa9162097d132",
       "span": 11
     },
+    "Experience.cs:289-319": {
+      "sha256": "9e00769b18e5ca4c747dc4205eb7f4c1f2070081f9f5aafa073cca9ce569b740",
+      "span": 31
+    },
     "Experience.cs:300-330": {
-      "sha256": "33fbf317e7a845367fc75a3a1164f1133e08c6ccb55d762785be598e9a7d9ded",
+      "sha256": "47bd409fd61a723a15f3551a8673b7c91eaf9bd459660a8cf26655476729871b",
       "span": 31
     },
     "Experience.cs:306-334": {
-      "sha256": "3f11c15050afa881eef60a095d4001340f1037928c283a438d8c640064737a41",
+      "sha256": "4e02305d74535a34686dd572abc069e3589926aeb5b91ddffa1cc3d9224ba3b8",
       "span": 29
     },
     "Experience.cs:32": {
       "sha256": "300a95586fb36bd9cf2c7aa7eae7225b21f04008e853a18f79923a56d5667510",
       "span": 1
     },
-    "Experience.cs:375-383": {
-      "sha256": "e9a9eaa238d9deac2cf1086a2deb56d464ad0e5845355d7f576f581083e7a8fa",
-      "span": 9
-    },
     "Experience.cs:38": {
       "sha256": "46f3f63b8816effb5b28cdc20519ec81cb330377f5f7aabe070bcdccf1041230",
       "span": 1
+    },
+    "Experience.cs:425-433": {
+      "sha256": "e9a9eaa238d9deac2cf1086a2deb56d464ad0e5845355d7f576f581083e7a8fa",
+      "span": 9
     },
     "Experience.cs:44-53": {
       "sha256": "c16f37b160b675ac5ff76ec112155d294d96cdff767fd25102bba31c7f151d3a",
       "span": 10
     },
-    "Experience.cs:446-453": {
+    "Experience.cs:496-503": {
       "sha256": "aff66a0c4ad02abe5c04f42a1136f5d05fd5f2bd19ee3670c4a781bcd2cefb8b",
       "span": 8
     },
-    "Experience.cs:453-489": {
+    "Experience.cs:503-539": {
       "sha256": "6da6badd6ea2d235fb4cb60976296bb910635a5665ae6e8d96c4663e227dfe24",
       "span": 37
-    },
-    "Experience.cs:477-486": {
-      "sha256": "529f22af964b0c4bf661e067fc3f1a45f7e095e3c1a81a641e4166cef27341e4",
-      "span": 10
     },
     "Experience.cs:51-52": {
       "sha256": "ff39d764c706d0a00d3a260506d3a5a9f08f796a81ca419b853ad970f166e8ef",
       "span": 2
     },
+    "Experience.cs:527-536": {
+      "sha256": "529f22af964b0c4bf661e067fc3f1a45f7e095e3c1a81a641e4166cef27341e4",
+      "span": 10
+    },
     "Experience.cs:60-100": {
-      "sha256": "ac6034d62a552212480f5b549a2e50bcffdb6463a629632475e151dd66731a78",
+      "sha256": "b8df3ae2af99d3f0461748a0fb2c1a7686480ef15551916b07c3b2dacf9b60a2",
       "span": 41
     },
     "Experience.cs:90-108": {
-      "sha256": "d8d18c3f6aaee4aef5e34ba7e16ab199442e2fba6c38eeb3faaa8c728f776d46",
+      "sha256": "5307109e60770d9db6b898a2f2ec9ab39b4a8aaa0ae16f8536a1c539336e4bf0",
       "span": 19
     },
     "Experience.cs:CalculateExperienceShare": {
@@ -575,7 +563,7 @@
       "span": 0
     },
     "FoodItem.cs:26-45": {
-      "sha256": "a7f170d5bfc33d98b206e66cf70ce811e699d3775cf1281d3a877bf57ee02557",
+      "sha256": "286f072d149506e8c4fb98220968d572901fda51d4e9450f2a70d3f9f731c3d0",
       "span": 20
     },
     "FriendlyPetFollowerItem.cs:16-23": {
@@ -620,82 +608,86 @@
       "span": 4
     },
     "GatherItem.cs:336-344": {
-      "sha256": "fb50d3d911a3734283594b8986be3da0c5bb010980873c6a9d9ba6f70f1b945e",
+      "sha256": "c381d295b491b2c600ed332cc80c345e4142849a94ebe69179d13f9fd2b53041",
       "span": 9
     },
-    "GatherItem.cs:353-374": {
+    "GatherItem.cs:356-377": {
       "sha256": "a36fb402e3f0c517d0927f6b200e6dbadba7638932dc135eac505d05ca91a664",
       "span": 22
     },
-    "GatherItem.cs:396": {
+    "GatherItem.cs:399": {
       "sha256": "e6b09d0d859106089a37b049f4e91fabb9b5645d04795b1f33787ddee6e97bbe",
       "span": 1
     },
-    "GatherItem.cs:572-581": {
+    "GatherItem.cs:540-542": {
+      "sha256": "5af9b7f382b88a96b3047117598a9f5c85fbebb6138981c5db3c6c3c9189e8c2",
+      "span": 3
+    },
+    "GatherItem.cs:579-588": {
       "sha256": "f865c2bd6b0f192a33150c08b58bb3f8616000b368d195f2d580766ebdf81a22",
       "span": 10
     },
-    "GatherItem.cs:574-581": {
+    "GatherItem.cs:581-588": {
       "sha256": "e13cb755ddfbbd44a32137f515d3e4bec6573c4950f819b9d583178b5c7d5988",
       "span": 8
     },
-    "GatherItem.cs:582": {
+    "GatherItem.cs:589": {
       "sha256": "2b80ff405c2b608adfe4e2263c3f75258634ab52326656cc2735b9aba207dff5",
       "span": 1
     },
-    "GatherItem.cs:648-670": {
+    "GatherItem.cs:655-677": {
       "sha256": "50679c212957013a92f2dd9602ef7280ef681e928a6f3b5d62f62a613976c96a",
       "span": 23
     },
-    "GatherItem.cs:650-653": {
+    "GatherItem.cs:657-660": {
       "sha256": "539e3a5da06787bca121518f265b71f7e06a7f77881059ab02d93e082ccd8ae5",
       "span": 4
     },
-    "GatherItem.cs:659-677": {
+    "GatherItem.cs:666-684": {
       "sha256": "21d5e4d16571fbff79d8e5a9b63c53d362fe77a0eabd7dcd612ef1cea1565444",
       "span": 19
     },
-    "GatherItem.cs:672-683": {
+    "GatherItem.cs:679-690": {
       "sha256": "5a42d846f99f27e237fd38f13368c916a785c86e57a6e0d24f8859a28ed1d539",
       "span": 12
     },
-    "GatherItem.cs:685-702": {
+    "GatherItem.cs:692-709": {
       "sha256": "a07708266bbac36d467680ed74928cf1baf3bd5919ca1883ec2d04660cd942f7",
       "span": 18
     },
-    "GatherItem.cs:704-720": {
+    "GatherItem.cs:711-727": {
       "sha256": "7b6ec56b715ddae2bbff91aa69ae426bffa9044602601cf3cffde06a5d4254ae",
       "span": 17
     },
-    "GatherItem.cs:722-739": {
+    "GatherItem.cs:729-746": {
       "sha256": "6afa79e8a2715bc9a3f00204634c4bea91645c8430a60d666f4a872a93a13887",
       "span": 18
     },
-    "GatherItem.cs:747-749": {
-      "sha256": "e646986c5031aca1cb6bbd531790c25860f3c6727ee7c0071027e6f197d11724",
-      "span": 3
+    "GatherItem.cs:751-764": {
+      "sha256": "2f7d8f551a76bb7f68bdd662b16c3d55fda5b42e85d0e135daa7048690162a22",
+      "span": 14
     },
-    "GatherItem.cs:748-754": {
-      "sha256": "9c1d6edf0b61e49033e63bcf618290dc565ad170527914822c174f33aef8a0bd",
-      "span": 7
-    },
-    "GatherItem.cs:748-779": {
+    "GatherItem.cs:755-786": {
       "sha256": "275ade24787c8089bd004801c91f877b4a794a5d21b6aa37773f3badd499f794",
       "span": 32
     },
-    "GatherItem.cs:759-766": {
+    "GatherItem.cs:758-760": {
+      "sha256": "83f3711bd1af31cff2e143e5c43d5648de59d4ef045018f69051b804b0b72137",
+      "span": 3
+    },
+    "GatherItem.cs:766-773": {
       "sha256": "67f895142f3e991aaae88633593e2c46830968f56785971bfa17bf857debbc3c",
       "span": 8
     },
-    "GatherItem.cs:759-767": {
-      "sha256": "9a40c9791ceba060cd31320746904c3c0ff2cc4604334d382dbe8561319b28a7",
-      "span": 9
+    "GatherItem.cs:766-777": {
+      "sha256": "fd3a6e666e80af2730efccf71ebc76933e52e91ab3b81226fcdf320c9906a3a5",
+      "span": 12
     },
-    "GatherItem.cs:808-811": {
+    "GatherItem.cs:815-818": {
       "sha256": "fc5816ac002b82df3c11e336b15cb7476b6c7b41c0d58f802376ac4c1f93e60a",
       "span": 4
     },
-    "GatherItem.cs:929-935": {
+    "GatherItem.cs:936-942": {
       "sha256": "da53eab81ac1dad3deb8fa364dfd2af3303b99fbf28bb9aed3a548762d277040",
       "span": 7
     },
@@ -754,103 +746,103 @@
     "Monster.cs": {
       "span": 0
     },
-    "Monster.cs:1234-1249": {
+    "Monster.cs:1249-1254": {
+      "sha256": "5ef04750096072362667530ddbaf9947f69d26c3f8c72612b296ab84d179f24f",
+      "span": 6
+    },
+    "Monster.cs:1284-1299": {
       "sha256": "83eb33ac4f457d46a31e63773d0fb8b2df4cc37ce1ce6118b195753b3f1937cd",
       "span": 16
     },
-    "Monster.cs:1249-1254": {
-      "sha256": "25a580b383dabc3600d651ac8f1bbbca1bf642252ef549ed0a46e5608d30ee9e",
-      "span": 6
-    },
-    "Monster.cs:1297-1301": {
+    "Monster.cs:1352-1356": {
       "sha256": "4026f4adc9a6c8e4a0e4b5eaaf3469613888858cef07ee58c3a06fbf19fb8c06",
       "span": 5
     },
-    "Monster.cs:1383-1406": {
+    "Monster.cs:1438-1461": {
       "sha256": "6b4d9d7243e445bc67220ee3cb76ba3248be0b98a946e456910033711994bec4",
       "span": 24
     },
-    "Monster.cs:1489-1503": {
+    "Monster.cs:1544-1558": {
       "sha256": "a314071035e10b17e1590b9897ccfe919b06c65de88c1d66413fe9d9ad2bfa1e",
       "span": 15
     },
-    "Monster.cs:1540-1548": {
+    "Monster.cs:1595-1603": {
       "sha256": "5453b028533f43969062f621f1a1f10949bf0febe1f96ef2c0a8dfb1636806ae",
       "span": 9
     },
-    "Monster.cs:1809": {
+    "Monster.cs:1864": {
       "sha256": "d6261b0b42eef835ffa2eb55562ffaed1712fbec257e9ae407b2c214ee5dde50",
       "span": 1
     },
-    "Monster.cs:1817-1820": {
+    "Monster.cs:1872-1875": {
       "sha256": "21492473ad66c2ef812394f75059d8ce4fbfbff6854e256fe98a01f5701a719f",
       "span": 4
     },
-    "Monster.cs:1821-1824": {
+    "Monster.cs:1876-1879": {
       "sha256": "86a10e09fbbe12be459e610a4f49934ab1f99a665816c0d2a4c4fbfdf6c993da",
       "span": 4
     },
-    "Monster.cs:1825-1840": {
+    "Monster.cs:1880-1895": {
       "sha256": "40ea6dfd4fdb49af22b75fe0622e2e79d7b0e756b54e198f6e5816abc53cd3da",
       "span": 16
     },
-    "Monster.cs:1842-1854": {
+    "Monster.cs:1897-1909": {
       "sha256": "2f253eae6c68d4be1433c5867972e35d896584fbf6a599621a92c7285459844d",
       "span": 13
     },
-    "Monster.cs:1857-1865": {
+    "Monster.cs:1912-1920": {
       "sha256": "2c48c328399438853e40a334c65e1f24d235698501ea6e1bf83715eec2af6c97",
       "span": 9
     },
-    "Monster.cs:2113-2123": {
+    "Monster.cs:2168-2178": {
       "sha256": "fd301ea4a59a94c1643031cde5e493ed3561a7b6c14262dd4db4e2a196a262b1",
       "span": 11
     },
-    "Monster.cs:2162-2167": {
+    "Monster.cs:2217-2222": {
       "sha256": "81467e298a8952d95dd3b1a8199605657b8951e41666e4fc4dfa2df0e98a0d89",
       "span": 6
     },
-    "Monster.cs:2262": {
+    "Monster.cs:2679": {
       "sha256": "128c8d479e6d0125330195890583741f38aaeda1f44b0d3944fe8b97c36a8e9a",
       "span": 1
     },
-    "Monster.cs:2486-2490": {
+    "Monster.cs:2904-2908": {
       "sha256": "ade1a9690be7862076d9cf7eafaec82cd6d4c3406fa4e7e81b895f3b12ac95ed",
       "span": 5
     },
-    "Monster.cs:2668-2687": {
+    "Monster.cs:3086-3105": {
       "sha256": "ff137c948c78a4853f99ca56380527b09e80fac28591c279ef1481cc92f66bf0",
       "span": 20
     },
-    "Monster.cs:2682-2710": {
+    "Monster.cs:3100-3128": {
       "sha256": "5b9a687a82000719911b1d33857e4ee9bc2e10f28930b2e3c09f7742ca7ebb47",
       "span": 29
     },
-    "Monster.cs:2689-2710": {
+    "Monster.cs:3107-3128": {
       "sha256": "b62d6948fda07c4a55b4b9b7eb32141f48b221c89ab34631929b57b4318c8852",
       "span": 22
     },
-    "Monster.cs:2704-2710": {
-      "sha256": "49dd355049ed37e2e8478b9e60dc184662bb81d551e89b4872e14aa2787a4db3",
-      "span": 7
+    "Monster.cs:3125": {
+      "sha256": "652431868ede5eb62465d0806e82da32ee9b01d30310ee84a7cd43ddf2aeb2ef",
+      "span": 1
     },
-    "Monster.cs:2715-2727": {
+    "Monster.cs:3133-3145": {
       "sha256": "33ce60bfb9cef6ce40442b5fa1be0a7133e76ec77d613e99676c626eec3a2d13",
       "span": 13
     },
-    "Monster.cs:2740-2746": {
-      "sha256": "14de2c5db6fcfebe7efe14cde1281cf758877e7a7bb898184e9cf287d7da9fa1",
-      "span": 7
+    "Monster.cs:3161": {
+      "sha256": "5d2340c3bacb9fe2fed01982bf8159b31df74ed25bf5c187c3f9ee0128c7336c",
+      "span": 1
     },
-    "Monster.cs:2744": {
+    "Monster.cs:3162": {
       "sha256": "7b9be9355a9ce8e72455dc101ea5682e725926d2a7ca7a7b3ec970593846326e",
       "span": 1
     },
-    "Monster.cs:2751-2763": {
+    "Monster.cs:3169-3181": {
       "sha256": "7b5d7ffd9818178b0c99c7f5ee2f1c4dc514486c3da7c27176505363bd3f0d9c",
       "span": 13
     },
-    "Monster.cs:3620-3626": {
+    "Monster.cs:4059-4065": {
       "sha256": "f40feddd3a37f8ea373e94158f9fffb6102ad463e07f6623638d3cb255cf5cac",
       "span": 7
     },
@@ -859,50 +851,50 @@
       "span": 1
     },
     "Monster.cs:502-510": {
-      "sha256": "5847c0661c2923ec59d475b0fed9acb5dd41283cc20177426166029213903e8c",
+      "sha256": "4f8a14e0b969dfbf59d09bd63c49973776a4dc58341a4c0689930a5ff3535057",
       "span": 9
     },
     "Monster.cs:502-520": {
-      "sha256": "368cdf038507be054b04a50833b0c4e9a488dec949a3262a2a9ddda3afe006cc",
+      "sha256": "2a6524bde64d46bf0a8a3fe314b8cee1b7062a45e000f6ec5f434eb50ca7edca",
       "span": 19
     },
-    "Monster.cs:517-542": {
-      "sha256": "135976aea289d7218c23aa8d166c361fc9eb041c3fd587f30ea5a1e4b0e47d48",
-      "span": 26
-    },
-    "Monster.cs:517-543": {
+    "Monster.cs:567-593": {
       "sha256": "ba075ee6d1392c63abfd3826bf6093507d28d184aa681c67afe54774dfd2cf28",
       "span": 27
     },
-    "Monster.cs:564-585": {
+    "Monster.cs:567-597": {
+      "sha256": "13958550d983af9c275fe5106d922ceb14830782b0e4cd451cb53d85e76fa475",
+      "span": 31
+    },
+    "Monster.cs:614-635": {
       "sha256": "8ffdc85b22b1c984f9ea91a9d8b0a0cc1a6e862fffdb7e316e1a4665377b3421",
       "span": 22
     },
-    "Monster.cs:619-627": {
+    "Monster.cs:669-677": {
       "sha256": "75ae7fa2b7a4ba35a9cfa75d562dfe2f2730c67af246561a696194b463faecc9",
       "span": 9
     },
-    "Monster.cs:659-664": {
+    "Monster.cs:709-714": {
       "sha256": "5aca3c5db99603c05c02ba80e2a69c9e52f452cc02b9d1b616a428168c97e4a6",
       "span": 6
     },
-    "Monster.cs:665-666": {
+    "Monster.cs:715-716": {
       "sha256": "1d8dbee09b70087f30dfbb07d5210b53a7ca921b17a09d59e428435c471e5fed",
       "span": 2
     },
-    "Monster.cs:844-851": {
+    "Monster.cs:894-901": {
       "sha256": "d9f20ae490e4db165d41a5140cb35c6114c74269d9c0e6fa241b96e1e8aabbe8",
       "span": 8
     },
-    "Monster.cs:879-886": {
+    "Monster.cs:929-936": {
       "sha256": "2427a287ec0583204831cae5929d93d74b47c92afc1d24446a90f95386f5ebd0",
       "span": 8
     },
-    "Monster.cs:888-895": {
+    "Monster.cs:938-945": {
       "sha256": "537907c18934a4a0b809e11cb79adb552508b5538a23dcedd4bbb9052eb81ce1",
       "span": 8
     },
-    "Monster.cs:941-956": {
+    "Monster.cs:991-1006": {
       "sha256": "7fdbfa5f1cc72d1568cd89650d10621c978e7eca8c25adaa255832aeb4b9ba45",
       "span": 16
     },
@@ -936,7 +928,7 @@
       "span": 0
     },
     "Npc.cs:1573-1583": {
-      "sha256": "6b576aed422e9e1508d6d24abb602e85c78c841354df99f9cb99287e264dc49e",
+      "sha256": "d0f525f1cc47c2ca17170f719f65cb9299cd0d6f4607bb26398b63383cf520b1",
       "span": 11
     },
     "Npc.cs:16": {
@@ -944,50 +936,50 @@
       "span": 1
     },
     "Npc.cs:1606-1616": {
-      "sha256": "08ef48890bb20b25d6c9d2258fbc4d50c5dbd4e90682a07f551cb461b683d1eb",
+      "sha256": "46fa58d35739e7e7051f3238d8ed70539dc9a5bc4ad36a10395ed85ee5f28f18",
       "span": 11
     },
-    "Npc.cs:1698-1702": {
-      "sha256": "1cd0a2d5939dd91d30ba5b81b404c4966d34bae8e7aaa1d4b3e5fffbc3907e5d",
-      "span": 5
+    "Npc.cs:1698-1703": {
+      "sha256": "130a890f0e2b040570e6e996c66241844788db3c0198b0497206235edc19125d",
+      "span": 6
     },
-    "Npc.cs:1703-1709": {
+    "Npc.cs:1708-1714": {
       "sha256": "e29b71c3619e3e9fb041403711af78ae15ba21c1609aafb545dbf2898c05d29c",
       "span": 7
     },
-    "Npc.cs:1705": {
+    "Npc.cs:1710": {
       "sha256": "d351c6c4434fa369a8c7f18c9e3c38068d2ca593bdef2452c22935215d7ca13d",
       "span": 1
     },
-    "Npc.cs:1786-1793": {
+    "Npc.cs:1791-1798": {
       "sha256": "42bdeb8ed396aa2cc0cd6a9341777aa979985ea4b224d4edaca2f7a8dc2cbb4c",
       "span": 8
     },
-    "Npc.cs:1788-1806": {
+    "Npc.cs:1793-1811": {
       "sha256": "dc0522d1d658ac89c215e70b79041e3d3114f74519011727f97f41c227bca27d",
       "span": 19
     },
-    "Npc.cs:1832-1846": {
+    "Npc.cs:1837-1851": {
       "sha256": "9b1e4e351faef7875671712903690b10faf031cf1aaaa96b38ace1ca74a1bdba",
       "span": 15
     },
-    "Npc.cs:1864-1874": {
+    "Npc.cs:1869-1879": {
       "sha256": "20c34143235d9c7f0a437aec8f512eb28179e4fe7b590ee1fce5d284066e7591",
       "span": 11
     },
-    "Npc.cs:1918-1926": {
+    "Npc.cs:1923-1931": {
       "sha256": "7a2e4d17187aa55df046faf9db31cfb53df1fac9a5114948e12cf4248ca66e4f",
       "span": 9
     },
-    "Npc.cs:1946-1948": {
+    "Npc.cs:1951-1953": {
       "sha256": "b496031e7f1a47c4063dcb5b57a93cf8910eae4a74aaeeabd030db024d485a76",
       "span": 3
     },
-    "Npc.cs:2618-2631": {
+    "Npc.cs:2623-2636": {
       "sha256": "cb01787ea9d0f9ae54538194e2604f3b4d9f6a4bcd8f960fbd0ea48e62e3b960",
       "span": 14
     },
-    "Npc.cs:47-49": {
+    "Npc.cs:49-51": {
       "sha256": "079db2f85f6f63bc33ee488b6690f65e1c2978837172e5b5b9e13adaad85ce76",
       "span": 3
     },
@@ -1016,7 +1008,7 @@
     "Pet.cs": {
       "span": 0
     },
-    "Pet.cs:2076-2100": {
+    "Pet.cs:2085-2109": {
       "sha256": "5d7f4388a25f8041b961ec6e90d3275a0caf723aec076d9b31cf866c52e6a526",
       "span": 25
     },
@@ -1042,249 +1034,265 @@
     "Player.cs": {
       "span": 0
     },
-    "Player.cs:10192-10227": {
+    "Player.cs:10054-10055": {
+      "sha256": "84c47a1cbcacefe44cf58d9f557ae70f64ab6c9b4ea79dd578eacda4006b6b61",
+      "span": 2
+    },
+    "Player.cs:10054-10066": {
+      "sha256": "4b7f6e23fffa227f853fd75d831e123f56ef31985d4ebf1ea777185c529ee13f",
+      "span": 13
+    },
+    "Player.cs:10224-10268": {
+      "sha256": "0f2370c31638150d9feb205fefae8dbf6fedd638da25111e1d7c8c66477afca5",
+      "span": 45
+    },
+    "Player.cs:10464-10499": {
       "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",
       "span": 36
     },
-    "Player.cs:10345-10380": {
+    "Player.cs:10623-10658": {
       "sha256": "e33740fc28cd74de8510ebd91e39d8de35d8714d6f6b1335a8fc21e8f8420cbc",
       "span": 36
     },
-    "Player.cs:10588-10591": {
+    "Player.cs:10889-10892": {
       "sha256": "d32a10a2361248d0114defe62311e4652490a43a520d5fa749ac48de25da93c8",
       "span": 4
     },
-    "Player.cs:10605": {
-      "sha256": "e0c481e3c08c556c9c645ca45dd4d132548ea4ed3e9f34f9b49fc0ff8eaceb6d",
+    "Player.cs:10912": {
+      "sha256": "645311e217c53539db846ec2e76c26009e85a42b465928ad78540017f7ab7f0b",
       "span": 1
     },
-    "Player.cs:10872-10884": {
+    "Player.cs:11173-11185": {
       "sha256": "488f8059086224105c9350a8717f697438176977b3c3edff141b474f83b9ae91",
       "span": 13
     },
-    "Player.cs:10956-10988": {
+    "Player.cs:11257-11289": {
       "sha256": "a2c824871efdddcd1ba876d3265c226c615f168c630237b43d38b1414ebf18f8",
       "span": 33
-    },
-    "Player.cs:11110-11139": {
-      "sha256": "8aacce02ea28ab54a904eb7c276793c8d05f5978fe5f597ae838ab20bf8b33ca",
-      "span": 30
-    },
-    "Player.cs:11245-11260": {
-      "sha256": "dcc00f402cfe746ca29ba65cb33ab32c2b21eef89ad8b7cf28594b0a0c828c49",
-      "span": 16
     },
     "Player.cs:113-121": {
       "sha256": "a521440e9642f9879a618a93dc6e0ebd3acb8777af03a22cd39c3398b7c01751",
       "span": 9
     },
-    "Player.cs:11357-11364": {
+    "Player.cs:11411-11440": {
+      "sha256": "8aacce02ea28ab54a904eb7c276793c8d05f5978fe5f597ae838ab20bf8b33ca",
+      "span": 30
+    },
+    "Player.cs:11546-11561": {
+      "sha256": "dcc00f402cfe746ca29ba65cb33ab32c2b21eef89ad8b7cf28594b0a0c828c49",
+      "span": 16
+    },
+    "Player.cs:11658-11665": {
       "sha256": "f82cfed35b232e8e2ca5237c34b789287d1d8078b39b8d33983800aa19d915f3",
       "span": 8
     },
-    "Player.cs:11601-11626": {
+    "Player.cs:11902-11927": {
       "sha256": "27a37fd214d6e5ce892b888e53edbff3e6f1df4c68206265fd4719a8a00e601e",
       "span": 26
     },
-    "Player.cs:11671-11675": {
+    "Player.cs:11972-11976": {
       "sha256": "03953bf1d86a7060725a2b14d37fd39aa331861d5f3100e1cc51d34971b1fd6b",
       "span": 5
     },
-    "Player.cs:12276-12280": {
+    "Player.cs:12578-12582": {
       "sha256": "93a48315e4fff0bb6c76d21eb6913d04cff2442bbc67b247d06f4e5423d5b36d",
       "span": 5
     },
-    "Player.cs:12625-12629": {
+    "Player.cs:12927-12931": {
       "sha256": "dd4fe4e09859262fc38da5ac089e2275828cf19afca42b394e7270a1a88ccab4",
       "span": 5
     },
-    "Player.cs:12636": {
+    "Player.cs:12938": {
       "sha256": "e5823f42ae8281ab01a68884d64e76585bb830180793533869ba1b78a5d7fb47",
       "span": 1
     },
-    "Player.cs:12700-12712": {
+    "Player.cs:13002-13014": {
       "sha256": "ac8a8aa1c73bc093f762ebc009351584efdb584d6781581cdd22aa905c26e46b",
       "span": 13
     },
-    "Player.cs:12777-12781": {
+    "Player.cs:13079-13083": {
       "sha256": "f50f03b7611dc8b1f526f04014f5396a525ca7902f87b3a22557c671919ec543",
       "span": 5
     },
-    "Player.cs:12850-12853": {
+    "Player.cs:13145-13148": {
       "sha256": "32997cd4147ffefc95e56abd259bff225ffb93d0d1621f5fe684df6d1f8cd36f",
       "span": 4
     },
-    "Player.cs:12876-12880": {
-      "sha256": "f61629d0c6e656ccd00b9b82954558e6fbff7d3d6eb0d43c6d5ed98cb013fb3e",
-      "span": 5
+    "Player.cs:13178-13181": {
+      "sha256": "b7603d66c9166f07e60ca45e76b41ce4a26d1dee24ee7adce994359cb1964c21",
+      "span": 4
     },
-    "Player.cs:12880": {
-      "sha256": "ba4243b1ffa9e9463836bdf699ea0b507b27e449c92b15c0aec0d3daa4829cbf",
-      "span": 1
+    "Player.cs:13182-13184": {
+      "sha256": "70820cb6ee7b940a08d9df0ef13cb206cefae919749230fcbae8e01ddf3f246e",
+      "span": 3
     },
-    "Player.cs:12882": {
+    "Player.cs:13184": {
       "sha256": "004ed169341daf2954fb2bf45e18780dd60339db52f9dfa227934ceec379e111",
       "span": 1
     },
-    "Player.cs:12894-12907": {
+    "Player.cs:13196-13209": {
       "sha256": "7420d5302f54530f3c21365a0606ded4e3a3f35baca4460a3ab74412eca609f5",
       "span": 14
     },
-    "Player.cs:12903": {
+    "Player.cs:13205": {
       "sha256": "d8be763d9dc1b34c42bac5e3dcfc26a4f2e9e266cefa8df64924f81a832c7ed3",
       "span": 1
     },
-    "Player.cs:12938-12963": {
+    "Player.cs:13240-13265": {
       "sha256": "d958428f89965f24b25583fa531f4f4b630289395c42b475b6ad8458b48f6a81",
       "span": 26
     },
-    "Player.cs:12973-13001": {
+    "Player.cs:13275-13303": {
       "sha256": "327f11d048f751aaa613d9eebe3ae14dc614dc6df4e05785f98ee30365496fc6",
       "span": 29
     },
-    "Player.cs:13130-13136": {
+    "Player.cs:13432-13438": {
       "sha256": "2be5114f52ec07bc062b05921b2f565db5a4702ce08187384bf235258adcb9f0",
       "span": 7
     },
-    "Player.cs:13158": {
-      "sha256": "d4a1295c5abdad86838c6781c2af9eb0100726f8e271b9c13f77b7bb2cdd1d39",
-      "span": 1
+    "Player.cs:13457-13460": {
+      "sha256": "47803aeb7c3720d361bf0104efdd5e7fe94535adae102f8152f2188b40605f88",
+      "span": 4
     },
-    "Player.cs:13543-13549": {
+    "Player.cs:13462-13464": {
+      "sha256": "0798855af56520c05d1262151bdd27632da31fcdbddb374f09b2d06ed492c465",
+      "span": 3
+    },
+    "Player.cs:13845-13851": {
       "sha256": "dc7566fc8a4b055e1c21bda8238bcfa1ed8680cdd6d31d6a294caeb93a4f9c1f",
       "span": 7
     },
-    "Player.cs:13557-13568": {
+    "Player.cs:13859-13870": {
       "sha256": "8d7d3ccf18dc3ff85bb61eeeb9032c2851d4ef1f80778811233d9dd2d8d73fd3",
       "span": 12
     },
-    "Player.cs:13563-13567": {
+    "Player.cs:13865-13869": {
       "sha256": "66c6fa228aaabc288e7a08866395bf9aeabc826df72849df61f79ffb5e7050f1",
       "span": 5
     },
-    "Player.cs:13818-13830": {
+    "Player.cs:14120-14132": {
       "sha256": "99969bb73deebfaf6db78f960d6f855c0fde63d49f7866fefba51ad793a43ea9",
       "span": 13
     },
+    "Player.cs:1470-1484": {
+      "sha256": "732d54825a1c9230defccda860901c7ff4dc64aa386a8546f773157d5a1c538b",
+      "span": 15
+    },
     "Player.cs:3051-3054": {
-      "sha256": "bf50f6051230d64c07ff1fd23ef0883e590ed79fbc4a2d37b36131770c71271e",
+      "sha256": "fcbe33e46827f7fd28d3d66f0915221d6118961c48a8a96836484f3d5e697752",
       "span": 4
     },
-    "Player.cs:3107-3109": {
+    "Player.cs:3186-3188": {
       "sha256": "cc1be66a0cdd1cc16b5525cdbe2a3100b79e69ec39d6b26e8e7a431df894b0eb",
       "span": 3
     },
-    "Player.cs:3226-3267": {
-      "sha256": "13792aead171bb39523c81d508ebeebab840e775a7fed5ac3cf51cf992016dd6",
-      "span": 42
-    },
     "Player.cs:3236-3275": {
-      "sha256": "4267c7c7261d7534abd8caac03cdd9269f4f43b5fe634c9839c43f55d12b081c",
+      "sha256": "ff431ab9b9ac255938850f18d6c69943fc4f6b4d8637f5ed32b73c6c0bee6d36",
       "span": 40
     },
-    "Player.cs:3300-3322": {
+    "Player.cs:3339-3356": {
+      "sha256": "29efaa803e3c194a546285deb5e69030d5ae006e50b534e6c18feae620599150",
+      "span": 18
+    },
+    "Player.cs:3349-3386": {
+      "sha256": "556582287f0149b76554b01aa2c4868c077c073cea79868f902845609562e182",
+      "span": 38
+    },
+    "Player.cs:3389-3411": {
       "sha256": "4b3f193520fc4afb46dd5f44bdc640c4f2e9b0193869ada4996298f5c0f0b858",
       "span": 23
     },
     "Player.cs:3434-3436": {
-      "sha256": "95bb71d80606fb217156723a2b28cc81ffc5f8a185b3873385e0557d4b8de9f6",
+      "sha256": "8f4948303b1a35d85bffecec1f064406adc5bb17d2bbe80b865b246127e4a232",
       "span": 3
     },
-    "Player.cs:3437": {
+    "Player.cs:3526": {
       "sha256": "645311e217c53539db846ec2e76c26009e85a42b465928ad78540017f7ab7f0b",
       "span": 1
-    },
-    "Player.cs:4016-4046": {
-      "sha256": "9465f7d5eae3e3a7ffa4841cb8f89d8c0e1cd6c10b75597eb61fb5113a837ca9",
-      "span": 31
     },
     "Player.cs:403": {
       "sha256": "ced6a03b15098def37cffab704445943de90c50732476be5bb55cc77d90db4c4",
       "span": 1
     },
-    "Player.cs:577-581": {
+    "Player.cs:4105-4135": {
+      "sha256": "9465f7d5eae3e3a7ffa4841cb8f89d8c0e1cd6c10b75597eb61fb5113a837ca9",
+      "span": 31
+    },
+    "Player.cs:581-585": {
       "sha256": "36816a7f97d0c52715ea71141ce1e67a2522479e4bdac8731756f377cb172c97",
       "span": 5
     },
-    "Player.cs:6199-6209": {
+    "Player.cs:6352-6362": {
       "sha256": "3c10c423fdf6f784fda2e2e1c9c488f5418a1c0846640bf5a57e69d634549806",
       "span": 11
     },
-    "Player.cs:6755-6765": {
+    "Player.cs:6908-6918": {
       "sha256": "22cc9d2d51bdba8f539e111d815a5d0543fad0a0c9b6d7b871ece50f54d87b67",
       "span": 11
     },
-    "Player.cs:7928-7945": {
+    "Player.cs:8057-8067": {
+      "sha256": "091eb4548bfba909b13a368da9576f588f0f1bd94fa4e693d9f4a157e63dab3f",
+      "span": 11
+    },
+    "Player.cs:8117-8134": {
       "sha256": "b90196d65c14ccabbc904b00c5801d404475dcc806c72310452e8a5bdcf93d35",
       "span": 18
     },
-    "Player.cs:7980-8016": {
+    "Player.cs:8169-8205": {
       "sha256": "a6e74e99610bd4fbb5b7621249c083521ca8861df25a0e7e5f3376231f9ed03c",
       "span": 37
     },
-    "Player.cs:7980-8187": {
+    "Player.cs:8169-8376": {
       "sha256": "5d1c80f7df39d4339102fb38075b685a03efc952ba50ad572176b4782df813e7",
       "span": 208
     },
-    "Player.cs:8017-8045": {
+    "Player.cs:8206-8234": {
       "sha256": "b94d7e6f6d6667501fbc3fe15db137fd1796cfc70ffe5d2105b5126dd182a1c6",
       "span": 29
     },
-    "Player.cs:8046-8074": {
+    "Player.cs:8235-8263": {
       "sha256": "cf984da9d2e508059a1c018bcb8b38e0cb5e3cc9f0e3697ddacba6501871eb03",
       "span": 29
     },
-    "Player.cs:8075-8103": {
+    "Player.cs:8264-8292": {
       "sha256": "b003f81543195217e6e417032805c13c6a0c26a69d757f089eec3a1e9a9097a4",
       "span": 29
     },
-    "Player.cs:8104-8132": {
+    "Player.cs:8293-8321": {
       "sha256": "6ae202684f43041b05bacd165ce25c6e702f78136d9edb86981e3d1553f81d5a",
       "span": 29
     },
-    "Player.cs:8133-8164": {
+    "Player.cs:8322-8353": {
       "sha256": "468f608c0ba76fbac819225c66c6eadcd749ad3e57cb5eda929648f57fef3aa4",
       "span": 32
     },
-    "Player.cs:8346-8365": {
+    "Player.cs:8544-8563": {
       "sha256": "a6c1d6d3291bbc0db018fe74dcb97e6f0b692ba8d3d3547329bb8933ad41ba22",
       "span": 20
     },
-    "Player.cs:9534-9551": {
+    "Player.cs:9772-9789": {
       "sha256": "2c8aa820ae419c4029efbfd9aa09360c4359587c3fd16967126763e81b113083",
       "span": 18
     },
-    "Player.cs:9534-9561": {
+    "Player.cs:9772-9799": {
       "sha256": "2f7ca815b3bc79f4674ad232d088a2d0e660bc95a9b662aeea513c1fd729b00a",
       "span": 28
     },
-    "Player.cs:9549-9561": {
+    "Player.cs:9787-9799": {
       "sha256": "2fccaeb8325dbcdf6474981407ce837d9005ca328c62b9b43b629adb967a94c2",
       "span": 13
     },
-    "Player.cs:9666-9699": {
+    "Player.cs:9904-9937": {
       "sha256": "9ad9dba9506188716e3e663a7d0208afd60ee567114d6ba3e6f72bac75838c9a",
       "span": 34
     },
-    "Player.cs:9748-9749": {
+    "Player.cs:9986-9987": {
       "sha256": "cc33e2410b7eb948488cab00028339c7be6cfee6e81ba3da33c8a68321cc6f37",
       "span": 2
     },
-    "Player.cs:9748-9792": {
-      "sha256": "51e4746cd4cc8b9dcdaa777fb6185822291d9e39ad7c54b3ebab35b9cfd7df48",
-      "span": 45
-    },
-    "Player.cs:9753-9790": {
+    "Player.cs:9991-10028": {
       "sha256": "e27c5ecb6057bda965d03fe4f957752c90b6600c63e5c354eed550997a71716a",
       "span": 38
-    },
-    "Player.cs:9816-9817": {
-      "sha256": "84c47a1cbcacefe44cf58d9f557ae70f64ab6c9b4ea79dd578eacda4006b6b61",
-      "span": 2
-    },
-    "Player.cs:9816-9828": {
-      "sha256": "4b7f6e23fffa227f853fd75d831e123f56ef31985d4ebf1ea777185c529ee13f",
-      "span": 13
     },
     "Player.cs:DestroyLivingMercenariesOnOwnerDeath": {
       "span": 0
@@ -1379,11 +1387,11 @@
       "sha256": "c7f64b70703e64c00282e7dac9ed4be6aad5623ea74bcf0cda3ee3c3ebb4b9f4",
       "span": 1
     },
-    "PlayerEquipment.cs:1615-1627": {
+    "PlayerEquipment.cs:1614-1626": {
       "sha256": "8cb6bc084b65aea25af5680dbce071fca45a28565f9e2dc05260c166bd9046ad",
       "span": 13
     },
-    "PlayerEquipment.cs:1670-1692": {
+    "PlayerEquipment.cs:1669-1691": {
       "sha256": "3c7a9e19497a76553b48b4171ee5fc21edf0f05247c8e794087e97c486afe546",
       "span": 23
     },
@@ -1545,21 +1553,24 @@
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
     },
-    "PlayerSkills.cs:337-347": {
+    "PlayerSkills.cs:1139-1149": {
       "sha256": "b29e15ecbe6940988a82e17799178d710430ab081d60f05e43067a30cf7e813a",
       "span": 11
     },
-    "PlayerSkills.cs:456-458": {
+    "PlayerSkills.cs:1259-1261": {
       "sha256": "a2351298960d849f3cd5726bf79f470f7151ff8235f89e60b136ed4cf058ed44",
       "span": 3
     },
-    "PlayerSkills.cs:480-535": {
+    "PlayerSkills.cs:1283-1338": {
       "sha256": "e3611fd868f2c7bdcaa343a24d42335912812d0d982888cb9181b0767f8f8c99",
       "span": 56
     },
-    "PlayerSkills.cs:891-908": {
-      "sha256": "c881cf3bfc13ed22183442eba4c1c726e8db31a56e725c9eeacf85d42e86ef1a",
-      "span": 18
+    "PlayerSkills.cs:1772-1788": {
+      "sha256": "2e15d3317d7a21f8be069925b59655b8e2177741da4e887314c09b646ff81470",
+      "span": 17
+    },
+    "PlayerSkills.cs:GetMaximumActiveBardSongs": {
+      "span": 0
     },
     "Portal.cs:49": {
       "sha256": "4f103f02cec1f25483ad56ff0766abf8f67ccbdf054fb955b8417d3ea35d6859",
@@ -1637,7 +1648,7 @@
     "ScriptableSkill.cs": {
       "span": 0
     },
-    "ScriptableSkill.cs:220-222": {
+    "ScriptableSkill.cs:229-231": {
       "sha256": "3efdd0f0d0a984c2b4b89b670428354938f4182ec30b63d405e35308945d035d",
       "span": 3
     },
@@ -1675,80 +1686,80 @@
     "Skills.cs": {
       "span": 0
     },
-    "Skills.cs:1004-1007": {
-      "sha256": "d82b487ac2e2f2a2897f8ebc21e9d56cb71a23ab5726ddbc3adf3f70aa61653f",
-      "span": 4
-    },
     "Skills.cs:1009-1012": {
-      "sha256": "ac7c2374bc43efc996fb17b85c3e14e61b9ae7ca75cd5b304f786bc0ef44caa2",
+      "sha256": "fd74be90d4b3b2adac52c8c240b6d1307dbf6713c8d219714c1fac02dae8fd2a",
       "span": 4
     },
-    "Skills.cs:1077-1120": {
+    "Skills.cs:1112-1116": {
+      "sha256": "15e2485ba7d745b253a2c9f97e55641f7c60d48e2f3a94ee46d1a3465b60b27f",
+      "span": 5
+    },
+    "Skills.cs:1159-1202": {
       "sha256": "66295fdeb042a16d69f0ca4c60a9427aaff8f15d99094e63089b7463391ccd7c",
       "span": 44
     },
-    "Skills.cs:1131-1133": {
+    "Skills.cs:1213-1215": {
       "sha256": "06485cb714fee867b915d4fbbca7b8ce07907b050972dd1a26da84ba1293e5bc",
       "span": 3
     },
-    "Skills.cs:1409-1417": {
+    "Skills.cs:1530-1538": {
       "sha256": "055eef90a09c412522bf76298a9363782f3985be0c5bdbe9d85a53ab7a4046a7",
       "span": 9
     },
-    "Skills.cs:1421-1426": {
+    "Skills.cs:1542-1547": {
       "sha256": "f73967f3a8dd8dfd5eac61f7debddd62f17b191b6bac210ada3a5b4c44948f35",
       "span": 6
     },
-    "Skills.cs:1481-1504": {
-      "sha256": "31fca5658d6fd4ee12677d70cd9304cb2d5220bee87ab194b154fc5116ab0075",
-      "span": 24
+    "Skills.cs:1604-1620": {
+      "sha256": "01ed49c04a39f2816c190b340d2bb8371ebb784bb2f92c408de356db4d60949b",
+      "span": 17
     },
     "Skills.cs:1606-1611": {
-      "sha256": "5573623a12c3a004323d2feb711d22c1f480c45c4becc15bbea5dc805a00ecf2",
+      "sha256": "698fb389fe1639a0ad807590a50124b835ab1857ea715d2a92a4d783866822b3",
       "span": 6
     },
     "Skills.cs:233-236": {
       "sha256": "1f09605f67d86b2b8014b24c28d0c5f0368da3eb0cc43e9c737b378d9a00bf43",
       "span": 4
     },
-    "Skills.cs:410-435": {
+    "Skills.cs:414-439": {
       "sha256": "feda83e9b7f92e3be4c48553aa2b1eef491270a52a84d16ad233ce7f9cb0f6a2",
       "span": 26
     },
-    "Skills.cs:535-550": {
+    "Skills.cs:539-554": {
       "sha256": "d6b87eaa264d0a168c91e3feb42392d34816f3efb046f844a24a8aab00262d64",
       "span": 16
     },
     "Skills.cs:862-887": {
-      "sha256": "21b41bb0e7a50a522038f22a9c13f8b2244bf3f599b871f7b66a028906160742",
+      "sha256": "52dbd42f7862a4ffea282c944058039291241b9cf052cacf72ace313a0bd2b2d",
       "span": 26
     },
-    "Skills.cs:865-868": {
+    "Skills.cs:888-891": {
       "sha256": "61167fe9def73bcef4173d63f07c7cbb2c4c0baca13fc820dcc0dd1a21d5dc59",
       "span": 4
     },
-    "Skills.cs:876": {
-      "sha256": "67c1aad7eb39ca4a8ec19a25e88a7f774716d1bbd36c49cfef0c1911346396d4",
-      "span": 1
-    },
-    "Skills.cs:884-886": {
+    "Skills.cs:902-904": {
       "sha256": "5bd148538911bc9b306f2989551be74fab2cab30e03e611bd65f9f70b0e817c2",
       "span": 3
     },
     "Skills.cs:914-915": {
-      "sha256": "b636269124fd2b3937a7b323b72b58d0a47de8e9abbebc8b745fd88d3d8d37de",
+      "sha256": "79587c3fb28aebe76a0ecea7fc83aa03043996c087be4c5fb73fa9eaa2f483bf",
       "span": 2
     },
     "Skills.cs:938-958": {
-      "sha256": "b7982e29c9020a944eb6cc1a8fd50f4b0703c63b6bee3530cb27b3151b07cc83",
+      "sha256": "feae8bf258f5d4119eaf926846cadac6570e2d8799c14e6020adb101b5e381f6",
       "span": 21
     },
     "Skills.cs:979-1003": {
-      "sha256": "cef2d3ca66a6d46044f2d7f317f2fd07cf7776ddfbb007176cd51b7f2577725f",
+      "sha256": "ecfa38f55f0b33a3890504812bf82b3db02e5400f99b6e14408eee15f71d82d5",
       "span": 25
     },
+    "Skills.cs:983": {
+      "sha256": "67c1aad7eb39ca4a8ec19a25e88a7f774716d1bbd36c49cfef0c1911346396d4",
+      "span": 1
+    },
     "Skills.cs:990-1014": {
-      "sha256": "b1ddecd42fa0cd56884d1ab96992e1b83a52038759667026d420589707a003f4",
+      "sha256": "79d824e79aa36ef98811dffae5ae0803be2a5bde84fac11e1966c0624eab5bb0",
       "span": 25
     },
     "Skills.cs:GetOverTimeDamageType": {
@@ -1840,26 +1851,26 @@
       "span": 1
     },
     "TargetDebuffSkill.cs:101-171": {
-      "sha256": "30521db7b0749526cd114e2ea3ef5a8684ceac2c0d07c12c7f56e98ee4ad936a",
+      "sha256": "88cee7727d29c4136132c8510ec68b1065eeaa8f9724c136ce8143433765ca55",
       "span": 71
     },
-    "TargetDebuffSkill.cs:104-142": {
+    "TargetDebuffSkill.cs:105-143": {
       "sha256": "300de2db672363ed14f5fa7689d884b74b1d988503c8aa3cdfca168882541477",
       "span": 39
     },
-    "TargetDebuffSkill.cs:140": {
+    "TargetDebuffSkill.cs:141": {
       "sha256": "f95958d1819f82afc7f7bfe6e9429285d871d00ddd40180ae8a29ade51fbed09",
       "span": 1
     },
-    "TargetDebuffSkill.cs:172-204": {
+    "TargetDebuffSkill.cs:173-205": {
       "sha256": "db1ff9db1b1b118949cbb68232c82fde9d0954d52b218ebbc74f7d1a07ccd081",
       "span": 33
     },
-    "TargetDebuffSkill.cs:208-233": {
+    "TargetDebuffSkill.cs:209-234": {
       "sha256": "2ef3bc240d0ed2494b699c35b15805fb940faf35ef22ae8a482587d2a10d4978",
       "span": 26
     },
-    "TargetDebuffSkill.cs:237-249": {
+    "TargetDebuffSkill.cs:238-250": {
       "sha256": "83b36782463e2d140930b42b1addf903e680a959343a264c88f6b410cdc934bd",
       "span": 13
     },
@@ -1871,7 +1882,7 @@
       "span": 6
     },
     "TargetProjectileSkill.cs:216-220": {
-      "sha256": "3ce86db37c1c3a37bc7526e0804c649c272d2147a525dc97ba9f171b8413e461",
+      "sha256": "c2ee88c6118be2b1804958440a176a740a4b84c6372573e19bdb9df377dd8e16",
       "span": 5
     },
     "TargetProjectileSkill.cs:221-222": {
@@ -1887,19 +1898,19 @@
       "span": 72
     },
     "Trap.cs:142-146": {
-      "sha256": "8c3cabc01d78ff1b811fe26e86936751f6bc6ffa9223f5883f8cb08f952c3307",
+      "sha256": "06944dd070636930ba8d8a50e7f83acbe03419af7a8a6f54dc925163efd1d052",
       "span": 5
     },
     "Trap.cs:181-197": {
-      "sha256": "31d725a5e0f229c25cd880a58a840b8e4ed426a8f8c028fdc5c7a5829003905a",
+      "sha256": "3d5f2466278153a31b73e0d0850556674e0045343683579188b085211d0a7caa",
       "span": 17
     },
     "Trap.cs:182-194": {
-      "sha256": "b48d8b5f7480f8f1a0181cc3c364cb7af2a7158f6b8e975d38c3f8fd43e48bf0",
+      "sha256": "7ec1f51c57791a65520e11bca6f0eb3857c0ab8bfc143ed0918f48520d86441d",
       "span": 13
     },
     "Trap.cs:199-209": {
-      "sha256": "b4202abc7f642dfe896178d89788dae96ef5f8ade323eb36240508fbde58899b",
+      "sha256": "35018ab7dbe2c1f4b93d0cc5311712cf44a308a4e39d88ddd0932bec45d9bb98",
       "span": 11
     },
     "Trap.cs:67-104": {
@@ -1950,11 +1961,11 @@
       "span": 0
     },
     "UICharacterEditor.cs:921-1483": {
-      "sha256": "d6e3b78098b9e06afbd659451ae10a6a8712b12224bdb82ea1c0824500ddaa5d",
+      "sha256": "58e228d6b3b1c87d0c9d53c6c9c86a614ac9d08e3cf24bc17cf3262da9e53b2f",
       "span": 563
     },
     "UICharacterInfo.cs:206": {
-      "sha256": "f911cd631f38ebd5b1273cd65b55adef1e77ed96c5dbc6f04e8e963a71ab058e",
+      "sha256": "da3c8092e2a6d37dc8e9e3c61384da97c56bbe7b413967ece13359700929f66e",
       "span": 1
     },
     "UIChest.cs": {
@@ -2071,11 +2082,7 @@
       "sha256": "992d7d7cd03dd129a06d2e335f6c309c0274d7cc6e8c553316cfd91da0cb708e",
       "span": 7
     },
-    "UIMercenaries.cs:436-442": {
-      "sha256": "83a29343ee0d4a5d0e8c68fa2639cba2791d33c39f391757ff3620d0c43efb14",
-      "span": 7
-    },
-    "UIMercenaries.cs:735-737": {
+    "UIMercenaries.cs:725-727": {
       "sha256": "c4f8243a3dd233eeb857209df6ffde92a988abba6a2333deaab45b823a55c2ff",
       "span": 3
     },
@@ -2131,15 +2138,15 @@
       "span": 7
     },
     "Utils.cs:539-549": {
-      "sha256": "7acd81eb193ca7f5bf623de5f5f7d4826d196d0b12c4035d3d18b74ba96cecfd",
+      "sha256": "e763bedbefcb7e48f4cf10f602af6e1236e34bd9e4d3f0c96bba0e25a36ee848",
       "span": 11
     },
     "Utils.cs:563-572": {
-      "sha256": "c0a977050a6409e0797c5c3be0d24ca087d35da0e1034b2587d235c5645f9a44",
+      "sha256": "3b72a4554334f74c0b56babb75d7a7d5bf5df13ce27177025ed1b3491dfa7fb3",
       "span": 10
     },
     "Utils.cs:567-576": {
-      "sha256": "b38456b33fd50dfdf1ced43314c130d0d71739c7ee40b08a85f08a5e7939c5f3",
+      "sha256": "5756df7e584d7fe7ea8918ca303f4ed856d44ce4f09176190ff96f8893585602",
       "span": 10
     },
     "Utils.cs:601-606": {
@@ -2208,9 +2215,13 @@
       "sha256": "f5159fa9ec01bac6e70c48b276d80cce06729cc679cdf3c7935047299d5f8ac6",
       "span": 27
     },
-    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:13-15": {
-      "sha256": "f82f4fca80cfbdcd31bb792f323949b20b8d47d46e2f320ba275fcdcb398726e",
-      "span": 3
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20": {
+      "sha256": "2fad3cfa84fd4ec7390a42a05541fe2c4c7481d21e32a329f09577579a7c2159",
+      "span": 4
+    },
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40": {
+      "sha256": "df922b864fd95c98cc3102cc8e415f35d9788c3a278a0a043ac8605f4762e2dc",
+      "span": 14
     },
     "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48": {
       "sha256": "7c6b83cd92a51305c5555c1a2e39f5b071d6cb21e2d51b7846c44499397bdaa5",

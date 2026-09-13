@@ -146,7 +146,7 @@ export function companionSkillLevel(
   );
 }
 
-/** Source: server-scripts/Player.cs:7980-8187. */
+/** Source: server-scripts/Player.cs:8169-8376. */
 export function companionProgressionAttributes(
   archetype: CompanionArchetype,
   ownerLevel: number,

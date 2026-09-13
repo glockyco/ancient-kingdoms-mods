@@ -34,7 +34,7 @@ export function isInvulnerable(target: TargetCombatStats): boolean {
   );
 }
 
-/** Source: server-scripts/Combat.cs:1506-1545. */
+/** Source: server-scripts/Combat.cs:1528-1567. */
 export function hitAvoidanceProbability(args: {
   target: TargetCombatStats;
   casterLevel: number;
@@ -98,7 +98,7 @@ export function debuffLandingProbability(args: {
   return 1 - resistance;
 }
 
-/** Source: server-scripts/Combat.cs:812-838. */
+/** Source: server-scripts/Combat.cs:834-860. */
 export function mitigationFraction(
   target: TargetCombatStats,
   damageType: DamageKind,

@@ -79,7 +79,7 @@ const professionLinks: Record<string, AchievementRelationship> = {
   },
 };
 
-// Source: server-scripts/Player.cs:10872-10884 — these quest names unlock the two achievement IDs.
+// Source: server-scripts/Player.cs:11173-11185 — these quest names unlock the two achievement IDs.
 const questLinks: Record<string, AchievementRelationship> = {
   PLANESWALKER: {
     kind: "quest",
@@ -93,7 +93,7 @@ const questLinks: Record<string, AchievementRelationship> = {
   },
 };
 
-// Source: server-scripts/Player.cs:11110-11139 — each monster name maps directly to one achievement ID.
+// Source: server-scripts/Player.cs:11411-11440 — each monster name maps directly to one achievement ID.
 const monsterLinks: Record<string, AchievementRelationship> = {
   KILL_BLACK_DRAGON: {
     kind: "monster",

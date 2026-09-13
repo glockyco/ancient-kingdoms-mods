@@ -488,7 +488,7 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
  *
  * Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike),
  * TargetDamageSkill.cs:239,282, TargetProjectileSkill.cs:221-222,252-256,
- * Combat.cs:368,752,818-825,944-955 (DealDamageAt).
+ * Combat.cs:368,774,840-847,944-955 (DealDamageAt).
  */
 export function renderWildStrikeFormulaDisplay(): FormulaDisplay {
   return {

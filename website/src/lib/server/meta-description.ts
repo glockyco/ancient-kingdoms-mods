@@ -344,7 +344,7 @@ function buffPhrase(
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/PotionItem.cs:24-39,143-145 — non-bandage buff
   // levels can use Elixir Endurance; bandages return their base buff level.
-  // Source: server-scripts/Pet.cs:2076-2100 — mercenary utility potions
+  // Source: server-scripts/Pet.cs:2085-2109 — mercenary utility potions
   // resolve that level from the owner's veteran rank.
   const isBandage = item.cooldown_category === "Bandages";
   // Source: server-scripts/PotionItem.cs:8-17,41-124 — health, mana, energy,
@@ -434,7 +434,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10345-10380 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10623-10658 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -453,7 +453,7 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(): string {
-  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:113-121,577-581 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
+  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:113-121,581-585 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
   return `Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
 }
 
@@ -564,7 +564,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12276-12280,11245-11260
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12578-12582,11546-11561
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -1518,11 +1518,11 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Non-class owners (pet/mercenary/item/monster) gate at the *source* (the
   // pet's summon skill, the item's level requirement, etc.), not on this
   // skill row, so emitting "Unlocks at level X" there would mislead.
-  // Source: server-scripts/PlayerSkills.cs:456-458 — veteran upgrades check
+  // Source: server-scripts/PlayerSkills.cs:1259-1261 — veteran upgrades check
   //   regular character level, available veteran points, and spent points.
-  // Source: server-scripts/PlayerSkills.cs:891-908 — CmdUpgradeVeteran spends
+  // Source: server-scripts/PlayerSkills.cs:1772-1788 — UserCode_CmdUpgradeVeteran__Int32 subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:6755-6765 and ScriptableSkill.cs:220-222
+  // Source: server-scripts/Player.cs:6908-6918 and ScriptableSkill.cs:229-231
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1597,7 +1597,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:9748-9792,9816-9817 — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:10224-10268,10054-10055 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }

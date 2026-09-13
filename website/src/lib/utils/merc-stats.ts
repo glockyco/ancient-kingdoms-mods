@@ -10,7 +10,7 @@ import {
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 
-// Source: server-scripts/Player.cs:9549-9561 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:9787-9799 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -28,7 +28,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:9753-9790 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:9991-10028 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -73,7 +73,7 @@ export interface ClassDef {
 }
 
 // Source: server-scripts/Utils.cs:635-644 — class race pools.
-// Source: server-scripts/Player.cs:7980-8016,8017-8045,8046-8074,8075-8103,8104-8132,8133-8164 — per-class attribute divisors.
+// Source: server-scripts/Player.cs:8169-8205,8206-8234,8235-8263,8264-8292,8293-8321,8322-8353 — per-class attribute divisors.
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
     type: "Warrior",
@@ -124,7 +124,7 @@ export type Curves = Record<string, Curve>;
 const linear = (base: number, per: number, level: number): number =>
   base + per * (level - 1);
 
-// Source: server-scripts/Player.cs:7980-8016,8017-8045,8046-8074,8075-8103,8104-8132,8133-8164 — mercenary attributes are floor(level / class divisor).
+// Source: server-scripts/Player.cs:8169-8205,8206-8234,8235-8263,8264-8292,8293-8321,8322-8353 — mercenary attributes are floor(level / class divisor).
 export function attrs(cls: string, level: number): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [a, n] of Object.entries(CLASSES[cls].div))
@@ -132,13 +132,13 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9534-9551 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9772-9789 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(multiplyF32(hpCurve, mult)) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9534-9561 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9772-9799 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(multiplyF32(manaCurve, mult)) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:9753-9790 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:9991-10028 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(multiplyF32(level, factor)) - 1;
 
@@ -164,9 +164,9 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:9748-9749,9753-9790,9816-9828 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
-/** Source: server-scripts/Player.cs:9534-9561 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
-/** Source: server-scripts/Player.cs:7980-8016,8017-8045,8046-8074,8075-8103,8104-8132,8133-8164 — class attributes are rebuilt from level. */
+/** Source: server-scripts/Player.cs:9986-9987,9991-10028,10054-10066 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
+/** Source: server-scripts/Player.cs:9772-9799 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:8169-8205,8206-8234,8235-8263,8264-8292,8293-8321,8322-8353 — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
   veteran: number,
@@ -266,7 +266,7 @@ export function pRaceAtRecruiter(
   return pool.includes(race) ? 1 / pool.length : 0;
 }
 
-/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:13-15, server-scripts/UINpcTrading.cs:824-831 — purchase discount is Charisma×0.002, capped by the shop. */
+/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20, server-scripts/UINpcTrading.cs:824-831 — GetDiscountPurchaseBonus returns Charisma * 0.002 and CalculatePurchaseItemPrice caps it at 0.25. */
 export function charismaDiscount(charisma: number): number {
   return clamp(charisma, 0, 125) * 0.002;
 }

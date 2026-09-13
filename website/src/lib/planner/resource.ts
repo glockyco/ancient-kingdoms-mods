@@ -48,7 +48,7 @@ export function recoverResourceTicks(
   return current;
 }
 
-/** Source: server-scripts/Skills.cs:410-435. */
+/** Source: server-scripts/Skills.cs:414-439. */
 export function resourceRecoveryPerTick(args: {
   base: number;
   passivePercent: number;
@@ -78,7 +78,7 @@ export function spendResource(
   return setResourceCurrent(state, state.current - amount);
 }
 
-/** Source: server-scripts/Combat.cs:1561-1568. */
+/** Source: server-scripts/Combat.cs:1583-1590. */
 export function incomingPhysicalEnergyReturn(damage: number): number {
   if (damage <= 0) return 0;
   return floorToInt(

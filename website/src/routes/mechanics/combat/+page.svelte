@@ -240,7 +240,7 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Combat.cs:1506-1509,1512-1515,1518-1521,1524-1527,1530-1533 GetProbResist* (formula), Combat.cs:632-639 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
+        <!-- Source: server-scripts/Combat.cs:1528-1531,1534-1537,1540-1543,1546-1549,1552-1555 GetProbResist* (formula), Combat.cs:632-639 (damage); TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:104-139 (debuff & dispel landing) -->
         <h3 class="font-semibold mb-1">Resist Roll</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">P(resist) = clamp(
@@ -621,7 +621,7 @@ finalDamage = damage − reduction</pre>
                   class="py-1 text-muted-foreground">−INT×0.5</td
                 ></tr
               >
-              <!-- Source: server-scripts/Skills.cs:1481-1504 — poison/disease DoT adds round(bonusAttribute × 1.5), then applies Poison Resist mitigation. -->
+              <!-- Source: server-scripts/Skills.cs:1604-1620 — poison and disease debuffs add RoundToInt(bonusAttribute * 1.5) before resistance. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">DoT poison/disease</td><td
                   class="py-1 text-muted-foreground"
@@ -685,7 +685,7 @@ finalDamage = damage − reduction</pre>
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/Player.cs:3051-3054,3107-3109 -->
+              <!-- Source: server-scripts/Player.cs:3051-3054,3186-3188 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -695,7 +695,7 @@ finalDamage = damage − reduction</pre>
                   >castTime + clamp(delay×(1−haste)/25, 0.25, 2.0)</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:884-886 — castTimeEnd -= spellHasteBonus × castTime -->
+              <!-- Source: server-scripts/Skills.cs:902-904 — castTimeEnd -= spellHasteBonus × castTime -->
               <!-- Source: server-scripts/Combat.cs:346-358 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
               <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f (post-cast refractory, blocks next cast) -->
               <tr class="border-b border-border/40">
@@ -715,7 +715,7 @@ finalDamage = damage − reduction</pre>
                 >
                 <td class="py-2 font-mono text-xs">castTime + cooldown</td>
               </tr>
-              <!-- Source: server-scripts/Skills.cs:865-868 -->
+              <!-- Source: server-scripts/Skills.cs:888-891 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">merc_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -725,7 +725,7 @@ finalDamage = damage − reduction</pre>
                   >castTime + cooldown×(1−haste)</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:865-868 -->
+              <!-- Source: server-scripts/Skills.cs:888-891 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">merc_spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -772,7 +772,7 @@ finalDamage = damage − reduction</pre>
                 >
                 <td class="py-2 text-muted-foreground text-xs">No effect</td>
               </tr>
-              <!-- Source: server-scripts/Skills.cs:884-886, server-scripts/Combat.cs:346-358 -->
+              <!-- Source: server-scripts/Skills.cs:902-904, server-scripts/Combat.cs:346-358 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -844,7 +844,7 @@ finalDamage = damage − reduction</pre>
         <!-- Source: server-scripts/DamageSkill.cs:49-67 — TryConsumeWildStrike checks the active Ranger follow-up buff, rounds ×(1 + 0.1 × buff level), sets DamageType.Magic, and selects WildStrikeTargetEffect. -->
         <!-- Source: server-scripts/TargetDamageSkill.cs:239,282 — Apply consumes the override for a sword follow-up and passes it to DealDamageAt. -->
         <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 — Apply consumes the override for a bow follow-up and passes it to the projectile effect. -->
-        <!-- Source: server-scripts/Combat.cs:368,752,818-825,944-955 — DealDamageAt runs the common pipeline, mitigates Magic once, and instantiates the override effect. -->
+        <!-- Source: server-scripts/Combat.cs:368,774,840-847,944-955 — DealDamageAt runs the common pipeline, mitigates Magic once, and instantiates the override effect. -->
         <h3 id="wild-strike" class="font-semibold mb-1 scroll-mt-24">
           Wild Strike
         </h3>
@@ -926,7 +926,7 @@ finalDamage = damage − reduction</pre>
         <!-- Source: server-scripts/Monster.cs and Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s branch, RemoveRoot roll) -->
         <!-- Source: server-scripts/Monster.cs (RemoveRoot: removes -50 < speedBonus < 0) -->
         <!-- Source: server-scripts/Npc.cs (root/full-stop threshold speed <= -10f, timerRoot 1s branch, 10% fixed chance) -->
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Root</h3>
         <p class="text-sm text-muted-foreground">
           Fully stops movement. Unlike sleep, does not break when the target
@@ -938,11 +938,11 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Skills.cs:1421-1426 (BreakMezz — entity.speed <= -50f) -->
+        <!-- Source: server-scripts/Skills.cs:1542-1547 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
         <!-- Source: server-scripts/Skills.cs:233-236 (DoT tick also calls BreakMezz) -->
-        <!-- Source: server-scripts/Monster.cs:1489-1503 (monster self-break: magic resist roll every 6s) -->
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+        <!-- Source: server-scripts/Monster.cs:1544-1558 (monster self-break: magic resist roll every 6s) -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Sleep</h3>
         <p class="text-sm text-muted-foreground">
           Applied by debuff skills that reduce speed to &minus;50 or below. Any
@@ -965,7 +965,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:1106-1119, 1534-1544; Player.cs:11671-11675 -->
+        <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:11972-11976 -->
         <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
         <p class="text-sm text-muted-foreground">
           Parry is a timed counter. If an eligible player is casting Parry and
@@ -986,7 +986,7 @@ finalDamage = damage − reduction</pre>
 
       <div>
         <!-- Source: server-scripts/TargetDamageSkill.cs — slot 13 fires at procEffectProbability * 0.5f; durability > 0 guard on both slots -->
-        <!-- Source: server-scripts/Combat.cs:1018 — proc weapons and scrolls are excluded from the damage-shield trigger. -->
+        <!-- Source: server-scripts/Combat.cs:1235 — proc weapons and scrolls are excluded from the damage-shield trigger. -->
         <h3 class="font-semibold mb-1">Weapon On-Hit Procs</h3>
         <p class="text-sm text-muted-foreground">
           Weapons with an on-hit effect trigger it at the listed probability on
@@ -1009,7 +1009,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:139-161 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:179,257 (area cleanse counter rolls); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:441-463 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:179,257 (area cleanse counter rolls); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It
@@ -1070,7 +1070,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1507-1534 GetProbResistMagic/Disease -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:105-143 (resist gate), 173-205,209-234,238-250 (removal); AreaDebuffSkill.cs:104-139 (resist gate), 164-205,209-233,238-258 (removal); Combat.cs:1529-1556 GetProbResistMagic/Disease -->
         <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Dispel removes beneficial buffs from its target. Players cast it on

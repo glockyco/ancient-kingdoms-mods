@@ -51,7 +51,7 @@ export const STAT_DISPLAY_NAMES: Record<string, string> = {
 /**
  * Maps internal resource names to their game terminology.
  * Used for consumable items and other contexts.
- * Source: server-scripts/EquipmentItem.cs:674-682, UICharacterInfo.cs:206 — energy displayed as "Rage" throughout game UI
+ * Source: server-scripts/EquipmentItem.cs:703-711, UICharacterInfo.cs:206 — energy displayed as "Rage" throughout game UI
  */
 export const RESOURCE_DISPLAY_NAMES: Record<string, string> = {
   health: "Hit Points",

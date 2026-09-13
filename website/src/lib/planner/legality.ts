@@ -99,7 +99,7 @@ function predecessorIsLearned(
 
 /**
  * Replays skill upgrades against the same monotone gates as `PlayerSkills.CanUpgrade`.
- * Source: server-scripts/PlayerSkills.cs:480-535.
+ * Source: server-scripts/PlayerSkills.cs:1283-1338.
  */
 export function evaluateSkillAllocation(
   input: SkillAllocationInput,
