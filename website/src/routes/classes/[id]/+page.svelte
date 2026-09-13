@@ -135,13 +135,14 @@
     return formatLinearDuration(lv.base_value, lv.bonus_per_level);
   }
 
-  // Cost column header: "Mana Cost" for mana classes, "Rage Cost" for energy classes
   // untrack: resource_type is static (prerendered), never changes at runtime
-  const costColumnHeader = untrack(() =>
-    data.class.resource_type === "energy" ? "Rage Cost" : "Mana Cost",
-  );
+  const costColumnHeader = untrack(() => {
+    if (data.class.resource_type === "energy") return "Rage Cost";
+    if (data.class.resource_type === "songs") return "Active Song Slot";
+    return "Mana Cost";
+  });
 
-  // Which cost field to use for this class
+  // Which consumable cost field to use. Bard songs occupy a slot instead.
   const costField = untrack(() =>
     data.class.resource_type === "energy" ? "energy_cost" : "mana_cost",
   );
@@ -254,9 +255,13 @@
       header: costColumnHeader,
       enableSorting: false,
       accessorFn: (row) =>
-        formatSkillCost(
-          costField === "energy_cost" ? row.energy_cost : row.mana_cost,
-        ),
+        data.class.resource_type === "songs"
+          ? row.is_bard_song
+            ? "1"
+            : "—"
+          : formatSkillCost(
+              costField === "energy_cost" ? row.energy_cost : row.mana_cost,
+            ),
     },
     {
       id: "cooldown",

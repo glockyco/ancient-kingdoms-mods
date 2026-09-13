@@ -102,6 +102,7 @@ export interface SkillDetailView {
   // Healing
   heals_health: LinearValue | null;
   heals_mana: LinearValue | null;
+  charmed_damage_percent: LinearValue | null;
   can_heal_self: boolean;
   can_heal_others: boolean;
 
@@ -183,6 +184,11 @@ export interface SkillDetailView {
   is_blindness: boolean;
   is_enrage: boolean;
   is_double_exp_spell: boolean;
+  scales_with_charisma: boolean;
+  is_bard_song: boolean;
+  is_bard_charm: boolean;
+  is_bard_final_cadence: boolean;
+  is_bard_virtuosity: boolean;
   is_permanent: boolean;
   is_only_for_magic_classes: boolean;
   remain_after_death: boolean;
@@ -196,6 +202,12 @@ export interface SkillDetailView {
   is_melee_debuff: boolean;
   is_magic_debuff: boolean;
   prob_ignore_cleanse: number;
+
+  // Passive mechanics
+  additional_active_bard_songs: number;
+  bard_song_duration_bonus_per_level: number;
+  extra_gather_item_chance: number;
+  food_and_drink_buff_duration_bonus_per_level: number;
 
   // Summon fields
   summoned_monster_id: string | null;
@@ -324,12 +336,12 @@ export type TimingModel =
   // Warrior and Rogue generate Rage; all other classes use Mana.
   | "player_auto" // e.g. crush_strike
   // interval = cast_time × (1 − spellHaste) + 0.75s refractory; hard cap: 50% (Combat.cs:314-324).
-  // Source: server-scripts/Skills.cs:884-886, server-scripts/Combat.cs:346-358, server-scripts/Player.cs:refractoryPeriodSkill
+  // Source: server-scripts/Skills.cs:902-904, server-scripts/Combat.cs:346-358, server-scripts/Player.cs:refractoryPeriodSkill
   | "player_spell" // e.g. fire_blast, wind_shock, smite, mystic_spark
   | "companion" // interval = cast_time + cooldown; companions, familiars, no-weapon followup
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
   // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by spell haste (cap 50%), cooldown not.
-  // Source: server-scripts/Skills.cs:884-886 (cast reduction), server-scripts/Skills.cs:1009-1012 (flat cooldown), server-scripts/Combat.cs:346-358 (cap)
+  // Source: server-scripts/Skills.cs:902-904 (cast reduction), server-scripts/Skills.cs:1009-1012 (flat cooldown), server-scripts/Combat.cs:346-358 (cap)
   | "merc_spell" // e.g. flame_blast, gale_burst, divine_smite
   // Monster.cs and Npc.cs both call FinishCastMeleeAttackMonster which haste-reduces
   // cooldown unconditionally regardless of isSpell — one model covers both.
@@ -344,6 +356,7 @@ export type DebuffBonusAttrKind =
   | "str" // is_melee_debuff=1 — e.g. rangers_mark
   | "dex" // is_poison_debuff=1 or is_disease_debuff=1 — e.g. poison_rend
   | "int" // default (magic/elemental debuff) — e.g. symbol_of_the_arbiter
+  | "cha" // Bard songs use Charisma as bonusAttribute
   | "none"; // monster/NPC/companion: 0 — e.g. ancient_curse
 
 export interface DebuffContext {

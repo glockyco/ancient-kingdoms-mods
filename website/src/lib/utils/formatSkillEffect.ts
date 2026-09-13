@@ -50,6 +50,7 @@ export interface Skill {
   // Healing fields
   heals_health: string | LinearValue | null;
   heals_mana?: string | LinearValue | null;
+  charmed_damage_percent?: string | LinearValue | null;
   is_resurrect_skill?: boolean;
   is_balance_health?: boolean;
 
@@ -110,6 +111,15 @@ export interface Skill {
   is_teleport?: boolean;
   is_blindness?: boolean;
   is_enrage?: boolean;
+  scales_with_charisma?: boolean;
+  is_bard_song?: boolean;
+  is_bard_charm?: boolean;
+  is_bard_final_cadence?: boolean;
+  is_bard_virtuosity?: boolean;
+  additional_active_bard_songs?: number;
+  bard_song_duration_bonus_per_level?: number;
+  extra_gather_item_chance?: number;
+  food_and_drink_buff_duration_bonus_per_level?: number;
 
   // Summon fields
   summoned_monster_id?: string | null;
@@ -485,7 +495,7 @@ function formatBuffDebuffStats(
 
   // 1. Special flags (binary game-changers that define the skill's identity)
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
-  // Skills.cs:1409-1417; Monster.cs:2704-2710,2740-2746 — hasDoubleExp() doubles XP awarded on kill.
+  // Skills.cs:1530-1538; Monster.cs:3125,3161 — hasDoubleExp() doubles party and solo kill XP.
   if (skill.is_double_exp_spell) parts.push("2× XP from kills");
   if (skill.is_dispel) parts.push("dispels buffs");
   // Source: server-scripts/TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff) — cleanse matches on the skill's own debuff type flags
@@ -511,8 +521,8 @@ function formatBuffDebuffStats(
   if (skill.is_blindness) parts.push("blinds");
   if (skill.is_invisibility) parts.push("grants invis");
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
-  // Source: server-scripts/BuffSkill.cs:28,61-71 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6199-6209 (ReSkinPlayer picks the illusion race)
+  // Source: server-scripts/BuffSkill.cs:32,65-75 (illusionRace, HasAppearanceIllusion),
+  // server-scripts/Player.cs:6352-6362 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
 
@@ -819,7 +829,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   gathering: "gather herbs and reagents",
   mining: "mine ore and minerals",
   opening: "open locked chests",
-  // Source: server-scripts/GatherItem.cs:317-325,353-374 — Lockpicking allows opening locked chests
+  // Source: server-scripts/GatherItem.cs:317-325,356-377 — Lockpicking allows opening locked chests
   // using lockpicks instead of the specific key. 80% failure chance, consumes one lockpick per attempt.
   lockpicking: "open locked chests with lockpicks (20% success chance)",
   blushburst: "cosmetic visual effect",
@@ -899,6 +909,39 @@ export function formatSkillEffect(
   if (skill.skill_type === "passive" && skill.is_enrage) {
     parts.push("+50-75% damage below 10% HP");
   }
+  if (skill.is_bard_song) parts.push("Bard song");
+  if (skill.is_bard_charm) {
+    const charmedDamage = parseLinearValue(
+      skill.charmed_damage_percent ?? null,
+    );
+    parts.push(
+      charmedDamage
+        ? `charms target at ${formatLinearPercent(charmedDamage, options)} damage`
+        : "charms target",
+    );
+  }
+  if (skill.additional_active_bard_songs) {
+    parts.push(`+${skill.additional_active_bard_songs} active Bard song`);
+  }
+  if (skill.bard_song_duration_bonus_per_level) {
+    parts.push(
+      `+${formatPercent(skill.bard_song_duration_bonus_per_level)} song duration per skill lvl`,
+    );
+  }
+  if (skill.extra_gather_item_chance) {
+    parts.push(
+      `${formatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item`,
+    );
+  }
+  if (skill.food_and_drink_buff_duration_bonus_per_level) {
+    parts.push(
+      `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per skill lvl`,
+    );
+  }
+  if (skill.is_bard_virtuosity) {
+    parts.push("damage bonuses require the active-song limit");
+  }
+  if (skill.scales_with_charisma) parts.push("scales with CHA");
 
   // 6. Buffs/debuffs
   // Always show buff/debuff stats (fixes bug where stats were suppressed if damage was present)

@@ -50,6 +50,27 @@ internal static class SkillEffectFormatter
         // Source: server-scripts/Combat.cs:770-803 (enrage scan and damage bonus)
         if (skill.skill_type == "passive" && skill.is_enrage)
             parts.Add("+50-75% damage below 10% HP");
+        if (skill.is_bard_song)
+            parts.Add("Bard song");
+        if (skill.is_bard_charm)
+        {
+            var charmedDamage = ParseLinearValue(skill.charmed_damage_percent);
+            parts.Add(charmedDamage != null
+                ? $"charms target at {FormatLinearPercent(charmedDamage)} damage"
+                : "charms target");
+        }
+        if (skill.additional_active_bard_songs != 0)
+            parts.Add($"+{skill.additional_active_bard_songs} active Bard song");
+        if (skill.bard_song_duration_bonus_per_level != 0)
+            parts.Add($"+{FormatPercent(skill.bard_song_duration_bonus_per_level)} song duration per skill lvl");
+        if (skill.extra_gather_item_chance != 0)
+            parts.Add($"{FormatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item");
+        if (skill.food_and_drink_buff_duration_bonus_per_level != 0)
+            parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per skill lvl");
+        if (skill.is_bard_virtuosity)
+            parts.Add("damage bonuses require the active-song limit");
+        if (skill.scales_with_charisma)
+            parts.Add("scales with CHA");
 
         if (skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff" or "passive")
             FormatBuffDebuffStats(skill, parts);
@@ -221,6 +242,8 @@ internal static class SkillEffectFormatter
 
     private static void FormatBuffDebuffStats(SkillEffectInput skill, List<string> parts)
     {
+        var initialPartCount = parts.Count;
+
         // 1. Special flags
         if (skill.is_double_exp_spell)
             parts.Add("2× XP from kills");
@@ -250,8 +273,8 @@ internal static class SkillEffectFormatter
         if (skill.is_invisibility)
             parts.Add("grants invis");
         // A buff carrying illusionRace redraws the wearer as that race until it ends.
-        // Source: server-scripts/BuffSkill.cs:28,61-71 (illusionRace, HasAppearanceIllusion),
-        // server-scripts/Player.cs:6199-6209 (ReSkinPlayer picks the illusion race)
+        // Source: server-scripts/BuffSkill.cs:32,65-75 (illusionRace, HasAppearanceIllusion),
+        // server-scripts/Player.cs:6352-6362 (ReSkinPlayer picks the illusion race)
         if (!string.IsNullOrWhiteSpace(skill.illusion_race))
             parts.Add($"{skill.illusion_race} illusion");
         if (skill.is_mana_shield)
@@ -367,7 +390,7 @@ internal static class SkillEffectFormatter
         AddSignedValue(parts, ParseLinearValue(skill.charisma_bonus), "cha", true);
 
         // Debuff type tags (only if nothing else and it's a debuff)
-        if (parts.Count == 0 && skill.skill_type is "area_debuff" or "target_debuff")
+        if (parts.Count == initialPartCount && skill.skill_type is "area_debuff" or "target_debuff")
         {
             if (skill.is_poison_debuff) parts.Add("poison DoT");
             else if (skill.is_fire_debuff) parts.Add("fire DoT");

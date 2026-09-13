@@ -29,6 +29,7 @@ internal static class SkillEffectExtractor
         PopulateHeal(skill, input);
         PopulateTargetBuff(skill, input);
         PopulateBonus(skill, input);
+        PopulateBard(skill, input);
         PopulateSummon(skill, input);
 
         return input;
@@ -45,6 +46,7 @@ internal static class SkillEffectExtractor
             if (skill.TryCast<FrontalProjectilesSkill>() != null) return "frontal_projectiles";
             if (skill.TryCast<TargetDamageSkill>() != null) return "target_damage";
             if (skill.TryCast<TargetProjectileSkill>() != null) return "target_projectile";
+            if (skill.TryCast<BardFinalCadenceSkill>() != null) return "area_damage";
             return "damage";
         }
 
@@ -66,6 +68,7 @@ internal static class SkillEffectExtractor
             if (skill.TryCast<AreaDebuffSkill>() != null) return "area_debuff";
             if (skill.TryCast<TargetBuffSkill>() != null) return isDebuff ? "target_debuff" : "target_buff";
             if (skill.TryCast<TargetDebuffSkill>() != null) return "target_debuff";
+            if (skill.TryCast<BardSongSkill>() != null) return "area_buff";
             return isDebuff ? "debuff" : "buff";
         }
 
@@ -202,6 +205,7 @@ internal static class SkillEffectExtractor
             input.fear_resist_chance_bonus = new LinearValue(buffSkill.fearResistChanceBonus.baseValue, buffSkill.fearResistChanceBonus.bonusPerLevel);
             input.is_blindness = buffSkill.isBlindness;
             input.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
+            input.scales_with_charisma = buffSkill.scalesWithCharisma;
 
             var areaBuffSkill = skill.TryCast<AreaBuffSkill>();
             if (areaBuffSkill != null)
@@ -210,7 +214,40 @@ internal static class SkillEffectExtractor
 
         var passiveSkill = skill.TryCast<PassiveSkill>();
         if (passiveSkill != null)
+        {
             input.is_enrage = passiveSkill.isEnrage;
+            input.additional_active_bard_songs = passiveSkill.additionalActiveBardSongs;
+            input.bard_song_duration_bonus_per_level = passiveSkill.bardSongDurationBonusPerLevel;
+            input.extra_gather_item_chance = passiveSkill.extraGatherItemChance;
+            input.food_and_drink_buff_duration_bonus_per_level = passiveSkill.foodAndDrinkBuffDurationBonusPerLevel;
+        }
+    }
+
+    private static void PopulateBard(ScriptableSkill skill, SkillEffectInput input)
+    {
+        var bardCharm = skill.TryCast<BardCharmSongSkill>();
+        input.is_bard_song = skill.TryCast<BardSongSkill>() != null
+            || skill.TryCast<BardAreaSongSkill>() != null
+            || bardCharm != null;
+
+        if (bardCharm != null)
+        {
+            input.is_bard_charm = true;
+            input.charmed_damage_percent = new LinearValue(
+                bardCharm.charmedDamagePercent.baseValue,
+                bardCharm.charmedDamagePercent.bonusPerLevel);
+        }
+
+        var finalCadence = skill.TryCast<BardFinalCadenceSkill>();
+        if (finalCadence != null)
+        {
+            input.is_bard_final_cadence = true;
+            input.heals_health = new LinearValue(
+                finalCadence.healsHealth.baseValue,
+                finalCadence.healsHealth.bonusPerLevel);
+        }
+
+        input.is_bard_virtuosity = skill.TryCast<BardVirtuositySkill>() != null;
     }
 
     private static string ExportDamageType(DamageType damageType)

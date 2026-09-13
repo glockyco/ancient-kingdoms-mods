@@ -101,6 +101,7 @@ export interface ClassSkill {
   break_armor_prob: number;
   heals_health: string | null;
   heals_mana: string | null;
+  charmed_damage_percent: string | null;
   is_resurrect_skill: boolean;
   is_balance_health: boolean;
   health_max_bonus: string | null;
@@ -152,6 +153,15 @@ export interface ClassSkill {
   is_teleport: boolean;
   is_blindness: boolean;
   is_enrage: boolean;
+  scales_with_charisma: boolean;
+  is_bard_song: boolean;
+  is_bard_charm: boolean;
+  is_bard_final_cadence: boolean;
+  is_bard_virtuosity: boolean;
+  additional_active_bard_songs: number;
+  bard_song_duration_bonus_per_level: number;
+  extra_gather_item_chance: number;
+  food_and_drink_buff_duration_bonus_per_level: number;
   summoned_monster_id: string | null;
   summoned_monster_name: string | null;
   summoned_monster_level: number | null;
@@ -216,6 +226,7 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.break_armor_prob,
       s.heals_health,
       s.heals_mana,
+      s.charmed_damage_percent,
       s.is_resurrect_skill,
       s.is_balance_health,
       s.health_max_bonus,
@@ -267,6 +278,15 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.is_teleport,
       s.is_blindness,
       s.is_enrage,
+      s.scales_with_charisma,
+      s.is_bard_song,
+      s.is_bard_charm,
+      s.is_bard_final_cadence,
+      s.is_bard_virtuosity,
+      s.additional_active_bard_songs,
+      s.bard_song_duration_bonus_per_level,
+      s.extra_gather_item_chance,
+      s.food_and_drink_buff_duration_bonus_per_level,
       s.summoned_monster_id,
       m.name as summoned_monster_name,
       s.summoned_monster_level,

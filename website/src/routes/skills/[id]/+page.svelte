@@ -844,7 +844,7 @@
   /**
    * How each damage type is mitigated and avoided, mirroring the game one row per type.
    *
-   * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:820-837 — the
+   * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:842-859 — the
    * per-damage-type switch, each read multiplied by 0.0005.
    * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:652-659 —
    * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
@@ -1848,8 +1848,8 @@
               </p>
             {/if}
             {#if skill.is_invisibility}
-              <!-- Source: server-scripts/Entity.cs:341-357 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
-              <!-- Source: server-scripts/Skills.cs:876, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
+              <!-- Source: server-scripts/Entity.cs:346-362 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
+              <!-- Source: server-scripts/Skills.cs:983, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
               <p class="text-purple-600 dark:text-purple-400">
                 Grants Invisibility{#if skill.ignores_see_invisibility}, hidden
                   even from monsters that see invisibility{/if}. Casting a skill
@@ -2290,7 +2290,7 @@
                     </p>
                   {/if}
                 {:else if ctx.model === "player_spell"}
-                  <!-- Source: server-scripts/Skills.cs:884-886, server-scripts/Combat.cs:346-358 -->
+                  <!-- Source: server-scripts/Skills.cs:902-904, server-scripts/Combat.cs:346-358 -->
                   <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) + 0.75s
@@ -2309,7 +2309,7 @@
                     haste (cap: &minus;80%).
                   </p>
                 {:else if ctx.model === "merc_spell"}
-                  <!-- Source: server-scripts/Skills.cs:884-886, server-scripts/Skills.cs:1009-1012, server-scripts/Combat.cs:346-358 -->
+                  <!-- Source: server-scripts/Skills.cs:902-904, server-scripts/Skills.cs:1009-1012, server-scripts/Combat.cs:346-358 -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) +
                     cooldown
@@ -2358,70 +2358,87 @@
                       ? "STR"
                       : ctx.bonusAttrKind === "dex"
                         ? "DEX"
-                        : "INT"}
+                        : ctx.bonusAttrKind === "cha"
+                          ? "CHA"
+                          : "INT"}
                   </p>
-                  <!-- Source: server-scripts/Buff.cs:97-111 — defense getter, negative branch: bonusAttribute × 0.4 -->
-                  <dl
-                    class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
-                  >
-                    {#if hasNonZeroField(skill.defense_bonus)}
-                      <dt class="text-muted-foreground">Defense reduction</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.magic_resist_bonus)}
-                      <dt class="text-muted-foreground">
-                        Magic Resist reduction
-                      </dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.poison_resist_bonus)}
-                      <dt class="text-muted-foreground">
-                        Poison Resist reduction
-                      </dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.fire_resist_bonus)}
-                      <dt class="text-muted-foreground">
-                        Fire Resist reduction
-                      </dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.cold_resist_bonus)}
-                      <dt class="text-muted-foreground">
-                        Cold Resist reduction
-                      </dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.disease_resist_bonus)}
-                      <dt class="text-muted-foreground">
-                        Disease Resist reduction
-                      </dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.damage_bonus)}
-                      <dt class="text-muted-foreground">Damage reduction</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.magic_damage_bonus)}
-                      <dt class="text-muted-foreground">Magic Dmg reduction</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
-                    {/if}
-                    {#if hasNonZeroField(skill.healing_per_second_bonus)}
-                      <dt class="text-muted-foreground">DoT</dt>
-                      {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                        <!-- Source: server-scripts/Skills.cs:1481-1504 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
-                        <dd>
-                          skillValue(level) + round(bonusAttribute &times; 1.5)
-                        </dd>
-                      {:else if skill.is_melee_debuff}
-                        <!-- melee (str × 0.5) or scroll of melee type -->
-                        <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
-                      {:else}
-                        <!-- other (int × 1.25) or scroll of other type -->
-                        <dd>skillValue(level) + bonusAttribute &times; 1.25</dd>
+                  {#if skill.scales_with_charisma}
+                    <!-- Source: server-scripts/Buff.cs:271-288; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40 — eligible Bard effects multiply their base value by 1 + min(CHA × 0.001, 2). -->
+                    <p class="font-mono">
+                      scaledValue = skillValue(level) &times; (1 + min(CHA
+                      &times; 0.001, 2))
+                    </p>
+                  {:else}
+                    <!-- Source: server-scripts/Buff.cs:97-111 — defense getter, negative branch: bonusAttribute × 0.4 -->
+                    <dl
+                      class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
+                    >
+                      {#if hasNonZeroField(skill.defense_bonus)}
+                        <dt class="text-muted-foreground">Defense reduction</dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
                       {/if}
-                    {/if}
-                  </dl>
+                      {#if hasNonZeroField(skill.magic_resist_bonus)}
+                        <dt class="text-muted-foreground">
+                          Magic Resist reduction
+                        </dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                      {/if}
+                      {#if hasNonZeroField(skill.poison_resist_bonus)}
+                        <dt class="text-muted-foreground">
+                          Poison Resist reduction
+                        </dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                      {/if}
+                      {#if hasNonZeroField(skill.fire_resist_bonus)}
+                        <dt class="text-muted-foreground">
+                          Fire Resist reduction
+                        </dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                      {/if}
+                      {#if hasNonZeroField(skill.cold_resist_bonus)}
+                        <dt class="text-muted-foreground">
+                          Cold Resist reduction
+                        </dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                      {/if}
+                      {#if hasNonZeroField(skill.disease_resist_bonus)}
+                        <dt class="text-muted-foreground">
+                          Disease Resist reduction
+                        </dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                      {/if}
+                      {#if hasNonZeroField(skill.damage_bonus)}
+                        <dt class="text-muted-foreground">Damage reduction</dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
+                      {/if}
+                      {#if hasNonZeroField(skill.magic_damage_bonus)}
+                        <dt class="text-muted-foreground">
+                          Magic Dmg reduction
+                        </dt>
+                        <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
+                      {/if}
+                      {#if hasNonZeroField(skill.healing_per_second_bonus)}
+                        <dt class="text-muted-foreground">DoT</dt>
+                        {#if skill.is_poison_debuff || skill.is_disease_debuff}
+                          <!-- Source: server-scripts/Skills.cs:1604-1620 — the poison and disease branch adds RoundToInt(bonusAttribute * 1.5) before resistance. -->
+                          <dd>
+                            skillValue(level) + round(bonusAttribute &times;
+                            1.5)
+                          </dd>
+                        {:else if skill.is_melee_debuff}
+                          <!-- melee (str × 0.5) or scroll of melee type -->
+                          <dd>
+                            skillValue(level) + bonusAttribute &times; 0.5
+                          </dd>
+                        {:else}
+                          <!-- other (int × 1.25) or scroll of other type -->
+                          <dd>
+                            skillValue(level) + bonusAttribute &times; 1.25
+                          </dd>
+                        {/if}
+                      {/if}
+                    </dl>
+                  {/if}
                 {/if}
               </div>
             {/each}
@@ -2429,7 +2446,7 @@
         {/if}
 
         <!-- D2. Resist Chance — shown for debuffs and dispels (both roll to resist); hidden for cleanse (no resist roll) -->
-        <!-- Source: server-scripts/Combat.cs:1501-1534 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
+        <!-- Source: server-scripts/Combat.cs:1523-1556 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:104-139 -->
         {#if isDebuffType && !skill.is_cleanse && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
@@ -2453,7 +2470,7 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); BuffSkill.cs:139-161 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); BuffSkill.cs:441-463 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
@@ -2482,7 +2499,7 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
-        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:139-161 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:18 (3 counters); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:441-463 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:19 (3 counters); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">
@@ -2515,7 +2532,7 @@
           {@const playerCast =
             skill.is_scroll || skill.player_classes.length > 0}
           <div class="space-y-1">
-            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1507-1534 GetProbResistMagic/Disease -->
+            <!-- Source: server-scripts/TargetDebuffSkill.cs:105-143 (resist gate), 173-205,209-234,238-250 (removal); AreaDebuffSkill.cs:104-139 (resist gate), 164-205,209-233,238-258 (removal); Combat.cs:1529-1556 GetProbResistMagic/Disease -->
             <h3 class="font-semibold">
               <a
                 href="/mechanics/combat#dispel"
@@ -2602,14 +2619,14 @@
           <!-- Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike) -->
           <!-- Source: server-scripts/TargetDamageSkill.cs:239,282 (Apply) -->
           <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 (Apply) -->
-          <!-- Source: server-scripts/Combat.cs:368,752,818-825,944-955 (DealDamageAt) -->
+          <!-- Source: server-scripts/Combat.cs:368,774,840-847,944-955 (DealDamageAt) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Wild Strike</h3>
             <FormulaDisplay display={renderWildStrikeFormulaDisplay()} />
           </div>
         {/if}
         {#if skill.id === "parry"}
-          <!-- Source: server-scripts/Combat.cs:1106-1119, 1534-1544; Player.cs:11671-11675 -->
+          <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:11972-11976 -->
           <div class="space-y-1">
             <h3 class="font-semibold">
               <a
@@ -2702,7 +2719,7 @@
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -10 && skill.speed_bonus.base_value > -50}
           <!-- Source: server-scripts/Monster.cs and Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s, RemoveRoot) -->
           <!-- Source: server-scripts/Npc.cs (root/full-stop threshold speed <= -10f, timerRoot 1s, 10% fixed) -->
-          <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+          <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Root</h3>
             <p class="text-muted-foreground">
@@ -2715,10 +2732,10 @@
           </div>
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
-          <!-- Source: server-scripts/Skills.cs:1421-1426 (BreakMezz — entity.speed <= -50f) -->
+          <!-- Source: server-scripts/Skills.cs:1542-1547 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:DealDamageAt (any damage > 0 calls BreakMezz) -->
-          <!-- Source: server-scripts/Monster.cs:1489-1503 (monster self-break roll every 6s) -->
-          <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+          <!-- Source: server-scripts/Monster.cs:1544-1558 (monster self-break roll every 6s) -->
+          <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
             <p class="text-muted-foreground">
@@ -2742,7 +2759,7 @@
         {/if}
         {#if hasLinearValue(skill.block_chance_bonus)}
           <!-- Source: server-scripts/Combat.cs:313-323 (blockChance property) -->
-          <!-- Source: server-scripts/Skills.cs:535-550 (GetBlockChanceBonus) -->
+          <!-- Source: server-scripts/Skills.cs:539-554 (GetBlockChanceBonus) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Block Chance</h3>
             <p class="text-muted-foreground">
@@ -2753,7 +2770,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.accuracy_bonus)}
-          <!-- Source: server-scripts/Combat.cs:1416-1419 (GetProbResistMeleeDamage, all GetProbResist*) -->
+          <!-- Source: server-scripts/Combat.cs:1438-1441 (GetProbResistMeleeDamage, all GetProbResist*) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Accuracy</h3>
             <p class="text-muted-foreground">
@@ -2848,8 +2865,8 @@
           </div>
         {/if}
         {#if skill.is_blindness}
-          <!-- Source: server-scripts/Player.cs:10956-10988 (TargetRpcAddBlind/RemoveBlind) -->
-          <!-- Source: server-scripts/Skills.cs:1131-1133 (isBlindness check, Player only) -->
+          <!-- Source: server-scripts/Player.cs:11257-11289 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Skills.cs:1213-1215 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>
             <p class="text-muted-foreground">

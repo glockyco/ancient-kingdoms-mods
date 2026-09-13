@@ -159,6 +159,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     // Healing
     heals_health: parseLinear(skillRaw.heals_health),
     heals_mana: parseLinear(skillRaw.heals_mana),
+    charmed_damage_percent: parseLinear(skillRaw.charmed_damage_percent),
     can_heal_self: Boolean(skillRaw.can_heal_self),
     can_heal_others: Boolean(skillRaw.can_heal_others),
 
@@ -249,6 +250,11 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_blindness: Boolean(skillRaw.is_blindness),
     is_enrage: Boolean(skillRaw.is_enrage),
     is_double_exp_spell: Boolean(skillRaw.is_double_exp_spell),
+    scales_with_charisma: Boolean(skillRaw.scales_with_charisma),
+    is_bard_song: Boolean(skillRaw.is_bard_song),
+    is_bard_charm: Boolean(skillRaw.is_bard_charm),
+    is_bard_final_cadence: Boolean(skillRaw.is_bard_final_cadence),
+    is_bard_virtuosity: Boolean(skillRaw.is_bard_virtuosity),
     is_permanent: Boolean(skillRaw.is_permanent),
     is_only_for_magic_classes: Boolean(skillRaw.is_only_for_magic_classes),
     remain_after_death: Boolean(skillRaw.remain_after_death),
@@ -262,6 +268,18 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_melee_debuff: Boolean(skillRaw.is_melee_debuff),
     is_magic_debuff: Boolean(skillRaw.is_magic_debuff),
     prob_ignore_cleanse: (skillRaw.prob_ignore_cleanse as number) || 0,
+
+    // Passive mechanics
+    additional_active_bard_songs: Number(
+      skillRaw.additional_active_bard_songs ?? 0,
+    ),
+    bard_song_duration_bonus_per_level: Number(
+      skillRaw.bard_song_duration_bonus_per_level ?? 0,
+    ),
+    extra_gather_item_chance: Number(skillRaw.extra_gather_item_chance ?? 0),
+    food_and_drink_buff_duration_bonus_per_level: Number(
+      skillRaw.food_and_drink_buff_duration_bonus_per_level ?? 0,
+    ),
 
     // Summon fields
     summoned_monster_id: skillRaw.summoned_monster_id as string | null,

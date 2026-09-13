@@ -47,6 +47,7 @@ internal sealed class SkillEffectInput
     // Healing
     public LinearValue heals_health { get; set; }
     public LinearValue heals_mana { get; set; }
+    public LinearValue charmed_damage_percent { get; set; }
     public bool is_resurrect_skill { get; set; }
     public bool is_balance_health { get; set; }
 
@@ -106,6 +107,15 @@ internal sealed class SkillEffectInput
     public bool is_teleport { get; set; }
     public bool is_blindness { get; set; }
     public bool is_enrage { get; set; }
+    public bool scales_with_charisma { get; set; }
+    public bool is_bard_song { get; set; }
+    public bool is_bard_charm { get; set; }
+    public bool is_bard_final_cadence { get; set; }
+    public bool is_bard_virtuosity { get; set; }
+    public int additional_active_bard_songs { get; set; }
+    public double bard_song_duration_bonus_per_level { get; set; }
+    public double extra_gather_item_chance { get; set; }
+    public double food_and_drink_buff_duration_bonus_per_level { get; set; }
 
     // Summon
     public string summoned_monster_id { get; set; }

@@ -15,7 +15,7 @@ export interface ClassConfig {
  * Canonical class name type (lowercase, as stored in database)
  */
 export type ClassName =
-  "warrior" | "cleric" | "ranger" | "rogue" | "wizard" | "druid";
+  "warrior" | "cleric" | "ranger" | "rogue" | "wizard" | "druid" | "bard";
 
 /**
  * Configuration for each player class.
@@ -29,6 +29,7 @@ export const CLASS_CONFIG: Record<ClassName, ClassConfig> = {
   rogue: { abbrev: "ROG", color: "#74498c", name: "Rogue" },
   wizard: { abbrev: "WIZ", color: "#2a5073", name: "Wizard" },
   druid: { abbrev: "DRU", color: "#4a8f58", name: "Druid" },
+  bard: { abbrev: "BRD", color: "#8f4a6f", name: "Bard" },
 };
 
 /** Default config for unknown classes */
@@ -57,6 +58,7 @@ export const ALL_CLASS_IDS = [
   "rogue",
   "wizard",
   "druid",
+  "bard",
 ] as const;
 
 /**
@@ -69,11 +71,13 @@ export function formatClassName(classId: string): string {
 
 /**
  * Resource type mapping (database ID -> display name)
- * Source: server-scripts/EquipmentItem.cs:674-682, UICharacterInfo.cs:206 — energy field is displayed as "Rage" throughout the game UI
+ * Source: server-scripts/EquipmentItem.cs:703-711, UICharacterInfo.cs:206 — energy is displayed as "Rage".
+ * Source: server-scripts/Player.cs:1470-1484 — Bard uses an "Active Songs" counter.
  */
 const RESOURCE_DISPLAY_NAMES: Record<string, string> = {
   energy: "Rage",
   mana: "Mana",
+  songs: "Active Songs",
 };
 
 /**

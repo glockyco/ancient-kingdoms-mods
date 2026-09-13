@@ -461,9 +461,8 @@ export function computeMechanicsSpec(
 
   // ---------- timing ----------
   // Only populated when followup_default_attack=true.
-  // Source: server-scripts/Skills.cs:1004-1007 — followupDefaultAttack + !isSpell + isMercenary → cooldown×(1-haste), Combat.cs:334-343 (haste cap)
-  // Source: server-scripts/Player.cs:3226-3267 — weapon-delay refractory for all non-spell weapon skills (!isSpell && hasReqWeapon)
-  // Source: server-scripts/Player.cs:3226-3267 — spell skills get flat 0.75s refractory (isSpell=true, no required_weapon_category)
+  // Source: server-scripts/Skills.cs:1112-1116 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown, Combat.cs:334-343 (haste cap)
+  // Source: server-scripts/Player.cs:3349-3386 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ label: string; model: TimingModel }> = [];
 
@@ -534,11 +533,13 @@ export function computeMechanicsSpec(
 
   if (hasDebuffScaling) {
     // Determine attribute kind for player/merc casters (same formula for both).
-    const playerMercKind: DebuffBonusAttrKind = skill.is_melee_debuff
-      ? "str"
-      : skill.is_poison_debuff || skill.is_disease_debuff
-        ? "dex"
-        : "int";
+    const playerMercKind: DebuffBonusAttrKind = skill.scales_with_charisma
+      ? "cha"
+      : skill.is_melee_debuff
+        ? "str"
+        : skill.is_poison_debuff || skill.is_disease_debuff
+          ? "dex"
+          : "int";
 
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
