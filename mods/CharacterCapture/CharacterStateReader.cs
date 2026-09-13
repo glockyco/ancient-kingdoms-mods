@@ -27,7 +27,7 @@ namespace CharacterCapture
     {
         private static readonly string[] ClassIds =
         {
-            "warrior", "ranger", "cleric", "rogue", "wizard", "druid",
+            "warrior", "ranger", "cleric", "rogue", "wizard", "druid", "bard",
         };
 
         public static CharacterCaptureSnapshot Read(Player player)
