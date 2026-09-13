@@ -954,6 +954,7 @@ CREATE TABLE npcs (
     is_summonable BOOLEAN DEFAULT 0,
     flee_on_low_hp BOOLEAN DEFAULT 0,
     is_christmas_npc BOOLEAN DEFAULT 0,
+    is_notable BOOLEAN DEFAULT 0,
 
     -- Respawn and behavior
     -- Note: respawn_dungeon_id = 100 is special "World Bosses" case, not a real zone

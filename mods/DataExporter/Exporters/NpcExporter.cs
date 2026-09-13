@@ -135,6 +135,7 @@ public class NpcExporter : BaseExporter
 
                 // Combat flags
                 invincible = canonical.combat?.invincible ?? false,
+                is_notable = canonical.isNotableNPC,
 
                 // Spawning and respawn
                 respawn_dungeon_id = canonical.respawnDungeonId,

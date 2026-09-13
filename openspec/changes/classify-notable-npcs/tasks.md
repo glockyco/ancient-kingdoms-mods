@@ -1,8 +1,8 @@
 ## 1. Preserve the classification
 
-- [ ] 1.1 Add `is_notable` to the DataExporter NPC model and populate it from the direct runtime field; verify the DataExporter tests and build pass.
-- [ ] 1.2 Run the real game-data export and confirm `npcs.json` marks each game-classified NPC without name or role inference.
-- [ ] 1.3 Add the field to the pipeline model and SQLite schema, rebuild the compendium database, and query the stored King Darin value.
+- [x] 1.1 Add `is_notable` to the DataExporter NPC model and populate it from the direct runtime field; verify the DataExporter tests and build pass.
+- [x] 1.2 Run the real game-data export and confirm `npcs.json` marks each game-classified NPC without name or role inference.
+- [x] 1.3 Add the field to the pipeline model and SQLite schema, rebuild the compendium database, and query the stored King Darin value.
 
 ## 2. Correct reputation behavior
 
