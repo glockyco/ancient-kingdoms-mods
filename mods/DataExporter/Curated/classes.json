@@ -74,6 +74,6 @@
     "difficulty": 3,
     "resource_type": "songs",
     "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii"],
-    "game_version": "0.9.32.2"
+    "game_version": "0.9.32.3"
   }
 ]
