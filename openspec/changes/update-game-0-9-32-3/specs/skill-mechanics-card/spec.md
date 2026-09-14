@@ -2,13 +2,12 @@
 
 ### Requirement: Bard mechanics follow the current game formulas
 
-The skill mechanics card SHALL describe Bard songs as active auras when the game re-evaluates eligible recipients while the song remains active. Leadership SHALL show the additive attribute contribution as `round((WIS + CON + CHA) / 2)`.
+The skill mechanics card SHALL describe Bard songs as timed auras. Leadership SHALL show the additive attribute contribution as `round((WIS + CON + CHA) / 2)`.
 
 #### Scenario: A Bard song page is displayed
 
 - **WHEN** a skill is an active Bard song
-- **THEN** the mechanics card identifies the song's duration as the aura lifetime
-- **AND** it states that recipient eligibility is re-evaluated while the song remains active
+- **THEN** the mechanics card identifies the song's active duration
 
 #### Scenario: Leadership is displayed
 

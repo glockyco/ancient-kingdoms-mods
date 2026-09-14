@@ -43,4 +43,4 @@ The rebuilt database will carry Dazing Strike requirements, Bardic Strike toolti
 
 - Class-template order becomes a published data contract. A future game reorder will produce a deliberate data diff and may move table rows.
 - A malformed sequence could misclassify a trailing utility skill. Pipeline validation and Bard-specific output inspection mitigate this; the implementation must not silently invent a category.
-- Aura refresh timing can be confused with the lifetime of each refreshed buff. Mechanics prose must distinguish maintained behavior from the internal expiry window.
+- Players can mistake an aura for a permanent effect. Mechanics prose must show the song duration without exposing internal refresh timing.

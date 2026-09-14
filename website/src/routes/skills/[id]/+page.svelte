@@ -2032,18 +2032,12 @@
         {/if}
 
         {#if skill.is_bard_song}
-          <!-- Source: PlayerSkills.cs:679-690,911-917,973-1065,1169-1180 -->
+          <!-- Source: PlayerSkills.cs:911-917,1169-1180 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Song Aura</h3>
             <p class="font-mono">
               activeDuration = baseDuration &times; (1 + total learned song
               duration bonuses)
-            </p>
-            <p class="font-mono">recipient check interval = 0.5s</p>
-            <p class="text-muted-foreground">
-              The game re-evaluates nearby eligible recipients while the song
-              remains active. A recipient gains the effect on entering the aura
-              and loses it on leaving the aura.
             </p>
           </div>
           <!-- Source: PlayerSkills.cs:937-950,1156-1167. Current exported Polyphony data sets additional_active_bard_songs to 1. -->
