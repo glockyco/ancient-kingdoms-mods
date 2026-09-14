@@ -1,21 +1,21 @@
 {
   "snapshot": {
-    "game_version": "0.9.32.2",
+    "game_version": "0.9.32.3",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
     "AreaBuffSkill.cs": {
       "span": 0
     },
-    "AreaBuffSkill.cs:116-125": {
-      "sha256": "c7a9c9f8795d557bf9e37a83021763c9c018717c0d60f546a898f14cf1b47b8c",
-      "span": 10
+    "AreaBuffSkill.cs:126-139": {
+      "sha256": "44e9d50e6d99326b8343375283167836663ff8a6c500ecf3556a217e19fe6576",
+      "span": 14
     },
-    "AreaBuffSkill.cs:179": {
+    "AreaBuffSkill.cs:184": {
       "sha256": "e9f7655d0ea0761a3f75537ccd59a918ee78b831e603ae1bc01799480a2aacf4",
       "span": 1
     },
-    "AreaBuffSkill.cs:257": {
+    "AreaBuffSkill.cs:262": {
       "sha256": "06b2b3ae29c04cfad8703e674150e300e5bab2a893630874adfce5a7847bd9a3",
       "span": 1
     },
@@ -30,19 +30,27 @@
       "span": 0
     },
     "AreaDebuffSkill.cs:104-139": {
-      "sha256": "414ae17c2a08c02f2380837671d4dd705a94dbce4870e4467ba7a0b3abacbba8",
+      "sha256": "537368ae3ca6c7eb02bbdfcb423c271df709202c40cec2bdfeb59dd84656aa59",
       "span": 36
     },
+    "AreaDebuffSkill.cs:113-158": {
+      "sha256": "22018087a171a86f28734d1f253c09811ee025090bfdee4f5eb1e84416995e29",
+      "span": 46
+    },
     "AreaDebuffSkill.cs:164-205": {
-      "sha256": "9e6fb5ce46551038e0dec667b7eea8d7e7f66b795c1449073de324e8d90b1a9f",
+      "sha256": "0b42b24a0e30745a10f68ac2a3d7688ccdce6d81fc5f783a41f7140ac4e28a13",
       "span": 42
     },
+    "AreaDebuffSkill.cs:184-281": {
+      "sha256": "77d8db70064bf077f7ea6c836c4952f276b55a867111e1504cbdbbb0fe08452c",
+      "span": 98
+    },
     "AreaDebuffSkill.cs:209-233": {
-      "sha256": "7b96c6a723ac67802b9307c57d6fc5e35dd71af20628f8dc4a7b4b7d5ac7c79d",
+      "sha256": "64d0628be4de76397642226d506d86df33a0e8f81b77a9ce26a526011e4f9682",
       "span": 25
     },
     "AreaDebuffSkill.cs:238-258": {
-      "sha256": "a1d5f47a4dcf4d758671c2b5a9d32776396b3d8206d86e6e984a8f516b8f98cb",
+      "sha256": "69bd2f9c444fac992cd7ff4007ab532be71be08129c89251801e05956a4420da",
       "span": 21
     },
     "AreaDebuffSkill.cs:Apply": {
@@ -1565,21 +1573,21 @@
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
     },
-    "PlayerSkills.cs:1139-1149": {
+    "PlayerSkills.cs:1313-1323": {
       "sha256": "b29e15ecbe6940988a82e17799178d710430ab081d60f05e43067a30cf7e813a",
       "span": 11
     },
-    "PlayerSkills.cs:1259-1261": {
+    "PlayerSkills.cs:1433-1435": {
       "sha256": "a2351298960d849f3cd5726bf79f470f7151ff8235f89e60b136ed4cf058ed44",
       "span": 3
     },
-    "PlayerSkills.cs:1283-1338": {
+    "PlayerSkills.cs:1457-1512": {
       "sha256": "e3611fd868f2c7bdcaa343a24d42335912812d0d982888cb9181b0767f8f8c99",
       "span": 56
     },
-    "PlayerSkills.cs:1772-1788": {
-      "sha256": "2e15d3317d7a21f8be069925b59655b8e2177741da4e887314c09b646ff81470",
-      "span": 17
+    "PlayerSkills.cs:1946-1964": {
+      "sha256": "369a5b179cbb248a24116d865a91cf074a3886b0f5a2cce6ca81a77fea1cfe8f",
+      "span": 19
     },
     "PlayerSkills.cs:GetMaximumActiveBardSongs": {
       "span": 0

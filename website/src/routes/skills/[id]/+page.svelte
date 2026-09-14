@@ -2906,7 +2906,7 @@
           </div>
         {/if}
         {#if skill.is_teleport}
-          <!-- Source: server-scripts/AreaBuffSkill.cs:116-125 — isTeleport branch -->
+          <!-- Source: server-scripts/AreaBuffSkill.cs:126-139 — isTeleport branch -->
           <div class="space-y-1">
             <h3 class="font-semibold">Teleport</h3>
             <p class="text-muted-foreground">

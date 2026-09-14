@@ -1412,9 +1412,9 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Non-class owners (pet/mercenary/item/monster) gate at the *source* (the
   // pet's summon skill, the item's level requirement, etc.), not on this
   // skill row, so emitting "Unlocks at level X" there would mislead.
-  // Source: server-scripts/PlayerSkills.cs:1259-1261 — veteran upgrades check
+  // Source: server-scripts/PlayerSkills.cs:1433-1435 — veteran upgrades check
   //   regular character level, available veteran points, and spent points.
-  // Source: server-scripts/PlayerSkills.cs:1772-1788 — UserCode_CmdUpgradeVeteran__Int32 subtracts upgradeRequiredSkillPoints
+  // Source: server-scripts/PlayerSkills.cs:1946-1964 — UserCode_CmdUpgradeVeteran__Int32 subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
   // Source: server-scripts/Player.cs:6908-6918 and ScriptableSkill.cs:229-231
   //   — requiredSpentPoints means already-spent veteran points, not veteran
