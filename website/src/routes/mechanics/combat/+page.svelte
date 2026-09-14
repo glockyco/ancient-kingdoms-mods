@@ -540,8 +540,7 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 font-mono text-xs">player_wis_con_avg</td
                 ><td class="py-1 text-muted-foreground"
-                  >Mercenary-targeted area buff except Leadership: round((WIS +
-                  CON) / 2)</td
+                  >Mercenary-targeted area buff: round((WIS + CON) / 2)</td
                 ></tr
               >
               <tr class="border-b border-border/40"
