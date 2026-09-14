@@ -81,6 +81,29 @@ describe("Bard mechanics contexts", () => {
     ]);
   });
 
+  test("uses Charisma in Leadership's mercenary buff attribute", () => {
+    const spec = computeMechanicsSpec(
+      bardSkill({
+        id: "leadership",
+        player_classes: ["warrior"],
+        is_bard_song: false,
+        scales_with_charisma: false,
+        is_mercenary_skill: true,
+        damage_bonus: { base_value: 30, bonus_per_level: 30 },
+      }),
+      [],
+      false,
+    );
+
+    expect(spec.buffContexts).toEqual([
+      {
+        casterLabels: ["Warrior (player)"],
+        bonusAttrSource: "player_wis_con_cha_half",
+        isAreaBuff: true,
+      },
+    ]);
+  });
+
   test("uses the custom Final Cadence damage formula", () => {
     const spec = computeMechanicsSpec(
       bardSkill({

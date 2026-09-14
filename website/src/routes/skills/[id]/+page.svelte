@@ -1994,7 +1994,7 @@
         {/if}
 
         {#if skill.additional_active_bard_songs > 0}
-          <!-- Source: PassiveSkill.cs:12-13 and PlayerSkills.cs:986-997 -->
+          <!-- Source: PassiveSkill.cs:12-13 and PlayerSkills.cs:1156-1167 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Song Capacity</h3>
             <p class="font-mono">
@@ -2007,7 +2007,7 @@
         {/if}
 
         {#if skill.bard_song_duration_bonus_per_level > 0}
-          <!-- Source: PassiveSkill.cs:15-27 and PlayerSkills.cs:999-1010 -->
+          <!-- Source: PassiveSkill.cs:15-27 and PlayerSkills.cs:1169-1180 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Song Duration Bonus</h3>
             <p class="font-mono">
@@ -2032,15 +2032,21 @@
         {/if}
 
         {#if skill.is_bard_song}
-          <!-- Source: PlayerSkills.cs:999-1010 and BuffSkill.cs:164-170 -->
+          <!-- Source: PlayerSkills.cs:679-690,911-917,973-1065,1169-1180 -->
           <div class="space-y-1">
-            <h3 class="font-semibold">Song Duration</h3>
+            <h3 class="font-semibold">Song Aura</h3>
             <p class="font-mono">
               activeDuration = baseDuration &times; (1 + total learned song
               duration bonuses)
             </p>
+            <p class="font-mono">recipient check interval = 0.5s</p>
+            <p class="text-muted-foreground">
+              The game re-evaluates nearby eligible recipients while the song
+              remains active. A recipient gains the effect on entering the aura
+              and loses it on leaving the aura.
+            </p>
           </div>
-          <!-- Source: PlayerSkills.cs:865-895,986-997. Current exported Polyphony data sets additional_active_bard_songs to 1. -->
+          <!-- Source: PlayerSkills.cs:937-950,1156-1167. Current exported Polyphony data sets additional_active_bard_songs to 1. -->
           <div class="space-y-1">
             <h3 class="font-semibold">Active Song Limit</h3>
             <p class="font-mono">
@@ -2319,8 +2325,13 @@
                     <p class="font-mono">
                       bonusAttribute = WIS &times; 3 (Ranger wisdom tripled)
                     </p>
+                  {:else if ctx.bonusAttrSource === "player_wis_con_cha_half"}
+                    <!-- Source: AreaBuffSkill.cs:14-17,52 — Leadership uses GetLeadershipAttributeBonus(player3) -->
+                    <p class="font-mono">
+                      bonusAttribute = round((WIS + CON + CHA) / 2)
+                    </p>
                   {:else if ctx.bonusAttrSource === "player_wis_con_avg"}
-                    <!-- Source: AreaBuffSkill.cs:46-50 — isMercenarySkill → num2 = round((WIS+CON)/2) -->
+                    <!-- Source: AreaBuffSkill.cs:52 — ordinary player-cast mercenary buffs use round((WIS+CON)/2) -->
                     <p class="font-mono">
                       bonusAttribute = round((WIS + CON) / 2)
                     </p>

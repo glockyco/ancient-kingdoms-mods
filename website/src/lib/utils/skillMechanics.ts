@@ -477,8 +477,12 @@ export function computeMechanicsSpec(
           // Source: BardSongSkill.cs — Bard songs use the caster's Charisma.
           src = "player_cha";
         } else if (isAreaBuff && skill.is_mercenary_skill) {
-          // Source: AreaBuffSkill.cs:46-50 — isMercenarySkill → num2 = round((WIS+CON)/2)
-          src = "player_wis_con_avg";
+          // Source: AreaBuffSkill.cs:14-17,52 — Leadership uses round((WIS+CON+CHA)/2);
+          // other player-cast mercenary buffs use round((WIS+CON)/2).
+          src =
+            skill.id === "leadership"
+              ? "player_wis_con_cha_half"
+              : "player_wis_con_avg";
         } else if (isAreaBuff) {
           // Source: AreaBuffSkill.cs:25 — plain player.wisdom.value; NO Ranger×3 for area buffs
           src = "player_wis";
