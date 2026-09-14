@@ -676,6 +676,7 @@ class SkillData(BaseModel):
     tier: int = 0
     max_level: int = 1
     player_classes: list[str] = []  # Classes that have this skill
+    class_skill_positions: dict[str, int] = {}
     level_required: int = 0
     level_requirement: SkillBonus | None = None
     required_skill_points: int = 0

@@ -1116,6 +1116,7 @@ CREATE TABLE skills (
     tier INTEGER DEFAULT 0,
     max_level INTEGER DEFAULT 1,
     player_classes TEXT,             -- JSON array: ["cleric", "druid"] - classes that have this skill
+    class_skill_positions TEXT,      -- JSON object: {"cleric": 12, "druid": 14}
     level_required INTEGER DEFAULT 0,
     required_skill_points INTEGER DEFAULT 1,
     required_spent_points INTEGER DEFAULT 0,

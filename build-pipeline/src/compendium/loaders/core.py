@@ -629,10 +629,30 @@ def load_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
     cursor = conn.cursor()
     # Defer FK checks for self-referential prerequisite_skill_id
     cursor.execute("PRAGMA defer_foreign_keys = ON")
+    occupied_positions: dict[str, set[int]] = {}
 
     for skill in skills:
         # Normalize class names to lowercase for consistent querying
         skill.player_classes = [c.lower() for c in skill.player_classes]
+        skill.class_skill_positions = {
+            class_id.lower(): position
+            for class_id, position in skill.class_skill_positions.items()
+        }
+        if set(skill.class_skill_positions) != set(skill.player_classes):
+            raise ValueError(
+                f"Skill {skill.id} class_skill_positions must match player_classes"
+            )
+        for class_id, position in skill.class_skill_positions.items():
+            if position < 0:
+                raise ValueError(
+                    f"Skill {skill.id} has a negative {class_id} progression position"
+                )
+            class_positions = occupied_positions.setdefault(class_id, set())
+            if position in class_positions:
+                raise ValueError(
+                    f"Class {class_id} has duplicate progression position {position}"
+                )
+            class_positions.add(position)
         insert_model(cursor, "skills", skill)
 
     conn.commit()

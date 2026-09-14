@@ -23,9 +23,10 @@ public class SkillData
     public int tier { get; set; }
     public int max_level { get; set; }
 
-    // Player class associations (from NetworkManagerMMO.playerClasses -> skillTemplates)
-    // A skill can appear in multiple class skill trees (e.g., shared veteran skills)
+    // Player class associations and positions from NetworkManagerMMO.playerClasses -> skillTemplates.
+    // A shared skill can occupy a different position in each class progression.
     public List<string> player_classes { get; set; }
+    public Dictionary<string, int> class_skill_positions { get; set; }
 
     // Requirements
     public int level_required { get; set; }

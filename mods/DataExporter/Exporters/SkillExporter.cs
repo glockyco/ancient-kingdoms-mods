@@ -18,7 +18,7 @@ public class SkillExporter : BaseExporter
 
         // Build skill-to-classes mapping from NetworkManagerMMO.playerClasses
         // A skill can appear in multiple class skill trees (e.g., shared veteran skills)
-        var skillToClasses = BuildSkillToClassesMapping();
+        var skillToClasses = BuildSkillToClassesMapping(out var skillToClassPositions);
         Logger.Msg($"Built skill-to-classes mapping with {skillToClasses.Count} entries");
 
         var type = Il2CppType.Of<Il2Cpp.ScriptableSkill>();
@@ -36,10 +36,12 @@ public class SkillExporter : BaseExporter
 
             var skillId = SanitizeId(skill.name);
             skillToClasses.TryGetValue(skillId, out var playerClasses);
+            skillToClassPositions.TryGetValue(skillId, out var classSkillPositions);
 
             var skillData = new SkillData
             {
                 player_classes = playerClasses ?? new List<string>(),
+                class_skill_positions = classSkillPositions ?? new Dictionary<string, int>(),
                 // Base ScriptableSkill fields
                 id = SanitizeId(skill.name),
                 name = skill.nameSkill ?? skill.name,
@@ -518,9 +520,11 @@ public class SkillExporter : BaseExporter
         skillData.is_bard_virtuosity = skill.TryCast<Il2Cpp.BardVirtuositySkill>() != null;
     }
 
-    private Dictionary<string, List<string>> BuildSkillToClassesMapping()
+    private Dictionary<string, List<string>> BuildSkillToClassesMapping(
+        out Dictionary<string, Dictionary<string, int>> skillToClassPositions)
     {
         var mapping = new Dictionary<string, List<string>>();
+        skillToClassPositions = new Dictionary<string, Dictionary<string, int>>();
 
         try
         {
@@ -576,13 +580,13 @@ public class SkillExporter : BaseExporter
 
                 Logger.Msg($"  {className}: {skillTemplates.Length} skills");
 
-                foreach (var skillTemplate in skillTemplates)
+                for (var position = 0; position < skillTemplates.Length; position++)
                 {
+                    var skillTemplate = skillTemplates[position];
                     if (skillTemplate == null || string.IsNullOrEmpty(skillTemplate.name)) continue;
 
                     var skillId = SanitizeId(skillTemplate.name);
 
-                    // Add this class to the skill's class list
                     if (!mapping.ContainsKey(skillId))
                     {
                         mapping[skillId] = new List<string>();
@@ -591,6 +595,12 @@ public class SkillExporter : BaseExporter
                     {
                         mapping[skillId].Add(sanitizedClass);
                     }
+
+                    if (!skillToClassPositions.ContainsKey(skillId))
+                    {
+                        skillToClassPositions[skillId] = new Dictionary<string, int>();
+                    }
+                    skillToClassPositions[skillId].TryAdd(sanitizedClass, position);
                 }
             }
 
@@ -608,6 +618,7 @@ public class SkillExporter : BaseExporter
         catch (System.Exception ex)
         {
             Logger.Error($"Error building skill-to-classes mapping: {ex.Message}");
+            throw;
         }
 
         return mapping;
