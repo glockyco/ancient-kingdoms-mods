@@ -189,6 +189,7 @@ export interface ClassSkill {
   base_skill: boolean;
   tier: number;
   required_spent_points: number;
+  class_skill_position: number;
 }
 
 /**
@@ -312,7 +313,8 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.learn_default,
       s.base_skill,
       s.tier,
-      s.required_spent_points
+      s.required_spent_points,
+      json_extract(s.class_skill_positions, '$.' || ?) AS class_skill_position
     FROM skills s
     LEFT JOIN monsters m ON s.summoned_monster_id = m.id
     LEFT JOIN visual_assets va
@@ -322,8 +324,8 @@ export function getClassSkills(classId: string): ClassSkill[] {
     WHERE (? IN (SELECT value FROM json_each(s.player_classes))
        OR 'all' IN (SELECT value FROM json_each(s.player_classes)))
       AND s.id NOT IN ('alchemy', 'baking', 'crafting', 'digging', 'gathering', 'mining', 'opening', 'teleport', 'new_skill_placeholder')
-    ORDER BY s.is_veteran, s.tier, s.level_required, s.name`,
-    [classId],
+    ORDER BY class_skill_position`,
+    [classId, classId],
   );
 }
 

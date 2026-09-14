@@ -165,9 +165,55 @@
     })(),
   );
 
+  const skillProgressionBounds = $derived(
+    (() => {
+      const tierPositions = data.skills
+        .filter((skill) => skill.tier > 0 && !skill.is_veteran)
+        .map((skill) => skill.class_skill_position);
+      const veteranPositions = data.skills
+        .filter((skill) => skill.is_veteran)
+        .map((skill) => skill.class_skill_position);
+
+      if (tierPositions.length === 0) {
+        throw new Error(
+          `Class ${data.class.id} has no tiered skill progression`,
+        );
+      }
+
+      const lastTierPosition = Math.max(...tierPositions);
+      const utilityPositions = data.skills
+        .filter(
+          (skill) =>
+            skill.max_level === 0 &&
+            skill.class_skill_position > lastTierPosition,
+        )
+        .map((skill) => skill.class_skill_position);
+
+      return {
+        lastTierPosition,
+        masteryEndPosition: Math.min(
+          ...veteranPositions,
+          ...utilityPositions,
+          Number.POSITIVE_INFINITY,
+        ),
+      };
+    })(),
+  );
+
+  function isMasterySkill(skill: ClassSkill): boolean {
+    return (
+      !skill.base_skill &&
+      !skill.is_veteran &&
+      skill.tier === 0 &&
+      skill.class_skill_position > skillProgressionBounds.lastTierPosition &&
+      skill.class_skill_position < skillProgressionBounds.masteryEndPosition
+    );
+  }
+
   function getSkillCategoryKey(skill: ClassSkill): string {
     if (skill.base_skill) return "Base";
     if (skill.is_veteran) return "Veteran";
+    if (isMasterySkill(skill)) return "Mastery";
     if (skill.tier === 0) return "Core";
     return `Tier ${skill.tier}`;
   }
@@ -200,6 +246,7 @@
         "Tier 2",
         "Tier 3",
         "Tier 4",
+        "Mastery",
         "Veteran",
       ];
       return order.filter((c) => cats.has(c));
@@ -213,16 +260,24 @@
       header: "Category",
       accessorFn: (row) => getSkillCategoryKey(row),
       sortingFn: (rowA, rowB) => {
-        // Sort by: Base=0, Core=1, Tier 1=2, Tier 2=3, Tier 3=4, Tier 4=5, Veteran=6
-        function categoryOrder(skill: ClassSkill): number {
-          if (skill.base_skill) return 0;
-          if (skill.is_veteran) return 6;
-          if (skill.tier === 0) return 1;
-          return skill.tier + 1;
-        }
-        const a = categoryOrder(rowA.original);
-        const b = categoryOrder(rowB.original);
-        return a - b;
+        const categoryOrder = [
+          "Base",
+          "Core",
+          "Tier 1",
+          "Tier 2",
+          "Tier 3",
+          "Tier 4",
+          "Mastery",
+          "Veteran",
+        ];
+        const categoryDifference =
+          categoryOrder.indexOf(getSkillCategoryKey(rowA.original)) -
+          categoryOrder.indexOf(getSkillCategoryKey(rowB.original));
+        return (
+          categoryDifference ||
+          rowA.original.class_skill_position -
+            rowB.original.class_skill_position
+        );
       },
       filterFn: (row, _columnId, filterValue: string[]) => {
         if (!filterValue || filterValue.length === 0) return true;

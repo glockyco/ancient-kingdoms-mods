@@ -31,9 +31,9 @@ Alternative: parse `Advanced Skill` from the tooltip. Rejected because localized
 
 ### Derive Mastery from the class progression sequence
 
-For a given class, a non-base, non-veteran, tier-zero skill is a Mastery when the authoritative class sequence places it after that class's last tiered skill and before the veteran section. Other tier-zero skills remain Core. The class page will sort by the exported position, while category ordering remains Base, Core, Tier 1 through Tier 4, Mastery, and Veteran.
+For a given class, a non-base, non-veteran, tier-zero skill is a Mastery when the authoritative class sequence places it after that class's last tiered skill and before the first zero-rank utility action or veteran skill. Other tier-zero skills remain Core. The class page will sort by the exported position, while category ordering remains Base, Core, Tier 1 through Tier 4, Mastery, and Veteran.
 
-The exporter and consumer checks will verify the Bard sequence before this rule is published. If the authoritative sequence does not delimit the mastery section, the build will fail instead of adding an ID list.
+The exported Bard sequence puts Song of Varensea, Inspiring Crescendo, and Grand Symphony after the final tiered skill, then starts the zero-rank utility section with Fishing. This structural boundary avoids both tooltip parsing and entity ID lists.
 
 ### Separate data changes from source-only behavior
 
