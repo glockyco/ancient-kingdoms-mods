@@ -1272,6 +1272,7 @@ CREATE TABLE skills (
     constitution_bonus TEXT,
     ward_bonus TEXT,
     fear_resist_chance_bonus TEXT,
+    fear_resist_chance_bonus_cap REAL NOT NULL DEFAULT 0,
 
     -- Special flags
     is_enrage BOOLEAN DEFAULT 0,

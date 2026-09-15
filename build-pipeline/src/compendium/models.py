@@ -867,6 +867,7 @@ class SkillData(BaseModel):
     constitution_bonus: SkillBonus | None = None
     ward_bonus: SkillBonus | None = None
     fear_resist_chance_bonus: SkillBonus | None = None
+    fear_resist_chance_bonus_cap: float = 0.0
 
     # Misc
     skill_aggro_message: str = ""
