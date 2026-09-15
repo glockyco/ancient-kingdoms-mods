@@ -63,6 +63,7 @@ export function skillRowToEffectInput(
     accuracy_bonus: r.accuracy_bonus,
     block_chance_bonus: r.block_chance_bonus,
     fear_resist_chance_bonus: r.fear_resist_chance_bonus,
+    fear_resist_chance_bonus_cap: r.fear_resist_chance_bonus_cap,
     damage_shield: r.damage_shield,
     cooldown_reduction_percent: r.cooldown_reduction_percent,
     heal_on_hit_percent: r.heal_on_hit_percent,

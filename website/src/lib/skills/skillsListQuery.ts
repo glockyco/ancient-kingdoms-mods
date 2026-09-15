@@ -72,6 +72,7 @@ export const SKILL_EFFECT_COLUMNS = `
       s.accuracy_bonus,
       s.block_chance_bonus,
       s.fear_resist_chance_bonus,
+      s.fear_resist_chance_bonus_cap,
       s.damage_shield,
       s.cooldown_reduction_percent,
       s.heal_on_hit_percent,

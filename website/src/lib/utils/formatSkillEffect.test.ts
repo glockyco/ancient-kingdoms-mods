@@ -83,6 +83,20 @@ describe("formatSkillEffect Bard summaries", () => {
     ).toBe("Bard song, +10% accuracy");
   });
 
+  it("shows the post-Charisma cap for Fear Resistance", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "area_buff",
+        is_bard_song: true,
+        fear_resist_chance_bonus: {
+          base_value: 0.035,
+          bonus_per_level: 0.035,
+        },
+        fear_resist_chance_bonus_cap: 0.7,
+      } as Skill),
+    ).toBe("Bard song, +3.5% × skill lvl fear resist (max 70%)");
+  });
+
   it("identifies charm damage as a base value", () => {
     expect(
       formatSkillEffect({

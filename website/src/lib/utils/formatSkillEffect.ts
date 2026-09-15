@@ -79,6 +79,7 @@ export interface Skill {
   accuracy_bonus: string | LinearValue | null;
   block_chance_bonus: string | LinearValue | null;
   fear_resist_chance_bonus?: string | LinearValue | null;
+  fear_resist_chance_bonus_cap?: number;
   damage_shield: string | LinearValue | null;
   cooldown_reduction_percent?: string | LinearValue | null;
   heal_on_hit_percent?: string | LinearValue | null;
@@ -682,8 +683,10 @@ function formatBuffDebuffStats(
   const fearResistBonus = parseLinearValue(skill.fear_resist_chance_bonus);
   if (fearResistBonus && fearResistBonus.base_value !== 0) {
     const sign = fearResistBonus.base_value > 0 ? "+" : "";
+    const cap = skill.fear_resist_chance_bonus_cap ?? 0;
+    const capSuffix = cap > 0 ? ` (max ${formatPercent(cap)})` : "";
     parts.push(
-      `${sign}${formatLinearPercent(fearResistBonus, options)} fear resist`,
+      `${sign}${formatLinearPercent(fearResistBonus, options)} fear resist${capSuffix}`,
     );
   }
 

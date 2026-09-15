@@ -76,6 +76,7 @@ internal sealed class SkillEffectInput
     public LinearValue accuracy_bonus { get; set; }
     public LinearValue block_chance_bonus { get; set; }
     public LinearValue fear_resist_chance_bonus { get; set; }
+    public double fear_resist_chance_bonus_cap { get; set; }
     public LinearValue damage_shield { get; set; }
     public LinearValue cooldown_reduction_percent { get; set; }
     public LinearValue heal_on_hit_percent { get; set; }

@@ -66,6 +66,7 @@ export interface SkillEffectRow {
   accuracy_bonus: string | null;
   block_chance_bonus: string | null;
   fear_resist_chance_bonus: string | null;
+  fear_resist_chance_bonus_cap: number;
   damage_shield: string | null;
   cooldown_reduction_percent: string | null;
   heal_on_hit_percent: string | null;

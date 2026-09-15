@@ -144,6 +144,7 @@ export interface SkillDetailView {
   accuracy_bonus: LinearValue | null;
   block_chance_bonus: LinearValue | null;
   fear_resist_chance_bonus: LinearValue | null;
+  fear_resist_chance_bonus_cap: number;
   damage_shield: LinearValue | null;
   cooldown_reduction_percent: LinearValue | null;
   heal_on_hit_percent: LinearValue | null;

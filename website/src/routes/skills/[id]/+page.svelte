@@ -1708,6 +1708,9 @@
                 <dt class="text-muted-foreground">Fear Resist</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.fear_resist_chance_bonus)}
+                  {#if skill.fear_resist_chance_bonus_cap > 0}
+                    (max {formatPercent(skill.fear_resist_chance_bonus_cap)})
+                  {/if}
                 </dd>
               </div>
             {/if}
@@ -2055,7 +2058,7 @@
         {/if}
 
         {#if skill.is_bard_charm}
-          <!-- Source: BardCharmSongSkill.cs:7-47,75-117 and Combat.cs:1538-1542 -->
+          <!-- Source: BardCharmSongSkill.cs:GetCharmTarget,GetCharmResistChance,Apply and Combat.cs:GetProbResistMagic -->
           <div class="space-y-1">
             <h3 class="font-semibold">Charm</h3>
             <p class="font-mono">
@@ -2073,12 +2076,13 @@
             </p>
             <p class="font-mono">
               resistChance = clamp(baseResistChance + max(levelDifference, 0)
-              &times; 0.05 &minus; max(CHA, 0) &times; 0.0002, 0, 0.95)
+              &times; 0.025 &minus; max(CHA, 0) &times; 0.0002, 0, 0.95)
             </p>
             <p class="text-muted-foreground">
               Only living monsters that are not bosses, elites, training
               dummies, or returning home can be charmed. A Bard can control one
-              charmed monster at a time.
+              charmed monster at a time. Casting the song again refreshes that
+              monster before considering the Bard's selected target.
             </p>
           </div>
         {/if}
@@ -2292,7 +2296,7 @@
                     No attribute scaling (bonus = 0).
                   </p>
                 {:else if ctx.bonusAttrSource === "player_cha"}
-                  <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, and Charisma.cs:21-36 -->
+                  <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, BuffSkill.cs:ScaleFearResistChanceBonus, and Charisma.cs:21-36 -->
                   <p class="font-mono">
                     songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
                   </p>
@@ -2304,7 +2308,14 @@
                   {/if}
                   {#if hasBardPercentageScaling}
                     <p class="font-mono">
-                      final value = base value at skill level &times; songPower
+                      {#if skill.fear_resist_chance_bonus_cap > 0}
+                        Fear Resist = min(base value at skill level &times;
+                        songPower,
+                        {formatPercent(skill.fear_resist_chance_bonus_cap)})
+                      {:else}
+                        final value = base value at skill level &times;
+                        songPower
+                      {/if}
                     </p>
                   {/if}
                   {#if hasNonZeroField(skill.healing_per_second_bonus)}
@@ -2848,8 +2859,14 @@
             <h3 class="font-semibold">Fear Resist</h3>
             <p class="text-muted-foreground">
               When a fear effect lands, the target rolls their accumulated fear
-              resist chance to block it. Accumulates from skills and equipment,
-              capped at 100%. At 100% the target is completely immune to fear.
+              resist chance to block it.
+              {#if skill.fear_resist_chance_bonus_cap > 0}
+                This skill contributes at most
+                {formatPercent(skill.fear_resist_chance_bonus_cap)} after Charisma
+                scaling.
+              {/if}
+              Total Fear Resistance from all sources is capped at 100%. At 100% the
+              target is completely immune to fear.
             </p>
           </div>
         {/if}

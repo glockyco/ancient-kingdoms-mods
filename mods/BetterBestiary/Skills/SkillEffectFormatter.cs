@@ -321,7 +321,15 @@ internal static class SkillEffectFormatter
         AddSignedPercent(parts, ParseLinearValue(skill.critical_resist_bonus), "critical resist", true);
         AddSignedPercent(parts, ParseLinearValue(skill.accuracy_bonus), "accuracy", true);
         AddSignedPercent(parts, ParseLinearValue(skill.block_chance_bonus), "block", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.fear_resist_chance_bonus), "fear resist", true);
+        var fearResist = ParseLinearValue(skill.fear_resist_chance_bonus);
+        if (fearResist != null && fearResist.base_value != 0)
+        {
+            var sign = fearResist.base_value > 0 ? "+" : "";
+            var capSuffix = skill.fear_resist_chance_bonus_cap > 0
+                ? $" (max {FormatPercent(skill.fear_resist_chance_bonus_cap)})"
+                : "";
+            parts.Add($"{sign}{FormatLinearPercent(fearResist)} fear resist{capSuffix}");
+        }
 
         // 8. Cooldown reduction
         AddSignedPercent(parts, ParseLinearValue(skill.cooldown_reduction_percent), "CDR", true);

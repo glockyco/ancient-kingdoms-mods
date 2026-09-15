@@ -203,6 +203,9 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     accuracy_bonus: parseLinear(skillRaw.accuracy_bonus),
     block_chance_bonus: parseLinear(skillRaw.block_chance_bonus),
     fear_resist_chance_bonus: parseLinear(skillRaw.fear_resist_chance_bonus),
+    fear_resist_chance_bonus_cap: Number(
+      skillRaw.fear_resist_chance_bonus_cap ?? 0,
+    ),
     damage_shield: parseLinear(skillRaw.damage_shield),
     cooldown_reduction_percent: parseLinear(
       skillRaw.cooldown_reduction_percent,

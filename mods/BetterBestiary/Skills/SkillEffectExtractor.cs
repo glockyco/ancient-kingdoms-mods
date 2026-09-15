@@ -203,6 +203,7 @@ internal static class SkillEffectExtractor
             input.damage_shield_type = ResolveDamageShieldType(buffSkill);
             input.ward_bonus = new LinearValue(buffSkill.wardBonus.baseValue, buffSkill.wardBonus.bonusPerLevel);
             input.fear_resist_chance_bonus = new LinearValue(buffSkill.fearResistChanceBonus.baseValue, buffSkill.fearResistChanceBonus.bonusPerLevel);
+            input.fear_resist_chance_bonus_cap = buffSkill.fearResistChanceBonusCap;
             input.is_blindness = buffSkill.isBlindness;
             input.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
             input.scales_with_charisma = buffSkill.scalesWithCharisma;
