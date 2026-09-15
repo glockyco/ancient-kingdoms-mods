@@ -10,6 +10,10 @@ The server-script diff is the planning source. A changelog omits implementation 
 
 See `scripts/update-server-scripts.sh` for the evidence-acquisition commands and snapshot behavior.
 
+The Steam application manifest proves which build is installed. If it stays on the old build after `build-tool update`, inspect `content_log.txt`. No new activity means the request reached a stale client. Do not repeat the request.
+
+Stop the complete CrossOver bottle. Preserve and remove `Steam/appcache/appinfo.vdf`. Start Steam normally, then wait for a new `[Logged On]` entry in `connection_log.txt`. Rerun `build-tool update`. The manifest must name the new build before decompilation starts.
+
 Read focused diffs for every game field used by DataExporter and every mechanic named by the changelog. When a diff touches a cited region, confirm that the anchor still names the code its claim describes. Verification compares content, so a passing check proves that the region did not change, not that the claim describes it.
 
 Decompiled scripts are evidence, not export input.
