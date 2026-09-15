@@ -8,6 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { base } from "$app/paths";
+  import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
@@ -58,6 +59,10 @@
   };
 
   let { data } = $props();
+
+  const npcImageSrc = $derived(
+    data.visualAsset ? `${base}/${data.visualAsset.public_path}` : null,
+  );
 
   // Get active roles for this NPC
   const activeRoles = $derived(getActiveRoles(data.npc.roles));
@@ -539,17 +544,7 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      {#if data.npc.faction}
-        <span
-          >Faction: <FactionLink
-            name={data.npc.faction}
-            id={data.factionIds[data.npc.faction]}
-          /></span
-        >
-      {/if}
-      {#if data.npc.race}
-        <span>Race: {data.npc.race}</span>
-      {/if}
+      <span>Level {data.npc.level}</span>
       <OnKillFactions
         effects={npcKillReputation(data.npc)}
         factionIds={data.factionIds}
@@ -558,22 +553,63 @@
   </div>
 
   <!-- Header Summary Card -->
-  {#if data.visualAsset}
-    <section aria-labelledby="npc-summary-title">
-      <h2 id="npc-summary-title" class="sr-only">Appearance</h2>
-      <div class="bg-muted/30 rounded-md border p-4">
-        <div class="flex min-h-32 w-full items-center justify-center">
-          <img
-            src="{base}/{data.visualAsset.public_path}"
-            alt={`${data.npc.name} sprite`}
-            width={data.visualAsset.width}
-            height={data.visualAsset.height}
-            class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] max-h-56 md:max-h-64"
-          />
+  <EntityCombatSummary
+    titleId="npc-summary-title"
+    title="NPC summary"
+    imageSrc={npcImageSrc}
+    imageAlt={`${data.npc.name} NPC sprite`}
+    imageWidth={data.visualAsset?.width}
+    imageHeight={data.visualAsset?.height}
+    health={data.npc.health}
+    damage={data.npc.damage}
+    magicDamage={data.npc.magic_damage}
+    defense={data.npc.defense}
+    magicResist={data.npc.magic_resist}
+    poisonResist={data.npc.poison_resist}
+    fireResist={data.npc.fire_resist}
+    coldResist={data.npc.cold_resist}
+    diseaseResist={data.npc.disease_resist}
+  >
+    {#snippet metadata()}
+      {#if data.npc.race}
+        <div
+          class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
+          title="Race"
+        >
+          <span
+            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-800 text-slate-100 shadow-sm"
+            aria-hidden="true"
+          >
+            <User class="h-5 w-5" />
+          </span>
+          <span class="sr-only">Race: </span>
+          <span class="min-w-0 text-lg font-semibold break-words"
+            >{data.npc.race}</span
+          >
         </div>
-      </div>
-    </section>
-  {/if}
+      {/if}
+      {#if data.npc.faction}
+        <div
+          class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
+          title="Faction"
+        >
+          <span
+            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-amber-700 text-amber-50 shadow-sm"
+            aria-hidden="true"
+          >
+            <Shield class="h-5 w-5" />
+          </span>
+          <span class="sr-only">Faction: </span>
+          <span class="min-w-0 text-lg font-semibold break-words">
+            <FactionLink
+              name={data.npc.faction}
+              id={data.factionIds[data.npc.faction]}
+            />
+          </span>
+        </div>
+      {/if}
+    {/snippet}
+  </EntityCombatSummary>
 
   <!-- Spawns Section (at top, like monsters) -->
   {#if data.spawns.length > 0}
