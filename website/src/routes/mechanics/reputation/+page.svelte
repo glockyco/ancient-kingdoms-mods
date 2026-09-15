@@ -118,7 +118,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Database.cs:3001-3009,3012-3020,3023-3031,3034-3041,3044-3052,3055-3062,3065-3072 — per-race starting faction values. -->
+      <!-- Source: server-scripts/Database.cs:CharacterCreate — per-race starting faction values. -->
       <p>
         A new character starts at 0 with every faction except the one that
         matches its race, which starts at 500.
@@ -450,7 +450,7 @@
         value it had.
       </p>
       <!-- Source: server-scripts/Player.cs:13079-13083, Monster.cs:3169-3181, Npc.cs:1606-1616, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
-      <!-- Source: server-scripts/Database.cs:3683-3691 — setFactionValue assigns value directly to character_factions.value. -->
+      <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the
         stored value without clamping it, and the value is saved as-is, so a

@@ -2633,7 +2633,7 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
-        <!-- Source: server-scripts/Buff.cs:19 (3 counters); BuffSkill.cs:441-463 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); BuffSkill.cs:457-479 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
@@ -2662,7 +2662,7 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
-        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:441-463 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:19 (3 counters); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:457-479 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:19 (3 counters); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">

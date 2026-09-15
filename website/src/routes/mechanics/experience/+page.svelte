@@ -700,7 +700,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Spending and Counting</h3>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/PlayerSkills.cs:1313-1323 — the total counts unspent points plus the base levels of learned veteran skills. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1344-1354 — the total counts unspent points plus the base levels of learned veteran skills. -->
           Veteran Points buy levels in veteran skills. Your veteran total counts unspent
           points plus the levels you already put into veteran skills, so spending
           them never lowers it.

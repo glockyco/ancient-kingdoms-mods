@@ -436,7 +436,7 @@ finalDamage = damage − reduction</pre>
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Charisma.cs:21-36 and Buff.cs:45-275 -->
+        <!-- Source: server-scripts/Charisma.cs:21-36, Buff.cs:45-275, and BuffSkill.cs:ScaleFearResistChanceBonus -->
         <h3 class="font-semibold mb-2">Bard Song Scaling</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">songPower = 1 + min(max(CHA, 0) × 0.001, 2)
@@ -448,7 +448,8 @@ percentageValue = baseValue × songPower</pre>
           Whole-number fields include Ward, Defense, flat damage, resists, and
           flat resource regeneration. Percentage fields include damage,
           Accuracy, Critical Chance, Haste, Spell Haste, and percentage resource
-          regeneration.
+          regeneration. Fear Resistance follows this formula until it reaches
+          the song's configured cap.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           Charisma does not scale movement Speed, primary attribute bonuses,
@@ -1057,7 +1058,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:441-463 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:457-479 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It

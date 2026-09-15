@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.32.3",
+    "game_version": "0.9.32.4",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -87,32 +87,34 @@
       "span": 1
     },
     "Buff.cs:45-275": {
-      "sha256": "0be5166739dc4575b4b68cb7193fb8450bd8b1a68c17aed4892a3087a53cec4f",
+      "sha256": "6d49eacd7f475f0bde6ddb9c25142d3e84184e261c69a4d91a4eb617ede97f0c",
       "span": 231
     },
     "Buff.cs:70-275": {
-      "sha256": "b70182445536523bdb58061a135b7b8ce8eda48cbe7b7dd854f9940d751b7704",
+      "sha256": "26ab4a138eaa9acafc4607fed4bc4b0d211525f797e9bc84272bd1d611da3b53",
       "span": 206
     },
     "Buff.cs:97-111": {
       "sha256": "bfe166efaaf5af733c72a2a96884bf9ad1aff31b8a94e01e2eb8d2bc501286d5",
       "span": 15
     },
-    "BuffSkill.cs:32": {
-      "sha256": "5c5234712e6c42f9a196742db4236ebde94ed463b0ef5fc56081ecfbde7fdd4b",
-      "span": 1
-    },
-    "BuffSkill.cs:441-463": {
+    "BuffSkill.cs:457-479": {
       "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
       "span": 23
     },
-    "BuffSkill.cs:65-75": {
+    "BuffSkill.cs:69-79": {
       "sha256": "8b32d6149a986adc58660e3c21b38464076bc60972581c5e59be8429643d9afa",
       "span": 11
     },
     "BuffSkill.cs:7-12": {
       "sha256": "a81cd66dd210393e8c6b716d753b564a77d542dc6125726368901f5a547a561c",
       "span": 6
+    },
+    "BuffSkill.cs:ScaleFearResistChanceBonus": {
+      "span": 0
+    },
+    "BuffSkill.cs:illusionRace": {
+      "span": 0
     },
     "ChestHouse.cs:173-176": {
       "sha256": "13314e6c427b5e812b2350342e52de7c91188da986ed0364021ad738393ab2f4",
@@ -414,41 +416,9 @@
       "sha256": "55d196d94057980f3ad334b373897aacf1ea6c0822dd136bc309ca8b7e6431cd",
       "span": 25
     },
-    "Database.cs:3001-3009": {
-      "sha256": "a8a82010c56158a399e655df0e55b275e649d6b07f5f2c30506b1a2973736122",
-      "span": 9
-    },
-    "Database.cs:3012-3020": {
-      "sha256": "3c37c1ad643cbbb11b5d590adf1d26cb844f55240d367e9cdc4aca7dcfc4ac1a",
-      "span": 9
-    },
-    "Database.cs:3023-3031": {
-      "sha256": "6f6b4e23a36c7fc2301c1f3190087fb57b5062538b3636531e4bad21a0636df6",
-      "span": 9
-    },
-    "Database.cs:3034-3041": {
-      "sha256": "9146982f541b6011a1b2bcd1991ed864579f76ad267f4ee029e0e411fb3e7876",
-      "span": 8
-    },
-    "Database.cs:3044-3052": {
-      "sha256": "f6feec03c954cb94f19075539439b2cc9e87c7e2287d6dce0b8d5ff7eec61f09",
-      "span": 9
-    },
-    "Database.cs:3055-3062": {
-      "sha256": "db300228a15a8d5c9e9f034eb40c229ccc969ab400ab7a25421809876bc2ff96",
-      "span": 8
-    },
-    "Database.cs:3065-3072": {
-      "sha256": "c5c3f5c1fdc1d634481ac0af2297d0de4c957d507bd123fc5f2ffbe6544033e9",
-      "span": 8
-    },
     "Database.cs:3118-3120": {
       "sha256": "23734c664b5a574cd9d409f800c556456df6ef660a79f41055ea390d89fe33ec",
       "span": 3
-    },
-    "Database.cs:3683-3691": {
-      "sha256": "1285044f3a2584daa5b709ebc85e9d36144af2f9598904b39ca66afb91fd30bd",
-      "span": 9
     },
     "Database.cs:425-435": {
       "sha256": "2d70b7ae188d1b620a1b9dff437ede00223ffdf9162fcf934e8119c89bfd4eb9",
@@ -462,6 +432,9 @@
       "span": 0
     },
     "Database.cs:CharacterCreate": {
+      "span": 0
+    },
+    "Database.cs:setFactionValue": {
       "span": 0
     },
     "DefaultEvent.cs:137-143": {
@@ -1573,23 +1546,22 @@
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
     },
-    "PlayerSkills.cs:1313-1323": {
+    "PlayerSkills.cs:1344-1354": {
       "sha256": "b29e15ecbe6940988a82e17799178d710430ab081d60f05e43067a30cf7e813a",
       "span": 11
     },
-    "PlayerSkills.cs:1433-1435": {
+    "PlayerSkills.cs:1464-1466": {
       "sha256": "a2351298960d849f3cd5726bf79f470f7151ff8235f89e60b136ed4cf058ed44",
       "span": 3
     },
-    "PlayerSkills.cs:1457-1512": {
+    "PlayerSkills.cs:1488-1543": {
       "sha256": "e3611fd868f2c7bdcaa343a24d42335912812d0d982888cb9181b0767f8f8c99",
       "span": 56
     },
-    "PlayerSkills.cs:1946-1964": {
-      "sha256": "369a5b179cbb248a24116d865a91cf074a3886b0f5a2cce6ca81a77fea1cfe8f",
-      "span": 19
-    },
     "PlayerSkills.cs:GetMaximumActiveBardSongs": {
+      "span": 0
+    },
+    "PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32": {
       "span": 0
     },
     "Portal.cs:49": {
