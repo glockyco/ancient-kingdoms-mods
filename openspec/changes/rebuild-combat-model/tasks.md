@@ -13,9 +13,9 @@
 
 ## 2. Class domain
 
-- [ ] 2.1 Replace the resource-type filter in `planner_payload.py` with declared supported and excluded class sets and emit a `classDomain` block with each exclusion reason. Verify a pipeline test fails when the export contains a class that is in neither set.
-- [ ] 2.2 Refuse a build of an excluded class in `catalog-resolver.ts` with the reason. Verify with a test that a Bard build is refused and names the song-system reason.
-- [ ] 2.3 Rebuild the payload and verify the reproducibility tests pass with the new block and the redaction check covers it.
+- [x] 2.1 Replace the resource-type filter in `planner_payload.py` with declared supported and excluded class sets and emit a `classDomain` block with each exclusion reason. Verify a pipeline test fails when the export contains a class that is in neither set.
+- [x] 2.2 Refuse a build of an excluded class in `catalog-resolver.ts` with the reason. Verify with a test that a Bard build is refused and names the song-system reason.
+- [x] 2.3 Rebuild the payload and verify the reproducibility tests pass with the new block and the redaction check covers it.
 
 ## 3. Harness measurement
 

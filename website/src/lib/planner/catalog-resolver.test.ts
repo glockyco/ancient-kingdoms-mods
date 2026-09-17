@@ -183,6 +183,15 @@ function catalog() {
   };
   return {
     build: buildEnvelope,
+    classDomain: {
+      supported: ["warrior"],
+      excluded: [
+        {
+          classId: "bard",
+          reason: "The Bard song system has no combat model.",
+        },
+      ],
+    },
     classes: [
       {
         id: "warrior",
@@ -353,14 +362,12 @@ function logicalBuild() {
         healthMultiplier: null,
         resourceMultiplier: null,
         baseCombat: null,
-        skills: [
-          {
-            skillId: "mercenary_strike",
-            skillName: "mercenary_strike",
-            level: 1,
-            pool: "normal",
-          },
-        ],
+        skills: [] as {
+          skillId: string;
+          skillName: string;
+          level: number;
+          pool: string;
+        }[],
         equipment: [],
       },
     ],
@@ -439,16 +446,23 @@ describe("catalog logical-build resolver", () => {
     expect(resolved.player.actions.map((action) => action.id)).toEqual([
       "melee_attack",
     ]);
-    expect(resolved.companions[0].actions.map((action) => action.id)).toEqual([
-      "mercenary_strike",
+    // A level 2 owner gives its mercenary level 0 skills, so it has nothing to cast.
+    expect(resolved.companions[0].skills).toEqual([
+      {
+        id: "mercenary_strike",
+        name: "mercenary_strike",
+        level: 0,
+        classification: "modelled",
+      },
     ]);
+    expect(resolved.companions[0].actions).toEqual([]);
     expect(result.entities.map((entity) => entity.entityId)).toEqual([
       "player",
       "mercenary",
     ]);
     expect(result.entities[0].abilities[0].actionId).toBe("melee_attack");
     expect(result.entities[0].abilities[0].cast.mean).toBeGreaterThan(0);
-    expect(result.entities[1].damage.mean).toBeGreaterThan(0);
+    expect(result.entities[1].damage.mean).toBe(0);
     expect(result.identities.replicates).toBe(4);
   });
 
@@ -505,6 +519,29 @@ describe("catalog logical-build resolver", () => {
     });
     expect(capture.producer.id).toBe("character-capture");
     expect(capturedResult).toEqual(authoredResult);
+  });
+
+  it("refuses a declared companion skill level that disagrees with the owner's progression", () => {
+    const build = logicalBuild();
+    build.companions[0].skills = [
+      {
+        skillId: "mercenary_strike",
+        skillName: "mercenary_strike",
+        level: 1,
+        pool: "normal",
+      },
+    ];
+    expect(() => resolveLogicalBuild(build, catalog())).toThrow(
+      "declares mercenary_strike at level 1; the owner's progression gives 0",
+    );
+  });
+
+  it("refuses a build of an excluded class with the catalog's reason", () => {
+    const bard = logicalBuild();
+    bard.player.classId = "bard";
+    expect(() => resolveLogicalBuild(bard, catalog())).toThrow(
+      "buildData.player.classId names excluded class 'bard': The Bard song system has no combat model.",
+    );
   });
 
   it("resolves inherent armor sets by exported stable identity", () => {

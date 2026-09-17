@@ -16,7 +16,18 @@ from compendium.redactions.verify import Subject
 RAW_PAYLOAD_NAME = "planner-data.json"
 COMPRESSED_PAYLOAD_NAME = f"{RAW_PAYLOAD_NAME}.gz"
 SERIALIZED_SCHEMA_VERSION = 3
-MODEL_VERSION = "1"
+MODEL_VERSION = "2"
+SUPPORTED_CLASS_IDS = frozenset(
+    {"warrior", "ranger", "cleric", "rogue", "wizard", "druid"}
+)
+# A class the export contains that the engine does not model. Each entry names its reason so
+# a reader of the payload sees the exclusion instead of an absent row.
+EXCLUDED_CLASS_REASONS: dict[str, str] = {
+    "bard": (
+        "The Bard song system (BardSongSkill and its sibling skill classes, active-song "
+        "state, auras, renewal, and charm) has no combat model."
+    ),
+}
 ADMITTED_ITEM_TYPES = frozenset(
     {"equipment", "weapon", "augment", "food", "potion", "ammo", "book"}
 )
@@ -266,16 +277,22 @@ def _build_payload(
     surviving_skills = _ids(conn, "skills")
     surviving_pets = _ids(conn, "pets")
     surviving_classes = _ids(conn, "classes")
-    # The combat evaluator currently models consumable mana and energy pools.
-    # Classes with another resource remain in the compendium but are not emitted
-    # into the planner catalog until that resource engine is modelled.
-    combat_resource_by_class = {
-        str(row.get("id")): row.get("resource_type") for row in classes_combat
-    }
-    planner_class_ids = {
-        class_id
-        for class_id in surviving_classes
-        if combat_resource_by_class.get(class_id) in {"mana", "energy"}
+    undeclared_classes = (
+        surviving_classes - SUPPORTED_CLASS_IDS - EXCLUDED_CLASS_REASONS.keys()
+    )
+    if undeclared_classes:
+        raise PlannerPayloadError(
+            "Planner class domain does not declare exported classes: "
+            + ", ".join(sorted(undeclared_classes))
+        )
+    planner_class_ids = surviving_classes & SUPPORTED_CLASS_IDS
+    class_domain = {
+        "supported": sorted(planner_class_ids),
+        "excluded": [
+            {"classId": class_id, "reason": reason}
+            for class_id, reason in sorted(EXCLUDED_CLASS_REASONS.items())
+            if class_id in surviving_classes
+        ],
     }
 
     admitted_items = [
@@ -346,6 +363,7 @@ def _build_payload(
 
     return {
         "build": _build_envelope(export_dir, snapshot_path),
+        "classDomain": class_domain,
         "classes": _sorted_rows(class_rows),
         "classCombat": _sorted_rows(combat_rows),
         "equipmentSlots": sorted(

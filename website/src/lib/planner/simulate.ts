@@ -1,4 +1,4 @@
-import type { BuildEnvelope } from "./build-envelope";
+import { MODEL_VERSION, type BuildEnvelope } from "./build-envelope";
 import {
   runReplicate,
   type ActionCounts,
@@ -9,8 +9,6 @@ import {
 import { createRandomSource, replicateSeed } from "./random";
 import type { DamageKind } from "./scenario";
 
-export const MODEL_VERSION = "2" as const;
-
 /** A sampled quantity summarised over replicates. */
 export interface SampledValue {
   mean: number;
@@ -20,6 +18,8 @@ export interface SampledValue {
 
 export interface AbilitySummary {
   actionId: string;
+  /** Why the action could not be cast at the initial state, or null when it could. */
+  initialRefusal: string | null;
   damage: SampledValue;
   cast: SampledValue;
   refused: SampledValue;
@@ -114,6 +114,7 @@ export function simulate(input: SimulationInput): SimulationResult {
       damagePerSecond: summarise(damage.map((value) => value / horizon)),
       abilities: actionIds.map((actionId) => ({
         actionId,
+        initialRefusal: results[0].initialRefusals.get(id)!.get(actionId)!,
         damage: summarise(
           results.map(
             (result) => result.damageByAbility.get(id)!.get(actionId) ?? 0,
@@ -196,7 +197,7 @@ export function summarise(values: readonly number[]): SampledValue {
 
 function countSummaries(
   counts: readonly (ActionCounts | undefined)[],
-): Omit<AbilitySummary, "actionId" | "damage"> {
+): Omit<AbilitySummary, "actionId" | "initialRefusal" | "damage"> {
   const pick = (key: keyof ActionCounts): SampledValue =>
     summarise(counts.map((entry) => entry?.[key] ?? 0));
   return {

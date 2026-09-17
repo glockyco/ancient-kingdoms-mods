@@ -1,5 +1,5 @@
 export const SERIALIZED_SCHEMA_VERSION = 3 as const;
-export const MODEL_VERSION = "1" as const;
+export const MODEL_VERSION = "2" as const;
 
 export interface GameDataVersion {
   gameVersion: string;

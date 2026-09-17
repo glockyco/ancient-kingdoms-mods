@@ -12,6 +12,7 @@ import {
 } from "./caster";
 import {
   buildCompanionCombatState,
+  companionSkillLevel,
   type CompanionArchetype,
   type CompanionCombatState,
   type CompanionRace,
@@ -53,6 +54,7 @@ import { parseBuildEnvelope, type BuildEnvelope } from "./build-envelope";
 
 const CATALOG_FIELDS = new Set([
   "build",
+  "classDomain",
   "classes",
   "classCombat",
   "equipmentSlots",
@@ -152,6 +154,7 @@ interface CatalogContext {
   books: Map<string, Record<string, unknown>>;
   classifications: Map<string, "modelled" | "excluded">;
   progression: Record<string, unknown>;
+  classDomain: { supported: Set<string>; excluded: Map<string, string> };
 }
 
 export interface ResolvedSkill {
@@ -518,8 +521,32 @@ function parseCatalog(value: unknown): CatalogContext {
     classifications.set(kind, status);
   }
 
+  const domain = record(catalog.classDomain, "catalog.classDomain");
+  const supported = new Set(
+    stringArray(domain, "supported", "catalog.classDomain.supported"),
+  );
+  const excluded = new Map<string, string>();
+  for (const [index, entry] of array(domain, "excluded").entries()) {
+    const path = `catalog.classDomain.excluded[${index}]`;
+    const exclusion = record(entry, path);
+    const classId = requiredString(exclusion, "classId", `${path}.classId`);
+    if (supported.has(classId) || excluded.has(classId))
+      throw new Error(`Catalog class domain declares '${classId}' twice`);
+    excluded.set(
+      classId,
+      requiredString(exclusion, "reason", `${path}.reason`),
+    );
+  }
+  for (const classId of supported) {
+    if (!CASTER_CLASSES.has(classId as CasterClass))
+      throw new Error(
+        `Catalog class domain supports '${classId}', which the engine does not model`,
+      );
+  }
+
   return {
     build: parseBuildEnvelope(catalog.build),
+    classDomain: { supported, excluded },
     classes: indexById(array(catalog, "classes"), "catalog.classes"),
     classCombat: indexById(
       array(catalog, "classCombat"),
@@ -566,7 +593,11 @@ function resolvePlayer(
   catalog: CatalogContext,
 ): { player: ResolvedPlayer; skillLevels: Readonly<Record<string, number>> } {
   const player = build.player;
-  const classId = casterClass(player.classId, "buildData.player.classId");
+  const classId = casterClass(
+    catalog,
+    player.classId,
+    "buildData.player.classId",
+  );
   const classDefinition = requireIdentity(
     catalog.classes,
     classId,
@@ -1179,7 +1210,11 @@ function resolveCompanion(
     );
   }
   const archetype = archetypes[0];
-  const classId = casterClass(companion.archetypeId, "companion.archetypeId");
+  const classId = casterClass(
+    catalog,
+    companion.archetypeId,
+    "companion.archetypeId",
+  );
   const classDefinition = requireIdentity(
     catalog.classes,
     classId,
@@ -1197,7 +1232,7 @@ function resolveCompanion(
     companion.level,
     catalog,
   );
-  const admittedSkills = new Set([
+  const orderedSkillIds = [
     ...stringArray(
       archetype,
       "skill_ids",
@@ -1208,41 +1243,57 @@ function resolveCompanion(
       "innate_skill_ids",
       `mercenary ${companion.archetypeId}.innate_skill_ids`,
     ),
-  ]);
-  const skills = companion.skills.map((allocation) => {
+  ];
+  const admittedSkills = new Set(orderedSkillIds);
+  for (const allocation of companion.skills) {
     if (!admittedSkills.has(allocation.skillId)) {
       throw new Error(
         `Companion skill '${allocation.skillId}' is incompatible with '${companion.archetypeId}'`,
       );
     }
+  }
+  // The game derives every companion skill level from its owner's progression. A declared level is
+  // an observation that must agree; it cannot choose a different value.
+  // Source: server-scripts/PetSkills.cs:27-41.
+  const archetypeSkills = orderedSkillIds.map((skillId, index) => {
     const skill = requireIdentity(
       catalog.skills,
-      allocation.skillId,
-      `companion skill '${allocation.skillId}'`,
+      skillId,
+      `companion skill '${skillId}'`,
     );
-    assertOptionalName(
-      allocation.skillName,
-      skill,
-      `companion skill '${allocation.skillId}'`,
+    const level = companionSkillLevel(
+      build.player.level,
+      build.player.veteranPoints,
+      requiredInteger(skill, "max_level", `skill ${skillId}.max_level`),
     );
-    return resolvedSkill(skill, allocation.level, catalog);
+    const declared = companion.skills.find(
+      (allocation) => allocation.skillId === skillId,
+    );
+    if (declared) {
+      assertOptionalName(
+        declared.skillName,
+        skill,
+        `companion skill '${skillId}'`,
+      );
+      if (declared.level !== level) {
+        throw new Error(
+          `Companion '${companion.entityId}' declares ${skillId} at level ${declared.level}; the owner's progression gives ${level}`,
+        );
+      }
+    }
+    return { skillId, index, skill, level };
   });
-  const passiveEffects = companion.skills
-    .map((allocation) => ({
-      allocation,
-      skill: requireIdentity(
-        catalog.skills,
-        allocation.skillId,
-        `companion skill '${allocation.skillId}'`,
-      ),
-    }))
+  const skills = archetypeSkills.map(({ skill, level }) =>
+    resolvedSkill(skill, level, catalog),
+  );
+  const passiveEffects = archetypeSkills
     .filter(
       ({ skill }) =>
         requiredString(skill, "skill_type", "companion skill.skill_type") ===
         "passive",
     )
-    .map(({ allocation, skill }) =>
-      skillEffects(skill, allocation.level, `skill ${allocation.skillId}`),
+    .map(({ skillId, skill, level }) =>
+      skillEffects(skill, level, `skill ${skillId}`),
     );
   const rollValues = [
     companion.healthMultiplier,
@@ -1286,48 +1337,16 @@ function resolveCompanion(
   });
   const resourceKind: "mana" | "energy" =
     classId === "warrior" || classId === "rogue" ? "energy" : "mana";
-  const orderedSkillIds = [
-    ...stringArray(
-      archetype,
-      "skill_ids",
-      `mercenary ${companion.archetypeId}.skill_ids`,
-    ),
-    ...stringArray(
-      archetype,
-      "innate_skill_ids",
-      `mercenary ${companion.archetypeId}.innate_skill_ids`,
-    ),
-  ];
-  const levelById = new Map(
-    companion.skills.map((allocation) => [
-      allocation.skillId,
-      allocation.level,
-    ]),
-  );
-  const actions = orderedSkillIds
-    .map((skillId, index) => ({
-      skillId,
-      index,
-      skill: requireIdentity(
-        catalog.skills,
-        skillId,
-        `companion skill '${skillId}'`,
-      ),
-    }))
-    .filter(({ skill }) => isCastable(skill))
-    .map(({ skillId, index, skill }) => {
-      const level = levelById.get(skillId);
-      if (level === undefined)
-        throw new Error(
-          `Companion '${companion.entityId}' declares no level for archetype skill '${skillId}'`,
-        );
-      return engineAction(skill, level, resourceKind, catalog, {
+  const actions = archetypeSkills
+    .filter(({ skill, level }) => level > 0 && isCastable(skill))
+    .map(({ skill, index, level }) =>
+      engineAction(skill, level, resourceKind, catalog, {
         defaultAttack: index === 0,
-      });
-    });
-  if (actions.length === 0 || !actions[0].defaultAttack)
+      }),
+    );
+  if (actions.length > 0 && !actions[0].defaultAttack)
     throw new Error(
-      `Companion archetype '${companion.archetypeId}' lists no castable default attack first`,
+      `Companion archetype '${companion.archetypeId}' does not list its default attack first`,
     );
   return {
     entityId: companion.entityId,
@@ -2092,8 +2111,15 @@ function damageKind(value: string, path: string): DamageKind {
   return normalized as DamageKind;
 }
 
-function casterClass(value: string, path: string): CasterClass {
-  if (!CASTER_CLASSES.has(value as CasterClass))
+function casterClass(
+  catalog: CatalogContext,
+  value: string,
+  path: string,
+): CasterClass {
+  const reason = catalog.classDomain.excluded.get(value);
+  if (reason !== undefined)
+    throw new Error(`${path} names excluded class '${value}': ${reason}`);
+  if (!catalog.classDomain.supported.has(value))
     throw new TypeError(`${path} has unsupported class '${value}'`);
   return value as CasterClass;
 }

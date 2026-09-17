@@ -97,7 +97,8 @@ export function companionPolicy(): ActionPolicy {
   return {
     decide(view, now, random): ActionDecision {
       const [defaultAction, ...specials] = view.actions;
-      if (!defaultAction || !defaultAction.defaultAttack)
+      if (!defaultAction) return { kind: "wait", until: null };
+      if (!defaultAction.defaultAttack)
         throw new Error(`${view.id} must list its default attack first`);
       if (view.classId === "warrior") {
         const challenge = specials.find(

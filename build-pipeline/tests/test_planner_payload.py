@@ -165,7 +165,7 @@ class PlannerPayloadTests(unittest.TestCase):
             hashlib.sha256(first_compressed).hexdigest(), second.content_sha256
         )
 
-    def test_non_consumable_resource_class_stays_out_of_planner_catalog(self):
+    def test_excluded_class_is_named_with_its_reason(self):
         self.conn.execute("INSERT INTO classes VALUES ('bard')")
         self.conn.execute("INSERT INTO skills VALUES ('anthem_of_focus')")
 
@@ -207,6 +207,18 @@ class PlannerPayloadTests(unittest.TestCase):
 
         self.assertNotIn("bard", {row["id"] for row in payload["classes"]})
         self.assertNotIn("anthem_of_focus", {row["id"] for row in payload["skills"]})
+        self.assertEqual(payload["classDomain"]["supported"], ["warrior"])
+        self.assertEqual(
+            [entry["classId"] for entry in payload["classDomain"]["excluded"]],
+            ["bard"],
+        )
+        self.assertIn("song", payload["classDomain"]["excluded"][0]["reason"])
+
+    def test_class_in_neither_domain_set_fails_publication(self):
+        self.conn.execute("INSERT INTO classes VALUES ('monk')")
+
+        with self.assertRaisesRegex(PlannerPayloadError, "monk"):
+            self._write()
 
     def test_failure_deletes_stale_and_partial_outputs(self):
         self.output.mkdir()

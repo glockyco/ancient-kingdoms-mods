@@ -211,6 +211,8 @@ export interface ActionCounts {
 }
 
 export interface ReplicateResult {
+  /** Refusal reason for each action at the initial state, or null when castable. */
+  initialRefusals: Map<string, Map<string, string | null>>;
   damageByEntity: Map<string, number>;
   damageByAbility: Map<string, Map<string, number>>;
   damageBySchool: Map<string, Map<DamageKind, number>>;
@@ -334,6 +336,7 @@ class Engine {
   private readonly entities = new Map<string, EntityState>();
   private readonly target: TargetState;
   private readonly result: ReplicateResult = {
+    initialRefusals: new Map(),
     damageByEntity: new Map(),
     damageByAbility: new Map(),
     damageBySchool: new Map(),
@@ -400,7 +403,18 @@ class Engine {
     }
     for (let second = 1; second <= input.horizon; second += 1)
       this.queue.push({ at: second, kind: "tick" });
-    for (const entity of this.entities.values()) this.scheduleDecide(entity, 0);
+    for (const entity of this.entities.values()) {
+      this.result.initialRefusals.set(
+        entity.input.id,
+        new Map(
+          entity.input.actions.map((action) => [
+            action.id,
+            this.gate(entity, action).refusal,
+          ]),
+        ),
+      );
+      this.scheduleDecide(entity, 0);
+    }
   }
 
   run(): ReplicateResult {
