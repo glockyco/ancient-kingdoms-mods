@@ -6,12 +6,14 @@ using CombatVerification.Dtos;
 using CombatVerification.Fixtures;
 using CombatVerification.Probes;
 using HotRepl.Control;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace CombatVerification.Commands
 {
     public sealed class ObserveFixtureArgs
     {
+        [JsonProperty("fixture", Required = Required.Always)]
         public FixtureDescriptor Fixture { get; set; }
     }
 

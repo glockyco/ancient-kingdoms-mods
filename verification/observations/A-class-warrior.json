@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "A-class-warrior",
+    "tier": "A",
+    "coverage": "A.class.Warrior",
+    "path": "verification/fixtures/a/A-class-warrior.json",
+    "contentSha256": "db163c9f068eb6327347b97c08e5efce4257f3e36f408bbf4878b2ecef375265"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-17T20:47:54.941305+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-class-warrior.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "None requested."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 0 items, cleared 4 slots the fixture does not declare."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 18,
+      "constitution": 26,
+      "dexterity": 14,
+      "intelligence": 11,
+      "wisdom": 9,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "A",
+    "seed": 1124023600,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "state",
+    "measurements": [
+      {
+        "quantity": "statSheet",
+        "unit": "stat",
+        "samplingUnit": "reading",
+        "windowSeconds": null,
+        "samples": [
+          {
+            "character": {
+              "kind": "player",
+              "archetype": "Warrior",
+              "race": "Human",
+              "level": 50,
+              "attributes": {
+                "strength": 18,
+                "constitution": 26,
+                "dexterity": 14,
+                "charisma": 9,
+                "intelligence": 11,
+                "wisdom": 9
+              },
+              "learnedBookIds": [],
+              "combat": {
+                "accuracy": 0.007000000216066837,
+                "blockChance": 0.05780000239610672,
+                "coldResist": 0.0,
+                "criticalChance": 0.004200000315904617,
+                "criticalResist": 0.007000000216066837,
+                "damage": 18.0,
+                "defense": 0.0,
+                "diseaseResist": 0.0,
+                "fearResistChance": 0.0,
+                "fireResist": 0.0,
+                "haste": 0.0,
+                "magicDamage": 16.0,
+                "magicResist": 0.0,
+                "poisonResist": 6.0,
+                "spellHaste": 0.0
+              },
+              "resources": {
+                "healthMax": 1680,
+                "healthCurrent": 1680,
+                "healthRecoveryRate": 35,
+                "healthMultiplier": 1.0,
+                "manaMax": 220,
+                "manaRecoveryRate": 4,
+                "manaMultiplier": 1.0,
+                "energyMax": 445,
+                "energyRecoveryRate": -9,
+                "energyMultiplier": 1.0
+              },
+              "equipment": [],
+              "activeSets": []
+            },
+            "companions": []
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

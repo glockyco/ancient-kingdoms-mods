@@ -1562,6 +1562,10 @@
       "sha256": "b29e15ecbe6940988a82e17799178d710430ab081d60f05e43067a30cf7e813a",
       "span": 11
     },
+    "PlayerSkills.cs:1387": {
+      "sha256": "d07607abcfeb533c5d00bf97cf034538aa485a9c466d88fe61a402cc16e4fd10",
+      "span": 1
+    },
     "PlayerSkills.cs:1464-1466": {
       "sha256": "a2351298960d849f3cd5726bf79f470f7151ff8235f89e60b136ed4cf058ed44",
       "span": 3

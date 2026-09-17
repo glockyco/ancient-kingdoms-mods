@@ -171,6 +171,7 @@ namespace CombatVerification.Materialization
                         Level = skill.level,
                         MaxLevel = skill.maxLevel,
                         IsVeteran = skill.data.isVeteran,
+                        LearnDefault = skill.data.learnDefault,
                     });
                 }
 

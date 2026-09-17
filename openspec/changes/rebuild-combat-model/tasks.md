@@ -24,7 +24,7 @@
 - [x] 3.3 Remove `Comparison/`, `BaselineCommands.cs`, their DTOs, and their tests. Verify the mod and test projects build.
 - [x] 3.4 Remove scratch reuse from `VerificationScratch` and `VerifyCommand`; create a fresh scratch database per fixture attempt. Verify the build-tool tests cover fresh creation and removal per fixture and that no reuse marker is written.
 - [x] 3.5 Write `verification/observations/<fixture>.json` from `VerifyCommand` for each completed fixture and report each failed stage without writing. Verify with a build-tool test that a readback mismatch writes no file and that the run continues.
-- [ ] 3.6 Run `build-tool verify` for one tier A fixture end to end and confirm the player save hash is unchanged. Verify the observation file exists and carries the current assembly hash.
+- [x] 3.6 Run `build-tool verify` for one tier A fixture end to end and confirm the player save hash is unchanged. Verify the observation file exists and carries the current assembly hash.
 - [ ] 3.7 Materialize the fixture target through engine paths: resolve the declared spawn at its level, place the player in cast range with the declared facing, and read the target's state back before measurement. Verify with a game-backed run that the target-state probe reports the declared spawn and level and that a mismatch stops the measurement.
 - [ ] 3.8 Drive the declared action schedule through `PlayerSkills.CmdUse` with the declared repetition and window, recording attempted, accepted, completed, and landed counts from the probes, and extend `fixture.observe` to tiers B, C, and D. Verify with a game-backed run that one tier C window records intervals and counts and that a refused action is counted, not dropped.
 

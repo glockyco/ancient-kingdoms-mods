@@ -13,6 +13,15 @@ namespace CombatVerification.Materialization
         public int Level { get; set; }
         public int MaxLevel { get; set; }
         public bool IsVeteran { get; set; }
+
+        /// <summary>
+        /// A default skill is held at level 1 from creation and cannot fall below it.
+        /// Source: server-scripts/PlayerSkills.cs:1387.
+        /// </summary>
+        public bool LearnDefault { get; set; }
+
+        /// <summary>The level the game grants before any point is spent.</summary>
+        public int FloorLevel => LearnDefault ? 1 : 0;
     }
 
     /// <summary>

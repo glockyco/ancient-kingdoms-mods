@@ -118,7 +118,8 @@ namespace CombatVerification.Materialization
         /// A fixture declares the points it allocates, not the totals it ends with, so spending
         /// them twice produces a character no fixture describes and no error reports. Books
         /// are permanent and also cannot be applied twice. A newly created character is at
-        /// level one with nothing granted, so neither points nor books can have been used.
+        /// level one with every skill at the floor the game grants, so neither points nor
+        /// books can have been used.
         /// </remarks>
         private static bool CheckUntouched(
             ICharacterUnderConstruction character, List<BuildStep> steps)
@@ -128,7 +129,7 @@ namespace CombatVerification.Materialization
                 && character.UnspentSkillPoints == 0
                 && character.TotalVeteranPoints == 0
                 && character.LearnedBookIds.Count == 0
-                && character.Skills.All(skill => skill.Level == 0)
+                && character.Skills.All(skill => skill.Level == skill.FloorLevel)
                 && character.Companions.Count == 0)
                 return true;
 
@@ -137,7 +138,7 @@ namespace CombatVerification.Materialization
                 + $"{character.UnspentAttributePoints} attribute and "
                 + $"{character.UnspentSkillPoints} skill points unspent and "
                 + $"{character.LearnedBookIds.Count} learned books, "
-                + $"{character.Skills.Count(skill => skill.Level > 0)} learned skills, and "
+                + $"{character.Skills.Count(skill => skill.Level > skill.FloorLevel)} upgraded skills, and "
                 + $"{character.Companions.Count} companions. A build allocates what a fixture "
                 + "declares, so it runs once on a newly created character.");
         }
