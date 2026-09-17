@@ -9,7 +9,7 @@
 - [x] 1.7 Move `companion.ts` to a sampled companion policy with the 2 to 4 s timer, uniform ready-skill choice, haste-reduced follow-up cooldown, and healer reserve, and record the in-range state. Verify with tests that the sampled special-action gaps over 1,000 windows stay inside the source-cited 2 to 4 s timer bound.
 - [x] 1.8 Add `simulate.ts` that runs the declared replicates over a parsed scenario and returns per-entity, per-ability, per-school totals, cast, refused, and landed counts, and effect uptimes with mean, standard error, and replicate count. Verify with tests that identical inputs produce byte-identical results and that two builds under one seed consume identical draws while their event orders agree.
 - [x] 1.9 Delete `evaluate.ts`, `rotation.ts`, `uncertainty.ts`, and their tests. Verify `pnpm check` passes with no reference to the removed exports.
-- [ ] 1.10 Measure the default replicate count against the level-50 default build over a 60 s window and record it in `docs/combat-model/evidence.md`. Verify the standard error at that count is below one percent of the mean.
+- [x] 1.10 Measure the default replicate count against the level-50 default build over a 60 s window and record it in `docs/combat-model/evidence.md`. Verify the standard error at that count is below one percent of the mean.
 
 ## 2. Class domain
 
