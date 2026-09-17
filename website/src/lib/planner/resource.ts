@@ -34,20 +34,6 @@ export function recoverResourceTick(
   return setResourceCurrent(state, state.current + state.recoveryPerTick);
 }
 
-export function recoverResourceTicks(
-  state: CombatResourceState,
-  count: number,
-): CombatResourceState {
-  if (!Number.isInteger(count) || count < 0) {
-    throw new RangeError("resource tick count must be a non-negative integer");
-  }
-  let current = state;
-  for (let index = 0; index < count; index += 1) {
-    current = recoverResourceTick(current);
-  }
-  return current;
-}
-
 /** Source: server-scripts/Skills.cs:414-439. */
 export function resourceRecoveryPerTick(args: {
   base: number;
@@ -62,20 +48,6 @@ export function resourceRecoveryPerTick(args: {
     iround(multiplyF32(args.buffPercent, args.maximum)) +
     args.flatBonus
   );
-}
-
-/** Source: server-scripts/Skills.cs:979-1003. */
-export function spendResource(
-  state: CombatResourceState,
-  amount: number,
-): CombatResourceState {
-  if (amount < 0) throw new RangeError("resource cost must not be negative");
-  if (amount > state.current) {
-    throw new RangeError(
-      `insufficient ${state.kind}: requires ${amount}, has ${state.current}`,
-    );
-  }
-  return setResourceCurrent(state, state.current - amount);
 }
 
 /** Source: server-scripts/Combat.cs:1583-1590. */
@@ -148,19 +120,5 @@ export function applyOutgoingDamageReturn(args: {
   return {
     state: setResourceCurrent(args.state, args.state.current + amount),
     amount,
-  };
-}
-
-/**
- * Resource burn happens inside Apply before the ordinary skill cost is charged.
- * Source: server-scripts/TargetDamageSkill.cs:128-169 and
- * server-scripts/TargetProjectileSkill.cs:216-220.
- */
-export function burnCurrentResource(
-  state: CombatResourceState,
-): ResourceTransition {
-  return {
-    state: setResourceCurrent(state, 0),
-    amount: state.current * 2,
   };
 }

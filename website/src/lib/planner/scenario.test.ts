@@ -56,6 +56,9 @@ function validScenario(): Record<string, unknown> {
     roster: ["player"],
     targetCount: 1,
     durabilityLoss: false,
+    includeHorizonEvents: true,
+    seed: 7,
+    replicates: 4,
   };
 }
 
@@ -87,6 +90,9 @@ describe("parseEvaluationScenario", () => {
     "roster",
     "targetCount",
     "durabilityLoss",
+    "includeHorizonEvents",
+    "seed",
+    "replicates",
   ])("refuses a missing %s field", (field) => {
     const scenario = validScenario();
     delete scenario[field];
@@ -115,6 +121,14 @@ describe("parseEvaluationScenario", () => {
     scenario.targetCount = 2;
     expect(() => parseEvaluationScenario(scenario, build)).toThrow(
       "Unsupported target count 2; expected 1",
+    );
+  });
+
+  it("refuses a replicate count below one and names the field", () => {
+    const scenario = validScenario();
+    scenario.replicates = 0;
+    expect(() => parseEvaluationScenario(scenario, build)).toThrow(
+      "scenario.replicates",
     );
   });
 
@@ -252,6 +266,8 @@ describe("parseEvaluationScenario", () => {
       targetMaximumHealth: 1_000_000,
       roster: ["player"],
       horizonSeconds: 120,
+      seed: 1,
+      replicates: 8,
       initialResources: [
         {
           entityId: "player",
@@ -264,6 +280,8 @@ describe("parseEvaluationScenario", () => {
 
     expect(scenario.name).toBe(DEFAULT_SCENARIO_NAME);
     expect(scenario.target.stationary).toBe(true);
+    expect(scenario.replicates).toBe(8);
+    expect(scenario.includeHorizonEvents).toBe(true);
     expect(scenario.incomingEvents).toEqual([]);
     expect(scenario.initialResources).toContainEqual({
       entityId: "training_dummy",

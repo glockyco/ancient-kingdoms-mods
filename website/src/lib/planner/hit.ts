@@ -1,11 +1,5 @@
-import {
-  addF32,
-  ceilToInt,
-  clamp,
-  expectedBernoulli,
-  iround,
-  multiplyF32,
-} from "./engine-math";
+import { addF32, ceilToInt, clamp, iround, multiplyF32 } from "./engine-math";
+import type { RandomSource } from "./random";
 import type { DamageKind } from "./scenario";
 import {
   hitAvoidanceProbability,
@@ -76,46 +70,59 @@ export interface DamageIntent {
   damageType: DamageKind;
   bypassAvoidanceAndMitigation: boolean;
   resourceSpent: { resource: "energy" | "mana"; amount: number } | null;
-  normalizedDefects: string[];
   ignoredPopulatedFields: string[];
 }
 
-export interface HitEvaluation {
-  refused: string | null;
-  intent: DamageIntent | null;
-  avoidanceProbability: number;
-  landedDamage: number;
-  expectedDamage: number;
-  nonCriticalBand: [number, number];
-  ammunitionPerCast: number;
-}
-
-export interface HitEvaluationOptions {
+export interface HitOptions {
   sameFacing?: boolean;
   movingPlayerTarget?: boolean;
-  normalizeKnownDefects?: boolean;
 }
 
-export function evaluateHit(
+/** A hit whose deterministic terms are fixed; only the draws remain. */
+export type PreparedHit =
+  | { refused: string; intent: null }
+  | {
+      refused: null;
+      intent: DamageIntent;
+      avoidanceProbability: number;
+      criticalChance: number;
+      ammunitionPerCast: number;
+      /** Landed non-critical damage for one variance roll in [0.9, 1.1]. */
+      landed: (varianceRoll: number) => number;
+      /** Landed non-critical damage at the extreme variance rolls. */
+      supportBand: [number, number];
+      /** Critical damage for a landed amount. Source: server-scripts/Combat.cs:864-880. */
+      critical: (landedDamage: number) => number;
+    };
+
+export interface HitOutcome {
+  avoided: boolean;
+  critical: boolean;
+  varianceRoll: number;
+  damage: number;
+}
+
+/**
+ * Fixes every deterministic term of one hit from current caster and target state. Source order:
+ * server-scripts/Combat.cs:702 (avoidance), :774 (variance), :865 (critical).
+ */
+export function prepareHit(
   caster: HitCaster,
   target: HitTarget,
   skill: DamageSkillSpec,
-  options: HitEvaluationOptions = {},
-): HitEvaluation {
+  options: HitOptions = {},
+): PreparedHit {
   const refusal = hitRefusal(caster, target, skill);
-  if (refusal) return refusedHit(refusal);
-  if (isInvulnerable(target)) return refusedHit("target is invulnerable");
+  if (refusal) return { refused: refusal, intent: null };
+  if (isInvulnerable(target))
+    return { refused: "target is invulnerable", intent: null };
 
-  const intent = buildDamageIntent(
-    caster,
-    skill,
-    options.normalizeKnownDefects ?? true,
-  );
+  const intent = buildDamageIntent(caster, skill);
   const positional =
     options.sameFacing === true &&
     (skill.skillClass === "target_damage" ||
       skill.skillClass === "target_projectile");
-  const pipelineOptions = { ...options, sameFacing: positional };
+  const pipelineOptions: HitOptions = { ...options, sameFacing: positional };
   const movingIntent = options.movingPlayerTarget
     ? intent.amount + Math.trunc(multiplyF32(intent.amount, 0.1))
     : intent.amount;
@@ -128,75 +135,59 @@ export function evaluateHit(
     movingPlayerTarget: options.movingPlayerTarget,
     manaburn: intent.bypassAvoidanceAndMitigation,
   });
-
-  const minimum = landedNonCriticalDamage(
-    movingIntent,
-    0.9,
-    caster,
-    target,
-    intent,
-    pipelineOptions,
-  );
-  const landedDamage = landedNonCriticalDamage(
-    movingIntent,
-    1,
-    caster,
-    target,
-    intent,
-    pipelineOptions,
-  );
-  const maximum = landedNonCriticalDamage(
-    movingIntent,
-    1.1,
-    caster,
-    target,
-    intent,
-    pipelineOptions,
-  );
+  const landed = (varianceRoll: number): number =>
+    landedNonCriticalDamage(
+      movingIntent,
+      varianceRoll,
+      caster,
+      target,
+      intent,
+      pipelineOptions,
+    );
   const criticalMultiplier = addF32(
     1,
     multiplyF32(0.5, 1 - clamp(target.criticalResist ?? 0, 0, 1)),
   );
-  const criticalDamage =
-    landedDamage > 3
-      ? iround(multiplyF32(landedDamage, criticalMultiplier))
-      : landedDamage;
-  const expectedLandedDamage = expectedBernoulli(
-    caster.criticalChance,
-    criticalDamage,
-    landedDamage,
-  );
-
   return {
     refused: null,
     intent,
     avoidanceProbability,
-    landedDamage,
-    expectedDamage: expectedBernoulli(
-      1 - avoidanceProbability,
-      expectedLandedDamage,
-    ),
-    nonCriticalBand: [minimum, maximum],
+    criticalChance: caster.criticalChance,
     ammunitionPerCast: ammunitionPerCast(caster, skill),
+    landed,
+    supportBand: [landed(0.9), landed(1.1)],
+    critical: (landedDamage) =>
+      iround(multiplyF32(landedDamage, criticalMultiplier)),
+  };
+}
+
+/** Draws avoidance, variance, and the critical roll in the engine's order. */
+export function sampleHit(
+  hit: Extract<PreparedHit, { refused: null }>,
+  random: RandomSource,
+): HitOutcome {
+  if (random.bernoulli(hit.avoidanceProbability))
+    return { avoided: true, critical: false, varianceRoll: 1, damage: 0 };
+  const varianceRoll = random.range(0.9, 1.1);
+  const landed = hit.landed(varianceRoll);
+  const critical = landed > 3 && random.bernoulli(hit.criticalChance);
+  return {
+    avoided: false,
+    critical,
+    varianceRoll,
+    damage: critical ? hit.critical(landed) : landed,
   };
 }
 
 export function buildDamageIntent(
   caster: HitCaster,
   skill: DamageSkillSpec,
-  normalizeKnownDefects = true,
 ): DamageIntent {
   const resourceBurn = resourceBurnIntent(caster, skill);
   if (resourceBurn) return resourceBurn;
 
-  const normalizedDefects: string[] = [];
   const ignoredPopulatedFields: string[] = [];
-  let stat = handlerCombatStat(
-    caster,
-    skill,
-    normalizeKnownDefects,
-    normalizedDefects,
-  );
+  let stat = handlerCombatStat(caster, skill);
   if (skill.isScroll) stat = 0;
   if (skill.requiredWeaponCategory2) {
     ignoredPopulatedFields.push("requiredWeaponCategory2");
@@ -216,14 +207,13 @@ export function buildDamageIntent(
     damageType: skill.damageType,
     bypassAvoidanceAndMitigation: skill.isManaburn === true,
     resourceSpent: null,
-    normalizedDefects,
     ignoredPopulatedFields,
   };
 }
 
 export function weaponGateRefusal(
-  caster: HitCaster,
-  skill: DamageSkillSpec,
+  caster: Pick<HitCaster, "kind" | "classId" | "weapons">,
+  skill: Pick<DamageSkillSpec, "id" | "requiredWeaponCategory">,
 ): string | null {
   const required = skill.requiredWeaponCategory.trim();
   if (!required) return null;
@@ -246,7 +236,7 @@ export function weaponGateRefusal(
   return null;
 }
 
-function hitRefusal(
+export function hitRefusal(
   caster: HitCaster,
   target: HitTarget,
   skill: DamageSkillSpec,
@@ -282,7 +272,6 @@ function resourceBurnIntent(
       damageType: skill.damageType,
       bypassAvoidanceAndMitigation: true,
       resourceSpent: { resource: "energy", amount: caster.energyCurrent },
-      normalizedDefects: [],
       ignoredPopulatedFields: [],
     };
   }
@@ -292,19 +281,13 @@ function resourceBurnIntent(
       damageType: skill.damageType,
       bypassAvoidanceAndMitigation: true,
       resourceSpent: { resource: "mana", amount: caster.manaCurrent },
-      normalizedDefects: [],
       ignoredPopulatedFields: [],
     };
   }
   return null;
 }
 
-function handlerCombatStat(
-  caster: HitCaster,
-  skill: DamageSkillSpec,
-  normalizeKnownDefects: boolean,
-  normalizedDefects: string[],
-): number {
+function handlerCombatStat(caster: HitCaster, skill: DamageSkillSpec): number {
   if (
     skill.skillClass !== "frontal_projectiles" &&
     skill.declaredDamage <= 0 &&
@@ -314,64 +297,35 @@ function handlerCombatStat(
   }
   switch (skill.skillClass) {
     case "target_damage":
-      return targetDamageStat(
-        caster,
-        skill,
-        normalizeKnownDefects,
-        normalizedDefects,
-      );
+      return targetDamageStat(caster, skill);
     case "frontal_damage":
-      return frontalDamageStat(
-        caster,
-        skill,
-        normalizeKnownDefects,
-        normalizedDefects,
-      );
+      return frontalDamageStat(caster, skill);
     case "area_damage":
       return areaDamageStat(caster, skill);
     case "target_projectile":
-      return targetProjectileStat(
-        caster,
-        skill,
-        normalizeKnownDefects,
-        normalizedDefects,
-      );
+      return targetProjectileStat(caster, skill);
     case "frontal_projectiles":
       return frontalProjectilesStat(caster, skill);
   }
 }
 
-function targetDamageStat(
-  caster: HitCaster,
-  skill: DamageSkillSpec,
-  normalizeKnownDefects: boolean,
-  normalizedDefects: string[],
-): number {
+/**
+ * Source: server-scripts/TargetDamageSkill.cs:218-223. A broken offhand still subtracts the damage
+ * it no longer grants; see docs/game-bugs/broken-offhand-subtracts-damage-it-never-gave.md.
+ */
+function targetDamageStat(caster: HitCaster, skill: DamageSkillSpec): number {
   let stat = baseCombatStat(caster, skill, true);
   if (caster.kind === "player" && caster.classId === "ranger") {
-    stat -= offhandDamageForMelee(
-      caster,
-      normalizeKnownDefects,
-      normalizedDefects,
-    );
+    stat -= offhandDamageForMelee(caster);
   }
   if (caster.kind === "player" && caster.classId === "rogue") {
     const offhand = occupiedWeapon(caster, 13);
-    if (offhand && (!normalizeKnownDefects || offhand.durability > 0)) {
-      stat -= ceilToInt(multiplyF32(offhand.damageBonus, 0.5));
-    } else if (offhand && normalizeKnownDefects) {
-      normalizedDefects.push("broken offhand subtraction");
-    }
+    if (offhand) stat -= ceilToInt(multiplyF32(offhand.damageBonus, 0.5));
   }
   return stat;
 }
 
-function frontalDamageStat(
-  caster: HitCaster,
-  skill: DamageSkillSpec,
-  normalizeKnownDefects: boolean,
-  normalizedDefects: string[],
-): number {
+function frontalDamageStat(caster: HitCaster, skill: DamageSkillSpec): number {
   let stat: number;
   if (isMagicSchoolWithoutPoison(skill.damageType)) {
     stat = caster.magicDamage;
@@ -385,11 +339,7 @@ function frontalDamageStat(
   }
   if (isMagicWeaponSkill(skill)) stat += caster.damage;
   if (caster.kind === "player" && caster.classId === "ranger") {
-    stat -= offhandDamageForMelee(
-      caster,
-      normalizeKnownDefects,
-      normalizedDefects,
-    );
+    stat -= offhandDamageForMelee(caster);
   }
   return stat;
 }
@@ -400,11 +350,13 @@ function areaDamageStat(caster: HitCaster, skill: DamageSkillSpec): number {
     : caster.damage;
 }
 
+/**
+ * Source: server-scripts/TargetProjectileSkill.cs:196-201. A bow without a melee weapon subtracts its own
+ * damage; see docs/game-bugs/a-bow-without-a-melee-weapon-cancels-its-own-damage.md.
+ */
 function targetProjectileStat(
   caster: HitCaster,
   skill: DamageSkillSpec,
-  normalizeKnownDefects: boolean,
-  normalizedDefects: string[],
 ): number {
   let stat: number;
   if (isMagicSchoolWithoutPoison(skill.damageType)) {
@@ -414,17 +366,8 @@ function targetProjectileStat(
     skill.requiredWeaponCategory === "Bow"
   ) {
     stat = caster.damage + rangedDexterityBonus(caster);
-    const weaponToRemove = normalizeKnownDefects
-      ? activeWeapon(caster, 12)
-      : firstOccupiedWeapon(caster);
+    const weaponToRemove = firstOccupiedWeapon(caster);
     if (weaponToRemove) stat -= weaponToRemove.damageBonus;
-    if (
-      normalizeKnownDefects &&
-      !activeWeapon(caster, 12) &&
-      occupiedWeapon(caster, 13)
-    ) {
-      normalizedDefects.push("bow-only self-subtraction");
-    }
   } else if (caster.kind === "companion" && caster.classId === "ranger") {
     stat = caster.damage + rangedDexterityBonus(caster);
   } else if (skill.damageType === "poison") {
@@ -485,7 +428,7 @@ function landedNonCriticalDamage(
   caster: HitCaster,
   target: HitTarget,
   damageIntent: DamageIntent,
-  options: HitEvaluationOptions,
+  options: HitOptions,
 ): number {
   if (intent <= 0) return 0;
   let amount = iround(multiplyF32(intent, variance));
@@ -507,18 +450,8 @@ function landedNonCriticalDamage(
     : mitigateLandedDamage(amount, target, damageIntent.damageType);
 }
 
-function offhandDamageForMelee(
-  caster: HitCaster,
-  normalizeKnownDefects: boolean,
-  normalizedDefects: string[],
-): number {
-  const offhand = occupiedWeapon(caster, 13);
-  if (!offhand) return 0;
-  if (normalizeKnownDefects && offhand.durability <= 0) {
-    normalizedDefects.push("broken offhand subtraction");
-    return 0;
-  }
-  return offhand.damageBonus;
+function offhandDamageForMelee(caster: HitCaster): number {
+  return occupiedWeapon(caster, 13)?.damageBonus ?? 0;
 }
 
 export function requiredAmmunitionForSkill(
@@ -557,14 +490,6 @@ function occupiedWeapon(
   );
 }
 
-function activeWeapon(
-  caster: HitCaster,
-  slot: number,
-): EquippedWeapon | undefined {
-  const weapon = occupiedWeapon(caster, slot);
-  return weapon && weapon.durability > 0 ? weapon : undefined;
-}
-
 function firstOccupiedWeapon(
   caster: Pick<HitCaster, "weapons">,
 ): EquippedWeapon | undefined {
@@ -596,16 +521,4 @@ function isMagicWeaponSkill(skill: DamageSkillSpec): boolean {
     !skill.isSpell &&
     skill.requiredWeaponCategory.startsWith("Weapon")
   );
-}
-
-function refusedHit(refused: string): HitEvaluation {
-  return {
-    refused,
-    intent: null,
-    avoidanceProbability: 0,
-    landedDamage: 0,
-    expectedDamage: 0,
-    nonCriticalBand: [0, 0],
-    ammunitionPerCast: 0,
-  };
 }

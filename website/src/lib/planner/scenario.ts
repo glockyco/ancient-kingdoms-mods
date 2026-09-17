@@ -4,7 +4,7 @@ import {
   type BuildEnvelope,
 } from "./build-envelope";
 
-export const SCENARIO_SCHEMA_VERSION = 1 as const;
+export const SCENARIO_SCHEMA_VERSION = 2 as const;
 export const SUPPORTED_TARGET_COUNT = 1 as const;
 export const DEFAULT_SCENARIO_NAME = "Stationary training dummy" as const;
 
@@ -69,6 +69,10 @@ export interface EvaluationScenario {
   roster: string[];
   targetCount: number;
   durabilityLoss: false;
+  /** Whether an event at exactly the horizon is applied. Hits in flight at the horizon never are. */
+  includeHorizonEvents: boolean;
+  seed: number;
+  replicates: number;
 }
 
 const SCENARIO_FIELDS = {
@@ -86,6 +90,9 @@ const SCENARIO_FIELDS = {
   roster: true,
   targetCount: true,
   durabilityLoss: true,
+  includeHorizonEvents: true,
+  seed: true,
+  replicates: true,
 } as const satisfies Readonly<Record<keyof EvaluationScenario, true>>;
 const TARGET_FIELDS = {
   id: true,
@@ -416,6 +423,17 @@ export function parseEvaluationScenario(
     roster,
     targetCount,
     durabilityLoss: false,
+    includeHorizonEvents: requireBoolean(
+      scenario,
+      "includeHorizonEvents",
+      "scenario.includeHorizonEvents",
+    ),
+    seed: requireNonNegativeInteger(scenario, "seed", "scenario.seed"),
+    replicates: requirePositiveInteger(
+      scenario,
+      "replicates",
+      "scenario.replicates",
+    ),
   };
 }
 
@@ -425,6 +443,8 @@ export function createDefaultEvaluationScenario(args: {
   targetMaximumHealth: number;
   roster: string[];
   horizonSeconds: number;
+  seed: number;
+  replicates: number;
   initialResources?: EvaluationScenario["initialResources"];
 }): EvaluationScenario {
   return parseEvaluationScenario(
@@ -451,6 +471,9 @@ export function createDefaultEvaluationScenario(args: {
       roster: args.roster,
       targetCount: SUPPORTED_TARGET_COUNT,
       durabilityLoss: false,
+      includeHorizonEvents: true,
+      seed: args.seed,
+      replicates: args.replicates,
     },
     args.build,
   );

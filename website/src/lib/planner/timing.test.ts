@@ -2,12 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   effectiveCastTime,
   effectiveSkillCooldown,
-  fractionalCooldownCapacity,
   playerSkillRefractory,
   playerWeaponInterval,
   reduceActiveCooldown,
-  scheduledCastCompletions,
-  scheduledCooldownUses,
 } from "./timing";
 
 describe("player timing", () => {
@@ -65,23 +62,5 @@ describe("cooldown timing", () => {
     expect(reduceActiveCooldown(200, 0.25)).toBe(170);
     expect(reduceActiveCooldown(20, 0.25)).toBe(15);
     expect(reduceActiveCooldown(0, 0.25)).toBe(0);
-  });
-
-  it("keeps fractional capacity out of the executable schedule", () => {
-    expect(scheduledCooldownUses(60, 45)).toEqual([0, 45]);
-    expect(fractionalCooldownCapacity(60, 45)).toBeCloseTo(2.3333333333);
-    expect(scheduledCooldownUses(90, 120)).toEqual([0]);
-    expect(fractionalCooldownCapacity(90, 120)).toBe(1.75);
-    expect(scheduledCooldownUses(90, 45)).toEqual([0, 45, 90]);
-    expect(fractionalCooldownCapacity(90, 45)).toBe(3);
-  });
-
-  it("starts cooldown after cast completion on the event timeline", () => {
-    expect(
-      scheduledCastCompletions({ horizon: 10, castTime: 1, cooldown: 4 }),
-    ).toEqual([
-      { readyAt: 0, completesAt: 1 },
-      { readyAt: 5, completesAt: 6 },
-    ]);
   });
 });

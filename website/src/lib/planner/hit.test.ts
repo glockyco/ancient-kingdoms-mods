@@ -1,12 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
   buildDamageIntent,
-  evaluateHit,
+  prepareHit,
+  sampleHit,
   weaponGateRefusal,
   type DamageSkillSpec,
   type HitCaster,
   type HitTarget,
+  type PreparedHit,
 } from "./hit";
+import { createRandomSource } from "./random";
+
+function ready(hit: PreparedHit): Extract<PreparedHit, { refused: null }> {
+  if (hit.refused !== null) throw new Error(hit.refused);
+  return hit;
+}
 
 const target: HitTarget = {
   level: 55,
@@ -179,7 +187,7 @@ describe("slot-specific damage", () => {
     ).toBe(1_085);
   });
 
-  it("normalizes subtraction of a broken offhand that gave no stat", () => {
+  it("subtracts a broken offhand that gave no stat, as the game does", () => {
     const ranger = caster({
       classId: "ranger",
       damage: 500,
@@ -193,21 +201,12 @@ describe("slot-specific damage", () => {
         },
       ],
     });
-    const normalized = buildDamageIntent(ranger, skill({ declaredDamage: 1 }));
-    const engine = buildDamageIntent(
-      ranger,
-      skill({ declaredDamage: 1 }),
-      false,
+    expect(buildDamageIntent(ranger, skill({ declaredDamage: 1 })).amount).toBe(
+      401,
     );
-
-    expect(normalized.amount).toBe(501);
-    expect(normalized.normalizedDefects).toContain(
-      "broken offhand subtraction",
-    );
-    expect(engine.amount).toBe(401);
   });
 
-  it("normalizes a bow subtracting itself when slot 12 is empty", () => {
+  it("lets a bow subtract itself when slot 12 is empty, as the game does", () => {
     const ranger = caster({
       classId: "ranger",
       damage: 409,
@@ -227,12 +226,7 @@ describe("slot-specific damage", () => {
       requiredWeaponCategory: "Bow",
       declaredDamage: 1,
     });
-    const normalized = buildDamageIntent(ranger, bowSkill);
-    const engine = buildDamageIntent(ranger, bowSkill, false);
-
-    expect(normalized.amount).toBe(410);
-    expect(normalized.normalizedDefects).toContain("bow-only self-subtraction");
-    expect(engine.amount).toBe(106);
+    expect(buildDamageIntent(ranger, bowSkill).amount).toBe(106);
   });
 });
 
@@ -240,11 +234,11 @@ describe("hit gates", () => {
   it("accepts assassination at one quarter health and refuses above it", () => {
     const assassination = skill({ isAssassination: true });
     expect(
-      evaluateHit(caster(), { ...target, currentHealth: 250 }, assassination)
+      prepareHit(caster(), { ...target, currentHealth: 250 }, assassination)
         .refused,
     ).toBeNull();
     expect(
-      evaluateHit(caster(), { ...target, currentHealth: 251 }, assassination)
+      prepareHit(caster(), { ...target, currentHealth: 251 }, assassination)
         .refused,
     ).toContain("one quarter");
   });
@@ -272,24 +266,23 @@ describe("hit gates", () => {
       ammunition: { arrow: 0 },
       endlessQuiver: true,
     });
-    expect(evaluateHit(ranger, target, projectile).refused).toContain(
+    expect(prepareHit(ranger, target, projectile).refused).toContain(
       "requires ammunition arrow",
     );
-    const supplied = evaluateHit(
-      { ...ranger, ammunition: { arrow: 1 } },
-      target,
-      projectile,
+    const supplied = ready(
+      prepareHit({ ...ranger, ammunition: { arrow: 1 } }, target, projectile),
     );
     expect(supplied.ammunitionPerCast).toBe(0.5);
   });
 
   it("does not require or consume ammunition without a weapon gate", () => {
-    const result = evaluateHit(
-      caster({ ammunition: { arrow: 0 } }),
-      target,
-      skill({ skillClass: "target_projectile" }),
+    const result = ready(
+      prepareHit(
+        caster({ ammunition: { arrow: 0 } }),
+        target,
+        skill({ skillClass: "target_projectile" }),
+      ),
     );
-    expect(result.refused).toBeNull();
     expect(result.ammunitionPerCast).toBe(0);
   });
 });
@@ -302,87 +295,126 @@ describe("ordered landed-hit pipeline", () => {
       dexterity: 0,
       weapons: [],
     });
-    const result = evaluateHit(rogue, target, skill({ declaredDamage: 1 }));
+    const result = ready(
+      prepareHit(rogue, target, skill({ declaredDamage: 1 })),
+    );
 
-    expect(result.intent?.amount).toBe(464);
-    expect(result.landedDamage).toBe(271);
-    expect(result.nonCriticalBand).toEqual([245, 298]);
+    expect(result.intent.amount).toBe(464);
+    expect(result.landed(1)).toBe(271);
+    expect(result.supportBand).toEqual([245, 298]);
+  });
+
+  it("draws avoidance, variance, and the critical roll from the random source", () => {
+    const rogue = caster({
+      level: 50,
+      damage: 463,
+      dexterity: 0,
+      criticalChance: 0.5,
+      weapons: [],
+    });
+    const hit = ready(
+      prepareHit(
+        rogue,
+        { ...target, blockChance: 0.1 },
+        skill({ declaredDamage: 1 }),
+      ),
+    );
+    const outcomes = Array.from({ length: 4 }, () =>
+      sampleHit(hit, createRandomSource(42)),
+    );
+    expect(new Set(outcomes.map((outcome) => outcome.damage)).size).toBe(1);
+    const [outcome] = outcomes;
+    expect(outcome.avoided).toBe(false);
+    expect(outcome.damage).toBeGreaterThanOrEqual(245);
+    expect(outcome.damage).toBeLessThanOrEqual(hit.critical(298));
+
+    let avoided = 0;
+    const random = createRandomSource(7);
+    for (let index = 0; index < 10_000; index += 1) {
+      if (sampleHit(hit, random).avoided) avoided += 1;
+    }
+    expect(avoided / 10_000).toBeCloseTo(hit.avoidanceProbability, 1);
   });
 
   it("uses the enhanced facing bonus only when the Rogue skill is active", () => {
-    const ordinary = evaluateHit(
-      caster({ classId: "rogue", weapons: [] }),
-      target,
-      skill(),
-      { sameFacing: true },
+    const ordinary = ready(
+      prepareHit(caster({ classId: "rogue", weapons: [] }), target, skill(), {
+        sameFacing: true,
+      }),
     );
-    const enhanced = evaluateHit(
-      caster({ classId: "rogue", enhancedBackstab: true, weapons: [] }),
-      target,
-      skill(),
-      { sameFacing: true },
+    const enhanced = ready(
+      prepareHit(
+        caster({ classId: "rogue", enhancedBackstab: true, weapons: [] }),
+        target,
+        skill(),
+        { sameFacing: true },
+      ),
     );
-    expect(ordinary.landedDamage).toBe(79);
-    expect(enhanced.landedDamage).toBe(90);
+    expect(ordinary.landed(1)).toBe(79);
+    expect(enhanced.landed(1)).toBe(90);
   });
 
   it("does not apply target-skill facing bonuses to area damage", () => {
-    const result = evaluateHit(
-      caster({ weapons: [] }),
-      { ...target, level: 55 },
-      skill({ skillClass: "area_damage" }),
-      { sameFacing: true },
+    const result = ready(
+      prepareHit(
+        caster({ weapons: [] }),
+        { ...target, level: 55 },
+        skill({ skillClass: "area_damage" }),
+        { sameFacing: true },
+      ),
     );
-    expect(result.intent?.amount).toBe(110);
-    expect(result.landedDamage).toBe(71);
+    expect(result.intent.amount).toBe(110);
+    expect(result.landed(1)).toBe(71);
   });
 
   it("applies critical resistance after mitigation with midpoint rounding", () => {
-    const result = evaluateHit(
-      caster({
-        level: 50,
-        damage: 463,
-        dexterity: 0,
-        criticalChance: 1,
-        accuracy: 0.025,
-        weapons: [],
-      }),
-      target,
-      skill({ declaredDamage: 1 }),
+    const result = ready(
+      prepareHit(
+        caster({ level: 50, damage: 463, dexterity: 0, weapons: [] }),
+        target,
+        skill({ declaredDamage: 1 }),
+      ),
     );
-    expect(result.landedDamage).toBe(271);
-    expect(result.expectedDamage).toBe(406);
+    expect(result.critical(271)).toBe(406);
+    const resisted = ready(
+      prepareHit(
+        caster({ level: 50, damage: 463, dexterity: 0, weapons: [] }),
+        { ...target, criticalResist: 0.5 },
+        skill({ declaredDamage: 1 }),
+      ),
+    );
+    expect(resisted.critical(271)).toBe(339);
   });
 
   it("bypasses avoidance and mitigation for resource burn", () => {
-    const result = evaluateHit(
-      caster({
-        classId: "rogue",
-        energyCurrent: 500,
-        criticalChance: 0,
-      }),
-      { ...target, defense: 10_000, blockChance: 0.9 },
-      skill({ isManaburn: true, declaredDamage: 0 }),
+    const result = ready(
+      prepareHit(
+        caster({ classId: "rogue", energyCurrent: 500, criticalChance: 0 }),
+        { ...target, defense: 10_000, blockChance: 0.9 },
+        skill({ isManaburn: true, declaredDamage: 0 }),
+      ),
     );
 
-    expect(result.intent?.amount).toBe(1_000);
-    expect(result.intent?.resourceSpent).toEqual({
+    expect(result.intent.amount).toBe(1_000);
+    expect(result.intent.resourceSpent).toEqual({
       resource: "energy",
       amount: 500,
     });
     expect(result.avoidanceProbability).toBe(0);
-    expect(result.landedDamage).toBe(1_000);
+    expect(result.landed(1)).toBe(1_000);
   });
 
   it("keeps resource-burn bypass for handlers that do not replace intent", () => {
-    const result = evaluateHit(
-      caster({ weapons: [] }),
-      { ...target, defense: 10_000, blockChance: 0.9 },
-      skill({ skillClass: "area_damage", isManaburn: true }),
+    const result = ready(
+      prepareHit(
+        caster({ weapons: [] }),
+        { ...target, defense: 10_000, blockChance: 0.9 },
+        skill({ skillClass: "area_damage", isManaburn: true }),
+      ),
     );
-    expect(result.intent?.amount).toBe(110);
-    expect(result.intent?.resourceSpent).toBeNull();
+    expect(result.intent.amount).toBe(110);
+    expect(result.intent.resourceSpent).toBeNull();
     expect(result.avoidanceProbability).toBe(0);
-    expect(result.landedDamage).toBe(110);
+    expect(result.landed(1)).toBe(110);
   });
 });

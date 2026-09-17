@@ -290,6 +290,13 @@ def _build_payload(
         for field in ("food_buff_id", "potion_buff_id", "weapon_proc_effect_id")
         if item.get(field)
     }
+    mercenary_skill_ids = {
+        str(skill_id)
+        for pet in pets
+        if pet.get("id") in surviving_pets and pet.get("is_mercenary") is True
+        for field in ("skill_ids", "innate_skill_ids")
+        for skill_id in pet.get(field) or ()
+    }
     emitted_skills = [
         skill
         for skill in skills
@@ -303,6 +310,7 @@ def _build_payload(
                 & planner_class_ids
             )
             or bool(skill.get("is_mercenary_skill"))
+            or skill.get("id") in mercenary_skill_ids
             or skill.get("id") in effect_skill_ids
         )
     ]

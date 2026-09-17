@@ -4,8 +4,6 @@ import {
   ceilToInt,
   divideF32,
   clamp,
-  expectedBernoulli,
-  expectedUniform,
   f32,
   floorToInt,
   iround,
@@ -49,13 +47,5 @@ describe("engine numeric primitives", () => {
     expect(clamp(1.25, 0, 0.8) * 100).toBe(80);
     expect(clamp(-0.25, 0, 0.8) * 100).toBe(0);
     expect(() => clamp(0, 1, 0)).toThrow("minimum must not exceed maximum");
-  });
-
-  it("substitutes exact expectations for supported random terms", () => {
-    expect(expectedBernoulli(0.25, 40, 8)).toBe(16);
-    expect(expectedUniform(0.9, 1.1)).toBe(1);
-    expect(() => expectedBernoulli(1.01, 1)).toThrow(
-      "probability must be between 0 and 1",
-    );
   });
 });

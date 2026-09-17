@@ -8,11 +8,6 @@ export interface SkillTiming {
   followupDefaultAttack: boolean;
 }
 
-export interface ScheduledCast {
-  readyAt: number;
-  completesAt: number;
-}
-
 /** Source: server-scripts/Player.cs:3236-3275. */
 export function playerWeaponInterval(
   weaponDelay: number,
@@ -70,65 +65,4 @@ export function reduceActiveCooldown(
     0,
     addF32(remaining, -Math.min(multiplyF32(remaining, reductionPercent), 30)),
   );
-}
-
-/**
- * Executes a ready-at-zero skill on cooldown. The long-cooldown policy was
- * measured by harness task 7.12 and includes a cast at the horizon endpoint.
- */
-export function scheduledCooldownUses(
-  horizon: number,
-  cooldown: number,
-  initialRemaining = 0,
-): number[] {
-  if (horizon < 0) throw new RangeError("horizon must not be negative");
-  if (cooldown <= 0) throw new RangeError("cooldown must be positive");
-  if (initialRemaining < 0) {
-    throw new RangeError("initialRemaining must not be negative");
-  }
-  if (initialRemaining > horizon) return [];
-
-  const finalIndex = Math.floor((horizon - initialRemaining) / cooldown);
-  return Array.from(
-    { length: finalIndex + 1 },
-    (_, index) => initialRemaining + index * cooldown,
-  );
-}
-
-/** Fractional search capacity; displayed output uses scheduledCooldownUses. */
-export function fractionalCooldownCapacity(
-  horizon: number,
-  cooldown: number,
-  initialRemaining = 0,
-): number {
-  if (horizon < 0) throw new RangeError("horizon must not be negative");
-  if (cooldown <= 0) throw new RangeError("cooldown must be positive");
-  if (initialRemaining < 0) {
-    throw new RangeError("initialRemaining must not be negative");
-  }
-  if (initialRemaining > horizon) return 0;
-  return 1 + (horizon - initialRemaining) / cooldown;
-}
-
-/**
- * Schedules cast completions when a cooldown begins at completion. This is the
- * event-timeline primitive; cooldown-only capacity remains a search bound.
- */
-export function scheduledCastCompletions(args: {
-  horizon: number;
-  castTime: number;
-  cooldown: number;
-  initialRemaining?: number;
-}): ScheduledCast[] {
-  const { horizon, castTime, cooldown, initialRemaining = 0 } = args;
-  if (castTime < 0) throw new RangeError("castTime must not be negative");
-  const readyTimes = scheduledCooldownUses(
-    Math.max(0, horizon - castTime),
-    cooldown + castTime,
-    initialRemaining,
-  );
-  return readyTimes.map((readyAt) => ({
-    readyAt,
-    completesAt: readyAt + castTime,
-  }));
 }

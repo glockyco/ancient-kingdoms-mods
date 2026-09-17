@@ -3,7 +3,7 @@ import type { BuildEnvelope } from "./build-envelope";
 import { buildCasterStatSheet } from "./caster";
 import { adaptCompleteCapture, parseCaptureBuildRecord } from "./capture-build";
 import { createDefaultEvaluationScenario } from "./scenario";
-import { evaluateLogicalBuild, resolveLogicalBuild } from "./catalog-resolver";
+import { resolveLogicalBuild, simulateLogicalBuild } from "./catalog-resolver";
 
 const zero = { base_value: 0, bonus_per_level: 0 };
 const attributeKeys = [
@@ -169,8 +169,11 @@ function catalog() {
   const mercenary = {
     id: "warrior_mercenary",
     class_id: "warrior",
-    skill_ids: [],
+    skill_ids: ["mercenary_strike"],
     innate_skill_ids: [],
+    has_heals: false,
+    base_mana_recovery_rate: 0,
+    base_energy_recovery_rate: 1,
     ...Object.fromEntries(
       combatStats.flatMap((name) => [
         [`${name}_base`, 0],
@@ -258,6 +261,12 @@ function catalog() {
       skill("training", "passive", {
         damage_percent_bonus: { base_value: 0.1, bonus_per_level: 0 },
       }),
+      skill("mercenary_strike", "target_damage", {
+        player_classes: [],
+        damage: { base_value: 2, bonus_per_level: 0 },
+        cooldown: { base_value: 1, bonus_per_level: 0 },
+        followup_default_attack: true,
+      }),
     ],
     mercenaryArchetypes: [mercenary],
     consumables: [
@@ -344,7 +353,14 @@ function logicalBuild() {
         healthMultiplier: null,
         resourceMultiplier: null,
         baseCombat: null,
-        skills: [],
+        skills: [
+          {
+            skillId: "mercenary_strike",
+            skillName: "mercenary_strike",
+            level: 1,
+            pool: "normal",
+          },
+        ],
         equipment: [],
       },
     ],
@@ -378,8 +394,11 @@ function scenario() {
     targetMaximumHealth: 1_000,
     roster: ["player", "mercenary"],
     horizonSeconds: 5,
+    seed: 3,
+    replicates: 4,
     initialResources: [
       { entityId: "player", resource: "energy", current: 70, maximum: 70 },
+      { entityId: "mercenary", resource: "energy", current: 0, maximum: 0 },
     ],
   });
   value.consumables = [
@@ -392,12 +411,13 @@ function scenario() {
 describe("catalog logical-build resolver", () => {
   it("derives production evaluator inputs from stable catalog identities", () => {
     const resolved = resolveLogicalBuild(logicalBuild(), catalog());
-    const result = evaluateLogicalBuild({
-      id: "catalog-build",
+    const result = simulateLogicalBuild({
       buildData: logicalBuild(),
       catalog: catalog(),
       scenario: scenario(),
+      policy: { kind: "priority", order: ["melee_attack"] },
     });
+    const sheet = buildCasterStatSheet(resolved.player.caster);
 
     expect(resolved.player.attributePointsSpent).toBe(1);
     expect(resolved.player.attributePointBudget).toBe(1);
@@ -414,19 +434,22 @@ describe("catalog logical-build resolver", () => {
       buffSkillId: null,
     });
     expect(resolved.ammunition[0]).toMatchObject({ quantity: 10 });
-    expect(result.caster.attributes.strength).toBe(7);
-    expect(result.caster.damage).toBe(13);
-    expect(result.actions.map((action) => action.actionId)).toEqual([
+    expect(sheet.attributes.strength).toBe(7);
+    expect(sheet.damage).toBe(13);
+    expect(resolved.player.actions.map((action) => action.id)).toEqual([
       "melee_attack",
     ]);
-    expect(
-      evaluateLogicalBuild({
-        id: "catalog-build",
-        buildData: logicalBuild(),
-        catalog: catalog(),
-        scenario: scenario(),
-      }).caster.attributes.strength,
-    ).toBe(7);
+    expect(resolved.companions[0].actions.map((action) => action.id)).toEqual([
+      "mercenary_strike",
+    ]);
+    expect(result.entities.map((entity) => entity.entityId)).toEqual([
+      "player",
+      "mercenary",
+    ]);
+    expect(result.entities[0].abilities[0].actionId).toBe("melee_attack");
+    expect(result.entities[0].abilities[0].cast.mean).toBeGreaterThan(0);
+    expect(result.entities[1].damage.mean).toBeGreaterThan(0);
+    expect(result.identities.replicates).toBe(4);
   });
 
   it("evaluates equivalent authored and captured builds identically", () => {
@@ -462,17 +485,18 @@ describe("catalog logical-build resolver", () => {
     const captured = adaptCompleteCapture(capture);
     const sharedScenario = scenario();
 
-    const authoredResult = evaluateLogicalBuild({
-      id: "authored",
+    const policy = { kind: "priority", order: ["melee_attack"] } as const;
+    const authoredResult = simulateLogicalBuild({
       buildData: authored,
       catalog: catalog(),
       scenario: sharedScenario,
+      policy,
     });
-    const capturedResult = evaluateLogicalBuild({
-      id: "captured",
+    const capturedResult = simulateLogicalBuild({
       buildData: captured,
       catalog: catalog(),
       scenario: sharedScenario,
+      policy,
     });
 
     expect(captured.provenance).toEqual({
@@ -480,12 +504,7 @@ describe("catalog logical-build resolver", () => {
       source: "character-capture",
     });
     expect(capture.producer.id).toBe("character-capture");
-    expect(authoredResult.fixtureId).toBe("authored");
-    expect(capturedResult.fixtureId).toBe("captured");
-    expect({ ...capturedResult, fixtureId: "shared" }).toEqual({
-      ...authoredResult,
-      fixtureId: "shared",
-    });
+    expect(capturedResult).toEqual(authoredResult);
   });
 
   it("resolves inherent armor sets by exported stable identity", () => {

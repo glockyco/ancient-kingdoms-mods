@@ -78,6 +78,8 @@ public class PetExporter : BaseExporter
                 mana_per_level = pet.mana?.baseMana.bonusPerLevel ?? 0,
                 energy_base = pet.energy?.baseEnergy.baseValue ?? 0,
                 energy_per_level = pet.energy?.baseEnergy.bonusPerLevel ?? 0,
+                base_mana_recovery_rate = pet.mana?.baseRecoveryRate ?? 0,
+                base_energy_recovery_rate = pet.energy?.baseRecoveryRate ?? 0,
                 damage_base = pet.combat?.baseDamage.baseValue ?? 0,
                 damage_per_level = pet.combat?.baseDamage.bonusPerLevel ?? 0,
                 magic_damage_base = pet.combat?.baseMagicDamage.baseValue ?? 0,

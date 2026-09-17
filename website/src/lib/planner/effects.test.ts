@@ -1,193 +1,125 @@
 import { describe, expect, it } from "vitest";
 import {
-  activeEffectsAt,
   applyCooldownReduction,
-  applyTimedEffect,
-  assertNoDurabilityLoss,
-  consumeExpectedAmmunition,
-  finiteRefreshUptime,
-  shouldOmitWeakerEffect,
-  steadyRefreshUptime,
-  useDeclaredConsumable,
+  applyEffect,
+  cleanupExpiredEffects,
+  targetStatsWithEffects,
+  type EffectSpec,
   type TimedEffect,
 } from "./effects";
 
-const effect = (overrides: Partial<TimedEffect> = {}): TimedEffect => ({
-  id: "strong",
-  ownerId: "player",
-  category: "Debuff AC",
-  appliedAt: 0,
-  expiresAt: 30,
-  contribution: 340,
-  ...overrides,
-});
+function spec(overrides: Partial<EffectSpec> = {}): EffectSpec {
+  return {
+    skillId: "hunters_sigil",
+    name: "Hunter's Sigil",
+    category: "Debuff AC",
+    duration: 30,
+    recipient: "target",
+    school: "melee",
+    decreasesResists: false,
+    bonuses: { defense: -125 },
+    damagePercent: 0,
+    magicDamagePercent: 0,
+    manaRecoveryPercent: 0,
+    energyRecoveryPercent: 0,
+    manaRecoveryFlat: 0,
+    energyRecoveryFlat: 0,
+    cooldownReductionPercent: 0,
+    ...overrides,
+  };
+}
 
-describe("refresh effects", () => {
-  it("computes exact finite and steady refresh uptime", () => {
-    expect(
-      finiteRefreshUptime({
-        probability: 1,
-        duration: 10,
-        cadence: 30,
-        horizon: 100,
-      }),
-    ).toBe(0.4);
-    expect(steadyRefreshUptime(1, 10, 30)).toBeCloseTo(1 / 3);
-    expect(steadyRefreshUptime(1, 40, 30)).toBe(1);
-  });
+function effect(overrides: Partial<TimedEffect> = {}): TimedEffect {
+  return {
+    spec: spec(),
+    sourceId: "player",
+    recipientId: "dummy",
+    appliedAt: 0,
+    expiresAt: 30,
+    ...overrides,
+  };
+}
 
-  it("accounts for repeated Bernoulli refresh attempts", () => {
-    const probability = 0.4;
-    expect(steadyRefreshUptime(probability, 10, 2)).toBeCloseTo(
-      1 - (1 - probability) ** 5,
-    );
-    expect(
-      finiteRefreshUptime({
-        probability,
-        duration: 10,
-        cadence: 2,
-        horizon: 120,
-      }),
-    ).toBeCloseTo(0.905664);
-  });
-
-  it("reduces every active cooldown with the per-skill cap", () => {
-    expect(
-      applyCooldownReduction({ ready: 0, short: 20, long: 200 }, 0.25),
-    ).toEqual({ ready: 0, short: 15, long: 170 });
-  });
-});
-
-describe("effect categories", () => {
-  it("keeps the newest same-owner category member even when weaker", () => {
-    const weak = effect({
-      id: "weak",
-      appliedAt: 1,
-      expiresAt: 31,
-      contribution: 125,
+describe("applyEffect", () => {
+  it("replaces every effect in the incoming category, whatever its source or magnitude", () => {
+    const stronger = effect();
+    const weaker = effect({
+      spec: spec({ skillId: "tangle_trap", bonuses: { defense: -40 } }),
+      sourceId: "mercenary",
+      appliedAt: 5,
+      expiresAt: 35,
     });
-    expect(applyTimedEffect([effect()], weak)).toEqual([weak]);
+    const applied = applyEffect([stronger], weaker);
+    expect(applied.effects).toEqual([weaker]);
+    expect(applied.replaced).toEqual([stronger]);
   });
 
-  it("isolates category ownership between player and companion", () => {
-    const companion = effect({ id: "companion", ownerId: "mercenary" });
-    const player = effect({ id: "player", contribution: 125 });
-    expect(applyTimedEffect([companion], player)).toEqual([companion, player]);
-  });
-
-  it("keeps uncategorised effects and expires effects at their boundary", () => {
-    const first = effect({ id: "first", category: "" });
-    const second = effect({ id: "second", category: "" });
-    const active = applyTimedEffect([first], second);
-    expect(active).toHaveLength(2);
-    expect(activeEffectsAt(active, 29.999)).toHaveLength(2);
-    expect(activeEffectsAt(active, 30)).toHaveLength(0);
-  });
-
-  it("allows the solver to omit a weaker same-owner action", () => {
-    expect(
-      shouldOmitWeakerEffect([effect()], {
-        ownerId: "player",
-        category: "Debuff AC",
-        contribution: 125,
-      }),
-    ).toBe(true);
-    expect(
-      shouldOmitWeakerEffect([effect()], {
-        ownerId: "mercenary",
-        category: "Debuff AC",
-        contribution: 125,
-      }),
-    ).toBe(false);
-  });
-});
-
-describe("consumables and ammunition", () => {
-  it("uses only declared consumables and applies their timed effect", () => {
-    const result = useDeclaredConsumable({
-      declaredIds: new Set(["elixir"]),
-      stack: { id: "elixir", quantity: 2, infinite: false },
-      spec: {
-        id: "elixir",
-        effect: {
-          id: "strength",
-          category: "Buff Strength",
-          duration: 600,
-          contribution: 25,
-        },
-      },
-      ownerId: "player",
-      now: 5,
-      effects: [],
+  it("refreshes the same skill in place and keeps other categories", () => {
+    const slow = effect({
+      spec: spec({ skillId: "balance", category: "Slow" }),
     });
-    expect(result.stack.quantity).toBe(1);
-    expect(result.effects).toEqual([
-      {
-        id: "strength",
-        ownerId: "player",
-        category: "Buff Strength",
-        appliedAt: 5,
-        expiresAt: 605,
-        contribution: 25,
-      },
+    const refreshed = effect({ appliedAt: 10, expiresAt: 40 });
+    const applied = applyEffect([effect(), slow], refreshed);
+    expect(applied.effects).toEqual([slow, refreshed]);
+    expect(applied.replaced.map((entry) => entry.spec.skillId)).toEqual([
+      "hunters_sigil",
     ]);
-    expect(() =>
-      useDeclaredConsumable({
-        declaredIds: new Set(),
-        stack: { id: "elixir", quantity: 2, infinite: false },
-        spec: { id: "elixir" },
-        ownerId: "player",
-        now: 0,
-        effects: [],
-      }),
-    ).toThrow("not declared");
   });
 
-  it("restores the matching resource without exceeding capacity", () => {
-    const result = useDeclaredConsumable({
-      declaredIds: new Set(["tonic"]),
-      stack: { id: "tonic", quantity: 1, infinite: true },
-      spec: {
-        id: "tonic",
-        resourceRestore: { kind: "mana", amount: 30 },
-      },
-      ownerId: "player",
-      now: 0,
-      effects: [],
-      resource: {
-        kind: "mana",
-        current: 80,
-        maximum: 100,
-        recoveryPerTick: 0,
-        enabled: true,
-        alive: true,
-      },
+  it("does not expire anything for an empty category", () => {
+    const uncategorised = effect({
+      spec: spec({ skillId: "hex", category: "" }),
     });
-    expect(result.stack.quantity).toBe(1);
-    expect(result.resource?.current).toBe(100);
+    expect(applyEffect([effect()], uncategorised).replaced).toEqual([]);
   });
+});
 
-  it("uses deterministic expected ammunition and refuses exhaustion", () => {
-    expect(
-      consumeExpectedAmmunition({
-        available: 10,
-        casts: 10,
-        expectedPerCast: 0.5,
-      }),
-    ).toEqual({ remaining: 5, consumed: 5 });
-    expect(() =>
-      consumeExpectedAmmunition({
-        available: 2,
-        casts: 3,
-        expectedPerCast: 1,
-      }),
-    ).toThrow("requires 3, has 2");
+describe("cleanupExpiredEffects", () => {
+  it("removes an effect only once its duration has elapsed", () => {
+    const expired = effect({ expiresAt: 30 });
+    expect(cleanupExpiredEffects([expired], 29.9).expired).toEqual([]);
+    expect(cleanupExpiredEffects([expired], 30).expired).toEqual([expired]);
   });
+});
 
-  it("refuses durability-loss scenarios", () => {
-    expect(() => assertNoDurabilityLoss(false)).not.toThrow();
-    expect(() => assertNoDurabilityLoss(true)).toThrow(
-      "durability loss is unsupported",
+describe("targetStatsWithEffects", () => {
+  it("adds the defensive bonuses of every active effect", () => {
+    const stats = targetStatsWithEffects(
+      {
+        level: 55,
+        defense: 700,
+        magicResist: 100,
+        poisonResist: 0,
+        fireResist: 0,
+        coldResist: 0,
+        diseaseResist: 0,
+        blockChance: 0.1,
+      },
+      [
+        effect(),
+        effect({
+          spec: spec({ skillId: "hex", bonuses: { magicResist: -50 } }),
+        }),
+      ],
     );
+    expect(stats.defense).toBe(575);
+    expect(stats.magicResist).toBe(50);
+  });
+});
+
+describe("applyCooldownReduction", () => {
+  it("removes the smaller of the percentage and thirty seconds from each remaining cooldown", () => {
+    const reduced = applyCooldownReduction(
+      new Map([
+        ["short", 20],
+        ["long", 110],
+        ["ready", 5],
+      ]),
+      10,
+      0.5,
+    );
+    expect(reduced.get("short")).toBeCloseTo(15);
+    expect(reduced.get("long")).toBeCloseTo(80);
+    expect(reduced.get("ready")).toBe(10);
   });
 });

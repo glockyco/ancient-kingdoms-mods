@@ -32,9 +32,9 @@ The game is 0.9.32.4. The Bard class uses a song resource and five dedicated ski
 them. The planner payload currently drops Bard because its resource type is not mana or energy.
 
 Engine constraints that fix the timeline shape: `NetworkManagerMMO.cs:105-117` runs recovery on a
-one-second tick; casts, swings, and cooldowns use exact timestamps; an expired effect contributes
-until the cleanup pass removes it; the game draws from one shared random generator, so a seed does
-not reproduce a sequence.
+one-second tick; casts, swings, and cooldowns use exact timestamps; `Skills.cs:712-717` removes
+expired effects on every entity update, so an expired effect leaves within one frame; the game draws
+from one shared random generator, so a seed does not reproduce a sequence.
 
 ## Goals / Non-Goals
 
@@ -99,10 +99,10 @@ change and its output could not be executed as an integer schedule.
 ### The hybrid timeline
 
 Actions, projectile arrivals, cooldown expiry, and effect expiry are exact-timestamp events. Resource
-recovery, damage over time, and effect cleanup run on the tick. The queue orders by timestamp, then by
-a stable sequence number, so two events at one timestamp resolve in insertion order. An effect whose
-remaining duration reached zero stays in the recipient's list and contributes until the next cleanup
-tick removes it, because the game does the same.
+recovery and damage over time run on the tick. The queue orders by timestamp, then by a stable
+sequence number, so two events at one timestamp resolve in insertion order. The game removes an
+expired effect on the recipient's next update, which is one frame later; the engine removes it at the
+expiry timestamp because that frame is below its timing resolution.
 
 ### Verification splits at the file boundary
 

@@ -17,17 +17,16 @@ import {
   type CompanionRace,
   type CompanionRoll,
 } from "./companion";
-import {
-  evaluateDeterministicFixture,
-  type DeterministicEvaluationResult,
-  type EvaluationFixtureAction,
-} from "./evaluate";
-import {
-  requiredAmmunitionForSkill,
-  type CasterClass,
-  type DamageSkillClass,
-  type DamageSkillSpec,
-  type EquippedWeapon,
+import type { EffectSpec } from "./effects";
+import type { EngineAction, EngineEntityInput, EngineInput } from "./engine";
+import { companionPolicy, priorityPolicy, schedulePolicy } from "./policy";
+import { simulate, type SimulationResult } from "./simulate";
+import type { DebuffSchool } from "./target";
+import type {
+  CasterClass,
+  DamageSkillClass,
+  DamageSkillSpec,
+  EquippedWeapon,
 } from "./hit";
 import {
   evaluateSkillAllocation,
@@ -45,7 +44,6 @@ import {
   type ItemQuantity,
   type LogicalBuildData,
 } from "./logical-build";
-import { resourceRecoveryPerTick } from "./resource";
 import {
   parseEvaluationScenario,
   type DamageKind,
@@ -91,6 +89,12 @@ const DAMAGE_SKILL_CLASSES = new Set<DamageSkillClass>([
   "area_damage",
   "target_projectile",
   "frontal_projectiles",
+]);
+const EFFECT_SKILL_CLASSES = new Map<string, EffectSpec["recipient"]>([
+  ["target_buff", "self"],
+  ["area_buff", "self"],
+  ["target_debuff", "target"],
+  ["area_debuff", "target"],
 ]);
 const ATTRIBUTE_KEYS: Array<keyof AttributeSet> = [
   "strength",
@@ -165,7 +169,7 @@ export interface ResolvedPlayer {
   caster: CasterStatInput;
   weapons: readonly EquippedWeapon[];
   weaponDelay: number;
-  actions: readonly EvaluationFixtureAction[];
+  actions: readonly EngineAction[];
   skills: readonly ResolvedSkill[];
   attributePointsSpent: number;
   attributePointBudget: number;
@@ -186,7 +190,13 @@ export interface ResolvedCompanion {
   entityId: string;
   archetypeId: string;
   classId: CasterClass;
+  resourceKind: "mana" | "energy";
+  resourceRecoveryBase: number;
+  hasHeals: boolean;
+  weapons: readonly EquippedWeapon[];
   skills: readonly ResolvedSkill[];
+  /** Ordered as the archetype lists them; the first entry is the default attack. */
+  actions: readonly EngineAction[];
   state: CompanionCombatState;
 }
 
@@ -215,12 +225,15 @@ export interface ResolvedLogicalBuild {
   ammunition: readonly ResolvedAmmunition[];
 }
 
-export interface LogicalBuildEvaluationInput {
-  id: string;
+export type PlayerPolicySpec =
+  | { kind: "priority"; order: readonly string[] }
+  | { kind: "schedule"; steps: readonly string[]; repeat: boolean };
+
+export interface LogicalBuildSimulationInput {
   buildData: unknown;
   catalog: unknown;
   scenario: unknown;
-  selection?: Readonly<Record<string, "include" | "exclude">>;
+  policy: PlayerPolicySpec;
 }
 
 interface ResolvedEquipment {
@@ -254,65 +267,110 @@ export function resolveLogicalBuild(
   return resolveInternal(buildValue, catalogValue).value;
 }
 
-export function evaluateLogicalBuild(
-  input: LogicalBuildEvaluationInput,
-): DeterministicEvaluationResult {
+/** Resolves a logical build and scenario through the catalog and runs the sampled engine. */
+export function simulateLogicalBuild(
+  input: LogicalBuildSimulationInput,
+): SimulationResult {
   const resolved = resolveInternal(input.buildData, input.catalog);
   const scenario = parseEvaluationScenario(
     input.scenario,
     resolved.value.build,
   );
   assertScenarioMatchesBuild(scenario, resolved.value);
+  const { player, companions } = resolved.value;
 
-  const activeEffects = scenario.activeBuffs
-    .filter((buff) => buff.targetEntityId === resolved.value.player.entityId)
-    .map((buff) => {
-      const skill = requireIdentity(
-        resolved.catalog.skills,
-        buff.skillId,
-        `scenario.activeBuffs skill '${buff.skillId}'`,
+  const effectSpecFor = (skillId: string, level: number, path: string) =>
+    effectSpecFromSkill(
+      requireIdentity(resolved.catalog.skills, skillId, path),
+      level,
+      resolved.catalog,
+    );
+  const initialResources = new Map<string, number>();
+  const resourceFor = (
+    entityId: string,
+    kind: "mana" | "energy",
+    calculatedMaximum: number,
+  ) => {
+    const resource = scenario.initialResources.find(
+      (candidate) =>
+        candidate.entityId === entityId && candidate.resource === kind,
+    );
+    if (!resource)
+      throw new Error(`scenario has no ${kind} state for ${entityId}`);
+    if (resource.maximum !== calculatedMaximum) {
+      throw new Error(
+        `scenario ${kind} maximum ${resource.maximum} for ${entityId} does not match catalog-derived ${calculatedMaximum}`,
       );
-      requireClassification(
-        resolved.catalog,
-        `skill_type:${requiredString(skill, "skill_type", `skill ${buff.skillId}.skill_type`)}`,
-      );
-      return skillEffects(skill, buff.skillLevel, `skill ${buff.skillId}`);
-    });
-  const caster: CasterStatInput = {
-    ...resolved.value.player.caster,
-    bonusSources: [
-      ...(resolved.value.player.caster.bonusSources ?? []),
-      ...activeEffects.map((effect) => effect.bonuses),
-    ],
-    damagePercentBuffs: activeEffects.map((effect) => effect.damagePercent),
-    magicDamagePercentBuffs: activeEffects.map(
-      (effect) => effect.magicDamagePercent,
-    ),
+    }
+    initialResources.set(entityId, resource.current);
   };
-  const resource = scenario.initialResources.find(
-    (candidate) =>
-      candidate.entityId === resolved.value.player.entityId &&
-      candidate.resource === resolved.value.player.resourceKind,
+
+  const playerSheet = buildCasterStatSheet(player.caster);
+  resourceFor(
+    player.entityId,
+    player.resourceKind,
+    player.resourceKind === "mana" ? playerSheet.mana : playerSheet.energy,
   );
-  if (!resource) {
-    throw new Error(
-      `scenario has no ${resolved.value.player.resourceKind} state for ${resolved.value.player.entityId}`,
-    );
-  }
-  const sheet = buildCasterStatSheet(caster);
-  const calculatedMaximum =
-    resolved.value.player.resourceKind === "mana" ? sheet.mana : sheet.energy;
-  if (resource.maximum !== calculatedMaximum) {
-    throw new Error(
-      `scenario ${resolved.value.player.resourceKind} maximum ${resource.maximum} does not match catalog-derived ${calculatedMaximum}`,
-    );
-  }
-  if (resolved.value.player.resourceKind === "mana") {
-    caster.manaFraction =
-      resource.maximum === 0 ? 0 : resource.current / resource.maximum;
-  } else {
-    caster.energyFraction =
-      resource.maximum === 0 ? 0 : resource.current / resource.maximum;
+  const entities: EngineEntityInput[] = [
+    {
+      id: player.entityId,
+      kind: "player",
+      classId: player.classId,
+      caster: player.caster,
+      weapons: player.weapons,
+      weaponDelay: player.weaponDelay,
+      resourceKind: player.resourceKind,
+      resourceRecovery: {
+        base: player.resourceRecovery.base,
+        equipmentFlat: player.resourceRecovery.equipmentFlat,
+        passivePercent:
+          player.resourceKind === "mana"
+            ? player.resourceRecovery.manaPassivePercent
+            : player.resourceRecovery.energyPassivePercent,
+      },
+      actions: player.actions,
+      policy:
+        input.policy.kind === "priority"
+          ? priorityPolicy(input.policy.order)
+          : schedulePolicy(input.policy),
+      hasHeals: false,
+      endlessQuiver: false,
+      enhancedBackstab: false,
+    },
+    ...companions.map((companion): EngineEntityInput => {
+      resourceFor(
+        companion.entityId,
+        companion.resourceKind,
+        companion.resourceKind === "mana"
+          ? companion.state.sheet.mana
+          : companion.state.sheet.energy,
+      );
+      return {
+        id: companion.entityId,
+        kind: "companion",
+        classId: companion.classId,
+        caster: companion.state.casterInput,
+        weapons: companion.weapons,
+        weaponDelay: 0,
+        resourceKind: companion.resourceKind,
+        resourceRecovery: {
+          base: companion.resourceRecoveryBase,
+          equipmentFlat: 0,
+          passivePercent: 0,
+        },
+        actions: companion.actions,
+        policy: companionPolicy(),
+        hasHeals: companion.hasHeals,
+        endlessQuiver: false,
+        enhancedBackstab: false,
+      };
+    }),
+  ];
+  for (const id of input.policy.kind === "priority"
+    ? input.policy.order
+    : input.policy.steps) {
+    if (!player.actions.some((action) => action.id === id))
+      throw new Error(`policy names unknown player action '${id}'`);
   }
 
   const targetHealth = scenario.initialResources.find(
@@ -320,71 +378,71 @@ export function evaluateLogicalBuild(
       candidate.entityId === scenario.target.id &&
       candidate.resource === "health",
   );
-  if (!targetHealth) {
+  if (!targetHealth)
     throw new Error(
       `scenario has no health state for target ${scenario.target.id}`,
     );
-  }
-  const passivePercent =
-    resolved.value.player.resourceKind === "mana"
-      ? resolved.value.player.resourceRecovery.manaPassivePercent
-      : resolved.value.player.resourceRecovery.energyPassivePercent;
-  const buffPercent = activeEffects.reduce(
-    (total, effect) =>
-      total +
-      (resolved.value.player.resourceKind === "mana"
-        ? effect.manaRecoveryPercent
-        : effect.energyRecoveryPercent),
-    0,
-  );
-  const flatBonus =
-    resolved.value.player.resourceRecovery.equipmentFlat +
-    activeEffects.reduce(
-      (total, effect) =>
-        total +
-        (resolved.value.player.resourceKind === "mana"
-          ? effect.manaRecoveryFlat
-          : effect.energyRecoveryFlat),
-      0,
-    );
-  const actions = resolved.value.player.actions.map((action) => ({
-    ...action,
-    ammunitionItemId: requiredAmmunitionForSkill(
-      {
-        kind: "player",
-        classId: resolved.value.player.classId,
-        weapons: resolved.value.player.weapons,
-      },
-      action.skill,
-    ),
-  }));
 
-  return evaluateDeterministicFixture(
-    {
-      id: input.id,
-      scenario,
-      casterEntityId: resolved.value.player.entityId,
-      casterClassId: resolved.value.player.classId,
-      caster,
-      weapons: resolved.value.player.weapons,
-      resourceKind: resolved.value.player.resourceKind,
-      resourceRecoveryPerTick: resourceRecoveryPerTick({
-        base: resolved.value.player.resourceRecovery.base,
-        passivePercent,
-        buffPercent,
-        flatBonus,
-        maximum: calculatedMaximum,
-      }),
-      weaponDelay: resolved.value.player.weaponDelay,
-      targetHealth: {
-        current: targetHealth.current,
-        maximum: targetHealth.maximum,
+  const engine: EngineInput = {
+    horizon: scenario.horizonSeconds,
+    includeHorizonEvents: scenario.includeHorizonEvents,
+    entities,
+    target: {
+      id: scenario.target.id,
+      stats: {
+        level: scenario.target.level,
+        defense: scenario.target.defense,
+        magicResist: scenario.target.magicResist,
+        poisonResist: scenario.target.poisonResist,
+        fireResist: scenario.target.fireResist,
+        coldResist: scenario.target.coldResist,
+        diseaseResist: scenario.target.diseaseResist,
+        blockChance: scenario.target.blockChance,
+        criticalResist: scenario.target.criticalResist,
+        bossOrElite: scenario.target.bossOrElite,
+        immuneDebuffs: scenario.target.immuneDebuffs,
       },
-      actions,
-      selection: input.selection,
+      currentHealth: targetHealth.current,
+      maximumHealth: targetHealth.maximum,
     },
-    resolved.value.build,
-  );
+    initialResources,
+    initialCooldowns: scenario.initialCooldowns,
+    initialEffects: scenario.activeBuffs.map((buff) => ({
+      sourceId: buff.sourceEntityId,
+      recipientId: buff.targetEntityId,
+      spec: effectSpecFor(
+        buff.skillId,
+        buff.skillLevel,
+        `scenario.activeBuffs skill '${buff.skillId}'`,
+      ),
+      remainingSeconds: buff.remainingSeconds,
+    })),
+    consumables: scenario.consumables.map((entry) => {
+      const consumable = resolved.value.consumables.find(
+        (candidate) => candidate.itemId === entry.itemId,
+      )!;
+      return {
+        entityId: entry.entityId,
+        spec:
+          consumable.buffSkillId === null
+            ? null
+            : effectSpecFor(
+                consumable.buffSkillId,
+                consumable.buffLevel,
+                `consumable buff skill '${consumable.buffSkillId}'`,
+              ),
+        quantity: entry.quantity,
+      };
+    }),
+    ammunition: scenario.ammunition,
+    incomingEvents: scenario.incomingEvents,
+  };
+  return simulate({
+    build: resolved.value.build,
+    seed: scenario.seed,
+    replicates: scenario.replicates,
+    engine,
+  });
 }
 
 function resolveInternal(
@@ -673,17 +731,13 @@ function resolvePlayer(
     ),
   };
   const actions = skillEffectsById
-    .filter(({ skill }) =>
-      DAMAGE_SKILL_CLASSES.has(
-        requiredString(
-          skill,
-          "skill_type",
-          "skill.skill_type",
-        ) as DamageSkillClass,
-      ),
-    )
+    .filter(({ skill }) => isCastable(skill))
     .map(({ skill, level }) =>
-      actionFromSkill(skill, level, resourceKind, catalog),
+      engineAction(skill, level, resourceKind, catalog, {
+        defaultAttack:
+          requiredBoolean(skill, "base_skill", "skill.base_skill") &&
+          requiredBoolean(skill, "learn_default", "skill.learn_default"),
+      }),
     );
   const skills = skillEffectsById.map(({ skill, level }) =>
     resolvedSkill(skill, level, catalog),
@@ -1230,11 +1284,71 @@ function resolveCompanion(
       })),
     },
   });
+  const resourceKind: "mana" | "energy" =
+    classId === "warrior" || classId === "rogue" ? "energy" : "mana";
+  const orderedSkillIds = [
+    ...stringArray(
+      archetype,
+      "skill_ids",
+      `mercenary ${companion.archetypeId}.skill_ids`,
+    ),
+    ...stringArray(
+      archetype,
+      "innate_skill_ids",
+      `mercenary ${companion.archetypeId}.innate_skill_ids`,
+    ),
+  ];
+  const levelById = new Map(
+    companion.skills.map((allocation) => [
+      allocation.skillId,
+      allocation.level,
+    ]),
+  );
+  const actions = orderedSkillIds
+    .map((skillId, index) => ({
+      skillId,
+      index,
+      skill: requireIdentity(
+        catalog.skills,
+        skillId,
+        `companion skill '${skillId}'`,
+      ),
+    }))
+    .filter(({ skill }) => isCastable(skill))
+    .map(({ skillId, index, skill }) => {
+      const level = levelById.get(skillId);
+      if (level === undefined)
+        throw new Error(
+          `Companion '${companion.entityId}' declares no level for archetype skill '${skillId}'`,
+        );
+      return engineAction(skill, level, resourceKind, catalog, {
+        defaultAttack: index === 0,
+      });
+    });
+  if (actions.length === 0 || !actions[0].defaultAttack)
+    throw new Error(
+      `Companion archetype '${companion.archetypeId}' lists no castable default attack first`,
+    );
   return {
     entityId: companion.entityId,
     archetypeId: companion.archetypeId,
     classId,
+    resourceKind,
+    resourceRecoveryBase: requiredNumber(
+      archetype,
+      resourceKind === "mana"
+        ? "base_mana_recovery_rate"
+        : "base_energy_recovery_rate",
+      `mercenary ${companion.archetypeId}.${resourceKind} recovery`,
+    ),
+    hasHeals: requiredBoolean(
+      archetype,
+      "has_heals",
+      `mercenary ${companion.archetypeId}.has_heals`,
+    ),
+    weapons: equipment.weapons,
     skills,
+    actions,
     state,
   };
 }
@@ -1327,62 +1441,39 @@ function resolveAmmunition(
   };
 }
 
-function actionFromSkill(
+function isCastable(skill: Record<string, unknown>): boolean {
+  const type = requiredString(skill, "skill_type", "skill.skill_type");
+  return (
+    DAMAGE_SKILL_CLASSES.has(type as DamageSkillClass) ||
+    EFFECT_SKILL_CLASSES.has(type)
+  );
+}
+
+function engineAction(
   skill: Record<string, unknown>,
   level: number,
   resourceKind: "mana" | "energy",
   catalog: CatalogContext,
-): EvaluationFixtureAction {
+  options: { defaultAttack: boolean },
+): EngineAction {
   const id = requiredString(skill, "id", "skill.id");
-  const skillClass = requiredString(
+  const skillType = requiredString(
     skill,
     "skill_type",
     `skill ${id}.skill_type`,
-  ) as DamageSkillClass;
-  requireClassification(catalog, `skill_type:${skillClass}`);
-  const spec: DamageSkillSpec = {
-    id,
-    skillClass,
-    damageType: damageKind(
-      requiredString(skill, "damage_type", `skill ${id}.damage_type`),
-      `skill ${id}.damage_type`,
-    ),
-    declaredDamage: skillValueAtLevel(
-      curve(skill, "damage", `skill ${id}.damage`),
-      level,
-    ),
-    damagePercent: skillValueAtLevel(
-      curve(skill, "damage_percent", `skill ${id}.damage_percent`),
-      level,
-    ),
-    isSpell: requiredBoolean(skill, "is_spell", `skill ${id}.is_spell`),
-    requiredWeaponCategory: requiredStringAllowEmpty(
-      skill,
-      "required_weapon_category",
-      `skill ${id}.required_weapon_category`,
-    ),
-    requiredWeaponCategory2: requiredStringAllowEmpty(
-      skill,
-      "required_weapon_category2",
-      `skill ${id}.required_weapon_category2`,
-    ),
-    isScroll: requiredBoolean(skill, "is_scroll", `skill ${id}.is_scroll`),
-    isManaburn: requiredBoolean(
-      skill,
-      "is_manaburn_skill",
-      `skill ${id}.is_manaburn_skill`,
-    ),
-    isAssassination: requiredBoolean(
-      skill,
-      "is_assassination_skill",
-      `skill ${id}.is_assassination_skill`,
-    ),
-    followupDefaultAttack: requiredBoolean(
-      skill,
-      "followup_default_attack",
-      `skill ${id}.followup_default_attack`,
-    ),
-  };
+  );
+  requireClassification(catalog, `skill_type:${skillType}`);
+  const isSpell = requiredBoolean(skill, "is_spell", `skill ${id}.is_spell`);
+  const requiredWeaponCategory = requiredStringAllowEmpty(
+    skill,
+    "required_weapon_category",
+    `skill ${id}.required_weapon_category`,
+  );
+  const followupDefaultAttack = requiredBoolean(
+    skill,
+    "followup_default_attack",
+    `skill ${id}.followup_default_attack`,
+  );
   const selectedCost = skillValueAtLevel(
     curve(
       skill,
@@ -1403,11 +1494,25 @@ function actionFromSkill(
     throw new Error(
       `Skill '${id}' consumes a resource incompatible with its class`,
     );
+
+  const damage = DAMAGE_SKILL_CLASSES.has(skillType as DamageSkillClass)
+    ? damageSpecFromSkill(
+        skill,
+        id,
+        skillType as DamageSkillClass,
+        level,
+        isSpell,
+        requiredWeaponCategory,
+        followupDefaultAttack,
+      )
+    : null;
+  const effect = EFFECT_SKILL_CLASSES.has(skillType)
+    ? effectSpecFromSkill(skill, level, catalog)
+    : null;
   return {
-    skill: spec,
-    defaultAttack:
-      requiredBoolean(skill, "base_skill", `skill ${id}.base_skill`) &&
-      requiredBoolean(skill, "learn_default", `skill ${id}.learn_default`),
+    id,
+    name: requiredString(skill, "name", `skill ${id}.name`),
+    defaultAttack: options.defaultAttack,
     castTime: skillValueAtLevel(
       curve(skill, "cast_time", `skill ${id}.cast_time`),
       level,
@@ -1417,6 +1522,144 @@ function actionFromSkill(
       level,
     ),
     resourceCost: selectedCost,
+    isSpell,
+    requiredWeaponCategory,
+    followupDefaultAttack,
+    offensive: damage !== null || effect?.recipient === "target",
+    damage,
+    effect,
+    // The scenario target is stationary inside cast range, so a projectile's flight is shorter than
+    // the server tick and arrival coincides with cast completion.
+    // Source: server-scripts/TargetProjectileSkill.cs:141-146.
+    projectileTravelSeconds: 0,
+  };
+}
+
+function damageSpecFromSkill(
+  skill: Record<string, unknown>,
+  id: string,
+  skillClass: DamageSkillClass,
+  level: number,
+  isSpell: boolean,
+  requiredWeaponCategory: string,
+  followupDefaultAttack: boolean,
+): DamageSkillSpec {
+  return {
+    id,
+    skillClass,
+    damageType: damageKind(
+      requiredString(skill, "damage_type", `skill ${id}.damage_type`),
+      `skill ${id}.damage_type`,
+    ),
+    declaredDamage: skillValueAtLevel(
+      curve(skill, "damage", `skill ${id}.damage`),
+      level,
+    ),
+    damagePercent: skillValueAtLevel(
+      curve(skill, "damage_percent", `skill ${id}.damage_percent`),
+      level,
+    ),
+    isSpell,
+    requiredWeaponCategory,
+    requiredWeaponCategory2: requiredStringAllowEmpty(
+      skill,
+      "required_weapon_category2",
+      `skill ${id}.required_weapon_category2`,
+    ),
+    isScroll: requiredBoolean(skill, "is_scroll", `skill ${id}.is_scroll`),
+    isManaburn: requiredBoolean(
+      skill,
+      "is_manaburn_skill",
+      `skill ${id}.is_manaburn_skill`,
+    ),
+    isAssassination: requiredBoolean(
+      skill,
+      "is_assassination_skill",
+      `skill ${id}.is_assassination_skill`,
+    ),
+    followupDefaultAttack,
+  };
+}
+
+const DEBUFF_SCHOOL_FLAGS: ReadonlyArray<[string, DebuffSchool]> = [
+  ["is_melee_debuff", "melee"],
+  ["is_poison_debuff", "poison"],
+  ["is_fire_debuff", "fire"],
+  ["is_cold_debuff", "cold"],
+  ["is_disease_debuff", "disease"],
+  ["is_magic_debuff", "magic"],
+];
+
+/**
+ * Source: server-scripts/TargetDebuffSkill.cs:101-171 selects the resist school from the first set
+ * school flag in this order; a debuff with no flag is not resisted.
+ */
+function effectSpecFromSkill(
+  skill: Record<string, unknown>,
+  level: number,
+  catalog: CatalogContext,
+): EffectSpec {
+  const id = requiredString(skill, "id", "skill.id");
+  const skillType = requiredString(
+    skill,
+    "skill_type",
+    `skill ${id}.skill_type`,
+  );
+  requireClassification(catalog, `skill_type:${skillType}`);
+  const recipient = EFFECT_SKILL_CLASSES.get(skillType);
+  if (recipient === undefined)
+    throw new Error(
+      `Skill '${id}' of type '${skillType}' applies no timed effect`,
+    );
+  const path = `skill ${id}`;
+  const effects = skillEffects(skill, level, path);
+  let school: DebuffSchool | null = null;
+  if (recipient === "target") {
+    for (const [flag, candidate] of DEBUFF_SCHOOL_FLAGS) {
+      if (requiredBoolean(skill, flag, `${path}.${flag}`)) {
+        school = candidate;
+        break;
+      }
+    }
+  }
+  return {
+    skillId: id,
+    name: requiredString(skill, "name", `${path}.name`),
+    category: requiredStringAllowEmpty(
+      skill,
+      "buff_category",
+      `${path}.buff_category`,
+    ),
+    duration:
+      requiredNumber(skill, "duration_base", `${path}.duration_base`) +
+      requiredNumber(
+        skill,
+        "duration_per_level",
+        `${path}.duration_per_level`,
+      ) *
+        (level - 1),
+    recipient,
+    school,
+    decreasesResists: requiredBoolean(
+      skill,
+      "is_decrease_resists_skill",
+      `${path}.is_decrease_resists_skill`,
+    ),
+    bonuses: effects.bonuses,
+    damagePercent: effects.damagePercent,
+    magicDamagePercent: effects.magicDamagePercent,
+    manaRecoveryPercent: effects.manaRecoveryPercent,
+    energyRecoveryPercent: effects.energyRecoveryPercent,
+    manaRecoveryFlat: effects.manaRecoveryFlat,
+    energyRecoveryFlat: effects.energyRecoveryFlat,
+    cooldownReductionPercent: skillValueAtLevel(
+      curve(
+        skill,
+        "cooldown_reduction_percent",
+        `${path}.cooldown_reduction_percent`,
+      ),
+      level,
+    ),
   };
 }
 

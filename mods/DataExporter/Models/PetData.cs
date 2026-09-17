@@ -43,6 +43,8 @@ public class PetData
     public int mana_per_level { get; set; }
     public int energy_base { get; set; }
     public int energy_per_level { get; set; }
+    public int base_mana_recovery_rate { get; set; }
+    public int base_energy_recovery_rate { get; set; }
     public int damage_base { get; set; }
     public int damage_per_level { get; set; }
     public int magic_damage_base { get; set; }

@@ -40,23 +40,3 @@ export function clamp(value: number, minimum: number, maximum: number): number {
   }
   return Math.max(minimum, Math.min(maximum, value));
 }
-
-/** Replaces one Bernoulli trial with its exact expectation. */
-export function expectedBernoulli(
-  probability: number,
-  successValue: number,
-  failureValue = 0,
-): number {
-  if (probability < 0 || probability > 1 || !Number.isFinite(probability)) {
-    throw new RangeError("Bernoulli probability must be between 0 and 1");
-  }
-  return probability * successValue + (1 - probability) * failureValue;
-}
-
-/** Replaces a continuous uniform roll with its exact expectation. */
-export function expectedUniform(minimum: number, maximum: number): number {
-  if (minimum > maximum) {
-    throw new RangeError("uniform minimum must not exceed maximum");
-  }
-  return (minimum + maximum) / 2;
-}

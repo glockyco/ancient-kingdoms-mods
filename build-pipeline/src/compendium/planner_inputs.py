@@ -167,9 +167,22 @@ def verify_planner_inputs(export_dir: Path) -> None:
             "damage_per_level",
             "magic_damage_base",
             "magic_damage_per_level",
+            "base_mana_recovery_rate",
+            "base_energy_recovery_rate",
         },
         "mercenary",
     )
+    skill_ids = {skill["id"] for skill in skills}
+    for row in mercenaries:
+        missing = {
+            *row["skill_ids"],
+            *row["innate_skill_ids"],
+        } - skill_ids
+        if missing:
+            raise ValueError(
+                f"Planner mercenary {row['id']} references unknown skills: "
+                + ", ".join(sorted(missing))
+            )
     mercenary_class_ids = {row["type_monster"].lower() for row in mercenaries}
     if not mercenary_class_ids <= class_ids:
         raise ValueError(

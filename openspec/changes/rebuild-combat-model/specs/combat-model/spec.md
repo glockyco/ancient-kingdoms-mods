@@ -77,7 +77,7 @@ from the sample.
 
 The engine SHALL advance exact-timestamp events for casts, completions, projectile arrivals, hits,
 incoming damage, cooldowns, effect application, effect expiry, and death, and SHALL apply resource
-recovery, damage over time, and effect cleanup on the game's fixed one-second tick. At each event it
+recovery and damage over time on the game's fixed one-second tick. At each event it
 SHALL read current state: the resource pool, target health, active effects, target defenses, and
 cooldowns. A finite scenario SHALL state its horizon and whether an action at the horizon or a hit in
 flight is included.
@@ -90,9 +90,9 @@ flight is included.
 
 #### Scenario: A target effect expires before a hit
 
-- **WHEN** the cleanup tick removes a defense effect before a later hit lands
+- **WHEN** a defense effect expires before a later hit lands
 - **THEN** that hit uses the target's unmodified defense
-- **AND** an expired effect that the cleanup tick has not yet removed still contributes
+- **AND** the report records the expiry before the hit
 
 #### Scenario: Target health crosses a threshold
 

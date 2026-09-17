@@ -69,6 +69,8 @@ class PlannerInputTests(unittest.TestCase):
                     "damage_per_level": 1,
                     "magic_damage_base": 0,
                     "magic_damage_per_level": 0,
+                    "base_mana_recovery_rate": 0,
+                    "base_energy_recovery_rate": 1,
                 }
             ],
             "items.json": [
@@ -122,6 +124,14 @@ class PlannerInputTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             export_dir = self._write(Path(tmp), self._valid_exports())
             verify_planner_inputs(export_dir)
+
+    def test_mercenary_skill_absent_from_skills_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            exports = self._valid_exports()
+            exports["pets.json"][0]["skill_ids"].append("hunters_sigil")
+            export_dir = self._write(Path(tmp), exports)
+            with self.assertRaisesRegex(ValueError, "hunters_sigil"):
+                verify_planner_inputs(export_dir)
 
     def test_player_class_without_mercenary_archetype_is_accepted(self):
         with tempfile.TemporaryDirectory() as tmp:
