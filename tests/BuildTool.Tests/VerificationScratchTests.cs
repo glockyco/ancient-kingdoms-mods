@@ -27,7 +27,7 @@ public sealed class VerificationScratchTests : IDisposable
         File.WriteAllText(Path.Combine(ScratchPath, "stale.txt"), "stale");
         File.WriteAllText(Path.Combine(DataPath, "player-sidecar"), "keep");
 
-        var database = VerificationScratch.Prepare(GamePath, reset: true);
+        var database = VerificationScratch.Prepare(GamePath);
 
         Assert.True(Directory.Exists(ScratchPath));
         Assert.False(File.Exists(Path.Combine(ScratchPath, "stale.txt")));
@@ -42,25 +42,13 @@ public sealed class VerificationScratchTests : IDisposable
     {
         Directory.CreateDirectory(GamePath);
 
-        var database = VerificationScratch.Prepare(GamePath, reset: true);
+        var database = VerificationScratch.Prepare(GamePath);
 
         Assert.True(Directory.Exists(DataPath));
         Assert.True(Directory.Exists(ScratchPath));
         Assert.Equal(
             Path.Combine(VerificationScratch.Validate(GamePath), PlayerSave.DatabaseFileName),
             database);
-    }
-
-    [Fact]
-    public void NonResetPreparationRetainsVerifiedScratchFiles()
-    {
-        Directory.CreateDirectory(ScratchPath);
-        var retained = Path.Combine(ScratchPath, "retained.txt");
-        File.WriteAllText(retained, "retained");
-
-        VerificationScratch.Prepare(GamePath, reset: false);
-
-        Assert.Equal("retained", File.ReadAllText(retained));
     }
 
     [Fact]
@@ -74,7 +62,7 @@ public sealed class VerificationScratchTests : IDisposable
         File.WriteAllText(protectedFile, "protected");
         Directory.CreateSymbolicLink(ScratchPath, outside);
 
-        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath, reset: true));
+        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath));
 
         Assert.Equal("protected", File.ReadAllText(protectedFile));
         Assert.True(Directory.Exists(ScratchPath));
@@ -91,7 +79,7 @@ public sealed class VerificationScratchTests : IDisposable
         File.WriteAllText(outside, "protected");
         Directory.CreateSymbolicLink(Path.Combine(ScratchPath, "escape.txt"), outside);
 
-        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath, reset: true));
+        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath));
 
         Assert.Equal("preserved", File.ReadAllText(preserved));
         Assert.Equal("protected", File.ReadAllText(outside));
@@ -104,7 +92,7 @@ public sealed class VerificationScratchTests : IDisposable
         Directory.CreateDirectory(DataPath);
         Directory.CreateSymbolicLink(ScratchPath, Path.Combine(_root, "missing"));
 
-        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath, reset: true));
+        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath));
     }
 
     [Fact]
@@ -115,7 +103,7 @@ public sealed class VerificationScratchTests : IDisposable
         Directory.CreateDirectory(outside);
         Directory.CreateSymbolicLink(DataPath, outside);
 
-        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath, reset: true));
+        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath));
         Assert.True(Directory.Exists(outside));
     }
 
@@ -126,7 +114,7 @@ public sealed class VerificationScratchTests : IDisposable
         Directory.CreateDirectory(outside);
         Directory.CreateSymbolicLink(GamePath, outside);
 
-        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath, reset: true));
+        Assert.Throws<IOException>(() => VerificationScratch.Prepare(GamePath));
         Assert.True(Directory.Exists(outside));
     }
 
@@ -134,7 +122,7 @@ public sealed class VerificationScratchTests : IDisposable
     public void ConfirmsOnlyTheExactCanonicalDatabasePath()
     {
         Directory.CreateDirectory(GamePath);
-        VerificationScratch.Prepare(GamePath, reset: true);
+        VerificationScratch.Prepare(GamePath);
         var mismatch = Path.Combine(DataPath, "other.dat");
 
         Assert.Throws<IOException>(() => VerificationScratch.ConfirmReportedPath(
@@ -145,7 +133,7 @@ public sealed class VerificationScratchTests : IDisposable
     public void RefusesAReportedSymlinkAliasToTheOwnedDatabase()
     {
         Directory.CreateDirectory(GamePath);
-        VerificationScratch.Prepare(GamePath, reset: true);
+        VerificationScratch.Prepare(GamePath);
         var alias = Path.Combine(_root, "database-alias");
         Directory.CreateSymbolicLink(alias, ScratchPath);
 
@@ -159,7 +147,7 @@ public sealed class VerificationScratchTests : IDisposable
         var prefix = Path.Combine(_root, "prefix");
         var game = Path.Combine(prefix, "drive_c", "Game");
         Directory.CreateDirectory(game);
-        VerificationScratch.Prepare(game, reset: true);
+        VerificationScratch.Prepare(game);
         var expected = Path.Combine(VerificationScratch.Validate(game), PlayerSave.DatabaseFileName);
 
         var actual = VerificationScratch.ConfirmReportedPath(
@@ -183,7 +171,7 @@ public sealed class VerificationScratchTests : IDisposable
     public void RefusesRelativeOrTraversalReportedPaths(string path)
     {
         Directory.CreateDirectory(GamePath);
-        VerificationScratch.Prepare(GamePath, reset: true);
+        VerificationScratch.Prepare(GamePath);
 
         Assert.Throws<IOException>(() => VerificationScratch.ConfirmReportedPath(
             GamePath, _root, path));

@@ -29,9 +29,7 @@ namespace CombatVerification
             _registered.Add(registry.Register(new PerHitDamageCommand()));
             _registered.Add(registry.Register(new TargetStateCommand()));
             _registered.Add(registry.Register(new ActionIntervalCommand()));
-            _registered.Add(registry.Register(new CompareFixtureCommand()));
-            _registered.Add(registry.Register(new CaptureBaselineCommand()));
-            _registered.Add(registry.Register(new CompareBaselineCommand()));
+            _registered.Add(registry.Register(new ObserveFixtureCommand()));
 
             Probes.DamageAttribution.Apply(HarmonyInstance);
             LoggerInstance.Msg(Probes.DamageAttribution.Applied

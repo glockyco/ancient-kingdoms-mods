@@ -42,7 +42,7 @@ namespace CombatVerification.Tests
                     LearnedBookIds = new(),
                     Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
                 },
-                Execution = new FixtureExecution { Seed = 1 },
+                Execution = new FixtureExecution { Seed = 1, Measurement = new MeasurementSpec { MinimumSamples = 1 } },
             };
 
         private static SyntheticRules Rules() => new();

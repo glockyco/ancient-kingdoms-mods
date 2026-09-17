@@ -35,7 +35,7 @@ public sealed class FixtureShapeValidatorTests
             LearnedBookIds = new List<string>(),
             Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
         },
-        Execution = new FixtureExecution { Seed = 7 },
+        Execution = new FixtureExecution { Seed = 7, Measurement = new MeasurementSpec { MinimumSamples = 1 } },
     };
 
     [Fact]
@@ -142,5 +142,15 @@ public sealed class FixtureShapeValidatorTests
 
         var problem = Assert.Single(FixtureShapeValidator.Validate(fixture).Problems);
         Assert.Equal("buildData.player.equipment[0].amount", problem.Field);
+    }
+
+    [Fact]
+    public void RefusesAMeasurementWithoutAPositiveMinimumSampleCount()
+    {
+        var fixture = Valid();
+        fixture.Execution.Measurement.MinimumSamples = 0;
+
+        var problem = Assert.Single(FixtureShapeValidator.Validate(fixture).Problems);
+        Assert.Equal("execution.measurement.minimumSamples", problem.Field);
     }
 }

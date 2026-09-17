@@ -63,7 +63,7 @@ namespace CombatVerification.Tests
                 LearnedBookIds = new List<string>(),
                 Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
             },
-            Execution = new FixtureExecution { Seed = 7 },
+            Execution = new FixtureExecution { Seed = 7, Measurement = new MeasurementSpec { MinimumSamples = 1 } },
         };
 
         private static IReadOnlyList<FixtureProblem> Check(FixtureDescriptor f, IFixtureRules? r = null)

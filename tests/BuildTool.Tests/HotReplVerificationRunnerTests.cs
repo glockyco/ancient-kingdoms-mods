@@ -22,7 +22,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
     public HotReplVerificationRunnerTests()
     {
         Directory.CreateDirectory(PlayerSave.DirectoryFor(GamePath));
-        VerificationScratch.Prepare(GamePath, reset: true);
+        VerificationScratch.Prepare(GamePath);
     }
     public void Dispose() => Directory.Delete(_prefix, recursive: true);
 
@@ -34,12 +34,18 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         @"{""type"":""commands_list_result"",""id"":""1"",""commands"":[" +
         @"{""name"":""game.useScratchDatabase""},{""name"":""world.summary""},{""name"":""game.quit""}]}";
 
-    private const string MatrixCommandsListResult =
+    private const string FixtureCommandsListResult =
         @"{""type"":""commands_list_result"",""id"":""1"",""commands"":[" +
         @"{""name"":""game.useScratchDatabase""},{""name"":""world.summary""}," +
         @"{""name"":""world.enter""},{""name"":""fixture.createCharacter""}," +
-        @"{""name"":""fixture.validateMatrix""}," +
+        @"{""name"":""fixture.validate""},{""name"":""fixture.buildCharacter""}," +
+        @"{""name"":""fixture.observe""}," +
         @"{""name"":""game.quit""}]}";
+
+    private const string FixtureJson =
+        @"{""schemaVersion"":3,""build"":{""modelVersion"":""2""},""name"":""A-test"",""tier"":""A""," +
+        @"""buildData"":{""player"":{""classId"":""warrior"",""raceId"":""human""}}," +
+        @"""execution"":{""seed"":7}}";
 
     private const string QuitOk =
         @"{""type"":""command_result"",""id"":""9"",""status"":""ok"",""output"":{""quitting"":true}}";
@@ -133,86 +139,104 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         Assert.Contains("game.quit", string.Join("\n", transport.SentMessages));
     }
 
-    [Fact]
-    public async Task EntersTheScratchWorldAndValidatesTheFixtureMatrix()
+    private HotReplRunnerOptions FixtureOptions() => new()
+    {
+        Endpoint = new Uri("ws://127.0.0.1:18590"),
+        VerificationSession = "owned-test-session",
+        VerificationGamePath = GamePath,
+        VerificationWinePrefix = _prefix,
+        ReadinessTimeout = TimeSpan.FromSeconds(5),
+        PollInterval = TimeSpan.FromMilliseconds(1),
+        FixtureJson = FixtureJson,
+    };
+
+    private static FakeHotReplTransport ReadyForFixture(int characters = 0)
     {
         var transport = new FakeHotReplTransport();
         transport.EnqueueServerMessage(Handshake);
-        transport.EnqueueServerMessage(MatrixCommandsListResult);
+        transport.EnqueueServerMessage(FixtureCommandsListResult);
         transport.EnqueueServerMessage(Handshake);
         transport.EnqueueServerMessage(IdentityOk);
-        transport.EnqueueServerMessage(RedirectOk());
+        transport.EnqueueServerMessage(RedirectOk(characters: characters));
+        return transport;
+    }
+
+    private static void EnqueueJob(FakeHotReplTransport transport, string jobId, string output = "{}", bool ok = true)
+    {
         transport.EnqueueServerMessage(
-            @"{""type"":""job_accepted"",""id"":""3"",""jobId"":""enter-1""}");
+            $@"{{""type"":""job_accepted"",""id"":""3"",""jobId"":""{jobId}""}}");
         transport.EnqueueServerMessage(
-            @"{""type"":""job_status_result"",""id"":""4"",""jobId"":""enter-1"",""state"":""done"",""status"":""ok""}");
-        transport.EnqueueServerMessage(
-            @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}" );
+            $@"{{""type"":""job_status_result"",""id"":""4"",""jobId"":""{jobId}"",""state"":""done"",""status"":""{(ok ? "ok" : "error")}"",""output"":{output}}}");
+    }
+
+    private static void EnqueueQuit(FakeHotReplTransport transport)
+    {
         transport.EnqueueServerMessage(Handshake);
         transport.EnqueueServerMessage(IdentityOk);
         transport.EnqueueServerMessage(QuitOk);
-        var options = Options();
-        options = new HotReplRunnerOptions
-        {
-            Endpoint = options.Endpoint,
-            VerificationSession = options.VerificationSession,
-            VerificationGamePath = options.VerificationGamePath,
-            VerificationWinePrefix = options.VerificationWinePrefix,
-            ReadinessTimeout = options.ReadinessTimeout,
-            PollInterval = options.PollInterval,
-            FixtureMatrixJson = @"{""schemaVersion"":1,""fixtures"":[{""coverage"":""A.class.Warrior""}]}",
-        };
-
-        var result = await new HotReplVerificationRunner(transport, options)
-            .RunAsync(CancellationToken.None);
-
-        Assert.True(result.Ok, result.Message);
-        Assert.Contains("runtime fixture matrix accepted", result.Message);
-        Assert.Contains("world.enter", string.Join("\n", transport.SentMessages));
-        Assert.Contains("fixture.validateMatrix", string.Join("\n", transport.SentMessages));
     }
 
     [Fact]
-    public async Task CreatesAValidationCharacterInAnEmptyScratchDatabase()
+    public async Task CreatesEntersValidatesBuildsAndObservesOneFixture()
     {
-        var transport = new FakeHotReplTransport();
-        transport.EnqueueServerMessage(Handshake);
-        transport.EnqueueServerMessage(MatrixCommandsListResult);
-        transport.EnqueueServerMessage(Handshake);
-        transport.EnqueueServerMessage(IdentityOk);
-        transport.EnqueueServerMessage(RedirectOk(characters: 0));
+        var transport = ReadyForFixture();
+        EnqueueJob(transport, "create-1");
+        EnqueueJob(transport, "enter-1");
         transport.EnqueueServerMessage(
-            @"{""type"":""job_accepted"",""id"":""3"",""jobId"":""create-1""}");
+            @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}");
+        EnqueueJob(transport, "build-1", @"{""ok"":true,""level"":50}");
         transport.EnqueueServerMessage(
-            @"{""type"":""job_status_result"",""id"":""4"",""state"":""done"",""status"":""ok""}");
-        transport.EnqueueServerMessage(
-            @"{""type"":""job_accepted"",""id"":""5"",""jobId"":""enter-1""}");
-        transport.EnqueueServerMessage(
-            @"{""type"":""job_status_result"",""id"":""6"",""state"":""done"",""status"":""ok""}");
-        transport.EnqueueServerMessage(
-            @"{""type"":""command_result"",""id"":""7"",""status"":""ok"",""output"":{""ok"":true}}" );
-        transport.EnqueueServerMessage(Handshake);
-        transport.EnqueueServerMessage(IdentityOk);
-        transport.EnqueueServerMessage(QuitOk);
-        var options = new HotReplRunnerOptions
-        {
-            Endpoint = new Uri("ws://127.0.0.1:18590"),
-            VerificationSession = "owned-test-session",
-            VerificationGamePath = GamePath,
-            VerificationWinePrefix = _prefix,
-            ReadinessTimeout = TimeSpan.FromSeconds(5),
-            PollInterval = TimeSpan.FromMilliseconds(1),
-            FixtureMatrixJson = @"{""schemaVersion"":1,""fixtures"":[{""fixture"":{""schemaVersion"":3,""buildData"":{""player"":{""classId"":""warrior"",""raceId"":""human""}}}}]}",
-        };
+            @"{""type"":""command_result"",""id"":""7"",""status"":""ok"",""output"":{""tier"":""A"",""measurements"":[]}}");
+        EnqueueQuit(transport);
 
-        var result = await new HotReplVerificationRunner(transport, options)
+        var result = await new HotReplVerificationRunner(transport, FixtureOptions())
             .RunAsync(CancellationToken.None);
 
         Assert.True(result.Ok, result.Message);
+        Assert.Equal("observe", result.Stage);
+        Assert.Equal(50, result.Achieved!.Value.GetProperty("level").GetInt32());
+        Assert.Equal("A", result.Observation!.Value.GetProperty("tier").GetString());
         var sent = string.Join("\n", transport.SentMessages);
-        Assert.Contains("fixture.createCharacter", sent);
+        foreach (var command in new[] { "fixture.createCharacter", "world.enter", "fixture.validate", "fixture.buildCharacter", "fixture.observe", "game.quit" })
+            Assert.Contains(command, sent);
         Assert.Contains("\"characterName\":\"Verifier\"", sent);
         Assert.Contains("\"class\":\"warrior\"", sent);
+        Assert.True(sent.IndexOf("fixture.validate\"", StringComparison.Ordinal) < sent.IndexOf("fixture.buildCharacter", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task NamesTheBuildStageWhenReadbackFailsAndKeepsTheAchievedState()
+    {
+        var transport = ReadyForFixture();
+        EnqueueJob(transport, "create-1");
+        EnqueueJob(transport, "enter-1");
+        transport.EnqueueServerMessage(
+            @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}");
+        EnqueueJob(transport, "build-1", @"{""ok"":false,""steps"":[{""name"":""level"",""ok"":false}]}");
+        EnqueueQuit(transport);
+
+        var result = await new HotReplVerificationRunner(transport, FixtureOptions())
+            .RunAsync(CancellationToken.None);
+
+        Assert.False(result.Ok);
+        Assert.Equal("build", result.Stage);
+        Assert.False(result.Achieved!.Value.GetProperty("ok").GetBoolean());
+        Assert.Null(result.Observation);
+        Assert.DoesNotContain("fixture.observe", string.Join("\n", transport.SentMessages));
+    }
+
+    [Fact]
+    public async Task RefusesAScratchDatabaseThatAlreadyHoldsCharacters()
+    {
+        var transport = ReadyForFixture(characters: 2);
+        EnqueueQuit(transport);
+
+        var result = await new HotReplVerificationRunner(transport, FixtureOptions())
+            .RunAsync(CancellationToken.None);
+
+        Assert.False(result.Ok);
+        Assert.Equal("scratch", result.Stage);
+        Assert.DoesNotContain("fixture.createCharacter", string.Join("\n", transport.SentMessages));
     }
 
     [Fact]

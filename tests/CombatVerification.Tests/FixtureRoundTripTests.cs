@@ -61,7 +61,8 @@ namespace CombatVerification.Tests
           "execution": {
             "seed": 1234,
             "actions": [ { "skill": "Melee Attack", "facing": "front" } ],
-            "target": { "spawn": "dummy", "level": 55 }
+            "target": { "spawn": "dummy", "level": 55 },
+            "measurement": { "minimumSamples": 1 }
           }
         }
         """;

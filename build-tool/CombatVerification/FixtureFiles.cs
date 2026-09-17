@@ -22,6 +22,22 @@ internal static class FixtureFiles
         JsonConvert.DeserializeObject<FixtureDescriptor>(
             File.ReadAllText(path), StrictFixtureJsonSettings)!;
 
+    /// <summary>Every committed fixture with its path, in a stable order.</summary>
+    internal static IReadOnlyList<(string Path, FixtureDescriptor Fixture)> ReadAll(string repoRoot)
+    {
+        var directory = DirectoryFor(repoRoot);
+        var files = Directory.Exists(directory)
+            ? Directory.GetFiles(directory, "*.json", SearchOption.AllDirectories)
+            : Array.Empty<string>();
+        return files
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .Select(path => (path, DeserializeFixture(path)))
+            .ToList();
+    }
+
+    /// <summary>The JSON a runtime command receives for one fixture, exactly as committed.</summary>
+    internal static string ReadJson(string path) => File.ReadAllText(path);
+
     internal static FixtureMatrix ReadMatrix(string repoRoot)
     {
         var directory = DirectoryFor(repoRoot);

@@ -2,11 +2,11 @@
   "schemaVersion": 3,
   "build": {
     "gameData": {
-      "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0",
-      "gameVersion": "0.9.31.1",
-      "steamBuildId": "24986533"
+      "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+      "gameVersion": "0.9.32.4",
+      "steamBuildId": "25326396"
     },
-    "modelVersion": "1",
+    "modelVersion": "2",
     "serializedSchemaVersion": 3
   },
   "name": "A-class-wizard",
@@ -60,6 +60,9 @@
       "spawn": "Snake",
       "level": 5
     },
-    "actions": null
+    "actions": null,
+    "measurement": {
+      "minimumSamples": 1
+    }
   }
 }

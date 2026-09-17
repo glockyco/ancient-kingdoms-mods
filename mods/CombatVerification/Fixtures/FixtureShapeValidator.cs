@@ -67,6 +67,13 @@ namespace CombatVerification.Fixtures
                 }
 
                 ValidateActions(problems, "execution.actions", fixture.Execution.Actions);
+
+                if (fixture.Execution.Measurement == null)
+                    Add(problems, "execution.measurement",
+                        "A measurement section declaring the comparison protocol is required.");
+                else if (fixture.Execution.Measurement.MinimumSamples is not >= 1)
+                    Add(problems, "execution.measurement.minimumSamples",
+                        "Must be an integer of at least 1.");
             }
 
             return Result(problems);

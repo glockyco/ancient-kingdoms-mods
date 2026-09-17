@@ -70,16 +70,16 @@ public static class VerificationScratch
     }
 
     /// <summary>
-    /// Validates the owned paths, optionally removes only verified scratch, and creates the
-    /// parent required by SQLite. The returned path is canonical even when the tree was new.
+    /// Validates the owned paths, removes any verified scratch, and creates the parent
+    /// required by SQLite. The returned path is canonical even when the tree was new.
     /// </summary>
-    public static string Prepare(string gamePath, bool reset)
+    public static string Prepare(string gamePath)
     {
         var canonicalScratch = Validate(gamePath);
         var scratch = DirectoryFor(gamePath);
         var data = PlayerSave.DirectoryFor(gamePath);
 
-        if (reset && Directory.Exists(scratch))
+        if (Directory.Exists(scratch))
         {
             // Validate completed before this call. Delete entries one by one so a symlink
             // discovered during a later operation cannot make recursive deletion follow it.

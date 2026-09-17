@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Commands;
@@ -68,12 +69,73 @@ public sealed class VerifyCommandTests : IDisposable
             """);
     }
 
-    private void WriteFixture(string body)
+    private void WriteFixture(string body, string fileName = "invalid.json")
     {
         var directory = BuildTool.CombatVerification.FixtureFiles.DirectoryFor(RepoRoot);
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, "invalid.json"), body);
+        File.WriteAllText(Path.Combine(directory, fileName), body);
     }
+
+    /// <summary>A tier A fixture that passes the shape gate.</summary>
+    private void WriteValidFixture(string name = "A-test", string coverage = "A.class.Warrior") =>
+        WriteFixture($$"""
+        {
+          "schemaVersion": 3,
+          "build": {
+            "serializedSchemaVersion": 3,
+            "modelVersion": "2",
+            "gameData": {
+              "gameVersion": "0.9.31.0",
+              "steamBuildId": "24925347",
+              "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0"
+            }
+          },
+          "name": "{{name}}",
+          "tier": "A",
+          "coverage": "{{coverage}}",
+          "buildData": {
+            "schemaVersion": 1,
+            "player": {
+              "entityId": "player",
+              "classId": "warrior",
+              "raceId": "human",
+              "level": 1,
+              "veteranPoints": 0,
+              "attributes": {
+                "rawObserved": null,
+                "baseProgression": { "strength": 0, "constitution": 0, "dexterity": 0, "intelligence": 0, "wisdom": 0, "charisma": 0 },
+                "allocated": { "strength": 0, "constitution": 0, "dexterity": 0, "intelligence": 0, "wisdom": 0, "charisma": 0 },
+                "derivedObserved": null
+              },
+              "skills": [],
+              "equipment": []
+            },
+            "companions": [],
+            "consumables": [],
+            "ammunition": [],
+            "learnedBookIds": [],
+            "provenance": { "kind": "authored", "source": "test" }
+          },
+          "execution": {
+            "durationSeconds": null,
+            "repetitions": 1,
+            "seed": 7,
+            "target": { "spawn": "Snake", "level": 5 },
+            "actions": null,
+            "measurement": { "minimumSamples": 1 }
+          }
+        }
+        """, name + ".json");
+
+    private static VerificationRunnerResult Measured(string message = "measured") =>
+        new(true, ExitCodes.Success, message,
+            "C:/game/ancientkingdoms_Data/verification-scratch/game.dat", 0,
+            Stage: "observe",
+            Achieved: JsonDocument.Parse("""{"ok":true,"level":1}""").RootElement.Clone(),
+            Observation: JsonDocument.Parse("""{"tier":"A","measurements":[]}""").RootElement.Clone());
+
+    private string ObservationPath(string name = "A-test") =>
+        Path.Combine(RepoRoot, "verification", "observations", name + ".json");
 
     private (int ExitCode, CommandResultStore Store, FakeProcessRunner Runner) Run(
         Func<HotReplRunnerOptions, CancellationToken, Task<VerificationRunnerResult>>? runner = null,
@@ -82,12 +144,16 @@ public sealed class VerifyCommandTests : IDisposable
     {
         var store = new CommandResultStore();
         var processRunner = new FakeProcessRunner();
-        // The game process stays alive until the run finishes, as it does in practice.
-        processRunner.Enqueue(async (_, ct) =>
+        // Each fixture session launches its own game process, which stays alive until the
+        // session finishes, as it does in practice.
+        for (var session = 0; session < 4; session++)
         {
-            await Task.Delay(Timeout.Infinite, ct);
-            return new BuildTool.Abstractions.ProcessResult(0, "", "", TimeSpan.Zero);
-        });
+            processRunner.Enqueue(async (_, ct) =>
+            {
+                await Task.Delay(Timeout.Infinite, ct);
+                return new BuildTool.Abstractions.ProcessResult(0, "", "", TimeSpan.Zero);
+            });
+        }
         var command = new VerifyCommand(
             RepoRoot,
             Config(),
@@ -95,10 +161,7 @@ public sealed class VerifyCommandTests : IDisposable
             store,
             hotReplReadinessTimeout: TimeSpan.FromMilliseconds(10),
             hotReplPollInterval: TimeSpan.FromMilliseconds(1),
-            verificationRunner: runner ?? ((_, _) =>
-                Task.FromResult(new VerificationRunnerResult(
-                    true, ExitCodes.Success, "redirected",
-                    "C:/game/ancientkingdoms_Data/verification-scratch/game.dat", 6))),
+            verificationRunner: runner ?? ((_, _) => Task.FromResult(Measured())),
             now: () => new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero),
             endpointAnswers: (_, _) => Task.FromResult(occupied),
             relevantProcessExists: _ => false);
@@ -196,6 +259,7 @@ public sealed class VerifyCommandTests : IDisposable
     {
         WriteInstallation("build A");
         WriteSnapshot("0000000000000000");
+        WriteValidFixture();
 
         var store = new CommandResultStore();
         var mismatchRunner = new FakeProcessRunner();
@@ -208,8 +272,7 @@ public sealed class VerifyCommandTests : IDisposable
             RepoRoot, Config(), mismatchRunner, store,
             hotReplReadinessTimeout: TimeSpan.FromMilliseconds(10),
             hotReplPollInterval: TimeSpan.FromMilliseconds(1),
-            verificationRunner: (_, _) => Task.FromResult(
-                new VerificationRunnerResult(true, ExitCodes.Success, "redirected", "C:/x", 1)),
+            verificationRunner: (_, _) => Task.FromResult(Measured()),
             now: () => DateTimeOffset.UnixEpoch,
             endpointAnswers: (_, _) => Task.FromResult(false),
             relevantProcessExists: _ => false);
@@ -226,16 +289,17 @@ public sealed class VerifyCommandTests : IDisposable
     // --- save gate ---
 
     [Fact]
-    public void AnAbsentPlayerSaveRemainsAbsentAfterValidation()
+    public void AnAbsentPlayerSaveRemainsAbsentAfterMeasurement()
     {
         var sha = WriteInstallation(withSave: false);
         WriteSnapshot(sha);
+        WriteValidFixture();
 
-        var (exit, store, runner) = Run();
+        var (exit, _, _) = Run();
 
         Assert.Equal(ExitCodes.Success, exit);
         Assert.Null(PlayerSave.Read(GamePath));
-        Assert.Contains("validation-only", store.Data?.ToString());
+        Assert.True(File.Exists(ObservationPath()));
     }
 
     [Fact]
@@ -243,16 +307,41 @@ public sealed class VerifyCommandTests : IDisposable
     {
         var sha = WriteInstallation();
         WriteSnapshot(sha);
+        WriteValidFixture();
 
         var (exit, _, _) = Run(runner: (_, _) =>
         {
             var backup = Assert.Single(Directory.GetDirectories(
                 PlayerSave.DirectoryFor(GamePath), "game-dat-backup-*"));
             Assert.Equal("player save", File.ReadAllText(Path.Combine(backup, "game.dat")));
-            return Task.FromResult(new VerificationRunnerResult(true, ExitCodes.Success, "redirected"));
+            return Task.FromResult(Measured());
         });
 
         Assert.Equal(ExitCodes.Success, exit);
+    }
+
+    [Fact]
+    public void BacksUpTheSaveOnceAcrossSeveralFixtureSessions()
+    {
+        var sha = WriteInstallation();
+        WriteSnapshot(sha);
+        WriteValidFixture("A-first", "A.test.first");
+        WriteValidFixture("A-second", "A.test.second");
+        var sessions = 0;
+
+        var (exit, store, _) = Run(runner: (options, _) =>
+        {
+            sessions++;
+            Assert.Contains("\"name\": \"A-" , options.FixtureJson);
+            return Task.FromResult(Measured());
+        });
+
+        Assert.True(exit == ExitCodes.Success, store.ErrorDetails?.ToString());
+        Assert.Equal(2, sessions);
+        Assert.Single(Directory.GetDirectories(PlayerSave.DirectoryFor(GamePath), "game-dat-backup-*"));
+        Assert.True(File.Exists(ObservationPath("A-first")));
+        Assert.True(File.Exists(ObservationPath("A-second")));
+        Assert.Contains("ok = True", store.Data?.ToString());
     }
 
     // --- isolation gate ---
@@ -262,47 +351,57 @@ public sealed class VerifyCommandTests : IDisposable
     {
         var sha = WriteInstallation();
         WriteSnapshot(sha);
+        WriteValidFixture();
 
         var (exit, store, _) = Run(runner: (_, _) =>
         {
             // Stand in for a run that reached player data.
             File.WriteAllText(PlayerSave.DatabasePath(GamePath), "modified");
-            return Task.FromResult(new VerificationRunnerResult(
-                true, ExitCodes.Success, "redirected", "C:/x", 1));
+            return Task.FromResult(Measured());
         });
 
         Assert.NotEqual(ExitCodes.Success, exit);
         Assert.Contains("player save changed", store.ErrorDetails?.ToString());
+        Assert.False(File.Exists(ObservationPath()));
     }
 
     [Fact]
-    public void SucceedsWhenTheRunConfirmsScratchAndLeavesTheSaveAlone()
+    public void WritesAnObservationWithFixtureAndGameIdentities()
     {
         var sha = WriteInstallation();
         WriteSnapshot(sha);
+        WriteValidFixture();
 
-        var (exit, store, _) = Run();
+        var (exit, _, _) = Run();
 
         Assert.Equal(ExitCodes.Success, exit);
-        Assert.Contains("verification-scratch", store.Data?.ToString());
-        Assert.Contains("validation-only", store.Data?.ToString());
-        Assert.Contains("verified = False", store.Data?.ToString());
+        using var record = JsonDocument.Parse(File.ReadAllText(ObservationPath()));
+        var root = record.RootElement;
+        Assert.Equal("A-test", root.GetProperty("fixture").GetProperty("name").GetString());
+        Assert.Equal("verification/fixtures/A-test.json", root.GetProperty("fixture").GetProperty("path").GetString());
+        Assert.Equal(64, root.GetProperty("fixture").GetProperty("contentSha256").GetString()!.Length);
+        Assert.Equal(sha, root.GetProperty("game").GetProperty("assemblySha256").GetString());
+        Assert.Equal("0.9.31.0", root.GetProperty("game").GetProperty("gameVersion").GetString());
+        Assert.True(root.GetProperty("achieved").GetProperty("ok").GetBoolean());
+        Assert.Equal("A", root.GetProperty("observation").GetProperty("tier").GetString());
     }
 
     [Fact]
-    public void FreshScratchRemovesOnlyTheVerificationOwnedDirectory()
+    public void EveryAttemptStartsFromAnEmptyScratchDirectory()
     {
         var sha = WriteInstallation();
         WriteSnapshot(sha);
+        WriteValidFixture();
         var scratch = Path.Combine(
             GamePath, "ancientkingdoms_Data", "verification-scratch");
         Directory.CreateDirectory(scratch);
         File.WriteAllText(Path.Combine(scratch, "game.dat"), "stale fixture state");
         var playerSave = PlayerSave.DatabasePath(GamePath);
 
-        var (exit, _, _) = Run(settings: new VerifyCommand.Settings
+        var (exit, _, _) = Run(runner: (_, _) =>
         {
-            FreshScratch = true,
+            Assert.Empty(Directory.GetFiles(scratch));
+            return Task.FromResult(Measured());
         });
 
         Assert.Equal(ExitCodes.Success, exit);
@@ -312,16 +411,23 @@ public sealed class VerifyCommandTests : IDisposable
     }
 
     [Fact]
-    public void AFailedRunStillReportsWhetherTheSaveSurvived()
+    public void AFailedStageWritesNoObservationAndContinuesToTheNextFixture()
     {
         var sha = WriteInstallation();
         WriteSnapshot(sha);
+        WriteValidFixture("A-first", "A.test.first");
+        WriteValidFixture("A-second", "A.test.second");
 
-        var (exit, store, _) = Run(runner: (_, _) => Task.FromResult(
-            new VerificationRunnerResult(false, ExitCodes.CommandFailed, "did not confirm")));
+        var (exit, store, _) = Run(runner: (options, _) => Task.FromResult(
+            options.FixtureJson!.Contains("A-first")
+                ? new VerificationRunnerResult(false, ExitCodes.CommandFailed,
+                    "readback mismatch on level", Stage: "build")
+                : Measured()));
 
         Assert.Equal(ExitCodes.CommandFailed, exit);
-        Assert.Contains("did not confirm", store.ErrorDetails?.ToString());
+        Assert.Contains("A-first: stage build: readback mismatch on level", store.ErrorDetails?.ToString());
+        Assert.False(File.Exists(ObservationPath("A-first")));
+        Assert.True(File.Exists(ObservationPath("A-second")));
     }
 
     [Fact]
@@ -329,12 +435,14 @@ public sealed class VerifyCommandTests : IDisposable
     {
         var sha = WriteInstallation();
         WriteSnapshot(sha);
-        VerificationScratch.Prepare(GamePath, reset: true);
+        VerificationScratch.Prepare(GamePath);
         var scratch = VerificationScratch.DirectoryFor(GamePath);
         var database = Path.Combine(scratch, "game.dat");
         File.WriteAllText(database, "active fixture");
 
-        var (exit, _, runner) = Run(settings: new VerifyCommand.Settings { FreshScratch = true }, occupied: true);
+        WriteValidFixture();
+
+        var (exit, _, runner) = Run(occupied: true);
 
         Assert.NotEqual(ExitCodes.Success, exit);
         Assert.Empty(runner.Calls);
@@ -348,6 +456,7 @@ public sealed class VerifyCommandTests : IDisposable
     {
         var sha = WriteInstallation();
         WriteSnapshot(sha);
+        WriteValidFixture();
         var (exit, store, _) = Run(runner: (_, _) =>
         {
             File.WriteAllText(PlayerSave.DatabasePath(GamePath), "modified");

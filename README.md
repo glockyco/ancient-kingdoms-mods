@@ -246,10 +246,11 @@ hotrepl --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
 Close other Ancient Kingdoms instances before running:
 
 ```bash
-dotnet run --project build-tool verify --fresh-scratch
+dotnet run --project build-tool verify
+dotnet run --project build-tool verify --fixture A-class-warrior
 ```
 
-`verify` currently validates fixture descriptors in a scratch world. It does not measure every fixture, compare planner predictions, or promote a baseline.
+`verify` measures each committed fixture in its own game session against a fresh scratch database and writes `verification/observations/<name>.json`. It does not compare observations with the engine; the website test suite does.
 A successful result reports `verified: false` and `status: validation-only`.
 Fixture-file loading rejects unsupported JSON fields, including nested fields, before launch. Planner build-envelope and scenario parsing also reject unsupported fields instead of discarding them.
 

@@ -12,43 +12,6 @@ namespace CombatVerification.Fixtures
     {
         public const int SchemaVersion = 1;
 
-        private static readonly string[] RequiredCoverage =
-        {
-            "A.class.Warrior",
-            "A.class.Ranger",
-            "A.class.Cleric",
-            "A.class.Rogue",
-            "A.class.Wizard",
-            "A.class.Druid",
-            "A.armorSet.threePieces",
-            "A.armorSet.fivePieces",
-            "A.haste.floor",
-            "A.avoidance.floor",
-            "A.augment",
-            "A.consumables",
-            "B.skill.targetDamage",
-            "B.skill.frontalDamage",
-            "B.skill.areaDamage",
-            "B.skill.targetProjectile",
-            "B.skill.frontalProjectiles",
-            "B.special.ignoresDamageMultiplier",
-            "B.special.ignoresCasterCombatStat",
-            "C.weaponDelay.23",
-            "C.weaponDelay.28",
-            "C.weaponDelay.30",
-            "C.haste.floor",
-            "D.class.Warrior",
-            "D.class.Ranger",
-            "D.class.Cleric",
-            "D.class.Rogue",
-            "D.class.Wizard",
-            "D.class.Druid",
-            "A.lowerLevel.10",
-            "B.lowerLevel.30",
-            "D.companion.Ranger.bare",
-            "D.companion.Ranger.equipped",
-        };
-
         public static FixtureMatrixResult Validate(FixtureMatrix matrix, IFixtureRules rules)
         {
             List<FixtureProblemDto> matrixProblems = new List<FixtureProblemDto>();
@@ -115,13 +78,6 @@ namespace CombatVerification.Fixtures
                 entries.Add(EntryResult(entry.Coverage, entry.Fixture?.Name, problems));
             }
 
-            foreach (string required in RequiredCoverage)
-            {
-                if (!coverage.Contains(required))
-                    Add(matrixProblems, "fixtures", "Missing required coverage '" + required + "'.");
-            }
-            foreach (string extra in coverage.Where(value => !RequiredCoverage.Contains(value)))
-                Add(matrixProblems, "fixtures", "Unknown coverage '" + extra + "'.");
             return Result(matrixProblems, entries);
         }
 

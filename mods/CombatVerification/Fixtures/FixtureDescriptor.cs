@@ -61,6 +61,21 @@ namespace CombatVerification.Fixtures
         /// <summary>Actions to drive. Empty for a fixture that measures the stat sheet only.</summary>
         [JsonProperty("actions", Required = Required.Default)]
         public List<ActionSpec> Actions { get; set; }
+
+        /// <summary>The comparison protocol this fixture's tier measurement declares.</summary>
+        [JsonProperty("measurement", Required = Required.Default)]
+        public MeasurementSpec Measurement { get; set; }
+    }
+
+    /// <summary>
+    /// What the comparison needs from the measurement. The tier fixes which quantities are
+    /// recorded; the fixture states how many samples a stochastic comparison requires.
+    /// </summary>
+    public sealed class MeasurementSpec
+    {
+        /// <summary>Fewer observed samples than this make the comparison inconclusive.</summary>
+        [JsonProperty("minimumSamples", Required = Required.Default)]
+        public int? MinimumSamples { get; set; }
     }
 
     public sealed class TargetSpec

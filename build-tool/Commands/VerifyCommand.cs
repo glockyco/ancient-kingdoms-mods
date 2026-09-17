@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
@@ -10,20 +13,21 @@ using BuildTool.Game;
 using BuildTool.HotRepl;
 using BuildTool.Output;
 using BuildTool.UnityDependencies;
-using Newtonsoft.Json;
+using CombatVerification.Fixtures;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
 
 /// <summary>
-/// Runs an isolated fixture-validation session: confirms the installation matches the evidence,
-/// backs up the player save, launches the game pointed at a scratch database, and confirms
-/// the save is untouched afterwards.
+/// Measures every committed fixture, one isolated game session each: confirms the installation
+/// matches the evidence, backs up the player save, launches the game pointed at a fresh scratch
+/// database, builds and measures the fixture, writes its observation, and confirms the save is
+/// untouched afterwards.
 /// </summary>
 /// <remarks>
 /// The isolation is confirmed at three points rather than trusted once: the game reports
 /// which database it opened, the run requires the exact owned canonical path, and the
-/// save's content hash is compared before and after.
+/// save's content hash is compared before and after every session.
 /// </remarks>
 public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
 {
@@ -87,9 +91,9 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
         [Description("Measure even when the installation does not match the decompiled evidence.")]
         public bool AllowBuildMismatch { get; set; }
 
-        [CommandOption("--fresh-scratch")]
-        [Description("Delete verification-owned scratch state and rebuild it before the run.")]
-        public bool FreshScratch { get; set; }
+        [CommandOption("--fixture <NAME>")]
+        [Description("Measure only the named fixture. Repeat the option for several.")]
+        public string[]? Fixtures { get; set; }
     }
 
     internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
@@ -112,17 +116,118 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
             return Fail(build.Detail
                 + " Pass --allow-build-mismatch to measure anyway, accepting that results and "
                 + "citations describe different builds.");
+        if (build.Recorded is null)
+            return Fail("No recorded build identity is available to stamp observations with.");
 
-        SaveSnapshot? before = null;
-        string? backupDirectory = null;
-        var scratchPrepared = false;
+        var fixtures = FixtureFiles.ReadAll(_repoRoot);
+        if (settings.Fixtures is { Length: > 0 })
+        {
+            var requested = new HashSet<string>(settings.Fixtures, StringComparer.Ordinal);
+            var unknown = requested.Except(fixtures.Select(entry => entry.Fixture.Name)).ToList();
+            if (unknown.Count > 0)
+                return Fail("Unknown fixture name(s): " + string.Join(", ", unknown));
+            fixtures = fixtures.Where(entry => requested.Contains(entry.Fixture.Name)).ToList();
+        }
+        if (fixtures.Count == 0)
+            return Fail("No fixtures to measure.");
+
+        VerificationScratch.Validate(_config.GamePath);
+        var save = new SaveGuard(_config.GamePath, _now);
+
+        var written = new List<string>();
+        var failures = new List<string>();
+        foreach (var (path, fixture) in fixtures)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Console.WriteLine();
+            Console.WriteLine($"Fixture: {fixture.Name} ({fixture.Tier}, {fixture.Coverage})");
+            var attempt = await MeasureAsync(settings, path, fixture, save, cancellationToken);
+            if (attempt.Failure is not null)
+            {
+                failures.Add($"{fixture.Name}: {attempt.Failure}");
+                Console.Error.WriteLine($"Failed: {attempt.Failure}");
+                continue;
+            }
+            var record = ObservationFiles.Build(
+                _repoRoot, path, fixture, build.Recorded, attempt.Achieved!.Value,
+                attempt.Observation!.Value, _now());
+            var observationPath = ObservationFiles.Write(_repoRoot, record);
+            written.Add(observationPath);
+            Console.WriteLine($"Observation: {Path.GetRelativePath(_repoRoot, observationPath)}");
+        }
+
+        _resultStore.SetData(new
+        {
+            ok = failures.Count == 0,
+            build = build.Recorded.ShortName,
+            gameVersion = build.Recorded.GameVersion,
+            observations = written.Select(path => Path.GetRelativePath(_repoRoot, path)).ToList(),
+            failures,
+            backupDirectory = save.BackupDirectory,
+        });
+
+        Console.WriteLine();
+        Console.WriteLine($"Measured {written.Count} of {fixtures.Count} fixture(s).");
+        return failures.Count == 0
+            ? ExitCodes.Success
+            : Fail("Fixture(s) failed:\n- " + string.Join("\n- ", failures));
+    }
+
+    private sealed record FixtureAttempt(string? Failure, JsonElement? Achieved, JsonElement? Observation);
+
+    /// <summary>
+    /// Backs the player save up once, after the first session owns the installation, and
+    /// compares it after every session.
+    /// </summary>
+    private sealed class SaveGuard(string gamePath, Func<DateTimeOffset> now)
+    {
+        private SaveSnapshot? _before;
+
+        public string? BackupDirectory { get; private set; }
+
+        public void BackUpOnce()
+        {
+            if (_before is not null) return;
+            _before = PlayerSave.Read(gamePath) ?? new SaveSnapshot(Array.Empty<SaveFileHash>());
+            if (_before.Files.Count == 0)
+            {
+                Console.WriteLine("Save: absent before the run; no backup is required.");
+                return;
+            }
+            var backup = PlayerSave.Create(gamePath, PlayerSave.DirectoryFor(gamePath), now());
+            Console.WriteLine($"Save: {backup.Detail}");
+            if (!backup.Ok)
+                throw new IOException(backup.Detail);
+            if (!_before.Matches(backup.Snapshot!))
+                throw new IOException("The player save changed while creating its backup.");
+            BackupDirectory = backup.Directory;
+        }
+
+        public void RequireUnchanged()
+        {
+            if (_before is null) return;
+            var after = PlayerSave.Read(gamePath) ?? new SaveSnapshot(Array.Empty<SaveFileHash>());
+            if (!_before.Matches(after))
+                throw new IOException("The player save changed during the run. Changed: "
+                    + string.Join(", ", _before.Differences(after)) + ".");
+            Console.WriteLine("Isolation: the player save and sidecars are unchanged.");
+        }
+    }
+
+    private async Task<FixtureAttempt> MeasureAsync(
+        Settings settings,
+        string fixturePath,
+        FixtureDescriptor fixture,
+        SaveGuard save,
+        CancellationToken cancellationToken)
+    {
         var sessionToken = Guid.NewGuid().ToString("N");
         var runnerOptions = new HotReplRunnerOptions
         {
             Endpoint = new Uri(_config.HotReplEndpoint),
             ReadinessTimeout = _hotReplReadinessTimeout ?? TimeSpan.FromMinutes(5),
             PollInterval = _hotReplPollInterval ?? TimeSpan.FromSeconds(3),
-            FixtureMatrixJson = JsonConvert.SerializeObject(FixtureFiles.ReadMatrix(_repoRoot)),
+            FixtureJson = FixtureFiles.ReadJson(fixturePath),
             VerificationSession = sessionToken,
             VerificationGamePath = _config.GamePath,
             VerificationWinePrefix = _config.WinePrefix,
@@ -135,57 +240,27 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
             new GameSessionRequest
             {
                 UnityVersionOverride = settings.UnityVersion,
-                Purpose = "combat fixture validation",
+                Purpose = $"combat fixture {fixture.Name}",
                 SessionToken = sessionToken,
                 BeforeLaunch = ct =>
                 {
                     ct.ThrowIfCancellationRequested();
-                    VerificationScratch.Validate(_config.GamePath);
-                    before = PlayerSave.Read(_config.GamePath)
-                        ?? new SaveSnapshot(Array.Empty<SaveFileHash>());
-                    if (before.Files.Count == 0)
-                    {
-                        Console.WriteLine("Save: absent before the run; no backup is required.");
-                    }
-                    else
-                    {
-                        var backup = PlayerSave.Create(_config.GamePath,
-                            PlayerSave.DirectoryFor(_config.GamePath), _now());
-                        Console.WriteLine($"Save: {backup.Detail}");
-                        if (!backup.Ok)
-                            throw new IOException(backup.Detail);
-                        if (!before.Matches(backup.Snapshot!))
-                            throw new IOException("The player save changed while creating its backup.");
-                        backupDirectory = backup.Directory;
-                    }
-
+                    save.BackUpOnce();
                     ct.ThrowIfCancellationRequested();
-                    // Validation does not produce a per-fixture materialization record.
-                    // Neither a legacy marker nor a prior validation can qualify reuse.
-                    scratchPrepared = true;
-                    VerificationScratch.Prepare(_config.GamePath, reset: true);
-                    Console.WriteLine(settings.FreshScratch
-                        ? "Scratch: fresh validation state requested."
-                        : "Scratch: no qualified materialization; preparing fresh validation state.");
+                    // Every attempt starts from an empty database; nothing from an earlier
+                    // attempt qualifies for reuse.
+                    VerificationScratch.Prepare(_config.GamePath);
+                    Console.WriteLine("Scratch: fresh database prepared.");
                     return Task.CompletedTask;
                 },
                 AfterShutdown = () =>
                 {
-                    if (scratchPrepared)
-                        VerificationScratch.Prepare(_config.GamePath, reset: true);
+                    VerificationScratch.Prepare(_config.GamePath);
                     return Task.CompletedTask;
                 },
                 AfterSession = () =>
                 {
-                    if (before is not null)
-                    {
-                        var after = PlayerSave.Read(_config.GamePath)
-                            ?? new SaveSnapshot(Array.Empty<SaveFileHash>());
-                        if (!before.Matches(after))
-                            throw new IOException("The player save changed during the run. Changed: "
-                                + string.Join(", ", before.Differences(after)) + ".");
-                        Console.WriteLine("Isolation: the player save and sidecars are unchanged.");
-                    }
+                    save.RequireUnchanged();
                     return Task.CompletedTask;
                 },
             },
@@ -202,29 +277,16 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
 
         if (!outcome.Ok)
         {
-            var primary = completedRun is { Ok: false } ? completedRun.Message + "\n" : "";
-            return Fail(primary + outcome.Failure!.Message, outcome.Failure.ExitCode);
+            var primary = completedRun is { Ok: false } ? completedRun.Message + " " : "";
+            return new(primary + outcome.Failure!.Message, completedRun?.Achieved, null);
         }
 
         var run = outcome.Work!;
         if (!run.Ok)
-            return Fail(run.Message, run.ExitCode);
-
-        _resultStore.SetData(new
-        {
-            ok = true,
-            verified = false,
-            status = "validation-only",
-            build = build.Recorded?.ShortName,
-            gameVersion = build.Recorded?.GameVersion,
-            resolvedDatabasePath = run.ResolvedDatabasePath,
-            characterCount = run.CharacterCount,
-            scratch = "fresh-validation",
-            backupDirectory,
-        });
-
-        Console.WriteLine("Fixture validation complete. Combat parity and baseline verification were not run.");
-        return ExitCodes.Success;
+            return new($"stage {run.Stage ?? "session"}: {run.Message}", run.Achieved, null);
+        if (run.Achieved is null || run.Observation is null)
+            return new("the run completed without an achieved state and a measurement", run.Achieved, null);
+        return new(null, run.Achieved, run.Observation);
     }
 
     private int Fail(string message, int exitCode = ExitCodes.CommandFailed)

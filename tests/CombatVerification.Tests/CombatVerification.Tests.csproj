@@ -62,14 +62,6 @@
              Link="Probes\TimedEffect.cs" />
     <Compile Include="..\..\mods\CombatVerification\Probes\Tiers.cs"
              Link="Probes\Tiers.cs" />
-    <Compile Include="..\..\mods\CombatVerification\Comparison\ComparisonReport.cs"
-             Link="Comparison\ComparisonReport.cs" />
-    <Compile Include="..\..\mods\CombatVerification\Comparison\ComparisonEngine.cs"
-             Link="Comparison\ComparisonEngine.cs" />
-    <Compile Include="..\..\mods\CombatVerification\Comparison\VerificationBaseline.cs"
-             Link="Comparison\VerificationBaseline.cs" />
-    <Compile Include="..\..\mods\CombatVerification\Comparison\ProbeQuantities.cs"
-             Link="Comparison\ProbeQuantities.cs" />
     <Compile Include="..\..\mods\CombatVerification\Dtos\StatSheetResult.cs"
              Link="Dtos\StatSheetResult.cs" />
     <Compile Include="..\..\mods\CombatVerification\Dtos\PerHitDamageResult.cs"
