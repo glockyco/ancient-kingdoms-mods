@@ -68,6 +68,14 @@
           "augmentId": null,
           "durability": 100,
           "amount": 1
+        },
+        {
+          "slot": 13,
+          "itemId": "rusty_shield",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100,
+          "amount": 1
         }
       ]
     },

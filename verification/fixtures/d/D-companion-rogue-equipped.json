@@ -98,8 +98,8 @@
   },
   "execution": {
     "durationSeconds": 20,
-    "repetitions": 12,
-    "seed": 1500000315,
+    "repetitions": 24,
+    "seed": 1500000028,
     "target": {
       "spawn": "Dummy",
       "level": 40
@@ -111,7 +111,7 @@
       }
     ],
     "measurement": {
-      "minimumSamples": 12
+      "minimumSamples": 24
     }
   }
 }

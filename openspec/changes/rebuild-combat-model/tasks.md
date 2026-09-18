@@ -53,7 +53,7 @@
 ## 8. Tier D: rotation windows and companions
 
 - [x] 8.1 Re-author the tier D fixtures: one repeated rotation per class with a resource transition and one maintained effect, and a bare and an equipped window per mercenary archetype. Verify shape validation passes and each declares its minimum window count.
-- [ ] 8.2 Record tier D observations. Verify each fixture passes or reports inconclusive with its sample counts, and that the coverage report credits every class and archetype.
+- [x] 8.2 Record tier D observations. Verify each fixture passes or reports inconclusive with its sample counts, and that the coverage report credits every class and archetype.
 
 ## 9. Evidence and closure
 

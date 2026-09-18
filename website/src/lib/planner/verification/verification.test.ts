@@ -149,6 +149,8 @@ describe("committed observations", () => {
     }
     expect(coverage.uncovered.handlers).toEqual([]);
     expect(coverage.uncovered.schools).toEqual([]);
+    expect(coverage.uncovered.classes).toEqual([]);
+    expect(coverage.uncovered.archetypes).toEqual([]);
   });
 
   it("credit a handler only from the listed skill's own hits", () => {
