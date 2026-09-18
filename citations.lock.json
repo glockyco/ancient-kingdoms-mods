@@ -82,6 +82,10 @@
     "BookItem.cs": {
       "span": 0
     },
+    "Buff.cs:114-230": {
+      "sha256": "07ce40feb26094fcc13f050f875ea69ec6785f59fce0287cb6aa24a8e3f3e034",
+      "span": 117
+    },
     "Buff.cs:19": {
       "sha256": "a86273c97a2fbd04185b8ae8ada63be74fae6a3fd7f8ca6e7c9e2adf2f5a6d99",
       "span": 1
@@ -97,6 +101,10 @@
     "Buff.cs:97-111": {
       "sha256": "bfe166efaaf5af733c72a2a96884bf9ad1aff31b8a94e01e2eb8d2bc501286d5",
       "span": 15
+    },
+    "BuffSkill.cs:422-453": {
+      "sha256": "c6912b3bc5cc4ad1d7155067dcf7a9b8e56e9cdf1cc32394fbe2f8c7da596131",
+      "span": 32
     },
     "BuffSkill.cs:457-479": {
       "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
@@ -1299,6 +1307,10 @@
       "sha256": "9ad9dba9506188716e3e663a7d0208afd60ee567114d6ba3e6f72bac75838c9a",
       "span": 34
     },
+    "Player.cs:9969-9993": {
+      "sha256": "17f27fb77117964e6a40683a5fdd725f25156576be64885e0058990eac174cb9",
+      "span": 25
+    },
     "Player.cs:9986-9987": {
       "sha256": "cc33e2410b7eb948488cab00028339c7be6cfee6e81ba3da33c8a68321cc6f37",
       "span": 2
@@ -1306,6 +1318,10 @@
     "Player.cs:9991-10028": {
       "sha256": "e27c5ecb6057bda965d03fe4f957752c90b6600c63e5c354eed550997a71716a",
       "span": 38
+    },
+    "Player.cs:9994-10035": {
+      "sha256": "355bec4597aeec6169ca6d55da17514a8a06117d47c118f8b52dc4cde01a6ee8",
+      "span": 42
     },
     "Player.cs:DestroyLivingMercenariesOnOwnerDeath": {
       "span": 0
@@ -1582,6 +1598,10 @@
       "sha256": "e3611fd868f2c7bdcaa343a24d42335912812d0d982888cb9181b0767f8f8c99",
       "span": 56
     },
+    "PlayerSkills.cs:1701-1705": {
+      "sha256": "9e737a1ba0a84bdd42c58c4395d1b8f331f16b5bd1b53b6e93cc6706d285b072",
+      "span": 5
+    },
     "PlayerSkills.cs:GetMaximumActiveBardSongs": {
       "span": 0
     },
@@ -1655,6 +1675,10 @@
     },
     "ScriptableSkill.cs": {
       "span": 0
+    },
+    "ScriptableSkill.cs:190-231": {
+      "sha256": "549427fdc4dc2c52102a9a81df11d7b99cb63269e38e4d4487e663d0f164a9fd",
+      "span": 42
     },
     "ScriptableSkill.cs:229-231": {
       "sha256": "3efdd0f0d0a984c2b4b89b670428354938f4182ec30b63d405e35308945d035d",
@@ -1854,6 +1878,10 @@
     "TargetDamageSkill.cs": {
       "span": 0
     },
+    "TargetDamageSkill.cs:152-157": {
+      "sha256": "4fd4b745120ef543819db577b679ef9eb839c4e02b149a63ee80bfa73f69fbad",
+      "span": 6
+    },
     "TargetDamageSkill.cs:162-171": {
       "sha256": "600f11caa0fe2f8236adeed4385872c1208f2689cfd5ed9d24a1bbf634f511c0",
       "span": 10
@@ -1911,6 +1939,10 @@
     },
     "TargetProjectileSkill.cs:196-201": {
       "sha256": "0ca5ff965dc228c3633c4cde94fb59371dbfa6bc5319a6d3ded0251ea15aacfe",
+      "span": 6
+    },
+    "TargetProjectileSkill.cs:216-221": {
+      "sha256": "2cf8cee07e74ba64caaaa61de05bbee604c22852dbda191322cad6ef19e2e002",
       "span": 6
     },
     "TargetProjectileSkill.cs:221-222": {

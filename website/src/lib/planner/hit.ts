@@ -258,6 +258,13 @@ export function hitRefusal(
   return null;
 }
 
+/**
+ * A burn skill spends the caster's whole resource pool and deals a multiple of it, bypassing
+ * avoidance and mitigation. The multiplier differs per handler: rage burn doubles, mana burn
+ * triples.
+ * Sources: server-scripts/TargetDamageSkill.cs:152-157 and
+ * server-scripts/TargetProjectileSkill.cs:216-221.
+ */
 function resourceBurnIntent(
   caster: HitCaster,
   skill: DamageSkillSpec,
@@ -277,7 +284,7 @@ function resourceBurnIntent(
   }
   if (skill.skillClass === "target_projectile" && caster.classId === "wizard") {
     return {
-      amount: caster.manaCurrent * 2,
+      amount: caster.manaCurrent * 3,
       damageType: skill.damageType,
       bypassAvoidanceAndMitigation: true,
       resourceSpent: { resource: "mana", amount: caster.manaCurrent },
