@@ -103,6 +103,9 @@ describe("observation staleness", () => {
         seed: 1,
         gameVersion: "0.0.0",
         fidelity: "state",
+        consumablesUsed: [],
+        activeEffects: [],
+        target: null,
         measurements: [],
       },
     };

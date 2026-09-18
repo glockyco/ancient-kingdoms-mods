@@ -22,6 +22,10 @@ namespace CombatVerification.Dtos
         [JsonProperty("amount")]
         public int Amount { get; set; }
 
+        /// <summary>Whether caster and victim looked the same way, the engine's positional test.</summary>
+        [JsonProperty("sameFacing")]
+        public bool SameFacing { get; set; }
+
         /// <summary>The moment the hit was recorded, in the game's server time.</summary>
         [JsonProperty("at")]
         public double At { get; set; }

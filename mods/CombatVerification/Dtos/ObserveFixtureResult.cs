@@ -39,6 +39,51 @@ namespace CombatVerification.Dtos
         [JsonProperty("activeEffects")] public List<ActiveEffect> ActiveEffects { get; set; }
     }
 
+    /// <summary>What the player stood beside when the window opened, read from the target itself.</summary>
+    public sealed class TargetReadback
+    {
+        [JsonProperty("spawn")] public string Spawn { get; set; }
+        [JsonProperty("level")] public int Level { get; set; }
+        [JsonProperty("netId")] public uint NetId { get; set; }
+        [JsonProperty("zone")] public int Zone { get; set; }
+        [JsonProperty("healthMax")] public int HealthMax { get; set; }
+        [JsonProperty("distance")] public float Distance { get; set; }
+        [JsonProperty("requestedFacing")] public string RequestedFacing { get; set; }
+        [JsonProperty("targetLookDirection")] public float[] TargetLookDirection { get; set; }
+        [JsonProperty("playerLookDirection")] public float[] PlayerLookDirection { get; set; }
+        [JsonProperty("stats")] public Dictionary<string, double> Stats { get; set; }
+    }
+
+    /// <summary>One blow the player took, read from its health falling between frames.</summary>
+    public sealed class IncomingBlow
+    {
+        [JsonProperty("at")] public double At { get; set; }
+        [JsonProperty("amount")] public int Amount { get; set; }
+    }
+
+    /// <summary>Everything one driven window observed.</summary>
+    public sealed class WindowSample
+    {
+        [JsonProperty("openedAt")] public double OpenedAt { get; set; }
+        [JsonProperty("closedAt")] public double ClosedAt { get; set; }
+        [JsonProperty("hits")] public List<LandedHit> Hits { get; set; }
+        [JsonProperty("completions")] public List<double> Completions { get; set; }
+        [JsonProperty("intervals")] public List<double> Intervals { get; set; }
+        [JsonProperty("resets")] public int Resets { get; set; }
+        [JsonProperty("incoming")] public List<IncomingBlow> Incoming { get; set; }
+        [JsonProperty("counts")] public ActionCounts Counts { get; set; }
+        [JsonProperty("fidelity")] public string Fidelity { get; set; }
+        [JsonProperty("fidelityLimit")] public string FidelityLimit { get; set; }
+        /// <summary>
+        /// Server seconds per frame across the window. Actions complete on frame boundaries, so a
+        /// timing comparison allows this much slack.
+        /// </summary>
+        [JsonProperty("averageFrameSeconds")] public double AverageFrameSeconds { get; set; }
+        /// <summary>Frames on which the target's health was refilled to keep it alive.</summary>
+        [JsonProperty("targetHealthRefills")] public int TargetHealthRefills { get; set; }
+        [JsonProperty("playerHealthRefills")] public int PlayerHealthRefills { get; set; }
+    }
+
     /// <summary>The measurements a fixture's tier declares, taken from the running game.</summary>
     public sealed class ObserveFixtureResult
     {
@@ -47,6 +92,12 @@ namespace CombatVerification.Dtos
         [JsonProperty("gameVersion")] public string GameVersion { get; set; }
         /// <summary>Attribution fidelity the measurement reached: state, perHit, or perHitAttributed.</summary>
         [JsonProperty("fidelity")] public string Fidelity { get; set; }
+        /// <summary>Consumables used before the measurement, in the order the build declares them.</summary>
+        [JsonProperty("consumablesUsed")] public List<string> ConsumablesUsed { get; set; }
+        /// <summary>Effects on the player after consumables and before any window.</summary>
+        [JsonProperty("activeEffects")] public List<ActiveEffect> ActiveEffects { get; set; }
+        /// <summary>The target as read before the first window; null for a stat-sheet tier.</summary>
+        [JsonProperty("target")] public TargetReadback Target { get; set; }
         [JsonProperty("measurements")] public List<Measurement> Measurements { get; set; }
     }
 }

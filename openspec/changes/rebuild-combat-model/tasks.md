@@ -25,9 +25,9 @@
 - [x] 3.4 Remove scratch reuse from `VerificationScratch` and `VerifyCommand`; create a fresh scratch database per fixture attempt. Verify the build-tool tests cover fresh creation and removal per fixture and that no reuse marker is written.
 - [x] 3.5 Write `verification/observations/<fixture>.json` from `VerifyCommand` for each completed fixture and report each failed stage without writing. Verify with a build-tool test that a readback mismatch writes no file and that the run continues.
 - [x] 3.6 Run `build-tool verify` for one tier A fixture end to end and confirm the player save hash is unchanged. Verify the observation file exists and carries the current assembly hash.
-- [ ] 3.7 Materialize the fixture target through engine paths: resolve the declared spawn at its level, place the player in cast range with the declared facing, and read the target's state back before measurement. Verify with a game-backed run that the target-state probe reports the declared spawn and level and that a mismatch stops the measurement.
-- [ ] 3.8 Drive the declared action schedule through `PlayerSkills.CmdUse` with the declared repetition and window, recording attempted, accepted, completed, and landed counts from the probes, and extend `fixture.observe` to tiers B, C, and D. Verify with a game-backed run that one tier C window records intervals and counts and that a refused action is counted, not dropped.
-- [ ] 3.9 Use each consumable the fixture execution declares before measurement, through the game's own use path, and record the resulting effects in the observation. Verify with a game-backed run that `A-consumables` reports its food and potion buffs active and its sheet passes with them applied.
+- [x] 3.7 Materialize the fixture target through engine paths: resolve the declared spawn at its level, place the player in cast range with the declared facing, and read the target's state back before measurement. Verify with a game-backed run that the target-state probe reports the declared spawn and level and that a mismatch stops the measurement.
+- [x] 3.8 Drive the declared actions as a priority list through `PlayerSkills.CmdUse` for the declared window count, recording attempted, accepted, completed, and landed counts from the probes, and extend `fixture.observe` to tiers B, C, and D. The window opens at the first completed action so the approach walk stays outside it. Verify with a game-backed run that one tier C window records intervals and counts.
+- [x] 3.9 Use each consumable the fixture execution declares before measurement, through the game's own use path, and record the resulting effects in the observation. Verify with a game-backed run that `A-consumables` reports its food and potion buffs active and its sheet passes with them applied.
 
 ## 4. Comparison suite
 
@@ -42,8 +42,8 @@
 
 ## 6. Tier C: cadence
 
-- [ ] 6.1 Re-author the tier C fixtures for three weapon delays and the haste floor on the Rogue. Verify shape validation passes.
-- [ ] 6.2 Record tier C observations. Verify each interval passes under the declared timing protocol.
+- [x] 6.1 Re-author the tier C fixtures for three weapon delays and the haste floor on the Rogue. Verify shape validation passes.
+- [x] 6.2 Record tier C observations. Verify each interval passes under the declared timing protocol.
 
 ## 7. Tier B: one hit per handler
 

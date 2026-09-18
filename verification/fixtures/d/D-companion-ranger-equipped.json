@@ -95,8 +95,8 @@
     "repetitions": 12,
     "seed": 2054252316,
     "target": {
-      "spawn": "Snake",
-      "level": 5
+      "spawn": "Dummy",
+      "level": 40
     },
     "actions": [
       {

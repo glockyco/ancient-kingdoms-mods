@@ -51,6 +51,14 @@ export interface ObservationRecord {
     seed: number;
     gameVersion: string;
     fidelity: string;
+    consumablesUsed: string[];
+    activeEffects: {
+      skillId: string | null;
+      name: string;
+      level: number;
+      remaining: number;
+    }[];
+    target: unknown;
     measurements: ObservationMeasurement[];
   };
 }

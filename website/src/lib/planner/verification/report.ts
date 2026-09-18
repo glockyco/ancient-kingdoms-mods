@@ -1,4 +1,5 @@
 import { compareTierA } from "./tier-a";
+import { compareTierC } from "./tier-c";
 import type { QuantityResult } from "./comparison";
 import {
   classifyObservation,
@@ -60,8 +61,9 @@ function compareQuantities(
   switch (fixture.tier) {
     case "A":
       return compareTierA(fixture, catalog, observation);
-    case "B":
     case "C":
+      return compareTierC(fixture, catalog, observation);
+    case "B":
     case "D":
       return [
         {

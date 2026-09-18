@@ -185,8 +185,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         transport.EnqueueServerMessage(
             @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}");
         EnqueueJob(transport, "build-1", @"{""ok"":true,""level"":50}");
-        transport.EnqueueServerMessage(
-            @"{""type"":""command_result"",""id"":""7"",""status"":""ok"",""output"":{""tier"":""A"",""measurements"":[]}}");
+        EnqueueJob(transport, "observe-1", @"{""tier"":""A"",""measurements"":[]}");
         EnqueueQuit(transport);
 
         var result = await new HotReplVerificationRunner(transport, FixtureOptions())

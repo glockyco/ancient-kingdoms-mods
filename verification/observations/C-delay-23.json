@@ -1,0 +1,491 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "C-delay-23",
+    "tier": "C",
+    "coverage": "C.weaponDelay.23",
+    "path": "verification/fixtures/c/C-delay-23.json",
+    "contentSha256": "87acf85f97f6dab08782b6c4e114656ae637170aefd66700e27b163413079784"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T06:09:10.416696+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/c/C-delay-23.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "Bought 0 levels across 1 skills."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 1 items, cleared 3 slots the fixture does not declare."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 18,
+      "constitution": 26,
+      "dexterity": 15,
+      "intelligence": 11,
+      "wisdom": 9,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "C",
+    "seed": 320135142,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "perHitAttributed",
+    "consumablesUsed": [],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.9867241,
+        "expired": false
+      }
+    ],
+    "target": {
+      "spawn": "Dummy",
+      "level": 40,
+      "netId": 5202,
+      "zone": 2,
+      "healthMax": 295000,
+      "distance": 3.0,
+      "requestedFacing": "front",
+      "targetLookDirection": [
+        0.0,
+        -1.0
+      ],
+      "playerLookDirection": [
+        -0.0,
+        1.0
+      ],
+      "stats": {
+        "accuracy": 0.0,
+        "blockChance": 0.0690000057220459,
+        "coldResist": 200.0,
+        "criticalChance": 0.0,
+        "criticalResist": 0.0,
+        "damage": 0.0,
+        "defense": 200.0,
+        "diseaseResist": 200.0,
+        "fearResistChance": 0.0,
+        "fireResist": 200.0,
+        "haste": 0.0,
+        "magicDamage": 0.0,
+        "magicResist": 200.0,
+        "poisonResist": 200.0,
+        "spellHaste": 0.0
+      }
+    },
+    "measurements": [
+      {
+        "quantity": "actionInterval",
+        "unit": "second",
+        "samplingUnit": "hit",
+        "windowSeconds": 40.0,
+        "samples": [
+          {
+            "openedAt": 13.348960331632652,
+            "closedAt": 53.355659134070294,
+            "hits": [
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 69,
+                "sameFacing": false,
+                "at": 14.786846534863946,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 72,
+                "sameFacing": false,
+                "at": 16.21855193452381,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 69,
+                "sameFacing": false,
+                "at": 17.655568530328797,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 83,
+                "sameFacing": false,
+                "at": 19.09245633503401,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 77,
+                "sameFacing": false,
+                "at": 20.535202331349204,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 82,
+                "sameFacing": false,
+                "at": 21.96925073696145,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 82,
+                "sameFacing": false,
+                "at": 23.391057234977325,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 69,
+                "sameFacing": false,
+                "at": 24.831002132936508,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 69,
+                "sameFacing": false,
+                "at": 26.27482693452381,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 75,
+                "sameFacing": false,
+                "at": 27.71266803429705,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 73,
+                "sameFacing": false,
+                "at": 29.153417431972787,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 78,
+                "sameFacing": false,
+                "at": 30.60046993339002,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 81,
+                "sameFacing": false,
+                "at": 32.02925613662131,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 73,
+                "sameFacing": false,
+                "at": 33.46004043367347,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 78,
+                "sameFacing": false,
+                "at": 34.900067736678004,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 77,
+                "sameFacing": false,
+                "at": 36.32640673185941,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 78,
+                "sameFacing": false,
+                "at": 37.76074803004535,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 81,
+                "sameFacing": false,
+                "at": 39.211560430839,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 69,
+                "sameFacing": false,
+                "at": 40.653782731009066,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 79,
+                "sameFacing": false,
+                "at": 42.077567332766435,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 81,
+                "sameFacing": false,
+                "at": 43.52445633503401,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 74,
+                "sameFacing": false,
+                "at": 44.95345763180272,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 70,
+                "sameFacing": false,
+                "at": 46.39068143424036,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 72,
+                "sameFacing": false,
+                "at": 47.84378813066893,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 81,
+                "sameFacing": false,
+                "at": 49.28314103599773,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 74,
+                "sameFacing": false,
+                "at": 50.72470163690476,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 68,
+                "sameFacing": false,
+                "at": 52.16544413265306,
+                "skill": "Melee Attack",
+                "damageType": "Normal",
+                "intent": 70
+              }
+            ],
+            "completions": [
+              14.786846534863946,
+              16.21855193452381,
+              17.655568530328797,
+              19.09245633503401,
+              20.535202331349204,
+              21.96925073696145,
+              23.391057234977325,
+              24.831002132936508,
+              26.27482693452381,
+              27.71266803429705,
+              29.153417431972787,
+              30.60046993339002,
+              32.02925613662131,
+              33.46004043367347,
+              34.900067736678004,
+              36.32640673185941,
+              37.76074803004535,
+              39.211560430839,
+              40.653782731009066,
+              42.077567332766435,
+              43.52445633503401,
+              44.95345763180272,
+              46.39068143424036,
+              47.84378813066893,
+              49.28314103599773,
+              50.72470163690476,
+              52.16544413265306
+            ],
+            "intervals": [
+              1.4317053996598634,
+              1.4370165958049874,
+              1.436887804705215,
+              1.4427459963151925,
+              1.434048405612245,
+              1.4218064980158758,
+              1.4399448979591831,
+              1.4438248015873008,
+              1.437841099773241,
+              1.440749397675738,
+              1.4470525014172324,
+              1.4287862032312937,
+              1.4307842970521563,
+              1.440027303004534,
+              1.4263389951814034,
+              1.4343412981859416,
+              1.4508124007936516,
+              1.4422223001700658,
+              1.4237846017573688,
+              1.446889002267575,
+              1.4290012967687105,
+              1.437223802437643,
+              1.45310669642857,
+              1.4393529053287963,
+              1.4415606009070316,
+              1.440742495748296
+            ],
+            "resets": 0,
+            "incoming": [],
+            "counts": {
+              "attempted": 0,
+              "accepted": 0,
+              "completed": 27,
+              "landed": 27
+            },
+            "fidelity": "perHitAttributed",
+            "fidelityLimit": null,
+            "averageFrameSeconds": 0.016002679520975057,
+            "targetHealthRefills": 28,
+            "playerHealthRefills": 0
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

@@ -47,10 +47,12 @@ namespace CombatVerification.Probes
                 uint victimNetId,
                 int amount,
                 double at,
+                bool sameFacing,
                 string skill,
                 string damageType,
                 int intent)
             {
+                SameFacing = sameFacing;
                 Victim = victim;
                 VictimNetId = victimNetId;
                 Amount = amount;
@@ -59,6 +61,12 @@ namespace CombatVerification.Probes
                 DamageType = damageType;
                 Intent = intent;
             }
+
+            /// <summary>
+            /// Whether the caster and the victim looked the same way when the hit landed, which is
+            /// the engine's test for a positional bonus. Source: server-scripts/Combat.cs:671.
+            /// </summary>
+            public bool SameFacing { get; }
 
             /// <summary>The entity the engine named as the subject of this hit.</summary>
             public string Victim { get; }
@@ -113,6 +121,7 @@ namespace CombatVerification.Probes
             uint victimNetId,
             long totalNow,
             double at,
+            bool sameFacing = false,
             string skill = null,
             string damageType = null,
             int intent = 0)
@@ -125,7 +134,7 @@ namespace CombatVerification.Probes
             }
 
             _hits.Add(new Hit(
-                victim, victimNetId, (int)(totalNow - _total), at, skill, damageType, intent));
+                victim, victimNetId, (int)(totalNow - _total), at, sameFacing, skill, damageType, intent));
             _total = totalNow;
 
             if (skill == null)

@@ -118,6 +118,17 @@ the comparison would need a second runtime or a port. Alternative considered: ke
 engine and baseline commands. Rejected because they compare against caller-supplied predictions and
 would duplicate the protocol.
 
+### Timed windows open at a completed action
+
+`build-tool verify` travels to the declared target through the game's portal command, places the
+player on the requested side, arms the first declared action, and opens the window at that action's
+completion. The default attack therefore starts the window on its refractory period, which the engine
+scenario states as an initial cooldown, and the approach walk stays outside the window. The game
+completes actions on frame boundaries, so an observed interval may differ from the engine's exact
+interval by up to three frames of the window's average frame length: one frame of slip at each
+endpoint and jitter between frames. The training Dummy is the timed target because it never attacks;
+a fighting spawn produced a stun gap inside a cadence window.
+
 ### The comparison protocol
 
 A deterministic quantity compares exactly: every stat-sheet field, every legality outcome, every count
@@ -198,3 +209,6 @@ compatibility window.
 - Whether the companion movement state can be held in range for a whole tier D window by target
   placement alone. If not, the companion window records the movement state and the comparison uses the
   in-range replicates only. This does not change the specs or the task breakdown.
+- Tier D windows currently model no incoming damage because the Dummy never attacks. Incoming
+  returns stay covered by the engine's source-cited unit tests until a fixture against a fighting
+  spawn with a recorded incoming stream is authored.

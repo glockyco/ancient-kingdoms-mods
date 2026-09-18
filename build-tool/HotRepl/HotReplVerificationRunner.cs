@@ -227,18 +227,17 @@ internal sealed class HotReplVerificationRunner
                 resolvedPath, characters, Stage: "build", Achieved: build.Output);
         }
 
-        using var observe = await _session.CallAsync("fixture.observe", ObserveArgs(), ct);
-        var observation = OkOutput(observe.RootElement);
-        if (observation is null)
+        var observe = await CallJobAsync("fixture.observe", ObserveArgs(), ct);
+        if (observe.Error != null || observe.Output is null)
         {
             return new(false, ExitCodes.CommandFailed,
-                "The measurement failed: " + DescribeError(observe.RootElement),
+                "The measurement failed: " + (observe.Error ?? "no measurement was returned"),
                 resolvedPath, characters, Stage: "observe", Achieved: build.Output);
         }
 
         return new(true, ExitCodes.Success,
             $"Redirected to {resolvedPath}; fixture built and measured.",
-            resolvedPath, characters, Stage: "observe", Achieved: build.Output, Observation: observation);
+            resolvedPath, characters, Stage: "observe", Achieved: build.Output, Observation: observe.Output);
     }
 
     private string FixtureCharacterArgs()

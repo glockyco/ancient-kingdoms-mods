@@ -134,7 +134,7 @@ namespace CombatVerification.Tests
         {
             var log = new DamageLog(0);
 
-            log.Observe("Ancient Cyclops", 1u, 283, 1.0, "Stab", "Normal", intent: 464);
+            log.Observe("Ancient Cyclops", 1u, 283, 1.0, sameFacing: false, "Stab", "Normal", intent: 464);
 
             var hit = Assert.Single(log.Hits);
             Assert.Equal("Stab", hit.Skill);
@@ -153,7 +153,7 @@ namespace CombatVerification.Tests
         {
             var log = new DamageLog(0);
 
-            log.Observe("Ancient Cyclops", 1u, 283, 1.0, "Stab", "Normal", 464);
+            log.Observe("Ancient Cyclops", 1u, 283, 1.0, false, "Stab", "Normal", 464);
             log.Observe("Ancient Cyclops", 1u, 550, 2.0);
 
             Assert.False(log.AllAttributed);

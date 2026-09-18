@@ -1,0 +1,791 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "C-haste-floor",
+    "tier": "C",
+    "coverage": "C.haste.floor",
+    "path": "verification/fixtures/c/C-haste-floor.json",
+    "contentSha256": "97c6b6b287e726596ed4f49d4903cbb3a6a1ca983fc9a4943219562cb36270a4"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T06:14:19.78379+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/c/C-haste-floor.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "Bought 0 levels across 1 skills."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=14, constitution=17, dexterity=27, intelligence=9, wisdom=11, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 11 items, cleared 1 slots the fixture does not declare."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 110,
+      "constitution": 66,
+      "dexterity": 140,
+      "intelligence": 34,
+      "wisdom": 36,
+      "charisma": 66
+    }
+  },
+  "observation": {
+    "tier": "C",
+    "seed": 825323343,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "perHitAttributed",
+    "consumablesUsed": [],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.9868713,
+        "expired": false
+      }
+    ],
+    "target": {
+      "spawn": "Dummy",
+      "level": 40,
+      "netId": 3481,
+      "zone": 4,
+      "healthMax": 295000,
+      "distance": 3.0,
+      "requestedFacing": "front",
+      "targetLookDirection": [
+        0.0,
+        -1.0
+      ],
+      "playerLookDirection": [
+        -0.0,
+        1.0
+      ],
+      "stats": {
+        "accuracy": 0.0,
+        "blockChance": 0.0690000057220459,
+        "coldResist": 200.0,
+        "criticalChance": 0.0,
+        "criticalResist": 0.0,
+        "damage": 0.0,
+        "defense": 200.0,
+        "diseaseResist": 200.0,
+        "fearResistChance": 0.0,
+        "fireResist": 200.0,
+        "haste": 0.0,
+        "magicDamage": 0.0,
+        "magicResist": 200.0,
+        "poisonResist": 200.0,
+        "spellHaste": 0.0
+      }
+    },
+    "measurements": [
+      {
+        "quantity": "actionInterval",
+        "unit": "second",
+        "samplingUnit": "hit",
+        "windowSeconds": 40.0,
+        "samples": [
+          {
+            "openedAt": 12.998501119614511,
+            "closedAt": 53.00089321853741,
+            "hits": [
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 475,
+                "sameFacing": false,
+                "at": 13.787750318877551,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 468,
+                "sameFacing": false,
+                "at": 14.544882015306122,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 523,
+                "sameFacing": false,
+                "at": 15.304204017857142,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 541,
+                "sameFacing": false,
+                "at": 16.05644861819728,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 534,
+                "sameFacing": false,
+                "at": 16.818386316609978,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 479,
+                "sameFacing": false,
+                "at": 17.57612261904762,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 457,
+                "sameFacing": false,
+                "at": 18.344445918367345,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 516,
+                "sameFacing": false,
+                "at": 19.114473115079363,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 742,
+                "sameFacing": false,
+                "at": 19.870325021258502,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 531,
+                "sameFacing": false,
+                "at": 20.634838421201813,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 474,
+                "sameFacing": false,
+                "at": 21.38843981717687,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 760,
+                "sameFacing": false,
+                "at": 22.155167020975057,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 501,
+                "sameFacing": false,
+                "at": 22.91927422052154,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 467,
+                "sameFacing": false,
+                "at": 23.677763421201814,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 484,
+                "sameFacing": false,
+                "at": 24.442194416099774,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 531,
+                "sameFacing": false,
+                "at": 25.209496116780045,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 528,
+                "sameFacing": false,
+                "at": 25.97162831632653,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 484,
+                "sameFacing": false,
+                "at": 26.73719861819728,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 505,
+                "sameFacing": false,
+                "at": 27.4957581207483,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 531,
+                "sameFacing": false,
+                "at": 28.260215114795916,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 545,
+                "sameFacing": false,
+                "at": 29.018747817460316,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 547,
+                "sameFacing": false,
+                "at": 29.779591617063492,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 491,
+                "sameFacing": false,
+                "at": 30.54643662131519,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 532,
+                "sameFacing": false,
+                "at": 31.31158842120181,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 472,
+                "sameFacing": false,
+                "at": 32.062128621031746,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 467,
+                "sameFacing": false,
+                "at": 32.823583715986395,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 517,
+                "sameFacing": false,
+                "at": 33.58394131944444,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 468,
+                "sameFacing": false,
+                "at": 34.347433319161,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 539,
+                "sameFacing": false,
+                "at": 35.11234511763038,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 529,
+                "sameFacing": false,
+                "at": 35.87185741921768,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 463,
+                "sameFacing": false,
+                "at": 36.6412508149093,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 774,
+                "sameFacing": false,
+                "at": 37.40428101615646,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 676,
+                "sameFacing": false,
+                "at": 38.160728514739226,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 490,
+                "sameFacing": false,
+                "at": 38.92303641581633,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 525,
+                "sameFacing": false,
+                "at": 39.683796619897954,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 450,
+                "sameFacing": false,
+                "at": 40.452620521541945,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 541,
+                "sameFacing": false,
+                "at": 41.21781622023809,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 485,
+                "sameFacing": false,
+                "at": 41.97685012046485,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 484,
+                "sameFacing": false,
+                "at": 42.73268122165533,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 480,
+                "sameFacing": false,
+                "at": 43.49499822137188,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 495,
+                "sameFacing": false,
+                "at": 44.262258815192745,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 772,
+                "sameFacing": false,
+                "at": 45.02411162131519,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 500,
+                "sameFacing": false,
+                "at": 45.78708151927437,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 522,
+                "sameFacing": false,
+                "at": 46.55247481575964,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 489,
+                "sameFacing": false,
+                "at": 47.30822171910431,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 518,
+                "sameFacing": false,
+                "at": 48.073796315192745,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 500,
+                "sameFacing": false,
+                "at": 48.84405552012471,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 479,
+                "sameFacing": false,
+                "at": 49.60523572137188,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 506,
+                "sameFacing": false,
+                "at": 50.37221931689342,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 534,
+                "sameFacing": false,
+                "at": 51.126308616780044,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 502,
+                "sameFacing": false,
+                "at": 51.89143961876417,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 515,
+                "sameFacing": false,
+                "at": 52.65613181689342,
+                "skill": "Swift Slash",
+                "damageType": "Normal",
+                "intent": 461
+              }
+            ],
+            "completions": [
+              13.787750318877551,
+              14.544882015306122,
+              15.304204017857142,
+              16.05644861819728,
+              16.818386316609978,
+              17.57612261904762,
+              18.344445918367345,
+              19.114473115079363,
+              19.870325021258502,
+              20.634838421201813,
+              21.38843981717687,
+              22.155167020975057,
+              22.91927422052154,
+              23.677763421201814,
+              24.442194416099774,
+              25.209496116780045,
+              25.97162831632653,
+              26.73719861819728,
+              27.4957581207483,
+              28.260215114795916,
+              29.018747817460316,
+              29.779591617063492,
+              30.54643662131519,
+              31.31158842120181,
+              32.062128621031746,
+              32.823583715986395,
+              33.58394131944444,
+              34.347433319161,
+              35.11234511763038,
+              35.87185741921768,
+              36.6412508149093,
+              37.40428101615646,
+              38.160728514739226,
+              38.92303641581633,
+              39.683796619897954,
+              40.452620521541945,
+              41.21781622023809,
+              41.97685012046485,
+              42.73268122165533,
+              43.49499822137188,
+              44.262258815192745,
+              45.02411162131519,
+              45.78708151927437,
+              46.55247481575964,
+              47.30822171910431,
+              48.073796315192745,
+              48.84405552012471,
+              49.60523572137188,
+              50.37221931689342,
+              51.126308616780044,
+              51.89143961876417,
+              52.65613181689342
+            ],
+            "intervals": [
+              0.757131696428571,
+              0.7593220025510199,
+              0.7522446003401377,
+              0.761937698412698,
+              0.7577363024376425,
+              0.7683232993197251,
+              0.770027196712018,
+              0.7558519061791387,
+              0.7645133999433114,
+              0.7536013959750569,
+              0.7667272037981867,
+              0.7641071995464834,
+              0.7584892006802733,
+              0.7644309948979604,
+              0.7673017006802709,
+              0.7621321995464854,
+              0.7655703018707491,
+              0.7585595025510194,
+              0.7644569940476167,
+              0.7585327026644002,
+              0.760843799603176,
+              0.7668450042516994,
+              0.7651517998866204,
+              0.7505401998299348,
+              0.7614550949546484,
+              0.760357603458047,
+              0.7634919997165568,
+              0.7649117984693845,
+              0.7595123015873,
+              0.7693933956916155,
+              0.7630302012471617,
+              0.7564474985827658,
+              0.7623079010771008,
+              0.7607602040816275,
+              0.7688239016439908,
+              0.7651956986961466,
+              0.7590339002267612,
+              0.7558311011904735,
+              0.7623169997165533,
+              0.7672605938208648,
+              0.7618528061224481,
+              0.7629698979591808,
+              0.7653932964852643,
+              0.7557469033446722,
+              0.7655745960884346,
+              0.7702592049319676,
+              0.7611802012471713,
+              0.7669835955215376,
+              0.7540892998866227,
+              0.7651310019841233,
+              0.7646921981292536
+            ],
+            "resets": 0,
+            "incoming": [],
+            "counts": {
+              "attempted": 0,
+              "accepted": 0,
+              "completed": 52,
+              "landed": 52
+            },
+            "fidelity": "perHitAttributed",
+            "fidelityLimit": null,
+            "averageFrameSeconds": 0.01132891308380711,
+            "targetHealthRefills": 53,
+            "playerHealthRefills": 1
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

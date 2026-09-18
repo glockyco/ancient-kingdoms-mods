@@ -1,0 +1,443 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "C-delay-30",
+    "tier": "C",
+    "coverage": "C.weaponDelay.30",
+    "path": "verification/fixtures/c/C-delay-30.json",
+    "contentSha256": "97d47b87d3698bc53d9108ab2d4fc03c30330080fff03b24c385a20dcfb07bd3"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T06:12:35.79491+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/c/C-delay-30.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "Bought 0 levels across 1 skills."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=12, constitution=13, dexterity=10, intelligence=17, wisdom=26, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 1 items, cleared 2 slots the fixture does not declare."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 12,
+      "constitution": 13,
+      "dexterity": 10,
+      "intelligence": 17,
+      "wisdom": 26,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "C",
+    "seed": 320135170,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "perHitAttributed",
+    "consumablesUsed": [],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.9862926,
+        "expired": false
+      }
+    ],
+    "target": {
+      "spawn": "Dummy",
+      "level": 40,
+      "netId": 3481,
+      "zone": 4,
+      "healthMax": 295000,
+      "distance": 3.0,
+      "requestedFacing": "front",
+      "targetLookDirection": [
+        0.0,
+        -1.0
+      ],
+      "playerLookDirection": [
+        -0.0,
+        1.0
+      ],
+      "stats": {
+        "accuracy": 0.0,
+        "blockChance": 0.0690000057220459,
+        "coldResist": 200.0,
+        "criticalChance": 0.0,
+        "criticalResist": 0.0,
+        "damage": 0.0,
+        "defense": 200.0,
+        "diseaseResist": 200.0,
+        "fearResistChance": 0.0,
+        "fireResist": 200.0,
+        "haste": 0.0,
+        "magicDamage": 0.0,
+        "magicResist": 200.0,
+        "poisonResist": 200.0,
+        "spellHaste": 0.0
+      }
+    },
+    "measurements": [
+      {
+        "quantity": "actionInterval",
+        "unit": "second",
+        "samplingUnit": "hit",
+        "windowSeconds": 40.0,
+        "samples": [
+          {
+            "openedAt": 13.125836422902493,
+            "closedAt": 53.1268877196712,
+            "hits": [
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 24,
+                "sameFacing": false,
+                "at": 14.834742318594104,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 25,
+                "sameFacing": false,
+                "at": 16.54587412131519,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 20,
+                "sameFacing": false,
+                "at": 18.255706519274376,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 19.971380520124715,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 21.686101424319727,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 23,
+                "sameFacing": false,
+                "at": 23.397786224489796,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 25,
+                "sameFacing": false,
+                "at": 25.105889923469388,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 24,
+                "sameFacing": false,
+                "at": 26.810002621882084,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 24,
+                "sameFacing": false,
+                "at": 28.51094841978458,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 30.218974822845805,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 23,
+                "sameFacing": false,
+                "at": 31.93232412131519,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 23,
+                "sameFacing": false,
+                "at": 33.64138052012471,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 35.35159262329932,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 25,
+                "sameFacing": false,
+                "at": 37.0536702239229,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 23,
+                "sameFacing": false,
+                "at": 38.767192623299316,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 24,
+                "sameFacing": false,
+                "at": 40.4806452239229,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 24,
+                "sameFacing": false,
+                "at": 42.189228422619045,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 43.90579392006803,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 45.61434141865079,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 47.32547122307256,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 24,
+                "sameFacing": false,
+                "at": 49.04374702380952,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 21,
+                "sameFacing": false,
+                "at": 50.747813321995466,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 25,
+                "sameFacing": false,
+                "at": 52.45922932256236,
+                "skill": "Crush Strike",
+                "damageType": "Normal",
+                "intent": 21
+              }
+            ],
+            "completions": [
+              14.834742318594103,
+              16.54587412131519,
+              18.255706519274376,
+              19.971380520124715,
+              21.686101424319727,
+              23.397786224489796,
+              25.105889923469388,
+              26.810002621882084,
+              28.51094841978458,
+              30.218974822845805,
+              31.93232412131519,
+              33.64138052012471,
+              35.35159262329932,
+              37.0536702239229,
+              38.767192623299316,
+              40.4806452239229,
+              42.189228422619045,
+              43.90579392006803,
+              45.61434141865079,
+              47.32547122307256,
+              49.04374702380952,
+              50.747813321995466,
+              52.45922932256236
+            ],
+            "intervals": [
+              1.7111318027210878,
+              1.709832397959186,
+              1.7156740008503384,
+              1.714720904195012,
+              1.7116848001700689,
+              1.708103698979592,
+              1.7041126984126969,
+              1.7009457979024951,
+              1.7080264030612256,
+              1.7133492984693852,
+              1.7090563988095226,
+              1.7102121031746051,
+              1.702077600623582,
+              1.7135223993764157,
+              1.713452600623583,
+              1.7085831986961466,
+              1.7165654974489826,
+              1.7085474985827602,
+              1.7111298044217733,
+              1.7182758007369614,
+              1.7040662981859427,
+              1.7114160005668921
+            ],
+            "resets": 0,
+            "incoming": [],
+            "counts": {
+              "attempted": 0,
+              "accepted": 0,
+              "completed": 23,
+              "landed": 23
+            },
+            "fidelity": "perHitAttributed",
+            "fidelityLimit": null,
+            "averageFrameSeconds": 0.011554318687685935,
+            "targetHealthRefills": 24,
+            "playerHealthRefills": 0
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

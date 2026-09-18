@@ -286,6 +286,10 @@
       "sha256": "646f5a5e6e6d84d938617ad919b44440b5f39fc0ca15e34bfdebb2f330c22dc6",
       "span": 8
     },
+    "Combat.cs:671": {
+      "sha256": "d70d2e66d5a7acb48200c6ff31c82f99a3d5e3444eb1314ca432206947f1ff37",
+      "span": 1
+    },
     "Combat.cs:770-803": {
       "sha256": "c8043431a140936cc2e4d514414f227e93c2dba8eb4cef447b5c80edf812df79",
       "span": 34

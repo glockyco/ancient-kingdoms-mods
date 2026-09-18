@@ -143,6 +143,7 @@ namespace CombatVerification.Probes
                     VictimNetId = hit.VictimNetId,
                     Amount = hit.Amount,
                     At = hit.At,
+                    SameFacing = hit.SameFacing,
                     Skill = hit.Skill,
                     DamageType = hit.DamageType,
                     Intent = hit.Intent,
@@ -175,13 +176,15 @@ namespace CombatVerification.Probes
             var at = ServerClock.TryRead(out var now) ? now : 0.0;
             var name = victim == null ? "unknown" : victim.nameEntity;
             var netId = victim == null ? 0u : victim.netId;
+            var sameFacing = victim != null && _caster != null
+                && _caster.lookDirection == victim.lookDirection;
 
             // The stamp belongs to the hit in flight, and the event fires inside that same call. A
             // stamp naming another caster is not this subject's hit, so it is not read.
             var stamp = DamageAttribution.Current;
             if (stamp == null || stamp.Value.CasterNetId != _casterNetId)
             {
-                _log.Observe(name, netId, _combat.meterDamageDone, at);
+                _log.Observe(name, netId, _combat.meterDamageDone, at, sameFacing);
                 return;
             }
 
@@ -190,6 +193,7 @@ namespace CombatVerification.Probes
                 netId,
                 _combat.meterDamageDone,
                 at,
+                sameFacing,
                 stamp.Value.SkillName,
                 stamp.Value.DamageType.ToString(),
                 stamp.Value.Intent);
