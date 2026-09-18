@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using CombatVerification.Dtos;
 using CombatVerification.Fixtures;
 using CombatVerification.Probes;
+using System.Linq;
 using HotRepl.Control;
+using Il2Cpp;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -65,6 +67,17 @@ namespace CombatVerification.Commands
             var sheet = StatSheet.Read(out var unavailable);
             if (sheet == null)
                 return context.PreconditionFailed("noLocalPlayer", unavailable);
+            var effects = Effects.Read(Player.localPlayer)
+                .Select(effect => new ActiveEffect
+                {
+                    SkillId = effect.SkillId,
+                    Name = effect.Name,
+                    Category = effect.Category,
+                    Level = effect.Level,
+                    Remaining = effect.Remaining,
+                    Expired = effect.Expired,
+                })
+                .ToList();
 
             return ControlCommandResult.Ok(new ObserveFixtureResult
             {
@@ -80,7 +93,10 @@ namespace CombatVerification.Commands
                         Unit = "stat",
                         SamplingUnit = "reading",
                         WindowSeconds = null,
-                        Samples = new List<object> { sheet },
+                        Samples = new List<object>
+                        {
+                            new StatSheetSample { Sheet = sheet, ActiveEffects = effects },
+                        },
                         Counts = null,
                     },
                 },

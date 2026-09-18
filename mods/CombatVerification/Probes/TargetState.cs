@@ -30,6 +30,7 @@ namespace CombatVerification.Probes
             {
                 effects.Add(new ActiveEffect
                 {
+                    SkillId = effect.SkillId,
                     Name = effect.Name,
                     Category = effect.Category,
                     Level = effect.Level,

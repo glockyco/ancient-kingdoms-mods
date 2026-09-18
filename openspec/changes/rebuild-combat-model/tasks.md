@@ -30,9 +30,9 @@
 
 ## 4. Comparison suite
 
-- [ ] 4.1 Add `verification.test.ts` that reads every fixture and observation, checks the assembly hash against `server-scripts/SNAPSHOT.toml`, and reports stale, missing, pass, fail, or inconclusive per fixture. Verify with a synthetic stale observation that it reports stale without failing.
-- [ ] 4.2 Implement exact comparison for deterministic quantities, the support-band check for per-hit ratios, and the Welch test for stochastic means with per-quantity minimum samples. Verify with tests for one exact mismatch, one out-of-band hit, one rejection at 0.01, and one inconclusive window.
-- [ ] 4.3 Add the coverage report over executed evidence: handler, school, class, and archetype from observation traces. Verify a fixture whose trace reaches a different handler is not credited for its label.
+- [x] 4.1 Add `verification.test.ts` that reads every fixture and observation, checks the assembly hash against `server-scripts/SNAPSHOT.toml`, and reports stale, missing, pass, fail, or inconclusive per fixture. Verify with a synthetic stale observation that it reports stale without failing.
+- [x] 4.2 Implement exact comparison for deterministic quantities, the support-band check for per-hit ratios, and the Welch test for stochastic means with per-quantity minimum samples. Verify with tests for one exact mismatch, one out-of-band hit, one rejection at 0.01, and one inconclusive window.
+- [ ] 4.3 Add the coverage report over executed evidence: handler, school, class, and archetype from observation traces. Verify a fixture whose trace reaches a different handler is not credited for its label. Class credit from the achieved stat sheet is in place; handler, school, and archetype credit need the tier B and D traces from task 3.8.
 
 ## 5. Tier A: stat sheet
 

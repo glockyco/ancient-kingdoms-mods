@@ -27,6 +27,18 @@ namespace CombatVerification.Dtos
         [JsonProperty("landed")] public int Landed { get; set; }
     }
 
+    /// <summary>A stat-sheet reading with the effects that shaped it.</summary>
+    public sealed class StatSheetSample
+    {
+        [JsonProperty("sheet")] public StatSheetResult Sheet { get; set; }
+        /// <summary>
+        /// Effects on the player at the reading. Out of combat the game refreshes a rest buff every
+        /// frame, so a sheet read at rest differs from one read in combat.
+        /// Source: server-scripts/Player.cs:2194-2197.
+        /// </summary>
+        [JsonProperty("activeEffects")] public List<ActiveEffect> ActiveEffects { get; set; }
+    }
+
     /// <summary>The measurements a fixture's tier declares, taken from the running game.</summary>
     public sealed class ObserveFixtureResult
     {

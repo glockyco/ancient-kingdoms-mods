@@ -270,6 +270,20 @@ export function resolveLogicalBuild(
   return resolveInternal(buildValue, catalogValue).value;
 }
 
+/** Resolves one buff or debuff skill at a level to the effect the engine applies. */
+export function resolveEffectSpec(
+  catalogValue: unknown,
+  skillId: string,
+  level: number,
+): EffectSpec {
+  const catalog = parseCatalog(catalogValue);
+  return effectSpecFromSkill(
+    requireIdentity(catalog.skills, skillId, `skill '${skillId}'`),
+    level,
+    catalog,
+  );
+}
+
 /** Resolves a logical build and scenario through the catalog and runs the sampled engine. */
 export function simulateLogicalBuild(
   input: LogicalBuildSimulationInput,

@@ -4,9 +4,13 @@ using Newtonsoft.Json;
 
 namespace CombatVerification.Dtos
 {
-    /// <summary>One timed effect the target carries.</summary>
+    /// <summary>One timed effect an entity carries.</summary>
     public sealed class ActiveEffect
     {
+        /// <summary>The stable skill identifier the catalog uses, or null when the buff has no data.</summary>
+        [JsonProperty("skillId")]
+        public string SkillId { get; set; }
+
         /// <summary>The name the effect's skill declares.</summary>
         [JsonProperty("name")]
         public string Name { get; set; }

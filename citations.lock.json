@@ -1179,6 +1179,10 @@
       "sha256": "732d54825a1c9230defccda860901c7ff4dc64aa386a8546f773157d5a1c538b",
       "span": 15
     },
+    "Player.cs:2194-2197": {
+      "sha256": "a2d6e97bff4fb95ffb7efe4b8963d31dc3b4591ab10c1732157c3735186d4b6c",
+      "span": 4
+    },
     "Player.cs:3051-3054": {
       "sha256": "fcbe33e46827f7fd28d3d66f0915221d6118961c48a8a96836484f3d5e697752",
       "span": 4
@@ -1726,6 +1730,10 @@
       "sha256": "698fb389fe1639a0ad807590a50124b835ab1857ea715d2a92a4d783866822b3",
       "span": 6
     },
+    "Skills.cs:1916": {
+      "sha256": "e047f5eea52aa7ad9ebba264661829bc1dc319d53b75e7038b14d7f8b6015258",
+      "span": 1
+    },
     "Skills.cs:233-236": {
       "sha256": "1f09605f67d86b2b8014b24c28d0c5f0368da3eb0cc43e9c737b378d9a00bf43",
       "span": 4
@@ -1741,6 +1749,10 @@
     "Skills.cs:712-717": {
       "sha256": "baae6998f98001d47c20b20ccb151c2447c150344339af22be575aab7d0268d5",
       "span": 6
+    },
+    "Skills.cs:754-758": {
+      "sha256": "f545f7b97f637ad7f65f3bed87be6bb3e08df58e157ddb1f77e7523cc4b5dcca",
+      "span": 5
     },
     "Skills.cs:862-887": {
       "sha256": "52dbd42f7862a4ffea282c944058039291241b9cf052cacf72ace313a0bd2b2d",

@@ -12,7 +12,7 @@
     "gameVersion": "0.9.32.4",
     "steamBuildId": "25326396"
   },
-  "recordedAt": "2026-09-17T20:47:54.941305+00:00",
+  "recordedAt": "2026-09-18T05:29:59.127919+00:00",
   "achieved": {
     "build": {
       "serializedSchemaVersion": 3,
@@ -93,53 +93,65 @@
         "windowSeconds": null,
         "samples": [
           {
-            "character": {
-              "kind": "player",
-              "archetype": "Warrior",
-              "race": "Human",
-              "level": 50,
-              "attributes": {
-                "strength": 18,
-                "constitution": 26,
-                "dexterity": 14,
-                "charisma": 9,
-                "intelligence": 11,
-                "wisdom": 9
+            "sheet": {
+              "character": {
+                "kind": "player",
+                "archetype": "Warrior",
+                "race": "Human",
+                "level": 50,
+                "attributes": {
+                  "strength": 18,
+                  "constitution": 26,
+                  "dexterity": 14,
+                  "charisma": 9,
+                  "intelligence": 11,
+                  "wisdom": 9
+                },
+                "learnedBookIds": [],
+                "combat": {
+                  "accuracy": 0.007000000216066837,
+                  "blockChance": 0.05780000239610672,
+                  "coldResist": 0.0,
+                  "criticalChance": 0.004200000315904617,
+                  "criticalResist": 0.007000000216066837,
+                  "damage": 18.0,
+                  "defense": 0.0,
+                  "diseaseResist": 0.0,
+                  "fearResistChance": 0.0,
+                  "fireResist": 0.0,
+                  "haste": 0.0,
+                  "magicDamage": 16.0,
+                  "magicResist": 0.0,
+                  "poisonResist": 6.0,
+                  "spellHaste": 0.0
+                },
+                "resources": {
+                  "healthMax": 1680,
+                  "healthCurrent": 1680,
+                  "healthRecoveryRate": 35,
+                  "healthMultiplier": 1.0,
+                  "manaMax": 220,
+                  "manaRecoveryRate": 4,
+                  "manaMultiplier": 1.0,
+                  "energyMax": 445,
+                  "energyRecoveryRate": -9,
+                  "energyMultiplier": 1.0
+                },
+                "equipment": [],
+                "activeSets": []
               },
-              "learnedBookIds": [],
-              "combat": {
-                "accuracy": 0.007000000216066837,
-                "blockChance": 0.05780000239610672,
-                "coldResist": 0.0,
-                "criticalChance": 0.004200000315904617,
-                "criticalResist": 0.007000000216066837,
-                "damage": 18.0,
-                "defense": 0.0,
-                "diseaseResist": 0.0,
-                "fearResistChance": 0.0,
-                "fireResist": 0.0,
-                "haste": 0.0,
-                "magicDamage": 16.0,
-                "magicResist": 0.0,
-                "poisonResist": 6.0,
-                "spellHaste": 0.0
-              },
-              "resources": {
-                "healthMax": 1680,
-                "healthCurrent": 1680,
-                "healthRecoveryRate": 35,
-                "healthMultiplier": 1.0,
-                "manaMax": 220,
-                "manaRecoveryRate": 4,
-                "manaMultiplier": 1.0,
-                "energyMax": 445,
-                "energyRecoveryRate": -9,
-                "energyMultiplier": 1.0
-              },
-              "equipment": [],
-              "activeSets": []
+              "companions": []
             },
-            "companions": []
+            "activeEffects": [
+              {
+                "skillId": "rest",
+                "name": "Rest",
+                "category": "",
+                "level": 1,
+                "remaining": 0.9855453,
+                "expired": false
+              }
+            ]
           }
         ],
         "counts": null

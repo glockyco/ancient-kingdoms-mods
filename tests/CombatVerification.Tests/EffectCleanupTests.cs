@@ -84,7 +84,7 @@ namespace CombatVerification.Tests
         [Fact]
         public void AnEffectKeepsItsCategoryAndLevel()
         {
-            var effect = new TimedEffect("Greater Feast", "Food", level: 3, remaining: 1799.5f);
+            var effect = new TimedEffect("greater_feast", "Greater Feast", "Food", level: 3, remaining: 1799.5f);
 
             Assert.Equal("Food", effect.Category);
             Assert.Equal(3, effect.Level);
@@ -92,6 +92,6 @@ namespace CombatVerification.Tests
         }
 
         private static TimedEffect Effect(string name, float remaining) =>
-            new TimedEffect(name, string.Empty, 1, remaining);
+            new TimedEffect(null, name, string.Empty, 1, remaining);
     }
 }

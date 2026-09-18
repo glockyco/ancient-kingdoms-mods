@@ -36,7 +36,9 @@ class PlannerPayloadTests(unittest.TestCase):
         self.conn.executemany(
             "INSERT INTO items VALUES (?)", [("sword",), ("forgotten_tome",)]
         )
-        self.conn.execute("INSERT INTO skills VALUES ('strike')")
+        self.conn.executemany(
+            "INSERT INTO skills VALUES (?)", [("strike",), ("rest",), ("serenity",)]
+        )
         self.conn.execute("INSERT INTO pets VALUES ('warrior_mercenary')")
         self.conn.execute("INSERT INTO classes VALUES ('warrior')")
         self._write_exports()
@@ -74,7 +76,16 @@ class PlannerPayloadTests(unittest.TestCase):
                     "player_classes": ["Warrior"],
                     "is_spell": True,
                     **(extra_skill or {}),
-                }
+                },
+                *(
+                    {
+                        "id": state_buff,
+                        "skill_type": "target_buff",
+                        "player_classes": [],
+                        "is_spell": False,
+                    }
+                    for state_buff in ("rest", "serenity")
+                ),
             ],
             "pets.json": [
                 {
@@ -213,6 +224,16 @@ class PlannerPayloadTests(unittest.TestCase):
             ["bard"],
         )
         self.assertIn("song", payload["classDomain"]["excluded"][0]["reason"])
+
+    def test_state_buffs_are_emitted_and_required(self):
+        payload = json.loads(self._write().raw_path.read_bytes())
+        self.assertLessEqual(
+            {"rest", "serenity"}, {row["id"] for row in payload["skills"]}
+        )
+
+        self.conn.execute("DELETE FROM skills WHERE id = 'rest'")
+        with self.assertRaisesRegex(PlannerPayloadError, "rest"):
+            self._write()
 
     def test_class_in_neither_domain_set_fails_publication(self):
         self.conn.execute("INSERT INTO classes VALUES ('monk')")

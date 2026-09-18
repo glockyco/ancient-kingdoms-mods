@@ -28,6 +28,10 @@ EXCLUDED_CLASS_REASONS: dict[str, str] = {
         "state, auras, renewal, and charm) has no combat model."
     ),
 }
+# Buffs the server applies to every player by state rather than by class: the rest buff
+# whenever the player is out of combat, or the serenity buff while a serenity item is worn.
+# Source: server-scripts/Player.cs:2194-2197.
+STATE_BUFF_SKILL_IDS = frozenset({"rest", "serenity"})
 ADMITTED_ITEM_TYPES = frozenset(
     {"equipment", "weapon", "augment", "food", "potion", "ammo", "book"}
 )
@@ -137,6 +141,9 @@ _EXCLUDED_SKILL_FLAGS = frozenset(
         "is_double_exp_spell",
         "is_invisibility",
         "is_mana_shield",
+        # Orders the buff display and silences a chat line; no combat effect.
+        # Source: server-scripts/Skills.cs:754-758,1916.
+        "is_permanent",
         "is_resurrect_skill",
         "is_scroll",
         "is_teleport",
@@ -329,8 +336,17 @@ def _build_payload(
             or bool(skill.get("is_mercenary_skill"))
             or skill.get("id") in mercenary_skill_ids
             or skill.get("id") in effect_skill_ids
+            or skill.get("id") in STATE_BUFF_SKILL_IDS
         )
     ]
+    missing_state_buffs = STATE_BUFF_SKILL_IDS - {
+        str(skill.get("id")) for skill in emitted_skills
+    }
+    if missing_state_buffs:
+        raise PlannerPayloadError(
+            "Planner payload is missing state buff skills: "
+            + ", ".join(sorted(missing_state_buffs))
+        )
     mercenaries = [
         _with_mercenary_class_id(pet, classes)
         for pet in pets

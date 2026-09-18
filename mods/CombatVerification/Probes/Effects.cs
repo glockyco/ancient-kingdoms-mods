@@ -1,5 +1,6 @@
 #nullable disable
 using System.Collections.Generic;
+using DataExporter;
 using Il2Cpp;
 
 namespace CombatVerification.Probes
@@ -30,6 +31,7 @@ namespace CombatVerification.Probes
             {
                 var data = buff.data;
                 effects.Add(new TimedEffect(
+                    data == null ? null : GameIds.Sanitize(data.name),
                     data == null ? "unknown" : data.nameSkill,
                     data == null ? string.Empty : data.categoryBuff ?? string.Empty,
                     buff.level,

@@ -6,13 +6,17 @@ namespace CombatVerification.Probes
     /// <summary>One timed effect an entity carries.</summary>
     public readonly struct TimedEffect
     {
-        public TimedEffect(string name, string category, int level, float remaining)
+        public TimedEffect(string skillId, string name, string category, int level, float remaining)
         {
+            SkillId = skillId;
             Name = name;
             Category = category;
             Level = level;
             Remaining = remaining;
         }
+
+        /// <summary>The stable identifier the catalog uses, or null when the buff has no data.</summary>
+        public string SkillId { get; }
 
         /// <summary>The name the effect's skill declares, which identifies it in the list.</summary>
         public string Name { get; }
