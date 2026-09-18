@@ -122,21 +122,23 @@ would duplicate the protocol.
 
 `build-tool verify` travels to the declared target through the game's portal command, places the
 player on the requested side, arms the default attack, and opens the window when that attack enters
-its refractory period. The attack still occupies the player until its cast completes. The engine
-scenario therefore starts the default attack on its refractory cooldown and delays other player
-actions by the remaining cast time. The harness also fills the player's resources at the boundary,
-and the approach walk stays outside the window. Inside the window the player casts the first
-declared action that is ready and
-affordable, and the default attack when none is, as the game's own client does for an unaffordable
-rage or mana skill. Between the windows of one fixture the harness cancels the follow-up loop,
-clears every cooldown, and removes every effect the window added, so each window repeats the
-initial state the engine runs from. A companion's damage per window is the movement of its own
-damage meter. The harness suppresses autonomous support-buff checks during the window so the
-measurement isolates the declared `PetSkills.NextAttackSkill` policy while retaining the healer
-resource reserve. The player's damage is the sum of hits from actions begun inside the window; a late
-projectile from the warm-up action is excluded. A tier B window is sized from the
-engine's cooldown of the slowest listed skill times the declared minimum, so a fixture for a
-long-cooldown skill declares a small minimum. The game
+its refractory period. The attack finishes after this recorded boundary. The engine scenario starts
+the default attack on its refractory cooldown and delays every listed non-default action by the
+remaining warm-up cast time. The harness fills the player's resources when it observes the
+completion, and the approach walk stays outside the window. Inside the window the player casts the
+first declared action that is ready and affordable, and the default attack when none is, as the game's
+own client does for an unaffordable rage or mana skill. Between the windows of one fixture the
+harness cancels the follow-up loop, clears every cooldown, and removes every effect the window added,
+so each window repeats the initial state the engine runs from. The harness pauses companion attacks
+and support buffs during the player's warm-up, then restores the attack stance when it observes the
+completion. The engine delays the Warrior's priority area-taunt path by the remaining warm-up cast
+time because that path reacquires its melee target after the stance returns. A companion's damage per
+window is the movement of its own damage meter. The harness suppresses
+autonomous support-buff checks during the window so the measurement isolates the declared
+`PetSkills.NextAttackSkill` policy while retaining the healer resource reserve. The player's damage
+is the sum of hits from an action begun inside the window. A late projectile from the warm-up action
+is excluded. A tier B window is sized from the engine's cooldown of the slowest listed skill times the declared minimum.
+A fixture for a long-cooldown skill therefore declares a small minimum. The game
 completes actions on frame boundaries, so an observed interval may differ from the engine's exact
 interval by up to three frames of the window's average frame length: one frame of slip at each
 endpoint and jitter between frames. The training Dummy is the timed target because it never attacks;

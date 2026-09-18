@@ -123,10 +123,12 @@ namespace CombatVerification.Commands
         private static void RestoreSkillState(Skills ownerSkills, HashSet<string> carriedEffects)
         {
             var skills = ownerSkills.skills;
+            var readyAt = ((NetworkManagerMMO)Il2CppMirror.NetworkManager.singleton).getServerTimeCorrected();
             for (var i = 0; i < skills.Count; i++)
             {
                 var skill = skills[i];
-                skill.cooldownEnd = 0;
+                skill.castTimeEnd = readyAt;
+                skill.cooldownEnd = readyAt;
                 skills[i] = skill;
             }
             var buffs = ownerSkills.buffs;
@@ -303,6 +305,15 @@ namespace CombatVerification.Commands
             var fidelity = (string)null;
             for (var window = 0; window < windows; window++)
             {
+                // Clear the state left by materialization or the preceding sample, then wait until
+                // the companion special-action timer is ready. Clear once more after the wait so
+                // each measured window starts with the same resources, effects, and cooldowns.
+                player.CmdCancelAction();
+                RestoreInitialState(player, target, carriedEffects);
+                for (var frame = 0; frame < 300; frame++) yield return null;
+                player.CmdCancelAction();
+                RestoreInitialState(player, target, carriedEffects);
+
                 UnityEngine.Random.InitState(execution.Seed.Value + window);
                 var outcome = new FixtureWindow.Outcome();
                 yield return FixtureWindow.RunCoroutine(
@@ -323,14 +334,7 @@ namespace CombatVerification.Commands
                 fidelity = fidelity == null || outcome.Sample.Fidelity == fidelity
                     ? outcome.Sample.Fidelity
                     : "mixed";
-                // Every window repeats the fixture's initial state, which is what the engine runs:
-                // the follow-up loop stops, every cooldown clears, and any effect the window added
-                // is removed. The effects the character carried before the first window stay.
-                player.CmdCancelAction();
-                RestoreInitialState(player, target, carriedEffects);
-                // PetSkills samples its next special-action time up to four seconds ahead. Wait past
-                // that private timer so the next window starts from the engine model's ready state.
-                for (var frame = 0; frame < 300; frame++) yield return null;
+
             }
 
             result.Fidelity = fidelity;

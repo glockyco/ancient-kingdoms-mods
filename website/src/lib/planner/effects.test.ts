@@ -28,6 +28,9 @@ function spec(overrides: Partial<EffectSpec> = {}): EffectSpec {
     manaRecoveryFlat: 0,
     energyRecoveryFlat: 0,
     cooldownReductionPercent: 0,
+    periodicDamage: 0,
+    periodicDamagePercent: 0,
+    periodicDamageAttributeMultiplier: 0,
     ...overrides,
   };
 }
@@ -87,15 +90,19 @@ describe("cleanupExpiredEffects", () => {
 
 describe("scaleTargetDebuff", () => {
   it("captures half the caster's Strength in a melee defense penalty", () => {
-    const scaled = scaleTargetDebuff(spec(), {
-      strength: 18,
-      constitution: 26,
-      dexterity: 14,
-      intelligence: 11,
-      wisdom: 9,
-      charisma: 9,
-    });
+    const scaled = scaleTargetDebuff(
+      spec({ periodicDamage: 180, periodicDamageAttributeMultiplier: 0.5 }),
+      {
+        strength: 18,
+        constitution: 26,
+        dexterity: 14,
+        intelligence: 11,
+        wisdom: 9,
+        charisma: 9,
+      },
+    );
     expect(scaled.bonuses.defense).toBe(-134);
+    expect(scaled.periodicDamage).toBe(189);
   });
 });
 

@@ -205,6 +205,23 @@ namespace CombatVerification.Probes
 
         private IEnumerator Run(Outcome outcome)
         {
+            var pets = Companions();
+            if (pets.Count != _companionIds.Count)
+            {
+                outcome.Failure = $"The player holds {pets.Count} companion(s); the fixture declares {_companionIds.Count}.";
+                yield break;
+            }
+            var companionAggressiveCapabilities = pets.Select(pet => pet.aggresiveStance).ToArray();
+            var companionBuffCapabilities = pets.Select(pet => pet.hasBuffs).ToArray();
+            for (var i = 0; i < pets.Count; i++)
+            {
+                pets[i].NetworkaggresiveStance = false;
+                pets[i].hasBuffs = false;
+                pets[i].Networktarget = null;
+                pets[i].skills.CancelCast();
+                pets[i].skills.NetworkcurrentSkill = -1;
+            }
+
             // Warm-up: arm the default attack and wait for its first refractory boundary. The
             // approach walk stays outside the window, while the remaining cast or projectile travel
             // can finish inside it. The listed skills are armed inside the window. A character
@@ -217,6 +234,11 @@ namespace CombatVerification.Probes
                 yield return null;
                 if (_player == null || _target == null)
                 {
+                    for (var i = 0; i < pets.Count; i++)
+                    {
+                        pets[i].NetworkaggresiveStance = companionAggressiveCapabilities[i];
+                        pets[i].hasBuffs = companionBuffCapabilities[i];
+                    }
                     outcome.Failure = "The player or the target went away before the window opened.";
                     yield break;
                 }
@@ -242,31 +264,40 @@ namespace CombatVerification.Probes
             }
             if (openedAt <= 0)
             {
+                for (var i = 0; i < pets.Count; i++)
+                {
+                    pets[i].NetworkaggresiveStance = companionAggressiveCapabilities[i];
+                    pets[i].hasBuffs = companionBuffCapabilities[i];
+                }
                 outcome.Failure = armed
                     ? "No action completed within the warm-up, so no window opened."
                     : "No listed skill was ready and affordable and the character holds no default attack.";
                 yield break;
             }
+            for (var i = 0; i < pets.Count; i++)
+                pets[i].NetworkaggresiveStance = companionAggressiveCapabilities[i];
 
             // The window opens at full resources, which is the initial state the engine assumes.
             _player.mana.current = _player.mana.max;
             _player.energy.current = _player.energy.max;
+            ServerClock.TryRead(out var readyAt);
+            foreach (var index in _priority.Distinct())
+            {
+                if (index == _fallback) continue;
+                var skill = _skills.skills[index];
+                skill.cooldownEnd = readyAt;
+                _skills.skills[index] = skill;
+            }
 
             if (!DamageEvents.TryListen(_player, out var events, out var unavailable))
             {
+                for (var i = 0; i < pets.Count; i++)
+                    pets[i].hasBuffs = companionBuffCapabilities[i];
                 outcome.Failure = $"The caster cannot be listened to: {unavailable}.";
                 yield break;
             }
 
-            var pets = Companions();
-            if (pets.Count != _companionIds.Count)
-            {
-                events.Dispose();
-                outcome.Failure = $"The player holds {pets.Count} companion(s); the fixture declares {_companionIds.Count}.";
-                yield break;
-            }
             var meters = new CompanionMeters(pets);
-            var companionBuffCapabilities = pets.Select(pet => pet.hasBuffs).ToArray();
             foreach (var pet in pets)
             {
                 pet.health.current = pet.health.max;
@@ -414,9 +445,10 @@ namespace CombatVerification.Probes
                 // A projectile from the warm-up action can arrive after the boundary. Damage from
                 // that pre-window action is not part of the rotation, so keep hits only after the
                 // first action that completed inside the window.
-                var firstWindowCompletion = timeline.Completions.Count > 0
-                    ? timeline.Completions[0]
-                    : openedAt;
+                var firstWindowCompletion = timeline.Completions
+                    .FirstOrDefault(completion => completion > openedAt);
+                if (firstWindowCompletion <= 0)
+                    firstWindowCompletion = openedAt;
                 var retainedHits = compactWindow
                     ? measured.Hits.Where(hit => hit.Skill != null && listedNames.Contains(hit.Skill)).ToList()
                     : measured.Hits.Where(hit => hit.At >= firstWindowCompletion).ToList();

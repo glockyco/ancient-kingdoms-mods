@@ -7,6 +7,7 @@ import {
   applyCooldownReduction,
   applyEffect,
   cleanupExpiredEffects,
+  periodicEffectDamage,
   scaleTargetDebuff,
   targetStatsWithEffects,
   type EffectSpec,
@@ -80,6 +81,8 @@ export interface EngineEntityInput {
   actions: readonly EngineAction[];
   policy: ActionPolicy;
   hasHeals: boolean;
+  /** The game does not test Rogue mercenary energy before a cast. */
+  ignoreResourceAffordability?: boolean;
   endlessQuiver: boolean;
   enhancedBackstab: boolean;
 }
@@ -601,7 +604,9 @@ class Engine {
     const refusal = action.damage
       ? hitRefusal(this.hitCaster(entity), this.targetStats(), action.damage)
       : weaponGateRefusal(this.hitCaster(entity), action);
-    const affordable = entity.resource.current >= action.resourceCost;
+    const affordable =
+      entity.input.ignoreResourceAffordability === true ||
+      entity.resource.current >= action.resourceCost;
     return { readyAt, refusal, affordable };
   }
 
@@ -711,7 +716,10 @@ class Engine {
     entity.castingUntil = null;
     const action = entity.actionsById.get(actionId)!;
     if (this.target.diedAt !== null) return;
-    if (entity.resource.current < action.resourceCost) {
+    if (
+      entity.input.ignoreResourceAffordability !== true &&
+      entity.resource.current < action.resourceCost
+    ) {
       this.recordRefusal(
         entity,
         action,
@@ -988,6 +996,48 @@ class Engine {
       const recovered = recoverResourceTick(entity.resource);
       if (recovered.current !== entity.resource.current)
         this.setResource(entity, recovered.current, now, "recovery tick");
+    }
+    if (this.target.diedAt === null) {
+      for (const effect of this.target.effects) {
+        const intent = periodicEffectDamage(
+          effect.spec,
+          this.targetStats(),
+          this.target.input.maximumHealth,
+        );
+        if (intent <= 0) continue;
+        const source = this.entities.get(effect.sourceId);
+        if (!source)
+          throw new Error(
+            `periodic effect ${effect.spec.skillId} names unknown source ${effect.sourceId}`,
+          );
+        const school: DamageKind =
+          effect.spec.school === "melee"
+            ? "normal"
+            : (effect.spec.school ?? "magic");
+        const dealt = Math.min(intent, this.target.currentHealth);
+        const counts = this.counts(source, effect.spec.skillId);
+        counts.hits += 1;
+        counts.landed += 1;
+        this.target.currentHealth -= dealt;
+        this.addDamage(source.input.id, effect.spec.skillId, school, dealt);
+        this.result.trace.push({
+          at: now,
+          kind: "hit",
+          entityId: source.input.id,
+          actionId: effect.spec.skillId,
+          school,
+          intent,
+          damage: dealt,
+          avoided: false,
+          critical: false,
+        });
+        if (this.target.currentHealth <= 0) {
+          this.target.diedAt = now;
+          this.result.targetDiedAt = now;
+          this.result.trace.push({ at: now, kind: "target_died" });
+          break;
+        }
+      }
     }
     for (const entity of this.entities.values())
       this.scheduleDecide(entity, now);

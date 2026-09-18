@@ -100,6 +100,8 @@ function skill(
     "energy_percent_per_second_bonus",
     "mana_per_second_bonus",
     "energy_per_second_bonus",
+    "healing_per_second_bonus",
+    "health_percent_per_second_bonus",
   ];
   return {
     id,
@@ -132,6 +134,8 @@ function skill(
     cooldown: zero,
     mana_cost: zero,
     energy_cost: zero,
+    scales_with_charisma: false,
+    is_cleanse: false,
     ...Object.fromEntries(effectFields.map((field) => [field, zero])),
     ...overrides,
   };
@@ -540,6 +544,35 @@ describe("catalog logical-build resolver", () => {
     });
     expect(capture.producer.id).toBe("character-capture");
     expect(capturedResult).toEqual(authoredResult);
+  });
+
+  it("does not offer cleanse skills as companion attacks", () => {
+    const build = logicalBuild();
+    build.player.level = 5;
+    build.companions[0].level = 5;
+    const gameCatalog = catalog();
+    gameCatalog.progression.class_levels.push({
+      class_id: "warrior",
+      level: 5,
+      automatic_attributes: attributes({ strength: 1 }),
+    });
+    gameCatalog.progression.level_budgets.push({
+      level: 5,
+      attribute_points: 1,
+      normal_skill_points: 2,
+    });
+    const cleanse = gameCatalog.skills.find(
+      (entry) => entry.id === "mercenary_strike",
+    );
+    if (!cleanse) throw new Error("Missing companion skill test data");
+    cleanse.is_cleanse = true;
+
+    const resolved = resolveLogicalBuild(build, gameCatalog);
+
+    expect(resolved.companions[0].actions[0]).toMatchObject({
+      id: "mercenary_strike",
+      offensive: false,
+    });
   });
 
   it("refuses a declared companion skill level that disagrees with the owner's progression", () => {

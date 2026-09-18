@@ -256,6 +256,16 @@ export function simulateFixtureWindow(
                 : 0,
             ),
           })),
+        // The Warrior's priority area-taunt path reacquires the target after its stance returns.
+        // Its melee rotation starts one warm-up cast after the recorded refractory boundary.
+        ...resolved.companions.flatMap((companion) =>
+          companion.actions.map((action) => ({
+            entityId: companion.entityId,
+            skillId: action.id,
+            remainingSeconds:
+              companion.classId === "warrior" ? warmupCastSeconds : 0,
+          })),
+        ),
       ]
     : [];
   const scenario = {

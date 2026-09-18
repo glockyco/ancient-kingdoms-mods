@@ -87,11 +87,11 @@ export function priorityPolicy(order: readonly string[]): ActionPolicy {
 }
 
 /**
- * Samples the companion's own selection. A Warrior casts Challenge whenever it is ready. When the
- * shared special-action timer has elapsed, the companion redraws it from 2 to 4 seconds and picks
- * uniformly among ready offensive skills that a healer's reserve allows and the target does not already
- * hold. Otherwise it uses its default attack when that is ready.
- * Source: server-scripts/PetSkills.cs:60-119,143-178.
+ * Samples the companion's own attack selection. A Warrior prioritizes Battle Shout and Challenge.
+ * The shared special-action timer redraws from 2 to 4 seconds and picks uniformly among ready
+ * offensive skills that a healer's reserve allows and the target does not already hold. Otherwise
+ * the companion uses its default attack when ready.
+ * Source: server-scripts/Pet.cs:1322-1362; server-scripts/PetSkills.cs:60-119,143-178.
  */
 export function companionPolicy(): ActionPolicy {
   return {
@@ -100,6 +100,16 @@ export function companionPolicy(): ActionPolicy {
       if (!defaultAction) return { kind: "wait", until: null };
       if (!defaultAction.defaultAttack)
         throw new Error(`${view.id} must list its default attack first`);
+      if (view.classId === "warrior") {
+        const areaTaunt = specials.find(
+          (action) => action.name === "Battle Shout",
+        );
+        if (areaTaunt) {
+          const gate = view.gate(areaTaunt);
+          if (gate.refusal === null && gate.readyAt <= now && gate.affordable)
+            return { kind: "cast", action: areaTaunt };
+        }
+      }
       if (view.classId === "warrior") {
         const challenge = specials.find(
           (action) => action.name === "Challenge",
@@ -124,14 +134,21 @@ export function companionPolicy(): ActionPolicy {
           if (gate.refusal !== null || gate.readyAt > now || !gate.affordable)
             return false;
           if (dropsBelowHealerReserve(view, action)) return false;
-          if (action.effect && view.targetHasEffect(action.effect))
+          if (
+            !action.damage &&
+            action.effect &&
+            view.targetHasEffect(action.effect)
+          )
             return false;
           return true;
         });
         if (ready.length > 0)
           return { kind: "cast", action: ready[random.below(ready.length)] };
       } else if (specials.length > 0) {
-        until = view.nextSpecialAt;
+        until =
+          until === null
+            ? view.nextSpecialAt
+            : Math.min(until, view.nextSpecialAt);
       }
       const gate = view.gate(defaultAction);
       if (

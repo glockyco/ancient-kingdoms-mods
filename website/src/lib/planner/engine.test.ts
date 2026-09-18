@@ -96,6 +96,9 @@ function effect(overrides: Partial<EffectSpec> = {}): EffectSpec {
     manaRecoveryFlat: 0,
     energyRecoveryFlat: 0,
     cooldownReductionPercent: 0,
+    periodicDamage: 0,
+    periodicDamagePercent: 0,
+    periodicDamageAttributeMultiplier: 0,
     ...overrides,
   };
 }
@@ -357,6 +360,48 @@ describe("effect handler", () => {
       events(result.trace, "effect_expired").map((event) => event.at),
     ).toEqual([2.5]);
     expect(result.effectUptime.get("dummy")?.get("sigil")).toBe(2.5);
+  });
+
+  it("applies resisted flat and maximum-health damage on fixed ticks", () => {
+    const result = runReplicate(
+      engineInput({
+        horizon: 3,
+        entities: [
+          entity({
+            actions: [
+              action({
+                id: "burn",
+                damage: null,
+                effect: effect({
+                  skillId: "burn",
+                  duration: 2.5,
+                  bonuses: {},
+                  periodicDamage: 100,
+                  periodicDamagePercent: 0.01,
+                }),
+                cooldown: 100,
+              }),
+            ],
+            policy: schedulePolicy({ steps: ["burn"], repeat: false }),
+          }),
+        ],
+        target: {
+          ...engineInput().target,
+          stats: { ...engineInput().target.stats, defense: 200 },
+          currentHealth: 1_000,
+          maximumHealth: 1_000,
+        },
+      }),
+      createRandomSource(1),
+    );
+
+    expect(
+      events(result.trace, "hit").map((event) => [event.at, event.damage]),
+    ).toEqual([
+      [1, 100],
+      [2, 100],
+    ]);
+    expect(result.damageByEntity.get("player")).toBe(200);
   });
 
   it("lets a weaker second source replace a stronger effect on the same recipient", () => {
@@ -678,6 +723,95 @@ describe("policies", () => {
       (event) => event.actionId === "alternate",
     );
     expect(completions.map((event) => event.at)).toEqual([0.5, 1.75, 3]);
+  });
+
+  it("casts companion skills when the game ignores their resource gate", () => {
+    const result = runReplicate(
+      engineInput({
+        horizon: 1,
+        entities: [
+          entity({
+            id: "companion",
+            kind: "companion",
+            classId: "rogue",
+            ignoreResourceAffordability: true,
+            actions: [
+              action({ id: "auto", defaultAttack: true, cooldown: 100 }),
+              action({ id: "special", resourceCost: 1_000, cooldown: 100 }),
+            ],
+            policy: companionPolicy(),
+          }),
+        ],
+        initialResources: new Map([["companion", 25]]),
+      }),
+      createRandomSource(1),
+    );
+
+    expect(
+      events(result.trace, "cast_complete").map((event) => event.actionId),
+    ).toEqual(["special", "auto"]);
+  });
+
+  it("allows a damaging companion skill when its side effect is active", () => {
+    const sideEffect = effect();
+    const result = runReplicate(
+      engineInput({
+        horizon: 0.1,
+        entities: [
+          entity({
+            id: "companion",
+            kind: "companion",
+            actions: [
+              action({ id: "auto", defaultAttack: true, cooldown: 100 }),
+              action({ id: "special", cooldown: 100, effect: sideEffect }),
+            ],
+            policy: companionPolicy(),
+          }),
+        ],
+        initialResources: new Map([["companion", 25]]),
+        initialEffects: [
+          {
+            sourceId: "companion",
+            recipientId: "dummy",
+            spec: sideEffect,
+            remainingSeconds: 5,
+          },
+        ],
+      }),
+      createRandomSource(1),
+    );
+
+    expect(events(result.trace, "cast_complete")[0]?.actionId).toBe("special");
+  });
+
+  it("prioritizes both Warrior taunts over attack skills", () => {
+    const result = runReplicate(
+      engineInput({
+        horizon: 1,
+        entities: [
+          entity({
+            id: "companion",
+            kind: "companion",
+            classId: "warrior",
+            actions: [
+              action({ id: "auto", defaultAttack: true, cooldown: 100 }),
+              action({ id: "challenge", name: "Challenge", cooldown: 100 }),
+              action({ id: "shout", name: "Battle Shout", cooldown: 100 }),
+              action({ id: "special", cooldown: 100 }),
+            ],
+            policy: companionPolicy(),
+          }),
+        ],
+        initialResources: new Map([["companion", 1_000]]),
+      }),
+      createRandomSource(1),
+    );
+
+    expect(
+      events(result.trace, "cast_complete")
+        .slice(0, 2)
+        .map((event) => event.actionId),
+    ).toEqual(["shout", "challenge"]);
   });
 
   it("samples the companion special timer from two to four seconds", () => {

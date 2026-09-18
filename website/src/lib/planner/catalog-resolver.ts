@@ -255,6 +255,8 @@ interface SkillEffects {
   energyRecoveryPercent: number;
   manaRecoveryFlat: number;
   energyRecoveryFlat: number;
+  healingPerSecond: number;
+  healthPercentPerSecond: number;
 }
 
 interface InternalResolution {
@@ -438,6 +440,10 @@ export function simulateLogicalBuild(
         actions: companion.actions,
         policy: companionPolicy(),
         hasHeals: companion.hasHeals,
+        // ScriptableSkill.CheckSelf does not test energy for Rogue mercenaries, although the
+        // completed cast still spends it and the resource component clamps at zero.
+        ignoreResourceAffordability:
+          companion.classId === "rogue" && companion.resourceKind === "energy",
         endlessQuiver: false,
         enhancedBackstab: false,
       };
@@ -1618,6 +1624,11 @@ function engineAction(
   const effect = EFFECT_SKILL_CLASSES.has(skillType)
     ? effectSpecFromSkill(skill, level, catalog)
     : null;
+  const isCleanse = requiredBoolean(
+    skill,
+    "is_cleanse",
+    `skill ${id}.is_cleanse`,
+  );
   return {
     id,
     name: requiredString(skill, "name", `skill ${id}.name`),
@@ -1634,7 +1645,8 @@ function engineAction(
     isSpell,
     requiredWeaponCategory,
     followupDefaultAttack,
-    offensive: damage !== null || effect?.recipient === "target",
+    offensive:
+      (damage !== null || effect?.recipient === "target") && !isCleanse,
     damage,
     effect,
     // The scenario target is stationary inside cast range, so a projectile's flight is shorter than
@@ -1778,6 +1790,22 @@ function effectSpecFromSkill(
       ),
       level,
     ),
+    periodicDamage: Math.max(0, -effects.healingPerSecond),
+    periodicDamagePercent: Math.max(0, -effects.healthPercentPerSecond),
+    periodicDamageAttributeMultiplier:
+      effects.healingPerSecond >= 0 ||
+      recipient !== "target" ||
+      requiredBoolean(
+        skill,
+        "scales_with_charisma",
+        `${path}.scales_with_charisma`,
+      )
+        ? 0
+        : school === "melee"
+          ? 0.5
+          : school === "poison" || school === "disease"
+            ? 1.5
+            : 1.25,
   };
 }
 
@@ -2001,6 +2029,22 @@ function skillEffects(
         skill,
         "energy_per_second_bonus",
         `${path}.energy_per_second_bonus`,
+      ),
+      level,
+    ),
+    healingPerSecond: skillValueAtLevel(
+      curve(
+        skill,
+        "healing_per_second_bonus",
+        `${path}.healing_per_second_bonus`,
+      ),
+      level,
+    ),
+    healthPercentPerSecond: skillValueAtLevel(
+      curve(
+        skill,
+        "health_percent_per_second_bonus",
+        `${path}.health_percent_per_second_bonus`,
       ),
       level,
     ),

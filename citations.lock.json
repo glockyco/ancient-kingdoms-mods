@@ -1061,6 +1061,10 @@
     "Pet.cs": {
       "span": 0
     },
+    "Pet.cs:1322-1362": {
+      "sha256": "dd62f64de83182763ebdc2b637f68368752908765aec0a36933835f12fa9e78a",
+      "span": 41
+    },
     "Pet.cs:2085-2109": {
       "sha256": "5d7f4388a25f8041b961ec6e90d3275a0caf723aec076d9b31cf866c52e6a526",
       "span": 25
@@ -1805,6 +1809,10 @@
     "Skills.cs:1542-1547": {
       "sha256": "f73967f3a8dd8dfd5eac61f7debddd62f17b191b6bac210ada3a5b4c44948f35",
       "span": 6
+    },
+    "Skills.cs:1567-1824": {
+      "sha256": "692b4c1ec804d4ef01540083af752d1465c713f837dc9f9e407773f3215839af",
+      "span": 258
     },
     "Skills.cs:1604-1620": {
       "sha256": "01ed49c04a39f2816c190b340d2bb8371ebb784bb2f92c408de356db4d60949b",

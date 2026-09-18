@@ -24,6 +24,12 @@ export interface EffectSpec {
   manaRecoveryFlat: number;
   energyRecoveryFlat: number;
   cooldownReductionPercent: number;
+  /** Flat target damage applied on each one-second recovery tick. */
+  periodicDamage: number;
+  /** Target maximum-health fraction applied as damage on each recovery tick. */
+  periodicDamagePercent: number;
+  /** Caster attribute multiplier added to periodicDamage when the debuff lands. */
+  periodicDamageAttributeMultiplier: number;
 }
 
 /** One applied effect in a recipient's list. */
@@ -120,7 +126,12 @@ export function scaleTargetDebuff(
     const scaled = iround(multiplyF32(power, coefficient));
     bonuses[key] = base > 0 ? base + scaled : base - scaled;
   }
-  return { ...spec, bonuses };
+  const periodicDamage =
+    spec.periodicDamage > 0 && spec.periodicDamageAttributeMultiplier > 0
+      ? spec.periodicDamage +
+        iround(multiplyF32(power, spec.periodicDamageAttributeMultiplier))
+      : spec.periodicDamage;
+  return { ...spec, bonuses, periodicDamage };
 }
 
 /** Applies the defensive bonuses of a target's effects to its base stats. */
@@ -139,6 +150,41 @@ export function targetStatsWithEffects<T extends TargetCombatStats>(
     stats.blockChance += spec.bonuses.blockChance ?? 0;
   }
   return stats;
+}
+
+/**
+ * Applies the debuff's resist school to its flat damage, then adds percentage-health damage.
+ * Source: server-scripts/Skills.cs:1567-1824.
+ */
+export function periodicEffectDamage(
+  spec: EffectSpec,
+  target: TargetCombatStats,
+  maximumHealth: number,
+): number {
+  let resisted = spec.periodicDamage;
+  if (resisted > 0 && spec.school !== null) {
+    const resistance =
+      spec.school === "melee"
+        ? target.defense
+        : spec.school === "magic"
+          ? target.magicResist
+          : spec.school === "poison"
+            ? target.poisonResist
+            : spec.school === "fire"
+              ? target.fireResist
+              : spec.school === "cold"
+                ? target.coldResist
+                : target.diseaseResist;
+    const reduction = Math.min(
+      Math.max(multiplyF32(resistance, 0.0005), 0),
+      0.9,
+    );
+    resisted -= Math.ceil(multiplyF32(resisted, reduction));
+  }
+  const percent = Math.abs(
+    iround(multiplyF32(spec.periodicDamagePercent, maximumHealth)),
+  );
+  return Math.max(0, resisted + percent);
 }
 
 /** Source: server-scripts/TargetBuffSkill.cs:277-297. */
