@@ -62,4 +62,4 @@
 - [x] 9.3 Write `docs/combat-model/verification.md` with the run procedure, the isolation guarantee, the observation format, the protocol, and how to read stale and inconclusive results. Verify `scripts/check-agent-docs.sh` passes.
 - [x] 9.4 Add the current-observation requirement to the game-version update procedure in `skill://update-game-version`. Verify the procedure names the verify command and the stale check.
 - [x] 9.5 Add or confirm a citation for every constant the engine applies. Verify the citation ledger check passes.
-- [ ] 9.6 Run the planner tests, the pipeline tests, the CombatVerification tests, the build-tool build, `pnpm check`, `pnpm lint`, and `openspec validate rebuild-combat-model --strict`. Verify all pass.
+- [x] 9.6 Run the planner tests, the pipeline tests, the CombatVerification tests, the build-tool build, `pnpm check`, `pnpm lint`, and `openspec validate rebuild-combat-model --strict`. Verify all pass.
