@@ -922,7 +922,7 @@ class Engine {
     }
   }
 
-  /** Source: server-scripts/TargetProjectileSkill.cs:73. */
+  /** Source: server-scripts/TargetProjectileSkill.cs:44-104. */
   private consumeAmmunition(
     entity: EntityState,
     skill: DamageSkillSpec,

@@ -24,6 +24,7 @@ interface HireRange {
   combatFactor: number;
 }
 
+/** Source: server-scripts/Player.cs:9994-10026. */
 const HIRE_RANGES: Readonly<Record<CompanionRace, HireRange>> = {
   human: {
     healthMaximum: 1,
@@ -69,6 +70,7 @@ const HIRE_RANGES: Readonly<Record<CompanionRace, HireRange>> = {
   },
 };
 
+/** Source: server-scripts/Player.cs:8170-8370. */
 const ATTRIBUTE_CADENCE: Readonly<
   Record<CompanionArchetype, Readonly<Record<keyof AttributeSet, number>>>
 > = {
@@ -221,7 +223,7 @@ function requirePositive(value: number, path: string): number {
 /**
  * Builds the stat sheet for one newly hired or captured mercenary. The base combat value deliberately
  * excludes the level-up accumulation that disappears on reload.
- * Sources: server-scripts/Player.cs:9969-9993 and server-scripts/Player.cs:9994-10035.
+ * Sources: server-scripts/Player.cs:9994-10081 and server-scripts/Energy.cs:24-35.
  */
 export function buildCompanionCombatState(
   input: CompanionStateInput,

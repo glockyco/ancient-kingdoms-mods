@@ -22,6 +22,10 @@
     "AreaDamageSkill.cs": {
       "span": 0
     },
+    "AreaDamageSkill.cs:85-106": {
+      "sha256": "6255ef382b049513d7015b71243eecc5f25f7ec764482c8f33c3652079c2520c",
+      "span": 22
+    },
     "AreaDamageSkill.cs:93": {
       "sha256": "f0925da5245ec088dd10df82506f3ff556f0271284b787e853a8f8cd76f726b1",
       "span": 1
@@ -182,6 +186,10 @@
       "sha256": "8a337b202c8b4b76c081528ffd9c97a3e8ebeb41898f40a82bff4b903ea2a28c",
       "span": 14
     },
+    "Combat.cs:113-358": {
+      "sha256": "e3c31ed5f847746b0340a32ec6be94b60af7480337418528f8a2eb7187ff5457",
+      "span": 246
+    },
     "Combat.cs:1235": {
       "sha256": "feae588cd7010377ff87f53db7cd3170cce1a1e9c4a25ae8e55f94ef0b535ac8",
       "span": 1
@@ -286,13 +294,17 @@
       "sha256": "253857df4642f89fd08760cbd068c09338784cecb036a8b82d861fe258a63302",
       "span": 8
     },
-    "Combat.cs:635-643": {
-      "sha256": "d9d90eb819bd10cd8e41865591bd8b064bab5335e9e385ab99943b48b59e5e3c",
-      "span": 9
-    },
     "Combat.cs:652-659": {
       "sha256": "646f5a5e6e6d84d938617ad919b44440b5f39fc0ca15e34bfdebb2f330c22dc6",
       "span": 8
+    },
+    "Combat.cs:657-670": {
+      "sha256": "ed026082a682c540ef3203658f016e1f21e3f1580b036ee796bbb4957eca4a40",
+      "span": 14
+    },
+    "Combat.cs:666-699": {
+      "sha256": "0682f411e2a5bc0b43330e074ea12f4aa923a031982e12c42fe2c2e6f8f2fc31",
+      "span": 34
     },
     "Combat.cs:671": {
       "sha256": "d70d2e66d5a7acb48200c6ff31c82f99a3d5e3444eb1314ca432206947f1ff37",
@@ -305,6 +317,10 @@
     "Combat.cs:774": {
       "sha256": "1f003cfd7baac216e54a0e7f9cd3b45dd2d9abe1ab31a018b6c22cd646020854",
       "span": 1
+    },
+    "Combat.cs:774-860": {
+      "sha256": "5b227352fd43852807c2a575515bab7504e76f42ff6a1f4e389d808590c35f0d",
+      "span": 87
     },
     "Combat.cs:796-820": {
       "sha256": "b6d15db3cf8fb6b14c0b1b582f990d72ba8f8cd460466ce52d596f11adfd48eb",
@@ -384,6 +400,10 @@
       "sha256": "496a1e56c2558dafba0139d95f092282bfbd375bf06aa645450900b62e911e7f",
       "span": 3
     },
+    "Constitution.cs:14-84": {
+      "sha256": "f06c553a923b326a72d18f2958ca7c290e9fd7a8109e5a15ec4eafb629f98be7",
+      "span": 71
+    },
     "CustomStrucUI.cs:102-109": {
       "sha256": "15ac3765c756058072883bba5976bd4f82f54eb3a33feaa7c652af0da15a2d80",
       "span": 8
@@ -461,9 +481,17 @@
       "sha256": "0f48ba1d378ee94c1a97ea6c06dc241e959351ec47fa12bb1aa16df969af4d02",
       "span": 1
     },
+    "Dexterity.cs:13-110": {
+      "sha256": "32eed97d3a6604ac2cae0ca339f818a949738d0fb1bf9bf03be0f006a001996a",
+      "span": 98
+    },
     "Dexterity.cs:34-37": {
       "sha256": "41c625fb719d2fbe4695d9112b770110c3495328c4c89a4294a3f71b43816d5f",
       "span": 4
+    },
+    "Energy.cs:24-35": {
+      "sha256": "e9f5be8bfdea64dae476a433eda6996e73b879cc360315599a0153f0e1142a47",
+      "span": 12
     },
     "EnergyResource.cs:21-34": {
       "sha256": "91ff8cc25bbc7d98062f38962d27f44bea71f29ef39de603ec6422af56e2fd82",
@@ -574,8 +602,16 @@
     "FrontalDamageSkill.cs": {
       "span": 0
     },
+    "FrontalDamageSkill.cs:60-101": {
+      "sha256": "41a94c4f50356ca0a7d85f5df8d77a7337a62b6bfc77ce3cfac4fc3ec4a2cc02",
+      "span": 42
+    },
     "FrontalProjectilesSkill.cs": {
       "span": 0
+    },
+    "FrontalProjectilesSkill.cs:95-111": {
+      "sha256": "5f3fe1777694f01a5313907848a2b1d7bea69d9a43441b7570ddfe8fc4a7bd75",
+      "span": 17
     },
     "GameManager.cs:OnBackpackKeyPressed": {
       "span": 0
@@ -694,6 +730,10 @@
     "GatherItem.cs:Update": {
       "span": 0
     },
+    "Health.cs:25-39": {
+      "sha256": "faf742aa7931fe6c3484de105554516be7275383df4663fae807da3ee8553b55",
+      "span": 15
+    },
     "Housing.cs:13": {
       "sha256": "9c841860b2f57982b47cdbbae6d9d37fc94593a5dab2b9fdd35802518b660f3e",
       "span": 1
@@ -713,6 +753,10 @@
     "HousingManager.cs:21-32": {
       "sha256": "a4d308ba8f7191c0a0b7d96ad53a3548d0ccaf79bda570087325a8d592f6d466",
       "span": 12
+    },
+    "Intelligence.cs:15-86": {
+      "sha256": "9bb4e2af8745f7f6c97b4be4d9a6cf3987b83026687887fc28e6281b74404a9d",
+      "span": 72
     },
     "Intelligence.cs:21-23": {
       "sha256": "0e393367b8c2ebd842223984f1896f77e4c9e0ecc61bed9c2039b747a0ac5a85",
@@ -739,6 +783,10 @@
     },
     "LinearInt.cs:Get": {
       "span": 0
+    },
+    "Mana.cs:25-39": {
+      "sha256": "39c02a781f536c8092c5eb1c0a20e35a589272ff02f9891051ab8cbda9cbe4ce",
+      "span": 15
     },
     "Monster.cs": {
       "span": 0
@@ -1263,6 +1311,10 @@
       "sha256": "5d1c80f7df39d4339102fb38075b685a03efc952ba50ad572176b4782df813e7",
       "span": 208
     },
+    "Player.cs:8170-8370": {
+      "sha256": "f7f8ea7208187f45c43d39edfd12338ecc881926f6bad285f3a7e4c0bd33a1f6",
+      "span": 201
+    },
     "Player.cs:8206-8234": {
       "sha256": "b94d7e6f6d6667501fbc3fe15db137fd1796cfc70ffe5d2105b5126dd182a1c6",
       "span": 29
@@ -1307,10 +1359,6 @@
       "sha256": "9ad9dba9506188716e3e663a7d0208afd60ee567114d6ba3e6f72bac75838c9a",
       "span": 34
     },
-    "Player.cs:9969-9993": {
-      "sha256": "17f27fb77117964e6a40683a5fdd725f25156576be64885e0058990eac174cb9",
-      "span": 25
-    },
     "Player.cs:9986-9987": {
       "sha256": "cc33e2410b7eb948488cab00028339c7be6cfee6e81ba3da33c8a68321cc6f37",
       "span": 2
@@ -1319,9 +1367,13 @@
       "sha256": "e27c5ecb6057bda965d03fe4f957752c90b6600c63e5c354eed550997a71716a",
       "span": 38
     },
-    "Player.cs:9994-10035": {
-      "sha256": "355bec4597aeec6169ca6d55da17514a8a06117d47c118f8b52dc4cde01a6ee8",
-      "span": 42
+    "Player.cs:9994-10026": {
+      "sha256": "30ab24a414a43f3a0f8333555486ac5adfd59fa38fb3b951522d6f21b2ee29c7",
+      "span": 33
+    },
+    "Player.cs:9994-10081": {
+      "sha256": "921101863691e7127373c637dca0cab584d212193488d521473228896958d5db",
+      "span": 88
     },
     "Player.cs:DestroyLivingMercenariesOnOwnerDeath": {
       "span": 0
@@ -1602,6 +1654,10 @@
       "sha256": "9e737a1ba0a84bdd42c58c4395d1b8f331f16b5bd1b53b6e93cc6706d285b072",
       "span": 5
     },
+    "PlayerSkills.cs:349-389": {
+      "sha256": "cdc799f9e92e03091d70524e6ad49619a2f48750eb55e679bce32537f05edf77",
+      "span": 41
+    },
     "PlayerSkills.cs:GetMaximumActiveBardSongs": {
       "span": 0
     },
@@ -1813,6 +1869,10 @@
     "Skills.cs:GetOverTimeDamageType": {
       "span": 0
     },
+    "Strength.cs:13-68": {
+      "sha256": "3e4e6649bdb138ff0bddc4293fb1c1c2861693cdf207beeee67f7b4e0686ac22",
+      "span": 56
+    },
     "Strength.cs:15-17": {
       "sha256": "5540467264dbd3ebfd8a8568de76cb9d1c02816f3b93ae7c621f44ff4a373342",
       "span": 3
@@ -1882,6 +1942,10 @@
       "sha256": "4fd4b745120ef543819db577b679ef9eb839c4e02b149a63ee80bfa73f69fbad",
       "span": 6
     },
+    "TargetDamageSkill.cs:159-236": {
+      "sha256": "6e9bbddd7c71b831ee57fa80b27330111d01e820eafac9b00830afa5a4363ed9",
+      "span": 78
+    },
     "TargetDamageSkill.cs:162-171": {
       "sha256": "600f11caa0fe2f8236adeed4385872c1208f2689cfd5ed9d24a1bbf634f511c0",
       "span": 10
@@ -1937,6 +2001,10 @@
       "sha256": "7cf9b642338ce65b3665ba54095e33030f496d89a4b9fd41d41f818d15fdb93c",
       "span": 6
     },
+    "TargetProjectileSkill.cs:181-221": {
+      "sha256": "f5b55a7ba23b52fe8d75499698d3e1d58c17c5e2ae3354dd2246438b95648fdd",
+      "span": 41
+    },
     "TargetProjectileSkill.cs:196-201": {
       "sha256": "0ca5ff965dc228c3633c4cde94fb59371dbfa6bc5319a6d3ded0251ea15aacfe",
       "span": 6
@@ -1953,9 +2021,13 @@
       "sha256": "a1cc4672a7d17680346bd74a68ef74b4b93ccdc0ebb62997e61863e4cc5fde48",
       "span": 5
     },
-    "TargetProjectileSkill.cs:73": {
-      "sha256": "a6dab04ae8a389e545190d7ecea125591cb79f6b30055c5242066adfefd4c4cc",
-      "span": 1
+    "TargetProjectileSkill.cs:44-104": {
+      "sha256": "09ad3511b142cf02e3926c799dd172785cf2b9a7216f13996ae542597268e365",
+      "span": 61
+    },
+    "TargetProjectileSkill.cs:44-64": {
+      "sha256": "734d8ab00a365fa7c7fad4e2caa1bc0b52524a6c2de3e0104f5e13bbbad84697",
+      "span": 21
     },
     "Trap.cs:142-146": {
       "sha256": "06944dd070636930ba8d8a50e7f83acbe03419af7a8a6f54dc925163efd1d052",

@@ -26,7 +26,7 @@ const SCHOOL_STAT: Record<DamageKind, keyof TargetCombatStats> = {
   disease: "diseaseResist",
 };
 
-/** Source: server-scripts/Combat.cs:635-643. */
+/** Source: server-scripts/Combat.cs:657-670. */
 export function isInvulnerable(target: TargetCombatStats): boolean {
   return (
     target.invincible === true ||
@@ -34,7 +34,7 @@ export function isInvulnerable(target: TargetCombatStats): boolean {
   );
 }
 
-/** Source: server-scripts/Combat.cs:1528-1567. */
+/** Source: server-scripts/Combat.cs:666-699,1528-1567. */
 export function hitAvoidanceProbability(args: {
   target: TargetCombatStats;
   casterLevel: number;

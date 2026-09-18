@@ -209,7 +209,14 @@ function resolveLearnedBookGains(input: CasterStatInput): AttributeSet {
   return gains;
 }
 
-/** Builds the properties read from Combat, Health, Mana, and Energy. */
+/**
+ * Sources: server-scripts/Combat.cs:113-358, Health.cs:25-39, Mana.cs:25-39,
+ * Energy.cs:24-35.
+ */
+/**
+ * Sources: server-scripts/Strength.cs:13-68, Constitution.cs:14-84,
+ * Dexterity.cs:13-110, Intelligence.cs:15-86.
+ */
 export function buildCasterStatSheet(input: CasterStatInput): CasterStatSheet {
   const equipment = aggregateActiveEquipment(input.equipment);
   const setStates = activeArmorSetStates(input.equipment);

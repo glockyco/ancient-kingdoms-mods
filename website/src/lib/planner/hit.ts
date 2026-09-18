@@ -179,6 +179,14 @@ export function sampleHit(
   };
 }
 
+/**
+ * Sources: server-scripts/TargetDamageSkill.cs:159-236,
+ * FrontalDamageSkill.cs:60-101 and AreaDamageSkill.cs:85-106.
+ */
+/**
+ * Sources: server-scripts/TargetProjectileSkill.cs:181-221 and
+ * FrontalProjectilesSkill.cs:95-111.
+ */
 export function buildDamageIntent(
   caster: HitCaster,
   skill: DamageSkillSpec,
@@ -211,6 +219,7 @@ export function buildDamageIntent(
   };
 }
 
+/** Source: server-scripts/ScriptableSkill.cs:84-120. */
 export function weaponGateRefusal(
   caster: Pick<HitCaster, "kind" | "classId" | "weapons">,
   skill: Pick<DamageSkillSpec, "id" | "requiredWeaponCategory">,
@@ -236,6 +245,10 @@ export function weaponGateRefusal(
   return null;
 }
 
+/**
+ * Sources: server-scripts/PlayerSkills.cs:349-389 and
+ * server-scripts/TargetProjectileSkill.cs:44-64.
+ */
 export function hitRefusal(
   caster: HitCaster,
   target: HitTarget,
@@ -429,6 +442,7 @@ function baseCombatStat(
   return stat;
 }
 
+/** Source: server-scripts/Combat.cs:774-860. */
 function landedNonCriticalDamage(
   intent: number,
   variance: number,
@@ -461,6 +475,7 @@ function offhandDamageForMelee(caster: HitCaster): number {
   return occupiedWeapon(caster, 13)?.damageBonus ?? 0;
 }
 
+/** Source: server-scripts/TargetProjectileSkill.cs:44-104. */
 export function requiredAmmunitionForSkill(
   caster: Pick<HitCaster, "kind" | "classId" | "weapons">,
   skill: Pick<DamageSkillSpec, "requiredWeaponCategory">,
