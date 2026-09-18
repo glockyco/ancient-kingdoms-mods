@@ -46,7 +46,7 @@ internal sealed class HotReplVerificationRunner
         "fixture.observe", "game.quit",
     };
 
-    private sealed record JobOutcome(string? Error, JsonElement? Output);
+    private sealed record JobOutcome(string? Error, JsonElement? Output, JsonElement? Artifacts = null);
 
     private readonly HotReplSession _session;
     private readonly HotReplRunnerOptions _options;
@@ -180,7 +180,7 @@ internal sealed class HotReplVerificationRunner
                 resolvedPath);
         }
 
-        VerificationScratch.ConfirmReportedPath(
+        var ownedDatabase = VerificationScratch.ConfirmReportedPath(
             _options.VerificationGamePath, _options.VerificationWinePrefix, resolvedPath!);
 
         if (!HasFixture())
@@ -234,10 +234,17 @@ internal sealed class HotReplVerificationRunner
                 "The measurement failed: " + (observe.Error ?? "no measurement was returned"),
                 resolvedPath, characters, Stage: "observe", Achieved: build.Output);
         }
+        var observation = ReadObservationArtifact(observe, ownedDatabase, out var artifactError);
+        if (observation is null)
+        {
+            return new(false, ExitCodes.CommandFailed,
+                "The measurement artifact could not be read: " + artifactError,
+                resolvedPath, characters, Stage: "observe", Achieved: build.Output);
+        }
 
         return new(true, ExitCodes.Success,
             $"Redirected to {resolvedPath}; fixture built and measured.",
-            resolvedPath, characters, Stage: "observe", Achieved: build.Output, Observation: observe.Output);
+            resolvedPath, characters, Stage: "observe", Achieved: build.Output, Observation: observation);
     }
 
     private string FixtureCharacterArgs()
@@ -272,6 +279,47 @@ internal sealed class HotReplVerificationRunner
     }
 
     private bool HasFixture() => !string.IsNullOrWhiteSpace(_options.FixtureJson);
+
+    /// <summary>
+    /// Reads the observation the game wrote beside its scratch database. The artifact names a
+    /// game path and a content hash; both are checked on this side before the record is trusted.
+    /// </summary>
+    private JsonElement? ReadObservationArtifact(JobOutcome observe, string ownedDatabase, out string error)
+    {
+        error = "";
+        var key = Text(observe.Output!.Value, "artifact");
+        if (key is null || observe.Artifacts is null
+            || observe.Artifacts.Value.ValueKind != JsonValueKind.Object
+            || !observe.Artifacts.Value.TryGetProperty(key, out var artifact))
+        {
+            error = "the result names no observation artifact";
+            return null;
+        }
+        var reported = Text(artifact, "path");
+        var expectedSha = Text(artifact, "sha256");
+        var hostPath = WinePath.ToHost(reported, _options.VerificationWinePrefix!);
+        if (hostPath is null || !System.IO.File.Exists(hostPath))
+        {
+            error = $"artifact path {reported ?? "(none)"} has no readable host file";
+            return null;
+        }
+        var scratch = System.IO.Path.GetDirectoryName(ownedDatabase)!;
+        var canonical = VerificationScratch.CanonicalHostPath(hostPath, "observation artifact");
+        if (!string.Equals(System.IO.Path.GetDirectoryName(canonical), scratch, StringComparison.Ordinal))
+        {
+            error = $"artifact {canonical} lies outside the owned scratch directory {scratch}";
+            return null;
+        }
+        var bytes = System.IO.File.ReadAllBytes(hostPath);
+        var sha = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant();
+        if (!string.Equals(sha, expectedSha, StringComparison.OrdinalIgnoreCase))
+        {
+            error = "artifact content hash does not match the reported hash";
+            return null;
+        }
+        using var document = JsonDocument.Parse(bytes);
+        return document.RootElement.Clone();
+    }
 
     private static JsonElement? OkOutput(JsonElement root)
         => Text(root, "status") == "ok"
@@ -318,9 +366,12 @@ internal sealed class HotReplVerificationRunner
                 var output = root.TryGetProperty("output", out var outputElement)
                     ? outputElement.Clone()
                     : (JsonElement?)null;
+                var artifacts = root.TryGetProperty("artifacts", out var artifactsElement)
+                    ? artifactsElement.Clone()
+                    : (JsonElement?)null;
                 return status == "ok" && state == "done"
-                    ? new(null, output)
-                    : new(root.GetRawText(), output);
+                    ? new(null, output, artifacts)
+                    : new(root.GetRawText(), output, artifacts);
             }
         }
         return new("the command did not finish before the job timeout", null);

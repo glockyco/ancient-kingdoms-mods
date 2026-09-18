@@ -1,6 +1,8 @@
 #nullable disable
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using CombatVerification.Dtos;
 using CombatVerification.Engine;
 using CombatVerification.Fixtures;
@@ -16,6 +18,12 @@ namespace CombatVerification.Probes
     /// The window opens at the first completed action, so it starts with the default attack on its
     /// refractory period and the approach walk outside it.
     /// </summary>
+    /// <remarks>
+    /// When no listed skill is ready and affordable, the default attack is armed instead, as the
+    /// game's own client does when a rage or mana skill cannot be paid for. A Warrior starts a
+    /// fight at zero rage, so a fixture that lists only a rage skill still opens its window and the
+    /// default attack builds the rage the listed skill then spends.
+    /// </remarks>
     /// <remarks>
     /// The target is kept alive by refilling its health each frame, because a level 50 character
     /// kills a low-level spawn in a few hits and a dead target ends the window. A refill cannot
@@ -36,14 +44,109 @@ namespace CombatVerification.Probes
         private readonly Monster _target;
         private readonly IReadOnlyList<int> _priority;
         private readonly double _seconds;
+        private readonly int _fallback;
+        private readonly IReadOnlyList<string> _companionIds;
+        private readonly bool _keepResourcesFull;
+        private readonly int _stopAfterListedHits;
+        private readonly bool _stopAfterListedEffect;
 
-        private FixtureWindow(Player player, Monster target, IReadOnlyList<int> priority, double seconds)
+        private FixtureWindow(
+            Player player, Monster target, IReadOnlyList<int> priority, double seconds,
+            IReadOnlyList<string> companionIds, bool keepResourcesFull, int stopAfterListedHits,
+            bool stopAfterListedEffect)
         {
+            _keepResourcesFull = keepResourcesFull;
+            _stopAfterListedHits = stopAfterListedHits;
+            _stopAfterListedEffect = stopAfterListedEffect;
             _player = player;
             _skills = player.skills.TryCast<PlayerSkills>();
             _target = target;
             _priority = priority;
             _seconds = seconds;
+            _fallback = DefaultAttackIndex(_skills);
+            _companionIds = companionIds;
+        }
+
+        /// <summary>The companions the player holds, in hire order.</summary>
+        private List<Pet> Companions()
+        {
+            var held = new List<Pet>();
+            foreach (var pet in new[]
+            {
+                _player.activeMercenary, _player.activeMercenary2,
+                _player.activeMercenary3, _player.activeMercenary4,
+            })
+                if (pet != null)
+                    held.Add(pet);
+            return held;
+        }
+
+        /// <summary>
+        /// Accumulates each companion's damage meter across the window. The meter is read every
+        /// frame and a backward move is a cleared meter, so only forward moves are counted.
+        /// </summary>
+        private sealed class CompanionMeters
+        {
+            private readonly List<Pet> _pets;
+            private readonly long[] _last;
+            public readonly long[] Total;
+
+            public CompanionMeters(List<Pet> pets)
+            {
+                _pets = pets;
+                _last = new long[pets.Count];
+                Total = new long[pets.Count];
+                for (var i = 0; i < pets.Count; i++)
+                    _last[i] = pets[i].combat.meterDamageDone;
+            }
+
+            public void Observe()
+            {
+                for (var i = 0; i < _pets.Count; i++)
+                {
+                    var now = _pets[i].combat.meterDamageDone;
+                    if (now > _last[i]) Total[i] += now - _last[i];
+                    _last[i] = now;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The skill the engine continues with between casts: the first held skill flagged as a
+        /// follow-up default attack. -1 when the character holds none.
+        /// </summary>
+        private static int DefaultAttackIndex(PlayerSkills skills)
+        {
+            for (var i = 0; i < skills.skills.Count; i++)
+            {
+                var skill = skills.skills[i];
+                if (skill.data.followupDefaultAttack && skill.level > 0)
+                    return i;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Arms the first listed skill that is ready and affordable, or the default attack when none
+        /// is. Returns the armed skill index, or -1 when nothing could be armed.
+        /// </summary>
+        private int TryArm()
+        {
+            foreach (var index in _priority)
+            {
+                var skill = _skills.skills[index];
+                if (skill.data.learnDefault && _player.NetworkcontinueFollowUpSkill >= 0)
+                    continue;
+                if (!skill.IsReady()) continue;
+                if (_player.mana.current < skill.manaCosts || _player.energy.current < skill.energyCosts)
+                    continue;
+                _skills.CmdUse(index, Direction());
+                return index;
+            }
+            if (_fallback < 0 || _player.NetworkcontinueFollowUpSkill >= 0)
+                return -1;
+            _skills.CmdUse(_fallback, Direction());
+            return _fallback;
         }
 
         /// <summary>Resolves the declared actions to skill indexes the engine addresses.</summary>
@@ -75,18 +178,37 @@ namespace CombatVerification.Probes
             return true;
         }
 
+        /// <param name="keepResourcesFull">
+        /// Refill the player's mana and energy every frame. A per-hit window measures each hit
+        /// against the target's state, not the caster's resource economy, so a 500-mana skill can
+        /// be cast on every cooldown. A rotation window leaves resources to the engine's model.
+        /// </param>
+        /// <param name="stopAfterListedHits">
+        /// Close the window once the listed skills have landed this many hits, or 0 to run the
+        /// whole declared length. A per-hit window is bounded by its sample count, not the clock.
+        /// </param>
+        /// <param name="stopAfterListedEffect">
+        /// Close after the target holds an effect from a listed skill. This records the effect and
+        /// the settled target stats instead of waiting for a hit that a debuff does not produce.
+        /// </param>
         public static IEnumerator RunCoroutine(
-            Player player, Monster target, IReadOnlyList<int> priority, double seconds, Outcome outcome)
+            Player player, Monster target, IReadOnlyList<int> priority, double seconds,
+            IReadOnlyList<string> companionIds, bool keepResourcesFull, int stopAfterListedHits,
+            bool stopAfterListedEffect, Outcome outcome)
         {
-            var window = new FixtureWindow(player, target, priority, seconds);
+            var window = new FixtureWindow(
+                player, target, priority, seconds, companionIds, keepResourcesFull,
+                stopAfterListedHits, stopAfterListedEffect);
             yield return window.Run(outcome);
         }
 
         private IEnumerator Run(Outcome outcome)
         {
-            // Warm-up: arm the first listed action and wait for its completion. The window opens
-            // at that completion, so the approach walk and the first cast stay outside it and the
-            // default attack starts the window on its refractory period.
+            // Warm-up: arm the default attack and wait for its completion. The window opens at
+            // that completion, so the approach walk and the first cast stay outside it and the
+            // default attack starts the window on its refractory period, which is the initial
+            // state the engine's scenario declares. The listed skills are armed inside the window.
+            // A character without a default attack arms its first ready listed skill instead.
             var warmup = new ActionTimeline();
             var armed = false;
             var openedAt = 0.0;
@@ -109,15 +231,26 @@ namespace CombatVerification.Probes
                 }
                 if (!armed && _player.state == "IDLE")
                 {
-                    _skills.CmdUse(_priority[0], Direction());
-                    armed = true;
+                    if (_fallback >= 0)
+                    {
+                        _skills.CmdUse(_fallback, Direction());
+                        armed = true;
+                    }
+                    else
+                        armed = TryArm() >= 0;
                 }
             }
             if (openedAt <= 0)
             {
-                outcome.Failure = "No action completed within the warm-up, so no window opened.";
+                outcome.Failure = armed
+                    ? "No action completed within the warm-up, so no window opened."
+                    : "No listed skill was ready and affordable and the character holds no default attack.";
                 yield break;
             }
+
+            // The window opens at full resources, which is the initial state the engine assumes.
+            _player.mana.current = _player.mana.max;
+            _player.energy.current = _player.energy.max;
 
             if (!DamageEvents.TryListen(_player, out var events, out var unavailable))
             {
@@ -125,10 +258,26 @@ namespace CombatVerification.Probes
                 yield break;
             }
 
+            var pets = Companions();
+            if (pets.Count != _companionIds.Count)
+            {
+                events.Dispose();
+                outcome.Failure = $"The player holds {pets.Count} companion(s); the fixture declares {_companionIds.Count}.";
+                yield break;
+            }
+            var meters = new CompanionMeters(pets);
+
+            var listedNames = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var index in _priority)
+                listedNames.Add(_skills.skills[index].name);
+            var targetEffectsBefore = Effects.Read(_target);
+            TargetStateResult settledTarget = null;
+
             var timeline = new ActionTimeline();
             var first = ActionInterval.Read(_player);
             timeline.Observe(first.End, first.Period);
             var incoming = new List<IncomingBlow>();
+            var attempts = new List<ActionAttempt>();
             var attempted = 0;
             var accepted = 0;
             var targetRefills = 0;
@@ -152,6 +301,24 @@ namespace CombatVerification.Probes
                         break;
                     }
                     ServerClock.TryRead(out closedAt);
+                    meters.Observe();
+                    if (_stopAfterListedHits > 0)
+                    {
+                        var listed = 0;
+                        foreach (var hit in events.Log.Hits)
+                            if (hit.Skill != null && listedNames.Contains(hit.Skill)) listed++;
+                        if (listed >= _stopAfterListedHits) break;
+                    }
+                    if (_stopAfterListedEffect)
+                    {
+                        var currentEffects = Effects.Read(_target);
+                        if (currentEffects.Any(effect => listedNames.Contains(effect.Name)))
+                        {
+                            settledTarget = TargetState.Read(
+                                _target, targetEffectsBefore, currentEffects, frames, closedAt);
+                            break;
+                        }
+                    }
 
                     // Incoming blows: the player's health only falls when something hits it.
                     var health = _player.health.current;
@@ -165,7 +332,8 @@ namespace CombatVerification.Probes
                     }
                     lastPlayerHealth = health;
 
-                    // Keep the target alive and targeted.
+                    // Keep the target alive, at full mana, and targeted. The target is declared at
+                    // its full state, and a mana-burning hit is sized by the mana it finds.
                     if (_target.health.current <= 0)
                     {
                         failure = "The target died inside the window.";
@@ -175,6 +343,13 @@ namespace CombatVerification.Probes
                     {
                         _target.health.current = _target.health.max;
                         targetRefills++;
+                    }
+                    if (_target.mana.current < _target.mana.max)
+                        _target.mana.current = _target.mana.max;
+                    if (_keepResourcesFull)
+                    {
+                        _player.mana.current = _player.mana.max;
+                        _player.energy.current = _player.energy.max;
                     }
                     if (_player.Networktarget == null || _player.Networktarget.netId != _target.netId)
                         _player.CmdSetTarget(_target.netIdentity);
@@ -190,39 +365,52 @@ namespace CombatVerification.Probes
                     }
                     wasCasting = casting;
 
-                    // Priority policy: the first listed skill that is ready and affordable. The
-                    // armed follow-up loop fires the default attack itself.
+                    // Priority policy: the first listed skill that is ready and affordable, else
+                    // the default attack. Once armed, the engine's follow-up loop fires the default
+                    // attack itself, so it is not re-armed.
                     if (!casting && _player.state == "IDLE")
                     {
-                        foreach (var index in _priority)
+                        var mana = _player.mana.current;
+                        var energy = _player.energy.current;
+                        var armedIndex = TryArm();
+                        if (armedIndex >= 0)
                         {
-                            var skill = _skills.skills[index];
-                            if (skill.data.learnDefault && _player.NetworkcontinueFollowUpSkill >= 0)
-                                continue;
-                            if (!skill.IsReady()) continue;
-                            if (_player.mana.current < skill.manaCosts || _player.energy.current < skill.energyCosts)
-                                continue;
                             attempted++;
                             pendingAttempt = true;
-                            _skills.CmdUse(index, Direction());
-                            break;
+                            attempts.Add(new ActionAttempt
+                            {
+                                At = closedAt,
+                                Skill = _skills.skills[armedIndex].name,
+                                Mana = mana,
+                                Energy = energy,
+                            });
                         }
                     }
                 }
+                if (_stopAfterListedEffect && settledTarget == null && failure == null)
+                    failure = "No listed target effect landed before the window closed.";
             }
             finally
             {
                 var measured = events.Measured(timeline, 0, openedAt, closedAt);
                 events.Dispose();
+                var compactWindow = _stopAfterListedHits > 0 || _stopAfterListedEffect;
+                var retainedHits = compactWindow
+                    ? measured.Hits.Where(hit => hit.Skill != null && listedNames.Contains(hit.Skill)).ToList()
+                    : measured.Hits;
+                var retainedAttempts = compactWindow
+                    ? attempts.Where(attempt => listedNames.Contains(attempt.Skill)).ToList()
+                    : attempts;
                 outcome.Sample = new WindowSample
                 {
                     OpenedAt = openedAt,
                     ClosedAt = closedAt,
-                    Hits = measured.Hits,
-                    Completions = new List<double>(timeline.Completions),
-                    Intervals = new List<double>(timeline.Intervals),
+                    Hits = retainedHits,
+                    Completions = compactWindow ? new List<double>() : new List<double>(timeline.Completions),
+                    Intervals = compactWindow ? new List<double>() : new List<double>(timeline.Intervals),
                     Resets = timeline.Resets,
                     Incoming = incoming,
+                    Attempts = retainedAttempts,
                     Counts = new ActionCounts
                     {
                         Attempted = attempted,
@@ -235,6 +423,14 @@ namespace CombatVerification.Probes
                     AverageFrameSeconds = frames == 0 ? 0 : (closedAt - openedAt) / frames,
                     TargetHealthRefills = targetRefills,
                     PlayerHealthRefills = playerRefills,
+                    SettledTarget = settledTarget,
+                    CompanionDamage = pets.Select((pet, i) => new CompanionDamage
+                    {
+                        EntityId = _companionIds[i],
+                        Name = pet.nameEntity,
+                        Archetype = pet.typeMonster,
+                        Damage = meters.Total[i],
+                    }).ToList(),
                 };
             }
             if (failure != null)

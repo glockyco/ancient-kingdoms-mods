@@ -12,7 +12,7 @@
     "gameVersion": "0.9.32.4",
     "steamBuildId": "25326396"
   },
-  "recordedAt": "2026-09-18T05:44:26.476482+00:00",
+  "recordedAt": "2026-09-18T06:43:04.982776+00:00",
   "achieved": {
     "build": {
       "serializedSchemaVersion": 3,
@@ -60,6 +60,11 @@
         "detail": "Equipped 0 items, cleared 4 slots the fixture does not declare."
       },
       {
+        "name": "supplies",
+        "ok": true,
+        "detail": "Granted 2 stack(s)."
+      },
+      {
         "name": "companions",
         "ok": true,
         "detail": "None declared."
@@ -85,6 +90,29 @@
     "seed": 902793843,
     "gameVersion": "0.9.32.4",
     "fidelity": "state",
+    "consumablesUsed": [
+      "bread",
+      "minor_potion_of_rage"
+    ],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.98399,
+        "expired": false
+      },
+      {
+        "skillId": "bread",
+        "name": "Bread",
+        "category": "Food",
+        "level": 1,
+        "remaining": 1799.9152,
+        "expired": false
+      }
+    ],
+    "target": null,
     "measurements": [
       {
         "quantity": "statSheet",
@@ -128,7 +156,7 @@
                 "resources": {
                   "healthMax": 1680,
                   "healthCurrent": 1680,
-                  "healthRecoveryRate": 35,
+                  "healthRecoveryRate": 38,
                   "healthMultiplier": 1.0,
                   "manaMax": 220,
                   "manaRecoveryRate": 4,
@@ -148,7 +176,15 @@
                 "name": "Rest",
                 "category": "",
                 "level": 1,
-                "remaining": 0.9769075,
+                "remaining": 0.98399,
+                "expired": false
+              },
+              {
+                "skillId": "bread",
+                "name": "Bread",
+                "category": "Food",
+                "level": 1,
+                "remaining": 1799.9152,
                 "expired": false
               }
             ]

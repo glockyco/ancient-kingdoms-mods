@@ -78,7 +78,9 @@ namespace CombatVerification.Commands
                     character,
                     buildData.Player,
                     buildData.Companions,
-                    buildData.LearnedBookIds);
+                    buildData.LearnedBookIds,
+                    buildData.Consumables,
+                    buildData.Ammunition);
             }
             catch (Exception exception)
             {

@@ -49,6 +49,7 @@ export interface ObservationRecord {
   observation: {
     tier: string;
     seed: number;
+    character?: { class: string; level: number };
     gameVersion: string;
     fidelity: string;
     consumablesUsed: string[];

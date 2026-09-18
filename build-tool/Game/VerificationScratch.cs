@@ -197,6 +197,10 @@ public static class VerificationScratch
             throw Unsafe($"{description} escapes its owned parent: {child}");
     }
 
+    /// <summary>Link-resolved absolute form of a host path, in the same form ConfirmReportedPath returns.</summary>
+    public static string CanonicalHostPath(string path, string description)
+        => Canonicalize(path, description).Path;
+
     private static CanonicalPath Canonicalize(string path, string description)
     {
         var full = FullPath(path, description);

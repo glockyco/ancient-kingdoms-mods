@@ -1,5 +1,8 @@
 import { compareTierA } from "./tier-a";
+import { compareTierB } from "./tier-b";
 import { compareTierC } from "./tier-c";
+import { compareTierD } from "./tier-d";
+import { catalogCoverageDomain } from "../catalog-resolver";
 import type { QuantityResult } from "./comparison";
 import {
   classifyObservation,
@@ -61,62 +64,135 @@ function compareQuantities(
   switch (fixture.tier) {
     case "A":
       return compareTierA(fixture, catalog, observation);
+    case "B":
+      return compareTierB(fixture, catalog, observation);
     case "C":
       return compareTierC(fixture, catalog, observation);
-    case "B":
     case "D":
-      return [
-        {
-          quantity: fixture.tier,
-          status: "inconclusive",
-          detail: `tier ${fixture.tier} comparison is not implemented`,
-        },
-      ];
+      return compareTierD(fixture, catalog, observation);
   }
 }
 
 /**
- * Credits coverage from executed evidence: a class, handler, school, or archetype counts only when
- * a current passing observation reached it. A fixture label alone credits nothing.
+ * Credits coverage from executed evidence. A handler and a school are credited by the hits of the
+ * listed skill in a passing tier B observation; a class by the character a passing tier D
+ * observation measured; an archetype by a companion whose damage a passing tier D observation
+ * read. A fixture label credits nothing, so a mislabelled fixture cannot cover what it never
+ * reached. Every required handler, school, class, and archetype without a credit is named as
+ * uncovered.
  */
 export interface CoverageReport {
+  handlers: Map<string, string[]>;
+  schools: Map<string, string[]>;
   classes: Map<string, string[]>;
+  archetypes: Map<string, string[]>;
+  uncovered: {
+    handlers: string[];
+    schools: string[];
+    classes: string[];
+    archetypes: string[];
+  };
 }
 
 export function coverageFrom(
   verdicts: readonly FixtureVerdict[],
   corpus: VerificationCorpus,
+  catalog: unknown,
 ): CoverageReport {
+  const domain = catalogCoverageDomain(catalog);
+  const handlers = new Map<string, string[]>();
+  const schools = new Map<string, string[]>();
   const classes = new Map<string, string[]>();
+  const archetypes = new Map<string, string[]>();
+  const credit = (map: Map<string, string[]>, key: string, name: string) => {
+    const names = map.get(key) ?? [];
+    if (!names.includes(name)) names.push(name);
+    map.set(key, names);
+  };
   for (const verdict of verdicts) {
     if (verdict.status !== "pass") continue;
+    const fixture = corpus.fixtures.find(
+      (entry) => entry.name === verdict.name,
+    )!;
     const observation = corpus.observations.get(verdict.name)!;
-    const classId = achievedClass(observation);
-    if (classId === null) continue;
-    const names = classes.get(classId) ?? [];
-    names.push(verdict.name);
-    classes.set(classId, names);
+    if (fixture.tier === "B") {
+      const listed = new Set(
+        (fixture.execution.actions ?? []).map((a) => a.skill),
+      );
+      for (const hit of observedHits(observation)) {
+        if (hit.skill === null || !listed.has(hit.skill)) continue;
+        const handler = domain.handlerBySkillName.get(hit.skill);
+        if (handler !== undefined) credit(handlers, handler, verdict.name);
+        if (hit.damageType !== null)
+          credit(schools, hit.damageType.toLowerCase(), verdict.name);
+      }
+    }
+    if (fixture.tier === "D") {
+      const classId = measuredClass(observation);
+      if (classId !== null) credit(classes, classId, verdict.name);
+      for (const archetype of observedCompanionArchetypes(observation))
+        credit(archetypes, archetype, verdict.name);
+    }
   }
-  return { classes };
+  return {
+    handlers,
+    schools,
+    classes,
+    archetypes,
+    uncovered: {
+      handlers: domain.handlers.filter((id) => !handlers.has(id)),
+      schools: domain.schools.filter((id) => !schools.has(id)),
+      classes: domain.classes.filter((id) => !classes.has(id)),
+      archetypes: domain.archetypes.filter((id) => !archetypes.has(id)),
+    },
+  };
 }
 
-function achievedClass(observation: ObservationRecord): string | null {
-  const measurement = observation.observation.measurements.find(
-    (entry) => entry.quantity === "statSheet",
+function observedHits(
+  observation: ObservationRecord,
+): { skill: string | null; damageType: string | null }[] {
+  return observation.observation.measurements.flatMap((measurement) =>
+    measurement.samples.flatMap((sample) => {
+      if (typeof sample !== "object" || sample === null) return [];
+      const sampleRecord = sample as Record<string, unknown>;
+      if (!Array.isArray(sampleRecord.hits)) return [];
+      return sampleRecord.hits.flatMap((hit) => {
+        if (typeof hit !== "object" || hit === null) return [];
+        const hitRecord = hit as Record<string, unknown>;
+        return [
+          {
+            skill: typeof hitRecord.skill === "string" ? hitRecord.skill : null,
+            damageType:
+              typeof hitRecord.damageType === "string"
+                ? hitRecord.damageType
+                : null,
+          },
+        ];
+      });
+    }),
   );
-  const sample = measurement?.samples[0];
-  if (typeof sample !== "object" || sample === null || !("character" in sample))
-    return null;
-  const character = sample.character;
-  if (
-    typeof character !== "object" ||
-    character === null ||
-    !("archetype" in character)
-  )
-    return null;
-  return typeof character.archetype === "string"
-    ? character.archetype.toLowerCase()
-    : null;
+}
+
+function observedCompanionArchetypes(observation: ObservationRecord): string[] {
+  const found = new Set<string>();
+  for (const measurement of observation.observation.measurements)
+    for (const sample of measurement.samples) {
+      if (typeof sample !== "object" || sample === null) continue;
+      const sampleRecord = sample as Record<string, unknown>;
+      if (!Array.isArray(sampleRecord.companionDamage)) continue;
+      for (const entry of sampleRecord.companionDamage) {
+        if (typeof entry !== "object" || entry === null) continue;
+        const damageRecord = entry as Record<string, unknown>;
+        if (typeof damageRecord.archetype === "string")
+          found.add(damageRecord.archetype);
+      }
+    }
+  return [...found];
+}
+
+function measuredClass(observation: ObservationRecord): string | null {
+  const name = observation.observation.character?.class;
+  return typeof name === "string" ? name.toLowerCase() : null;
 }
 
 export function formatVerdicts(verdicts: readonly FixtureVerdict[]): string {

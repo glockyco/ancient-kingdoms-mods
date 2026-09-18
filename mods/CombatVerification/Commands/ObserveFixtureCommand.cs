@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ using CombatVerification.Fixtures;
 using CombatVerification.Materialization;
 using CombatVerification.Probes;
 using HotRepl.Control;
+using HotRepl.Control.Artifacts;
+using HotReplCommands.Isolation;
 using Il2Cpp;
 using MelonLoader;
 using Newtonsoft.Json;
@@ -32,29 +35,112 @@ namespace CombatVerification.Commands
     /// consumable the build declares is used once first, through the game's own use command, and the
     /// effects on the player are recorded so the comparison sees the state the sheet was read under.
     /// </remarks>
-    public sealed class ObserveFixtureCommand
-        : IControlCommandHandler<ObserveFixtureArgs, ObserveFixtureResult>
+    /// <summary>What the command returns inline; the full record travels as an artifact.</summary>
+    public sealed class ObserveFixtureSummary
     {
+        [JsonProperty("tier")] public string Tier { get; set; }
+        [JsonProperty("fidelity")] public string Fidelity { get; set; }
+        [JsonProperty("measurements")] public int Measurements { get; set; }
+        /// <summary>The artifact key under which the full observation record is returned.</summary>
+        [JsonProperty("artifact")] public string Artifact { get; set; }
+    }
+
+    public sealed class ObserveFixtureCommand
+        : IControlCommandHandler<ObserveFixtureArgs, ObserveFixtureSummary>
+    {
+        public const string ArtifactKey = "observation";
+        private const string ArtifactFileName = "observation.json";
+
         public string Name => "fixture.observe";
-        public int Version => 2;
+        public int Version => 3;
         public ControlCommandKind Kind => ControlCommandKind.Job;
         public bool MutatesState => true;
 
-        public ValueTask<ControlCommandResult<ObserveFixtureResult>> ExecuteAsync(
-            ControlCommandContext<ObserveFixtureResult> context,
+        public ValueTask<ControlCommandResult<ObserveFixtureSummary>> ExecuteAsync(
+            ControlCommandContext<ObserveFixtureSummary> context,
             ObserveFixtureArgs args,
             CancellationToken cancellationToken)
         {
-            var completion = new TaskCompletionSource<ControlCommandResult<ObserveFixtureResult>>(
+            var completion = new TaskCompletionSource<ControlCommandResult<ObserveFixtureSummary>>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
             MelonCoroutines.Start(RunCoroutine(context, args, completion));
-            return new ValueTask<ControlCommandResult<ObserveFixtureResult>>(completion.Task);
+            return new ValueTask<ControlCommandResult<ObserveFixtureSummary>>(completion.Task);
+        }
+
+        /// <summary>
+        /// Writes the record beside the scratch database, which the run owns, and returns it as an
+        /// artifact. A window of hits exceeds what the command channel carries inline.
+        /// </summary>
+        private static ControlCommandResult<ObserveFixtureSummary> Deliver(
+            ControlCommandContext<ObserveFixtureSummary> context, ObserveFixtureResult result)
+        {
+            var database = GameManager.pathFileDB;
+            if (!ScratchDatabase.IsScratch(database))
+                return context.PreconditionFailed("notScratch",
+                    "The observation is written only beside a scratch database.");
+            var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(database), ArtifactFileName);
+            System.IO.File.WriteAllText(path, JsonConvert.SerializeObject(result));
+            var info = new System.IO.FileInfo(path);
+            string sha;
+            using (var hasher = System.Security.Cryptography.SHA256.Create())
+            using (var stream = System.IO.File.OpenRead(path))
+                sha = System.BitConverter.ToString(hasher.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+            var artifacts = new Dictionary<string, ArtifactRef>
+            {
+                [ArtifactKey] = new ArtifactRef(
+                    LogicalName: ArtifactKey,
+                    Uri: new System.Uri(System.IO.Path.GetFullPath(path)).AbsoluteUri,
+                    Path: path,
+                    ContentType: "application/json",
+                    ByteSize: info.Length,
+                    Sha256: sha,
+                    Finalized: true),
+            };
+            return ControlCommandResult.Ok(new ObserveFixtureSummary
+            {
+                Tier = result.Tier,
+                Fidelity = result.Fidelity,
+                Measurements = result.Measurements.Count,
+                Artifact = ArtifactKey,
+            }, artifacts);
+        }
+
+        /// <summary>
+        /// Seconds for one listed skill to land the minimum number of samples: its cooldown or,
+        /// when it has none, four seconds per cycle, with headroom for casts that land nothing.
+        /// </summary>
+        private static double TierBWindowSeconds(Player player, IReadOnlyList<int> priority, int minimumSamples)
+        {
+            var cycle = 0.0;
+            foreach (var index in priority)
+                cycle = Math.Max(cycle, player.skills.skills[index].cooldown);
+            if (cycle <= 0) cycle = 4.0;
+            // Half again as many cycles as samples: an avoided or blocked cast lands nothing, and
+            // the window closes as soon as the samples are in hand.
+            return cycle * Math.Ceiling(minimumSamples * 1.5) + 10.0;
+        }
+
+        private static void RestoreInitialState(Player player, HashSet<string> carriedEffects)
+        {
+            var skills = player.skills.skills;
+            for (var i = 0; i < skills.Count; i++)
+            {
+                var skill = skills[i];
+                skill.cooldownEnd = 0;
+                skills[i] = skill;
+            }
+            var buffs = player.skills.buffs;
+            for (var i = buffs.Count - 1; i >= 0; i--)
+            {
+                if (!carriedEffects.Contains(buffs[i].name))
+                    buffs.RemoveAt(i);
+            }
         }
 
         private static IEnumerator RunCoroutine(
-            ControlCommandContext<ObserveFixtureResult> context,
+            ControlCommandContext<ObserveFixtureSummary> context,
             ObserveFixtureArgs args,
-            TaskCompletionSource<ControlCommandResult<ObserveFixtureResult>> completion)
+            TaskCompletionSource<ControlCommandResult<ObserveFixtureSummary>> completion)
         {
             var fixture = args?.Fixture;
             if (fixture?.Execution?.Seed == null || fixture.Execution.Measurement?.MinimumSamples == null)
@@ -99,6 +185,7 @@ namespace CombatVerification.Commands
             {
                 Tier = fixture.Tier,
                 Seed = fixture.Execution.Seed.Value,
+                Character = new MeasuredCharacter { Class = player.className, Level = player.level.current },
                 GameVersion = Application.version,
                 ConsumablesUsed = consumablesUsed,
                 ActiveEffects = effects,
@@ -121,7 +208,7 @@ namespace CombatVerification.Commands
                     SamplingUnit = "reading",
                     Samples = new List<object> { new StatSheetSample { Sheet = sheet, ActiveEffects = effects } },
                 });
-                completion.TrySetResult(ControlCommandResult.Ok(result));
+                completion.TrySetResult(Deliver(context, result));
                 yield break;
             }
 
@@ -168,11 +255,15 @@ namespace CombatVerification.Commands
             }
             result.Target = approach.Readback;
 
-            // Tier B has no timed window; it needs enough landed hits of its one action. Give it
-            // a generous bound so the minimum decides, not the clock.
+            // Tier B has no timed window. A damaging action needs enough landed hits; a target
+            // debuff needs one settled target-state reading after the effect lands. Both use the
+            // action's cooldown to bound the attempt without making the clock the sample count.
+            var measuresTargetEffect = fixture.Tier == "B"
+                && priority.Count == 1
+                && player.skills.skills[priority[0]].data.TryCast<TargetDebuffSkill>() != null;
             var windows = fixture.Tier == "D" ? execution.Repetitions : 1;
             var seconds = fixture.Tier == "B"
-                ? 4.0 * execution.Measurement.MinimumSamples.Value + 10.0
+                ? TierBWindowSeconds(player, priority, execution.Measurement.MinimumSamples.Value)
                 : execution.DurationSeconds ?? 0.0;
             if (seconds <= 0)
             {
@@ -181,13 +272,25 @@ namespace CombatVerification.Commands
                 yield break;
             }
 
+            var companionIds = new List<string>();
+            foreach (var companion in fixture.BuildData.Companions)
+                companionIds.Add(companion.EntityId);
+
+            var carriedEffects = new HashSet<string>(effects.Select(effect => effect.Name), StringComparer.Ordinal);
             var samples = new List<object>();
             var fidelity = (string)null;
             for (var window = 0; window < windows; window++)
             {
                 UnityEngine.Random.InitState(execution.Seed.Value + window);
                 var outcome = new FixtureWindow.Outcome();
-                yield return FixtureWindow.RunCoroutine(player, target, priority, seconds, outcome);
+                yield return FixtureWindow.RunCoroutine(
+                    player, target, priority, seconds, companionIds,
+                    keepResourcesFull: fixture.Tier == "B",
+                    stopAfterListedHits: fixture.Tier == "B" && !measuresTargetEffect
+                        ? execution.Measurement.MinimumSamples.Value
+                        : 0,
+                    stopAfterListedEffect: measuresTargetEffect,
+                    outcome: outcome);
                 if (outcome.Failure != null)
                 {
                     completion.TrySetResult(context.PreconditionFailed("windowFailed",
@@ -198,21 +301,26 @@ namespace CombatVerification.Commands
                 fidelity = fidelity == null || outcome.Sample.Fidelity == fidelity
                     ? outcome.Sample.Fidelity
                     : "mixed";
-                // Let the target and the follow-up loop settle before the next window.
+                // Every window repeats the fixture's initial state, which is what the engine runs:
+                // the follow-up loop stops, every cooldown clears, and any effect the window added
+                // is removed. The effects the character carried before the first window stay.
                 player.CmdCancelAction();
+                RestoreInitialState(player, carriedEffects);
                 for (var frame = 0; frame < 120; frame++) yield return null;
             }
 
             result.Fidelity = fidelity;
             result.Measurements.Add(new Measurement
             {
-                Quantity = fixture.Tier == "B" ? "perHit" : fixture.Tier == "C" ? "actionInterval" : "window",
-                Unit = fixture.Tier == "C" ? "second" : "damage",
-                SamplingUnit = fixture.Tier == "D" ? "window" : "hit",
+                Quantity = measuresTargetEffect
+                    ? "targetState"
+                    : fixture.Tier == "B" ? "perHit" : fixture.Tier == "C" ? "actionInterval" : "window",
+                Unit = measuresTargetEffect ? "state" : fixture.Tier == "C" ? "second" : "damage",
+                SamplingUnit = measuresTargetEffect ? "reading" : fixture.Tier == "D" ? "window" : "hit",
                 WindowSeconds = seconds,
                 Samples = samples,
             });
-            completion.TrySetResult(ControlCommandResult.Ok(result));
+            completion.TrySetResult(Deliver(context, result));
         }
     }
 }

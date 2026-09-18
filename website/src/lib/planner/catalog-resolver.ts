@@ -263,6 +263,66 @@ interface InternalResolution {
   skillLevels: Readonly<Record<string, number>>;
 }
 
+/**
+ * The domains the verification coverage report answers for: every supported class, every mercenary
+ * archetype as the game names it, and each damaging skill's handler under the skill's display name,
+ * which is how an observed hit names its skill.
+ */
+export interface CatalogCoverageDomain {
+  classes: readonly string[];
+  archetypes: readonly string[];
+  handlers: readonly DamageSkillClass[];
+  schools: readonly DamageKind[];
+  handlerBySkillName: ReadonlyMap<string, DamageSkillClass>;
+}
+
+export function catalogCoverageDomain(
+  catalogValue: unknown,
+): CatalogCoverageDomain {
+  const catalog = parseCatalog(catalogValue);
+  const handlerBySkillName = new Map<string, DamageSkillClass>();
+  const handlers = new Set<DamageSkillClass>();
+  const schools = new Set<DamageKind>();
+  for (const [id, skill] of catalog.skills) {
+    const type = requiredString(skill, "skill_type", `skill ${id}.skill_type`);
+    if (!DAMAGE_SKILL_CLASSES.has(type as DamageSkillClass)) continue;
+    const playerClasses = stringArray(
+      skill,
+      "player_classes",
+      `skill ${id}.player_classes`,
+    );
+    if (
+      !playerClasses.some((classId) =>
+        catalog.classDomain.supported.has(classId),
+      )
+    )
+      continue;
+    const handler = type as DamageSkillClass;
+    handlerBySkillName.set(
+      requiredString(skill, "name", `skill ${id}.name`),
+      handler,
+    );
+    handlers.add(handler);
+    schools.add(
+      damageKind(
+        requiredString(skill, "damage_type", `skill ${id}.damage_type`),
+        `skill ${id}.damage_type`,
+      ),
+    );
+  }
+  return {
+    classes: [...catalog.classDomain.supported].sort(),
+    archetypes: [...catalog.mercenaries.values()]
+      .map((row) =>
+        requiredString(row, "type_monster", "mercenary.type_monster"),
+      )
+      .sort(),
+    handlers: [...handlers].sort(),
+    schools: [...schools].sort(),
+    handlerBySkillName,
+  };
+}
+
 export function resolveLogicalBuild(
   buildValue: unknown,
   catalogValue: unknown,

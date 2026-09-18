@@ -133,12 +133,65 @@ describe("committed observations", () => {
   });
 
   it("credit coverage only from passing current observations", () => {
-    const coverage = coverageFrom(verdicts, corpus);
-    for (const [classId, names] of coverage.classes) {
-      for (const name of names) {
-        const verdict = verdicts.find((entry) => entry.name === name);
-        expect(verdict?.status, `${classId} credited by ${name}`).toBe("pass");
+    const coverage = coverageFrom(verdicts, corpus, catalog);
+    for (const map of [
+      coverage.handlers,
+      coverage.schools,
+      coverage.classes,
+      coverage.archetypes,
+    ]) {
+      for (const [key, names] of map) {
+        for (const name of names) {
+          const verdict = verdicts.find((entry) => entry.name === name);
+          expect(verdict?.status, `${key} credited by ${name}`).toBe("pass");
+        }
       }
     }
+    expect(coverage.uncovered.handlers).toEqual([]);
+    expect(coverage.uncovered.schools).toEqual([]);
+  });
+
+  it("credit a handler only from the listed skill's own hits", () => {
+    const fixture = corpus.fixtures.find((entry) => entry.tier === "B")!;
+    const observation = corpus.observations.get(fixture.name)!;
+    const listed = fixture.execution.actions![0].skill;
+    const mislabelled = {
+      ...observation,
+      observation: {
+        ...observation.observation,
+        measurements: observation.observation.measurements.map((m) => ({
+          ...m,
+          samples: m.samples.map((sample) => {
+            if (typeof sample !== "object" || sample === null) return sample;
+            const record = sample as Record<string, unknown>;
+            if (!Array.isArray(record.hits)) return sample;
+            return {
+              ...record,
+              hits: record.hits.map((hit) => {
+                if (typeof hit !== "object" || hit === null) return hit;
+                const hitRecord = hit as Record<string, unknown>;
+                return {
+                  ...hitRecord,
+                  skill:
+                    hitRecord.skill === listed
+                      ? "Staff Strike"
+                      : hitRecord.skill,
+                };
+              }),
+            };
+          }),
+        })),
+      },
+    };
+    const corpusWithMislabel = {
+      ...corpus,
+      observations: new Map([[fixture.name, mislabelled]]),
+    };
+    const coverage = coverageFrom(
+      [{ name: fixture.name, tier: "B", status: "pass", quantities: [] }],
+      corpusWithMislabel,
+      catalog,
+    );
+    expect([...coverage.handlers.keys()]).toEqual([]);
   });
 });

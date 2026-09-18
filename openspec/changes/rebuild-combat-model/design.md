@@ -121,9 +121,17 @@ would duplicate the protocol.
 ### Timed windows open at a completed action
 
 `build-tool verify` travels to the declared target through the game's portal command, places the
-player on the requested side, arms the first declared action, and opens the window at that action's
-completion. The default attack therefore starts the window on its refractory period, which the engine
-scenario states as an initial cooldown, and the approach walk stays outside the window. The game
+player on the requested side, arms the default attack, and opens the window at its completion with
+the player's resources filled. The default attack therefore starts the window on its refractory
+period, which the engine scenario states as an initial cooldown, and the approach walk stays outside
+the window. Inside the window the player casts the first declared action that is ready and
+affordable, and the default attack when none is, as the game's own client does for an unaffordable
+rage or mana skill. Between the windows of one fixture the harness cancels the follow-up loop,
+clears every cooldown, and removes every effect the window added, so each window repeats the
+initial state the engine runs from. A companion's damage per window is the movement of its own
+damage meter; the player's is the sum of its attributed hits. A tier B window is sized from the
+engine's cooldown of the slowest listed skill times the declared minimum, so a fixture for a
+long-cooldown skill declares a small minimum. The game
 completes actions on frame boundaries, so an observed interval may differ from the engine's exact
 interval by up to three frames of the window's average frame length: one frame of slip at each
 endpoint and jitter between frames. The training Dummy is the timed target because it never attacks;

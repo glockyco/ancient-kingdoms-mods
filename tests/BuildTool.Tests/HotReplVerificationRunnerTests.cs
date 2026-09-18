@@ -161,12 +161,22 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         return transport;
     }
 
-    private static void EnqueueJob(FakeHotReplTransport transport, string jobId, string output = "{}", bool ok = true)
+    private static void EnqueueJob(
+        FakeHotReplTransport transport, string jobId, string output = "{}", bool ok = true, string artifacts = "{}")
     {
         transport.EnqueueServerMessage(
             $@"{{""type"":""job_accepted"",""id"":""3"",""jobId"":""{jobId}""}}");
         transport.EnqueueServerMessage(
-            $@"{{""type"":""job_status_result"",""id"":""4"",""jobId"":""{jobId}"",""state"":""done"",""status"":""{(ok ? "ok" : "error")}"",""output"":{output}}}");
+            $@"{{""type"":""job_status_result"",""id"":""4"",""jobId"":""{jobId}"",""state"":""done"",""status"":""{(ok ? "ok" : "error")}"",""output"":{output},""artifacts"":{artifacts}}}");
+    }
+
+    /// <summary>Writes an observation beside the scratch database and describes it as the game would.</summary>
+    private string WriteObservationArtifact(string json)
+    {
+        var path = Path.Combine(VerificationScratch.DirectoryFor(GamePath), "observation.json");
+        File.WriteAllText(path, json);
+        var sha = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
+        return $@"{{""observation"":{{""logicalName"":""observation"",""path"":""{path}"",""sha256"":""{sha}""}}}}";
     }
 
     private static void EnqueueQuit(FakeHotReplTransport transport)
@@ -185,7 +195,8 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         transport.EnqueueServerMessage(
             @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}");
         EnqueueJob(transport, "build-1", @"{""ok"":true,""level"":50}");
-        EnqueueJob(transport, "observe-1", @"{""tier"":""A"",""measurements"":[]}");
+        var artifacts = WriteObservationArtifact(@"{""tier"":""A"",""measurements"":[]}");
+        EnqueueJob(transport, "observe-1", @"{""tier"":""A"",""artifact"":""observation""}", artifacts: artifacts);
         EnqueueQuit(transport);
 
         var result = await new HotReplVerificationRunner(transport, FixtureOptions())
@@ -201,6 +212,27 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         Assert.Contains("\"characterName\":\"Verifier\"", sent);
         Assert.Contains("\"class\":\"warrior\"", sent);
         Assert.True(sent.IndexOf("fixture.validate\"", StringComparison.Ordinal) < sent.IndexOf("fixture.buildCharacter", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task RefusesAnObservationArtifactWhoseHashDoesNotMatch()
+    {
+        var transport = ReadyForFixture();
+        EnqueueJob(transport, "create-1");
+        EnqueueJob(transport, "enter-1");
+        transport.EnqueueServerMessage(
+            @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}");
+        EnqueueJob(transport, "build-1", @"{""ok"":true}");
+        var artifacts = WriteObservationArtifact(@"{""tier"":""A""}").Replace("\"sha256\":\"", "\"sha256\":\"00");
+        EnqueueJob(transport, "observe-1", @"{""tier"":""A"",""artifact"":""observation""}", artifacts: artifacts);
+        EnqueueQuit(transport);
+
+        var result = await new HotReplVerificationRunner(transport, FixtureOptions())
+            .RunAsync(CancellationToken.None);
+
+        Assert.False(result.Ok);
+        Assert.Equal("observe", result.Stage);
+        Assert.Contains("hash", result.Message);
     }
 
     [Fact]

@@ -59,7 +59,9 @@ namespace CombatVerification.Materialization
             ICharacterUnderConstruction character,
             PlayerBuild spec,
             IReadOnlyList<CompanionBuild> companions,
-            IReadOnlyList<string> learnedBookIds)
+            IReadOnlyList<string> learnedBookIds,
+            IReadOnlyList<ItemQuantity> consumables,
+            IReadOnlyList<ItemQuantity> ammunition)
         {
             var steps = new List<BuildStep>();
             if (spec?.Attributes?.Allocated == null
@@ -67,10 +69,13 @@ namespace CombatVerification.Materialization
                 || spec.Equipment == null
                 || companions == null
                 || companions.Any(companion => companion?.Skills == null || companion.Equipment == null)
-                || learnedBookIds == null)
+                || learnedBookIds == null
+                || consumables == null
+                || ammunition == null)
             {
                 Fail(steps, "buildData",
-                    "Player attributes, skills, equipment, companions, and learnedBookIds are required.");
+                    "Player attributes, skills, equipment, companions, learnedBookIds, consumables, "
+                    + "and ammunition are required.");
                 return new BuildOutcome { Steps = steps };
             }
 
@@ -101,6 +106,7 @@ namespace CombatVerification.Materialization
                 () => SpendSkills(character, spec, steps),
                 () => LearnBooks(character, learnedBookIds, steps),
                 () => EquipItems(character, spec, steps),
+                () => GrantSupplies(character, consumables, ammunition, steps),
                 () => HireCompanions(character, companions, steps),
             };
 
@@ -325,6 +331,34 @@ namespace CombatVerification.Materialization
 
             return Pass(steps, "skills",
                 $"Bought {bought} levels across {requested.Count} skills.");
+        }
+
+        // --- supplies ---
+
+        /// <summary>
+        /// Grants the declared consumables and ammunition into the inventory and reads each back.
+        /// A measurement uses consumables through the game's own use command and a bow skill
+        /// consumes arrows, so a declared quantity that the inventory does not hold measures nothing.
+        /// </summary>
+        private static bool GrantSupplies(
+            ICharacterUnderConstruction character,
+            IReadOnlyList<ItemQuantity> consumables,
+            IReadOnlyList<ItemQuantity> ammunition,
+            List<BuildStep> steps)
+        {
+            var granted = 0;
+            foreach (var entry in consumables.Concat(ammunition))
+            {
+                if (string.IsNullOrWhiteSpace(entry?.ItemId) || entry.Quantity <= 0)
+                    return Fail(steps, "supplies", "Every consumable and ammunition entry needs an item id and a positive quantity.");
+                if (!character.ItemExists(entry.ItemId))
+                    return Fail(steps, "supplies", $"The game defines no item '{entry.ItemId}'.");
+                character.GrantItem(entry.ItemId, entry.Quantity, character.MaxDurability(entry.ItemId), null);
+                if (character.FindInInventory(entry.ItemId, null) < 0)
+                    return Fail(steps, "supplies", $"'{entry.ItemId}' was granted but the inventory does not hold it.");
+                granted++;
+            }
+            return Pass(steps, "supplies", granted == 0 ? "None declared." : $"Granted {granted} stack(s).");
         }
 
         // --- permanent books ---

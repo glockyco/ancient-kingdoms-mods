@@ -34,12 +34,16 @@ namespace CombatVerification.Tests
             FakeCharacter character,
             PlayerBuild spec,
             IReadOnlyList<CompanionBuild>? companions = null,
-            IReadOnlyList<string>? learnedBookIds = null)
+            IReadOnlyList<string>? learnedBookIds = null,
+            IReadOnlyList<ItemQuantity>? consumables = null,
+            IReadOnlyList<ItemQuantity>? ammunition = null)
             => CharacterBuilder.Run(
                 character,
                 spec,
                 companions ?? new List<CompanionBuild>(),
-                learnedBookIds ?? new List<string>());
+                learnedBookIds ?? new List<string>(),
+                consumables ?? new List<ItemQuantity>(),
+                ammunition ?? new List<ItemQuantity>());
 
         private static BuildStep Step(BuildOutcome outcome, string name)
             => outcome.Steps.Single(step => step.Name == name);
@@ -407,7 +411,7 @@ namespace CombatVerification.Tests
             Assert.Equal(
                 new[]
                 {
-                    "level", "veteran", "attributes", "skills", "learnedBooks", "equipment",
+                    "level", "veteran", "attributes", "skills", "learnedBooks", "equipment", "supplies",
                     "companions",
                 },
                 outcome.Steps.Select(step => step.Name).ToArray());
@@ -836,6 +840,34 @@ namespace CombatVerification.Tests
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(3, character.Equipment.Slots.Count(slot => slot.Occupied));
             Assert.Contains("Equipped 3 items", Step(outcome, "equipment").Detail);
+        }
+
+        [Fact]
+        public void GrantsDeclaredSuppliesAndReadsThemBack()
+        {
+            var character = Equipper().WithItem("bread", maxDurability: 0).WithItem("arrow", maxDurability: 0);
+            var outcome = Build(
+                character,
+                Spec(),
+                consumables: new List<ItemQuantity> { new() { ItemId = "bread", Quantity = 5 } },
+                ammunition: new List<ItemQuantity> { new() { ItemId = "arrow", Quantity = 200 } });
+
+            Assert.True(outcome.Ok, outcome.Failure?.Detail);
+            Assert.Contains("Granted 2 stack(s)", Step(outcome, "supplies").Detail);
+            Assert.True(character.FindInInventory("bread", null) >= 0);
+            Assert.True(character.FindInInventory("arrow", null) >= 0);
+        }
+
+        [Fact]
+        public void FailsTheSuppliesStepForAnItemTheGameDoesNotDefine()
+        {
+            var outcome = Build(
+                Equipper(),
+                Spec(),
+                consumables: new List<ItemQuantity> { new() { ItemId = "ambrosia", Quantity = 1 } });
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("ambrosia", Step(outcome, "supplies").Detail);
         }
     }
 }

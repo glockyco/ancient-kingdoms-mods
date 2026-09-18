@@ -19,6 +19,18 @@ export interface TargetReadback {
   stats: Record<string, number>;
 }
 
+export interface SettledTargetState {
+  stats: Record<string, number>;
+  effects: {
+    skillId: string | null;
+    name: string;
+    category: string;
+    level: number;
+    remaining: number;
+    expired: boolean;
+  }[];
+}
+
 export interface WindowSample {
   openedAt: number;
   closedAt: number;
@@ -42,6 +54,7 @@ export interface WindowSample {
   fidelity: string;
   averageFrameSeconds: number;
   targetHealthRefills: number;
+  settledTarget: SettledTargetState | null;
 }
 
 function requireNumber(value: unknown, path: string): number {
@@ -70,6 +83,37 @@ export function parseTargetReadback(value: unknown): TargetReadback {
     healthMax: requireNumber(record.healthMax, "observation.target.healthMax"),
     stats: numbers,
   };
+}
+
+function parseSettledTargetState(
+  value: unknown,
+  path: string,
+): SettledTargetState | null {
+  if (value === null || value === undefined) return null;
+  const record = requireRecord(value, path);
+  const rawStats = requireRecord(record.stats, `${path}.stats`);
+  const stats: Record<string, number> = {};
+  for (const [key, entry] of Object.entries(rawStats))
+    stats[key] = requireNumber(entry, `${path}.stats.${key}`);
+  if (!Array.isArray(record.effects))
+    throw new TypeError(`${path}.effects must be an array`);
+  const effects = record.effects.map((value, index) => {
+    const effectPath = `${path}.effects[${index}]`;
+    const effect = requireRecord(value, effectPath);
+    if (effect.skillId !== null && typeof effect.skillId !== "string")
+      throw new TypeError(`${effectPath}.skillId must be a string or null`);
+    if (typeof effect.name !== "string" || typeof effect.category !== "string")
+      throw new TypeError(`${effectPath} must name the effect and category`);
+    return {
+      skillId: effect.skillId as string | null,
+      name: effect.name,
+      category: effect.category,
+      level: requireNumber(effect.level, `${effectPath}.level`),
+      remaining: requireNumber(effect.remaining, `${effectPath}.remaining`),
+      expired: effect.expired === true,
+    };
+  });
+  return { stats, effects };
 }
 
 export function parseWindowSample(value: unknown, path: string): WindowSample {
@@ -129,6 +173,10 @@ export function parseWindowSample(value: unknown, path: string): WindowSample {
       record.targetHealthRefills,
       `${path}.targetHealthRefills`,
     ),
+    settledTarget: parseSettledTargetState(
+      record.settledTarget,
+      `${path}.settledTarget`,
+    ),
   };
 }
 
@@ -151,8 +199,9 @@ export function actionSkillIds(
 
 /**
  * Runs the engine under the state the observation reports: the target as read from the game, the
- * player at full resources with the effects it carried, and the declared actions as a priority
- * list, which is how the game's follow-up loop fills every idle gap.
+ * player and every declared companion at full resources with the effects the player carried, and
+ * the declared actions as a priority list, which is how the game's follow-up loop fills every idle
+ * gap.
  */
 export function simulateFixtureWindow(
   fixture: FixtureRecord,
@@ -207,6 +256,18 @@ export function simulateFixtureWindow(
     horizonSeconds,
     initialResources: [
       { entityId: playerId, resource: resourceKind, current: maximum, maximum },
+      ...resolved.companions.map((companion) => {
+        const companionMaximum =
+          companion.resourceKind === "mana"
+            ? companion.state.sheet.mana
+            : companion.state.sheet.energy;
+        return {
+          entityId: companion.entityId,
+          resource: companion.resourceKind,
+          current: companionMaximum,
+          maximum: companionMaximum,
+        };
+      }),
       {
         entityId: "target",
         resource: "health",
@@ -231,7 +292,10 @@ export function simulateFixtureWindow(
       quantity: item.quantity,
     })),
     incomingEvents: [],
-    roster: [playerId],
+    roster: [
+      playerId,
+      ...resolved.companions.map((companion) => companion.entityId),
+    ],
     targetCount: 1,
     durabilityLoss: false,
     includeHorizonEvents: true,

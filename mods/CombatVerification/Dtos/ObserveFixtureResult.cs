@@ -61,6 +61,15 @@ namespace CombatVerification.Dtos
         [JsonProperty("amount")] public int Amount { get; set; }
     }
 
+    /// <summary>One skill use the driver issued, with the resources the caster held at that moment.</summary>
+    public sealed class ActionAttempt
+    {
+        [JsonProperty("at")] public double At { get; set; }
+        [JsonProperty("skill")] public string Skill { get; set; }
+        [JsonProperty("mana")] public int Mana { get; set; }
+        [JsonProperty("energy")] public int Energy { get; set; }
+    }
+
     /// <summary>Everything one driven window observed.</summary>
     public sealed class WindowSample
     {
@@ -71,6 +80,8 @@ namespace CombatVerification.Dtos
         [JsonProperty("intervals")] public List<double> Intervals { get; set; }
         [JsonProperty("resets")] public int Resets { get; set; }
         [JsonProperty("incoming")] public List<IncomingBlow> Incoming { get; set; }
+        /// <summary>Skill uses the driver issued; the follow-up loop's own attacks are not attempts.</summary>
+        [JsonProperty("attempts")] public List<ActionAttempt> Attempts { get; set; }
         [JsonProperty("counts")] public ActionCounts Counts { get; set; }
         [JsonProperty("fidelity")] public string Fidelity { get; set; }
         [JsonProperty("fidelityLimit")] public string FidelityLimit { get; set; }
@@ -82,13 +93,39 @@ namespace CombatVerification.Dtos
         /// <summary>Frames on which the target's health was refilled to keep it alive.</summary>
         [JsonProperty("targetHealthRefills")] public int TargetHealthRefills { get; set; }
         [JsonProperty("playerHealthRefills")] public int PlayerHealthRefills { get; set; }
+        /// <summary>
+        /// The target after a listed target effect lands. Null for windows that measure damage or
+        /// cadence. The reading includes the active effect and the stats that the next hit meets.
+        /// </summary>
+        [JsonProperty("settledTarget")] public TargetStateResult SettledTarget { get; set; }
+        /// <summary>
+        /// Damage each hired companion dealt inside the window, read from its own damage meter in
+        /// hire order, which is the order the fixture declares its companions.
+        /// </summary>
+        [JsonProperty("companionDamage")] public List<CompanionDamage> CompanionDamage { get; set; }
+    }
+
+    public sealed class CompanionDamage
+    {
+        [JsonProperty("entityId")] public string EntityId { get; set; }
+        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("archetype")] public string Archetype { get; set; }
+        [JsonProperty("damage")] public long Damage { get; set; }
     }
 
     /// <summary>The measurements a fixture's tier declares, taken from the running game.</summary>
+    public sealed class MeasuredCharacter
+    {
+        [JsonProperty("class")] public string Class { get; set; }
+        [JsonProperty("level")] public int Level { get; set; }
+    }
+
     public sealed class ObserveFixtureResult
     {
         [JsonProperty("tier")] public string Tier { get; set; }
         [JsonProperty("seed")] public int Seed { get; set; }
+        /// <summary>The measured character as the game names it, so coverage credits what ran.</summary>
+        [JsonProperty("character")] public MeasuredCharacter Character { get; set; }
         [JsonProperty("gameVersion")] public string GameVersion { get; set; }
         /// <summary>Attribution fidelity the measurement reached: state, perHit, or perHitAttributed.</summary>
         [JsonProperty("fidelity")] public string Fidelity { get; set; }
