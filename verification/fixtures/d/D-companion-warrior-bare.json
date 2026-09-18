@@ -9,9 +9,9 @@
     "modelVersion": "2",
     "serializedSchemaVersion": 3
   },
-  "name": "D-companion-ranger-bare",
+  "name": "D-companion-warrior-bare",
   "tier": "D",
-  "coverage": "D.companion.Ranger.bare",
+  "coverage": "D.companion.Warrior.bare",
   "buildData": {
     "schemaVersion": 1,
     "player": {
@@ -63,7 +63,7 @@
       {
         "entityId": "companion-1",
         "kind": "mercenary",
-        "archetypeId": "ranger",
+        "archetypeId": "warrior",
         "raceId": "human",
         "level": 50,
         "healthMultiplier": 1.0,
@@ -84,13 +84,13 @@
     "learnedBookIds": [],
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/d/D-companion-ranger-bare.json"
+      "source": "verification/fixtures/d/D-companion-warrior-bare.json"
     }
   },
   "execution": {
     "durationSeconds": 20,
     "repetitions": 12,
-    "seed": 384235887,
+    "seed": 1500000400,
     "target": {
       "spawn": "Dummy",
       "level": 40

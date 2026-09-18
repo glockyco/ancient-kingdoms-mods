@@ -83,7 +83,13 @@
       }
     ],
     "consumables": [],
-    "ammunition": [],
+    "ammunition": [
+      {
+        "itemId": "arrow",
+        "itemName": null,
+        "quantity": 500
+      }
+    ],
     "learnedBookIds": [],
     "provenance": {
       "kind": "authored",
@@ -105,7 +111,7 @@
       }
     ],
     "measurement": {
-      "minimumSamples": 30
+      "minimumSamples": 12
     }
   }
 }

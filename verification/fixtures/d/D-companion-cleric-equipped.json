@@ -9,9 +9,9 @@
     "modelVersion": "2",
     "serializedSchemaVersion": 3
   },
-  "name": "D-companion-ranger-bare",
+  "name": "D-companion-cleric-equipped",
   "tier": "D",
-  "coverage": "D.companion.Ranger.bare",
+  "coverage": "D.companion.Cleric.equipped",
   "buildData": {
     "schemaVersion": 1,
     "player": {
@@ -63,14 +63,23 @@
       {
         "entityId": "companion-1",
         "kind": "mercenary",
-        "archetypeId": "ranger",
+        "archetypeId": "cleric",
         "raceId": "human",
         "level": 50,
         "healthMultiplier": 1.0,
         "resourceMultiplier": 1.0,
         "baseCombat": 50,
         "skills": [],
-        "equipment": []
+        "equipment": [
+          {
+            "slot": 12,
+            "itemId": "rusty_hammer",
+            "itemName": null,
+            "augmentId": null,
+            "durability": 100,
+            "amount": 1
+          }
+        ]
       }
     ],
     "consumables": [],
@@ -84,13 +93,13 @@
     "learnedBookIds": [],
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/d/D-companion-ranger-bare.json"
+      "source": "verification/fixtures/d/D-companion-cleric-equipped.json"
     }
   },
   "execution": {
     "durationSeconds": 20,
     "repetitions": 12,
-    "seed": 384235887,
+    "seed": 1500000101,
     "target": {
       "spawn": "Dummy",
       "level": 40
