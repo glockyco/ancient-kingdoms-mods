@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "B-target-damage",
+    "tier": "B",
+    "coverage": "B.skill.targetDamage",
+    "path": "verification/fixtures/b/B-target-damage.json",
+    "contentSha256": "5dab53c7c36b776e9273f12b2b93b3ab47bd87616e0c57157793be064b649e78"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T07:42:45.095408+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-target-damage.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "Bought 1 levels across 1 skills."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 1 items, cleared 3 slots the fixture does not declare."
+      },
+      {
+        "name": "supplies",
+        "ok": true,
+        "detail": "None declared."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 48,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 18,
+      "constitution": 26,
+      "dexterity": 14,
+      "intelligence": 11,
+      "wisdom": 9,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "B",
+    "seed": 2080333999,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "perHitAttributed",
+    "consumablesUsed": [],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.9872879,
+        "expired": false
+      }
+    ],
+    "target": {
+      "spawn": "Dummy",
+      "level": 40,
+      "netId": 5202,
+      "zone": 2,
+      "healthMax": 295000,
+      "distance": 3.0,
+      "requestedFacing": "front",
+      "targetLookDirection": [
+        0.0,
+        -1.0
+      ],
+      "playerLookDirection": [
+        -0.0,
+        1.0
+      ],
+      "stats": {
+        "accuracy": 0.0,
+        "blockChance": 0.0690000057220459,
+        "coldResist": 200.0,
+        "criticalChance": 0.0,
+        "criticalResist": 0.0,
+        "damage": 0.0,
+        "defense": 200.0,
+        "diseaseResist": 200.0,
+        "fearResistChance": 0.0,
+        "fireResist": 200.0,
+        "haste": 0.0,
+        "magicDamage": 0.0,
+        "magicResist": 200.0,
+        "poisonResist": 200.0,
+        "spellHaste": 0.0
+      }
+    },
+    "measurements": [
+      {
+        "quantity": "perHit",
+        "unit": "damage",
+        "samplingUnit": "hit",
+        "windowSeconds": 280.0,
+        "samples": [
+          {
+            "openedAt": 13.627579627267574,
+            "closedAt": 293.6329659297052,
+            "hits": [
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 56,
+                "sameFacing": false,
+                "at": 19.065205428004536,
+                "skill": "Slam",
+                "damageType": "Normal",
+                "intent": 54
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 56,
+                "sameFacing": false,
+                "at": 64.60681612811791,
+                "skill": "Slam",
+                "damageType": "Normal",
+                "intent": 54
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 63,
+                "sameFacing": false,
+                "at": 110.14347052862811,
+                "skill": "Slam",
+                "damageType": "Normal",
+                "intent": 54
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 61,
+                "sameFacing": false,
+                "at": 155.67591112528345,
+                "skill": "Slam",
+                "damageType": "Normal",
+                "intent": 54
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 58,
+                "sameFacing": false,
+                "at": 201.20452342687074,
+                "skill": "Slam",
+                "damageType": "Normal",
+                "intent": 54
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 54,
+                "sameFacing": false,
+                "at": 246.74292982568025,
+                "skill": "Slam",
+                "damageType": "Normal",
+                "intent": 54
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 58,
+                "sameFacing": false,
+                "at": 292.2901121244331,
+                "skill": "Slam",
+                "damageType": "Normal",
+                "intent": 54
+              }
+            ],
+            "completions": [],
+            "intervals": [],
+            "resets": 0,
+            "incoming": [],
+            "attempts": [
+              {
+                "at": 18.5459654265873,
+                "skill": "Slam",
+                "mana": 220,
+                "energy": 27
+              },
+              {
+                "at": 64.06853312783447,
+                "skill": "Slam",
+                "mana": 220,
+                "energy": 255
+              },
+              {
+                "at": 109.62061252834467,
+                "skill": "Slam",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 155.1565363307823,
+                "skill": "Slam",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 200.68316182681406,
+                "skill": "Slam",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 246.2177119260204,
+                "skill": "Slam",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 291.76243862670066,
+                "skill": "Slam",
+                "mana": 220,
+                "energy": 445
+              }
+            ],
+            "counts": {
+              "attempted": 7,
+              "accepted": 7,
+              "completed": 172,
+              "landed": 171
+            },
+            "fidelity": "perHitAttributed",
+            "fidelityLimit": null,
+            "averageFrameSeconds": 0.014727049192785866,
+            "targetHealthRefills": 172,
+            "playerHealthRefills": 0,
+            "settledTarget": null
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

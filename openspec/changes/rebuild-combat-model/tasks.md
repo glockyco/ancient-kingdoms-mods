@@ -47,8 +47,8 @@
 
 ## 7. Tier B: one hit per handler
 
-- [ ] 7.1 Re-author the tier B fixtures for every damaging handler and every school, including the ignored-multiplier and ignored-caster-stat handlers, a lower-level case, and one applied target debuff with settled target state. Verify shape validation passes.
-- [ ] 7.2 Record tier B observations. Verify each per-hit ratio lies in the support band and the coverage report credits every handler and school.
+- [x] 7.1 Re-author the tier B fixtures for every damaging handler and every school, including the ignored-multiplier and ignored-caster-stat handlers, a lower-level case, and one applied target debuff with settled target state. Verify shape validation passes.
+- [x] 7.2 Record tier B observations. Verify each per-hit ratio lies in the support band and the coverage report credits every handler and school.
 
 ## 8. Tier D: rotation windows and companions
 

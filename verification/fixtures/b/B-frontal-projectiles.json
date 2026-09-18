@@ -85,7 +85,13 @@
     },
     "companions": [],
     "consumables": [],
-    "ammunition": [],
+    "ammunition": [
+      {
+        "itemId": "arrow",
+        "itemName": null,
+        "quantity": 500
+      }
+    ],
     "learnedBookIds": [],
     "provenance": {
       "kind": "authored",

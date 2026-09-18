@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "B-school-cold",
+    "tier": "B",
+    "coverage": "B.school.cold",
+    "path": "verification/fixtures/b/B-school-cold.json",
+    "contentSha256": "aae41a3d3677827c6f8173d82e77f0a2abcb88d06c8b54fdea2045e002079ed1"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T08:43:43.956631+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-school-cold.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "Bought 31 levels across 8 skills."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=10, constitution=11, dexterity=18, intelligence=26, wisdom=13, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 1 items, cleared 2 slots the fixture does not declare."
+      },
+      {
+        "name": "supplies",
+        "ok": true,
+        "detail": "None declared."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 18,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 10,
+      "constitution": 11,
+      "dexterity": 18,
+      "intelligence": 26,
+      "wisdom": 13,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "B",
+    "seed": 146880331,
+    "character": {
+      "class": "Wizard",
+      "level": 50
+    },
+    "gameVersion": "0.9.32.4",
+    "fidelity": "perHitAttributed",
+    "consumablesUsed": [],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.9872127,
+        "expired": false
+      }
+    ],
+    "target": {
+      "spawn": "Dummy",
+      "level": 40,
+      "netId": 5202,
+      "zone": 2,
+      "healthMax": 295000,
+      "distance": 3.0,
+      "requestedFacing": "front",
+      "targetLookDirection": [
+        0.0,
+        -1.0
+      ],
+      "playerLookDirection": [
+        -0.0,
+        1.0
+      ],
+      "stats": {
+        "accuracy": 0.0,
+        "blockChance": 0.0690000057220459,
+        "coldResist": 200.0,
+        "criticalChance": 0.0,
+        "criticalResist": 0.0,
+        "damage": 0.0,
+        "defense": 200.0,
+        "diseaseResist": 200.0,
+        "fearResistChance": 0.0,
+        "fireResist": 200.0,
+        "haste": 0.0,
+        "magicDamage": 0.0,
+        "magicResist": 200.0,
+        "poisonResist": 200.0,
+        "spellHaste": 0.0
+      }
+    },
+    "measurements": [
+      {
+        "quantity": "perHit",
+        "unit": "damage",
+        "samplingUnit": "hit",
+        "windowSeconds": 235.0,
+        "samples": [
+          {
+            "openedAt": 10.409153039965986,
+            "closedAt": 156.24681023951246,
+            "hits": [
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 261,
+                "sameFacing": false,
+                "at": 11.919997888321994,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 273,
+                "sameFacing": false,
+                "at": 27.959995046768707,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 272,
+                "sameFacing": false,
+                "at": 43.959992212301586,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 246,
+                "sameFacing": false,
+                "at": 59.999989370748295,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 244,
+                "sameFacing": false,
+                "at": 76.039986529195,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 266,
+                "sameFacing": false,
+                "at": 92.07998368764171,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 246,
+                "sameFacing": false,
+                "at": 108.11998084608842,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 255,
+                "sameFacing": false,
+                "at": 124.15997800453515,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 255,
+                "sameFacing": false,
+                "at": 140.19997516298184,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 5202,
+                "amount": 241,
+                "sameFacing": false,
+                "at": 156.23997232142855,
+                "skill": "Icestrike",
+                "damageType": "Cold",
+                "intent": 242
+              }
+            ],
+            "completions": [],
+            "intervals": [],
+            "resets": 0,
+            "incoming": [],
+            "attempts": [
+              {
+                "at": 10.87179494047619,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 26.907713343253967,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 42.93219074546485,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 58.96965524376417,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 74.99232304421768,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 91.03347334183673,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 107.08428163973923,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 123.1084568452381,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 139.15168084608842,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              },
+              {
+                "at": 155.19157714002267,
+                "skill": "Icestrike",
+                "mana": 1305,
+                "energy": 100
+              }
+            ],
+            "counts": {
+              "attempted": 10,
+              "accepted": 10,
+              "completed": 91,
+              "landed": 90
+            },
+            "fidelity": "perHitAttributed",
+            "fidelityLimit": null,
+            "averageFrameSeconds": 0.01568990394831054,
+            "targetHealthRefills": 90,
+            "playerHealthRefills": 0,
+            "settledTarget": null,
+            "companionDamage": []
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

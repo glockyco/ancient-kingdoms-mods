@@ -1,0 +1,501 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "B-frontal-damage",
+    "tier": "B",
+    "coverage": "B.skill.frontalDamage",
+    "path": "verification/fixtures/b/B-frontal-damage.json",
+    "contentSha256": "67d0336aab25090034b8bfc9790319f0e853b2fe56cb7f9e464de81308d3971a"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T07:58:13.781015+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-frontal-damage.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "Bought 22 levels across 6 skills."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 1 items, cleared 3 slots the fixture does not declare."
+      },
+      {
+        "name": "supplies",
+        "ok": true,
+        "detail": "None declared."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 27,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 18,
+      "constitution": 26,
+      "dexterity": 14,
+      "intelligence": 11,
+      "wisdom": 9,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "B",
+    "seed": 38965828,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "perHitAttributed",
+    "consumablesUsed": [],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.9811843,
+        "expired": false
+      }
+    ],
+    "target": {
+      "spawn": "Dummy",
+      "level": 40,
+      "netId": 3481,
+      "zone": 4,
+      "healthMax": 295000,
+      "distance": 3.0,
+      "requestedFacing": "front",
+      "targetLookDirection": [
+        0.0,
+        -1.0
+      ],
+      "playerLookDirection": [
+        -0.0,
+        1.0
+      ],
+      "stats": {
+        "accuracy": 0.0,
+        "blockChance": 0.0690000057220459,
+        "coldResist": 200.0,
+        "criticalChance": 0.0,
+        "criticalResist": 0.0,
+        "damage": 0.0,
+        "defense": 200.0,
+        "diseaseResist": 200.0,
+        "fearResistChance": 0.0,
+        "fireResist": 200.0,
+        "haste": 0.0,
+        "magicDamage": 0.0,
+        "magicResist": 200.0,
+        "poisonResist": 200.0,
+        "spellHaste": 0.0
+      }
+    },
+    "measurements": [
+      {
+        "quantity": "perHit",
+        "unit": "damage",
+        "samplingUnit": "hit",
+        "windowSeconds": 325.0,
+        "samples": [
+          {
+            "openedAt": 13.048327338435374,
+            "closedAt": 324.4163436366213,
+            "hits": [
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 43,
+                "sameFacing": false,
+                "at": 14.008484835600907,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 46,
+                "sameFacing": false,
+                "at": 29.530599036281178,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 47,
+                "sameFacing": false,
+                "at": 45.04899013605442,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 42,
+                "sameFacing": false,
+                "at": 60.564777834467115,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 43,
+                "sameFacing": false,
+                "at": 76.08210373441042,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 46,
+                "sameFacing": false,
+                "at": 91.60812053571428,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 45,
+                "sameFacing": false,
+                "at": 107.13049903628118,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 42,
+                "sameFacing": false,
+                "at": 122.64991533446711,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 41,
+                "sameFacing": false,
+                "at": 138.16383933531745,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 48,
+                "sameFacing": false,
+                "at": 153.68797513463718,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 47,
+                "sameFacing": false,
+                "at": 169.20487333475057,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 45,
+                "sameFacing": false,
+                "at": 184.73249183673468,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 41,
+                "sameFacing": false,
+                "at": 200.2491256377551,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 45,
+                "sameFacing": false,
+                "at": 231.28477533304988,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 47,
+                "sameFacing": false,
+                "at": 246.80820483276642,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 43,
+                "sameFacing": false,
+                "at": 262.32740723497733,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 47,
+                "sameFacing": false,
+                "at": 277.84605273526074,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 45,
+                "sameFacing": false,
+                "at": 293.36423383645126,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 46,
+                "sameFacing": false,
+                "at": 308.89506333616777,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 45,
+                "sameFacing": false,
+                "at": 324.4163436366213,
+                "skill": "Mighty Sweep",
+                "damageType": "Normal",
+                "intent": 42
+              }
+            ],
+            "completions": [],
+            "intervals": [],
+            "resets": 0,
+            "incoming": [],
+            "attempts": [
+              {
+                "at": 13.490485232426304,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 29.017126232993196,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 44.53384173752834,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 60.053030236678005,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 75.56759573412698,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 91.0874227324263,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 106.61791693594104,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 122.13719653486395,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 137.65193163265306,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 153.17368963293652,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 168.69065953798184,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 184.21450343679138,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 199.7330499362245,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 215.25754813633785,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 230.77075313208616,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 246.2915394345238,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 261.8121017361111,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 277.335430534297,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 292.8525021329365,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 308.3744288336168,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              },
+              {
+                "at": 323.89704783871883,
+                "skill": "Mighty Sweep",
+                "mana": 220,
+                "energy": 445
+              }
+            ],
+            "counts": {
+              "attempted": 21,
+              "accepted": 21,
+              "completed": 200,
+              "landed": 200
+            },
+            "fidelity": "perHitAttributed",
+            "fidelityLimit": null,
+            "averageFrameSeconds": 0.010614939361749086,
+            "targetHealthRefills": 200,
+            "playerHealthRefills": 0,
+            "companionDamage": [],
+            "settledTarget": null
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

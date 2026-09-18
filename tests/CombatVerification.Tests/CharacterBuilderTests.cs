@@ -854,8 +854,8 @@ namespace CombatVerification.Tests
 
             Assert.True(outcome.Ok, outcome.Failure?.Detail);
             Assert.Contains("Granted 2 stack(s)", Step(outcome, "supplies").Detail);
-            Assert.True(character.FindInInventory("bread", null) >= 0);
-            Assert.True(character.FindInInventory("arrow", null) >= 0);
+            Assert.True(character.FindInInventory("bread", null!) >= 0);
+            Assert.True(character.FindInInventory("arrow", null!) >= 0);
         }
 
         [Fact]

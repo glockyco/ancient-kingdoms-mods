@@ -399,7 +399,7 @@ namespace CombatVerification.Probes
                     ? measured.Hits.Where(hit => hit.Skill != null && listedNames.Contains(hit.Skill)).ToList()
                     : measured.Hits;
                 var retainedAttempts = compactWindow
-                    ? attempts.Where(attempt => listedNames.Contains(attempt.Skill)).ToList()
+                    ? new List<ActionAttempt>()
                     : attempts;
                 outcome.Sample = new WindowSample
                 {

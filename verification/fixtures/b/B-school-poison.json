@@ -9,14 +9,14 @@
     "modelVersion": "2",
     "serializedSchemaVersion": 3
   },
-  "name": "B-target-damage",
+  "name": "B-school-poison",
   "tier": "B",
-  "coverage": "B.skill.targetDamage",
+  "coverage": "B.school.poison",
   "buildData": {
     "schemaVersion": 1,
     "player": {
       "entityId": "player",
-      "classId": "warrior",
+      "classId": "rogue",
       "raceId": "human",
       "level": 50,
       "veteranPoints": 200,
@@ -24,8 +24,8 @@
         "rawObserved": null,
         "baseProgression": {
           "strength": 18,
-          "constitution": 26,
-          "dexterity": 14,
+          "constitution": 13,
+          "dexterity": 27,
           "intelligence": 11,
           "wisdom": 9,
           "charisma": 9
@@ -42,8 +42,26 @@
       },
       "skills": [
         {
-          "skillId": "slam",
-          "skillName": "Slam",
+          "skillId": "ambush",
+          "skillName": "Ambush",
+          "level": 5,
+          "pool": "normal"
+        },
+        {
+          "skillId": "stab",
+          "skillName": "Stab",
+          "level": 1,
+          "pool": "normal"
+        },
+        {
+          "skillId": "adrenaline_rush",
+          "skillName": "Adrenaline Rush",
+          "level": 5,
+          "pool": "normal"
+        },
+        {
+          "skillId": "deadly_strike",
+          "skillName": "Deadly Strike",
           "level": 1,
           "pool": "normal"
         }
@@ -51,7 +69,7 @@
       "equipment": [
         {
           "slot": 12,
-          "itemId": "rusty_sword",
+          "itemId": "rusty_dagger",
           "itemName": null,
           "augmentId": null,
           "durability": 100,
@@ -65,25 +83,25 @@
     "learnedBookIds": [],
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/b/B-target-damage.json"
+      "source": "verification/fixtures/b/B-school-poison.json"
     }
   },
   "execution": {
     "durationSeconds": null,
     "repetitions": 1,
-    "seed": 2080333999,
+    "seed": 646291772,
     "target": {
       "spawn": "Dummy",
       "level": 40
     },
     "actions": [
       {
-        "skill": "Slam",
+        "skill": "Deadly Strike",
         "facing": "front"
       }
     ],
     "measurement": {
-      "minimumSamples": 6
+      "minimumSamples": 10
     }
   }
 }

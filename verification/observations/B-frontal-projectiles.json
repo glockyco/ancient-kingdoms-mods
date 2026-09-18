@@ -1,0 +1,864 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "B-frontal-projectiles",
+    "tier": "B",
+    "coverage": "B.skill.frontalProjectiles",
+    "path": "verification/fixtures/b/B-frontal-projectiles.json",
+    "contentSha256": "66b53323a1bbfbeceb1f46366ac5f66e0d5956e27bdf1ca1d73b974176a69ce5"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T07:08:59.006693+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-frontal-projectiles.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "Bought 41 levels across 5 skills."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=34, constitution=37, dexterity=27, intelligence=29, wisdom=11, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 1 items, cleared 3 slots the fixture does not declare."
+      },
+      {
+        "name": "supplies",
+        "ok": true,
+        "detail": "Granted 1 stack(s)."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 159,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 34,
+      "constitution": 37,
+      "dexterity": 27,
+      "intelligence": 29,
+      "wisdom": 11,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "B",
+    "seed": 1424779765,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "perHitAttributed",
+    "consumablesUsed": [],
+    "activeEffects": [
+      {
+        "skillId": "rest",
+        "name": "Rest",
+        "category": "",
+        "level": 1,
+        "remaining": 0.9864447,
+        "expired": false
+      }
+    ],
+    "target": {
+      "spawn": "Dummy",
+      "level": 40,
+      "netId": 3481,
+      "zone": 4,
+      "healthMax": 295000,
+      "distance": 3.0,
+      "requestedFacing": "front",
+      "targetLookDirection": [
+        0.0,
+        -1.0
+      ],
+      "playerLookDirection": [
+        -0.0,
+        1.0
+      ],
+      "stats": {
+        "accuracy": 0.0,
+        "blockChance": 0.0690000057220459,
+        "coldResist": 200.0,
+        "criticalChance": 0.0,
+        "criticalResist": 0.0,
+        "damage": 0.0,
+        "defense": 200.0,
+        "diseaseResist": 200.0,
+        "fearResistChance": 0.0,
+        "fireResist": 200.0,
+        "haste": 0.0,
+        "magicDamage": 0.0,
+        "magicResist": 200.0,
+        "poisonResist": 200.0,
+        "spellHaste": 0.0
+      }
+    },
+    "measurements": [
+      {
+        "quantity": "perHit",
+        "unit": "damage",
+        "samplingUnit": "hit",
+        "windowSeconds": 210.0,
+        "samples": [
+          {
+            "openedAt": 10.114756724773242,
+            "closedAt": 220.1164630243764,
+            "hits": [
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1284,
+                "sameFacing": false,
+                "at": 10.199998193027211,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1132,
+                "sameFacing": false,
+                "at": 10.199998193027211,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1132,
+                "sameFacing": false,
+                "at": 20.759996322278912,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1181,
+                "sameFacing": false,
+                "at": 20.759996322278912,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1263,
+                "sameFacing": false,
+                "at": 20.759996322278912,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1149,
+                "sameFacing": false,
+                "at": 31.27999445861678,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1081,
+                "sameFacing": false,
+                "at": 31.27999445861678,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1170,
+                "sameFacing": false,
+                "at": 31.27999445861678,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1202,
+                "sameFacing": false,
+                "at": 41.799992594954645,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1170,
+                "sameFacing": false,
+                "at": 41.799992594954645,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1216,
+                "sameFacing": false,
+                "at": 41.799992594954645,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1087,
+                "sameFacing": false,
+                "at": 52.31999073129251,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1310,
+                "sameFacing": false,
+                "at": 52.31999073129251,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1087,
+                "sameFacing": false,
+                "at": 52.31999073129251,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1142,
+                "sameFacing": false,
+                "at": 62.83998886763038,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1208,
+                "sameFacing": false,
+                "at": 62.83998886763038,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1176,
+                "sameFacing": false,
+                "at": 62.83998886763038,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1177,
+                "sameFacing": false,
+                "at": 73.39998699688208,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1225,
+                "sameFacing": false,
+                "at": 73.39998699688208,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1283,
+                "sameFacing": false,
+                "at": 73.39998699688208,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1269,
+                "sameFacing": false,
+                "at": 83.91998513321995,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1120,
+                "sameFacing": false,
+                "at": 83.91998513321995,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1158,
+                "sameFacing": false,
+                "at": 83.91998513321995,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1230,
+                "sameFacing": false,
+                "at": 94.43998326955781,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1079,
+                "sameFacing": false,
+                "at": 94.43998326955781,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1138,
+                "sameFacing": false,
+                "at": 94.43998326955781,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1161,
+                "sameFacing": false,
+                "at": 104.95998140589569,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1311,
+                "sameFacing": false,
+                "at": 104.95998140589569,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1197,
+                "sameFacing": false,
+                "at": 104.95998140589569,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1260,
+                "sameFacing": false,
+                "at": 115.47997954223355,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1295,
+                "sameFacing": false,
+                "at": 115.47997954223355,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1104,
+                "sameFacing": false,
+                "at": 125.99997767857143,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1115,
+                "sameFacing": false,
+                "at": 125.99997767857143,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1112,
+                "sameFacing": false,
+                "at": 125.99997767857143,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1254,
+                "sameFacing": false,
+                "at": 136.5199758149093,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1277,
+                "sameFacing": false,
+                "at": 136.5199758149093,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1136,
+                "sameFacing": false,
+                "at": 136.5199758149093,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1157,
+                "sameFacing": false,
+                "at": 147.03997395124716,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1125,
+                "sameFacing": false,
+                "at": 147.03997395124716,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1083,
+                "sameFacing": false,
+                "at": 147.03997395124716,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1666,
+                "sameFacing": false,
+                "at": 157.59997208049887,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1255,
+                "sameFacing": false,
+                "at": 157.59997208049887,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1107,
+                "sameFacing": false,
+                "at": 157.59997208049887,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1266,
+                "sameFacing": false,
+                "at": 168.11997021683672,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1268,
+                "sameFacing": false,
+                "at": 168.11997021683672,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1228,
+                "sameFacing": false,
+                "at": 178.6399683531746,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1088,
+                "sameFacing": false,
+                "at": 178.6399683531746,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1112,
+                "sameFacing": false,
+                "at": 178.6399683531746,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1310,
+                "sameFacing": false,
+                "at": 189.15996648951247,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1141,
+                "sameFacing": false,
+                "at": 189.15996648951247,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1261,
+                "sameFacing": false,
+                "at": 189.15996648951247,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1186,
+                "sameFacing": false,
+                "at": 199.67996462585035,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1149,
+                "sameFacing": false,
+                "at": 199.67996462585035,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1227,
+                "sameFacing": false,
+                "at": 199.67996462585035,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1289,
+                "sameFacing": false,
+                "at": 210.1999627621882,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1096,
+                "sameFacing": false,
+                "at": 210.1999627621882,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              },
+              {
+                "victim": "Dummy",
+                "victimNetId": 3481,
+                "amount": 1179,
+                "sameFacing": false,
+                "at": 210.1999627621882,
+                "skill": "Forest Guardians Aid",
+                "damageType": "Magic",
+                "intent": 1104
+              }
+            ],
+            "completions": [],
+            "intervals": [],
+            "resets": 0,
+            "incoming": [],
+            "attempts": [
+              {
+                "at": 20.123373625283445,
+                "skill": "Forest Guardians Aid",
+                "mana": 717,
+                "energy": 0
+              },
+              {
+                "at": 30.650913825113378,
+                "skill": "Forest Guardians Aid",
+                "mana": 726,
+                "energy": 0
+              },
+              {
+                "at": 41.174395826247164,
+                "skill": "Forest Guardians Aid",
+                "mana": 712,
+                "energy": 0
+              },
+              {
+                "at": 51.703561727607706,
+                "skill": "Forest Guardians Aid",
+                "mana": 721,
+                "energy": 0
+              },
+              {
+                "at": 62.22949162414966,
+                "skill": "Forest Guardians Aid",
+                "mana": 707,
+                "energy": 0
+              },
+              {
+                "at": 72.76607342687075,
+                "skill": "Forest Guardians Aid",
+                "mana": 716,
+                "energy": 0
+              },
+              {
+                "at": 83.28538432539682,
+                "skill": "Forest Guardians Aid",
+                "mana": 702,
+                "energy": 0
+              },
+              {
+                "at": 93.8272700255102,
+                "skill": "Forest Guardians Aid",
+                "mana": 711,
+                "energy": 0
+              },
+              {
+                "at": 104.3474610260771,
+                "skill": "Forest Guardians Aid",
+                "mana": 697,
+                "energy": 0
+              },
+              {
+                "at": 114.86557662981859,
+                "skill": "Forest Guardians Aid",
+                "mana": 706,
+                "energy": 0
+              },
+              {
+                "at": 125.38244032738095,
+                "skill": "Forest Guardians Aid",
+                "mana": 670,
+                "energy": 0
+              },
+              {
+                "at": 135.91147452522677,
+                "skill": "Forest Guardians Aid",
+                "mana": 679,
+                "energy": 0
+              },
+              {
+                "at": 146.4395045280612,
+                "skill": "Forest Guardians Aid",
+                "mana": 643,
+                "energy": 0
+              },
+              {
+                "at": 156.9672661281179,
+                "skill": "Forest Guardians Aid",
+                "mana": 652,
+                "energy": 0
+              },
+              {
+                "at": 167.49448482851474,
+                "skill": "Forest Guardians Aid",
+                "mana": 639,
+                "energy": 0
+              },
+              {
+                "at": 178.01348402777776,
+                "skill": "Forest Guardians Aid",
+                "mana": 625,
+                "energy": 0
+              },
+              {
+                "at": 188.5314112244898,
+                "skill": "Forest Guardians Aid",
+                "mana": 634,
+                "energy": 0
+              },
+              {
+                "at": 199.0604036281179,
+                "skill": "Forest Guardians Aid",
+                "mana": 620,
+                "energy": 0
+              },
+              {
+                "at": 209.58750562641723,
+                "skill": "Forest Guardians Aid",
+                "mana": 629,
+                "energy": 0
+              },
+              {
+                "at": 220.10562962726758,
+                "skill": "Forest Guardians Aid",
+                "mana": 615,
+                "energy": 0
+              }
+            ],
+            "counts": {
+              "attempted": 21,
+              "accepted": 20,
+              "completed": 19,
+              "landed": 57
+            },
+            "fidelity": "perHitAttributed",
+            "fidelityLimit": null,
+            "averageFrameSeconds": 0.011298310986151782,
+            "targetHealthRefills": 20,
+            "playerHealthRefills": 0,
+            "settledTarget": null
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}
