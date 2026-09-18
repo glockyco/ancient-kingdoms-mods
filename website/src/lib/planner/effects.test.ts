@@ -3,6 +3,7 @@ import {
   applyCooldownReduction,
   applyEffect,
   cleanupExpiredEffects,
+  scaleTargetDebuff,
   targetStatsWithEffects,
   type EffectSpec,
   type TimedEffect,
@@ -17,6 +18,8 @@ function spec(overrides: Partial<EffectSpec> = {}): EffectSpec {
     recipient: "target",
     school: "melee",
     decreasesResists: false,
+    debuffPowerAttribute: "strength",
+    meleeDebuff: true,
     bonuses: { defense: -125 },
     damagePercent: 0,
     magicDamagePercent: 0,
@@ -79,6 +82,20 @@ describe("cleanupExpiredEffects", () => {
     const expired = effect({ expiresAt: 30 });
     expect(cleanupExpiredEffects([expired], 29.9).expired).toEqual([]);
     expect(cleanupExpiredEffects([expired], 30).expired).toEqual([expired]);
+  });
+});
+
+describe("scaleTargetDebuff", () => {
+  it("captures half the caster's Strength in a melee defense penalty", () => {
+    const scaled = scaleTargetDebuff(spec(), {
+      strength: 18,
+      constitution: 26,
+      dexterity: 14,
+      intelligence: 11,
+      wisdom: 9,
+      charisma: 9,
+    });
+    expect(scaled.bonuses.defense).toBe(-134);
   });
 });
 

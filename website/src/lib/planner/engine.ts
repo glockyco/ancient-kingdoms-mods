@@ -7,6 +7,7 @@ import {
   applyCooldownReduction,
   applyEffect,
   cleanupExpiredEffects,
+  scaleTargetDebuff,
   targetStatsWithEffects,
   type EffectSpec,
   type TimedEffect,
@@ -824,12 +825,13 @@ class Engine {
       });
       return;
     }
+    const appliedSpec = scaleTargetDebuff(spec, entity.sheet.attributes);
     this.applyEffectTo(this.target.input.id, {
-      spec,
+      spec: appliedSpec,
       sourceId: entity.input.id,
       recipientId: this.target.input.id,
       appliedAt: now,
-      expiresAt: now + spec.duration,
+      expiresAt: now + appliedSpec.duration,
     });
   }
 

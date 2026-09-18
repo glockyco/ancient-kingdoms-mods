@@ -86,6 +86,8 @@ function effect(overrides: Partial<EffectSpec> = {}): EffectSpec {
     recipient: "target",
     school: "melee",
     decreasesResists: false,
+    debuffPowerAttribute: "strength",
+    meleeDebuff: true,
     bonuses: { defense: -100 },
     damagePercent: 0,
     magicDamagePercent: 0,

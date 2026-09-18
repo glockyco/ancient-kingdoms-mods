@@ -1678,6 +1678,15 @@ function effectSpecFromSkill(
       "is_decrease_resists_skill",
       `${path}.is_decrease_resists_skill`,
     ),
+    debuffPowerAttribute:
+      recipient === "self"
+        ? null
+        : school === "melee"
+          ? "strength"
+          : school === "poison" || school === "disease"
+            ? "dexterity"
+            : "intelligence",
+    meleeDebuff: school === "melee",
     bonuses: effects.bonuses,
     damagePercent: effects.damagePercent,
     magicDamagePercent: effects.magicDamagePercent,

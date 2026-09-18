@@ -1,4 +1,5 @@
-import type { CasterBonuses } from "./caster";
+import type { AttributeSet, CasterBonuses } from "./caster";
+import { iround, multiplyF32 } from "./engine-math";
 import { reduceActiveCooldown } from "./timing";
 import type { DebuffSchool, TargetCombatStats } from "./target";
 
@@ -12,6 +13,9 @@ export interface EffectSpec {
   /** Resist school that gates landing on a target; `null` for a self effect. */
   school: DebuffSchool | null;
   decreasesResists: boolean;
+  /** Attribute captured into a target debuff when it lands; null for self effects. */
+  debuffPowerAttribute: keyof AttributeSet | null;
+  meleeDebuff: boolean;
   bonuses: Partial<CasterBonuses>;
   damagePercent: number;
   magicDamagePercent: number;
@@ -73,6 +77,50 @@ export function cleanupExpiredEffects(
     effects: effects.filter((effect) => effect.expiresAt > now),
     expired,
   };
+}
+
+const TARGET_DEBUFF_STATS: ReadonlyArray<
+  keyof Pick<
+    CasterBonuses,
+    | "defense"
+    | "magicResist"
+    | "poisonResist"
+    | "fireResist"
+    | "coldResist"
+    | "diseaseResist"
+  >
+> = [
+  "defense",
+  "magicResist",
+  "poisonResist",
+  "fireResist",
+  "coldResist",
+  "diseaseResist",
+];
+
+/**
+ * Captures the caster's debuff-power attribute into the defensive penalties when the effect lands.
+ * A negative defense bonus uses half Strength for a melee debuff and 40 percent otherwise; every
+ * negative resist bonus uses 40 percent. Positive values add 15 percent.
+ * Sources: server-scripts/BuffSkill.cs:422-453 and server-scripts/Buff.cs:114-230.
+ */
+export function scaleTargetDebuff(
+  spec: EffectSpec,
+  attributes: AttributeSet,
+): EffectSpec {
+  if (spec.recipient !== "target" || spec.debuffPowerAttribute === null)
+    return spec;
+  const power = attributes[spec.debuffPowerAttribute];
+  const bonuses = { ...spec.bonuses };
+  for (const key of TARGET_DEBUFF_STATS) {
+    const base = bonuses[key];
+    if (typeof base !== "number" || base === 0) continue;
+    const coefficient =
+      base > 0 ? 0.15 : key === "defense" && spec.meleeDebuff ? 0.5 : 0.4;
+    const scaled = iround(multiplyF32(power, coefficient));
+    bonuses[key] = base > 0 ? base + scaled : base - scaled;
+  }
+  return { ...spec, bonuses };
 }
 
 /** Applies the defensive bonuses of a target's effects to its base stats. */
