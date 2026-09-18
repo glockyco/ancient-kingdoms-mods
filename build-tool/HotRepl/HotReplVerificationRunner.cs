@@ -223,7 +223,7 @@ internal sealed class HotReplVerificationRunner
         {
             return new(false, ExitCodes.CommandFailed,
                 "The fixture character could not be built: "
-                + (build.Error ?? build.Output?.GetRawText() ?? "no build result"),
+                + (build.Error ?? DescribeBuildFailure(build.Output)),
                 resolvedPath, characters, Stage: "build", Achieved: build.Output);
         }
 
@@ -266,6 +266,7 @@ internal sealed class HotReplVerificationRunner
         {
             ["build"] = fixture.RootElement.GetProperty("build").Clone(),
             ["buildData"] = fixture.RootElement.GetProperty("buildData").Clone(),
+            ["seed"] = fixture.RootElement.GetProperty("execution").GetProperty("seed").Clone(),
         });
     }
 
@@ -327,6 +328,24 @@ internal sealed class HotReplVerificationRunner
            && output.ValueKind == JsonValueKind.Object
             ? output.Clone()
             : null;
+
+    private static string DescribeBuildFailure(JsonElement? output)
+    {
+        if (output is null) return "no build result";
+        var value = output.Value;
+        if (value.ValueKind == JsonValueKind.Object
+            && value.TryGetProperty("steps", out var steps)
+            && steps.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var step in steps.EnumerateArray())
+            {
+                if (IsTrue(step, "ok")) continue;
+                return $"step {Text(step, "name") ?? "(unnamed)"}: "
+                    + (Text(step, "detail") ?? "no detail reported");
+            }
+        }
+        return value.GetRawText();
+    }
 
     private static bool IsTrue(JsonElement element, string property)
         => element.ValueKind == JsonValueKind.Object

@@ -18,6 +18,10 @@ namespace CombatVerification.Dtos
         /// </summary>
         [JsonProperty("buildData", Required = Required.Always)]
         public LogicalBuildData BuildData { get; set; }
+
+        /// <summary>Seed used to reproduce engine random draws during materialization.</summary>
+        [JsonProperty("seed", Required = Required.Always)]
+        public int Seed { get; set; }
     }
 
     /// <summary>One step of the build and what it achieved.</summary>

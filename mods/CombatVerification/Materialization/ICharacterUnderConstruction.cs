@@ -176,6 +176,9 @@ namespace CombatVerification.Materialization
         /// <summary>The price the game itself asks for this archetype at the owner's standing.</summary>
         long HirePrice(string archetype);
 
+        /// <summary>Sets the seed applied immediately before the engine draws a companion race.</summary>
+        void SeedRandom(int seed);
+
         /// <summary>
         /// Hires through the same command the interface sends, including the gender roll and the
         /// generated name the interface supplies. The engine caps how many companions an owner may

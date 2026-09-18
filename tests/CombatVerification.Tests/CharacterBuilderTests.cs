@@ -36,14 +36,16 @@ namespace CombatVerification.Tests
             IReadOnlyList<CompanionBuild>? companions = null,
             IReadOnlyList<string>? learnedBookIds = null,
             IReadOnlyList<ItemQuantity>? consumables = null,
-            IReadOnlyList<ItemQuantity>? ammunition = null)
+            IReadOnlyList<ItemQuantity>? ammunition = null,
+            int seed = 0)
             => CharacterBuilder.Run(
                 character,
                 spec,
                 companions ?? new List<CompanionBuild>(),
                 learnedBookIds ?? new List<string>(),
                 consumables ?? new List<ItemQuantity>(),
-                ammunition ?? new List<ItemQuantity>());
+                ammunition ?? new List<ItemQuantity>(),
+                seed);
 
         private static BuildStep Step(BuildOutcome outcome, string name)
             => outcome.Steps.Single(step => step.Name == name);
@@ -665,7 +667,7 @@ namespace CombatVerification.Tests
             var outcome = Build(character, Spec(), new List<CompanionBuild>
             {
                 Companion("Rogue", race: "Felarii", health: 0.93f, resource: 1.02f, baseCombat: 47),
-            });
+            }, seed: 71);
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             var companion = Assert.Single(character.Companions);
@@ -674,6 +676,7 @@ namespace CombatVerification.Tests
             Assert.Equal(0.93f, companion.HealthMultiplier);
             Assert.Equal(1.02f, companion.ResourceMultiplier);
             Assert.Equal(47, companion.BaseCombat);
+            Assert.Equal(71, character.LastRandomSeed);
             Assert.Equal(1, character.HireCalls);
         }
 

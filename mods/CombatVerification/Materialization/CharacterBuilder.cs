@@ -61,7 +61,8 @@ namespace CombatVerification.Materialization
             IReadOnlyList<CompanionBuild> companions,
             IReadOnlyList<string> learnedBookIds,
             IReadOnlyList<ItemQuantity> consumables,
-            IReadOnlyList<ItemQuantity> ammunition)
+            IReadOnlyList<ItemQuantity> ammunition,
+            int seed)
         {
             var steps = new List<BuildStep>();
             if (spec?.Attributes?.Allocated == null
@@ -107,7 +108,7 @@ namespace CombatVerification.Materialization
                 () => LearnBooks(character, learnedBookIds, steps),
                 () => EquipItems(character, spec, steps),
                 () => GrantSupplies(character, consumables, ammunition, steps),
-                () => HireCompanions(character, companions, steps),
+                () => HireCompanions(character, companions, seed, steps),
             };
 
             foreach (var step in order)
@@ -562,6 +563,7 @@ namespace CombatVerification.Materialization
         private static bool HireCompanions(
             ICharacterUnderConstruction character,
             IReadOnlyList<CompanionBuild> companions,
+            int seed,
             List<BuildStep> steps)
         {
             var requested = companions
@@ -570,14 +572,16 @@ namespace CombatVerification.Materialization
             if (requested.Count == 0)
                 return Pass(steps, "companions", "None declared.");
 
-            foreach (var wanted in requested)
+            for (var hireIndex = 0; hireIndex < requested.Count; hireIndex++)
             {
+                var wanted = requested[hireIndex];
                 if (!character.ArchetypeExists(wanted.ArchetypeId))
                     return Fail(steps, "companions",
                         $"The game offers no companion archetype '{wanted.ArchetypeId}'.");
 
                 var price = character.HirePrice(wanted.ArchetypeId);
 
+                character.SeedRandom(unchecked(seed + hireIndex));
                 var companion = HireOne(character, wanted, price, steps);
                 if (companion == null)
                     return false;

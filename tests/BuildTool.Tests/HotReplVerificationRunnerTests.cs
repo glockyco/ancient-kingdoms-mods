@@ -211,6 +211,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
             Assert.Contains(command, sent);
         Assert.Contains("\"characterName\":\"Verifier\"", sent);
         Assert.Contains("\"class\":\"warrior\"", sent);
+        Assert.Contains("\"seed\":7", sent);
         Assert.True(sent.IndexOf("fixture.validate\"", StringComparison.Ordinal) < sent.IndexOf("fixture.buildCharacter", StringComparison.Ordinal));
     }
 
@@ -243,7 +244,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         EnqueueJob(transport, "enter-1");
         transport.EnqueueServerMessage(
             @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}");
-        EnqueueJob(transport, "build-1", @"{""ok"":false,""steps"":[{""name"":""level"",""ok"":false}]}");
+        EnqueueJob(transport, "build-1", @"{""ok"":false,""steps"":[{""name"":""level"",""ok"":false,""detail"":""stayed at 1""}]}");
         EnqueueQuit(transport);
 
         var result = await new HotReplVerificationRunner(transport, FixtureOptions())
@@ -251,6 +252,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
 
         Assert.False(result.Ok);
         Assert.Equal("build", result.Stage);
+        Assert.Contains("step level: stayed at 1", result.Message);
         Assert.False(result.Achieved!.Value.GetProperty("ok").GetBoolean());
         Assert.Null(result.Observation);
         Assert.DoesNotContain("fixture.observe", string.Join("\n", transport.SentMessages));

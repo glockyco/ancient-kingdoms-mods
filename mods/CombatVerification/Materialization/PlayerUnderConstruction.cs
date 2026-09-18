@@ -28,6 +28,7 @@ namespace CombatVerification.Materialization
         private readonly Player _player;
         private readonly PlayerSkills _skills;
         private readonly PlayerInventory _inventory;
+        private int? _hireSeed;
 
         private PlayerUnderConstruction(
             Player player, PlayerSkills skills, PlayerInventory inventory)
@@ -279,6 +280,8 @@ namespace CombatVerification.Materialization
             return UINpcTrading.singleton.CalculatePurchaseItemPrice(basePrice, _player);
         }
 
+        public void SeedRandom(int seed) => _hireSeed = seed;
+
         public void Hire(string archetype, long price)
         {
             var index = HireIndexOf(archetype);
@@ -292,6 +295,11 @@ namespace CombatVerification.Materialization
             var female = UnityEngine.Random.value > 0.5f;
             var name = GenerateCompanionName(female);
 
+            if (!_hireSeed.HasValue)
+                throw new InvalidOperationException(
+                    "A companion hire needs a seed for the engine's race draw.");
+            UnityEngine.Random.InitState(_hireSeed.Value);
+            _hireSeed = null;
             _player.CmdBuyMercenary(index, price, name, female);
         }
 

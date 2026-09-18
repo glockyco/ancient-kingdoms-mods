@@ -25,7 +25,7 @@ namespace CombatVerification.Commands
         : IControlCommandHandler<BuildCharacterArgs, BuildCharacterResult>
     {
         public string Name => "fixture.buildCharacter";
-        public int Version => 3;
+        public int Version => 4;
         public ControlCommandKind Kind => ControlCommandKind.Job;
         public bool MutatesState => true;
 
@@ -80,7 +80,8 @@ namespace CombatVerification.Commands
                     buildData.Companions,
                     buildData.LearnedBookIds,
                     buildData.Consumables,
-                    buildData.Ammunition);
+                    buildData.Ammunition,
+                    args.Seed);
             }
             catch (Exception exception)
             {

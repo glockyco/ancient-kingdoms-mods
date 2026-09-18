@@ -441,6 +441,10 @@ namespace CombatVerification.Tests
 
         public long HirePrice(string archetype) => HirePriceEach;
 
+        public int? LastRandomSeed { get; private set; }
+
+        public void SeedRandom(int seed) => LastRandomSeed = seed;
+
         public void Hire(string archetype, long price)
         {
             HireCalls++;
