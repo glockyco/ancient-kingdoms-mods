@@ -221,7 +221,7 @@ function requirePositive(value: number, path: string): number {
 /**
  * Builds the stat sheet for one newly hired or captured mercenary. The base combat value deliberately
  * excludes the level-up accumulation that disappears on reload.
- * Sources: server-scripts/Player.cs:9744-9839 and server-scripts/Player.cs:9971-9993.
+ * Sources: server-scripts/Player.cs:9969-9993 and server-scripts/Player.cs:9994-10035.
  */
 export function buildCompanionCombatState(
   input: CompanionStateInput,

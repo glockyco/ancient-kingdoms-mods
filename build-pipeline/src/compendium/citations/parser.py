@@ -10,7 +10,7 @@ from pathlib import Path
 CITATION_EXTENSIONS = frozenset({".ts", ".js", ".svelte", ".py", ".sql", ".cs"})
 _MAX_CONTINUATIONS = 2
 
-_SOURCE_RE = re.compile(r"[Ss]ource:\s*server-scripts")
+_SOURCE_RE = re.compile(r"[Ss]ources?:\s*server-scripts")
 _FILE_RE = re.compile(
     r"(?:server-scripts(?:-[0-9][0-9.]*)?/)?"
     r"((?:[A-Za-z0-9_.]+/)*[A-Z][A-Za-z0-9_]*\.cs)"
@@ -143,11 +143,13 @@ def parse_file(path: Path, text: str) -> list[Reference]:
             continue
 
         end = index + 1
-        block_lines = [lines[index][source_match.start() + 7 :]]
+        # Keep only the citation side of the introducer, so a plural "Sources:" reads the same.
+        body_start = lines[index].index(":", source_match.start()) + 1
+        block_lines = [lines[index][body_start:]]
         for _ in range(_MAX_CONTINUATIONS):
             if (
                 end >= len(lines)
-                or "Source:" in lines[end]
+                or _SOURCE_RE.search(lines[end]) is not None
                 or not _is_continuation(lines[end])
             ):
                 break
@@ -166,7 +168,7 @@ def parse_file(path: Path, text: str) -> list[Reference]:
                         physical_line += locator_line
                         col = offset - block.rfind("\n", 0, offset) - 1
                     else:
-                        col = source_match.start() + 7 + offset
+                        col = body_start + offset
                 else:
                     col = -1
             else:

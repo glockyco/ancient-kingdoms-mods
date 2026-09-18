@@ -286,7 +286,7 @@ export type ActionGateFailureCode =
 
 /**
  * Applies the exported preconditions that the engine checks before a cast.
- * Sources: server-scripts/ScriptableSkill.cs:181-239 and server-scripts/PlayerSkills.cs:126-138.
+ * Sources: server-scripts/ScriptableSkill.cs:190-231 and server-scripts/PlayerSkills.cs:1701-1705.
  */
 export function actionGateRefusal(
   skill: ActionGateSkill,
