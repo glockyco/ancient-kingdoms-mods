@@ -15,8 +15,8 @@ namespace CombatVerification.Probes
     /// Drives one measurement window: the player casts the first listed skill that is ready and
     /// affordable whenever it is idle, the game's own follow-up loop fills the gaps with the default
     /// attack, and every hit, completion, and incoming blow is recorded against the server clock.
-    /// The window opens at the first completed action, so it starts with the default attack on its
-    /// refractory period and the approach walk outside it.
+    /// The window opens when the warm-up attack enters its refractory period. Its remaining cast or
+    /// projectile travel can therefore finish inside the window, while the approach walk stays out.
     /// </summary>
     /// <remarks>
     /// When no listed skill is ready and affordable, the default attack is armed instead, as the
@@ -135,7 +135,7 @@ namespace CombatVerification.Probes
             foreach (var index in _priority)
             {
                 var skill = _skills.skills[index];
-                if (skill.data.learnDefault && _player.NetworkcontinueFollowUpSkill >= 0)
+                if (index == _fallback && _player.NetworkcontinueFollowUpSkill >= 0)
                     continue;
                 if (!skill.IsReady()) continue;
                 if (_player.mana.current < skill.manaCosts || _player.energy.current < skill.energyCosts)
@@ -204,11 +204,10 @@ namespace CombatVerification.Probes
 
         private IEnumerator Run(Outcome outcome)
         {
-            // Warm-up: arm the default attack and wait for its completion. The window opens at
-            // that completion, so the approach walk and the first cast stay outside it and the
-            // default attack starts the window on its refractory period, which is the initial
-            // state the engine's scenario declares. The listed skills are armed inside the window.
-            // A character without a default attack arms its first ready listed skill instead.
+            // Warm-up: arm the default attack and wait for its first refractory boundary. The
+            // approach walk stays outside the window, while the remaining cast or projectile travel
+            // can finish inside it. The listed skills are armed inside the window. A character
+            // without a default attack arms its first ready listed skill instead.
             var warmup = new ActionTimeline();
             var armed = false;
             var openedAt = 0.0;
@@ -266,6 +265,13 @@ namespace CombatVerification.Probes
                 yield break;
             }
             var meters = new CompanionMeters(pets);
+            foreach (var pet in pets)
+            {
+                pet.health.current = pet.health.max;
+                if (pet.mana != null) pet.mana.current = pet.mana.max;
+                if (pet.energy != null) pet.energy.current = pet.energy.max;
+                pet.CmdAttackTarget(_target.netIdentity);
+            }
 
             var listedNames = new HashSet<string>(StringComparer.Ordinal);
             foreach (var index in _priority)
@@ -395,9 +401,15 @@ namespace CombatVerification.Probes
                 var measured = events.Measured(timeline, 0, openedAt, closedAt);
                 events.Dispose();
                 var compactWindow = _stopAfterListedHits > 0 || _stopAfterListedEffect;
+                // A projectile from the warm-up action can arrive after the boundary. Damage from
+                // that pre-window action is not part of the rotation, so keep hits only after the
+                // first action that completed inside the window.
+                var firstWindowCompletion = timeline.Completions.Count > 0
+                    ? timeline.Completions[0]
+                    : openedAt;
                 var retainedHits = compactWindow
                     ? measured.Hits.Where(hit => hit.Skill != null && listedNames.Contains(hit.Skill)).ToList()
-                    : measured.Hits;
+                    : measured.Hits.Where(hit => hit.At >= firstWindowCompletion).ToList();
                 var retainedAttempts = compactWindow
                     ? new List<ActionAttempt>()
                     : attempts;

@@ -6,7 +6,7 @@ import {
 } from "../catalog-resolver";
 import { SCENARIO_SCHEMA_VERSION } from "../scenario";
 import type { SimulationResult } from "../simulate";
-import { playerSkillRefractory } from "../timing";
+import { effectiveCastTime, playerSkillRefractory } from "../timing";
 import type { FixtureRecord, ObservationRecord } from "./corpus";
 
 /** The replicate count every fixture comparison uses. See docs/combat-model/evidence.md. */
@@ -217,10 +217,18 @@ export function simulateFixtureWindow(
   const maximum = resourceKind === "mana" ? sheet.mana : sheet.energy;
   const playerId = resolved.player.entityId;
   const activeEffects = observation.observation.activeEffects ?? [];
-  // The window opens at a completed action, so the default attack starts on its refractory period.
+  // The harness opens the window when the warm-up attack enters its refractory period. The attack
+  // still occupies the caster until its cast completes, so listed actions cannot start immediately.
   const defaultAttack = resolved.player.actions.find(
     (action) => action.defaultAttack,
   );
+  const warmupCastSeconds = defaultAttack
+    ? effectiveCastTime(
+        defaultAttack.castTime,
+        defaultAttack.isSpell,
+        sheet.spellHaste,
+      )
+    : 0;
   const initialCooldowns = defaultAttack
     ? [
         {
@@ -232,6 +240,13 @@ export function simulateFixtureWindow(
             sheet.haste,
           ),
         },
+        ...resolved.player.actions
+          .filter((action) => action.id !== defaultAttack.id)
+          .map((action) => ({
+            entityId: playerId,
+            skillId: action.id,
+            remainingSeconds: warmupCastSeconds,
+          })),
       ]
     : [];
   const scenario = {

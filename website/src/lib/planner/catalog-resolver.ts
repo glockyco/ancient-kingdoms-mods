@@ -835,19 +835,32 @@ function resolvePlayer(
         }) satisfies PassiveDamageBonus,
     ),
   };
-  const actions = skillEffectsById
-    .filter(({ skill }) => isCastable(skill))
-    .map(({ skill, level }) =>
-      engineAction(skill, level, resourceKind, catalog, {
-        defaultAttack:
-          requiredBoolean(skill, "base_skill", "skill.base_skill") &&
-          requiredBoolean(skill, "learn_default", "skill.learn_default"),
-      }),
-    );
+  const castableSkills = skillEffectsById.filter(({ skill }) =>
+    isCastable(skill),
+  );
+  const defaultAttackIndex = castableSkills.findIndex(({ skill }) =>
+    requiredBoolean(
+      skill,
+      "followup_default_attack",
+      "skill.followup_default_attack",
+    ),
+  );
+  const actions = castableSkills.map(({ skill, level }, index) =>
+    engineAction(skill, level, resourceKind, catalog, {
+      defaultAttack: index === defaultAttackIndex,
+    }),
+  );
   const skills = skillEffectsById.map(({ skill, level }) =>
     resolvedSkill(skill, level, catalog),
   );
-  const mainHand = equipment.weapons.find((weapon) => weapon.slot === 12);
+  const defaultAttack = actions.find((action) => action.defaultAttack);
+  const defaultWeaponSlot =
+    classId === "ranger" && defaultAttack?.requiredWeaponCategory === "Bow"
+      ? 13
+      : 12;
+  const defaultWeapon = equipment.weapons.find(
+    (weapon) => weapon.slot === defaultWeaponSlot,
+  );
 
   return {
     player: {
@@ -858,15 +871,16 @@ function resolvePlayer(
       caster,
       weapons: equipment.weapons,
       weaponDelay:
-        mainHand?.durability && mainHand.amount > 0
+        defaultWeapon?.durability && defaultWeapon.amount > 0
           ? requiredNumber(
               requireIdentity(
                 catalog.equipment,
-                player.equipment.find((item) => item.slot === 12)?.itemId ?? "",
-                "main-hand weapon",
+                player.equipment.find((item) => item.slot === defaultWeaponSlot)
+                  ?.itemId ?? "",
+                "default-attack weapon",
               ),
               "weapon_delay",
-              "main-hand weapon.weapon_delay",
+              "default-attack weapon.weapon_delay",
             )
           : 0,
       actions,

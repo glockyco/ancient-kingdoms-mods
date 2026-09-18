@@ -264,6 +264,7 @@ function catalog() {
       skill("melee_attack", "target_damage", {
         learn_default: true,
         base_skill: true,
+        followup_default_attack: true,
         damage: { base_value: 1, bonus_per_level: 0 },
         required_weapon_category: "Weapon",
       }),

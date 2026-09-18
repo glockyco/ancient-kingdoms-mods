@@ -85,7 +85,8 @@ The tiers test different contracts:
   completion occur on frame boundaries.
 - Tier D compares observed and engine damage samples with a two-sample Welch test at significance
   level 0.01. One complete timed window is one sample. Player and companion damage remain separate
-  quantities.
+  quantities. Player damage excludes a late projectile from the warm-up action because that action
+  began before the rotation window.
 
 Each stochastic fixture declares a minimum sample count. The protocol does not correct across the
 fixture corpus because every fixture is reviewed independently. Never widen a tolerance after a

@@ -120,20 +120,42 @@ namespace CombatVerification.Commands
             return cycle * Math.Ceiling(minimumSamples * 1.5) + 10.0;
         }
 
-        private static void RestoreInitialState(Player player, HashSet<string> carriedEffects)
+        private static void RestoreSkillState(Skills ownerSkills, HashSet<string> carriedEffects)
         {
-            var skills = player.skills.skills;
+            var skills = ownerSkills.skills;
             for (var i = 0; i < skills.Count; i++)
             {
                 var skill = skills[i];
                 skill.cooldownEnd = 0;
                 skills[i] = skill;
             }
-            var buffs = player.skills.buffs;
+            var buffs = ownerSkills.buffs;
             for (var i = buffs.Count - 1; i >= 0; i--)
             {
-                if (!carriedEffects.Contains(buffs[i].name))
+                if (carriedEffects == null || !carriedEffects.Contains(buffs[i].name))
                     buffs.RemoveAt(i);
+            }
+        }
+
+        private static void RestoreInitialState(
+            Player player, Monster target, HashSet<string> carriedEffects)
+        {
+            RestoreSkillState(player.skills, carriedEffects);
+            RestoreSkillState(target.skills, null);
+            foreach (var pet in new[]
+            {
+                player.activeMercenary, player.activeMercenary2,
+                player.activeMercenary3, player.activeMercenary4,
+            })
+            {
+                if (pet == null) continue;
+                pet.skills.CancelCast();
+                pet.skills.NetworkcurrentSkill = -1;
+                pet.Networktarget = null;
+                pet.health.current = pet.health.max;
+                if (pet.mana != null) pet.mana.current = pet.mana.max;
+                if (pet.energy != null) pet.energy.current = pet.energy.max;
+                RestoreSkillState(pet.skills, null);
             }
         }
 
@@ -305,8 +327,10 @@ namespace CombatVerification.Commands
                 // the follow-up loop stops, every cooldown clears, and any effect the window added
                 // is removed. The effects the character carried before the first window stay.
                 player.CmdCancelAction();
-                RestoreInitialState(player, carriedEffects);
-                for (var frame = 0; frame < 120; frame++) yield return null;
+                RestoreInitialState(player, target, carriedEffects);
+                // PetSkills samples its next special-action time up to four seconds ahead. Wait past
+                // that private timer so the next window starts from the engine model's ready state.
+                for (var frame = 0; frame < 300; frame++) yield return null;
             }
 
             result.Fidelity = fidelity;
