@@ -347,13 +347,16 @@ namespace CombatVerification.Tests
             });
         }
 
-        public int FindInInventory(string itemId, string augmentId)
+        public int FindInInventory(
+            string itemId, string augmentId, int? amount = null, int? durability = null)
         {
             var wanted = string.IsNullOrWhiteSpace(augmentId) ? null : augmentId;
             for (var index = 0; index < _inventory.Count; index++)
             {
                 var held = _inventory[index];
                 if (string.Equals(held.ItemId, itemId, StringComparison.OrdinalIgnoreCase)
+                    && (!amount.HasValue || held.Amount == amount.Value)
+                    && (!durability.HasValue || held.Durability == durability.Value)
                     && string.Equals(held.AugmentId ?? "", wanted ?? "",
                         StringComparison.OrdinalIgnoreCase))
                     return index;

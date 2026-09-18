@@ -838,12 +838,14 @@ function resolvePlayer(
   const castableSkills = skillEffectsById.filter(({ skill }) =>
     isCastable(skill),
   );
-  const defaultAttackIndex = castableSkills.findIndex(({ skill }) =>
-    requiredBoolean(
-      skill,
-      "followup_default_attack",
-      "skill.followup_default_attack",
-    ),
+  const defaultAttackIndex = castableSkills.findIndex(
+    ({ skill }) =>
+      requiredBoolean(skill, "base_skill", "skill.base_skill") &&
+      requiredBoolean(
+        skill,
+        "followup_default_attack",
+        "skill.followup_default_attack",
+      ),
   );
   const actions = castableSkills.map(({ skill, level }, index) =>
     engineAction(skill, level, resourceKind, catalog, {

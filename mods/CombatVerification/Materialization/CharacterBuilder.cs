@@ -498,7 +498,8 @@ namespace CombatVerification.Materialization
 
                 character.GrantItem(entry.ItemId, entry.Amount, durability, entry.AugmentId);
 
-                var inventoryIndex = character.FindInInventory(entry.ItemId, entry.AugmentId);
+                var inventoryIndex = character.FindInInventory(
+                    entry.ItemId, entry.AugmentId, entry.Amount, durability);
                 if (inventoryIndex < 0)
                     return Fail(steps, "equipment",
                         $"'{entry.ItemId}' did not reach the inventory. The engine refuses a grant "
@@ -739,7 +740,8 @@ namespace CombatVerification.Materialization
 
                 character.GrantItem(entry.ItemId, entry.Amount, durability, entry.AugmentId);
 
-                var inventoryIndex = character.FindInInventory(entry.ItemId, entry.AugmentId);
+                var inventoryIndex = character.FindInInventory(
+                    entry.ItemId, entry.AugmentId, entry.Amount, durability);
                 if (inventoryIndex < 0)
                     return Fail(steps, "companions",
                         $"'{entry.ItemId}' did not reach the owner's inventory, which is where a "

@@ -594,7 +594,8 @@ class Engine {
   private gate(entity: EntityState, action: EngineAction): ActionGate {
     const cooldownReady = entity.cooldownReadyAt.get(action.id) ?? 0;
     const readyAt =
-      action.defaultAttack && entity.input.kind === "player"
+      (action.defaultAttack || action.followupDefaultAttack) &&
+      entity.input.kind === "player"
         ? Math.max(cooldownReady, entity.nextDefaultAttackAt)
         : cooldownReady;
     const refusal = action.damage

@@ -799,6 +799,23 @@ namespace CombatVerification.Tests
         }
 
         [Fact]
+        public void ACompanionEquipsTheGrantedCopyWhenStarterGearHasTheSameIdentity()
+        {
+            var character = Equipper().Wearing(2, "plate_chest", durability: 10);
+            var outcome = Build(character, Spec(), new List<CompanionBuild>
+            {
+                Companion("Warrior", equipment: new List<EquippedItem>
+                {
+                    Entry(2, "plate_chest", durability: 80),
+                }),
+            });
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            var companion = Assert.Single(character.Companions);
+            Assert.Equal(80, companion.Equipment.At(2).Durability);
+        }
+
+        [Fact]
         public void ACompanionEquipTheEngineIgnoresIsCaughtByReadingTheSlot()
         {
             var character = Equipper();

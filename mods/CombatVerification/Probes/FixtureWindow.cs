@@ -112,15 +112,16 @@ namespace CombatVerification.Probes
         }
 
         /// <summary>
-        /// The skill the engine continues with between casts: the first held skill flagged as a
-        /// follow-up default attack. -1 when the character holds none.
+        /// The skill the engine continues with between casts: the first held base damage skill
+        /// flagged as a follow-up default attack. -1 when the character holds none.
         /// </summary>
         private static int DefaultAttackIndex(PlayerSkills skills)
         {
             for (var i = 0; i < skills.skills.Count; i++)
             {
                 var skill = skills.skills[i];
-                if (skill.data.followupDefaultAttack && skill.level > 0)
+                if (skill.data is DamageSkill { baseSkill: true }
+                    && skill.data.followupDefaultAttack && skill.level > 0)
                     return i;
             }
             return -1;
@@ -265,6 +266,7 @@ namespace CombatVerification.Probes
                 yield break;
             }
             var meters = new CompanionMeters(pets);
+            var companionBuffCapabilities = pets.Select(pet => pet.hasBuffs).ToArray();
             foreach (var pet in pets)
             {
                 pet.health.current = pet.health.max;
@@ -297,6 +299,11 @@ namespace CombatVerification.Probes
 
             try
             {
+                // Tier D verifies PetSkills.NextAttackSkill. Autonomous buff checks would apply a
+                // second policy the planner does not claim to model and would change attack time.
+                foreach (var pet in pets)
+                    pet.hasBuffs = false;
+
                 while (closedAt - openedAt < _seconds)
                 {
                     yield return null;
@@ -398,6 +405,9 @@ namespace CombatVerification.Probes
             }
             finally
             {
+                for (var i = 0; i < pets.Count; i++)
+                    pets[i].hasBuffs = companionBuffCapabilities[i];
+
                 var measured = events.Measured(timeline, 0, openedAt, closedAt);
                 events.Dispose();
                 var compactWindow = _stopAfterListedHits > 0 || _stopAfterListedEffect;

@@ -257,10 +257,15 @@ function catalog() {
         },
       ],
       level_budgets: [
-        { level: 2, attribute_points: 1, normal_skill_points: 1 },
+        { level: 2, attribute_points: 1, normal_skill_points: 2 },
       ],
     },
     skills: [
+      skill("alternate_attack", "target_damage", {
+        base_skill: false,
+        followup_default_attack: true,
+        damage: { base_value: 2, bonus_per_level: 0 },
+      }),
       skill("melee_attack", "target_damage", {
         learn_default: true,
         base_skill: true,
@@ -335,6 +340,12 @@ function logicalBuild() {
         derivedObserved: attributes({ strength: 99 }),
       },
       skills: [
+        {
+          skillId: "alternate_attack",
+          skillName: "alternate_attack",
+          level: 1,
+          pool: "normal",
+        },
         {
           skillId: "training",
           skillName: "training",
@@ -433,6 +444,7 @@ describe("catalog logical-build resolver", () => {
     expect(
       resolved.player.skills.map((entry) => [entry.id, entry.level]),
     ).toEqual([
+      ["alternate_attack", 1],
       ["melee_attack", 1],
       ["training", 1],
     ]);
@@ -444,8 +456,14 @@ describe("catalog logical-build resolver", () => {
     expect(resolved.ammunition[0]).toMatchObject({ quantity: 10 });
     expect(sheet.attributes.strength).toBe(7);
     expect(sheet.damage).toBe(13);
-    expect(resolved.player.actions.map((action) => action.id)).toEqual([
-      "melee_attack",
+    expect(
+      resolved.player.actions.map((action) => [
+        action.id,
+        action.defaultAttack,
+      ]),
+    ).toEqual([
+      ["alternate_attack", false],
+      ["melee_attack", true],
     ]);
     // A level 2 owner gives its mercenary level 0 skills, so it has nothing to cast.
     expect(resolved.companions[0].skills).toEqual([
@@ -461,8 +479,10 @@ describe("catalog logical-build resolver", () => {
       "player",
       "mercenary",
     ]);
-    expect(result.entities[0].abilities[0].actionId).toBe("melee_attack");
-    expect(result.entities[0].abilities[0].cast.mean).toBeGreaterThan(0);
+    const melee = result.entities[0].abilities.find(
+      (ability) => ability.actionId === "melee_attack",
+    );
+    expect(melee?.cast.mean).toBeGreaterThan(0);
     expect(result.entities[1].damage.mean).toBe(0);
     expect(result.identities.replicates).toBe(4);
   });

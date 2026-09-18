@@ -653,6 +653,33 @@ describe("policies", () => {
     expect(completions.map((event) => event.at)).toEqual([0.5, 2]);
   });
 
+  it("applies the player refractory period to every follow-up attack", () => {
+    const result = runReplicate(
+      engineInput({
+        horizon: 3,
+        entities: [
+          entity({
+            actions: [
+              action({ id: "auto", defaultAttack: true }),
+              action({
+                id: "alternate",
+                castTime: 0.5,
+                followupDefaultAttack: true,
+              }),
+            ],
+            policy: priorityPolicy(["alternate"]),
+          }),
+        ],
+      }),
+      createRandomSource(1),
+    );
+
+    const completions = events(result.trace, "cast_complete").filter(
+      (event) => event.actionId === "alternate",
+    );
+    expect(completions.map((event) => event.at)).toEqual([0.5, 1.75, 3]);
+  });
+
   it("samples the companion special timer from two to four seconds", () => {
     const gaps: number[] = [];
     for (let index = 0; index < 1_000; index += 1) {

@@ -155,10 +155,11 @@ namespace CombatVerification.Materialization
         void GrantItem(string itemId, int amount, int durability, string augmentId);
 
         /// <summary>
-        /// Where the inventory holds this item, or -1 when it holds none. The grant reports
-        /// nothing about where it landed, so the position is read back.
+        /// Where the inventory holds this exact item state, or -1 when it holds none. Null amount
+        /// or durability accepts any value. The grant reports nothing about where it landed, so the
+        /// position is read back.
         /// </summary>
-        int FindInInventory(string itemId, string augmentId);
+        int FindInInventory(string itemId, string augmentId, int? amount = null, int? durability = null);
 
         // --- companions ---
 

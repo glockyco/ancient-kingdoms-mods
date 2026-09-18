@@ -245,7 +245,16 @@ export function simulateFixtureWindow(
           .map((action) => ({
             entityId: playerId,
             skillId: action.id,
-            remainingSeconds: warmupCastSeconds,
+            remainingSeconds: Math.max(
+              warmupCastSeconds,
+              action.followupDefaultAttack
+                ? playerSkillRefractory(
+                    defaultAttack,
+                    resolved.player.weaponDelay,
+                    sheet.haste,
+                  )
+                : 0,
+            ),
           })),
       ]
     : [];

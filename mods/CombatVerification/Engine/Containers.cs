@@ -52,7 +52,9 @@ namespace CombatVerification.Engine
         /// is part of the identity, because one item with an augment and the same item without are
         /// different pieces of equipment.
         /// </summary>
-        public static int IndexOf(ItemContainer container, string itemId, string augmentId)
+        public static int IndexOf(
+            ItemContainer container, string itemId, string augmentId,
+            int? amount = null, int? durability = null)
         {
             var wanted = GameIds.Sanitize(itemId);
             var wantedAugment = string.IsNullOrWhiteSpace(augmentId)
@@ -62,6 +64,10 @@ namespace CombatVerification.Engine
             foreach (var slot in Read(container))
             {
                 if (!slot.Occupied || slot.ItemId != wanted)
+                    continue;
+                if (amount.HasValue && slot.Amount != amount.Value)
+                    continue;
+                if (durability.HasValue && slot.Durability != durability.Value)
                     continue;
 
                 if (string.Equals(slot.AugmentId ?? "", wantedAugment ?? "",

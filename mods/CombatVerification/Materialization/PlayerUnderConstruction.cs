@@ -215,8 +215,9 @@ namespace CombatVerification.Materialization
             _inventory.Add(new Item(asset), amount, durability, augment == null ? null : augment.nameItem);
         }
 
-        public int FindInInventory(string itemId, string augmentId)
-            => Containers.IndexOf(_inventory, itemId, augmentId);
+        public int FindInInventory(
+            string itemId, string augmentId, int? amount = null, int? durability = null)
+            => Containers.IndexOf(_inventory, itemId, augmentId, amount, durability);
 
         private static ScriptableItem Required(string itemId)
         {

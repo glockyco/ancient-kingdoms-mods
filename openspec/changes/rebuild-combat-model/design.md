@@ -131,7 +131,9 @@ affordable, and the default attack when none is, as the game's own client does f
 rage or mana skill. Between the windows of one fixture the harness cancels the follow-up loop,
 clears every cooldown, and removes every effect the window added, so each window repeats the
 initial state the engine runs from. A companion's damage per window is the movement of its own
-damage meter. The player's damage is the sum of hits from actions begun inside the window; a late
+damage meter. The harness suppresses autonomous support-buff checks during the window so the
+measurement isolates the declared `PetSkills.NextAttackSkill` policy while retaining the healer
+resource reserve. The player's damage is the sum of hits from actions begun inside the window; a late
 projectile from the warm-up action is excluded. A tier B window is sized from the
 engine's cooldown of the slowest listed skill times the declared minimum, so a fixture for a
 long-cooldown skill declares a small minimum. The game
