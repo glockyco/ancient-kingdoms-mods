@@ -63,14 +63,22 @@ Set `COMPENDIUM_VERSION` in `website/src/lib/constants/version.ts` last. The liv
 
 The ledger version and `COMPENDIUM_VERSION` describe different things. The ledger names the snapshot the anchors describe, and `COMPENDIUM_VERSION` names the published data. The two differ from phase 2 until this step.
 
-Run focused tests as each concern lands. Before the release gate, run the citation check and the model verification against a new scratch database:
+Run focused tests as each concern lands. Before the release gate, reconcile citations and record the complete combat fixture matrix:
 
 ```bash
 uv run compendium citations check
-dotnet run --project build-tool -- verify --fresh-scratch --json
+dotnet run --project build-tool verify
 ```
 
-The verification command must accept the committed fixture matrix, preserve the player save, and report the current game build. A reused scratch database does not satisfy this update check.
+The verification command must preserve the player save, report the current game build, and write a current observation for every committed fixture. Each fixture runs in a fresh scratch database. Scratch reuse is not an option.
+
+Then run the comparison from `website/`:
+
+```bash
+pnpm test --run src/lib/planner/verification/verification.test.ts
+```
+
+Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from `server-scripts/SNAPSHOT.toml`. A stale or missing observation does not count as current evidence. Do not complete the version update while any fixture is stale, missing, failed, or inconclusive. The coverage report must also credit every declared handler, damage school, supported class, and companion archetype.
 
 Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 
