@@ -58,7 +58,7 @@
 ## 9. Evidence and closure
 
 - [x] 9.1 Write `docs/combat-model/evidence.md` from the measured tables of the two superseded designs, each with its recorded game build and scope, and add the replicate measurement. Verify every cited game build and assembly hash in the file matches the source design text.
-- [ ] 9.2 Delete `openspec/changes/add-gear-and-rotation-planner` and `openspec/changes/add-combat-verification-harness`. Verify `openspec list` shows neither.
+- [x] 9.2 Delete `openspec/changes/add-gear-and-rotation-planner` and `openspec/changes/add-combat-verification-harness`. Verify `openspec list` shows neither.
 - [x] 9.3 Write `docs/combat-model/verification.md` with the run procedure, the isolation guarantee, the observation format, the protocol, and how to read stale and inconclusive results. Verify `scripts/check-agent-docs.sh` passes.
 - [x] 9.4 Add the current-observation requirement to the game-version update procedure in `skill://update-game-version`. Verify the procedure names the verify command and the stale check.
 - [x] 9.5 Add or confirm a citation for every constant the engine applies. Verify the citation ledger check passes.
