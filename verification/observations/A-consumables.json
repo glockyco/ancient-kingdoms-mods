@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "fixture": {
-    "name": "A-class-warrior",
+    "name": "A-consumables",
     "tier": "A",
-    "coverage": "A.class.Warrior",
-    "path": "verification/fixtures/a/A-class-warrior.json",
-    "contentSha256": "db163c9f068eb6327347b97c08e5efce4257f3e36f408bbf4878b2ecef375265"
+    "coverage": "A.consumables",
+    "path": "verification/fixtures/a/A-consumables.json",
+    "contentSha256": "28c7bc2db3f7cb56fb528248f0ffd01a38e388a1bc9db101a9afab22ec9c4b17"
   },
   "game": {
     "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
     "gameVersion": "0.9.32.4",
     "steamBuildId": "25326396"
   },
-  "recordedAt": "2026-09-18T05:42:38.701796+00:00",
+  "recordedAt": "2026-09-18T05:44:26.476482+00:00",
   "achieved": {
     "build": {
       "serializedSchemaVersion": 3,
@@ -25,7 +25,7 @@
     },
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/a/A-class-warrior.json"
+      "source": "verification/fixtures/a/A-consumables.json"
     },
     "ok": true,
     "steps": [
@@ -82,7 +82,7 @@
   },
   "observation": {
     "tier": "A",
-    "seed": 1124023600,
+    "seed": 902793843,
     "gameVersion": "0.9.32.4",
     "fidelity": "state",
     "measurements": [
@@ -148,7 +148,7 @@
                 "name": "Rest",
                 "category": "",
                 "level": 1,
-                "remaining": 0.9878495,
+                "remaining": 0.9769075,
                 "expired": false
               }
             ]

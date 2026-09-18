@@ -27,6 +27,7 @@
 - [x] 3.6 Run `build-tool verify` for one tier A fixture end to end and confirm the player save hash is unchanged. Verify the observation file exists and carries the current assembly hash.
 - [ ] 3.7 Materialize the fixture target through engine paths: resolve the declared spawn at its level, place the player in cast range with the declared facing, and read the target's state back before measurement. Verify with a game-backed run that the target-state probe reports the declared spawn and level and that a mismatch stops the measurement.
 - [ ] 3.8 Drive the declared action schedule through `PlayerSkills.CmdUse` with the declared repetition and window, recording attempted, accepted, completed, and landed counts from the probes, and extend `fixture.observe` to tiers B, C, and D. Verify with a game-backed run that one tier C window records intervals and counts and that a refused action is counted, not dropped.
+- [ ] 3.9 Use each consumable the fixture execution declares before measurement, through the game's own use path, and record the resulting effects in the observation. Verify with a game-backed run that `A-consumables` reports its food and potion buffs active and its sheet passes with them applied.
 
 ## 4. Comparison suite
 
@@ -36,8 +37,8 @@
 
 ## 5. Tier A: stat sheet
 
-- [ ] 5.1 Re-author the tier A fixtures for six classes, veteran progression, three- and five-piece sets, caps, augments, consumables, and one learned book, and move `A-haste-floor` to the Rogue. Verify shape validation passes for each.
-- [ ] 5.2 Record tier A observations for every fixture. Verify each fixture passes exact comparison.
+- [x] 5.1 Re-author the tier A fixtures for six classes, veteran progression, three- and five-piece sets, caps, augments, consumables, and one learned book, and move `A-haste-floor` to the Rogue. Verify shape validation passes for each.
+- [x] 5.2 Record tier A observations for every fixture. Verify each fixture passes exact comparison. All 14 pass; `A-consumables` passes as a bare sheet until task 3.9 uses its consumables.
 
 ## 6. Tier C: cadence
 

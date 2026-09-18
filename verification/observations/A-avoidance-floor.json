@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "A-avoidance-floor",
+    "tier": "A",
+    "coverage": "A.avoidance.floor",
+    "path": "verification/fixtures/a/A-avoidance-floor.json",
+    "contentSha256": "23f6645e20bcfdd32a3b98e4bbe60b66c4858a9ae97c7301f18f8ddc999f8e03"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T05:37:59.493354+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-avoidance-floor.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": "dexterity \u002B249"
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "None requested."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=14, constitution=17, dexterity=276, intelligence=9, wisdom=11, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 6 items, cleared 1 slots the fixture does not declare."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 0,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 41,
+      "constitution": 32,
+      "dexterity": 306,
+      "intelligence": 9,
+      "wisdom": 11,
+      "charisma": 29
+    }
+  },
+  "observation": {
+    "tier": "A",
+    "seed": 915771334,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "state",
+    "measurements": [
+      {
+        "quantity": "statSheet",
+        "unit": "stat",
+        "samplingUnit": "reading",
+        "windowSeconds": null,
+        "samples": [
+          {
+            "sheet": {
+              "character": {
+                "kind": "player",
+                "archetype": "Ranger",
+                "race": "Human",
+                "level": 50,
+                "attributes": {
+                  "strength": 41,
+                  "constitution": 32,
+                  "dexterity": 306,
+                  "charisma": 29,
+                  "intelligence": 9,
+                  "wisdom": 11
+                },
+                "learnedBookIds": [],
+                "combat": {
+                  "accuracy": 0.4930000305175781,
+                  "blockChance": 0.06810000538825989,
+                  "coldResist": 0.0,
+                  "criticalChance": 0.1518000066280365,
+                  "criticalResist": 0.15300001204013824,
+                  "damage": 176.0,
+                  "defense": 85.0,
+                  "diseaseResist": 50.0,
+                  "fearResistChance": 0.0,
+                  "fireResist": 0.0,
+                  "haste": 0.05999999865889549,
+                  "magicDamage": 14.0,
+                  "magicResist": 25.0,
+                  "poisonResist": 33.0,
+                  "spellHaste": 0.0
+                },
+                "resources": {
+                  "healthMax": 2395,
+                  "healthCurrent": 1504,
+                  "healthRecoveryRate": 49,
+                  "healthMultiplier": 1.0,
+                  "manaMax": 685,
+                  "manaRecoveryRate": 15,
+                  "manaMultiplier": 1.0,
+                  "energyMax": 410,
+                  "energyRecoveryRate": -8,
+                  "energyMultiplier": 1.0
+                },
+                "equipment": [
+                  {
+                    "slot": 1,
+                    "itemId": "sentinels_wrath_stud",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "accuracyBonus": 0.029999999329447746,
+                      "criticalChanceBonus": 0.029999999329447746,
+                      "hasteBonus": 0.029999999329447746
+                    }
+                  },
+                  {
+                    "slot": 2,
+                    "itemId": "duskblade_attire",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 15.0,
+                      "constitutionBonus": 15.0,
+                      "dexterityBonus": 30.0,
+                      "healthBonus": 250.0,
+                      "defenseBonus": 70.0,
+                      "magicResistBonus": 25.0,
+                      "poisonResistBonus": 25.0,
+                      "accuracyBonus": 0.10000000149011612
+                    }
+                  },
+                  {
+                    "slot": 7,
+                    "itemId": "sentinels_wrath_stud",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "accuracyBonus": 0.029999999329447746,
+                      "criticalChanceBonus": 0.029999999329447746,
+                      "hasteBonus": 0.029999999329447746
+                    }
+                  },
+                  {
+                    "slot": 12,
+                    "itemId": "lamentation",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 12.0,
+                      "charismaBonus": -2.0,
+                      "healthBonus": 135.0,
+                      "damageBonus": 135.0,
+                      "accuracyBonus": 0.07999999821186066
+                    }
+                  },
+                  {
+                    "slot": 14,
+                    "itemId": "scaled_bracers",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "charismaBonus": 12.0,
+                      "healthBonus": 180.0,
+                      "defenseBonus": 15.0,
+                      "diseaseResistBonus": 50.0,
+                      "accuracyBonus": 0.05000000074505806
+                    }
+                  },
+                  {
+                    "slot": 15,
+                    "itemId": "emberwake_charm",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "charismaBonus": 10.0,
+                      "accuracyBonus": 0.05000000074505806
+                    }
+                  }
+                ],
+                "activeSets": []
+              },
+              "companions": []
+            },
+            "activeEffects": [
+              {
+                "skillId": "rest",
+                "name": "Rest",
+                "category": "",
+                "level": 1,
+                "remaining": 0.9859766,
+                "expired": false
+              }
+            ]
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

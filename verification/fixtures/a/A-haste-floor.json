@@ -16,19 +16,19 @@
     "schemaVersion": 1,
     "player": {
       "entityId": "player",
-      "classId": "bard",
+      "classId": "ranger",
       "raceId": "human",
       "level": 50,
       "veteranPoints": 200,
       "attributes": {
         "rawObserved": null,
         "baseProgression": {
-          "strength": 16,
-          "constitution": 10,
-          "dexterity": 12,
-          "intelligence": 8,
-          "wisdom": 8,
-          "charisma": 25
+          "strength": 14,
+          "constitution": 17,
+          "dexterity": 27,
+          "intelligence": 9,
+          "wisdom": 11,
+          "charisma": 9
         },
         "allocated": {
           "strength": 0,
@@ -51,8 +51,16 @@
           "amount": 1
         },
         {
+          "slot": 7,
+          "itemId": "sentinels_wrath_stud",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100,
+          "amount": 1
+        },
+        {
           "slot": 2,
-          "itemId": "cinderchant_chestplate",
+          "itemId": "elven_hero_chestplate",
           "itemName": null,
           "augmentId": null,
           "durability": 100,
@@ -60,6 +68,14 @@
         },
         {
           "slot": 4,
+          "itemId": "fabled_lord_darish_signet",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100,
+          "amount": 1
+        },
+        {
+          "slot": 10,
           "itemId": "fabled_lord_darish_signet",
           "itemName": null,
           "augmentId": null,
@@ -75,24 +91,8 @@
           "amount": 1
         },
         {
-          "slot": 7,
-          "itemId": "sentinels_wrath_stud",
-          "itemName": null,
-          "augmentId": null,
-          "durability": 100,
-          "amount": 1
-        },
-        {
           "slot": 8,
           "itemId": "northgates_frenzy_cord",
-          "itemName": null,
-          "augmentId": null,
-          "durability": 100,
-          "amount": 1
-        },
-        {
-          "slot": 10,
-          "itemId": "fabled_lord_darish_signet",
           "itemName": null,
           "augmentId": null,
           "durability": 100,
@@ -116,7 +116,7 @@
         },
         {
           "slot": 13,
-          "itemId": "drum_of_war",
+          "itemId": "nightshade_whisperbow",
           "itemName": null,
           "augmentId": null,
           "durability": 100,

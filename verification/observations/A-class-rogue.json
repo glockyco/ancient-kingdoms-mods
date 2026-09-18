@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "fixture": {
-    "name": "A-class-warrior",
+    "name": "A-class-rogue",
     "tier": "A",
-    "coverage": "A.class.Warrior",
-    "path": "verification/fixtures/a/A-class-warrior.json",
-    "contentSha256": "db163c9f068eb6327347b97c08e5efce4257f3e36f408bbf4878b2ecef375265"
+    "coverage": "A.class.Rogue",
+    "path": "verification/fixtures/a/A-class-rogue.json",
+    "contentSha256": "1df002504cb9bb331199470d96d5d998ba49fa9199f844ba441eaeac56b633f6"
   },
   "game": {
     "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
     "gameVersion": "0.9.32.4",
     "steamBuildId": "25326396"
   },
-  "recordedAt": "2026-09-18T05:42:38.701796+00:00",
+  "recordedAt": "2026-09-18T05:41:43.247636+00:00",
   "achieved": {
     "build": {
       "serializedSchemaVersion": 3,
@@ -25,7 +25,7 @@
     },
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/a/A-class-warrior.json"
+      "source": "verification/fixtures/a/A-class-rogue.json"
     },
     "ok": true,
     "steps": [
@@ -52,12 +52,12 @@
       {
         "name": "learnedBooks",
         "ok": true,
-        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+        "detail": "None requested. Attributes: strength=18, constitution=13, dexterity=27, intelligence=11, wisdom=9, charisma=9"
       },
       {
         "name": "equipment",
         "ok": true,
-        "detail": "Equipped 0 items, cleared 4 slots the fixture does not declare."
+        "detail": "Equipped 0 items, cleared 3 slots the fixture does not declare."
       },
       {
         "name": "companions",
@@ -73,8 +73,8 @@
     "learnedBookIds": [],
     "attributes": {
       "strength": 18,
-      "constitution": 26,
-      "dexterity": 14,
+      "constitution": 13,
+      "dexterity": 27,
       "intelligence": 11,
       "wisdom": 9,
       "charisma": 9
@@ -82,7 +82,7 @@
   },
   "observation": {
     "tier": "A",
-    "seed": 1124023600,
+    "seed": 2070699336,
     "gameVersion": "0.9.32.4",
     "fidelity": "state",
     "measurements": [
@@ -96,24 +96,24 @@
             "sheet": {
               "character": {
                 "kind": "player",
-                "archetype": "Warrior",
+                "archetype": "Rogue",
                 "race": "Human",
                 "level": 50,
                 "attributes": {
                   "strength": 18,
-                  "constitution": 26,
-                  "dexterity": 14,
+                  "constitution": 13,
+                  "dexterity": 27,
                   "charisma": 9,
                   "intelligence": 11,
                   "wisdom": 9
                 },
                 "learnedBookIds": [],
                 "combat": {
-                  "accuracy": 0.007000000216066837,
-                  "blockChance": 0.05780000239610672,
+                  "accuracy": 0.013500000350177288,
+                  "blockChance": 0.05389999970793724,
                   "coldResist": 0.0,
-                  "criticalChance": 0.004200000315904617,
-                  "criticalResist": 0.007000000216066837,
+                  "criticalChance": 0.008100000210106373,
+                  "criticalResist": 0.013500000350177288,
                   "damage": 18.0,
                   "defense": 0.0,
                   "diseaseResist": 0.0,
@@ -122,19 +122,19 @@
                   "haste": 0.0,
                   "magicDamage": 16.0,
                   "magicResist": 0.0,
-                  "poisonResist": 6.0,
+                  "poisonResist": 3.0,
                   "spellHaste": 0.0
                 },
                 "resources": {
-                  "healthMax": 1680,
-                  "healthCurrent": 1680,
-                  "healthRecoveryRate": 35,
+                  "healthMax": 1110,
+                  "healthCurrent": 1110,
+                  "healthRecoveryRate": 23,
                   "healthMultiplier": 1.0,
                   "manaMax": 220,
                   "manaRecoveryRate": 4,
                   "manaMultiplier": 1.0,
-                  "energyMax": 445,
-                  "energyRecoveryRate": -9,
+                  "energyMax": 690,
+                  "energyRecoveryRate": -14,
                   "energyMultiplier": 1.0
                 },
                 "equipment": [],
@@ -148,7 +148,7 @@
                 "name": "Rest",
                 "category": "",
                 "level": 1,
-                "remaining": 0.9878495,
+                "remaining": 0.9777728,
                 "expired": false
               }
             ]

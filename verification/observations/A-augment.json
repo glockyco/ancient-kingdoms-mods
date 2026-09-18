@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "fixture": {
-    "name": "A-class-warrior",
+    "name": "A-augment",
     "tier": "A",
-    "coverage": "A.class.Warrior",
-    "path": "verification/fixtures/a/A-class-warrior.json",
-    "contentSha256": "db163c9f068eb6327347b97c08e5efce4257f3e36f408bbf4878b2ecef375265"
+    "coverage": "A.augment",
+    "path": "verification/fixtures/a/A-augment.json",
+    "contentSha256": "d3841ba85a7a84e12bdcf626e769524e1b1ecb2efaa217f90cfe46286a87c527"
   },
   "game": {
     "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
     "gameVersion": "0.9.32.4",
     "steamBuildId": "25326396"
   },
-  "recordedAt": "2026-09-18T05:42:38.701796+00:00",
+  "recordedAt": "2026-09-18T05:37:03.957763+00:00",
   "achieved": {
     "build": {
       "serializedSchemaVersion": 3,
@@ -25,7 +25,7 @@
     },
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/a/A-class-warrior.json"
+      "source": "verification/fixtures/a/A-augment.json"
     },
     "ok": true,
     "steps": [
@@ -57,7 +57,7 @@
       {
         "name": "equipment",
         "ok": true,
-        "detail": "Equipped 0 items, cleared 4 slots the fixture does not declare."
+        "detail": "Equipped 1 items, 1 augmented, cleared 3 slots the fixture does not declare."
       },
       {
         "name": "companions",
@@ -82,7 +82,7 @@
   },
   "observation": {
     "tier": "A",
-    "seed": 1124023600,
+    "seed": 2039976980,
     "gameVersion": "0.9.32.4",
     "fidelity": "state",
     "measurements": [
@@ -112,9 +112,9 @@
                   "accuracy": 0.007000000216066837,
                   "blockChance": 0.05780000239610672,
                   "coldResist": 0.0,
-                  "criticalChance": 0.004200000315904617,
+                  "criticalChance": 0.0142000000923872,
                   "criticalResist": 0.007000000216066837,
-                  "damage": 18.0,
+                  "damage": 34.0,
                   "defense": 0.0,
                   "diseaseResist": 0.0,
                   "fearResistChance": 0.0,
@@ -137,7 +137,19 @@
                   "energyRecoveryRate": -9,
                   "energyMultiplier": 1.0
                 },
-                "equipment": [],
+                "equipment": [
+                  {
+                    "slot": 12,
+                    "itemId": "rusty_sword",
+                    "augmentId": "jagged_shard",
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "damageBonus": 16.0,
+                      "criticalChanceBonus": 0.009999999776482582
+                    }
+                  }
+                ],
                 "activeSets": []
               },
               "companions": []
@@ -148,7 +160,7 @@
                 "name": "Rest",
                 "category": "",
                 "level": 1,
-                "remaining": 0.9878495,
+                "remaining": 0.9864255,
                 "expired": false
               }
             ]

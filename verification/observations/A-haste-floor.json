@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "A-haste-floor",
+    "tier": "A",
+    "coverage": "A.haste.floor",
+    "path": "verification/fixtures/a/A-haste-floor.json",
+    "contentSha256": "c847554bf46570a16b839639a743ace8d69b794e1c04ded7f5f000cefc9879f0"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T05:45:20.144638+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-haste-floor.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "None requested."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=14, constitution=17, dexterity=27, intelligence=9, wisdom=11, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 11 items, cleared 1 slots the fixture does not declare."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 110,
+      "constitution": 66,
+      "dexterity": 140,
+      "intelligence": 34,
+      "wisdom": 36,
+      "charisma": 66
+    }
+  },
+  "observation": {
+    "tier": "A",
+    "seed": 1412129357,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "state",
+    "measurements": [
+      {
+        "quantity": "statSheet",
+        "unit": "stat",
+        "samplingUnit": "reading",
+        "windowSeconds": null,
+        "samples": [
+          {
+            "sheet": {
+              "character": {
+                "kind": "player",
+                "archetype": "Ranger",
+                "race": "Human",
+                "level": 50,
+                "attributes": {
+                  "strength": 110,
+                  "constitution": 66,
+                  "dexterity": 140,
+                  "charisma": 66,
+                  "intelligence": 34,
+                  "wisdom": 36
+                },
+                "learnedBookIds": [],
+                "combat": {
+                  "accuracy": 0.12999999523162842,
+                  "blockChance": 0.07829999923706055,
+                  "coldResist": 100.0,
+                  "criticalChance": 0.10199999809265137,
+                  "criticalResist": 0.07000000029802322,
+                  "damage": 775.0,
+                  "defense": 85.0,
+                  "diseaseResist": 100.0,
+                  "fearResistChance": 0.0,
+                  "fireResist": 100.0,
+                  "haste": 0.800000011920929,
+                  "magicDamage": 51.0,
+                  "magicResist": 120.0,
+                  "poisonResist": 136.0,
+                  "spellHaste": 0.05000000074505806
+                },
+                "resources": {
+                  "healthMax": 4265,
+                  "healthCurrent": 1541,
+                  "healthRecoveryRate": 86,
+                  "healthMultiplier": 1.0,
+                  "manaMax": 1685,
+                  "manaRecoveryRate": 35,
+                  "manaMultiplier": 1.0,
+                  "energyMax": 1100,
+                  "energyRecoveryRate": -22,
+                  "energyMultiplier": 1.0
+                },
+                "equipment": [
+                  {
+                    "slot": 1,
+                    "itemId": "sentinels_wrath_stud",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "accuracyBonus": 0.029999999329447746,
+                      "criticalChanceBonus": 0.029999999329447746,
+                      "hasteBonus": 0.029999999329447746
+                    }
+                  },
+                  {
+                    "slot": 2,
+                    "itemId": "elven_hero_chestplate",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "constitutionBonus": 8.0,
+                      "dexterityBonus": 12.0,
+                      "healthBonus": 190.0,
+                      "defenseBonus": 50.0,
+                      "magicResistBonus": 20.0,
+                      "poisonResistBonus": 20.0,
+                      "hasteBonus": 0.15000000596046448
+                    }
+                  },
+                  {
+                    "slot": 4,
+                    "itemId": "fabled_lord_darish_signet",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "dexterityBonus": 10.0,
+                      "charismaBonus": 10.0,
+                      "hasteBonus": 0.05000000074505806
+                    }
+                  },
+                  {
+                    "slot": 6,
+                    "itemId": "valaarks_worldheart",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 25.0,
+                      "constitutionBonus": 25.0,
+                      "dexterityBonus": 25.0,
+                      "charismaBonus": 25.0,
+                      "intelligenceBonus": 25.0,
+                      "wisdomBonus": 25.0,
+                      "healthBonus": 500.0,
+                      "manaBonus": 500.0,
+                      "defenseBonus": 25.0,
+                      "magicResistBonus": 100.0,
+                      "poisonResistBonus": 100.0,
+                      "fireResistBonus": 100.0,
+                      "coldResistBonus": 100.0,
+                      "diseaseResistBonus": 100.0,
+                      "hasteBonus": 0.05000000074505806,
+                      "spellHasteBonus": 0.05000000074505806,
+                      "speedBonus": 1.0
+                    }
+                  },
+                  {
+                    "slot": 7,
+                    "itemId": "sentinels_wrath_stud",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "accuracyBonus": 0.029999999329447746,
+                      "criticalChanceBonus": 0.029999999329447746,
+                      "hasteBonus": 0.029999999329447746
+                    }
+                  },
+                  {
+                    "slot": 8,
+                    "itemId": "northgates_frenzy_cord",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "healthBonus": 300.0,
+                      "defenseBonus": 10.0,
+                      "hasteBonus": 0.20000000298023224
+                    }
+                  },
+                  {
+                    "slot": 10,
+                    "itemId": "fabled_lord_darish_signet",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "dexterityBonus": 10.0,
+                      "charismaBonus": 10.0,
+                      "hasteBonus": 0.05000000074505806
+                    }
+                  },
+                  {
+                    "slot": 11,
+                    "itemId": "horn_of_victory",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 6.0,
+                      "constitutionBonus": 6.0,
+                      "dexterityBonus": 6.0,
+                      "charismaBonus": 12.0,
+                      "healthBonus": 145.0,
+                      "hasteBonus": 0.10000000149011612
+                    }
+                  },
+                  {
+                    "slot": 12,
+                    "itemId": "blade_of_destruction",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 40.0,
+                      "dexterityBonus": 25.0,
+                      "healthBonus": 270.0,
+                      "damageBonus": 350.0,
+                      "hasteBonus": 0.10000000149011612
+                    }
+                  },
+                  {
+                    "slot": 13,
+                    "itemId": "nightshade_whisperbow",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 25.0,
+                      "constitutionBonus": 10.0,
+                      "dexterityBonus": 25.0,
+                      "healthBonus": 180.0,
+                      "damageBonus": 315.0,
+                      "hasteBonus": 0.05000000074505806
+                    }
+                  },
+                  {
+                    "slot": 15,
+                    "itemId": "frostwind_charm",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "hasteBonus": 0.05999999865889549
+                    }
+                  }
+                ],
+                "activeSets": []
+              },
+              "companions": []
+            },
+            "activeEffects": [
+              {
+                "skillId": "rest",
+                "name": "Rest",
+                "category": "",
+                "level": 1,
+                "remaining": 0.9869107,
+                "expired": false
+              }
+            ]
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

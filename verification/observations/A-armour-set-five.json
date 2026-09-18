@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "fixture": {
+    "name": "A-armour-set-five",
+    "tier": "A",
+    "coverage": "A.armorSet.fivePieces",
+    "path": "verification/fixtures/a/A-armour-set-five.json",
+    "contentSha256": "350a527b1ad29a953d476c3f1823ef5809f7efa29e28cadeafd29f70fce54c77"
+  },
+  "game": {
+    "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+    "gameVersion": "0.9.32.4",
+    "steamBuildId": "25326396"
+  },
+  "recordedAt": "2026-09-18T05:35:12.237696+00:00",
+  "achieved": {
+    "build": {
+      "serializedSchemaVersion": 3,
+      "modelVersion": "2",
+      "gameData": {
+        "gameVersion": "0.9.32.4",
+        "steamBuildId": "25326396",
+        "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771"
+      }
+    },
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-armour-set-five.json"
+    },
+    "ok": true,
+    "steps": [
+      {
+        "name": "level",
+        "ok": true,
+        "detail": "Level 50."
+      },
+      {
+        "name": "veteran",
+        "ok": true,
+        "detail": "200 veteran points."
+      },
+      {
+        "name": "attributes",
+        "ok": true,
+        "detail": ""
+      },
+      {
+        "name": "skills",
+        "ok": true,
+        "detail": "None requested."
+      },
+      {
+        "name": "learnedBooks",
+        "ok": true,
+        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+      },
+      {
+        "name": "equipment",
+        "ok": true,
+        "detail": "Equipped 5 items, cleared 2 slots the fixture does not declare."
+      },
+      {
+        "name": "companions",
+        "ok": true,
+        "detail": "None declared."
+      }
+    ],
+    "level": 50,
+    "veteranPoints": 200,
+    "unspentAttributePoints": 249,
+    "unspentSkillPoints": 49,
+    "unspentVeteranPoints": 200,
+    "learnedBookIds": [],
+    "attributes": {
+      "strength": 98,
+      "constitution": 216,
+      "dexterity": 69,
+      "intelligence": 11,
+      "wisdom": 9,
+      "charisma": 9
+    }
+  },
+  "observation": {
+    "tier": "A",
+    "seed": 1795638653,
+    "gameVersion": "0.9.32.4",
+    "fidelity": "state",
+    "measurements": [
+      {
+        "quantity": "statSheet",
+        "unit": "stat",
+        "samplingUnit": "reading",
+        "windowSeconds": null,
+        "samples": [
+          {
+            "sheet": {
+              "character": {
+                "kind": "player",
+                "archetype": "Warrior",
+                "race": "Human",
+                "level": 50,
+                "attributes": {
+                  "strength": 98,
+                  "constitution": 216,
+                  "dexterity": 69,
+                  "charisma": 9,
+                  "intelligence": 11,
+                  "wisdom": 9
+                },
+                "learnedBookIds": [],
+                "combat": {
+                  "accuracy": 0.1145000010728836,
+                  "blockChance": 0.15080000460147858,
+                  "coldResist": 45.0,
+                  "criticalChance": 0.02070000022649765,
+                  "criticalResist": 0.03450000286102295,
+                  "damage": 99.0,
+                  "defense": 360.0,
+                  "diseaseResist": 0.0,
+                  "fearResistChance": 0.0,
+                  "fireResist": 0.0,
+                  "haste": 0.0,
+                  "magicDamage": 16.0,
+                  "magicResist": 120.0,
+                  "poisonResist": 54.0,
+                  "spellHaste": 0.0
+                },
+                "resources": {
+                  "healthMax": 8245,
+                  "healthCurrent": 1846,
+                  "healthRecoveryRate": 166,
+                  "healthMultiplier": 1.0,
+                  "manaMax": 220,
+                  "manaRecoveryRate": 4,
+                  "manaMultiplier": 1.0,
+                  "energyMax": 2045,
+                  "energyRecoveryRate": -41,
+                  "energyMultiplier": 1.0
+                },
+                "equipment": [
+                  {
+                    "slot": 0,
+                    "itemId": "cobalts_helmet",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 20.0,
+                      "constitutionBonus": 25.0,
+                      "dexterityBonus": 10.0,
+                      "healthBonus": 290.0,
+                      "energyBonus": 100.0,
+                      "defenseBonus": 50.0,
+                      "magicResistBonus": 25.0,
+                      "coldResistBonus": 25.0
+                    }
+                  },
+                  {
+                    "slot": 2,
+                    "itemId": "cobalts_chestplate",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 25.0,
+                      "constitutionBonus": 50.0,
+                      "dexterityBonus": 25.0,
+                      "healthBonus": 630.0,
+                      "energyBonus": 350.0,
+                      "defenseBonus": 130.0,
+                      "magicResistBonus": 40.0,
+                      "accuracyBonus": 0.07999999821186066
+                    }
+                  },
+                  {
+                    "slot": 3,
+                    "itemId": "cobalts_greaves",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "constitutionBonus": 40.0,
+                      "dexterityBonus": 15.0,
+                      "healthBonus": 290.0,
+                      "energyBonus": 100.0,
+                      "defenseBonus": 80.0,
+                      "magicResistBonus": 30.0,
+                      "coldResistBonus": 20.0
+                    }
+                  },
+                  {
+                    "slot": 5,
+                    "itemId": "cobalts_gauntlets",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 15.0,
+                      "constitutionBonus": 35.0,
+                      "healthBonus": 270.0,
+                      "energyBonus": 100.0,
+                      "defenseBonus": 50.0
+                    }
+                  },
+                  {
+                    "slot": 9,
+                    "itemId": "cobalts_boots",
+                    "augmentId": null,
+                    "durability": 100,
+                    "contributes": true,
+                    "contribution": {
+                      "strengthBonus": 20.0,
+                      "constitutionBonus": 30.0,
+                      "healthBonus": 335.0,
+                      "energyBonus": 150.0,
+                      "defenseBonus": 50.0,
+                      "magicResistBonus": 25.0
+                    }
+                  }
+                ],
+                "activeSets": [
+                  {
+                    "setId": "cobalt_armor_bonus_set",
+                    "name": "Cobalt Armor Bonus Set",
+                    "piecesWorn": 5,
+                    "declaredBonuses": {
+                      "constitutionBonus": 10.0,
+                      "dexterityBonus": 5.0
+                    },
+                    "declaredSkillBonuses": {
+                      "Tactics of War": 1
+                    },
+                    "grantedSkillBonuses": {
+                      "Tactics of War": 1
+                    }
+                  }
+                ]
+              },
+              "companions": []
+            },
+            "activeEffects": [
+              {
+                "skillId": "rest",
+                "name": "Rest",
+                "category": "",
+                "level": 1,
+                "remaining": 0.9858914,
+                "expired": false
+              }
+            ]
+          }
+        ],
+        "counts": null
+      }
+    ]
+  }
+}

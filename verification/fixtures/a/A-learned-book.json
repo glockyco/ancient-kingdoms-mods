@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 3,
+  "build": {
+    "gameData": {
+      "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
+      "gameVersion": "0.9.32.4",
+      "steamBuildId": "25326396"
+    },
+    "modelVersion": "2",
+    "serializedSchemaVersion": 3
+  },
+  "name": "A-learned-book",
+  "tier": "A",
+  "coverage": "A.learnedBook",
+  "buildData": {
+    "schemaVersion": 1,
+    "player": {
+      "entityId": "player",
+      "classId": "warrior",
+      "raceId": "human",
+      "level": 50,
+      "veteranPoints": 200,
+      "attributes": {
+        "rawObserved": null,
+        "baseProgression": {
+          "strength": 18,
+          "constitution": 26,
+          "dexterity": 14,
+          "intelligence": 11,
+          "wisdom": 9,
+          "charisma": 9
+        },
+        "allocated": {
+          "strength": 0,
+          "constitution": 0,
+          "dexterity": 0,
+          "intelligence": 0,
+          "wisdom": 0,
+          "charisma": 0
+        },
+        "derivedObserved": null
+      },
+      "skills": [],
+      "equipment": []
+    },
+    "companions": [],
+    "consumables": [],
+    "ammunition": [],
+    "learnedBookIds": [
+      "chains_of_shadows"
+    ],
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-learned-book.json"
+    }
+  },
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1124023601,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null,
+    "measurement": {
+      "minimumSamples": 1
+    }
+  }
+}

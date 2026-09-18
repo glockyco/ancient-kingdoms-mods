@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "fixture": {
-    "name": "A-class-warrior",
+    "name": "A-learned-book",
     "tier": "A",
-    "coverage": "A.class.Warrior",
-    "path": "verification/fixtures/a/A-class-warrior.json",
-    "contentSha256": "db163c9f068eb6327347b97c08e5efce4257f3e36f408bbf4878b2ecef375265"
+    "coverage": "A.learnedBook",
+    "path": "verification/fixtures/a/A-learned-book.json",
+    "contentSha256": "17b617b20be52cd235ee2988638282847ce6e1573ecbdd83de8871782adb87a2"
   },
   "game": {
     "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
     "gameVersion": "0.9.32.4",
     "steamBuildId": "25326396"
   },
-  "recordedAt": "2026-09-18T05:42:38.701796+00:00",
+  "recordedAt": "2026-09-18T05:46:13.76788+00:00",
   "achieved": {
     "build": {
       "serializedSchemaVersion": 3,
@@ -25,7 +25,7 @@
     },
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/a/A-class-warrior.json"
+      "source": "verification/fixtures/a/A-learned-book.json"
     },
     "ok": true,
     "steps": [
@@ -52,7 +52,7 @@
       {
         "name": "learnedBooks",
         "ok": true,
-        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+        "detail": "Learned chains_of_shadows. Attributes: strength=21, constitution=26, dexterity=14, intelligence=14, wisdom=9, charisma=9"
       },
       {
         "name": "equipment",
@@ -70,19 +70,21 @@
     "unspentAttributePoints": 249,
     "unspentSkillPoints": 49,
     "unspentVeteranPoints": 200,
-    "learnedBookIds": [],
+    "learnedBookIds": [
+      "chains_of_shadows"
+    ],
     "attributes": {
-      "strength": 18,
+      "strength": 21,
       "constitution": 26,
       "dexterity": 14,
-      "intelligence": 11,
+      "intelligence": 14,
       "wisdom": 9,
       "charisma": 9
     }
   },
   "observation": {
     "tier": "A",
-    "seed": 1124023600,
+    "seed": 1124023601,
     "gameVersion": "0.9.32.4",
     "fidelity": "state",
     "measurements": [
@@ -100,27 +102,29 @@
                 "race": "Human",
                 "level": 50,
                 "attributes": {
-                  "strength": 18,
+                  "strength": 21,
                   "constitution": 26,
                   "dexterity": 14,
                   "charisma": 9,
-                  "intelligence": 11,
+                  "intelligence": 14,
                   "wisdom": 9
                 },
-                "learnedBookIds": [],
+                "learnedBookIds": [
+                  "chains_of_shadows"
+                ],
                 "combat": {
                   "accuracy": 0.007000000216066837,
                   "blockChance": 0.05780000239610672,
                   "coldResist": 0.0,
                   "criticalChance": 0.004200000315904617,
                   "criticalResist": 0.007000000216066837,
-                  "damage": 18.0,
+                  "damage": 21.0,
                   "defense": 0.0,
                   "diseaseResist": 0.0,
                   "fearResistChance": 0.0,
                   "fireResist": 0.0,
                   "haste": 0.0,
-                  "magicDamage": 16.0,
+                  "magicDamage": 21.0,
                   "magicResist": 0.0,
                   "poisonResist": 6.0,
                   "spellHaste": 0.0
@@ -130,11 +134,11 @@
                   "healthCurrent": 1680,
                   "healthRecoveryRate": 35,
                   "healthMultiplier": 1.0,
-                  "manaMax": 220,
-                  "manaRecoveryRate": 4,
+                  "manaMax": 280,
+                  "manaRecoveryRate": 6,
                   "manaMultiplier": 1.0,
-                  "energyMax": 445,
-                  "energyRecoveryRate": -9,
+                  "energyMax": 475,
+                  "energyRecoveryRate": -10,
                   "energyMultiplier": 1.0
                 },
                 "equipment": [],
@@ -148,7 +152,7 @@
                 "name": "Rest",
                 "category": "",
                 "level": 1,
-                "remaining": 0.9878495,
+                "remaining": 0.9873557,
                 "expired": false
               }
             ]

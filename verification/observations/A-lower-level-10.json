@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "fixture": {
-    "name": "A-class-warrior",
+    "name": "A-lower-level-10",
     "tier": "A",
-    "coverage": "A.class.Warrior",
-    "path": "verification/fixtures/a/A-class-warrior.json",
-    "contentSha256": "db163c9f068eb6327347b97c08e5efce4257f3e36f408bbf4878b2ecef375265"
+    "coverage": "A.lowerLevel.10",
+    "path": "verification/fixtures/a/A-lower-level-10.json",
+    "contentSha256": "ee90d7131f6d35143efa4524e7b6f63488264cf6241d707ff947482ec200dafa"
   },
   "game": {
     "assemblySha256": "6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771",
     "gameVersion": "0.9.32.4",
     "steamBuildId": "25326396"
   },
-  "recordedAt": "2026-09-18T05:42:38.701796+00:00",
+  "recordedAt": "2026-09-18T05:47:07.234969+00:00",
   "achieved": {
     "build": {
       "serializedSchemaVersion": 3,
@@ -25,19 +25,19 @@
     },
     "provenance": {
       "kind": "authored",
-      "source": "verification/fixtures/a/A-class-warrior.json"
+      "source": "verification/fixtures/a/A-lower-level-10.json"
     },
     "ok": true,
     "steps": [
       {
         "name": "level",
         "ok": true,
-        "detail": "Level 50."
+        "detail": "Level 10."
       },
       {
         "name": "veteran",
         "ok": true,
-        "detail": "200 veteran points."
+        "detail": "None requested."
       },
       {
         "name": "attributes",
@@ -52,7 +52,7 @@
       {
         "name": "learnedBooks",
         "ok": true,
-        "detail": "None requested. Attributes: strength=18, constitution=26, dexterity=14, intelligence=11, wisdom=9, charisma=9"
+        "detail": "None requested. Attributes: strength=5, constitution=6, dexterity=4, intelligence=3, wisdom=2, charisma=2"
       },
       {
         "name": "equipment",
@@ -65,24 +65,24 @@
         "detail": "None declared."
       }
     ],
-    "level": 50,
-    "veteranPoints": 200,
-    "unspentAttributePoints": 249,
-    "unspentSkillPoints": 49,
-    "unspentVeteranPoints": 200,
+    "level": 10,
+    "veteranPoints": 0,
+    "unspentAttributePoints": 9,
+    "unspentSkillPoints": 9,
+    "unspentVeteranPoints": 0,
     "learnedBookIds": [],
     "attributes": {
-      "strength": 18,
-      "constitution": 26,
-      "dexterity": 14,
-      "intelligence": 11,
-      "wisdom": 9,
-      "charisma": 9
+      "strength": 5,
+      "constitution": 6,
+      "dexterity": 4,
+      "intelligence": 3,
+      "wisdom": 2,
+      "charisma": 2
     }
   },
   "observation": {
     "tier": "A",
-    "seed": 1124023600,
+    "seed": 1287593841,
     "gameVersion": "0.9.32.4",
     "fidelity": "state",
     "measurements": [
@@ -98,43 +98,43 @@
                 "kind": "player",
                 "archetype": "Warrior",
                 "race": "Human",
-                "level": 50,
+                "level": 10,
                 "attributes": {
-                  "strength": 18,
-                  "constitution": 26,
-                  "dexterity": 14,
-                  "charisma": 9,
-                  "intelligence": 11,
-                  "wisdom": 9
+                  "strength": 5,
+                  "constitution": 6,
+                  "dexterity": 4,
+                  "charisma": 2,
+                  "intelligence": 3,
+                  "wisdom": 2
                 },
                 "learnedBookIds": [],
                 "combat": {
-                  "accuracy": 0.007000000216066837,
-                  "blockChance": 0.05780000239610672,
+                  "accuracy": 0.0020000000949949026,
+                  "blockChance": 0.05180000141263008,
                   "coldResist": 0.0,
-                  "criticalChance": 0.004200000315904617,
-                  "criticalResist": 0.007000000216066837,
-                  "damage": 18.0,
+                  "criticalChance": 0.0012000000569969416,
+                  "criticalResist": 0.0020000000949949026,
+                  "damage": 5.0,
                   "defense": 0.0,
                   "diseaseResist": 0.0,
                   "fearResistChance": 0.0,
                   "fireResist": 0.0,
                   "haste": 0.0,
-                  "magicDamage": 16.0,
+                  "magicDamage": 4.0,
                   "magicResist": 0.0,
-                  "poisonResist": 6.0,
+                  "poisonResist": 2.0,
                   "spellHaste": 0.0
                 },
                 "resources": {
-                  "healthMax": 1680,
-                  "healthCurrent": 1680,
-                  "healthRecoveryRate": 35,
+                  "healthMax": 380,
+                  "healthCurrent": 380,
+                  "healthRecoveryRate": 9,
                   "healthMultiplier": 1.0,
-                  "manaMax": 220,
-                  "manaRecoveryRate": 4,
+                  "manaMax": 60,
+                  "manaRecoveryRate": 1,
                   "manaMultiplier": 1.0,
-                  "energyMax": 445,
-                  "energyRecoveryRate": -9,
+                  "energyMax": 115,
+                  "energyRecoveryRate": -2,
                   "energyMultiplier": 1.0
                 },
                 "equipment": [],
@@ -148,7 +148,7 @@
                 "name": "Rest",
                 "category": "",
                 "level": 1,
-                "remaining": 0.9878495,
+                "remaining": 0.9866884,
                 "expired": false
               }
             ]
