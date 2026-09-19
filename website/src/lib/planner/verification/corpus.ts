@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { parseTierDWindowSample } from "./tier-d-sample";
 
 /** One committed fixture descriptor, read as the harness commits it. */
 export interface FixtureRecord {
@@ -35,7 +36,7 @@ export interface ObservationMeasurement {
 
 /** One committed observation, as `build-tool verify` writes it. */
 export interface ObservationRecord {
-  schemaVersion: 1;
+  schemaVersion: 2;
   fixture: {
     name: string;
     tier: string;
@@ -151,19 +152,49 @@ export function parseObservationRecord(
   path: string,
 ): ObservationRecord {
   const record = requireRecord(value, path);
-  if (record.schemaVersion !== 1)
-    throw new TypeError(`${path}.schemaVersion must be 1`);
+  if (record.schemaVersion !== 2)
+    throw new TypeError(
+      `${path}.schemaVersion must be 2, received ${String(record.schemaVersion)}`,
+    );
   const fixture = requireRecord(record.fixture, `${path}.fixture`);
   const game = requireRecord(record.game, `${path}.game`);
   const observation = requireRecord(record.observation, `${path}.observation`);
   if (!Array.isArray(observation.measurements))
     throw new TypeError(`${path}.observation.measurements must be an array`);
+  const tier = requireString(fixture, "tier", `${path}.fixture`);
+  const coverage = requireString(fixture, "coverage", `${path}.fixture`);
+  if (tier === "D") {
+    let foundWindow = false;
+    observation.measurements.forEach((value, measurementIndex) => {
+      const measurement = requireRecord(
+        value,
+        `${path}.observation.measurements[${measurementIndex}]`,
+      );
+      if (measurement.quantity !== "window") return;
+      foundWindow = true;
+      if (!Array.isArray(measurement.samples))
+        throw new TypeError(
+          `${path}.observation.measurements[${measurementIndex}].samples must be an array`,
+        );
+      measurement.samples.forEach((sample, sampleIndex) =>
+        parseTierDWindowSample(
+          sample,
+          `${path}.observation.measurements[${measurementIndex}].samples[${sampleIndex}]`,
+          coverage.startsWith("D.class."),
+        ),
+      );
+    });
+    if (!foundWindow)
+      throw new TypeError(
+        `${path}.observation.measurements must contain window`,
+      );
+  }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     fixture: {
       name: requireString(fixture, "name", `${path}.fixture`),
-      tier: requireString(fixture, "tier", `${path}.fixture`),
-      coverage: requireString(fixture, "coverage", `${path}.fixture`),
+      tier,
+      coverage,
       path: requireString(fixture, "path", `${path}.fixture`),
       contentSha256: requireString(fixture, "contentSha256", `${path}.fixture`),
     },

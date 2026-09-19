@@ -1,6 +1,7 @@
 import { compareWelch, type QuantityResult } from "./comparison";
 import type { FixtureRecord, ObservationRecord } from "./corpus";
-import { parseWindowSample, simulateFixtureWindow } from "./scenario";
+import { simulateFixtureWindow } from "./scenario";
+import { parseTierDWindowSample } from "./tier-d-sample";
 
 /** Significance for every stochastic mean, as the design's protocol states. */
 export const WELCH_SIGNIFICANCE = 0.01;
@@ -22,17 +23,15 @@ export function compareTierD(
   );
   if (!measurement || measurement.samples.length === 0)
     return [{ quantity: "window", status: "fail", detail: "no windows" }];
-  const windows = measurement.samples.map((sample, index) => ({
-    window: parseWindowSample(sample, `measurements.window.samples[${index}]`),
-    companions: parseCompanionDamage(
+  const windows = measurement.samples.map((sample, index) =>
+    parseTierDWindowSample(
       sample,
       `measurements.window.samples[${index}]`,
+      fixture.coverage.startsWith("D.class."),
     ),
-  }));
+  );
   const horizons = new Set(
-    windows.map((entry) =>
-      Math.round(entry.window.closedAt - entry.window.openedAt),
-    ),
+    windows.map((entry) => Math.round(entry.durationSeconds)),
   );
   if (horizons.size !== 1)
     return [
@@ -69,16 +68,14 @@ export function compareTierD(
   results.push(
     compareWelch(
       `damage.${playerId}`,
-      windows.map((entry) =>
-        entry.window.hits.reduce((total, hit) => total + hit.amount, 0),
-      ),
+      windows.map((entry) => entry.playerDamage),
       result.samples.perEntityDamage.get(playerId) ?? [],
       options,
     ),
   );
   for (const companion of resolved.companions) {
     const observed = windows.map((entry) => {
-      const match = entry.companions.find(
+      const match = entry.companionDamage.find(
         (candidate) => candidate.entityId === companion.entityId,
       );
       if (!match)
@@ -97,32 +94,4 @@ export function compareTierD(
     );
   }
   return results;
-}
-
-function parseCompanionDamage(
-  value: unknown,
-  path: string,
-): { entityId: string; damage: number }[] {
-  if (typeof value !== "object" || value === null)
-    throw new TypeError(`${path} must be an object`);
-  const raw = (value as Record<string, unknown>).companionDamage;
-  if (raw === undefined) return [];
-  if (!Array.isArray(raw))
-    throw new TypeError(`${path}.companionDamage must be an array`);
-  return raw.map((entry, index) => {
-    if (typeof entry !== "object" || entry === null)
-      throw new TypeError(
-        `${path}.companionDamage[${index}] must be an object`,
-      );
-    const record = entry as Record<string, unknown>;
-    if (typeof record.entityId !== "string")
-      throw new TypeError(
-        `${path}.companionDamage[${index}].entityId must be a string`,
-      );
-    if (typeof record.damage !== "number" || !Number.isFinite(record.damage))
-      throw new TypeError(
-        `${path}.companionDamage[${index}].damage must be a finite number`,
-      );
-    return { entityId: record.entityId, damage: record.damage };
-  });
 }

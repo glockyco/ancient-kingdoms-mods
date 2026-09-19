@@ -116,7 +116,7 @@ describe("observation staleness", () => {
   it("reports an observation from another assembly as stale, not as a failure", () => {
     const fixture = corpus.fixtures[0];
     const stale: ObservationRecord = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       fixture: {
         name: fixture.name,
         tier: fixture.tier,
@@ -228,5 +228,38 @@ describe("committed observations", () => {
       catalog,
     );
     expect([...coverage.handlers.keys()]).toEqual([]);
+  });
+
+  it("does not credit a class from the fixture label alone", () => {
+    const fixture = corpus.fixtures.find(
+      (entry) => entry.tier === "D" && entry.coverage.startsWith("D.class."),
+    )!;
+    const observation = corpus.observations.get(fixture.name)!;
+    const withoutEffectEvidence = {
+      ...observation,
+      observation: {
+        ...observation.observation,
+        measurements: observation.observation.measurements.map(
+          (measurement) => ({
+            ...measurement,
+            samples: measurement.samples.map((sample) =>
+              typeof sample === "object" && sample !== null
+                ? { ...sample, maintainedEffects: [] }
+                : sample,
+            ),
+          }),
+        ),
+      },
+    };
+    const coverage = coverageFrom(
+      [{ name: fixture.name, tier: "D", status: "pass", quantities: [] }],
+      {
+        ...corpus,
+        observations: new Map([[fixture.name, withoutEffectEvidence]]),
+      },
+      catalog,
+    );
+
+    expect([...coverage.classes.keys()]).toEqual([]);
   });
 });

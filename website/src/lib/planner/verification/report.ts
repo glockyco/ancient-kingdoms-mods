@@ -129,7 +129,8 @@ export function coverageFrom(
     }
     if (fixture.tier === "D") {
       const classId = measuredClass(observation);
-      if (classId !== null) credit(classes, classId, verdict.name);
+      if (classId !== null && observedMaintainedEffect(observation))
+        credit(classes, classId, verdict.name);
       for (const archetype of observedCompanionArchetypes(observation))
         credit(archetypes, archetype, verdict.name);
     }
@@ -169,6 +170,16 @@ function observedHits(
           },
         ];
       });
+    }),
+  );
+}
+
+function observedMaintainedEffect(observation: ObservationRecord): boolean {
+  return observation.observation.measurements.some((measurement) =>
+    measurement.samples.some((sample) => {
+      if (typeof sample !== "object" || sample === null) return false;
+      const effects = (sample as Record<string, unknown>).maintainedEffects;
+      return Array.isArray(effects) && effects.length > 0;
     }),
   );
 }
