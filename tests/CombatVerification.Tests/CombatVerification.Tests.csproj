@@ -56,6 +56,8 @@
              Link="Materialization\IEquipmentSurface.cs" />
     <Compile Include="..\..\mods\CombatVerification\Probes\ActionTimeline.cs"
              Link="Probes\ActionTimeline.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Probes\WindowEvidence.cs"
+             Link="Probes\WindowEvidence.cs" />
     <Compile Include="..\..\mods\CombatVerification\Probes\DamageLog.cs"
              Link="Probes\DamageLog.cs" />
     <Compile Include="..\..\mods\CombatVerification\Probes\TimedEffect.cs"
@@ -64,6 +66,10 @@
              Link="Probes\Tiers.cs" />
     <Compile Include="..\..\mods\CombatVerification\Dtos\StatSheetResult.cs"
              Link="Dtos\StatSheetResult.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Dtos\ObserveFixtureResult.cs"
+             Link="Dtos\ObserveFixtureResult.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Dtos\TargetStateResult.cs"
+             Link="Dtos\TargetStateResult.cs" />
     <Compile Include="..\..\mods\CombatVerification\Dtos\PerHitDamageResult.cs"
              Link="Dtos\PerHitDamageResult.cs" />
     <Compile Include="..\..\mods\CombatVerification\Dtos\ActionIntervalResult.cs"

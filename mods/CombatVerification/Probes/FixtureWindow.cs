@@ -327,6 +327,10 @@ namespace CombatVerification.Probes
             var pendingAttempt = false;
             var closedAt = openedAt;
             var failure = (string)null;
+            var recordsRotationEvidence = _stopAfterListedHits == 0 && !_stopAfterListedEffect;
+            var boundedEvidence = recordsRotationEvidence ? new WindowEvidence() : null;
+            boundedEvidence?.Observe(
+                openedAt, _player.mana.current, _player.energy.current, Effects.Read(_player));
 
             try
             {
@@ -345,6 +349,8 @@ namespace CombatVerification.Probes
                         break;
                     }
                     ServerClock.TryRead(out closedAt);
+                    boundedEvidence?.Observe(
+                        closedAt, _player.mana.current, _player.energy.current, Effects.Read(_player));
                     meters.Observe();
                     if (_stopAfterListedHits > 0)
                     {
@@ -465,6 +471,8 @@ namespace CombatVerification.Probes
                     Resets = timeline.Resets,
                     Incoming = incoming,
                     Attempts = retainedAttempts,
+                    ResourceTransitions = boundedEvidence?.ResourceTransitions,
+                    ObservedEffects = boundedEvidence?.ObservedEffects,
                     Counts = new ActionCounts
                     {
                         Attempted = attempted,

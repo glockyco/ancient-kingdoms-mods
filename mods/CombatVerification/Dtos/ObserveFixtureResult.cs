@@ -70,6 +70,23 @@ namespace CombatVerification.Dtos
         [JsonProperty("energy")] public int Energy { get; set; }
     }
 
+    /// <summary>A player resource state retained only when mana or energy changes.</summary>
+    public sealed class ResourceTransition
+    {
+        [JsonProperty("at")] public double At { get; set; }
+        [JsonProperty("mana")] public int Mana { get; set; }
+        [JsonProperty("energy")] public int Energy { get; set; }
+    }
+
+    /// <summary>The first and last time one active player effect was observed in a window.</summary>
+    public sealed class EffectObservation
+    {
+        [JsonProperty("skillId")] public string SkillId { get; set; }
+        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("firstObservedAt")] public double FirstObservedAt { get; set; }
+        [JsonProperty("lastObservedAt")] public double LastObservedAt { get; set; }
+    }
+
     /// <summary>Everything one driven window observed.</summary>
     public sealed class WindowSample
     {
@@ -82,6 +99,12 @@ namespace CombatVerification.Dtos
         [JsonProperty("incoming")] public List<IncomingBlow> Incoming { get; set; }
         /// <summary>Skill uses the driver issued; the follow-up loop's own attacks are not attempts.</summary>
         [JsonProperty("attempts")] public List<ActionAttempt> Attempts { get; set; }
+        /// <summary>Resource states retained only at the window start and on a value change.</summary>
+        [JsonProperty("resourceTransitions", NullValueHandling = NullValueHandling.Ignore)]
+        public List<ResourceTransition> ResourceTransitions { get; set; }
+        /// <summary>First and last sightings of each active player effect.</summary>
+        [JsonProperty("observedEffects", NullValueHandling = NullValueHandling.Ignore)]
+        public List<EffectObservation> ObservedEffects { get; set; }
         [JsonProperty("counts")] public ActionCounts Counts { get; set; }
         [JsonProperty("fidelity")] public string Fidelity { get; set; }
         [JsonProperty("fidelityLimit")] public string FidelityLimit { get; set; }

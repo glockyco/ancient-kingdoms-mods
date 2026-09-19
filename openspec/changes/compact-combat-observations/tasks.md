@@ -1,7 +1,7 @@
 ## 1. Runtime evidence
 
-- [ ] 1.1 Add bounded resource-transition and effect-observation records to each rotation window. Verify `CombatVerification.Tests` proves repeated states are deduplicated and first/last effect observations are retained.
-- [ ] 1.2 Keep the detailed hit and attempt trace in the run-owned artifact without adding diagnostic fields to committed records. Verify the runtime DTO serialization contains both diagnostic data and bounded evidence.
+- [x] 1.1 Add bounded resource-transition and effect-observation records to each rotation window. Verify `CombatVerification.Tests` proves repeated states are deduplicated and first/last effect observations are retained.
+- [x] 1.2 Keep the detailed hit and attempt trace in the run-owned artifact without adding diagnostic fields to committed records. Verify the runtime DTO serialization contains both diagnostic data and bounded evidence.
 
 ## 2. Host normalization
 
