@@ -5,9 +5,9 @@
 
 ## 2. Host normalization
 
-- [ ] 2.1 Add the schema version 2 observation model and a Tier D normalizer in `build-tool/`. Verify `BuildTool.Tests` covers player totals, companion identity and totals, relative duration, counts, fidelity, resource transitions, and class-effect evidence.
-- [ ] 2.2 Make normalization fail when required Tier D evidence is missing or malformed. Verify focused tests name the fixture and missing field instead of writing a partial observation.
-- [ ] 2.3 Normalize the trusted runtime artifact before `build-tool verify` writes the committed file. Verify Tier A, Tier B, and Tier C payloads remain unchanged apart from the schema version.
+- [x] 2.1 Add the schema version 2 observation model and a Tier D normalizer in `build-tool/`. Verify `BuildTool.Tests` covers player totals, companion identity and totals, relative duration, counts, fidelity, resource transitions, and class-effect evidence.
+- [x] 2.2 Make normalization fail when required Tier D evidence is missing or malformed. Verify focused tests name the fixture and missing field instead of writing a partial observation.
+- [x] 2.3 Normalize the trusted runtime artifact before `build-tool verify` writes the committed file. Verify Tier A, Tier B, and Tier C payloads remain unchanged apart from the schema version.
 
 ## 3. Website verification
 

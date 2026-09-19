@@ -148,12 +148,20 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
                 Console.Error.WriteLine($"Failed: {attempt.Failure}");
                 continue;
             }
-            var record = ObservationFiles.Build(
-                _repoRoot, path, fixture, build.Recorded, attempt.Achieved!.Value,
-                attempt.Observation!.Value, _now());
-            var observationPath = ObservationFiles.Write(_repoRoot, record);
-            written.Add(observationPath);
-            Console.WriteLine($"Observation: {Path.GetRelativePath(_repoRoot, observationPath)}");
+            try
+            {
+                var record = ObservationFiles.Build(
+                    _repoRoot, path, fixture, build.Recorded, attempt.Achieved!.Value,
+                    attempt.Observation!.Value, _now());
+                var observationPath = ObservationFiles.Write(_repoRoot, record);
+                written.Add(observationPath);
+                Console.WriteLine($"Observation: {Path.GetRelativePath(_repoRoot, observationPath)}");
+            }
+            catch (InvalidDataException exception)
+            {
+                failures.Add($"{fixture.Name}: observation normalization failed: {exception.Message}");
+                Console.Error.WriteLine($"Failed: observation normalization failed: {exception.Message}");
+            }
         }
 
         _resultStore.SetData(new

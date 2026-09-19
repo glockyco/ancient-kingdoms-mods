@@ -32,7 +32,7 @@ public sealed record ObservationGame(
 /// <summary>Writes observation records where the website comparison reads them.</summary>
 internal static class ObservationFiles
 {
-    public const int SchemaVersion = 1;
+    public const int SchemaVersion = 2;
 
     private static readonly JsonSerializerOptions Options = new()
     {
@@ -67,7 +67,7 @@ internal static class ObservationFiles
             new ObservationGame(game.AssemblySha256, game.GameVersion, game.SteamBuildId),
             recordedAt,
             achieved,
-            observation);
+            ObservationNormalizer.Normalize(fixture, observation));
     }
 
     internal static string Write(string repoRoot, ObservationRecord record)
