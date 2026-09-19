@@ -78,7 +78,7 @@ Then run the comparison from `website/`:
 pnpm test --run src/lib/planner/verification/verification.test.ts
 ```
 
-Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from `server-scripts/SNAPSHOT.toml`. A stale or missing observation does not count as current evidence. Do not complete the version update while any fixture is stale, missing, failed, or inconclusive. The coverage report must also credit every declared handler, damage school, supported class, and companion archetype.
+Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from the tracked planner payload generated from `server-scripts/SNAPSHOT.toml`. A stale or missing observation does not count as current evidence. Do not complete the version update while any fixture is stale, missing, failed, or inconclusive. The coverage report must also credit every declared handler, damage school, supported class, and companion archetype.
 
 Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 

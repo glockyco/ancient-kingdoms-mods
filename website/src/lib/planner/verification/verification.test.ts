@@ -1,4 +1,12 @@
-import { readFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   compareExact,
@@ -9,6 +17,7 @@ import {
 import {
   classifyObservation,
   loadCorpus,
+  readPlannerAssemblySha256,
   type ObservationRecord,
 } from "./corpus";
 import { coverageFrom, formatVerdicts, verifyFixture } from "./report";
@@ -76,6 +85,30 @@ describe("comparison primitives", () => {
     expect(studentTCdf(2.228, 10)).toBeCloseTo(0.975, 3);
     expect(studentTCdf(1.96, 1_000)).toBeCloseTo(0.975, 3);
     expect(studentTCdf(0, 5)).toBeCloseTo(0.5, 10);
+  });
+});
+
+describe("planner assembly identity", () => {
+  it("reads the tracked planner payload without a decompiled source tree", () => {
+    const root = mkdtempSync(join(tmpdir(), "planner-identity-"));
+    try {
+      const dataDirectory = join(root, "website", "data");
+      mkdirSync(dataDirectory, { recursive: true });
+      writeFileSync(
+        join(dataDirectory, "planner-data.json"),
+        JSON.stringify({
+          build: {
+            gameData: {
+              assemblySha256: "a".repeat(64),
+            },
+          },
+        }),
+      );
+
+      expect(readPlannerAssemblySha256(root)).toBe("a".repeat(64));
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
 

@@ -102,8 +102,9 @@ failure to make the fixture pass.
 - `inconclusive`: no quantity rejects, but at least one stochastic quantity has fewer samples than its
   declared minimum. Record more complete windows or fix the measurement loss. Do not treat this as a
   pass.
-- `stale`: the observation assembly SHA-256 differs from `server-scripts/SNAPSHOT.toml`. It is neither
-  current evidence nor a model failure. Re-record the fixture on the matching current game build.
+- `stale`: the observation assembly SHA-256 differs from the tracked planner payload generated from
+  `server-scripts/SNAPSHOT.toml`. It is neither current evidence nor a model failure. Re-record the
+  fixture on the matching current game build.
 - `missing`: the fixture has no committed observation. Record it before making a corpus-wide claim.
 
 A game-version update is incomplete while any fixture is stale or missing. The current corpus must

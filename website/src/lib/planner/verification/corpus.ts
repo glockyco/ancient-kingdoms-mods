@@ -178,15 +178,27 @@ export function parseObservationRecord(
   };
 }
 
-/** Source: server-scripts/SNAPSHOT.toml records the assembly the decompiled evidence came from. */
-export function readSnapshotAssemblySha256(repoRoot: string): string {
-  const text = readFileSync(
-    join(repoRoot, "server-scripts", "SNAPSHOT.toml"),
-    "utf8",
+/** The tracked planner payload records the assembly identity used by this model. */
+export function readPlannerAssemblySha256(repoRoot: string): string {
+  const plannerData = requireRecord(
+    JSON.parse(
+      readFileSync(
+        join(repoRoot, "website", "data", "planner-data.json"),
+        "utf8",
+      ),
+    ),
+    "planner-data.json",
   );
-  const match = /^assembly_sha256\s*=\s*"([0-9a-f]{64})"/m.exec(text);
-  if (!match) throw new Error("SNAPSHOT.toml has no assembly_sha256");
-  return match[1];
+  const build = requireRecord(plannerData.build, "planner-data.json.build");
+  const gameData = requireRecord(
+    build.gameData,
+    "planner-data.json.build.gameData",
+  );
+  return requireString(
+    gameData,
+    "assemblySha256",
+    "planner-data.json.build.gameData",
+  );
 }
 
 export function loadCorpus(repoRoot: string): VerificationCorpus {
@@ -210,7 +222,7 @@ export function loadCorpus(repoRoot: string): VerificationCorpus {
     observations.set(record.fixture.name, record);
   }
   return {
-    snapshotAssemblySha256: readSnapshotAssemblySha256(repoRoot),
+    snapshotAssemblySha256: readPlannerAssemblySha256(repoRoot),
     fixtures,
     observations,
   };
