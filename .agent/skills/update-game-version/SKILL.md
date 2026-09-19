@@ -75,7 +75,7 @@ The verification command must preserve the player save, report the current game 
 Then run the comparison from `website/`:
 
 ```bash
-pnpm test --run src/lib/planner/verification/verification.test.ts
+pnpm test --run src/lib/planner/verification/verification.db.test.ts
 ```
 
 Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from the tracked planner payload generated from `server-scripts/SNAPSHOT.toml`. A stale or missing observation does not count as current evidence. Do not complete the version update while any fixture is stale, missing, failed, or inconclusive. The coverage report must also credit every declared handler, damage school, supported class, and companion archetype.

@@ -31,7 +31,7 @@ observation before committing it.
 Run the comparison from `website/`:
 
 ```bash
-pnpm test --run src/lib/planner/verification/verification.test.ts
+pnpm test --run src/lib/planner/verification/verification.db.test.ts
 ```
 
 This test reads every fixture and committed observation, runs the production event engine with the
