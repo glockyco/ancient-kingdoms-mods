@@ -2303,8 +2303,8 @@
                   <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, BuffSkill.cs:ScaleFearResistChanceBonus, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
                   {#if hasBardFlatDamageScaling}
                     <p class="font-mono">
-                      damage per second = abs(base value at skill level) +
-                      round(max(CHA, 0) &times; {formatNumber(
+                      damagePerSecond = abs(skillValue(level)) + round(max(CHA,
+                      0) &times; {formatNumber(
                         skill.damage_over_time_bonus_per_charisma_point,
                       )})
                     </p>
@@ -2536,7 +2536,7 @@
                     <!-- Source: Buff.cs:70-275, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
                     {#if hasBardFlatDamageScaling}
                       <p class="font-mono">
-                        damage per second = abs(base value at skill level) +
+                        damagePerSecond = abs(skillValue(level)) +
                         round(max(CHA, 0) &times; {formatNumber(
                           skill.damage_over_time_bonus_per_charisma_point,
                         )})
