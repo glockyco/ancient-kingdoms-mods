@@ -21,6 +21,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:nodb": "vitest run --exclude '**/node_modules/**' --exclude '**/*.db.test.ts'",
+    "test:combat-verification": "AK_REQUIRE_CURRENT_COMBAT_FIXTURES=1 vitest run src/lib/planner/verification/verification.db.test.ts",
     "gen:home-counts": "node scripts/generate-home-counts.mjs",
     "gen:skill-effect-parity": "tsx scripts/gen-skill-effect-parity.ts",
     "cf-deploy": "(curl -fsSL --retry 3 --retry-delay 2 https://ancient-kingdoms.compendiums.org/sitemap-manifest.json -o .sitemap-manifest.prev.json || rm -f .sitemap-manifest.prev.json) && wrangler deploy && node scripts/indexnow-ping.mjs .sitemap-manifest.prev.json static/sitemap-manifest.json && rm -f .sitemap-manifest.prev.json",

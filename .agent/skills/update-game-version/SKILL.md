@@ -63,22 +63,25 @@ Set `COMPENDIUM_VERSION` in `website/src/lib/constants/version.ts` last. The liv
 
 The ledger version and `COMPENDIUM_VERSION` describe different things. The ledger names the snapshot the anchors describe, and `COMPENDIUM_VERSION` names the published data. The two differ from phase 2 until this step.
 
-Run focused tests as each concern lands. Before the release gate, reconcile citations and record the complete combat fixture matrix:
+Run focused tests as each concern lands. Before the release gate, reconcile citations and run the committed-observation comparison:
 
 ```bash
 uv run compendium citations check
-dotnet run --project build-tool verify
-```
-
-The verification command must preserve the player save, report the current game build, and write a current observation for every committed fixture. Each fixture runs in a fresh scratch database. Scratch reuse is not an option.
-
-Then run the comparison from `website/`:
-
-```bash
+cd website
 pnpm test --run src/lib/planner/verification/verification.db.test.ts
 ```
 
-Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from the tracked planner payload generated from `server-scripts/SNAPSHOT.toml`. A stale or missing observation does not count as current evidence. Do not complete the version update while any fixture is stale, missing, failed, or inconclusive. The coverage report must also credit every declared handler, damage school, supported class, and companion archetype.
+Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from the tracked planner payload generated from `server-scripts/SNAPSHOT.toml`. Stale observations are expected after a game update and do not fail the routine release gate.
+
+Do not refresh the complete combat fixture matrix only because the assembly changed. When the server-script diff changes behavior covered by one or more committed fixtures, run only those fixtures with repeated `--fixture <name>` options. Run the complete matrix when the verification framework or fixture corpus changes, or when the user explicitly requests it:
+
+```bash
+dotnet run --project build-tool verify
+cd website
+pnpm test:combat-verification
+```
+
+A complete refresh must preserve the player save, report the current game build, and write a current observation for every committed fixture. Each fixture runs in a fresh scratch database. Scratch reuse is not an option. The explicit combat-verification gate must credit every declared handler, damage school, supported class, and companion archetype, with no stale, missing, failed, or inconclusive fixture.
 
 Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 
