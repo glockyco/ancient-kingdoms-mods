@@ -1743,6 +1743,18 @@ function effectSpecFromSkill(
       }
     }
   }
+  const periodicDamageAttributeMultiplier = requiredNumber(
+    skill,
+    "damage_over_time_bonus_per_charisma_point",
+    `${path}.damage_over_time_bonus_per_charisma_point`,
+  );
+  const scalesWithCharisma = requiredBoolean(
+    skill,
+    "scales_with_charisma",
+    `${path}.scales_with_charisma`,
+  );
+  const hasFlatCharismaDamage =
+    effects.healingPerSecond < 0 && periodicDamageAttributeMultiplier > 0;
   return {
     skillId: id,
     name: requiredString(skill, "name", `${path}.name`),
@@ -1769,11 +1781,13 @@ function effectSpecFromSkill(
     debuffPowerAttribute:
       recipient === "self"
         ? null
-        : school === "melee"
-          ? "strength"
-          : school === "poison" || school === "disease"
-            ? "dexterity"
-            : "intelligence",
+        : hasFlatCharismaDamage
+          ? "charisma"
+          : school === "melee"
+            ? "strength"
+            : school === "poison" || school === "disease"
+              ? "dexterity"
+              : "intelligence",
     meleeDebuff: school === "melee",
     bonuses: effects.bonuses,
     damagePercent: effects.damagePercent,
@@ -1793,19 +1807,17 @@ function effectSpecFromSkill(
     periodicDamage: Math.max(0, -effects.healingPerSecond),
     periodicDamagePercent: Math.max(0, -effects.healthPercentPerSecond),
     periodicDamageAttributeMultiplier:
-      effects.healingPerSecond >= 0 ||
-      recipient !== "target" ||
-      requiredBoolean(
-        skill,
-        "scales_with_charisma",
-        `${path}.scales_with_charisma`,
-      )
+      effects.healingPerSecond >= 0 || recipient !== "target"
         ? 0
-        : school === "melee"
-          ? 0.5
-          : school === "poison" || school === "disease"
-            ? 1.5
-            : 1.25,
+        : hasFlatCharismaDamage
+          ? periodicDamageAttributeMultiplier
+          : scalesWithCharisma
+            ? 0
+            : school === "melee"
+              ? 0.5
+              : school === "poison" || school === "disease"
+                ? 1.5
+                : 1.25,
   };
 }
 

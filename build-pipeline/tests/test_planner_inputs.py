@@ -32,6 +32,7 @@ class PlannerInputTests(unittest.TestCase):
             "cooldown": {"base_value": 0, "bonus_per_level": 0},
             "cast_time": {"base_value": 0, "bonus_per_level": 0},
             "cast_range": {"base_value": 1, "bonus_per_level": 0},
+            "damage_over_time_bonus_per_charisma_point": 0,
         }
         slots = [
             {

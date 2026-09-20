@@ -117,7 +117,8 @@ export function hasCharismaScaledIntegerEffect(
     hasNonZeroField(skill.fire_resist_bonus) ||
     hasNonZeroField(skill.cold_resist_bonus) ||
     hasNonZeroField(skill.disease_resist_bonus) ||
-    hasNonZeroField(skill.healing_per_second_bonus) ||
+    (skill.damage_over_time_bonus_per_charisma_point === 0 &&
+      hasNonZeroField(skill.healing_per_second_bonus)) ||
     hasNonZeroField(skill.mana_per_second_bonus) ||
     hasNonZeroField(skill.energy_per_second_bonus)
   );

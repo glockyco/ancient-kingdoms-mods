@@ -260,6 +260,10 @@
   const hasBardPercentageScaling = $derived(
     skill.scales_with_charisma && hasCharismaScaledPercentageEffect(skill),
   );
+  const hasBardFlatDamageScaling = $derived(
+    skill.scales_with_charisma &&
+      skill.damage_over_time_bonus_per_charisma_point > 0,
+  );
 
   const hasCrowdControl = $derived(
     hasLinearValue(skill.stun_chance) ||
@@ -2296,10 +2300,20 @@
                     No attribute scaling (bonus = 0).
                   </p>
                 {:else if ctx.bonusAttrSource === "player_cha"}
-                  <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, BuffSkill.cs:ScaleFearResistChanceBonus, and Charisma.cs:21-36 -->
-                  <p class="font-mono">
-                    songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
-                  </p>
+                  <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, BuffSkill.cs:ScaleFearResistChanceBonus, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
+                  {#if hasBardFlatDamageScaling}
+                    <p class="font-mono">
+                      damage per second = abs(base value at skill level) +
+                      round(max(CHA, 0) &times; {formatNumber(
+                        skill.damage_over_time_bonus_per_charisma_point,
+                      )})
+                    </p>
+                  {/if}
+                  {#if hasBardIntegerScaling || hasBardPercentageScaling}
+                    <p class="font-mono">
+                      songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
+                    </p>
+                  {/if}
                   {#if hasBardIntegerScaling}
                     <p class="font-mono">
                       final value = round(base value at skill level &times;
@@ -2519,10 +2533,20 @@
                   </p>
                 {:else}
                   {#if skill.scales_with_charisma}
-                    <!-- Source: Buff.cs:70-275 and Charisma.cs:21-36 -->
-                    <p class="font-mono">
-                      songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
-                    </p>
+                    <!-- Source: Buff.cs:70-275, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
+                    {#if hasBardFlatDamageScaling}
+                      <p class="font-mono">
+                        damage per second = abs(base value at skill level) +
+                        round(max(CHA, 0) &times; {formatNumber(
+                          skill.damage_over_time_bonus_per_charisma_point,
+                        )})
+                      </p>
+                    {/if}
+                    {#if hasBardIntegerScaling || hasBardPercentageScaling}
+                      <p class="font-mono">
+                        songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
+                      </p>
+                    {/if}
                     {#if hasBardIntegerScaling}
                       <p class="font-mono">
                         final value = round(base value at skill level &times;

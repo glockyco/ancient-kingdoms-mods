@@ -254,6 +254,9 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_enrage: Boolean(skillRaw.is_enrage),
     is_double_exp_spell: Boolean(skillRaw.is_double_exp_spell),
     scales_with_charisma: Boolean(skillRaw.scales_with_charisma),
+    damage_over_time_bonus_per_charisma_point: Number(
+      skillRaw.damage_over_time_bonus_per_charisma_point ?? 0,
+    ),
     is_bard_song: Boolean(skillRaw.is_bard_song),
     is_bard_charm: Boolean(skillRaw.is_bard_charm),
     is_bard_final_cadence: Boolean(skillRaw.is_bard_final_cadence),

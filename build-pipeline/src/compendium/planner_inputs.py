@@ -37,6 +37,7 @@ SKILL_FIELDS = {
     "cooldown",
     "cast_time",
     "cast_range",
+    "damage_over_time_bonus_per_charisma_point",
 }
 
 BOOK_GAIN_FIELDS = {

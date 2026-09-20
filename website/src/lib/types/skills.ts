@@ -186,6 +186,7 @@ export interface SkillDetailView {
   is_enrage: boolean;
   is_double_exp_spell: boolean;
   scales_with_charisma: boolean;
+  damage_over_time_bonus_per_charisma_point: number;
   is_bard_song: boolean;
   is_bard_charm: boolean;
   is_bard_final_cadence: boolean;

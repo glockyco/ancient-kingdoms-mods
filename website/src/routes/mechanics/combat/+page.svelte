@@ -450,8 +450,8 @@ percentageValue = baseValue × songPower</pre>
           Accuracy, Critical Chance, Haste, Spell Haste, and percentage resource
           regeneration. Fear Resistance follows this formula until it reaches
           the song's configured cap. Cacophony is an exception: its damage per
-          second gains the skill's configured flat bonus for each non-negative
-          Charisma point instead of using Song Power.
+          second gains 0.75 damage for each non-negative Charisma point, rounded
+          to the nearest whole number, instead of using Song Power.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           Charisma does not scale movement Speed, primary attribute bonuses,
@@ -583,10 +583,10 @@ percentageValue = baseValue × songPower</pre>
         <p class="text-sm text-muted-foreground">
           A Bard debuff song with Charisma scaling multiplies each eligible
           whole-number or percentage field by Song Power. Cacophony instead adds
-          its configured flat damage bonus per non-negative Charisma point. Bard
-          debuffs do not use the STR, DEX, or INT rules below. Movement Speed is
-          not an eligible field, so Song of Varensea does not become stronger
-          with Charisma.
+          0.75 damage per non-negative Charisma point, rounded to the nearest
+          whole number. Bard debuffs do not use the STR, DEX, or INT rules
+          below. Movement Speed is not an eligible field, so Song of Varensea
+          does not become stronger with Charisma.
         </p>
       </div>
 

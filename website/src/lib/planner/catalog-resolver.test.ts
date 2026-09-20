@@ -135,6 +135,7 @@ function skill(
     mana_cost: zero,
     energy_cost: zero,
     scales_with_charisma: false,
+    damage_over_time_bonus_per_charisma_point: 0,
     is_cleanse: false,
     ...Object.fromEntries(effectFields.map((field) => [field, zero])),
     ...overrides,

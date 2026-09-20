@@ -104,6 +104,28 @@ describe("scaleTargetDebuff", () => {
     expect(scaled.bonuses.defense).toBe(-134);
     expect(scaled.periodicDamage).toBe(189);
   });
+
+  it("adds Cacophony's flat damage from non-negative Charisma", () => {
+    const cacophony = spec({
+      debuffPowerAttribute: "charisma",
+      periodicDamage: 180,
+      periodicDamageAttributeMultiplier: 0.75,
+    });
+    const attributes = {
+      strength: 18,
+      constitution: 26,
+      dexterity: 14,
+      intelligence: 11,
+      wisdom: 9,
+      charisma: 8,
+    };
+
+    expect(scaleTargetDebuff(cacophony, attributes).periodicDamage).toBe(186);
+    expect(
+      scaleTargetDebuff(cacophony, { ...attributes, charisma: -8 })
+        .periodicDamage,
+    ).toBe(180);
+  });
 });
 
 describe("targetStatsWithEffects", () => {
