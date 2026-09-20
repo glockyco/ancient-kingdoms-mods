@@ -501,14 +501,14 @@ interface GatheringDropRow {
  * For secondary drops, uses actual_drop_chance = (1/N) * drop_rate.
  * For radiant sparks, radiant aether drop is 5-25% based on skill, not guaranteed.
  */
-// Source: server-scripts/GatherItem.cs:399
+// Source: server-scripts/GatherItem.cs:446-451
 export async function loadGatheringPopupDetails(
   resourceId: string,
 ): Promise<GatheringPopupDetails> {
   const rows = await query<GatheringDropRow>(
     `
     -- Primary drop from gathering_resources
-    -- Source: server-scripts/GatherItem.cs:399
+    -- Source: server-scripts/GatherItem.cs:446-451
     -- For radiant sparks, radiant aether is 5-25% based on skill
     -- For plants/minerals, it's guaranteed (100%)
     SELECT

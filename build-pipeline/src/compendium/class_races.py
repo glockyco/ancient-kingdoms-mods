@@ -5,7 +5,7 @@ creation takes both as independent strings and cross-checks neither, and no runt
 structure lists the races a class allows. The rule exists only in the character
 creator, which enables or disables one class button per race.
 
-- Source: server-scripts/UICharacterEditor.cs:921-1483 - changeRace* methods
+- Source: server-scripts/UICharacterEditor.cs:947-1509 - changeRace* methods
 
 `compatible_races` in `exported-data/classes.json` is transcribed from those methods.
 A build must not require the decompiled snapshot, because that snapshot is a local

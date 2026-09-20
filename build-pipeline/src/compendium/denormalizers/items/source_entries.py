@@ -7,8 +7,8 @@ from rich.console import Console
 console = Console()
 
 # Source: server-scripts/UINpcTrading.cs:354-365 — vendor purchases have no player-level gate unless the item adds faction or adventuring requirements.
-# Source: server-scripts/Npc.cs:49-51 — adventurer merchants are a distinct NPC role.
-# Source: server-scripts/Npc.cs:1951-1953 — adventurer NPC interactions treat player level 40 as the low-level cutoff.
+# Source: server-scripts/Npc.cs:52-54 — adventurer merchants are a distinct NPC role.
+# Source: server-scripts/Npc.cs:1975-1977 — adventurer NPC interactions treat player level 40 as the low-level cutoff.
 REGULAR_VENDOR_SOURCE_LEVEL = 1
 ADVENTURER_VENDOR_SOURCE_LEVEL = 40
 

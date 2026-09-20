@@ -271,8 +271,8 @@ internal static class SkillEffectFormatter
         if (skill.is_invisibility)
             parts.Add("grants invis");
         // A buff carrying illusionRace redraws the wearer as that race until it ends.
-        // Source: server-scripts/BuffSkill.cs:illusionRace,69-79 (illusionRace, HasAppearanceIllusion),
-        // server-scripts/Player.cs:6352-6362 (ReSkinPlayer picks the illusion race)
+        // Source: server-scripts/BuffSkill.cs:illusionRace,73-83 (illusionRace, HasAppearanceIllusion),
+        // server-scripts/Player.cs:6378-6388 (ReSkinPlayer picks the illusion race)
         if (!string.IsNullOrWhiteSpace(skill.illusion_race))
             parts.Add($"{skill.illusion_race} illusion");
         if (skill.is_mana_shield)

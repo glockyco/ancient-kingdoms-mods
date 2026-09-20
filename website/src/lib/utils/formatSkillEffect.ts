@@ -522,8 +522,8 @@ function formatBuffDebuffStats(
   if (skill.is_blindness) parts.push("blinds");
   if (skill.is_invisibility) parts.push("grants invis");
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
-  // Source: server-scripts/BuffSkill.cs:illusionRace,69-79 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6352-6362 (ReSkinPlayer picks the illusion race)
+  // Source: server-scripts/BuffSkill.cs:illusionRace,73-83 (illusionRace, HasAppearanceIllusion),
+  // server-scripts/Player.cs:6378-6388 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
 
@@ -832,7 +832,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   gathering: "gather herbs and reagents",
   mining: "mine ore and minerals",
   opening: "open locked chests",
-  // Source: server-scripts/GatherItem.cs:317-325,356-377 — Lockpicking allows opening locked chests
+  // Source: server-scripts/GatherItem.cs:368-376,407-428 — Lockpicking allows opening locked chests
   // using lockpicks instead of the specific key. 80% failure chance, consumes one lockpick per attempt.
   lockpicking: "open locked chests with lockpicks (20% success chance)",
   blushburst: "cosmetic visual effect",
@@ -843,7 +843,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps and Trap.cs:142-146,182-194,199-209,
   // TrapDetection.cs:25-31 — passive grants trap visibility/disarm to Rogues at any rank.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:8425-8442 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:8452-8469 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",

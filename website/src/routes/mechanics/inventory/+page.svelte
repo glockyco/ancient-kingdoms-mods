@@ -270,14 +270,14 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:403 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13240-13265 and 13275-13303 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:13278-13303 and 13313-13341 — bank gold withdraw and deposit commands. -->
         New characters start with tab 1 unlocked. Additional tabs unlock in order.
         Banked gold is stored separately from carried gold. Depositing moves carried
         gold into the account vault and withdrawing moves it back to the character.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:13196-13209 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:13234-13247 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -309,7 +309,7 @@
     <Card.Content class="space-y-6">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Housing.cs:33-49 — entering an unowned house area opens the house purchase flow. -->
-        <!-- Source: server-scripts/ChestHouse.cs:81-84 and 173-176 — only the owning account can open house chest UI. -->
+        <!-- Source: server-scripts/ChestHouse.cs:OnInteractClient and UserCode_CmdOpenChestHouse__NetworkIdentity__String — only the owning account can open house chest UI. -->
         <!-- Source: server-scripts/StrucItemUi.cs:32-35 — purchase warning says same-color chests share storage. -->
         You need to own a house before you can use house chests. Each chest type opens
         one fixed account-wide storage section. A second chest of the same type gives
@@ -335,7 +335,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:13002-13014 — move mode hides the structure, then repositions the same one without charging gold. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:13040-13052 — move mode hides the structure, then repositions the same one without charging gold. -->
           Place the selected chest with left click or
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-foreground"
@@ -345,7 +345,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9904-9937 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9956-9989 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           Individual chests can be destroyed, but there is no chest resale flow. Selling
           the house removes placed furniture, while the account-wide chest items remain
           retrievable if you buy another house.
@@ -511,30 +511,30 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:49-76 — loot pickup states and 2.4-unit reach check. -->Loot
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — loot pickup states and 2.4-unit reach check. -->Loot
           pickup requires 2.4-unit range.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:125-144 — gold deposits directly as carried gold and splits among nearby party members. -->Gold
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — gold deposits directly as carried gold and splits among nearby party members. -->Gold
           goes directly to carried gold.
         </li>
         <li>Nearby party members split gold pickups.</li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:146-151 — keys are added to key storage instead of inventory slots. -->Keys
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — keys are added to key storage instead of inventory slots. -->Keys
           go to key storage.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:85-122 — matching GatherQuest loot can be consumed for quest progress before entering inventory. -->Items
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — matching GatherQuest loot can be consumed for quest progress before entering inventory. -->Items
           that match an active GatherQuest objective are consumed on pickup when
           they advance that quest.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:162-171 — GatherInventoryQuest updates after normal inventory add succeeds. -->GatherInventoryQuest
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — GatherInventoryQuest updates after normal inventory add succeeds. -->GatherInventoryQuest
           objectives update after the item is added to inventory, and the item
           is not consumed by that quest update.
         </li>
         <li>
-          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2623-2636 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
+          <!-- Source: server-scripts/ChestLoot.cs:323-340 and Npc.cs:UserCode_CmdLootMonster — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
           <!-- Source: server-scripts/Monster.cs:UserCode_CmdLootMonster — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more
@@ -608,7 +608,7 @@
           starts with 10 durability.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:3389-3411 — death reduces each equipped item's durability and warns when broken. -->Death
+          <!-- Source: server-scripts/Player.cs:3397-3419 — death reduces each equipped item's durability and warns when broken. -->Death
           reduces equipped item durability by 1.
         </li>
         <li>
@@ -616,7 +616,7 @@
           durability is depleted.
         </li>
         <li>
-          <!-- Source: server-scripts/GatherItem.cs:287-298 and PlayerInventory.cs:137-155 — mining consumes selected pickaxe durability; 0-durability pickaxes cannot mine until repaired. -->Mining
+          <!-- Source: server-scripts/GatherItem.cs:338-349 and PlayerInventory.cs:137-155 — mining consumes selected pickaxe durability; 0-durability pickaxes cannot mine until repaired. -->Mining
           consumes pickaxe durability. A 0-durability pickaxe remains in
           inventory but cannot be used for mining until repaired.
         </li>

@@ -203,12 +203,12 @@ export const ROLE_DESCRIPTIONS: Partial<
     description: "Sells food and drinks.",
     details: ["Cost: 25 gold"],
   },
-  // Source: server-scripts/Npc.cs:16 — BarberPrice is 100 gold.
+  // Source: server-scripts/Npc.cs:BarberPrice — BarberPrice is 100 gold.
   is_barber: {
     description: "Changes your character's appearance.",
     details: ["Cost: 100 gold"],
   },
-  // Source: server-scripts/Npc.cs:1869-1879 — the mercenary recruiter opens at level 10.
+  // Source: server-scripts/Npc.cs:InteractNpc — the mercenary recruiter opens at level 10.
   // Source: server-scripts/UIMercenaries.cs:295-297,352-365,725-727 — active mercenary limits follow level thresholds 20, 30, and 40.
   // Source: server-scripts/UIMercenaries.cs:41,373 — the roster holds ten mercenaries.
   is_recruiter_mercenaries: {
@@ -218,7 +218,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-39), 4 (40+)",
     ],
   },
-  // Source: server-scripts/Npc.cs:1837-1851
+  // Source: server-scripts/Npc.cs:1861-1875
   is_priestess: {
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a>.',

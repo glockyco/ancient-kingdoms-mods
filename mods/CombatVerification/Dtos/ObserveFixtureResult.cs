@@ -34,7 +34,7 @@ namespace CombatVerification.Dtos
         /// <summary>
         /// Effects on the player at the reading. Out of combat the game refreshes a rest buff every
         /// frame, so a sheet read at rest differs from one read in combat.
-        /// Source: server-scripts/Player.cs:2194-2197.
+        /// Source: server-scripts/Player.cs:2198-2201.
         /// </summary>
         [JsonProperty("activeEffects")] public List<ActiveEffect> ActiveEffects { get; set; }
     }

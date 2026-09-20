@@ -334,12 +334,12 @@
   <section class="rounded-lg border p-5">
     <h2 class="text-xl font-semibold">How It Works</h2>
     <!-- Source: server-scripts/Utils.cs:567-576 — Fishing spot success chance per tier. -->
-    <!-- Source: server-scripts/GatherItem.cs:657-660 — < 0.2 spot success hard-blocks fishing. -->
-    <!-- Source: server-scripts/GatherItem.cs:655-677,679-690,692-709,711-727,729-746 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
-    <!-- Source: server-scripts/GatherItem.cs:666-684 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
-    <!-- Source: server-scripts/GatherItem.cs:755-786 — Fishing mastery gain and XP table. -->
-    <!-- Source: server-scripts/GatherItem.cs:936-942 — click-window length per tier. -->
-    <!-- Source: server-scripts/Player.cs:8544-8563 — auto-equips best rod and starts the cast with Random.Range(3, 8) second window delay. -->
+    <!-- Source: server-scripts/GatherItem.cs:708-711 — < 0.2 spot success hard-blocks fishing. -->
+    <!-- Source: server-scripts/GatherItem.cs:706-728,730-741,743-760,762-778,780-797 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
+    <!-- Source: server-scripts/GatherItem.cs:717-735 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
+    <!-- Source: server-scripts/GatherItem.cs:806-837 — Fishing mastery gain and XP table. -->
+    <!-- Source: server-scripts/GatherItem.cs:1112-1118 — click-window length per tier. -->
+    <!-- Source: server-scripts/Player.cs:8571-8590 — auto-equips best rod and starts the cast with Random.Range(3, 8) second window delay. -->
 
     <div class="mt-4 divide-y">
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">

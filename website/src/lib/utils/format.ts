@@ -158,11 +158,11 @@ export function formatGatheringRespawn(
   type: string,
   respawnTime: number,
 ): string {
-  // Source: server-scripts/GatherItem.cs:235-238,328-331 — Random.Range(100f, 3600f)
+  // Source: server-scripts/GatherItem.cs:286-289,379-382 — Random.Range(100f, 3600f)
   if (type === "gathering_spark" || type === "Radiant Spark") {
     return "1m40s – 1h";
   }
-  // Source: server-scripts/GatherItem.cs:815-818 — mineral and plant readiness uses Random.Range with half and full timeToWaitReady
+  // Source: server-scripts/GatherItem.cs:864-872 — mineral and plant readiness uses Random.Range with half and full timeToWaitReady
   if ((type === "gathering_mineral" || type === "Mineral") && respawnTime > 0) {
     const min = formatDuration(Math.floor(respawnTime / 2));
     const max = formatDuration(respawnTime);

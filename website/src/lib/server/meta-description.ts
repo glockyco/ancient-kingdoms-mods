@@ -238,7 +238,7 @@ function buffPhrase(
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/PotionItem.cs:24-39,143-145 — non-bandage buff
   // levels can use Elixir Endurance; bandages return their base buff level.
-  // Source: server-scripts/Pet.cs:2085-2109 — mercenary utility potions
+  // Source: server-scripts/Pet.cs:2089-2113 — mercenary utility potions
   // resolve that level from the owner's veteran rank.
   const isBandage = item.cooldown_category === "Bandages";
   // Source: server-scripts/PotionItem.cs:8-17,41-124 — health, mana, energy,
@@ -328,7 +328,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10623-10658 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10675-10710 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -458,7 +458,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12578-12582,11546-11561
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12616-12620,11582-11597
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -1416,7 +1416,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32 — subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:6908-6918 and ScriptableSkill.cs:229-231
+  // Source: server-scripts/Player.cs:6934-6944 and ScriptableSkill.cs:229-231
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1491,7 +1491,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:10224-10268,10054-10055 — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:10276-10320,10106-10107 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }

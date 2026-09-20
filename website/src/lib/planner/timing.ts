@@ -8,7 +8,7 @@ export interface SkillTiming {
   followupDefaultAttack: boolean;
 }
 
-/** Source: server-scripts/Player.cs:3236-3275. */
+/** Source: server-scripts/Player.cs:3250-3289. */
 export function playerWeaponInterval(
   weaponDelay: number,
   haste: number,
@@ -28,7 +28,7 @@ export function effectiveCastTime(
     : castTime;
 }
 
-/** Source: server-scripts/Player.cs:3236-3275. */
+/** Source: server-scripts/Player.cs:3250-3289. */
 export function playerSkillRefractory(
   skill: Pick<SkillTiming, "isSpell" | "requiredWeaponCategory">,
   weaponDelay: number,

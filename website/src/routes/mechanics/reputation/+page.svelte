@@ -237,7 +237,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:567-597 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
+      <!-- Source: server-scripts/Monster.cs:569-599 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
       <p>
         What you gain depends on the monster's level and its maximum health,
         multiplied by its rank. What you lose depends only on level.
@@ -276,7 +276,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Monster.cs:3169-3181 — the solo kill applies both lists. -->
+      <!-- Source: server-scripts/Monster.cs:3170-3182 — the solo kill applies both lists. -->
       <p>
         Because health counts, high-health bosses are worth far more than
         anything else.
@@ -303,7 +303,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1552-1584 and 1599-1631 — party and solo faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1577-1609 and 1624-1656 — party and solo faction changes on an NPC death. -->
       <p>
         Every faction on the NPC's improve list goes up by
         <span class="font-mono">NPC level × 1.5</span>. A Notable NPC multiplies
@@ -358,7 +358,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/GatherItem.cs:336-344 — opening a rewarding chest lowers its faction. -->
+      <!-- Source: server-scripts/GatherItem.cs:387-395 — opening a rewarding chest lowers its faction. -->
       <p>
         Opening a faction chest costs
         <span class="font-mono text-red-600 dark:text-red-400">200</span>
@@ -382,7 +382,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:13079-13083 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:13117-13121 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Clicking one from up close pets it and gives 1 to 4 reputation with the
         animal's faction. Each animal only pays out once every 30 seconds, so
@@ -423,7 +423,7 @@
           the quest up.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1698-1703 — faction values below -500 select the lowFactionMessages branch instead of services. -->
+          <!-- Source: server-scripts/Npc.cs:1727-1733 — faction values below -500 select the lowFactionMessages branch instead of services. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
           that faction will not talk to you. No shop, no quests, no services.
         </li>
@@ -449,7 +449,7 @@
         of the sources above applies, so a faction you ignore keeps whatever
         value it had.
       </p>
-      <!-- Source: server-scripts/Player.cs:13079-13083, Monster.cs:3169-3181, Npc.cs:1606-1616, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:13117-13121, Monster.cs:3170-3182, Npc.cs:1631-1641, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the

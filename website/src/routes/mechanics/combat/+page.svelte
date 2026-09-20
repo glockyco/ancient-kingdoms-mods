@@ -436,7 +436,7 @@ finalDamage = damage − reduction</pre>
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Charisma.cs:21-36, Buff.cs:45-275, and BuffSkill.cs:ScaleFearResistChanceBonus -->
+        <!-- Source: server-scripts/Charisma.cs:21-36, Buff.cs:ScaleWithCharisma, and BuffSkill.cs:ScaleFearResistChanceBonus and ScaleHealingPerSecondBonus -->
         <h3 class="font-semibold mb-2">Bard Song Scaling</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">songPower = 1 + min(max(CHA, 0) × 0.001, 2)
@@ -449,7 +449,9 @@ percentageValue = baseValue × songPower</pre>
           flat resource regeneration. Percentage fields include damage,
           Accuracy, Critical Chance, Haste, Spell Haste, and percentage resource
           regeneration. Fear Resistance follows this formula until it reaches
-          the song's configured cap.
+          the song's configured cap. Cacophony is an exception: its damage per
+          second gains the skill's configured flat bonus for each non-negative
+          Charisma point instead of using Song Power.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           Charisma does not scale movement Speed, primary attribute bonuses,
@@ -576,13 +578,15 @@ percentageValue = baseValue × songPower</pre>
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Buff.cs:70-275 and Charisma.cs:21-36 -->
+        <!-- Source: server-scripts/Buff.cs:ScaleWithCharisma, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
         <h3 class="font-semibold mb-1">Bard Debuff Songs</h3>
         <p class="text-sm text-muted-foreground">
           A Bard debuff song with Charisma scaling multiplies each eligible
-          whole-number or percentage field by Song Power. It does not use the
-          STR, DEX, or INT rules below. Movement Speed is not an eligible field,
-          so Song of Varensea does not become stronger with Charisma.
+          whole-number or percentage field by Song Power. Cacophony instead adds
+          its configured flat damage bonus per non-negative Charisma point. Bard
+          debuffs do not use the STR, DEX, or INT rules below. Movement Speed is
+          not an eligible field, so Song of Varensea does not become stronger
+          with Charisma.
         </p>
       </div>
 
@@ -734,7 +738,7 @@ percentageValue = baseValue × songPower</pre>
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/Player.cs:3051-3054,3186-3188 -->
+              <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod and 3190-3192 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -990,7 +994,7 @@ percentageValue = baseValue × songPower</pre>
         <!-- Source: server-scripts/Skills.cs:1542-1547 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
         <!-- Source: server-scripts/Skills.cs:233-236 (DoT tick also calls BreakMezz) -->
-        <!-- Source: server-scripts/Monster.cs:1544-1558 (monster self-break: magic resist roll every 6s) -->
+        <!-- Source: server-scripts/Monster.cs:1546-1560 (monster self-break: magic resist roll every 6s) -->
         <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Sleep</h3>
         <p class="text-sm text-muted-foreground">
@@ -1014,7 +1018,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:11972-11976 -->
+        <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:12008-12012 -->
         <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
         <p class="text-sm text-muted-foreground">
           Parry is a timed counter. If an eligible player is casting Parry and
@@ -1058,7 +1062,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:457-479 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It

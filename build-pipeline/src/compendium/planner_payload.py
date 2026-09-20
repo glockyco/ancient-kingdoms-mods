@@ -30,7 +30,7 @@ EXCLUDED_CLASS_REASONS: dict[str, str] = {
 }
 # Buffs the server applies to every player by state rather than by class: the rest buff
 # whenever the player is out of combat, or the serenity buff while a serenity item is worn.
-# Source: server-scripts/Player.cs:2194-2197.
+# Source: server-scripts/Player.cs:2198-2201.
 STATE_BUFF_SKILL_IDS = frozenset({"rest", "serenity"})
 ADMITTED_ITEM_TYPES = frozenset(
     {"equipment", "weapon", "augment", "food", "potion", "ammo", "book"}

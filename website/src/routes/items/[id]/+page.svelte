@@ -961,7 +961,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1791-1798 -->
+                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1815-1822 -->
                 <div class={styles.value}>
                   {formatGold(10000)}g + Token of Redemption
                 </div>
@@ -1146,7 +1146,7 @@
           </Card.Content>
         </Card.Root>
       {:else if data.item.id === "lockpicks"}
-        <!-- Source: server-scripts/GatherItem.cs:317-325,356-377 — Lockpicking skill -->
+        <!-- Source: server-scripts/GatherItem.cs:368-376,407-428 — Lockpicking skill -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Lockpicking</Card.Title>
@@ -1658,7 +1658,7 @@
           <Card.Title>Mechanics</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-3 text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:4105-4135 — using the item summons the pet, or dismisses the one it already summoned. -->
+          <!-- Source: server-scripts/Player.cs:4113-4143 — using the item summons the pet, or dismisses the one it already summoned. -->
           <p>
             Use the whistle to summon the pet. Using it again dismisses that
             pet. Three pets can follow you at once.
@@ -1671,7 +1671,7 @@
             character&gt;'s pet".
           </p>
           <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <!-- Source: server-scripts/Player.cs:10889-10892 — portals respawn the followers at the destination. -->
+          <!-- Source: server-scripts/Player.cs:10941-10944 — portals respawn the followers at the destination. -->
           <p>
             The pet follows you, catches up when it falls far behind, and
             reappears beside you after you take a portal. It is cosmetic and

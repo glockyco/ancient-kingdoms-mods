@@ -2644,7 +2644,7 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
-        <!-- Source: server-scripts/Buff.cs:19 (3 counters); BuffSkill.cs:457-479 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
@@ -2673,7 +2673,7 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
-        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:457-479 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:19 (3 counters); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:19 (3 counters); Skills.cs:1606-1611 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">
@@ -2800,7 +2800,7 @@
           </div>
         {/if}
         {#if skill.id === "parry"}
-          <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:11972-11976 -->
+          <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:12008-12012 -->
           <div class="space-y-1">
             <h3 class="font-semibold">
               <a
@@ -2914,7 +2914,7 @@
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
           <!-- Source: server-scripts/Skills.cs:1542-1547 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:DealDamageAt (any damage > 0 calls BreakMezz) -->
-          <!-- Source: server-scripts/Monster.cs:1544-1558 (monster self-break roll every 6s) -->
+          <!-- Source: server-scripts/Monster.cs:1546-1560 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
@@ -3045,7 +3045,7 @@
           </div>
         {/if}
         {#if skill.is_blindness}
-          <!-- Source: server-scripts/Player.cs:11257-11289 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcAddBlind and UserCode_TargetRpcRemoveBlind -->
           <!-- Source: server-scripts/Skills.cs:1213-1215 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>

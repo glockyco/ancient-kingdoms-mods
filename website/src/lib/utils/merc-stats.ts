@@ -10,7 +10,7 @@ import {
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 
-// Source: server-scripts/Player.cs:9787-9799 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:9814-9826 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -28,7 +28,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:9991-10028 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:10043-10080 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -73,7 +73,7 @@ export interface ClassDef {
 }
 
 // Source: server-scripts/Utils.cs:635-644 — class race pools.
-// Source: server-scripts/Player.cs:8169-8205,8206-8234,8235-8263,8264-8292,8293-8321,8322-8353 — per-class attribute divisors.
+// Source: server-scripts/Player.cs:8196-8232,8233-8261,8262-8290,8291-8319,8320-8348,8349-8380 — per-class attribute divisors.
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
     type: "Warrior",
@@ -124,7 +124,7 @@ export type Curves = Record<string, Curve>;
 const linear = (base: number, per: number, level: number): number =>
   base + per * (level - 1);
 
-// Source: server-scripts/Player.cs:8169-8205,8206-8234,8235-8263,8264-8292,8293-8321,8322-8353 — mercenary attributes are floor(level / class divisor).
+// Source: server-scripts/Player.cs:8196-8232,8233-8261,8262-8290,8291-8319,8320-8348,8349-8380 — mercenary attributes are floor(level / class divisor).
 export function attrs(cls: string, level: number): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [a, n] of Object.entries(CLASSES[cls].div))
@@ -132,13 +132,13 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9772-9789 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9799-9816 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(multiplyF32(hpCurve, mult)) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9772-9799 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9799-9826 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(multiplyF32(manaCurve, mult)) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:9991-10028 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:10043-10080 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(multiplyF32(level, factor)) - 1;
 
@@ -164,9 +164,9 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:9986-9987,9991-10028,10054-10066 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
-/** Source: server-scripts/Player.cs:9772-9799 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
-/** Source: server-scripts/Player.cs:8169-8205,8206-8234,8235-8263,8264-8292,8293-8321,8322-8353 — class attributes are rebuilt from level. */
+/** Source: server-scripts/Player.cs:10038-10039,10043-10080,10106-10118 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
+/** Source: server-scripts/Player.cs:9799-9826 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:8196-8232,8233-8261,8262-8290,8291-8319,8320-8348,8349-8380 — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
   veteran: number,

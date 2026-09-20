@@ -108,7 +108,7 @@ const TARGET_DEBUFF_STATS: ReadonlyArray<
  * Captures the caster's debuff-power attribute into the defensive penalties when the effect lands.
  * A negative defense bonus uses half Strength for a melee debuff and 40 percent otherwise; every
  * negative resist bonus uses 40 percent. Positive values add 15 percent.
- * Sources: server-scripts/BuffSkill.cs:422-453 and server-scripts/Buff.cs:114-230.
+ * Sources: server-scripts/BuffSkill.cs:435-466 and server-scripts/Buff.cs:114-230.
  */
 export function scaleTargetDebuff(
   spec: EffectSpec,

@@ -46,8 +46,8 @@ const reputationAmountFormat = new Intl.NumberFormat("en-US", {
  * Reputation changed per kill for a monster, formatted as a range across its
  * spawn levels (level_min..level_max).
  *
- * Source: server-scripts/Monster.cs:567-593 (formula),
- * 3133-3145 and 3169-3181 (party/solo reward application).
+ * Source: server-scripts/Monster.cs:569-595 (formula),
+ * 3134-3146 and 3170-3182 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
  * (boss 20 / elite 10 / normal 2); decrease subtracts level.current *
  * (boss 2 / elite 1 / normal 0.5).
@@ -96,7 +96,7 @@ export function monsterKillReputation(
 /**
  * Reputation changed per kill for an NPC.
  *
- * Source: server-scripts/Npc.cs:1552-1584 (party) / 1599-1631 (solo).
+ * Source: server-scripts/Npc.cs:1577-1609 (party) / 1624-1656 (solo).
  * Improve adds level.current * 1.5, multiplied by 60 for a notable NPC.
  * Decrease subtracts level.current * 5.
  */
