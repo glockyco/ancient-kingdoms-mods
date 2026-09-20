@@ -143,6 +143,7 @@ public class SkillData
     public bool is_teleport { get; set; }
     public bool is_relic { get; set; }
     public bool scales_with_charisma { get; set; }
+    public float damage_over_time_bonus_per_charisma_point { get; set; }
     public bool is_bard_song { get; set; }
     public bool is_bard_charm { get; set; }
     public bool is_bard_final_cadence { get; set; }

@@ -1222,6 +1222,7 @@ CREATE TABLE skills (
     is_teleport BOOLEAN DEFAULT 0,
     is_relic BOOLEAN DEFAULT 0,
     scales_with_charisma BOOLEAN DEFAULT 0,
+    damage_over_time_bonus_per_charisma_point REAL NOT NULL DEFAULT 0.0,
     is_bard_song BOOLEAN DEFAULT 0,
     is_bard_charm BOOLEAN DEFAULT 0,
     is_bard_final_cadence BOOLEAN DEFAULT 0,

@@ -434,6 +434,7 @@ public class SkillExporter : BaseExporter
             skillData.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
             skillData.is_decrease_resists_skill = buffSkill.isDecreaseResistsSkill;
             skillData.scales_with_charisma = buffSkill.scalesWithCharisma;
+            skillData.damage_over_time_bonus_per_charisma_point = buffSkill.damageOverTimeBonusPerCharismaPoint;
 
             var areaBuffSkill = skill.TryCast<Il2Cpp.AreaBuffSkill>();
             if (areaBuffSkill != null)

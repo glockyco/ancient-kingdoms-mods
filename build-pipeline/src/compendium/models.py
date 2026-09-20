@@ -722,6 +722,7 @@ class SkillData(BaseModel):
     is_teleport: bool = False
     is_relic: bool = False
     scales_with_charisma: bool = False
+    damage_over_time_bonus_per_charisma_point: float = Field(default=0.0, ge=0.0)
     is_bard_song: bool = False
     is_bard_charm: bool = False
     is_bard_final_cadence: bool = False
