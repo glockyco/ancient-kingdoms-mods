@@ -86,6 +86,9 @@
     "BardMercenarySkills.cs:NextAttackSkill": {
       "span": 0
     },
+    "BardMercenarySkills.cs:OnStartServer": {
+      "span": 0
+    },
     "BardMercenarySkills.cs:RefreshAura": {
       "span": 0
     },

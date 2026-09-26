@@ -2049,7 +2049,34 @@
           </div>
         {/if}
 
-        {#if skill.is_bard_song}
+        {#if skill.is_bard_song && usedByBardMercenary}
+          <!-- Source: server-scripts/BardMercenarySkills.cs:OnStartServer,LateUpdate,RefreshAura,MaximumCombatSongs -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Mercenary Song Aura</h3>
+            <p class="font-mono">
+              activeDuration = baseDuration; reapplied every 2.5s while the song
+              stays active
+            </p>
+            <p class="text-muted-foreground">
+              The Bard mercenary sings by itself. Out of combat it keeps only
+              Wayfarer's Rhythm active. In combat it keeps Grand Symphony and
+              March of Celerity active, and from level 40 also Anthem of Focus.
+              It starts one song at a time. The songs stop when the mercenary or
+              its owner dies, or when the mercenary is hidden, stunned, feared,
+              or asleep.
+            </p>
+          </div>
+          <div class="space-y-1">
+            <h3 class="font-semibold">Active Song Limit</h3>
+            <p class="font-mono">
+              maximumCombatSongs = 2 below level 40, 3 at level 40 and above
+            </p>
+            <p class="text-muted-foreground">
+              Polyphony and learned song duration bonuses do not apply to the
+              mercenary.
+            </p>
+          </div>
+        {:else if skill.is_bard_song}
           <!-- Source: PlayerSkills.cs:911-917,1169-1180 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Song Aura</h3>
@@ -2107,7 +2134,12 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Final Cadence</h3>
             <p class="font-mono">
-              Requirement: activeSongs &gt;= maximumActiveSongs
+              {#if usedByBardMercenary}
+                Requirement: mercenary level &gt;= 50 and activeSongs =
+                maximumCombatSongs
+              {:else}
+                Requirement: activeSongs &gt;= maximumActiveSongs
+              {/if}
             </p>
             <p class="font-mono">
               baseHealing = round(skillHealing(level) &times; (1 + min(max(CHA,
@@ -2123,7 +2155,11 @@
             <p class="text-muted-foreground">
               The Bard's critical chance determines one roll shared by every
               recipient. Damage uses the same Charisma multiplier before the
-              normal magic damage pipeline.
+              normal magic damage pipeline. Familiars are not healed.
+              {#if usedByBardMercenary}
+                The mercenary damages only enemies that target its owner, a
+                party member, or one of their pets.
+              {/if}
             </p>
           </div>
         {/if}
