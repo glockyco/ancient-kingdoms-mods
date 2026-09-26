@@ -21,11 +21,13 @@ SUPPORTED_CLASS_IDS = frozenset(
     {"warrior", "ranger", "cleric", "rogue", "wizard", "druid"}
 )
 # A class the export contains that the engine does not model. Each entry names its reason so
-# a reader of the payload sees the exclusion instead of an absent row.
+# a reader of the payload sees the exclusion instead of an absent row. The exclusion also
+# covers the class's mercenary archetype and every skill only that archetype uses.
 EXCLUDED_CLASS_REASONS: dict[str, str] = {
     "bard": (
         "The Bard song system (BardSongSkill and its sibling skill classes, active-song "
-        "state, auras, renewal, and charm) has no combat model."
+        "state, auras, renewal, and charm) has no combat model. The Bard mercenary "
+        "(BardMercenarySkills) uses the same system."
     ),
 }
 # Buffs the server applies to every player by state rather than by class: the rest buff
@@ -314,13 +316,21 @@ def _build_payload(
         for field in ("food_buff_id", "potion_buff_id", "weapon_proc_effect_id")
         if item.get(field)
     }
-    mercenary_skill_ids = {
-        str(skill_id)
+    exported_mercenaries = [
+        _with_mercenary_class_id(pet, classes)
         for pet in pets
         if pet.get("id") in surviving_pets and pet.get("is_mercenary") is True
-        for field in ("skill_ids", "innate_skill_ids")
-        for skill_id in pet.get(field) or ()
-    }
+    ]
+    mercenaries = [
+        pet for pet in exported_mercenaries if pet["class_id"] in planner_class_ids
+    ]
+    mercenary_skill_ids = _mercenary_skill_ids(mercenaries)
+    excluded_mercenary_skill_ids = (
+        _mercenary_skill_ids(
+            [pet for pet in exported_mercenaries if pet not in mercenaries]
+        )
+        - mercenary_skill_ids
+    )
     emitted_skills = [
         skill
         for skill in skills
@@ -333,7 +343,10 @@ def _build_payload(
                 }
                 & planner_class_ids
             )
-            or bool(skill.get("is_mercenary_skill"))
+            or (
+                bool(skill.get("is_mercenary_skill"))
+                and skill.get("id") not in excluded_mercenary_skill_ids
+            )
             or skill.get("id") in mercenary_skill_ids
             or skill.get("id") in effect_skill_ids
             or skill.get("id") in STATE_BUFF_SKILL_IDS
@@ -347,11 +360,6 @@ def _build_payload(
             "Planner payload is missing state buff skills: "
             + ", ".join(sorted(missing_state_buffs))
         )
-    mercenaries = [
-        _with_mercenary_class_id(pet, classes)
-        for pet in pets
-        if pet.get("id") in surviving_pets and pet.get("is_mercenary") is True
-    ]
 
     classifications = _classify_effects(admitted_items, emitted_skills)
     _require_effect_references(effect_skill_ids, emitted_skills)
@@ -546,6 +554,15 @@ def _with_mercenary_class_id(
             f"Mercenary {pet_id!r} does not resolve to exactly one class"
         )
     return {**pet, "class_id": matches[0]}
+
+
+def _mercenary_skill_ids(mercenaries: list[dict[str, Any]]) -> set[str]:
+    return {
+        str(skill_id)
+        for pet in mercenaries
+        for field in ("skill_ids", "innate_skill_ids")
+        for skill_id in pet.get(field) or ()
+    }
 
 
 def _ids(conn: sqlite3.Connection, table: str) -> set[str]:

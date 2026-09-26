@@ -179,6 +179,8 @@ class PlannerPayloadTests(unittest.TestCase):
     def test_excluded_class_is_named_with_its_reason(self):
         self.conn.execute("INSERT INTO classes VALUES ('bard')")
         self.conn.execute("INSERT INTO skills VALUES ('anthem_of_focus')")
+        self.conn.execute("INSERT INTO skills VALUES ('mercenary_anthem_of_focus')")
+        self.conn.execute("INSERT INTO pets VALUES ('bard_mercenary')")
 
         def append_row(filename, row):
             path = self.exports / filename
@@ -201,6 +203,24 @@ class PlannerPayloadTests(unittest.TestCase):
             },
         )
         append_row(
+            "skills.json",
+            {
+                "id": "mercenary_anthem_of_focus",
+                "skill_type": "area_buff",
+                "is_mercenary_skill": True,
+                "scales_with_charisma": True,
+            },
+        )
+        append_row(
+            "pets.json",
+            {
+                "id": "bard_mercenary",
+                "name": "Bard Mercenary",
+                "is_mercenary": True,
+                "skill_ids": ["mercenary_anthem_of_focus"],
+            },
+        )
+        append_row(
             "equipment_slots.json",
             {
                 "owner_type": "player",
@@ -218,6 +238,12 @@ class PlannerPayloadTests(unittest.TestCase):
 
         self.assertNotIn("bard", {row["id"] for row in payload["classes"]})
         self.assertNotIn("anthem_of_focus", {row["id"] for row in payload["skills"]})
+        self.assertNotIn(
+            "mercenary_anthem_of_focus", {row["id"] for row in payload["skills"]}
+        )
+        self.assertEqual(
+            ["warrior"], [row["class_id"] for row in payload["mercenaryArchetypes"]]
+        )
         self.assertEqual(payload["classDomain"]["supported"], ["warrior"])
         self.assertEqual(
             [entry["classId"] for entry in payload["classDomain"]["excluded"]],
