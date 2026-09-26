@@ -35,11 +35,11 @@ interface NpcKillReputationInput {
 
 // Monster faction changes use the slain monster's level and exported max health.
 // Improve adds (level + round(max health / 2000)) * rank factor. Decrease uses
-// only level. Fractional results (normal-rank loss is level * 0.5) are kept
-// exactly as the game adds them to the faction value, so up to one decimal is
+// only level. Fractional results (normal-rank loss is level * 0.75) are kept
+// exactly as the game adds them to the faction value, so up to two decimals are
 // shown.
 const reputationAmountFormat = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 1,
+  maximumFractionDigits: 2,
 });
 
 /**
@@ -47,10 +47,10 @@ const reputationAmountFormat = new Intl.NumberFormat("en-US", {
  * spawn levels (level_min..level_max).
  *
  * Source: server-scripts/Monster.cs:569-595 (formula),
- * 3134-3146 and 3170-3182 (party/solo reward application).
+ * 3135-3147 and 3171-3183 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
- * (boss 20 / elite 10 / normal 2); decrease subtracts level.current *
- * (boss 2 / elite 1 / normal 0.5).
+ * (boss 20 / elite 10 / normal 1); decrease subtracts level.current *
+ * (boss 2 / elite 1 / normal 0.75).
  */
 function monsterReputationAmount(
   monster: MonsterKillReputationInput,
@@ -59,12 +59,12 @@ function monsterReputationAmount(
   let min: number;
   let max: number;
   if (direction === "improve") {
-    const rankMultiplier = monster.is_boss ? 20 : monster.is_elite ? 10 : 2;
+    const rankMultiplier = monster.is_boss ? 20 : monster.is_elite ? 10 : 1;
     const healthBonus = iround(monster.health / 2000);
     min = (monster.level_min + healthBonus) * rankMultiplier;
     max = (monster.level_max + healthBonus) * rankMultiplier;
   } else {
-    const multiplier = monster.is_boss ? 2 : monster.is_elite ? 1 : 0.5;
+    const multiplier = monster.is_boss ? 2 : monster.is_elite ? 1 : 0.75;
     min = monster.level_min * multiplier;
     max = monster.level_max * multiplier;
   }

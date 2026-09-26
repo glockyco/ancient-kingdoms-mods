@@ -269,14 +269,14 @@
             <tr class="border-b border-border/50 hover:bg-muted/30">
               <td class="py-2 pr-4">Normal</td>
               <td class="py-2 pr-4 font-mono"
-                >(level + round(max health / 2000)) × 2</td
+                >level + round(max health / 2000)</td
               >
-              <td class="py-2 font-mono">level × 0.5</td>
+              <td class="py-2 font-mono">level × 0.75</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Monster.cs:3170-3182 — the solo kill applies both lists. -->
+      <!-- Source: server-scripts/Monster.cs:3171-3183 — the solo kill applies both lists. -->
       <p>
         Because health counts, high-health bosses are worth far more than
         anything else.
@@ -382,7 +382,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:13117-13121 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:13156-13160 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Clicking one from up close pets it and gives 1 to 4 reputation with the
         animal's faction. Each animal only pays out once every 30 seconds, so
@@ -449,7 +449,7 @@
         of the sources above applies, so a faction you ignore keeps whatever
         value it had.
       </p>
-      <!-- Source: server-scripts/Player.cs:13117-13121, Monster.cs:3170-3182, Npc.cs:1631-1641, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:13156-13160, Monster.cs:3171-3183, Npc.cs:1631-1641, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the

@@ -14,8 +14,8 @@ const baseMonster = {
 describe("monsterKillReputation", () => {
   it("uses max health and normal-rank multipliers for improvements", () => {
     expect(monsterKillReputation(baseMonster)).toEqual([
-      { direction: "improve", amount: "24", factions: ["Army of Order"] },
-      { direction: "decrease", amount: "5", factions: ["Dark Alliance"] },
+      { direction: "improve", amount: "12", factions: ["Army of Order"] },
+      { direction: "decrease", amount: "7.5", factions: ["Dark Alliance"] },
     ]);
   });
 
@@ -35,27 +35,27 @@ describe("monsterKillReputation", () => {
     ]);
   });
 
-  it("preserves the half-point produced by fractional multipliers", () => {
+  it("preserves the quarter-points produced by fractional multipliers", () => {
     const oddLevel = { ...baseMonster, level_min: 7, level_max: 7 };
     expect(monsterKillReputation(oddLevel).map((e) => e.amount)).toEqual([
-      "18",
-      "3.5",
+      "9",
+      "5.25",
     ]);
   });
 
   it("renders a range across the spawn levels", () => {
     const ranged = { ...baseMonster, level_min: 10, level_max: 14 };
     expect(monsterKillReputation(ranged).map((e) => e.amount)).toEqual([
-      "24-32",
-      "5-7",
+      "12-16",
+      "7.5-10.5",
     ]);
   });
 
   it("matches Mathf.RoundToInt midpoint-to-even health rounding", () => {
     const roundDown = { ...baseMonster, health: 1000 };
     const roundUp = { ...baseMonster, health: 3000 };
-    expect(monsterKillReputation(roundDown)[0]?.amount).toBe("20");
-    expect(monsterKillReputation(roundUp)[0]?.amount).toBe("24");
+    expect(monsterKillReputation(roundDown)[0]?.amount).toBe("10");
+    expect(monsterKillReputation(roundUp)[0]?.amount).toBe("12");
   });
 
   it("groups every faction of a direction under one shared amount", () => {
