@@ -700,13 +700,13 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Spending and Counting</h3>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/PlayerSkills.cs:1344-1354 — the total counts unspent points plus the base levels of learned veteran skills. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1361-1371 — the total counts unspent points plus the base levels of learned veteran skills. -->
           Veteran Points buy levels in veteran skills. Your veteran total counts unspent
           points plus the levels you already put into veteran skills, so spending
           them never lowers it.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:10516-10551 and server-scripts/Npc.cs:1817-1835 — a veteran master refunds spent veteran skill points for gold and a token. -->
+          <!-- Source: server-scripts/Player.cs:10555-10590 and server-scripts/Npc.cs:1817-1835 — a veteran master refunds spent veteran skill points for gold and a token. -->
           A veteran master refunds every spent Veteran Point for 10,000 gold and a
           {#if data.redemptionToken}
             <ItemLink
@@ -875,7 +875,7 @@
         </p>
         <!-- Source: server-scripts/Experience.cs:496-503 — dungeon +10% bonus -->
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP skill (solo kill) -->
-        <!-- Source: server-scripts/Monster.cs:3163 — Forgotten Altar ×1.4 (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:3164 — Forgotten Altar ×1.4 (solo kill) -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
@@ -921,9 +921,9 @@
           </table>
         </div>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
-        <!-- Source: server-scripts/GatherItem.cs:589 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:13243 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:13243 — double XP applies to scribing -->
+        <!-- Source: server-scripts/GatherItem.cs:640,825 — double XP applies to gathering -->
+        <!-- Source: server-scripts/Player.cs:13293 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:13293 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
@@ -937,7 +937,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:3101-3129 — party kill XP award loop -->
+        <!-- Source: server-scripts/Monster.cs:3102-3130 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
@@ -1186,7 +1186,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:11694-11701 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:11733-11740 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1243,8 +1243,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13470-13476 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:11938-11963 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:13520-13526 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:11977-12002 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1283,7 +1283,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13470-13476 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:13520-13526 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

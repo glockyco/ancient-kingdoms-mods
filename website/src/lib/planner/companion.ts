@@ -24,7 +24,7 @@ interface HireRange {
   combatFactor: number;
 }
 
-/** Source: server-scripts/Player.cs:10046-10078. */
+/** Source: server-scripts/Player.cs:10080-10112. */
 const HIRE_RANGES: Readonly<Record<CompanionRace, HireRange>> = {
   human: {
     healthMaximum: 1,
@@ -70,7 +70,7 @@ const HIRE_RANGES: Readonly<Record<CompanionRace, HireRange>> = {
   },
 };
 
-/** Source: server-scripts/Player.cs:8197-8397. */
+/** Source: server-scripts/Player.cs:UpdateMercStatsByLevel. */
 const ATTRIBUTE_CADENCE: Readonly<
   Record<CompanionArchetype, Readonly<Record<keyof AttributeSet, number>>>
 > = {
@@ -128,7 +128,7 @@ function energyArchetype(archetype: CompanionArchetype): boolean {
   return archetype === "warrior" || archetype === "rogue";
 }
 
-/** Source: server-scripts/PetSkills.cs:27-41. */
+/** Source: server-scripts/PetSkills.cs:OnStartServer. */
 export function companionSkillLevel(
   ownerLevel: number,
   veteranPoints: number,
@@ -147,7 +147,7 @@ export function companionSkillLevel(
   );
 }
 
-/** Source: server-scripts/Player.cs:8196-8403. */
+/** Source: server-scripts/Player.cs:UpdateMercStatsByLevel. */
 export function companionProgressionAttributes(
   archetype: CompanionArchetype,
   ownerLevel: number,
@@ -223,7 +223,7 @@ function requirePositive(value: number, path: string): number {
 /**
  * Builds the stat sheet for one newly hired or captured mercenary. The base combat value deliberately
  * excludes the level-up accumulation that disappears on reload.
- * Sources: server-scripts/Player.cs:10046-10133 and server-scripts/Energy.cs:24-35.
+ * Sources: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean and server-scripts/Energy.cs:24-35.
  */
 export function buildCompanionCombatState(
   input: CompanionStateInput,

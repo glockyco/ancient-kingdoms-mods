@@ -142,7 +142,7 @@ _EXCLUDED_SKILL_FLAGS = frozenset(
         "is_invisibility",
         "is_mana_shield",
         # Orders the buff display and silences a chat line; no combat effect.
-        # Source: server-scripts/Skills.cs:754-758,1916.
+        # Source: server-scripts/Skills.cs:754-758,1921.
         "is_permanent",
         "is_resurrect_skill",
         "is_scroll",

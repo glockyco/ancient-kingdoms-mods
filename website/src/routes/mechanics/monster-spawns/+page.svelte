@@ -205,19 +205,19 @@
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
-        <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD,10964,12976 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
+        <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD,11003,13015 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
         About 5 seconds after the last player leaves a zone (immediately, on a logout),
         the entire zone is switched off. Monsters in it stop acting entirely — they
         do not move, fight, or respawn until a player enters again.
       </p>
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          <!-- Source: server-scripts/Monster.cs:3108-3129 — on zone deactivation dead monsters are hidden, warped home, and their corpse deadline is set to now. -->
+          <!-- Source: server-scripts/Monster.cs:3109-3130 — on zone deactivation dead monsters are hidden, warped home, and their corpse deadline is set to now. -->
           Corpses are removed the moment the zone shuts down. Loot you left on a corpse
           is gone when you come back.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:3087-3106 — on zone reactivation living monsters warp to start position, heal to full, and clear target, aggro, pets, and debuffs. -->
+          <!-- Source: server-scripts/Monster.cs:3088-3107 — on zone reactivation living monsters warp to start position, heal to full, and clear target, aggro, pets, and debuffs. -->
           When the zone wakes up again, monsters that were alive snap back to their
           spawn point at full health with aggro cleared. You cannot pull a monster
           away or damage it, leave the zone, and expect it to stay put or stay hurt.
@@ -261,7 +261,7 @@
           time (about 5 minutes).
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13903-13907 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
+          <!-- Source: server-scripts/Player.cs:13953-13957 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
           For dungeon bosses these timers can be wiped for gold — see
           <a
             href="#renewal-sages"
@@ -522,17 +522,17 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Player.cs:13897-13908 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
+          <!-- Source: server-scripts/Player.cs:13947-13958 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
           A renewal marks every respawn timer in the dungeon as due — regular monsters,
           elites, and bosses alike, including saved boss deadlines.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13897-13908 — the renewal only writes timers; health and state of living monsters are untouched. -->
+          <!-- Source: server-scripts/Player.cs:13947-13958 — the renewal only writes timers; health and state of living monsters are untouched. -->
           Nothing despawns. Monsters that are alive — including a rare or boss that
           is already up — are not touched. A renewal only affects the dead.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13883-13889 — the renewal is refused while any player is inside the dungeon. -->
+          <!-- Source: server-scripts/Player.cs:13933-13939 — the renewal is refused while any player is inside the dungeon. -->
           A renewal is refused while anyone is inside the dungeon. The respawns therefore
           happen the moment the next player walks in, since the empty zone is switched
           off at the time of purchase.
@@ -545,7 +545,7 @@
       </ul>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:14158-14170 and Monster.cs:2219-2224 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:14208-14220 and Monster.cs:2219-2224 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         Renewals interact with rare spawns in a useful way. Buying several renewals
         back-to-back is wasted gold: the roll only fires when someone enters, so you
         get one roll on the next entry no matter how many renewals you stacked. But
@@ -787,7 +787,7 @@
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:671-679 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
         <!-- Source: server-scripts/SummonMonster.cs:26,36-46,52-69 — once per second the trigger checks for a fresh alive-to-all-dead placeholder cycle; kills are not counted. -->
-        <!-- Source: server-scripts/Monster.cs:1864 and 1882-1897 — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
+        <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
         Each summon watches a fixed set of nearby spawns. There is no kill counter
         — kills do not add up. The watched group must be alive before a fresh clear
         can qualify. What matters is that every watched monster is then dead at the

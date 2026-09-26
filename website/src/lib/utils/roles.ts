@@ -209,8 +209,8 @@ export const ROLE_DESCRIPTIONS: Partial<
     details: ["Cost: 100 gold"],
   },
   // Source: server-scripts/Npc.cs:InteractNpc — the mercenary recruiter opens at level 10.
-  // Source: server-scripts/UIMercenaries.cs:295-297,352-365,725-727 — active mercenary limits follow level thresholds 20, 30, and 40.
-  // Source: server-scripts/UIMercenaries.cs:41,373 — the roster holds ten mercenaries.
+  // Source: server-scripts/UIMercenaries.cs:297-299,359-372,732-734 — active mercenary limits follow level thresholds 20, 30, and 40.
+  // Source: server-scripts/UIMercenaries.cs:43,380 — the roster holds ten mercenaries.
   is_recruiter_mercenaries: {
     description: "Hire and manage mercenaries (up to 10 stored).",
     details: [

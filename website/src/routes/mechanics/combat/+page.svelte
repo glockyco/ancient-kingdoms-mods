@@ -674,7 +674,7 @@ percentageValue = baseValue × songPower</pre>
                   class="py-1 text-muted-foreground">−INT×0.5</td
                 ></tr
               >
-              <!-- Source: server-scripts/Skills.cs:1604-1620 — poison and disease debuffs add RoundToInt(bonusAttribute * 1.5) before resistance. -->
+              <!-- Source: server-scripts/Skills.cs:1609-1625 — poison and disease debuffs add RoundToInt(bonusAttribute * 1.5) before resistance. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">DoT poison/disease</td><td
                   class="py-1 text-muted-foreground"
@@ -991,7 +991,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Skills.cs:1542-1547 (BreakMezz — entity.speed <= -50f) -->
+        <!-- Source: server-scripts/Skills.cs:1547-1552 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
         <!-- Source: server-scripts/Skills.cs:233-236 (DoT tick also calls BreakMezz) -->
         <!-- Source: server-scripts/Monster.cs:1546-1560 (monster self-break: magic resist roll every 6s) -->
@@ -1018,7 +1018,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:12008-12012 -->
+        <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:12047-12051 -->
         <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
         <p class="text-sm text-muted-foreground">
           Parry is a timed counter. If an eligible player is casting Parry and
@@ -1062,7 +1062,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1606-1611 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1611-1616 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It

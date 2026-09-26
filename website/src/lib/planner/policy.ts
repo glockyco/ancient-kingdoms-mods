@@ -91,7 +91,7 @@ export function priorityPolicy(order: readonly string[]): ActionPolicy {
  * The shared special-action timer redraws from 2 to 4 seconds and picks uniformly among ready
  * offensive skills that a healer's reserve allows and the target does not already hold. Otherwise
  * the companion uses its default attack when ready.
- * Source: server-scripts/Pet.cs:1326-1366; server-scripts/PetSkills.cs:60-119,143-178.
+ * Source: server-scripts/Pet.cs:1333-1373; server-scripts/PetSkills.cs:NextAttackSkill; server-scripts/BardMercenarySkills.cs:NextAttackSkill.
  */
 export function companionPolicy(): ActionPolicy {
   return {

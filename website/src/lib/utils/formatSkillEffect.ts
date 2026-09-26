@@ -496,7 +496,7 @@ function formatBuffDebuffStats(
 
   // 1. Special flags (binary game-changers that define the skill's identity)
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
-  // Skills.cs:1530-1538; Monster.cs:3125,3161 — hasDoubleExp() doubles party and solo kill XP.
+  // Skills.cs:hasDoubleExp; Monster.cs:OnDeath — hasDoubleExp() doubles party and solo kill XP.
   if (skill.is_double_exp_spell) parts.push("2× XP from kills");
   if (skill.is_dispel) parts.push("dispels buffs");
   // Source: server-scripts/TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff) — cleanse matches on the skill's own debuff type flags
@@ -841,9 +841,9 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   skyflare: "cosmetic visual effect",
   // Source: server-scripts/PassiveSkill.cs (0.9.18.0+) — Detect Traps is now a passive skill.
   // Source: server-scripts/Player.cs:HasDetectTraps and Trap.cs:142-146,182-194,199-209,
-  // TrapDetection.cs:25-31 — passive grants trap visibility/disarm to Rogues at any rank.
+  // TrapDetection.cs:Update — Detect Traps grants Rogue player visibility and disarm; Rogue and Bard mercenaries disarm traps.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:8452-8469 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:8481-8498 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",

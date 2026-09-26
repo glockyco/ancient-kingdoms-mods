@@ -16,7 +16,7 @@ namespace CombatVerification.Materialization
 
         /// <summary>
         /// A default skill is held at level 1 from creation and cannot fall below it.
-        /// Source: server-scripts/PlayerSkills.cs:1387.
+        /// Source: server-scripts/PlayerSkills.cs:1404.
         /// </summary>
         public bool LearnDefault { get; set; }
 

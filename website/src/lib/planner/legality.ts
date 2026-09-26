@@ -99,7 +99,7 @@ function predecessorIsLearned(
 
 /**
  * Replays skill upgrades against the same monotone gates as `PlayerSkills.CanUpgrade`.
- * Source: server-scripts/PlayerSkills.cs:1488-1543.
+ * Source: server-scripts/PlayerSkills.cs:1505-1560.
  */
 export function evaluateSkillAllocation(
   input: SkillAllocationInput,
@@ -238,7 +238,7 @@ export interface SkillWeaponState {
   offhandOccupied: boolean;
 }
 
-/** Source: server-scripts/ScriptableSkill.cs:84-120. */
+/** Source: server-scripts/ScriptableSkill.cs:CheckWeapon. */
 export function weaponGateRefusal(
   weapon: SkillWeaponState,
   requiredWeaponCategory: string,
@@ -286,7 +286,7 @@ export type ActionGateFailureCode =
 
 /**
  * Applies the exported preconditions that the engine checks before a cast.
- * Sources: server-scripts/ScriptableSkill.cs:190-231 and server-scripts/PlayerSkills.cs:1701-1705.
+ * Sources: server-scripts/ScriptableSkill.cs:198-239 and server-scripts/PlayerSkills.cs:1718-1722.
  */
 export function actionGateRefusal(
   skill: ActionGateSkill,

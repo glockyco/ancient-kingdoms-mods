@@ -1350,7 +1350,7 @@ function resolveCompanion(
   }
   // The game derives every companion skill level from its owner's progression. A declared level is
   // an observation that must agree; it cannot choose a different value.
-  // Source: server-scripts/PetSkills.cs:27-41.
+  // Source: server-scripts/PetSkills.cs:OnStartServer.
   const archetypeSkills = orderedSkillIds.map((skillId, index) => {
     const skill = requireIdentity(
       catalog.skills,

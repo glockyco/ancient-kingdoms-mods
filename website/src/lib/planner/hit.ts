@@ -219,7 +219,7 @@ export function buildDamageIntent(
   };
 }
 
-/** Source: server-scripts/ScriptableSkill.cs:84-120. */
+/** Source: server-scripts/ScriptableSkill.cs:CheckWeapon. */
 export function weaponGateRefusal(
   caster: Pick<HitCaster, "kind" | "classId" | "weapons">,
   skill: Pick<DamageSkillSpec, "id" | "requiredWeaponCategory">,

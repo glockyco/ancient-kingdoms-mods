@@ -7,8 +7,8 @@ Source references:
 - Source: server-scripts/Monster.cs:CalculateRewardExp — CalculateRewardExp (monster EXP)
 - Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — zone discovery EXP
 - Source: server-scripts/GatherItem.cs:630-639 — gathering EXP by tier
-- Source: server-scripts/Player.cs:13470-13476 — crafting EXP by item quality
-- Source: server-scripts/Player.cs:11694-11701 — alchemy EXP by recipe tier
+- Source: server-scripts/Player.cs:13520-13526 — crafting EXP by item quality
+- Source: server-scripts/Player.cs:11733-11740 — alchemy EXP by recipe tier
 """
 
 import sqlite3
@@ -145,7 +145,7 @@ def get_gathering_exp(level: int) -> int:
 def get_crafting_exp(quality: int) -> int:
     """Get EXP reward for crafting an item.
 
-    Source: server-scripts/Player.cs:13470-13476 — crafting EXP by item quality.
+    Source: server-scripts/Player.cs:13520-13526 — crafting EXP by item quality.
 
     Args:
         quality: Item quality (1-4)
@@ -159,7 +159,7 @@ def get_crafting_exp(quality: int) -> int:
 def get_alchemy_exp(tier: int) -> int:
     """Get EXP reward for crafting a potion.
 
-    Source: server-scripts/Player.cs:11694-11701 — alchemy EXP by recipe tier.
+    Source: server-scripts/Player.cs:11733-11740 — alchemy EXP by recipe tier.
 
     Args:
         tier: Recipe tier / level_required (0-4)

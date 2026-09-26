@@ -432,14 +432,14 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Active Limit</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:295-297 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
+                <!-- Source: server-scripts/UIMercenaries.cs:297-299 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
                 1 at levels 10–19 · 2 at 20–29 · 3 at 30–39 · 4 at 40+
               </dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Max Stored</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:41,373 — the recruiter roster holds ten mercenaries. -->
+                <!-- Source: server-scripts/UIMercenaries.cs:43,380 — the recruiter roster holds ten mercenaries. -->
                 10
               </dd>
             </div>
@@ -456,7 +456,7 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Recruit Cost</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:427-433 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 15) (0.9.19.1+). -->
+                <!-- Source: server-scripts/UIMercenaries.cs:434-440 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 15) (0.9.19.1+). -->
                 20–3,420
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>,
                 scales with your regular and veteran level
@@ -492,7 +492,7 @@
               <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
               <dd>
                 <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath — living mercenaries are removed on owner death; dead ones keep their corpse. -->
-                <!-- Source: server-scripts/Player.cs:3442-3444,12965-12969 — respawning and resurrection re-summon the stored mercenaries. -->
+                <!-- Source: server-scripts/Player.cs:3442-3444,13004-13008 — respawning and resurrection re-summon the stored mercenaries. -->
                 Living mercenaries are dismissed and re-summoned once you respawn.
                 A mercenary that already died keeps its corpse and still needs a resurrection.
               </dd>

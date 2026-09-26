@@ -162,7 +162,7 @@ export function targetStatsWithEffects<T extends TargetCombatStats>(
 
 /**
  * Applies the debuff's resist school to its flat damage, then adds percentage-health damage.
- * Source: server-scripts/Skills.cs:1567-1824.
+ * Source: server-scripts/Skills.cs:1572-1829.
  */
 export function periodicEffectDamage(
   spec: EffectSpec,
