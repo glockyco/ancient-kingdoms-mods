@@ -92,6 +92,9 @@
     "BardMercenarySkills.cs:RefreshAura": {
       "span": 0
     },
+    "BardSongSkill.cs:TryApplyAuraBuff": {
+      "span": 0
+    },
     "BookItem.cs": {
       "span": 0
     },

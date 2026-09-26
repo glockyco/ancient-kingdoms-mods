@@ -2099,6 +2099,23 @@
           </div>
         {/if}
 
+        {#if skill.is_bard_song && skill.buff_category}
+          <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff,GetStackingStrength -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Song Category: {skill.buff_category}</h3>
+            <p class="font-mono">
+              strength = speed + phys dmg % + magic dmg % + haste + spell haste
+              + accuracy
+            </p>
+            <p class="text-muted-foreground">
+              A target keeps one song of each category. This applies to songs
+              from different Bards and to Bard mercenary songs. A new song
+              replaces songs of the same category only when its strength is
+              higher. On equal strength, the song already applied stays.
+            </p>
+          </div>
+        {/if}
+
         {#if skill.is_bard_charm}
           <!-- Source: BardCharmSongSkill.cs:GetCharmTarget,GetCharmResistChance,Apply and Combat.cs:GetProbResistMagic -->
           <div class="space-y-1">
