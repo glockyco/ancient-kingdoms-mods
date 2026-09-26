@@ -840,8 +840,8 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   golden_whirl: "cosmetic visual effect",
   skyflare: "cosmetic visual effect",
   // Source: server-scripts/PassiveSkill.cs (0.9.18.0+) — Detect Traps is now a passive skill.
-  // Source: server-scripts/Player.cs:HasDetectTraps and Trap.cs:142-146,182-194,199-209,
-  // TrapDetection.cs:Update — Detect Traps grants Rogue player visibility and disarm; Rogue and Bard mercenaries disarm traps.
+  // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-194,199-209;
+  // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
   // Source: server-scripts/Player.cs:8481-8498 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",

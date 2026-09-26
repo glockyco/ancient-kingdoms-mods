@@ -263,8 +263,11 @@
     cRecruiter = v;
   }
 
+  // Source: server-scripts/Utils.cs:GetRandomChar — invalid preferences roll the class pool.
   function recruiterSpecialty(preferred: string) {
-    return preferred ? `hires ${preferred}` : "hires any race in the pool";
+    return preferred && classCanBe(cCls, preferred)
+      ? `hires ${preferred}`
+      : "rolls from class pool";
   }
 
   function impossibleMessage() {
@@ -352,20 +355,23 @@
   <h1>Mercenary Stat Ranges</h1>
   <p class="lead">
     Compare the stat ranges every mercenary class and race can roll, at any
-    level and veteran-point total. The recruiter decides the race, and hiring
-    rolls hidden modifiers, so two mercenaries of the same class, race and level
-    can still differ — the tables show every roll you might get.
+    level and veteran-point total. A recruiter fixes the race only when its
+    preference is valid for the class. Hiring also rolls hidden modifiers, so
+    two mercenaries of the same class, race and level can still differ. The
+    tables show every roll you might get.
   </p>
 
   <details class="howto">
     <summary>How to read these ranges</summary>
     <div class="howto-body">
       <p>
-        Each recruiter hires one race, so the race is not a roll. Hiring then
-        rolls three values saved to that mercenary: a Health multiplier, a
-        resource multiplier, and a base-combat value. Warriors and Rogues roll a
-        resource multiplier too, but their Rage ignores it — only casters' Mana
-        uses it. You never see these numbers. They set where in each range your
+        A recruiter fixes the race when its preference is valid for that class.
+        Otherwise, it rolls from the class's race pool. Hiring then rolls three
+        values saved to that mercenary: a Health multiplier, a resource
+        multiplier, and a base-combat value. Warriors and Rogues roll a resource
+        multiplier, but Rage ignores it. Bard's base Mana curve is zero, so its
+        multiplier does not change base Mana. Other classes use the multiplier
+        for Mana. You never see these rolls. They set where in each range your
         mercenary lands.
       </p>
       <ul>
@@ -389,8 +395,8 @@
         </li>
       </ul>
       <p>
-        Warriors and Rogues use Rage, which is race-independent, so they have no
-        Mana column.
+        Warriors and Rogues use Rage. Bard displays active songs instead of
+        Mana. These classes have no rolled Mana column.
       </p>
     </div>
   </details>
@@ -520,10 +526,10 @@
   <section class="cost-sec" aria-label="Hiring cost and odds">
     <h2>Hiring odds &amp; cost</h2>
     <p class="sub">
-      Every hire re-rolls the hidden modifiers, so chasing a great mercenary
-      means re-hiring — from the recruiter that hires the race you want. Set the
-      minimums you'd accept and see the odds per hire and the gold it takes on
-      average — at the Level and Veteran points chosen above.
+      Every hire re-rolls the hidden modifiers. Choose a recruiter that hires
+      the race you want or rolls it from the class pool. Set your minimum stats
+      to see the odds per hire and the average gold cost at the selected level
+      and veteran-point total.
     </p>
     <div class="cost-grid">
       <div class="cost-inputs">

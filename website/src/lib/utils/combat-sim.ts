@@ -57,6 +57,7 @@ export interface CompRow {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+// Bard player and mercenary attacks are outside these six supported formula modes.
 export const CLASSES: readonly PlayerClass[] = [
   "warrior",
   "rogue",

@@ -238,7 +238,7 @@ export interface SkillWeaponState {
   offhandOccupied: boolean;
 }
 
-/** Source: server-scripts/ScriptableSkill.cs:CheckWeapon. */
+/** Source: server-scripts/ScriptableSkill.cs:CheckWeapon. This is the player gate; Bard mercenaries use a separate gate outside the planner domain. */
 export function weaponGateRefusal(
   weapon: SkillWeaponState,
   requiredWeaponCategory: string,

@@ -1466,7 +1466,10 @@ interface PetDescriptionInput {
   summoning_class_id: string | null;
 }
 
+// Source: server-scripts/BardMercenarySkills.cs:RefreshAura — Bard songs apply buffs even though the exported pet has_buffs flag is false.
 function petRolePhrase(input: PetDescriptionInput): string {
+  if (input.kind === "Mercenary" && input.type_monster === "Bard")
+    return "Plays songs that buff nearby allies.";
   if (input.has_heals && input.has_buffs) return "Provides heals and buffs.";
   if (input.has_heals) return "Provides heals.";
   if (input.has_buffs) return "Provides buffs.";

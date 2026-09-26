@@ -219,7 +219,7 @@ export function buildDamageIntent(
   };
 }
 
-/** Source: server-scripts/ScriptableSkill.cs:CheckWeapon. */
+/** Source: server-scripts/ScriptableSkill.cs:CheckWeapon. Bard mercenaries have a separate Weapon gate and are outside the planner domain. */
 export function weaponGateRefusal(
   caster: Pick<HitCaster, "kind" | "classId" | "weapons">,
   skill: Pick<DamageSkillSpec, "id" | "requiredWeaponCategory">,

@@ -86,6 +86,9 @@
     "BardMercenarySkills.cs:NextAttackSkill": {
       "span": 0
     },
+    "BardMercenarySkills.cs:RefreshAura": {
+      "span": 0
+    },
     "BookItem.cs": {
       "span": 0
     },
@@ -1045,6 +1048,10 @@
       "sha256": "5d7f4388a25f8041b961ec6e90d3275a0caf723aec076d9b31cf866c52e6a526",
       "span": 25
     },
+    "Pet.cs:953-961": {
+      "sha256": "b1808623e9c39626cfcb4165c8ef8366bad1d676891e061613546c778373057b",
+      "span": 9
+    },
     "Pet.cs:OnDeath": {
       "span": 0
     },
@@ -1088,6 +1095,10 @@
     "Player.cs:10337-10351": {
       "sha256": "d1630fa405d2fe7ba58fdfd6e98975d8d1cfc2ebaeeaeb316e17f571267d79c8",
       "span": 15
+    },
+    "Player.cs:10337-10364": {
+      "sha256": "ed1913d360b6db9ce4eb8b3afd76dda69fc56a1611d15c68f187c3629740afe4",
+      "span": 28
     },
     "Player.cs:10555-10590": {
       "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",

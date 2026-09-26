@@ -62,6 +62,7 @@ export const RACES: Record<string, RaceBands> = {
 /** Display order of every race a mercenary can be. */
 export const RACE_ORDER = Object.keys(RACES);
 
+/** Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean; Player.cs:10337-10364; Pet.cs:953-961 — Bard uses the Mana multiplier branch but displays songs. */
 export type Role = "mana" | "energy";
 
 export interface ClassDef {
@@ -110,6 +111,12 @@ export const CLASSES: Record<string, ClassDef> = {
     role: "mana",
     pool: ["Human", "Elf", "Dark Elf", "Dwarf", "Fire Goblin", "Felarii"],
     div: { STR: 4, CON: 3, DEX: 2, INT: 6, WIS: 5, CHA: 6 },
+  },
+  Bard: {
+    type: "Bard",
+    role: "mana",
+    pool: ["Human", "Elf", "Dark Elf", "Fire Goblin", "Felarii"],
+    div: { STR: 3, CON: 5, DEX: 4, INT: 6, WIS: 6, CHA: 2 },
   },
 };
 
@@ -178,6 +185,7 @@ export function computeAll(
     const cur = curves[c.type];
     const hpCurve = linear(cur.hp_base, cur.hp_per, level);
     const manaCurve = linear(cur.mana_base, cur.mana_per, level);
+    // Bard's base Mana curve is zero; its song count is not a Mana roll.
     const hasMana = c.role === "mana" && manaCurve > 0;
     const magAdd = iround(multiplyF32(a.INT, INT_MAGIC));
     const rows: MercRow[] = RACE_ORDER.map((race) => {
@@ -212,7 +220,8 @@ export function computeAll(
       attrs: a,
       hpCurve,
       manaCurve,
-      resource: c.role === "energy" ? "Rage" : "Mana",
+      resource:
+        c.type === "Bard" ? "Songs" : c.role === "energy" ? "Rage" : "Mana",
       rows,
     };
   });
@@ -221,8 +230,8 @@ export function computeAll(
 /**
  * Races a recruiter preference can produce although no class pool lists them,
  * with the classes that accept each one.
- * Source: server-scripts/Utils.cs:646-647 — the server names the race and the
- * class indices that honour it, so the pool alone does not decide the outcome.
+ * Source: server-scripts/Utils.cs:GetRandomChar — Drassar preference applies
+ * only to class indices 1, 2, 3, 4, and 6. Bard (7) is excluded.
  */
 export const PREFERRED_ONLY_RACES: Record<string, string[]> = {
   Drassar: ["Warrior", "Cleric", "Rogue", "Wizard", "Ranger"],

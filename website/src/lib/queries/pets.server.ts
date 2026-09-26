@@ -220,9 +220,10 @@ export function getPetById(petId: string): PetDetailView | null {
 }
 
 /**
- * Get all NPCs that recruit mercenaries, with their zone locations and the race
- * each one hires. Every recruiter offers every mercenary class, so this is not
- * filtered per pet, but the recruiter fixes the race of the hire.
+ * Get all NPCs that recruit mercenaries, with their zone locations and race
+ * preference. Every recruiter offers every mercenary class. A preference
+ * the class cannot use does not fix the race.
+ * Source: server-scripts/Utils.cs:GetRandomChar.
  */
 function getMercenaryRecruiters(): PetRecruiter[] {
   return query<PetRecruiter>(

@@ -70,7 +70,7 @@ const HIRE_RANGES: Readonly<Record<CompanionRace, HireRange>> = {
   },
 };
 
-/** Source: server-scripts/Player.cs:UpdateMercStatsByLevel. */
+/** Source: server-scripts/Player.cs:UpdateMercStatsByLevel. The Bard mercenary is outside the planner domain. */
 const ATTRIBUTE_CADENCE: Readonly<
   Record<CompanionArchetype, Readonly<Record<keyof AttributeSet, number>>>
 > = {
@@ -128,7 +128,7 @@ function energyArchetype(archetype: CompanionArchetype): boolean {
   return archetype === "warrior" || archetype === "rogue";
 }
 
-/** Source: server-scripts/PetSkills.cs:OnStartServer. */
+/** Source: server-scripts/PetSkills.cs:OnStartServer. Bard's minimum rank of 1 is outside the planner domain. */
 export function companionSkillLevel(
   ownerLevel: number,
   veteranPoints: number,
@@ -147,7 +147,7 @@ export function companionSkillLevel(
   );
 }
 
-/** Source: server-scripts/Player.cs:UpdateMercStatsByLevel. */
+/** Source: server-scripts/Player.cs:UpdateMercStatsByLevel. The Bard mercenary is outside the planner domain. */
 export function companionProgressionAttributes(
   archetype: CompanionArchetype,
   ownerLevel: number,
@@ -221,8 +221,9 @@ function requirePositive(value: number, path: string): number {
 }
 
 /**
- * Builds the stat sheet for one newly hired or captured mercenary. The base combat value deliberately
- * excludes the level-up accumulation that disappears on reload.
+ * Builds the stat sheet for a newly hired or captured mercenary in the planner domain.
+ * The Bard mercenary is outside this domain. The base combat value excludes
+ * the level-up accumulation that disappears on reload.
  * Sources: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean and server-scripts/Energy.cs:24-35.
  */
 export function buildCompanionCombatState(

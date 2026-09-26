@@ -683,6 +683,9 @@
 
   // Pet/mercenary usage flags for skill-level notes inside the mechanics card
   const usedByMercenary = $derived(data.usedByPets.some((p) => p.is_mercenary));
+  const usedByBardMercenary = $derived(
+    data.usedByPets.some((p) => p.is_mercenary && p.type_monster === "Bard"),
+  );
   const usedByCompanion = $derived(
     data.usedByPets.some((p) => !p.is_mercenary && !p.is_familiar),
   );
@@ -1965,10 +1968,18 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
-        <!-- Pet/Merc Skill Level -->{#if usedByMercenary && skill.max_level > 1}
+        <!-- Source: server-scripts/PetSkills.cs:OnStartServer — Bard mercenary skill ranks have a minimum of 1. -->
+        {#if usedByMercenary && skill.max_level > 1}
           <p class="text-muted-foreground">
-            When used by a mercenary, skill level = floor(regular level &divide;
-            5) + floor(veteran level &divide; 10), capped at max skill level.
+            {#if usedByBardMercenary}
+              Bard mercenary skill level = min(max skill level, max(1,
+              floor(regular level &divide; 5) + floor(veteran level &divide;
+              10))).
+            {:else}
+              When used by a mercenary, skill level = floor(regular level
+              &divide; 5) + floor(veteran level &divide; 10), capped at max
+              skill level.
+            {/if}
           </p>
         {/if}
         {#if usedByCompanion && skill.max_level > 1}

@@ -16,6 +16,7 @@ const CURVES: Curves = {
   Wizard: { hp_base: 50, hp_per: 50, mana_base: 20, mana_per: 15 },
   Druid: { hp_base: 55, hp_per: 55, mana_base: 20, mana_per: 10 },
   Ranger: { hp_base: 80, hp_per: 80, mana_base: 15, mana_per: 5 },
+  Bard: { hp_base: 70, hp_per: 70, mana_base: 0, mana_per: 0 },
 };
 
 function row(cls: string, race: string, level: number, veteran: number) {
@@ -62,6 +63,32 @@ describe("computeAll", () => {
 
   test("a Druid is never Drassar", () => {
     expect(row("Druid", "Drassar", 50, 200).eligible).toBe(false);
+  });
+
+  test("Bard uses its own race pool, attribute cadence, and songs instead of a Mana roll", () => {
+    const bard = computeAll(30, 0, CURVES).find((c) => c.cls === "Bard")!;
+    expect(bard.attrs).toEqual({
+      STR: 10,
+      CON: 6,
+      DEX: 7,
+      INT: 5,
+      WIS: 5,
+      CHA: 15,
+    });
+    expect(bard.role).toBe("mana");
+    expect(bard.resource).toBe("Songs");
+    expect(bard.hasMana).toBe(false);
+    expect(bard.rows.filter((r) => r.eligible).map((r) => r.race)).toEqual([
+      "Human",
+      "Elf",
+      "Dark Elf",
+      "Fire Goblin",
+      "Felarii",
+    ]);
+    expect(row("Bard", "Drassar", 30, 0).eligible).toBe(false);
+    expect(row("Bard", "Dwarf", 30, 0).eligible).toBe(false);
+    expect(row("Bard", "Human", 30, 0).hp).toEqual([2145, 2250]);
+    expect(row("Bard", "Human", 30, 0).mana).toBeNull();
   });
 });
 

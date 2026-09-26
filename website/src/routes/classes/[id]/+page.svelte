@@ -901,7 +901,7 @@
       {data.class.description}
     </p>
 
-    {#if ["warrior", "rogue", "cleric", "druid", "ranger", "wizard"].includes(data.class.id)}
+    {#if ["warrior", "rogue", "cleric", "druid", "ranger", "wizard", "bard"].includes(data.class.id)}
       <p class="mt-3 text-muted-foreground">
         For information about the {data.class.name} mercenary, see:
         <a

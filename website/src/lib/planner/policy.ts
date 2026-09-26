@@ -87,10 +87,12 @@ export function priorityPolicy(order: readonly string[]): ActionPolicy {
 }
 
 /**
- * Samples the companion's own attack selection. A Warrior prioritizes Battle Shout and Challenge.
- * The shared special-action timer redraws from 2 to 4 seconds and picks uniformly among ready
- * offensive skills that a healer's reserve allows and the target does not already hold. Otherwise
- * the companion uses its default attack when ready.
+ * Samples the attack selection of mercenaries in the planner domain.
+ * A Warrior prioritizes Battle Shout and Challenge. The shared special-action
+ * timer redraws from 2 to 4 seconds and picks uniformly among ready offensive
+ * skills that a healer's reserve allows and the target does not already hold.
+ * Otherwise the mercenary uses its default attack when ready.
+ * Bard mercenaries are outside the planner domain. They override NextAttackSkill.
  * Source: server-scripts/Pet.cs:1333-1373; server-scripts/PetSkills.cs:NextAttackSkill; server-scripts/BardMercenarySkills.cs:NextAttackSkill.
  */
 export function companionPolicy(): ActionPolicy {

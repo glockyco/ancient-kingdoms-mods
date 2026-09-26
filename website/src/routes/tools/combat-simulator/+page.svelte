@@ -401,7 +401,7 @@
 
 <Seo
   title="Auto-Attack DPS Simulator - Ancient Kingdoms"
-  description="Compare weapon DPS for all six classes at your stats and haste. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
+  description="Compare weapon DPS for six supported classes at your stats and haste. Bard player and mercenary attacks are not modeled. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
   path="/tools/combat-simulator"
 />
 
@@ -420,6 +420,10 @@
       Models auto-attack DPS only — stab, archer_shot, melee_attack, and the
       caster equivalents. Does not include ability damage, crits, or weapon
       procs.
+    </p>
+    <p class="text-muted-foreground">
+      Bard player and mercenary attacks are not modeled by these class and mode
+      formulas.
     </p>
   </div>
 

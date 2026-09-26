@@ -23,6 +23,7 @@
     PetRecruiter,
   } from "$lib/types/pets";
   import { petHref } from "$lib/utils/pets";
+  import { classCanBe } from "$lib/utils/merc-stats";
   import { base } from "$app/paths";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
@@ -180,9 +181,10 @@
       size={28}
     />
   {:else if cell.column.id === "preferred_race"}
-    {#if row.original.preferred_race}
+    {#if row.original.preferred_race && classCanBe(pet.type_monster, row.original.preferred_race)}
       {row.original.preferred_race}
     {:else}
+      <!-- Source: server-scripts/Utils.cs:GetRandomChar — unsupported recruiter preferences fall back to a uniform class-pool roll. -->
       <span class="text-muted-foreground">Any in class pool</span>
     {/if}
   {:else if cell.column.id === "zone_name"}
@@ -377,9 +379,12 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Resource</dt>
               <dd>
-                {pet.type_monster === "Warrior" || pet.type_monster === "Rogue"
-                  ? "Rage"
-                  : "Mana"}
+                {pet.type_monster === "Bard"
+                  ? "Songs"
+                  : pet.type_monster === "Warrior" ||
+                      pet.type_monster === "Rogue"
+                    ? "Rage"
+                    : "Mana"}
               </dd>
             </div>
             <div class="flex gap-2">
@@ -407,14 +412,22 @@
                 {:else if pet.type_monster === "Ranger"}
                   Dex every 2 lvls · Con every 3 · Str every 4 · Wis every 5 ·
                   Int &amp; Cha every 6
+                {:else if pet.type_monster === "Bard"}
+                  Cha every 2 lvls · Str every 3 · Dex every 4 · Con every 5 ·
+                  Wis &amp; Int every 6
                 {/if}
               </dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Skill Levels</dt>
               <dd>
-                floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at
-                each skill's max level
+                {#if pet.type_monster === "Bard"}
+                  max(1, floor(regular level ÷ 5) + floor(veteran level ÷ 10)),
+                  capped at each skill's max level
+                {:else}
+                  floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped
+                  at each skill's max level
+                {/if}
               </dd>
             </div>
             <div class="flex gap-2">
@@ -427,6 +440,10 @@
                   ? "rage"
                   : "mana"}, +1 damage<br />Per regular level: +1 all
                 resistances
+                {#if pet.type_monster === "Bard"}
+                  <br />
+                  Base Mana is zero. Active songs do not use Mana.
+                {/if}
               </dd>
             </div>
             <div class="flex gap-2">

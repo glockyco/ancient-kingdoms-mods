@@ -1348,8 +1348,8 @@ function resolveCompanion(
       );
     }
   }
-  // The game derives every companion skill level from its owner's progression. A declared level is
-  // an observation that must agree; it cannot choose a different value.
+  // The planner excludes Bard mercenaries, whose skill ranks have a minimum of 1.
+  // For included mercenaries, an observed skill level must match owner progression.
   // Source: server-scripts/PetSkills.cs:OnStartServer.
   const archetypeSkills = orderedSkillIds.map((skillId, index) => {
     const skill = requireIdentity(
