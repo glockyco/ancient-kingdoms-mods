@@ -118,20 +118,15 @@ public class PetExporter : BaseExporter
                 }
             }
 
-            // Export innate skills applied programmatically (not in skillTemplates)
-            // Warrior mercenaries have a death prevention skill triggered by Combat logic
-            if (pet.isMercenary && pet.typeMonster == "Warrior")
+            // Combat applies GameManager.invulWarriorSkill to a Warrior or Rogue
+            // mercenary on a lethal hit, so it is an innate skill of both.
+            // Source: server-scripts/Combat.cs:1350-1361
+            if (pet.isMercenary && (pet.typeMonster == "Warrior" || pet.typeMonster == "Rogue"))
             {
                 var invulSkill = Il2Cpp.GameManager.singleton?.invulWarriorSkill;
-                if (invulSkill != null && !string.IsNullOrEmpty(invulSkill.name))
-                {
-                    Logger.Msg($"  invulWarriorSkill: {invulSkill.name}");
-                    petData.innate_skill_ids.Add(SanitizeId(invulSkill.name));
-                }
-                else
-                {
-                    Logger.Warning("  invulWarriorSkill not found on GameManager");
-                }
+                if (invulSkill == null || string.IsNullOrEmpty(invulSkill.name))
+                    throw new System.InvalidOperationException("GameManager.invulWarriorSkill is unavailable.");
+                petData.innate_skill_ids.Add(SanitizeId(invulSkill.name));
             }
 
             petList.Add(petData);
