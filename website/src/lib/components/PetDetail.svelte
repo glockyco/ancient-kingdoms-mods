@@ -516,12 +516,12 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>
-                <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice — 5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + 10 per veteran point, then the Charisma discount (up to 25%). -->
+                <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice — round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + 10 per veteran point), then the Charisma discount (up to 25%). Recruiters require level 10 (Npc.cs:1893-1904), where the base rounds to 8. -->
                 <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD — the corpse despawns after 300 seconds; the mercenary stays marked dead. -->
                 <!-- Source: server-scripts/TargetHealSkill.cs:232-253, UIMercenaries.cs:620-640,820-835 — resurrect skills restore a corpse; the recruiter resurrects for the fee. -->
                 Stays dead until resurrected. A resurrect skill, such as a Cleric's
                 or a Scroll of Resurrection, works on the corpse. The corpse disappears
-                after 5 minutes. A mercenary recruiter resurrects it for 5–2,300
+                after 5 minutes. A mercenary recruiter resurrects it for 8–2,300
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>
                 before the Charisma discount. Equipped gear stays on the mercenary,
                 and death does not reduce durability.
