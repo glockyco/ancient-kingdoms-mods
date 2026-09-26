@@ -435,14 +435,19 @@
                 Veteran Bonuses
               </dt>
               <dd>
-                Per veteran level: +1% HP, +1% {pet.type_monster ===
-                  "Warrior" || pet.type_monster === "Rogue"
-                  ? "rage"
-                  : "mana"}, +1 damage<br />Per regular level: +1 all
-                resistances
+                <!-- Source: server-scripts/Player.cs:4629-4652 — each veteran level adds 0.0025 to the Health and resource multipliers and 1 to base damage and base magic damage. -->
+                Per veteran level: +0.25% Health multiplier{pet.type_monster ===
+                "Bard"
+                  ? ""
+                  : pet.type_monster === "Warrior" ||
+                      pet.type_monster === "Rogue"
+                    ? ", +0.25% Rage multiplier"
+                    : ", +0.25% Mana multiplier"}, +1 damage, +1 magic damage<br
+                />Per regular level: +1 all resistances
                 {#if pet.type_monster === "Bard"}
                   <br />
-                  Base Mana is zero. Active songs do not use Mana.
+                  Base Mana is zero, so the Mana multiplier has no effect. Active
+                  songs do not use Mana.
                 {/if}
               </dd>
             </div>

@@ -10,7 +10,7 @@ import {
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 
-// Source: server-scripts/Player.cs:9843-9855 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:10352-10365 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -139,10 +139,10 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9828-9845 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:10337-10354 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(multiplyF32(hpCurve, mult)) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9828-9855 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:10337-10365 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(multiplyF32(manaCurve, mult)) + intl * INT_MANA;
 // Source: server-scripts/Player.cs:10077-10114 — base-combat max is round(level × race factor) − 1.
@@ -172,7 +172,7 @@ export interface ClassResult {
 }
 
 /** Source: server-scripts/Player.cs:10072-10073,10077-10114,10140-10152 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
-/** Source: server-scripts/Player.cs:9828-9855 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:10337-10365 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
 /** Source: server-scripts/Player.cs:UpdateMercStatsByLevel — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
