@@ -435,15 +435,20 @@
                 Veteran Bonuses
               </dt>
               <dd>
-                <!-- Source: server-scripts/Player.cs:4629-4652 — each veteran level adds 0.0025 to the Health and resource multipliers and 1 to base damage and base magic damage. -->
-                Per veteran level: +0.25% Health multiplier{pet.type_monster ===
+                <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean, Player.cs:10352-10365 — each summon adds total veteran points × 0.0025 to the rolled Health and resource multipliers. -->
+                <!-- Source: server-scripts/Player.cs:4629-4652, Database.cs:SaveNewMercenary — a veteran level gained while summoned adds 1 base damage and 1 base magic damage; only the hire roll is saved. -->
+                Each veteran level adds 0.25% to the Health multiplier{pet.type_monster ===
                 "Bard"
                   ? ""
                   : pet.type_monster === "Warrior" ||
                       pet.type_monster === "Rogue"
-                    ? ", +0.25% Rage multiplier"
-                    : ", +0.25% Mana multiplier"}, +1 damage, +1 magic damage<br
-                />Per regular level: +1 all resistances
+                    ? " and the Rage multiplier"
+                    : " and the Mana multiplier"}.<br />A veteran level gained
+                while the mercenary is summoned also adds +1 damage and +1 magic
+                damage. The game does not save this bonus, so the next summon
+                restores the damage rolled at hire.<br />
+                <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
+                Per regular level: +1 all resistances
                 {#if pet.type_monster === "Bard"}
                   <br />
                   Base Mana is zero, so the Mana multiplier has no effect. Active
@@ -454,8 +459,10 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Active Limit</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:297-299 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
-                1 at levels 10–19 · 2 at 20–29 · 3 at 30–39 · 4 at 40+
+                <!-- Source: server-scripts/UIMercenaries.cs:297-299, Npc.cs:1893-1904 — recruiters serve players from level 10; the active limit is 1 below level 20, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
+                <!-- Source: server-scripts/Player.cs:10115-10120,10290-10305 — the limit also cannot exceed 5 minus the party members, counting players and their active mercenaries. -->
+                1 at levels 10–19 · 2 at 20–29 · 3 at 30–39 · 4 at 40+. A party holds
+                at most 5 members, and each active mercenary counts as one.
               </dd>
             </div>
             <div class="flex gap-2">
@@ -468,7 +475,10 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Stance</dt>
               <dd>
-                Aggressive (attacks your target) or Defensive (retaliates only)
+                <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean; Pet.cs:2198-2209,1147 — only the aggressive stance casts attack skills or reacts to aggro; support skills run in both stances. -->
+                Aggressive: attacks your target and enemies that attack it. Defensive:
+                does not attack, and drops its hostile target when you switch. Heals
+                and buffs continue in both stances.
               </dd>
             </div>
             <div class="flex gap-2">
@@ -478,45 +488,54 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Recruit Cost</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:434-440 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 15) (0.9.19.1+). -->
+                <!-- Source: server-scripts/UIMercenaries.cs:CalculatePriceMercenaryLevel — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteran points × 15). -->
+                <!-- Source: server-scripts/NetworkManagerMMO.cs:768-772, UINpcTrading.cs:CalculatePurchaseItemPrice — veteran points cap at 200; the Charisma discount caps at 25%. -->
                 20–3,420
-                <span class="text-yellow-600 dark:text-yellow-400">gold</span>,
-                scales with your regular and veteran level
+                <span class="text-yellow-600 dark:text-yellow-400">gold</span>
+                before the Charisma discount (up to 25%). Scales with your regular
+                and veteran level.
               </dd>
             </div>
-            {#if pet.type_monster === "Warrior"}
+            {#if pet.type_monster === "Warrior" || pet.type_monster === "Rogue"}
               <div class="flex gap-2">
                 <dt class="text-muted-foreground w-40 shrink-0">
                   Death Prevention
                 </dt>
                 <dd>
-                  When a lethal hit would kill this mercenary, it automatically
-                  casts
+                  <!-- Source: server-scripts/Combat.cs:1350-1361,1157-1180 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage; rank = round(total veteran points ÷ 10). -->
+                  When a hit would kill this mercenary, it casts
                   <a
                     href="/skills/runebound_aegis"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Runebound Aegis</a
-                  > (level 50+).
+                  > instead. This needs owner level 50+ and enough Rage, and has a
+                  120-second cooldown. Its rank is your veteran level ÷ 10, rounded.
                 </dd>
               </div>
             {/if}
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>
-                <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice — GetMercenaryResurrectionPrice adds the level curve and 10 gold per total veteran point before the Charisma discount. -->
-                <!-- Source: server-scripts/Pet.cs:OnDeath — OnDeath sets the mercenary death timer without changing equipment durability. -->
-                Stays dead until resurrected for 5–2,300
-                <span class="text-yellow-600 dark:text-yellow-400">gold</span>.
-                Equipped gear stays on the mercenary and keeps its durability.
+                <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice — 5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + 10 per veteran point, then the Charisma discount (up to 25%). -->
+                <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD — the corpse despawns after 300 seconds; the mercenary stays marked dead. -->
+                <!-- Source: server-scripts/TargetHealSkill.cs:232-253, UIMercenaries.cs:620-640,820-835 — resurrect skills restore a corpse; the recruiter resurrects for the fee. -->
+                Stays dead until resurrected. A resurrect skill, such as a Cleric's
+                or a Scroll of Resurrection, works on the corpse. The corpse disappears
+                after 5 minutes. A mercenary recruiter resurrects it for 5–2,300
+                <span class="text-yellow-600 dark:text-yellow-400">gold</span>
+                before the Charisma discount. Equipped gear stays on the mercenary,
+                and death does not reduce durability.
               </dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
               <dd>
                 <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath — living mercenaries are removed on owner death; dead ones keep their corpse. -->
-                <!-- Source: server-scripts/Player.cs:3442-3444,13004-13008 — respawning and resurrection re-summon the stored mercenaries. -->
-                Living mercenaries are dismissed and re-summoned once you respawn.
-                A mercenary that already died keeps its corpse and still needs a resurrection.
+                <!-- Source: server-scripts/UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,10254-10273 — respawn pays the resurrection fee for every dead summoned mercenary (up to 4) if you can pay for all, and they return with 10% Health. -->
+                Living mercenaries are dismissed and return when you respawn. When
+                you respawn, the game also pays the resurrection fee for each dead
+                summoned mercenary. They return with 10% Health. If you cannot pay
+                for all of them, none return.
               </dd>
             </div>
           </dl>
