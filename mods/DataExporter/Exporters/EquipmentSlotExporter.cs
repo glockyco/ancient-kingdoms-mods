@@ -53,6 +53,7 @@ public sealed class EquipmentSlotExporter : BaseExporter
             ("wizard", ui.wizardMercenary),
             ("druid", ui.druidMercenary),
             ("ranger", ui.rangerMercenary),
+            ("bard", ui.bardMercenary),
         };
 
         foreach (var (mercenaryId, prefab) in mercenaryPrefabs)
