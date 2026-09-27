@@ -122,14 +122,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     },
     rules: [
       {
-        text: "Rogue skills need a light one-handed weapon, such as a dagger or spear, in your main hand.",
+        text: "Rogue skills need a 1H Weapon (Light), such as a dagger or spear, in your main hand.",
         source:
           "Source: server-scripts/ScriptableSkill.cs:102-145 — a required weapon category prevents casting with the wrong weapon",
       },
       {
-        text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when you take physical damage. Equipment and buffs can add regeneration.",
+        text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when you take physical damage. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Combat.cs:1364-1388 — recovery bonus and combat rage gain",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:422-440; server-scripts/Combat.cs:1364-1388 — rage recovery comes only from passive skill and buff bonuses; combat rage gain",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },

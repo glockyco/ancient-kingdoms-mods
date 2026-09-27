@@ -3,6 +3,7 @@ import {
   getClassSkills,
   getClassItemsWithSources,
   getClassQuests,
+  getClassVisualAsset,
 } from "$lib/queries/classes.server";
 import { CLASS_GUIDES } from "$lib/data/classes/guide";
 import type { ClassName } from "$lib/utils/classes";
@@ -51,6 +52,7 @@ export const load: PageServerLoad = ({ params }) => {
     items,
     itemStatKeys,
     quests: getClassQuests(classData.id),
+    classIcon: getClassVisualAsset(classData.id),
     description,
   };
 };

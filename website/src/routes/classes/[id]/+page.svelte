@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { base } from "$app/paths";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { untrack } from "svelte";
   import {
     DataTable,
@@ -47,7 +49,6 @@
   import Zap from "@lucide/svelte/icons/zap";
   import Gem from "@lucide/svelte/icons/gem";
   import Scroll from "@lucide/svelte/icons/scroll";
-  import BookOpenText from "@lucide/svelte/icons/book-open-text";
   import EntityLink from "$lib/components/EntityLink.svelte";
 
   let { data } = $props();
@@ -983,7 +984,12 @@
 
   <section id="class-guide" class="scroll-mt-24">
     <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-      <BookOpenText class="h-5 w-5 text-sky-500" />
+      <EntityIcon
+        src={data.classIcon ? `${base}/${data.classIcon.public_path}` : null}
+        alt=""
+        size={24}
+        bordered={false}
+      />
       {data.class.name} Guide
     </h2>
 

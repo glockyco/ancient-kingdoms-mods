@@ -348,10 +348,6 @@
       "sha256": "f660f0e7ce5b7eeedc654ab1ea5b0866fe1f4deec116eb2dd02b31a4b5ce6452",
       "span": 30
     },
-    "Combat.cs:1333-1348": {
-      "sha256": "b248ad65b7af9bb2cede5dccd8b454d56fc0d7ec3338b52a051d7e7f246476e2",
-      "span": 16
-    },
     "Combat.cs:1348-1369": {
       "sha256": "8494cf04b0e715732fc30da14b0e1999598f9e69d4205db8c98afef89a630f46",
       "span": 22
@@ -406,10 +402,6 @@
     },
     "Combat.cs:1556-1566": {
       "sha256": "47dd0cea639dce5e99e5fa46ebd98cc6be718f3ccfc9964324f61a661ea32c6f",
-      "span": 11
-    },
-    "Combat.cs:1570-1580": {
-      "sha256": "1e413fd8f916996fc1210c9346c826480a6487c7dc0ced04908b81362df80107",
       "span": 11
     },
     "Combat.cs:1583-1590": {
@@ -3600,6 +3592,10 @@
     "Skills.cs:414-439": {
       "sha256": "feda83e9b7f92e3be4c48553aa2b1eef491270a52a84d16ad233ce7f9cb0f6a2",
       "span": 26
+    },
+    "Skills.cs:422-440": {
+      "sha256": "e6983024f05a24d22beff3164a1966c37c05bdf44e5c8c0f6dde9f4dcf60fc89",
+      "span": 19
     },
     "Skills.cs:539-554": {
       "sha256": "d6b87eaa264d0a168c91e3feb42392d34816f3efb046f844a24a8aab00262d64",

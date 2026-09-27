@@ -1,6 +1,7 @@
 import { getDb, query, queryOne } from "$lib/db.server";
 import type { Class } from "$lib/types/classes";
 import type { DamageType } from "$lib/types/skills";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import {
   getItemSourceSummaries,
   getMinimumSourceLevel,
@@ -473,5 +474,19 @@ export function getClassQuests(classId: string): ClassQuest[] {
        OR 'all' IN (SELECT value FROM json_each(class_requirements))
     ORDER BY level_required, name`,
     [classId],
+  );
+}
+
+/**
+ * The class icon the game shows for a class, exported from its UI slot.
+ */
+export function getClassVisualAsset(classId: string): EntityVisualAsset | null {
+  return (
+    queryOne<EntityVisualAsset>(
+      `SELECT public_path, width, height, source_field, source_type
+       FROM visual_assets
+       WHERE domain = 'class' AND entity_id = ? AND kind = 'icon'`,
+      [classId],
+    ) ?? null
   );
 }
