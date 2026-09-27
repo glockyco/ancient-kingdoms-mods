@@ -93,14 +93,14 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <h1
         class="max-w-xl text-balance text-4xl font-bold tracking-[-0.035em] sm:text-5xl lg:text-6xl"
       >
-        Every achievement and how to unlock it
+        Every Steam achievement
       </h1>
       <p
         class="mt-5 max-w-xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg"
       >
-        Find all {data.total} Steam achievements for Ancient Kingdoms. Each entry
-        gives the Steam unlock condition. If an achievement has one specific target,
-        the entry also links to the related compendium page.
+        Find all {data.total} Steam achievements for Ancient Kingdoms. Entries show
+        the unlock condition when Steam reveals it. Related entries link to their
+        compendium pages.
       </p>
     </div>
 

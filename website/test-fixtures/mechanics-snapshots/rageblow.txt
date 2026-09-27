@@ -1,1 +1,1 @@
-Mechanics Damage Formula Consumes all Rage (Warrior/Rogue) or all Mana (Wizard) and deals that amount × 2 as damage. Completely bypasses armor, resistance, and all other mitigation.
+Mechanics Damage Formula Rageblow consumes all the Warrior's or Rogue's Rage and deals twice that amount as damage.Armor and resistance do not reduce this damage.

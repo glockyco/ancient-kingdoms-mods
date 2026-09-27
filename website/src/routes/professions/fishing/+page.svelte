@@ -138,7 +138,9 @@
           tooltipHtml: row.tooltipHtml,
           quality: row.quality,
           note:
-            row.kind === "primary_fish" ? "Primary fish" : "Lower-tier fish",
+            row.kind === "primary_fish"
+              ? "Fish from this spot"
+              : "Lower-tier fish",
           chance: selectedSpotSuccessChance * row.chancePerBite,
         };
       }),
@@ -157,8 +159,8 @@
     outcomeRows
       .filter((row) => row.itemId)
       .sort((a, b) => {
-        const aPrimary = a.note === "Primary fish" ? 0 : 1;
-        const bPrimary = b.note === "Primary fish" ? 0 : 1;
+        const aPrimary = a.note === "Fish from this spot" ? 0 : 1;
+        const bPrimary = b.note === "Fish from this spot" ? 0 : 1;
         if (aPrimary !== bPrimary) return aPrimary - bPrimary;
         return (b.quality ?? 0) - (a.quality ?? 0);
       }),
@@ -171,7 +173,7 @@
     let escape = 0;
 
     for (const row of outcomeRows) {
-      if (row.note === "Primary fish") primaryFish += row.chance;
+      if (row.note === "Fish from this spot") primaryFish += row.chance;
       else if (row.note === "Lower-tier fish") fallbackFish += row.chance;
       else if (row.label === "Trash catch") trash += row.chance;
       else if (row.label === "Fish escapes") escape += row.chance;
@@ -179,8 +181,8 @@
 
     return [
       { label: "No bite", chance: 1 - selectedSpotSuccessChance },
-      { label: "Primary fish", chance: primaryFish },
-      { label: "Lower-tier fallback fish", chance: fallbackFish },
+      { label: "Fish from this spot", chance: primaryFish },
+      { label: "Fish from lower tiers", chance: fallbackFish },
       { label: "Trash catch", chance: trash },
       { label: "Fish escapes", chance: escape },
     ];
@@ -302,7 +304,7 @@
           {data.profession.name}
         </h1>
         <p class="mt-2 max-w-3xl text-muted-foreground">
-          Catch fish at fishing spots.
+          Catch fish at fishing spots to gain experience and improve Fishing.
         </p>
       </div>
     </div>
@@ -370,9 +372,9 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            The map currently has {data.stats.spot_count} Fishing Spot locations across
-            {spotTiers.length} tiers, from Tier {toRomanNumeral(lowestSpotTier)} to
-            Tier {toRomanNumeral(highestSpotTier)}.
+            You can fish at {data.stats.spot_count} spots across {spotTiers.length}
+            tiers, from Tier {toRomanNumeral(lowestSpotTier)} to Tier
+            {toRomanNumeral(highestSpotTier)}.
           </p>
         </div>
       </div>
@@ -380,7 +382,7 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
-          <div>Respond while the fish is biting.</div>
+          <div>Interact with the spot when the fish bites.</div>
           <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must fall inside the tier's bite window. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
@@ -388,7 +390,8 @@
               with the spot again.
             </span>
             <span class="block">
-              The window lasts 2.0 / 1.5 / 1.0 / 0.75 seconds by tier.
+              The response window lasts 2 seconds at Tier I, 1.5 at Tier II, 1
+              at Tier III, and 0.75 at Tier IV.
             </span>
             <span class="block">An early or late response fails.</span>
           </p>
@@ -398,7 +401,7 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">4</div>
         <div>
-          <div>Pass the spot success check.</div>
+          <div>Wait for a bite.</div>
           <!-- Source: server-scripts/GatherItem.cs:698-708 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Rod quality, Fishing skill, and spot tier decide whether the attempt
@@ -410,18 +413,19 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">5</div>
         <div>
-          <div>Roll for the reward.</div>
-          <!-- Source: server-scripts/GatherItem.cs:708-797 — a successful spot check rolls a primary fish, then possible fallback fish, trash, or escape. -->
+          <div>Catch a fish, trash, or nothing.</div>
+          <!-- Source: server-scripts/GatherItem.cs:708-797 — after a bite, the spot's fish gets the first chance. On failure, lower-tier fish, trash, or escape can follow. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
-              The game first rolls one primary fish from the spot.
+              When a fish bites, the game first tries to catch one of the fish
+              listed for that spot.
             </span>
             <span class="block">
-              If that roll fails, higher-tier spots can instead catch a random
-              fish from the <a
+              If the first attempt does not catch a fish, higher-tier spots can
+              instead catch a random <a
                 href="#fishing-fallback-pools"
                 class="text-blue-600 hover:underline dark:text-blue-400"
-                >fallback fish pools</a
+                >fish from lower tiers</a
               >.
             </span>
             <span class="block">
@@ -430,11 +434,11 @@
             </span>
           </p>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Failed catch rolls that do not become fish are either a <a
+            If you catch no fish from the spot or a lower tier, you either catch
+            <a
               href="#fishing-trash"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >trash catch</a
-            > or an escaped fish.
+              class="text-blue-600 hover:underline dark:text-blue-400">trash</a
+            > or the fish gets away.
           </p>
         </div>
       </div>
@@ -442,10 +446,10 @@
       <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">6</div>
         <div>
-          <div>Gain XP and possibly mastery.</div>
+          <div>Gain experience and possibly Fishing skill.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Successful bites grant XP by tier and can raise Fishing mastery up
-            to the tier cap.
+            A bite gives experience based on the spot's tier and can improve
+            Fishing until you pass that tier's skill limit.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
@@ -585,7 +589,7 @@
           </div>
         {:else}
           <p class="text-sm text-muted-foreground">
-            No fishing rods are loaded yet.
+            No fishing rods are listed.
           </p>
         {/if}
         <div>
@@ -634,13 +638,17 @@
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">Mastery proc per cast</div>
+          <div class="text-sm text-muted-foreground">
+            Fishing gain chance per cast
+          </div>
           <div class="text-2xl font-semibold">
             {formatPercent(selectedSpotSuccessChance * masteryGainChance)}
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">Mastery gain per proc</div>
+          <div class="text-sm text-muted-foreground">
+            Fishing gain per increase
+          </div>
           <div class="text-2xl font-semibold">
             {masteryGainRange.min.toFixed(2)}% – {masteryGainRange.max.toFixed(
               2,
@@ -731,7 +739,7 @@
       {/if}
     {:else}
       <p class="mt-4 text-sm text-muted-foreground">
-        No fishing spots are loaded yet.
+        No fishing spots are listed.
       </p>
     {/if}
   </section>
@@ -777,7 +785,7 @@
                             class="h-4 w-4 shrink-0 {sourceConfig.color}"
                             aria-hidden="true"
                           />
-                          <span class="text-xs text-muted-foreground">
+                          <span class="text-sm text-muted-foreground">
                             {sourceConfig.label}:
                           </span>
                           {#each visibleSources(sources) as source, i (source.id)}
@@ -794,7 +802,7 @@
                           {#if sources.length > MAX_VISIBLE_SOURCES_PER_TYPE}
                             <a
                               href="/items/{rod.item_id}"
-                              class="text-xs text-muted-foreground hover:underline"
+                              class="text-sm text-muted-foreground hover:underline"
                             >
                               +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE}
                               more
@@ -858,8 +866,8 @@
                       />
                     {/each}
                   </div>
-                  <div class="mt-1 text-xs text-muted-foreground">
-                    Fallback: {getFallbackSummaryForSpot(spot.level)}
+                  <div class="mt-1 text-sm text-muted-foreground">
+                    Lower-tier fish: {getFallbackSummaryForSpot(spot.level)}
                   </div>
                 </td>
                 <td class="p-3">
@@ -892,7 +900,7 @@
   <section id="fishing-fallback-pools" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <Fish class="h-5 w-5 text-cyan-500" />
-      <h2 class="text-xl font-semibold">Fallback Fish Pools</h2>
+      <h2 class="text-xl font-semibold">Fish from Lower Tiers</h2>
     </div>
     <div class="mt-4 grid gap-4 md:grid-cols-3">
       {#each Array.from({ length: Math.max(0, highestSpotTier) }, (_, index) => index + 1) as tier (tier)}

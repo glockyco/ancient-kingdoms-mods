@@ -33,7 +33,8 @@
     <Card.Header>
       <Card.Title>Furniture and Home Workstations</Card.Title>
       <Card.Description
-        >Place, move, or remove furniture in your house.</Card.Description
+        >Buy furniture for your account's house, then move it without another
+        purchase.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -63,8 +64,8 @@
       <ul class="list-disc space-y-1 pl-5">
         <li>Move mode repositions owned furniture without buying it again.</li>
         <li>
-          Remove mode destroys it after confirmation and does not refund its
-          price.
+          Remove mode destroys the selected furniture after confirmation without
+          refunding its price.
         </li>
       </ul>
       <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:58-69 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13192-13209,13494-13535 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
@@ -74,7 +75,8 @@
           Workbench.
         </li>
         <li>
-          They use the same ingredients and recipes as those stations elsewhere.
+          Home workstations use the same ingredients and recipes as stations
+          elsewhere.
         </li>
         <li>An Alchemy Workbench still requires learned potion recipes.</li>
       </ul>
@@ -98,7 +100,8 @@
     <Card.Header>
       <Card.Title>Barbers and Appearance</Card.Title>
       <Card.Description
-        >Appearance changes and the costume wardrobe.</Card.Description
+        >Change your appearance at a barber or select saved outfits from your
+        wardrobe.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">

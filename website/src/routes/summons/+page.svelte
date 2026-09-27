@@ -151,31 +151,36 @@
           <tbody>
             <tr class="border-b">
               <th class="py-2 pr-5 font-medium text-foreground">Combat pet</th>
-              <td class="py-2 pr-5">One shared pet slot</td>
+              <td class="py-2 pr-5">It uses the shared pet slot.</td>
               <td class="py-2 pr-5"
-                ><span class="block">Your level, up to its cap.</span><span
-                  class="block">Skills scale with veteran level.</span
+                ><span class="block"
+                  >Its level matches yours, up to its cap.</span
+                ><span class="block"
+                  >Skills start at rank 1, gain a rank at veteran level 20, and
+                  gain another every 10 veteran levels afterward.</span
+                ><span class="block">Each skill stops at its maximum rank.</span
                 ></td
               >
               <td class="py-2 pr-5">Yes</td><td class="py-2 pr-5">No</td><td
                 class="py-2"
-                ><span class="block">Vanishes.</span><span class="block"
-                  >Summon again.</span
+                ><span class="block">It vanishes when it dies.</span><span
+                  class="block">Summon it again.</span
                 ></td
               >
             </tr>
             <tr class="border-b">
               <th class="py-2 pr-5 font-medium text-foreground">Familiar</th>
-              <td class="py-2 pr-5">The same pet slot</td>
+              <td class="py-2 pr-5">It uses the same pet slot.</td>
               <td class="py-2 pr-5"
-                ><span class="block">Summoning skill rank.</span><span
-                  class="block">Buff rank has its own cap.</span
+                ><span class="block"
+                  >Its level matches your summoning skill rank.</span
+                ><span class="block">Each buff stops at its maximum rank.</span
                 ></td
               >
               <td class="py-2 pr-5">No</td><td class="py-2 pr-5">No</td><td
                 class="py-2"
-                ><span class="block">Vanishes.</span><span class="block"
-                  >Summon again.</span
+                ><span class="block">It vanishes when it dies.</span><span
+                  class="block">Summon it again.</span
                 ></td
               >
             </tr>
@@ -183,10 +188,12 @@
               <th class="py-2 pr-5 font-medium text-foreground"
                 >Whistle follower</th
               >
-              <td class="py-2 pr-5">Separate three-follower limit</td>
-              <td class="py-2 pr-5">No combat level</td>
+              <td class="py-2 pr-5"
+                >You can have up to three whistle followers.</td
+              >
+              <td class="py-2 pr-5">It has no combat level.</td>
               <td class="py-2 pr-5">No</td><td class="py-2 pr-5">No</td><td
-                class="py-2">No combat death</td
+                class="py-2">It cannot die in combat.</td
               >
             </tr>
           </tbody>
@@ -195,26 +202,29 @@
       <!-- Source: server-scripts/Pet.cs:2184-2195; PetSkills.cs:25-49,170-200; exported-data/pets.json:1-59,122-179; exported-data/skills.json:126334-126387,126601-126654,126868-126921 — familiar buff selection and the three exported effect types. -->
       <p>
         <span class="block">Wizard familiars provide these buffs:</span>
+        <!-- Source: exported-data/skills.json:126808-126811 — Blue Familiar grants 2 Mana per second per buff rank. -->
         <span class="block"
           ><a
             href="/summons/blue_fairy"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >Blue Familiar</a
-          > improves Mana regeneration.</span
+          > adds 2 Mana regeneration per second per buff rank.</span
         >
+        <!-- Source: exported-data/skills.json:127043-127046 — Red Familiar grants 1% accuracy per buff rank. -->
         <span class="block"
           ><a
             href="/summons/red_fairy"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >Red Familiar</a
-          > improves accuracy.</span
+          > adds 1% accuracy per buff rank.</span
         >
+        <!-- Source: exported-data/skills.json:126473-126476 — Arcane Familiar grants 1.5% spell power per buff rank. -->
         <span class="block"
           ><a
             href="/summons/arcane_fairy"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >Arcane Familiar</a
-          > improves spell power.</span
+          > adds 1.5% spell power per buff rank.</span
         >
       </p>
       <!-- Source: server-scripts/Pet.cs:3952-3963,4194-4205; GameManager.cs:1832-1919 — combat pets receive companion attack orders. -->

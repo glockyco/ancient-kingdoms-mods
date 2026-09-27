@@ -29,5 +29,5 @@
     {teleportZoneName}
   </a>
 {:else}
-  <span class="text-muted-foreground">Unknown effect</span>
+  <span class="text-muted-foreground">Effect details unavailable</span>
 {/if}

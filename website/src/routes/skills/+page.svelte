@@ -16,6 +16,7 @@
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import { getClassConfig } from "$lib/utils/classes";
   import { petHref } from "$lib/utils/pets";
+  import { formatSkillType } from "$lib/utils/format";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
 
   let { data } = $props();
@@ -149,8 +150,8 @@
       nameClass="truncate"
     />
   {:else if cell.column.id === "skill_type"}
-    <span class="text-muted-foreground capitalize truncate block"
-      >{String(cell.getValue()).replace(/_/g, " ")}</span
+    <span class="text-muted-foreground truncate block"
+      >{formatSkillType(String(cell.getValue()))}</span
     >
   {:else if cell.column.id === "effect"}
     {@const s = row.original}
@@ -180,9 +181,7 @@
       column={typeCol}
       title="Type"
       options={uniqueSkillTypes.map((t) => ({
-        label: t
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        label: formatSkillType(t),
         value: t,
       }))}
     />
@@ -200,7 +199,7 @@
   {#if skillCategoriesCol}
     <DataTableFacetedFilter
       column={skillCategoriesCol}
-      title="Flags"
+      title="Categories"
       options={[
         { label: "Spell", value: "spell" },
         { label: "Veteran", value: "veteran" },

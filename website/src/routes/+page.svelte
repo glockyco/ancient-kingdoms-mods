@@ -43,7 +43,7 @@
 
   const title = "Ancient Kingdoms Compendium — Wiki, Map & Guides";
   const description =
-    "Every item, monster, NPC, zone, quest, skill, and recipe, pulled directly from the game files and updated each patch.";
+    "Look up items, monsters, NPCs, zones, quests, skills, and recipes from game files updated after each patch.";
 
   // Primary database sections, ranked by usage. Each carries its own literal
   // badge classes (Tailwind needs static strings) so the icon tint stays
@@ -89,7 +89,7 @@
     },
     {
       title: "Professions",
-      description: "Skills and progression",
+      description: "Gathering, crafting, and combat",
       href: "/professions",
       icon: Hammer,
       badge: "bg-yellow-500/10 text-yellow-500",
@@ -240,7 +240,7 @@
         Ancient Kingdoms Compendium
       </h1>
       <p class="text-xl text-muted-foreground">
-        Fan-made wiki, interactive world map, and game database
+        Fan-made wiki, world map, and searchable game database
       </p>
       <GameVersionBanner live={data.live} checkedAt={data.checkedAt} />
       {#if dev}
@@ -263,8 +263,8 @@
           Interactive World Map
         </h2>
         <p class="mt-1 text-muted-foreground">
-          Explore the world of Eratiath — every monster, NPC, and resource
-          across {HOME_COUNTS.zones} zones
+          Find monsters, NPCs, and resources across {HOME_COUNTS.zones} zones on the
+          map of Eratiath.
         </p>
       </div>
       <span
@@ -368,9 +368,9 @@
       class="max-w-[66ch] space-y-3 text-sm leading-relaxed text-pretty text-muted-foreground"
     >
       <p>
-        <strong>Ancient Kingdoms</strong> is an old-school 2D pixel-art RPG by
-        Ancient Pixels, inspired by classic MMORPGs. It's set in the world of
-        Eratiath and can be played solo or in co-op. The game is currently in
+        <strong>Ancient Kingdoms</strong> is a 2D pixel-art RPG by Ancient
+        Pixels, inspired by classic MMORPGs. You can play alone or in co-op in
+        the world of Eratiath. The game is in
         <a
           href={STEAM_STORE_URL}
           target="_blank"
@@ -382,12 +382,12 @@
       </p>
       <p>
         The <strong>Ancient Kingdoms Compendium</strong> is a fan-made wiki, interactive
-        world map, and searchable game database. Its listings are generated directly
-        from the game files and refreshed after each patch, covering items, monsters,
-        NPCs, zones, quests, skills, classes, professions, crafting recipes, and more.
+        world map, and searchable game database. We update the listings from game
+        files after each patch. They cover items, monsters, NPCs, zones, quests, skills,
+        classes, professions, and crafting recipes.
       </p>
       <p>
-        Running your own server? <a
+        Do you run a server? <a
           href={AK_MONITOR_DISCORD_URL}
           target="_blank"
           rel="noopener noreferrer"
@@ -395,7 +395,7 @@
         >
           Ancient Kingdoms Monitor</a
         > by Thero manages a dedicated server from a desktop app: restarts, crash
-        recovery, SteamCMD updates, backups, and RCON. It is a separate community
+        recovery, SteamCMD updates, backups, and RCON. The monitor is a separate community
         project, not part of the compendium.
       </p>
     </div>

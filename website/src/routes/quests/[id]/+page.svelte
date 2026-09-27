@@ -150,8 +150,8 @@
   {#if data.quest.is_adventurer_quest}
     <div class="bg-muted/30 rounded-md border p-4">
       <p class="text-sm">
-        Repeatable once every 24 hours. Daily quests are shuffled into a random
-        order each day and offered one at a time.
+        You can repeat this quest once every 24 hours. Daily quests appear in a
+        random order, one at a time.
       </p>
     </div>
   {/if}
@@ -749,7 +749,7 @@
 
       {#if !currentTooltipHtml() && !currentTooltipCompleteHtml()}
         <div class="text-muted-foreground text-center py-8">
-          No game tooltip available for this quest.
+          This quest has no game tooltip.
         </div>
       {/if}
     </Tabs.Content>

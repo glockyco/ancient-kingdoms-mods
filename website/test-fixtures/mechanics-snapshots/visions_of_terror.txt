@@ -1,1 +1,1 @@
-Mechanics Effective Cast Time = castTime − (castTime × spellHaste) Fear Applies only if two independent rolls succeed: the skill's fear chance, then the target failing their fear resist roll. Duration is random between half and full fearTime.
+Mechanics Cast time = cast time × (1 − spell haste) Fear Fear applies only when the skill's fear roll succeeds and the target fails a separate fear resist roll. Fear lasts a random duration between half and all of the skill's fear duration.

@@ -162,10 +162,11 @@
               <dd>Matches your regular level, up to level {pet.level}</dd>
             </div>
             <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Skill Levels</dt>
+              <dt class="text-muted-foreground w-40 shrink-0">Skill ranks</dt>
               <dd>
-                floor(veteran level ÷ 10) — scales with veteran level only,
-                capped at each skill's max level
+                Each skill starts at rank 1. It gains one rank at veteran level
+                20 and every 10 veteran levels after that, up to its maximum
+                rank.
               </dd>
             </div>
             <div class="flex gap-2">
@@ -175,39 +176,39 @@
                   href="/skills/symbiosis"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   >Symbiosis</a
-                > passive transfers 10% of your attributes to this companion
+                > passive gives this companion 10% of your attributes
               </dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
-              <dd>Vanishes — re-summon to restore</dd>
+              <dd>It vanishes when it dies. Summon it again to restore it.</dd>
             </div>
           </dl>
         {:else}
           <dl class="space-y-2">
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Role</dt>
-              <dd>Passive buff only — does not attack</dd>
+              <dd>It grants a buff but does not attack.</dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>
-                Equal to your rank in
+                Its level matches your rank in
                 {#if pet.classLink.skill_id && pet.classLink.skill_name}
                   <a
                     href="/skills/{pet.classLink.skill_id}"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >{pet.classLink.skill_name}</a
-                  >
+                  >.
                 {:else}
-                  the summoning skill
+                  the summoning skill.
                 {/if}
-                (max {pet.effective_max_level})
+                It cannot exceed level {pet.effective_max_level}.
               </dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
-              <dd>Vanishes — re-summon to restore</dd>
+              <dd>It vanishes when it dies. Summon it again to restore it.</dd>
             </div>
           </dl>
         {/if}

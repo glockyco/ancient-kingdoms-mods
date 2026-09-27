@@ -36,7 +36,7 @@
       <Card.Title>Party</Card.Title>
       <!-- Source: server-scripts/Party.cs:9,48-75 and server-scripts/PlayerParty.cs:91-140 — five shared player and active-mercenary places. -->
       <Card.Description
-        >Five places shared by players and active mercenaries.</Card.Description
+        >Each player or active mercenary occupies one of five party places.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -57,7 +57,8 @@
           >Invite an online player who is not in a party or in combat.</span
         >
         <span class="block"
-          >The game checks the combined places again when the player accepts.</span
+          >The game checks that a place is available again when the invited
+          player accepts.</span
         >
       </p>
       <!-- Source: server-scripts/Party.cs:13-29 and server-scripts/PartySystem.cs:35-56,88-100 — the inviter is leader and only the leader can kick or dismiss. -->
@@ -69,12 +70,14 @@
       </p>
       <!-- Source: server-scripts/PartySystem.cs:60-85 and server-scripts/PlayerParty.cs:54-66 — members can leave; one remaining player dissolves the party; leader destruction dismisses it. -->
       <p>
-        <span class="block">Members can leave.</span>
+        <span class="block">Any member can leave the party.</span>
         <span class="block"
           >The party dissolves when fewer than two players remain, even if
           mercenaries remain.</span
         >
-        <span class="block">A leader disconnect also dismisses it.</span>
+        <span class="block"
+          >The party also dissolves if its leader disconnects.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>
@@ -84,15 +87,15 @@
       <Card.Title>Shared Rewards</Card.Title>
       <!-- Source: server-scripts/Monster.cs:2930-2942,3102-3129 — nearby party members receive loot access and experience on a credited kill. -->
       <Card.Description
-        >Nearby party players may share rewards from credited kills.</Card.Description
+        >Nearby party players can share loot and XP from a monster kill.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:2901-2917,2930-2942 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
       <p>
         <span class="block"
-          >A monster's highest-threat participant determines kill credit, not
-          the last hit.</span
+          >The monster's highest-threat opponent gets kill credit, not the
+          player who lands the final hit.</span
         >
         <span class="block">A mercenary or combat pet credits its owner.</span>
         <span class="block"
@@ -101,15 +104,18 @@
       </p>
       <!-- Source: server-scripts/PlayerParty.cs:74-88 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
       <p>
-        Sharing requires visibility in that player's network area and a distance
-        of less than 40 world units.
+        Sharing requires party members to be visible to the credited player and
+        less than 40 world units from them.
       </p>
       <!-- Source: server-scripts/Monster.cs:3102-3129 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
         <span class="block"
-          >Living nearby players can share kill XP around the credited player.</span
+          >Living players near the credited player can share kill XP.</span
         >
-        <span class="block">Their highest level affects the share.</span>
+        <span class="block"
+          >The highest level among nearby players sets the level adjustment for
+          everyone's XP share.</span
+        >
         <span class="block">Mercenaries do not take extra XP shares.</span>
         <span class="block"
           >See <MechanicsLink section="experience">Experience</MechanicsLink> for
@@ -122,7 +128,7 @@
           >When someone collects gold, each nearby party player receives the
           pickup amount divided by the nearby player count, rounded up.</span
         >
-        <span class="block">This range is measured from the collector.</span>
+        <span class="block">Distance is measured from the gold collector.</span>
       </p>
       <!-- Source: server-scripts/PlayerLooting.cs:108-147 — matching unfinished GatherQuest objectives advance for nearby party members on monster or chest pickup; the loot is consumed rather than copied. -->
       <p>
@@ -130,12 +136,16 @@
           >A gather-quest drop from a dead monster or chest can advance each
           nearby member's matching unfinished quest.</span
         >
-        <span class="block">It does not create an item for each member.</span>
+        <span class="block">Quest progress does not duplicate the item.</span>
       </p>
       <!-- Source: server-scripts/PlayerLooting.cs:177-203 and server-scripts/Monster.cs:4553-4592 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
-        <span class="block">Unrolled items go to the collector.</span>
-        <span class="block">Qualifying shared drops start a roll instead.</span>
+        <span class="block"
+          >Items that do not require a roll go to the collector.</span
+        >
+        <span class="block"
+          >Shared drops that require a roll go to the winner instead.</span
+        >
         <span class="block"
           >See <a
             href="/mechanics/inventory#loot"
@@ -151,14 +161,14 @@
     <Card.Header>
       <Card.Title>Need, Greed, and Pass</Card.Title>
       <Card.Description
-        >The choices for eligible players when a shared item rolls.</Card.Description
+        >Choose Need, Greed, or Pass when a shared item goes to a party roll.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/ItemsRollSystem.cs:39-79,188-197 and server-scripts/UIRollForItem.cs:60-67 — 120-second deadline, early resolution once all answer, unanswered choices treated as passes after expiry. -->
       <p>
         <span class="block"
-          >Each eligible player has up to 120 seconds to answer.</span
+          >Each player offered the roll has up to 120 seconds to answer.</span
         >
         <span class="block">The roll resolves sooner if everyone answers.</span>
         <span class="block">No answer by the deadline counts as Pass.</span>
@@ -176,7 +186,7 @@
             <tr class="border-b border-border/50">
               <td class="py-2 pr-6 font-medium">Need</td>
               <td class="py-2">
-                <span class="block">Beats every Greed.</span>
+                <span class="block">Need beats every Greed roll.</span>
                 <span class="block">The highest Need result wins.</span>
               </td>
             </tr>
@@ -189,7 +199,7 @@
             <tr>
               <td class="py-2 pr-6 font-medium">Pass</td>
               <td class="py-2">
-                <span class="block">Cannot win.</span>
+                <span class="block">Pass cannot win the item.</span>
                 <span class="block"
                   >If everyone passes, nobody receives the item.</span
                 >
@@ -211,7 +221,7 @@
       <p>
         <span class="block"
           >If a won item needs inventory space after the roll and no longer
-          fits, the award tries an empty bank slot, then an empty house-chest
+          fits, the game tries an empty bank slot, then an empty house-chest
           slot.</span
         >
         <span class="block">With neither available, the item is lost.</span>
@@ -239,7 +249,7 @@
           <tbody>
             <tr class="border-b border-border/50"
               ><td class="py-2 pr-6 font-mono">None</td><td class="py-2"
-                >Local players in network range</td
+                >Players nearby in the same network area</td
               ></tr
             >
             <tr class="border-b border-border/50"
@@ -278,14 +288,16 @@
         >
         <span class="block">Party membership is not required.</span>
         <span class="block">Following only moves you toward the player.</span>
-        <span class="block">It stops within 1 unit.</span>
+        <span class="block">Following stops within 1 unit of the player.</span>
       </p>
       <!-- Source: server-scripts/Player.cs:3856-3879,3883-3915 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
-        <span class="block">Manual movement or a skill cancels follow.</span>
         <span class="block"
-          >Either player's death, a missing or hidden target, a zone change, or
-          a target jump over 8 units also ends it.</span
+          >Moving manually or using a skill cancels follow.</span
+        >
+        <span class="block"
+          >Either player's death, a hidden or absent target, a zone change, or a
+          target jump over 8 units also ends following.</span
         >
       </p>
     </Card.Content>

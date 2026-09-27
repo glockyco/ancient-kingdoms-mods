@@ -1,1 +1,1 @@
-Mechanics Aggro min(target.HP, skillAggro + caster.maxHP + damage + round(stunChance × stunTime × 10) + round(fearChance × fearTime × 10) ) Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Aggro Aggro = min(target health, skill aggro + caster maximum health + damage + round(stunChance × stunTime × 10) + round(fearChance × fearTime × 10) ) Cast time = cast time × (1 − spell haste)

@@ -681,7 +681,7 @@
           <div>
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
-                ? "Mastery Proc / Cast"
+                ? "Fishing gain chance per cast"
                 : "Skill Gain Chance"}
             </div>
             <div class="font-mono font-medium">
@@ -693,7 +693,7 @@
           <div>
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
-                ? "Mastery Gain / Proc"
+                ? "Fishing gain per increase"
                 : "Skill Gain Amount"}
             </div>
             <div class="font-mono">

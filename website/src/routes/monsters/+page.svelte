@@ -123,7 +123,7 @@
     },
     {
       accessorKey: "damage",
-      header: "Damage",
+      header: "Physical Damage",
       size: 150,
     },
     {
@@ -199,7 +199,7 @@
     name: "Name",
     level_min: "Level",
     health: "Health",
-    damage: "Damage",
+    damage: "Physical Damage",
     magic_damage: "Magic Damage",
     defense: "Defense",
     magic_resist: "Magic Resist",

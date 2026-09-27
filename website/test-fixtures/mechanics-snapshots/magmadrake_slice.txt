@@ -1,1 +1,1 @@
-Mechanics Critical Chance Flat additive modifier to the caster's critical hit chance. Critical hits deal 1.5x damage. Crit chance is capped at 70%.
+Mechanics Critical Chance This skill adds to the attacker's critical hit chance, capped at 70%. Critical hits deal 1.5 times the damage of a noncritical hit.

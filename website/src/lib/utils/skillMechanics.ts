@@ -364,16 +364,16 @@ export function computeMechanicsSpec(
     for (const pet of mercPets) {
       // type_monster is "Ranger", "Rogue", etc. (title-case from DB)
       const tm = pet.type_monster ?? "Unknown";
-      const label = `${tm} Merc`;
+      const label = `${tm} mercenary`;
       damagePairs.push({ label, formula: mercDamageFormula(skill, tm) });
     }
     if (hasOtherCaster) {
       const parts: string[] = [];
-      if (hasMonsters) parts.push("Monster/NPC");
+      if (hasMonsters) parts.push("Monster or NPC");
       if (hasNonMercPet) parts.push("Companion");
       if (hasFamiliar) parts.push("Familiar");
       damagePairs.push({
-        label: parts.join("/"),
+        label: parts.join(", "),
         formula: otherDamageFormula(skill),
       });
     }
@@ -394,12 +394,12 @@ export function computeMechanicsSpec(
         // Every class on the same formula produces one clean label.
         const label =
           classes.length === ALL_CLASS_IDS.length
-            ? "Player (weapon proc)"
+            ? "Player (weapon effect on hit)"
             : classes
                 .map(
                   (c) => `${c.charAt(0).toUpperCase() + c.slice(1)} (player)`,
                 )
-                .join("/");
+                .join(", ");
         damagePairs.push({ label, formula });
       }
     }
@@ -426,19 +426,19 @@ export function computeMechanicsSpec(
     }
     for (const pet of mercPets) {
       const tm = pet.type_monster ?? "Unknown";
-      const label = `${tm} Merc`;
+      const label = `${tm} mercenary`;
       // Source: TargetHealSkill.cs — `caster is Pet { isMercenary: not false }` → pet.wisdom.GetHealBonus()
       // GetHealBonus() called without the isRanger flag; no ×3 multiplier even for Ranger merc
       healPairs.push({ label, bonusKind: "merc", canCrit });
     }
     if (hasOtherCaster) {
       const parts: string[] = [];
-      if (hasMonsters) parts.push("Monster/NPC");
+      if (hasMonsters) parts.push("Monster or NPC");
       if (hasNonMercPet) parts.push("Companion");
       if (hasFamiliar) parts.push("Familiar");
       // Source: TargetHealSkill.cs — else branch → bonus = 0
       healPairs.push({
-        label: parts.join("/"),
+        label: parts.join(", "),
         bonusKind: "none",
         canCrit: false,
       });
@@ -498,21 +498,21 @@ export function computeMechanicsSpec(
       }
       for (const pet of mercPets) {
         const tm = pet.type_monster ?? "Unknown";
-        const label = `${tm} Merc`;
+        const label = `${tm} mercenary`;
         // Source: TargetBuffSkill.cs:419 — `caster is Pet { isMercenary: not false }` → pet3.wisdom.value
         // Source: AreaBuffSkill.cs:25 — same merc branch, no Ranger×3
         buffPairs.push({ label, bonusAttrSource: "merc_wis", isAreaBuff });
       }
       if (hasOtherCaster && (playerClasses.length > 0 || mercPets.length > 0)) {
         const parts: string[] = [];
-        if (hasMonsters) parts.push("Monster/NPC");
+        if (hasMonsters) parts.push("Monster or NPC");
         if (hasNonMercPet) parts.push("Companion");
         if (hasFamiliar) parts.push("Familiar");
         // Source: TargetBuffSkill.cs:419 — final else → 0
         // Only shown when a player or merc also casts the skill; pure monster-only
         // buff skills have bonusAttrSource=none which is uninformative to players.
         buffPairs.push({
-          label: parts.join("/"),
+          label: parts.join(", "),
           bonusAttrSource: "none",
           isAreaBuff,
         });
@@ -546,7 +546,7 @@ export function computeMechanicsSpec(
     }
     for (const pet of mercPets) {
       const tm = pet.type_monster ?? "Unknown";
-      const label = `${tm} Merc`;
+      const label = `${tm} mercenary`;
       // Source: Skills.cs:762-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste)
       const model: TimingModel = isSpell ? "merc_spell" : "merc_auto";
       timingPairs.push({ label, model });
@@ -556,14 +556,14 @@ export function computeMechanicsSpec(
       // unconditionally regardless of isSpell, so spells and non-spells have the same
       // haste-reduced cooldown behaviour. A single model covers both.
       const model: TimingModel = "monster";
-      timingPairs.push({ label: "Monster/NPC", model });
+      timingPairs.push({ label: "Monster or NPC", model });
     }
     // Non-merc companion pets and familiars use FinishCast (flat cooldown) — same shape as flat
     if (hasNonMercPet || hasFamiliar) {
       const parts: string[] = [];
       if (hasNonMercPet) parts.push("Companion");
       if (hasFamiliar) parts.push("Familiar");
-      timingPairs.push({ label: parts.join("/"), model: "companion" });
+      timingPairs.push({ label: parts.join(", "), model: "companion" });
     }
   }
 
@@ -613,20 +613,23 @@ export function computeMechanicsSpec(
     // player_classes entries of their own.
     if (isWeaponProc) {
       debuffPairs.push({
-        label: "Player/Mercenary (weapon proc)",
+        label: "Player or mercenary (weapon effect on hit)",
         bonusAttrKind: playerMercKind,
       });
     }
     for (const pet of mercPets) {
       const tm = pet.type_monster ?? "Unknown";
-      debuffPairs.push({ label: `${tm} Merc`, bonusAttrKind: playerMercKind });
+      debuffPairs.push({
+        label: `${tm} mercenary`,
+        bonusAttrKind: playerMercKind,
+      });
     }
     if (hasOtherCaster) {
       const parts: string[] = [];
-      if (hasMonsters) parts.push("Monster/NPC");
+      if (hasMonsters) parts.push("Monster or NPC");
       if (hasNonMercPet) parts.push("Companion");
       if (hasFamiliar) parts.push("Familiar");
-      debuffPairs.push({ label: parts.join("/"), bonusAttrKind: "none" });
+      debuffPairs.push({ label: parts.join(", "), bonusAttrKind: "none" });
     }
   }
 

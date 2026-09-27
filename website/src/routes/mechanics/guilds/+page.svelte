@@ -32,7 +32,8 @@
     <Card.Header>
       <Card.Title>Guild Membership</Card.Title>
       <Card.Description
-        >Creation, invitations, and who leads the guild.</Card.Description
+        >Create a guild at a registrar for up to 10 characters, including its
+        leader.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -54,12 +55,12 @@
       <p>
         <span class="block">Guild membership belongs to each character.</span>
         <span class="block"
-          >Leadership permissions follow the owner account only while playing a
-          character in its guild.</span
+          >The owner account can use leader permissions only through a character
+          in its guild.</span
         >
         <span class="block"
-          >A guildless alt on that account can Join the owned guild if a place
-          is open.</span
+          >Another character on the owner account can join that guild if it has
+          room.</span
         >
       </p>
       <!-- Source: server-scripts/Player.cs:11655-11690 and server-scripts/Database.cs:1293-1336 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
@@ -92,13 +93,14 @@
       </p>
       <!-- Source: server-scripts/Database.cs:2161-2170,2900-2902,2942-2946 and server-scripts/GuildSystem.cs:179-250,359-446 — character save carries guild state; online players on one server synchronize, with membership authoritative when a leader is present. -->
       <p>
-        <span class="block">Guild state is saved with each character.</span>
-        <span class="block"
-          >Online guildmates on the same server synchronize their data.</span
+        <span class="block">Each character saves its own guild membership.</span
         >
         <span class="block"
-          >When the leader is present, the leader's membership record decides
-          who remains a member.</span
+          >Online guildmates on the same server receive membership updates.</span
+        >
+        <span class="block"
+          >When the leader is present, the leader's member list determines who
+          stays in the guild.</span
         >
       </p>
     </Card.Content>
@@ -108,7 +110,8 @@
     <Card.Header>
       <Card.Title>Guild Points</Card.Title>
       <Card.Description
-        >Boss kills credit one guild member's character.</Card.Description
+        >A guilded player credited with a boss kill earns points for that
+        character.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -121,15 +124,15 @@
         >
         <span class="block">A mercenary or combat pet credits its owner.</span>
         <span class="block"
-          >Only that credited player gains points if guilded.</span
+          >Only the credited player receives guild points, if they belong to a
+          guild.</span
         >
       </p>
       <!-- Source: server-scripts/GuildSystem.cs:27-29,266-279 — reward is ceil(max(1, boss level) / 5), at least one; non-boss elites are excluded. -->
       <p>
         <span class="block"
-          >The reward is <span class="font-mono"
-            >ceil(max(1, boss level) / 5)</span
-          >.</span
+          >A boss grants one guild point per five levels, rounded up, with at
+          least one point.</span
         >
         <span class="block">A non-boss elite grants no guild points.</span>
       </p>
@@ -163,7 +166,7 @@
           contribution.</span
         >
         <span class="block"
-          >Online guildmates on the same server receive updated member data.</span
+          >Online guildmates on the same server see updated member points.</span
         >
       </p>
     </Card.Content>

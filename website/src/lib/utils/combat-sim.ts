@@ -96,13 +96,13 @@ export const CLASS_DEFAULT_MODE: Record<PlayerClass, AttackMode> = {
 
 export const MODE_LABEL: Record<AttackMode, string> = {
   player: "Player",
-  merc: "Merc",
+  merc: "Mercenary",
   bow_player: "Bow (Player)",
   melee_player: "Melee (Player)",
-  bow_merc: "Bow (Merc)",
+  bow_merc: "Bow (Mercenary)",
   spell_player: "Spell (Player)",
   staff_player: "Staff (Player)",
-  spell_merc: "Spell (Merc)",
+  spell_merc: "Spell (Mercenary)",
 };
 
 // Spell player cast times: fire_blast (wizard 0.9s), wind_shock (druid 1.0s), smite (cleric 1.2s)
@@ -600,7 +600,7 @@ export function fmtInterval(
   switch (mode) {
     case "player": {
       const ct = cls === "warrior" ? 0.5 : 0.4;
-      return `${fmt(ct, 1)}s cast + ${fmt(interval - ct)}s refractory`;
+      return `${fmt(ct, 1)}s cast + ${fmt(interval - ct)}s recovery`;
     }
     case "merc": {
       const ct = cls === "warrior" ? 0.5 : 0.4;
@@ -608,19 +608,19 @@ export function fmtInterval(
       return `${fmt(ct, 1)}s cast + 1.0×(1−${hastePercent}%) = ${fmt(cd)}s cooldown`;
     }
     case "bow_player":
-      return `0.8s cast + ${fmt(interval - 0.8)}s refractory`;
+      return `0.8s cast + ${fmt(interval - 0.8)}s recovery`;
     case "melee_player":
-      return `0.5s cast + ${fmt(interval - 0.5)}s refractory`;
+      return `0.5s cast + ${fmt(interval - 0.5)}s recovery`;
     case "bow_merc": {
       const cd = 1.0 * (1 - h);
       return `0.8s cast + 1.0×(1−${hastePercent}%) = ${fmt(cd)}s cooldown`;
     }
     case "spell_player": {
       const ct = SPELL_PLAYER_CAST[cls] ?? 1.0;
-      return `${fmt(ct, 1)}s × (1−${spellHastePercent}% spell haste) + 0.75s refractory = ${fmt(interval)}s`;
+      return `${fmt(ct, 1)}s × (1−${spellHastePercent}% spell haste) + 0.75s recovery = ${fmt(interval)}s`;
     }
     case "staff_player":
-      return `0.5s cast + ${fmt(interval - 0.5)}s refractory`;
+      return `0.5s cast + ${fmt(interval - 0.5)}s recovery`;
     case "spell_merc": {
       const ct = SPELL_MERC_CAST[cls] ?? 1.0;
       const cd = SPELL_MERC_CD[cls] ?? 1.0;

@@ -1,1 +1,1 @@
-Mechanics Song Capacity maximumActiveSongs = 2 + learned passive bonuses This passive adds 1 while it is learned.
+Mechanics Song Capacity Active song limit = 2 + bonuses from learned passives Learning this passive adds 1 to your active song limit.

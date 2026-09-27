@@ -84,7 +84,7 @@
     },
     {
       id: "flags",
-      header: "Flags",
+      header: "Categories",
       size: 130,
       enableSorting: false,
       accessorFn: (row) => {
@@ -183,11 +183,11 @@
     display_type: "Type",
     level_required: "Req. Level",
     level_recommended: "Rec. Level",
-    flags: "Flags",
+    flags: "Categories",
     class: "Class",
     quest_giver: "Quest Giver",
     display_type_filter: "Type Filter",
-    flags_filter: "Flags Filter",
+    flags_filter: "Categories Filter",
   };
 </script>
 
@@ -276,7 +276,7 @@
   {#if flagsCol}
     <DataTableFacetedFilter
       column={flagsCol}
-      title="Flags"
+      title="Categories"
       options={[
         ...QUEST_FLAG_CONFIG.map((f) => ({ label: f.label, value: f.key })),
         { label: "Regular", value: "regular" },
@@ -331,7 +331,8 @@
           >Some item objectives check what you carry at turn-in.</span
         >
         <span class="block"
-          >Others record gathering progress as it happens.</span
+          >For other quests, gathering an item advances the objective
+          immediately.</span
         >
       </p>
       <!-- Source: server-scripts/UINpcQuests.cs:170-174; server-scripts/UIQuests.cs:124-140; server-scripts/UIQuestTracking.cs:54 — the log permits 15 active quests, but tracking replaces the oldest of three. -->
@@ -345,10 +346,12 @@
       <!-- Source: server-scripts/PlayerQuests.cs:363-392,445-468 — rewards follow NPC turn-in, while abandoning removes the quest record and progress. -->
       <p>
         <span class="block"
-          >Completed objectives do not grant rewards until you turn the quest in
-          at its NPC.</span
+          >You receive rewards after you complete the objectives and turn in the
+          quest to its NPC.</span
         >
-        <span class="block">Abandoning removes its recorded progress.</span>
+        <span class="block"
+          >Abandoning a quest removes its recorded progress.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>
@@ -365,17 +368,20 @@
       </p>
       <!-- Source: server-scripts/PlayerQuests.cs:236-253 — one completed quest from the predecessor array meets the chain requirement. -->
       <p>
-        If a quest lists alternative predecessors, completing one is enough.
+        If a quest lists multiple earlier quests, you only need to complete one.
       </p>
       <!-- Source: server-scripts/PlayerQuests.cs:220-235 — ordinary repeatables reopen eight real hours after completion; Adventurer quests use 24 hours and the daily offer. -->
       <p>
-        <span class="block">Repeatable quests reopen after 8 real hours.</span>
+        <span class="block"
+          >Repeatable quests outside the Adventurers' Guild reopen 8 real hours
+          after completion.</span
+        >
         <span class="block"
           ><a
             href="/professions/adventuring#how-it-works"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >Adventurers' Guild assignments</a
-          > follow a separate 24-hour completion rule and daily selection.</span
+          > reopen after 24 hours, with a new daily selection.</span
         >
       </p>
     </Card.Content>

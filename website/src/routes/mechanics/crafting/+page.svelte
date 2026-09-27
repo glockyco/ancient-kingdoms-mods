@@ -33,7 +33,8 @@
     <Card.Header>
       <Card.Title>Crafting at a Station</Card.Title>
       <Card.Description
-        >Materials, results, and the Crafting journal.</Card.Description
+        >Choose materials at a Craft Station and record successful crafts in the
+        Crafting journal.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -47,7 +48,8 @@
           Unrelated extra materials do not prevent an otherwise matching recipe.
         </li>
         <li>
-          The matching recipe with the most ingredient entries takes priority.
+          If more than one recipe matches, the recipe listing the most
+          ingredients takes priority.
         </li>
       </ul>
       <p>
@@ -64,8 +66,8 @@
           result.
         </li>
         <li>
-          Ordinary non-food crafting consumes the materials and produces the
-          result without a failure roll.
+          Non-food crafting consumes the materials and always produces the
+          result.
         </li>
         <li>
           <a
@@ -77,7 +79,7 @@
           <a
             href="/professions/alchemy"
             class="text-blue-600 hover:underline dark:text-blue-400">Alchemy</a
-          > has separate recipe and success requirements.
+          > requires a learned recipe and rolls for success.
         </li>
       </ul>
       <!-- Source: server-scripts/Player.cs:13494-13503,13569-13585 — equipment receives its maximum durability; pack recipes add the final item in the pack's final quantity. -->
@@ -103,7 +105,8 @@
           >Craft All repeats the craft while the station stays open.</span
         >
         <span class="block"
-          >It stops when the materials run out or your inventory is full.</span
+          >Craft All stops when no recipe matches the remaining materials or the
+          result cannot fit in your inventory.</span
         >
       </p>
     </Card.Content>
@@ -112,7 +115,9 @@
   <Card.Root id="augments" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Attaching and Removing Augments</Card.Title>
-      <Card.Description>One augment per equipment piece.</Card.Description>
+      <Card.Description
+        >Each equipment piece holds one augment.</Card.Description
+      >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/UICraftingStation.cs:53-69,142-159,288-315 and server-scripts/Player.cs:13412-13454 — two station materials trigger attachment, equipment and augment must be in inventory, and the client checks defensive category compatibility. -->
@@ -123,16 +128,18 @@
         </li>
         <li>Ammunition cannot receive an augment.</li>
         <li>
-          Defensive augments fit defensive equipment categories, and offensive
-          augments fit the other categories.
+          <span class="block">Defensive augments fit armor and shields.</span>
+          <span class="block"
+            >Offensive augments fit weapons and other equipment.</span
+          >
         </li>
       </ul>
       <!-- Source: server-scripts/Player.cs:13427-13454 and server-scripts/Inventory.cs:67-92 — attaching requires an unaugmented copy, consumes the loose augment, and returns the equipment with maximum durability. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>An equipment piece holds one augment.</li>
         <li>
-          Attaching consumes the loose augment and returns the piece with the
-          augment attached.
+          Attaching an augment consumes the loose augment and returns the
+          equipment with that augment attached.
         </li>
         <li>
           The returned piece has full durability, even if it was worn before

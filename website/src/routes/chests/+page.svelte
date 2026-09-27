@@ -32,7 +32,7 @@
     buildCollectionPage({
       path: "/chests",
       name: "Chests — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.chests.length.toLocaleString()} chests in Ancient Kingdoms.`,
+      description: `Find ${data.chests.length.toLocaleString()} chests by zone, key, reward, and respawn time.`,
       items: data.chests.map((chest) => ({
         name: chest.name,
         path: `/chests/${chest.id}`,
@@ -291,7 +291,7 @@
 
 <Seo
   title="Chests - Ancient Kingdoms"
-  description={`${data.chests.length.toLocaleString()} treasure chests across every zone — coordinates on the world map, required keys, gold ranges, item rewards, and respawn timers.`}
+  description={`Find ${data.chests.length.toLocaleString()} chests on the world map, with required keys, gold ranges, item rewards, and respawn times.`}
   path="/chests"
 />
 

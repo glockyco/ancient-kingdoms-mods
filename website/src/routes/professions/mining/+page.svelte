@@ -98,14 +98,14 @@
     iconBackgroundClass="bg-amber-500/10"
     {sections}
   >
-    <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — tier IV is 0.05 per
-         pickaxe quality plus 0.4 per skill, so a Draconium pickaxe alone gives 20%
-         and full Mining adds the other 40 points. -->
+    <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — tier V is 0.05 per
+         pickaxe quality plus 0.5 per skill, so a Draconium pickaxe alone gives 20%
+         and full Mining adds the other 50 points. -->
     <p>
       Mine ore from nodes across the world. Your skill and your pickaxe together
       control your chance to get ore from a node.
       <strong class="font-semibold text-foreground"
-        >A Draconium node with a Draconium pickaxe gives 20% at 0 Mining and 60%
+        >A Draconium node with a Draconium pickaxe gives 20% at 0 Mining and 70%
         at 100.</strong
       >
     </p>
@@ -121,11 +121,12 @@
         <div>
           <p class="font-medium">Carry a pickaxe.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            A better <a
+            On nodes where your success chance is below 100%, a higher-quality
+            <a
               href="#pickaxes"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >pickaxe</a
-            > gives a better chance on every node. A broken pickaxe does not work.
+            > can improve it. A broken pickaxe does not work.
           </p>
           <!-- Source: server-scripts/Player.cs:9551-9556; server-scripts/PlayerInventory.cs:105-119 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
@@ -155,7 +156,7 @@
           <p class="font-medium">Collect the ore.</p>
           <!-- Source: server-scripts/GatherItem.cs:383-405 — a mineral enters its depletion wait only when the roll succeeds. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Every success gives 1 ore and one more roll for a <a
+            Every successful mine gives 1 ore and a separate chance at a <a
               href="#gems"
               class="text-blue-600 hover:underline dark:text-blue-400">gem</a
             >. Only a successful attempt depletes the node. A failure leaves it
@@ -169,7 +170,7 @@
   <section id="pickaxes" class="space-y-4">
     <h2 class="text-xl font-semibold">Pickaxes</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      You need 50% Mining to use a Rusty Pickaxe on a Tier V node. A Draconium
+      You need 40% Mining to use a Rusty Pickaxe on a Tier V node. A Draconium
       Pickaxe works at any skill.
     </p>
     <div class="overflow-x-auto rounded-lg border">
@@ -194,7 +195,7 @@
                 />
               </td>
               <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — on tier 4 the
-                   chance is quality x 0.05 plus skill x 0.4. -->
+                   chance is quality × 0.05 plus skill × 0.5. -->
               <td class="p-3 text-right tabular-nums"
                 >{miningSuccessPercent(4, pickaxe.quality, 100).toFixed(0)}%</td
               >
@@ -215,8 +216,9 @@
   <section id="calculator" class="space-y-4">
     <h2 class="text-xl font-semibold">Success by skill</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Each tier is a straight line from your pickaxe quality to 100%. In the
-      shaded bands, the node still gives ore and <MechanicsLink
+      On Tier V ore, each pickaxe quality adds 5 percentage points to your
+      success chance. Each 1% Mining adds another 0.5 points. In the shaded
+      bands, the node still gives ore and <MechanicsLink
         section="experience#gathering-xp">experience</MechanicsLink
       >, but no more Mining skill.
     </p>
@@ -452,9 +454,6 @@
 
   <section id="uses" class="space-y-4">
     <h2 class="text-xl font-semibold">What ore is for</h2>
-    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Ore is a material for crafting.
-    </p>
     <ul class="flex flex-wrap gap-x-6 gap-y-1.5 text-sm">
       {#each data.ores as ore (ore.id)}
         <li>
@@ -526,14 +525,15 @@
     {/if}
 
     <p class="text-pretty text-sm text-muted-foreground">
-      Ore is also a material for <a
+      Ore also goes into <a
         href="/professions/alchemy"
         class="text-blue-600 hover:underline dark:text-blue-400">Alchemy</a
       >
-      and for the crafting stations. All gathering uses the same experience rules,
-      in
+      recipes and other crafting stations. Ore follows the same experience rules as
+      other gathering. See
       <MechanicsLink section="experience#gathering-xp">Experience</MechanicsLink
-      >.
+      >
+      for the rule.
     </p>
   </section>
 </div>

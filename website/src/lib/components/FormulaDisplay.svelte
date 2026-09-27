@@ -2,10 +2,17 @@
   import type { FormulaDisplay } from "$lib/types/formula";
 
   let { display }: { display: FormulaDisplay } = $props();
+  const specialNoteSentences = $derived(
+    display.specialNote?.split(/(?<=[.!?])\s+(?=[A-Z])/u) ?? [],
+  );
 </script>
 
 {#if display.specialNote}
-  <p class="text-sm text-muted-foreground">{display.specialNote}</p>
+  <p class="text-sm text-muted-foreground">
+    {#each specialNoteSentences as sentence (sentence)}
+      <span class="block">{sentence}</span>
+    {/each}
+  </p>
 {:else}
   <dl class="space-y-2">
     {#if display.preMitigation}

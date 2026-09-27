@@ -152,7 +152,7 @@
       <div class="order-3 min-w-0 space-y-2 text-sm md:order-none">
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
-          title="Damage"
+          title="Physical Damage"
         >
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-red-800 text-red-50 shadow-sm"
@@ -160,7 +160,7 @@
           >
             <Sword class="h-5 w-5" />
           </span>
-          <span class="sr-only">Damage: </span>
+          <span class="sr-only">Physical Damage: </span>
           <span class="text-lg font-semibold">{damage.toLocaleString()}</span>
         </div>
         <div

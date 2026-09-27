@@ -123,7 +123,8 @@
           Mercenaries
         </h1>
         <p class="mt-2 max-w-3xl text-muted-foreground">
-          Hired fighters that join your party and level up with you.
+          You can hire mercenaries to fight in your party, and they level up
+          with you.
         </p>
       </div>
     </div>
@@ -234,8 +235,8 @@
       <h2 class="text-xl font-semibold">Attribute growth</h2>
       <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel — each attribute gains 1 at every multiple of its class interval. -->
       <p class="mt-1 text-sm text-muted-foreground">
-        A class gains +1 in an attribute every few levels. The table shows how
-        many levels each +1 takes.
+        Each table value is the number of levels a mercenary needs to gain +1 in
+        that attribute.
       </p>
     </div>
     <div class="overflow-x-auto rounded-lg border">
@@ -442,11 +443,11 @@
               <div>
                 <!-- Source: server-scripts/Player.cs:4629-4652, Player.cs:10347-10348, Database.cs:SaveNewMercenary -->
                 <p class="font-medium">
-                  Game quirk: veteran damage does not stay
+                  Veteran damage bonus disappears after summoning again
                 </p>
                 <p>
                   A veteran level gained while a mercenary is summoned adds +1
-                  damage and +1 magic damage.
+                  physical damage and +1 magic damage.
                 </p>
                 <p>
                   The game does not save this bonus. The next summon restores
@@ -482,8 +483,8 @@
                     >Aggressive</th
                   ><td class="py-2"
                     ><span class="block"
-                      >Attacks the enemies you are fighting.</span
-                    ><span class="block">Still heals and buffs.</span></td
+                      >The companion attacks the enemies you are fighting.</span
+                    ><span class="block">It still heals and buffs.</span></td
                   ></tr
                 >
                 <tr class="border-b"
@@ -491,8 +492,8 @@
                     >Defensive</th
                   ><td class="py-2"
                     ><span class="block"
-                      >Stops attacking and drops its target.</span
-                    ><span class="block">Still heals and buffs.</span></td
+                      >The companion stops attacking and drops its target.</span
+                    ><span class="block">It still heals and buffs.</span></td
                   ></tr
                 >
                 <tr class="border-b"
@@ -524,11 +525,13 @@
                     >Individual attack</th
                   ><td class="py-2"
                     ><span class="block"
-                      >Sends one companion at your target and ends Hold
-                      Position.</span
-                    ><span class="block">Interrupts its current action.</span
-                    ><span class="block">Wakes a mesmerized target.</span><span
-                      class="block">Works only in aggressive stance.</span
+                      >The order sends one companion at your target and ends
+                      Hold Position.</span
+                    ><span class="block"
+                      >The order interrupts its current action.</span
+                    ><span class="block">It wakes a mesmerized target.</span
+                    ><span class="block"
+                      >The companion must be in aggressive stance.</span
                     ></td
                   ></tr
                 >
@@ -558,7 +561,8 @@
                       >The companion drops its target, stops casting, and moves
                       next to you.</span
                     ><span class="block"
-                      >Does not work while it is feared, stunned, or rooted.</span
+                      >The order does not work while the companion is feared,
+                      stunned, or rooted.</span
                     ></td
                   ></tr
                 >
@@ -785,26 +789,31 @@
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground">Food</th><td
               class="py-2"
-              ><span class="block">No food buff.</span><span class="block"
-                >Checked every 5–10 seconds.</span
-              ></td
+              ><span class="block"
+                >The mercenary eats food when it has no food buff.</span
+              ><span class="block">It checks every 5–10 seconds.</span></td
             ></tr
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
               >Utility potion</th
             ><td class="py-2"
-              ><span class="block">No buff from the potion's category.</span
-              ><span class="block">Checked every 5–10 seconds.</span></td
+              ><span class="block"
+                >The mercenary uses a utility potion when it has no buff from
+                the potion's category.</span
+              ><span class="block">It checks every 5–10 seconds.</span></td
             ></tr
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
               >Healing potion</th
             ><td class="py-2"
-              ><span class="block">Below 50% Health.</span><span class="block"
-                >At least 90% of the potion's healing must fit.</span
-              ><span class="block">Checked every 1–3 seconds.</span></td
+              ><span class="block"
+                >The mercenary uses a healing potion below 50% Health.</span
+              ><span class="block"
+                >The mercenary must be missing at least 90% of the Health that
+                the potion restores.</span
+              ><span class="block">It checks every 1–3 seconds.</span></td
             ></tr
           >
           <tr
@@ -812,10 +821,13 @@
               >Resource potion</th
             ><td class="py-2"
               ><span class="block"
-                >Below 25% Energy for Warrior and Rogue, or Mana for other
-                classes except Bard.</span
-              ><span class="block">At least 90% of recovery must fit.</span
-              ><span class="block">Checked every 1–3 seconds.</span></td
+                >The mercenary uses a resource potion below 25% Rage for a
+                Warrior or Rogue, or below 25% Mana for other classes except
+                Bard.</span
+              ><span class="block"
+                >The mercenary must be missing at least 90% of the Rage or Mana
+                that the potion restores.</span
+              ><span class="block">It checks every 1–3 seconds.</span></td
             ></tr
           >
         </tbody>
@@ -841,8 +853,8 @@
         >Other party members must be within 12 units of the healer.</span
       >
       <span class="block"
-        >Lower Health, an active attacker, and a Warrior tank increase healing
-        priority.</span
+        >Healers prioritize allies with less Health, allies under attack, and
+        Warriors.</span
       >
       <span class="block"
         >Offensive skills preserve at least 35% of a healer's maximum Mana after
@@ -864,20 +876,23 @@
             ><th class="py-2 pr-5 font-medium text-foreground"
               >Heal candidate</th
             ><td class="py-2"
-              >Below 90% Health, or below 40% for urgent healing.</td
+              >The healer considers allies below 90% Health, or below 40% when
+              urgent healing is needed.</td
             ></tr
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
               >Heal-over-time buff</th
             ><td class="py-2"
-              >Below 70% Health and not already affected by that buff.</td
+              >The healer considers an ally below 70% Health who does not
+              already have that buff.</td
             ></tr
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground">Area heal</th><td
               class="py-2"
-              >At least 3 eligible allies below 60% Health within range.</td
+              >The healer considers an area heal when at least 3 living allies
+              below 60% Health are in range and can receive it.</td
             ></tr
           >
           <tr
@@ -885,10 +900,11 @@
               >Single-target heal</th
             ><td class="py-2"
               ><span class="block"
-                >Always considered at 75% Health or lower, rising to 85% at full
-                healer Mana.</span
+                >The healer always considers a single-target heal at 75% Health
+                or lower, rising to 85% when the healer has full Mana.</span
               ><span class="block"
-                >Above that, at least half the heal must fit.</span
+                >Above that threshold, the ally must need at least half the
+                heal.</span
               ></td
             ></tr
           >
@@ -897,7 +913,9 @@
     </div>
     <!-- Source: server-scripts/Pet.cs:4452-4499,4542-4585,4898-4939 — cleansing takes priority and same-owner healers avoid duplicate noncritical direct heals. -->
     <p class="text-sm leading-6 text-muted-foreground">
-      <span class="block">A ready cleanse takes priority over healing.</span>
+      <span class="block"
+        >Healers cleanse before healing when Cleanse is ready.</span
+      >
       <span class="block"
         >Healers with the same owner avoid duplicate direct heals unless the
         target is below 40% Health.</span
@@ -910,7 +928,8 @@
       >
       <span class="block"
         >In aggressive stance, Battle Shout takes priority when at least two
-        valid monsters near you attack the party.</span
+        attackable monsters within 20 units of you attack party members and are
+        close enough to each other for the shout.</span
       >
     </p>
     <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2702-2709,2814-2835 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->

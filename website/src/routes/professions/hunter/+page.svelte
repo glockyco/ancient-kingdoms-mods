@@ -113,7 +113,7 @@
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-3"
     >
       <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Hunter Skill:</label>
+        <label for="skill-slider" class="shrink-0">Hunting Skill:</label>
         <input
           id="skill-slider"
           type="range"

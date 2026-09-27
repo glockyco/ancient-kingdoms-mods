@@ -348,6 +348,10 @@
       "sha256": "f660f0e7ce5b7eeedc654ab1ea5b0866fe1f4deec116eb2dd02b31a4b5ce6452",
       "span": 30
     },
+    "Combat.cs:1333-1348": {
+      "sha256": "b248ad65b7af9bb2cede5dccd8b454d56fc0d7ec3338b52a051d7e7f246476e2",
+      "span": 16
+    },
     "Combat.cs:1348-1369": {
       "sha256": "8494cf04b0e715732fc30da14b0e1999598f9e69d4205db8c98afef89a630f46",
       "span": 22
@@ -388,6 +392,10 @@
       "sha256": "83ae1ffbe32c465526b27e402cb53e46ca3222490b7629b3aba2d3b92275a1fd",
       "span": 4
     },
+    "Combat.cs:1540-1567": {
+      "sha256": "f07877ff7b440aaa9c2f48e8da723f420072c41d153c62aedb86b6bb94f92b7d",
+      "span": 28
+    },
     "Combat.cs:1546-1549": {
       "sha256": "f240f5a35cbc51b4b621e4ae95b95c374975ccde60fc76c320bfb3f33f2b268d",
       "span": 4
@@ -398,6 +406,10 @@
     },
     "Combat.cs:1556-1566": {
       "sha256": "47dd0cea639dce5e99e5fa46ebd98cc6be718f3ccfc9964324f61a661ea32c6f",
+      "span": 11
+    },
+    "Combat.cs:1570-1580": {
+      "sha256": "1e413fd8f916996fc1210c9346c826480a6487c7dc0ced04908b81362df80107",
       "span": 11
     },
     "Combat.cs:1583-1590": {
@@ -800,6 +812,14 @@
     "DefaultEvent.cs:137-143": {
       "sha256": "93c445b327dda059e248fbefe034b1e302f5e567ee6d2203c1c590fd248e5e69",
       "span": 7
+    },
+    "DefaultEvent.cs:209-217": {
+      "sha256": "b9e244dc75e373948e027e4c286de1a10402716ff945d491f39bf68374664a2c",
+      "span": 9
+    },
+    "DefaultEvent.cs:229-239": {
+      "sha256": "c3094b6a3d2d89aac1bd8764f0fff83e9c18e2de2018e2353be74b6b5969cc82",
+      "span": 11
     },
     "DefaultEvent.cs:231": {
       "sha256": "0f48ba1d378ee94c1a97ea6c06dc241e959351ec47fa12bb1aa16df969af4d02",
@@ -1776,6 +1796,10 @@
       "sha256": "d351c6c4434fa369a8c7f18c9e3c38068d2ca593bdef2452c22935215d7ca13d",
       "span": 1
     },
+    "Npc.cs:1752-1775": {
+      "sha256": "902e0c35a92a9795c0b8c4cb39b07d69dc116629a9e9aa9ac4dfe24f1aeed8e2",
+      "span": 24
+    },
     "Npc.cs:1783-1793": {
       "sha256": "9a23cb65628588c0412039e77183457cefd7bf4aeae9b952c4889210d8f045dd",
       "span": 11
@@ -2366,6 +2390,10 @@
     "Player.cs:14192-14205": {
       "sha256": "8c6b1eb34b9ff8901df2b4c59c05454310ef4e700bc4a37b3d304eeb32b5242b",
       "span": 14
+    },
+    "Player.cs:14192-14219": {
+      "sha256": "d947276937d7f06ed79834df922827610f05f822fb04c504800b4ab3e6997048",
+      "span": 28
     },
     "Player.cs:14202-14207": {
       "sha256": "170d53df8d542a76bee8cbcf8dfdc50eaa178b9d960f954ce7703e8afe0fc28e",
@@ -3744,6 +3772,10 @@
     "TargetDamageSkill.cs": {
       "span": 0
     },
+    "TargetDamageSkill.cs:127-155": {
+      "sha256": "3b9d1b67ae00da41bc4929ce1dd3925bbb463dc45f94fcfc60881ddebbcd70d2",
+      "span": 29
+    },
     "TargetDamageSkill.cs:152-157": {
       "sha256": "4fd4b745120ef543819db577b679ef9eb839c4e02b149a63ee80bfa73f69fbad",
       "span": 6
@@ -3838,6 +3870,10 @@
     "TargetProjectileSkill.cs:196-201": {
       "sha256": "0ca5ff965dc228c3633c4cde94fb59371dbfa6bc5319a6d3ded0251ea15aacfe",
       "span": 6
+    },
+    "TargetProjectileSkill.cs:211-220": {
+      "sha256": "73044a97e95406b56967c0906a6aeb707bc8e12335d0b1bdbfa2194786f3389c",
+      "span": 10
     },
     "TargetProjectileSkill.cs:216-221": {
       "sha256": "2cf8cee07e74ba64caaaa61de05bbee604c22852dbda191322cad6ef19e2e002",
@@ -4242,9 +4278,17 @@
       "sha256": "c7598c54a0805fbc5437a049ad90f112a61324037b7819361d37efdc2dbc90db",
       "span": 18
     },
+    "UINpcTrading.cs:214-219": {
+      "sha256": "890c3f5ed4a7dabc89c5c3c66ded3379b9c8ffe6045092d17d72a2202d09a6a0",
+      "span": 6
+    },
     "UINpcTrading.cs:268-285": {
       "sha256": "0482b6307fe5f7bbfd32270c36678d3a6331510158f9d40cec0cc3aaf546c478",
       "span": 18
+    },
+    "UINpcTrading.cs:279-284": {
+      "sha256": "87a79a95ecb592825372009ef5f9939cb68f37effb624ff1a0f52fac8b8455c0",
+      "span": 6
     },
     "UINpcTrading.cs:354-365": {
       "sha256": "2532d91068b26d12d1d3d1eec5b70bd1e1e415426c3f6bf1e285042106c73583",
@@ -4273,6 +4317,10 @@
     "UINpcTrading.cs:824-831": {
       "sha256": "24e56e21fddf789f66c37d4edbc80b08b48ab59613d323894dc1cf8ad944e251",
       "span": 8
+    },
+    "UINpcTrading.cs:824-832": {
+      "sha256": "164875a119a56d5bee40b674d1d5793ee66f32e033204855312b287a5491ab09",
+      "span": 9
     },
     "UINpcTrading.cs:97-113": {
       "sha256": "474954921afb05ea0555214d12cfeb951eb90bbb939138cedc9e0a1bca7bc887",

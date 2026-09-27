@@ -134,13 +134,14 @@
     <p class="text-muted-foreground">
       <span class="block">A growing plant cannot be gathered.</span>
       <span class="block"
-        >A plant that is too difficult refuses the attempt.</span
+        >You need at least a 10% success chance to harvest a plant.</span
       >
     </p>
-    <!-- Source: server-scripts/GatherItem.cs:379-400 — an eligible plant starts its regrowth wait before the success roll. -->
+    <!-- Source: server-scripts/GatherItem.cs:379-400 — an allowed harvest starts regrowth before the success roll. -->
     <p class="text-muted-foreground">
-      Every eligible attempt starts the plant's regrowth wait, even when the
-      harvest fails.
+      A ready plant starts regrowing when you attempt to harvest it with enough
+      inventory space and at least a 10% success chance, even if you gather
+      nothing.
     </p>
   </section>
 

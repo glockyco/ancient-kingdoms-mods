@@ -107,8 +107,8 @@
     <Card.Header>
       <Card.Title>Storage at a Glance</Card.Title>
       <Card.Description>
-        Where items and gold are stored, and whether that storage belongs to one
-        character or the account.
+        Compare storage capacity for one character with storage shared across
+        your account.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-6">
@@ -161,33 +161,35 @@
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:432-446 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->Unique
-          backpacks can only be equipped once. Any other backpack can fill
-          several bag slots at once.
+          <!-- Source: server-scripts/PlayerInventory.cs:432-446 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
+          <span class="block">Unique backpacks can only be equipped once.</span>
+          <span class="block"
+            >Other backpacks can occupy multiple bag slots.</span
+          >
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:417-433 — removal or downgrade is blocked if items would be locked away. -->Removing
-          or downgrading a bag is blocked when items would be locked away.
+          or downgrading a bag fails if its stored items would lose their slots.
         </li>
         <!-- Source: server-scripts/PlayerInventory.cs:480-490,529-535,623-629 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
         <li>
           <span class="block"
-            >Bank and house chest transfers reject equipped bags.</span
+            >You cannot move an equipped bag directly to the bank or a house
+            chest.</span
           >
           <span class="block"
-            >Move a bag to base inventory before changing it, rather than into
-            its own storage.</span
+            >Move an equipped bag into base inventory before changing it.</span
           >
           <span class="block"
-            >Game quirk: the first storage slot accepts your only equipped bag.
-            The bag then disappears from both inventory windows.</span
+            >The first storage slot accepts your only equipped bag, but the bag
+            then disappears from both inventory windows.</span
           >
         </li>
       </ul>
 
       <p class="text-sm text-muted-foreground">
-        Source Level is an obtainability hint. It is not a character level
-        requirement.
+        Source Level estimates where you can obtain the bag. It does not
+        restrict which characters can equip it.
       </p>
 
       {#if data.backpacks.length > 0}
@@ -287,9 +289,15 @@
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:403 — characters start with one bank tab unlocked. -->
         <!-- Source: server-scripts/Player.cs:13328-13353 and 13363-13391 — bank gold withdraw and deposit commands. -->
-        New characters start with tab 1 unlocked. Additional tabs unlock in order.
-        Banked gold is stored separately from carried gold. Depositing moves carried
-        gold into the account vault and withdrawing moves it back to the character.
+        <span class="block">New characters start with bank tab 1 unlocked.</span
+        >
+        <span class="block">Unlock additional tabs in order.</span>
+        <span class="block"
+          >Depositing transfers carried gold to your account's vault.</span
+        >
+        <span class="block"
+          >Withdrawing transfers vault gold back to your character.</span
+        >
       </p>
       <!-- Source: server-scripts/Npc.cs:1722-1750 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
       <p class="text-sm text-muted-foreground">
@@ -351,12 +359,12 @@
         <!-- Source: server-scripts/Housing.cs:33-49 — entering an unowned house area opens the house purchase flow. -->
         <!-- Source: server-scripts/ChestHouse.cs:OnInteractClient and UserCode_CmdOpenChestHouse__NetworkIdentity__String — only the owning account can open house chest UI. -->
         <!-- Source: server-scripts/StrucItemUi.cs:32-35 — purchase warning says same-color chests share storage. -->
-        <span class="block">Houses belong to an account.</span>
+        <span class="block">Your account can own a house.</span>
         <span class="block"
           >A house claimed by another account cannot be purchased.</span
         >
         <span class="block"
-          >Each chest type opens one fixed account-wide storage section.</span
+          >Each chest type opens one account-wide section with 70 slots.</span
         >
         <span class="block"
           >A second chest of the same type gives another access point, not
@@ -402,14 +410,14 @@
             >Chests can be moved after placement without paying again.</span
           >
           <span class="block"
-            >A moved chest keeps its contents: it is repositioned, not rebuilt.</span
+            >Moving a chest does not remove its stored items.</span
           >
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
           <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9985-10018 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
-            >Individual chests can be destroyed without resale.</span
+            >You can destroy an individual chest without receiving gold back.</span
           >
           <span class="block"
             >Selling the house removes its <a
@@ -513,7 +521,8 @@
     <Card.Header>
       <Card.Title>Item Movement and Stacks</Card.Title>
       <Card.Description>
-        Slot choice, stack handling, splitting, swaps, and deletion rules.
+        Items fill base slots before backpack slots. You can split stacks or
+        move items between storage locations.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -555,9 +564,9 @@
   <Card.Root id="merchants" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Merchants, Buyback, and Repairs</Card.Title>
-      <Card.Description
-        >Buying, selling, recovering, and repairing items.</Card.Description
-      >
+      <Card.Description>
+        Buy, sell, or repair gear at a merchant. Buy back recently sold items.
+      </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerNpcTrading.cs:170-226 — trading requires an idle player near a merchant; purchases check token or gold cost and storage for the full delivered quantity, including pack contents. -->
@@ -570,7 +579,7 @@
         <span class="block">The full quantity must fit in carried storage.</span
         >
         <span class="block"
-          >Packs deliver their contents directly, not a pack item.</span
+          >Buying a pack puts its contents directly in carried storage.</span
         >
       </p>
       <!-- Source: server-scripts/PlayerNpcTrading.cs:250-318,52-60 — only sellable items are accepted; damaged equipment loses sale value; Charisma adds at most 25% to the sale price. -->
@@ -625,7 +634,8 @@
     <Card.Header>
       <Card.Title>Loot Pickup</Card.Title>
       <Card.Description>
-        How loot moves from enemies and containers into character storage.
+        Gold, keys, quest items, and rolled drops enter different storage
+        locations when you collect them.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -644,14 +654,17 @@
           go to key storage.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — matching GatherQuest loot can be consumed for quest progress before entering inventory. -->Items
-          that match an active GatherQuest objective are consumed on pickup when
-          they advance that quest.
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — matching GatherQuest loot can be consumed for quest progress before entering inventory. -->An
+          item needed by an active quest to gather drops disappears on pickup
+          when it advances that quest.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — GatherInventoryQuest updates after normal inventory add succeeds. -->GatherInventoryQuest
-          objectives update after the item is added to inventory, and the item
-          is not consumed by that quest update.
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — GatherInventoryQuest updates after normal inventory add succeeds. -->
+          <span class="block"
+            >For a quest that requires items in your inventory, progress updates
+            after the item enters inventory.</span
+          >
+          <span class="block">The quest does not consume the item.</span>
         </li>
         <li>
           <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — a failed inventory add keeps the loot slot and sends "Your inventory is full". -->When
@@ -663,9 +676,9 @@
           <!-- Source: server-scripts/Monster.cs:UserCode_CmdLootMonster — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more
-          than 200 gold, and XP potions use group rolls instead of direct
+          than 200 gold, and XP potions go to a group roll instead of direct
           pickup. Enemy loot also rolls monster merge drops and scrolls.
-          Quest-only items are excluded.
+          Quest-only items do not roll.
         </li>
       </ul>
     </Card.Content>
@@ -753,7 +766,8 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/EquipmentItem.cs:13-16 and server-scripts/PlayerEquipment.cs:57-58 — equipment defaults to 10 maximum durability and player equipment has 16 slots. -->
       <p>
-        Equipment defaults to 10 maximum durability across 16 equipped slots.
+        Equipment has 16 equipped slots, and each item defaults to 10 durability
+        points.
       </p>
       <!-- Source: server-scripts/Player.cs:4013-4023 — death reduces equipped item durability by one. -->
       <p>
@@ -776,8 +790,8 @@
       <!-- Source: server-scripts/Equipment.cs:6-58 and server-scripts/PlayerEquipment.cs:194-319,1614-1625 — gear at zero durability gives no equipment or attached augment attribute bonuses and no longer counts toward its armor set. -->
       <p>
         <span class="block"
-          >At zero durability, gear stays equipped but gives no equipment or
-          attached augment stats.</span
+          >At zero durability, gear stays equipped but provides no equipment or
+          attached augment bonuses.</span
         >
         <span class="block">It stops counting toward armor set bonuses.</span>
       </p>
@@ -791,7 +805,8 @@
           >Target your own mercenary to repair that mercenary instead.</span
         >
         <span class="block"
-          >A kit is not consumed if no eligible gear needs repair.</span
+          >A kit remains unused if none of the equipped gear it can repair is
+          damaged.</span
         >
       </p>
       <!-- Source: server-scripts/ScrollItem.cs:22-56, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4462-4465 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
@@ -873,7 +888,8 @@
     <Card.Header>
       <Card.Title>Consumables and Item Types</Card.Title>
       <Card.Description
-        >What use changes and what restrictions remain.</Card.Description
+        >Use potions and food for buffs, or scrolls to activate skills without
+        learning them.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -901,11 +917,9 @@
       <!-- Source: server-scripts/UsableItem.cs:14-26,30-56 — items with the same cooldown category share a cooldown; an unset category defaults to the item name, and use removes invisibility. -->
       <p>
         <span class="block"
-          >Usable items with the same cooldown category share a timer.</span
+          >Items that share a cooldown cannot be used until that cooldown ends.</span
         >
-        <span class="block"
-          >When no category is set, the item name identifies its timer.</span
-        >
+        <span class="block">Otherwise, each item has its own cooldown.</span>
         <span class="block">Using an item removes invisibility.</span>
       </p>
       <!-- Source: server-scripts/PotionItem.cs:124-144 and server-scripts/FoodItem.cs:14-35 — each consumable replaces active buffs with the same nonempty buff category. -->
@@ -916,10 +930,11 @@
       <!-- Source: server-scripts/Item.cs:20-24, server-scripts/PlayerNpcTrading.cs:250-257, server-scripts/PlayerTrading.cs:438-441 and server-scripts/PlayerInventory.cs:694-702 — sale, player trade, and destruction check separate item permissions. -->
       <p>
         <span class="block"
-          >Sellable, tradable, and destroyable are separate permissions.</span
+          >An item can have different restrictions on selling, trading with
+          players, and deleting it.</span
         >
         <span class="block"
-          >An item can be barred from player trades but accepted by a merchant.</span
+          >A merchant might buy an item that you cannot trade to another player.</span
         >
       </p>
     </Card.Content>

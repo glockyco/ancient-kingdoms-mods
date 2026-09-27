@@ -42,7 +42,7 @@
     hasCharismaScaledIntegerEffect,
     hasCharismaScaledPercentageEffect,
   } from "$lib/utils/skillMechanics";
-  import { formatEquipmentCategory } from "$lib/utils/format";
+  import { formatEquipmentCategory, formatSkillType } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
   import Seo from "$lib/components/Seo.svelte";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
@@ -138,24 +138,6 @@
       .replace(/<\/color>/g, "</span>")
       .replace(/\n/g, "<br>");
   }
-
-  const SKILL_TYPE_LABELS: Record<string, string> = {
-    target_damage: "Target Damage",
-    area_damage: "Area Damage",
-    frontal_damage: "Frontal Damage",
-    target_projectile: "Target Projectile",
-    frontal_projectiles: "Frontal Projectiles",
-    target_heal: "Target Heal",
-    area_heal: "Area Heal",
-    target_buff: "Target Buff",
-    area_buff: "Area Buff",
-    target_debuff: "Target Debuff",
-    area_debuff: "Area Debuff",
-    passive: "Passive",
-    summon: "Summon",
-    summon_monsters: "Summon Monsters",
-    area_object_spawn: "Object Spawn",
-  };
 
   const hasStatBonuses = $derived(
     skill.health_max_bonus ||
@@ -859,8 +841,8 @@
    *
    * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
    * per point, and it also feeds the block roll at 0.0001 per point, because blockChance is
-   * derived from it. Source: server-scripts/Combat.cs:305-317. So the two physical formulas are
-   * not independent, and both already name `defense`.
+   * derived from it. Source: server-scripts/Combat.cs:305-317. Both physical formulas refer
+   * to Defense.
    *
    * Stat names are looked up here and never assembled from a fragment. Appending "Resist" to a
    * damage type once produced `physicalResist`, which the game does not implement.
@@ -871,12 +853,12 @@
   };
 
   const DAMAGE_MECHANICS: Record<string, DamageMechanics> = {
-    Physical: { stat: "defense", avoidance: "block" },
-    Magic: { stat: "magicResist", avoidance: "resist" },
-    Fire: { stat: "fireResist", avoidance: "resist" },
-    Cold: { stat: "coldResist", avoidance: "resist" },
-    Poison: { stat: "poisonResist", avoidance: "resist" },
-    Disease: { stat: "diseaseResist", avoidance: "resist" },
+    Physical: { stat: "Defense", avoidance: "block" },
+    Magic: { stat: "Magic Resist", avoidance: "resist" },
+    Fire: { stat: "Fire Resist", avoidance: "resist" },
+    Cold: { stat: "Cold Resist", avoidance: "resist" },
+    Poison: { stat: "Poison Resist", avoidance: "resist" },
+    Disease: { stat: "Disease Resist", avoidance: "resist" },
   };
 
   const damageMechanics = $derived.by((): DamageMechanics | null => {
@@ -1028,7 +1010,7 @@
                 <div>
                   <dt class="text-muted-foreground">Skill Type</dt>
                   <dd class="font-medium">
-                    {SKILL_TYPE_LABELS[skill.skill_type] ?? skill.skill_type}
+                    {formatSkillType(skill.skill_type)}
                   </dd>
                 </div>
                 <div class="col-span-2 sm:col-span-3">
@@ -1059,7 +1041,7 @@
             <div>
               <dt class="text-muted-foreground">Skill Type</dt>
               <dd class="font-medium">
-                {SKILL_TYPE_LABELS[skill.skill_type] ?? skill.skill_type}
+                {formatSkillType(skill.skill_type)}
               </dd>
             </div>
             <div class="col-span-2 sm:col-span-3">
@@ -1296,12 +1278,15 @@
           <div class="mt-3 space-y-1 text-sm">
             {#if skill.is_assassination_skill}
               <p class="text-amber-600 dark:text-amber-400">
-                Assassination: requires target below 25% HP
+                Assassination requires the target to have less than 25% health.
               </p>
             {/if}
             {#if skill.is_manaburn_skill}
+              <!-- Source: server-scripts/TargetDamageSkill.cs:127-155, TargetProjectileSkill.cs:211-220 — Rageblow spends all rage for double damage; Mana Burn spends all mana for triple damage. -->
               <p class="text-purple-600 dark:text-purple-400">
-                Manaburn: consumes all resource for damage
+                {skill.skill_type === "target_projectile"
+                  ? "Mana Burn spends all your mana to deal three times that amount as damage."
+                  : "Rageblow spends all your rage to deal twice that amount as damage."}
               </p>
             {/if}
           </div>
@@ -1355,7 +1340,7 @@
         {#if skill.is_balance_health}
           <div class="mt-3 space-y-1 text-sm">
             <p class="text-green-600 dark:text-green-400">
-              Equalizes group member HP percentages
+              Sets each group member's health to the same percentage.
             </p>
           </div>
         {/if}
@@ -1430,7 +1415,10 @@
       </Card.Header>
       <Card.Content>
         {#if skill.skill_type === "summon_monsters" && skill.summon_count_per_cast === 0}
-          <p class="text-sm font-medium">Teleports target to self, stun (2s)</p>
+          <p class="text-sm font-medium">
+            Teleports the target to the character using this skill and stuns the
+            target for 2 seconds.
+          </p>
         {:else if skill.skill_type === "summon_monsters" && skill.summoned_monster_id}
           <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
             <div>
@@ -1859,31 +1847,37 @@
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
-                Enrage: monsters deal +50–75% damage below 10% HP. Non-spell
-                skills only.
+                Enraged monsters with less than 10% health deal 50–75% more
+                damage with non-spell skills.
               </p>
             {/if}
             {#if skill.is_invisibility}
               <!-- Source: server-scripts/Entity.cs:346-362 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
               <!-- Source: server-scripts/Skills.cs:983, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
               <p class="text-purple-600 dark:text-purple-400">
-                Grants Invisibility{#if skill.ignores_see_invisibility}, hidden
-                  even from monsters that see invisibility{/if}. Casting a skill
-                or using an item ends it.
+                <span class="block"
+                  >Grants invisibility{#if skill.ignores_see_invisibility}, even
+                    against monsters that can see invisible targets{/if}.</span
+                >
+                <span class="block"
+                  >Casting a skill or using an item ends invisibility.</span
+                >
               </p>
             {/if}
             {#if skill.is_mana_shield}
               <p class="text-blue-600 dark:text-blue-400">
-                Mana Shield (damage absorbed by mana)
+                Mana Shield uses mana to absorb incoming damage.
               </p>
             {/if}
 
             {#if skill.is_blindness}
-              <p class="text-amber-600 dark:text-amber-400">Blinds target</p>
+              <p class="text-amber-600 dark:text-amber-400">
+                Blinds the target.
+              </p>
             {/if}
             {#if skill.is_permanent}
               <p class="text-muted-foreground">
-                Timer hidden in UI (duration still applies)
+                The game hides the timer, but the effect still has a duration.
               </p>
             {/if}
           </div>
@@ -2006,7 +2000,7 @@
               >
             </h3>
             <p class="font-mono">
-              Skill Level = clamp(Round(Mastery% &divide; 5), 1, {skill.max_level})
+              Skill level = clamp(round(Scroll Mastery% &divide; 5), 1, {skill.max_level})
             </p>
           </div>
         {/if}
@@ -2016,10 +2010,11 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Song Capacity</h3>
             <p class="font-mono">
-              maximumActiveSongs = 2 + learned passive bonuses
+              Active song limit = 2 + bonuses from learned passives
             </p>
             <p class="text-muted-foreground">
-              This passive adds {skill.additional_active_bard_songs} while it is learned.
+              Learning this passive adds {skill.additional_active_bard_songs} to your
+              active song limit.
             </p>
           </div>
         {/if}
@@ -2029,12 +2024,13 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Song Duration Bonus</h3>
             <p class="font-mono">
-              contribution = skillLevel &times; {formatPercent(
+              Song duration bonus = skill level &times; {formatPercent(
                 skill.bard_song_duration_bonus_per_level,
               )}
             </p>
             <p class="font-mono">
-              activeDuration = baseDuration &times; (1 + total learned bonuses)
+              Song duration = base duration &times; (1 + learned song duration
+              bonuses)
             </p>
           </div>
         {/if}
@@ -2044,7 +2040,7 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Virtuosity</h3>
             <p class="font-mono">
-              bonusActive = activeSongs &gt;= maximumActiveSongs
+              Virtuosity activates when active songs &gt;= active song limit.
             </p>
           </div>
         {/if}
@@ -2054,22 +2050,35 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Mercenary Song Aura</h3>
             <p class="font-mono">
-              activeDuration = baseDuration; reapplied every 2.5s while the song
-              stays active
+              <span class="block">Song duration = base duration.</span>
+              <span class="block"
+                >The mercenary refreshes the song every 2.5s while it stays
+                active.</span
+              >
             </p>
             <p class="text-muted-foreground">
-              The Bard mercenary sings by itself. Out of combat it keeps only
-              Wayfarer's Rhythm active. In combat it keeps Grand Symphony and
-              March of Celerity active, and from level 40 also Anthem of Focus.
-              It starts one song at a time. The songs stop when the mercenary or
-              its owner dies, or when the mercenary is hidden, stunned, feared,
-              or asleep.
+              <span class="block">The Bard mercenary sings automatically.</span>
+              <span class="block"
+                >Out of combat, it keeps only Wayfarer's Rhythm active.</span
+              >
+              <span class="block"
+                >In combat, it keeps Grand Symphony and March of Celerity
+                active.</span
+              >
+              <span class="block"
+                >From level 40, it also keeps Anthem of Focus active.</span
+              >
+              <span class="block">It starts one song at a time.</span>
+              <span class="block"
+                >The songs stop when the mercenary or its owner dies, or when
+                the mercenary is hidden, stunned, feared, or asleep.</span
+              >
             </p>
           </div>
           <div class="space-y-1">
             <h3 class="font-semibold">Active Song Limit</h3>
             <p class="font-mono">
-              maximumCombatSongs = 2 below level 40, 3 at level 40 and above
+              Combat song limit = 2 below level 40, 3 from level 40 onward.
             </p>
             <p class="text-muted-foreground">
               Polyphony and learned song duration bonuses do not apply to the
@@ -2081,20 +2090,25 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Song Aura</h3>
             <p class="font-mono">
-              activeDuration = baseDuration &times; (1 + total learned song
-              duration bonuses)
+              Song duration = base duration &times; (1 + learned song duration
+              bonuses)
             </p>
           </div>
           <!-- Source: PlayerSkills.cs:937-950,1156-1167. Current exported Polyphony data sets additional_active_bard_songs to 1. -->
           <div class="space-y-1">
             <h3 class="font-semibold">Active Song Limit</h3>
             <p class="font-mono">
-              maximumActiveSongs = 2 + learned Polyphony bonus
+              Active song limit = 2 + the bonus from Polyphony.
             </p>
             <p class="text-muted-foreground">
-              A Bard can sustain two songs by default. Learning Polyphony raises
-              the limit to three. Starting a song while at the current limit
-              ends the oldest active song.
+              <span class="block">A Bard can sustain two songs by default.</span
+              >
+              <span class="block"
+                >Learning Polyphony raises the limit to three.</span
+              >
+              <span class="block"
+                >Starting another song at the limit ends the oldest active song.</span
+              >
             </p>
           </div>
         {/if}
@@ -2104,14 +2118,20 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Song Category: {skill.buff_category}</h3>
             <p class="font-mono">
-              strength = speed + phys dmg % + magic dmg % + haste + spell haste
-              + accuracy
+              Song strength = speed + physical damage % + magic damage % + haste
+              + spell haste + accuracy
             </p>
             <p class="text-muted-foreground">
-              A target keeps one song of each category. This applies to songs
-              from different Bards and to Bard mercenary songs. A new song
-              replaces songs of the same category only when its strength is
-              higher. On equal strength, the song already applied stays.
+              <span class="block"
+                >A target keeps one song of each category, including songs from
+                other Bards and Bard mercenaries.</span
+              >
+              <span class="block"
+                >A stronger song replaces a song in the same category.</span
+              >
+              <span class="block"
+                >At equal strength, the song already active stays.</span
+              >
             </p>
           </div>
         {/if}
@@ -2121,27 +2141,35 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Charm</h3>
             <p class="font-mono">
-              songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
+              Song multiplier = 1 + min(max(CHA, 0) &times; 0.001, 2)
             </p>
             <p class="font-mono">
-              charmedDamage = min(100%, skillValue(level) &times; songPower)
+              Charmed damage = min(100%, skill value at level &times; song
+              multiplier)
             </p>
             <p class="font-mono">
-              levelDifference = targetLevel &minus; BardLevel
+              Level difference = target level &minus; Bard level
             </p>
             <p class="font-mono">
-              baseResistChance = clamp(targetMagicResist &times; 0.0005 +
-              clamp(levelDifference &times; 0.005, &minus;0.1, 0.1), 0, 0.9)
+              Base resist chance = clamp(target Magic Resist &times; 0.0005 +
+              clamp(level difference &times; 0.005, &minus;0.1, 0.1), 0, 0.9)
             </p>
             <p class="font-mono">
-              resistChance = clamp(baseResistChance + max(levelDifference, 0)
-              &times; 0.025 &minus; max(CHA, 0) &times; 0.0002, 0, 0.95)
+              Resist chance = clamp(base resist chance + max(level difference,
+              0) &times; 0.025 &minus; max(CHA, 0) &times; 0.0002, 0, 0.95)
             </p>
             <p class="text-muted-foreground">
-              Only living monsters that are not bosses, elites, training
-              dummies, or returning home can be charmed. A Bard can control one
-              charmed monster at a time. Casting the song again refreshes that
-              monster before considering the Bard's selected target.
+              <span class="block"
+                >Only living monsters that are not bosses, elites, training
+                dummies, or returning home can be charmed.</span
+              >
+              <span class="block"
+                >A Bard can control one charmed monster at a time.</span
+              >
+              <span class="block"
+                >Casting the song again refreshes that monster before
+                considering the Bard's selected target.</span
+              >
             </p>
           </div>
         {/if}
@@ -2152,30 +2180,38 @@
             <h3 class="font-semibold">Final Cadence</h3>
             <p class="font-mono">
               {#if usedByBardMercenary}
-                Requirement: mercenary level &gt;= 50 and activeSongs =
-                maximumCombatSongs
+                Requires mercenary level &gt;= 50 and active songs = combat song
+                limit.
               {:else}
-                Requirement: activeSongs &gt;= maximumActiveSongs
+                Requires active songs &gt;= active song limit.
               {/if}
             </p>
             <p class="font-mono">
-              baseHealing = round(skillHealing(level) &times; (1 + min(max(CHA,
-              0) &times; 0.001, 2)))
+              Base healing = round(skill healing at level &times; (1 +
+              min(max(CHA, 0) &times; 0.001, 2)))
             </p>
             <p class="font-mono">
-              criticalMultiplier = 1 normally, 2 on a critical heal, or 3 on 10%
-              of critical heals
+              Critical multiplier = 1 normally, 2 on a critical heal, or 3 on
+              10% of critical heals
             </p>
             <p class="font-mono">
-              finalHealing = baseHealing &times; criticalMultiplier
+              Final healing = base healing &times; critical multiplier
             </p>
             <p class="text-muted-foreground">
-              The Bard's critical chance determines one roll shared by every
-              recipient. Damage uses the same Charisma multiplier before the
-              normal magic damage pipeline. Familiars are not healed.
+              <span class="block"
+                >The Bard's critical chance determines one roll shared by every
+                recipient.</span
+              >
+              <span class="block"
+                >Damage uses the same Charisma multiplier before the usual magic
+                damage reductions.</span
+              >
+              <span class="block">Final Cadence does not heal familiars.</span>
               {#if usedByBardMercenary}
-                The mercenary damages only enemies that target its owner, a
-                party member, or one of their pets.
+                <span class="block"
+                  >The mercenary damages only enemies that target its owner, a
+                  party member, or one of their pets.</span
+                >
               {/if}
             </p>
           </div>
@@ -2192,15 +2228,17 @@
                     {ctx.casterLabels.join(", ")}
                   </p>
                 {/if}
-                <FormulaDisplay display={renderFormulaDisplay(ctx.formula)} />
+                <FormulaDisplay
+                  display={renderFormulaDisplay(ctx.formula, skill.skill_type)}
+                />
               </div>
             {/each}
 
             {#if skill.damage_percent}
               <p class="text-muted-foreground">
-                Total pre-mitigation damage is then multiplied by {formatLinearPercent(
+                Multiply the damage before reductions by {formatLinearPercent(
                   skill.damage_percent,
-                )}
+                )}.
               </p>
             {/if}
 
@@ -2209,36 +2247,47 @@
             {#if !data.mechanicsSpec.damageContexts.some((c) => c.formula === "manaburn")}
               <div class="space-y-1">
                 <h4 class="font-medium text-muted-foreground">
-                  Damage Pipeline
+                  How Damage Is Calculated
                 </h4>
                 <ol class="list-decimal list-inside space-y-0.5 font-mono">
                   <li>Variance: &times;0.9&ndash;1.1</li>
                   <li>
-                    Backstab (behind target): +10% | Rogue w/ Improved Backstab:
-                    +25%
+                    Backstab: +10% damage when attacking from behind (Rogues
+                    with Improved Backstab: +25% instead)
                   </li>
                   <li>
                     Level difference: &plusmn;2% per level (max &plusmn;20%)
                   </li>
                   <li>
-                    Slayer reduction (boss/elite &rarr; player):
-                    &minus;slayerLevel &times; 10%
+                    Slayer reduction (boss or elite attacking a player or pet):
+                    &minus;Slayer level &times; 10%
                   </li>
                   <li>
-                    Enrage (non-spell): monsters +50&ndash;75% below 10% HP.
+                    Enrage: non-spell attacks by monsters below 10% health deal
+                    50–75% more damage.
                   </li>
                   {#if damageMechanics}
                     <li>
-                      Mitigation: &minus;ceil(dmg &times; clamp(target.{damageMechanics.stat}
+                      Damage reduction: &minus;ceil(damage &times;
+                      clamp(target's {damageMechanics.stat}
                       &times; 0.0005, 0, 0.9))
                     </li>
                   {/if}
-                  <li>Crit: &times;1.5</li>
+                  <li>Critical hit: &times;1.5</li>
                   <li>
-                    Radiant Aether (15% on crit, consumes 1 item): &times;2 on
-                    top &rarr; &times;3 total
+                    Radiant Aether (15% on a critical hit, consumes one item):
+                    &times;2 again, for &times;3 total
                   </li>
                 </ol>
+                {#if damageMechanics}
+                  <!-- Source: server-scripts/Combat.cs:842-859 — each 100 Defense or matching Resist points reduces damage by 5%, up to 90% before rounding. -->
+                  <p class="text-muted-foreground">
+                    Every 100 points of {damageMechanics.avoidance === "block"
+                      ? "Defense"
+                      : "the matching Resist"} reduce the damage you take from a hit
+                    by 5%, up to a 90% reduction before rounding.
+                  </p>
+                {/if}
               </div>
             {/if}
 
@@ -2254,29 +2303,42 @@
                   <!-- Source: Combat.cs:1310-1314 — GetProbResistMeleeDamage -->
                   <!-- Source: Combat.cs:272-284 — blockChance is defense × 0.0001 plus bonuses -->
                   <p class="font-mono">
-                    clamp(<br />&nbsp;&nbsp;clamp(target.baseBlock +
-                    target.defense &times; 0.0001 + buffs, 0, 0.8)<br
-                    />&nbsp;&nbsp;+ clamp((target.level &minus; attacker.level)
+                    clamp(<br />&nbsp;&nbsp;clamp(target's base block chance +
+                    target's Defense &times; 0.0001 + buff bonuses, 0, 0.8)<br
+                    />&nbsp;&nbsp;+ clamp((target level &minus; attacker level)
                     &times; 0.005, &minus;0.1, 0.1)<br />&nbsp;&nbsp;&minus;
-                    attacker.accuracy<br />, 0, 0.9)
+                    attacker's Accuracy<br />, 0, 0.9)
+                  </p>
+                  <!-- Source: server-scripts/Combat.cs:305-317,1528-1531 — blockChance adds defense × 0.0001, and GetProbResistMeleeDamage then applies level difference and casterAccuracy. -->
+                  <p class="text-muted-foreground">
+                    Every 100 Defense adds 1 percentage point to block chance
+                    before Accuracy and level difference.
                   </p>
                 {:else}
                   <!-- Source: Combat.cs:1322-1349 — GetProbResistMagic/Fire/Cold/Poison/Disease -->
                   <p class="font-mono">
-                    clamp(<br />&nbsp;&nbsp;target.{damageMechanics.stat}
-                    &times; 0.0005<br />&nbsp;&nbsp;+ (target.level &minus;
-                    attacker.level) &times; 0.005<br />&nbsp;&nbsp;&minus;
-                    attacker.accuracy<br />, 0, 0.9)
+                    clamp(<br />&nbsp;&nbsp;target's {damageMechanics.stat}
+                    &times; 0.0005<br />&nbsp;&nbsp;+ (target level &minus;
+                    attacker level) &times; 0.005<br />&nbsp;&nbsp;&minus;
+                    attacker's Accuracy<br />, 0, 0.9)
+                  </p>
+                  <!-- Source: server-scripts/Combat.cs:1540-1567 — GetProbResistMagic, Poison, Fire, Cold, and Disease each add magicResist, poisonResist, fireResist, coldResist, or diseaseResist × 0.0005. -->
+                  <p class="text-muted-foreground">
+                    Every 100 points of the matching Resist add 5 percentage
+                    points to resist chance before Accuracy and level
+                    difference.
                   </p>
                 {/if}
                 <!-- Source: Combat.cs — moving player gets -0.25 resist and +10% damage -->
                 <dl
                   class="font-mono grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5"
                 >
-                  <dt>Target moving:</dt>
-                  <dd>resist &minus;0.25, damage +10%</dd>
+                  <dt>Moving target:</dt>
+                  <dd>
+                    resist chance &minus;25 percentage points, damage +10%
+                  </dd>
                   <dt>Backstab:</dt>
-                  <dd>resist &times; 0.8</dd>
+                  <dd>resist chance &times; 0.8</dd>
                 </dl>
               </div>
             {/if}
@@ -2287,9 +2349,9 @@
         {#if isDamageType && (skill.aggro?.base_value ?? 0) > 0}
           <div class="space-y-1">
             <h3 class="font-semibold">Aggro</h3>
-            <p class="font-mono">min(target.HP,</p>
+            <p class="font-mono">Aggro = min(target health,</p>
             <ul class="font-mono list-none ml-4 space-y-0.5">
-              <li>skillAggro + caster.maxHP</li>
+              <li>skill aggro + caster maximum health</li>
               <li>+ damage</li>
               <li>+ round(stunChance &times; stunTime &times; 10)</li>
               <li>+ round(fearChance &times; fearTime &times; 10)</li>
@@ -2329,8 +2391,13 @@
                     &times; 0.004, 5.0))
                   </p>
                   <p class="text-muted-foreground">
-                    Merc uses its own WIS. Ranger Merc does not get the ×3
-                    bonus.
+                    <span class="block"
+                      >Mercenaries use their own Wisdom to increase healing.</span
+                    >
+                    <span class="block"
+                      >Ranger mercenaries do not receive the triple-Wisdom bonus
+                      that Ranger players receive.</span
+                    >
                   </p>
                 {:else}
                   <p class="font-mono">Final Heal = Base Heal (no bonus)</p>
@@ -2361,38 +2428,38 @@
                 {/if}
                 {#if ctx.bonusAttrSource === "none"}
                   <p class="text-muted-foreground">
-                    No attribute scaling (bonus = 0).
+                    This buff receives no attribute bonus.
                   </p>
                 {:else if ctx.bonusAttrSource === "player_cha"}
                   <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, BuffSkill.cs:ScaleFearResistChanceBonus, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
                   {#if hasBardFlatDamageScaling}
                     <p class="font-mono">
-                      damagePerSecond = abs(skillValue(level)) + round(max(CHA,
-                      0) &times; {formatNumber(
+                      Damage per second = abs(skill value at level) +
+                      round(max(CHA, 0) &times; {formatNumber(
                         skill.damage_over_time_bonus_per_charisma_point,
                       )})
                     </p>
                   {/if}
                   {#if hasBardIntegerScaling || hasBardPercentageScaling}
                     <p class="font-mono">
-                      songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
+                      Song multiplier = 1 + min(max(CHA, 0) &times; 0.001, 2)
                     </p>
                   {/if}
                   {#if hasBardIntegerScaling}
                     <p class="font-mono">
-                      final value = round(base value at skill level &times;
-                      songPower)
+                      final value = round(base value at skill level &times; song
+                      multiplier)
                     </p>
                   {/if}
                   {#if hasBardPercentageScaling}
                     <p class="font-mono">
                       {#if skill.fear_resist_chance_bonus_cap > 0}
-                        Fear Resist = min(base value at skill level &times;
-                        songPower,
+                        Fear Resist = min(base value at skill level &times; song
+                        multiplier,
                         {formatPercent(skill.fear_resist_chance_bonus_cap)})
                       {:else}
-                        final value = base value at skill level &times;
-                        songPower
+                        final value = base value at skill level &times; song
+                        multiplier
                       {/if}
                     </p>
                   {/if}
@@ -2406,91 +2473,134 @@
                   {#if ctx.bonusAttrSource === "player_ranger_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 — Ranger → wisdom.value * 3 -->
                     <p class="font-mono">
-                      bonusAttribute = WIS &times; 3 (Ranger wisdom tripled)
+                      Attribute contribution = WIS &times; 3 (Ranger Wisdom
+                      tripled)
                     </p>
                   {:else if ctx.bonusAttrSource === "player_wis_con_cha_half"}
                     <!-- Source: AreaBuffSkill.cs:14-17,52 — Leadership uses GetLeadershipAttributeBonus(player3) -->
                     <p class="font-mono">
-                      bonusAttribute = round((WIS + CON + CHA) / 2)
+                      Attribute contribution = round((WIS + CON + CHA) / 2)
                     </p>
                   {:else if ctx.bonusAttrSource === "player_wis_con_avg"}
                     <!-- Source: AreaBuffSkill.cs:52 — ordinary player-cast mercenary buffs use round((WIS+CON)/2) -->
                     <p class="font-mono">
-                      bonusAttribute = round((WIS + CON) / 2)
+                      Attribute contribution = round((WIS + CON) / 2)
                     </p>
                   {:else if ctx.bonusAttrSource === "merc_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
-                    <p class="font-mono">bonusAttribute = WIS</p>
+                    <p class="font-mono">Attribute contribution = WIS</p>
                   {:else if ctx.bonusAttrSource === "player_level"}
                     <!-- Source: AreaBuffSkill.cs:34-37 — isRelic → num2 = caster.level.current * 10 -->
                     <p class="font-mono">
-                      bonusAttribute = casterLevel &times; 10
+                      Attribute contribution = skill user's level &times; 10
                     </p>
                   {:else}
                     <!-- player_wis -->
-                    <p class="font-mono">bonusAttribute = WIS</p>
+                    <p class="font-mono">Attribute contribution = WIS</p>
                   {/if}
                   <dl
                     class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono"
                   >
                     {#if hasNonZeroField(skill.health_max_bonus)}
                       <dt class="text-muted-foreground">Max Health</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 2</dd>
+                      <dd>
+                        skill value at level + attribute contribution &times; 2
+                      </dd>
                     {/if}
                     {#if hasNonZeroField(skill.defense_bonus)}
                       <dt class="text-muted-foreground">Defense</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.15</dd>
+                      <dd>
+                        skill value at level + attribute contribution &times;
+                        0.15
+                      </dd>
                     {/if}
                     {#if hasNonZeroField(skill.magic_resist_bonus)}
                       <dt class="text-muted-foreground">Magic Resist</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.15</dd>
+                      <dd>
+                        skill value at level + attribute contribution &times;
+                        0.15
+                      </dd>
                     {/if}
                     {#if hasNonZeroField(skill.ward_bonus)}
                       <dt class="text-muted-foreground">Ward</dt>
                       {#if ctx.isAreaBuff}
                         <!-- Source: AreaBuffSkill.cs — scroll runs before wardBonus transform (different order vs TargetBuff) -->
-                        <dd>wardBonus(level) + bonusAttribute &times; 2</dd>
+                        <dd>
+                          Ward at skill level + attribute contribution &times; 2
+                        </dd>
                       {:else}
-                        <dd>wardBonus(level) + bonusAttribute &times; 2</dd>
+                        <dd>
+                          Ward at skill level + attribute contribution &times; 2
+                        </dd>
                       {/if}
                     {/if}
                     {#if hasNonZeroField(skill.damage_shield)}
                       <dt class="text-muted-foreground">Damage Shield</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.75</dd>
+                      <dd>
+                        skill value at level + attribute contribution &times;
+                        0.75
+                      </dd>
                     {/if}
-                    {#if hasNonZeroField(skill.poison_resist_bonus) || hasNonZeroField(skill.fire_resist_bonus) || hasNonZeroField(skill.cold_resist_bonus) || hasNonZeroField(skill.disease_resist_bonus)}
-                      <dt class="text-muted-foreground">Elemental Resists</dt>
-                      <dd>skillValue(level) + bonusAttribute &times; 0.15</dd>
+                    {#if hasNonZeroField(skill.poison_resist_bonus)}
+                      <dt class="text-muted-foreground">Poison Resist</dt>
+                      <dd>
+                        skill value at level + attribute contribution &times;
+                        0.15
+                      </dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.fire_resist_bonus)}
+                      <dt class="text-muted-foreground">Fire Resist</dt>
+                      <dd>
+                        skill value at level + attribute contribution &times;
+                        0.15
+                      </dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.cold_resist_bonus)}
+                      <dt class="text-muted-foreground">Cold Resist</dt>
+                      <dd>
+                        skill value at level + attribute contribution &times;
+                        0.15
+                      </dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.disease_resist_bonus)}
+                      <dt class="text-muted-foreground">Disease Resist</dt>
+                      <dd>
+                        skill value at level + attribute contribution &times;
+                        0.15
+                      </dd>
                     {/if}
                     {#if hasNonZeroField(skill.healing_per_second_bonus)}
                       <dt class="text-muted-foreground">
                         {isNegativeLinear(skill.healing_per_second_bonus)
-                          ? "DoT"
-                          : "HoT"}
+                          ? "Damage per second"
+                          : "Healing per second"}
                       </dt>
                       {#if isNegativeLinear(skill.healing_per_second_bonus)}
                         <!-- Source: Wisdom.cs:118-121 — GetHealingPerSecondBuffBonus returns 0 for healingPerSecondBonus <= 0; a DoT tick gets no attribute scaling -->
-                        <dd>skillValue(level)</dd>
+                        <dd>skill value at level</dd>
                       {:else if skill.duration_base >= 60}
                         <!-- Source: Wisdom.cs:116-128 — buffs 60s or longer add flat bonusAttribute × 0.3 -->
-                        <dd>skillValue(level) + bonusAttribute &times; 0.3</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.3
+                        </dd>
                       {:else}
                         <!-- Source: Wisdom.cs:116-128 — buffs under 60s scale base by min(bonusAttribute × 0.004, 5.0) -->
                         <dd>
-                          skillValue(level) &times; (1 + min(bonusAttribute
-                          &times; 0.004, 5.0))
+                          skill value at level &times; (1 + min(attribute
+                          contribution &times; 0.004, 5.0))
                         </dd>
                       {/if}
                     {/if}
                     {#if skill.id === "leadership" && hasNonZeroField(skill.damage_bonus)}
                       <!-- Source: Buff.cs:64-67 — Leadership-only: damageBonus.Get(level) + bonusAttribute on positive branch -->
                       <dt class="text-muted-foreground">Damage</dt>
-                      <dd>skillValue(level) + bonusAttribute</dd>
+                      <dd>skill value at level + attribute contribution</dd>
                     {/if}
                     {#if skill.id === "leadership" && hasNonZeroField(skill.magic_damage_bonus)}
                       <!-- Source: Buff.cs:84-87 — Leadership-only: magicDamageBonus.Get(level) + bonusAttribute on positive branch -->
                       <dt class="text-muted-foreground">Magic Damage</dt>
-                      <dd>skillValue(level) + bonusAttribute</dd>
+                      <dd>skill value at level + attribute contribution</dd>
                     {/if}
                   </dl>
                 {/if}
@@ -2514,20 +2624,24 @@
                 {#if ctx.model === "player_auto"}
                   <!-- Source: Player.cs:2783 — refractoryPeriod = clamp(delay*(1-haste)/25, 0.25, 2.0) -->
                   <!-- Source: Skills.cs:772 — player cooldownEnd = now + cooldown (no haste reduction) -->
+                  <p class="font-mono">interval = cast time + recovery time</p>
                   <p class="font-mono">
-                    interval = cast time + refractory period
-                  </p>
-                  <p class="font-mono">
-                    refractory = clamp(weaponDelay &times; (1 &minus; haste) /
-                    25, 0.25s, 2s)
+                    recovery time = clamp(weapon delay &times; (1 &minus; haste)
+                    / 25, 0.25s, 2s)
                   </p>
                   <p class="text-muted-foreground">
-                    Haste reduces the refractory period but not the cooldown.
-                    Can trigger weapon procs.
+                    <span class="block"
+                      >Haste shortens the recovery time between auto attacks,
+                      but not the cooldown.</span
+                    >
+                    <span class="block"
+                      >Auto attacks can trigger weapon effects on hit.</span
+                    >
                   </p>
                   {#if ctx.casterLabels.some((l) => l.startsWith("Warrior") || l.startsWith("Rogue"))}
                     <p class="text-muted-foreground">
-                      Generates rage on hit (25% of damage).
+                      Auto attacks generate rage equal to 25% of the damage
+                      dealt on hit.
                     </p>
                   {/if}
                 {:else if ctx.model === "player_spell"}
@@ -2537,8 +2651,13 @@
                     interval = cast time &times; (1 &minus; spell haste) + 0.75s
                   </p>
                   <p class="text-muted-foreground">
-                    Spell haste reduces cast time (cap: 50%). The 0.75s
-                    refractory period is fixed.
+                    <span class="block"
+                      >Spell haste shortens cast time by up to 50%.</span
+                    >
+                    <span class="block"
+                      >The 0.75-second recovery time before the next cast does
+                      not change.</span
+                    >
                   </p>
                 {:else if ctx.model === "merc_auto"}
                   <!-- Source: Skills.cs:766-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste) -->
@@ -2546,8 +2665,12 @@
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
                   <p class="text-muted-foreground">
-                    Weapon delay has no effect. Cooldown scales linearly with
-                    haste (cap: &minus;80%).
+                    <span class="block"
+                      >Weapon delay does not affect mercenary auto attacks.</span
+                    >
+                    <span class="block"
+                      >Haste shortens their cooldown by up to 80%.</span
+                    >
                   </p>
                 {:else if ctx.model === "merc_spell"}
                   <!-- Source: server-scripts/Skills.cs:902-904, server-scripts/Skills.cs:1009-1012, server-scripts/Combat.cs:346-358 -->
@@ -2556,8 +2679,10 @@
                     cooldown
                   </p>
                   <p class="text-muted-foreground">
-                    Spell haste reduces cast time (cap: 50%). Cooldown is not
-                    haste-reduced.
+                    <span class="block"
+                      >Spell haste shortens cast time by up to 50%.</span
+                    >
+                    <span class="block">It does not shorten the cooldown.</span>
                   </p>
                 {:else if ctx.model === "monster"}
                   <!-- Source: Monster.cs:1625, Npc.cs:1266 — FinishCastMeleeAttackMonster (haste-reduced for all monster skills) -->
@@ -2569,7 +2694,9 @@
                   <!-- Source: server-scripts/Pet.cs -->
                   <!-- Source: server-scripts/Skills.cs:1009-1012 — companion cooldown remains flat -->
                   <p class="font-mono">interval = cast time + cooldown</p>
-                  <p class="text-muted-foreground">No haste reduction.</p>
+                  <p class="text-muted-foreground">
+                    Haste does not shorten this cooldown.
+                  </p>
                 {/if}
               </div>
             {/each}
@@ -2593,14 +2720,14 @@
                 {/if}
                 {#if ctx.bonusAttrKind === "none"}
                   <p class="text-muted-foreground">
-                    No attribute scaling (bonusAttribute = 0).
+                    This debuff receives no attribute bonus.
                   </p>
                 {:else}
                   {#if skill.scales_with_charisma}
                     <!-- Source: Buff.cs:70-275, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
                     {#if hasBardFlatDamageScaling}
                       <p class="font-mono">
-                        damagePerSecond = abs(skillValue(level)) +
+                        Damage per second = abs(skill value at level) +
                         round(max(CHA, 0) &times; {formatNumber(
                           skill.damage_over_time_bonus_per_charisma_point,
                         )})
@@ -2608,24 +2735,24 @@
                     {/if}
                     {#if hasBardIntegerScaling || hasBardPercentageScaling}
                       <p class="font-mono">
-                        songPower = 1 + min(max(CHA, 0) &times; 0.001, 2)
+                        Song multiplier = 1 + min(max(CHA, 0) &times; 0.001, 2)
                       </p>
                     {/if}
                     {#if hasBardIntegerScaling}
                       <p class="font-mono">
                         final value = round(base value at skill level &times;
-                        songPower)
+                        song multiplier)
                       </p>
                     {/if}
                     {#if hasBardPercentageScaling}
                       <p class="font-mono">
-                        final value = base value at skill level &times;
-                        songPower
+                        final value = base value at skill level &times; song
+                        multiplier
                       </p>
                     {/if}
                   {:else}
                     <p class="font-mono">
-                      bonusAttribute = {ctx.bonusAttrKind === "str"
+                      Attribute contribution = {ctx.bonusAttrKind === "str"
                         ? "STR"
                         : ctx.bonusAttrKind === "dex"
                           ? "DEX"
@@ -2637,65 +2764,91 @@
                     >
                       {#if hasNonZeroField(skill.defense_bonus)}
                         <dt class="text-muted-foreground">Defense reduction</dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.4
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.magic_resist_bonus)}
                         <dt class="text-muted-foreground">
                           Magic Resist reduction
                         </dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.4
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.poison_resist_bonus)}
                         <dt class="text-muted-foreground">
                           Poison Resist reduction
                         </dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.4
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.fire_resist_bonus)}
                         <dt class="text-muted-foreground">
                           Fire Resist reduction
                         </dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.4
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.cold_resist_bonus)}
                         <dt class="text-muted-foreground">
                           Cold Resist reduction
                         </dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.4
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.disease_resist_bonus)}
                         <dt class="text-muted-foreground">
                           Disease Resist reduction
                         </dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.4
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.damage_bonus)}
                         <dt class="text-muted-foreground">Damage reduction</dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.5
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.magic_damage_bonus)}
                         <dt class="text-muted-foreground">
-                          Magic Dmg reduction
+                          Magic Damage reduction
                         </dt>
-                        <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
+                        <dd>
+                          skill value at level + attribute contribution &times;
+                          0.5
+                        </dd>
                       {/if}
                       {#if hasNonZeroField(skill.healing_per_second_bonus)}
-                        <dt class="text-muted-foreground">DoT</dt>
+                        <dt class="text-muted-foreground">Damage per second</dt>
                         {#if skill.is_poison_debuff || skill.is_disease_debuff}
                           <!-- Source: server-scripts/Skills.cs:1609-1625 — the poison and disease branch adds RoundToInt(bonusAttribute * 1.5) before resistance. -->
                           <dd>
-                            skillValue(level) + round(bonusAttribute &times;
-                            1.5)
+                            skill value at level + round(attribute contribution
+                            &times; 1.5)
                           </dd>
                         {:else if skill.is_melee_debuff}
                           <!-- melee (str × 0.5) or scroll of melee type -->
                           <dd>
-                            skillValue(level) + bonusAttribute &times; 0.5
+                            skill value at level + attribute contribution
+                            &times; 0.5
                           </dd>
                         {:else}
                           <!-- other (int × 1.25) or scroll of other type -->
                           <dd>
-                            skillValue(level) + bonusAttribute &times; 1.25
+                            skill value at level + attribute contribution
+                            &times; 1.25
                           </dd>
                         {/if}
                       {/if}
@@ -2708,25 +2861,32 @@
         {/if}
 
         <!-- D2. Resist Chance — shown for debuffs and dispels; cleanse has no resist roll, and Bard charm uses its custom formula above. -->
-        <!-- Source: server-scripts/Combat.cs:1523-1556 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:104-139 -->
+        <!-- Source: server-scripts/Combat.cs:1523-1556 — GetProbResistMeleeDebuff adds defense × 0.0005, and each other GetProbResist* adds its matching resist × 0.0005, before diff_levels and casterAccuracy; resist gate TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:104-139 -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_bard_charm && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
             <p class="font-mono">
-              clamp(<br />&nbsp;&nbsp;target.{skill.is_melee_debuff
-                ? "defense"
+              clamp(<br />&nbsp;&nbsp;target's {skill.is_melee_debuff
+                ? "Defense"
                 : skill.is_poison_debuff
-                  ? "poisonResist"
+                  ? "Poison Resist"
                   : skill.is_fire_debuff
-                    ? "fireResist"
+                    ? "Fire Resist"
                     : skill.is_cold_debuff
-                      ? "coldResist"
+                      ? "Cold Resist"
                       : skill.is_disease_debuff
-                        ? "diseaseResist"
-                        : "magicResist"} &times; 0.0005<br />&nbsp;&nbsp;+
-              clamp((target.level &minus; caster.level) &times; 0.005,
-              &minus;0.1, 0.1)<br />&nbsp;&nbsp;&minus; caster.accuracy<br />,
-              0, 0.9)
+                        ? "Disease Resist"
+                        : "Magic Resist"} &times; 0.0005<br />&nbsp;&nbsp;+
+              clamp((target level &minus; skill user level) &times; 0.005,
+              &minus;0.1, 0.1)<br />&nbsp;&nbsp;&minus; skill user's Accuracy<br
+              />, 0, 0.9)
+            </p>
+            <!-- Source: server-scripts/Combat.cs:1523-1556 — each 100 points of the matching Defense or Resist add 5 percentage points before level difference and Accuracy. -->
+            <p class="text-muted-foreground">
+              Every 100 points of the target's {skill.is_melee_debuff
+                ? "Defense"
+                : "matching Resist"} add 5 percentage points to resist chance before
+              level difference and Accuracy.
             </p>
           </div>
         {/if}
@@ -2747,14 +2907,28 @@
               </p>
             {:else}
               <p class="text-muted-foreground">
-                This debuff carries 3 counters and is gone only when its
-                counters reach 0. A matching cleanse removes 1 counter for
-                certain, then makes 2 more attempts that each remove another
-                counter with a {formatPercent(1 - skill.prob_ignore_cleanse)}
-                chance, multiplied by (1 + the caster's Accuracy). All 3 counters
-                are removed at once when that chance reaches 100%.{skill.healing_per_second_bonus
-                  ? " While counters remain, each tick of its damage is reduced, to 85% of full at 2 counters and 70% at 1 counter."
-                  : ""}
+                <span class="block"
+                  >This debuff has three layers, and cleansing it removes the
+                  debuff only after all three are gone.</span
+                >
+                <span class="block"
+                  >A matching cleanse always removes one layer.</span
+                >
+                <span class="block"
+                  >It rolls twice more to remove one additional layer per roll.</span
+                >
+                <span class="block"
+                  >Each roll has a {formatPercent(
+                    1 - skill.prob_ignore_cleanse,
+                  )} chance, multiplied by (1 + the cleanser's Accuracy) and capped
+                  at 100%.</span
+                >
+                {#if skill.healing_per_second_bonus}
+                  <span class="block"
+                    >While layers remain, each damage tick deals 85% of its full
+                    damage at two layers or 70% at one layer.</span
+                  >
+                {/if}
               </p>
             {/if}
           </div>
@@ -2772,19 +2946,34 @@
               >
             </h3>
             <p class="text-muted-foreground">
-              Cast on yourself or an ally, this skill removes harmful debuffs of
-              the elements it cleanses. It cannot be resisted, but the caster's
-              Accuracy raises how many counters it strips. Every debuff carries
-              3 counters and is fully removed only when its counters reach 0. If
-              a matching debuff has a Cleanse Resist of 0, all 3 counters are
-              removed in a single cast. Otherwise the cast removes 1 counter for
-              certain, then makes 2 more attempts that each remove another
-              counter with a chance of (100% &minus; Cleanse Resist) &times; (1
-              + caster Accuracy). All 3 counters are removed at once when that
-              chance reaches 100%. A debuff with a Cleanse Resist of 100% cannot
-              be cleansed. For damage-over-time debuffs, losing counters also
-              lowers each tick of damage, to 85% of full at 2 counters and 70%
-              at 1 counter.
+              <span class="block"
+                >Cast on yourself or an ally, this skill removes harmful debuffs
+                of the types it cleanses.</span
+              >
+              <span class="block">The target cannot resist the cleanse.</span>
+              <span class="block"
+                >Each matching debuff has three layers, and the cleanse removes
+                the debuff only after all three are gone.</span
+              >
+              <span class="block"
+                >If the debuff has 0% Cleanse Resist, one cast removes all three
+                layers.</span
+              >
+              <span class="block"
+                >Otherwise, the cast always removes one layer and rolls twice to
+                remove one additional layer per roll.</span
+              >
+              <span class="block"
+                >Each roll has a (100% &minus; Cleanse Resist) &times; (1 + the
+                cleanser's Accuracy) chance, capped at 100%.</span
+              >
+              <span class="block"
+                >A debuff with 100% Cleanse Resist cannot be cleansed.</span
+              >
+              <span class="block"
+                >For damage-over-time debuffs, each tick deals 85% of its full
+                damage at two layers or 70% at one layer.</span
+              >
             </p>
           </div>
         {/if}
@@ -2804,21 +2993,35 @@
             </h3>
             {#if playerCast}
               <p class="text-muted-foreground">
-                You cast this on a monster to remove its beneficial buffs.
-                Whether it removes anything, and how much, is decided in two
-                steps.
+                <span class="block"
+                  >You cast this on a monster to remove its beneficial buffs.</span
+                >
+                <span class="block"
+                  >First the monster can resist the skill, then each buff has a
+                  separate removal chance.</span
+                >
               </p>
               <p class="text-muted-foreground">
-                <span class="font-medium">1. Landing.</span> The monster first rolls
-                to resist (the Resist Chance above), which your Accuracy lowers. If
-                the monster resists, nothing is removed.
+                <span class="block"
+                  ><span class="font-medium">1. Resist.</span> Your Accuracy lowers
+                  the monster's chance to resist this skill (shown above).</span
+                >
+                <span class="block"
+                  >If the monster resists, no buffs are removed.</span
+                >
               </p>
               <p class="text-muted-foreground">
-                <span class="font-medium">2. Removal, only when it lands.</span>
-                Each of the monster's buffs is removed only when a random value from
-                0 to 1 is greater than that buff's Dispel Resist after subtracting
-                your Dispel Resist reduction. A buff with 0 Dispel Resist is always
-                removed.
+                <span class="block"
+                  ><span class="font-medium">2. Remove buffs.</span> Each buff has
+                  a separate removal roll.</span
+                >
+                <span class="block"
+                  >The chance to remove a buff is 100% minus its Dispel Resist,
+                  plus your Dispel Resist reduction.</span
+                >
+                <span class="block"
+                  >A buff with 0% Dispel Resist is always removed.</span
+                >
               </p>
               {#if skill.skill_type === "target_debuff"}
                 {#if skill.is_scroll}
@@ -2834,43 +3037,69 @@
                       >Scroll Mastery</a
                     >
                     rank, lowering a monster's Dispel Resist by 1 percentage point
-                    per effective rank (up to {skill.max_level}). So a scroll
-                    dispel uses two of your stats: Accuracy to land it in step
-                    1, and Scroll Mastery to strip more buffs in step 2.
+                    per effective rank (up to {skill.max_level}).
+                    <span class="block"
+                      >Accuracy helps the scroll land in step 1.</span
+                    >
+                    <span class="block"
+                      >Scroll Mastery removes more buffs in step 2.</span
+                    >
                   </p>
                 {:else}
                   <p class="font-mono">
                     Dispel Resist reduction = Accuracy &times; 0.5
                   </p>
                   <p class="text-muted-foreground">
-                    Here your Accuracy is the only stat involved. It both lands
-                    the dispel in step 1 and sets this reduction in step 2, so
-                    20% Accuracy lowers a monster's Dispel Resist by 10
-                    percentage points.
+                    <span class="block"
+                      >Your Accuracy helps the dispel land and reduces each
+                      buff's Dispel Resist.</span
+                    >
+                    <span class="block"
+                      >For example, 20% Accuracy lowers Dispel Resist by 10
+                      percentage points.</span
+                    >
                   </p>
                 {/if}
               {:else}
                 <p class="text-muted-foreground">
-                  This area dispel applies no Dispel Resist reduction in step 2,
-                  so each buff must beat its full Dispel Resist. Only the
-                  landing roll in step 1 depends on your Accuracy.
+                  <span class="block"
+                    >Area dispels do not lower any buff's Dispel Resist, so each
+                    buff faces its full removal chance.</span
+                  >
+                  <span class="block"
+                    >Your Accuracy still helps the skill land.</span
+                  >
                 </p>
               {/if}
             {:else}
               <p class="text-muted-foreground">
-                Monsters use this to remove beneficial buffs from you and your
-                pets. Whether it removes anything is decided in two steps.
+                <span class="block"
+                  >Monsters use this to remove beneficial buffs from you and
+                  your pets.</span
+                >
+                <span class="block"
+                  >First you can resist the skill, then it removes your buffs.</span
+                >
               </p>
               <p class="text-muted-foreground">
-                <span class="font-medium">1. Landing.</span> You first roll to resist
-                it (the Resist Chance above). The monster's Accuracy lowers your resist
-                chance, while a higher matching resistance raises it. If you resist,
-                nothing is removed.
+                <span class="block"
+                  ><span class="font-medium">1. Resist.</span> You roll to resist
+                  this skill (chance shown above).</span
+                >
+                <span class="block"
+                  >The monster's Accuracy lowers your chance to resist; matching
+                  resistance raises it.</span
+                >
+                <span class="block">If you resist, your buffs stay.</span>
               </p>
               <p class="text-muted-foreground">
-                <span class="font-medium">2. Removal, only when it lands.</span>
-                All of your buffs are removed except the Rest buff. On a pet, all
-                of its buffs are removed.
+                <span class="block"
+                  ><span class="font-medium">2. Remove buffs.</span> If the skill
+                  lands, it removes all your buffs except Rest.</span
+                >
+                <span class="block"
+                  >It removes all buffs from an affected pet.</span
+                >
               </p>
             {/if}
           </div>
@@ -2898,36 +3127,54 @@
               >
             </h3>
             <p class="text-muted-foreground">
-              During Parry's cast window, if your selected target hits you with
-              a single-target Normal melee attack, Parry blocks that attack's
-              health damage and counters. Counterdamage is half the health
-              damage the attack would have dealt after mitigation, ward, and
-              mana shield, rounded and capped from 1 to 5,000. Fully absorbed
-              hits do not trigger Parry.
+              <span class="block"
+                >During Parry's cast window, Parry blocks the health damage from
+                a single-target physical melee attack by your selected target.</span
+              >
+              <span class="block"
+                >Your counterattack deals half the health damage the hit would
+                have dealt after damage reduction, ward, and mana shield.</span
+              >
+              <span class="block"
+                >The game rounds that damage and limits it to 1–5,000.</span
+              >
+              <span class="block"
+                >Hits fully absorbed before health damage do not trigger Parry.</span
+              >
             </p>
           </div>
         {/if}
         {#if skill.is_assassination_skill}
-          <p>Requires target below 25% HP to cast</p>
+          <p>
+            You can cast this skill only when the target has less than 25%
+            health.
+          </p>
         {/if}
         {#if skill.is_decrease_resists_skill}
           <!-- Source: BuffSkill.cs:99-106, TargetDebuffSkill.cs:134-136 -->
           <p>
-            Bypasses "Immune to Debuffs" on monsters. Reduces the target's
-            resist chance by 30% before the resist roll.
+            <span class="block"
+              >This skill bypasses monsters' immunity to debuffs.</span
+            >
+            <span class="block"
+              >It lowers the target's resist chance by 30 percentage points
+              before the resist roll.</span
+            >
           </p>
         {/if}
         {#if skill.is_mana_shield}
           <!-- Source: Combat.cs — DealDamageAt, ward check before mana shield check -->
           <p>
-            Ward absorbs damage first, then mana shield absorbs remainder from
-            mana pool.
+            <span class="block">Ward absorbs damage first.</span>
+            <span class="block"
+              >Mana Shield then absorbs the remaining damage using mana.</span
+            >
           </p>
         {/if}
         {#if hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll}
           <!-- Source: Skills.cs:673-675 — castTimeEnd reduction only when isSpell -->
           <p class="text-muted-foreground">
-            Effective Cast Time = castTime &minus; (castTime &times; spellHaste)
+            Cast time = cast time &times; (1 &minus; spell haste)
           </p>
         {/if}
         {#if hasLinearValue(skill.fear_chance)}
@@ -2935,9 +3182,14 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Fear</h3>
             <p class="text-muted-foreground">
-              Applies only if two independent rolls succeed: the skill's fear
-              chance, then the target failing their fear resist roll. Duration
-              is random between half and full fearTime.
+              <span class="block"
+                >Fear applies only when the skill's fear roll succeeds and the
+                target fails a separate fear resist roll.</span
+              >
+              <span class="block"
+                >Fear lasts a random duration between half and all of the
+                skill's fear duration.</span
+              >
             </p>
           </div>
         {/if}
@@ -2946,15 +3198,22 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Fear Resist</h3>
             <p class="text-muted-foreground">
-              When a fear effect lands, the target rolls their accumulated fear
-              resist chance to block it.
+              <span class="block"
+                >When fear would apply, the target has a chance to resist it.</span
+              >
               {#if skill.fear_resist_chance_bonus_cap > 0}
-                This skill contributes at most
-                {formatPercent(skill.fear_resist_chance_bonus_cap)} after Charisma
-                scaling.
+                <span class="block"
+                  >This skill adds at most {formatPercent(
+                    skill.fear_resist_chance_bonus_cap,
+                  )} to that chance after Charisma scaling.</span
+                >
               {/if}
-              Total Fear Resistance from all sources is capped at 100%. At 100% the
-              target is completely immune to fear.
+              <span class="block"
+                >Total Fear Resist from all sources is capped at 100%.</span
+              >
+              <span class="block"
+                >At 100%, the target resists every fear effect.</span
+              >
             </p>
           </div>
         {/if}
@@ -2963,9 +3222,15 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Stun</h3>
             <p class="text-muted-foreground">
-              Applies on a single roll. Cannot apply while the target is feared.
-              Duration stacks: extends the existing stun end time rather than
-              replacing it. Bear mounts have a 90% chance to resist any stun.
+              <span class="block"
+                >Stun applies on one roll, but cannot affect a feared target.</span
+              >
+              <span class="block"
+                >Another stun extends the existing stun instead of replacing its
+                end time.</span
+              >
+              <span class="block">Bear mounts resist 90% of stun attempts.</span
+              >
             </p>
           </div>
         {/if}
@@ -2974,13 +3239,22 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Knockback</h3>
             <p class="text-muted-foreground">
-              Applies only if neither stun nor fear took effect on the same hit,
-              and only while the target is not already stunned. Pushes the
-              target back
-              {#if skill.knockback_distance}{skill.knockback_distance}m{/if}
-              with a fixed 0.25-second stun. When an obstacle blocks that path, the
-              target also takes 1.25% of the damage just dealt, rounded up, and never
-              less than 1. Only applies within 15 levels (waived for boss casters).
+              <span class="block"
+                >Knockback applies only if stun and fear did not apply on the
+                same hit and the target is not already stunned.</span
+              >
+              <span class="block"
+                >It pushes the target back{#if skill.knockback_distance}
+                  {skill.knockback_distance}m{/if} and stuns them for 0.25 seconds.</span
+              >
+              <span class="block"
+                >If an obstacle blocks the path, the target also takes 1.25% of
+                the damage just dealt, rounded up to at least 1.</span
+              >
+              <span class="block"
+                >The target must be within 15 levels of the attacker, unless the
+                attacker is a boss.</span
+              >
             </p>
           </div>
         {/if}
@@ -2991,11 +3265,20 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Root</h3>
             <p class="text-muted-foreground">
-              Fully stops movement. Does not break on incoming damage. Monsters
-              attempt a self-break every 2 seconds: chance = magicResist / 1000,
-              clamped between 5% and 95%. NPCs attempt a self-break every 1
-              second with a fixed 10% chance. Bosses and elite monsters
-              automatically resist this debuff.
+              <span class="block"
+                >Root stops movement and does not break when the target takes
+                damage.</span
+              >
+              <span class="block"
+                >Every 2 seconds, a rooted monster has a chance to break free
+                equal to its Magic Resist divided by 1,000, limited to 5–95%.</span
+              >
+              <span class="block"
+                >A rooted NPC has a 10% chance to break free every second.</span
+              >
+              <span class="block"
+                >Bosses and elite monsters always resist this debuff.</span
+              >
             </p>
           </div>
         {/if}
@@ -3007,11 +3290,17 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
             <p class="text-muted-foreground">
-              Fully immobilizes the target. Any direct damage hit or DoT tick
-              immediately breaks the effect. Bosses and elite monsters
-              automatically resist this debuff. Every 6 seconds, an affected
-              monster rolls to self-break: chance = magicResist / 1000, clamped
-              between 5% and 95%.
+              <span class="block"
+                >Sleep stops movement, but any direct damage or damage-over-time
+                tick wakes the target.</span
+              >
+              <span class="block"
+                >Bosses and elite monsters always resist sleep.</span
+              >
+              <span class="block"
+                >Every 6 seconds, a sleeping monster has a chance to wake equal
+                to its Magic Resist divided by 1,000, limited to 5–95%.</span
+              >
             </p>
           </div>
         {/if}
@@ -3020,8 +3309,13 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Teleport</h3>
             <p class="text-muted-foreground">
-              Teleports each party member in range to the nearest safe city.
-              Each player is stunned for 1 second on arrival.
+              <span class="block"
+                >This skill teleports each party member in range to the nearest
+                safe city.</span
+              >
+              <span class="block"
+                >Each player is stunned for 1 second on arrival.</span
+              >
             </p>
           </div>
         {/if}
@@ -3031,9 +3325,17 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Block Chance</h3>
             <p class="text-muted-foreground">
-              Flat additive modifier to the target's block chance. Block chance
-              is capped at 80% before accuracy and level difference are applied.
-              Final miss probability is capped at 90%.
+              <span class="block"
+                >This skill adds its Block Chance bonus to the target's chance
+                to block.</span
+              >
+              <span class="block"
+                >Block Chance is capped at 80% before Accuracy and level
+                difference are applied.</span
+              >
+              <span class="block"
+                >The final chance for an attack to miss is capped at 90%.</span
+              >
             </p>
           </div>
         {/if}
@@ -3042,9 +3344,13 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Accuracy</h3>
             <p class="text-muted-foreground">
-              Flat modifier subtracted from the target's block and resist
-              chance. Higher accuracy makes attacks harder to block or resist.
-              Capped between -50% and 100%.
+              <span class="block"
+                >This skill's Accuracy bonus lowers the target's chance to block
+                or resist an attack by the same number of percentage points.</span
+              >
+              <span class="block"
+                >Total Accuracy is limited to a value between −50% and 100%.</span
+              >
             </p>
           </div>
         {/if}
@@ -3053,8 +3359,13 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Critical Chance</h3>
             <p class="text-muted-foreground">
-              Flat additive modifier to the caster's critical hit chance.
-              Critical hits deal 1.5x damage. Crit chance is capped at 70%.
+              <span class="block"
+                >This skill adds to the attacker's critical hit chance, capped
+                at 70%.</span
+              >
+              <span class="block"
+                >Critical hits deal 1.5 times the damage of a noncritical hit.</span
+              >
             </p>
           </div>
         {/if}
@@ -3063,13 +3374,24 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Critical Resist</h3>
             <p class="text-muted-foreground">
-              Defensive critical-hit reduction. Critical Resist reduces the
-              bonus damage from critical hits: a crit's multiplier is 1 + (base
-              − 1) × (1 − Critical Resist), where base is ×1.5 (or ×3 under
-              Radiant Aether), so full resist makes a crit deal normal-hit
-              damage. Dexterity adds 0.05 percentage points per positive point.
-              Gear and buffs can add more. Total Critical Resist is capped at
-              100%.
+              <span class="block"
+                >Critical Resist reduces the extra damage from critical hits.</span
+              >
+              <span class="block"
+                >The critical multiplier is 1 + (base − 1) × (1 − Critical
+                Resist), where base is 1.5 (or 3 with Radiant Aether).</span
+              >
+              <span class="block"
+                >At 100% Critical Resist, a critical hit deals the same damage
+                as an ordinary hit.</span
+              >
+              <span class="block"
+                >Each positive point of Dexterity adds 0.05 percentage points of
+                Critical Resist.</span
+              >
+              <span class="block"
+                >Gear and buffs can add more, up to a total of 100%.</span
+              >
             </p>
           </div>
         {/if}
@@ -3078,9 +3400,11 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Lifetap</h3>
             <p class="text-muted-foreground">
-              Heals the attacker for a percentage of actual damage dealt, after
-              all mitigation (resists, crits, etc.). The heal amount is rounded
-              down.
+              <span class="block"
+                >Lifetap heals the attacker for a percentage of the health
+                damage dealt after damage reduction and critical-hit bonuses.</span
+              >
+              <span class="block">The game rounds the healing down.</span>
             </p>
           </div>
         {/if}
@@ -3089,9 +3413,20 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Break Armor</h3>
             <p class="text-muted-foreground">
-              On each hit, rolls against the break armor chance. If successful,
-              a random equipment slot on the target loses 1 to 4 durability.
-              Affects players and mercenaries.
+              <span class="block"
+                >Each hit can trigger Break Armor at the skill's listed chance.</span
+              >
+              <span class="block"
+                >When it triggers, the game picks one random equipment slot on
+                the target.</span
+              >
+              <span class="block"
+                >If that slot contains an item with durability remaining, the
+                item loses 1–4 durability.</span
+              >
+              <span class="block"
+                >Break Armor affects players and mercenaries.</span
+              >
             </p>
           </div>
         {/if}
@@ -3100,9 +3435,13 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Heal on Hit</h3>
             <p class="text-muted-foreground">
-              Heals the attacker for a percentage of melee damage dealt. Only
-              triggers on non-spell attacks with a cast range below 2. Stacks
-              across multiple active buffs.
+              <span class="block"
+                >Heal on Hit restores a percentage of melee damage dealt by
+                non-spell attacks with a cast range below 2.</span
+              >
+              <span class="block"
+                >Bonuses from multiple active buffs add together.</span
+              >
             </p>
           </div>
         {/if}
@@ -3111,10 +3450,13 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Cooldown Reduction</h3>
             <p class="text-muted-foreground">
-              When this buff is applied, all skills currently on cooldown have
-              their remaining cooldown reduced by this percentage, up to 30
-              seconds per skill. This is a one-time effect at application, not
-              an ongoing reduction.
+              <span class="block"
+                >Applying this buff reduces each skill's remaining cooldown by
+                the listed percentage, up to 30 seconds per skill.</span
+              >
+              <span class="block"
+                >The reduction happens once when the buff is applied.</span
+              >
             </p>
           </div>
         {/if}
@@ -3123,12 +3465,25 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Damage Shield</h3>
             <p class="text-muted-foreground">
-              Reflects damage to melee attackers. Only triggers on non-spell
-              single-target attacks with a cast range below 1.5. Scroll skills
-              and weapon on-hit proc skills do not trigger it. Reflected damage
-              scales with the caster's WIS (0.75 per point) and is mitigated by
-              the attacker's resist matching the buff's damage type. Final value
-              has &plusmn;10% random variance.
+              <span class="block"
+                >Damage Shield reflects damage when a non-spell, single-target
+                melee attack with a cast range below 1.5 hits the wearer.</span
+              >
+              <span class="block"
+                >Scroll skills and weapon effects triggered on hit cannot
+                trigger it.</span
+              >
+              <span class="block"
+                >Reflected damage increases by 0.75 per point of the wearer's
+                Wisdom.</span
+              >
+              <span class="block"
+                >Every 100 points of the attacker's matching Resist reduce
+                reflected damage by 5%, up to a 90% reduction.</span
+              >
+              <span class="block"
+                >The final damage varies randomly by &plusmn;10%.</span
+              >
             </p>
           </div>
         {/if}
@@ -3138,9 +3493,16 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>
             <p class="text-muted-foreground">
-              Fills the player's screen with a black overlay for the buff's
-              duration. Purely visual with no effect on combat stats. Only
-              affects players. Fades out over 1 second when the effect ends.
+              <span class="block"
+                >Blindness covers the affected player's screen with a black
+                overlay for the effect's duration.</span
+              >
+              <span class="block"
+                >It changes no combat stats and affects only players.</span
+              >
+              <span class="block"
+                >The overlay fades out over 1 second when the effect ends.</span
+              >
             </p>
           </div>
         {/if}

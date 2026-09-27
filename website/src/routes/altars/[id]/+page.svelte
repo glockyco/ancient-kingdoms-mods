@@ -191,7 +191,9 @@
         <!-- Init Message -->
         {#if data.altar.initEventMessage}
           <div class="pt-3 border-t">
-            <p class="text-sm text-muted-foreground mb-1">On event start:</p>
+            <p class="text-sm text-muted-foreground mb-1">
+              When the event starts:
+            </p>
             <p class="italic">"{data.altar.initEventMessage}"</p>
           </div>
         {/if}
@@ -208,9 +210,10 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4">
+          <!-- Source: server-scripts/DefaultEvent.cs:209-217 — game rounds total veteran points / 40; this preview floors its veteran-level slider / 40 -->
           <p class="text-muted-foreground">
-            Monster levels scale based on effective level (player level +
-            veteran level / 40)
+            This preview adds your level and one level per 40 veteran levels
+            (rounded down) to each monster's base level, then subtracts 30.
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
@@ -282,9 +285,11 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content>
+          <!-- Source: server-scripts/DefaultEvent.cs:229-239 — reward quality uses player level plus total veteran points, with thresholds at 40, 50, and 150 -->
           <p class="text-muted-foreground mb-4">
-            Reward tier is determined by effective level (player level + veteran
-            level)
+            Your level plus your total veteran points determines the reward:
+            below 40 gives common, 40–49 magic, 50–149 epic, and 150 or more
+            legendary.
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             {#each data.rewards as reward (reward.tier)}
@@ -397,7 +402,9 @@
                       {timingInfo.label}
                     </span>
                   {:else if wave.require_all_monsters_cleared && !isLastWave}
-                    <span>Must clear all monsters</span>
+                    <span
+                      >The next wave waits until you defeat every monster</span
+                    >
                   {/if}
                 </div>
               </div>
@@ -441,7 +448,7 @@
                   {#if wave.init_wave_message}
                     <div>
                       <p class="text-sm text-muted-foreground">
-                        On wave start:
+                        When the wave starts:
                       </p>
                       <p class="italic">"{wave.init_wave_message}"</p>
                     </div>
@@ -449,7 +456,7 @@
                   {#if wave.finish_wave_message}
                     <div>
                       <p class="text-sm text-muted-foreground">
-                        On wave completion:
+                        When the wave ends:
                       </p>
                       <p class="italic">"{wave.finish_wave_message}"</p>
                     </div>
@@ -460,7 +467,9 @@
               <!-- Failure message (final wave only) -->
               {#if isLastWave}
                 <div class="mt-3 pt-3 border-t">
-                  <p class="text-sm text-muted-foreground">On time expired:</p>
+                  <p class="text-sm text-muted-foreground">
+                    When time runs out:
+                  </p>
                   <p class="italic">
                     {#if isForgotten}
                       "The Forgotten Altar dims, its energies spent as the

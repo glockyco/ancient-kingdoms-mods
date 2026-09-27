@@ -32,7 +32,7 @@
     buildCollectionPage({
       path: "/items",
       name: "Items — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.items.length.toLocaleString()} items in Ancient Kingdoms.`,
+      description: `Find ${data.items.length.toLocaleString()} items by quality, level, slot, class, and zone.`,
       items: data.items.map((item) => ({
         name: item.name,
         path: `/items/${item.id}`,
@@ -477,7 +477,7 @@
 
 <Seo
   title="Items - Ancient Kingdoms"
-  description={`Searchable database of ${data.items.length.toLocaleString()} items — weapons, armor, consumables, and quest items, with quality, level requirements, drop sources, vendors, and recipes.`}
+  description={`Browse ${data.items.length.toLocaleString()} weapons, armor, consumables, and quest items by quality and level. Check each item's drop sources, vendors, and recipes.`}
   path="/items"
 />
 

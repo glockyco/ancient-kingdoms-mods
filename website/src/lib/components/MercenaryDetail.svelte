@@ -345,7 +345,7 @@
           {@render stat(
             "Skill rank",
             String(skillRank),
-            "A skill with a lower max rank stops there.",
+            "Each skill stops at its own maximum rank.",
           )}
           {@render stat(
             "Active mercenaries",
@@ -447,7 +447,9 @@
                 : `+0.25% Health and ${resourceName} multipliers per veteran level.`}
             </p>
             <p class="mt-1 text-sm text-muted-foreground">
-              At veteran level {veteran}: +{veteranBonus}%.
+              At veteran level {veteran}, {cls === "Bard"
+                ? `the Health multiplier gains +${veteranBonus}%`
+                : `the Health and ${resourceName} multipliers gain +${veteranBonus}%`}.
             </p>
           </div>
         </div>
@@ -456,10 +458,12 @@
           <Info />
           <div>
             <!-- Source: server-scripts/Player.cs:4629-4652, Player.cs:10347-10348, Database.cs:SaveNewMercenary — the level-up bonus changes live stats only; a summon restores the saved hire roll, or rolls again when that roll was 0. -->
-            <p class="font-medium">Game quirk: veteran damage does not stay</p>
+            <p class="font-medium">
+              Veteran damage bonus disappears after summoning again
+            </p>
             <p>
               A veteran level gained while the mercenary is summoned adds +1
-              damage and +1 magic damage.
+              physical damage and +1 magic damage.
             </p>
             <p>
               The game does not save this bonus. The next summon restores the
@@ -486,8 +490,8 @@
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
           <p>
-            The Bard mercenary plays its songs by itself. It starts one song at
-            a time and keeps each song active.
+            The Bard mercenary starts its songs automatically, one at a time,
+            and keeps each song active.
           </p>
           <table class="w-full">
             <thead>
@@ -563,21 +567,21 @@
         <Card.Content class="space-y-4 text-sm">
           <!-- Source: server-scripts/Combat.cs:1350-1361,1157-1180 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
           <p>
-            When a hit would kill this mercenary, it casts
+            From level {DEATH_SAVE_MIN_LEVEL}, a lethal hit triggers
             <a
               href="/skills/{deathSave.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{deathSave.name}</a
             >
-            instead and is invulnerable to all attacks for {deathSaveInfo.now
-              .seconds} seconds.
+            if its cooldown has ended and the mercenary has enough Rage. The skill
+            makes it invulnerable to attacks for {deathSaveInfo.now.seconds} seconds.
           </p>
           {#if level < DEATH_SAVE_MIN_LEVEL}
             <Alert variant="warning">
               <Info />
               <p>
-                It works only when you are level {DEATH_SAVE_MIN_LEVEL}. You are
-                level {level}.
+                It works from level {DEATH_SAVE_MIN_LEVEL}. You are level
+                {level}.
               </p>
             </Alert>
           {/if}
@@ -614,7 +618,7 @@
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
           {@render stat("Main hand", slotName(mainHand.accepted_category))}
           {#if slot13}{@render stat(
-              "Off hand",
+              "Off-hand",
               slotName(slot13.accepted_category),
             )}{/if}
         </dl>
@@ -627,26 +631,27 @@
         <!-- Source: server-scripts/EquipmentItem.cs:CanEquipMercenary,CanClassUse — the item must allow the mercenary's class, and the owner must meet its level. -->
         <ul class="list-disc space-y-1 pl-5">
           <li>
-            It can wear
+            Only
             <a
               href="/classes/{pet.classLink.class_id}#equipment"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{cls} gear</a
-            >.
+            > meets this mercenary's class restriction.
           </li>
           <li>Your level must meet the item's level requirement.</li>
           {#if slot13?.accepted_category === "Shield" || slot13?.accepted_category === "Instrument"}
+            <!-- Source: server-scripts/EquipmentItem.cs:CanEquipMercenary — WeaponSword2H and WeaponWand2H block the off-hand shield or instrument; the export has no 2H wand. -->
             <li>
-              <!-- Source: server-scripts/EquipmentItem.cs:CanEquipMercenary — WeaponSword2H and WeaponWand2H block the off-hand shield or instrument; the export has no 2H wand. -->
-              A 2H Weapon cannot be equipped with {slot13.accepted_category ===
+              You cannot equip a 2H Weapon with {slot13.accepted_category ===
               "Instrument"
-                ? "an Instrument"
-                : "a Shield"}.
+                ? "an instrument"
+                : "a shield"} in the off-hand.
             </li>
           {/if}
+          <!-- Source: server-scripts/Pet.cs:OnDeath, Combat.cs:739-755 — hits lower gear durability; death does not. -->
           <li>
-            <!-- Source: server-scripts/Pet.cs:OnDeath, Combat.cs:739-755 — hits lower gear durability; death does not. -->
-            Gear stays on the mercenary when it dies, and death does not lower durability.
+            Gear stays on the mercenary when it dies, and death does not lower
+            durability.
           </li>
         </ul>
       </Card.Content>

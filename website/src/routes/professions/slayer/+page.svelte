@@ -376,8 +376,8 @@
           </p>
           <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13635-13642; server-scripts/UIBestiaryDetail.cs:150-154 — approach discovery and loot discovery are separate records. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Zero kills means discovered, not defeated. Loot discoveries are
-            separate: finding a boss does not reveal all its drops.
+            Finding a boss does not reveal its drops. You discover loot
+            separately.
           </p>
         </div>
       </li>
@@ -387,8 +387,8 @@
         <div>
           <p class="font-medium">Kill the target.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The player with the highest aggro gets the kill credit. In a party,
-            each nearby member also gets
+            The player who drew the most of the monster's attention gets kill
+            credit. In a party, each nearby member also gets
             <a
               href="#mastery"
               class="text-blue-600 hover:underline dark:text-blue-400">credit</a
@@ -434,9 +434,9 @@
   <section id="payoff" class="space-y-4">
     <h2 class="text-xl font-semibold">Damage reduction</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Slayer has no combat effect below 10%. From 10%, each point of mastery
-      increases your protection against a boss or elite. The game applies this
-      reduction before armor and elemental resistance.
+      Below 10% Slayer, boss and elite hits deal full damage. At 10% Slayer, a
+      100-damage hit loses 1 damage. At 100%, it loses 10. Armor and elemental
+      resistance reduce the remaining damage.
     </p>
 
     <div class="space-y-5 rounded-lg border p-4 md:p-5">
@@ -487,10 +487,9 @@
         <!-- Source: server-scripts/Combat.cs:DealDamageAt -->
         <div class="mt-2 space-y-2 text-pretty text-muted-foreground">
           <p>
-            From 10% mastery, the game subtracts <code
-              >ceil(damage × Slayer × 0.1)</code
-            >. The game stores Slayer as a value from 0 to 1. The upward
-            rounding can increase the reduction on a small hit.
+            At 10% Slayer, a boss or elite hit loses 1% of its damage, rounded
+            up. Each additional 10 percentage points of Slayer adds another 1%
+            reduction, up to 10%. Even a 10-damage hit loses 1 damage.
           </p>
           <p>A mercenary or summon uses the Slayer mastery of its owner.</p>
         </div>
@@ -517,8 +516,8 @@
       <!-- Source: server-scripts/Monster.cs:OnDeath -->
       <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcUpdateKillsBestiary__String -->
       <p>
-        A mercenary or a summon with the highest aggro gives the credit to its
-        owner. In a party, each nearby member gets the same credit.
+        A mercenary or summon that draws the most attention gives kill credit to
+        its owner. In a party, each nearby member gets the same credit.
       </p>
       <p>
         The Bestiary count stays with one character. Slayer mastery is the total

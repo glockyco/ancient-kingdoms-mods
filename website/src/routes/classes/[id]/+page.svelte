@@ -468,7 +468,7 @@
     if (hasQuestFlags) {
       cols.push({
         id: "flags",
-        header: "Flags",
+        header: "Quest labels",
         enableSorting: false,
         accessorFn: (row) => {
           const flags: string[] = [];
@@ -948,12 +948,12 @@
 
     {#if ["warrior", "rogue", "cleric", "druid", "ranger", "wizard", "bard"].includes(data.class.id)}
       <p class="mt-3 text-muted-foreground">
-        For information about the {data.class.name} mercenary, see:
+        See the
         <a
           href="/mercenaries/{data.class.id}_mercenary"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >{data.class.name} Mercenary</a
-        >.
+        > page.
       </p>
     {/if}
   </div>

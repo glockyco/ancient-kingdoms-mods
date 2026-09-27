@@ -1,1 +1,1 @@
-Mechanics Buff Scaling bonusAttribute = WIS × 3 (Ranger wisdom tripled) Max Health skillValue(level) + bonusAttribute × 2 Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling Attribute contribution = WIS × 3 (Ranger Wisdom tripled) Max Health skill value at level + attribute contribution × 2 Cast time = cast time × (1 − spell haste)

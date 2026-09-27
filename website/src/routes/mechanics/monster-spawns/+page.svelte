@@ -24,8 +24,8 @@
     { id: "renewal-sages", label: "Renewal Sages" },
     { id: "spawn-windows", label: "Day and Night Spawns" },
     { id: "summons", label: "Kill-Triggered Summons" },
-    { id: "leashing", label: "Leashing and Resets" },
-    { id: "other-spawns", label: "Other Spawn Types" },
+    { id: "leashing", label: "Chase Limits and Resets" },
+    { id: "other-spawns", label: "Other Ways Monsters Appear" },
   ];
 
   const bossTiers = $derived.by(() => {
@@ -120,9 +120,8 @@
     <Card.Header>
       <Card.Title>The Respawn Cycle</Card.Title>
       <Card.Description>
-        Every open-world monster lives on a fixed spot and cycles through death,
-        corpse, and respawn on its own timers. Shown below with the most common
-        timer setup.
+        Most open-world monsters appear at a fixed location after the corpse and
+        respawn periods shown in this diagram.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -154,26 +153,33 @@
       </div>
 
       <ol class="list-decimal space-y-1 pl-5">
+        <!-- Source: server-scripts/Monster.cs:OnDeath — corpse deadline = death + deathTime; respawn deadline = corpse deadline + respawnTime. -->
         <li>
-          <!-- Source: server-scripts/Monster.cs:OnDeath — corpse deadline = death + deathTime; respawn deadline = corpse deadline + respawnTime. -->
-          On death the monster becomes a lootable corpse. The corpse stays for its
-          corpse time (2 minutes for most monsters), then disappears.
+          <span class="block"
+            >On death, a monster becomes a lootable corpse.</span
+          >
+          <span class="block">Most corpses disappear after 2 minutes.</span>
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:931-938 — corpses with zero occupied inventory slots are removed from one second after death onward. -->
-          A corpse that holds no items — because nothing dropped or everything was
-          looted — disappears almost immediately instead.
+          A corpse with no items disappears almost immediately, whether the monster
+          dropped nothing or players took everything.
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:1914-1922 and 2905-2909 — hidden corpse is warped back to its start position. -->
-          When the corpse disappears, the monster is invisibly moved back to its original
-          spawn point.
+          When a corpse disappears, the monster returns invisibly to its original
+          location.
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:OnDeath — both deadlines are fixed at the moment of death; respawnTimeEnd = deathTimeEnd + respawnTime. Early corpse removal (looting) never touches respawnTimeEnd. -->
-          Both timers are locked in at the moment of death: the monster respawns corpse
-          time plus respawn timer after the kill. Looting the corpse makes it disappear
-          sooner, but never speeds up the respawn.
+          <span class="block"
+            >At death, the monster's return is set for its corpse period plus
+            its respawn timer after the kill.</span
+          >
+          <span class="block"
+            >Taking all corpse loot does not shorten the wait until the monster
+            returns.</span
+          >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:1899-1911 — on respawn aggro, debuffs, gold, and loot state are cleared, then the monster is shown and revived. -->
@@ -182,16 +188,21 @@
       </ol>
       <p>
         <!-- Source: website/data/compendium.db monsters table — regular respawning monsters use respawn_time 40-7200 and death_time 5-300. -->
-        Timers are set per monster. For regular monsters the respawn timer ranges
-        from 40 seconds up to 2 hours, and 6 minutes is by far the most common. Bosses
-        run far longer (<a
-          href="#bosses"
-          class="text-blue-600 hover:underline dark:text-blue-400">see below</a
-        >).
+        <span class="block"
+          >Regular monsters have respawn timers from 40 seconds to 2 hours, most
+          often 6 minutes.</span
+        >
+        <span class="block"
+          >Bosses have longer timers (<a
+            href="#bosses"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >see below</a
+          >).</span
+        >
       </p>
       <p>
-        One catch: the respawn itself only happens while a player is in the zone
-        — see the next section.
+        A monster does not respawn until a player enters its zone, even after
+        its timer ends.
       </p>
     </Card.Content>
   </Card.Root>
@@ -200,17 +211,24 @@
     <Card.Header>
       <Card.Title>Empty Zones Are Switched Off</Card.Title>
       <Card.Description>
-        The server deactivates a zone when nobody is in it. Spawns behave very
-        differently around that moment.
+        When everyone leaves a zone, its monsters stop moving, fighting, and
+        respawning until someone returns.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
         <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD,11003,13015 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
-        About 5 seconds after the last player leaves a zone (immediately, on a logout),
-        the entire zone is switched off. Monsters in it stop acting entirely — they
-        do not move, fight, or respawn until a player enters again.
+        <span class="block"
+          >About 5 seconds after the last player leaves a zone, the zone becomes
+          inactive.</span
+        >
+        <span class="block"
+          >Logging out deactivates an empty zone immediately.</span
+        >
+        <span class="block"
+          >Its monsters cannot move, fight, or respawn until a player returns.</span
+        >
       </p>
       <ul class="list-disc space-y-1 pl-5">
         <li>
@@ -220,17 +238,26 @@
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:3088-3107 — on zone reactivation living monsters warp to start position, heal to full, and clear target, aggro, pets, and debuffs. -->
-          When the zone wakes up again, monsters that were alive snap back to their
-          spawn point at full health with aggro cleared. You cannot pull a monster
-          away or damage it, leave the zone, and expect it to stay put or stay hurt.
+          <span class="block"
+            >When someone returns, living monsters move back to their original
+            locations at full health.</span
+          >
+          <span class="block"
+            >They forget their targets, lose harmful effects, and dismiss their
+            summoned pets.</span
+          >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:940-947 and Entity.cs:221-229 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
-          Respawn timers are deadlines on the clock, so time spent with the zone empty
-          still counts toward them — but the respawn itself only executes while the
-          zone is active. A monster whose deadline passed while the zone was empty
-          appears the instant a player walks in. One whose deadline has not passed
-          yet simply waits out the rest.
+          <span class="block"
+            >Time in an empty zone still counts toward each monster's respawn
+            deadline.</span
+          >
+          <span class="block"
+            >If the deadline passes while the zone is empty, the monster returns
+            when a player enters.</span
+          >
+          <span class="block">Otherwise, it waits for the remaining time.</span>
         </li>
       </ul>
     </Card.Content>
@@ -240,31 +267,35 @@
     <Card.Header>
       <Card.Title>Boss Respawn Timers</Card.Title>
       <Card.Description>
-        Bosses and elites run on long timers that are saved server-side and
-        survive server restarts.
+        Boss and elite respawn deadlines are saved on the server and survive
+        restarts.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
           <!-- Source: server-scripts/Monster.cs:OnDeath — boss and elite deaths write the respawn deadline to the server database; the respawn duration is sent to currently-online clients via TargetRpcUpdateBossState (applied locally as now+duration, early by the death/corpse window), not a synced deadline, and offline clients are not notified. -->
-          When a boss dies, its respawn deadline is saved server-side.
+          When a boss or elite dies, the server saves its respawn deadline.
         </li>
         <li>
           <!-- Source: server-scripts/NetworkManagerMMO.cs:111 and Monster.cs:616-637 — saved deadlines are loaded at server start; bosses whose deadline has not passed start hidden. -->
           <!-- Source: server-scripts/Monster.cs:504-522 — at server start only summonable, seasonal, and failed-roll rare monsters start hidden; everything else starts alive. -->
-          Saved deadlines are reloaded when the server starts, so a restart does not
-          bring a dead boss back early. Regular monsters have no such memory — after
-          a restart they all start alive.
+          <span class="block"
+            >Restarting the server does not reset a dead boss's saved timer.</span
+          >
+          <span class="block"
+            >Regular monsters return alive after a server restart.</span
+          >
         </li>
         <li>
           <!-- Source: website/data/compendium.db monsters table — bosses use death_time 300; respawnTimeEnd = deathTimeEnd + respawnTime, fixed at death (Monster.cs:2078-2079). -->
-          Total time from kill to respawn is the timer below plus the boss's corpse
-          time (about 5 minutes).
+          A boss returns after its listed timer plus approximately 5 minutes for its
+          corpse.
         </li>
         <li>
           <!-- Source: server-scripts/Player.cs:14207-14219 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
-          For dungeon bosses these timers can be wiped for gold — see
+          For a dungeon boss, you can pay a Renewal Sage to restart its respawn —
+          see
           <a
             href="#renewal-sages"
             class="text-blue-600 hover:underline dark:text-blue-400"
@@ -342,7 +373,9 @@
           </tr>
           <!-- Source: server-scripts/Monster.cs:2217-2218,2233-2237; SummonMonster.cs:36-69 — a summoned encounter waits for its linked group to qualify. -->
           <tr class="border-b border-border/50">
-            <td class="py-2 pr-4">Its linked group needs a fresh clear.</td>
+            <td class="py-2 pr-4"
+              >All linked guards need to die after respawning.</td
+            >
             <td class="py-2"
               ><a href="#summons" class="underline hover:text-foreground"
                 >Kill-Triggered Summons</a
@@ -354,7 +387,7 @@
             <td class="py-2 pr-4">Its seasonal event is inactive.</td>
             <td class="py-2"
               ><a href="#other-spawns" class="underline hover:text-foreground"
-                >Other Spawn Types</a
+                >Other Ways Monsters Appear</a
               ></td
             >
           </tr>
@@ -376,21 +409,29 @@
     <Card.Header>
       <Card.Title>Rare Spawns</Card.Title>
       <Card.Description>
-        Some monsters only have a chance to appear each time their respawn timer
-        runs out.
+        When a rare monster's respawn timer ends, it appears only if its
+        spawn-chance roll succeeds.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:2219-2224 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
         <!-- Source: server-scripts/Monster.cs:711-716 — the same roll happens once at server start. -->
-        When a rare monster's respawn timer ends, the game rolls its spawn chance.
-        On a failure it stays hidden and the timer re-arms for another full interval.
-        A roll can only fire while a player keeps the zone active. As long as anyone
-        is inside when the timer runs out, the roll happens right on schedule — even
-        if the zone sat empty in between. Only a timer that runs out in an empty zone
-        is held back. The overdue roll then fires the moment the next player walks
-        in — a single roll, no matter how long the zone was empty.
+        <span class="block"
+          >When a rare monster's respawn timer ends, the game rolls its chance
+          to appear.</span
+        >
+        <span class="block"
+          >A failed roll leaves it hidden and starts another full interval.</span
+        >
+        <span class="block"
+          >The game rolls only while someone is in the zone.</span
+        >
+        <span class="block"
+          >If the deadline passes while nobody is there, one overdue roll
+          happens when the next player enters, regardless of how long the zone
+          was empty.</span
+        >
       </p>
 
       <div class="space-y-4 text-sm">
@@ -589,21 +630,24 @@
     <Card.Header>
       <Card.Title>Renewal Sages</Card.Title>
       <Card.Description>
-        Most dungeons have a sage outside that sells an instant reset of that
-        dungeon's respawn timers.
+        Pay a Renewal Sage outside a dungeon to make its dead monsters ready to
+        respawn.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
           <!-- Source: server-scripts/Player.cs:14207-14219 — the renewal zeroes every respawn-enabled monster deadline in the dungeon and persists cleared boss and elite deadlines. -->
-          A renewal marks every respawn timer in the dungeon as due — regular monsters,
-          elites, and bosses alike, including saved boss deadlines.
+          Renewal clears respawn deadlines for dead monsters that can respawn in the
+          dungeon, including regular monsters, elites, and bosses.
         </li>
         <li>
           <!-- Source: server-scripts/Player.cs:14208-14220 — the renewal only changes respawn deadlines, leaving living monsters untouched. -->
-          Nothing despawns. Monsters that are alive — including a rare or boss that
-          is already up — are not touched. A renewal only affects the dead.
+          <span class="block"
+            >Renewal does not remove living monsters, even bosses or rare
+            monsters.</span
+          >
+          <span class="block">It changes only respawn deadlines.</span>
         </li>
         <li>
           <!-- Source: server-scripts/Player.cs:14192-14205 — renewal checks every online player in the dungeon and refuses while any is inside, regardless of party; it also refuses insufficient gold. -->
@@ -611,7 +655,7 @@
         </li>
         <li>
           <!-- Source: server-scripts/Npc.cs:1733-1739; Player.cs:14202-14207 — the sage quotes a gold fee and renewal refuses if the payer lacks the quoted gold. -->
-          Renewal costs the quoted gold fee and refuses if you cannot pay.
+          You must pay the gold fee quoted by the sage.
         </li>
         <li>
           <!-- Source: server-scripts/Npc.cs:1733-1739; UINpcTrading.cs:824-831 — the table gives base fees, while Charisma discounts most quoted fees up to 25%; dungeon 100 uses its undiscounted fee. -->
@@ -628,19 +672,27 @@
       </p>
       <!-- Source: server-scripts/Player.cs:14208-14220; Monster.cs:2217-2237 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
       <p class="text-sm text-muted-foreground">
-        Conditional encounters still need their own spawn conditions.
+        Summoned monsters, rare spawn rolls, seasonal events, and time windows
+        still govern whether a monster appears after renewal.
       </p>
 
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:14208-14220 and Monster.cs:2219-2224 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
-        Renewals interact with rare spawns in a useful way. Buying several renewals
-        back-to-back is wasted gold: the roll only fires when someone enters, so you
-        get one roll on the next entry no matter how many renewals you stacked. But
-        you can cycle — renew, step inside (the roll fires immediately, wherever the
-        rare lives), step out, renew again. Each cycle buys one roll without running
-        to a spawn spot deep in the dungeon. Side effect: a renewal revives all the
-        regular monsters too, so the dungeon is fully repopulated every time you step
-        in.
+        <span class="block"
+          >Buy renewal once, then enter the dungeon to trigger one rare-spawn
+          roll.</span
+        >
+        <span class="block"
+          >Buying more renewals before entering does not add more rolls.</span
+        >
+        <span class="block"
+          >After entering, you can leave, renew again, and re-enter for another
+          roll without visiting the monster's location.</span
+        >
+        <span class="block"
+          >Each renewal also makes dead regular monsters in the dungeon ready to
+          respawn.</span
+        >
       </p>
 
       <div class="space-y-4 text-sm">
@@ -800,19 +852,29 @@
     <Card.Header>
       <Card.Title>Day and Night Spawns</Card.Title>
       <Card.Description>
-        A few monsters only exist during part of the in-game day.
+        Some monsters appear only during particular in-game hours.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:EventTimeSpawn — game hour = ((server time % 3600) / 2.5) / 60, so one in-game day lasts exactly one real hour and one game hour lasts 2.5 real minutes. -->
-        One in-game day lasts exactly one real hour, so each game hour is 2.5 real
-        minutes.
+        <span class="block"
+          >One in-game day lasts exactly one real hour, so each game hour is 2.5
+          real minutes.</span
+        >
         <!-- Source: server-scripts/Monster.cs:1878-1881 — respawn is held while outside the spawn window. -->
         <!-- Source: server-scripts/Monster.cs:896-903 and 1354-1358 — outside its window a monster with no aggro is hidden and warped home. -->
-        These monsters only respawn inside their window, and despawn once the window
-        closes — unless they are in combat, which keeps them around until they kill
-        you or reset.
+        <span class="block"
+          >These monsters respawn only during their listed hours.</span
+        >
+        <span class="block"
+          >Outside those hours, a monster disappears if it is no longer
+          fighting.</span
+        >
+        <span class="block"
+          >A fighting monster remains until it kills its opponent or returns
+          home.</span
+        >
       </p>
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -866,8 +928,8 @@
     <Card.Header>
       <Card.Title>Kill-Triggered Summons</Card.Title>
       <Card.Description>
-        Some monsters stay hidden until you clear the regular monsters that
-        guard their spot.
+        Some monsters appear only after the monsters guarding their location are
+        all dead.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4">
@@ -875,25 +937,40 @@
         <!-- Source: server-scripts/Monster.cs:671-679 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
         <!-- Source: server-scripts/SummonMonster.cs:26,36-46,52-69 — once per second the trigger checks for a fresh alive-to-all-dead placeholder cycle; kills are not counted. -->
         <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
-        Each summon watches a fixed set of nearby spawns. There is no kill counter
-        — kills do not add up. The watched group must be alive before a fresh clear
-        can qualify. What matters is that every watched monster is then dead at the
-        same time. The moment that happens (and the summon's own respawn timer has
-        run out), the spawn check fires. Most summons then appear instantly, and many
-        announce themselves to everyone in the zone.
+        <span class="block"
+          >Each summoned monster watches a fixed group of guards.</span
+        >
+        <span class="block"
+          >The game does not count kills toward its appearance.</span
+        >
+        <span class="block"
+          >All guards must first be alive, then dead together for a new attempt.</span
+        >
+        <span class="block"
+          >If the summoned monster's timer has ended, killing the last guard
+          triggers its chance to appear.</span
+        >
+        <span class="block">Many announce their arrival to the zone.</span>
       </p>
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:2219-2224 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
-        Watch the chance column: some summons are rare spawns on top. For those the
-        check is only a roll, and a failed roll re-arms the summon's timer for a full
-        interval. The chance is not lost if the watched monsters revive in the meantime
-        — once the timer is past, the next roll simply waits and fires the moment
-        all of them are dead at the same time again. The intervals are listed in the
-        <a
-          href="#rare-spawns"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >rare spawn table</a
-        > above.
+        <span class="block"
+          >Some summoned monsters have a chance to appear below 100%.</span
+        >
+        <span class="block"
+          >After a failed roll, their timer starts another full interval.</span
+        >
+        <span class="block"
+          >Once the timer ends, another roll waits until all guards are dead at
+          the same time.</span
+        >
+        <span class="block"
+          >The intervals are in the <a
+            href="#rare-spawns"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >rare spawn table</a
+          >.</span
+        >
       </p>
 
       <div class="space-y-4 text-sm">
@@ -1134,10 +1211,10 @@
 
   <Card.Root id="leashing" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Leashing and Resets</Card.Title>
+      <Card.Title>Chase Limits and Resets</Card.Title>
       <Card.Description>
-        Monsters give up the chase at a fixed distance from home and reset
-        completely. Regular monsters in dungeons are the big exception.
+        Most monsters stop chasing at a set distance from home, while regular
+        dungeon monsters have no distance limit.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1145,27 +1222,45 @@
         <li>
           <!-- Source: server-scripts/Monster.cs:51 and 993-1008 — chase limit is the per-monster follow distance, default 20 units, measured from the spawn point. -->
           <!-- Source: server-scripts/Monster.cs:1286-1301 — beyond the follow distance the monster drops its target, clears debuffs, and returns home with bonus sprint speed. -->
-          Each monster has a chase limit measured from its spawn point (20 units for
-          most monsters). Past that limit it drops its target, sheds all debuffs,
-          and returns home with extra move speed.
+          <span class="block"
+            >Most monsters stop chasing 20 units from where they first appear.</span
+          >
+          <span class="block"
+            >They drop their target, lose their harmful effects, and return home
+            faster.</span
+          >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:717-718 and 1251-1256 — the distance check is skipped entirely for non-boss, non-elite monsters in dungeon zones. -->
           <!-- Source: server-scripts/Monster.cs:1597-1605 — chasing ends when the target is no longer reachable by pathfinding. -->
-          Regular monsters inside dungeons have no distance limit. They chase you
-          for as long as they can reach you, and only give up when no path to you
-          exists. Bosses and elites leash normally even in dungeons.
+          <span class="block"
+            >Regular monsters inside dungeons have no distance limit.</span
+          >
+          <span class="block">They chase you while a route to you exists.</span>
+          <span class="block"
+            >Bosses and elites still stop chasing at their usual distance.</span
+          >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:2681 and Monster.cs:717-718 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:663-664). -->
-          While heading home it only re-engages if you stay close (within 80% of its
-          chase range). Regular dungeon monsters are the exception — they always turn
-          around and re-engage.
+          <span class="block"
+            >Returning monsters chase you again only within 80% of their maximum
+            chase distance.</span
+          >
+          <span class="block"
+            >Regular dungeon monsters can turn around and chase you at any
+            distance.</span
+          >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:1440-1463 — on arriving home the monster heals to full, restores mana, clears aggro and debuffs, and destroys its summoned pets. -->
-          On reaching home it resets fully: full health and mana, aggro cleared, summoned
-          minions removed. Damage dealt before a reset is wasted.
+          <span class="block"
+            >On returning home, a monster recovers full health and mana, forgets
+            enemies, loses harmful effects, and dismisses its summoned pets.</span
+          >
+          <span class="block"
+            >Damage you dealt before it returned does not carry over.</span
+          >
         </li>
       </ul>
     </Card.Content>
@@ -1173,19 +1268,25 @@
 
   <Card.Root id="other-spawns" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Other Spawn Types</Card.Title>
+      <Card.Title>Other Ways Monsters Appear</Card.Title>
       <Card.Description>
-        Not everything stands in the world on a respawn timer.
+        Some monsters appear after a kill, during altar events, or at Halloween
+        instead of returning on their own timer.
       </Card.Description>
     </Card.Header>
     <Card.Content>
       <ul class="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
         <li>
           <!-- Source: server-scripts/Monster.cs:2170-2180 — on death a monster can spawn a replacement at its corpse position with a configured probability; the replacement never respawns. -->
-          <span class="font-medium text-foreground">Spawn on death:</span>
-          a monster can spawn a different monster at its corpse when it dies. The
-          replacement is a one-off and never respawns. Currently the only case is
-          the Large Shade Beast, which always leaves a Keeper Remnant behind.
+          <span class="block"
+            ><span class="font-medium text-foreground"
+              >After another monster dies:</span
+            > one monster can cause another to appear at its corpse.</span
+          >
+          <span class="block">The new monster does not respawn.</span>
+          <span class="block"
+            >A Large Shade Beast always leaves a Keeper Remnant behind.</span
+          >
         </li>
         <li>
           <!-- Source: website/data/compendium.db monster_spawns table — 231 spawns have spawn_type 'altar', spawned in waves by altar events. -->

@@ -49,11 +49,11 @@
     spell: "Spell Power",
   };
   const TITLES: Record<StatKey, string> = {
-    hp: "Total Health at this level: base-health curve + Constitution, scaled by the hidden Health multiplier rolled at hire and your veteran level.",
-    mana: "Total Mana at this level: base-mana curve + Intelligence, scaled by the hidden Mana multiplier rolled at hire and your veteran level.",
-    atk: "Strength bonus at this level + the base-combat value rolled at hire.",
+    hp: "Health at this level: base health + Constitution, multiplied by the Health factor rolled at hire and adjusted by your veteran level.",
+    mana: "Mana at this level: base mana + Intelligence, multiplied by the Mana factor rolled at hire and adjusted by your veteran level.",
+    atk: "Strength bonus at this level + the shared Attack Power and Spell Power bonus rolled at hire.",
     spell:
-      "round(INT×1.5) at this level + the base-combat value rolled at hire.",
+      "round(INT×1.5) at this level + the shared Attack Power and Spell Power bonus rolled at hire.",
   };
   const TARGET_LABELS: Record<TargetKey, string> = {
     hp: "Health",
@@ -268,11 +268,11 @@
 
   function impossibleMessage() {
     if (pRace !== 0) return "";
-    if (!classCanBe(cCls, cRace)) return `A ${cCls} is never ${cRace}.`;
+    if (!classCanBe(cCls, cRace)) return `A ${cCls} cannot be ${cRace}.`;
     if (!listedByClass[cCls].includes(cRace))
-      return `No recruiter listed here hires ${cRace}, so a ${cRace} ${cCls} cannot be hired.`;
+      return `No recruiter listed here hires ${cRace}, so you cannot hire a ${cRace} ${cCls}.`;
     if (preferredRace)
-      return `${recruiter} only hires ${preferredRace}, so no ${cRace} ${cCls} comes from this recruiter.`;
+      return `${recruiter} only hires ${preferredRace}, not ${cRace} ${cCls}.`;
     return "";
   }
 
@@ -326,7 +326,7 @@
       ${grid}${xt}
       <polyline class="curve" points="${pts.join(" ")}"/>
       ${dots}${now}
-      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">demanded quality — top X% on each roll →</text>
+      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">minimum stats — top X% on each stat roll →</text>
     </svg>`;
   }
 </script>
@@ -354,49 +354,92 @@
 
   <h1>Mercenary Stat Ranges</h1>
   <p class="lead">
-    Compare the stat ranges every mercenary class and race can roll, at any
-    level and veteran level. A recruiter fixes the race only when its preference
-    is valid for the class. Hiring also rolls hidden modifiers, so two
-    mercenaries of the same class, race and level can still differ. The tables
-    show every roll you might get.
+    <span class="block"
+      >Compare possible mercenary Health, Mana, Attack Power, and Spell Power by
+      class, race, level, and veteran level.</span
+    >
+    <span class="block"
+      >A recruiter guarantees its preferred race only if that race can take the
+      chosen class.</span
+    >
+    <span class="block"
+      >Each hire also rolls hidden bonuses, so two otherwise identical
+      mercenaries can have different stats.</span
+    >
   </p>
 
   <details class="howto">
     <summary>How to read these ranges</summary>
     <div class="howto-body">
       <p>
-        A recruiter fixes the race when its preference is valid for that class.
-        Otherwise, it rolls from the class's race pool. Hiring then rolls three
-        values saved to that mercenary: a Health multiplier, a resource
-        multiplier, and a base-combat value. Warriors and Rogues roll a resource
-        multiplier, but Rage ignores it. Bard's base Mana curve is zero, so its
-        multiplier does not change base Mana. Other classes use the multiplier
-        for Mana. You never see these rolls. They set where in each range your
-        mercenary lands.
+        <span class="block"
+          >A recruiter's preferred race is guaranteed if it can take the chosen
+          class.</span
+        >
+        <span class="block"
+          >Otherwise, the game draws a race from that class's pool.</span
+        >
+        <span class="block"
+          >Hiring then sets three hidden values: a Health multiplier, a resource
+          multiplier, and a combat value shared by Attack Power and Spell Power.</span
+        >
+        <span class="block"
+          >Warriors and Rogues roll a resource multiplier, but their Rage
+          ignores it.</span
+        >
+        <span class="block"
+          >Bards' base Mana is zero, so their multiplier does not increase it.</span
+        >
+        <span class="block">Other classes use the multiplier for Mana.</span>
+        <span class="block"
+          >These values determine where the hire falls within each range.</span
+        >
       </p>
       <ul>
         <li>
-          <b>Health &amp; Mana</b> re-derive from the mercenary's current level
-          and your veteran level, so an existing mercenary's totals match the
-          row at its <i>current</i> level.
+          <span class="block"
+            ><b>Health &amp; Mana</b> change with the mercenary's current level and
+            your veteran level.</span
+          >
+          <span class="block"
+            >For an existing mercenary, compare totals with the row at its
+            current level.</span
+          >
         </li>
         <li>
-          <b>Attack Power and Spell Power</b> are the current attribute bonus, Strength
-          for Attack Power and round(INT×1.5) for Spell Power, plus the base-combat
-          roll, which both share. The attribute part grows with level, but the base-combat
-          roll is locked at hire and never re-rolls, except for veteran bonuses, so
-          these columns are exact for a mercenary hired at the shown level.
+          <span class="block"
+            ><b>Attack Power and Spell Power</b> include an attribute bonus: Strength
+            for Attack Power and round(INT×1.5) for Spell Power.</span
+          >
+          <span class="block"
+            >Both also use the same combat bonus rolled at hire.</span
+          >
+          <span class="block"
+            >Attributes grow with level, but that hire-time bonus does not
+            reroll apart from veteran bonuses.</span
+          >
+          <span class="block"
+            >These ranges therefore apply exactly to mercenaries hired at the
+            level shown.</span
+          >
         </li>
         <li>
-          <b>Every class lists every race.</b> A "–" marks a race that class can never
-          be. Some races are in no class pool at all: only a recruiter that hires
-          that race produces one, and only for the classes the game allows. A race
-          no listed recruiter hires cannot be hired at all.
+          <span class="block"><b>Every class lists every race.</b></span>
+          <span class="block">A "–" means that race cannot take the class.</span
+          >
+          <span class="block"
+            >Some races are absent from every class's random hiring pool, but a
+            recruiter that prefers one can still hire it for an allowed class.</span
+          >
+          <span class="block"
+            >If no listed recruiter prefers that race, you cannot hire it.</span
+          >
         </li>
       </ul>
       <p>
-        Warriors and Rogues use Rage. Bard displays active songs instead of
-        Mana. These classes have no rolled Mana column.
+        <span class="block">Warriors and Rogues use Rage.</span>
+        <span class="block">Bard displays active songs instead of Mana.</span>
+        <span class="block">These classes have no rolled Mana column.</span>
       </p>
     </div>
   </details>
@@ -526,10 +569,15 @@
   <section class="cost-sec" aria-label="Hiring cost and odds">
     <h2>Hiring odds &amp; cost</h2>
     <p class="sub">
-      Every hire re-rolls the hidden modifiers. Choose a recruiter that hires
-      the race you want or rolls it from the class pool. Set your minimum stats
-      to see the odds per hire and the average gold cost at the selected level
-      and veteran level.
+      <span class="block">Each hire rerolls the hidden bonuses.</span>
+      <span class="block"
+        >Choose a recruiter that can provide your chosen race, then set the
+        lowest stats you want.</span
+      >
+      <span class="block"
+        >The calculator shows your chance per hire and average gold cost at the
+        selected level and veteran level.</span
+      >
     </p>
     <div class="cost-grid">
       <div class="cost-inputs">
@@ -645,16 +693,17 @@
           <p class="eq zero">{impossibleText}</p>
         {:else}
           <p class="eq">
-            per hire = race <b>{pct(pRace)}</b> × rolls <b>{pct(pRolls)}</b> · {fmt(
-              price,
-            )} gp each
+            chance per hire = chosen race <b>{pct(pRace)}</b> × stat rolls
+            <b>{pct(pRolls)}</b> · {fmt(price)} gold per hire
           </p>
           <!-- eslint-disable-next-line svelte/no-at-html-tags — drawChart returns static SVG assembled from numeric inputs and fixed labels. -->
           <div id="c-chart">{@html chartSvg}</div>
           <p class="chart-cap">
-            Expected gold to roll a mercenary this good, demanding the same
-            top-X% on each of its {meaningful.length} meaningful rolls, race chance
-            included. The dot marks your current targets.
+            <span class="block"
+              >Average gold needed to hire a mercenary meeting these stat
+              thresholds, including the chance of getting the chosen race.</span
+            >
+            <span class="block">The dot marks your selected thresholds.</span>
           </p>
         {/if}
       </div>
@@ -1146,7 +1195,7 @@
     color: var(--stat-atk);
   }
   .chart-cap {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--muted-foreground);
     margin: 0.5rem 0 0;
     text-wrap: pretty;

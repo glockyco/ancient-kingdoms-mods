@@ -79,7 +79,9 @@
         <span class="block"
           >Hardcore becomes selectable when a saved character reaches level 50.</span
         >
-        <span class="block">It starts unchecked for each new character.</span>
+        <span class="block"
+          >Hardcore starts unchecked for each new character.</span
+        >
       </p>
       <!-- Source: server-scripts/Player.cs:4042-4049,9392-9395 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
@@ -136,7 +138,7 @@
       <!-- Source: server-scripts/Monster.cs:1195-1201,2228-2231 — some monsters only spawn within their configured in-game hour window. -->
       <p>
         <span class="block"
-          >In-game time changes when some monsters can appear.</span
+          >Some monsters appear only during specific in-game hours.</span
         >
         <span class="block"
           >See <MechanicsLink section="monster-spawns#spawn-windows"
@@ -150,7 +152,9 @@
           >Temple of Valaark shows a special map instead of the normal map
           panel.</span
         >
-        <span class="block">It also hides the player marker.</span>
+        <span class="block"
+          >The Temple of Valaark map also hides your marker.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>
@@ -168,10 +172,10 @@
       <!-- Source: server-scripts/UIMapNotesController.cs:200-250,253-268 — notes persist in a single local PlayerPrefs key and render on the local map for their zone. -->
       <p>
         <span class="block"
-          >Notes are saved on this installation and shared by its characters.</span
+          >All characters on this installation share their saved map notes.</span
         >
         <span class="block"
-          >They appear on the local map for their zone, not on the world map.</span
+          >Your notes appear on that zone's local map, not the world map.</span
         >
       </p>
       <!-- Source: server-scripts/UIMapNotesController.cs:121-140 and server-scripts/UIMap.cs:138-153 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
@@ -187,11 +191,11 @@
       <!-- Source: server-scripts/Npc.cs:1783-1793, server-scripts/Player.cs:9938-9945,9960-9970, and server-scripts/TargetBuffSkill.cs:311-316 — accepting a soul binder or Bind Affinity confirmation records the player's current position and zone. -->
       <p>
         <span class="block"
-          >Confirming a binding replaces your bind point with your current
-          position and zone.</span
+          >Confirming a binding saves your current position and zone as your new
+          bind point.</span
         >
         <span class="block"
-          >A soul binder or Bind Affinity can request that confirmation.</span
+          >A soul binder or Bind Affinity can ask you to confirm a binding.</span
         >
       </p>
       <!-- Source: server-scripts/TravelItem.cs:22-41 — a Bind Point travel item reads the saved bind point and teleports without changing it. The exported gate_scroll item is a TravelItem. -->
@@ -209,8 +213,8 @@
       <!-- Source: server-scripts/TravelItem.cs:15-42 — blocked use in zone 23 returns before consuming a charge; successful use decrements one charge unless the item has infinite charges. -->
       <p>
         <span class="block"
-          >Destination travel items teleport to their assigned destination and
-          use one charge on successful use.</span
+          >Destination travel items teleport you to their assigned destination
+          and consume one charge on successful use.</span
         >
         <span class="block"
           >Temple of Valaark blocks travel items before they consume a charge.</span
@@ -233,8 +237,11 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Portal.cs:25-32 and server-scripts/InteractablePortal.cs:80-91 — ordinary portals respond to entering their trigger; interactable portals respond to interaction. -->
       <p>
-        <span class="block">Some portals open when you walk into them.</span>
-        <span class="block">Other entrances require interaction.</span>
+        <span class="block">Some portals activate when you walk into them.</span
+        >
+        <span class="block"
+          >Other portals require you to interact with them.</span
+        >
         <span class="block"
           >Explore their destinations on the <a
             href="/map"
@@ -270,7 +277,7 @@
             <tr class="border-b border-border/60">
               <th scope="row" class="py-2 pr-6 text-left font-medium">Key</th>
               <td class="py-2"
-                >A required key must be held by you or an eligible party member.</td
+                >You or one online party member must carry a required key.</td
               >
             </tr>
             <tr>
@@ -287,13 +294,14 @@
       <!-- Source: server-scripts/Portal.cs:47-63 — requiresEveryoneKey disallows a party key on walk-in portals; level and total item level are checked per player. server-scripts/InteractablePortal.cs:98-115 and server-scripts/PlayerParty.cs:203-213 — interactable portals accept a key from an online party member and check the interacting player's own thresholds. -->
       <p>
         <span class="block"
-          >Some walk-in portals accept a key from an online party member.</span
+          >At some walk-in portals, one online party member needs a key for the
+          group.</span
         >
         <span class="block"
-          >When a portal requires everyone's key, each traveler needs their own.</span
+          >When a portal requires everyone's key, every party member needs one.</span
         >
         <span class="block"
-          >Interactable portals accept a key from an online party member.</span
+          >Portals you interact with accept a key from an online party member.</span
         >
         <span class="block"
           >Each traveler still needs the required character level and total item

@@ -26,7 +26,11 @@
     MonsterQuest,
   } from "$lib/types/monsters";
   import type { LinearValue } from "$lib/types/skills";
-  import { formatPercent, formatDuration } from "$lib/utils/format";
+  import {
+    formatPercent,
+    formatDuration,
+    formatSkillType,
+  } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
@@ -473,7 +477,7 @@
     if (hasQuestFlags) {
       cols.push({
         id: "flags",
-        header: "Flags",
+        header: "Categories",
         size: 130,
         enableSorting: false,
         accessorFn: (row) => {
@@ -681,9 +685,12 @@
       <span class="ml-1 text-xs text-muted-foreground">(Default)</span>
     {/if}
   {:else if cell.column.id === "skill_type"}
-    <span class="text-muted-foreground capitalize"
-      >{String(cell.getValue()).replace(/_/g, " ")}</span
-    >
+    <span class="text-muted-foreground">
+      {row.original.skill_type === "summon_monsters" &&
+      row.original.summon_count_per_cast === 0
+        ? "Teleports target to this monster"
+        : formatSkillType(row.original.skill_type)}
+    </span>
   {:else if cell.column.id === "effect"}
     <span class="text-sm">{cell.getValue()}</span>
   {:else if cell.column.id === "cooldown"}
@@ -918,17 +925,15 @@
           <div class="space-y-2">
             {#each data.spawns.summon as summon (summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
-                <span
-                  >Blocked from respawning while {summon.kill_count > 1
-                    ? `${summon.kill_count} `
+                <span>
+                  This monster cannot respawn while {summon.kill_count > 1
+                    ? `${summon.kill_count} copies of `
                     : ""}</span
                 >
                 <a
                   href="/monsters/{summon.kill_monster_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >{summon.kill_monster_name}{summon.kill_count > 1
-                    ? "s"
-                    : ""}</a
+                  >{summon.kill_monster_name}</a
                 >
                 <span>{summon.kill_count > 1 ? " are" : " is"} alive in </span>
                 <a
@@ -950,7 +955,7 @@
           <div class="space-y-2">
             {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
-                <span>Blocks </span>
+                <span>This monster prevents </span>
                 <a
                   href="/monsters/{summon.summoned_monster_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -959,8 +964,8 @@
                 </a>
                 <span>
                   from respawning while {summon.kill_count > 1
-                    ? `${summon.kill_count} are`
-                    : "1 is"} alive in
+                    ? `${summon.kill_count} copies of this monster are`
+                    : "this monster is"} alive in
                 </span>
                 <a
                   href="/zones/{summon.zone_id}"
@@ -979,7 +984,11 @@
         <!-- Spawned On Death (how this monster spawns) -->
         {#if data.spawns.placeholder}
           <div class="bg-muted/30 rounded-md border p-3">
-            <span>Appears after killing </span>
+            <span
+              >This monster {data.spawns.placeholder.spawn_probability < 1
+                ? "can appear"
+                : "appears"} after you kill
+            </span>
             <a
               href="/monsters/{data.spawns.placeholder.source_monster_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1004,7 +1013,13 @@
         <!-- On Death Spawns (what spawns when this monster dies) -->
         {#if hasSpawnsOnDeath}
           <div class="bg-muted/30 rounded-md border p-3">
-            <span>Killing this spawns </span>
+            <span
+              >Killing this monster {data.monster
+                .placeholder_spawn_probability > 0 &&
+              data.monster.placeholder_spawn_probability < 1
+                ? "can spawn"
+                : "spawns"}
+            </span>
             <a
               href="/monsters/{data.monster.placeholder_monster_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1024,8 +1039,9 @@
         {#if data.renewalSages.length > 0}
           <div class="space-y-2">
             {#each data.renewalSages as sage (sage.id)}
+              <!-- Source: server-scripts/Npc.cs:1733-1739; server-scripts/Player.cs:14192-14219 — priced World Boss renewal costs gold and resets respawn timers in zone 100. -->
               <div class="bg-muted/30 rounded-md border p-3">
-                <span>Reset by </span>
+                <span>You can ask </span>
                 <a
                   href="/npcs/{sage.id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1041,18 +1057,14 @@
                     {sage.zoneName}
                   </a>
                 {/if}
+                <span> to reset this monster's respawn timer</span>
                 {#if sage.cost > 0}
                   <span> for </span>
                   <span class="text-yellow-600 dark:text-yellow-400"
-                    >{sage.cost.toLocaleString()}</span
+                    >{sage.cost.toLocaleString()} gold</span
                   >
-                  <a
-                    href="/items/adventurers_essence"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Adventurer's Essence
-                  </a>
                 {/if}
+                <span>.</span>
               </div>
             {/each}
           </div>
@@ -1156,7 +1168,7 @@
 
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
-          <div class="text-sm text-muted-foreground">Damage</div>
+          <div class="text-sm text-muted-foreground">Physical Damage</div>
           <div class="font-medium">
             {displayDamage.toLocaleString()}
           </div>
@@ -1186,7 +1198,7 @@
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">HP Regen</div>
+          <div class="text-sm text-muted-foreground">Health Recovery</div>
           <div class="font-medium">
             {data.monster.health_regen_base.toLocaleString()} / sec
           </div>

@@ -184,7 +184,7 @@
 
 <Seo
   title="Traps - Ancient Kingdoms"
-  description={`${data.traps.length.toLocaleString()} traps across Ancient Kingdoms, with trap kinds, effects, teleport destinations, and mapped locations.`}
+  description={`${data.traps.length.toLocaleString()} traps: find types, effects, teleport destinations, and locations on the world map.`}
   path="/traps"
 />
 

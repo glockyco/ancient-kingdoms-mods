@@ -365,7 +365,7 @@
         {#if monsterVisualAsset}
           <img
             src={`${base}/${monsterVisualAsset.publicPath}`}
-            alt={`${getDisplayName(entity)} monster sprite`}
+            alt={`${getDisplayName(entity)} monster image`}
             width={monsterVisualAsset.width}
             height={monsterVisualAsset.height}
             class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] {isCompositeMonsterImage
@@ -506,8 +506,9 @@
     {#if monster.spawnType === "summon" && monster.summonKillMonsterName}
       {@const count = monster.summonKillCount ?? 1}
       <div class="rounded bg-purple-500/20 px-2 py-1 text-purple-300">
-        <span class="text-purple-400">Blocked from respawning while</span>
-        {#if count > 1}{count}x{/if}
+        <span class="text-purple-400">This monster cannot respawn while</span>
+        {#if count > 1}{count}
+        {/if}
         {#if monster.summonKillMonsterId}
           <button
             type="button"
@@ -554,7 +555,10 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
         <span class="text-muted-foreground"
-          >Patrols {monster.patrolWaypoints.length} waypoints</span
+          >Patrol route has {monster.patrolWaypoints.length} point{monster
+            .patrolWaypoints.length === 1
+            ? ""
+            : "s"}</span
         >
       </div>
     {:else if monster.moveDistance > 0}
@@ -569,7 +573,7 @@
     <!-- Altar spawn info (for altar-only bosses) -->
     {#if monsterAltarDetails.length > 0}
       <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
+        <div class="mb-1 text-sm font-medium text-muted-foreground">
           Spawns at
         </div>
         <div class="space-y-0.5">
@@ -783,7 +787,10 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
         <span class="text-muted-foreground"
-          >Patrols {npc.patrolWaypoints.length} waypoints</span
+          >Patrol route has {npc.patrolWaypoints.length} point{npc
+            .patrolWaypoints.length === 1
+            ? ""
+            : "s"}</span
         >
       </div>
     {:else if npc.moveDistance > 0}
@@ -920,13 +927,13 @@
             {#if portal.requiredItemName}
               <!-- Source: server-scripts/Portal.cs:47 — without requiresEveryoneKey, an online party member's key admits the traveler. -->
               <div class="flex justify-between">
-                <span class="text-muted-foreground">Key holder</span>
+                <span class="text-muted-foreground">Who needs the key</span>
                 <a
                   href="/mechanics/world#portals"
                   class="text-blue-600 hover:underline dark:text-blue-400"
                   >{portal.requiresEveryoneKey
-                    ? "Every traveler"
-                    : "Any party member"}</a
+                    ? "Every party member needs one"
+                    : "One party member needs one"}</a
                 >
               </div>
             {/if}
@@ -1098,7 +1105,7 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-rose-500"></span>
         <span class="text-muted-foreground"
-          >Area {formatTrapArea(trap.areaPaths)}</span
+          >Trap area: {formatTrapArea(trap.areaPaths)}</span
         >
       </div>
     {/if}

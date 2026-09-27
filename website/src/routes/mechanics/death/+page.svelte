@@ -28,7 +28,9 @@
   <Card.Root id="death" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Death and Remains</Card.Title>
-      <Card.Description>What you lose and how you can recover.</Card.Description
+      <Card.Description
+        >Death costs XP and durability. Remains or Resurrection can restore some
+        lost XP.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
@@ -54,7 +56,8 @@
           <span class="block"
             >Your summoned pet disappears and your Bard songs stop.</span
           >
-          <span class="block">Buffs end unless they persist through death.</span
+          <span class="block"
+            >Buffs end unless their effects survive death.</span
           >
           <span class="block"
             ><MechanicsLink section="inventory#durability-and-repair"
@@ -76,8 +79,8 @@
         <!-- Source: server-scripts/Player.cs:4002-4005 — a new death destroys the prior remains. -->
         <p>
           <span class="block"
-            >Remains last 15 minutes, but a later death removes the previous
-            remains.</span
+            >Your remains last 15 minutes or until your next death, whichever
+            comes first.</span
           >
           <span class="block">You can use the remains only once.</span>
         </p>
@@ -107,7 +110,7 @@
                 <td class="p-2 font-mono">50%</td>
                 <td class="p-2">
                   <span class="block"
-                    >Return to the death location after respawning.</span
+                    >Collect your remains after respawning at your bind point.</span
                   >
                   <span class="block">No extra health or mana is restored.</span
                   >
@@ -123,11 +126,12 @@
                 <td class="p-2 font-mono">75%</td>
                 <td class="p-2">
                   <span class="block"
-                    >After respawning, return to your remains at 60% health.</span
+                    >Resurrection returns you to your remains at 60% health
+                    after you respawn.</span
                   >
                   <span class="block"
-                    >Restore mana equal to 20% of maximum health, capped at
-                    maximum mana.</span
+                    >You also regain mana equal to 20% of maximum health, up to
+                    your maximum mana.</span
                   >
                 </td>
               </tr>
@@ -164,7 +168,8 @@
           ><strong>Hardcore:</strong> Death permanently deletes your character.</span
         >
         <span class="block"
-          >Respawning, remains, and resurrection cannot undo it.</span
+          >A Hardcore character cannot respawn or recover through remains or
+          Resurrection.</span
         >
       </p>
     </Card.Content>

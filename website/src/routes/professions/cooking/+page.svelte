@@ -168,9 +168,11 @@
     <!-- Source: server-scripts/Player.cs:13503-13505,13529-13542,13565-13568,12478-12505 — baking checks output space, spends ingredients before success, and displays a burned result on failure without adding food. -->
     <p class="text-muted-foreground">
       <span class="block">Baking needs room for the food.</span>
-      <span class="block">Ingredients are spent before the success roll.</span>
       <span class="block"
-        >A failed bake displays a burned result but gives no food.</span
+        >You spend ingredients before you know whether baking succeeds.</span
+      >
+      <span class="block"
+        >A failed bake shows burned food in the oven, but gives you no food.</span
       >
     </p>
     <!-- Source: server-scripts/FoodItem.cs:21-35 — eating food expires an existing buff in the same nonempty category before applying the new one. -->

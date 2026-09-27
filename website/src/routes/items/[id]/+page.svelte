@@ -366,7 +366,6 @@
       (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) ||
       data.item.id === "primal_essence" ||
       data.item.id === "radiant_aether" ||
-      data.item.id === "adventurers_essence" ||
       (isAugment && !isArmorSetMetadata && data.augmenters.length > 0) ||
       data.packContents.length > 0,
   );
@@ -997,8 +996,8 @@
               </div>
               <div>
                 <div class={styles.label}>Amount received</div>
-                <!-- Source: server-scripts/Utils.cs:getPrimalEssenceAmount — ceil(sellPrice * 0.06f) -->
-                <div class={styles.value}>6% of sell price</div>
+                <!-- Source: server-scripts/Utils.cs:getPrimalEssenceAmount — ceil(sellPrice * 0.06f), rounded up to a whole essence -->
+                <div class={styles.value}>6% of sell price, rounded up</div>
               </div>
             </div>
           </Card.Content>
@@ -1049,24 +1048,32 @@
               <div>
                 <div class={styles.label}>How it works</div>
                 <div class={styles.value}>
-                  Keep it in one of the 24 base carry slots. It can activate
-                  automatically on an ability critical hit, lethal damage, or a
-                  hostile area damage or debuff skill. Each activation consumes
-                  1. Critical and lethal checks use a 15% chance. For a hostile
-                  area skill, one eligible player gets a 15% chance. With two or
-                  more, each gets the lower of 10% or 25% divided by the
-                  eligible player count. The first activation cancels the skill
-                  for all targets.
+                  <p>
+                    Keep Radiant Aether in one of your first 24 carry slots. An
+                    ability critical hit, a hit that would kill you, or an
+                    enemy's area attack or debuff can activate it. Each
+                    activation uses one Radiant Aether.
+                  </p>
+                  <p>
+                    Ability critical hits and hits that would kill you each have
+                    a 15% activation chance. If an area skill targets one player
+                    carrying Radiant Aether, that player has a 15% chance to
+                    cancel it. If it targets two or more such players, each has
+                    the lower of 10% or 25% divided by their number. The first
+                    successful activation cancels the skill for every target.
+                  </p>
                 </div>
               </div>
               <div class="space-y-2">
                 <div>
-                  <div class={styles.label}>On Ability Critical Hit</div>
+                  <div class={styles.label}>
+                    When an Ability Lands a Critical Hit
+                  </div>
                   <div class={styles.value}>
                     <span class={styles.valuePositive}
-                      >Doubles the normal critical multiplier</span
+                      >Raises the critical multiplier from ×1.5 to ×3</span
                     >
-                    → ×1.5 to ×3, before Critical Resist
+                    before Critical Resist
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether surges - your strike rends the heavens!"
@@ -1075,10 +1082,9 @@
               </div>
               <div class="space-y-2">
                 <div>
-                  <div class={styles.label}>On Lethal Damage</div>
+                  <div class={styles.label}>When a Hit Would Kill You</div>
                   <div class={styles.value}>
-                    <span class={styles.valuePositive}>Full heal to max HP</span
-                    >
+                    <span class={styles.valuePositive}>Restores all HP</span>
                     instead of dying
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
@@ -1088,44 +1094,18 @@
               </div>
               <div class="space-y-2">
                 <div>
-                  <div class={styles.label}>On AoE Attack</div>
+                  <div class={styles.label}>
+                    When an Enemy Uses an Area Skill
+                  </div>
                   <div class={styles.value}>
                     <span class={styles.valuePositive}
-                      >Cancels the area skill for all targets</span
+                      >Cancels the skill for all targets</span
                     >, preventing its damage or debuff
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether flares brightly - your party withstand
                     &#123;SKILL_NAME&#125;!"
                   </div>
-                </div>
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
-      {:else if data.item.id === "adventurers_essence" && data.worldBossRenewalSages.length > 0}
-        <!-- Adventurer's Essence - World Boss Reset -->
-        <Card.Root class="bg-muted/30">
-          <Card.Header>
-            <Card.Title>World Boss Reset</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <div class="space-y-3">
-              <div>
-                <div class={styles.label}>Cost</div>
-                <div class={styles.value}>
-                  {data.worldBossRenewalSages[0].gold_required.toLocaleString()}
-                  Adventurer's Essences
-                </div>
-              </div>
-              <div>
-                <div class={styles.label}>Available from</div>
-                <div class="space-y-1 mt-1">
-                  {#each data.worldBossRenewalSages as sage (sage.id)}
-                    <a href="/npcs/{sage.id}" class={styles.link}>
-                      {sage.name}
-                    </a>
-                  {/each}
                 </div>
               </div>
             </div>
@@ -1209,11 +1189,10 @@
           </Card.Header>
           <Card.Content>
             <p class="text-sm text-muted-foreground">
-              Used by Rogues with the <a
-                href="/skills/lockpicking"
-                class={styles.link}>Lockpicking</a
-              > veteran skill to open locked chests without the specific key. One
-              lockpick is consumed per attempt with a 20% success chance.
+              Rogues with the <a href="/skills/lockpicking" class={styles.link}
+                >Lockpicking</a
+              > veteran skill can open locked chests without their keys. Each attempt
+              uses one lockpick and has a 20% success chance.
             </p>
           </Card.Content>
         </Card.Root>
@@ -1229,19 +1208,21 @@
                 <div class={styles.label}>Socketing</div>
                 <div class={styles.value}>
                   Place the augment and an armor or weapon in a crafting
-                  station, then craft. The augment is consumed and its stats are
-                  permanently added. If you have multiple copies of the item,
-                  the first un-augmented copy will be used.
+                  station, then craft. Crafting uses the augment and permanently
+                  adds its stats to the equipment. If you have multiple copies
+                  of the equipment, crafting uses the first copy without an
+                  augment.
                 </div>
               </div>
               <div>
                 <div class={styles.label}>Removing</div>
                 <!-- Source: server-scripts/UINpcTrading.cs:118-123,182-186 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
                 <div class={styles.value}>
-                  Visit an Augmenter NPC to remove a socketed augment. Cost per
-                  augment: {formatGold(5000)}g (common), {formatGold(10000)}g
-                  (magic), or {formatGold(15000)}g (epic). The augment is
-                  returned to your inventory.
+                  Visit an Augmenter to remove a socketed augment. Removal costs {formatGold(
+                    5000,
+                  )}g for a common augment, {formatGold(10000)}g for a magic
+                  augment, or {formatGold(15000)}g for an epic augment. The
+                  Augmenter returns it to your inventory.
                 </div>
               </div>
               <div>
@@ -1561,7 +1542,7 @@
       <Card.Header>
         <Card.Title>Permanent Stat Gains</Card.Title>
         <Card.Description
-          >Reading this book grants permanent stat increases.</Card.Description
+          >Reading this book permanently increases the attributes listed below.</Card.Description
         >
       </Card.Header>
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -2221,10 +2202,10 @@
         <Card.Header>
           <Card.Title>Chest Rewards</Card.Title>
           <Card.Description>
-            Gives up to {data.item.chest_num_items}
-            {data.item.chest_num_items === 1 ? "item" : "items"} per opening. Each
-            item can only appear once. Drop chances calculated via simulation (100k
-            trials).
+            Each opening gives up to {data.item.chest_num_items}
+            {data.item.chest_num_items === 1 ? "item" : "items"}. An item cannot
+            appear twice in one opening. The drop chances come from 100,000
+            simulated openings.
           </Card.Description>
         </Card.Header>
         <Card.Content>

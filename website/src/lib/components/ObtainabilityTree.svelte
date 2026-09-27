@@ -111,7 +111,7 @@
     {/if}
 
     {#if !hasChildren}
-      <span class="text-xs text-muted-foreground ml-2">Unknown source</span>
+      <span class="text-sm text-muted-foreground ml-2">Source unknown</span>
     {/if}
   </div>
 

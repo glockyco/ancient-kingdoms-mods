@@ -25,7 +25,7 @@
     buildCollectionPage({
       path: "/altars",
       name: "Altars — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.altars.length.toLocaleString()} altars in Ancient Kingdoms.`,
+      description: `Find ${data.altars.length.toLocaleString()} Forgotten and Avatar altars by zone, boss, and level.`,
       items: data.altars.map((altar) => ({
         name: altar.name,
         path: `/altars/${altar.id}`,
@@ -198,7 +198,7 @@
 
 <Seo
   title="Altars - Ancient Kingdoms"
-  description={`${data.altars.length.toLocaleString()} Forgotten and Avatar altars — wave-based encounters, summoned bosses, level requirements, and tiered loot from common to legendary.`}
+  description={`Find ${data.altars.length.toLocaleString()} Forgotten and Avatar altars with wave counts, bosses, level requirements, and rewards from common to legendary.`}
   path="/altars"
 />
 

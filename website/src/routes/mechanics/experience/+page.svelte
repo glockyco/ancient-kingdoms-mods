@@ -177,11 +177,11 @@
     {
       level: 40,
       unlock:
-        "A fourth mercenary can be active, and the Adventurer's Guild opens its quests and augment merchant.",
+        "A fourth mercenary can be active. The Adventurer's Guild opens its quests and augment merchant.",
     },
     {
       level: LEVEL_CAP,
-      unlock: "Maximum level. Further experience earns Veteran Points.",
+      unlock: "At maximum level, further experience earns Veteran Points.",
     },
   ];
 
@@ -313,24 +313,30 @@
     <Card.Header>
       <Card.Title>Levels</Card.Title>
       <Card.Description>
-        How much experience each level takes on the way to {LEVEL_CAP}.
+        Experience needed for each level through {LEVEL_CAP}.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-6">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Experience.cs:current and GetRequiredExperience — each full experience bar consumes its own cost and advances the level, and the requirement curve changes shape at level 40. -->
-        Each level needs its own amount of experience, and the requirement grows by
-        25.8% per level. That growth eases to 18% per level once you pass 40, so the
-        last ten levels are far cheaper than the curve would otherwise make them.
-        Overflow experience carries into the next level.
+        <span class="block"
+          >Experience needed for the next level increases by 25.8% at each level
+          through 40.</span
+        >
+        <span class="block"
+          >After level 40, each new requirement increases by 18% instead.</span
+        >
+        <span class="block"
+          >Extra experience after a level-up counts toward the next level.</span
+        >
       </p>
 
       <div class="space-y-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
           <h3 class="font-semibold">Experience per level</h3>
           <span class="text-xs text-muted-foreground"
-            >Log scale &middot; <span class="text-emerald-500">green</span> is the
-            eased curve past 40, dashed is the same growth carried on</span
+            >Log scale &middot; <span class="text-emerald-500">green</span> shows
+            18% growth after 40; dashed shows continued 25.8% growth</span
           >
         </div>
         <svg
@@ -478,19 +484,25 @@
   <Card.Root id="level-rewards" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Level Rewards</Card.Title>
-      <Card.Description>What every level gives your character.</Card.Description
-      >
     </Card.Header>
     <Card.Content class="space-y-6">
       <div class="space-y-2">
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:281-291 — every level grants one attribute point, one skill point, and a full heal while alive. -->
-          Every level grants one attribute point and one skill point, and refills
-          health and mana as long as your character is alive.
+          <span class="block"
+            >Each level grants one attribute point and one class skill point.</span
+          >
+          <span class="block"
+            >If your character is alive, leveling also refills health and mana.</span
+          >
         </p>
         <p class="text-sm text-muted-foreground">
-          Your class also raises attributes on its own schedule. Every sixth
-          level raises two attributes at once.
+          <span class="block"
+            >Your class raises attributes at the levels shown below.</span
+          >
+          <span class="block"
+            >At every sixth level, it raises two attributes.</span
+          >
         </p>
       </div>
 
@@ -547,25 +559,33 @@
   <Card.Root id="veteran-points" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Veteran Points</Card.Title>
-      <Card.Description
-        >Where experience goes after the level cap.</Card.Description
-      >
     </Card.Header>
     <Card.Content class="space-y-6">
       <div class="space-y-2">
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:300-330 — at the cap a filled bar grants a Veteran Point, an attribute point, a full heal, and a veteran level-up for your mercenaries. -->
-          At level {LEVEL_CAP} a filled bar grants one Veteran Point and one attribute
-          point instead of a level, refills health and mana, and levels up your mercenaries
-          as veterans.
+          <span class="block"
+            >At level {LEVEL_CAP}, filling the experience bar grants one Veteran
+            Point and one attribute point instead of another level.</span
+          >
+          <span class="block"
+            >It also refills health and mana and grants your mercenaries a
+            veteran level.</span
+          >
         </p>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:44-53 — the max-level bar costs 1,000,000 plus 20,000 per total Veteran Point. -->
-          Each Veteran Point costs
-          <span class="font-mono font-medium"
-            >{fmt(VETERAN_BASE_COST)} + {fmt(VETERAN_COST_PER_POINT)} &times; points</span
-          >, so the first costs {fmt(VETERAN_BASE_COST)} and every further point costs
-          {fmt(VETERAN_COST_PER_POINT)} more than the last.
+          <span class="block"
+            >The next Veteran Point costs
+            <span class="font-mono font-medium"
+              >{fmt(VETERAN_BASE_COST)} + {fmt(VETERAN_COST_PER_POINT)} &times; Veteran
+              Points already earned</span
+            > XP.</span
+          >
+          <span class="block"
+            >The first costs {fmt(VETERAN_BASE_COST)} XP, and each following point
+            costs {fmt(VETERAN_COST_PER_POINT)} XP more than the last.</span
+          >
         </p>
       </div>
 
@@ -688,7 +708,7 @@
             </dd>
           </div>
         </dl>
-        <p class="text-xs text-muted-foreground">
+        <p class="text-sm text-muted-foreground">
           Filling all {MAX_VETERAN_POINTS} Veteran Points takes {fmt(
             VETERAN_TOTAL,
           )}
@@ -701,9 +721,15 @@
         <h3 class="font-semibold">Spending and Counting</h3>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/PlayerSkills.cs:1361-1371 — the total counts unspent points plus the base levels of learned veteran skills. -->
-          Veteran Points buy levels in veteran skills. Your veteran total counts unspent
-          points plus the levels you already put into veteran skills, so spending
-          them never lowers it.
+          <span class="block">Veteran Points buy ranks in veteran skills.</span>
+          <span class="block"
+            >Your total Veteran Points include both unspent points and ranks
+            purchased in veteran skills.</span
+          >
+          <span class="block"
+            >Spending a point does not lower the total used to calculate the
+            next point's cost.</span
+          >
         </p>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Player.cs:10555-10590 and server-scripts/Npc.cs:1817-1835 — a veteran master refunds spent veteran skill points for gold and a token. -->
@@ -723,19 +749,25 @@
         </p>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:306-334 — earning stops at 200 total points and pays out the max-level reward item instead. -->
-          The total caps at {MAX_VETERAN_POINTS}. After that, every filled bar
-          pays out a
-          {#if data.maxLevelReward}
-            <ItemLink
-              itemId={data.maxLevelReward.id}
-              itemName={data.maxLevelReward.name}
-              colorClass={getQualityTextColorClass(data.maxLevelReward.quality)}
-              tooltipHtml={data.maxLevelReward.tooltip_html}
-            />
-          {:else}
-            reward item
-          {/if}
-          instead.
+          <span class="block"
+            >You can earn up to {MAX_VETERAN_POINTS} Veteran Points.</span
+          >
+          <span class="block"
+            >After that, each filled experience bar grants a
+            {#if data.maxLevelReward}
+              <ItemLink
+                itemId={data.maxLevelReward.id}
+                itemName={data.maxLevelReward.name}
+                colorClass={getQualityTextColorClass(
+                  data.maxLevelReward.quality,
+                )}
+                tooltipHtml={data.maxLevelReward.tooltip_html}
+              />
+            {:else}
+              reward item
+            {/if}
+            instead.</span
+          >
         </p>
       </div>
     </Card.Content>
@@ -753,18 +785,26 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Base XP</h3>
         <p class="text-sm text-muted-foreground">
-          Each monster has a base XP value shown on its page. This is the XP you
-          receive when fighting it at the same level as you, solo, outside of a
-          dungeon. The following modifiers are then applied on top.
+          <span class="block">Each monster's page shows its base XP.</span>
+          <span class="block"
+            >When you fight alone outside a dungeon, a same-level monster grants
+            its base XP.</span
+          >
+          <span class="block"
+            >Level difference and the modifiers below then change the award.</span
+          >
         </p>
       </div>
 
       <div class="space-y-2">
         <h3 class="font-semibold">Level Difference Scaling</h3>
         <p class="text-sm text-muted-foreground">
-          Your XP is multiplied by how your level compares to the monster's.
-          Monsters above your level give up to 150% XP, and a monster 21 or more
-          levels below you gives none.
+          <span class="block"
+            >Monsters ten or more levels above you award 150% of their base XP.</span
+          >
+          <span class="block"
+            >Monsters 21 or more levels below you award no XP.</span
+          >
         </p>
         <!-- Source: server-scripts/Experience.cs:503-539 — BalanceExperienceReward -->
         <svg
@@ -871,7 +911,8 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Additional Modifiers</h3>
         <p class="text-sm text-muted-foreground">
-          These are applied on top of the level-scaled value:
+          Dungeon kills, the Forgotten Altar event, and Double XP buffs change
+          the level-scaled XP award:
         </p>
         <!-- Source: server-scripts/Experience.cs:496-503 — dungeon +10% bonus -->
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP skill (solo kill) -->
@@ -928,9 +969,13 @@
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
-          Double XP buffs apply to kills, gathering, alchemy, scribing, cooking,
-          and crafting. They do not apply to XP scrolls, quests, or zone
-          discovery.
+          <span class="block"
+            >Double XP buffs apply to kills, gathering, alchemy, scribing,
+            cooking, and crafting.</span
+          >
+          <span class="block"
+            >They do not apply to XP scrolls, quests, or zone discovery.</span
+          >
         </p>
       </div>
 
@@ -942,11 +987,16 @@
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
         <p class="text-sm text-muted-foreground">
-          XP is split evenly among nearby party members, but a bonus more than
-          compensates: each member in a larger party earns more than a solo
-          player would. Level scaling uses the highest-level member's level
-          difference to the monster, applied equally to everyone. Mercenaries
-          are not counted as party members.
+          <span class="block">Nearby party members share kill XP evenly.</span>
+          <span class="block"
+            >A party bonus raises each member's award above the solo award, as
+            the table shows.</span
+          >
+          <span class="block"
+            >Every member uses the highest-level party member's level difference
+            from the monster.</span
+          >
+          <span class="block">Mercenaries do not count as party members.</span>
         </p>
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
@@ -1009,8 +1059,12 @@
       <!-- Source: server-scripts/Experience.cs:527-536 — Death() = max * 0.1f -->
       <!-- Source: server-scripts/Player.cs:OnDeath — lossExp capped at experience.current -->
       <p class="text-sm text-muted-foreground">
-        On death, you lose 10% of the current level's XP cap. The loss cannot
-        drop you below zero XP for your level.
+        <span class="block"
+          >On death, you lose 10% of the XP needed for your next level.</span
+        >
+        <span class="block"
+          >Your current level's XP cannot drop below zero.</span
+        >
       </p>
       <p class="text-sm text-muted-foreground">
         <a
@@ -1201,7 +1255,7 @@
       <!-- Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — isScribingTable overrides num5 = level.current * 100 -->
       <p class="text-sm text-muted-foreground">
         Each successful craft awards <span class="font-mono font-medium"
-          >Player Level &times; 100</span
+          >character level &times; 100</span
         > XP.
       </p>
     </Card.Content>
@@ -1339,7 +1393,9 @@
           </tr>
         </tbody>
       </table>
-      <p class="text-sm text-muted-foreground">No multipliers apply.</p>
+      <p class="text-sm text-muted-foreground">
+        Zone discovery XP has no multipliers.
+      </p>
     </Card.Content>
   </Card.Root>
 </div>

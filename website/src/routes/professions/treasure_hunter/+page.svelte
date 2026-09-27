@@ -86,7 +86,7 @@
         </div>
         <p class="mt-2 max-w-3xl text-muted-foreground">
           Find treasure maps, follow their clues, dig up buried rewards, and
-          improve relic odds from treasure chests.
+          increase your chance of finding relics in treasure chests.
         </p>
       </div>
     </div>
@@ -336,8 +336,9 @@
       </div>
       <!-- Source: server-scripts/ChestItem.cs:24,61 — chest reward selection loop runs up to 10 passes until the slot count is filled. -->
       <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-        <span aria-hidden="true">*</span> Each reward rolls up to 10 times per chest,
-        so the per-roll bonus compounds into a larger per-chest gain.
+        <span aria-hidden="true">*</span> The chest checks its rewards up to 10 times
+        until it fills the available reward slots. Each check gives relics another
+        chance, so the bonus shown above can have a larger effect per chest.
       </p>
     </div>
   </section>

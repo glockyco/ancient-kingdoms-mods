@@ -10,7 +10,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-16,73-76 — attribute effects",
     },
     equipment: {
-      text: "Holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
@@ -31,12 +31,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   cleric: {
     attributes: {
-      text: "Wisdom increases your healing and some protective buffs. Intelligence raises mana and magic damage.",
+      text: "Wisdom increases healing and buffs that grant Health, defense, or magic resistance. Intelligence raises mana and magic damage.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114,129-156; server-scripts/Intelligence.cs:21-39 — attribute effects",
     },
     equipment: {
-      text: "Holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
@@ -59,12 +59,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   druid: {
     attributes: {
-      text: "Wisdom increases your healing and some protective buffs. Intelligence raises mana and magic damage.",
+      text: "Wisdom increases healing and buffs that grant Health, defense, or magic resistance. Intelligence raises mana and magic damage.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114,129-156; server-scripts/Intelligence.cs:21-39 — attribute effects",
     },
     equipment: {
-      text: "Holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
@@ -90,7 +90,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:107-114 — attribute effects and Ranger multiplier",
     },
     equipment: {
-      text: "Holds your bow, not a shield. Your main-hand weapon stays available for melee skills.",
+      text: "Your off-hand holds your bow, not a shield. Your main-hand weapon stays available for melee skills.",
       source:
         "Source: server-scripts/ScriptableSkill.cs:120-143; server-scripts/PlayerEquipment.cs:856-900 — bow slot and main-hand weapon",
     },
@@ -101,7 +101,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/TargetProjectileSkill.cs:32-48,103-109 — Ranger ammunition check",
       },
       {
-        text: "Wild Strike turns your next sword or bow auto attack into Magic damage.",
+        text: "Wild Strike turns your next sword or bow auto attack into magic damage.",
         source:
           "Source: server-scripts/DamageSkill.cs:49-65 — a Ranger follow-up attack consumes Wild Strike and becomes Magic damage",
         href: "/mechanics/combat#wild-strike",
@@ -116,7 +116,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         "Source: server-scripts/Dexterity.cs:59-71,89-96; server-scripts/Strength.cs:15-18,80-83 — attribute effects",
     },
     equipment: {
-      text: "Holds a second weapon, so you fight with two. Weapon skills still need a weapon in your main hand.",
+      text: "Your off-hand holds a second weapon, so you fight with two. Weapon skills still need a weapon in your main hand.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:790-795,834-839; server-scripts/ScriptableSkill.cs:139-143 — dual wield and main-hand check",
     },
@@ -142,7 +142,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — attribute effects",
     },
     equipment: {
-      text: "Holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
@@ -171,7 +171,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         "Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; server-scripts/BardCharmSongSkill.cs:66-71 — Charisma scales songs and reduces charm resistance",
     },
     equipment: {
-      text: "Holds your instrument. Songs need it, so you cannot use a two-handed weapon.",
+      text: "Your off-hand holds your instrument. Songs need it, so you cannot use a two-handed weapon.",
       source:
         "Source: server-scripts/ScriptableSkill.cs:130-138; server-scripts/EquipmentItem.cs:107-120,130-140 — instrument casting and two-handed restriction",
     },

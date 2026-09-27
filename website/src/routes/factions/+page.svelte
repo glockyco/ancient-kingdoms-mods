@@ -76,18 +76,18 @@
           >
             <div>{plural(faction.member_count, "member", "members")}</div>
             <div>
-              {plural(faction.monster_source_count, "monster", "monsters")} raise
-              it
+              Monsters you can kill for reputation:
+              {faction.monster_source_count.toLocaleString()}
             </div>
             <div>
-              {plural(faction.quest_source_count, "quest", "quests")} grant reputation
+              Quests that award reputation:
+              {faction.quest_source_count.toLocaleString()}
             </div>
             <div>
-              {plural(
-                faction.house_count + faction.gated_item_count,
-                "reputation unlock",
-                "reputation unlocks",
-              )}
+              Houses and items requiring reputation:
+              {(
+                faction.house_count + faction.gated_item_count
+              ).toLocaleString()}
             </div>
           </Card.Content>
         </Card.Root>
@@ -96,7 +96,7 @@
   </div>
 
   <p class="mt-6 text-sm text-muted-foreground">
-    Reputation goes from Hated to Exalted. See
+    Reputation ranges from Hated to Exalted. See
     <a
       href="/mechanics/reputation"
       class="text-blue-600 dark:text-blue-400 hover:underline"

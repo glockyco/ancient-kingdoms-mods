@@ -27,7 +27,7 @@
     buildCollectionPage({
       path: "/gather-items",
       name: "Gathering Resources — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.resources.length.toLocaleString()} gathering resources in Ancient Kingdoms.`,
+      description: `Find ${data.resources.length.toLocaleString()} plants, minerals, fishing spots, and radiant sparks by tier and zone.`,
       items: data.resources.map((resource) => ({
         name: resource.name,
         path: `/gather-items/${resource.id}`,
@@ -316,7 +316,7 @@
 
 <Seo
   title="Gathering Resources - Ancient Kingdoms"
-  description="Plants, ores, and radiant sparks across Eratiath — tier, gathering XP, required tool, and every spawn zone for each node."
+  description="Find plants, minerals, fishing spots, and radiant sparks across Eratiath by tier, gathering XP, spawn zone, and rewards."
   path="/gather-items"
 />
 

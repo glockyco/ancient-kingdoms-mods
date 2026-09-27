@@ -1,1 +1,1 @@
-Mechanics Cooldown Reduction When this buff is applied, all skills currently on cooldown have their remaining cooldown reduced by this percentage, up to 30 seconds per skill. This is a one-time effect at application, not an ongoing reduction.
+Mechanics Cooldown Reduction Applying this buff reduces each skill's remaining cooldown by the listed percentage, up to 30 seconds per skill. The reduction happens once when the buff is applied.

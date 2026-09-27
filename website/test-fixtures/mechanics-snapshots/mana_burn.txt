@@ -1,1 +1,1 @@
-Mechanics Damage Formula Consumes all Rage (Warrior/Rogue) or all Mana (Wizard) and deals that amount × 2 as damage. Completely bypasses armor, resistance, and all other mitigation. Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Damage Formula Mana Burn consumes all the Wizard's Mana and deals three times that amount as damage.Armor and resistance do not reduce this damage. Cast time = cast time × (1 − spell haste)

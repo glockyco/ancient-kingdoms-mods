@@ -1,1 +1,1 @@
-Mechanics Song Duration Bonus contribution = skillLevel × 10% activeDuration = baseDuration × (1 + total learned bonuses)
+Mechanics Song Duration Bonus Song duration bonus = skill level × 10% Song duration = base duration × (1 + learned song duration bonuses)

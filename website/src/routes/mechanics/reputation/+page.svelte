@@ -150,8 +150,8 @@
         {/each}
       </div>
       <p>
-        The Forsaken is the one faction nobody is born into. It is also the only
-        faction that goes up when you kill NPCs.
+        Killing NPCs can increase your standing with The Forsaken, but no race
+        starts with bonus reputation for that faction.
       </p>
     </Card.Content>
   </Card.Root>
@@ -160,8 +160,8 @@
     <Card.Header>
       <Card.Title>The Nine Tiers</Card.Title>
       <Card.Description>
-        Each reputation value falls into one of nine tiers. Requirements in the
-        game check the raw number, so the tier is only a label.
+        Each faction has nine standing tiers. Quests and vendors check your
+        reputation points, not your tier name.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -222,8 +222,10 @@
         </table>
       </div>
       <p>
-        Each number is the lowest reputation that counts as that tier. Friendly
-        starts at exactly 1,000, so 999 is still Neutral.
+        <span class="block">Each table entry is the minimum for its tier.</span>
+        <span class="block"
+          >Friendly starts at 1,000 points, so 999 points is Neutral.</span
+        >
       </p>
       <!-- Source: server-scripts/UIFactions.cs:124-153 — Unfriendly is −500 through below 0, Hostile is −3,000 through below −500, and Hated is below −3,000. -->
       <p>
@@ -235,12 +237,12 @@
       <!-- Source: server-scripts/Npc.cs:1727-1733; PlayerQuests.cs:131-143; ScriptableQuest.cs:39 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
         <span class="block"
-          >NPCs of a faction refuse interaction only when its value is below
-          −500.</span
+          >An NPC refuses to talk to you when your reputation with its faction
+          falls below −500.</span
         >
         <span class="block"
-          >A quest requirement checks the named faction's raw value, not your
-          rank or standing with another faction.</span
+          >A quest checks your reputation points with its named faction, not
+          your tier or points with another faction.</span
         >
       </p>
     </Card.Content>
@@ -250,15 +252,20 @@
     <Card.Header>
       <Card.Title>Killing Monsters</Card.Title>
       <Card.Description>
-        Most reputation comes from kills. Each monster has a list of factions it
-        raises and a list it lowers, and both apply when it dies.
+        A monster kill can raise standing with some factions and lower it with
+        others.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:569-599 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
       <p>
-        What you gain depends on the monster's level and its maximum health,
-        multiplied by its rank. What you lose depends only on level.
+        <span class="block"
+          >A monster's level, maximum health, and rank determine reputation
+          gained.</span
+        >
+        <span class="block"
+          >Only its level and rank determine reputation lost.</span
+        >
       </p>
       <div class="overflow-x-auto">
         <table class="w-full min-w-[640px] border-collapse text-sm">
@@ -296,18 +303,19 @@
       </div>
       <!-- Source: server-scripts/Monster.cs:3171-3183 — the solo kill applies both lists. -->
       <p>
-        Because health counts, high-health bosses are worth far more than
-        anything else.
-        <a
-          href="/monsters/valaark"
-          class="text-blue-600 hover:underline dark:text-blue-400">Valaark</a
+        <span class="block"
+          ><a
+            href="/monsters/valaark"
+            class="text-blue-600 hover:underline dark:text-blue-400">Valaark</a
+          > is a level 70 boss with 3,000,000 health.</span
         >
-        is a level 70 boss with 3,000,000 health, so killing it gives (70 + 1,500)
-        × 20 = <strong class="text-foreground">+31,400</strong> Ancient Gods.
+        <span class="block"
+          >Killing Valaark gives (70 + 1,500) × 20 =
+          <strong class="text-foreground">+31,400</strong> Ancient Gods reputation.</span
+        >
       </p>
       <p>
-        If you kill it in a party, everyone nearby gets the full amount. It is
-        not divided.
+        Every nearby party member receives the full monster-kill reputation.
       </p>
     </Card.Content>
   </Card.Root>
@@ -316,8 +324,8 @@
     <Card.Header>
       <Card.Title>Killing NPCs</Card.Title>
       <Card.Description>
-        NPCs can be killed too, and their death changes reputation with a
-        simpler formula.
+        Killing an NPC changes your standing with the factions listed for that
+        NPC.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -343,8 +351,8 @@
         and the Notable classification do not change the negative amount.
       </p>
       <p>
-        Every nearby party member receives the full reputation changes. The game
-        does not divide them among party members.
+        Every nearby party member receives the full reputation change from an
+        NPC kill.
       </p>
     </Card.Content>
   </Card.Root>
@@ -366,7 +374,7 @@
         >
         <span class="block">A level 40 quest gives 800.</span>
       </p>
-      <p>Adventurer quests give no reputation at all.</p>
+      <p>Adventurer quests give no reputation.</p>
     </Card.Content>
   </Card.Root>
 
@@ -374,8 +382,8 @@
     <Card.Header>
       <Card.Title>Looting Faction Chests</Card.Title>
       <Card.Description>
-        Some chests belong to a faction, and looting one lowers your reputation
-        with it.
+        A faction chest takes 200 reputation points with its faction if you
+        receive a reward.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -383,8 +391,7 @@
       <p>
         Opening a faction chest costs
         <span class="font-mono text-red-600 dark:text-red-400">200</span>
-        reputation. It is the same amount for every chest, no matter its level or
-        contents.
+        reputation points with its faction, regardless of level or contents.
       </p>
       <p>
         You only pay it when the chest actually gives you something. If the
@@ -397,17 +404,21 @@
     <Card.Header>
       <Card.Title>Petting Animals</Card.Title>
       <Card.Description>
-        Friendly animals stand around in towns and can be petted for a small
-        amount of reputation.
+        Petting a friendly animal grants 1–4 reputation with its faction at most
+        once every 30 seconds.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
       <!-- Source: server-scripts/Player.cs:13156-13160 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
-        Clicking one from up close pets it and gives 1 to 4 reputation with the
-        animal's faction. Each animal only pays out once every 30 seconds, so
-        petting the same one repeatedly does nothing extra.
+        <span class="block"
+          >Click an animal within 3 units to pet it for 1–4 reputation with its
+          faction.</span
+        >
+        <span class="block"
+          >The same animal cannot grant more for another 30 seconds.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>
@@ -416,7 +427,8 @@
     <Card.Header>
       <Card.Title>What Reputation Unlocks</Card.Title>
       <Card.Description>
-        Every requirement compares your raw reputation value against a number.
+        Vendors, houses, quests, and other services check your points with the
+        relevant faction.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -428,9 +440,8 @@
         </li>
         <li>
           <!-- Source: server-scripts/UINpcTrading.cs:381-385 — per-item faction requirement against the vendor's faction. -->
-          <strong class="text-foreground">Some items</strong> have their own requirement
-          on top of that. It is checked against the faction of the NPC selling the
-          item.
+          <strong class="text-foreground">Some items</strong> require additional reputation
+          with the selling NPC's faction, even when the NPC opens their shop.
         </li>
         <li>
           <!-- Source: server-scripts/UIHousing.cs:73 — house purchase checks the house's faction requirement. -->
@@ -450,8 +461,8 @@
         </li>
       </ul>
       <p>
-        Reputation does not affect prices. The price an NPC quotes only includes
-        your charisma discount.
+        <span class="block">Reputation does not change prices.</span>
+        <span class="block">NPC prices include a Charisma discount.</span>
       </p>
     </Card.Content>
   </Card.Root>
@@ -460,30 +471,34 @@
     <Card.Header>
       <Card.Title>Decay and Limits</Card.Title>
       <Card.Description>
-        Reputation does not move on its own, and there is no limit in either
-        direction.
+        Reputation does not decay over time or stop at a maximum or minimum.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <p>
-        Nothing in the game changes reputation over time. It only moves when one
-        of the sources above applies, so a faction you ignore keeps whatever
-        value it had.
+        If you stop gaining or losing reputation with a faction, your points
+        with that faction stay the same.
       </p>
       <!-- Source: server-scripts/Player.cs:13156-13160, Monster.cs:3171-3183, Npc.cs:1631-1641, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
-        There is no cap and no floor. Every source adds to or subtracts from the
-        stored value without clamping it, and the value is saved as-is, so a
-        faction can climb past Exalted or fall well below Hated.
+        <span class="block">Reputation has no maximum or minimum.</span>
+        <span class="block"
+          >Kills, quests, and other sources can move your saved points past the
+          Exalted or Hated tier.</span
+        >
       </p>
       <!-- Source: server-scripts/UIFactions.cs:84-105 — the Exalted readout clamps only the slider. -->
       <!-- Source: server-scripts/UIFactions.cs:148-154 — the Hated readout floors the displayed number at 0. -->
       <p>
-        The faction panel hides this at both ends. At Exalted it shows "Max" and
-        fills the slider completely, and at Hated it shows 0 out of 10,000 once
-        you drop below −13,000. Both are display limits on a value that keeps
-        moving.
+        <span class="block"
+          >At Exalted, the faction panel shows "Max" and fills its slider even
+          as your points keep increasing.</span
+        >
+        <span class="block"
+          >At Hated, it shows 0 out of 10,000 after you fall below −13,000, even
+          as your points keep decreasing.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>

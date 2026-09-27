@@ -86,7 +86,7 @@
               >
               <td class="py-3">
                 The Bard, nearby living party members in the same zone, and
-                their eligible pets and mercenaries.<br />
+                their active combat pets and mercenaries.<br />
                 Familiars do not receive these auras.
               </td>
             </tr>
@@ -95,23 +95,24 @@
               <th class="py-3 pr-5 text-left font-medium text-foreground"
                 >Harmful</th
               >
-              <td class="py-3">Eligible enemies within the song's area.</td>
+              <td class="py-3">Enemies in range of the harmful song.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Source: server-scripts/PlayerSkills.cs:995-1107, Buff.cs:9-25 — leaving removes an aura; an uncategorized song can restore the saved buff with its remaining duration and counters on re-entry. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:995-1107, Buff.cs:9-25 — leaving removes an aura; a song without a buff category can restore the saved effect with its remaining duration and counters on re-entry. -->
       <p>
         Leaving a song's range removes that Bard's aura.<br />
-        Returning can restore an uncategorized song's saved effect while its duration
-        remains.<br />
-        Its remaining debuff counters are not refilled by that return.
+        Returning can restore the remaining effect of a song that does not share a
+        buff category with other songs.<br />
+        If cleansing weakened a harmful effect, leaving and returning does not restore
+        its original strength.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1010-1085, BardSongSkill.cs:35-71, Skills.cs:1159-1197 — categorized beneficial songs take the reapply branch rather than the suspended-buff branch. Aegis Aria is a Ward-category song in the exported skills. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1010-1085, BardSongSkill.cs:35-71, Skills.cs:1159-1197 — songs with a buff category apply a fresh effect on re-entry. Aegis Aria is a Ward-category song in the exported skills. -->
       <p>
-        Categorized beneficial songs instead apply a fresh effect on re-entry.<br
-        />
+        Songs that share a buff category instead apply a fresh effect when you
+        return to range.<br />
         Aegis Aria can restore its ward this way before the next cast.
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:1039-1099 — fresh casts reset attempted recipients, while ordinary aura updates do not retry resisted or removed uncategorized effects. -->
@@ -153,12 +154,15 @@
       <p>
         Each nonnegative Charisma point reduces the charm resist chance by 0.02
         percentage points.<br />
-        The monster's magic resistance also affects the roll.<br />
-        Each level above the Bard adds 2.5 percentage points to its resist chance.<br
-        />
+        Each magic resistance point adds 0.05 percentage points to the monster's base
+        resist chance, up to 90% before other modifiers.<br />
+        The base roll also changes by 0.5 percentage points per level of difference,
+        up to 10 points either way.<br />
+        Each level above the Bard adds another 2.5 percentage points.<br />
         The final resist chance cannot exceed 95%.<br />
-        A charmed monster starts at 45% of its normal damage.<br />
-        Charisma raises that share, up to 100%.
+        A charmed monster starts at 45% of its usual physical damage.<br />
+        Each nonnegative Charisma point adds 0.045 percentage points to that share,
+        up to 100%.
       </p>
       <!-- Source: server-scripts/Monster.cs:2468-2534,2556-2650 — the charmed creature follows its owner when idle and finds reachable nearby monsters that threaten the Bard's group. -->
       <p>

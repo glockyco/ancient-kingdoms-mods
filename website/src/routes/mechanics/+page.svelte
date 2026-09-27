@@ -2,7 +2,6 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
-  import { Alert } from "$lib/components/ui/alert";
   import type { Component } from "svelte";
   import Axe from "@lucide/svelte/icons/axe";
   import Backpack from "@lucide/svelte/icons/backpack";
@@ -17,7 +16,6 @@
   import Skull from "@lucide/svelte/icons/skull";
   import Swords from "@lucide/svelte/icons/swords";
   import TrendingUp from "@lucide/svelte/icons/trending-up";
-  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import UserRound from "@lucide/svelte/icons/user-round";
   import Users from "@lucide/svelte/icons/users";
   import { MECHANICS_GROUPS, type MechanicsHref } from "$lib/data/mechanics";
@@ -51,14 +49,6 @@
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Mechanics" }]} />
 
   <h1 class="text-4xl font-bold">Mechanics</h1>
-
-  <Alert variant="warning">
-    <TriangleAlert />
-    <p>
-      These pages are reference material. They favor precise game rules over
-      quick-start guidance, so some sections are dense.
-    </p>
-  </Alert>
 
   {#each MECHANICS_GROUPS as group (group.title)}
     <section class="space-y-3">

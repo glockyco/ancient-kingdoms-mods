@@ -23,7 +23,7 @@
     buildCollectionPage({
       path: "/recipes",
       name: "Recipes — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.recipes.length.toLocaleString()} recipes in Ancient Kingdoms.`,
+      description: `Find ${data.recipes.length.toLocaleString()} recipes for crafting, alchemy, cooking, and scribing.`,
       items: data.recipes.map((recipe) => ({
         name: recipe.result_item_name,
         path: `/recipes/${recipe.id}`,
@@ -280,7 +280,7 @@
 
 <Seo
   title="Recipes - Ancient Kingdoms"
-  description={`${data.recipes.length.toLocaleString()} recipes for crafting, alchemy, cooking, and scribing — ingredient lists, station requirements, profession levels, and resulting items.`}
+  description={`Find ${data.recipes.length.toLocaleString()} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
   path="/recipes"
 />
 

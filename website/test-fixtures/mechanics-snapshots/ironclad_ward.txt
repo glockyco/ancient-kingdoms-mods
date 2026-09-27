@@ -1,1 +1,1 @@
-Mechanics Scroll Mastery Skill Level = clamp(Round(Mastery% ÷ 5), 1, 20)
+Mechanics Scroll Mastery Skill level = clamp(round(Scroll Mastery% ÷ 5), 1, 20)

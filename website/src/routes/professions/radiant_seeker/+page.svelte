@@ -115,9 +115,10 @@
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
         <span class="text-sm tabular-nums text-muted-foreground">3</span>
         <div>
-          <p class="font-medium">Roll for Radiant Aether.</p>
+          <p class="font-medium">See whether you find Radiant Aether.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The reward chance is 5% to 25%. The spark returns after a random
+            Each spark has a 5% to 25% chance to give Radiant Aether, depending
+            on your Radiant Seeker skill. The spark returns after a random
             {mechanics.respawnSeconds[0]} to {mechanics.respawnSeconds[1].toLocaleString()}
             seconds (1 minute 40 seconds to 1 hour).
           </p>
@@ -135,8 +136,8 @@
   <section id="chance" class="space-y-4">
     <h2 class="text-xl font-semibold">Aether chance</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Radiant Seeker changes the reward roll. It does not change whether you can
-      gather a spark.
+      Radiant Seeker increases the chance that a spark gives you Radiant Aether.
+      You can gather sparks at any Radiant Seeker skill.
     </p>
 
     <div class="space-y-5 rounded-lg border p-4 md:p-5">
@@ -237,11 +238,11 @@
         No crafting recipe uses it.
       {/if}
     </p>
-    <p class="max-w-2xl text-pretty text-xs text-muted-foreground">
+    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
       <!-- Source: server-scripts/Player.cs:HasRadiantAether — combat checks only slots 0–23. -->
       <span class="font-medium text-foreground">Inventory requirement:</span>
-      Only Aether in the 24 base carry slots is checked. Backpack-added slots do not
-      count.
+      Carry Radiant Aether in one of your first 24 inventory slots to use it in combat.
+      Backpack-added slots do not count.
     </p>
 
     <div class="divide-y divide-border border-y border-border">
@@ -262,7 +263,7 @@
         </div>
         <h3 class="mt-2 font-semibold">Deal 3× damage instead of 1.5×</h3>
         <p class="mt-1 text-pretty text-sm text-muted-foreground">
-          Critical resistance reduces the extra damage afterward.
+          With 50% Critical Resist, a 3× critical hit deals 2× damage instead.
         </p>
       </div>
 
@@ -298,7 +299,7 @@
             <span>When a hostile area skill targets your party</span>
           </div>
           <span class="pl-7 text-xs font-medium text-sky-500 sm:pl-0"
-            >Variable activation</span
+            >Chance depends on party size</span
           >
         </div>
         <h3 class="mt-2 font-semibold">Cancel the area skill for everyone</h3>
@@ -315,19 +316,20 @@
             class="mt-2 max-w-lg divide-y divide-border text-muted-foreground"
           >
             <div class="flex items-baseline justify-between gap-4 py-1.5">
-              <dt>1 eligible player</dt>
+              <dt>1 player carrying Aether</dt>
               <dd class="font-medium tabular-nums text-foreground">15%</dd>
             </div>
             <div class="flex items-baseline justify-between gap-4 py-1.5">
-              <dt>2 or more eligible players</dt>
+              <dt>2 or more players carrying Aether</dt>
               <dd class="text-right font-medium text-foreground">
                 Each gets the lower of 10% or 25% ÷ player count
               </dd>
             </div>
           </dl>
-          <p class="mt-2 max-w-lg text-pretty text-xs text-muted-foreground">
-            A player is eligible when they carry Aether in a base inventory
-            slot. The game checks players until one activation succeeds.
+          <p class="mt-2 max-w-lg text-pretty text-sm text-muted-foreground">
+            Only players who carry Aether in a base inventory slot get an
+            activation chance. The game checks each of them until one activation
+            succeeds.
           </p>
         </details>
       </div>

@@ -1,1 +1,1 @@
-Mechanics Healing Formula Final Heal = Base Heal (no bonus) Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Healing Formula Final Heal = Base Heal (no bonus) Cast time = cast time × (1 − spell haste)

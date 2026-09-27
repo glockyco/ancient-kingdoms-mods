@@ -77,11 +77,11 @@
 
   function formatSkillType(skillType: string): string {
     const labels: Record<string, string> = {
-      area_damage: "Area Damage",
-      target_projectile: "Target Projectile",
-      target_buff: "Target Buff",
-      target_debuff: "Target Debuff",
-      target_heal: "Target Heal",
+      area_damage: "Area damage",
+      target_projectile: "Targeted projectile",
+      target_buff: "Targeted buff",
+      target_debuff: "Targeted debuff",
+      target_heal: "Targeted heal",
     };
 
     return labels[skillType] ?? skillType.replace(/_/g, " ");
@@ -101,7 +101,7 @@
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View scroll recipes, scribing table locations, Scroll Mastery rank scaling, mastery gain chance, and Dispel Resist rules.`}
+  description={`${data.profession.description} View scroll recipes, Scribing Table locations, rank scaling, and Scroll Mastery gains.`}
   path="/professions/scroll_mastery"
 />
 
@@ -126,7 +126,7 @@
           </h1>
         </div>
         <p class="mt-2 max-w-3xl text-muted-foreground">
-          Craft scrolls and improve scaling scroll effects.
+          Craft scrolls and raise Scroll Mastery to strengthen their effects.
         </p>
       </div>
     </div>
@@ -175,7 +175,7 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Craftable scroll recipes are made at Scribing Tables.
+            Craft scrolls from recipes at a Scribing Table.
           </p>
         </div>
       </div>
@@ -199,22 +199,25 @@
         <div>
           <div>Use scrolls.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Scaling scrolls use rank = clamp(round(Scroll Mastery% ÷ 5), 1, max
-            rank). Fixed-rank scrolls stay rank 1.
+            For scaling scrolls, divide your Scroll Mastery percentage by 5 and
+            round to the nearest whole number. Ranks range from 1 up to the
+            skill's maximum. Fixed-rank scrolls stay at rank 1.
           </p>
           <!-- Source: server-scripts/ScrollItem.cs:67-112 — a valid scroll applies a temporary skill and consumes one charge unless infiniteCharges is set. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block"
-              >A scroll applies its skill without teaching it.</span
+              >Using a scroll casts its skill without teaching it to you.</span
             >
-            <span class="block">Normal scrolls use one charge.</span>
             <span class="block"
-              >Items marked for unlimited use do not lose a charge.</span
+              >A scroll with limited charges uses one charge.</span
+            >
+            <span class="block"
+              >Scrolls with unlimited charges do not use a charge.</span
             >
           </p>
           <!-- Source: server-scripts/ScrollItem.cs:69-79; server-scripts/UsableItem.cs:CanUse — target, class, item level, and cooldown restrictions can prevent use. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <span class="block">An invalid target prevents use.</span>
+            <span class="block">You need a valid target to use a scroll.</span>
             <span class="block"
               >Class, item-level, and cooldown restrictions still apply.</span
             >
@@ -283,7 +286,9 @@
           </div>
         </div>
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">Gain amount per proc</div>
+          <div class="text-sm text-muted-foreground">
+            Gain amount per increase
+          </div>
           <div class="text-sm leading-6">
             <div>
               Craft: {CRAFT_MASTERY_GAIN_MIN.toFixed(

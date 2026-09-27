@@ -352,8 +352,8 @@
           </div>
           <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            All taskgivers use the same shared quest pool, so NPC choice does
-            not affect which quests are available at your character's level.
+            Every taskgiver offers quests from the same pool, so NPC choice does
+            not change which quests are available at your character's level.
           </p>
         </div>
       </div>
@@ -371,7 +371,7 @@
             resets daily.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Queue days start at {queueResetTime}.
+            A new quest queue begins at {queueResetTime} each day.
             {#if mounted}
               Next reset: {timeUntilReset}, at {localResetTime}.
             {/if}
@@ -384,7 +384,8 @@
         <div>
           <div>
             <!-- Source: server-scripts/PlayerQuests.cs:50-51,227,445-446 — completed adventurer quests use DateTime.UtcNow ticks and remain completed for 24 hours. -->
-            Each Adventurer quest has its own per-character 24-hour cooldown.
+            After you complete an Adventurer quest, it stays on a 24-hour cooldown
+            for your character.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <!-- Source: server-scripts/Utils.cs:601-606 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
@@ -400,8 +401,8 @@
             <li>Your character has not completed it in the last 24 hours.</li>
           </ul>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Completing one quest puts only that quest on cooldown, then reveals
-            the next eligible quest in the daily queue.
+            Completing a quest starts its 24-hour cooldown. The taskgiver then
+            offers the next quest in today's queue that meets both requirements.
           </p>
         </div>
       </div>
@@ -673,7 +674,7 @@
                   tooltipHtml={unlock.tooltip_html}
                 />
                 {#if !sellerLabel(unlock.sold_by.length)}
-                  <div class="mt-1 text-xs text-muted-foreground">
+                  <div class="mt-1 text-sm text-muted-foreground">
                     Sold by
                     {#each unlock.sold_by as seller, index (seller.npc_id)}
                       <a

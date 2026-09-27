@@ -343,11 +343,12 @@
       attackMode === "bow_player" || attackMode === "bow_merc"
         ? "bow"
         : attackMode === "melee_player"
-          ? "melee"
+          ? "melee weapon"
           : selectedClass === "rogue"
-            ? "main"
+            ? "main-hand weapon"
             : "weapon";
-    const secondaryLabel = selectedClass === "rogue" ? "off" : "melee";
+    const secondaryLabel =
+      selectedClass === "rogue" ? "off-hand weapon" : "melee weapon";
 
     const terms: string[] = [`${hastePercent}% base`];
     if (wh !== 0) terms.push(`${wh}% ${primaryLabel}`);
@@ -382,11 +383,11 @@
   function weaponStatLine(w: WeaponItem): string {
     const parts: string[] = [`delay ${w.weapon_delay}`];
     if (isSpellMode(attackMode)) {
-      parts.push(`magic ${w.magic_damage}`);
+      parts.push(`magic damage ${w.magic_damage}`);
       if (w.spell_haste > 0)
         parts.push(`+${(w.spell_haste * 100).toFixed(0)}% spell haste`);
     } else {
-      if (w.damage > 0) parts.push(`dmg ${w.damage}`);
+      if (w.damage > 0) parts.push(`physical damage ${w.damage}`);
       if (w.strength > 0) parts.push(`+${w.strength} STR`);
       if (w.dexterity > 0) parts.push(`+${w.dexterity} DEX`);
       if (w.haste > 0) parts.push(`+${(w.haste * 100).toFixed(0)}% haste`);
@@ -401,7 +402,7 @@
 
 <Seo
   title="Auto-Attack DPS Simulator - Ancient Kingdoms"
-  description="Compare weapon DPS for six supported classes at your stats and haste. Bard player and mercenary attacks are not modeled. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
+  description="Compare player and mercenary auto-attack DPS for six classes at your chosen attributes and haste. Includes Rogue off-hand damage, Ranger Dexterity scaling and melee attacks, plus weapon haste and spell haste. Excludes Bard, other abilities, critical hits, and weapon effects."
   path="/tools/combat-simulator"
 />
 
@@ -417,13 +418,12 @@
   <div class="space-y-2">
     <h1 class="text-4xl font-bold">Auto-Attack DPS Simulator</h1>
     <p class="text-muted-foreground">
-      Models auto-attack DPS only — stab, archer_shot, melee_attack, and the
-      caster equivalents. Does not include ability damage, crits, or weapon
-      procs.
+      Compare auto-attack damage and DPS for your chosen weapons, attributes,
+      and haste, including Stab, Archer Shot, Melee Attack, and spell attacks.
+      Other abilities, critical hits, and weapon effects are not included.
     </p>
     <p class="text-muted-foreground">
-      Bard player and mercenary attacks are not modeled by these class and mode
-      formulas.
+      Bard player and mercenary auto attacks are not included.
     </p>
   </div>
 
@@ -488,9 +488,9 @@
         {#if !isSpellMode(attackMode)}
           <div class="space-y-1">
             <label class="text-sm font-medium" for="base-str">STR</label>
-            <p class="text-xs text-muted-foreground">
-              Your character's STR attribute. Do not include the selected
-              weapon's own strength bonus — the simulator adds it automatically.
+            <p class="text-sm text-muted-foreground">
+              Enter your character's STR without the selected weapon's bonus.
+              The simulator adds the weapon's STR.
             </p>
             <input
               id="base-str"
@@ -507,9 +507,9 @@
         {#if attackMode === "bow_player" || attackMode === "bow_merc"}
           <div class="space-y-1">
             <label class="text-sm font-medium" for="base-dex">DEX</label>
-            <p class="text-xs text-muted-foreground">
-              Your character's DEX attribute. Do not include the selected bow's
-              own dexterity bonus — the simulator adds it automatically.
+            <p class="text-sm text-muted-foreground">
+              Enter your character's DEX without the selected bow's bonus. The
+              simulator adds the bow's DEX.
             </p>
             <input
               id="base-dex"
@@ -543,8 +543,8 @@
             <label class="text-sm font-medium" for="spell-haste-pct">
               Spell Haste % (reduces cast time)
             </label>
-            <p class="text-xs text-muted-foreground">
-              Regular haste has zero effect on spell auto-attack intervals.
+            <p class="text-sm text-muted-foreground">
+              Regular haste does not shorten spell auto-attack intervals.
             </p>
             <div class="flex gap-2 items-center">
               <input
@@ -597,8 +597,9 @@
             <label class="text-sm font-medium" for="other-magic-equip">
               Equipment magic bonus
             </label>
-            <p class="text-xs text-muted-foreground">
-              Magic damage from armor, rings, etc. (not the wand slot)
+            <p class="text-sm text-muted-foreground">
+              Enter magic damage from other equipment, such as armor and rings.
+              The selected casting weapon's bonus is added separately.
             </p>
             <input
               id="other-magic-equip"
@@ -614,8 +615,9 @@
             <label class="text-sm font-medium" for="other-equip">
               Equipment damage bonus
             </label>
-            <p class="text-xs text-muted-foreground">
-              Damage from armor, rings, etc. (not weapon slots)
+            <p class="text-sm text-muted-foreground">
+              Enter physical damage from other equipment, such as armor and
+              rings. The selected weapon's bonus is added separately.
             </p>
             <input
               id="other-equip"
@@ -703,9 +705,10 @@
           </div>
           <div class="space-y-1">
             <p class="text-sm font-medium">Off-hand 1H Weapon (Light)</p>
-            <p class="text-xs text-muted-foreground">
-              Contributes floor(dmg×0.5) but full STR bonus. Comparison table
-              uses selected off-hand.
+            <p class="text-sm text-muted-foreground">
+              An off-hand weapon adds its full STR bonus and half its physical
+              damage, rounded down. The comparison uses your selected off-hand
+              weapon.
             </p>
             <div
               class="max-h-36 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
@@ -765,9 +768,9 @@
           </div>
           <div class="space-y-1">
             <p class="text-sm font-medium">Off-hand 1H Weapon (Light)</p>
-            <p class="text-xs text-muted-foreground">
-              Both weapons deal full damage (no off-hand penalty for mercs).
-              Comparison table uses the selected off-hand.
+            <p class="text-sm text-muted-foreground">
+              Both weapons add their full physical damage for a Rogue mercenary.
+              The comparison uses your selected off-hand weapon.
             </p>
             <div
               class="max-h-36 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
@@ -799,8 +802,9 @@
           <!-- Warrior merc: main weapon only -->
           <div class="space-y-1">
             <p class="text-sm font-medium">Weapon</p>
-            <p class="text-xs text-muted-foreground">
-              sword_strike — no off-hand.
+            <p class="text-sm text-muted-foreground">
+              A Warrior mercenary uses Sword Strike with one weapon and no
+              off-hand weapon.
             </p>
             <div
               class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
@@ -860,8 +864,9 @@
           <!-- Ranger melee player: melee weapon only -->
           <div class="space-y-1">
             <p class="text-sm font-medium">Melee Weapon</p>
-            <p class="text-xs text-muted-foreground">
-              swift_slash — no bow, no DEX scaling.
+            <p class="text-sm text-muted-foreground">
+              Swift Slash uses a melee weapon, not a bow, and does not gain
+              damage from DEX.
             </p>
             <div
               class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
@@ -893,9 +898,9 @@
           <!-- Ranger bow merc: bow + optional melee -->
           <div class="space-y-1">
             <p class="text-sm font-medium">Bow</p>
-            <p class="text-xs text-muted-foreground">
-              explorer_shot — both bow and melee damage count (no slot
-              subtraction).
+            <p class="text-sm text-muted-foreground">
+              A Ranger mercenary's Explorer Shot adds damage from both the bow
+              and equipped melee weapon.
             </p>
             <div
               class="max-h-44 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
@@ -958,14 +963,14 @@
           <div class="space-y-1">
             <p class="text-sm font-medium">Casting Weapon</p>
             {#if attackMode === "spell_player" || attackMode === "spell_merc"}
-              <p class="text-xs text-muted-foreground">
-                Ranked by magic damage. Physical dmg stat is unused in spell
-                mode.
+              <p class="text-sm text-muted-foreground">
+                Spell attacks use the casting weapon's magic damage, not its
+                physical damage.
               </p>
             {:else}
-              <p class="text-xs text-muted-foreground">
-                Staff mode uses physical damage formula; magic_dmg stat is
-                unused.
+              <p class="text-sm text-muted-foreground">
+                In Staff mode, a melee attack uses the casting weapon's physical
+                damage, not its magic damage.
               </p>
             {/if}
             <div
@@ -992,7 +997,7 @@
               {/each}
               {#if wandWeapons.length === 0}
                 <p class="px-3 py-3 text-sm text-muted-foreground">
-                  No wands found.
+                  No casting weapons found.
                 </p>
               {/if}
             </div>
@@ -1039,7 +1044,7 @@
           <div>
             <dt class="text-xs text-muted-foreground mb-1">Attack Interval</dt>
             <dd class="text-2xl font-mono font-semibold">{fmt(interval)}s</dd>
-            <dd class="text-xs text-muted-foreground mt-1">
+            <dd class="text-sm text-muted-foreground mt-1">
               {intervalBreakdown}
             </dd>
           </div>
@@ -1069,8 +1074,8 @@
               {/if}
             </dd>
             {#if isDelayBased(attackMode)}
-              <dd class="text-xs text-muted-foreground mt-1">
-                haste beyond this has no effect
+              <dd class="text-sm text-muted-foreground mt-1">
+                Haste above this cap does not shorten the attack interval.
               </dd>
             {/if}
           </div>
@@ -1078,7 +1083,7 @@
 
         <!-- Formula breakdown -->
         <div
-          class="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground space-y-1"
+          class="mt-4 pt-4 border-t border-border/50 text-sm text-muted-foreground space-y-1"
         >
           <p class="font-medium text-foreground">Formula</p>
           {#if attackSkill}
@@ -1095,25 +1100,25 @@
             {#if selectedClass === "rogue"}
               {#if attackMode === "player"}
                 <p>
-                  Damage = (STR {baseSTR} + main STR {mainWeapon.strength}{offWeapon
-                    ? " + off STR " + offWeapon.strength
-                    : ""}) + main dmg {mainWeapon.damage}{offWeapon
-                    ? " + ⌊" +
+                  Damage = (STR {baseSTR} + main-hand STR {mainWeapon.strength}{offWeapon
+                    ? " + off-hand STR " + offWeapon.strength
+                    : ""}) + main-hand physical damage {mainWeapon.damage}{offWeapon
+                    ? " + off-hand physical damage ⌊" +
                       offWeapon.damage +
                       " × 0.5⌋ = " +
                       Math.floor(offWeapon.damage * 0.5)
-                    : ""} + equip.dmg {otherEquipDmg} = {Math.round(
+                    : ""} + other equipment damage {otherEquipDmg} = {Math.round(
                     damagePerHit,
                   )}
                 </p>
               {:else}
                 <!-- merc rogue: both daggers at full damage -->
                 <p>
-                  Damage = (STR {baseSTR} + main STR {mainWeapon.strength}{offWeapon
-                    ? " + off STR " + offWeapon.strength
-                    : ""}) + main dmg {mainWeapon.damage}{offWeapon
-                    ? " + off dmg " + offWeapon.damage
-                    : ""} + equip.dmg {otherEquipDmg} = {Math.round(
+                  Damage = (STR {baseSTR} + main-hand STR {mainWeapon.strength}{offWeapon
+                    ? " + off-hand STR " + offWeapon.strength
+                    : ""}) + main-hand physical damage {mainWeapon.damage}{offWeapon
+                    ? " + off-hand physical damage " + offWeapon.damage
+                    : ""} + other equipment damage {otherEquipDmg} = {Math.round(
                     damagePerHit,
                   )}
                 </p>
@@ -1121,8 +1126,8 @@
             {:else}
               <p>
                 Damage = (STR {baseSTR} + weapon STR {mainWeapon.strength}) +
-                weapon dmg
-                {mainWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
+                weapon physical damage
+                {mainWeapon.damage} + other equipment damage {otherEquipDmg} = {Math.round(
                   damagePerHit,
                 )}
               </p>
@@ -1138,9 +1143,10 @@
             {/if}
           {:else if attackMode === "bow_player" && bowWeapon}
             <p>
-              Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}) + bow dmg {bowWeapon.damage}
-              + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 +
-              equip.dmg {otherEquipDmg}
+              Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}) + bow
+              physical damage {bowWeapon.damage}
+              + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 + other
+              equipment damage {otherEquipDmg}
               = {Math.round(damagePerHit)}
             </p>
             <p>
@@ -1152,9 +1158,9 @@
             {/if}
           {:else if attackMode === "melee_player" && meleeWeapon}
             <p>
-              Damage = (STR {baseSTR} + melee STR {meleeWeapon.strength}) +
-              melee dmg
-              {meleeWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
+              Damage = (STR {baseSTR} + melee weapon STR {meleeWeapon.strength})
+              + melee weapon physical damage
+              {meleeWeapon.damage} + other equipment damage {otherEquipDmg} = {Math.round(
                 damagePerHit,
               )}
             </p>
@@ -1168,11 +1174,11 @@
           {:else if attackMode === "bow_merc" && bowWeapon}
             <p>
               Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}{meleeWeapon
-                ? " + melee STR " + meleeWeapon.strength
-                : ""}) + bow dmg {bowWeapon.damage}{meleeWeapon
-                ? " + melee dmg " + meleeWeapon.damage
+                ? " + melee weapon STR " + meleeWeapon.strength
+                : ""}) + bow physical damage {bowWeapon.damage}{meleeWeapon
+                ? " + melee weapon physical damage " + meleeWeapon.damage
                 : ""} + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 +
-              equip.dmg
+              other equipment damage
               {otherEquipDmg} = {Math.round(damagePerHit)}
             </p>
             <p>
@@ -1185,14 +1191,16 @@
             {/if}
           {:else if (attackMode === "spell_player" || attackMode === "spell_merc") && wandWeapon}
             <p>
-              Damage = INT {baseINT} × 1.5 + wand magic dmg {wandWeapon.magic_damage}
-              + equip.magic {otherMagicEquipDmg} = {Math.round(damagePerHit)}
+              Damage = INT {baseINT} × 1.5 + casting weapon magic damage {wandWeapon.magic_damage}
+              + other equipment magic damage {otherMagicEquipDmg} = {Math.round(
+                damagePerHit,
+              )}
             </p>
             {#if attackMode === "spell_player"}
               <p>
                 Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s &times;
                 (1&minus;{effectiveSpellHastePercent}% spell haste) + 0.75s
-                refractory = {fmt(interval)}s
+                recovery = {fmt(interval)}s
               </p>
               {#if spellHasteBreakdownText}
                 <p>Spell haste = {spellHasteBreakdownText}</p>
@@ -1211,9 +1219,9 @@
             {/if}
           {:else if attackMode === "staff_player" && wandWeapon}
             <p>
-              Damage = (STR {baseSTR} + wand STR {wandWeapon.strength}) + wand
-              dmg
-              {wandWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
+              Damage = (STR {baseSTR} + casting weapon STR {wandWeapon.strength})
+              + casting weapon physical damage
+              {wandWeapon.damage} + other equipment damage {otherEquipDmg} = {Math.round(
                 damagePerHit,
               )}
             </p>
@@ -1297,7 +1305,7 @@
                 <th class="text-right px-4 py-2 font-medium">Delay</th>
                 <th class="text-right px-4 py-2 font-medium">Soft-cap %</th>
               {/if}
-              <th class="text-right px-4 py-2 font-medium">Dmg/Hit</th>
+              <th class="text-right px-4 py-2 font-medium">Damage/Hit</th>
               <th class="text-right px-4 py-2 font-medium">Interval</th>
               <th class="text-right px-4 py-2 font-medium font-semibold">DPS</th
               >

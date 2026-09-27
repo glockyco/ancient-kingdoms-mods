@@ -592,7 +592,8 @@
     </p>
 
     <p class="mt-2 text-sm text-muted-foreground">
-      Reputation with this faction only changes through the sources below. See
+      The tables below show which monsters, NPCs, quests, and chests change your
+      reputation with this faction. See
       <a
         href="/mechanics/reputation"
         class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -731,7 +732,8 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Skull class="h-5 w-5 text-red-500" />
-        Reputation gained from monsters ({data.faction.monstersImprove.length})
+        Reputation gained by killing monsters ({data.faction.monstersImprove
+          .length})
       </h2>
       <DataTable
         data={data.faction.monstersImprove}
@@ -753,7 +755,8 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Scroll class="h-5 w-5 text-orange-500" />
-        Reputation gained from quests ({data.faction.questGrants.length})
+        Reputation gained by completing quests ({data.faction.questGrants
+          .length})
       </h2>
       <DataTable
         data={data.faction.questGrants}
@@ -775,7 +778,8 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Users class="h-5 w-5 text-blue-500" />
-        Reputation gained from NPCs ({data.faction.npcKillsImprove.length})
+        Reputation gained by killing NPCs ({data.faction.npcKillsImprove
+          .length})
       </h2>
       <DataTable
         data={data.faction.npcKillsImprove}
@@ -797,7 +801,8 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Skull class="h-5 w-5 text-red-500" />
-        Reputation lost to monsters ({data.faction.monstersDecrease.length})
+        Reputation lost by killing monsters ({data.faction.monstersDecrease
+          .length})
       </h2>
       <DataTable
         data={data.faction.monstersDecrease}
@@ -819,7 +824,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Users class="h-5 w-5 text-blue-500" />
-        Reputation lost to NPCs ({data.faction.npcKillsDecrease.length})
+        Reputation lost by killing NPCs ({data.faction.npcKillsDecrease.length})
       </h2>
       <DataTable
         data={data.faction.npcKillsDecrease}
@@ -841,7 +846,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Box class="h-5 w-5 text-sky-500" />
-        Reputation lost to chests ({data.faction.chests.length})
+        Reputation lost by looting chests ({data.faction.chests.length})
       </h2>
       <DataTable
         data={data.faction.chests}

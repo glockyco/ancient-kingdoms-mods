@@ -1,1 +1,1 @@
-Mechanics Virtuosity bonusActive = activeSongs >= maximumActiveSongs
+Mechanics Virtuosity Virtuosity activates when active songs >= active song limit.

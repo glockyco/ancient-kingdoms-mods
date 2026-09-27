@@ -1,1 +1,1 @@
-Mechanics Buff Scaling bonusAttribute = WIS Max Health skillValue(level) + bonusAttribute × 2 Defense skillValue(level) + bonusAttribute × 0.15 Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling Attribute contribution = WIS Max Health skill value at level + attribute contribution × 2 Defense skill value at level + attribute contribution × 0.15 Cast time = cast time × (1 − spell haste)

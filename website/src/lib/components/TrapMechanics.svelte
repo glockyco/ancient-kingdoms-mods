@@ -30,7 +30,7 @@
       href="/skills/sharp_senses"
       class="text-blue-600 dark:text-blue-400 hover:underline">Sharp Senses</a
     >
-    can disarm it. Active Rogue and Bard mercenaries can disarm it automatically.
+    can disarm the trap. Active Rogue and Bard mercenaries can disarm the trap automatically.
   {/if}
   {#if details}
     {details}{/if}

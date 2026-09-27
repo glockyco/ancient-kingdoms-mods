@@ -32,7 +32,6 @@
   <Card.Root id="attributes" class="bg-muted/30">
     <Card.Header>
       <Card.Title>The Six Attributes</Card.Title>
-      <Card.Description>What each attribute changes.</Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <div class="overflow-x-auto">
@@ -52,7 +51,9 @@
                   >+1 physical damage and +10 maximum rage per point.</span
                 >
                 <span class="block"
-                  >Selected physical debuffs gain a rounded +0.5 per point.</span
+                  >Strength adds a rounded 0.5 per point to physical
+                  damage-over-time effects and Defense reductions from melee
+                  debuffs.</span
                 >
               </td>
             </tr>
@@ -81,7 +82,12 @@
                   >Bow damage gains a rounded +1.5 per point.</span
                 >
                 <span class="block"
-                  >Some poison effects also scale with Dexterity.</span
+                  >Poison damage from Rogue attacks gains a rounded +2.5 per
+                  point.</span
+                >
+                <span class="block"
+                  >Poison and disease damage-over-time effects gain a rounded
+                  +1.5 per point.</span
                 >
               </td>
             </tr>
@@ -93,8 +99,16 @@
                   >+20 maximum mana and rounded +1.5 magic damage per point.</span
                 >
                 <span class="block"
-                  >Some magical debuffs and damage-over-time effects also scale
-                  with Intelligence.</span
+                  >Defense, Magic Resist, and elemental resistance reductions
+                  from magical debuffs gain a rounded +0.4 per point.</span
+                >
+                <span class="block"
+                  >Physical and magic damage reductions from debuffs gain a
+                  rounded +0.5 per point.</span
+                >
+                <span class="block"
+                  >Magic, fire, and cold damage-over-time effects gain a rounded
+                  +1.25 per point.</span
                 >
               </td>
             </tr>
@@ -107,7 +121,8 @@
                   Rangers, with a +500% cap.</span
                 >
                 <span class="block"
-                  >Selected protective buffs and wards also improve.</span
+                  >Wisdom increases the maximum health, Defense, Magic Resist,
+                  and ward capacity granted by protective buffs.</span
                 >
                 <span class="block"
                   >Wisdom adds neither maximum mana nor mana recovery.</span
@@ -154,12 +169,19 @@
       <Card.Title>Health, Mana, Rage, and Songs</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Health.cs:28-44,59-71 — max health and recovery use separate bonuses. -->
+      <!-- Source: server-scripts/Health.cs:28-44,59-71 — Constitution, equipment, augments, passive skills, and buffs raise maximum health; equipment, augments, passive skills, and healing-over-time buffs raise recovery. -->
       <!-- Source: server-scripts/EnergyResource.cs:84-95 — resources recover only while the entity is alive. -->
       <p>
-        <span class="block">All classes have health.</span>
+        <span class="block">Every class has health.</span>
+        <span class="block">Constitution adds 25 maximum health per point.</span
+        >
         <span class="block"
-          >Maximum health and health recovery use separate bonuses.</span
+          >Equipment, augments, passive skills, and buffs can also raise maximum
+          health.</span
+        >
+        <span class="block"
+          >Equipment, augments, passive skills, and healing-over-time buffs
+          increase health recovery.</span
         >
       </p>
       <div class="overflow-x-auto">
@@ -182,13 +204,16 @@
                   >Intelligence adds +20 maximum mana per point.</span
                 >
                 <span class="block"
-                  >Wisdom does not increase the pool or regeneration.</span
+                  >Wisdom adds neither maximum mana nor mana recovery.</span
                 >
-                <span class="block">Recovery has its own bonuses.</span>
+                <span class="block"
+                  >Equipment, augments, passive skills, and buffs can increase
+                  mana recovery.</span
+                >
               </td>
             </tr>
             <!-- Source: server-scripts/Energy.cs:12-17,27-51 and server-scripts/Strength.cs:80-87 — rage capacity scales with Strength and baseline recovery is zero. -->
-            <!-- Source: server-scripts/Combat.cs:994-1025,1364-1388 — damaging auto attacks and received Normal-type TargetDamageSkill hits generate rage, with no melee-range check. -->
+            <!-- Source: server-scripts/Combat.cs:994-1025,1364-1388 — damaging auto attacks and received single-target physical skill hits generate rage, with no melee-range check. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Rage</th>
               <td class="p-2">Warrior, Rogue</td>
@@ -198,8 +223,8 @@
                 >
                 <span class="block">Rage has no baseline recovery.</span>
                 <span class="block"
-                  >Dealing auto-attack damage or taking physical damage builds
-                  it.</span
+                  >You build Rage by dealing auto-attack damage or taking
+                  physical damage from a single-target skill.</span
                 >
                 <span class="block"
                   ><MechanicsLink section="combat#rage-generation"
@@ -214,9 +239,9 @@
               <td class="p-2">Bard</td>
               <td class="p-2">
                 <span class="block"
-                  >Two active-song slots by default, with individual song
-                  durations.</span
+                  >Bards can play two songs at once by default.</span
                 >
+                <span class="block">Each song lasts for its own duration.</span>
                 <span class="block">Songs require an instrument.</span>
                 <span class="block"
                   ><MechanicsLink section="bard#songs"
@@ -250,7 +275,9 @@
   <Card.Root id="skills-and-specializations" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Skills, Veteran Points, and Specializations</Card.Title>
-      <Card.Description>Separate points and separate builds.</Card.Description>
+      <Card.Description
+        >Class skills and veteran skills use separate points.</Card.Description
+      >
     </Card.Header>
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Experience.cs:319-322 — each regular level awards one class skill point. -->
@@ -301,8 +328,8 @@
             to the veteran limit of 200.</span
           >
           <span class="block"
-            >Veteran skills spend a separate point pool and still check ranks,
-            prerequisites, and tier limits.</span
+            >Veteran skills spend Veteran Points rather than class skill points,
+            but still have rank, prerequisite, and tier limits.</span
           >
           <span class="block"
             ><MechanicsLink section="experience#veteran-points"
@@ -329,8 +356,8 @@
         <!-- Source: server-scripts/PlayerSkills.cs:1374-1422 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
         <p>
           <span class="block"
-            >A second specialization holds another class-skill build for the
-            same class.</span
+            >Your second specialization stores another set of class skills for
+            the same class.</span
           >
           <span class="block"
             >Veteran skills are shared between both builds.</span
@@ -354,7 +381,8 @@
         <!-- Source: server-scripts/PlayerSkills.cs:1374-1467 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"
-            >Class-skill and veteran-skill resets are separate.</span
+            >Resetting class skills refunds class skill points but leaves
+            veteran skills unchanged.</span
           >
           <span class="block"
             >A veteran reset costs 10,000 gold and one Token of Redemption.</span

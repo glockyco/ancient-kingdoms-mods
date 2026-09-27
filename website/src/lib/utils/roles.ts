@@ -146,99 +146,100 @@ export const ROLE_DESCRIPTIONS: Partial<
   Record<keyof NpcRoles, RoleDescription>
 > = {
   is_quest_giver: {
-    description: "Offers quests to players.",
+    description: "This NPC offers quests.",
   },
   is_taskgiver_adventurer: {
-    description: "Offers daily adventurer quests.",
-    details: ["Requires level 40"],
+    description: "This NPC offers daily adventurer quests.",
+    details: ["You must reach level 40."],
   },
   is_merchant: {
-    description: "Sells items to players.",
+    description: "This NPC sells items.",
   },
   is_merchant_adventurer: {
-    description: "Sells adventurer-related items and rewards.",
+    description: "This NPC sells adventurer items and rewards.",
   },
   is_faction_vendor: {
-    description: "Sells faction-exclusive items.",
-    details: ["Requires 15,000+ faction reputation"],
+    description: "This NPC sells items exclusive to its faction.",
+    details: ["You need at least 15,000 reputation with this faction."],
   },
   is_essence_trader: {
     description:
-      'Trades magic+ equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
-    details: ["Requires magic or better gear in inventory"],
+      'Trade Magic-quality or better equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
+    details: ["Bring Magic-quality or better equipment in your inventory."],
   },
   // Source: server-scripts/UIBank.cs:294-307 — tab costs use the number of tabs already unlocked.
   is_bank: {
-    description: "Provides access to your bank storage.",
+    description: "This NPC gives you access to your bank.",
     details: [
-      "30 slots per tab, up to 10 tabs",
-      "Tab costs: 200 → 1k → 2k → 5k → 10k → 15k → 20k → 50k → 100k gold",
+      "Each tab has 30 slots. You can unlock up to 10 tabs.",
+      "Tabs cost 200, 1,000, 2,000, 5,000, 10,000, 15,000, 20,000, 50,000, then 100,000 gold.",
     ],
   },
   can_repair_equipment: {
-    description: "Repairs damaged equipment for gold.",
+    description: "This NPC repairs damaged equipment for gold.",
   },
   is_skill_master: {
-    description: "Resets your class skill points.",
+    description: "This NPC resets your class skill points.",
     details: [
-      "Cost: 100g (lvl 1-9), 250g (10-19), 500g (20-29), 1k (30-39), 3k (40+)",
+      "The reset costs 100 gold at levels 1–9, 250 at 10–19, 500 at 20–29, 1,000 at 30–39, or 3,000 at 40+.",
     ],
   },
   is_veteran_master: {
-    description: "Resets your veteran skill points.",
+    description: "This NPC resets your veteran skill points.",
     details: [
-      'Cost: 10,000 gold + <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>',
+      'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
     ],
   },
   is_reset_attributes: {
-    description: "Resets your attribute points.",
+    description: "This NPC resets your attribute points.",
     details: [
-      "Cost: 100g (lvl 1-9), 250g (10-19), 500g (20-29), 1k (30-39), 3k (40+)",
+      "The reset costs 100 gold at levels 1–9, 250 at 10–19, 500 at 20–29, 1,000 at 30–39, or 3,000 at 40+.",
     ],
   },
   is_soul_binder: {
-    description: "Binds your respawn point to the current area.",
+    description: "This NPC sets your respawn point to the current area.",
   },
+  // Source: server-scripts/Npc.cs:1752-1775 — the innkeeper offers a drink for 25 gold.
   is_inkeeper: {
-    description: "Sells food and drinks.",
-    details: ["Cost: 25 gold"],
+    description: "This NPC sells food and drinks.",
+    details: ["An innkeeper drink costs 25 gold."],
   },
   // Source: server-scripts/Npc.cs:BarberPrice — BarberPrice is 100 gold.
   is_barber: {
-    description: "Changes your character's appearance.",
-    details: ["Cost: 100 gold"],
+    description: "This NPC changes your character's appearance.",
+    details: ["The change costs 100 gold."],
   },
   // Source: server-scripts/Npc.cs:InteractNpc — the mercenary recruiter opens at level 10.
   // Source: server-scripts/UIMercenaries.cs:297-299,359-372,732-734 — active mercenary limits follow level thresholds 20, 30, and 40.
   // Source: server-scripts/UIMercenaries.cs:43,380 — the roster holds ten mercenaries.
   is_recruiter_mercenaries: {
-    description: "Hire and manage mercenaries (up to 10 stored).",
+    description: "You can hire and manage up to 10 mercenaries here.",
     details: [
-      "Requires level 10",
-      "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-39), 4 (40+)",
+      "You must reach level 10 to hire mercenaries.",
+      "You can have 1 active mercenary at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+.",
     ],
   },
   // Source: server-scripts/Npc.cs:1861-1875
   is_priestess: {
     description:
-      'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a>.',
-    details: ["Cost: 75 gold per rune", "Requires Cursed Runes in inventory"],
+      'This NPC converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
+    details: ["Bring Cursed Runes in your inventory."],
   },
-  // Source: server-scripts/UINpcTrading.cs:118-123,182-186 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
+  // Source: server-scripts/UINpcTrading.cs:214-219,279-284 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
   is_augmenter: {
-    description: "Removes augments from equipment.",
+    description: "This NPC removes augments from equipment.",
     details: [
-      "Cost per augment: 5,000g (common), 10,000g (magic), or 15,000g (epic)",
-      "Augment is returned to your inventory",
-      "Requires augmented gear in inventory or equipped",
+      "Removal costs 5,000 gold for other augment qualities, 10,000 for Magic, or 15,000 for Epic.",
+      "You get the removed augment back in your inventory.",
+      "Bring augmented equipment in your inventory or wear it.",
     ],
   },
   is_guild_management: {
-    description: "Creates and manages guild memberships.",
-    details: ["Create guild cost: 10,000 gold", "Guild member cap: 10"],
+    description: "This NPC creates guilds and manages memberships.",
+    details: ["A new guild costs 10,000 gold.", "A guild can have 10 members."],
   },
   is_guard: {
-    description: "Protects the area and may attack hostile players.",
+    description: "This guard protects the area and can attack hostile players.",
   },
   // is_renewal_sage: handled dynamically in NPC detail page
   // is_teleporter: handled dynamically in NPC detail page (destination varies)
@@ -267,13 +268,16 @@ export const ROLE_RULES: Partial<Record<keyof NpcRoles, RoleRules>> = {
   },
   is_merchant_adventurer: {
     href: "/professions/adventuring#adventurer-vendor-unlocks",
-    label: "Adventuring unlocks",
+    label: "Adventurer vendor rewards",
   },
   is_faction_vendor: {
     href: "/mechanics/reputation#unlocks",
     label: "What reputation unlocks",
   },
-  is_bank: { href: "/mechanics/inventory#bank", label: "Bank rules" },
+  is_bank: {
+    href: "/mechanics/inventory#bank",
+    label: "Bank storage and tab costs",
+  },
   can_repair_equipment: {
     href: "/mechanics/inventory#durability-and-repair",
     label: "Durability and repair",
@@ -316,7 +320,7 @@ export const ROLE_RULES: Partial<Record<keyof NpcRoles, RoleRules>> = {
   },
   is_renewal_sage: {
     href: "/mechanics/monster-spawns#renewal-sages",
-    label: "How renewal works",
+    label: "Renewing dungeon monsters",
   },
   is_teleporter: {
     href: "/mechanics/world#binding-and-travel",

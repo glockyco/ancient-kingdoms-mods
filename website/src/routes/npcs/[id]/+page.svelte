@@ -68,28 +68,23 @@
   // Get active roles for this NPC
   const activeRoles = $derived(getActiveRoles(data.npc.roles));
 
-  // Get description for a role (with dynamic handling for renewal sage and teleporter)
+  // Source: server-scripts/Npc.cs:1733-1739; server-scripts/Player.cs:14192-14219 — renewal uses gold when priced and resets respawn timers for monsters in the target zone.
+  // Source: server-scripts/UINpcTrading.cs:824-832 — Charisma can reduce the fee for ordinary dungeons by up to 25%.
   function getRoleDescription(role: RoleConfig): string {
     if (role.key === "is_renewal_sage") {
       const isWorldBoss = data.npc.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID;
 
-      // World Boss resets use Adventurer's Essence (link to item page)
-      // Regular dungeon resets use gold
-      const currency = isWorldBoss
-        ? `<a href="/items/adventurers_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Adventurer's Essence</a>`
-        : `<span class="text-yellow-600 dark:text-yellow-400">gold</span>`;
-
       if (isWorldBoss) {
         return data.npc.gold_required_respawn_dungeon > 0
-          ? `Resets all World Bosses for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> ${currency}.`
-          : `Resets all World Bosses.`;
+          ? `Resets World Boss respawn timers for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> gold.`
+          : `Resets World Boss respawn timers.`;
       }
 
       const target = `<a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>`;
 
       return data.npc.gold_required_respawn_dungeon > 0
-        ? `Resets all spawns in ${target} for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> ${currency}.`
-        : `Resets all spawns in ${target}.`;
+        ? `Resets respawn timers for monsters in ${target}. The base fee is <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> gold before your Charisma discount (up to 25%).`
+        : `Resets respawn timers for monsters in ${target}.`;
     }
 
     if (role.key === "is_teleporter") {
@@ -191,7 +186,7 @@
     if (hasQuestFlags) {
       cols.push({
         id: "flags",
-        header: "Flags",
+        header: "Categories",
         size: 130,
         enableSorting: false,
         accessorFn: (row) => {
@@ -660,7 +655,7 @@
             </div>
           {/if}
           <div>
-            <div class="text-sm text-muted-foreground">Damage</div>
+            <div class="text-sm text-muted-foreground">Physical Damage</div>
             <div class="font-medium">{data.npc.damage}</div>
           </div>
           {#if data.npc.magic_damage > 0}

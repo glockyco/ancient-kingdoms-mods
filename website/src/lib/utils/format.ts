@@ -72,6 +72,28 @@ export function formatItemType(type: string | null | undefined): string {
   );
 }
 
+const skillTypeDisplayNames: Record<string, string> = {
+  target_damage: "Single-target damage",
+  area_damage: "Area damage",
+  frontal_damage: "Frontal damage",
+  target_projectile: "Single-target projectile",
+  frontal_projectiles: "Frontal projectiles",
+  target_heal: "Single-target heal",
+  area_heal: "Area heal",
+  target_buff: "Single-target buff",
+  area_buff: "Area buff",
+  target_debuff: "Single-target debuff",
+  area_debuff: "Area debuff",
+  passive: "Passive",
+  summon: "Summon",
+  summon_monsters: "Summon monsters",
+  area_object_spawn: "Area effect",
+};
+
+export function formatSkillType(type: string): string {
+  return skillTypeDisplayNames[type] ?? type.replaceAll("_", " ");
+}
+
 const equipmentCategoryDisplayNames: Record<string, string> = {
   Ammo: "Ammunition",
   Artifact: "Artifact",

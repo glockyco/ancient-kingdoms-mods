@@ -221,11 +221,14 @@ export const FORMULA_EXPRS = {
 
   // Source: BardFinalCadenceSkill.cs:45-54 and Charisma.cs:21-36.
   bard_final_cadence: special(
-    "round(skillDamage(level) × (1 + min(max(CHA, 0) × 0.001, 2)))",
+    "round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2)))",
   ),
-  manaburn: special("Current Rage or Mana × 2 — bypasses mitigation"),
-  monster_melee: special("baseDamage(level)"),
-  monster_magic: special("baseMagicDamage(level)"),
+  // Source: server-scripts/TargetDamageSkill.cs:127-155, TargetProjectileSkill.cs:211-220 — Rageblow uses Rage ×2; Mana Burn uses Mana ×3.
+  manaburn: special(
+    "Current Rage × 2 (Rageblow) or current Mana × 3 (Mana Burn) — ignores armor and resistance",
+  ),
+  monster_melee: special("monster's base physical damage at this level"),
+  monster_magic: special("monster's base magic damage at this level"),
 } satisfies Record<DamageFormulaKind, Expr>;
 
 // ─── Evaluator ────────────────────────────────────────────────────────────────
@@ -275,26 +278,33 @@ export function evaluate(expr: Expr, ctx: EvalCtx): number | null {
 
 // ─── Formula renderer ─────────────────────────────────────────────────────────
 
-// Notation used in rendered strings:
-//   Player stats:  STR  DEX  INT
-// Notation used in rendered formula strings:
-//   Player stats:   STR  DEX  INT
-//   Weapon flat:    main.dmg  off.dmg  bow.dmg  melee.dmg  wand.magic
 // Notation used in rendered formula strings:
 //   Player stats:   STR  DEX  INT
 //   Weapon flat:    main.dmg  off.dmg  bow.dmg  melee.dmg  wand.magic
 //   Other equip:    equip.dmg   equip.magic
 //
-// Weapon strength and dexterity bonuses are NOT listed separately — they contribute
-// to the same multiplier as the player's STR/DEX attribute and players see them as
-// part of their total stat value. Only flat damage stats (weapon.dmg) are named
-// explicitly because they appear as a distinct additive term.
+// Weapon strength and dexterity bonuses are not listed separately. They add to
+// the same multiplier as the player's STR/DEX attribute, and players see them as
+// part of their total stat value. Only flat damage stats (weapon.dmg) are named,
+// because they appear as a distinct additive term.
+// Weapon damage uses slot names such as "main-hand weapon damage".
+// Other equipment damage is a separate term.
+// Weapon Strength and Dexterity bonuses are part of the player's total
+// displayed stat and do not appear again as weapon terms.
 
 const FIELD_SHORT: Record<string, string> = {
-  strength: "STR", // not used in rendered output (collapsed into player stat)
-  damage: "dmg",
-  dexterity: "DEX", // not used in rendered output (collapsed into player stat)
-  magic_damage: "magic",
+  strength: "Strength", // not used in rendered output (collapsed into player stat)
+  damage: "damage",
+  dexterity: "Dexterity", // not used in rendered output (collapsed into player stat)
+  magic_damage: "magic damage",
+};
+
+const SLOT_LABELS: Record<WeaponSlotName, string> = {
+  main: "main-hand weapon",
+  off: "off-hand weapon",
+  bow: "bow",
+  melee: "melee weapon",
+  wand: "casting weapon",
 };
 
 function fmtFactor(n: number): string {
@@ -304,12 +314,8 @@ function fmtFactor(n: number): string {
 /**
  * Render an expression tree as a compact human-readable formula string.
  *
- * Weapon strength/dexterity bonuses are collapsed into the adjacent player stat term:
- * (STR + main.STR + bow.STR) × 1 → STR × 1, because players see a single STR value
- * in-game that already includes all weapon strength contributions.
- *
- * Only weapon flat damage stats (main.dmg, off.dmg, etc.) remain explicit, since
- * those are a genuinely separate additive term from the stat multiplier.
+ * Weapon Strength and Dexterity are included in the player's displayed STR
+ * and DEX. Only flat weapon damage remains a separate term.
  */
 export function renderFormula(expr: Expr): string {
   switch (expr.type) {
@@ -319,15 +325,15 @@ export function renderFormula(expr: Expr): string {
       // Strength and dexterity on weapons scale with the same multiplier as the
       // player's STR/DEX attribute; collapse them to empty so they merge cleanly.
       if (expr.field === "strength" || expr.field === "dexterity") return "";
-      return `${expr.slot}.${FIELD_SHORT[expr.field]}`;
+      return `${SLOT_LABELS[expr.slot]} ${FIELD_SHORT[expr.field]}`;
     case "other":
-      return expr.category === "phys" ? "equip.dmg" : "equip.magic";
+      return expr.category === "phys"
+        ? "other equipment damage"
+        : "other equipment magic damage";
     case "const":
       return String(expr.value);
     case "add": {
-      // Stat-scaler terms (mul nodes: STR × 1, DEX × 1.5, …) first, then flat
-      // additive terms (weapon damage, equip.dmg, …). Keeps interleaved formulas
-      // like ranged_player readable: STR × 1 + DEX × 1.5 + bow.dmg + equip.dmg.
+      // Put stat terms before flat weapon and other-equipment damage.
       const statTerms = expr.operands.filter((op) => op.type === "mul");
       const flatTerms = expr.operands.filter((op) => op.type !== "mul");
       const parts = [...statTerms, ...flatTerms]
@@ -357,7 +363,7 @@ export function renderFormula(expr: Expr): string {
 
 // ─── Structured display builder ───────────────────────────────────────────────
 
-const PIPELINE_SUFFIX = " × (1 + passive% + buff%)";
+const PIPELINE_SUFFIX = " × (1 + passive damage bonus + buff damage bonus)";
 
 /**
  * Build the structured breakdown shown on skill detail pages.
@@ -367,7 +373,10 @@ const PIPELINE_SUFFIX = " × (1 + passive% + buff%)";
  * Dual formulas     → separate rows for each damage type (different resist paths server-side).
  * Special formulas  → a prose note instead of a table.
  */
-export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
+export function renderFormulaDisplay(
+  kind: DamageFormulaKind,
+  skillType: string,
+): FormulaDisplay {
   const expr = FORMULA_EXPRS[kind];
 
   switch (kind) {
@@ -380,13 +389,15 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
         specialNote: renderFormula(expr),
       };
 
+    // Source: server-scripts/TargetDamageSkill.cs:127-155, TargetProjectileSkill.cs:211-220 — resource and multiplier depend on the skill.
     case "manaburn":
       return {
         preMitigation: null,
         terms: [],
         specialNote:
-          "Consumes all Rage (Warrior/Rogue) or all Mana (Wizard) and deals that amount × 2 as damage. " +
-          "Completely bypasses armor, resistance, and all other mitigation.",
+          skillType === "target_projectile"
+            ? "Mana Burn consumes all the Wizard's Mana and deals three times that amount as damage. Armor and resistance do not reduce this damage."
+            : "Rageblow consumes all the Warrior's or Rogue's Rage and deals twice that amount as damage. Armor and resistance do not reduce this damage.",
       };
 
     // ── Monster / NPC (level-scaled) ─────────────────────────────────────────
@@ -424,11 +435,11 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
     // The server applies separate mitigation to each, so we split them for display.
 
     case "magic_weapon": {
-      // magic component: INT×1.5 + wand.magic + other magic
+      // Magic component: INT × 1.5 + casting weapon magic damage + other equipment magic damage.
       const magicStr = renderFormula(
         add([mul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
       );
-      // physical component: (STR + main.STR) × 1 + main.dmg + other phys
+      // Physical component: STR × 1 + main-hand weapon damage + other equipment damage.
       const physStr = renderFormula(
         add([
           mul(1.0, add([s("str"), w("main", "strength")])),
@@ -506,6 +517,6 @@ export function renderWildStrikeFormulaDisplay(): FormulaDisplay {
     preMitigation: null,
     terms: [],
     specialNote:
-      "Wild Strike empowers the Ranger's next sword or bow auto attack. Add Wild Strike's damage to the auto attack, multiply the total by ×(1 + 0.1 × Wild Strike's level), and round it. The whole hit then deals Magic damage and is reduced by Magic Defense and Magic Resist.",
+      "Wild Strike empowers the Ranger's next sword or bow auto attack. Add Wild Strike's damage to the auto attack and multiply the total by (1 + 0.1 × Wild Strike's level), rounding the result. The whole hit deals magic damage: each 100 Magic Resist reduces it by 5% and adds 5 percentage points to the target's chance to resist.",
   };
 }

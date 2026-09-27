@@ -1,1 +1,1 @@
-Mechanics Buff Scaling bonusAttribute = WIS Ward wardBonus(level) + bonusAttribute × 2 Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling Attribute contribution = WIS Ward Ward at skill level + attribute contribution × 2 Cast time = cast time × (1 − spell haste)

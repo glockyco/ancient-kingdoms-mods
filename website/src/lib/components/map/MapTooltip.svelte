@@ -132,22 +132,22 @@
       </div>
     {/if}
     {#if npc.renewalDungeonName && hasNpcRole(npc.roleBitmask, "isRenewalSage")}
-      <div class="text-xs text-muted-foreground">
+      <div class="text-sm text-muted-foreground">
         Resets: {npc.renewalDungeonName}
       </div>
     {/if}
     {#if npc.isPatrolling}
-      <div class="text-xs text-muted-foreground">Patrolling</div>
+      <div class="text-sm text-muted-foreground">Patrolling</div>
     {/if}
   {:else if entity.type === "chest"}
     {@const chest = entity as ChestMapEntity}
     {#if chest.keyRequiredName}
-      <div class="text-xs text-amber-400">Key: {chest.keyRequiredName}</div>
+      <div class="text-sm text-amber-400">Key: {chest.keyRequiredName}</div>
     {/if}
   {:else if entity.type === "altar"}
     {@const altar = entity as AltarMapEntity}
     {#if altar.activationItemName}
-      <div class="text-xs text-amber-400">
+      <div class="text-sm text-amber-400">
         Requires: {altar.activationItemName}
       </div>
     {/if}
@@ -157,12 +157,12 @@
   {:else if entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
     {@const monster = entity as MonsterMapEntity}
     {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
-      <div class="text-xs text-cyan-400">
-        Kill: {monster.sourceMonsterName}
+      <div class="text-sm text-cyan-400">
+        Spawns after killing {monster.sourceMonsterName}
       </div>
     {/if}
     {#if monster.isPatrolling}
-      <div class="text-xs text-muted-foreground">Patrolling</div>
+      <div class="text-sm text-muted-foreground">Patrolling</div>
     {/if}
   {:else if entity.type === "portal"}
     {@const portal = entity as PortalMapEntity}
@@ -170,15 +170,15 @@
       <div class="text-xs text-red-400">Closed</div>
     {:else}
       {#if portal.requiredItemName}
-        <div class="text-xs text-amber-400">
+        <div class="text-sm text-amber-400">
           Key: {portal.requiredItemName}{portal.requiresEveryoneKey
-            ? " (each traveler)"
-            : " (one per party)"}
+            ? " (every party member needs one)"
+            : " (one party member needs one)"}
         </div>
       {/if}
       {#if portal.needMonsterDeadName}
-        <div class="text-xs text-amber-400">
-          Kill: {portal.needMonsterDeadName}
+        <div class="text-sm text-amber-400">
+          Kill {portal.needMonsterDeadName} to enter
         </div>
       {/if}
       {#if portal.requiredLevel > 0}

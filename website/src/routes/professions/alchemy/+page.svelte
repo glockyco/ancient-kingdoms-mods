@@ -169,7 +169,9 @@
     <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
     <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — a known recipe cannot be learned again; learning consumes one recipe item. -->
     <p class="text-muted-foreground">
-      <span class="block">Learning a new potion consumes one recipe item.</span>
+      <span class="block"
+        >Learning a new potion recipe consumes one recipe item.</span
+      >
       <span class="block"
         >A recipe you already know cannot be learned again.</span
       >
@@ -180,9 +182,9 @@
         >Brewing requires a learned recipe and room for the potion.</span
       >
       <span class="block"
-        >Ingredients are consumed before the success roll, so a failed brew
-        still costs them.</span
+        >You spend ingredients before you know whether the brew succeeds.</span
       >
+      <span class="block">A failed brew does not return them.</span>
     </p>
   </section>
 

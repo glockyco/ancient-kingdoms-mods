@@ -60,7 +60,9 @@
       {#if row.original.preferred_race && classCanBe(cls, row.original.preferred_race)}
         {row.original.preferred_race}
       {:else}
-        <span class="text-muted-foreground">Any in class pool</span>
+        <span class="text-muted-foreground"
+          >Any race available to this class</span
+        >
       {/if}
     {:else if row.original.preferred_race}
       {row.original.preferred_race}
