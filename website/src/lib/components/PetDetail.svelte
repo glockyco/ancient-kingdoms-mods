@@ -422,7 +422,7 @@
                 {/if}
                 <br />
                 <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
-                +1 all resistances per level
+                All resists every lvl
               </dd>
             </div>
             <div class="flex gap-2">
