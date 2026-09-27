@@ -385,6 +385,10 @@
                       pet.type_monster === "Rogue"
                     ? "Rage"
                     : "Mana"}
+                {#if pet.type_monster === "Bard"}
+                  <!-- Source: exported-data/pets.json, Pet.cs:953-961 — the Bard prefab has no Mana curve; the bar shows active songs. -->
+                  — active songs do not use Mana
+                {/if}
               </dd>
             </div>
             <div class="flex gap-2">
@@ -416,6 +420,9 @@
                   Cha every 2 lvls · Str every 3 · Dex every 4 · Con every 5 ·
                   Wis &amp; Int every 6
                 {/if}
+                <br />
+                <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
+                +1 all resistances per level
               </dd>
             </div>
             <div class="flex gap-2">
@@ -448,14 +455,7 @@
                 while the mercenary is summoned also adds +1 damage and +1 magic
                 damage. The game does not save this bonus. The next summon
                 restores the damage rolled at hire. If that roll was 0, each
-                summon rolls a new value instead.<br />
-                <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
-                Per regular level: +1 all resistances
-                {#if pet.type_monster === "Bard"}
-                  <br />
-                  Base Mana is zero, so the Mana multiplier has no effect. Active
-                  songs do not use Mana.
-                {/if}
+                summon rolls a new value instead.
               </dd>
             </div>
             <div class="flex gap-2">
