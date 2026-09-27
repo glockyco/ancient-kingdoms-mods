@@ -535,7 +535,7 @@
           Notable
         </span>
       {/if}
-      <RoleBadges roles={data.npc.roles} />
+      <RoleBadges roles={data.npc.roles} linked />
       {#if data.npc.is_christmas_npc}
         <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
           <Snowflake class="{ICON_BADGE.iconSize} text-red-500" />

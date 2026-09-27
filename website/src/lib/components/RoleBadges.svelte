@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { NpcRoles } from "$lib/types/npcs";
-  import { getActiveRoles, type RoleCategory } from "$lib/utils/roles";
+  import {
+    getActiveRoles,
+    ROLE_RULES,
+    type RoleCategory,
+  } from "$lib/utils/roles";
   import { ICON_BADGE } from "$lib/styles/badge";
   import Scroll from "@lucide/svelte/icons/scroll";
   import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
@@ -13,11 +17,13 @@
   interface Props {
     /** NPC roles object */
     roles: NpcRoles;
+    /** Link each badge to the section that explains its service */
+    linked?: boolean;
     /** Additional CSS classes for the container */
     class?: string;
   }
 
-  let { roles, class: className = "" }: Props = $props();
+  let { roles, linked = false, class: className = "" }: Props = $props();
 
   const activeRoles = $derived(getActiveRoles(roles));
 
@@ -53,10 +59,22 @@
 {#if activeRoles.length > 0}
   <div class="flex flex-wrap gap-1 {className}">
     {#each activeRoles as role (role.key)}
-      <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
-        {@render categoryIcon(role.category)}
-        {role.label}
-      </span>
+      {@const rules = linked ? ROLE_RULES[role.key] : undefined}
+      {#if rules}
+        <a
+          href={rules.href}
+          title={rules.label}
+          class="{ICON_BADGE.base} {ICON_BADGE.link}"
+        >
+          {@render categoryIcon(role.category)}
+          {role.label}
+        </a>
+      {:else}
+        <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
+          {@render categoryIcon(role.category)}
+          {role.label}
+        </span>
+      {/if}
     {/each}
   </div>
 {:else}
