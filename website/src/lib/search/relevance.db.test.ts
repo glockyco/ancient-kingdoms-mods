@@ -46,6 +46,12 @@ function passing(cases: readonly JudgedCase[]): JudgedCase[] {
  */
 const RECORDED_PASSES = { tuning: 97, development: 142, heldOut: 127 };
 
+/** Sampled entities whose every query variant passes, out of all sampled. */
+const RECORDED_ENTITY_PASSES = {
+  development: { entities: 36, passes: 33 },
+  heldOut: { entities: 35, passes: 31 },
+};
+
 describe("judged relevance", () => {
   test.each([
     ["tuning", TUNING_CASES],
@@ -60,6 +66,49 @@ describe("judged relevance", () => {
       passes: RECORDED_PASSES[name],
     });
   });
+
+  // Sampled cases come in variants of one entity: its exact name, a prefix,
+  // and a typo. An entity passes only when every variant passes.
+  test.each([
+    ["development", DEVELOPMENT_CASES],
+    ["heldOut", HELD_OUT_CASES],
+  ] as const)(
+    "%s sampled entities keep their recorded pass count",
+    (name, cases) => {
+      const passed = new Set(passing(cases));
+      // An exact-name case exists for every sampled entity. A typo case accepts
+      // the same destinations, and a prefix case accepts one of them.
+      const entities = new Map<string, JudgedCase[]>(
+        cases
+          .filter((judged) => judged.intent === "exact")
+          .map((judged) => [judged.expect.join(" "), [judged]]),
+      );
+      const orphans: string[] = [];
+      for (const judged of cases) {
+        if (judged.intent !== "typo" && judged.intent !== "prefix") continue;
+        const key =
+          judged.intent === "typo"
+            ? judged.expect.join(" ")
+            : [...entities.keys()].find((candidate) =>
+                candidate.split(" ").includes(judged.expect[0]),
+              );
+        const variants = key ? entities.get(key) : undefined;
+        if (variants) variants.push(judged);
+        else orphans.push(judged.q);
+      }
+      expect(orphans).toEqual([]);
+      const failed = [...entities]
+        .filter(
+          ([, variants]) => !variants.every((judged) => passed.has(judged)),
+        )
+        .map(([key]) => key);
+      expect({
+        entities: entities.size,
+        passes: entities.size - failed.length,
+        failed,
+      }).toMatchObject(RECORDED_ENTITY_PASSES[name]);
+    },
+  );
 
   test("every guide article title returns its own section first three", () => {
     const articles = db

@@ -1,7 +1,7 @@
 ## 1. Judged query set
 
 - [x] 1.1 Move `evidence/tuning-queries.json` and `evidence/development-queries.json` into a typed fixture under `website/src/lib/search/` as development cases, keeping exact destination hrefs. Verify that no query string occurs in both sets.
-- [x] 1.2 Add a relevance test that builds the index from `compendium.db`, runs each case, and reports passes by intent and by sampled entity. It fails when a guide title is outside the first three results, and when the held-out pass count from task 6.1 falls below its recorded number. Verify that it runs against the current `searchEntities()` and reports 59/106 tuning and 123/150 development passes before the engine changes. Done as follows: the baseline was measured by running the old `searchEntities()` on the SQLite 3.33.0 WASM build before the engine changed; the committed test runs the new engine and lists failing cases by intent.
+- [x] 1.2 Add a relevance test that builds the index from `compendium.db`, runs each case, and reports passes by intent and by sampled entity. It fails when a guide title is outside the first three results, and when the held-out pass count from task 6.1 falls below its recorded number. Verify that it runs against the current `searchEntities()` and reports 59/106 tuning and 123/150 development passes before the engine changes. Done as follows: the baseline was measured by running the old `searchEntities()` on the SQLite 3.33.0 WASM build before the engine changed; the committed test runs the new engine, lists failing cases by intent, and gates the pass count of sampled entities, where an entity passes when all of its query variants pass.
 
 ## 2. Index documents
 

@@ -41,7 +41,9 @@ Measured on the production build (`vite preview`) in headless Chromium on 2026-0
 
 The index asset `search-index.json.<hash>.gz` is 383,480 bytes, from the build output. The worker fetches it, so the page's network log does not show it. An item page loads neither the SQLite WASM nor `compendium.db` to search.
 
-Final judged results: 97 of 107 tuning cases, 142 of 150 development cases, and 127 of 131 held-out cases pass. All four held-out failures are short prefixes that match several names ("Guard", "Emerald").
+Final judged results: 97 of 107 tuning cases, 142 of 150 development cases, and 127 of 131 held-out cases pass. All four held-out failures are short prefixes that match several names ("Guard", "Emerald"). Counted by sampled entity, where an entity passes only when its exact-name, prefix, and typo queries all pass, 33 of 36 development entities and 31 of 35 held-out entities pass.
+
+The tuning set grew from the 106 cases in the spike table to 107: one case was added for the `sim` synonym. The spike's old-engine results (59 of 106, 123 of 150) were measured on the earlier sets and are not directly comparable with the final tuning count.
 
 ## Goals / Non-Goals
 
