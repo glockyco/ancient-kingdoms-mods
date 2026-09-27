@@ -972,7 +972,7 @@
           parent: container,
           views: new deckModules.OrthographicView({}),
           initialViewState,
-          controller: { inertia: 500 },
+          controller: { inertia: false },
           eventRecognizerOptions: MAP_EVENT_RECOGNIZER_OPTIONS,
           layers,
           getCursor: ({ isHovering }: { isHovering: boolean }) =>
