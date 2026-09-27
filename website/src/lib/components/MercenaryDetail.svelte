@@ -287,10 +287,6 @@
           <User class="h-4 w-4 text-muted-foreground" />
           Your character
         </Card.Title>
-        <Card.Description>
-          The numbers on this page use these values. Your browser saves them for
-          every mercenary page.
-        </Card.Description>
       </Card.Header>
       <Card.Content class="grid gap-6 sm:grid-cols-3">
         <NumberField
