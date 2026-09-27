@@ -1602,13 +1602,13 @@
       "sha256": "91f168be19201336c513e20c1476403c0af8b62d50e76ad29ec86a50e88c9b26",
       "span": 19
     },
-    "PlayerInventory.cs:1710-1725": {
-      "sha256": "a0a5a5eca84adcd4c8bb42ccfb8a442f159af66a4146c7d8dc8d79b427e3087f",
-      "span": 16
-    },
     "PlayerInventory.cs:1795-1809": {
       "sha256": "d4e26f6671e798eb2d952155f82ef4473d82bf3b302feb4a4725e4af20f87638",
       "span": 15
+    },
+    "PlayerInventory.cs:2007-2015": {
+      "sha256": "fc750d393ec1437295a8cf2b93ff572ae1e2c9de618b8724a9af1ab86aeffa4f",
+      "span": 9
     },
     "PlayerInventory.cs:31-42": {
       "sha256": "9f6fd27d2a8056dc39b378373f4928d2a9586a73a9556d52b0f231a3b4a04bee",
@@ -1626,21 +1626,25 @@
       "sha256": "140cd9d8a16faded0024c7dc8d3e678cef4e01ceebcb674048df5a25bbf5c75b",
       "span": 15
     },
-    "PlayerInventory.cs:441-444": {
-      "sha256": "cc38bc0e87690e70d7f3b9baa9114314ea510d4964bfaa8546caacda3ddb74ea",
+    "PlayerInventory.cs:449-454": {
+      "sha256": "1312a3bfe4342b6fbdb104bf170555d5a6fde0df6a4b25be1291266678c1c2ff",
+      "span": 6
+    },
+    "PlayerInventory.cs:498-511": {
+      "sha256": "a0b3ac938f0cd1c8b2498636fdc7b71a06113fd6e396d60c919adab6c22acbd0",
+      "span": 14
+    },
+    "PlayerInventory.cs:513-516": {
+      "sha256": "7b4fa89071d308bb958a92eb80dd193bff96c7429c6ec535d75781f4c2c7c268",
       "span": 4
     },
-    "PlayerInventory.cs:493-504": {
-      "sha256": "010202d603830d51d7d2d04f0e8541d405d7693bc86f52fc6bab082b7a8ef45b",
-      "span": 12
+    "PlayerInventory.cs:67-93": {
+      "sha256": "98ec203ff45627ab4c9b6302cde55ed8905b49be2cccf82867a9705c28515b25",
+      "span": 27
     },
-    "PlayerInventory.cs:554-560": {
-      "sha256": "6b721fccb1bb7eef1ddabce9a6fa0ff01b7a2a6cfd6712829e546ad43ac6123a",
-      "span": 7
-    },
-    "PlayerInventory.cs:56-81": {
-      "sha256": "cc521609c348a61736786659f3d7fc28013f5e2b58fa51fa7d8a054b64993e97",
-      "span": 26
+    "PlayerInventory.cs:694-702": {
+      "sha256": "90e340b9d9fafabd3419ef9f5d0722584396e70d480fe47c4b035922daafa99e",
+      "span": 9
     },
     "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
       "span": 0

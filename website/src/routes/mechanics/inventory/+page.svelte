@@ -446,7 +446,7 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:56-81 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
+          <!-- Source: server-scripts/PlayerInventory.cs:67-93 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
           items try base carried slots first, then unlocked backpack slots.
         </li>
         <li>
@@ -454,16 +454,16 @@
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:493-504 and 1710-1725 — Shift-click opens an amount picker, then the server validates and splits the requested amount. -->Shift-click
-          opens an amount picker and moves the chosen amount into an empty
-          target slot.
+          <!-- Source: server-scripts/PlayerInventory.cs:449-454 and 498-511 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
+          Shift while you drag a stack onto an empty slot. An amount picker
+          opens and moves the chosen amount into that slot.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:441-444 — non-split, non-merge inventory drag swaps slots. -->Other
+          <!-- Source: server-scripts/PlayerInventory.cs:513-516 — non-split, non-merge inventory drag swaps slots. -->Other
           carried-item drags swap source and destination slots.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:554-560 — non-destroyable carried items cannot be destroyed. -->Non-destroyable
+          <!-- Source: server-scripts/PlayerInventory.cs:694-702 and 2007-2015 — non-destroyable carried items cannot be destroyed. -->Non-destroyable
           items cannot be deleted.
         </li>
       </ul>
