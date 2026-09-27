@@ -141,6 +141,9 @@
     "BuffSkill.cs:ScaleHealingPerSecondBonus": {
       "span": 0
     },
+    "BuffSkill.cs:buffTime": {
+      "span": 0
+    },
     "BuffSkill.cs:illusionRace": {
       "span": 0
     },
@@ -216,6 +219,10 @@
     "Combat.cs:1161-1165": {
       "sha256": "14fcecd7b4ecacdc0f493cd8eea8d593fe9631f6a7dab20e897f604125944b42",
       "span": 5
+    },
+    "Combat.cs:1165": {
+      "sha256": "95b1c94c3901b4c43b41fa8fae67e37a4ddf6372d50effd8158ed0f2d81cf8a4",
+      "span": 1
     },
     "Combat.cs:1187": {
       "sha256": "81fd7423a286aed6da1c14877f4b5968b19c826ee4d9b7144ba97eaeee8d0981",

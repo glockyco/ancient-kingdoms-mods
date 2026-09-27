@@ -13,6 +13,7 @@
     CLASSES,
     DEATH_SAVE_MIN_LEVEL,
     MAX_HIRED,
+    MAX_VETERAN,
     VET_MULT_PER_POINT,
     activeMercenaryLimit,
     charismaDiscount,
@@ -141,17 +142,34 @@
   const deathSave = $derived(pet.skills.find((s) => s.is_innate) ?? null);
   const deathSaveInfo = $derived.by(() => {
     if (!deathSave) return null;
-    const rank = deathSaveRank(veteran);
-    // Source: server-scripts/Combat.cs:1161-1165 — the Rage cost is energyCosts.Get(rank); the cooldown is cooldown.baseValue at every rank.
-    return {
-      rank,
-      rage: linearAt(
-        requireLinearValue(
-          deathSave.energy_cost,
-          `${deathSave.id} energy_cost`,
+    const at = (veteranLevel: number) => {
+      const rank = deathSaveRank(veteranLevel);
+      // Source: server-scripts/Combat.cs:1161-1165, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
+      return {
+        rage: linearAt(
+          requireLinearValue(
+            deathSave.energy_cost,
+            `${deathSave.id} energy_cost`,
+          ),
+          rank,
         ),
-        rank,
-      ),
+        seconds:
+          Math.round(
+            linearAt(
+              {
+                base_value: deathSave.duration_base,
+                bonus_per_level: deathSave.duration_per_level,
+              },
+              rank,
+            ) * 100,
+          ) / 100,
+      };
+    };
+    return {
+      now: at(veteran),
+      low: at(0),
+      high: at(MAX_VETERAN),
+      // Source: server-scripts/Combat.cs:1165 — the cooldown is cooldown.baseValue at every rank.
       cooldown: requireLinearValue(
         deathSave.cooldown,
         `${deathSave.id} cooldown`,
@@ -403,20 +421,15 @@
                 </td>
               </tr>
             {/each}
-            {#each resistanceRows as r (r.label)}
-              <tr class="border-b border-border/50">
-                <td class="py-2 pr-4">{r.label}</td>
-                <td class="py-2 pr-4 text-muted-foreground"
-                  >+{r.per_level} every level</td
-                >
-                <td class="py-2 pr-4 text-right font-medium tabular-nums"
-                  >{r.atLevel} total</td
-                >
-                <td class="hidden sm:table-cell"></td>
-              </tr>
-            {/each}
           </tbody>
         </table>
+        <!-- Source: exported-data/pets.json — each resistance is base + per_level × (level − 1). -->
+        {#each resistanceRows as r (r.label)}
+          <p class="text-sm">
+            {r.label}: <span class="font-medium tabular-nums">{r.atLevel}</span>
+            at level {level}, +{r.per_level} every level.
+          </p>
+        {/each}
 
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
@@ -559,22 +572,30 @@
               href="/skills/{deathSave.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{deathSave.name}</a
-            > instead.
+            >
+            instead and is invulnerable to all attacks for {deathSaveInfo.now
+              .seconds} seconds.
           </p>
-          <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {@render stat(
-              "Available",
-              level >= DEATH_SAVE_MIN_LEVEL ? "Yes" : "No",
-              `Needs level ${DEATH_SAVE_MIN_LEVEL}`,
-            )}
-            {@render stat(
-              "Rank",
-              String(deathSaveInfo.rank),
-              "Veteran level ÷ 10, rounded",
-            )}
-            {@render stat("Rage cost", fmt(deathSaveInfo.rage))}
+          {#if level < DEATH_SAVE_MIN_LEVEL}
+            <Alert variant="warning">
+              <Info />
+              <p>
+                It works only when you are level {DEATH_SAVE_MIN_LEVEL}. You are
+                level {level}.
+              </p>
+            </Alert>
+          {/if}
+          <dl class="grid grid-cols-3 gap-3">
+            {@render stat("Invulnerable for", `${deathSaveInfo.now.seconds} s`)}
+            {@render stat("Rage cost", fmt(deathSaveInfo.now.rage))}
             {@render stat("Cooldown", `${fmt(deathSaveInfo.cooldown)} s`)}
           </dl>
+          <p class="text-muted-foreground">
+            Duration and Rage cost rise with your veteran level, from {deathSaveInfo
+              .low.seconds} s for {deathSaveInfo.low.rage} Rage at veteran level 0
+            to {deathSaveInfo.high.seconds} s for {deathSaveInfo.high.rage} Rage at
+            veteran level {MAX_VETERAN}.
+          </p>
           <p class="text-muted-foreground">
             Without enough Rage, the hit kills the mercenary.
           </p>
