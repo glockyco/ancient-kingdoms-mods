@@ -1,5 +1,6 @@
 <script lang="ts" generics="TData">
   import { onMount, untrack } from "svelte";
+  import { afterNavigate } from "$app/navigation";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
   import {
     getCoreRowModel,
@@ -367,73 +368,118 @@
     window.history.replaceState(history.state, "", newUrl);
   }
 
-  onMount(() => {
-    if (urlKey) {
-      const prefix = `${urlKey}.`;
-      const restoredFilters: ColumnFiltersState = [];
-      const restoredVisibility: VisibilityState = {};
-      let hasUrlState = false;
-      let restoredPage: number | null = null;
-      let restoredSorting: SortingState | null = null;
+  interface UrlTableState {
+    hasUrlState: boolean;
+    search: string | null;
+    filters: ColumnFiltersState;
+    visibility: VisibilityState;
+    page: number | null;
+    sorting: SortingState | null;
+  }
 
-      // Find all URL params that match our prefix (normalized to fix &amp; from Steam links)
-      new URLSearchParams(getNormalizedUrlSearch()).forEach((value, key) => {
-        if (key.startsWith(prefix)) {
-          hasUrlState = true;
-          const paramKey = key.slice(prefix.length);
+  /** The table state this table's `{urlKey}.*` parameters describe. */
+  function readUrlState(): UrlTableState {
+    const prefix = `${urlKey}.`;
+    const restoredFilters: ColumnFiltersState = [];
+    const restoredVisibility: VisibilityState = {};
+    let hasUrlState = false;
+    let restoredSearch: string | null = null;
+    let restoredPage: number | null = null;
+    let restoredSorting: SortingState | null = null;
 
-          if (paramKey === "search") {
-            globalFilter = value;
-          } else if (paramKey === "hide") {
-            const hiddenCols = value.split(",").filter(Boolean);
-            for (const col of hiddenCols) {
-              restoredVisibility[col] = false;
-            }
-          } else if (paramKey === "show") {
-            const shownCols = value.split(",").filter(Boolean);
-            for (const col of shownCols) {
-              restoredVisibility[col] = true;
-            }
-          } else if (paramKey === "page") {
-            const pageNum = parseInt(value, 10);
-            if (!isNaN(pageNum) && pageNum > 0) {
-              restoredPage = pageNum - 1;
-            }
-          } else if (paramKey === "sort") {
-            const sortParts = value.split(",").filter(Boolean);
-            restoredSorting = sortParts.map((part) => {
-              const [id, dir] = part.split(":");
-              return { id, desc: dir === "desc" };
-            });
+    // Find all URL params that match our prefix (normalized to fix &amp; from Steam links)
+    new URLSearchParams(getNormalizedUrlSearch()).forEach((value, key) => {
+      if (key.startsWith(prefix)) {
+        hasUrlState = true;
+        const paramKey = key.slice(prefix.length);
+
+        if (paramKey === "search") {
+          restoredSearch = value;
+        } else if (paramKey === "hide") {
+          const hiddenCols = value.split(",").filter(Boolean);
+          for (const col of hiddenCols) {
+            restoredVisibility[col] = false;
+          }
+        } else if (paramKey === "show") {
+          const shownCols = value.split(",").filter(Boolean);
+          for (const col of shownCols) {
+            restoredVisibility[col] = true;
+          }
+        } else if (paramKey === "page") {
+          const pageNum = parseInt(value, 10);
+          if (!isNaN(pageNum) && pageNum > 0) {
+            restoredPage = pageNum - 1;
+          }
+        } else if (paramKey === "sort") {
+          const sortParts = value.split(",").filter(Boolean);
+          restoredSorting = sortParts.map((part) => {
+            const [id, dir] = part.split(":");
+            return { id, desc: dir === "desc" };
+          });
+        } else {
+          // Check if it's a stat filter (format: "stat1,stat2;mode" or ";mode" for mode-only)
+          const statFilterMatch = value.match(/^(.*);(any|all)$/);
+          if (statFilterMatch) {
+            const stats = statFilterMatch[1].split(",").filter(Boolean);
+            const mode = statFilterMatch[2] as "any" | "all";
+            restoredFilters.push({ id: paramKey, value: { stats, mode } });
           } else {
-            // Check if it's a stat filter (format: "stat1,stat2;mode" or ";mode" for mode-only)
-            const statFilterMatch = value.match(/^(.*);(any|all)$/);
-            if (statFilterMatch) {
-              const stats = statFilterMatch[1].split(",").filter(Boolean);
-              const mode = statFilterMatch[2] as "any" | "all";
-              restoredFilters.push({ id: paramKey, value: { stats, mode } });
+            // Check if it's a range filter (format: "min-max", "-max", "min-")
+            const rangeMatch = value.match(/^(-?\d*)-(-?\d*)$/);
+            if (rangeMatch) {
+              const min =
+                rangeMatch[1] !== "" ? parseInt(rangeMatch[1], 10) : null;
+              const max =
+                rangeMatch[2] !== "" ? parseInt(rangeMatch[2], 10) : null;
+              if (min !== null || max !== null) {
+                restoredFilters.push({ id: paramKey, value: [min, max] });
+              }
             } else {
-              // Check if it's a range filter (format: "min-max", "-max", "min-")
-              const rangeMatch = value.match(/^(-?\d*)-(-?\d*)$/);
-              if (rangeMatch) {
-                const min =
-                  rangeMatch[1] !== "" ? parseInt(rangeMatch[1], 10) : null;
-                const max =
-                  rangeMatch[2] !== "" ? parseInt(rangeMatch[2], 10) : null;
-                if (min !== null || max !== null) {
-                  restoredFilters.push({ id: paramKey, value: [min, max] });
-                }
-              } else {
-                // Faceted filter (comma-separated values)
-                const values = value.split(",").filter(Boolean);
-                if (values.length > 0) {
-                  restoredFilters.push({ id: paramKey, value: values });
-                }
+              // Faceted filter (comma-separated values)
+              const values = value.split(",").filter(Boolean);
+              if (values.length > 0) {
+                restoredFilters.push({ id: paramKey, value: values });
               }
             }
           }
         }
-      });
+      }
+    });
+
+    return {
+      hasUrlState,
+      search: restoredSearch,
+      filters: restoredFilters,
+      visibility: restoredVisibility,
+      page: restoredPage,
+      sorting: restoredSorting,
+    };
+  }
+
+  // A link to the same page with other filters, such as a search result that
+  // opens a filtered list, keeps this component mounted. Apply the new URL
+  // state, and reset what the URL no longer sets.
+  afterNavigate(({ type }) => {
+    if (!urlKey || !isHydrated || type === "enter") return;
+    const state = readUrlState();
+    globalFilter = state.search ?? "";
+    columnFilters = state.filters;
+    columnVisibility = { ...initialColumnVisibility, ...state.visibility };
+    pagination = { ...pagination, pageIndex: state.page ?? 0 };
+    sorting = state.sorting ?? initialSorting;
+  });
+
+  onMount(() => {
+    if (urlKey) {
+      const {
+        hasUrlState,
+        search: restoredSearch,
+        filters: restoredFilters,
+        visibility: restoredVisibility,
+        page: restoredPage,
+        sorting: restoredSorting,
+      } = readUrlState();
+      if (restoredSearch !== null) globalFilter = restoredSearch;
 
       // Track if we restored from localStorage (need to sync URL after hydration)
       let restoredFromStorage = false;
