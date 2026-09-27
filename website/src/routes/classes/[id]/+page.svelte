@@ -44,6 +44,7 @@
     ClassItem,
     ClassQuest,
   } from "$lib/queries/classes.server";
+  import * as Card from "$lib/components/ui/card";
   import Zap from "@lucide/svelte/icons/zap";
   import Gem from "@lucide/svelte/icons/gem";
   import Scroll from "@lucide/svelte/icons/scroll";
@@ -62,8 +63,19 @@
       .sort(),
   );
 
+  const daggerSkillCount = untrack(
+    () =>
+      data.skills.filter(
+        (skill) => skill.required_weapon_category === "WeaponDagger",
+      ).length,
+  );
   // Sorted class IDs for sibling nav (alphabetical)
   const sortedClassIds = [...ALL_CLASS_IDS].sort();
+
+  /** Guide notes render one sentence per line. */
+  function sentences(text: string): string[] {
+    return text.split(/(?<=\.)\s+/);
+  }
 
   function getDifficultyLabel(difficulty: number): string {
     if (difficulty === 1) return "Easy";
@@ -170,9 +182,6 @@
       const tierPositions = data.skills
         .filter((skill) => skill.tier > 0 && !skill.is_veteran)
         .map((skill) => skill.class_skill_position);
-      const veteranPositions = data.skills
-        .filter((skill) => skill.is_veteran)
-        .map((skill) => skill.class_skill_position);
 
       if (tierPositions.length === 0) {
         throw new Error(
@@ -180,22 +189,8 @@
         );
       }
 
-      const lastTierPosition = Math.max(...tierPositions);
-      const utilityPositions = data.skills
-        .filter(
-          (skill) =>
-            skill.max_level === 0 &&
-            skill.class_skill_position > lastTierPosition,
-        )
-        .map((skill) => skill.class_skill_position);
-
       return {
-        lastTierPosition,
-        masteryEndPosition: Math.min(
-          ...veteranPositions,
-          ...utilityPositions,
-          Number.POSITIVE_INFINITY,
-        ),
+        lastTierPosition: Math.max(...tierPositions),
       };
     })(),
   );
@@ -206,7 +201,7 @@
       !skill.is_veteran &&
       skill.tier === 0 &&
       skill.class_skill_position > skillProgressionBounds.lastTierPosition &&
-      skill.class_skill_position < skillProgressionBounds.masteryEndPosition
+      skill.class_skill_position < 18
     );
   }
 
@@ -214,6 +209,7 @@
     if (skill.base_skill) return "Base";
     if (skill.is_veteran) return "Veteran";
     if (isMasterySkill(skill)) return "Mastery";
+    if (skill.class_skill_position >= 18) return "Utility";
     if (skill.tier === 0) return "Core";
     return `Tier ${skill.tier}`;
   }
@@ -247,6 +243,7 @@
         "Tier 3",
         "Tier 4",
         "Mastery",
+        "Utility",
         "Veteran",
       ];
       return order.filter((c) => cats.has(c));
@@ -268,6 +265,7 @@
           "Tier 3",
           "Tier 4",
           "Mastery",
+          "Utility",
           "Veteran",
         ];
         const categoryDifference =
@@ -296,6 +294,16 @@
     {
       accessorKey: "required_spent_points",
       header: "Req Points",
+    },
+    { accessorKey: "level_required", header: "Req Lvl" },
+    {
+      id: "prerequisites",
+      header: "Prerequisites",
+      enableSorting: false,
+      accessorFn: (row) =>
+        [row.prerequisite_skill_name, row.prerequisite2_skill_name]
+          .filter(Boolean)
+          .join(", "),
     },
     {
       accessorKey: "max_level",
@@ -549,6 +557,48 @@
     <span class="text-muted-foreground"
       >{getSkillCategoryDisplay(row.original)}</span
     >
+  {:else if cell.column.id === "level_required"}
+    <span class="ml-auto">
+      {#if row.original.level_required > 0}
+        {row.original.level_required}
+      {:else}
+        <span class="text-muted-foreground">—</span>
+      {/if}
+    </span>
+  {:else if cell.column.id === "prerequisites"}
+    <span class="space-y-1 whitespace-nowrap">
+      {#if row.original.prerequisite_skill_id}
+        <a
+          href="/skills/{row.original.prerequisite_skill_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {row.original.prerequisite_skill_name ??
+            row.original.prerequisite_skill_id}
+        </a>
+        <span class="text-muted-foreground"
+          >rank {row.original.prerequisite_level}</span
+        >
+      {/if}
+      {#if row.original.prerequisite2_skill_id}
+        {#if row.original.prerequisite_skill_id}<span
+            class="text-muted-foreground"
+            >,
+          </span>{/if}
+        <a
+          href="/skills/{row.original.prerequisite2_skill_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {row.original.prerequisite2_skill_name ??
+            row.original.prerequisite2_skill_id}
+        </a>
+        <span class="text-muted-foreground"
+          >rank {row.original.prerequisite2_level}</span
+        >
+      {/if}
+      {#if !row.original.prerequisite_skill_id && !row.original.prerequisite2_skill_id}
+        <span class="text-muted-foreground">—</span>
+      {/if}
+    </span>
   {:else if cell.column.id === "required_spent_points"}
     <span class="ml-auto">
       {#if row.original.required_spent_points}
@@ -597,7 +647,7 @@
 }: {
   header: Header<ClassSkill, unknown>;
 })}
-  {#if ["required_spent_points", "max_level", "cost", "cooldown", "cast_time"].includes(header.id)}
+  {#if ["level_required", "required_spent_points", "max_level", "cost", "cooldown", "cast_time"].includes(header.id)}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -936,6 +986,65 @@
     {/each}
   </nav>
 
+  <Card.Root id="class-guide" class="bg-muted/30 scroll-mt-24">
+    <Card.Header>
+      <Card.Title>{data.class.name} Guide</Card.Title>
+    </Card.Header>
+    <Card.Content
+      class="space-y-3 text-sm leading-relaxed text-muted-foreground"
+    >
+      <p>
+        <span class="font-medium text-foreground">Attributes</span>
+        {#each sentences(data.guide.attributes.text) as line (line)}
+          <span class="block">{line}</span>
+        {/each}
+        <a
+          href="/mechanics/character#attributes"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Attribute rules</a
+        >
+      </p>
+      <!-- Source: server-scripts/Player.cs:1456-1484 — class resource labels; server-scripts/PlayerSkills.cs:1798-1821 — skill costs spend mana or rage; server-scripts/PlayerSkills.cs:1204-1215 — Bard song limit. -->
+      <p>
+        <span class="font-medium text-foreground">Resource</span>
+        <span class="block"
+          >{getResourceDisplayName(data.class.resource_type)}.</span
+        >
+        <a
+          href="/mechanics/character#resources"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Resource rules</a
+        >
+      </p>
+      <p>
+        <span class="font-medium text-foreground">Equipment</span>
+        {#each sentences(data.guide.equipment.text) as line (line)}
+          <span class="block">{line}</span>
+        {/each}
+      </p>
+      <ul class="list-disc space-y-1.5 pl-5">
+        {#each data.guide.rules as rule, index (rule.text)}
+          <li>
+            {#if data.class.id === "rogue" && index === 0}
+              <span class="block">{daggerSkillCount} {rule.text}</span>
+            {:else}
+              {#each sentences(rule.text) as line (line)}
+                <span class="block">{line}</span>
+              {/each}
+            {/if}
+            {#if rule.href && rule.linkText}
+              <a
+                href={rule.href}
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >{rule.linkText}</a
+              >
+            {/if}
+          </li>
+        {/each}
+      </ul>
+    </Card.Content>
+  </Card.Root>
+
   <!-- Equipment & Weapons Section -->
   {#if data.items.length > 0}
     <section id="equipment" class="scroll-mt-4">
@@ -986,6 +1095,7 @@
           { id: "required_spent_points", desc: false },
           { id: "name", desc: false },
         ]}
+        initialColumnVisibility={{ skill_type: false, cast_time: false }}
         columnLabels={{
           category: "Category",
           cost: costColumnHeader,

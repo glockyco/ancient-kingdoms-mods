@@ -4,6 +4,8 @@ import {
   getClassItemsWithSources,
   getClassQuests,
 } from "$lib/queries/classes.server";
+import { CLASS_GUIDES } from "$lib/data/classes/guide";
+import type { ClassName } from "$lib/utils/classes";
 import { error } from "@sveltejs/kit";
 import { validateClassName } from "$lib/utils/validateClassName";
 import { classDescription } from "$lib/server/meta-description";
@@ -44,6 +46,7 @@ export const load: PageServerLoad = ({ params }) => {
 
   return {
     class: classData,
+    guide: CLASS_GUIDES[className as ClassName],
     skills,
     items,
     itemStatKeys,

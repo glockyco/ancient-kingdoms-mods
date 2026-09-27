@@ -22,3 +22,17 @@ export interface Class {
   visual_source_field: string | null;
   visual_source_type: string | null;
 }
+
+/** Curated class-specific facts with a decompiled-source citation. */
+export interface ClassGuideFact {
+  text: string;
+  source: string;
+  href?: string;
+  linkText?: string;
+}
+
+export interface ClassGuide {
+  attributes: ClassGuideFact;
+  equipment: ClassGuideFact;
+  rules: ClassGuideFact[];
+}

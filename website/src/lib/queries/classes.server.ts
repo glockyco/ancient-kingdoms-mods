@@ -80,6 +80,13 @@ export interface ClassSkill {
   visual_source_type: string | null;
   skill_type: string;
   level_required: number;
+  prerequisite_skill_id: string | null;
+  prerequisite_skill_name: string | null;
+  prerequisite_level: number;
+  prerequisite2_skill_id: string | null;
+  prerequisite2_skill_name: string | null;
+  prerequisite2_level: number;
+  required_weapon_category: string;
   is_innate?: boolean;
   // All fields needed by formatSkillEffect
   damage_type: DamageType | null;
@@ -209,6 +216,13 @@ export function getClassSkills(classId: string): ClassSkill[] {
       va.source_type AS visual_source_type,
       s.skill_type,
       s.level_required,
+      s.prerequisite_skill_id,
+      ps.name AS prerequisite_skill_name,
+      s.prerequisite_level,
+      s.prerequisite2_skill_id,
+      ps2.name AS prerequisite2_skill_name,
+      s.prerequisite2_level,
+      s.required_weapon_category,
       s.damage_type,
       s.damage_over_time_type,
       s.damage_shield_type,
@@ -319,13 +333,15 @@ export function getClassSkills(classId: string): ClassSkill[] {
       json_extract(s.class_skill_positions, '$.' || ?) AS class_skill_position
     FROM skills s
     LEFT JOIN monsters m ON s.summoned_monster_id = m.id
+    LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
+    LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
     LEFT JOIN visual_assets va
       ON va.domain = 'skill'
      AND va.entity_id = s.id
      AND va.kind = 'icon'
     WHERE (? IN (SELECT value FROM json_each(s.player_classes))
        OR 'all' IN (SELECT value FROM json_each(s.player_classes)))
-      AND s.id NOT IN ('alchemy', 'baking', 'crafting', 'digging', 'gathering', 'mining', 'opening', 'teleport', 'new_skill_placeholder')
+      AND s.id != 'new_skill_placeholder'
     ORDER BY class_skill_position`,
     [classId, classId],
   );
