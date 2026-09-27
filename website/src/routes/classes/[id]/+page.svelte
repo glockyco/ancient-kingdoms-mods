@@ -44,10 +44,10 @@
     ClassItem,
     ClassQuest,
   } from "$lib/queries/classes.server";
-  import * as Card from "$lib/components/ui/card";
   import Zap from "@lucide/svelte/icons/zap";
   import Gem from "@lucide/svelte/icons/gem";
   import Scroll from "@lucide/svelte/icons/scroll";
+  import BookOpenText from "@lucide/svelte/icons/book-open-text";
   import EntityLink from "$lib/components/EntityLink.svelte";
 
   let { data } = $props();
@@ -71,11 +71,6 @@
   );
   // Sorted class IDs for sibling nav (alphabetical)
   const sortedClassIds = [...ALL_CLASS_IDS].sort();
-
-  /** Guide notes render one sentence per line. */
-  function sentences(text: string): string[] {
-    return text.split(/(?<=\.)\s+/);
-  }
 
   function getDifficultyLabel(difficulty: number): string {
     if (difficulty === 1) return "Easy";
@@ -986,65 +981,6 @@
     {/each}
   </nav>
 
-  <Card.Root id="class-guide" class="bg-muted/30 scroll-mt-24">
-    <Card.Header>
-      <Card.Title>{data.class.name} Guide</Card.Title>
-    </Card.Header>
-    <Card.Content
-      class="space-y-3 text-sm leading-relaxed text-muted-foreground"
-    >
-      <p>
-        <span class="font-medium text-foreground">Attributes</span>
-        {#each sentences(data.guide.attributes.text) as line (line)}
-          <span class="block">{line}</span>
-        {/each}
-        <a
-          href="/mechanics/character#attributes"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-          >Attribute rules</a
-        >
-      </p>
-      <!-- Source: server-scripts/Player.cs:1456-1484 — class resource labels; server-scripts/PlayerSkills.cs:1798-1821 — skill costs spend mana or rage; server-scripts/PlayerSkills.cs:1204-1215 — Bard song limit. -->
-      <p>
-        <span class="font-medium text-foreground">Resource</span>
-        <span class="block"
-          >{getResourceDisplayName(data.class.resource_type)}.</span
-        >
-        <a
-          href="/mechanics/character#resources"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-          >Resource rules</a
-        >
-      </p>
-      <p>
-        <span class="font-medium text-foreground">Equipment</span>
-        {#each sentences(data.guide.equipment.text) as line (line)}
-          <span class="block">{line}</span>
-        {/each}
-      </p>
-      <ul class="list-disc space-y-1.5 pl-5">
-        {#each data.guide.rules as rule, index (rule.text)}
-          <li>
-            {#if data.class.id === "rogue" && index === 0}
-              <span class="block">{daggerSkillCount} {rule.text}</span>
-            {:else}
-              {#each sentences(rule.text) as line (line)}
-                <span class="block">{line}</span>
-              {/each}
-            {/if}
-            {#if rule.href && rule.linkText}
-              <a
-                href={rule.href}
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-                >{rule.linkText}</a
-              >
-            {/if}
-          </li>
-        {/each}
-      </ul>
-    </Card.Content>
-  </Card.Root>
-
   <!-- Equipment & Weapons Section -->
   {#if data.items.length > 0}
     <section id="equipment" class="scroll-mt-4">
@@ -1145,4 +1081,50 @@
       />
     </section>
   {/if}
+
+  <section id="class-guide" class="scroll-mt-24">
+    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+      <BookOpenText class="h-5 w-5 text-sky-500" />
+      {data.class.name} Guide
+    </h2>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="rounded-lg border bg-muted/30 p-4">
+        <h3 class="font-semibold">Attributes</h3>
+        <p class="mt-2 text-muted-foreground">{data.guide.attributes.text}</p>
+        <a
+          href="/mechanics/character#attributes"
+          class="mt-3 inline-block text-blue-600 dark:text-blue-400 hover:underline"
+          >Attribute rules</a
+        >
+      </div>
+      <div class="rounded-lg border bg-muted/30 p-4">
+        <h3 class="font-semibold">Off-hand</h3>
+        <p class="mt-2 text-muted-foreground">{data.guide.equipment.text}</p>
+      </div>
+    </div>
+
+    {#if data.guide.rules.length > 0}
+      <div class="mt-4 rounded-lg border bg-muted/30 p-4">
+        <h3 class="font-semibold">Playing a {data.class.name}</h3>
+        <ul class="mt-2 list-disc space-y-3 pl-5 text-muted-foreground">
+          {#each data.guide.rules as rule, index (rule.text)}
+            <li>
+              {#if data.class.id === "rogue" && index === 0}
+                {daggerSkillCount}
+              {/if}
+              {rule.text}
+              {#if rule.href && rule.linkText}
+                <a
+                  href={rule.href}
+                  class="mt-1 block w-fit text-blue-600 dark:text-blue-400 hover:underline"
+                  >{rule.linkText}</a
+                >
+              {/if}
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+  </section>
 </div>
