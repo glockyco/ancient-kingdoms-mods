@@ -938,7 +938,7 @@
 
   <!-- Equipment & Weapons Section -->
   {#if data.items.length > 0}
-    <section>
+    <section id="equipment" class="scroll-mt-4">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
         Armor & Weapons ({data.items.length})

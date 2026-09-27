@@ -1,11 +1,11 @@
 <script lang="ts">
-  import PetDetail from "$lib/components/PetDetail.svelte";
+  import MercenaryDetail from "$lib/components/MercenaryDetail.svelte";
 
   let { data } = $props();
 </script>
 
-<PetDetail
+<MercenaryDetail
   pet={data.pet}
   description={data.description}
-  visualAsset={data.visualAsset}
+  role={data.role}
 />

@@ -1,4 +1,5 @@
 import type { ClassSkill } from "$lib/queries/classes.server";
+import type { Curves } from "$lib/utils/merc-stats";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export type PetKind = "Mercenary" | "Companion" | "Familiar";
@@ -77,4 +78,37 @@ export interface PetDetailView {
   classLink: PetClassLink;
   skills: ClassSkill[];
   recruiters: PetRecruiter[];
+}
+
+/** A resistance that grows linearly with the mercenary level. */
+export interface MercenaryResistance {
+  name: string;
+  base: number;
+  per_level: number;
+}
+
+/** One equipment slot and the item category it accepts. */
+export interface MercenaryEquipmentSlot {
+  slot_index: number;
+  accepted_category: string;
+}
+
+/** A mercenary archetype, for links between the mercenary pages. */
+export interface MercenarySibling {
+  id: string;
+  type_monster: string;
+}
+
+/** Class-specific data that only the mercenary detail page shows. */
+export interface MercenaryProfile {
+  /** Base Health and Mana curves of every mercenary class, for stat ranges. */
+  curves: Curves;
+  resistances: MercenaryResistance[];
+  equipmentSlots: MercenaryEquipmentSlot[];
+  siblings: MercenarySibling[];
+}
+
+export interface MercenaryDetailView extends PetDetailView {
+  kind: "Mercenary";
+  profile: MercenaryProfile;
 }

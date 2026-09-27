@@ -294,6 +294,56 @@ export function hirePrice(
   return Math.max(1, base - ceilToInt(base * d));
 }
 
+/** Source: server-scripts/Npc.cs:1893-1904 — a recruiter serves only players at level 10 or higher. */
+export const MERC_MIN_LEVEL = 10;
+/** Source: server-scripts/Experience.cs:maxVeteranLevel, NetworkManagerMMO.cs:768-772 — total veteran points cap at 200. */
+export const MAX_VETERAN = 200;
+/** Source: server-scripts/UIMercenaries.cs:380 — a player can have ten hired mercenaries. */
+export const MAX_HIRED = 10;
+/** Source: server-scripts/Player.cs:10115-10120 — a party holds at most five members. */
+export const MAX_PARTY = 5;
+
+/** Source: server-scripts/UIMercenaries.cs:297-299, Player.cs:10116 — the active limit is 1 below level 20, 2 at 20–29, 3 at 30–39, and 4 at 40+. */
+export function activeMercenaryLimit(level: number): number {
+  if (level >= 40) return 4;
+  if (level >= 30) return 3;
+  if (level >= 20) return 2;
+  return 1;
+}
+
+/**
+ * Rank of each mercenary skill for its owner's progression.
+ * Source: server-scripts/PetSkills.cs:OnStartServer — min(max rank, floor(level ÷ 5) + floor(veteran ÷ 10)), with a minimum of 1 for Bard mercenaries.
+ */
+export function mercenarySkillRank(
+  cls: string,
+  level: number,
+  veteran: number,
+  maximum: number,
+): number {
+  const rank = floorToInt(level / 5) + floorToInt(veteran / 10);
+  return Math.min(maximum, cls === "Bard" ? Math.max(1, rank) : rank);
+}
+
+/** Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice — round(5 + 295 × ((clamp(level, 1, 50) − 1) ÷ 49)^2.8 + 10 × veteran), less the Charisma discount (rounded up), at least 1. */
+export function resurrectionPrice(
+  level: number,
+  veteran: number,
+  discount = 0,
+): number {
+  const x = (clamp(level, 1, 50) - 1) / 49;
+  const base = iround(5 + 295 * x ** 2.8 + Math.max(0, veteran) * 10);
+  return Math.max(1, base - ceilToInt(base * clamp(discount, 0, 0.25)));
+}
+
+/** Source: server-scripts/Combat.cs:1157-1162 — the death-save rank is Mathf.RoundToInt(total veteran points ÷ 10). */
+export function deathSaveRank(veteran: number): number {
+  return iround(veteran / 10);
+}
+
+/** Source: server-scripts/Combat.cs:1159 — the death save needs an owner at level 50 or higher. */
+export const DEATH_SAVE_MIN_LEVEL = 50;
+
 /** P(stat >= target), discrete uniform over integers [lo, hi]. Use for base-combat. */
 export function pAtLeast([lo, hi]: [number, number], target: number): number {
   if (target <= lo) return 1;

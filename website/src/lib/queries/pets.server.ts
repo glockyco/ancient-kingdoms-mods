@@ -2,13 +2,17 @@ import { query, queryOne } from "$lib/db.server";
 import type { ClassSkill } from "./classes.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type {
+  MercenaryDetailView,
   MercenaryListView,
+  MercenaryProfile,
+  MercenaryResistance,
   SummonListView,
   PetDetailView,
   PetKind,
   PetClassLink,
   PetRecruiter,
 } from "$lib/types/pets";
+import { getMercenaryCurves } from "$lib/queries/mercenaries.server";
 
 function getPetKind(is_mercenary: boolean, is_familiar: boolean): PetKind {
   if (is_mercenary) return "Mercenary";
@@ -254,6 +258,61 @@ export function getMercenaryIds(): string[] {
   return query<{ id: string }>(
     `SELECT id FROM pets WHERE is_mercenary = 1`,
   ).map((r) => r.id);
+}
+
+const RESISTANCES = [
+  ["Magic", "magic_resist"],
+  ["Poison", "poison_resist"],
+  ["Fire", "fire_resist"],
+  ["Cold", "cold_resist"],
+  ["Disease", "disease_resist"],
+] as const;
+
+/**
+ * Class-specific data for a mercenary detail page: stat curves, resistance
+ * growth, the equipment slot layout, and the other mercenary archetypes.
+ */
+export function getMercenaryDetail(pet: PetDetailView): MercenaryDetailView {
+  if (pet.kind !== "Mercenary")
+    throw new Error(`Pet ${pet.id} is not a mercenary`);
+
+  const resistRow = queryOne<Record<string, number>>(
+    `SELECT ${RESISTANCES.map(
+      ([, col]) => `${col}_base, ${col}_per_level`,
+    ).join(", ")}
+     FROM pets WHERE id = ?`,
+    [pet.id],
+  );
+  if (!resistRow) throw new Error(`No resistance data for ${pet.id}`);
+  const resistances: MercenaryResistance[] = RESISTANCES.map(([name, col]) => ({
+    name,
+    base: resistRow[`${col}_base`],
+    per_level: resistRow[`${col}_per_level`],
+  }));
+
+  const equipmentSlots = query<{
+    slot_index: number;
+    accepted_category: string;
+  }>(
+    `SELECT slot_index, accepted_category
+     FROM equipment_slots
+     WHERE owner_type = 'mercenary' AND owner_id = ?
+     ORDER BY slot_index`,
+    [pet.classLink.class_id],
+  );
+  if (equipmentSlots.length === 0)
+    throw new Error(`No equipment slots exported for mercenary ${pet.id}`);
+
+  const profile: MercenaryProfile = {
+    curves: getMercenaryCurves(),
+    resistances,
+    equipmentSlots,
+    siblings: query<{ id: string; type_monster: string }>(
+      `SELECT id, type_monster FROM pets WHERE is_mercenary = 1
+       ORDER BY type_monster`,
+    ),
+  };
+  return { ...pet, kind: "Mercenary", profile };
 }
 
 /**

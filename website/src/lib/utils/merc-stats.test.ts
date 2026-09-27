@@ -1,7 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
+  activeMercenaryLimit,
   computeAll,
+  deathSaveRank,
   hirePrice,
+  resurrectionPrice,
   charismaDiscount,
   obtainableRaces,
   pRaceAtRecruiter,
@@ -147,5 +150,35 @@ describe("hiring cost helpers", () => {
     // A Druid cannot be Drassar, so that recruiter rolls the Druid pool.
     expect(pRaceAtRecruiter("Druid", "Human", "Drassar")).toBe(1 / 4);
     expect(pRaceAtRecruiter("Druid", "Drassar", "Drassar")).toBe(0);
+  });
+});
+
+describe("resurrectionPrice", () => {
+  test("spans 8 gold at level 10 to 2,300 gold at level 50, veteran 200", () => {
+    // Level 10 gives 7.57 before rounding; level 1 (5 gold) cannot own a mercenary.
+    expect(resurrectionPrice(10, 0)).toBe(8);
+    expect(resurrectionPrice(50, 200)).toBe(2300);
+  });
+
+  test("rounds the Charisma discount up and caps it at 25%", () => {
+    expect(resurrectionPrice(50, 200, 0.25)).toBe(1725);
+    expect(resurrectionPrice(50, 200, 0.4)).toBe(1725);
+    expect(resurrectionPrice(10, 0, 0.01)).toBe(7);
+  });
+});
+
+describe("activeMercenaryLimit", () => {
+  test("steps up at levels 20, 30, and 40", () => {
+    expect([10, 19, 20, 29, 30, 39, 40, 50].map(activeMercenaryLimit)).toEqual([
+      1, 1, 2, 2, 3, 3, 4, 4,
+    ]);
+  });
+});
+
+describe("deathSaveRank", () => {
+  test("matches Mathf.RoundToInt midpoint-to-even rounding", () => {
+    expect(deathSaveRank(25)).toBe(2);
+    expect(deathSaveRank(35)).toBe(4);
+    expect(deathSaveRank(200)).toBe(20);
   });
 });

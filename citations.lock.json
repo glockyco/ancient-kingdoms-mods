@@ -83,6 +83,9 @@
       "sha256": "72858585388ae5d8fd8249f78824dbc3d5553b85e5b4e81bcadd93b0bfaa3d7d",
       "span": 1
     },
+    "BardMercenarySkills.cs:MaximumCombatSongs": {
+      "span": 0
+    },
     "BardMercenarySkills.cs:NextAttackSkill": {
       "span": 0
     },
@@ -195,9 +198,25 @@
       "sha256": "e3c31ed5f847746b0340a32ec6be94b60af7480337418528f8a2eb7187ff5457",
       "span": 246
     },
+    "Combat.cs:1157-1162": {
+      "sha256": "bf296113bf6e3b753d5f52bc6ca4fab1e0fe7cadcf11ee63b598c50754f13b0d",
+      "span": 6
+    },
     "Combat.cs:1157-1180": {
       "sha256": "da19cf59e64f44ad573ddf10b88f143bfc33633f8143507a93cbff098156a6fb",
       "span": 24
+    },
+    "Combat.cs:1159": {
+      "sha256": "3dd700f41e950042f24732c9a1266bd59c367d01050137d93b437f8807fe69ee",
+      "span": 1
+    },
+    "Combat.cs:1161-1165": {
+      "sha256": "14fcecd7b4ecacdc0f493cd8eea8d593fe9631f6a7dab20e897f604125944b42",
+      "span": 5
+    },
+    "Combat.cs:1187": {
+      "sha256": "81fd7423a286aed6da1c14877f4b5968b19c826ee4d9b7144ba97eaeee8d0981",
+      "span": 1
     },
     "Combat.cs:1235": {
       "sha256": "feae588cd7010377ff87f53db7cd3170cce1a1e9c4a25ae8e55f94ef0b535ac8",
@@ -319,9 +338,17 @@
       "sha256": "0682f411e2a5bc0b43330e074ea12f4aa923a031982e12c42fe2c2e6f8f2fc31",
       "span": 34
     },
+    "Combat.cs:668": {
+      "sha256": "35de553bf0fff5dc7932798ac20932befcbec824cb57338794776eb9d38baec7",
+      "span": 1
+    },
     "Combat.cs:671": {
       "sha256": "d70d2e66d5a7acb48200c6ff31c82f99a3d5e3444eb1314ca432206947f1ff37",
       "span": 1
+    },
+    "Combat.cs:739-755": {
+      "sha256": "24167489d5a293de6bf3a3376c41ba3fed1a36266e4a8176aca0e8f40d316ffd",
+      "span": 17
     },
     "Combat.cs:770-803": {
       "sha256": "c8043431a140936cc2e4d514414f227e93c2dba8eb4cef447b5c80edf812df79",
@@ -533,6 +560,9 @@
       "sha256": "ace3350470cf9821cc9da999bc577b66e51199c15ca88ca2f8f8a57faa218bed",
       "span": 9
     },
+    "EquipmentItem.cs:CanEquipMercenary": {
+      "span": 0
+    },
     "Experience.cs:112-320": {
       "sha256": "bfc1a68fb6585d8d71429f92d0a651e02422e7cce895352e20dcff5b22b0ffe1",
       "span": 209
@@ -593,6 +623,9 @@
       "span": 0
     },
     "Experience.cs:current": {
+      "span": 0
+    },
+    "Experience.cs:maxVeteranLevel": {
       "span": 0
     },
     "ExponentialLong.cs:11-14": {
@@ -975,6 +1008,10 @@
       "sha256": "d45a9bae67e331c6b79ab395c59539599bfbad999249c6e87afbb51d60397ebc",
       "span": 1
     },
+    "NetworkManagerMMO.cs:764-767": {
+      "sha256": "f08f72ef67d723703b504070cea9495410bfe8628df20bb2d0d3a6f4ad5e9cff",
+      "span": 4
+    },
     "NetworkManagerMMO.cs:768-772": {
       "sha256": "3b0a728fa36a626f9cefd148c95a504ccf8c6ecbc84dbec87fdf7bc8842e87b3",
       "span": 5
@@ -1065,10 +1102,6 @@
     "Pet.cs": {
       "span": 0
     },
-    "Pet.cs:1147": {
-      "sha256": "236c6ac4db495f485d4ce26d6e7383689051677fe54a301ac56e0a721c360e2f",
-      "span": 1
-    },
     "Pet.cs:1333-1373": {
       "sha256": "dd62f64de83182763ebdc2b637f68368752908765aec0a36933835f12fa9e78a",
       "span": 41
@@ -1128,6 +1161,10 @@
       "sha256": "597902ac145f06a4f7181ca641cde8e99390ac8a1dd90bdd23d081e350e6b352",
       "span": 6
     },
+    "Player.cs:10116": {
+      "sha256": "c681fb675cc0e663c8cb070125685981f17234cb8dcb6ce403e11b5425efb87e",
+      "span": 1
+    },
     "Player.cs:10140-10152": {
       "sha256": "4b7f6e23fffa227f853fd75d831e123f56ef31985d4ebf1ea777185c529ee13f",
       "span": 13
@@ -1163,6 +1200,10 @@
     "Player.cs:10352-10365": {
       "sha256": "7ddf7e4146fd9ecdbf83c37e88d5bd7ceb64ce9081010f895c8f9e682f77ed87",
       "span": 14
+    },
+    "Player.cs:10417": {
+      "sha256": "74433b510b824b45f1f44f7d3b115263a8809b2be02ed68c30ac6c8848f30b85",
+      "span": 1
     },
     "Player.cs:10555-10590": {
       "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",
@@ -1210,6 +1251,10 @@
     },
     "Player.cs:12655-12659": {
       "sha256": "93a48315e4fff0bb6c76d21eb6913d04cff2442bbc67b247d06f4e5423d5b36d",
+      "span": 5
+    },
+    "Player.cs:13004-13008": {
+      "sha256": "dd4fe4e09859262fc38da5ac089e2275828cf19afca42b394e7270a1a88ccab4",
       "span": 5
     },
     "Player.cs:13015": {
@@ -1370,10 +1415,19 @@
     "Player.cs:HasRadiantAether": {
       "span": 0
     },
+    "Player.cs:OnAggro": {
+      "span": 0
+    },
     "Player.cs:OnDeath": {
       "span": 0
     },
     "Player.cs:ProcessMercenariesOnPlayerRespawn": {
+      "span": 0
+    },
+    "Player.cs:ReloadSummonedMercenaries": {
+      "span": 0
+    },
+    "Player.cs:ResurrectMercenaryNearOwner": {
       "span": 0
     },
     "Player.cs:TryGetSelectedPickaxe": {
@@ -2200,17 +2254,9 @@
       "sha256": "992d7d7cd03dd129a06d2e335f6c309c0274d7cc6e8c553316cfd91da0cb708e",
       "span": 7
     },
-    "UIMercenaries.cs:620-640": {
-      "sha256": "5daf39f4948564d4fbf332d48a0abf3f71629cae619290f16522e36260c23e4d",
-      "span": 21
-    },
     "UIMercenaries.cs:732-734": {
       "sha256": "c4f8243a3dd233eeb857209df6ffde92a988abba6a2333deaab45b823a55c2ff",
       "span": 3
-    },
-    "UIMercenaries.cs:820-835": {
-      "sha256": "90fac65a36e50325af897080ad64c2288b4cbf211c23d41c5347e73bc605d81e",
-      "span": 16
     },
     "UIMercenaries.cs:CalculatePriceMercenaryLevel": {
       "span": 0
@@ -2257,9 +2303,6 @@
     "UINpcTrading.cs:824-831": {
       "sha256": "24e56e21fddf789f66c37d4edbc80b08b48ab59613d323894dc1cf8ad944e251",
       "span": 8
-    },
-    "UINpcTrading.cs:CalculatePurchaseItemPrice": {
-      "span": 0
     },
     "UIRespawn.cs:Respawn": {
       "span": 0

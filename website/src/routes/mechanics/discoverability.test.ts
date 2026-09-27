@@ -14,6 +14,7 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(mechanicsIndex, /href: "\/mechanics\/experience"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/combat"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/monster-spawns"/);
+  assert.match(mechanicsIndex, /href: "\/mechanics\/mercenaries"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/mercenary-stats"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/reputation"/);
 
@@ -24,6 +25,7 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(homepage, /href: "\/mechanics\/experience"/);
   assert.match(homepage, /href: "\/mechanics\/combat"/);
   assert.match(homepage, /href: "\/mechanics\/monster-spawns"/);
+  assert.match(homepage, /href: "\/mechanics\/mercenaries"/);
   assert.match(homepage, /href: "\/mechanics\/mercenary-stats"/);
   assert.match(homepage, /href: "\/mechanics\/reputation"/);
 });

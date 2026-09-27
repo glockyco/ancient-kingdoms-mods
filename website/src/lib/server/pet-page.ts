@@ -1,7 +1,15 @@
-import { getPetById, getPetVisualAsset } from "$lib/queries/pets.server";
+import {
+  getMercenaryDetail,
+  getPetById,
+  getPetVisualAsset,
+} from "$lib/queries/pets.server";
 import { error } from "@sveltejs/kit";
-import { petDescription } from "$lib/server/meta-description";
-import type { PetDetailView } from "$lib/types/pets";
+import {
+  petDescription,
+  petRolePhrase,
+  type PetDescriptionInput,
+} from "$lib/server/meta-description";
+import type { MercenaryDetailView, PetDetailView } from "$lib/types/pets";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export interface PetPageData {
@@ -10,14 +18,22 @@ export interface PetPageData {
   visualAsset: EntityVisualAsset | null;
 }
 
+export interface MercenaryPageData {
+  pet: MercenaryDetailView;
+  description: string;
+  /** One sentence about what the mercenary does, shown below the title. */
+  role: string;
+}
+
 /**
- * Load a pet detail page.
- *
- * `isMercenary` is the section the request came in through. A pet that belongs
- * to the other section 404s rather than rendering under two URLs, which would
- * split its search ranking and let stale links look valid.
+ * Load a pet and reject it when it belongs to the other section. A pet that
+ * renders under two URLs splits its search ranking and lets stale links look
+ * valid, so it 404s instead.
  */
-export function loadPetPage(id: string, isMercenary: boolean): PetPageData {
+function loadPet(
+  id: string,
+  isMercenary: boolean,
+): { pet: PetDetailView; input: PetDescriptionInput } {
   const pet = getPetById(id);
 
   if (!pet || (pet.kind === "Mercenary") !== isMercenary) {
@@ -34,25 +50,39 @@ export function loadPetPage(id: string, isMercenary: boolean): PetPageData {
       s.skill_type === "passive",
   );
 
-  const summoning_skill_name = pet.classLink.skill_name ?? null;
-  const summoning_class_id = isMercenary
-    ? null
-    : (pet.classLink.class_id ?? null);
-
-  const description = petDescription({
-    name: pet.name,
-    kind: pet.kind,
-    type_monster: pet.type_monster,
-    has_buffs,
-    has_heals,
-    summoning_skill_name,
-    summoning_class_id,
-  });
-
   return {
     pet,
-    description,
-    // Mercenaries have no single portrait; their appearance varies by character.
-    visualAsset: isMercenary ? null : getPetVisualAsset(id),
+    input: {
+      name: pet.name,
+      kind: pet.kind,
+      type_monster: pet.type_monster,
+      has_buffs,
+      has_heals,
+      summoning_skill_name: pet.classLink.skill_name ?? null,
+      summoning_class_id: isMercenary ? null : (pet.classLink.class_id ?? null),
+    },
+  };
+}
+
+/** Load a summon (companion or familiar) detail page. */
+export function loadSummonPage(id: string): PetPageData {
+  const { pet, input } = loadPet(id, false);
+  return {
+    pet,
+    description: petDescription(input),
+    visualAsset: getPetVisualAsset(id),
+  };
+}
+
+/**
+ * Load a mercenary detail page. Mercenaries have no single portrait, because
+ * their appearance varies by character.
+ */
+export function loadMercenaryPage(id: string): MercenaryPageData {
+  const { pet, input } = loadPet(id, true);
+  return {
+    pet: getMercenaryDetail(pet),
+    description: petDescription(input),
+    role: petRolePhrase(input),
   };
 }

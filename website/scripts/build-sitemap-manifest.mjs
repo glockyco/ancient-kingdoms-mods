@@ -383,9 +383,35 @@ function factionPayload(db, id) {
 }
 
 function petPayload(db, id) {
-  return {
-    row: rowById(db, "pets", id),
+  const row = rowById(db, "pets", id);
+  const payload = {
+    row,
     skills: rowsByColumn(db, "pet_skills", "pet_id", id),
+  };
+  if (!row.is_mercenary) return payload;
+  // A mercenary page also shows its slot layout, the recruiters, and stat
+  // ranges computed from every mercenary curve.
+  return {
+    ...payload,
+    slots: all(
+      db,
+      `SELECT slot_index, accepted_category FROM equipment_slots
+       WHERE owner_type = 'mercenary' AND owner_id = lower(?)
+       ORDER BY slot_index`,
+      row.type_monster,
+    ),
+    recruiters: all(
+      db,
+      `SELECT n.id, n.name, n.preferred_mercenary_race, s.zone_id
+       FROM npcs n JOIN npc_spawns s ON s.npc_id = n.id
+       WHERE json_extract(n.roles, '$.is_recruiter_mercenaries') = 1
+       ORDER BY n.id, s.zone_id`,
+    ),
+    curves: all(
+      db,
+      `SELECT type_monster, health_base, health_per_level, mana_base, mana_per_level
+       FROM pets WHERE is_mercenary = 1 ORDER BY type_monster`,
+    ),
   };
 }
 
@@ -568,6 +594,10 @@ function addMechanicsHashes(db, hashes) {
     {
       url: "/mechanics/monster-spawns",
       file: "src/routes/mechanics/monster-spawns/+page.svelte",
+    },
+    {
+      url: "/mechanics/mercenaries",
+      file: "src/routes/mechanics/mercenaries/+page.svelte",
     },
     {
       url: "/mechanics/reputation",

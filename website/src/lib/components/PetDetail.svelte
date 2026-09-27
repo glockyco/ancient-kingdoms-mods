@@ -5,37 +5,23 @@
     type ColumnDef,
     type Cell,
     type Row,
-    type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import MapLink from "$lib/components/MapLink.svelte";
+  import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import {
-    formatLinearDuration,
-    formatLinearValue,
-    formatSkillEffect,
-  } from "$lib/utils/formatSkillEffect";
   import { getClassConfig } from "$lib/utils/classes";
-  import type { ClassSkill } from "$lib/queries/classes.server";
-  import type {
-    PetClassLink,
-    PetDetailView,
-    PetRecruiter,
-  } from "$lib/types/pets";
+  import type { PetClassLink, PetDetailView } from "$lib/types/pets";
   import { petHref } from "$lib/utils/pets";
-  import { classCanBe } from "$lib/utils/merc-stats";
   import { base } from "$app/paths";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import EntityLink from "$lib/components/EntityLink.svelte";
   import type { EntityVisualAsset } from "$lib/types/visual-assets";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import PawPrint from "@lucide/svelte/icons/paw-print";
-  import User from "@lucide/svelte/icons/user";
   import Zap from "@lucide/svelte/icons/zap";
   import Info from "@lucide/svelte/icons/info";
 
-  // Mercenaries and summons render the same detail layout; only the section
-  // they hang off differs, and that follows from the pet's own kind.
+  // Detail layout for summons (companions and familiars). Mercenaries use
+  // MercenaryDetail.
   let {
     pet,
     description,
@@ -47,86 +33,12 @@
   } = $props();
 
   const spriteSrc = $derived(
-    pet.kind === "Mercenary" || !visualAsset
-      ? null
-      : `${base}/${visualAsset.public_path}`,
-  );
-
-  // "Summoned By" table — one row containing the class link
-  const summonedByRows = $derived(
-    pet.kind !== "Mercenary" ? [pet.classLink] : [],
+    visualAsset ? `${base}/${visualAsset.public_path}` : null,
   );
 
   const summonedByColumns: ColumnDef<PetClassLink>[] = [
     { accessorKey: "class_id", header: "Class" },
     { accessorKey: "skill_id", header: "Via Skill" },
-  ];
-
-  // "Recruited At" table
-  const recruitedAtColumns: ColumnDef<PetRecruiter>[] = [
-    { accessorKey: "npc_name", header: "Recruiter" },
-    { accessorKey: "preferred_race", header: "Race Hired" },
-    { accessorKey: "zone_name", header: "Zone" },
-    { id: "map", header: "Map", size: 80, enableSorting: false },
-  ];
-
-  // Skills table
-  function formatCost(row: ClassSkill): string {
-    type LevelValue = { base_value: number; bonus_per_level: number };
-    const mana = row.mana_cost
-      ? (JSON.parse(row.mana_cost) as LevelValue)
-      : null;
-    const energy = row.energy_cost
-      ? (JSON.parse(row.energy_cost) as LevelValue)
-      : null;
-    const lv =
-      (mana?.base_value ?? 0) > 0
-        ? mana
-        : (energy?.base_value ?? 0) > 0
-          ? energy
-          : null;
-    if (!lv) return "—";
-    return formatLinearValue(lv, undefined);
-  }
-
-  function formatCooldown(raw: string | null): string {
-    if (!raw) return "—";
-    const lv = JSON.parse(raw) as {
-      base_value: number;
-      bonus_per_level: number;
-    };
-    if (lv.base_value === 0 && lv.bonus_per_level === 0) return "—";
-    return formatLinearDuration(lv.base_value, lv.bonus_per_level);
-  }
-
-  const skillColumns: ColumnDef<ClassSkill>[] = [
-    { accessorKey: "name", header: "Skill", enableHiding: false },
-    { accessorKey: "skill_type", header: "Type" },
-    { accessorKey: "max_level", header: "Max Lvl" },
-    {
-      id: "effect",
-      header: "Effect",
-      enableSorting: false,
-      accessorFn: (row) => formatSkillEffect(row),
-    },
-    {
-      id: "cost",
-      header: "Cost",
-      enableSorting: false,
-      accessorFn: (row) => formatCost(row),
-    },
-    {
-      id: "cooldown",
-      header: "Cooldown",
-      enableSorting: false,
-      accessorFn: (row) => formatCooldown(row.cooldown),
-    },
-    {
-      id: "cast_time",
-      header: "Cast Time",
-      enableSorting: false,
-      accessorFn: (row) => formatCooldown(row.cast_time),
-    },
   ];
 </script>
 
@@ -161,103 +73,17 @@
   {/if}
 {/snippet}
 
-{#snippet renderRecruitedAtCell({
-  cell,
-  row,
-}: {
-  cell: Cell<PetRecruiter, unknown>;
-  row: Row<PetRecruiter>;
-})}
-  {#if cell.column.id === "npc_name"}
-    <EntityLink
-      href="/npcs/{row.original.npc_id}"
-      name={row.original.npc_name}
-      domain="npc"
-      entityId={row.original.npc_id}
-      imageKind="primary"
-      imageAvailable={row.original.visual_public_path}
-      variant="reference"
-      fallback={User}
-      size={28}
-    />
-  {:else if cell.column.id === "preferred_race"}
-    {#if row.original.preferred_race && classCanBe(pet.type_monster, row.original.preferred_race)}
-      {row.original.preferred_race}
-    {:else}
-      <!-- Source: server-scripts/Utils.cs:GetRandomChar — unsupported recruiter preferences fall back to a uniform class-pool roll. -->
-      <span class="text-muted-foreground">Any in class pool</span>
-    {/if}
-  {:else if cell.column.id === "zone_name"}
-    <a
-      href="/zones/{row.original.zone_id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.zone_name}
-    </a>
-  {:else if cell.column.id === "map"}
-    <MapLink entityId={row.original.npc_id} entityType="npc" compact={true} />
-  {:else}
-    {cell.getValue()}
-  {/if}
-{/snippet}
-
-{#snippet renderSkillHeader({
-  header,
-}: {
-  header: Header<ClassSkill, unknown>;
-})}
-  {#if header.id === "max_level" || header.id === "cost" || header.id === "cooldown" || header.id === "cast_time"}
-    <span class="ml-auto">{header.column.columnDef.header}</span>
-  {:else}
-    {header.column.columnDef.header}
-  {/if}
-{/snippet}
-
-{#snippet renderSkillCell({
-  cell,
-  row,
-}: {
-  cell: Cell<ClassSkill, unknown>;
-  row: Row<ClassSkill>;
-})}
-  {#if cell.column.id === "name"}
-    <EntityLink
-      href="/skills/{row.original.id}"
-      name={row.original.name}
-      domain="skill"
-      entityId={row.original.id}
-      imageKind="icon"
-      imageAvailable={row.original.visual_public_path}
-      variant="reference"
-      fallback={Zap}
-      size={28}
-    />
-  {:else if cell.column.id === "skill_type"}
-    <span class="text-muted-foreground capitalize">
-      {String(cell.getValue()).replace(/_/g, " ")}
-    </span>
-  {:else if cell.column.id === "effect"}
-    <span class="text-sm">{cell.getValue()}</span>
-  {:else if cell.column.id === "max_level" || cell.column.id === "cost" || cell.column.id === "cooldown" || cell.column.id === "cast_time"}
-    <span class="ml-auto">{cell.getValue()}</span>
-  {:else}
-    {cell.getValue()}
-  {/if}
-{/snippet}
-
 <Seo
   title={`${pet.name} - Ancient Kingdoms`}
   {description}
-  path={petHref(pet.id, pet.kind === "Mercenary")}
+  path={petHref(pet.id, false)}
 />
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      pet.kind === "Mercenary"
-        ? { label: "Mercenaries", href: "/mercenaries" }
-        : { label: "Summons", href: "/summons" },
+      { label: "Summons", href: "/summons" },
       { label: pet.name },
     ]}
   />
@@ -273,21 +99,9 @@
       </span>
     </div>
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      <span
-        >Class:
-        {#if pet.kind === "Mercenary"}
-          <a
-            href="/classes/{pet.type_monster.toLowerCase()}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >{pet.type_monster}</a
-          >
-        {:else}
-          {pet.type_monster}
-        {/if}
-      </span>
+      <span>Class: {pet.type_monster}</span>
     </div>
   </div>
-  <!-- Header Summary Card -->
   {#if visualAsset}
     <section aria-labelledby="pet-summary-title">
       <h2 id="pet-summary-title" class="sr-only">Appearance</h2>
@@ -296,10 +110,10 @@
           <EntityIcon
             src={spriteSrc}
             alt={`${pet.name} sprite`}
-            width={visualAsset?.width ?? 224}
-            height={visualAsset?.height ?? 224}
+            width={visualAsset.width ?? 224}
+            height={visualAsset.height ?? 224}
             size={224}
-            fallback={pet.kind === "Mercenary" ? User : PawPrint}
+            fallback={PawPrint}
             bordered={false}
             class="max-h-56 max-w-full object-contain [image-rendering:pixelated]"
           />
@@ -308,65 +122,32 @@
     </section>
   {/if}
 
-  <!-- Summoned By (companions and familiars) -->
-  {#if pet.kind !== "Mercenary"}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <MapPin class="h-5 w-5 text-emerald-500" />
-        Summoned By
-      </h2>
-      <DataTable
-        data={summonedByRows}
-        columns={summonedByColumns}
-        renderCell={renderSummonedByCell}
-        urlKey="pet-{pet.id}-summoned-by"
-        pageSize={10}
-        zebraStripe={true}
-        class="bg-muted/30"
-      />
-    </section>
-  {/if}
+  <section>
+    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+      <MapPin class="h-5 w-5 text-emerald-500" />
+      Summoned By
+    </h2>
+    <DataTable
+      data={[pet.classLink]}
+      columns={summonedByColumns}
+      renderCell={renderSummonedByCell}
+      urlKey="pet-{pet.id}-summoned-by"
+      pageSize={10}
+      zebraStripe={true}
+      class="bg-muted/30"
+    />
+  </section>
 
-  <!-- Recruited At (mercenaries) -->
-  {#if pet.kind === "Mercenary" && pet.recruiters.length > 0}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <MapPin class="h-5 w-5 text-emerald-500" />
-        Recruited At
-      </h2>
-      <DataTable
-        data={pet.recruiters}
-        columns={recruitedAtColumns}
-        renderCell={renderRecruitedAtCell}
-        urlKey="pet-{pet.id}-recruited-at"
-        pageSize={10}
-        zebraStripe={true}
-        class="bg-muted/30"
-      />
-    </section>
-  {/if}
-
-  <!-- Skills -->
   {#if pet.skills.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Zap class="h-5 w-5 text-purple-500" />
         Skills ({pet.skills.length})
       </h2>
-      <DataTable
-        data={pet.skills}
-        columns={skillColumns}
-        renderCell={renderSkillCell}
-        renderHeader={renderSkillHeader}
-        urlKey="pet-{pet.id}-skills"
-        pageSize={10}
-        zebraStripe={true}
-        class="bg-muted/30"
-      />
+      <PetSkillsTable skills={pet.skills} urlKey="pet-{pet.id}-skills" />
     </section>
   {/if}
 
-  <!-- Mechanics -->
   <section>
     <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
       <Info class="h-5 w-5 text-muted-foreground" />
@@ -374,182 +155,7 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content>
-        {#if pet.kind === "Mercenary"}
-          <dl class="space-y-2">
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Resource</dt>
-              <dd>
-                {pet.type_monster === "Bard"
-                  ? "Songs"
-                  : pet.type_monster === "Warrior" ||
-                      pet.type_monster === "Rogue"
-                    ? "Rage"
-                    : "Mana"}
-                {#if pet.type_monster === "Bard"}
-                  <!-- Source: exported-data/pets.json, Pet.cs:953-961 — the Bard prefab has no Mana curve; the bar shows active songs. -->
-                  — active songs do not use Mana
-                {/if}
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
-              <dd>Matches your regular level</dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Level Bonuses</dt>
-              <dd>
-                <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel — per-class attribute intervals. -->
-                {#if pet.type_monster === "Warrior"}
-                  +1 Constitution every 2 levels · +1 Strength every 3 levels ·
-                  +1 Dexterity every 4 levels · +1 Intelligence every 5 levels ·
-                  +1 Wisdom and +1 Charisma every 6 levels
-                {:else if pet.type_monster === "Rogue"}
-                  +1 Dexterity every 2 levels · +1 Strength every 3 levels · +1
-                  Constitution every 4 levels · +1 Intelligence every 5 levels ·
-                  +1 Wisdom and +1 Charisma every 6 levels
-                {:else if pet.type_monster === "Cleric"}
-                  +1 Wisdom every 2 levels · +1 Intelligence every 3 levels · +1
-                  Constitution every 4 levels · +1 Strength every 5 levels · +1
-                  Dexterity and +1 Charisma every 6 levels
-                {:else if pet.type_monster === "Druid"}
-                  +1 Wisdom every 2 levels · +1 Intelligence every 3 levels · +1
-                  Dexterity every 4 levels · +1 Constitution every 5 levels · +1
-                  Strength and +1 Charisma every 6 levels
-                {:else if pet.type_monster === "Wizard"}
-                  +1 Intelligence every 2 levels · +1 Dexterity every 3 levels ·
-                  +1 Wisdom every 4 levels · +1 Constitution every 5 levels · +1
-                  Strength and +1 Charisma every 6 levels
-                {:else if pet.type_monster === "Ranger"}
-                  +1 Dexterity every 2 levels · +1 Constitution every 3 levels ·
-                  +1 Strength every 4 levels · +1 Wisdom every 5 levels · +1
-                  Intelligence and +1 Charisma every 6 levels
-                {:else if pet.type_monster === "Bard"}
-                  +1 Charisma every 2 levels · +1 Strength every 3 levels · +1
-                  Dexterity every 4 levels · +1 Constitution every 5 levels · +1
-                  Wisdom and +1 Intelligence every 6 levels
-                {/if}
-                <br />
-                <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
-                +1 to each resistance every level
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Skill Levels</dt>
-              <dd>
-                {#if pet.type_monster === "Bard"}
-                  max(1, floor(regular level ÷ 5) + floor(veteran level ÷ 10)),
-                  capped at each skill's max level
-                {:else}
-                  floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped
-                  at each skill's max level
-                {/if}
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">
-                Veteran Bonuses
-              </dt>
-              <dd>
-                <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean, Player.cs:10352-10365 — each summon adds total veteran points × 0.0025 to the rolled Health and resource multipliers. -->
-                <!-- Source: server-scripts/Player.cs:4629-4652, Database.cs:SaveNewMercenary — a veteran level gained while summoned adds 1 base damage and 1 base magic damage; only the hire roll is saved. -->
-                <!-- Source: server-scripts/Player.cs:10347-10348 — a saved hire roll of 0 is replaced on each summon by a new roll from 0 to round(level × 0.8) − 1. -->
-                Each veteran level adds 0.25% to the Health multiplier{pet.type_monster ===
-                "Bard"
-                  ? ""
-                  : pet.type_monster === "Warrior" ||
-                      pet.type_monster === "Rogue"
-                    ? " and the Rage multiplier"
-                    : " and the Mana multiplier"}.<br />A veteran level gained
-                while the mercenary is summoned also adds +1 damage and +1 magic
-                damage. The game does not save this bonus. The next summon
-                restores the damage rolled at hire. If that roll was 0, each
-                summon rolls a new value instead.
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Active Limit</dt>
-              <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:297-299, Npc.cs:1893-1904 — recruiters serve players from level 10; the active limit is 1 below level 20, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
-                <!-- Source: server-scripts/Player.cs:10115-10120,10290-10305 — the limit also cannot exceed 5 minus the party members, counting players and their active mercenaries. -->
-                1 at levels 10–19 · 2 at 20–29 · 3 at 30–39 · 4 at 40+. A party holds
-                at most 5 members, and each active mercenary counts as one.
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Max Stored</dt>
-              <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:43,380 — the recruiter roster holds ten mercenaries. -->
-                10
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Stance</dt>
-              <dd>
-                <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean; Pet.cs:2198-2209,1147 — only the aggressive stance casts attack skills or reacts to aggro; support skills run in both stances. -->
-                Aggressive: attacks your target and enemies that attack it. Defensive:
-                does not attack, and drops its hostile target when you switch. Heals
-                and buffs continue in both stances.
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Equipment</dt>
-              <dd>Can be equipped with gear to boost stats</dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Recruit Cost</dt>
-              <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:CalculatePriceMercenaryLevel — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteran points × 15). -->
-                <!-- Source: server-scripts/NetworkManagerMMO.cs:768-772, UINpcTrading.cs:CalculatePurchaseItemPrice — veteran points cap at 200; the Charisma discount caps at 25%. -->
-                20–3,420
-                <span class="text-yellow-600 dark:text-yellow-400">gold</span>
-                before the Charisma discount (up to 25%). Scales with your regular
-                and veteran level.
-              </dd>
-            </div>
-            {#if pet.type_monster === "Warrior" || pet.type_monster === "Rogue"}
-              <div class="flex gap-2">
-                <dt class="text-muted-foreground w-40 shrink-0">
-                  Death Prevention
-                </dt>
-                <dd>
-                  <!-- Source: server-scripts/Combat.cs:1350-1361,1157-1180 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage; rank = round(total veteran points ÷ 10). -->
-                  When a hit would kill this mercenary, it casts
-                  <a
-                    href="/skills/runebound_aegis"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >Runebound Aegis</a
-                  > instead. This needs owner level 50+ and enough Rage, and has a
-                  120-second cooldown. Its rank is your veteran level ÷ 10, rounded.
-                </dd>
-              </div>
-            {/if}
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
-              <dd>
-                <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice — round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + 10 per veteran point), then the Charisma discount (up to 25%). Recruiters require level 10 (Npc.cs:1893-1904), where the base rounds to 8. -->
-                <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD — the corpse despawns after 300 seconds; the mercenary stays marked dead. -->
-                <!-- Source: server-scripts/TargetHealSkill.cs:232-253, UIMercenaries.cs:620-640,820-835 — resurrect skills restore a corpse; the recruiter resurrects for the fee. -->
-                Stays dead until resurrected. A resurrect skill, such as a Cleric's
-                or a Scroll of Resurrection, works on the corpse. The corpse disappears
-                after 5 minutes. A mercenary recruiter resurrects it for 8–2,300
-                <span class="text-yellow-600 dark:text-yellow-400">gold</span>
-                before the Charisma discount. Equipped gear stays on the mercenary,
-                and death does not reduce durability.
-              </dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
-              <dd>
-                <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath — living mercenaries are removed on owner death; dead ones keep their corpse. -->
-                <!-- Source: server-scripts/UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,10254-10273 — respawn pays the resurrection fee for every dead summoned mercenary (up to 4) if you can pay for all, and they return with 10% Health. -->
-                Living mercenaries are dismissed and return when you respawn. When
-                you respawn, the game also pays the resurrection fee for each dead
-                summoned mercenary. They return with 10% Health. If you cannot pay
-                for all of them, none return.
-              </dd>
-            </div>
-          </dl>
-        {:else if pet.kind === "Companion"}
+        {#if pet.kind === "Companion"}
           <dl class="space-y-2">
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
@@ -577,7 +183,7 @@
               <dd>Vanishes — re-summon to restore</dd>
             </div>
           </dl>
-        {:else if pet.kind === "Familiar"}
+        {:else}
           <dl class="space-y-2">
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Role</dt>

@@ -11,6 +11,7 @@ const PAGES = [
   "../../routes/mechanics/combat/+page.svelte",
   "../../routes/mechanics/experience/+page.svelte",
   "../../routes/mechanics/inventory/+page.svelte",
+  "../../routes/mechanics/mercenaries/+page.svelte",
   "../../routes/mechanics/monster-spawns/+page.svelte",
   "../../routes/mechanics/reputation/+page.svelte",
   "../../routes/skills/[id]/+page.svelte",

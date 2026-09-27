@@ -10,6 +10,7 @@
   import TrendingUp from "@lucide/svelte/icons/trending-up";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import Shield from "@lucide/svelte/icons/shield";
+  import Users from "@lucide/svelte/icons/users";
 
   const mechanics = [
     {
@@ -43,6 +44,14 @@
       icon: Skull,
       color: "text-purple-500",
       bg: "bg-purple-500/10",
+    },
+    {
+      href: "/mechanics/mercenaries",
+      title: "Mercenary Rules",
+      description: "Hiring, party limits, stance, death, and resurrection",
+      icon: Users,
+      color: "text-sky-500",
+      bg: "bg-sky-500/10",
     },
     {
       href: "/mechanics/mercenary-stats",

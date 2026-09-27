@@ -1453,7 +1453,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // numeric levels or stats: every value in the DB pets row is a build-time
 // placeholder.
 
-interface PetDescriptionInput {
+export interface PetDescriptionInput {
   name: string;
   /** "Mercenary" | "Familiar" | "Companion". Pre-classified by pets.server.ts. */
   kind: "Mercenary" | "Familiar" | "Companion";
@@ -1467,7 +1467,7 @@ interface PetDescriptionInput {
 }
 
 // Source: server-scripts/BardMercenarySkills.cs:RefreshAura — Bard songs apply buffs even though the exported pet has_buffs flag is false.
-function petRolePhrase(input: PetDescriptionInput): string {
+export function petRolePhrase(input: PetDescriptionInput): string {
   if (input.kind === "Mercenary" && input.type_monster === "Bard")
     return "Plays songs that buff nearby allies.";
   if (input.has_heals && input.has_buffs) return "Provides heals and buffs.";

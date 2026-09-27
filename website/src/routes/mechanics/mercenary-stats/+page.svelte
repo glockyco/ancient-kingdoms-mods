@@ -1,6 +1,15 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import NumberField from "$lib/components/NumberField.svelte";
+  import RangeSlider from "$lib/components/RangeSlider.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import {
+    OWNER_LIMITS,
+    mercenaryOwner,
+    restoreMercenaryOwner,
+    setMercenaryOwner,
+  } from "$lib/utils/mercenary-owner.svelte";
+  import { onMount } from "svelte";
   import {
     CLASSES,
     RACE_ORDER,
@@ -69,14 +78,16 @@
           ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "k"
           : fmt(Math.round(n));
 
-  let level = $state(50);
-  let veteran = $state(200);
+  const level = $derived(mercenaryOwner.level);
+  const veteran = $derived(mercenaryOwner.veteran);
   let active = new SvelteSet(CLASS_NAMES);
   let cCls = $state("Wizard");
   let cRace = $state<string>(CLASSES["Wizard"].pool[0]);
   /** Explicit recruiter choice; empty means "the one that hires the chosen race". */
   let cRecruiter = $state<string>("");
-  let cCharisma = $state(0);
+  const cCharisma = $derived(mercenaryOwner.charisma);
+
+  onMount(restoreMercenaryOwner);
   let frac = $state<Record<TargetKey, number>>({ hp: 0, mana: 0, atk: 0 });
 
   const results = $derived(computeAll(level, veteran, data.curves));
@@ -122,22 +133,6 @@
       ? drawChart(price, pRace, meaningful.length, pRolls)
       : "",
   );
-
-  function clamp(v: number, lo: number, hi: number) {
-    return Math.max(lo, Math.min(hi, Math.round(v || 0)));
-  }
-
-  function setLevel(v: number) {
-    level = clamp(v, 1, 50);
-  }
-
-  function setVeteran(v: number) {
-    veteran = clamp(v, 0, 200);
-  }
-
-  function setCharisma(v: number) {
-    cCharisma = clamp(v, 0, 200);
-  }
 
   function toggleClass(cls: string) {
     if (active.has(cls)) active.delete(cls);
@@ -403,22 +398,22 @@
 
   <section class="controls" aria-label="Query controls">
     <div class="controls-grid">
-      {@render numField(
-        "Level",
-        "mercs unlock at level 10",
-        level,
-        setLevel,
-        1,
-        50,
-      )}
-      {@render numField(
-        "Veteran points",
-        "Health & Mana · +0.25% each",
-        veteran,
-        setVeteran,
-        0,
-        200,
-      )}
+      <NumberField
+        label="Level"
+        hint="mercenaries unlock at level 10"
+        value={level}
+        min={OWNER_LIMITS.level[0]}
+        max={OWNER_LIMITS.level[1]}
+        onchange={(v) => setMercenaryOwner("level", v)}
+      />
+      <NumberField
+        label="Veteran points"
+        hint="Health & Mana · +0.25% each"
+        value={veteran}
+        min={OWNER_LIMITS.veteran[0]}
+        max={OWNER_LIMITS.veteran[1]}
+        onchange={(v) => setMercenaryOwner("veteran", v)}
+      />
       <div class="chips">
         <span class="chips-label">Classes</span>
         <button
@@ -575,11 +570,12 @@
             <input
               class="num-in"
               type="number"
-              min="0"
-              max="200"
+              min={OWNER_LIMITS.charisma[0]}
+              max={OWNER_LIMITS.charisma[1]}
               value={cCharisma}
               inputmode="numeric"
-              oninput={(e) => setCharisma(e.currentTarget.valueAsNumber)}
+              oninput={(e) =>
+                setMercenaryOwner("charisma", e.currentTarget.valueAsNumber)}
             />
           </label>
           <div class="field">
@@ -599,14 +595,12 @@
                 >
                 <span class="top">top {pct(read.p)}</span>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1000"
+              <RangeSlider
                 value={Math.round((frac[k] ?? 0) * 1000)}
-                style={`--pct:${(frac[k] ?? 0) * 100}%`}
-                oninput={(e) =>
-                  setFrac(k, e.currentTarget.valueAsNumber / 1000)}
+                min={0}
+                max={1000}
+                label={`Minimum ${TARGET_LABELS[k]}`}
+                onchange={(v) => setFrac(k, v / 1000)}
               />
               <div class="sub">
                 {#if k === "atk"}
@@ -663,53 +657,6 @@
   </section>
 </div>
 
-{#snippet numField(
-  label: string,
-  hint: string,
-  value: number,
-  setter: (v: number) => void,
-  min: number,
-  max: number,
-)}
-  <div>
-    <div class="field-label">
-      <span>{label}</span><span class="field-hint">{hint}</span>
-    </div>
-    <div class="stepper">
-      <button
-        type="button"
-        class="stepbtn"
-        aria-label={`Decrease ${label.toLowerCase()}`}
-        onclick={() => setter(value - 1)}>−</button
-      >
-      <input
-        class="bignum tnum"
-        type="number"
-        {min}
-        {max}
-        {value}
-        inputmode="numeric"
-        oninput={(e) => setter(e.currentTarget.valueAsNumber)}
-      />
-      <button
-        type="button"
-        class="stepbtn"
-        aria-label={`Increase ${label.toLowerCase()}`}
-        onclick={() => setter(value + 1)}>+</button
-      >
-    </div>
-    <input
-      type="range"
-      {min}
-      {max}
-      {value}
-      style={`--pct:${((value - min) / (max - min)) * 100}%`}
-      oninput={(e) => setter(e.currentTarget.valueAsNumber)}
-    />
-    <div class="ticks"><span>{min}</span><span>{max}</span></div>
-  </div>
-{/snippet}
-
 <style>
   .tnum {
     font-variant-numeric: tabular-nums;
@@ -765,143 +712,6 @@
       grid-template-columns: 1fr;
       gap: 1.25rem;
     }
-  }
-
-  .field-label {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted-foreground);
-    margin-bottom: 0.5rem;
-  }
-  .field-hint {
-    font-weight: 500;
-    letter-spacing: 0;
-    text-transform: none;
-    opacity: 0.85;
-  }
-  .stepper {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  .stepbtn {
-    width: 2rem;
-    height: 2rem;
-    flex: none;
-    border-radius: calc(var(--radius) - 3px);
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--foreground);
-    font-size: 1.1rem;
-    line-height: 1;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    transition:
-      background 0.15s ease,
-      border-color 0.15s ease,
-      transform 0.06s ease;
-  }
-  .stepbtn:hover {
-    background: var(--muted);
-    border-color: var(--ring);
-  }
-  .stepbtn:active {
-    transform: scale(0.94);
-  }
-  .stepbtn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 45%, transparent);
-  }
-  .bignum {
-    width: 5.2rem;
-    border: none;
-    background: transparent;
-    color: var(--foreground);
-    font-size: 2rem;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-    padding: 0;
-    appearance: textfield;
-    -moz-appearance: textfield;
-  }
-  .bignum::-webkit-outer-spin-button,
-  .bignum::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  .bignum:focus-visible {
-    outline: none;
-  }
-
-  input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 1.25rem;
-    margin: 0.7rem 0 0;
-    background: transparent;
-    cursor: pointer;
-  }
-  input[type="range"]::-webkit-slider-runnable-track {
-    height: 6px;
-    border-radius: 999px;
-    background: linear-gradient(
-      to right,
-      var(--primary) var(--pct, 0%),
-      var(--muted) var(--pct, 0%)
-    );
-  }
-  input[type="range"]::-moz-range-track {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--muted);
-  }
-  input[type="range"]::-moz-range-progress {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--primary);
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    margin-top: -5px;
-    border-radius: 50%;
-    background: var(--background);
-    border: 2px solid var(--primary);
-    box-shadow: 0 1px 2px oklch(0 0 0 / 0.25);
-    transition: transform 0.1s ease;
-  }
-  input[type="range"]::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--background);
-    border: 2px solid var(--primary);
-    box-shadow: 0 1px 2px oklch(0 0 0 / 0.25);
-  }
-  input[type="range"]:active::-webkit-slider-thumb {
-    transform: scale(1.15);
-  }
-  input[type="range"]:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--ring) 40%, transparent);
-  }
-  .ticks {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
-    color: var(--muted-foreground);
-    margin-top: 0.25rem;
   }
 
   .chips {
