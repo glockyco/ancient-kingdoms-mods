@@ -5,6 +5,10 @@
   import AchievementLink from "$lib/components/AchievementLink.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import Leaf from "@lucide/svelte/icons/leaf";
+  import {
+    PROFESSION_MECHANICS,
+    rawTierSuccessChance,
+  } from "$lib/data/professions/mechanics";
 
   let { data } = $props();
 
@@ -24,21 +28,14 @@
     new Map(data.xpByTier.map((tx) => [tx.tier, tx.xp])),
   );
 
-  // Source: server-scripts/Utils.cs:GetSuccessProbHerbalism — tiered plant gather success
   function getSuccessChance(resourceLevel: number): number {
-    const skill = skillLevel / 100;
-    switch (resourceLevel) {
-      case 0:
-        return 100;
-      case 1:
-        return Math.min(100, (0.3 + skill * 2) * 100);
-      case 2:
-        return Math.min(100, (0.15 + skill) * 100);
-      case 3:
-        return Math.min(100, skill * 100);
-      default:
-        return Math.min(100, skill * 0.95 * 100);
-    }
+    return (
+      rawTierSuccessChance(
+        PROFESSION_MECHANICS.herbalism.success,
+        resourceLevel,
+        skillLevel,
+      ) * 100
+    );
   }
 
   function getSuccessChanceColor(chance: number): string {

@@ -1137,6 +1137,10 @@
       "sha256": "fff19ed4592d9c4c7aacdffd79d85bb3455fd94f571aa68dc7d53ea38fb8ac0a",
       "span": 24
     },
+    "GatherItem.cs:343-350": {
+      "sha256": "ff2ce7e23c90420a495965ba1eb3bc79378499353f7a97433826095b419da4fc",
+      "span": 8
+    },
     "GatherItem.cs:368-376": {
       "sha256": "f3410bef61b21d9356e3a51f72327adc69492456f72a971b976f89dd8fab6d52",
       "span": 9

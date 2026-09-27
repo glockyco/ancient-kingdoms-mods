@@ -10,6 +10,7 @@
     formatAltarRewardTier,
   } from "$lib/utils/format";
   import type { AltarWave } from "$lib/types/altars";
+  import { altarVeteranLevelBonus } from "$lib/utils/altar";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Swords from "@lucide/svelte/icons/swords";
   import Gift from "@lucide/svelte/icons/gift";
@@ -28,11 +29,9 @@
   // Veteran scaling state (only used for Forgotten Altars)
   // Start at the altar's minimum level requirement (capture initial value only)
   let playerLevel = $state((() => data.altar.minLevelRequired || 30)());
-  let veteranLevel = $state(0);
+  let veteranPoints = $state(0);
 
-  // Computed effective level and scaling
-  // Veteran level contributes 1 point per 40 veteran levels to effective level (updated v0.9.3.4)
-  const veteranBonus = $derived(Math.floor(veteranLevel / 40));
+  const veteranBonus = $derived(altarVeteranLevelBonus(veteranPoints));
   const effectiveLevel = $derived(playerLevel + veteranBonus);
   const levelAdjustment = $derived(effectiveLevel - 30);
 
@@ -210,10 +209,11 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4">
-          <!-- Source: server-scripts/DefaultEvent.cs:209-217 — game rounds total veteran points / 40; this preview floors its veteran-level slider / 40 -->
+          <!-- Source: server-scripts/DefaultEvent.cs:209-217 — each monster level is its base level + player level + Mathf.RoundToInt(total veteran points / 40) - 30 -->
           <p class="text-muted-foreground">
-            This preview adds your level and one level per 40 veteran levels
-            (rounded down) to each monster's base level, then subtracts 30.
+            Each monster's level is its base level plus your level, plus one
+            level for every 40 veteran points you have earned (rounded to the
+            nearest level), minus 30.
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
@@ -231,16 +231,16 @@
               />
             </div>
             <div>
-              <label for="veteran-level" class="flex justify-between mb-2">
-                <span>Veteran Level</span>
-                <span class="font-medium">{veteranLevel}</span>
+              <label for="veteran-points" class="flex justify-between mb-2">
+                <span>Veteran Points</span>
+                <span class="font-medium">{veteranPoints}</span>
               </label>
               <input
-                id="veteran-level"
+                id="veteran-points"
                 type="range"
                 min="0"
                 max="200"
-                bind:value={veteranLevel}
+                bind:value={veteranPoints}
                 class="w-full accent-green-500"
               />
             </div>

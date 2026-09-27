@@ -57,6 +57,19 @@ describe("profession mechanics record", () => {
     );
   });
 
+  test("matches the five herbalism tier formulas", () => {
+    expect(tierValues(PROFESSION_MECHANICS.herbalism.success.tiers)).toEqual([
+      [1, 0, 0],
+      [0.3, 0, 2],
+      [0.15, 0, 1],
+      [0, 0, 1.05],
+      [0, 0, 1],
+    ]);
+    expect(
+      rawTierSuccessChance(PROFESSION_MECHANICS.herbalism.success, 3, 60),
+    ).toBeCloseTo(0.63);
+  });
+
   test("uses strict no-skill thresholds", () => {
     const thresholds = PROFESSION_MECHANICS.mining.effortless;
     expect(isEffortlessAtTier(thresholds, 0, 25)).toBe(false);

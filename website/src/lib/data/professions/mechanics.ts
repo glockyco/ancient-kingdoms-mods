@@ -65,6 +65,15 @@ const GATHERING_SUCCESS_TIERS = [
   { constant: 0, toolFactor: 0.05, skillFactor: 0.5 },
 ] as const satisfies readonly SuccessTier[];
 
+// Source: server-scripts/Utils.cs:GetSuccessProbHerbalism
+const HERBALISM_SUCCESS_TIERS = [
+  { constant: 1, toolFactor: 0, skillFactor: 0 },
+  { constant: 0.3, toolFactor: 0, skillFactor: 2 },
+  { constant: 0.15, toolFactor: 0, skillFactor: 1 },
+  { constant: 0, toolFactor: 0, skillFactor: 1.05 },
+  { constant: 0, toolFactor: 0, skillFactor: 1 },
+] as const satisfies readonly SuccessTier[];
+
 const STANDARD_EFFORTLESS_THRESHOLDS = [
   { above: 0.25, throughTier: 0 },
   { above: 0.5, throughTier: 1 },
@@ -115,6 +124,12 @@ export const PROFESSION_MECHANICS = {
       range: [1, 3],
       divisor: 5000,
     },
+  },
+  herbalism: {
+    capPercent: 100,
+    payoff: { effect: "plant success chance", source: "plants" },
+    // Source: server-scripts/GatherItem.cs:343-350 — a harvest below 10% success is refused
+    success: { floor: 0.1, tiers: HERBALISM_SUCCESS_TIERS },
   },
   mining: {
     capPercent: 100,
