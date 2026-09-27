@@ -40,7 +40,15 @@ A defect claim must not depend on a value that only a tool can set. When the cla
 
 ## Screenshots
 
-A screenshot shows an interface defect that numbers cannot. Capture one for every defect a player can see. `UnityEngine.ScreenCapture.CaptureScreenshot` takes a Windows path, so create the directory on the host first, and wait a frame before you read the file.
+A screenshot shows an interface defect that numbers cannot. Capture one for every defect a player can see.
+
+Capture with the typed job `unity.screenshot.capture`. It waits for the end of the frame, includes the interface, and returns a PNG artifact with a Windows `path` and a `sha256`. Translate the path with `build-tool/Game/WinePath.cs:ToHost`, which maps `C:\` to `drive_c` under `WINE_PREFIX` from `Local.props`, then check the hash.
+
+```sh
+hotrepl run unity.screenshot.capture '{}' --json
+```
+
+A host built before HotRepl commit `5d36398` refuses with `Unity PNG encoding is not available in this runtime.` Redeploy it with `build-tool deploy-host --hotrepl-repo <HotRepl-repo>` from a checkout that contains that commit.
 
 Capture the state before the action and the state after it. Capture a correct case beside the defect when the game handles a similar case correctly, because the contrast shows the intended behaviour.
 

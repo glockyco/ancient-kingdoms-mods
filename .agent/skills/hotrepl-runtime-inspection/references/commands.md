@@ -26,6 +26,12 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 | `probe.actionInterval` | job | `{"windowSeconds": number?}` |
 | `fixture.buildCharacter` | job | `{"build": {...}, "buildData": {"character": {...}, "companions": [...], "consumables": [...], "learnedBookIds": [...], "provenance": {...}}}` |
 
+## HotRepl Unity commands
+
+| Command | Kind | Arguments |
+| --- | --- | --- |
+| `unity.screenshot.capture` | job | `{}` |
+
 ## Caveats
 
 - `world.enter` selects the lowest name in ordinal order when `character` is absent.

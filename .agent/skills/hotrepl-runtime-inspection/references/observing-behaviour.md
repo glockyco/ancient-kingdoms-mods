@@ -117,7 +117,7 @@ slain`, then `You have entered Milldenn`. Four scalar reads had revealed neither
 teleport.
 
 Take the screenshot first, then form the explanation. Delete a diagnostic capture afterwards. Keep only
-what a report cites. `skill://game-defect-reports` holds the capture call and its two traps, a Windows path and a frame to wait before the file exists.
+what a report cites. `skill://game-defect-reports` holds the capture command, the host version it needs, and the path translation out of the Wine bottle.
 
 ## Prefer an event to a sample, and check that it can be subscribed to
 
