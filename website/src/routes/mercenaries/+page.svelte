@@ -769,10 +769,7 @@
       <span class="block"
         >The Auto-Consume toggle is saved separately for each mercenary.</span
       >
-      <span class="block"
-        >Consumption checks run while the mercenary is idle, alive, and you are
-        in combat.</span
-      >
+      <span class="block">Supplies are used only while you are in combat.</span>
     </p>
     <!-- Source: server-scripts/Pet.cs:2073-2162 — food and utility buff checks occur every 5–10 seconds; health and resource checks every 1–3 seconds with 15-second reuse and 90% efficiency gates. -->
     <div class="overflow-x-auto">

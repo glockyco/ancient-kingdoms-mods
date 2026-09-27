@@ -96,15 +96,15 @@
           successful crafts.
         </li>
       </ul>
-      <!-- Source: server-scripts/UICraftingStation.cs:346-450 and server-scripts/Player.cs:12489-12535 — Craft All refreshes materials and searches the station's recipes after each result; another recipe can match the remaining materials. -->
+      <!-- Source: server-scripts/Player.cs:12529-12535 — after each result, Craft All crafts again while the station panel stays open. -->
+      <!-- Source: server-scripts/UICraftingStation.cs:400-450 — a craft stops when no recipe matches the materials or the result does not fit in the inventory. -->
       <p>
-        Craft All searches for a matching recipe after each result while the
-        station stays open.
-      </p>
-      <!-- Source: server-scripts/UICraftingStation.cs:400-450 and server-scripts/Player.cs:12529-12535 — the next automatic craft can select a different recipe from the remaining materials. -->
-      <p>
-        It can switch to another recipe when the remaining materials match that
-        recipe.
+        <span class="block"
+          >Craft All repeats the craft while the station stays open.</span
+        >
+        <span class="block"
+          >It stops when the materials run out or your inventory is full.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>

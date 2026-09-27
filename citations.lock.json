@@ -2215,10 +2215,6 @@
       "sha256": "92bc021fdf6ce8fdde397519fbbdb07e777f5d21f5aac7b8a9a96f5e2273c03c",
       "span": 28
     },
-    "Player.cs:12489-12535": {
-      "sha256": "42c3328d61ac0f871cbb1c9ed638d3ae976b6cc5bff747cfd63745ee00db333a",
-      "span": 47
-    },
     "Player.cs:12529-12535": {
       "sha256": "35f1506afc79caab00c67d58e9806fc3f8c0580fad935e94f1f2d41078892461",
       "span": 7
@@ -4007,10 +4003,6 @@
     "UICraftingStation.cs:288-315": {
       "sha256": "dd3ce6054d0eb8233e5ad92b2c59f59e444f1658f7b1f35a09e2f2c74b7c9eca",
       "span": 28
-    },
-    "UICraftingStation.cs:346-450": {
-      "sha256": "8a681592efcbbe85811e5b8f8be9f99fbdbc7b2dab3cf0d53bae3fa3c17e993c",
-      "span": 105
     },
     "UICraftingStation.cs:400-449": {
       "sha256": "6106d1bcd0198e856ea4061316c135d69ae2d5b8ecf3970d1dafe7bbe53c0619",
