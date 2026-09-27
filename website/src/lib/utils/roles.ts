@@ -244,3 +244,82 @@ export const ROLE_DESCRIPTIONS: Partial<
   // is_teleporter: handled dynamically in NPC detail page (destination varies)
   // is_villager: no description needed (not shown in Services section)
 };
+
+export interface RoleRules {
+  /** Compendium section that explains the rules behind this service */
+  href: string;
+  label: string;
+}
+
+/**
+ * Where the compendium explains each service an NPC offers. The NPC detail
+ * page links these from its Services section.
+ */
+export const ROLE_RULES: Partial<Record<keyof NpcRoles, RoleRules>> = {
+  is_quest_giver: { href: "/quests#how-quests-work", label: "How quests work" },
+  is_taskgiver_adventurer: {
+    href: "/professions/adventuring#how-it-works",
+    label: "How assignments work",
+  },
+  is_merchant: {
+    href: "/mechanics/inventory#merchants",
+    label: "Buying, selling, and buyback",
+  },
+  is_merchant_adventurer: {
+    href: "/professions/adventuring#adventurer-vendor-unlocks",
+    label: "Adventuring unlocks",
+  },
+  is_faction_vendor: {
+    href: "/mechanics/reputation#unlocks",
+    label: "What reputation unlocks",
+  },
+  is_bank: { href: "/mechanics/inventory#bank", label: "Bank rules" },
+  can_repair_equipment: {
+    href: "/mechanics/inventory#durability-and-repair",
+    label: "Durability and repair",
+  },
+  is_skill_master: {
+    href: "/mechanics/character#skills-and-specializations",
+    label: "Skills and specializations",
+  },
+  is_veteran_master: {
+    href: "/mechanics/character#skills-and-specializations",
+    label: "Skills and specializations",
+  },
+  is_reset_attributes: {
+    href: "/mechanics/character#attributes",
+    label: "What each attribute does",
+  },
+  is_soul_binder: {
+    href: "/mechanics/world#binding-and-travel",
+    label: "Binding and travel",
+  },
+  is_barber: {
+    href: "/mechanics/housing#appearance",
+    label: "Barbers and appearance",
+  },
+  is_inkeeper: {
+    href: "/mechanics/inventory#consumables",
+    label: "Food, drink, and buffs",
+  },
+  is_recruiter_mercenaries: {
+    href: "/mercenaries#roster",
+    label: "Hiring and managing mercenaries",
+  },
+  is_guild_management: {
+    href: "/mechanics/guilds#membership",
+    label: "Guild membership",
+  },
+  is_augmenter: {
+    href: "/mechanics/crafting#augments",
+    label: "Attaching and removing augments",
+  },
+  is_renewal_sage: {
+    href: "/mechanics/monster-spawns#renewal-sages",
+    label: "How renewal works",
+  },
+  is_teleporter: {
+    href: "/mechanics/world#binding-and-travel",
+    label: "Binding and travel",
+  },
+};

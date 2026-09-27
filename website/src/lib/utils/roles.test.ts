@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { NPC_ROLE_BITS } from "$lib/types/map";
 import type { NpcRoles } from "$lib/types/npcs";
 import { getNpcRoles } from "$lib/utils/tooltip";
-import { normalizeRoles, ROLE_CONFIG } from "./roles";
+import { missingAnchors } from "$lib/testing/route-anchors";
+import { normalizeRoles, ROLE_CONFIG, ROLE_RULES } from "./roles";
 
 describe("NPC role configuration", () => {
   it("surfaces guild management NPCs in role config and map bitmasks", () => {
@@ -33,5 +34,10 @@ describe("NPC role configuration", () => {
     const bit = (NPC_ROLE_BITS as Record<string, number>).isBarber;
     expect(bit).toBe(21);
     expect(getNpcRoles(1 << bit)).toContain("Barber");
+  });
+
+  it("links every service to a section that exists", () => {
+    const hrefs = Object.values(ROLE_RULES).map((rules) => rules!.href);
+    expect(missingAnchors(hrefs)).toEqual([]);
   });
 });

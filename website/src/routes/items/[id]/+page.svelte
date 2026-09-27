@@ -136,6 +136,18 @@
   const isHouseChestStructure = $derived(
     data.item.item_type === "structure" && isHouseChestItemId(data.item.id),
   );
+  const isSetPiece = $derived(Boolean(data.item.augment_armor_set_name));
+  const isCostume = $derived(data.item.item_type === "costume");
+  const isTravelItem = $derived(data.item.item_type === "travel");
+  const hasMechanicsNotes = $derived(
+    isBackpack ||
+      isHouseChestStructure ||
+      isSetPiece ||
+      isAugment ||
+      isCostume ||
+      isTravelItem ||
+      isPet,
+  );
 
   // Compute all derived values from item data and server-loaded sources/usages
   const computed = $derived.by(() => {
@@ -549,7 +561,7 @@
     </Card.Content>
   </Card.Root>
 
-  {#if isBackpack || isHouseChestStructure}
+  {#if hasMechanicsNotes}
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title>Mechanics</Card.Title>
@@ -576,6 +588,50 @@
               for slot ranges, costs, and house locations.
             </p>
           </div>
+        {/if}
+        {#if isSetPiece}
+          <p class="text-muted-foreground">
+            Set bonuses count only equipped pieces with durability left. See
+            <a href="/mechanics/inventory#armor-sets" class={styles.link}>
+              armor set rules
+            </a>
+            for the piece thresholds.
+          </p>
+        {/if}
+        {#if isAugment}
+          <p class="text-muted-foreground">
+            Augments attach to equipment at a Craft Station. See
+            <a href="/mechanics/crafting#augments" class={styles.link}>
+              augment rules
+            </a>
+            for compatibility and removal.
+          </p>
+        {/if}
+        {#if isCostume}
+          <p class="text-muted-foreground">
+            Using a costume saves its appearance to your wardrobe. See
+            <a href="/mechanics/housing#appearance" class={styles.link}>
+              wardrobe and appearance rules
+            </a>.
+          </p>
+        {/if}
+        {#if isTravelItem}
+          <p class="text-muted-foreground">
+            See
+            <a href="/mechanics/world#binding-and-travel" class={styles.link}>
+              binding and travel rules
+            </a>
+            for bind points and where travel items cannot be used.
+          </p>
+        {/if}
+        {#if isPet}
+          <p class="text-muted-foreground">
+            Whistles summon a friendly follower that does not fight. See
+            <a href="/summons#friendly-followers" class={styles.link}>
+              friendly follower rules
+            </a>
+            for the follower limit and naming.
+          </p>
         {/if}
       </Card.Content>
     </Card.Root>

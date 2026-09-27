@@ -25,6 +25,7 @@
   import {
     getActiveRoles,
     ROLE_DESCRIPTIONS,
+    ROLE_RULES,
     type RoleConfig,
     type RoleCategory,
   } from "$lib/utils/roles";
@@ -810,6 +811,14 @@
                   </li>
                 {/each}
               </ul>
+            {/if}
+            {#if ROLE_RULES[role.key]}
+              {@const rules = ROLE_RULES[role.key]!}
+              <a
+                href={rules.href}
+                class="mt-1 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
+                >{rules.label}</a
+              >
             {/if}
             {#if role.key === "is_renewal_sage" && data.worldBosses.length > 0}
               <div class="mt-3 rounded-md border bg-background/50 p-3">
