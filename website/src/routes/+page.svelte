@@ -381,7 +381,7 @@
         The <strong>Ancient Kingdoms Compendium</strong> is a fan-made wiki, interactive
         world map, and searchable game database. We update the listings from game
         files after each patch. They cover items, monsters, NPCs, zones, quests, skills,
-        classes, professions, and crafting recipes.
+        classes, professions, and more.
       </p>
       <p>
         Do you run a server? <a
