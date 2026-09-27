@@ -1,33 +1,38 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { test } from "vitest";
+import { MECHANICS_GROUPS } from "$lib/data/mechanics";
 
 function source(path: string): string {
   return readFileSync(new URL(path, import.meta.url), "utf8");
 }
 
-test("mechanics index and homepage expose mechanics references", () => {
-  const mechanicsIndex = source("./+page.svelte");
-  const homepage = source("../+page.svelte");
+test("every mechanics page is registered, and every entry opens a page", () => {
+  const listed: readonly string[] = MECHANICS_GROUPS.flatMap((group) =>
+    group.pages.map((page) => page.href),
+  );
+  const routes = readdirSync(new URL(".", import.meta.url), {
+    withFileTypes: true,
+  })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        existsSync(new URL(`./${entry.name}/+page.svelte`, import.meta.url)),
+    )
+    .map((entry) => `/mechanics/${entry.name}`);
 
-  assert.match(mechanicsIndex, /href: "\/mechanics\/inventory"/);
-  assert.match(mechanicsIndex, /href: "\/mechanics\/experience"/);
-  assert.match(mechanicsIndex, /href: "\/mechanics\/combat"/);
-  assert.match(mechanicsIndex, /href: "\/mechanics\/monster-spawns"/);
-  assert.match(mechanicsIndex, /href: "\/mercenaries#how-it-works"/);
-  assert.match(mechanicsIndex, /href: "\/mechanics\/mercenary-stats"/);
-  assert.match(mechanicsIndex, /href: "\/mechanics\/reputation"/);
+  const unlisted = routes.filter((route) => !listed.includes(route));
+  assert.deepEqual(
+    unlisted,
+    [],
+    "mechanics pages missing from MECHANICS_GROUPS",
+  );
 
-  // The homepage's "Game mechanics" section links directly to the mechanics
-  // pages, which supersedes the old single /mechanics card. The mercenary
-  // pages are reached through the Mercenaries card instead.
-  assert.match(homepage, /Game mechanics/);
-  assert.match(homepage, /href: "\/mechanics\/inventory"/);
-  assert.match(homepage, /href: "\/mechanics\/experience"/);
-  assert.match(homepage, /href: "\/mechanics\/combat"/);
-  assert.match(homepage, /href: "\/mechanics\/monster-spawns"/);
-  assert.match(homepage, /href: "\/mechanics\/reputation"/);
-  assert.match(homepage, /href: "\/mercenaries",/);
+  const dangling = listed.filter((href) => {
+    const path = href.split("#")[0];
+    return !existsSync(new URL(`..${path}/+page.svelte`, import.meta.url));
+  });
+  assert.deepEqual(dangling, [], "MECHANICS_GROUPS entries without a route");
 });
 
 test("mercenary rules links reach the hub section", () => {

@@ -11,6 +11,7 @@
   import { buttonVariants } from "$lib/components/ui/button";
   import { COMPENDIUM_VERSION } from "$lib/constants/version";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
+  import { MECHANICS_GROUPS } from "$lib/data/mechanics";
   import {
     AK_MONITOR_DISCORD_URL,
     DISCORD_URL,
@@ -187,20 +188,6 @@
     },
   ];
 
-  // Game-mechanics reference pages from /mechanics. The mercenary rules and
-  // stat ranges are left out: the Mercenaries card above opens the mercenary
-  // hub, which links to both.
-  const mechanics = [
-    { title: "Character Build", href: "/mechanics/character" },
-    { title: "Combat", href: "/mechanics/combat" },
-    { title: "Experience", href: "/mechanics/experience" },
-    { title: "Death & Remains", href: "/mechanics/death" },
-    { title: "Inventory", href: "/mechanics/inventory" },
-    { title: "Party & Loot", href: "/mechanics/party" },
-    { title: "Monster Spawns", href: "/mechanics/monster-spawns" },
-    { title: "Reputation", href: "/mechanics/reputation" },
-  ];
-
   // Curated footer nav: the highest-traffic sections only (no Mechanics — it
   // has its own section above).
   const footerLinks = [
@@ -353,14 +340,23 @@
     <!-- Game mechanics -->
     <section>
       {@render sectionLabel("Game mechanics")}
-      <div class="flex flex-wrap gap-2">
-        {#each mechanics as mechanic (mechanic.href)}
-          <a
-            href={mechanic.href}
-            class="inline-flex items-center rounded-full border bg-card px-3.5 py-1.5 text-sm transition-colors hover:border-foreground/20 hover:bg-muted/50"
-          >
-            {mechanic.title}
-          </a>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-5">
+        {#each MECHANICS_GROUPS as group (group.title)}
+          <div>
+            <h3 class="mb-1.5 text-sm font-semibold">{group.title}</h3>
+            <ul>
+              {#each group.pages as page (page.href)}
+                <li>
+                  <a
+                    href={page.href}
+                    class="block py-1 text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
+                  >
+                    {page.title}
+                  </a>
+                </li>
+              {/each}
+            </ul>
+          </div>
         {/each}
       </div>
     </section>
