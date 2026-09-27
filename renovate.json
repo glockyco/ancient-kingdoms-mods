@@ -2,5 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>glockyco/renovate-config"
+  ],
+  "packageRules": [
+    {
+      "description": "TypeScript 7.0 ships no compiler API. typescript-eslint, svelte-check, and knip need it, and no build step runs tsc. Remove this hold when typescript-eslint supports TypeScript 7 (https://github.com/typescript-eslint/typescript-eslint/issues/10940).",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    }
   ]
 }
