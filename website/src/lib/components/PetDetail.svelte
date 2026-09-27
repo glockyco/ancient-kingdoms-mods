@@ -398,31 +398,39 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level Bonuses</dt>
               <dd>
+                <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel — per-class attribute intervals. -->
                 {#if pet.type_monster === "Warrior"}
-                  Con every 2 lvls · Str every 3 · Dex every 4 · Int every 5 ·
-                  Wis &amp; Cha every 6
+                  +1 Constitution every 2 levels · +1 Strength every 3 levels ·
+                  +1 Dexterity every 4 levels · +1 Intelligence every 5 levels ·
+                  +1 Wisdom and +1 Charisma every 6 levels
                 {:else if pet.type_monster === "Rogue"}
-                  Dex every 2 lvls · Str every 3 · Con every 4 · Int every 5 ·
-                  Wis &amp; Cha every 6
+                  +1 Dexterity every 2 levels · +1 Strength every 3 levels · +1
+                  Constitution every 4 levels · +1 Intelligence every 5 levels ·
+                  +1 Wisdom and +1 Charisma every 6 levels
                 {:else if pet.type_monster === "Cleric"}
-                  Wis every 2 lvls · Int every 3 · Con every 4 · Str every 5 ·
-                  Dex &amp; Cha every 6
+                  +1 Wisdom every 2 levels · +1 Intelligence every 3 levels · +1
+                  Constitution every 4 levels · +1 Strength every 5 levels · +1
+                  Dexterity and +1 Charisma every 6 levels
                 {:else if pet.type_monster === "Druid"}
-                  Wis every 2 lvls · Int every 3 · Dex every 4 · Con every 5 ·
-                  Str &amp; Cha every 6
+                  +1 Wisdom every 2 levels · +1 Intelligence every 3 levels · +1
+                  Dexterity every 4 levels · +1 Constitution every 5 levels · +1
+                  Strength and +1 Charisma every 6 levels
                 {:else if pet.type_monster === "Wizard"}
-                  Int every 2 lvls · Dex every 3 · Wis every 4 · Con every 5 ·
-                  Str &amp; Cha every 6
+                  +1 Intelligence every 2 levels · +1 Dexterity every 3 levels ·
+                  +1 Wisdom every 4 levels · +1 Constitution every 5 levels · +1
+                  Strength and +1 Charisma every 6 levels
                 {:else if pet.type_monster === "Ranger"}
-                  Dex every 2 lvls · Con every 3 · Str every 4 · Wis every 5 ·
-                  Int &amp; Cha every 6
+                  +1 Dexterity every 2 levels · +1 Constitution every 3 levels ·
+                  +1 Strength every 4 levels · +1 Wisdom every 5 levels · +1
+                  Intelligence and +1 Charisma every 6 levels
                 {:else if pet.type_monster === "Bard"}
-                  Cha every 2 lvls · Str every 3 · Dex every 4 · Con every 5 ·
-                  Wis &amp; Int every 6
+                  +1 Charisma every 2 levels · +1 Strength every 3 levels · +1
+                  Dexterity every 4 levels · +1 Constitution every 5 levels · +1
+                  Wisdom and +1 Intelligence every 6 levels
                 {/if}
                 <br />
                 <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
-                All resists every lvl
+                +1 to each resistance every level
               </dd>
             </div>
             <div class="flex gap-2">
