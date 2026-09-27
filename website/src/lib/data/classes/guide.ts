@@ -21,7 +21,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/PlayerEquipment.cs:322-328 — shield removal clears both buffs",
       },
       {
-        text: "You gain rage when your auto attacks deal damage and when you take Normal damage.",
+        text: "You gain rage when your auto attacks deal damage and when you take physical damage.",
         source:
           "Source: server-scripts/Combat.cs:1364-1388 — rage gain from hits and follow-up attacks",
         href: "/mechanics/combat#rage-generation",
@@ -122,12 +122,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     },
     rules: [
       {
-        text: "Rogue skills need a dagger in your main hand.",
+        text: "Rogue skills need a light one-handed weapon, such as a dagger or spear, in your main hand.",
         source:
           "Source: server-scripts/ScriptableSkill.cs:102-145 — a required weapon category prevents casting with the wrong weapon",
       },
       {
-        text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when you take Normal damage. Equipment and buffs can add regeneration.",
+        text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when you take physical damage. Equipment and buffs can add regeneration.",
         source:
           "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Combat.cs:1364-1388 — recovery bonus and combat rage gain",
         href: "/mechanics/character#resources",

@@ -981,6 +981,52 @@
     {/each}
   </nav>
 
+  <section id="class-guide" class="scroll-mt-24">
+    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+      <BookOpenText class="h-5 w-5 text-sky-500" />
+      {data.class.name} Guide
+    </h2>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="rounded-lg border bg-muted/30 p-4">
+        <h3 class="font-semibold">Attributes</h3>
+        <p class="mt-2 text-muted-foreground">{data.guide.attributes.text}</p>
+        <a
+          href="/mechanics/character#attributes"
+          class="mt-3 inline-block text-blue-600 dark:text-blue-400 hover:underline"
+          >Attribute rules</a
+        >
+      </div>
+      <div class="rounded-lg border bg-muted/30 p-4">
+        <h3 class="font-semibold">Off-hand</h3>
+        <p class="mt-2 text-muted-foreground">{data.guide.equipment.text}</p>
+      </div>
+    </div>
+
+    {#if data.guide.rules.length > 0}
+      <div class="mt-4 rounded-lg border bg-muted/30 p-4">
+        <h3 class="font-semibold">Playing a {data.class.name}</h3>
+        <ul class="mt-2 list-disc space-y-3 pl-5 text-muted-foreground">
+          {#each data.guide.rules as rule, index (rule.text)}
+            <li>
+              {#if data.class.id === "rogue" && index === 0}
+                {daggerSkillCount}
+              {/if}
+              {rule.text}
+              {#if rule.href && rule.linkText}
+                <a
+                  href={rule.href}
+                  class="mt-1 block w-fit text-blue-600 dark:text-blue-400 hover:underline"
+                  >{rule.linkText}</a
+                >
+              {/if}
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
+  </section>
+
   <!-- Equipment & Weapons Section -->
   {#if data.items.length > 0}
     <section id="equipment" class="scroll-mt-4">
@@ -1081,50 +1127,4 @@
       />
     </section>
   {/if}
-
-  <section id="class-guide" class="scroll-mt-24">
-    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-      <BookOpenText class="h-5 w-5 text-sky-500" />
-      {data.class.name} Guide
-    </h2>
-
-    <div class="grid gap-4 md:grid-cols-2">
-      <div class="rounded-lg border bg-muted/30 p-4">
-        <h3 class="font-semibold">Attributes</h3>
-        <p class="mt-2 text-muted-foreground">{data.guide.attributes.text}</p>
-        <a
-          href="/mechanics/character#attributes"
-          class="mt-3 inline-block text-blue-600 dark:text-blue-400 hover:underline"
-          >Attribute rules</a
-        >
-      </div>
-      <div class="rounded-lg border bg-muted/30 p-4">
-        <h3 class="font-semibold">Off-hand</h3>
-        <p class="mt-2 text-muted-foreground">{data.guide.equipment.text}</p>
-      </div>
-    </div>
-
-    {#if data.guide.rules.length > 0}
-      <div class="mt-4 rounded-lg border bg-muted/30 p-4">
-        <h3 class="font-semibold">Playing a {data.class.name}</h3>
-        <ul class="mt-2 list-disc space-y-3 pl-5 text-muted-foreground">
-          {#each data.guide.rules as rule, index (rule.text)}
-            <li>
-              {#if data.class.id === "rogue" && index === 0}
-                {daggerSkillCount}
-              {/if}
-              {rule.text}
-              {#if rule.href && rule.linkText}
-                <a
-                  href={rule.href}
-                  class="mt-1 block w-fit text-blue-600 dark:text-blue-400 hover:underline"
-                  >{rule.linkText}</a
-                >
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      </div>
-    {/if}
-  </section>
 </div>

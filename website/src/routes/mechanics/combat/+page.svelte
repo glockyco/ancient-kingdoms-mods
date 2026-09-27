@@ -1094,9 +1094,9 @@ percentageValue = baseValue × songPower</pre>
             target's current HP.
           </li>
           <li>
-            Taking Normal-type damage: ⌊clamp(sqrt(damage) × 0.35, 1, 25)⌋ per
-            hit. Same formula applies to Warrior/Rogue mercenary pets when they
-            receive Normal damage.
+            Taking physical damage: ⌊clamp(sqrt(damage) × 0.35, 1, 25)⌋ per hit.
+            Same formula applies to Warrior/Rogue mercenary pets when they take
+            physical damage.
           </li>
         </ul>
       </div>

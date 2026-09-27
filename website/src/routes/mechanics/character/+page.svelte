@@ -198,8 +198,8 @@
                 >
                 <span class="block">Rage has no baseline recovery.</span>
                 <span class="block"
-                  >Dealing auto-attack damage or taking a damaging Normal-type
-                  hit builds it.</span
+                  >Dealing auto-attack damage or taking physical damage builds
+                  it.</span
                 >
                 <span class="block"
                   ><MechanicsLink section="combat#rage-generation"
