@@ -196,7 +196,10 @@
       </p>
       <!-- Source: server-scripts/TravelItem.cs:22-41 — a Bind Point travel item reads the saved bind point and teleports without changing it. The exported gate_scroll item is a TravelItem. -->
       <p>Gate Scroll returns to your saved bind point without changing it.</p>
-      <!-- Source: server-scripts/UsableItem.cs:30-39, server-scripts/ScrollItem.cs:67-79, and server-scripts/PlayerSkills.cs:408-412 — item use checks the required level (the Scroll of Binding export requires 30), and binding scrolls and spells are blocked in dungeons. -->
+      <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
+      <!-- Source: exported-data/items.json — scroll_of_binding has level_required 30. -->
+      <!-- Source: server-scripts/ScrollItem.cs:67-79 — a bind scroll is refused in a dungeon. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:408-412 — a bind spell is refused in a dungeon. -->
       <p>
         <span class="block">Scroll of Binding requires level 30.</span>
         <span class="block"

@@ -1,7 +1,7 @@
 import type { ClassName } from "$lib/utils/classes";
 import type { ClassGuide } from "$lib/types/classes";
 
-// Each source is rendered as an HTML Source comment immediately before its fact.
+// Each fact carries its own Source citation, which the citation check reads from this file.
 export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   warrior: {
     attributes: {

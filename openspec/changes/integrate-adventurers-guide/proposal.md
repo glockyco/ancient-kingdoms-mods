@@ -27,5 +27,5 @@ Game version 0.9.34.0 added the Adventurer's Guide, an in-game help system with 
 
 - `mods/DataExporter`: a new exporter and model for the guide.
 - `build-pipeline`: a new loader and table.
-- `website`: the entity manifest and search documents, a coverage map and its test, seven new routes, and edits to existing routes and the class query.
+- `website`: the entity manifest and search documents, a coverage map and its test, eight new routes, and edits to existing routes and the class query.
 - A new game export is required before the pipeline can build, because the loader fails when `game_guide.json` is absent.

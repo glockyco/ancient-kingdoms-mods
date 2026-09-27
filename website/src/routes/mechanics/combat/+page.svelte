@@ -697,7 +697,11 @@ percentageValue = baseValue × songPower</pre>
         Reapplying the same named effect replaces its old instance and resets
         its timer. Effects in the same overwrite group replace one another.
       </p>
-      <!-- Source: server-scripts/Monster.cs:1560-1564; PlayerSkills.cs:310-317; Skills.cs:1547-1563,233-238; Combat.cs:760-762 — root stops movement, stun/fear prevent player skill use, and direct damage or a damage-over-time tick breaks sleep. -->
+      <!-- Source: server-scripts/Monster.cs:1560-1564 — a heavy slow resets monster movement. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:310-317 — FEAR and STUNNED states block skill use. -->
+      <!-- Source: server-scripts/Skills.cs:1547-1563 — BreakMezz ends mesmerize buffs. -->
+      <!-- Source: server-scripts/Combat.cs:760-762 — damage calls BreakMezz. -->
+      <!-- Source: server-scripts/Skills.cs:233-238 — a damage-over-time recovery tick calls BreakMezz. -->
       <p>
         Root stops movement but does not end on damage. Stun prevents normal
         skill use. Sleep ends when direct damage or a damage-over-time tick hits
@@ -707,7 +711,8 @@ percentageValue = baseValue × songPower</pre>
         >
         for the control rules.
       </p>
-      <!-- Source: server-scripts/Skills.cs:1832-1879; Combat.cs:908-950 — a ward absorbs damage-over-time damage until its pool runs out, while a damage shield retaliates on eligible hits. -->
+      <!-- Source: server-scripts/Skills.cs:1832-1879 — ApplyWardToDoTDamage takes tick damage from the ward pool and passes the excess. -->
+      <!-- Source: server-scripts/Combat.cs:908-950 — damageShield buffs deal damage back to the attacker. -->
       <p>
         A ward absorbs damage-over-time ticks until its pool runs out, then any
         excess reaches health. A damage shield retaliates against qualifying

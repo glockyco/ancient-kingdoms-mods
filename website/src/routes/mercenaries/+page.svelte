@@ -661,7 +661,9 @@
             >
               fee = round(5 + 295 × ((level − 1) ÷ 49)^2.8 + 10 × veteran level)
             </p>
-            <!-- Source: server-scripts/UsableItem.cs:30-39; exported-data/items.json:127045-127068; Pet.cs:5059-5075 — scroll minimum level and resurrection excluded from mercenary healing AI. -->
+            <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
+            <!-- Source: exported-data/items.json — scroll_of_resurrection has level_required 30. -->
+            <!-- Source: server-scripts/Pet.cs:5059-5075 — mercenary healing AI skips resurrection skills. -->
             <p>
               <span class="block"
                 >A <a href="/items/scroll_of_resurrection" class={link}

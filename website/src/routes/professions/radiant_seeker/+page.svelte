@@ -124,7 +124,8 @@
         </div>
       </li>
     </ol>
-    <!-- Source: server-scripts/ScriptableItem.cs:23-31,396-404 — sale price and player-trade permission are separate item properties; the Radiant Aether export is sellable for 15 gold and not tradable. -->
+    <!-- Source: server-scripts/ScriptableItem.cs:23-31 — sellPrice, sellable, and tradable are separate item fields. -->
+    <!-- Source: exported-data/items.json — radiant_aether has sell_price 15 and tradable false. -->
     <p class="text-muted-foreground">
       Radiant Aether cannot be traded to another player, but it can be sold to a
       merchant.
