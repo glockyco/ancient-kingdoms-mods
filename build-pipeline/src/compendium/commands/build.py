@@ -24,6 +24,7 @@ from compendium.loaders import (
     load_crafting_stations,
     load_equipment_slots,
     load_fish,
+    load_game_guide,
     load_gather_items,
     load_houses,
     load_items,
@@ -82,6 +83,7 @@ def load_all(
     load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
     load_classes(conn, export_dir)  # Player classes (early, no dependencies)
     load_equipment_slots(conn, export_dir)
+    load_game_guide(conn, export_dir)
     load_progression(conn, export_dir)  # After classes (class and race coverage)
     load_zones(conn, export_dir)
     if static_dir is None:

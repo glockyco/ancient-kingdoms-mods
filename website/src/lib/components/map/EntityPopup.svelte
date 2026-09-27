@@ -917,6 +917,19 @@
                 <span>{portal.requiredItemName}</span>
               </div>
             {/if}
+            {#if portal.requiredItemName}
+              <!-- Source: server-scripts/Portal.cs:47 — without requiresEveryoneKey, an online party member's key admits the traveler. -->
+              <div class="flex justify-between">
+                <span class="text-muted-foreground">Key holder</span>
+                <a
+                  href="/mechanics/world#portals"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{portal.requiresEveryoneKey
+                    ? "Every traveler"
+                    : "Any party member"}</a
+                >
+              </div>
+            {/if}
             {#if portal.needMonsterDeadName}
               <div class="rounded bg-red-500/20 px-2 py-1 text-red-300">
                 <span class="text-red-400">Kill</span>

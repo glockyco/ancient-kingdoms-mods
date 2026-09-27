@@ -216,6 +216,11 @@ namespace DataExporter
                 var exporter = new ProgressionExporter(LoggerInstance, ExportPath);
                 exporter.Export();
             }));
+            result.Exporters.Add(RunExporter("gameGuide", required: true, () =>
+            {
+                var exporter = new GameGuideExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
             result.Exporters.Add(RunExporter("visualAssets.manifest", required: true, visualAssets.WriteManifest));
 
             result.Ok = result.Exporters.TrueForAll(exporter => !exporter.Required || exporter.Ok);

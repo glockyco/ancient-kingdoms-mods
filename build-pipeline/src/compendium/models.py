@@ -959,6 +959,15 @@ class EquipmentSlotData(BaseModel):
     accepted_category: EquipmentCategory
 
 
+class GameGuideArticleData(BaseModel):
+    """One article of the in-game Adventurer's Guide, in English."""
+
+    id: str = Field(min_length=1)
+    category: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    body: str = Field(min_length=1)
+
+
 class AttributeValuesData(BaseModel):
     """Six base attributes at one progression point."""
 
@@ -1024,6 +1033,9 @@ class PortalData(BaseModel):
     destination: Position
     orientation: Position | None = None
     required_item_id: str | None = None
+    # True when every traveler needs their own key. When false, an online
+    # party member's key admits the whole party (Portal.cs OnTriggerEnter2D).
+    requires_everyone_key: bool
     need_monster_dead_id: str | None = (
         None  # Monster that must be dead to activate (e.g., "thalassor")
     )

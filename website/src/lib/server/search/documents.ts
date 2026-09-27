@@ -237,6 +237,14 @@ const builders: Partial<Record<SearchableEntityId, Builder>> = {
       .all() as RawRow[];
     return rowsToDocs(def, rows);
   },
+  guide_topic: (db, def) => {
+    const rows = db
+      .prepare(
+        "SELECT id, title AS name, 'adventurers guide help' AS keywords, body AS content FROM game_guide_articles ORDER BY id",
+      )
+      .all() as RawRow[];
+    return rowsToDocs(def, rows);
+  },
 };
 
 export const searchDocumentBuilders = builders as Record<

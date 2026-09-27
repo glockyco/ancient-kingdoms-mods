@@ -566,6 +566,7 @@ interface PortalRow {
   is_closed: number;
   required_item_id: string | null;
   required_item_name: string | null;
+  requires_everyone_key: number;
   required_level: number;
   required_item_level: number;
   need_monster_dead_id: string | null;
@@ -592,6 +593,7 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       p.is_closed,
       p.required_item_id,
       i.name as required_item_name,
+      p.requires_everyone_key,
       COALESCE(p.level_required, 0) as required_level,
       COALESCE(p.item_level_required, 0) as required_item_level,
       p.need_monster_dead_id,
@@ -644,6 +646,7 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       isClosed,
       requiredItemId: r.required_item_id,
       requiredItemName: r.required_item_name,
+      requiresEveryoneKey: Boolean(r.requires_everyone_key),
       requiredLevel: r.required_level,
       requiredItemLevel: r.required_item_level,
       needMonsterDeadId: r.need_monster_dead_id,

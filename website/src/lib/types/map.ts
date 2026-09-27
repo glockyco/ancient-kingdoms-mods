@@ -154,6 +154,8 @@ export interface PortalMapEntity extends MapEntity {
   isClosed: boolean;
   requiredItemId: string | null;
   requiredItemName: string | null;
+  /** Every traveler needs their own key. Otherwise, a party member's key admits the party. */
+  requiresEveryoneKey: boolean;
   requiredLevel: number;
   requiredItemLevel: number;
   needMonsterDeadId: string | null;

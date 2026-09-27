@@ -170,7 +170,11 @@
       <div class="text-xs text-red-400">Closed</div>
     {:else}
       {#if portal.requiredItemName}
-        <div class="text-xs text-amber-400">Key: {portal.requiredItemName}</div>
+        <div class="text-xs text-amber-400">
+          Key: {portal.requiredItemName}{portal.requiresEveryoneKey
+            ? " (each traveler)"
+            : " (one per party)"}
+        </div>
       {/if}
       {#if portal.needMonsterDeadName}
         <div class="text-xs text-amber-400">

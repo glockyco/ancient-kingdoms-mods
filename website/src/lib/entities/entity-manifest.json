@@ -297,5 +297,18 @@
     "imageDomain": null,
     "imageKind": null,
     "sitemap": false
+  },
+  {
+    "id": "guide_topic",
+    "label": "Guide Topic",
+    "pluralLabel": "Guide Topics",
+    "order": 240,
+    "overviewHref": "/mechanics",
+    "detailPrefix": null,
+    "table": "game_guide_articles",
+    "searchable": true,
+    "imageDomain": null,
+    "imageKind": null,
+    "sitemap": false
   }
 ]

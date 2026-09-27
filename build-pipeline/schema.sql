@@ -166,6 +166,19 @@ CREATE TABLE equipment_slots (
 CREATE INDEX idx_equipment_slots_owner ON equipment_slots(owner_type, owner_id);
 
 -- =============================================================================
+-- ADVENTURER'S GUIDE
+-- =============================================================================
+
+-- The in-game guide's articles, in English. The website maps each one to the
+-- compendium section that covers it and makes its title searchable.
+CREATE TABLE game_guide_articles (
+    id TEXT PRIMARY KEY,
+    category TEXT NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL
+);
+
+-- =============================================================================
 -- CHARACTER PROGRESSION
 -- =============================================================================
 
@@ -1316,6 +1329,7 @@ CREATE TABLE portals (
     orientation_y REAL DEFAULT 0.0,
     orientation_z REAL DEFAULT 0.0,
     required_item_id TEXT REFERENCES items(id),
+    requires_everyone_key BOOLEAN NOT NULL DEFAULT 0,
     need_monster_dead_id TEXT REFERENCES monsters(id),
     level_required INTEGER DEFAULT 0,
     item_level_required INTEGER DEFAULT 0,

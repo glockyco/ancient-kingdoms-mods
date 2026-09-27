@@ -55,6 +55,8 @@ Tile validation must pass before replacement. Investigate redaction drift. Run `
 
 Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it and changes generated fixtures, so treat each one as its own concern.
 
+A patch can edit the in-game Adventurer's Guide. `website/src/lib/data/game-guide/coverage.db.test.ts` names every guide article that is new, removed, or edited since its compendium section was reviewed. For each named article, update the section and its digest in `coverage.ts` together.
+
 See `website/scripts/snapshot-mechanics.mjs` for mechanics snapshot generation and its `--update` option.
 
 ## 5. Publish and verify the release

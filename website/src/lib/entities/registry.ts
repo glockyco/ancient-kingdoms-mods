@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  BookOpenText,
   Box,
   Cat,
   CircleDot,
@@ -23,6 +24,7 @@ import {
   type IconNode,
 } from "lucide";
 import { achievementAnchor } from "$lib/data/achievements/relationships";
+import { guideCoverage } from "$lib/data/game-guide/coverage";
 import manifest from "./entity-manifest.json";
 
 export type EntityImageKind = "icon" | "primary" | "thumbnail" | "treasure_map";
@@ -83,11 +85,15 @@ const ICONS: Record<EntityId, IconNode> = {
   crafting_station: Hammer,
   alchemy_table: FlaskConical,
   scribing_table: BookOpen,
+  guide_topic: BookOpenText,
 };
 
 function hrefFor(entry: ManifestEntry, id: string): string {
   if (entry.id === "achievement") {
     return `${entry.overviewHref}#${achievementAnchor(id)}`;
+  }
+  if (entry.id === "guide_topic") {
+    return guideCoverage[id]?.href ?? entry.overviewHref;
   }
   if (!entry.detailPrefix || entry.detailPrefix === "/map") {
     return entry.overviewHref;

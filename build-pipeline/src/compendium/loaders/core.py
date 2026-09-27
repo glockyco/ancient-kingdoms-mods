@@ -23,6 +23,7 @@ from compendium.models import (
     CraftingStationData,
     EquipmentSlotData,
     FishData,
+    GameGuideArticleData,
     GatherItemData,
     HouseData,
     ItemData,
@@ -284,6 +285,24 @@ def load_equipment_slots(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(slots)} equipment slots")
+
+
+def load_game_guide(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load the Adventurer's Guide articles that the website maps to its sections."""
+    console.print("Loading Adventurer's Guide articles...")
+
+    filepath = export_dir / "game_guide.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        articles = [GameGuideArticleData(**item) for item in json.load(f)]
+    if not articles:
+        raise ValueError("game_guide.json contains no articles")
+
+    cursor = conn.cursor()
+    for article in articles:
+        insert_model(cursor, "game_guide_articles", article)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(articles)} guide articles")
 
 
 def load_progression(conn: sqlite3.Connection, export_dir: Path) -> None:
