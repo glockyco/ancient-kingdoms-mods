@@ -66,8 +66,8 @@
   // What actually changes inside each tier. The thresholds are raw numbers, so
   // most of these sit inside a tier rather than on its boundary.
   const TIER_UNLOCKS: Record<number, string> = {
-    0: "NPCs refuse to talk",
-    1: "NPCs refuse to talk",
+    0: "NPCs refuse interaction",
+    1: "NPCs refuse below −500",
     4: "Faction vendors, at 15,000",
     5: "Houses and gated quests, at 21,000",
     6: "Recipes, costumes, and pets, at 221,000",
@@ -225,6 +225,24 @@
         Each number is the lowest reputation that counts as that tier. Friendly
         starts at exactly 1,000, so 999 is still Neutral.
       </p>
+      <!-- Source: server-scripts/UIFactions.cs:124-153 — Unfriendly is −500 through below 0, Hostile is −3,000 through below −500, and Hated is below −3,000. -->
+      <p>
+        <span class="block">Below zero, Unfriendly covers −500 to below 0.</span
+        >
+        <span class="block">Hostile covers −3,000 to below −500.</span>
+        <span class="block">Hated begins below −3,000.</span>
+      </p>
+      <!-- Source: server-scripts/Npc.cs:1727-1733; PlayerQuests.cs:131-143; ScriptableQuest.cs:39 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
+      <p>
+        <span class="block"
+          >NPCs of a faction refuse interaction only when its value is below
+          −500.</span
+        >
+        <span class="block"
+          >A quest requirement checks the named faction's raw value, not your
+          rank or standing with another faction.</span
+        >
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -341,9 +359,12 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerQuests.cs:440-443 — quest completion raises the start NPC's faction. -->
       <p>
-        Handing in a quest gives
-        <span class="font-mono">recommended level × 20</span>
-        reputation with that faction. A level 40 quest gives 800.
+        <span class="block"
+          >Handing in an ordinary quest gives
+          <span class="font-mono">recommended level × 20</span>
+          reputation with its starting quest giver's faction.</span
+        >
+        <span class="block">A level 40 quest gives 800.</span>
       </p>
       <p>Adventurer quests give no reputation at all.</p>
     </Card.Content>

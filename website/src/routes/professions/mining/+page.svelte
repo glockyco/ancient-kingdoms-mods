@@ -112,20 +112,25 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Mining works</h2>
+    <h2 class="text-xl font-semibold">How Mining and Pickaxes work</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:TryGetSelectedPickaxe — the gather needs a
            Pickaxe-category weapon that is not broken. -->
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
         <span class="text-sm tabular-nums text-muted-foreground">1</span>
         <div>
-          <p class="font-medium">Equip a pickaxe.</p>
+          <p class="font-medium">Carry a pickaxe.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             A better <a
               href="#pickaxes"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >pickaxe</a
             > gives a better chance on every node. A broken pickaxe does not work.
+          </p>
+          <!-- Source: server-scripts/Player.cs:9551-9556; server-scripts/PlayerInventory.cs:105-119 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            If no usable pickaxe is selected, the game selects the best one in
+            your inventory.
           </p>
         </div>
       </li>
@@ -148,11 +153,13 @@
         <span class="text-sm tabular-nums text-muted-foreground">3</span>
         <div>
           <p class="font-medium">Collect the ore.</p>
+          <!-- Source: server-scripts/GatherItem.cs:383-405 — a mineral enters its depletion wait only when the roll succeeds. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Every success gives 1 ore and one more roll for a <a
               href="#gems"
               class="text-blue-600 hover:underline dark:text-blue-400">gem</a
-            >. If you fail, the node stays ready and you can try again.
+            >. Only a successful attempt depletes the node. A failure leaves it
+            ready.
           </p>
         </div>
       </li>

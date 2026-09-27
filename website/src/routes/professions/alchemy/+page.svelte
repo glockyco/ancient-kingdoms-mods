@@ -165,6 +165,27 @@
     </div>
   </div>
 
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
+    <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — a known recipe cannot be learned again; learning consumes one recipe item. -->
+    <p class="text-muted-foreground">
+      <span class="block">Learning a new potion consumes one recipe item.</span>
+      <span class="block"
+        >A recipe you already know cannot be learned again.</span
+      >
+    </p>
+    <!-- Source: server-scripts/Player.cs:13206-13217,13230-13250 — brewing requires the learned recipe and output space, then consumes ingredients before the roll. -->
+    <p class="text-muted-foreground">
+      <span class="block"
+        >Brewing requires a learned recipe and room for the potion.</span
+      >
+      <span class="block"
+        >Ingredients are consumed before the success roll, so a failed brew
+        still costs them.</span
+      >
+    </p>
+  </section>
+
   <!-- Station Locations -->
   {#if data.locations.length > 0}
     <section class="space-y-4">

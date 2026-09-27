@@ -159,8 +159,8 @@
     </div>
   </section>
 
-  <section class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How It Works</h2>
+  <section id="how-it-works" class="rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">Scrolls and Scroll Mastery</h2>
 
     <div class="mt-4 divide-y">
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
@@ -201,6 +201,23 @@
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Scaling scrolls use rank = clamp(round(Scroll Mastery% ÷ 5), 1, max
             rank). Fixed-rank scrolls stay rank 1.
+          </p>
+          <!-- Source: server-scripts/ScrollItem.cs:67-112 — a valid scroll applies a temporary skill and consumes one charge unless infiniteCharges is set. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <span class="block"
+              >A scroll applies its skill without teaching it.</span
+            >
+            <span class="block">Normal scrolls use one charge.</span>
+            <span class="block"
+              >Items marked for unlimited use do not lose a charge.</span
+            >
+          </p>
+          <!-- Source: server-scripts/ScrollItem.cs:69-79; server-scripts/UsableItem.cs:CanUse — target, class, item level, and cooldown restrictions can prevent use. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <span class="block">An invalid target prevents use.</span>
+            <span class="block"
+              >Class, item-level, and cooldown restrictions still apply.</span
+            >
           </p>
         </div>
       </div>

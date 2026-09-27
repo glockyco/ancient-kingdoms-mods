@@ -111,12 +111,10 @@ test("combat mechanics page documents Parry special rules", () => {
   assert.match(parrySection, /<h3 id="parry"[^>]*>Parry<\/h3>/);
 });
 
-test("experience page cross-links equipment and death inventory rules", () => {
+test("experience page links death and remains recovery rules", () => {
   const experiencePage = source("./experience/+page.svelte");
+  const deathPage = source("./death/+page.svelte");
 
-  assert.match(
-    experiencePage,
-    /href="\/mechanics\/inventory#equipment-and-death"/,
-  );
-  assert.match(experiencePage, /Retrieve from corpse/);
+  assert.match(experiencePage, /href="\/mechanics\/death#death"/);
+  assert.match(deathPage, /<Card\.Root id="death"/);
 });

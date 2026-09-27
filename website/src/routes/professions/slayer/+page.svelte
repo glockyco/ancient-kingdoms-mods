@@ -363,7 +363,7 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Slayer works</h2>
+    <h2 class="text-xl font-semibold">Bestiary Discoveries and Slayer</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity -->
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
@@ -373,6 +373,11 @@
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Only these {data.targets.length} targets give Slayer mastery. When you
             come near one, your Bestiary adds it with zero kills.
+          </p>
+          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13635-13642; server-scripts/UIBestiaryDetail.cs:150-154 — approach discovery and loot discovery are separate records. -->
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            Zero kills means discovered, not defeated. Loot discoveries are
+            separate: finding a boss does not reveal all its drops.
           </p>
         </div>
       </li>

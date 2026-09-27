@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import Seo from "$lib/components/Seo.svelte";
@@ -12,11 +13,14 @@
   // Every section on the page, in document order. Drives the jump list. The
   // ids match each Card.Root below.
   const SECTIONS = [
+    { id: "targeting", label: "Targets, Range and Casting" },
     { id: "damage-pipeline", label: "Damage Pipeline" },
     { id: "damage-formulas", label: "Damage Formulas" },
     { id: "resistance", label: "Resistance & Mitigation" },
+    { id: "combat-advantage", label: "Combat Advantage" },
     { id: "healing", label: "Healing" },
     { id: "buffs", label: "Buff Scaling" },
+    { id: "effects-and-control", label: "Buffs, Wards and Control" },
     { id: "debuffs", label: "Debuff Mechanics" },
     { id: "timing", label: "Timing & Haste" },
     { id: "special", label: "Special Mechanics" },
@@ -114,6 +118,64 @@
       >Auto-Attack DPS Simulator</a
     >.
   </div>
+
+  <!-- Source: server-scripts/Player.cs:4315-4325; PlayerSkills.cs:439-473 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
+  <Card.Root id="targeting" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Targets, Range and Casting</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <p>
+        <span class="block"
+          >Players can attack living monsters and NPCs, but not other players or
+          Bard-charmed monsters.</span
+        >
+        <span class="block"
+          >A targeted attack without a valid target selects the nearest
+          non-hidden, attackable monster within 10 units if one exists.</span
+        >
+      </p>
+      <!-- Source: server-scripts/TargetHealSkill.cs:17-80,83-135; PlayerSkills.cs:414-437 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
+      <p>
+        <span class="block"
+          >A targeted heal can reach yourself, another player, or a pet when the
+          skill permits it.</span
+        >
+        <span class="block"
+          >Selecting a monster can instead heal the player or pet it is
+          attacking.</span
+        >
+        <span class="block">Self-only heals stay on the caster.</span>
+        <span class="block"
+          >Resurrection targets player remains or a dead mercenary, not a living
+          ally.</span
+        >
+      </p>
+      <!-- Source: server-scripts/PlayerSkills.cs:310-317,399-405,475-557 — fear and stun block normal skill use; learned status, readiness, resources, equipment, ammunition, range, and visibility are checked. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:506-537 — out-of-range and obscured targets can start navigation and queue the cast. -->
+      <p>
+        <span class="block">Fear and stun block normal skill use.</span>
+        <span class="block"
+          >Casting also requires a learned, ready skill, enough Mana or Rage,
+          suitable equipment, and ammunition for applicable projectiles.</span
+        >
+        <span class="block"
+          >When range or visibility fails, targeted skills can move you closer
+          and queue the cast.</span
+        >
+      </p>
+      <!-- Source: server-scripts/PlayerSkills.cs:620-679,825-854 — Bard song use and repetition continue while moving or casting ordinary skills. -->
+      <p>
+        <span class="block"
+          >Bard songs can continue while moving or using ordinary combat skills.</span
+        >
+        <span class="block"
+          >See <MechanicsLink section="bard#songs">Bard Songs</MechanicsLink
+          >.</span
+        >
+      </p>
+    </Card.Content>
+  </Card.Root>
 
   <!-- ── §1 Damage Pipeline ─────────────────────────────────────────────── -->
   <Card.Root id="damage-pipeline" class="bg-muted/30">
@@ -365,6 +427,59 @@ finalDamage = damage − reduction</pre>
     </Card.Content>
   </Card.Root>
 
+  <!-- Source: server-scripts/Combat.cs:671-690,774-779 — targeted damage and projectile skills gain advantage when both look directions match; resist chance is multiplied by 0.8, and damage gains 10% rounded up plus 1. -->
+  <Card.Root id="combat-advantage" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Combat Advantage</Card.Title>
+      <Card.Description
+        >Facing and movement change a hit before mitigation.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <p>
+        Targeted strikes and projectiles gain combat advantage when attacker and
+        target face the same direction. The target's chance to avoid the hit
+        falls by 20% of its current chance. The hit gains 10% damage, rounded
+        up, plus 1.
+      </p>
+      <!-- Source: server-scripts/Combat.cs:774-779 — Rogues with learned skill index 15 and Rogue mercenaries receive 25% rather than 10% damage, rounded up, plus 1. -->
+      <p>
+        A Rogue with <a
+          href="/skills/improved_backstab"
+          class="text-blue-600 hover:underline dark:text-blue-400"
+          >Improved Backstab</a
+        > gains 25% damage, rounded up, plus 1 instead. Rogue mercenaries receive
+        the same bonus.
+      </p>
+      <!-- Source: server-scripts/Combat.cs:687-696 — a moving player has 25 percentage points subtracted from avoidance chance, takes truncated 10% additional pre-mitigation damage, and may receive extra stun chance from Normal hits by attackers above level 5. -->
+      <p>
+        While you move, your chance to avoid a hit drops by 25 percentage
+        points, to a minimum of zero. The incoming hit also gains 10% damage
+        before mitigation, with the extra amount rounded down. Normal hits from
+        attackers above level 5 gain 1–10 percentage points of stun chance and
+        at least 0.5 seconds of stun duration.
+      </p>
+      <!-- Source: server-scripts/Combat.cs:565-569 — a monster returning home evades damage. -->
+      <p>
+        A monster returning home evades incoming hits. See
+        <MechanicsLink section="monster-spawns#leashing"
+          >Leashing and Resets</MechanicsLink
+        >
+        for its reset rules.
+      </p>
+      <p>
+        See <a href="#damage-pipeline" class="underline hover:text-foreground"
+          >Damage Pipeline</a
+        >
+        and
+        <a href="#resistance" class="underline hover:text-foreground"
+          >Resistance and Mitigation</a
+        >
+        for the rest of the hit calculation.
+      </p>
+    </Card.Content>
+  </Card.Root>
+
   <!-- ── §4 Healing ────────────────────────────────────────────────────── -->
   <Card.Root id="healing" class="bg-muted/30">
     <Card.Header>
@@ -568,6 +683,56 @@ percentageValue = baseValue × songPower</pre>
           </table>
         </div>
       </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Source: server-scripts/Buff.cs:9-25; Skills.cs:1178-1197 — effects have a timed end, a same-name effect replaces the old instance, and effects in a shared overwrite category expire when a new one arrives. -->
+  <Card.Root id="effects-and-control" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Buffs, Debuffs, Wards and Cleanse</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <p>
+        Buffs and debuffs run for their listed duration unless removed earlier.
+        Reapplying the same named effect replaces its old instance and resets
+        its timer. Effects in the same overwrite group replace one another.
+      </p>
+      <!-- Source: server-scripts/Monster.cs:1560-1564; PlayerSkills.cs:310-317; Skills.cs:1547-1563,233-238; Combat.cs:760-762 — root stops movement, stun/fear prevent player skill use, and direct damage or a damage-over-time tick breaks sleep. -->
+      <p>
+        Root stops movement but does not end on damage. Stun prevents normal
+        skill use. Sleep ends when direct damage or a damage-over-time tick hits
+        the target. See <a
+          href="#special"
+          class="underline hover:text-foreground">Special Mechanics</a
+        >
+        for the control rules.
+      </p>
+      <!-- Source: server-scripts/Skills.cs:1832-1879; Combat.cs:908-950 — a ward absorbs damage-over-time damage until its pool runs out, while a damage shield retaliates on eligible hits. -->
+      <p>
+        A ward absorbs damage-over-time ticks until its pool runs out, then any
+        excess reaches health. A damage shield retaliates against qualifying
+        attackers instead of adding health. See <a
+          href="#special"
+          class="underline hover:text-foreground"
+          >Ward and Mana Shield Priority</a
+        > for direct hits.
+      </p>
+      <!-- Source: server-scripts/TargetBuffSkill.cs:318-331; BuffSkill.cs:43-54 — cleansing removes only debuffs whose elements match the spell; the exported Cleric Cleanse skill enables poison and disease. -->
+      <p>
+        Cleric's <a
+          href="/skills/cleanse"
+          class="underline hover:text-foreground">Cleanse</a
+        >
+        removes counters from poison and disease debuffs. See
+        <a href="#cleanse" class="underline hover:text-foreground"
+          >Cleanse counters</a
+        > for resistance and repeat casts.
+      </p>
+      <!-- Source: server-scripts/TargetDebuffSkill.cs:105-143,173-205 — dispels resist on landing and remove eligible beneficial buffs. -->
+      <p>
+        <a href="#dispel" class="underline hover:text-foreground">Dispel</a>
+        removes beneficial effects from a target.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -912,7 +1077,9 @@ percentageValue = baseValue × songPower</pre>
       <div>
         <!-- Source: server-scripts/Combat.cs:DealDamageAt — auto-attack rage gain on dealing damage. -->
         <!-- Source: server-scripts/Combat.cs:DealDamageAt — damage received by Warrior/Rogue entities invokes the shared rage formula. -->
-        <h3 class="font-semibold mb-1">Rage Generation</h3>
+        <h3 id="rage-generation" class="font-semibold mb-1 scroll-mt-24">
+          Rage Generation
+        </h3>
         <p class="text-sm text-muted-foreground mb-2">
           Warrior and Rogue generate Rage from two sources:
         </p>
@@ -1065,11 +1232,19 @@ percentageValue = baseValue × songPower</pre>
         <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1611-1616 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
-          Cleanse is cast on yourself or an ally and removes harmful debuffs. It
-          cannot be resisted, but the caster's Accuracy raises how many counters
-          it strips. A cleanse only acts on debuffs whose element matches it.
-          For example, a fire-and-cold cleanse removes fire and cold debuffs but
-          not poison, disease, or magic ones.
+          <span class="block"
+            >Cleanse is cast on yourself or an ally and removes harmful debuffs.</span
+          >
+          <span class="block">The cast has no landing resist roll.</span>
+          <span class="block"
+            >Each debuff's Cleanse Resist controls how many counters a cast
+            removes, and 100% prevents removal.</span
+          >
+          <span class="block">Only matching elements are affected.</span>
+          <span class="block"
+            >A fire-and-cold cleanse cannot remove poison, disease, or magic
+            debuffs.</span
+          >
         </p>
         <p class="text-sm text-muted-foreground mb-2">
           A cleanse item with limited charges refuses to be used while the

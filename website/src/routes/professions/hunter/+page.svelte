@@ -84,6 +84,25 @@
     </div>
   </div>
 
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Hunting works</h2>
+    <!-- Source: server-scripts/Monster.cs:2952-2965 — only isHunt kills record Hunting and can improve the skill. -->
+    <p class="text-muted-foreground">
+      <span class="block">Only creatures in the Hunting journal count.</span>
+      <span class="block">Their kills can improve Hunting skill.</span>
+    </p>
+    <!-- Source: server-scripts/Monster.cs:2981-3055 — non-boss isHunt monsters add half the player's Hunting fraction to above-Normal item drop chances. -->
+    <p class="text-muted-foreground">
+      <span class="block"
+        >Against non-boss Hunting-journal creatures, each 10% Hunting adds 5
+        percentage points to the drop chance of items above Normal quality.</span
+      >
+      <span class="block"
+        >Other creatures and Normal-quality drops get no bonus.</span
+      >
+    </p>
+  </section>
+
   <!-- Calculator -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">

@@ -85,7 +85,7 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Radiant Seeker works</h2>
+    <h2 class="text-xl font-semibold">How Radiant Sparks work</h2>
     <ol class="divide-y divide-border">
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
         <span class="text-sm tabular-nums text-muted-foreground">1</span>
@@ -124,6 +124,11 @@
         </div>
       </li>
     </ol>
+    <!-- Source: server-scripts/ScriptableItem.cs:23-31,396-404 — sale price and player-trade permission are separate item properties; the Radiant Aether export is sellable for 15 gold and not tradable. -->
+    <p class="text-muted-foreground">
+      Radiant Aether cannot be traded to another player, but it can be sold to a
+      merchant.
+    </p>
   </section>
 
   <section id="chance" class="space-y-4">

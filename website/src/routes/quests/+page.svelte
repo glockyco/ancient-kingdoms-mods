@@ -10,6 +10,8 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
+  import * as Card from "$lib/components/ui/card";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
@@ -34,6 +36,13 @@
   );
 
   const PAGE_SIZE = 20;
+  const sections = [
+    { id: "how-quests-work", label: "Accepting and Completing Quests" },
+    {
+      id: "requirements-and-repeats",
+      label: "Quest Requirements and Repeat Visits",
+    },
+  ];
 
   // Get unique display types from data for filter options
   const uniqueDisplayTypes = $derived(
@@ -301,6 +310,76 @@
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Quests" }]} />
 
   <h1 class="text-3xl font-bold">Quests</h1>
+
+  <PageSections {sections} />
+
+  <Card.Root id="how-quests-work" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Accepting and Completing Quests</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-3 text-muted-foreground">
+      <!-- Source: server-scripts/PlayerQuests.cs:295-309,322-349; server-scripts/KillQuest.cs:16-47 — kills and locations advance only quests already in the active quest list. -->
+      <p>
+        <span class="block"
+          >Accept a quest before completing its kill or location objectives.</span
+        >
+        <span class="block">Earlier actions do not count.</span>
+      </p>
+      <!-- Source: server-scripts/GatherInventoryQuest.cs:15-54,57-85; server-scripts/GatherQuest.cs:21-26 — inventory objectives check carried items, while gather objectives record progress. -->
+      <p>
+        <span class="block"
+          >Some item objectives check what you carry at turn-in.</span
+        >
+        <span class="block"
+          >Others record gathering progress as it happens.</span
+        >
+      </p>
+      <!-- Source: server-scripts/UINpcQuests.cs:170-174; server-scripts/UIQuests.cs:124-140; server-scripts/UIQuestTracking.cs:54 — the log permits 15 active quests, but tracking replaces the oldest of three. -->
+      <p>
+        <span class="block">You can have 15 active quests and track 3.</span>
+        <span class="block"
+          >Tracking a fourth replaces the oldest tracked quest without
+          abandoning it.</span
+        >
+      </p>
+      <!-- Source: server-scripts/PlayerQuests.cs:363-392,445-468 — rewards follow NPC turn-in, while abandoning removes the quest record and progress. -->
+      <p>
+        <span class="block"
+          >Completed objectives do not grant rewards until you turn the quest in
+          at its NPC.</span
+        >
+        <span class="block">Abandoning removes its recorded progress.</span>
+      </p>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root id="requirements-and-repeats" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Quest Requirements and Repeat Visits</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-3 text-muted-foreground">
+      <!-- Source: server-scripts/ScriptableQuest.cs:32-51; server-scripts/PlayerQuests.cs:131-147,183-253 — acceptance checks level, faction value, race, class, and predecessors. -->
+      <p>
+        Quests can require a level, faction standing, race, class, or earlier
+        quest.
+      </p>
+      <!-- Source: server-scripts/PlayerQuests.cs:236-253 — one completed quest from the predecessor array meets the chain requirement. -->
+      <p>
+        If a quest lists alternative predecessors, completing one is enough.
+      </p>
+      <!-- Source: server-scripts/PlayerQuests.cs:220-235 — ordinary repeatables reopen eight real hours after completion; Adventurer quests use 24 hours and the daily offer. -->
+      <p>
+        <span class="block">Repeatable quests reopen after 8 real hours.</span>
+        <span class="block"
+          ><a
+            href="/professions/adventuring#how-it-works"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >Adventurers' Guild assignments</a
+          > follow a separate 24-hour completion rule and daily selection.</span
+        >
+      </p>
+    </Card.Content>
+  </Card.Root>
 
   <DataTable
     data={dataWithVirtual}

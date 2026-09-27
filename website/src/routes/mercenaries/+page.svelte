@@ -25,7 +25,6 @@
   import Check from "@lucide/svelte/icons/check";
   import Info from "@lucide/svelte/icons/info";
   import Swords from "@lucide/svelte/icons/swords";
-  import X from "@lucide/svelte/icons/x";
 
   let { data } = $props();
 
@@ -85,16 +84,6 @@
     level,
     limit: activeMercenaryLimit(level),
   }));
-
-  const STANCE_ROWS = [
-    { label: "Attacks your target", aggressive: true, defensive: false },
-    {
-      label: "Attacks enemies that hit you or it",
-      aggressive: true,
-      defensive: false,
-    },
-    { label: "Uses heals and buffs", aggressive: true, defensive: true },
-  ];
 </script>
 
 {#snippet mark(yes: boolean)}
@@ -298,7 +287,10 @@
     <h2 class="text-xl font-semibold">How mercenaries work</h2>
 
     <div class="mt-4 divide-y">
-      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
+      <div
+        id="roster"
+        class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]"
+      >
         <div class="text-sm text-muted-foreground">1</div>
         <div>
           <div>
@@ -314,6 +306,8 @@
               >
               <span class="block">
                 The price is {fmt(hirePrice(MERC_MIN_LEVEL, 0))} gold at level {MERC_MIN_LEVEL}.
+              </span>
+              <span class="block">
                 It rises to {fmt(hirePrice(50, MAX_VETERAN))} gold at level 50 with
                 veteran level {MAX_VETERAN}.
               </span>
@@ -322,7 +316,10 @@
               </span>
               <span class="block">
                 A recruiter that prefers a race hires that race when the class
-                allows it. Otherwise, the race is random.
+                allows it.
+              </span>
+              <span class="block">
+                Otherwise, the race is random.
                 <a href="/mechanics/mercenary-stats" class={link}
                   >Race odds and stat ranges</a
                 >
@@ -375,9 +372,35 @@
           </div>
         </div>
       </div>
-
+      <!-- Source: server-scripts/UITarget.cs:443-474; UIMercenaries.cs:530-582,588-615,646-700; Player.cs:10487-10509 — combat prevents target-panel dismissal, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
+        <div>
+          <div>Manage your roster.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <span class="block"
+              >Dismissing a mercenary sends it back to your roster.</span
+            >
+            <span class="block">You cannot dismiss a mercenary in combat.</span>
+            <span class="block"
+              >A dead mercenary must be resurrected before you can summon it
+              again.</span
+            >
+            <span class="block"
+              >Dismiss an active mercenary before renaming them.</span
+            >
+            <span class="block"
+              >Permanent deletion requires removing their equipped gear.</span
+            >
+            <span class="block"
+              >Retrieve supplies before deletion if you want to keep them.</span
+            >
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">4</div>
         <div>
           <div>It levels up with you.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
@@ -402,6 +425,18 @@
             >
               skill rank = ⌊level ÷ 5⌋ + ⌊veteran level ÷ 10⌋
             </p>
+            <!-- Source: server-scripts/BardMercenarySkills.cs:60-104 — a Bard mercenary gains a third combat song at level 40, and Final Cadence requires level 50 with all combat songs active. -->
+            <p>
+              <span class="block"
+                ><a href={petHref("bard_mercenary", true)} class={link}
+                  >Bard mercenaries</a
+                > can sustain three combat songs from level 40 instead of two.</span
+              >
+              <span class="block"
+                >At level 50, Final Cadence requires all three combat songs to
+                be active.</span
+              >
+            </p>
             <Alert variant="info">
               <Info />
               <div>
@@ -423,60 +458,120 @@
         </div>
       </div>
 
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">4</div>
-        <div>
-          <div>Choose a stance.</div>
-          <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean; Pet.cs:2198-2209; Player.cs:OnAggro; Combat.cs:668,1187 -->
-          <div class="mt-2 overflow-x-auto">
-            <table class="text-sm">
-              <thead>
-                <tr class="text-muted-foreground">
-                  <th class="py-1.5 pr-8 text-left font-normal"></th>
-                  <th class="px-4 py-1.5 font-medium text-foreground"
-                    >Aggressive</th
-                  >
-                  <th class="px-4 py-1.5 font-medium text-foreground"
-                    >Defensive</th
-                  >
-                </tr>
+      <div id="commands" class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">5</div>
+        <div class="space-y-3">
+          <div>Give it orders.</div>
+          <!-- Source: server-scripts/GameManager.cs:1813-1829,1832-1919,1986-2039; Player.cs:8819-8845 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
+          <p class="text-sm leading-6 text-muted-foreground">
+            These orders also apply to your combat pet.
+          </p>
+          <!-- Source: server-scripts/Pet.cs:1488-1491,2198-2209,6007-6017; PetSkills.cs:170-200 — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
+          <!-- Source: server-scripts/GameManager.cs:1813-1829,1832-1919,1922-1983,1986-2039; Player.cs:8819-8845; Pet.cs:5375-5415,5945-5993 — group toggles, Warrior-first attack order, and movement commands. -->
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[36rem] text-left text-sm leading-6">
+              <thead class="border-b text-foreground">
+                <tr
+                  ><th class="py-2 pr-5">Order</th><th class="py-2">Effect</th
+                  ></tr
+                >
               </thead>
-              <tbody>
-                {#each STANCE_ROWS as stance (stance.label)}
-                  <tr class="border-t">
-                    <td class="py-1.5 pr-8 text-muted-foreground"
-                      >{stance.label}</td
-                    >
-                    {#each [stance.aggressive, stance.defensive] as yes, i (i)}
-                      <td class="px-4 py-1.5 text-center">
-                        {#if yes}
-                          <Check
-                            class="mx-auto h-4 w-4 text-emerald-500"
-                            aria-label="Yes"
-                          />
-                        {:else}
-                          <X
-                            class="mx-auto h-4 w-4 text-muted-foreground"
-                            aria-label="No"
-                          />
-                        {/if}
-                      </td>
-                    {/each}
-                  </tr>
-                {/each}
+              <tbody class="text-muted-foreground">
+                <tr class="border-b"
+                  ><th class="py-2 pr-5 font-medium text-foreground"
+                    >Aggressive</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >Attacks the enemies you are fighting.</span
+                    ><span class="block">Still heals and buffs.</span></td
+                  ></tr
+                >
+                <tr class="border-b"
+                  ><th class="py-2 pr-5 font-medium text-foreground"
+                    >Defensive</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >Stops attacking and drops its target.</span
+                    ><span class="block">Still heals and buffs.</span></td
+                  ></tr
+                >
+                <tr class="border-b"
+                  ><th class="py-2 pr-5 font-medium text-foreground"
+                    >Group stance</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >If any companion is aggressive, all become defensive.</span
+                    ><span class="block">Otherwise, all become aggressive.</span
+                    ></td
+                  ></tr
+                >
+                <tr class="border-b"
+                  ><th class="py-2 pr-5 font-medium text-foreground"
+                    >Group attack</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >A Warrior mercenary attacks first.</span
+                    ><span class="block"
+                      >Other aggressive companions join 1.5 seconds later.</span
+                    ><span class="block"
+                      >A defensive companion takes the target but waits until
+                      you make it aggressive.</span
+                    ></td
+                  ></tr
+                >
+                <tr class="border-b"
+                  ><th class="py-2 pr-5 font-medium text-foreground"
+                    >Individual attack</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >Sends one companion at your target and ends Hold
+                      Position.</span
+                    ><span class="block">Interrupts its current action.</span
+                    ><span class="block">Wakes a mesmerized target.</span><span
+                      class="block">Works only in aggressive stance.</span
+                    ></td
+                  ></tr
+                >
+                <tr class="border-b"
+                  ><th class="py-2 pr-5 font-medium text-foreground"
+                    >Hold Position</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >Companions stay in place until you order Follow or an
+                      attack.</span
+                    ></td
+                  ></tr
+                >
+                <tr class="border-b"
+                  ><th class="py-2 pr-5 font-medium text-foreground">Follow</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >Companions return to you and stop holding position.</span
+                    ></td
+                  ></tr
+                >
+                <tr
+                  ><th class="py-2 pr-5 font-medium text-foreground"
+                    >Come Here</th
+                  ><td class="py-2"
+                    ><span class="block"
+                      >The companion drops its target, stops casting, and moves
+                      next to you.</span
+                    ><span class="block"
+                      >Does not work while it is feared, stunned, or rooted.</span
+                    ></td
+                  ></tr
+                >
               </tbody>
             </table>
           </div>
-          <p class="mt-2 text-sm leading-6 text-muted-foreground">
-            When you switch to defensive, your mercenaries stop their attack.
-          </p>
         </div>
       </div>
 
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">5</div>
+      <div id="resurrection" class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">6</div>
         <div>
-          <div>Bring it back when it dies.</div>
+          <div>If it dies, resurrect it.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
             <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD, Combat.cs:1350-1361 -->
             <p>
@@ -533,14 +628,25 @@
                 </tbody>
               </table>
             </div>
+            <!-- Source: server-scripts/UIMercenaries.cs:618-644,817-839 — recruiter resurrection handles one dead mercenary or all dead roster members, charging the full combined fee. -->
+            <p>
+              <span class="block"
+                >A recruiter can resurrect one dead mercenary or all dead
+                mercenaries in your roster.</span
+              >
+              <span class="block"
+                >Resurrecting all requires enough gold for the complete group.</span
+              >
+            </p>
             <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:739-755 -->
             <p>
               <span class="block">
                 The fee is {fmt(resurrectionPrice(MERC_MIN_LEVEL, 0))} gold at level
-                {MERC_MIN_LEVEL}. It rises to {fmt(
-                  resurrectionPrice(50, MAX_VETERAN),
-                )}
-                gold at level 50 with veteran level {MAX_VETERAN}.
+                {MERC_MIN_LEVEL}.
+              </span>
+              <span class="block">
+                It rises to {fmt(resurrectionPrice(50, MAX_VETERAN))} gold at level
+                50 with veteran level {MAX_VETERAN}.
               </span>
               <span class="block">
                 Charisma lowers the fee in the same way as the hire price.
@@ -555,12 +661,23 @@
             >
               fee = round(5 + 295 × ((level − 1) ÷ 49)^2.8 + 10 × veteran level)
             </p>
+            <!-- Source: server-scripts/UsableItem.cs:30-39; exported-data/items.json:127045-127068; Pet.cs:5059-5075 — scroll minimum level and resurrection excluded from mercenary healing AI. -->
+            <p>
+              <span class="block"
+                >A <a href="/items/scroll_of_resurrection" class={link}
+                  >Scroll of Resurrection</a
+                > requires level 30.</span
+              >
+              <span class="block"
+                >Healer mercenaries do not cast resurrection automatically.</span
+              >
+            </p>
           </div>
         </div>
       </div>
 
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">6</div>
+        <div class="text-sm text-muted-foreground">7</div>
         <div>
           <div>If you die, your mercenaries leave.</div>
           <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,13004-13008, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,10254-10273 -->
@@ -576,10 +693,240 @@
             <span class="block">
               If you cannot pay for all of them, none of them return.
             </span>
+            <!-- Source: server-scripts/UIRespawn.cs:30-63 — the paid mercenary return is available only through non-Hardcore respawn. -->
+            <span class="block">
+              Hardcore characters have no normal respawn, so this does not apply
+              to them.
+            </span>
           </p>
         </div>
       </div>
     </div>
+  </section>
+
+  <section id="equipment" class="space-y-4 rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">Equipping a mercenary</h2>
+    <!-- Source: server-scripts/UITarget.cs:443-447; EquipmentItem.cs:157-212; MercenaryEquipment.cs:21-86 — the target-panel helmet icon opens equipment, with owner-level, class, slot, and two-handed checks. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Open the selected mercenary's equipment with the helmet icon.</span
+      >
+      <span class="block"
+        >Each item must fit its slot and the mercenary's class.</span
+      >
+      <span class="block">Your level must meet its level requirement.</span>
+      <span class="block"
+        >A two-handed weapon cannot share the off-hand slot with a shield or
+        instrument.</span
+      >
+    </p>
+    <!-- Source: server-scripts/MercenaryEquipment.cs:116-187,201-256 — only durable items and augments grant attributes; three active matching pieces give attribute bonuses, with no five-piece skill bonus. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Equipment and augments increase a mercenary's attributes.</span
+      >
+      <span class="block"
+        >Three matching, unbroken armor-set pieces give the set's attribute
+        bonus.</span
+      >
+      <span class="block"
+        >Mercenaries do not receive the five-piece skill bonus.</span
+      >
+      <span class="block">Broken gear gives no active attribute bonus.</span>
+    </p>
+    <!-- Source: server-scripts/ScrollItem.cs:11-65; UIEquipmentMercenary.cs:163-171; MercenaryEquipment.cs:286-309 — repair kits select an owned mercenary target and helmet visibility changes the appearance. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >A repair kit restores equipped gear up to the kit's quality.</span
+      >
+      <span class="block"
+        >Target your mercenary first, or the kit repairs your own gear.</span
+      >
+      <span class="block"
+        >Hiding a helmet changes its appearance, not its equipment slot.</span
+      >
+    </p>
+    <p class="text-sm leading-6">
+      <a href="#auto-consume" class={link}
+        >Auto-Consume supplies and thresholds</a
+      >
+    </p>
+  </section>
+
+  <section id="auto-consume" class="space-y-4 rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">Auto-Consume</h2>
+    <!-- Source: server-scripts/Pet.cs:288-302,2073-2162; UIEquipmentMercenary.cs:174-188; UIMercenaries.cs:576-583 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Each mercenary has food, utility potion, healing potion, and resource
+        potion slots.</span
+      >
+      <span class="block"
+        >Supplies in your backpack do not fill these slots.</span
+      >
+      <span class="block"
+        >The Auto-Consume toggle is saved separately for each mercenary.</span
+      >
+      <span class="block"
+        >Consumption checks run while the mercenary is idle, alive, and you are
+        in combat.</span
+      >
+    </p>
+    <!-- Source: server-scripts/Pet.cs:2073-2162 — food and utility buff checks occur every 5–10 seconds; health and resource checks every 1–3 seconds with 15-second reuse and 90% efficiency gates. -->
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[32rem] text-left text-sm leading-6">
+        <thead class="border-b text-foreground">
+          <tr
+            ><th class="py-2 pr-5">Supply</th><th class="py-2"
+              >Automatic-use condition</th
+            ></tr
+          >
+        </thead>
+        <tbody class="text-muted-foreground">
+          <tr class="border-b"
+            ><th class="py-2 pr-5 font-medium text-foreground">Food</th><td
+              class="py-2"
+              ><span class="block">No food buff.</span><span class="block"
+                >Checked every 5–10 seconds.</span
+              ></td
+            ></tr
+          >
+          <tr class="border-b"
+            ><th class="py-2 pr-5 font-medium text-foreground"
+              >Utility potion</th
+            ><td class="py-2"
+              ><span class="block">No buff from the potion's category.</span
+              ><span class="block">Checked every 5–10 seconds.</span></td
+            ></tr
+          >
+          <tr class="border-b"
+            ><th class="py-2 pr-5 font-medium text-foreground"
+              >Healing potion</th
+            ><td class="py-2"
+              ><span class="block">Below 50% Health.</span><span class="block"
+                >At least 90% of the potion's healing must fit.</span
+              ><span class="block">Checked every 1–3 seconds.</span></td
+            ></tr
+          >
+          <tr
+            ><th class="py-2 pr-5 font-medium text-foreground"
+              >Resource potion</th
+            ><td class="py-2"
+              ><span class="block"
+                >Below 25% Energy for Warrior and Rogue, or Mana for other
+                classes except Bard.</span
+              ><span class="block">At least 90% of recovery must fit.</span
+              ><span class="block">Checked every 1–3 seconds.</span></td
+            ></tr
+          >
+        </tbody>
+      </table>
+    </div>
+    <!-- Source: server-scripts/Pet.cs:2124-2162 — healing and resource potions each have a 15-second reuse timer. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Healing and resource potions each have a 15-second reuse delay.</span
+      >
+    </p>
+  </section>
+
+  <section id="ai-behavior" class="space-y-4 rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">Healers, taunts, and area attacks</h2>
+    <!-- Source: server-scripts/Pet.cs:4422-4459,4502-4539,4664-4679,5133-5171,5173-5219; PetSkills.cs:60-108,162-169 — target score, healing thresholds, range, efficiency, and offensive mana reserve. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Cleric and Druid healers consider you, your companions, and nearby
+        party members and companions.</span
+      >
+      <span class="block"
+        >Other party members must be within 12 units of the healer.</span
+      >
+      <span class="block"
+        >Lower Health, an active attacker, and a Warrior tank increase healing
+        priority.</span
+      >
+      <span class="block"
+        >Offensive skills preserve at least 35% of a healer's maximum Mana after
+        casting.</span
+      >
+    </p>
+    <!-- Source: server-scripts/Pet.cs:4422-4449,4588-4625,4664-4679,5133-5171 — candidate, heal-over-time, area, and direct-heal thresholds. -->
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[32rem] text-left text-sm leading-6">
+        <thead class="border-b text-foreground">
+          <tr
+            ><th class="py-2 pr-5">Healing choice</th><th class="py-2"
+              >Threshold</th
+            ></tr
+          >
+        </thead>
+        <tbody class="text-muted-foreground">
+          <tr class="border-b"
+            ><th class="py-2 pr-5 font-medium text-foreground"
+              >Heal candidate</th
+            ><td class="py-2"
+              >Below 90% Health, or below 40% for urgent healing.</td
+            ></tr
+          >
+          <tr class="border-b"
+            ><th class="py-2 pr-5 font-medium text-foreground"
+              >Heal-over-time buff</th
+            ><td class="py-2"
+              >Below 70% Health and not already affected by that buff.</td
+            ></tr
+          >
+          <tr class="border-b"
+            ><th class="py-2 pr-5 font-medium text-foreground">Area heal</th><td
+              class="py-2"
+              >At least 3 eligible allies below 60% Health within range.</td
+            ></tr
+          >
+          <tr
+            ><th class="py-2 pr-5 font-medium text-foreground"
+              >Single-target heal</th
+            ><td class="py-2"
+              ><span class="block"
+                >Always considered at 75% Health or lower, rising to 85% at full
+                healer Mana.</span
+              ><span class="block"
+                >Above that, at least half the heal must fit.</span
+              ></td
+            ></tr
+          >
+        </tbody>
+      </table>
+    </div>
+    <!-- Source: server-scripts/Pet.cs:4452-4499,4542-4585,4898-4939 — cleansing takes priority and same-owner healers avoid duplicate noncritical direct heals. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block">A ready cleanse takes priority over healing.</span>
+      <span class="block"
+        >Healers with the same owner avoid duplicate direct heals unless the
+        target is below 40% Health.</span
+      >
+    </p>
+    <!-- Source: server-scripts/PetSkills.cs:60-75,111-118; Pet.cs:1333-1444 — Warrior Challenge is chosen first; Battle Shout needs two nearby valid monsters already attacking party members. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Warriors prioritize Challenge against one target.</span
+      >
+      <span class="block"
+        >In aggressive stance, Battle Shout takes priority when at least two
+        valid monsters near you attack the party.</span
+      >
+    </p>
+    <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2702-2709,2814-2835 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      <span class="block"
+        >Combat pets and mercenaries can evade monster area attacks with at
+        least a 1-second cast and a reachable safe destination.</span
+      >
+      <span class="block"
+        >Familiars and aggressive Warriors do not try this escape.</span
+      >
+      <span class="block"
+        >A healer can cast support skills from the escape position.</span
+      >
+    </p>
   </section>
 
   <section id="recruiters" class="space-y-4">

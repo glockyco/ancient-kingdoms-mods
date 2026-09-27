@@ -331,8 +331,8 @@
     </div>
   </section>
 
-  <section class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How It Works</h2>
+  <section id="how-it-works" class="rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">How Fishing works</h2>
     <!-- Source: server-scripts/Utils.cs:567-576 — Fishing spot success chance per tier. -->
     <!-- Source: server-scripts/GatherItem.cs:708-711 — < 0.2 spot success hard-blocks fishing. -->
     <!-- Source: server-scripts/GatherItem.cs:706-728,730-741,743-760,762-778,780-797 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
@@ -380,10 +380,17 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
-          <div>Click inside the timing window.</div>
+          <div>Respond while the fish is biting.</div>
+          <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must fall inside the tier's bite window. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            After the {castDelay.min}–{castDelay.max} second cast delay, the click
-            window lasts 2.0 / 1.5 / 1.0 / 0.75 seconds by tier.
+            <span class="block">
+              After the {castDelay.min}–{castDelay.max} second cast delay, interact
+              with the spot again.
+            </span>
+            <span class="block">
+              The window lasts 2.0 / 1.5 / 1.0 / 0.75 seconds by tier.
+            </span>
+            <span class="block">An early or late response fails.</span>
           </p>
         </div>
       </div>
@@ -391,9 +398,11 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">4</div>
         <div>
-          <div>Roll for a bite.</div>
+          <div>Pass the spot success check.</div>
+          <!-- Source: server-scripts/GatherItem.cs:698-708 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Bite chance is based on Fishing skill and spot tier.
+            Rod quality, Fishing skill, and spot tier decide whether the attempt
+            succeeds.
           </p>
         </div>
       </div>
@@ -401,7 +410,8 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">5</div>
         <div>
-          <div>Roll for your catch.</div>
+          <div>Roll for the reward.</div>
+          <!-- Source: server-scripts/GatherItem.cs:708-797 — a successful spot check rolls a primary fish, then possible fallback fish, trash, or escape. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               The game first rolls one primary fish from the spot.

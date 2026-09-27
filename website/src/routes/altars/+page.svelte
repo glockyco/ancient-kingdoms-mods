@@ -11,6 +11,8 @@
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
+  import * as Card from "$lib/components/ui/card";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import Trees from "@lucide/svelte/icons/trees";
@@ -32,6 +34,9 @@
   );
 
   const PAGE_SIZE = 20;
+  const sections = [
+    { id: "how-altars-work", label: "Altars, Trials, and Seasonal Events" },
+  ];
 
   // Get unique types for filter options
   const uniqueTypes = $derived(
@@ -203,6 +208,47 @@
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Altars" }]} />
 
   <h1 class="text-3xl font-bold">Altars</h1>
+
+  <PageSections {sections} />
+
+  <Card.Root id="how-altars-work" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Altars, Trials, and Seasonal Events</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-4 text-muted-foreground">
+      <!-- Source: server-scripts/EventAltar.cs:201-213; server-scripts/AvatarEventAltar.cs:197-209 — activating either altar removes one required item before starting its event. -->
+      <p>
+        Forgotten and Avatar altars each consume their required offering when
+        activated.
+      </p>
+      <!-- Source: server-scripts/DefaultEvent.cs:64-80,273-291; server-scripts/AvatarEvent.cs:54-70,231-249 — the event stops if its activating player is no longer alive inside the event radius. -->
+      <p>
+        <span class="block"
+          >The activating player must remain alive and inside the event area.</span
+        >
+        <span class="block"
+          >Other players cannot keep that attempt running after the activator
+          leaves or dies.</span
+        >
+      </p>
+      <!-- Source: server-scripts/TrialAncientsEvent.cs:222-251,69-88,91-119 — entering starts a 30-second preparation countdown, then waves; clearing the last wave completes the trial. -->
+      <p>
+        <span class="block"
+          >Entering the Trial of the Ancients area starts a 30-second
+          preparation countdown.</span
+        >
+        <span class="block">Clearing its final wave completes the trial.</span>
+      </p>
+      <!-- Source: server-scripts/EnviromentSystem.cs:158-185 — seasonal events use UTC calendar dates, checked hourly by the server. -->
+      <div>
+        <h3 class="font-semibold text-foreground">
+          Seasonal event dates (UTC)
+        </h3>
+        <p>Halloween runs from October 19 through November 1.</p>
+        <p>The Winter Festival runs from December 19 through January 6.</p>
+      </div>
+    </Card.Content>
+  </Card.Root>
 
   <DataTable
     data={data.altars}

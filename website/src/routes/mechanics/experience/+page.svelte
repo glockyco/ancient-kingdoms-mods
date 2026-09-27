@@ -1012,40 +1012,13 @@
         On death, you lose 10% of the current level's XP cap. The loss cannot
         drop you below zero XP for your level.
       </p>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="border-b">
-              <th class="text-left p-2 font-medium">Recovery method</th>
-              <th class="text-right p-2 font-medium">XP recovered</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Source: server-scripts/Player.cs:UserCode_CmdGetExpFromRemains — CmdGetExpFromRemains: 0.5f * lossExp -->
-            <tr class="border-b hover:bg-muted/30">
-              <td class="p-2">
-                <a
-                  href="/mechanics/inventory#equipment-and-death"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >Retrieve from corpse</a
-                >
-              </td>
-              <td class="p-2 text-right font-mono">50%</td>
-            </tr>
-            <!-- Source: server-scripts/Player.cs:UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity — resurrection adds 0.75f * lossExp. -->
-            <tr class="hover:bg-muted/30">
-              <td class="p-2"
-                ><a
-                  href="/skills/resurrection"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >Resurrection</a
-                > (cast by another player)</td
-              >
-              <td class="p-2 text-right font-mono">75%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <p class="text-sm text-muted-foreground">
+        <a
+          href="/mechanics/death#death"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Death and Remains</a
+        > explains how to recover XP through your remains or Resurrection.
+      </p>
     </Card.Content>
   </Card.Root>
 

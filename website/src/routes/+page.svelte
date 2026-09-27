@@ -191,9 +191,12 @@
   // stat ranges are left out: the Mercenaries card above opens the mercenary
   // hub, which links to both.
   const mechanics = [
-    { title: "Inventory", href: "/mechanics/inventory" },
-    { title: "Experience", href: "/mechanics/experience" },
+    { title: "Character Build", href: "/mechanics/character" },
     { title: "Combat", href: "/mechanics/combat" },
+    { title: "Experience", href: "/mechanics/experience" },
+    { title: "Death & Remains", href: "/mechanics/death" },
+    { title: "Inventory", href: "/mechanics/inventory" },
+    { title: "Party & Loot", href: "/mechanics/party" },
     { title: "Monster Spawns", href: "/mechanics/monster-spawns" },
     { title: "Reputation", href: "/mechanics/reputation" },
   ];

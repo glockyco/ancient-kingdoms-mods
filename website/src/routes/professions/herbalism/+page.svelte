@@ -128,6 +128,22 @@
     </div>
   </div>
 
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Gathering Plants works</h2>
+    <!-- Source: server-scripts/GatherItem.cs:208-250,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
+    <p class="text-muted-foreground">
+      <span class="block">A growing plant cannot be gathered.</span>
+      <span class="block"
+        >A plant that is too difficult refuses the attempt.</span
+      >
+    </p>
+    <!-- Source: server-scripts/GatherItem.cs:379-400 — an eligible plant starts its regrowth wait before the success roll. -->
+    <p class="text-muted-foreground">
+      Every eligible attempt starts the plant's regrowth wait, even when the
+      harvest fails.
+    </p>
+  </section>
+
   <!-- Calculator -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">

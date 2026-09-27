@@ -335,8 +335,8 @@
     </div>
   </section>
 
-  <section class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How It Works</h2>
+  <section id="how-it-works" class="rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">Adventurers' Guild Assignments</h2>
 
     <div class="mt-4 divide-y">
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">

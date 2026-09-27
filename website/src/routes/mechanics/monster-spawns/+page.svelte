@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
@@ -18,6 +19,7 @@
     { id: "cycle", label: "The Respawn Cycle" },
     { id: "empty-zones", label: "Empty Zones" },
     { id: "bosses", label: "Boss Respawn Timers" },
+    { id: "missing-boss", label: "Why a Boss Is Absent" },
     { id: "rare-spawns", label: "Rare Spawns" },
     { id: "renewal-sages", label: "Renewal Sages" },
     { id: "spawn-windows", label: "Day and Night Spawns" },
@@ -261,7 +263,7 @@
           time (about 5 minutes).
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13953-13957 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
+          <!-- Source: server-scripts/Player.cs:14207-14219 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
           For dungeon bosses these timers can be wiped for gold — see
           <a
             href="#renewal-sages"
@@ -295,6 +297,78 @@
           </div>
         {/each}
       </div>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root id="missing-boss" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Why a Boss Is Absent</Card.Title>
+    </Card.Header>
+    <Card.Content class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-border">
+            <th class="py-2 pr-4 text-left font-medium">Why it is absent</th>
+            <th class="py-2 text-left font-medium">Where to check</th>
+          </tr>
+        </thead>
+        <tbody class="text-muted-foreground">
+          <!-- Source: server-scripts/Monster.cs:2852-2862,769-779 — a dead boss waits for its saved respawn deadline. -->
+          <tr class="border-b border-border/50">
+            <td class="py-2 pr-4">Its respawn timer has not ended.</td>
+            <td class="py-2"
+              ><a href="#bosses" class="underline hover:text-foreground"
+                >Boss Respawn Timers</a
+              ></td
+            >
+          </tr>
+          <!-- Source: server-scripts/Monster.cs:2229-2232 — respawn waits for the configured in-game time window. -->
+          <tr class="border-b border-border/50">
+            <td class="py-2 pr-4">Its spawn window is closed.</td>
+            <td class="py-2"
+              ><a href="#spawn-windows" class="underline hover:text-foreground"
+                >Day and Night Spawns</a
+              ></td
+            >
+          </tr>
+          <!-- Source: server-scripts/Monster.cs:2217-2223 — a failed appearance roll hides the monster and re-arms the timer. -->
+          <tr class="border-b border-border/50">
+            <td class="py-2 pr-4">Its rare-spawn roll failed.</td>
+            <td class="py-2"
+              ><a href="#rare-spawns" class="underline hover:text-foreground"
+                >Rare Spawns</a
+              ></td
+            >
+          </tr>
+          <!-- Source: server-scripts/Monster.cs:2217-2218,2233-2237; SummonMonster.cs:36-69 — a summoned encounter waits for its linked group to qualify. -->
+          <tr class="border-b border-border/50">
+            <td class="py-2 pr-4">Its linked group needs a fresh clear.</td>
+            <td class="py-2"
+              ><a href="#summons" class="underline hover:text-foreground"
+                >Kill-Triggered Summons</a
+              ></td
+            >
+          </tr>
+          <!-- Source: server-scripts/Monster.cs:2225-2227 — Halloween encounters remain hidden while the event is inactive. -->
+          <tr class="border-b border-border/50">
+            <td class="py-2 pr-4">Its seasonal event is inactive.</td>
+            <td class="py-2"
+              ><a href="#other-spawns" class="underline hover:text-foreground"
+                >Other Spawn Types</a
+              ></td
+            >
+          </tr>
+          <!-- Source: server-scripts/Monster.cs:1628-1633,1774-1780 — a monster can return home and reset health rather than die. -->
+          <tr>
+            <td class="py-2 pr-4">It leashed and returned home.</td>
+            <td class="py-2"
+              ><a href="#leashing" class="underline hover:text-foreground"
+                >Leashing and Resets</a
+              ></td
+            >
+          </tr>
+        </tbody>
+      </table>
     </Card.Content>
   </Card.Root>
 
@@ -522,27 +596,40 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Player.cs:13947-13958 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
+          <!-- Source: server-scripts/Player.cs:14207-14219 — the renewal zeroes every respawn-enabled monster deadline in the dungeon and persists cleared boss and elite deadlines. -->
           A renewal marks every respawn timer in the dungeon as due — regular monsters,
           elites, and bosses alike, including saved boss deadlines.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13947-13958 — the renewal only writes timers; health and state of living monsters are untouched. -->
+          <!-- Source: server-scripts/Player.cs:14208-14220 — the renewal only changes respawn deadlines, leaving living monsters untouched. -->
           Nothing despawns. Monsters that are alive — including a rare or boss that
           is already up — are not touched. A renewal only affects the dead.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13933-13939 — the renewal is refused while any player is inside the dungeon. -->
-          A renewal is refused while anyone is inside the dungeon. The respawns therefore
-          happen the moment the next player walks in, since the empty zone is switched
-          off at the time of purchase.
+          <!-- Source: server-scripts/Player.cs:14192-14205 — renewal checks every online player in the dungeon and refuses while any is inside, regardless of party; it also refuses insufficient gold. -->
+          Every player must leave before renewal, including anyone outside your party.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1733-1739 and UINpcTrading.cs:762-770 — the fee runs through the vendor purchase formula, discounted by Charisma up to 25%. -->
-          Fees below are base prices — Charisma discounts the actual price by up to
-          25%, the same as vendor purchases.
+          <!-- Source: server-scripts/Npc.cs:1733-1739; Player.cs:14202-14207 — the sage quotes a gold fee and renewal refuses if the payer lacks the quoted gold. -->
+          Renewal costs the quoted gold fee and refuses if you cannot pay.
+        </li>
+        <li>
+          <!-- Source: server-scripts/Npc.cs:1733-1739; UINpcTrading.cs:824-831 — the table gives base fees, while Charisma discounts most quoted fees up to 25%; dungeon 100 uses its undiscounted fee. -->
+          The table lists base fees before the Charisma discount of up to 25% available
+          at most sages.
         </li>
       </ul>
+      <!-- Source: server-scripts/Player.cs:14207-14220; Portal.cs:33-63 — renewal changes monster deadlines only, while portal keys, level and item-level requirements remain checked on entry. -->
+      <p class="text-sm text-muted-foreground">
+        Renewal does not remove a portal's key, level, or item-level
+        requirements. See <MechanicsLink section="world#portals"
+          >Portals and Entry Requirements</MechanicsLink
+        >.
+      </p>
+      <!-- Source: server-scripts/Player.cs:14208-14220; Monster.cs:2217-2237 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
+      <p class="text-sm text-muted-foreground">
+        Conditional encounters still need their own spawn conditions.
+      </p>
 
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:14208-14220 and Monster.cs:2219-2224 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->

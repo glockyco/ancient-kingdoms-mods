@@ -163,6 +163,23 @@
     </div>
   </div>
 
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Cooking works</h2>
+    <!-- Source: server-scripts/Player.cs:13503-13505,13529-13542,13565-13568,12478-12505 — baking checks output space, spends ingredients before success, and displays a burned result on failure without adding food. -->
+    <p class="text-muted-foreground">
+      <span class="block">Baking needs room for the food.</span>
+      <span class="block">Ingredients are spent before the success roll.</span>
+      <span class="block"
+        >A failed bake displays a burned result but gives no food.</span
+      >
+    </p>
+    <!-- Source: server-scripts/FoodItem.cs:21-35 — eating food expires an existing buff in the same nonempty category before applying the new one. -->
+    <p class="text-muted-foreground">
+      Eating food replaces an active food buff in the same category instead of
+      stacking with it.
+    </p>
+  </section>
+
   <!-- Station Locations -->
   {#if data.locations.length > 0}
     <section class="space-y-4">
