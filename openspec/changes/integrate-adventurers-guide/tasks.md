@@ -30,5 +30,6 @@
 
 - [x] 4.1 Run the citation check, the coverage test, `pnpm check`, `pnpm lint`, and `pnpm build`.
 - [x] 4.2 Review each new and changed page in a browser.
-- [ ] 4.3 Reproduce each guide-versus-code disagreement in the game, then record confirmed defects in `docs/game-bugs/`.
-- [x] 4.4 Validate the change with `openspec validate integrate-adventurers-guide --strict`.
+- [x] 4.3 Resolve four guide-versus-code disagreements. Binding in dungeons: ruled out, because every soul binder stands outside dungeons and the scroll and spell are refused inside. Mercenary Auto-Consume: ruled out, because a mercenary returns to its idle state after every action in combat. Craft All: ruled out, because no recipe's materials, at any station, fall within another recipe's materials, so the leftovers of one recipe cannot match a different one. Backpack move into the first storage slot: reproduced through UI drop events and recorded in `docs/game-bugs/`.
+- [ ] 4.4 Resolve the Bard ward disagreement. The guide says that returning to a song's range does not restore an exhausted ward. The code reapplies a fresh Ward-category buff to a recipient that has none (`PlayerSkills.cs:1047-1061`). A diagnostic on the Bard's own ward saw a full refill about every 2 seconds after depletion was injected, which matches the song's repeat cast, which the guide allows. The re-entry case needs a second recipient that leaves and returns to range, with depletion from real combat damage.
+- [x] 4.5 Validate the change with `openspec validate integrate-adventurers-guide --strict`.

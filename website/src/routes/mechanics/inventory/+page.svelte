@@ -178,6 +178,10 @@
             >Move a bag to base inventory before changing it, rather than into
             its own storage.</span
           >
+          <span class="block"
+            >Game quirk: the first storage slot accepts your only equipped bag.
+            The bag then disappears from both inventory windows.</span
+          >
         </li>
       </ul>
 
