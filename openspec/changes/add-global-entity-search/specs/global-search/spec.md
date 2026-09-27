@@ -18,6 +18,11 @@ The site SHALL provide one search palette on every page. Cmd-K on macOS and Ctrl
 - **WHEN** a visitor activates the search field on the home page
 - **THEN** the same search palette opens
 
+#### Scenario: JavaScript is not available
+
+- **WHEN** a page renders without JavaScript
+- **THEN** the page shows no search control that does nothing, and the space for the home page field stays reserved
+
 ### Requirement: The palette is operable with the keyboard and a screen reader
 
 The palette input SHALL expose combobox semantics with a list of options. Down and Up SHALL move the active result, Enter SHALL open the active result, and Escape SHALL close the palette and return focus to the element that opened it. A polite live region SHALL announce the number of results after each search.
@@ -63,6 +68,12 @@ Sub-zone names SHALL match their parent zone. Chests, traps, portals, workstatio
 - **WHEN** a visitor searches for "Milldenn"
 - **THEN** a result opens the Crescent Coast zone page
 
+#### Scenario: A visitor searches for a placement name
+
+- **WHEN** a visitor searches the palette for "Milldenn"
+- **THEN** no portal, trap, chest, or workstation result appears
+- **AND** the map search for "Milldenn" still returns the Milldenn portals
+
 #### Scenario: A visitor searches for a mechanics page
 
 - **WHEN** a visitor searches for "experience"
@@ -101,6 +112,15 @@ The ranking SHALL apply these rules:
 
 - **WHEN** a visitor searches for "banker"
 - **THEN** no barber or soul binder result ranks above the bank results
+
+### Requirement: Search content excludes internal notes
+
+The index SHALL NOT contain item comments or other developer notes that the site does not display as descriptions.
+
+#### Scenario: An item has a developer comment
+
+- **WHEN** an item's comment contains a word that appears nowhere else in its record
+- **THEN** a search for that word does not return the item
 
 ### Requirement: Guide articles keep their titles and sections
 

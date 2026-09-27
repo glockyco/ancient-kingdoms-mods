@@ -15,16 +15,16 @@ Current state:
 
 A spike compared the current search with candidate configurations. Destinations were compared as exact hrefs, including anchors. The current search was run through the real `searchEntities()` on the SQLite 3.33.0 WASM build.
 
-| Configuration | Tuning set (106) | Held-out set (150) | Held-out MRR@10 |
+| Configuration | Tuning set (106) | Development set (150) | Development MRR@10 |
 |---|---|---|---|
 | Current `searchEntities()` | 59 | 123 | 0.806 |
 | MiniSearch, current documents | 81 | 129 | 0.852 |
 | MiniSearch, added documents | 91 | 141 | 0.919 |
 
 - The tuning set has 106 hand-written queries in 14 intent groups.
-- The held-out set has 150 queries. 108 of them are the exact name, a prefix, and a one-swap typo of 36 randomly sampled entities, so they are 36 entities with three variants each, not 108 independent cases. The other 42 are hand-written concept, page, list, role, sub-zone, and synonym queries. No query string occurs in both sets.
-- The held-out set was used to compare four typo policies. It is therefore tuning evidence now, not an untouched validation set. Task 6.1 writes a fresh held-out part before the settings are final.
-- Most of the held-out gain comes from the added documents (129 → 141). The engine change alone mainly fixes words inside a name, word order, plurals, and empty results.
+- The development set has 150 queries. It was written as a held-out set. 108 of them are the exact name, a prefix, and a one-swap typo of 36 randomly sampled entities, so they are 36 entities with three variants each, not 108 independent cases. The other 42 are hand-written concept, page, list, role, sub-zone, and synonym queries. No query string occurs in both sets.
+- The set was then used to compare four typo policies, so it is development evidence, not a validation set. Only the fresh held-out set from task 6.1 gates the held-out requirement.
+- Most of the development-set gain comes from the added documents (129 → 141). The engine change alone mainly fixes words inside a name, word order, plurals, and empty results.
 - All 64 guide article titles return their own article within the first three results in every candidate configuration.
 - Query latency in Bun: median 0.3 ms, 95th percentile 1.2 ms. This is not a browser measurement.
 
@@ -90,13 +90,17 @@ A result such as "Bankers" opens `/npcs?npcs.role_keys=is_bank`. `DataTable` rea
 
 `SearchPalette.svelte` uses the existing `Command` and `Drawer` components with the same desktop and mobile split as `MapSearch`. It shows a flat list; the map search `groupByCategory` display stays map-only. `+layout.svelte` mounts it and binds Cmd-K or Ctrl-K, except on `/map`, where the existing map binding stays. `HomeSearch.svelte` becomes a button that opens the palette.
 
-Without JavaScript, the home search control does nothing. Search is an addition to navigation, not required content, and every destination stays reachable through links.
+`HomeSearch` renders its control only after hydration, in space that the server-rendered page reserves, so a page without JavaScript shows no dead control and no layout shift. Every destination stays reachable through links without JavaScript.
 
 Recent searches are stored in `localStorage`, capped at 8 entries.
 
-### D7. Legacy FTS removal
+### D7. Search scopes
 
-The cutover removes the 14 legacy FTS tables, their triggers, and the optimize list in `commands/build.py`. The three pipeline tests assert the keyword columns instead, because the search index reads keywords from those columns.
+`searchEntities()` takes a scope. The palette scope filters out the placement families before ranking, so they cannot take result slots. The map scope searches every family. Both scopes use one index and one ranking.
+
+### D8. Legacy FTS removal
+
+The cutover removes the 14 legacy FTS tables, their triggers, and the optimize list in `commands/build.py`. Index tests take over what the three FTS-based pipeline tests check, including that item comments are not searchable. The pipeline tests keep their keyword-column and comment-preservation assertions.
 
 ## Risks / Trade-offs
 
