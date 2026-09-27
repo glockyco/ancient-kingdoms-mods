@@ -437,6 +437,7 @@
               <dd>
                 <!-- Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean, Player.cs:10352-10365 — each summon adds total veteran points × 0.0025 to the rolled Health and resource multipliers. -->
                 <!-- Source: server-scripts/Player.cs:4629-4652, Database.cs:SaveNewMercenary — a veteran level gained while summoned adds 1 base damage and 1 base magic damage; only the hire roll is saved. -->
+                <!-- Source: server-scripts/Player.cs:10347-10348 — a saved hire roll of 0 is replaced on each summon by a new roll from 0 to round(level × 0.8) − 1. -->
                 Each veteran level adds 0.25% to the Health multiplier{pet.type_monster ===
                 "Bard"
                   ? ""
@@ -445,8 +446,9 @@
                     ? " and the Rage multiplier"
                     : " and the Mana multiplier"}.<br />A veteran level gained
                 while the mercenary is summoned also adds +1 damage and +1 magic
-                damage. The game does not save this bonus, so the next summon
-                restores the damage rolled at hire.<br />
+                damage. The game does not save this bonus. The next summon
+                restores the damage rolled at hire. If that roll was 0, each
+                summon rolls a new value instead.<br />
                 <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
                 Per regular level: +1 all resistances
                 {#if pet.type_monster === "Bard"}
