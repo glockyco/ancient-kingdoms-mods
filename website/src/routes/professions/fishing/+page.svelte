@@ -806,7 +806,7 @@
   </section>
   <section id="fishing-spots" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
-      <MapPin class="h-5 w-5 text-cyan-500" />
+      <MapPin class="h-5 w-5 text-emerald-500" />
       <h2 class="text-xl font-semibold">Fishing Spots ({data.spots.length})</h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">

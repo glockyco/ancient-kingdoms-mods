@@ -3,6 +3,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import { Alert } from "$lib/components/ui/alert";
+  import Axe from "@lucide/svelte/icons/axe";
   import Backpack from "@lucide/svelte/icons/backpack";
   import Skull from "@lucide/svelte/icons/skull";
   import Calculator from "@lucide/svelte/icons/calculator";
@@ -10,7 +11,6 @@
   import TrendingUp from "@lucide/svelte/icons/trending-up";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import Shield from "@lucide/svelte/icons/shield";
-  import Users from "@lucide/svelte/icons/users";
 
   const mechanics = [
     {
@@ -33,7 +33,7 @@
       href: "/mechanics/combat",
       title: "Combat",
       description: "Damage formulas, mitigation, healing, buffs, and timing",
-      icon: Swords,
+      icon: Axe,
       color: "text-red-500",
       bg: "bg-red-500/10",
     },
@@ -42,16 +42,16 @@
       title: "Monster Spawns",
       description: "Respawn timers, rare spawns, boss timers, and zone resets",
       icon: Skull,
-      color: "text-purple-500",
-      bg: "bg-purple-500/10",
+      color: "text-red-500",
+      bg: "bg-red-500/10",
     },
     {
       href: "/mercenaries#how-it-works",
       title: "Mercenaries",
       description: "Hiring, party limits, growth, stance, and resurrection",
-      icon: Users,
-      color: "text-sky-500",
-      bg: "bg-sky-500/10",
+      icon: Swords,
+      color: "text-teal-500",
+      bg: "bg-teal-500/10",
     },
     {
       href: "/mechanics/mercenary-stats",

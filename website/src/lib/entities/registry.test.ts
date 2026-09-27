@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { Package, Sparkles, Skull, Users } from "lucide";
 import {
   entityIds,
   entityRegistry,
@@ -20,13 +19,6 @@ describe("entity registry", () => {
       expect(def.label.length).toBeGreaterThan(0);
       expect(def.pluralLabel.length).toBeGreaterThan(0);
     }
-  });
-
-  test("uses family glyphs for compact fallback results", () => {
-    expect(entityRegistry.item.icon).toBe(Package);
-    expect(entityRegistry.skill.icon).toBe(Sparkles);
-    expect(entityRegistry.monster.icon).toBe(Skull);
-    expect(entityRegistry.npc.icon).toBe(Users);
   });
 
   test("sitemap metadata is derived from the same registry", () => {

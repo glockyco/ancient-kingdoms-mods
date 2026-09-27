@@ -9,7 +9,7 @@
   import MapLink from "$lib/components/MapLink.svelte";
   import type { PetRecruiter } from "$lib/types/pets";
   import { classCanBe } from "$lib/utils/merc-stats";
-  import User from "@lucide/svelte/icons/user";
+  import Users from "@lucide/svelte/icons/users";
 
   interface Props {
     recruiters: PetRecruiter[];
@@ -51,7 +51,7 @@
       imageKind="primary"
       imageAvailable={row.original.visual_public_path}
       variant="reference"
-      fallback={User}
+      fallback={Users}
       size={28}
     />
   {:else if cell.column.id === "preferred_race"}

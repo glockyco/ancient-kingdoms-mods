@@ -401,7 +401,7 @@
   <!-- Recipes Table -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
-      <ScrollIcon class="h-5 w-5 text-orange-500" />
+      <FlaskConical class="h-5 w-5 text-purple-500" />
       Recipes ({recipeCountLabel})
     </h2>
     <div class="flex flex-wrap items-center gap-3">

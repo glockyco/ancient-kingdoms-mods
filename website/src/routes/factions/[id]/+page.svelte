@@ -38,8 +38,6 @@
   import KeyRound from "@lucide/svelte/icons/key-round";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Skull from "@lucide/svelte/icons/skull";
-  import Sword from "@lucide/svelte/icons/sword";
-  import TrendingDown from "@lucide/svelte/icons/trending-down";
   import Users from "@lucide/svelte/icons/users";
 
   let { data } = $props();
@@ -732,7 +730,7 @@
   {#if data.faction.monstersImprove.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Sword class="h-5 w-5 text-red-500" />
+        <Skull class="h-5 w-5 text-red-500" />
         Reputation gained from monsters ({data.faction.monstersImprove.length})
       </h2>
       <DataTable
@@ -776,7 +774,7 @@
   {#if data.faction.npcKillsImprove.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Skull class="h-5 w-5 text-slate-500" />
+        <Users class="h-5 w-5 text-blue-500" />
         Reputation gained from NPCs ({data.faction.npcKillsImprove.length})
       </h2>
       <DataTable
@@ -798,7 +796,7 @@
   {#if data.faction.monstersDecrease.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <TrendingDown class="h-5 w-5 text-red-500" />
+        <Skull class="h-5 w-5 text-red-500" />
         Reputation lost to monsters ({data.faction.monstersDecrease.length})
       </h2>
       <DataTable
@@ -820,7 +818,7 @@
   {#if data.faction.npcKillsDecrease.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <TrendingDown class="h-5 w-5 text-slate-500" />
+        <Users class="h-5 w-5 text-blue-500" />
         Reputation lost to NPCs ({data.faction.npcKillsDecrease.length})
       </h2>
       <DataTable

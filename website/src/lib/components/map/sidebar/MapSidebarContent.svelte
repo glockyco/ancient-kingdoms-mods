@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Sword from "@lucide/svelte/icons/sword";
+  import Skull from "@lucide/svelte/icons/skull";
   import Users from "@lucide/svelte/icons/users";
   import Leaf from "@lucide/svelte/icons/leaf";
   import Hammer from "@lucide/svelte/icons/hammer";
@@ -100,7 +100,7 @@
     color:
       | readonly [number, number, number]
       | readonly [number, number, number, number];
-    icon: typeof Sword | IconNode;
+    icon: typeof Skull | IconNode;
   }
 
   function registryLayerOptions(section: MarkerSidebarSection): LayerOption[] {
@@ -226,7 +226,7 @@
   <!-- Monsters section -->
   <MapSidebarSection
     title="Monsters"
-    icon={Sword}
+    icon={Skull}
     expanded={isSectionExpanded("monsters")}
     onExpandedChange={(expanded) => handleSectionToggle("monsters", expanded)}
     toggleState={getToggleState(visibility, monsterKeys)}

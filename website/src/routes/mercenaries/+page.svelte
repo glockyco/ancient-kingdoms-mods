@@ -24,7 +24,7 @@
   import Calculator from "@lucide/svelte/icons/calculator";
   import Check from "@lucide/svelte/icons/check";
   import Info from "@lucide/svelte/icons/info";
-  import Users from "@lucide/svelte/icons/users";
+  import Swords from "@lucide/svelte/icons/swords";
   import X from "@lucide/svelte/icons/x";
 
   let { data } = $props();
@@ -126,8 +126,8 @@
 
   <section class="rounded-lg border p-6 md:p-8">
     <div class="flex flex-wrap items-start gap-4">
-      <div class="rounded-lg bg-sky-500/10 p-3">
-        <Users class="h-7 w-7 text-sky-500 dark:text-sky-400" />
+      <div class="rounded-lg bg-teal-500/10 p-3">
+        <Swords class="h-7 w-7 text-teal-500 dark:text-teal-400" />
       </div>
       <div class="min-w-0 flex-1">
         <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
@@ -199,7 +199,7 @@
                   imageKind="icon"
                   imageAvailable={row.class_icon}
                   variant="reference"
-                  fallback={Users}
+                  fallback={Swords}
                   size={28}
                 />
               </td>
@@ -271,7 +271,7 @@
                   imageKind="icon"
                   imageAvailable={row.class_icon}
                   variant="reference"
-                  fallback={Users}
+                  fallback={Swords}
                   size={28}
                 />
               </td>

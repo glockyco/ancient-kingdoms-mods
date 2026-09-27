@@ -4,7 +4,7 @@
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import Compass from "@lucide/svelte/icons/compass";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
-  import MapIcon from "@lucide/svelte/icons/map";
+  import MapPin from "@lucide/svelte/icons/map-pin";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
 
@@ -59,7 +59,7 @@
   <!-- Areas Table -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
-      <MapIcon class="h-5 w-5 text-blue-500" />
+      <MapPin class="h-5 w-5 text-emerald-500" />
       Areas to Discover ({data.areas.length})
     </h2>
     <div class="rounded-lg border overflow-x-auto">

@@ -301,7 +301,7 @@
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Chests" }]} />
 
   <h1 class="text-3xl font-bold flex items-center gap-3">
-    <Box class="h-8 w-8 text-blue-500" />
+    <Box class="h-8 w-8 text-sky-500" />
     Chests ({data.chests.length})
   </h1>
 

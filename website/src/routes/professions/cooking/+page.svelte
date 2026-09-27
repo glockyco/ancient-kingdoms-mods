@@ -11,7 +11,7 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapPin from "@lucide/svelte/icons/map-pin";
-  import ScrollIcon from "@lucide/svelte/icons/scroll";
+  import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import { SvelteSet } from "svelte/reactivity";
   import {
     cookingSkillGainChancePercent,
@@ -290,7 +290,7 @@
   <!-- Recipes Table -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
-      <ScrollIcon class="h-5 w-5 text-orange-500" />
+      <FlaskConical class="h-5 w-5 text-purple-500" />
       Recipes ({recipeCountLabel})
     </h2>
     <div class="flex flex-wrap items-center gap-3">

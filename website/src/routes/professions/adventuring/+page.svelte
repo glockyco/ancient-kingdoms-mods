@@ -10,7 +10,7 @@
   import Backpack from "@lucide/svelte/icons/backpack";
   import Scroll from "@lucide/svelte/icons/scroll";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
-  import MapPin from "@lucide/svelte/icons/map-pin";
+  import Users from "@lucide/svelte/icons/users";
   import Store from "@lucide/svelte/icons/store";
 
   let { data } = $props();
@@ -715,7 +715,7 @@
     {#if data.questGivers.length > 0}
       <div id="adventurer-taskgivers" class="space-y-4">
         <h2 class="flex items-center gap-2 text-xl font-semibold">
-          <MapPin class="h-5 w-5 text-emerald-500" />
+          <Users class="h-5 w-5 text-blue-500" />
           Adventurer Taskgivers ({data.questGivers.length})
         </h2>
         <div class="grid gap-3">
