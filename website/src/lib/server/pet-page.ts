@@ -9,7 +9,12 @@ import {
   petRolePhrase,
   type PetDescriptionInput,
 } from "$lib/server/meta-description";
-import type { MercenaryDetailView, PetDetailView } from "$lib/types/pets";
+import { getMercenaryLinks } from "$lib/queries/mercenaries.server";
+import type {
+  MercenaryDetailView,
+  MercenaryLink,
+  PetDetailView,
+} from "$lib/types/pets";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export interface PetPageData {
@@ -23,6 +28,8 @@ export interface MercenaryPageData {
   description: string;
   /** One sentence about what the mercenary does, shown below the title. */
   role: string;
+  /** Every mercenary, for the navigation between the mercenary pages. */
+  links: MercenaryLink[];
 }
 
 /**
@@ -40,24 +47,14 @@ function loadPet(
     throw error(404, `Pet not found: ${id}`);
   }
 
-  const has_heals = pet.skills.some(
-    (s) => s.skill_type === "target_heal" || s.skill_type === "area_heal",
-  );
-  const has_buffs = pet.skills.some(
-    (s) =>
-      s.skill_type === "target_buff" ||
-      s.skill_type === "area_buff" ||
-      s.skill_type === "passive",
-  );
-
   return {
     pet,
     input: {
       name: pet.name,
       kind: pet.kind,
       type_monster: pet.type_monster,
-      has_buffs,
-      has_heals,
+      has_heals: pet.has_heals,
+      has_buffs: pet.has_buffs,
       summoning_skill_name: pet.classLink.skill_name ?? null,
       summoning_class_id: isMercenary ? null : (pet.classLink.class_id ?? null),
     },
@@ -84,5 +81,6 @@ export function loadMercenaryPage(id: string): MercenaryPageData {
     pet: getMercenaryDetail(pet),
     description: petDescription(input),
     role: petRolePhrase(input),
+    links: getMercenaryLinks(),
   };
 }

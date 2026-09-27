@@ -8,16 +8,22 @@ export type PetKind = "Mercenary" | "Companion" | "Familiar";
 export type SummonKind = Exclude<PetKind, "Mercenary">;
 
 /**
- * Mercenary list view for the /mercenaries overview. Mercenaries are hired
- * from recruiter NPCs rather than summoned, so they carry recruiters and no
- * summoning skill.
+ * One mercenary class on the /mercenaries hub. Mercenaries are hired from
+ * recruiter NPCs rather than summoned. Every recruiter hires every class.
  */
-export interface MercenaryListView {
+export interface MercenarySummary {
   id: string;
   name: string;
   type_monster: string;
-  level: number;
-  recruiters: PetRecruiter[];
+  /** Pet.hasHeals: the pet AI checks for allies to heal. */
+  has_heals: boolean;
+  /** Pet.hasBuffs: the pet AI checks for allies to buff. */
+  has_buffs: boolean;
+  /** Public path of the class icon, when exported. */
+  class_icon: string | null;
+  /** Warrior and Rogue mercenaries survive a lethal hit with a death save. */
+  hasDeathSave: boolean;
+  skillCount: number;
 }
 
 /**
@@ -73,6 +79,10 @@ export interface PetDetailView {
   kind: PetKind;
   type_monster: string;
   level: number;
+  /** Pet.hasHeals: the pet AI checks for allies to heal. */
+  has_heals: boolean;
+  /** Pet.hasBuffs: the pet AI checks for allies to buff. */
+  has_buffs: boolean;
   /** For familiars: the summoning skill's max_level (= actual max familiar level). For others: same as level. */
   effective_max_level: number;
   classLink: PetClassLink;
@@ -94,7 +104,7 @@ export interface MercenaryEquipmentSlot {
 }
 
 /** A mercenary archetype, for links between the mercenary pages. */
-export interface MercenarySibling {
+export interface MercenaryLink {
   id: string;
   type_monster: string;
 }
@@ -105,7 +115,6 @@ export interface MercenaryProfile {
   curves: Curves;
   resistances: MercenaryResistance[];
   equipmentSlots: MercenaryEquipmentSlot[];
-  siblings: MercenarySibling[];
 }
 
 export interface MercenaryDetailView extends PetDetailView {

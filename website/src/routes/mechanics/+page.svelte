@@ -46,9 +46,9 @@
       bg: "bg-purple-500/10",
     },
     {
-      href: "/mechanics/mercenaries",
-      title: "Mercenary Rules",
-      description: "Hiring, party limits, stance, death, and resurrection",
+      href: "/mercenaries#how-it-works",
+      title: "Mercenaries",
+      description: "Hiring, party limits, growth, stance, and resurrection",
       icon: Users,
       color: "text-sky-500",
       bg: "bg-sky-500/10",

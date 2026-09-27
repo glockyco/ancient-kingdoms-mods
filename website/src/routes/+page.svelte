@@ -187,14 +187,14 @@
     },
   ];
 
-  // Game-mechanics reference pages. Titles and routes mirror /mechanics.
+  // Game-mechanics reference pages from /mechanics. The mercenary rules and
+  // stat ranges are left out: the Mercenaries card above opens the mercenary
+  // hub, which links to both.
   const mechanics = [
     { title: "Inventory", href: "/mechanics/inventory" },
     { title: "Experience", href: "/mechanics/experience" },
     { title: "Combat", href: "/mechanics/combat" },
     { title: "Monster Spawns", href: "/mechanics/monster-spawns" },
-    { title: "Mercenary Rules", href: "/mechanics/mercenaries" },
-    { title: "Mercenary Stats", href: "/mechanics/mercenary-stats" },
     { title: "Reputation", href: "/mechanics/reputation" },
   ];
 

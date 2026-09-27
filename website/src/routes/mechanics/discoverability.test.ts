@@ -14,20 +14,27 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(mechanicsIndex, /href: "\/mechanics\/experience"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/combat"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/monster-spawns"/);
-  assert.match(mechanicsIndex, /href: "\/mechanics\/mercenaries"/);
+  assert.match(mechanicsIndex, /href: "\/mercenaries#how-it-works"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/mercenary-stats"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/reputation"/);
 
-  // The homepage's "Game mechanics" section links directly to every mechanics
-  // page, which supersedes the old single /mechanics card.
+  // The homepage's "Game mechanics" section links directly to the mechanics
+  // pages, which supersedes the old single /mechanics card. The mercenary
+  // pages are reached through the Mercenaries card instead.
   assert.match(homepage, /Game mechanics/);
   assert.match(homepage, /href: "\/mechanics\/inventory"/);
   assert.match(homepage, /href: "\/mechanics\/experience"/);
   assert.match(homepage, /href: "\/mechanics\/combat"/);
   assert.match(homepage, /href: "\/mechanics\/monster-spawns"/);
-  assert.match(homepage, /href: "\/mechanics\/mercenaries"/);
-  assert.match(homepage, /href: "\/mechanics\/mercenary-stats"/);
   assert.match(homepage, /href: "\/mechanics\/reputation"/);
+  assert.match(homepage, /href: "\/mercenaries",/);
+});
+
+test("mercenary rules links reach the hub section", () => {
+  const hub = source("../mercenaries/+page.svelte");
+
+  // The mechanics index and every mercenary page link to this section.
+  assert.match(hub, /id="how-it-works"/);
 });
 
 test("faction pages link standing to reputation mechanics", () => {

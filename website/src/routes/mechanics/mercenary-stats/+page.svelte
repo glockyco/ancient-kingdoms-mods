@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MercenaryNav from "$lib/components/MercenaryNav.svelte";
   import NumberField from "$lib/components/NumberField.svelte";
   import RangeSlider from "$lib/components/RangeSlider.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -48,8 +49,8 @@
     spell: "Spell Power",
   };
   const TITLES: Record<StatKey, string> = {
-    hp: "Total Health at this level: base-health curve + Constitution, scaled by the hidden Health multiplier rolled at hire, including veteran points.",
-    mana: "Total Mana at this level: base-mana curve + Intelligence, scaled by the hidden Mana multiplier rolled at hire, including veteran points.",
+    hp: "Total Health at this level: base-health curve + Constitution, scaled by the hidden Health multiplier rolled at hire and your veteran level.",
+    mana: "Total Mana at this level: base-mana curve + Intelligence, scaled by the hidden Mana multiplier rolled at hire and your veteran level.",
     atk: "Strength bonus at this level + the base-combat value rolled at hire.",
     spell:
       "round(INT×1.5) at this level + the base-combat value rolled at hire.",
@@ -332,7 +333,7 @@
 
 <Seo
   title="Mercenary Stat Ranges - Ancient Kingdoms"
-  description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, at any level and veteran rank, plus the gold and hires needed to roll a great one."
+  description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, at any level and veteran level, plus the gold and hires needed to roll a great one."
   path="/mechanics/mercenary-stats"
 />
 
@@ -347,13 +348,17 @@
     />
   </div>
 
+  <div class="mt-4 mb-8">
+    <MercenaryNav mercenaries={data.links} current="stat-ranges" />
+  </div>
+
   <h1>Mercenary Stat Ranges</h1>
   <p class="lead">
     Compare the stat ranges every mercenary class and race can roll, at any
-    level and veteran-point total. A recruiter fixes the race only when its
-    preference is valid for the class. Hiring also rolls hidden modifiers, so
-    two mercenaries of the same class, race and level can still differ. The
-    tables show every roll you might get.
+    level and veteran level. A recruiter fixes the race only when its preference
+    is valid for the class. Hiring also rolls hidden modifiers, so two
+    mercenaries of the same class, race and level can still differ. The tables
+    show every roll you might get.
   </p>
 
   <details class="howto">
@@ -372,8 +377,8 @@
       <ul>
         <li>
           <b>Health &amp; Mana</b> re-derive from the mercenary's current level
-          and your total veteran points, so an existing mercenary's totals match
-          the row at its <i>current</i> level.
+          and your veteran level, so an existing mercenary's totals match the
+          row at its <i>current</i> level.
         </li>
         <li>
           <b>Attack Power and Spell Power</b> are the current attribute bonus, Strength
@@ -407,7 +412,7 @@
         onchange={(v) => setMercenaryOwner("level", v)}
       />
       <NumberField
-        label="Veteran points"
+        label="Veteran level"
         hint="Health & Mana · +0.25% each"
         value={veteran}
         min={OWNER_LIMITS.veteran[0]}
@@ -524,7 +529,7 @@
       Every hire re-rolls the hidden modifiers. Choose a recruiter that hires
       the race you want or rolls it from the class pool. Set your minimum stats
       to see the odds per hire and the average gold cost at the selected level
-      and veteran-point total.
+      and veteran level.
     </p>
     <div class="cost-grid">
       <div class="cost-inputs">
@@ -725,7 +730,7 @@
     margin-top: 1rem;
   }
   .chips-label {
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -780,7 +785,7 @@
     letter-spacing: -0.01em;
   }
   .resource {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -838,7 +843,7 @@
     border-radius: var(--radius);
   }
   thead th {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -886,7 +891,7 @@
   .racenote {
     display: block;
     font-weight: 400;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     color: var(--muted-foreground);
   }
   .cell {
@@ -1034,7 +1039,7 @@
     grid-column: 1 / -1;
   }
   .field > span {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -1115,7 +1120,7 @@
     gap: 0.2rem;
   }
   .stat3 .k {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -1153,7 +1158,7 @@
   }
   :global(#c-chart svg text) {
     fill: var(--muted-foreground);
-    font-size: 10px;
+    font-size: 12px;
   }
   :global(#c-chart .axis) {
     stroke: var(--border);

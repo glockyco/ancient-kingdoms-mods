@@ -3,8 +3,8 @@ import type { ClassSkill } from "./classes.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type {
   MercenaryDetailView,
-  MercenaryListView,
   MercenaryProfile,
+  MercenarySummary,
   MercenaryResistance,
   SummonListView,
   PetDetailView,
@@ -12,7 +12,10 @@ import type {
   PetClassLink,
   PetRecruiter,
 } from "$lib/types/pets";
-import { getMercenaryCurves } from "$lib/queries/mercenaries.server";
+import {
+  getMercenaryCurves,
+  getMercenaryLinks,
+} from "$lib/queries/mercenaries.server";
 
 function getPetKind(is_mercenary: boolean, is_familiar: boolean): PetKind {
   if (is_mercenary) return "Mercenary";
@@ -49,33 +52,39 @@ function getVisualAsset(row: PetVisualAssetColumns): EntityVisualAsset | null {
 }
 
 /**
- * Get all mercenaries for the /mercenaries overview.
- *
- * Every recruiter sells every mercenary, so the recruiter list is fetched once
- * and shared across rows.
+ * One row per mercenary class for the /mercenaries hub, in the site-wide
+ * class order. The role flags and the death save come from the class skills.
  */
-export function getAllMercenaries(): MercenaryListView[] {
-  const recruiters = getMercenaryRecruiters();
-
-  const rows = query<{
-    id: string;
-    name: string;
-    type_monster: string;
-    level: number;
-  }>(
-    `SELECT p.id, p.name, p.type_monster, p.level
-     FROM pets p
-     WHERE p.is_mercenary = 1
-     ORDER BY p.name ASC`,
-  );
-
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    type_monster: r.type_monster,
-    level: r.level,
-    recruiters,
-  }));
+export function getMercenarySummaries(): MercenarySummary[] {
+  return getMercenaryLinks().map(({ id }) => {
+    const pet = queryOne<{
+      name: string;
+      type_monster: string;
+      has_heals: number;
+      has_buffs: number;
+    }>(
+      `SELECT name, type_monster, has_heals, has_buffs FROM pets WHERE id = ?`,
+      [id],
+    );
+    if (!pet) throw new Error(`Mercenary ${id} disappeared from pets`);
+    const skills = getPetSkills(id);
+    return {
+      id,
+      name: pet.name,
+      type_monster: pet.type_monster,
+      has_heals: pet.has_heals === 1,
+      has_buffs: pet.has_buffs === 1,
+      class_icon:
+        queryOne<{ public_path: string }>(
+          `SELECT public_path FROM visual_assets
+           WHERE domain = 'class' AND kind = 'icon' AND entity_id = lower(?)`,
+          [pet.type_monster],
+        )?.public_path ?? null,
+      // Source: mods/DataExporter/Exporters/PetExporter.cs — the only innate mercenary skill is the death save.
+      hasDeathSave: skills.some((s) => s.is_innate),
+      skillCount: skills.filter((s) => !s.is_innate).length,
+    };
+  });
 }
 
 /**
@@ -151,8 +160,11 @@ export function getPetById(petId: string): PetDetailView | null {
     is_familiar: boolean;
     type_monster: string;
     level: number;
+    has_heals: number;
+    has_buffs: number;
   }>(
-    `SELECT id, name, is_mercenary, is_familiar, type_monster, level
+    `SELECT id, name, is_mercenary, is_familiar, type_monster, level,
+            has_heals, has_buffs
      FROM pets
      WHERE id = ?`,
     [petId],
@@ -216,6 +228,8 @@ export function getPetById(petId: string): PetDetailView | null {
     kind,
     type_monster: row.type_monster,
     level: row.level,
+    has_heals: row.has_heals === 1,
+    has_buffs: row.has_buffs === 1,
     effective_max_level,
     classLink,
     skills,
@@ -229,7 +243,7 @@ export function getPetById(petId: string): PetDetailView | null {
  * the class cannot use does not fix the race.
  * Source: server-scripts/Utils.cs:GetRandomChar.
  */
-function getMercenaryRecruiters(): PetRecruiter[] {
+export function getMercenaryRecruiters(): PetRecruiter[] {
   return query<PetRecruiter>(
     `SELECT n.id as npc_id, n.name as npc_name,
             n.preferred_mercenary_race as preferred_race,
@@ -307,10 +321,6 @@ export function getMercenaryDetail(pet: PetDetailView): MercenaryDetailView {
     curves: getMercenaryCurves(),
     resistances,
     equipmentSlots,
-    siblings: query<{ id: string; type_monster: string }>(
-      `SELECT id, type_monster FROM pets WHERE is_mercenary = 1
-       ORDER BY type_monster`,
-    ),
   };
   return { ...pet, kind: "Mercenary", profile };
 }

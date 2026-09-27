@@ -75,6 +75,7 @@ export interface ClassDef {
 
 // Source: server-scripts/Utils.cs:GetRandomChar — class race pools.
 // Source: server-scripts/Player.cs:UpdateMercStatsByLevel — per-class attribute divisors.
+// Keys follow the site-wide class order (ALL_CLASS_IDS in $lib/utils/classes).
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
     type: "Warrior",
@@ -82,17 +83,23 @@ export const CLASSES: Record<string, ClassDef> = {
     pool: ["Human", "Elf", "Dark Elf", "Dwarf", "Fire Goblin", "Felarii"],
     div: { STR: 3, CON: 2, DEX: 4, INT: 5, WIS: 6, CHA: 6 },
   },
-  Rogue: {
-    type: "Rogue",
-    role: "energy",
-    pool: ["Human", "Dark Elf", "Dwarf", "Fire Goblin", "Felarii"],
-    div: { STR: 3, CON: 4, DEX: 2, INT: 5, WIS: 6, CHA: 6 },
+  Ranger: {
+    type: "Ranger",
+    role: "mana",
+    pool: ["Human", "Elf", "Dark Elf", "Dwarf", "Fire Goblin", "Felarii"],
+    div: { STR: 4, CON: 3, DEX: 2, INT: 6, WIS: 5, CHA: 6 },
   },
   Cleric: {
     type: "Cleric",
     role: "mana",
     pool: ["Human", "Elf", "Dark Elf", "Dwarf", "Fire Goblin"],
     div: { STR: 5, CON: 4, DEX: 6, INT: 3, WIS: 2, CHA: 6 },
+  },
+  Rogue: {
+    type: "Rogue",
+    role: "energy",
+    pool: ["Human", "Dark Elf", "Dwarf", "Fire Goblin", "Felarii"],
+    div: { STR: 3, CON: 4, DEX: 2, INT: 5, WIS: 6, CHA: 6 },
   },
   Wizard: {
     type: "Wizard",
@@ -105,12 +112,6 @@ export const CLASSES: Record<string, ClassDef> = {
     role: "mana",
     pool: ["Human", "Elf", "Fire Goblin", "Felarii"],
     div: { STR: 6, CON: 5, DEX: 4, INT: 3, WIS: 2, CHA: 6 },
-  },
-  Ranger: {
-    type: "Ranger",
-    role: "mana",
-    pool: ["Human", "Elf", "Dark Elf", "Dwarf", "Fire Goblin", "Felarii"],
-    div: { STR: 4, CON: 3, DEX: 2, INT: 6, WIS: 5, CHA: 6 },
   },
   Bard: {
     type: "Bard",
@@ -220,11 +221,50 @@ export function computeAll(
       attrs: a,
       hpCurve,
       manaCurve,
-      resource:
-        c.type === "Bard" ? "Songs" : c.role === "energy" ? "Rage" : "Mana",
+      resource: mercenaryResource(cls),
       rows,
     };
   });
+}
+
+export interface StatSpan {
+  health: [number, number] | null;
+  /** Null for classes without a Mana curve. */
+  mana: [number, number] | null;
+  attack: [number, number] | null;
+  spell: [number, number] | null;
+}
+
+/**
+ * The lowest and highest value of each stat that a class can roll at a level
+ * and veteran total, over the given races. Gear is not included.
+ */
+export function classStatSpan(
+  cls: string,
+  level: number,
+  veteran: number,
+  curves: Curves,
+  races: readonly string[],
+): StatSpan {
+  const result = computeAll(level, veteran, curves).find((c) => c.cls === cls);
+  if (!result) throw new Error(`No stat model for mercenary class ${cls}`);
+  const rows = result.rows.filter((r) => r.eligible && races.includes(r.race));
+  const span = (
+    pick: (r: MercRow) => [number, number] | null | undefined,
+  ): [number, number] | null => {
+    const values = rows.map(pick).filter((v) => v != null);
+    if (values.length === 0) return null;
+    return [
+      Math.min(...values.map((v) => v[0])),
+      Math.max(...values.map((v) => v[1])),
+    ];
+  };
+  return {
+    health: span((r) => r.hp),
+    mana: result.hasMana ? span((r) => r.mana) : null,
+    attack: span((r) => r.atk),
+    spell: span((r) => r.spell),
+  };
 }
 
 /**
@@ -292,6 +332,16 @@ export function hirePrice(
   );
   const d = clamp(discount, 0, 0.25);
   return Math.max(1, base - ceilToInt(base * d));
+}
+
+/**
+ * The resource a mercenary class shows. Warriors and Rogues use Rage. A Bard
+ * shows its active songs. The other classes use Mana.
+ * Source: server-scripts/Pet.cs:953-961, Player.cs:10338-10346
+ */
+export function mercenaryResource(cls: string): "Rage" | "Mana" | "Songs" {
+  if (cls === "Bard") return "Songs";
+  return CLASSES[cls].role === "energy" ? "Rage" : "Mana";
 }
 
 /** Source: server-scripts/Npc.cs:1893-1904 — a recruiter serves only players at level 10 or higher. */

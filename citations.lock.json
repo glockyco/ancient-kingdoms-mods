@@ -83,6 +83,9 @@
       "sha256": "72858585388ae5d8fd8249f78824dbc3d5553b85e5b4e81bcadd93b0bfaa3d7d",
       "span": 1
     },
+    "BardMercenarySkills.cs:LateUpdate": {
+      "span": 0
+    },
     "BardMercenarySkills.cs:MaximumCombatSongs": {
       "span": 0
     },
@@ -1110,9 +1113,25 @@
       "sha256": "5d7f4388a25f8041b961ec6e90d3275a0caf723aec076d9b31cf866c52e6a526",
       "span": 25
     },
+    "Pet.cs:2184": {
+      "sha256": "6d14e994b11fc984ba7f787ca982088d8b0084f17ba995296906eeb1eed42789",
+      "span": 1
+    },
     "Pet.cs:2198-2209": {
       "sha256": "d2b114d7a23792959b553262a1464e49ebe9caf11e45c133b89426908c542c1c",
       "span": 12
+    },
+    "Pet.cs:2367": {
+      "sha256": "95934581b8207f6b9b387b6f287a97a2f9bf8264f296cec36811eb87782ed7e2",
+      "span": 1
+    },
+    "Pet.cs:4544": {
+      "sha256": "4a9dc8a9e7884482806324789421375dffd28d925f98a1824425b560c4dce295",
+      "span": 1
+    },
+    "Pet.cs:4744": {
+      "sha256": "73763aa9e80cf421dde0c8e3cf86271e5e3c2295df49292add3caad357cccda1",
+      "span": 1
     },
     "Pet.cs:953-961": {
       "sha256": "b1808623e9c39626cfcb4165c8ef8366bad1d676891e061613546c778373057b",
@@ -1192,6 +1211,10 @@
     "Player.cs:10337-10365": {
       "sha256": "8900bd5ed68edd73404947802eb482d5fd7b2212989523b17fa401e44d86959d",
       "span": 29
+    },
+    "Player.cs:10338-10346": {
+      "sha256": "e1c0e0e7a57a2523f01fadde097e142ecc1ce034f149cb7d6dee06646df52b01",
+      "span": 9
     },
     "Player.cs:10347-10348": {
       "sha256": "3e4399628c7a9b9aaa0d636dc09041a8bd50b3cfc878940fe1afa9d234da01a7",
@@ -1422,9 +1445,6 @@
       "span": 0
     },
     "Player.cs:ProcessMercenariesOnPlayerRespawn": {
-      "span": 0
-    },
-    "Player.cs:ReloadSummonedMercenaries": {
       "span": 0
     },
     "Player.cs:ResurrectMercenaryNearOwner": {

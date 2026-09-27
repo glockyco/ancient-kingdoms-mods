@@ -60,7 +60,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 0.75rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -137,7 +137,7 @@
   .ticks {
     display: flex;
     justify-content: space-between;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--muted-foreground);
     margin-top: 0.25rem;
   }

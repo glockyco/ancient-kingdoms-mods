@@ -1,20 +1,14 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Alert } from "$lib/components/ui/alert";
-  import {
-    DataTable,
-    type ColumnDef,
-    type Cell,
-    type Row,
-  } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import EntityLink from "$lib/components/EntityLink.svelte";
-  import MapLink from "$lib/components/MapLink.svelte";
+  import MercenaryNav from "$lib/components/MercenaryNav.svelte";
   import NumberField from "$lib/components/NumberField.svelte";
   import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
+  import RecruiterTable from "$lib/components/RecruiterTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import type { ClassSkill } from "$lib/queries/classes.server";
-  import type { MercenaryDetailView, PetRecruiter } from "$lib/types/pets";
+  import type { MercenaryDetailView, MercenaryLink } from "$lib/types/pets";
   import {
     CLASSES,
     DEATH_SAVE_MIN_LEVEL,
@@ -22,10 +16,10 @@
     VET_MULT_PER_POINT,
     activeMercenaryLimit,
     charismaDiscount,
-    classCanBe,
-    computeAll,
+    classStatSpan,
     deathSaveRank,
     hirePrice,
+    mercenaryResource,
     mercenarySkillRank,
     obtainableRaces,
     resurrectionPrice,
@@ -53,7 +47,13 @@
     pet,
     description,
     role,
-  }: { pet: MercenaryDetailView; description: string; role: string } = $props();
+    links,
+  }: {
+    pet: MercenaryDetailView;
+    description: string;
+    role: string;
+    links: MercenaryLink[];
+  } = $props();
 
   onMount(restoreMercenaryOwner);
 
@@ -120,38 +120,14 @@
   const races = $derived(obtainableRaces(cls, preferredRaces));
 
   /** Stat ranges at the owner's values, over every race a recruiter can hire. */
-  const stats = $derived.by(() => {
-    const result = computeAll(level, veteran, pet.profile.curves).find(
-      (c) => c.cls === cls,
-    );
-    if (!result) throw new Error(`No stat model for mercenary class ${cls}`);
-    const rows = result.rows.filter(
-      (r) => r.eligible && races.includes(r.race),
-    );
-    const span = (
-      pick: (r: (typeof rows)[number]) => [number, number] | null | undefined,
-    ): [number, number] | null => {
-      const values = rows.map(pick).filter((v) => v != null);
-      if (values.length === 0) return null;
-      return [
-        Math.min(...values.map((v) => v[0])),
-        Math.max(...values.map((v) => v[1])),
-      ];
-    };
-    return {
-      health: span((r) => r.hp),
-      mana: result.hasMana ? span((r) => r.mana) : null,
-      attack: span((r) => r.atk),
-      spell: span((r) => r.spell),
-    };
-  });
+  const stats = $derived(
+    classStatSpan(cls, level, veteran, pet.profile.curves, races),
+  );
 
   const topRank = $derived(Math.max(...pet.skills.map((s) => s.max_level)));
   const skillRank = $derived(mercenarySkillRank(cls, level, veteran, topRank));
 
-  const resourceName = $derived(
-    cls === "Bard" ? "Songs" : classDef.role === "energy" ? "Rage" : "Mana",
-  );
+  const resourceName = $derived(mercenaryResource(cls));
   const resourceClass = $derived(
     cls === "Bard"
       ? "text-foreground"
@@ -225,59 +201,13 @@
     }
     return groups;
   });
-
-  const recruitedAtColumns: ColumnDef<PetRecruiter>[] = [
-    { accessorKey: "npc_name", header: "Recruiter" },
-    { accessorKey: "preferred_race", header: "Race Hired" },
-    { accessorKey: "zone_name", header: "Zone" },
-    { id: "map", header: "Map", size: 80, enableSorting: false },
-  ];
 </script>
-
-{#snippet renderRecruitedAtCell({
-  cell,
-  row,
-}: {
-  cell: Cell<PetRecruiter, unknown>;
-  row: Row<PetRecruiter>;
-})}
-  {#if cell.column.id === "npc_name"}
-    <EntityLink
-      href="/npcs/{row.original.npc_id}"
-      name={row.original.npc_name}
-      domain="npc"
-      entityId={row.original.npc_id}
-      imageKind="primary"
-      imageAvailable={row.original.visual_public_path}
-      variant="reference"
-      fallback={User}
-      size={28}
-    />
-  {:else if cell.column.id === "preferred_race"}
-    {#if row.original.preferred_race && classCanBe(cls, row.original.preferred_race)}
-      {row.original.preferred_race}
-    {:else}
-      <!-- Source: server-scripts/Utils.cs:GetRandomChar — unsupported recruiter preferences fall back to a uniform class-pool roll. -->
-      <span class="text-muted-foreground">Any in class pool</span>
-    {/if}
-  {:else if cell.column.id === "zone_name"}
-    <a
-      href="/zones/{row.original.zone_id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-      >{row.original.zone_name}</a
-    >
-  {:else if cell.column.id === "map"}
-    <MapLink entityId={row.original.npc_id} entityType="npc" compact={true} />
-  {:else}
-    {cell.getValue()}
-  {/if}
-{/snippet}
 
 {#snippet stat(label: string, value: string, note: string = "")}
   <div class="rounded-md border bg-background/40 p-3">
-    <dt class="text-xs text-muted-foreground">{label}</dt>
+    <dt class="text-sm text-muted-foreground">{label}</dt>
     <dd class="mt-1 text-lg font-semibold tabular-nums">{value}</dd>
-    {#if note}<dd class="text-xs text-muted-foreground">{note}</dd>{/if}
+    {#if note}<dd class="text-sm text-muted-foreground">{note}</dd>{/if}
   </div>
 {/snippet}
 
@@ -295,6 +225,8 @@
       { label: pet.name },
     ]}
   />
+
+  <MercenaryNav mercenaries={links} current={pet.id} />
 
   <header class="space-y-3">
     <div class="flex items-center gap-3 flex-wrap">
@@ -326,24 +258,11 @@
           <a
             href="/mechanics/mercenary-stats"
             class="ml-1 text-blue-600 dark:text-blue-400 hover:underline"
-            >odds and stat ranges</a
+            >Race odds and stat ranges</a
           >
         </dd>
       </div>
     </dl>
-    <nav aria-label="Other mercenaries" class="flex flex-wrap gap-1.5">
-      {#each pet.profile.siblings as sibling (sibling.id)}
-        {@const current = sibling.id === pet.id}
-        <a
-          href={petHref(sibling.id, true)}
-          aria-current={current ? "page" : undefined}
-          class="rounded-full border px-3 py-1 text-xs font-medium transition-colors {current
-            ? 'border-primary bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:border-ring hover:text-foreground'}"
-          >{sibling.type_monster}</a
-        >
-      {/each}
-    </nav>
   </header>
 
   <section aria-labelledby="owner-title">
@@ -431,7 +350,7 @@
             `${fmt(resurrectionPrice(level, veteran, discount))} gold`,
           )}
         </dl>
-        <p class="text-xs text-muted-foreground">
+        <p class="text-sm text-muted-foreground">
           Stat ranges do not include gear. They cover every race a recruiter can
           hire and every hire roll.
           <a
@@ -740,19 +659,15 @@
       <p class="mb-3 text-sm text-muted-foreground">
         Every recruiter hires every mercenary class, from level 10.
         <a
-          href="/mechanics/mercenaries"
+          href="/mercenaries#how-it-works"
           class="text-blue-600 dark:text-blue-400 hover:underline"
-          >Rules for all mercenaries</a
-        > cover stance, party limits, death, and resurrection.
+          >How mercenaries work</a
+        > covers stance, party limits, death, and resurrection.
       </p>
-      <DataTable
-        data={pet.recruiters}
-        columns={recruitedAtColumns}
-        renderCell={renderRecruitedAtCell}
+      <RecruiterTable
+        recruiters={pet.recruiters}
+        {cls}
         urlKey="pet-{pet.id}-recruited-at"
-        pageSize={10}
-        zebraStripe={true}
-        class="bg-muted/30"
       />
     </section>
   {/if}

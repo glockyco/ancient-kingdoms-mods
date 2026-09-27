@@ -559,11 +559,24 @@ function addOverviewHashes(db, hashes) {
   addHash(hashes, "/skills", all(db, "SELECT * FROM skills ORDER BY id"));
   addHash(hashes, "/classes", all(db, "SELECT * FROM classes ORDER BY id"));
   addHash(hashes, "/altars", all(db, "SELECT * FROM altars ORDER BY id"));
-  addHash(
-    hashes,
-    "/mercenaries",
-    all(db, "SELECT * FROM pets WHERE is_mercenary = 1 ORDER BY id"),
-  );
+  // The mercenary hub compares the classes and explains the shared rules, so
+  // it changes with the pets, their skills, the recruiters, and its own prose.
+  addHash(hashes, "/mercenaries", {
+    pets: all(db, "SELECT * FROM pets WHERE is_mercenary = 1 ORDER BY id"),
+    skills: all(
+      db,
+      `SELECT ps.* FROM pet_skills ps JOIN pets p ON p.id = ps.pet_id
+       WHERE p.is_mercenary = 1 ORDER BY ps.pet_id, ps.skill_index`,
+    ),
+    recruiters: all(
+      db,
+      `SELECT n.id, n.name, n.preferred_mercenary_race, s.zone_id
+       FROM npcs n JOIN npc_spawns s ON s.npc_id = n.id
+       WHERE json_extract(n.roles, '$.is_recruiter_mercenaries') = 1
+       ORDER BY n.id, s.zone_id`,
+    ),
+    source: fileHash("src/routes/mercenaries/+page.svelte"),
+  });
   addHash(
     hashes,
     "/summons",
@@ -594,10 +607,6 @@ function addMechanicsHashes(db, hashes) {
     {
       url: "/mechanics/monster-spawns",
       file: "src/routes/mechanics/monster-spawns/+page.svelte",
-    },
-    {
-      url: "/mechanics/mercenaries",
-      file: "src/routes/mechanics/mercenaries/+page.svelte",
     },
     {
       url: "/mechanics/reputation",
