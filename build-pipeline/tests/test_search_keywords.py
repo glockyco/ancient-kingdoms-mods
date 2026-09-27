@@ -32,27 +32,15 @@ class SearchKeywordTests(unittest.TestCase):
 
                 keywords.run(conn)
 
-                barber_matches = conn.execute(
-                    """
-                    SELECT n.id
-                    FROM npcs_fts
-                    JOIN npcs n ON n.rowid = npcs_fts.rowid
-                    WHERE npcs_fts MATCH '"barber"*'
-                    """
-                ).fetchall()
-                appearance_matches = conn.execute(
-                    """
-                    SELECT n.id
-                    FROM npcs_fts
-                    JOIN npcs n ON n.rowid = npcs_fts.rowid
-                    WHERE npcs_fts MATCH '"appearance"*'
-                    """
-                ).fetchall()
+                rows = dict(conn.execute("SELECT id, keywords FROM npcs").fetchall())
             finally:
                 conn.close()
 
-        self.assertEqual(barber_matches, [("borin_ironbeard",)])
-        self.assertEqual(appearance_matches, [("borin_ironbeard",)])
+        # The website search index reads these keywords.
+        self.assertIn("barber", rows["borin_ironbeard"].split())
+        self.assertIn("appearance", rows["borin_ironbeard"].split())
+        self.assertNotIn("barber", rows["banker"].split())
+        self.assertNotIn("appearance", rows["banker"].split())
 
     def test_notable_classification_is_searchable_without_a_service_role(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -68,18 +56,12 @@ class SearchKeywordTests(unittest.TestCase):
 
                 keywords.run(conn)
 
-                matches = conn.execute(
-                    """
-                    SELECT n.id
-                    FROM npcs_fts
-                    JOIN npcs n ON n.rowid = npcs_fts.rowid
-                    WHERE npcs_fts MATCH '"notable"*'
-                    """
-                ).fetchall()
+                rows = dict(conn.execute("SELECT id, keywords FROM npcs").fetchall())
             finally:
                 conn.close()
 
-        self.assertEqual(matches, [("king_darin",)])
+        self.assertIn("notable", rows["king_darin"].split())
+        self.assertNotIn("notable", (rows["villager"] or "").split())
 
 
 if __name__ == "__main__":

@@ -53,9 +53,9 @@ class HousesLoaderTests(unittest.TestCase):
                     WHERE id = 'elven_lake_house'
                     """
                 ).fetchone()
-                fts_rows = conn.execute(
-                    "SELECT rowid FROM houses_fts WHERE houses_fts MATCH 'housing'"
-                ).fetchall()
+                keywords = conn.execute(
+                    "SELECT keywords FROM houses WHERE id = 'elven_lake_house'"
+                ).fetchone()[0]
             finally:
                 conn.close()
 
@@ -72,7 +72,8 @@ class HousesLoaderTests(unittest.TestCase):
                 20,
             ),
         )
-        self.assertEqual(len(fts_rows), 1)
+        # The website search index reads these keywords.
+        self.assertIn("housing", keywords.split())
 
 
 if __name__ == "__main__":

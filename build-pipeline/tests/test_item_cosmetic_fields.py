@@ -19,7 +19,7 @@ def seed_required_foreign_keys(conn):
 
 
 class ItemCosmeticFieldTests(unittest.TestCase):
-    def test_load_items_preserves_comments_without_indexing_them_for_search(self):
+    def test_load_items_preserves_comments(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             export_dir = root / "exported-data"
@@ -48,14 +48,10 @@ class ItemCosmeticFieldTests(unittest.TestCase):
                 row = conn.execute(
                     "SELECT comments FROM items WHERE id = 'soul_ember'"
                 ).fetchone()
-                fts_rows = conn.execute(
-                    "SELECT rowid FROM items_fts WHERE items_fts MATCH 'skins'"
-                ).fetchall()
             finally:
                 conn.close()
 
         self.assertEqual(row, ("Used to buy skins in Skin Vendor",))
-        self.assertEqual(fts_rows, [])
 
     def test_load_items_preserves_authoritative_cosmetic_flags_and_costume_type(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -34,8 +34,6 @@ def run(config: dict) -> None:
         WHERE type = 'table'
           AND name NOT LIKE 'sqlite_%'
           AND name NOT LIKE 'sqlean_%'
-          AND name NOT LIKE '%_fts'
-          AND name NOT LIKE '%_fts_%'
         ORDER BY name
         """
     )

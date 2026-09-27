@@ -31,18 +31,18 @@ Implemented:
 - Golden tests pin marker identities and deck.gl paint order.
 - `entity-manifest.json` and `entityRegistry` own shared entity labels, routes, searchability, artwork,
   and sitemap participation.
-- `build-search-db.ts` creates one `search.db` from registered entity documents.
-- `searchEntities()` performs exact, prefix, FTS, and fuzzy search tiers.
-- Map search uses the unified search ranking and restores map-specific geometry afterward.
+- `build-search-index.ts` serializes one MiniSearch index from registered entity documents, pages,
+  and filtered lists.
+- `searchEntities()` ranks in a dedicated worker, with a palette scope and a map scope.
+- Map search uses the map scope and restores map-specific geometry afterward.
+- A global Cmd-K palette, the home page search field, and a breadcrumb search button use the palette
+  scope.
 
-The current build writes 3,858 search documents. It compresses `search.db` from 2.65 MB to 0.93 MB.
-The main `compendium.db` compresses from 16.50 MB to 2.37 MB.
+The index holds 4,105 documents and compresses to 0.38 MB. The main `compendium.db` compresses to
+2.07 MB after the legacy FTS tables were removed.
 
 Not implemented:
 
-- The site layout has no global Cmd-K palette.
-- `HomeSearch.svelte` remains a development-only visual stub.
-- The 14 legacy per-table FTS indexes and their triggers remain in `compendium.db`.
 - Physical selection still uses legacy indexes and dispatch paths.
 - Popup routing and popup bodies remain centralized.
 - Zone focus and its GPU filters remain.
@@ -80,22 +80,16 @@ replacement. Do not change it as a side effect of popup or search work.
 
 ## Search design
 
-One search index serves map and global consumers. Search ranking uses these tiers:
-
-1. exact normalized name;
-2. name prefix;
-3. weighted FTS over `name`, `keywords`, and cleaned `content`;
-4. bounded fuzzy fallback.
+One search index serves map and global consumers. The `global-search` spec in the archived
+`add-global-entity-search` change owns the ranking contract: an exact name first, every typed word
+matched, the last word as a prefix, bounded typo tolerance, reviewed synonyms, and one row per
+destination in the palette.
 
 Global relevance order remains intact. A consumer may group results for display, but it must not use
 round-robin category interleaving.
 
-The installed `sql.js-fts5@1.4.0` WASM is 1,213,472 bytes raw and 460,651 bytes gzip. A measured local
-Node run initialized it in a 4.498 ms median and opened the earlier 16.9 MB database plus one query in a
-13.966 ms median. These are local-process measurements, not browser cold-start evidence.
-
-The global palette must measure network transfer, decompression, worker startup, first-result latency,
-and keyboard interaction in a browser before release.
+A judged query set under `website/src/lib/search/judged/` gates relevance. Its held-out part is frozen
+and must not select ranking settings. The change design records the browser measurements.
 
 ## Routing design gate
 
@@ -170,12 +164,13 @@ but one change does not absorb another change's implementation tasks.
 
 ### `add-global-entity-search`
 
-- [ ] Add one global Cmd-K palette in `+layout.svelte` using `searchEntities()`.
-- [ ] Replace the development-only `HomeSearch` stub with a working global-search entry point.
-- [ ] Keep map search on the same ranking path and retain map-specific geometry enrichment.
-- [ ] Add entity artwork, keyboard navigation, empty state, and recent searches.
-- [ ] Remove the 14 legacy FTS tables, triggers, optimization list, and last old reader in one cutover.
-- [ ] Measure browser cold start, first result, transfer bytes, worker memory, and main-thread responsiveness.
+- [x] Add one global Cmd-K palette in `+layout.svelte` using `searchEntities()`.
+- [x] Replace the development-only `HomeSearch` stub with a working global-search entry point.
+- [x] Keep map search on the same ranking path and retain map-specific geometry enrichment.
+- [x] Add entity artwork, keyboard navigation, empty state, and recent searches.
+- [x] Remove the 14 legacy FTS tables, triggers, optimization list, and last old reader in one cutover.
+- [x] Measure browser cold start, first result, transfer bytes, and main-thread responsiveness. Worker
+  memory was not measured.
 
 ### `add-map-wayfinding`
 

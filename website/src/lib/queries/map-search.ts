@@ -1,7 +1,11 @@
 import { query } from "$lib/db";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import { TRAP_TYPE_LABELS, type TrapType } from "$lib/constants/traps";
-import { searchEntities, type SearchResult } from "$lib/search/search";
+import {
+  searchEntities,
+  type SearchKind,
+  type SearchResult,
+} from "$lib/search/search";
 
 export interface MapSearchBounds {
   minX: number;
@@ -46,9 +50,6 @@ export interface MapSearchResult {
   id: string;
   name: string;
   category: MapSearchCategory;
-  /** Entity registry family used for labels and glyphs. */
-  entityType?: string;
-  entityLabel?: string;
   image: string | null;
   subcategory?: string;
   quality?: number;
@@ -87,9 +88,7 @@ type GeometryRow = {
 
 type MapEntityCategory = MapSearchCategory;
 
-const ENTITY_CATEGORY: Partial<
-  Record<SearchResult["entityType"], MapEntityCategory>
-> = {
+const ENTITY_CATEGORY: Partial<Record<SearchKind, MapEntityCategory>> = {
   monster: "monster",
   npc: "npc",
   zone: "zone",
@@ -109,10 +108,10 @@ const ENTITY_CATEGORY: Partial<
 
 /**
  * These queries intentionally enrich the compact search result from the
- * authoritative compendium. Search ranking stays in search.db; these rows
+ * authoritative compendium. Search ranking stays in the search index; these rows
  * only restore the map result contract and physical source geometry.
  */
-const GEOMETRY_QUERY: Partial<Record<SearchResult["entityType"], string>> = {
+const GEOMETRY_QUERY: Partial<Record<SearchKind, string>> = {
   monster: `
     SELECT m.id,
       MIN(ms.position_x) min_x, MAX(ms.position_x) max_x,
@@ -372,7 +371,7 @@ function itemBoundsQuery(idsJson: string): Promise<GeometryRow[]> {
 async function itemRows(
   matches: SearchResult[],
 ): Promise<Map<string, GeometryRow>> {
-  const ids = matches.map((match) => match.entityId);
+  const ids = matches.map((match) => match.id);
   const placeholders = ids.map(() => "?").join(",");
   const basics = await query<{
     id: string;
@@ -408,7 +407,7 @@ function toMapSearchResult(
   match: SearchResult,
   row: GeometryRow | undefined,
 ): MapSearchResult {
-  const category = ENTITY_CATEGORY[match.entityType]!;
+  const category = ENTITY_CATEGORY[match.kind]!;
   const isAltarOnly =
     Boolean(row?.is_altar_only) && row?.altar_x != null && row.altar_y != null;
   const bounds = isAltarOnly
@@ -432,11 +431,9 @@ function toMapSearchResult(
       : undefined) ??
     match.name;
   return {
-    id: match.entityId,
+    id: match.id,
     name: displayName,
     category,
-    entityType: match.entityType,
-    entityLabel: match.entity.pluralLabel,
     image: match.image,
     subcategory: row?.subcategory ?? undefined,
     quality: row?.quality ?? undefined,
@@ -459,17 +456,20 @@ export async function searchMapEntities(
   searchQuery: string,
   limit = 20,
 ): Promise<MapSearchResult[]> {
-  const matches = await searchEntities(searchQuery, Math.max(limit * 10, 100));
+  const matches = await searchEntities(searchQuery, {
+    scope: "map",
+    limit: Math.max(limit * 10, 100),
+  });
   const mapMatches = matches.filter((match) =>
-    Boolean(ENTITY_CATEGORY[match.entityType]),
+    Boolean(ENTITY_CATEGORY[match.kind]),
   );
   if (mapMatches.length === 0) return [];
 
   const grouped = new Map<string, SearchResult[]>();
   for (const match of mapMatches) {
-    const group = grouped.get(match.entityType) ?? [];
+    const group = grouped.get(match.kind) ?? [];
     group.push(match);
-    grouped.set(match.entityType, group);
+    grouped.set(match.kind, group);
   }
 
   const geometry = new Map<string, GeometryRow>();
@@ -480,10 +480,9 @@ export async function searchMapEntities(
           geometry.set(`${entityType}:${id}`, row);
         return;
       }
-      const queryText =
-        GEOMETRY_QUERY[entityType as SearchResult["entityType"]];
+      const queryText = GEOMETRY_QUERY[entityType as SearchKind];
       if (!queryText) return;
-      const ids = categoryMatches.map((match) => match.entityId);
+      const ids = categoryMatches.map((match) => match.id);
       const rows = await query<GeometryRow>(
         queryText.replaceAll("/*IDS*/", ids.map(() => "?").join(",")),
         ids,
@@ -495,9 +494,6 @@ export async function searchMapEntities(
   return mapMatches
     .slice(0, limit)
     .map((match) =>
-      toMapSearchResult(
-        match,
-        geometry.get(`${match.entityType}:${match.entityId}`),
-      ),
+      toMapSearchResult(match, geometry.get(`${match.kind}:${match.id}`)),
     );
 }

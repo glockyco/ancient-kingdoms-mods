@@ -47,6 +47,9 @@ importers:
       lucide:
         specifier: ^1.27.0
         version: 1.30.0
+      minisearch:
+        specifier: ^7.2.0
+        version: 7.2.0
       sql.js-fts5:
         specifier: ^1.4.0
         version: 1.4.0
@@ -2562,6 +2565,9 @@ packages:
   minimatch@10.2.6:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
     engines: {node: 18 || 20 || >=22}
+
+  minisearch@7.2.0:
+    resolution: {integrity: sha512-dqT2XBYUOZOiC5t2HRnwADjhNS2cecp9u+TJRiJ1Qp/f5qjkeT5APcGPjHw+bz89Ms8Jp+cG4AlE+QZ/QnDglg==}
 
   mjolnir.js@3.0.1:
     resolution: {integrity: sha512-/RMi8Jm3NKleOkVI8D2ai+1OVwtfRJsSVBVjbTXNm83nfsN4uORYaN3u1/hsg5CqVI+di8enTkvgDNDOywn6cQ==}
@@ -5388,6 +5394,8 @@ snapshots:
   minimatch@10.2.6:
     dependencies:
       brace-expansion: 5.0.9
+
+  minisearch@7.2.0: {}
 
   mjolnir.js@3.0.1: {}
 

@@ -12,12 +12,15 @@
     class?: string;
     compact?: boolean;
     iconRight?: boolean;
+    /** Show only the icon below the `sm` breakpoint, where the row is crowded. */
+    hideLabelOnMobile?: boolean;
   }
 
   let {
     class: className = "",
     compact = false,
     iconRight = false,
+    hideLabelOnMobile = false,
   }: Props = $props();
 
   const label = "Support the Compendium";
@@ -35,7 +38,10 @@
 >
   {#snippet text()}
     {#if compact}
-      <span class="md:hidden">Support</span>
+      <span
+        class={hideLabelOnMobile ? "hidden sm:inline md:hidden" : "md:hidden"}
+        >Support</span
+      >
       <span class="hidden md:inline">{label}</span>
     {:else}
       <span>{label}</span>

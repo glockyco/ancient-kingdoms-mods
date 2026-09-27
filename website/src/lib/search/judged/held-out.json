@@ -1,0 +1,794 @@
+[
+  {
+    "q": "Guard Gyll",
+    "intent": "exact",
+    "expect": ["/monsters/guard_gyll"],
+    "k": 1
+  },
+  {
+    "q": "Guard",
+    "intent": "prefix",
+    "expect": ["/monsters/guard_gyll"],
+    "k": 3
+  },
+  {
+    "q": "Guaad Gyll",
+    "intent": "typo",
+    "expect": ["/monsters/guard_gyll"],
+    "k": 3
+  },
+  {
+    "q": "Guard Snowbrand",
+    "intent": "exact",
+    "expect": ["/monsters/guard_snowbrand"],
+    "k": 1
+  },
+  {
+    "q": "Guard Sno",
+    "intent": "prefix",
+    "expect": ["/monsters/guard_snowbrand"],
+    "k": 3
+  },
+  {
+    "q": "Guard Snowbrnd",
+    "intent": "typo",
+    "expect": ["/monsters/guard_snowbrand"],
+    "k": 3
+  },
+  {
+    "q": "Worm",
+    "intent": "exact",
+    "expect": ["/monsters/worm"],
+    "k": 1
+  },
+  {
+    "q": "Large Shade Beast",
+    "intent": "exact",
+    "expect": ["/monsters/large_shade_beast"],
+    "k": 1
+  },
+  {
+    "q": "Large Shade",
+    "intent": "prefix",
+    "expect": ["/monsters/large_shade_beast"],
+    "k": 3
+  },
+  {
+    "q": "Lare Shade Beast",
+    "intent": "typo",
+    "expect": ["/monsters/large_shade_beast"],
+    "k": 3
+  },
+  {
+    "q": "Cinderscale Channeler",
+    "intent": "exact",
+    "expect": ["/monsters/cinderscale_channeler"],
+    "k": 1
+  },
+  {
+    "q": "Cinderscale C",
+    "intent": "prefix",
+    "expect": ["/monsters/cinderscale_channeler"],
+    "k": 3
+  },
+  {
+    "q": "Cindersclae Channeler",
+    "intent": "typo",
+    "expect": ["/monsters/cinderscale_channeler"],
+    "k": 3
+  },
+  {
+    "q": "Vyriss the Withered",
+    "intent": "exact",
+    "expect": ["/monsters/vyriss_the_withered"],
+    "k": 1
+  },
+  {
+    "q": "Vyriss the W",
+    "intent": "prefix",
+    "expect": ["/monsters/vyriss_the_withered"],
+    "k": 3
+  },
+  {
+    "q": "Ancient Spirit",
+    "intent": "exact",
+    "expect": ["/monsters/ancient_spirit"],
+    "k": 1
+  },
+  {
+    "q": "Ancient S",
+    "intent": "prefix",
+    "expect": ["/monsters/ancient_spirit"],
+    "k": 3
+  },
+  {
+    "q": "Anciunt Spirit",
+    "intent": "typo",
+    "expect": ["/monsters/ancient_spirit"],
+    "k": 3
+  },
+  {
+    "q": "Blushburst",
+    "intent": "exact",
+    "expect": ["/items/blushburst", "/skills/blushburst"],
+    "k": 2
+  },
+  {
+    "q": "Blushb",
+    "intent": "prefix",
+    "expect": ["/items/blushburst"],
+    "k": 3
+  },
+  {
+    "q": "Blusbhurst",
+    "intent": "typo",
+    "expect": ["/items/blushburst", "/skills/blushburst"],
+    "k": 3
+  },
+  {
+    "q": "Invigorating Burning Tempest",
+    "intent": "exact",
+    "expect": [
+      "/items/invigorating_burning_tempest",
+      "/skills/invigorating_burning_tempest"
+    ],
+    "k": 2
+  },
+  {
+    "q": "Invigorating Burn",
+    "intent": "prefix",
+    "expect": ["/items/invigorating_burning_tempest"],
+    "k": 3
+  },
+  {
+    "q": "Invigoratng Burning Tempest",
+    "intent": "typo",
+    "expect": [
+      "/items/invigorating_burning_tempest",
+      "/skills/invigorating_burning_tempest"
+    ],
+    "k": 3
+  },
+  {
+    "q": "Staff of the Forest",
+    "intent": "exact",
+    "expect": ["/items/staff_of_the_forest"],
+    "k": 1
+  },
+  {
+    "q": "Staff of the",
+    "intent": "prefix",
+    "expect": ["/items/staff_of_the_forest"],
+    "k": 3
+  },
+  {
+    "q": "Staff of the Foreit",
+    "intent": "typo",
+    "expect": ["/items/staff_of_the_forest"],
+    "k": 3
+  },
+  {
+    "q": "Dawnbreaker",
+    "intent": "exact",
+    "expect": ["/items/dawnbreaker"],
+    "k": 1
+  },
+  {
+    "q": "Dawnbre",
+    "intent": "prefix",
+    "expect": ["/items/dawnbreaker"],
+    "k": 3
+  },
+  {
+    "q": "Dawnbreakr",
+    "intent": "typo",
+    "expect": ["/items/dawnbreaker"],
+    "k": 3
+  },
+  {
+    "q": "Stone Amulet of Guardian",
+    "intent": "exact",
+    "expect": ["/items/stone_amulet_of_guardian"],
+    "k": 1
+  },
+  {
+    "q": "Stone Amulet of",
+    "intent": "prefix",
+    "expect": ["/items/stone_amulet_of_guardian"],
+    "k": 3
+  },
+  {
+    "q": "Stone Amulet of Guarian",
+    "intent": "typo",
+    "expect": ["/items/stone_amulet_of_guardian"],
+    "k": 3
+  },
+  {
+    "q": "Stoneforge Breeches",
+    "intent": "exact",
+    "expect": ["/items/stoneforge_breeches"],
+    "k": 1
+  },
+  {
+    "q": "Stoneforge B",
+    "intent": "prefix",
+    "expect": ["/items/stoneforge_breeches"],
+    "k": 3
+  },
+  {
+    "q": "Stonefrge Breeches",
+    "intent": "typo",
+    "expect": ["/items/stoneforge_breeches"],
+    "k": 3
+  },
+  {
+    "q": "Shattered Visage of Corruption",
+    "intent": "exact",
+    "expect": ["/items/shattered_visage_of_corruption"],
+    "k": 1
+  },
+  {
+    "q": "Shattered Visage o",
+    "intent": "prefix",
+    "expect": ["/items/shattered_visage_of_corruption"],
+    "k": 3
+  },
+  {
+    "q": "Shattered Visage of Crruption",
+    "intent": "typo",
+    "expect": ["/items/shattered_visage_of_corruption"],
+    "k": 3
+  },
+  {
+    "q": "Legendary Gnome's Arcane Sphere",
+    "intent": "exact",
+    "expect": ["/items/legendary_gnomes_arcane_sphere"],
+    "k": 1
+  },
+  {
+    "q": "Legendary Gnome's A",
+    "intent": "prefix",
+    "expect": ["/items/legendary_gnomes_arcane_sphere"],
+    "k": 3
+  },
+  {
+    "q": "Lugendary Gnome's Arcane Sphere",
+    "intent": "typo",
+    "expect": ["/items/legendary_gnomes_arcane_sphere"],
+    "k": 3
+  },
+  {
+    "q": "Random Gem 1",
+    "intent": "exact",
+    "expect": ["/items/random_gem_1"],
+    "k": 1
+  },
+  {
+    "q": "Random G",
+    "intent": "prefix",
+    "expect": ["/items/random_gem_1"],
+    "k": 3
+  },
+  {
+    "q": "Raneom Gem 1",
+    "intent": "typo",
+    "expect": ["/items/random_gem_1"],
+    "k": 3
+  },
+  {
+    "q": "Eryndel Starwhisper",
+    "intent": "exact",
+    "expect": ["/npcs/eryndel_starwhisper"],
+    "k": 1
+  },
+  {
+    "q": "Eryndel Star",
+    "intent": "prefix",
+    "expect": ["/npcs/eryndel_starwhisper"],
+    "k": 3
+  },
+  {
+    "q": "Eryndel Starwhispar",
+    "intent": "typo",
+    "expect": ["/npcs/eryndel_starwhisper"],
+    "k": 3
+  },
+  {
+    "q": "Skrik Emberspark",
+    "intent": "exact",
+    "expect": ["/npcs/skrik_emberspark"],
+    "k": 1
+  },
+  {
+    "q": "Skrik Embe",
+    "intent": "prefix",
+    "expect": ["/npcs/skrik_emberspark"],
+    "k": 3
+  },
+  {
+    "q": "Skrik Emebrspark",
+    "intent": "typo",
+    "expect": ["/npcs/skrik_emberspark"],
+    "k": 3
+  },
+  {
+    "q": "Galaeron Lorak",
+    "intent": "exact",
+    "expect": ["/npcs/galaeron_lorak"],
+    "k": 1
+  },
+  {
+    "q": "Galaeron",
+    "intent": "prefix",
+    "expect": ["/npcs/galaeron_lorak"],
+    "k": 3
+  },
+  {
+    "q": "Gaaleron Lorak",
+    "intent": "typo",
+    "expect": ["/npcs/galaeron_lorak"],
+    "k": 3
+  },
+  {
+    "q": "Irzyl Bondre",
+    "intent": "exact",
+    "expect": ["/npcs/irzyl_bondre"],
+    "k": 1
+  },
+  {
+    "q": "Irzyl Bo",
+    "intent": "prefix",
+    "expect": ["/npcs/irzyl_bondre"],
+    "k": 3
+  },
+  {
+    "q": "Irzyl Bnodre",
+    "intent": "typo",
+    "expect": ["/npcs/irzyl_bondre"],
+    "k": 3
+  },
+  {
+    "q": "Emilee Claridge",
+    "intent": "exact",
+    "expect": ["/npcs/emilee_claridge"],
+    "k": 1
+  },
+  {
+    "q": "Emilee Cl",
+    "intent": "prefix",
+    "expect": ["/npcs/emilee_claridge"],
+    "k": 3
+  },
+  {
+    "q": "Emilee Clardge",
+    "intent": "typo",
+    "expect": ["/npcs/emilee_claridge"],
+    "k": 3
+  },
+  {
+    "q": "A Dangerous Cave",
+    "intent": "exact",
+    "expect": ["/quests/11_a_dangerous_cave"],
+    "k": 1
+  },
+  {
+    "q": "A Dangerou",
+    "intent": "prefix",
+    "expect": ["/quests/11_a_dangerous_cave"],
+    "k": 3
+  },
+  {
+    "q": "A Dnagerous Cave",
+    "intent": "typo",
+    "expect": ["/quests/11_a_dangerous_cave"],
+    "k": 3
+  },
+  {
+    "q": "Noises at Night",
+    "intent": "exact",
+    "expect": ["/quests/1_noises_at_night"],
+    "k": 1
+  },
+  {
+    "q": "Noises at",
+    "intent": "prefix",
+    "expect": ["/quests/1_noises_at_night"],
+    "k": 3
+  },
+  {
+    "q": "Noiess at Night",
+    "intent": "typo",
+    "expect": ["/quests/1_noises_at_night"],
+    "k": 3
+  },
+  {
+    "q": "Dark Times",
+    "intent": "exact",
+    "expect": ["/quests/3_dark_times"],
+    "k": 1
+  },
+  {
+    "q": "Dark T",
+    "intent": "prefix",
+    "expect": ["/quests/3_dark_times"],
+    "k": 3
+  },
+  {
+    "q": "Dark Tmies",
+    "intent": "typo",
+    "expect": ["/quests/3_dark_times"],
+    "k": 3
+  },
+  {
+    "q": "The Spirit of Winter",
+    "intent": "exact",
+    "expect": ["/quests/the_spirit_of_winter"],
+    "k": 1
+  },
+  {
+    "q": "The Spirit o",
+    "intent": "prefix",
+    "expect": ["/quests/the_spirit_of_winter"],
+    "k": 3
+  },
+  {
+    "q": "The Sparit of Winter",
+    "intent": "typo",
+    "expect": ["/quests/the_spirit_of_winter"],
+    "k": 3
+  },
+  {
+    "q": "Crescent Coast",
+    "intent": "exact",
+    "expect": ["/zones/crescent_coast"],
+    "k": 1
+  },
+  {
+    "q": "Crescent",
+    "intent": "prefix",
+    "expect": ["/zones/crescent_coast"],
+    "k": 3
+  },
+  {
+    "q": "Crsecent Coast",
+    "intent": "typo",
+    "expect": ["/zones/crescent_coast"],
+    "k": 3
+  },
+  {
+    "q": "Everfrost",
+    "intent": "exact",
+    "expect": ["/zones/everfrost"],
+    "k": 1
+  },
+  {
+    "q": "Everfr",
+    "intent": "prefix",
+    "expect": ["/zones/everfrost"],
+    "k": 3
+  },
+  {
+    "q": "Everrfost",
+    "intent": "typo",
+    "expect": ["/zones/everfrost"],
+    "k": 3
+  },
+  {
+    "q": "Water Summoning",
+    "intent": "exact",
+    "expect": ["/skills/water_summoning"],
+    "k": 1
+  },
+  {
+    "q": "Water Sum",
+    "intent": "prefix",
+    "expect": ["/skills/water_summoning"],
+    "k": 3
+  },
+  {
+    "q": "Water Sammoning",
+    "intent": "typo",
+    "expect": ["/skills/water_summoning"],
+    "k": 3
+  },
+  {
+    "q": "Emerald Dirge",
+    "intent": "exact",
+    "expect": ["/skills/emerald_dirge"],
+    "k": 1
+  },
+  {
+    "q": "Emerald",
+    "intent": "prefix",
+    "expect": ["/skills/emerald_dirge"],
+    "k": 3
+  },
+  {
+    "q": "Emreald Dirge",
+    "intent": "typo",
+    "expect": ["/skills/emerald_dirge"],
+    "k": 3
+  },
+  {
+    "q": "Festive Cookie",
+    "intent": "exact",
+    "expect": ["/items/festive_cookie", "/skills/festive_cookie"],
+    "k": 2
+  },
+  {
+    "q": "Festive C",
+    "intent": "prefix",
+    "expect": ["/skills/festive_cookie"],
+    "k": 3
+  },
+  {
+    "q": "Fostive Cookie",
+    "intent": "typo",
+    "expect": ["/items/festive_cookie", "/skills/festive_cookie"],
+    "k": 3
+  },
+  {
+    "q": "Digging",
+    "intent": "exact",
+    "expect": ["/skills/digging"],
+    "k": 1
+  },
+  {
+    "q": "Diggi",
+    "intent": "prefix",
+    "expect": ["/skills/digging"],
+    "k": 3
+  },
+  {
+    "q": "Diging",
+    "intent": "typo",
+    "expect": ["/skills/digging"],
+    "k": 3
+  },
+  {
+    "q": "Fury of Flames",
+    "intent": "exact",
+    "expect": ["/achievements#kill-pyroth"],
+    "k": 1
+  },
+  {
+    "q": "Fury of F",
+    "intent": "prefix",
+    "expect": ["/achievements#kill-pyroth"],
+    "k": 3
+  },
+  {
+    "q": "Fury of Faames",
+    "intent": "typo",
+    "expect": ["/achievements#kill-pyroth"],
+    "k": 3
+  },
+  {
+    "q": "Tormentor's End",
+    "intent": "exact",
+    "expect": ["/achievements#kill-zarothak"],
+    "k": 1
+  },
+  {
+    "q": "Tormentor",
+    "intent": "prefix",
+    "expect": ["/achievements#kill-zarothak"],
+    "k": 3
+  },
+  {
+    "q": "Trmentor's End",
+    "intent": "typo",
+    "expect": ["/achievements#kill-zarothak"],
+    "k": 3
+  },
+  {
+    "q": "Winter Pansy",
+    "intent": "exact",
+    "expect": ["/gather-items/winter_pansy"],
+    "k": 1
+  },
+  {
+    "q": "Winter P",
+    "intent": "prefix",
+    "expect": ["/gather-items/winter_pansy"],
+    "k": 3
+  },
+  {
+    "q": "Witer Pansy",
+    "intent": "typo",
+    "expect": ["/gather-items/winter_pansy"],
+    "k": 3
+  },
+  {
+    "q": "Azurevein",
+    "intent": "exact",
+    "expect": ["/gather-items/azurevein"],
+    "k": 1
+  },
+  {
+    "q": "Azurev",
+    "intent": "prefix",
+    "expect": ["/gather-items/azurevein"],
+    "k": 3
+  },
+  {
+    "q": "Azurevin",
+    "intent": "typo",
+    "expect": ["/gather-items/azurevein"],
+    "k": 3
+  },
+  {
+    "q": "loot rolls",
+    "intent": "concept",
+    "expect": ["/mechanics/party#loot-rolls"],
+    "k": 3
+  },
+  {
+    "q": "equipment durability",
+    "intent": "concept",
+    "expect": ["/mechanics/inventory#durability-and-repair"],
+    "k": 3
+  },
+  {
+    "q": "splitting items",
+    "intent": "concept",
+    "expect": ["/mechanics/inventory#item-movement"],
+    "k": 3
+  },
+  {
+    "q": "mercenary stances",
+    "intent": "concept",
+    "expect": ["/mercenaries#commands"],
+    "k": 3
+  },
+  {
+    "q": "hire mercenary",
+    "intent": "concept",
+    "expect": ["/mercenaries#roster"],
+    "k": 3
+  },
+  {
+    "q": "guild leader",
+    "intent": "concept",
+    "expect": ["/mechanics/guilds#membership"],
+    "k": 3
+  },
+  {
+    "q": "follow player",
+    "intent": "concept",
+    "expect": ["/mechanics/party#chat-and-follow"],
+    "k": 3
+  },
+  {
+    "q": "personal notes on map",
+    "intent": "concept",
+    "expect": ["/mechanics/world#map-notes"],
+    "k": 3
+  },
+  {
+    "q": "dungeon renewal",
+    "intent": "concept",
+    "expect": ["/mechanics/monster-spawns#renewal-sages"],
+    "k": 3
+  },
+  {
+    "q": "scroll mastery",
+    "intent": "concept",
+    "expect": ["/professions/scroll_mastery#how-it-works"],
+    "k": 3
+  },
+  {
+    "q": "pickaxe mining",
+    "intent": "concept",
+    "expect": ["/professions/mining#how-it-works"],
+    "k": 3
+  },
+  {
+    "q": "bard charm",
+    "intent": "concept",
+    "expect": ["/mechanics/bard#charm"],
+    "k": 3
+  },
+  {
+    "q": "targeting range",
+    "intent": "concept",
+    "expect": ["/mechanics/combat#targeting"],
+    "k": 3
+  },
+  {
+    "q": "wards",
+    "intent": "concept",
+    "expect": ["/mechanics/combat#effects-and-control"],
+    "k": 3
+  },
+  {
+    "q": "hardcore mode",
+    "intent": "concept",
+    "expect": ["/mechanics/world#game-modes"],
+    "k": 3
+  },
+  {
+    "q": "necklaces",
+    "intent": "list",
+    "expect": ["/items?items.slot=Neck"],
+    "k": 1
+  },
+  {
+    "q": "shovels",
+    "intent": "list",
+    "expect": ["/items?items.slot=Shovel"],
+    "k": 1
+  },
+  {
+    "q": "relics",
+    "intent": "list",
+    "expect": ["/items?items.item_type=relic"],
+    "k": 1
+  },
+  {
+    "q": "travel items",
+    "intent": "list",
+    "expect": ["/items?items.item_type=travel"],
+    "k": 1
+  },
+  {
+    "q": "essence traders",
+    "intent": "list",
+    "expect": ["/npcs?npcs.role_keys=is_essence_trader"],
+    "k": 1
+  },
+  {
+    "q": "skill masters",
+    "intent": "list",
+    "expect": ["/npcs?npcs.role_keys=is_skill_master"],
+    "k": 1
+  },
+  {
+    "q": "fabled monsters",
+    "intent": "list",
+    "expect": ["/monsters?monsters.classification=fabled"],
+    "k": 1
+  },
+  {
+    "q": "housing rules",
+    "intent": "page",
+    "expect": ["/mechanics/housing"],
+    "k": 3
+  },
+  {
+    "q": "achievements",
+    "intent": "page",
+    "expect": ["/achievements"],
+    "k": 3
+  },
+  {
+    "q": "recipes",
+    "intent": "page",
+    "expect": ["/recipes"],
+    "k": 3
+  },
+  {
+    "q": "professions",
+    "intent": "page",
+    "expect": ["/professions"],
+    "k": 3
+  },
+  {
+    "q": "King Vaeril's Bane",
+    "intent": "subzone",
+    "expect": ["/zones/the_lone-lands"],
+    "k": 3
+  },
+  {
+    "q": "Despair Level 2",
+    "intent": "subzone",
+    "expect": ["/zones/despair"],
+    "k": 3
+  },
+  {
+    "q": "The Final Delve",
+    "intent": "subzone",
+    "expect": ["/zones/abandoned_mines"],
+    "k": 3
+  }
+]

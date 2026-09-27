@@ -53,7 +53,7 @@ owning spec, not here.
 
 | Rank | Item | Doc | Scope |
 | --- | --- | --- | --- |
-| P1.1 | Global entity search interface | `2026-08-09-map-marker-and-search-registry` | `search.db`, `searchEntities()`, and map search use the unified index; `+layout.svelte` still has no global palette |
+| P1.1 | Global entity search interface | `2026-08-09-map-marker-and-search-registry` | Done: the global palette and map search share one MiniSearch index and ranking |
 | P1.2 | Compact map links on list pages | — (small item) | 2 of 11 target surfaces are complete; current position data covers 361 monsters, 234 NPCs, 7 altars, and 49 resources |
 | P2.1 | Finish entity image surfacing | `2026-07-31-entity-image-surfacing` | Four of five named surfaces render art; item detail loads `visualAsset` but has no prominent item-icon surface |
 | P2.2 | Pack and random sources in item popups | — (small item) | Both junction tables are populated, but the map popup still does not query both source families |

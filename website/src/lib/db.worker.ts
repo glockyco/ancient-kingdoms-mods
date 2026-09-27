@@ -1,45 +1,22 @@
 import initSqlJs, { type Database, type SqlValue } from "sql.js-fts5";
 import sqlWasmUrl from "sql.js-fts5/dist/sql-wasm.wasm?url";
-export type DatabaseTarget = "compendium" | "search";
+import { inflatedBytes } from "./gzip";
 
 /**
- * Content-hashed asset URLs, supplied by the main thread. The worker cannot
- * import them itself without emitting a second copy of each database under a
+ * Content-hashed database URL, supplied by the main thread. The worker cannot
+ * import it itself without emitting a second copy of the database under a
  * different hashed name (see src/lib/database-assets.ts).
  */
-let databaseUrls: Record<DatabaseTarget, string> | null = null;
-
-/** First two bytes of a gzip member (RFC 1952). */
-const GZIP_MAGIC = [0x1f, 0x8b];
-
-/**
- * Inflate the response unless the transport already did it.
- *
- * A host that maps the `.gz` extension to `Content-Encoding: gzip` makes the
- * browser inflate the body before we see it. Sniffing the magic bytes keeps
- * one code path correct on every host, in dev and in production alike.
- */
-async function databaseBytes(response: Response): Promise<Uint8Array> {
-  const body = await response.arrayBuffer();
-  const head = new Uint8Array(body, 0, Math.min(2, body.byteLength));
-  if (head[0] !== GZIP_MAGIC[0] || head[1] !== GZIP_MAGIC[1]) {
-    return new Uint8Array(body);
-  }
-  const inflated = new Response(body).body!.pipeThrough(
-    new DecompressionStream("gzip"),
-  );
-  return new Uint8Array(await new Response(inflated).arrayBuffer());
-}
+let databaseUrl: string | null = null;
 
 interface ConfigureMessage {
   kind: "configure";
-  urls: Record<DatabaseTarget, string>;
+  url: string;
 }
 
 interface QueryRequest {
   kind: "query";
   id: number;
-  target: DatabaseTarget;
   sql: string;
   params: SqlValue[];
 }
@@ -52,47 +29,23 @@ interface QueryResponse {
   error?: string;
 }
 
-interface SqlRuntime {
-  Database: new (data: Uint8Array) => Database;
-}
+let databasePromise: Promise<Database> | null = null;
 
-let sqlPromise: Promise<SqlRuntime> | null = null;
-let compendium: Database | null = null;
-let search: Database | null = null;
-let compendiumPromise: Promise<Database> | null = null;
-let searchPromise: Promise<Database> | null = null;
-
-async function loadDatabase(target: DatabaseTarget): Promise<Database> {
-  if (!sqlPromise) {
-    sqlPromise = initSqlJs({ locateFile: () => sqlWasmUrl });
-  }
-  const SQL = await sqlPromise;
-  if (!databaseUrls) {
+async function loadDatabase(): Promise<Database> {
+  const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
+  if (!databaseUrl) {
     throw new Error("Database worker was queried before it was configured");
   }
-  const response = await fetch(databaseUrls[target]);
+  const response = await fetch(databaseUrl);
   if (!response.ok) {
-    throw new Error(`Unable to load ${target} database (${response.status})`);
+    throw new Error(`Unable to load the database (${response.status})`);
   }
-  const database = new SQL.Database(await databaseBytes(response));
-  if (target === "compendium") compendium = database;
-  else search = database;
-  return database;
-}
-
-function openDatabase(target: DatabaseTarget): Promise<Database> {
-  if (target === "compendium") {
-    if (compendium) return Promise.resolve(compendium);
-    compendiumPromise ??= loadDatabase(target);
-    return compendiumPromise;
-  }
-  if (search) return Promise.resolve(search);
-  searchPromise ??= loadDatabase(target);
-  return searchPromise;
+  return new SQL.Database(await inflatedBytes(response));
 }
 
 async function execute(request: QueryRequest): Promise<unknown[]> {
-  const database = await openDatabase(request.target);
+  databasePromise ??= loadDatabase();
+  const database = await databasePromise;
   const statement = database.prepare(request.sql);
   try {
     statement.bind(request.params);
@@ -106,7 +59,7 @@ async function execute(request: QueryRequest): Promise<unknown[]> {
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
   if (event.data.kind === "configure") {
-    databaseUrls = event.data.urls;
+    databaseUrl = event.data.url;
     return;
   }
 

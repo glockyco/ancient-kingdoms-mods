@@ -55,6 +55,7 @@
   import { resolve } from "$app/paths";
   import { serializeJsonLd } from "$lib/seo/jsonld";
   import SupportButton from "$lib/components/SupportButton.svelte";
+  import SearchButton from "$lib/components/search/SearchButton.svelte";
 
   let { items }: BreadcrumbProps = $props();
 
@@ -119,5 +120,8 @@
     </ol>
   </nav>
 
-  <SupportButton compact iconRight class="shrink-0" />
+  <div class="flex shrink-0 items-center gap-3">
+    <SearchButton />
+    <SupportButton compact iconRight hideLabelOnMobile class="shrink-0" />
+  </div>
 </div>

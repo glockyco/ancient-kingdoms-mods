@@ -1,158 +1,74 @@
-import { querySearch } from "$lib/db";
-import {
-  entityRegistry,
-  type EntityDef,
-  type EntityId,
-  type SearchableEntityId,
-} from "$lib/entities/registry";
+import { browser } from "$app/environment";
+import { SEARCH_INDEX_URL } from "$lib/database-assets";
+import type { SearchDoc, SearchScope } from "./engine";
+import type {
+  SearchWorkerRequest,
+  SearchWorkerResponse,
+} from "./search.worker";
 
-export interface SearchResult {
-  readonly entityType: SearchableEntityId;
-  readonly entityId: string;
-  readonly name: string;
-  readonly entity: EntityDef;
-  readonly href: string;
-  readonly image: string | null;
-  readonly snippet: string | null;
+export type { SearchKind, SearchScope } from "./engine";
+
+export interface SearchResult extends SearchDoc {
   readonly score: number;
 }
 
-interface SearchRow {
-  entity_type: string;
-  entity_id: string;
-  name: string;
-  image: string | null;
-  snippet?: string | null;
-  score?: number;
+interface PendingSearch {
+  resolve: (results: SearchResult[]) => void;
+  reject: (error: Error) => void;
 }
 
-const NAME_QUERY = `
-  SELECT entity_type, entity_id, name, image, NULL AS snippet, 0 AS score
-  FROM entities
-  WHERE lower(name) = lower(?)
-  ORDER BY length(name), name, entity_type, entity_id
-  LIMIT ?
-`;
+let worker: Worker | null = null;
+let nextRequestId = 1;
+const pending = new Map<number, PendingSearch>();
 
-const PREFIX_QUERY = `
-  SELECT entity_type, entity_id, name, image, NULL AS snippet, 1 AS score
-  FROM entities
-  WHERE lower(name) LIKE lower(?) || '%'
-  ORDER BY length(name), name, entity_type, entity_id
-  LIMIT ?
-`;
-
-const FTS_QUERY = `
-  SELECT
-    e.entity_type,
-    e.entity_id,
-    e.name,
-    e.image,
-    snippet(search_fts, 2, '<mark>', '</mark>', '…', 12) AS snippet,
-    bm25(search_fts, 10.0, 5.0, 1.0) AS score
-  FROM search_fts
-  JOIN entities e ON e.rowid = search_fts.rowid
-  WHERE search_fts MATCH ?
-  ORDER BY score, e.name, e.entity_type, e.entity_id
-  LIMIT ?
-`;
-
-function ftsPrefix(value: string): string {
-  return `"${value.replaceAll('"', '""')}"*`;
+function post(message: SearchWorkerRequest, client: Worker): void {
+  client.postMessage(message);
 }
 
-function editDistance(left: string, right: string): number {
-  const previous = Array.from(
-    { length: right.length + 1 },
-    (_, index) => index,
-  );
-  for (let i = 1; i <= left.length; i += 1) {
-    let diagonal = previous[0];
-    previous[0] = i;
-    for (let j = 1; j <= right.length; j += 1) {
-      const above = previous[j];
-      previous[j] =
-        left[i - 1] === right[j - 1]
-          ? diagonal
-          : Math.min(diagonal, previous[j], previous[j - 1]) + 1;
-      diagonal = above;
-    }
-  }
-  return previous[right.length];
-}
-
-function toResult(row: SearchRow): SearchResult | null {
-  const entity = entityRegistry[row.entity_type as EntityId];
-  if (!entity || !entity.searchable) return null;
-  return {
-    entityType: row.entity_type as SearchableEntityId,
-    entityId: row.entity_id,
-    name: row.name,
-    entity,
-    href: entity.detailHref(row.entity_id),
-    image: row.image ? `/${row.image}` : null,
-    snippet: row.snippet || null,
-    score: row.score ?? 0,
+function workerClient(): Worker {
+  if (!browser) throw new Error("Search runs only in the browser");
+  if (worker) return worker;
+  worker = new Worker(new URL("./search.worker.ts", import.meta.url), {
+    type: "module",
+  });
+  // The worker cannot resolve the hashed index URL itself; see
+  // src/lib/database-assets.ts. This message is queued before any search.
+  post({ kind: "configure", url: SEARCH_INDEX_URL }, worker);
+  worker.onmessage = (event: MessageEvent<SearchWorkerResponse>) => {
+    const response = event.data;
+    const request = pending.get(response.id);
+    if (!request) return;
+    pending.delete(response.id);
+    if (response.error) request.reject(new Error(response.error));
+    else request.resolve([...(response.results ?? [])]);
   };
+  worker.onerror = (event) => {
+    const error = new Error(event.message || "Search worker failed");
+    for (const request of pending.values()) request.reject(error);
+    pending.clear();
+  };
+  return worker;
 }
 
-async function fuzzyNames(
-  value: string,
-  limit: number,
-): Promise<SearchResult[]> {
-  const rows = await querySearch<SearchRow>(
-    "SELECT entity_type, entity_id, name, image FROM entities",
-  );
-  const queryValue = value.toLocaleLowerCase();
-  const threshold = Math.max(1, Math.floor(queryValue.length / 3));
-  return rows
-    .map((row) => ({
-      row,
-      distance: editDistance(queryValue, row.name.toLocaleLowerCase()),
-    }))
-    .filter(({ distance }) => distance <= threshold)
-    .sort(
-      (a, b) => a.distance - b.distance || a.row.name.localeCompare(b.row.name),
-    )
-    .slice(0, limit)
-    .map(({ row, distance }) => toResult({ ...row, score: distance }))
-    .filter((result): result is SearchResult => Boolean(result));
+/** Start loading the index without blocking the caller. */
+export function preloadSearchIndex(): void {
+  if (!browser) return;
+  post({ kind: "preload" }, workerClient());
 }
 
-/** Search every registered entity family using exact, prefix, FTS, then fuzzy tiers. */
-export async function searchEntities(
-  value: string,
-  limit = 20,
+/** Rank every document in the scope against the query text. */
+export function searchEntities(
+  text: string,
+  {
+    scope = "palette",
+    limit = 20,
+  }: { scope?: SearchScope; limit?: number } = {},
 ): Promise<SearchResult[]> {
-  const queryValue = value.trim();
-  if (queryValue.length < 2) return [];
-
-  const exact = await querySearch<SearchRow>(NAME_QUERY, [queryValue, limit]);
-  if (exact.length > 0) {
-    return exact
-      .map(toResult)
-      .filter((result): result is SearchResult => Boolean(result));
-  }
-
-  const prefix = await querySearch<SearchRow>(PREFIX_QUERY, [
-    queryValue,
-    limit,
-  ]);
-  if (prefix.length > 0) {
-    return prefix
-      .map(toResult)
-      .filter((result): result is SearchResult => Boolean(result));
-  }
-
-  const fullText = await querySearch<SearchRow>(FTS_QUERY, [
-    ftsPrefix(queryValue),
-    limit,
-  ]);
-  if (fullText.length > 0) {
-    return fullText
-      .map(toResult)
-      .filter((result): result is SearchResult => Boolean(result));
-  }
-
-  return fuzzyNames(queryValue, limit);
+  if (text.trim().length < 2) return Promise.resolve([]);
+  const client = workerClient();
+  const id = nextRequestId++;
+  return new Promise<SearchResult[]>((resolve, reject) => {
+    pending.set(id, { resolve, reject });
+    post({ kind: "search", id, text, scope, limit }, client);
+  });
 }

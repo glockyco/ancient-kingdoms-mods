@@ -6,6 +6,8 @@
     type MapSearchCategory,
     type MapSearchResult,
   } from "$lib/queries/map-search";
+  import { linkActiveDescendant } from "$lib/components/ui/command/link-active-descendant";
+  import { scrollSelectedIntoView } from "$lib/components/ui/command/scroll-selected-into-view";
   import SearchResultItem from "./SearchResultItem.svelte";
 
   interface Props {
@@ -88,82 +90,51 @@
     }
     return groups;
   }
-
-  // Workaround: bits-ui Command doesn't fully scroll selected items into view
-  // See: https://github.com/pacocoursey/cmdk/issues/321
-  function fixScrollIntoView(node: HTMLElement) {
-    function isFullyVisible(el: HTMLElement, container: HTMLElement): boolean {
-      const elRect = el.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      return (
-        elRect.top >= containerRect.top && elRect.bottom <= containerRect.bottom
-      );
-    }
-
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.attributeName !== "aria-selected") continue;
-        const target = mutation.target as HTMLElement;
-        if (target.getAttribute("aria-selected") !== "true") continue;
-
-        const list = node.querySelector("[data-slot='command-list']");
-        if (list && !isFullyVisible(target, list as HTMLElement)) {
-          target.scrollIntoView({ block: "nearest" });
-        }
-      }
-    });
-
-    observer.observe(node, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["aria-selected"],
-    });
-
-    return { destroy: () => observer.disconnect() };
-  }
 </script>
 
 {#snippet searchContent()}
-  <Command.Input
-    bind:value={query}
-    placeholder="Search monsters, NPCs, zones..."
-    autofocus
-  />
-  <div use:fixScrollIntoView>
-    <Command.List>
-      {#if loading}
-        <Command.Loading>
-          <div class="py-6 text-center text-sm text-muted-foreground">
-            Searching...
-          </div>
-        </Command.Loading>
-      {:else if query.length < 2}
-        <Command.Empty>
-          <div class="py-6 text-center text-sm text-muted-foreground">
-            Type at least 2 characters to search
-          </div>
-        </Command.Empty>
-      {:else if results.length === 0}
-        <Command.Empty>
-          <div class="py-6 text-center text-sm text-muted-foreground">
-            No results found for "{query}"
-          </div>
-        </Command.Empty>
-      {:else}
-        {#each groupByCategory(results) as [category, items] (category)}
-          <Command.Group heading={categoryLabels[category]}>
-            {#each items as result (result.id)}
-              <Command.Item
-                value={`${result.category}-${result.id}-${result.name}`}
-                onSelect={() => handleSelect(result)}
-              >
-                <SearchResultItem {result} />
-              </Command.Item>
-            {/each}
-          </Command.Group>
-        {/each}
-      {/if}
-    </Command.List>
+  <div class="contents" use:linkActiveDescendant>
+    <Command.Input
+      bind:value={query}
+      placeholder="Search monsters, NPCs, zones..."
+      autofocus
+    />
+    <div use:scrollSelectedIntoView>
+      <Command.List>
+        {#if loading}
+          <Command.Loading>
+            <div class="py-6 text-center text-sm text-muted-foreground">
+              Searching...
+            </div>
+          </Command.Loading>
+        {:else if query.length < 2}
+          <Command.Empty>
+            <div class="py-6 text-center text-sm text-muted-foreground">
+              Type at least 2 characters to search
+            </div>
+          </Command.Empty>
+        {:else if results.length === 0}
+          <Command.Empty>
+            <div class="py-6 text-center text-sm text-muted-foreground">
+              No results found for "{query}"
+            </div>
+          </Command.Empty>
+        {:else}
+          {#each groupByCategory(results) as [category, items] (category)}
+            <Command.Group heading={categoryLabels[category]}>
+              {#each items as result (result.id)}
+                <Command.Item
+                  value={`${result.category}-${result.id}-${result.name}`}
+                  onSelect={() => handleSelect(result)}
+                >
+                  <SearchResultItem {result} />
+                </Command.Item>
+              {/each}
+            </Command.Group>
+          {/each}
+        {/if}
+      </Command.List>
+    </div>
   </div>
 {/snippet}
 

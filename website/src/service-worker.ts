@@ -8,19 +8,19 @@ import { build, version } from "$service-worker";
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 /**
- * The database URLs are content-hashed, so the cache does not need the build
+ * The database and search index URLs are content-hashed, so the cache does not need the build
  * version in its name. A deploy that leaves the game data untouched now keeps
  * the cached copy instead of downloading 19 MB again. Stale entries are
  * dropped on activate by comparing against the current URLs.
  *
  * The URLs are read from the build manifest rather than imported. Importing
- * the assets here would emit a second copy of each database under a different
+ * the assets here would emit a second copy of each file under a different
  * hashed name, and this worker would then cache a URL the page never requests.
  * src/lib/database-assets.ts owns the only import.
  */
 const DB_CACHE_NAME = "db-cache";
 const DB_URLS = build.filter((url) =>
-  /\/(compendium|search)\.db[.-][\w-]+\.gz$/.test(url),
+  /\/(compendium\.db|search-index\.json)[.-][\w-]+\.gz$/.test(url),
 );
 
 // Tile URLs are not content-hashed, so this cache is still keyed by build.

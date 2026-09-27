@@ -1,4 +1,4 @@
-"""Generate search keywords for FTS5 indexing.
+"""Generate search keywords for the website search index.
 
 Keywords allow searching by entity type/category, not just name.
 For example, searching "boss" finds all boss monsters, "bank" finds banker NPCs.

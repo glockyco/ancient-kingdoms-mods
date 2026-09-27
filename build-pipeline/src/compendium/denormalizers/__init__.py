@@ -126,7 +126,7 @@ def run_all(conn: sqlite3.Connection) -> verify.Subject:
     # Quest denormalizations (tooltips)
     quests.run_tooltips(conn)
 
-    # Search keywords for FTS5 indexing
+    # Search keywords, read by the website search index
     search.run_all(conn)
 
     return verify.Subject(

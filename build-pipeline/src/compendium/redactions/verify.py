@@ -114,7 +114,7 @@ def _tables(conn: sqlite3.Connection) -> list[str]:
         row[0]
         for row in conn.execute(
             "SELECT name FROM sqlite_master WHERE type = 'table' "
-            "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '%_fts%'"
+            "AND name NOT LIKE 'sqlite_%'"
         )
     )
 

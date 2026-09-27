@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Compress the generated databases for delivery to the browser.
+ * Compress the generated databases and the search index for delivery to the
+ * browser.
  *
  * Cloudflare does not compress these files on the fly. It picks compressible
  * responses by content type, and a SQLite file has no compressible type, so
@@ -9,10 +10,10 @@
  * HTTP range requests are not an option here, because the Cloudflare asset
  * layer answers a Range header with the complete body.
  *
- * The `.gz` files are imported by src/lib/db.worker.ts through Vite, which
+ * The `.gz` files are imported by src/lib/database-assets.ts through Vite, which
  * gives them a content-hashed name under /_app/immutable/. That is what makes
  * them safe to cache forever, and what makes a rebuilt database invalidate
- * itself. The worker inflates the bytes with DecompressionStream.
+ * itself. The client inflates the bytes with DecompressionStream.
  *
  * Output must stay byte-stable for identical input, otherwise every build
  * changes the content hash and forces every visitor to download again.
@@ -29,7 +30,7 @@ import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
 
 const root = resolve(import.meta.dirname, "..");
-const DATABASES = ["compendium.db", "search.db"];
+const DATABASES = ["compendium.db", "search-index.json"];
 
 for (const name of DATABASES) {
   const source = resolve(root, "data", name);

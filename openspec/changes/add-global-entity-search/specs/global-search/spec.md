@@ -21,7 +21,7 @@ The site SHALL provide one search palette on every page. Cmd-K on macOS and Ctrl
 #### Scenario: JavaScript is not available
 
 - **WHEN** a page renders without JavaScript
-- **THEN** the page shows no search control that does nothing, and the space for the home page field stays reserved
+- **THEN** the page shows no search control, because a search control without JavaScript does nothing
 
 ### Requirement: The palette is operable with the keyboard and a screen reader
 

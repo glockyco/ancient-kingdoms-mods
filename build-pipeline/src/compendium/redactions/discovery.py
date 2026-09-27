@@ -115,8 +115,7 @@ class ForeignKey:
 def tables(conn: sqlite3.Connection) -> list[str]:
     rows = conn.execute(
         "SELECT name FROM sqlite_master WHERE type = 'table' "
-        "AND name NOT LIKE 'sqlite!_%' ESCAPE '!' "
-        "AND name NOT LIKE '%!_fts%' ESCAPE '!' ORDER BY name"
+        "AND name NOT LIKE 'sqlite!_%' ESCAPE '!' ORDER BY name"
     )
     return [row[0] for row in rows]
 

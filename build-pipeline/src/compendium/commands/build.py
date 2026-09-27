@@ -181,29 +181,6 @@ def run(config: dict) -> None:
             f"{planner_payload.compressed_size:,} compressed bytes)"
         )
 
-        # Optimize FTS5 indexes (merges segments, reduces size)
-        console.print("\nOptimizing database...")
-        cursor = conn.cursor()
-        fts_tables = [
-            "items_fts",
-            "monsters_fts",
-            "npcs_fts",
-            "quests_fts",
-            "zones_fts",
-            "gathering_resources_fts",
-            "chests_fts",
-            "traps_fts",
-            "houses_fts",
-            "altars_fts",
-            "portals_fts",
-            "crafting_stations_fts",
-            "alchemy_tables_fts",
-            "scribing_tables_fts",
-        ]
-        for table in fts_tables:
-            cursor.execute(f"INSERT INTO {table}({table}) VALUES ('optimize')")
-        console.print(f"  [green]OK[/green] Optimized {len(fts_tables)} FTS5 indexes")
-
         conn.commit()
         console.print(
             f"\n[bold green]OK Database built successfully:[/bold green] {db_path}"

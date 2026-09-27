@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { dev } from "$app/environment";
   import Seo from "$lib/components/Seo.svelte";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import SupportButton from "$lib/components/SupportButton.svelte";
@@ -243,9 +242,7 @@
         Fan-made wiki, world map, and searchable game database
       </p>
       <GameVersionBanner live={data.live} checkedAt={data.checkedAt} />
-      {#if dev}
-        <HomeSearch />
-      {/if}
+      <HomeSearch />
     </div>
 
     <!-- Flagship: interactive world map -->
