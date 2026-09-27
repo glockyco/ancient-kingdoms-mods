@@ -6,7 +6,6 @@ import {
 import { error } from "@sveltejs/kit";
 import {
   petDescription,
-  petRolePhrase,
   type PetDescriptionInput,
 } from "$lib/server/meta-description";
 import { getMercenaryLinks } from "$lib/queries/mercenaries.server";
@@ -26,8 +25,6 @@ export interface PetPageData {
 export interface MercenaryPageData {
   pet: MercenaryDetailView;
   description: string;
-  /** One sentence about what the mercenary does, shown below the title. */
-  role: string;
   /** Every mercenary, for the navigation between the mercenary pages. */
   links: MercenaryLink[];
 }
@@ -80,7 +77,6 @@ export function loadMercenaryPage(id: string): MercenaryPageData {
   return {
     pet: getMercenaryDetail(pet),
     description: petDescription(input),
-    role: petRolePhrase(input),
     links: getMercenaryLinks(),
   };
 }

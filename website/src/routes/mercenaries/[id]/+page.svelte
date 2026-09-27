@@ -7,6 +7,5 @@
 <MercenaryDetail
   pet={data.pet}
   description={data.description}
-  role={data.role}
   links={data.links}
 />

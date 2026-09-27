@@ -46,12 +46,10 @@
   let {
     pet,
     description,
-    role,
     links,
   }: {
     pet: MercenaryDetailView;
     description: string;
-    role: string;
     links: MercenaryLink[];
   } = $props();
 
@@ -236,7 +234,6 @@
         >Mercenary</span
       >
     </div>
-    <p class="text-muted-foreground">{role}</p>
     <dl class="flex flex-wrap gap-x-6 gap-y-1 text-sm">
       <div class="flex gap-1.5">
         <dt class="text-muted-foreground">Class</dt>
