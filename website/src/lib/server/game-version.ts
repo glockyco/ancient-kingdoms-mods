@@ -24,6 +24,8 @@ const STEAM_NEWS_RSS_URL =
 export async function fetchGameVersion(): Promise<GameVersionResult> {
   try {
     const upstream = await fetch(STEAM_NEWS_RSS_URL, {
+      // Five seconds limits a stalled Steam request without holding the Worker's home-page response.
+      signal: AbortSignal.timeout(5_000),
       // @ts-expect-error - `cf` is a Cloudflare Workers extension to RequestInit;
       // DOM fetch (svelte-check tsconfig) does not know about it, but Node's fetch
       // (Vite dev) silently ignores unknown init fields.
