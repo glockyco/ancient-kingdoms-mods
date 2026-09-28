@@ -746,39 +746,14 @@
       }
 
       try {
-        // Dynamic imports for deck.gl (only load once)
+        // Load deck.gl only when the map initializes.
         if (!deckModules) {
-          const [deckCore, deckLayers, deckGeoLayers, deckExtensions, atlas] =
-            await Promise.all([
-              import("@deck.gl/core"),
-              import("@deck.gl/layers"),
-              import("@deck.gl/geo-layers"),
-              import("@deck.gl/extensions"),
-              createIconAtlas(),
-            ]);
+          const [modules, atlas] = await Promise.all([
+            import("$lib/map/deck-layers"),
+            createIconAtlas(),
+          ]);
 
-          const { Deck, OrthographicView } = deckCore;
-          const {
-            ScatterplotLayer,
-            IconLayer,
-            PolygonLayer,
-            LineLayer,
-            BitmapLayer,
-          } = deckLayers;
-          const { TileLayer } = deckGeoLayers;
-          const { DataFilterExtension } = deckExtensions;
-
-          deckModules = {
-            Deck,
-            OrthographicView,
-            ScatterplotLayer,
-            IconLayer,
-            PolygonLayer,
-            LineLayer,
-            TileLayer,
-            BitmapLayer,
-            DataFilterExtension,
-          };
+          deckModules = modules;
           iconAtlas = atlas;
         }
 
