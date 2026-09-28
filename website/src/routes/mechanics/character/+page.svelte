@@ -112,7 +112,7 @@
                 >
               </td>
             </tr>
-            <!-- Source: server-scripts/Wisdom.cs:27-35,102-113,136-170 — WIS improves healing and selected protective buffs, not the mana pool or recovery. -->
+            <!-- Source: server-scripts/Wisdom.cs:27-35,102-113; Buff.cs:47-60,113-150; TargetBuffSkill.cs:432-435; AreaBuffSkill.cs:42-46 — Wisdom raises direct healing and the stated protective buff amounts, not mana capacity or recovery. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Wisdom</th>
               <td class="p-2">
@@ -121,8 +121,17 @@
                   Rangers, with a +500% cap.</span
                 >
                 <span class="block"
-                  >Wisdom increases the maximum health, Defense, Magic Resist,
-                  and ward capacity granted by protective buffs.</span
+                  >Each Wisdom point adds +2 maximum health to buffs that grant
+                  maximum health, and +2 ward capacity to ward buffs.</span
+                >
+                <span class="block"
+                  >Defense and Magic Resist buffs each gain round(Wisdom ×
+                  0.15).</span
+                >
+                <span class="block"
+                  ><MechanicsLink section="combat#buffs"
+                    >See the buff scaling rates</MechanicsLink
+                  > for other resistances and effects.</span
                 >
                 <span class="block"
                   >Wisdom adds neither maximum mana nor mana recovery.</span

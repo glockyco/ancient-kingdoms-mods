@@ -335,106 +335,6 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">Adventurers' Guild Assignments</h2>
-
-    <div class="mt-4 divide-y">
-      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">1</div>
-        <div>
-          <div>
-            Visit any
-            <a
-              href="#adventurer-taskgivers"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >Adventurer Taskgiver</a
-            > to accept an Adventurer quest.
-          </div>
-          <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Every taskgiver offers quests from the same pool, so NPC choice does
-            not change which quests are available at your character's level.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">2</div>
-        <div>
-          <div>
-            The shared Adventurer
-            <a
-              href="#adventurer-quests"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >quest queue</a
-            >
-            resets daily.
-          </div>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A new quest queue begins at {queueResetTime} each day.
-            {#if mounted}
-              Next reset: {timeUntilReset}, at {localResetTime}.
-            {/if}
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">3</div>
-        <div>
-          <div>
-            <!-- Source: server-scripts/PlayerQuests.cs:50-51,227,445-446 — completed adventurer quests use DateTime.UtcNow ticks and remain completed for 24 hours. -->
-            After you complete an Adventurer quest, it stays on a 24-hour cooldown
-            for your character.
-          </div>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Utils.cs:601-606 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
-            The taskgiver offers the first quest in today's queue that meets both
-            requirements:
-          </p>
-          <ul
-            class="mt-1 list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground"
-          >
-            <li>
-              Its recommended level is at or below your character's level.
-            </li>
-            <li>Your character has not completed it in the last 24 hours.</li>
-          </ul>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Completing a quest starts its 24-hour cooldown. The taskgiver then
-            offers the next quest in today's queue that meets both requirements.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">4</div>
-        <div>
-          <div>
-            Adventurer
-            <a
-              href="#adventurer-vendor-unlocks"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >vendor purchases</a
-            >
-            unlock by Adventuring percentage.
-          </div>
-          <p
-            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
-          >
-            <span>Max Level: {data.profession.max_level}%</span>
-            {#if data.profession.achievement_id}
-              <AchievementLink
-                achievementId={data.profession.achievement_id}
-                achievementName={data.profession.achievement_name}
-              />
-            {/if}
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section id="adventurer-quests" class="space-y-4">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -672,6 +572,7 @@
                   itemId={unlock.item_id}
                   itemName={unlock.item_name}
                   tooltipHtml={unlock.tooltip_html}
+                  imageAvailable={unlock.visual_public_path}
                 />
                 {#if !sellerLabel(unlock.sold_by.length)}
                   <div class="mt-1 text-sm text-muted-foreground">
@@ -785,6 +686,27 @@
           {/each}
         </div>
       </div>
+    {/if}
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">Adventurers' Guild Assignments</h2>
+    <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — every taskgiver uses the shared npcAdventurerReference quest list. -->
+    <p class="text-muted-foreground">
+      Every taskgiver offers quests from the same queue. Changing NPCs does not
+      change today's available quests.
+    </p>
+    <!-- Source: server-scripts/Utils.cs:601-610; server-scripts/PlayerQuests.cs:50-51,227,445-446 — the first level-eligible quest not completed in the past 24 hours is offered. -->
+    <p class="text-muted-foreground">
+      The taskgiver offers the first quest at or below your character's level
+      that your character has not completed in the last 24 hours. Completing it
+      starts its 24-hour cooldown and advances the queue.
+    </p>
+    {#if data.profession.achievement_id}
+      <AchievementLink
+        achievementId={data.profession.achievement_id}
+        achievementName={data.profession.achievement_name}
+      />
     {/if}
   </section>
 </div>

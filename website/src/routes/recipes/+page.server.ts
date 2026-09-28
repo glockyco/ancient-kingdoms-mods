@@ -16,7 +16,6 @@ interface RawRecipe {
   result_visual_public_path: string | null;
   result_quality: number;
   result_amount: number;
-  materials: string;
   type: "Alchemy" | "Cooking" | "Crafting" | "Scribing";
   tier: number;
 }
@@ -36,7 +35,6 @@ export const load: PageServerLoad = (): RecipesPageData => {
           va.public_path as result_visual_public_path,
           i.quality as result_quality,
           1 as result_amount,
-          ar.materials,
           'Alchemy' as type,
           ar.level_required as tier
         FROM alchemy_recipes ar
@@ -54,7 +52,6 @@ export const load: PageServerLoad = (): RecipesPageData => {
           va.public_path as result_visual_public_path,
           i.quality as result_quality,
           cr.result_amount,
-          cr.materials,
           CASE WHEN cr.station_type = 'cooking' THEN 'Cooking' ELSE 'Crafting' END as type,
           i.quality as tier
         FROM crafting_recipes cr
@@ -72,7 +69,6 @@ export const load: PageServerLoad = (): RecipesPageData => {
           va.public_path as result_visual_public_path,
           i.quality as result_quality,
           1 as result_amount,
-          sr.materials,
           'Scribing' as type,
           sr.level_required as tier
         FROM scribing_recipes sr
@@ -93,21 +89,25 @@ export const load: PageServerLoad = (): RecipesPageData => {
     )
     .all() as RawRecipe[];
 
-  const itemVisualRows = db
+  const ingredientRows = db
     .prepare(
-      `SELECT entity_id, public_path
-       FROM visual_assets
-       WHERE domain = 'item' AND kind = 'icon'`,
+      `SELECT u.recipe_id, u.item_id, i.name AS item_name, u.amount,
+            va.public_path AS visual_public_path
+     FROM item_usages_recipe u
+     JOIN items i ON i.id = u.item_id
+     LEFT JOIN visual_assets va
+       ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+     ORDER BY u.recipe_id, i.name COLLATE BINARY, i.id, u.id`,
     )
-    .all() as Array<{ entity_id: string; public_path: string | null }>;
-  const itemVisuals = new Map(
-    itemVisualRows.map((row) => [row.entity_id, row.public_path] as const),
-  );
-
+    .all() as Array<RecipeIngredient & { recipe_id: string }>;
   db.close();
 
-  // Materials JSON is pre-enriched with item_name by the build pipeline.
-  // Artwork is joined by item ID from the canonical visual_assets table.
+  const ingredientsByRecipe = new Map<string, RecipeIngredient[]>();
+  for (const { recipe_id, ...ingredient } of ingredientRows) {
+    const ingredients = ingredientsByRecipe.get(recipe_id);
+    if (ingredients) ingredients.push(ingredient);
+    else ingredientsByRecipe.set(recipe_id, [ingredient]);
+  }
   const recipes: RecipeListView[] = rawRecipes.map((raw) => ({
     id: raw.id,
     result_item_id: raw.result_item_id,
@@ -115,16 +115,7 @@ export const load: PageServerLoad = (): RecipesPageData => {
     result_visual_public_path: raw.result_visual_public_path,
     result_quality: raw.result_quality,
     result_amount: raw.result_amount,
-    ingredients: raw.materials
-      ? (
-          JSON.parse(raw.materials) as Array<
-            Omit<RecipeIngredient, "visual_public_path">
-          >
-        ).map((ingredient) => ({
-          ...ingredient,
-          visual_public_path: itemVisuals.get(ingredient.item_id) ?? null,
-        }))
-      : [],
+    ingredients: ingredientsByRecipe.get(raw.id) ?? [],
     type: raw.type,
     tier: raw.tier,
   }));

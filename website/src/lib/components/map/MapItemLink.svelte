@@ -9,11 +9,13 @@
   import * as HoverCard from "$lib/components/ui/hover-card";
   import { buildEntityUrl } from "$lib/map/url-state";
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
+  import { entityImageUrl } from "$lib/utils/entityImage";
 
   interface Props {
     itemId: string;
     itemName: string;
     tooltipHtml?: string | null;
+    imageAvailable?: string | boolean | null;
     class?: string;
     colorClass?: string;
     onSelect: (itemId: string) => void;
@@ -23,6 +25,7 @@
     itemId,
     itemName,
     tooltipHtml = null,
+    imageAvailable,
     class: className,
     colorClass,
     onSelect,
@@ -34,6 +37,14 @@
   const showTooltip = $derived(
     tooltipHtml && browser && !isSmallScreen.current,
   );
+  const tooltipVisualAsset = $derived.by(() => {
+    if (tooltipHtml && imageAvailable === undefined) {
+      throw new Error(`Missing icon availability for item ${itemId}`);
+    }
+    return imageAvailable
+      ? { public_path: entityImageUrl("item", itemId, "icon").slice(1) }
+      : null;
+  });
 
   const effectiveColorClass = $derived(
     colorClass ?? "text-blue-600 dark:text-blue-400",
@@ -84,7 +95,7 @@
         side="right"
         collisionPadding={16}
       >
-        <ItemTooltip {itemId} {tooltipHtml} />
+        <ItemTooltip {tooltipHtml} visualAsset={tooltipVisualAsset} />
       </HoverCard.Content>
     </HoverCard.Root>
   {:else}

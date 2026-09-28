@@ -3,6 +3,7 @@ import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 
 export const prerender = true;
 
@@ -78,6 +79,7 @@ interface AlchemyPageData {
   recipes: AlchemyRecipe[];
   locations: StationLocation[];
   quests: AlchemyQuest[];
+  itemIconPaths: Record<string, string | null>;
   recipeCounts: TierCount[];
   xpByTier: TierXp[];
 }
@@ -331,7 +333,23 @@ export const load: PageServerLoad = (): AlchemyPageData => {
     )
     .all() as TierXp[];
 
+  const itemIconPaths = getItemIconPaths(
+    db,
+    quests.flatMap((quest) => [
+      ...quest.objective_items.map((item) => item.item_id),
+      ...quest.reward_items.map((item) => item.item_id),
+      ...(quest.potion_to_brew ? [quest.potion_to_brew.item_id] : []),
+    ]),
+  );
   db.close();
 
-  return { profession, recipes, locations, quests, recipeCounts, xpByTier };
+  return {
+    profession,
+    recipes,
+    locations,
+    quests,
+    itemIconPaths,
+    recipeCounts,
+    xpByTier,
+  };
 };

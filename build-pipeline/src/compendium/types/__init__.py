@@ -3,11 +3,9 @@
 from compendium.types.denormalized import (
     ChestSourceInfo,
     GrantedByItemInfo,
-    MaterialInfo,
 )
 
 __all__ = [
     "ChestSourceInfo",
     "GrantedByItemInfo",
-    "MaterialInfo",
 ]

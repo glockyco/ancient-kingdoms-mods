@@ -11,6 +11,7 @@
   import { cn } from "$lib/utils.js";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
+  import { entityImageUrl } from "$lib/utils/entityImage";
 
   interface Props {
     itemId: string;
@@ -49,6 +50,18 @@
   const showTooltip = $derived(
     tooltipHtml && browser && !isSmallScreen.current,
   );
+  const tooltipVisualAsset = $derived.by(() => {
+    if (tooltipHtml && imageAvailable === undefined) {
+      throw new Error(`Missing icon availability for item ${itemId}`);
+    }
+    return imageAvailable
+      ? {
+          public_path: entityImageUrl("item", itemId, "icon").slice(1),
+          width: imageWidth ?? undefined,
+          height: imageHeight ?? undefined,
+        }
+      : null;
+  });
 
   const effectiveColorClass = $derived(
     colorClass ?? "text-blue-600 dark:text-blue-400",
@@ -110,7 +123,7 @@
         side="right"
         collisionPadding={16}
       >
-        <ItemTooltip {itemId} {tooltipHtml} />
+        <ItemTooltip {tooltipHtml} visualAsset={tooltipVisualAsset} />
       </HoverCard.Content>
     </HoverCard.Root>
   {:else}

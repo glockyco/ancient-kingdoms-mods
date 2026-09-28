@@ -7,6 +7,7 @@
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import {
     loadItemPopupDetails,
+    loadMapItemIconPaths,
     type ItemPopupDetails,
   } from "$lib/queries/popup";
   import { getQualityTextColorClass, formatPercent } from "$lib/utils/format";
@@ -87,18 +88,29 @@
   let details = $state<ItemPopupDetails | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let itemIconPaths = $state<Record<string, string | null> | null>(null);
 
   $effect(() => {
     isLoading = true;
     error = null;
     details = null;
+    itemIconPaths = null;
 
     loadItemPopupDetails(itemId)
-      .then((d) => {
+      .then(async (d) => {
+        const paths = await loadMapItemIconPaths(
+          d
+            ? [
+                ...d.treasureMapSources.map((source) => source.mapItemId),
+                ...(d.treasureDestination?.rewardItemId
+                  ? [d.treasureDestination.rewardItemId]
+                  : []),
+              ]
+            : [],
+        );
+        itemIconPaths = paths;
         details = d;
-        if (!d) {
-          error = "Item not found";
-        }
+        if (!d) error = "Item not found";
       })
       .catch((e) => {
         error = e instanceof Error ? e.message : "Failed to load item";
@@ -455,6 +467,7 @@
                 itemId={source.mapItemId}
                 itemName={source.mapItemName}
                 tooltipHtml={source.mapItemTooltipHtml}
+                imageAvailable={itemIconPaths?.[source.mapItemId]}
                 onSelect={onSelectItem}
               />
               <span class="shrink-0 text-xs text-muted-foreground">
@@ -488,6 +501,7 @@
             itemId={dest.rewardItemId}
             itemName={dest.rewardItemName}
             tooltipHtml={dest.rewardItemTooltipHtml}
+            imageAvailable={itemIconPaths?.[dest.rewardItemId]}
             onSelect={onSelectItem}
           />
         </div>
@@ -510,7 +524,10 @@
           ? "border-t pt-2"
           : ""}
       >
-        <ItemTooltip itemId={details.id} tooltipHtml={details.tooltipHtml} />
+        <ItemTooltip
+          tooltipHtml={details.tooltipHtml}
+          visualAsset={details.visualAsset}
+        />
       </div>
     {/if}
   </PopupCard>

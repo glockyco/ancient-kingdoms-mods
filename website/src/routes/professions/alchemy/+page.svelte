@@ -165,27 +165,82 @@
     </div>
   </div>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
-    <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — a known recipe cannot be learned again; learning consumes one recipe item. -->
-    <p class="text-muted-foreground">
-      <span class="block"
-        >Learning a new potion recipe consumes one recipe item.</span
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
+      Calculator
+    </h2>
+    <div
+      class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
+    >
+      <div class="flex items-center gap-3">
+        <label for="skill-slider" class="shrink-0">Alchemy Skill:</label>
+        <input
+          id="skill-slider"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={skillLevel}
+          class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+        />
+        <span class="font-mono w-12">{skillLevel}%</span>
+      </div>
+      <div class="flex items-center gap-2 text-muted-foreground">
+        <span>Skill gain chance:</span>
+        <span class="font-mono text-foreground"
+          >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
+        >
+        <span class="text-xs">(per success)</span>
+      </div>
+    </div>
+    <div class="rounded-lg border overflow-x-auto">
+      <div
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: repeat(5, 1fr);"
       >
-      <span class="block"
-        >A recipe you already know cannot be learned again.</span
-      >
-    </p>
-    <!-- Source: server-scripts/Player.cs:13206-13217,13230-13250 — brewing requires the learned recipe and output space, then consumes ingredients before the roll. -->
-    <p class="text-muted-foreground">
-      <span class="block"
-        >Brewing requires a learned recipe and room for the potion.</span
-      >
-      <span class="block"
-        >You spend ingredients before you know whether the brew succeeds.</span
-      >
-      <span class="block">A failed brew does not return them.</span>
-    </p>
+        <div class="bg-muted/50 p-3 font-medium">Tier</div>
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
+        {#each [0, 1, 2, 3, 4] as tier (tier)}
+          {@const successChance = alchemySuccessPercent(tier, skillLevel)}
+          {@const skillGain = alchemySkillGainRange(tier, skillLevel)}
+          {@const recipeCount = recipeCountMap.get(tier) ?? 0}
+          {@const xp = xpByTierMap.get(tier)}
+          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
+          <div class="p-3 border-t">
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
+          </div>
+          <div class="p-3 border-t">
+            {#if skillGain}
+              <span class="font-mono"
+                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">
+            {#if xp}
+              <MechanicsLink section="experience"
+                >{xp.toLocaleString()}</MechanicsLink
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">{recipeCount}</div>
+        {/each}
+      </div>
+    </div>
   </section>
 
   <!-- Station Locations -->
@@ -279,6 +334,7 @@
                             itemId={item.item_id}
                             itemName={item.item_name}
                             tooltipHtml={item.tooltip_html}
+                            imageAvailable={data.itemIconPaths[item.item_id]}
                           />
                           <span class="text-muted-foreground"
                             >×{item.amount}</span
@@ -292,6 +348,9 @@
                         itemId={quest.potion_to_brew.item_id}
                         itemName={quest.potion_to_brew.item_name}
                         tooltipHtml={quest.potion_to_brew.tooltip_html}
+                        imageAvailable={data.itemIconPaths[
+                          quest.potion_to_brew.item_id
+                        ]}
                       />
                       <span class="text-muted-foreground"
                         >×{quest.potion_to_brew.amount}</span
@@ -320,6 +379,7 @@
                         itemId={item.item_id}
                         itemName={item.item_name}
                         tooltipHtml={item.tooltip_html}
+                        imageAvailable={data.itemIconPaths[item.item_id]}
                       />
                     {/each}
                     {#if quest.reward_alchemy_skill > 0}
@@ -341,85 +401,6 @@
       </div>
     </section>
   {/if}
-
-  <!-- Calculator -->
-  <section class="space-y-4">
-    <h2 class="text-xl font-semibold flex items-center gap-2">
-      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
-      Calculator
-    </h2>
-    <div
-      class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
-    >
-      <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Alchemy Skill:</label>
-        <input
-          id="skill-slider"
-          type="range"
-          min="0"
-          max="100"
-          step="1"
-          bind:value={skillLevel}
-          class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-        />
-        <span class="font-mono w-12">{skillLevel}%</span>
-      </div>
-      <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Skill gain chance:</span>
-        <span class="font-mono text-foreground"
-          >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
-        >
-        <span class="text-xs">(per success)</span>
-      </div>
-    </div>
-    <div class="rounded-lg border overflow-x-auto">
-      <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(5, 1fr);"
-      >
-        <div class="bg-muted/50 p-3 font-medium">Tier</div>
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
-        {#each [0, 1, 2, 3, 4] as tier (tier)}
-          {@const successChance = alchemySuccessPercent(tier, skillLevel)}
-          {@const skillGain = alchemySkillGainRange(tier, skillLevel)}
-          {@const recipeCount = recipeCountMap.get(tier) ?? 0}
-          {@const xp = xpByTierMap.get(tier)}
-          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
-          <div class="p-3 border-t">
-            {#if successChance === 0}
-              <span class="text-muted-foreground">—</span>
-            {:else}
-              <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {successChance.toFixed(0)}%
-              </span>
-            {/if}
-          </div>
-          <div class="p-3 border-t">
-            {#if skillGain}
-              <span class="font-mono"
-                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">
-            {#if xp}
-              <MechanicsLink section="experience"
-                >{xp.toLocaleString()}</MechanicsLink
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">{recipeCount}</div>
-        {/each}
-      </div>
-    </div>
-  </section>
 
   <!-- Recipes Table -->
   <section class="space-y-4">
@@ -498,6 +479,7 @@
               itemId={recipe.result_item_id}
               itemName={recipe.result_item_name}
               tooltipHtml={recipe.result_tooltip_html}
+              imageAvailable={recipe.obtainabilityTree.visual_public_path}
             />
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
@@ -509,6 +491,7 @@
                       itemId={mat.item_id}
                       itemName={mat.item_name}
                       tooltipHtml={mat.tooltip_html}
+                      imageAvailable={mat.visual_public_path}
                     />
                     <span class="text-muted-foreground">×{mat.amount}</span>
                   </span>
@@ -558,5 +541,19 @@
         {/if}
       </div>
     </div>
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
+    <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — learning consumes one recipe item; known recipes cannot be learned again. -->
+    <p class="text-muted-foreground">
+      Learning a potion recipe consumes its recipe item. You cannot learn the
+      same recipe twice.
+    </p>
+    <!-- Source: server-scripts/Player.cs:13206-13217,13230-13250 — brewing checks the learned recipe and inventory space, then removes ingredients before the success roll. -->
+    <p class="text-muted-foreground">
+      Brewing needs a learned recipe and room for the potion. A failed brew
+      still consumes the ingredients.
+    </p>
   </section>
 </div>

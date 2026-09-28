@@ -1,4 +1,5 @@
 import { query, queryScalar } from "$lib/db";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import { fishOutcomeRangesForSpot } from "$lib/utils/fishing";
 import {
@@ -9,6 +10,34 @@ import {
   type FishingSpotRow,
   type FishingDropRateRow,
 } from "$lib/utils/fishing-source-ranges";
+
+const itemIconPathCache = new Map<string, string | null>();
+
+export async function loadMapItemIconPaths(
+  ids: Iterable<string>,
+): Promise<Record<string, string | null>> {
+  const uniqueIds = [...new Set(ids)];
+  const missingIds = uniqueIds.filter((id) => !itemIconPathCache.has(id));
+  if (missingIds.length > 0) {
+    const rows = await query<{ id: string; public_path: string | null }>(
+      `SELECT i.id, va.public_path
+       FROM items i
+       LEFT JOIN visual_assets va
+         ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+       WHERE i.id IN (SELECT value FROM json_each(?))`,
+      [JSON.stringify(missingIds)],
+    );
+    for (const row of rows) itemIconPathCache.set(row.id, row.public_path);
+    for (const id of missingIds) {
+      if (!itemIconPathCache.has(id)) {
+        throw new Error(`Missing item for icon availability: ${id}`);
+      }
+    }
+  }
+  return Object.fromEntries(
+    uniqueIds.map((id) => [id, itemIconPathCache.get(id)!]),
+  );
+}
 
 /**
  * Drop item for popup display
@@ -1104,6 +1133,10 @@ export interface ItemPopupDetails {
   name: string;
   quality: number;
   tooltipHtml: string | null;
+  visualAsset: Pick<
+    EntityVisualAsset,
+    "public_path" | "width" | "height"
+  > | null;
   droppers: ItemPopupDropper[];
   altarSources: ItemPopupAltarSource[];
   vendors: ItemPopupVendor[];
@@ -1123,6 +1156,9 @@ interface ItemPopupRow {
   name: string;
   quality: number;
   tooltip_html: string | null;
+  public_path: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 interface ItemDropperRow {
@@ -1173,14 +1209,29 @@ async function loadFishingRangeData(): Promise<FishingRangeData> {
 export async function loadItemPopupDetails(
   itemId: string,
 ): Promise<ItemPopupDetails | null> {
-  // Get item info
   const [item] = await query<ItemPopupRow>(
-    `SELECT id, name, quality, tooltip_html FROM items WHERE id = ?`,
+    `SELECT i.id, i.name, i.quality, i.tooltip_html,
+            va.public_path, va.width, va.height
+     FROM items i
+     LEFT JOIN visual_assets va
+       ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+     WHERE i.id = ?`,
     [itemId],
   );
 
   if (!item) {
     return null;
+  }
+  let visualAsset: ItemPopupDetails["visualAsset"] = null;
+  if (item.public_path !== null) {
+    if (item.width === null || item.height === null) {
+      throw new Error(`Missing icon dimensions for item ${item.id}`);
+    }
+    visualAsset = {
+      public_path: item.public_path,
+      width: item.width,
+      height: item.height,
+    };
   }
 
   // Get monsters that drop this item (excluding altar-only monsters)
@@ -1389,53 +1440,46 @@ export async function loadItemPopupDetails(
     [itemId],
   );
 
-  // Query crafting/alchemy sources from junction table with materials
-  const craftingSourcesRaw = await query<{
+  const craftingRows = await query<{
     recipeId: string;
     resultAmount: number;
-    materials: string;
+    materialId: string | null;
+    materialName: string | null;
+    amount: number | null;
   }>(
-    `
-    SELECT
-      isr.recipe_id as recipeId,
-      isr.result_amount as resultAmount,
-      CASE
-        WHEN isr.recipe_type = 'crafting' THEN (
-          SELECT cr.materials FROM crafting_recipes cr WHERE cr.id = isr.recipe_id
-        )
-        WHEN isr.recipe_type = 'alchemy' THEN (
-          SELECT ar.materials FROM alchemy_recipes ar WHERE ar.id = isr.recipe_id
-        )
-        WHEN isr.recipe_type = 'scribing' THEN (
-          SELECT sr.materials FROM scribing_recipes sr WHERE sr.id = isr.recipe_id
-        )
-      END as materials
-    FROM item_sources_recipe isr
-    WHERE isr.item_id = ?
-  `,
+    `SELECT isr.recipe_id AS recipeId, isr.result_amount AS resultAmount,
+            u.item_id AS materialId, i.name AS materialName, u.amount
+     FROM item_sources_recipe isr
+     LEFT JOIN item_usages_recipe u
+       ON u.recipe_id = isr.recipe_id AND u.recipe_type = isr.recipe_type
+     LEFT JOIN items i ON i.id = u.item_id
+     WHERE isr.item_id = ?
+     ORDER BY isr.recipe_id, i.name COLLATE BINARY, i.id, u.id`,
     [itemId],
   );
-
-  // Parse materials JSON and map from DB snake_case to camelCase
-  const craftingSources: ItemPopupCraftSource[] = craftingSourcesRaw.map(
-    (c) => ({
-      recipeId: c.recipeId,
-      resultAmount: c.resultAmount,
-      materials: c.materials
-        ? (
-            JSON.parse(c.materials) as Array<{
-              item_id: string;
-              item_name: string;
-              amount: number;
-            }>
-          ).map((m) => ({
-            itemId: m.item_id,
-            itemName: m.item_name,
-            amount: m.amount,
-          }))
-        : [],
-    }),
-  );
+  const craftingSources: ItemPopupCraftSource[] = [];
+  for (const row of craftingRows) {
+    let source = craftingSources[craftingSources.length - 1];
+    if (!source || source.recipeId !== row.recipeId) {
+      source = {
+        recipeId: row.recipeId,
+        resultAmount: row.resultAmount,
+        materials: [],
+      };
+      craftingSources.push(source);
+    }
+    if (
+      row.materialId !== null &&
+      row.materialName !== null &&
+      row.amount !== null
+    ) {
+      source.materials.push({
+        itemId: row.materialId,
+        itemName: row.materialName,
+        amount: row.amount,
+      });
+    }
+  }
 
   // Query merge sources from junction table
   const mergeSources = await query<ItemPopupMergeSource>(
@@ -1521,6 +1565,7 @@ export async function loadItemPopupDetails(
     name: item.name,
     quality: item.quality,
     tooltipHtml: item.tooltip_html,
+    visualAsset,
     droppers: droppers.map((d) => ({
       monsterId: d.monster_id,
       monsterName: d.monster_name,

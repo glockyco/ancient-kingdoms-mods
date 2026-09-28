@@ -1019,6 +1019,7 @@
               itemId={activeWeapon.id}
               itemName={activeWeapon.name}
               tooltipHtml={activeWeapon.tooltip_html || null}
+              imageAvailable={data.itemIconPaths[activeWeapon.id]}
               colorClass={getQualityTextColorClass(activeWeapon.quality)}
             />
           {/if}
@@ -1027,6 +1028,7 @@
               itemId={offWeapon.id}
               itemName={offWeapon.name}
               tooltipHtml={offWeapon.tooltip_html || null}
+              imageAvailable={data.itemIconPaths[offWeapon.id]}
               colorClass={getQualityTextColorClass(offWeapon.quality)}
             />
           {:else if attackMode === "bow_merc" && meleeWeapon}
@@ -1034,6 +1036,7 @@
               itemId={meleeWeapon.id}
               itemName={meleeWeapon.name}
               tooltipHtml={meleeWeapon.tooltip_html || null}
+              imageAvailable={data.itemIconPaths[meleeWeapon.id]}
               colorClass={getQualityTextColorClass(meleeWeapon.quality)}
             />
           {/if}

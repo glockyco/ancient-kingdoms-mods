@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import {
   getItemSourceSummaries,
   getMinimumSourceLevel,
@@ -82,6 +83,7 @@ interface MiningPageData {
   pickaxes: Pickaxe[];
   quests: OreQuest[];
   vendors: OreVendor[];
+  itemIconPaths: Record<string, string | null>;
   totalNodes: number;
 }
 
@@ -261,12 +263,17 @@ export const load: PageServerLoad = (): MiningPageData => {
     )
     .all() as OreVendor[];
 
+  const itemIconPaths = getItemIconPaths(db, [
+    ...pickaxes.map((pickaxe) => pickaxe.id),
+    ...ores.flatMap((ore) => ore.gems.map((gem) => gem.item_id)),
+  ]);
   db.close();
 
   return {
     profession,
     ores,
     pickaxes,
+    itemIconPaths,
     quests,
     vendors,
     totalNodes: ores.reduce((total, ore) => total + ore.node_count, 0),

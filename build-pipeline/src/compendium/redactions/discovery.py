@@ -74,7 +74,6 @@ ENTITY_JSON_CARRIERS: tuple[tuple[str, str, tuple[str, ...], str], ...] = (
     ("items", "augment_armor_set_members", ("item_id",), "items"),
     ("items", "augment_skill_bonuses", ("skill_id",), "skills"),
     ("items", "augment_skill_bonuses_with_names", ("skill_id",), "skills"),
-    ("items", "alchemy_recipe_materials", ("item_id",), "items"),
     ("monsters", "drops", ("item_id",), "items"),
     ("npcs", "quests_offered", ("id",), "quests"),
     ("npcs", "quests_completed_here", ("id",), "quests"),

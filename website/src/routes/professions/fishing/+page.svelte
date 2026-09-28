@@ -333,140 +333,6 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How Fishing works</h2>
-    <!-- Source: server-scripts/Utils.cs:567-576 — Fishing spot success chance per tier. -->
-    <!-- Source: server-scripts/GatherItem.cs:708-711 — < 0.2 spot success hard-blocks fishing. -->
-    <!-- Source: server-scripts/GatherItem.cs:706-728,730-741,743-760,762-778,780-797 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
-    <!-- Source: server-scripts/GatherItem.cs:717-735 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
-    <!-- Source: server-scripts/GatherItem.cs:806-837 — Fishing mastery gain and XP table. -->
-    <!-- Source: server-scripts/GatherItem.cs:1112-1118 — click-window length per tier. -->
-    <!-- Source: server-scripts/Player.cs:8600-8619 — auto-equips best rod and starts the cast with Random.Range(3, 8) second window delay. -->
-
-    <div class="mt-4 divide-y">
-      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">1</div>
-        <div>
-          <div>
-            Carry a <a
-              href="#fishing-rods"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >Fishing Rod</a
-            >.
-          </div>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            If you carry multiple rods, the game uses the highest-quality
-            Fishing Rod in your inventory.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">2</div>
-        <div>
-          <div>
-            Click a <a
-              href="#fishing-spots"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >Fishing Spot</a
-            >.
-          </div>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            You can fish at {data.stats.spot_count} spots across {spotTiers.length}
-            tiers, from Tier {toRomanNumeral(lowestSpotTier)} to Tier
-            {toRomanNumeral(highestSpotTier)}.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">3</div>
-        <div>
-          <div>Interact with the spot when the fish bites.</div>
-          <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must fall inside the tier's bite window. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <span class="block">
-              After the {castDelay.min}–{castDelay.max} second cast delay, interact
-              with the spot again.
-            </span>
-            <span class="block">
-              The response window lasts 2 seconds at Tier I, 1.5 at Tier II, 1
-              at Tier III, and 0.75 at Tier IV.
-            </span>
-            <span class="block">An early or late response fails.</span>
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">4</div>
-        <div>
-          <div>Wait for a bite.</div>
-          <!-- Source: server-scripts/GatherItem.cs:698-708 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Rod quality, Fishing skill, and spot tier decide whether the attempt
-            succeeds.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">5</div>
-        <div>
-          <div>Catch a fish, trash, or nothing.</div>
-          <!-- Source: server-scripts/GatherItem.cs:708-797 — after a bite, the spot's fish gets the first chance. On failure, lower-tier fish, trash, or escape can follow. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <span class="block">
-              When a fish bites, the game first tries to catch one of the fish
-              listed for that spot.
-            </span>
-            <span class="block">
-              If the first attempt does not catch a fish, higher-tier spots can
-              instead catch a random <a
-                href="#fishing-fallback-pools"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >fish from lower tiers</a
-              >.
-            </span>
-            <span class="block">
-              Tier II spots can catch Tier I fish, Tier III spots can catch Tier
-              I–II fish, and Tier IV spots can catch Tier I–III fish.
-            </span>
-          </p>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            If you catch no fish from the spot or a lower tier, you either catch
-            <a
-              href="#fishing-trash"
-              class="text-blue-600 hover:underline dark:text-blue-400">trash</a
-            > or the fish gets away.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">6</div>
-        <div>
-          <div>Gain experience and possibly Fishing skill.</div>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A bite gives experience based on the spot's tier and can improve
-            Fishing until you pass that tier's skill limit.
-          </p>
-          <p
-            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
-          >
-            <span>Max Level: {data.profession.max_level}%</span>
-            {#if data.profession.achievement_id}
-              <AchievementLink
-                achievementId={data.profession.achievement_id}
-                achievementName={data.profession.achievement_name}
-              />
-            {/if}
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section id="calculator" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
@@ -614,6 +480,7 @@
                   itemId={piece.item_id}
                   itemName={piece.item_name}
                   tooltipHtml={piece.tooltip_html}
+                  imageAvailable={data.itemIconPaths[piece.item_id]}
                   colorClass={getQualityTextColorClass(piece.quality)}
                 />
               </label>
@@ -721,6 +588,9 @@
                         itemId={row.itemId ?? ""}
                         itemName={row.label}
                         tooltipHtml={row.tooltipHtml}
+                        imageAvailable={row.itemId
+                          ? data.itemIconPaths[row.itemId]
+                          : null}
                         colorClass={getQualityTextColorClass(row.quality ?? 0)}
                       />
                     </td>
@@ -743,6 +613,7 @@
       </p>
     {/if}
   </section>
+
   <section id="fishing-rods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <h2 class="text-xl font-semibold">Fishing Rods ({data.rods.length})</h2>
@@ -765,6 +636,7 @@
                     itemId={rod.item_id}
                     itemName={rod.item_name}
                     tooltipHtml={rod.tooltip_html}
+                    imageAvailable={data.itemIconPaths[rod.item_id]}
                     colorClass={getQualityTextColorClass(rod.quality)}
                   />
                 </td>
@@ -862,6 +734,7 @@
                         itemId={drop.item_id}
                         itemName={drop.item_name}
                         tooltipHtml={drop.tooltip_html}
+                        imageAvailable={data.itemIconPaths[drop.item_id]}
                         colorClass={getQualityTextColorClass(drop.quality)}
                       />
                     {/each}
@@ -915,6 +788,7 @@
                 itemId={fish.itemId}
                 itemName={fish.itemName}
                 tooltipHtml={fish.tooltipHtml}
+                imageAvailable={data.itemIconPaths[fish.itemId]}
                 colorClass={getQualityTextColorClass(fish.quality)}
               />
             {/each}
@@ -947,6 +821,7 @@
                     itemId={item.item_id}
                     itemName={item.item_name}
                     tooltipHtml={item.tooltip_html}
+                    imageAvailable={data.itemIconPaths[item.item_id]}
                     colorClass={getQualityTextColorClass(item.quality)}
                   />
                 </td>
@@ -956,6 +831,44 @@
         </table>
       </div>
     </div>
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Fishing works</h2>
+    <!-- Source: server-scripts/Player.cs:9579-9585; server-scripts/PlayerInventory.cs:121-135 — an invalid rod selection falls back to the highest-quality rod in inventory. -->
+    <p class="text-muted-foreground">
+      Carry a
+      <a
+        href="#fishing-rods"
+        class="text-blue-600 hover:underline dark:text-blue-400">Fishing Rod</a
+      >. If no usable rod is selected, the game selects your highest-quality
+      rod.
+    </p>
+    <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must occur within 2, 1.5, 1, or 0.75 seconds for Tier I, II, III, or IV. -->
+    <p class="text-muted-foreground">
+      When the fish bites, interact again within 2 seconds at Tier I, 1.5 at
+      Tier II, 1 at Tier III, or 0.75 at Tier IV.
+    </p>
+    <!-- Source: server-scripts/GatherItem.cs:698-797 — after the spot success roll, a failed primary fish roll may yield a lower-tier fish, trash, or no catch. -->
+    <p class="text-muted-foreground">
+      A successful bite can yield a listed fish. If that catch fails,
+      higher-tier spots may give a
+      <a
+        href="#fishing-fallback-pools"
+        class="text-blue-600 hover:underline dark:text-blue-400"
+        >lower-tier fish</a
+      >,
+      <a
+        href="#fishing-trash"
+        class="text-blue-600 hover:underline dark:text-blue-400">trash</a
+      >, or nothing.
+    </p>
+    {#if data.profession.achievement_id}
+      <AchievementLink
+        achievementId={data.profession.achievement_id}
+        achievementName={data.profession.achievement_name}
+      />
+    {/if}
   </section>
 
   <section id="fish-foods" class="rounded-lg border p-5">
@@ -981,6 +894,7 @@
                     itemId={recipe.result_item_id}
                     itemName={recipe.result_item_name}
                     tooltipHtml={recipe.result_tooltip_html}
+                    imageAvailable={data.itemIconPaths[recipe.result_item_id]}
                     colorClass={getQualityTextColorClass(recipe.result_quality)}
                   />
                 </td>
@@ -1004,6 +918,9 @@
                           itemId={ingredient.item_id}
                           itemName={ingredient.item_name}
                           tooltipHtml={ingredient.tooltip_html}
+                          imageAvailable={data.itemIconPaths[
+                            ingredient.item_id
+                          ]}
                           colorClass={getQualityTextColorClass(
                             ingredient.quality,
                           )}
@@ -1051,6 +968,7 @@
                       itemId={recipe.result_item_id}
                       itemName={recipe.result_item_name}
                       tooltipHtml={recipe.result_tooltip_html}
+                      imageAvailable={data.itemIconPaths[recipe.result_item_id]}
                       colorClass={getQualityTextColorClass(
                         recipe.result_quality,
                       )}
@@ -1076,6 +994,9 @@
                             itemId={ingredient.item_id}
                             itemName={ingredient.item_name}
                             tooltipHtml={ingredient.tooltip_html}
+                            imageAvailable={data.itemIconPaths[
+                              ingredient.item_id
+                            ]}
                             colorClass={getQualityTextColorClass(
                               ingredient.quality,
                             )}

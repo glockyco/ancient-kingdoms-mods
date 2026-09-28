@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 
 export const prerender = true;
 
@@ -64,6 +65,7 @@ interface TreasureHunterPageData {
   buriedChestRewards: ChestRewardRow[];
   buriedChestRewardLimit: number;
   keyItems: Record<"random_map" | "buried_treasure_chest" | "shovel", KeyItem>;
+  itemIconPaths: Record<string, string | null>;
 }
 
 interface RawTreasureMap {
@@ -271,6 +273,11 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     shovel: keyItemsById.shovel!,
   };
 
+  const itemIconPaths = getItemIconPaths(db, [
+    ...requiredKeyItemIds,
+    ...treasureMaps.flatMap((map) => [map.id, map.reward_item_id]),
+    ...buriedChestRewards.map((reward) => reward.item_id),
+  ]);
   db.close();
 
   return {
@@ -280,5 +287,6 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     buriedChestRewards,
     buriedChestRewardLimit,
     keyItems,
+    itemIconPaths,
   };
 };

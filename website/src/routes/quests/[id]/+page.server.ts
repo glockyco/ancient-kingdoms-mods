@@ -20,6 +20,7 @@ import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import { questDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 
 export const prerender = true;
 
@@ -599,6 +600,15 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     objectives,
   );
 
+  const itemIconPaths = getItemIconPaths(db, [
+    ...rewards.items.map((item) => item.item_id),
+    ...gatherItems.map((item) => item.id),
+    ...gatherInventoryItems.map((item) => item.id),
+    ...requiredItems.map((item) => item.id),
+    ...equipItems.map((item) => item.id),
+    ...(potionItem ? [potionItem.id] : []),
+    ...(givenItemOnStart ? [givenItemOnStart.id] : []),
+  ]);
   db.close();
 
   return {
@@ -618,6 +628,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     equipItems,
     potionItem,
     givenItemOnStart,
+    itemIconPaths,
     itemObtainabilityTrees,
   };
 };

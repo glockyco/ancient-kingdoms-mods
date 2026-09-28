@@ -151,6 +151,7 @@ export interface QuestDetailPageData {
   equipItems: QuestItemTarget[];
   potionItem: QuestItemTarget | null;
   givenItemOnStart: QuestItemTarget | null;
+  itemIconPaths: Record<string, string | null>;
   itemObtainabilityTrees: ObtainabilityNode[];
 }
 

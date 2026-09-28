@@ -170,10 +170,11 @@
       <div class="text-xs text-red-400">Closed</div>
     {:else}
       {#if portal.requiredItemName}
+        <!-- Source: server-scripts/Portal.cs:47 — requiresEveryoneKey checks the interacting player's own key; otherwise any online party member can supply the key. -->
         <div class="text-sm text-amber-400">
           Key: {portal.requiredItemName}{portal.requiresEveryoneKey
-            ? " (every party member needs one)"
-            : " (one party member needs one)"}
+            ? " (each player needs their own)"
+            : " (any online party member's key)"}
         </div>
       {/if}
       {#if portal.needMonsterDeadName}

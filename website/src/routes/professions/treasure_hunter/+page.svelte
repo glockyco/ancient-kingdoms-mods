@@ -6,7 +6,7 @@
   import {
     calculateAdjustedChestRewards,
     sortChestRewardsForDisplay,
-  } from "$lib/utils/treasureHunter.js";
+  } from "$lib/utils/treasureHunter";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapIcon from "@lucide/svelte/icons/map";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -19,7 +19,7 @@
   const skillFraction = $derived(skillLevel / 100);
   // Source: server-scripts/ChestItem.cs:30 — relic per-roll bonus is `treasureHunterLevel * 0.1f`, so a fully capped skill adds +10 pp to every relic roll.
   const relicRollBonus = $derived(skillFraction * 0.1);
-  // Source: server-scripts/TreasureLocation.cs:87-90 — each successful treasure dig grants +0.5% Treasure Hunter, so capping at 100% takes (100 - current) / 0.5 successful digs.
+  // Source: server-scripts/TreasureLocation.cs:87-90 — each successful dig below the 100% cap grants +0.5% Treasure Hunter, so capping takes (100 - current) / 0.5 successful digs.
   const successfulDigsToCap = $derived(Math.ceil((100 - skillLevel) / 0.5));
   const adjustedChestRewards = $derived.by(() => {
     const adjusted = calculateAdjustedChestRewards(
@@ -115,118 +115,6 @@
     </div>
   </section>
 
-  <section class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How It Works</h2>
-
-    <div class="mt-4 divide-y">
-      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">1</div>
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <span>
-              Find <ItemLink
-                itemId={data.keyItems.random_map.id}
-                itemName={data.keyItems.random_map.name}
-                tooltipHtml={data.keyItems.random_map.tooltip_html}
-              /> drops.
-            </span>
-            <MapLink entityId="random_map" entityType="item" compact />
-          </div>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Each drop gives one of
-            <a
-              href="#treasure-maps"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >{data.treasureMaps.length} treasure maps</a
-            >, and each treasure map leads to a Buried Treasure Chest.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">2</div>
-        <div>
-          <div>Open the map clue.</div>
-          <!-- Source: server-scripts/TreasureMapItem.cs:12-15 and Player.cs:8143-8160 — using a treasure map opens the clue image. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Use the treasure map to see its dig-site clue.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">3</div>
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <span>Find the matching dig site.</span>
-            <MapLink
-              entityId="buried_treasure_chest"
-              entityType="item"
-              compact
-            />
-          </div>
-          <!-- Source: server-scripts/TreasureLocation.cs:13-18,31-37 — treasure locations require the matching map in inventory. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Each treasure map points to one dig site. Use the clue or the map
-            links on this page to find it.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">4</div>
-        <div>
-          <div>
-            Dig with a <ItemLink
-              itemId={data.keyItems.shovel.id}
-              itemName={data.keyItems.shovel.name}
-              tooltipHtml={data.keyItems.shovel.tooltip_html}
-            />.
-          </div>
-          <!-- Source: server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — digging requires the matching map and shovel, consumes one map on success, and grants the configured reward. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Bring a Shovel and at least one free inventory slot. A successful
-            dig awards the treasure and gives +0.5% Treasure Hunter.
-          </p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
-        <div class="text-sm text-muted-foreground">5</div>
-        <div>
-          <div>
-            Open the <ItemLink
-              itemId={data.keyItems.buried_treasure_chest.id}
-              itemName={data.keyItems.buried_treasure_chest.name}
-              tooltipHtml={data.keyItems.buried_treasure_chest.tooltip_html}
-            />.
-          </div>
-          <!-- Source: server-scripts/ChestItem.cs:24-31 — Buried Treasure Chest grants unique rewards and applies Treasure Hunter bonus to relic rolls only. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Each chest gives up to {data.buriedChestRewardLimit} unique rewards. Treasure
-            Hunter
-            <a
-              href="#calculator"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >improves the chance</a
-            > that those rewards include relics.
-          </p>
-          <p
-            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
-          >
-            <span>Max Level: {data.profession.max_level}%</span>
-            {#if data.profession.achievement_id}
-              <AchievementLink
-                achievementId={data.profession.achievement_id}
-                achievementName={data.profession.achievement_name}
-              />
-            {/if}
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section id="calculator" class="space-y-4">
     <h2 class="flex items-center gap-2 text-xl font-semibold">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
@@ -263,8 +151,8 @@
         </div>
         <div class="rounded-lg border bg-background p-3">
           <div class="text-sm text-muted-foreground">Skill gain</div>
-          <!-- Source: server-scripts/TreasureLocation.cs:87-90 — successful dig grants +0.5% Treasure Hunter. -->
-          <div class="text-xl font-semibold">+0.5% per treasure</div>
+          <!-- Source: server-scripts/TreasureLocation.cs:87-90 — successful digs grant +0.5% Treasure Hunter until the 100% cap. -->
+          <div class="text-xl font-semibold">+0.5% per treasure until 100%</div>
         </div>
       </div>
     </div>
@@ -293,6 +181,7 @@
                     itemId={reward.item_id}
                     itemName={reward.item_name}
                     tooltipHtml={reward.tooltip_html}
+                    imageAvailable={data.itemIconPaths[reward.item_id]}
                   />
                 </td>
                 <td class="p-3">
@@ -342,6 +231,7 @@
       </p>
     </div>
   </section>
+
   <section id="treasure-maps" class="space-y-4">
     <h2 class="flex items-center gap-2 text-xl font-semibold">
       <MapIcon class="h-5 w-5 text-amber-500" />
@@ -367,6 +257,7 @@
                     itemId={map.id}
                     itemName={map.name}
                     tooltipHtml={map.tooltip_html}
+                    imageAvailable={data.itemIconPaths[map.id]}
                   />
                 </td>
                 <td class="p-3">
@@ -387,6 +278,7 @@
                     itemId={map.reward_item_id}
                     itemName={map.reward_item_name}
                     tooltipHtml={map.reward_item_tooltip}
+                    imageAvailable={data.itemIconPaths[map.reward_item_id]}
                   />
                 </td>
                 <td class="p-3">
@@ -402,5 +294,42 @@
         </table>
       </div>
     </div>
+  </section>
+
+  <section class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">Finding buried treasure</h2>
+    <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/TreasureMapItem.cs:12-15; server-scripts/Player.cs:9435-9452; server-scripts/TreasureLocation.cs:13-18,31-37 — using a map shows its location image, and the matching map must be carried at the dig site. -->
+    <p class="text-muted-foreground">
+      Use a treasure map to see its dig-site clue. Bring that map to the
+      matching location in the
+      <a
+        href="#treasure-maps"
+        class="text-blue-600 hover:underline dark:text-blue-400"
+        >Treasure Maps</a
+      >
+      table.
+    </p>
+    <!-- Source: server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — digging requires a shovel, the matching map, and inventory space; success consumes the map, grants a chest and +0.5% skill. -->
+    <p class="text-muted-foreground">
+      Carry a
+      <ItemLink
+        itemId={data.keyItems.shovel.id}
+        itemName={data.keyItems.shovel.name}
+        tooltipHtml={data.keyItems.shovel.tooltip_html}
+        imageAvailable={data.itemIconPaths[data.keyItems.shovel.id]}
+      />
+      and make room for a chest. A successful dig consumes the map and gives a chest.
+    </p>
+    <!-- Source: server-scripts/ChestItem.cs:24-31 — a Buried Treasure Chest grants unique rewards and applies the Treasure Hunter bonus only to relic rolls. -->
+    <p class="text-muted-foreground">
+      Opening a chest grants up to {data.buriedChestRewardLimit} unique rewards. Treasure
+      Hunter increases only the relic rolls.
+    </p>
+    {#if data.profession.achievement_id}
+      <AchievementLink
+        achievementId={data.profession.achievement_id}
+        achievementName={data.profession.achievement_name}
+      />
+    {/if}
   </section>
 </div>

@@ -404,6 +404,7 @@
               itemId={data.givenItemOnStart.id}
               itemName={data.givenItemOnStart.name}
               tooltipHtml={data.givenItemOnStart.tooltip_html}
+              imageAvailable={data.itemIconPaths[data.givenItemOnStart.id]}
             />
           </div>
         </section>
@@ -452,6 +453,7 @@
                   itemId={item.id}
                   itemName={item.name}
                   tooltipHtml={item.tooltip_html}
+                  imageAvailable={data.itemIconPaths[item.id]}
                 />
                 <span class="text-muted-foreground">x{item.amount}</span>
               </div>
@@ -478,6 +480,7 @@
                   itemId={item.id}
                   itemName={item.name}
                   tooltipHtml={item.tooltip_html}
+                  imageAvailable={data.itemIconPaths[item.id]}
                 />
                 <span class="text-muted-foreground">x{item.amount}</span>
               </div>
@@ -495,6 +498,7 @@
                   itemId={item.id}
                   itemName={item.name}
                   tooltipHtml={item.tooltip_html}
+                  imageAvailable={data.itemIconPaths[item.id]}
                 />
                 {#if item.amount > 1}
                   <span class="text-muted-foreground">x{item.amount}</span>
@@ -514,6 +518,7 @@
                   itemId={item.id}
                   itemName={item.name}
                   tooltipHtml={item.tooltip_html}
+                  imageAvailable={data.itemIconPaths[item.id]}
                 />
               </div>
             {/each}
@@ -530,6 +535,7 @@
                   itemId={data.potionItem.id}
                   itemName={data.potionItem.name}
                   tooltipHtml={data.potionItem.tooltip_html}
+                  imageAvailable={data.itemIconPaths[data.potionItem.id]}
                 />
                 <span class="text-muted-foreground"
                   >x{data.potionItem.amount}</span
@@ -684,6 +690,7 @@
                       itemId={item.item_id}
                       itemName={item.item_name}
                       tooltipHtml={item.tooltip_html}
+                      imageAvailable={data.itemIconPaths[item.item_id]}
                     />
                   </div>
                 {/each}

@@ -647,8 +647,8 @@
           </Card.Header>
           <Card.Content>
             <ItemTooltip
-              itemId={data.item.id}
               tooltipHtml={data.item.tooltip_html}
+              visualAsset={data.visualAsset}
             />
           </Card.Content>
         </Card.Root>
@@ -1285,10 +1285,9 @@
               {/if}
             </div>
 
-            {#if data.item.alchemy_recipe_materials}
-              {@const materials = JSON.parse(
-                data.item.alchemy_recipe_materials,
-              )}
+            {#if data.recipeMaterials[data.item.recipe_potion_learned_id]?.length}
+              {@const materials =
+                data.recipeMaterials[data.item.recipe_potion_learned_id]}
               {#if materials.length > 0}
                 <div>
                   <div class={styles.label}>Materials</div>
@@ -1346,10 +1345,8 @@
               {/if}
             </div>
 
-            {#if data.item.alchemy_recipe_materials}
-              {@const materials = JSON.parse(
-                data.item.alchemy_recipe_materials,
-              )}
+            {#if computed.craftedFrom?.[0]?.materials.length}
+              {@const materials = computed.craftedFrom[0].materials}
               {#if materials.length > 0}
                 <div>
                   <div class={styles.label}>Materials</div>
@@ -1393,6 +1390,7 @@
                   itemId={member.item_id}
                   itemName={member.item_name}
                   tooltipHtml={member.tooltip_html}
+                  imageAvailable={data.itemIconPaths[member.item_id]}
                 />
               {/each}
             </div>

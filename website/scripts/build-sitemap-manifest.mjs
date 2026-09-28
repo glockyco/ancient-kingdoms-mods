@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 
@@ -40,20 +40,62 @@ const ITEM_USAGE_TABLES = [
   "item_usages_recipe",
 ];
 
-const PROFESSION_SLUGS = [
-  "adventuring",
-  "alchemy",
-  "cooking",
-  "exploring",
-  "herbalism",
-  "hunter",
-  "lore_keeping",
-  "mining",
-  "radiant_seeker",
-  "scroll_mastery",
-  "slayer",
-  "treasure_hunter",
-];
+const PROFESSION_DATA_TABLES = {
+  adventuring: [
+    "npcs",
+    "npc_spawns",
+    "zones",
+    "zone_triggers",
+    "quests",
+    "monsters",
+    "items",
+  ],
+  alchemy: ["alchemy_recipes", "alchemy_tables", "items", "npcs", "quests"],
+  cooking: ["crafting_recipes", "crafting_stations", "items"],
+  exploring: ["zone_triggers", "zones", "monster_spawns", "monsters"],
+  fishing: [
+    "gathering_resources",
+    "gathering_resource_spawns",
+    "zones",
+    "items",
+    "item_sources_gather",
+    "fish",
+    "item_usages_recipe",
+    "crafting_recipes",
+    "alchemy_recipes",
+    ...ITEM_SOURCE_TABLES,
+  ],
+  herbalism: ["gathering_resources", "items"],
+  hunter: ["monsters"],
+  lore_keeping: ["items", "visual_assets", "monsters", ...ITEM_SOURCE_TABLES],
+  mining: [
+    "gathering_resources",
+    "gathering_resource_spawns",
+    "zones",
+    "items",
+    "item_sources_gather",
+    "item_usages_recipe",
+    "item_usages_quest",
+    "quests",
+    "npcs",
+  ],
+  radiant_seeker: [
+    "gathering_resources",
+    "gathering_resource_spawns",
+    "zones",
+    "items",
+    "item_usages_recipe",
+  ],
+  scroll_mastery: ["items", "skills", "scribing_recipes", "scribing_tables"],
+  slayer: [
+    "achievements",
+    "monsters",
+    "monster_spawns",
+    "zones",
+    "visual_assets",
+  ],
+  treasure_hunter: ["items", "treasure_locations", "zones", "zone_triggers"],
+};
 
 export function canonicalJson(value) {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
@@ -174,7 +216,6 @@ function itemPayload(db, id) {
         id,
       ),
       zonesObtainable: rowsByColumn(db, "item_zones_obtainable", "item_id", id),
-      zonesUsable: rowsByColumn(db, "item_zones_usable", "item_id", id),
       chestsOpened: rowsByColumn(db, "chests", "key_required_id", id),
     },
     referencedSkills: buffIds.length
@@ -455,7 +496,7 @@ function addHash(hashes, path, payload) {
   hashes[`${SITE_URL}${path}`] = hashRow(payload);
 }
 
-function computeHashes() {
+export function computeHashes() {
   const db = new Database(DB_PATH, { readonly: true });
   const hashes = {};
 
@@ -488,6 +529,19 @@ function computeHashes() {
   addOverviewHashes(db, hashes);
   addMechanicsHashes(db, hashes);
   addProfessionHashes(db, hashes);
+  addHash(hashes, "/achievements", {
+    rows: all(db, "SELECT * FROM achievements ORDER BY id"),
+    icons: all(
+      db,
+      "SELECT * FROM visual_assets WHERE domain = 'achievement' ORDER BY entity_id, kind",
+    ),
+    source: fileHash("src/routes/achievements/+page.svelte"),
+    server: fileHash(
+      "src/routes/achievements/achievements-page-data.server.ts",
+    ),
+    catalog: fileHash("src/lib/data/achievements/catalog.ts"),
+    relationships: fileHash("src/lib/data/achievements/relationships.ts"),
+  });
 
   // Listed without a content hash on purpose. Each depends on several sources
   // at once — the live game version, map tiles, simulator logic — so no single
@@ -589,69 +643,151 @@ function addOverviewHashes(db, hashes) {
   });
 }
 
-function addMechanicsHashes(db, hashes) {
-  for (const { url, file } of [
-    { url: "/mechanics", file: "src/routes/mechanics/+page.svelte" },
-    {
-      url: "/mechanics/inventory",
-      file: "src/routes/mechanics/inventory/+page.svelte",
-    },
-    {
-      url: "/mechanics/combat",
-      file: "src/routes/mechanics/combat/+page.svelte",
-    },
-    {
-      url: "/mechanics/experience",
-      file: "src/routes/mechanics/experience/+page.svelte",
-    },
-    {
-      url: "/mechanics/monster-spawns",
-      file: "src/routes/mechanics/monster-spawns/+page.svelte",
-    },
-    {
-      url: "/mechanics/reputation",
-      file: "src/routes/mechanics/reputation/+page.svelte",
-    },
-  ]) {
-    hashes[`${SITE_URL}${url}`] = fileHash(file);
-  }
+function staticSectionPages(section) {
+  const directory = join("src/routes", section);
+  return [
+    "",
+    ...readdirSync(directory, { withFileTypes: true })
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          existsSync(join(directory, entry.name, "+page.svelte")),
+      )
+      .map((entry) => entry.name)
+      .sort(),
+  ];
+}
 
-  // Unlike the prose pages, the mercenary stat tables are computed from DB
-  // rows, so a curve retune or a new tavern must bump lastmod on its own.
-  addHash(hashes, "/mechanics/mercenary-stats", {
-    curves: all(
-      db,
-      `SELECT type_monster, health_base, health_per_level, mana_base, mana_per_level
-       FROM pets WHERE is_mercenary = 1 ORDER BY type_monster`,
-    ),
-    taverns: all(
-      db,
-      `SELECT DISTINCT n.name AS npc_name, z.name AS zone_name, z.zone_id AS zone_num
-       FROM npcs n
-       JOIN npc_spawns s ON s.npc_id = n.id
-       JOIN zones z ON z.id = s.zone_id
-       WHERE json_extract(n.roles, '$.is_recruiter_mercenaries') = 1
-       ORDER BY z.zone_id`,
-    ),
-    source: fileHash("src/routes/mechanics/mercenary-stats/+page.svelte"),
-    server: fileHash("src/routes/mechanics/mercenary-stats/+page.server.ts"),
-  });
+function pageSources(section, slug) {
+  const directory = join("src/routes", section, slug);
+  const server = join(directory, "+page.server.ts");
+  return {
+    source: fileHash(join(directory, "+page.svelte")),
+    ...(existsSync(server) ? { server: fileHash(server) } : {}),
+  };
+}
+
+function addMechanicsHashes(db, hashes) {
+  for (const slug of staticSectionPages("mechanics")) {
+    let rows;
+    switch (slug) {
+      case "experience":
+        rows = {
+          skills: all(
+            db,
+            "SELECT * FROM skills WHERE is_double_exp_spell = 1 ORDER BY id",
+          ),
+          items: rowsByIds(db, "items", [
+            "token_of_redemption",
+            "scroll_of_knowledge_v",
+          ]),
+        };
+        break;
+      case "inventory":
+        rows = {
+          backpacks: all(
+            db,
+            "SELECT * FROM items WHERE item_type = 'backpack' ORDER BY id",
+          ),
+          chests: all(
+            db,
+            "SELECT * FROM items WHERE item_type = 'structure' ORDER BY id",
+          ),
+          houses: all(db, "SELECT * FROM houses ORDER BY id"),
+          zones: all(db, "SELECT * FROM zones ORDER BY id"),
+          fish: all(db, "SELECT * FROM fish ORDER BY item_id"),
+          fishingSpots: all(
+            db,
+            "SELECT * FROM gathering_resources WHERE is_fishing_spot = 1 ORDER BY id",
+          ),
+          sources: Object.fromEntries(
+            ITEM_SOURCE_TABLES.map((table) => [
+              table,
+              all(db, `SELECT * FROM ${table} ORDER BY rowid`),
+            ]),
+          ),
+        };
+        break;
+      case "mercenary-stats":
+        rows = {
+          pets: all(
+            db,
+            "SELECT * FROM pets WHERE is_mercenary = 1 ORDER BY id",
+          ),
+          npcs: all(db, "SELECT * FROM npcs ORDER BY id"),
+          npcSpawns: all(db, "SELECT * FROM npc_spawns ORDER BY rowid"),
+          zones: all(db, "SELECT * FROM zones ORDER BY id"),
+        };
+        break;
+      case "monster-spawns":
+        rows = {
+          monsters: all(db, "SELECT * FROM monsters ORDER BY id"),
+          spawns: all(db, "SELECT * FROM monster_spawns ORDER BY rowid"),
+          triggers: all(db, "SELECT * FROM summon_triggers ORDER BY rowid"),
+          placeholders: all(
+            db,
+            "SELECT * FROM summon_trigger_placeholders ORDER BY rowid",
+          ),
+          npcs: all(db, "SELECT * FROM npcs ORDER BY id"),
+          zones: all(db, "SELECT * FROM zones ORDER BY id"),
+        };
+        break;
+      case "reputation":
+        rows = all(db, "SELECT * FROM reputation_tiers ORDER BY id");
+        break;
+      default:
+        if (existsSync(join("src/routes/mechanics", slug, "+page.server.ts"))) {
+          throw new Error(
+            `Missing sitemap database dependencies for mechanics/${slug}`,
+          );
+        }
+    }
+    addHash(hashes, `/mechanics${slug ? `/${slug}` : ""}`, {
+      ...pageSources("mechanics", slug),
+      ...(rows === undefined ? {} : { rows }),
+    });
+  }
 }
 
 function addProfessionHashes(db, hashes) {
   const professions = all(db, "SELECT * FROM professions ORDER BY id");
-  hashes[`${SITE_URL}/professions`] = hashRow({
-    professions,
-    source: fileHash("src/routes/professions/+page.svelte"),
-    server: fileHash("src/routes/professions/+page.server.ts"),
-  });
-  for (const slug of PROFESSION_SLUGS) {
-    const sourcePath = `src/routes/professions/${slug}/+page.svelte`;
-    const serverPath = `src/routes/professions/${slug}/+page.server.ts`;
-    hashes[`${SITE_URL}/professions/${slug}`] = hashRow({
-      profession: professions.find((p) => p.id === slug) ?? null,
-      source: existsSync(sourcePath) ? fileHash(sourcePath) : null,
-      server: existsSync(serverPath) ? fileHash(serverPath) : null,
+  const cachedRows = new Map();
+  const tableRows = (table) => {
+    if (!cachedRows.has(table)) {
+      cachedRows.set(table, all(db, `SELECT * FROM ${table} ORDER BY rowid`));
+    }
+    return cachedRows.get(table);
+  };
+  for (const slug of staticSectionPages("professions")) {
+    if (!slug) {
+      addHash(hashes, "/professions", {
+        professions,
+        achievements: tableRows("achievements"),
+        zoneTriggers: tableRows("zone_triggers"),
+        ...pageSources("professions", slug),
+      });
+      continue;
+    }
+    const profession = professions.find((row) => row.id === slug);
+    if (!profession) throw new Error(`Missing profession row for ${slug}`);
+    const dependencies = PROFESSION_DATA_TABLES[slug];
+    if (!dependencies) {
+      throw new Error(
+        `Missing sitemap database dependencies for profession ${slug}`,
+      );
+    }
+    const directory = join("src/routes/professions", slug);
+    const helperFiles = readdirSync(directory)
+      .filter((file) => file.endsWith("-page-data.server.ts"))
+      .sort();
+    addHash(hashes, `/professions/${slug}`, {
+      profession,
+      achievement: rowById(db, "achievements", profession.achievement_id),
+      rows: Object.fromEntries(
+        dependencies.map((table) => [table, tableRows(table)]),
+      ),
+      ...pageSources("professions", slug),
+      helpers: helperFiles.map((file) => fileHash(join(directory, file))),
     });
   }
 }

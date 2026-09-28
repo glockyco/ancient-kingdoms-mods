@@ -47,10 +47,10 @@
   ];
 
   const sections = [
+    { id: "targets", label: "Targets" },
     { id: "how-it-works", label: "How Slayer works" },
     { id: "payoff", label: "Damage reduction" },
     { id: "mastery", label: "Mastery" },
-    { id: "targets", label: "Targets" },
   ];
 
   function getClassification(target: SlayerTarget): string {
@@ -77,9 +77,9 @@
     ).sort((a, b) => a.zone_name.localeCompare(b.zone_name)),
   );
 
-  // Source: server-scripts/Monster.cs:Awake — altar, summon, and placeholder
-  // targets only appear after their own trigger, so the table names the trigger
-  // instead of the generic spawn label.
+  // Source: server-scripts/EventAltar.cs:201-213; server-scripts/DefaultEvent.cs:200-213 — altar activation starts the event that spawns each wave.
+  // Source: server-scripts/Monster.cs:695-706,2217-2237 — summonable monsters start hidden and wait for readiness.
+  // Source: server-scripts/Monster.cs:2890-2899 — a slain monster can spawn its configured placeholder.
   function requirementText(target: SlayerTarget): string {
     if (target.spawn_type === "altar") {
       const wave =
@@ -362,73 +362,47 @@
     </p>
   </ProfessionHeader>
 
-  <section id="how-it-works" class="space-y-4">
+  <section id="targets" class="space-y-4">
+    <h2 class="text-xl font-semibold">Slayer targets</h2>
+    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
+      Only bosses and elites give Slayer mastery. Regular monsters and hunt
+      targets do not.
+    </p>
+
+    <DataTable
+      data={dataWithVirtual}
+      {columns}
+      {columnLabels}
+      {renderCell}
+      {renderHeader}
+      {renderToolbar}
+      pageSize={PAGE_SIZE}
+      initialSorting={[
+        { id: "level_min", desc: false },
+        { id: "name", desc: false },
+      ]}
+      initialColumnVisibility={{
+        classification: false,
+        zone_ids: false,
+      }}
+      urlKey="slayer-targets"
+      showPagination={true}
+      showSearch={true}
+      showColumnToggle={true}
+      zebraStripe={true}
+      paginateStaticHtml={true}
+      searchPlaceholder="Search targets..."
+      class="bg-muted/30"
+    />
+  </section>
+
+  <section id="how-it-works" class="space-y-3">
     <h2 class="text-xl font-semibold">Bestiary Discoveries and Slayer</h2>
-    <ol class="divide-y divide-border">
-      <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-        <span class="text-sm tabular-nums text-muted-foreground">1</span>
-        <div>
-          <p class="font-medium">Find a boss or an elite.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Only these {data.targets.length} targets give Slayer mastery. When you
-            come near one, your Bestiary adds it with zero kills.
-          </p>
-          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13635-13642; server-scripts/UIBestiaryDetail.cs:150-154 — approach discovery and loot discovery are separate records. -->
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Finding a boss does not reveal its drops. You discover loot
-            separately.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/Monster.cs:OnDeath -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">2</span>
-        <div>
-          <p class="font-medium">Kill the target.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The player who drew the most of the monster's attention gets kill
-            credit. In a party, each nearby member also gets
-            <a
-              href="#mastery"
-              class="text-blue-600 hover:underline dark:text-blue-400">credit</a
-            >.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/Database.cs:CalculateSlayerLevelForAccount -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">3</span>
-        <div>
-          <p class="font-medium">Collect the mastery.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Each credited kill adds 0.02 percentage points to
-            <a
-              href="#mastery"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >account Slayer</a
-            >. Only the first 50 kills of each target count. After that, find a
-            new target.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/Combat.cs:DealDamageAt -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">4</span>
-        <div>
-          <p class="font-medium">Take less damage.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            From {mechanics.damageReduction.thresholdPercent}% mastery, every
-            boss and elite deals
-            <a
-              href="#payoff"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >less damage</a
-            > to you. The reduction grows to 10% at full mastery.
-          </p>
-        </div>
-      </li>
-    </ol>
+    <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13635-13642; server-scripts/UIBestiaryDetail.cs:150-154 — approaching a target records discovery with zero kills, but loot discoveries are separate. -->
+    <p class="max-w-2xl text-muted-foreground">
+      The first time you approach a boss or elite, it enters your Bestiary with
+      zero kills. Finding it does not reveal its drops.
+    </p>
   </section>
 
   <section id="payoff" class="space-y-4">
@@ -525,39 +499,5 @@
         limit still increases the Bestiary count, but not Slayer mastery.
       </p>
     </div>
-  </section>
-
-  <section id="targets" class="space-y-4">
-    <h2 class="text-xl font-semibold">Slayer targets</h2>
-    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Only bosses and elites give Slayer mastery. Regular monsters and hunt
-      targets do not.
-    </p>
-
-    <DataTable
-      data={dataWithVirtual}
-      {columns}
-      {columnLabels}
-      {renderCell}
-      {renderHeader}
-      {renderToolbar}
-      pageSize={PAGE_SIZE}
-      initialSorting={[
-        { id: "level_min", desc: false },
-        { id: "name", desc: false },
-      ]}
-      initialColumnVisibility={{
-        classification: false,
-        zone_ids: false,
-      }}
-      urlKey="slayer-targets"
-      showPagination={true}
-      showSearch={true}
-      showColumnToggle={true}
-      zebraStripe={true}
-      paginateStaticHtml={true}
-      searchPlaceholder="Search targets..."
-      class="bg-muted/30"
-    />
   </section>
 </div>

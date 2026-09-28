@@ -16,14 +16,6 @@ class ChestSourceInfo(TypedDict):
     rate: float
 
 
-class MaterialInfo(TypedDict):
-    """Recipe material information."""
-
-    item_id: str
-    item_name: str
-    amount: int
-
-
 class GrantedByItemInfo(TypedDict):
     """Item source information for skills.granted_by_items."""
 

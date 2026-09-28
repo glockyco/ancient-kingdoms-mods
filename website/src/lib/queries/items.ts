@@ -118,7 +118,6 @@ export interface Item {
   recipe_potion_learned_id: string | null;
   recipe_potion_learned_name: string | null;
   alchemy_recipe_level_required: number | null;
-  alchemy_recipe_materials: string | null; // JSON
   // Alchemy recipe (for potion items)
   taught_by_recipe_id: string | null;
   taught_by_recipe_name: string | null;

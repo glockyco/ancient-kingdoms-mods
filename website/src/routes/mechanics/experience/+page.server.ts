@@ -14,6 +14,7 @@ export interface ItemRef {
   name: string;
   quality: number;
   tooltip_html: string | null;
+  visual_public_path: string | null;
 }
 
 interface ExperiencePageData {
@@ -33,9 +34,12 @@ function getItem(db: Database.Database, id: string): ItemRef | null {
   const row = db
     .prepare(
       `
-      SELECT id, name, quality, tooltip_html
-      FROM items
-      WHERE id = ?
+      SELECT i.id, i.name, i.quality, i.tooltip_html,
+             va.public_path AS visual_public_path
+      FROM items i
+      LEFT JOIN visual_assets va
+        ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+      WHERE i.id = ?
     `,
     )
     .get(id) as ItemRef | undefined;

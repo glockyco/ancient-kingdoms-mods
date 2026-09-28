@@ -8,6 +8,8 @@ import type { Item } from "$lib/queries/items";
 import { itemDescription, itemTitle } from "$lib/server/meta-description";
 import { getItemSources } from "$lib/server/item-sources";
 import { getItemUsages } from "$lib/server/item-usages";
+import { getRecipeMaterials } from "$lib/server/obtainability";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 
 const FISHERMAN_COSTUME_IDS = new Set([
   "fishermans_hat",
@@ -106,35 +108,28 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   const sources = getItemSources(db, params.id);
   const usages = getItemUsages(db, params.id);
 
-  // Load recipe materials for recipes that create this item
-  // Materials JSON is pre-enriched with item_name by the build pipeline
-  const recipeMaterials: Record<
-    string,
-    Array<{ item_id: string; item_name: string; amount: number }>
-  > = {};
-
+  const recipeMaterials: ItemDetailPageData["recipeMaterials"] = {};
   for (const recipe of sources.recipes) {
-    const recipeTable =
-      recipe.recipe_type === "crafting"
-        ? "crafting_recipes"
-        : recipe.recipe_type === "scribing"
-          ? "scribing_recipes"
-          : "alchemy_recipes";
-    const recipeData = db
-      .prepare(
-        `
-      SELECT materials
-      FROM ${recipeTable}
-      WHERE id = ?
-    `,
-      )
-      .get(recipe.recipe_id) as { materials: string } | undefined;
-
-    if (recipeData?.materials) {
-      recipeMaterials[recipe.recipe_id] = JSON.parse(
-        recipeData.materials,
-      ) as Array<{ item_id: string; item_name: string; amount: number }>;
+    recipeMaterials[recipe.recipe_id] = getRecipeMaterials(
+      db,
+      recipe.recipe_id,
+      recipe.recipe_type,
+    );
+  }
+  if (item.recipe_potion_learned_id) {
+    const taughtRecipe = db
+      .prepare("SELECT id FROM alchemy_recipes WHERE result_item_id = ?")
+      .get(item.recipe_potion_learned_id) as { id: string } | undefined;
+    if (!taughtRecipe) {
+      throw new Error(
+        `Missing alchemy recipe for ${item.recipe_potion_learned_id}`,
+      );
     }
+    recipeMaterials[item.recipe_potion_learned_id] = getRecipeMaterials(
+      db,
+      taughtRecipe.id,
+      "alchemy",
+    );
   }
 
   // Load random item outcomes (what this item produces if it's a random container)
@@ -280,6 +275,16 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       )
       .get(params.id) as EntityVisualAsset | undefined) ?? null;
 
+  const itemIconPaths = getItemIconPaths(
+    db,
+    item.augment_armor_set_members
+      ? (
+          JSON.parse(item.augment_armor_set_members) as Array<{
+            item_id: string;
+          }>
+        ).map((member) => member.item_id)
+      : [],
+  );
   db.close();
 
   const description = itemDescription(item, {
@@ -310,6 +315,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     augmenters,
     priestesses,
     visualAsset,
+    itemIconPaths,
     petVisualAsset,
   };
 };

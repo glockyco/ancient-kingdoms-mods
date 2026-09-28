@@ -50,6 +50,8 @@
   import Gem from "@lucide/svelte/icons/gem";
   import Scroll from "@lucide/svelte/icons/scroll";
   import EntityLink from "$lib/components/EntityLink.svelte";
+  import { Alert } from "$lib/components/ui/alert";
+  import Info from "@lucide/svelte/icons/info";
 
   let { data } = $props();
 
@@ -942,6 +944,20 @@
         Races: <span class="text-foreground">{races.join(", ")}</span>
       </span>
     </div>
+    {#if data.class.id === "druid"}
+      <Alert variant="info" class="mt-4">
+        <Info />
+        <div>
+          <!-- Source: server-scripts/UICharacterEditor.cs:1507-1523,1694-1719 — selecting Fire Goblin while Druid is selected silently switches to Warrior; selecting Druid afterward restores it. -->
+          <p class="font-medium">Fire Goblin class selection defect</p>
+          <p>
+            Selecting Fire Goblin while Druid is selected silently changes your
+            class to Warrior. Select Fire Goblin first, then select Druid again
+            and check the selected class before creating the character.
+          </p>
+        </div>
+      </Alert>
+    {/if}
 
     <p class="mt-4 text-muted-foreground leading-relaxed">
       {data.class.description}

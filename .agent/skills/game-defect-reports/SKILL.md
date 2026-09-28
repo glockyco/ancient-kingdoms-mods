@@ -70,6 +70,9 @@ The measurements come from a modded, macOS CrossOver installation. A developer c
 
 ## Do not exploit a defect
 
-A defect found is recorded, not relied on.
+A defect found is recorded, not relied on as an intended rule.
 
-When a model or an exporter meets a defect, represent the intended behaviour and say so in the affected document. A published figure that depends on a defect becomes wrong when the developer fixes it.
+A published page or exporter represents intended behaviour and names any defect that changes what the player sees.
+The combat engine instead reproduces the running game's behaviour for verification against live results.
+If a published figure from the combat engine depends on a defect, name that defect beside the figure.
+Do not present a defect-dependent figure as a stable rule: a game fix can change it.

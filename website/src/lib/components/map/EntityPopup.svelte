@@ -31,6 +31,7 @@
   } from "$lib/types/map";
   import {
     loadMonsterPopupDetails,
+    loadMapItemIconPaths,
     loadNpcPopupDetails,
     loadChestPopupDetails,
     loadGatheringPopupDetails,
@@ -93,6 +94,7 @@
   let chestDetails = $state<ChestPopupDetails | null>(null);
   let gatheringDetails = $state<GatheringPopupDetails | null>(null);
   let altarDetails = $state<AltarPopupDetails | null>(null);
+  let itemIconPaths = $state<Record<string, string | null> | null>(null);
   let isLoading = $state(false);
 
   // Load details after the selection shell has had a chance to paint.
@@ -106,6 +108,7 @@
     chestDetails = null;
     gatheringDetails = null;
     altarDetails = null;
+    itemIconPaths = null;
     isLoading = true;
 
     async function loadDetails() {
@@ -177,6 +180,34 @@
           if (cancelled) return;
           altarDetails = details;
         }
+        const altarSources = [
+          ...(altarDetails ? [altarDetails] : []),
+          ...monsterAltarDetails.map((altar) => altar.details),
+        ];
+        const itemIds = [
+          ...(monsterDetails?.drops.map((drop) => drop.itemId) ?? []),
+          ...(npcDetails?.itemsSold.map((item) => item.itemId) ?? []),
+          ...(chestDetails?.drops.map((drop) => drop.itemId) ?? []),
+          ...(gatheringDetails?.drops.map((drop) => drop.itemId) ?? []),
+          ...(gatheringDetails?.fishingOutcomes?.flatMap((outcome) =>
+            outcome.itemId ? [outcome.itemId] : [],
+          ) ?? []),
+          ...altarSources.flatMap((altar) => [
+            ...altar.rewards.map((reward) => reward.itemId),
+            ...altar.bossDrops.flatMap((boss) =>
+              boss.drops.map((drop) => drop.itemId),
+            ),
+          ]),
+          ...(currentEntity.type === "treasure"
+            ? [
+                currentEntity.requiredMapId,
+                ...(currentEntity.rewardId ? [currentEntity.rewardId] : []),
+              ]
+            : []),
+        ];
+        const paths = await loadMapItemIconPaths(itemIds);
+        if (cancelled) return;
+        itemIconPaths = paths;
       } finally {
         if (!cancelled) {
           isLoading = false;
@@ -615,7 +646,8 @@
                   <MapItemLink
                     itemId={reward.itemId}
                     itemName={reward.itemName}
-                    tooltipHtml={reward.tooltipHtml}
+                    tooltipHtml={itemIconPaths ? reward.tooltipHtml : null}
+                    imageAvailable={itemIconPaths?.[reward.itemId]}
                     colorClass={getQualityTextColorClass(reward.quality)}
                     class="truncate"
                     onSelect={onSelectItem}
@@ -648,7 +680,8 @@
               <MapItemLink
                 itemId={drop.itemId}
                 itemName={drop.itemName}
-                tooltipHtml={drop.tooltipHtml}
+                tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
+                imageAvailable={itemIconPaths?.[drop.itemId]}
                 colorClass={getQualityTextColorClass(drop.quality)}
                 class="truncate"
                 onSelect={onSelectItem}
@@ -845,7 +878,8 @@
               <MapItemLink
                 itemId={item.itemId}
                 itemName={item.itemName}
-                tooltipHtml={item.tooltipHtml}
+                tooltipHtml={itemIconPaths ? item.tooltipHtml : null}
+                imageAvailable={itemIconPaths?.[item.itemId]}
                 colorClass={getQualityTextColorClass(item.quality)}
                 class="truncate"
                 onSelect={onSelectItem}
@@ -925,15 +959,15 @@
               </div>
             {/if}
             {#if portal.requiredItemName}
-              <!-- Source: server-scripts/Portal.cs:47 — without requiresEveryoneKey, an online party member's key admits the traveler. -->
+              <!-- Source: server-scripts/Portal.cs:47 — each player needs their own key only when requiresEveryoneKey is set; otherwise any online party member's key admits the player. -->
               <div class="flex justify-between">
                 <span class="text-muted-foreground">Who needs the key</span>
                 <a
                   href="/mechanics/world#portals"
                   class="text-blue-600 hover:underline dark:text-blue-400"
                   >{portal.requiresEveryoneKey
-                    ? "Every party member needs one"
-                    : "One party member needs one"}</a
+                    ? "Each player needs their own"
+                    : "Any online party member's key"}</a
                 >
               </div>
             {/if}
@@ -1002,7 +1036,8 @@
                 <MapItemLink
                   itemId={drop.itemId}
                   itemName={drop.itemName}
-                  tooltipHtml={drop.tooltipHtml}
+                  tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
+                  imageAvailable={itemIconPaths?.[drop.itemId]}
                   colorClass={getQualityTextColorClass(drop.quality)}
                   class="truncate"
                   onSelect={onSelectItem}
@@ -1043,7 +1078,8 @@
       <MapItemLink
         itemId={treasure.requiredMapId}
         itemName={treasure.requiredMapName}
-        tooltipHtml={treasure.requiredMapTooltipHtml}
+        tooltipHtml={itemIconPaths ? treasure.requiredMapTooltipHtml : null}
+        imageAvailable={itemIconPaths?.[treasure.requiredMapId]}
         onSelect={onSelectItem}
       />
     </div>
@@ -1062,7 +1098,8 @@
         <MapItemLink
           itemId={treasure.rewardId}
           itemName={treasure.rewardName}
-          tooltipHtml={treasure.rewardTooltipHtml}
+          tooltipHtml={itemIconPaths ? treasure.rewardTooltipHtml : null}
+          imageAvailable={itemIconPaths?.[treasure.rewardId]}
           onSelect={onSelectItem}
         />
       </div>
@@ -1190,7 +1227,8 @@
               <MapItemLink
                 itemId={reward.itemId}
                 itemName={reward.itemName}
-                tooltipHtml={reward.tooltipHtml}
+                tooltipHtml={itemIconPaths ? reward.tooltipHtml : null}
+                imageAvailable={itemIconPaths?.[reward.itemId]}
                 colorClass={getQualityTextColorClass(reward.quality)}
                 class="truncate"
                 onSelect={onSelectItem}
@@ -1229,7 +1267,8 @@
                 <MapItemLink
                   itemId={drop.itemId}
                   itemName={drop.itemName}
-                  tooltipHtml={drop.tooltipHtml}
+                  tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
+                  imageAvailable={itemIconPaths?.[drop.itemId]}
                   colorClass={getQualityTextColorClass(drop.quality)}
                   class="truncate"
                   onSelect={onSelectItem}
@@ -1300,7 +1339,8 @@
                 <MapItemLink
                   itemId={outcome.itemId}
                   itemName={outcome.itemName}
-                  tooltipHtml={outcome.tooltipHtml}
+                  tooltipHtml={itemIconPaths ? outcome.tooltipHtml : null}
+                  imageAvailable={itemIconPaths?.[outcome.itemId]}
                   colorClass={getQualityTextColorClass(outcome.quality ?? 0)}
                   class="min-w-0 truncate"
                   onSelect={onSelectItem}
@@ -1341,7 +1381,8 @@
               <MapItemLink
                 itemId={drop.itemId}
                 itemName={drop.itemName}
-                tooltipHtml={drop.tooltipHtml}
+                tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
+                imageAvailable={itemIconPaths?.[drop.itemId]}
                 colorClass={getQualityTextColorClass(drop.quality)}
                 class="truncate"
                 onSelect={onSelectItem}

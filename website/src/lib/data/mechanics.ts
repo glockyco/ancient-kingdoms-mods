@@ -101,7 +101,8 @@ export const MECHANICS_GROUPS = [
       {
         title: "World & Travel",
         href: "/mechanics/world",
-        description: "Game modes, binding, travel, and portals",
+        description:
+          "Game modes, seasonal events, binding, travel, and portals",
       },
       {
         title: "Monster Spawns",

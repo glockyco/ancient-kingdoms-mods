@@ -77,6 +77,7 @@ export interface AltarDetailPageData {
   altar: AltarInfo;
   description: string;
   rewards: AltarReward[];
+  itemIconPaths: Record<string, string | null>;
   waves: AltarWave[];
   bosses: AltarBoss[];
 }

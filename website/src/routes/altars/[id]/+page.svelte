@@ -171,6 +171,9 @@
               itemId={data.altar.requiredActivationItemId}
               itemName={data.altar.requiredActivationItemName}
               tooltipHtml={data.altar.activationItemTooltipHtml}
+              imageAvailable={data.itemIconPaths[
+                data.altar.requiredActivationItemId
+              ]}
             />
           </div>
         {/if}
@@ -306,6 +309,7 @@
                       itemId={reward.itemId}
                       itemName={reward.itemName}
                       tooltipHtml={reward.tooltipHtml}
+                      imageAvailable={data.itemIconPaths[reward.itemId]}
                     />
                     {#if reward.dropRate !== null}
                       <span class="text-sm text-muted-foreground">

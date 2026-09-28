@@ -15,6 +15,7 @@ interface RadiantSparkResource {
   reward_item_id: string;
   reward_item_name: string;
   reward_tooltip_html: string | null;
+  reward_visual_public_path: string | null;
   node_count: number;
   zones: SparkZone[];
 }
@@ -65,9 +66,12 @@ export function getRadiantSeekerPageData(
         gr.gathering_exp,
         gr.item_reward_id AS reward_item_id,
         reward.name AS reward_item_name,
-        reward.tooltip_html AS reward_tooltip_html
+        reward.tooltip_html AS reward_tooltip_html,
+        va.public_path AS reward_visual_public_path
       FROM gathering_resources gr
       JOIN items reward ON reward.id = gr.item_reward_id
+      LEFT JOIN visual_assets va
+        ON va.domain = 'item' AND va.entity_id = reward.id AND va.kind = 'icon'
       WHERE gr.is_radiant_spark = 1
     `,
     )

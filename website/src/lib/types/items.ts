@@ -98,6 +98,7 @@ export interface ItemDetailPageData {
   priestesses: Array<{ id: string; name: string }>;
   /** Icon artwork for this item. */
   visualAsset: EntityVisualAsset | null;
+  itemIconPaths: Record<string, string | null>;
   /** Sprite of the creature a pet whistle summons. */
   petVisualAsset: EntityVisualAsset | null;
 }

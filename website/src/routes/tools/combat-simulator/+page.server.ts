@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { WeaponItem } from "$lib/utils/combat-sim";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 
 // Re-export so +page.svelte can import WeaponItem from "./+page.server" as planned.
 export type { WeaponItem } from "$lib/utils/combat-sim";
@@ -10,6 +11,7 @@ export const prerender = true;
 
 export interface CombatPageData {
   weapons: WeaponItem[];
+  itemIconPaths: Record<string, string | null>;
 }
 
 export const load: PageServerLoad = (): CombatPageData => {
@@ -56,6 +58,10 @@ export const load: PageServerLoad = (): CombatPageData => {
     spell_haste: number;
   }>;
 
+  const itemIconPaths = getItemIconPaths(
+    db,
+    rows.map((row) => row.id),
+  );
   db.close();
 
   const weapons: WeaponItem[] = rows.map((r) => ({
@@ -77,5 +83,5 @@ export const load: PageServerLoad = (): CombatPageData => {
     tooltip_html: r.tooltip_html ?? "",
   }));
 
-  return { weapons };
+  return { weapons, itemIconPaths };
 };

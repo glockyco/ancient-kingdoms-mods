@@ -38,6 +38,7 @@ interface VendorUnlock {
   item_id: string;
   item_name: string;
   tooltip_html: string | null;
+  visual_public_path: string | null;
   adventuring_level_needed: number;
   sold_by: {
     npc_id: string;
@@ -298,6 +299,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       i.id as item_id,
       i.name as item_name,
       i.tooltip_html,
+      va.public_path AS visual_public_path,
       i.adventuring_level_needed,
       n.id as npc_id,
       n.name as npc_name,
@@ -308,6 +310,8 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       ON n.items_sold IS NOT NULL
     JOIN json_each(n.items_sold) sold
       ON json_extract(sold.value, '$.item_id') = i.id
+    LEFT JOIN visual_assets va
+      ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
     WHERE i.adventuring_level_needed > 0
       AND json_extract(n.roles, '$.is_merchant_adventurer') = 1
     ORDER BY i.adventuring_level_needed, i.name, n.name
@@ -317,6 +321,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     item_id: string;
     item_name: string;
     tooltip_html: string | null;
+    visual_public_path: string | null;
     adventuring_level_needed: number;
     npc_id: string;
     npc_name: string;
@@ -330,6 +335,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       item_id: row.item_id,
       item_name: row.item_name,
       tooltip_html: row.tooltip_html,
+      visual_public_path: row.visual_public_path,
       adventuring_level_needed: row.adventuring_level_needed,
       sold_by: [],
       currencies: [],

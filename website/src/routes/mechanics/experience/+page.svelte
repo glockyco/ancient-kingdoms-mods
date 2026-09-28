@@ -742,6 +742,7 @@
                 data.redemptionToken.quality,
               )}
               tooltipHtml={data.redemptionToken.tooltip_html}
+              imageAvailable={data.redemptionToken.visual_public_path}
             />
           {:else}
             Token of Redemption
@@ -762,6 +763,7 @@
                   data.maxLevelReward.quality,
                 )}
                 tooltipHtml={data.maxLevelReward.tooltip_html}
+                imageAvailable={data.maxLevelReward.visual_public_path}
               />
             {:else}
               reward item

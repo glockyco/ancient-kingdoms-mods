@@ -163,71 +163,6 @@
     </div>
   </div>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Cooking works</h2>
-    <!-- Source: server-scripts/Player.cs:13503-13505,13529-13542,13565-13568,12478-12505 — baking checks output space, spends ingredients before success, and displays a burned result on failure without adding food. -->
-    <p class="text-muted-foreground">
-      <span class="block">Baking needs room for the food.</span>
-      <span class="block"
-        >You spend ingredients before you know whether baking succeeds.</span
-      >
-      <span class="block"
-        >A failed bake shows burned food in the oven, but gives you no food.</span
-      >
-    </p>
-    <!-- Source: server-scripts/FoodItem.cs:21-35 — eating food expires an existing buff in the same nonempty category before applying the new one. -->
-    <p class="text-muted-foreground">
-      Eating food replaces an active food buff in the same category instead of
-      stacking with it.
-    </p>
-  </section>
-
-  <!-- Station Locations -->
-  {#if data.locations.length > 0}
-    <section class="space-y-4">
-      <h2 class="text-xl font-semibold flex items-center gap-2">
-        <MapPin class="h-5 w-5 text-emerald-500" />
-        Cooking Oven Locations ({data.locations.length})
-      </h2>
-      <div class="rounded-lg border overflow-x-auto">
-        <table class="w-full whitespace-nowrap">
-          <thead class="bg-muted/50">
-            <tr>
-              <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Sub-zone</th>
-              <th class="text-left p-3 font-medium">Map</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each data.locations as location (location.id)}
-              <tr class="border-t hover:bg-muted/30">
-                <td class="p-3">
-                  <a
-                    href="/zones/{location.zone_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {location.zone_name}
-                  </a>
-                </td>
-                <td class="p-3 text-muted-foreground">
-                  {location.sub_zone_name ?? "—"}
-                </td>
-                <td class="p-3">
-                  <MapLink
-                    entityId={location.id}
-                    entityType="crafting_station"
-                    compact
-                  />
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  {/if}
-
-  <!-- Calculator -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
@@ -305,6 +240,51 @@
       </div>
     </div>
   </section>
+
+  <!-- Station Locations -->
+  {#if data.locations.length > 0}
+    <section class="space-y-4">
+      <h2 class="text-xl font-semibold flex items-center gap-2">
+        <MapPin class="h-5 w-5 text-emerald-500" />
+        Cooking Oven Locations ({data.locations.length})
+      </h2>
+      <div class="rounded-lg border overflow-x-auto">
+        <table class="w-full whitespace-nowrap">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="text-left p-3 font-medium">Zone</th>
+              <th class="text-left p-3 font-medium">Sub-zone</th>
+              <th class="text-left p-3 font-medium">Map</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each data.locations as location (location.id)}
+              <tr class="border-t hover:bg-muted/30">
+                <td class="p-3">
+                  <a
+                    href="/zones/{location.zone_id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {location.zone_name}
+                  </a>
+                </td>
+                <td class="p-3 text-muted-foreground">
+                  {location.sub_zone_name ?? "—"}
+                </td>
+                <td class="p-3">
+                  <MapLink
+                    entityId={location.id}
+                    entityType="crafting_station"
+                    compact
+                  />
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {/if}
 
   <!-- Recipes Table -->
   <section class="space-y-4">
@@ -386,6 +366,7 @@
               itemId={recipe.result_item_id}
               itemName={recipe.result_item_name}
               tooltipHtml={recipe.result_tooltip_html}
+              imageAvailable={recipe.obtainabilityTree.visual_public_path}
             />
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
@@ -397,6 +378,7 @@
                       itemId={mat.item_id}
                       itemName={mat.item_name}
                       tooltipHtml={mat.tooltip_html}
+                      imageAvailable={mat.visual_public_path}
                     />
                     <span class="text-muted-foreground">×{mat.amount}</span>
                   </span>
@@ -446,5 +428,19 @@
         {/if}
       </div>
     </div>
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Cooking works</h2>
+    <!-- Source: server-scripts/Player.cs:13503-13505,13529-13542,13565-13568 — baking checks inventory space and consumes ingredients before the success roll; failed bakes give no food. -->
+    <p class="text-muted-foreground">
+      Baking needs room for the food. A failed bake still consumes the
+      ingredients and gives no food.
+    </p>
+    <!-- Source: server-scripts/FoodItem.cs:21-35 — a food buff replaces the active buff in the same nonempty category. -->
+    <p class="text-muted-foreground">
+      Eating food replaces an active food buff in the same category instead of
+      stacking with it.
+    </p>
   </section>
 </div>

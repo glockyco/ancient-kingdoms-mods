@@ -379,6 +379,7 @@
         <span class="block"
           >Otherwise, the game draws a race from that class's pool.</span
         >
+        <!-- Source: server-scripts/Player.cs:10077-10122,10337-10365; Database.cs:1900-1921; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
         <span class="block"
           >Hiring then sets three hidden values: a Health multiplier, a resource
           multiplier, and a combat value shared by Attack Power and Spell Power.</span
@@ -407,20 +408,29 @@
           >
         </li>
         <li>
+          <!-- Source: server-scripts/Player.cs:10077-10122,10140-10152,10347-10365,4627-4652; Database.cs:1900-1921 — a positive hire roll is restored; a zero roll rerolls independently, and veteran damage gained while active is not saved. -->
           <span class="block"
             ><b>Attack Power and Spell Power</b> include an attribute bonus: Strength
             for Attack Power and round(INT×1.5) for Spell Power.</span
           >
           <span class="block"
-            >Both also use the same combat bonus rolled at hire.</span
+            >At hire, both use the same rolled combat bonus.</span
+          >
+          <span class="block">Attributes grow with level.</span>
+          <span class="block"
+            >A positive hire damage roll stays fixed between summons.</span
           >
           <span class="block"
-            >Attributes grow with level, but that hire-time bonus does not
-            reroll apart from veteran bonuses.</span
+            >Game defect: a zero hire roll gives separate physical and magic
+            damage rolls on every summon.</span
           >
           <span class="block"
-            >These ranges therefore apply exactly to mercenaries hired at the
-            level shown.</span
+            >Game defect: veteran levels earned while summoned add damage that
+            the next summon loses.</span
+          >
+          <span class="block"
+            >These ranges describe mercenaries hired at the level shown, not
+            later summons after a zero roll.</span
           >
         </li>
         <li>

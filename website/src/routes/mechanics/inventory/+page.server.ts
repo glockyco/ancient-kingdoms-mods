@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import type { ItemSourceType } from "$lib/constants/source-types";
 import { HOUSE_CHEST_SLOT_RANGES } from "$lib/inventory/house-chests";
 import {
@@ -61,6 +62,7 @@ export interface InventoryMechanicsPageData {
   backpacks: BackpackListItem[];
   houses: HouseStorageLocation[];
   houseChests: HouseChestStructure[];
+  itemIconPaths: Record<string, string | null>;
 }
 
 function getBackpackRows(db: Database.Database): BackpackRow[] {
@@ -166,10 +168,16 @@ export const load: PageServerLoad = (): InventoryMechanicsPageData => {
       })
       .sort(compareBackpacks);
 
+    const houseChests = getHouseChests(db);
+    const itemIconPaths = getItemIconPaths(
+      db,
+      [...backpacks, ...houseChests].map((item) => item.id),
+    );
     return {
       backpacks,
       houses: getHouseLocations(db),
-      houseChests: getHouseChests(db),
+      houseChests,
+      itemIconPaths,
     };
   } finally {
     db.close();

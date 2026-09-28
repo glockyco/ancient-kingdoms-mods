@@ -65,7 +65,7 @@ function fishingLevelFraction(fishingPercent: number): number {
 const FISHING_SUCCESS_FLOOR = mechanics.success.floor;
 const CEILING_FISHERMAN_PIECES = 3;
 
-// Source: server-scripts/Utils.cs:567-576 — GetSuccessProbFishing.
+// Source: server-scripts/Utils.cs:577-587 — GetSuccessProbFishing.
 // Source: server-scripts/GatherItem.cs:708-711 — values below 0.2 show "skill too low" and do not fish.
 export function fishingSpotSuccessChance({
   rodQuality,

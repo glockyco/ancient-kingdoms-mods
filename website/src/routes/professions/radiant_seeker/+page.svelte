@@ -19,9 +19,9 @@
 
   const mechanics = PROFESSION_MECHANICS.radiant_seeker;
   const sections = [
-    { id: "how-it-works", label: "How Radiant Seeker works" },
     { id: "chance", label: "Aether chance" },
     { id: "locations", label: "Spark locations" },
+    { id: "how-it-works", label: "How Radiant Sparks work" },
     { id: "combat", label: "Aether in combat" },
   ];
 
@@ -77,61 +77,13 @@
         itemId={data.resource.reward_item_id}
         itemName={data.resource.reward_item_name}
         tooltipHtml={data.resource.reward_tooltip_html}
+        imageAvailable={data.resource.reward_visual_public_path}
       />.
       <strong class="font-semibold text-foreground"
         >Your Aether chance increases from 5% at 0 skill to 25% at 100.</strong
       >
     </p>
   </ProfessionHeader>
-
-  <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Radiant Sparks work</h2>
-    <ol class="divide-y divide-border">
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-        <span class="text-sm tabular-nums text-muted-foreground">1</span>
-        <div>
-          <p class="font-medium">Find a Radiant Spark.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The world has {data.resource.node_count} sparks in {data.resource
-              .zones.length}
-            zones. You do not need a tool.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">2</span>
-        <div>
-          <p class="font-medium">Gather the spark.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            A spark has no success check. Each gather gives {data.resource
-              .gathering_exp}
-            experience and can increase Radiant Seeker.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer -->
-      <!-- Source: server-scripts/GatherItem.cs:Update -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">3</span>
-        <div>
-          <p class="font-medium">See whether you find Radiant Aether.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Each spark has a 5% to 25% chance to give Radiant Aether, depending
-            on your Radiant Seeker skill. The spark returns after a random
-            {mechanics.respawnSeconds[0]} to {mechanics.respawnSeconds[1].toLocaleString()}
-            seconds (1 minute 40 seconds to 1 hour).
-          </p>
-        </div>
-      </li>
-    </ol>
-    <!-- Source: server-scripts/ScriptableItem.cs:23-31 — sellPrice, sellable, and tradable are separate item fields. -->
-    <!-- Source: exported-data/items.json — radiant_aether has sell_price 15 and tradable false. -->
-    <p class="text-muted-foreground">
-      Radiant Aether cannot be traded to another player, but it can be sold to a
-      merchant.
-    </p>
-  </section>
 
   <section id="chance" class="space-y-4">
     <h2 class="text-xl font-semibold">Aether chance</h2>
@@ -229,6 +181,17 @@
     </div>
   </section>
 
+  <section id="how-it-works" class="space-y-3">
+    <h2 class="text-xl font-semibold">How Radiant Sparks work</h2>
+    <!-- Source: server-scripts/GatherItem.cs:327-400,448-451 — a spark has no tool or skill threshold; each gather rolls for Radiant Aether. -->
+    <!-- Source: server-scripts/GatherItem.cs:379-382 — each attempt starts a random 100–3,600 second respawn wait. -->
+    <p class="max-w-2xl text-muted-foreground">
+      Gather sparks without a tool. Whether or not you find Radiant Aether, each
+      spark returns after {mechanics
+        .respawnSeconds[0]}–{mechanics.respawnSeconds[1].toLocaleString()} seconds.
+    </p>
+  </section>
+
   <section id="combat" class="space-y-4">
     <h2 class="text-xl font-semibold">Radiant Aether in combat</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
@@ -296,10 +259,13 @@
         >
           <div class="flex min-w-0 items-center gap-2 text-muted-foreground">
             <Shield class="h-5 w-5 shrink-0 text-sky-500" />
-            <span>When a hostile area skill targets your party</span>
+            <span
+              >When hostile area damage or a debuff targets players carrying
+              Aether</span
+            >
           </div>
           <span class="pl-7 text-xs font-medium text-sky-500 sm:pl-0"
-            >Chance depends on party size</span
+            >Chance depends on the number of eligible Aether carriers</span
           >
         </div>
         <h3 class="mt-2 font-semibold">Cancel the area skill for everyone</h3>

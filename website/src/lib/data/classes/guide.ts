@@ -5,9 +5,9 @@ import type { ClassGuide } from "$lib/types/classes";
 export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   warrior: {
     attributes: {
-      text: "Strength raises physical damage and maximum rage. Constitution raises health and block chance.",
+      text: "Strength raises physical damage and maximum rage. Each Constitution point adds 25 maximum health and 0.03 percentage points of block chance. Constitution adds no health recovery.",
       source:
-        "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-16,73-76 — attribute effects",
+        "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-25,73-76; server-scripts/Health.cs:28-44 — Constitution adds maximum health, not recovery",
     },
     equipment: {
       text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
@@ -31,9 +31,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   cleric: {
     attributes: {
-      text: "Wisdom increases healing and buffs that grant Health, defense, or magic resistance. Intelligence raises mana and magic damage.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain round(Wisdom × 0.15). Intelligence adds 20 maximum mana and rounded 1.5 magic damage per point.",
       source:
-        "Source: server-scripts/Wisdom.cs:107-114,129-156; server-scripts/Intelligence.cs:21-39 — attribute effects",
+        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
       text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
@@ -59,9 +59,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   druid: {
     attributes: {
-      text: "Wisdom increases healing and buffs that grant Health, defense, or magic resistance. Intelligence raises mana and magic damage.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain round(Wisdom × 0.15). Intelligence adds 20 maximum mana and rounded 1.5 magic damage per point.",
       source:
-        "Source: server-scripts/Wisdom.cs:107-114,129-156; server-scripts/Intelligence.cs:21-39 — attribute effects",
+        "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
       text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
@@ -107,6 +107,20 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         href: "/mechanics/combat#wild-strike",
         linkText: "Wild Strike damage",
       },
+      {
+        text: "Game defect: With no main-hand weapon, a bow attack subtracts the bow's own damage. Equip a melee weapon to keep the bow's damage.",
+        source:
+          "Source: server-scripts/TargetProjectileSkill.cs:189-200; server-scripts/Equipment.cs:515-525 — bow-only equipment makes the bow subtract its own damage",
+        href: "/mechanics/combat#damage-formulas",
+        linkText: "Bow damage and defect note",
+      },
+      {
+        text: "Game defect: A broken bow subtracts its damage from melee attacks despite giving none. Repair or unequip the bow before melee combat.",
+        source:
+          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:218-222; server-scripts/FrontalDamageSkill.cs:88-92 — broken bows are still subtracted",
+        href: "/mechanics/combat#damage-formulas",
+        linkText: "Broken-bow damage and defect note",
+      },
     ],
   },
   rogue: {
@@ -133,13 +147,20 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },
+      {
+        text: "Game defect: A broken off-hand weapon subtracts half its damage, rounded up, from melee attacks despite giving none. Repair or unequip it before melee combat.",
+        source:
+          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:223-227 — broken off-hand weapons are still subtracted",
+        href: "/mechanics/combat#damage-formulas",
+        linkText: "Broken-weapon damage and defect note",
+      },
     ],
   },
   wizard: {
     attributes: {
-      text: "Intelligence raises mana and magic damage. Dexterity raises accuracy and critical chance.",
+      text: "Each Intelligence point adds 20 maximum mana and rounded 1.5 magic damage. Dexterity raises accuracy and critical chance.",
       source:
-        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — attribute effects",
+        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — Intelligence increases maximum mana and magic damage",
     },
     equipment: {
       text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",

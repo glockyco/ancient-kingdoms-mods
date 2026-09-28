@@ -3,6 +3,7 @@ import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import { altarDescription } from "$lib/server/meta-description";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import type {
   AltarDetailPageData,
   AltarInfo,
@@ -208,6 +209,10 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
     estimatedDurationSeconds: altarRaw.estimated_duration_seconds as number,
   };
 
+  const itemIconPaths = getItemIconPaths(db, [
+    ...rewards.flatMap((reward) => (reward.itemId ? [reward.itemId] : [])),
+    ...(altar.requiredActivationItemId ? [altar.requiredActivationItemId] : []),
+  ]);
   db.close();
 
   // Generate meta description
@@ -232,6 +237,7 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
     altar,
     description,
     rewards,
+    itemIconPaths,
     waves,
     bosses,
   };

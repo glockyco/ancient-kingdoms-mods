@@ -84,26 +84,6 @@
     </div>
   </div>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Hunting works</h2>
-    <!-- Source: server-scripts/Monster.cs:2952-2965 — only isHunt kills record Hunting and can improve the skill. -->
-    <p class="text-muted-foreground">
-      <span class="block">Only creatures in the Hunting journal count.</span>
-      <span class="block">Their kills can improve Hunting skill.</span>
-    </p>
-    <!-- Source: server-scripts/Monster.cs:2981-3055 — non-boss isHunt monsters add half the player's Hunting fraction to above-Normal item drop chances. -->
-    <p class="text-muted-foreground">
-      <span class="block"
-        >Against non-boss Hunting-journal creatures, each 10% Hunting adds 5
-        percentage points to the drop chance of items above Normal quality.</span
-      >
-      <span class="block"
-        >Other creatures and Normal-quality drops get no bonus.</span
-      >
-    </p>
-  </section>
-
-  <!-- Calculator -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
@@ -199,5 +179,19 @@
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Hunting works</h2>
+    <!-- Source: server-scripts/Monster.cs:2952-2965 — kills of isHunt creatures record Hunting progress and can increase skill. -->
+    <p class="text-muted-foreground">
+      Only kills of Hunting-journal targets can increase Hunting skill.
+    </p>
+    <!-- Source: server-scripts/Monster.cs:2981-2982,3049-3055 — non-boss hunt targets add half the Hunting fraction to item drops above Normal quality; bosses use a different loot path. -->
+    <p class="text-muted-foreground">
+      Against non-boss hunt targets, each 10% Hunting adds 5 percentage points
+      to the drop chance of items above Normal quality. Other targets and
+      Normal-quality items get no bonus.
+    </p>
   </section>
 </div>

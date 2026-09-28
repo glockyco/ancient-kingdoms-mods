@@ -149,7 +149,6 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
         ("item_usages_quest", "quest_id"),
         ("item_usages_recipe", "item_id"),
         ("item_zones_obtainable", "item_id"),
-        ("item_zones_usable", "item_id"),
         ("monster_skills", "monster_id"),
         ("monster_spawns", "source_altar_activation_item_id"),
         ("monster_spawns", "source_monster_id"),
@@ -213,7 +212,6 @@ JSON_MENTIONS: frozenset[tuple[str, str]] = frozenset(
     {
         ("alchemy_recipes", "materials"),
         ("crafting_recipes", "materials"),
-        ("items", "alchemy_recipe_materials"),
         ("quests", "equip_items"),
         ("quests", "gather_items"),
         ("quests", "required_items"),

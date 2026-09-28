@@ -11,12 +11,13 @@
     { id: "map-notes", label: "Personal Map Notes" },
     { id: "binding-and-travel", label: "Binding and Travel" },
     { id: "portals", label: "Portals and Entry Requirements" },
+    { id: "seasonal-events", label: "Seasonal Events" },
   ];
 </script>
 
 <Seo
   title="World and Travel - Ancient Kingdoms"
-  description="Game modes, exploration rewards, personal map notes, binding, travel, and portal requirements in Ancient Kingdoms."
+  description="Game modes, exploration rewards, seasonal events, personal map notes, binding, travel, and portal requirements in Ancient Kingdoms."
   path="/mechanics/world"
 />
 
@@ -277,7 +278,8 @@
             <tr class="border-b border-border/60">
               <th scope="row" class="py-2 pr-6 text-left font-medium">Key</th>
               <td class="py-2"
-                >You or one online party member must carry a required key.</td
+                >A key from any online party member suffices unless each player
+                needs their own.</td
               >
             </tr>
             <tr>
@@ -294,17 +296,17 @@
       <!-- Source: server-scripts/Portal.cs:47-63 — requiresEveryoneKey disallows a party key on walk-in portals; level and total item level are checked per player. server-scripts/InteractablePortal.cs:98-115 and server-scripts/PlayerParty.cs:203-213 — interactable portals accept a key from an online party member and check the interacting player's own thresholds. -->
       <p>
         <span class="block"
-          >At some walk-in portals, one online party member needs a key for the
-          group.</span
+          >At some walk-in portals, a key from any online party member admits
+          the player.</span
         >
         <span class="block"
-          >When a portal requires everyone's key, every party member needs one.</span
+          >When a portal requires everyone's key, each player needs their own.</span
         >
         <span class="block"
-          >Portals you interact with accept a key from an online party member.</span
+          >Portals you interact with accept a key from any online party member.</span
         >
         <span class="block"
-          >Each traveler still needs the required character level and total item
+          >Each player still needs the required character level and total item
           level.</span
         >
       </p>
@@ -317,6 +319,29 @@
         <span class="block"
           >Entering a dungeon dismounts you, and you cannot mount inside.</span
         >
+      </p>
+    </Card.Content>
+  </Card.Root>
+  <Card.Root id="seasonal-events" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Seasonal Events</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-3 text-muted-foreground">
+      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2217-2227 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
+      <p>
+        <span class="font-medium text-foreground"
+          >Halloween: October 19 through November 1, inclusive (UTC).</span
+        >
+        Halloween monsters can appear only while the event is active. See <MechanicsLink
+          section="monster-spawns#other-spawns"
+          >seasonal monster spawns</MechanicsLink
+        >.
+      </p>
+      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Npc.cs:326-340,785-792,1426-1432 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
+      <p>
+        <span class="font-medium text-foreground"
+          >Winter Festival: December 19 through January 6, inclusive (UTC).</span
+        > Winter Festival NPCs are unavailable outside the event.
       </p>
     </Card.Content>
   </Card.Root>

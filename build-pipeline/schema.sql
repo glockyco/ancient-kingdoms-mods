@@ -421,7 +421,6 @@ CREATE TABLE items (
     recipe_potion_learned_id TEXT REFERENCES items(id),
     recipe_potion_learned_name TEXT,
     alchemy_recipe_level_required INTEGER,
-    alchemy_recipe_materials TEXT,  -- JSON: [{"item_id": "water", "item_name": "Water", "amount": 1}, ...]
     taught_by_recipe_id TEXT REFERENCES items(id),  -- Reverse: which recipe teaches this potion
     taught_by_recipe_name TEXT,
     alchemy_exp INTEGER,              -- EXP granted when crafting this potion (from alchemy_recipes)
@@ -809,18 +808,6 @@ CREATE TABLE item_zones_obtainable (
 );
 CREATE INDEX idx_item_zones_obtainable_zone ON item_zones_obtainable(zone_id);
 CREATE INDEX idx_item_zones_obtainable_source ON item_zones_obtainable(source_type);
-
--- Items usable in specific zones
-CREATE TABLE item_zones_usable (
-    item_id TEXT NOT NULL REFERENCES items(id),
-    zone_id TEXT NOT NULL REFERENCES zones(id),
-    usage_type TEXT NOT NULL CHECK (usage_type IN (
-        'recipe', 'quest', 'currency', 'altar', 'portal', 'chest'
-    )),
-    PRIMARY KEY (item_id, zone_id, usage_type)
-);
-CREATE INDEX idx_item_zones_usable_zone ON item_zones_usable(zone_id);
-CREATE INDEX idx_item_zones_usable_usage ON item_zones_usable(usage_type);
 
 -- =============================================================================
 -- MONSTER SPAWNS

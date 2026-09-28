@@ -31,6 +31,13 @@
     fishingSpotSuccessChance,
     type FishPoolItem,
   } from "$lib/utils/fishing";
+  import {
+    PROFESSION_MECHANICS,
+    isEffortlessAtTier,
+    linearProcChance,
+    rawTierSuccessChance,
+    skillGainChance,
+  } from "$lib/data/professions/mechanics";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
   import Gem from "@lucide/svelte/icons/gem";
@@ -180,40 +187,6 @@
     { itemId: "fishermans_trousers", itemName: "Fisherman's Trousers" },
   ];
 
-  // Source: server-scripts/Utils.cs:GetSuccessProbHerbalism — tiered plant gather success
-  function getHerbalismSuccessChance(resourceLevel: number): number {
-    const skill = skillLevel / 100;
-    switch (resourceLevel) {
-      case 0:
-        return 100;
-      case 1:
-        return Math.min(100, (0.3 + skill * 2) * 100);
-      case 2:
-        return Math.min(100, (0.15 + skill) * 100);
-      case 3:
-        return Math.min(100, skill * 100);
-      default:
-        return Math.min(100, skill * 0.95 * 100);
-    }
-  }
-
-  // Source: server-scripts/Utils.cs:GetSuccessProbMining — tiered mineral gather success
-  function getMiningSuccessChance(resourceLevel: number): number {
-    const skill = skillLevel / 100;
-    switch (resourceLevel) {
-      case 0:
-        return Math.min(100, (0.8 + pickaxeQuality + skill) * 100);
-      case 1:
-        return Math.min(100, (0.3 + pickaxeQuality * 0.2 + skill) * 100);
-      case 2:
-        return Math.min(100, (pickaxeQuality * 0.15 + skill * 0.6) * 100);
-      case 3:
-        return Math.min(100, (pickaxeQuality * 0.1 + skill * 0.5) * 100);
-      default:
-        return Math.min(100, (pickaxeQuality * 0.05 + skill * 0.4) * 100);
-    }
-  }
-
   function getSuccessChanceColor(chance: number): string {
     if (chance >= 100) return "text-green-500";
     if (chance >= 75) return "text-lime-500";
@@ -222,47 +195,24 @@
     return "text-red-500";
   }
 
-  // Skill gain chance: 70% at 0 skill, down to 20% at 100% skill
-  function getSkillGainChance(): number {
-    const skill = skillLevel / 100;
-    return Math.max(0, (0.7 - skill / 2) * 100);
-  }
-
-  // Skill gain amount: Random(1-3) / (successChance * 1000)
-  function getSkillGainAmount(successChance: number): [number, number] {
-    if (successChance <= 0) return [0, 0];
-    const successFraction = successChance / 100;
-    const min = (1 / (successFraction * 1000)) * 100;
-    const max = (3 / (successFraction * 1000)) * 100;
-    return [min, max];
-  }
-
-  // Effortless thresholds
-  function isEffortless(resourceLevel: number): boolean {
-    const skill = skillLevel / 100;
-    switch (resourceLevel) {
-      case 0:
-        return skill >= 0.25;
-      case 1:
-        return skill >= 0.5;
-      case 2:
-        return skill >= 0.75;
-      default:
-        return false;
-    }
-  }
-
-  // Source: server-scripts/GatherItem.cs:446-451 — the Radiant Spark branch uses 0.05 + player.radiantSekeerLevel * 0.2
-  function getRadiantAetherChance(): number {
-    const skill = skillLevel / 100;
-    return (0.05 + skill * 0.2) * 100;
-  }
-
   const successChance = $derived.by(() => {
     if (resource.is_plant) {
-      return getHerbalismSuccessChance(resource.level);
+      return (
+        rawTierSuccessChance(
+          PROFESSION_MECHANICS.herbalism.success,
+          resource.level,
+          skillLevel,
+        ) * 100
+      );
     } else if (resource.is_mineral) {
-      return getMiningSuccessChance(resource.level);
+      return (
+        rawTierSuccessChance(
+          PROFESSION_MECHANICS.mining.success,
+          resource.level,
+          skillLevel,
+          pickaxeQuality,
+        ) * 100
+      );
     } else if (resource.is_fishing_spot) {
       return (
         fishingSpotSuccessChance({
@@ -275,11 +225,46 @@
     return 0;
   });
 
+  // Source: server-scripts/GatherItem.cs:343-365,698-705 — the game refuses attempts below these success floors.
+  const attemptFloor = $derived(
+    resource.is_plant
+      ? PROFESSION_MECHANICS.herbalism.success.floor
+      : resource.is_mineral
+        ? PROFESSION_MECHANICS.mining.success.floor
+        : resource.is_fishing_spot
+          ? PROFESSION_MECHANICS.fishing.success.floor
+          : 0,
+  );
+  const canAttempt = $derived(successChance >= attemptFloor * 100);
+
   const effortless = $derived.by(() => {
-    // Radiant sparks are never effortless (always grant skill)
     if (resource.is_radiant_spark) return false;
-    return isEffortless(resource.level);
+    const thresholds = resource.is_plant
+      ? PROFESSION_MECHANICS.herbalism.effortless
+      : resource.is_mineral
+        ? PROFESSION_MECHANICS.mining.effortless
+        : PROFESSION_MECHANICS.fishing.effortless;
+    return isEffortlessAtTier(thresholds, resource.level, skillLevel);
   });
+
+  const gatheringSkillGainRule = $derived(
+    resource.is_plant
+      ? PROFESSION_MECHANICS.herbalism.skillGain
+      : resource.is_mineral
+        ? PROFESSION_MECHANICS.mining.skillGain
+        : PROFESSION_MECHANICS.radiant_seeker.skillGain,
+  );
+  const gatheringSkillGainChance = $derived(
+    !canAttempt || skillLevel >= 100 || effortless
+      ? 0
+      : skillGainChance(gatheringSkillGainRule, skillLevel) * 100,
+  );
+  const radiantAetherChance = $derived(
+    linearProcChance(
+      PROFESSION_MECHANICS.radiant_seeker.procChance,
+      skillLevel,
+    ) * 100,
+  );
 
   const fishingMasteryProcChance = $derived(
     resource.is_fishing_spot
@@ -300,11 +285,19 @@
     fishingMasteryGainRange(successChance / 100),
   );
 
-  const skillGain = $derived(
-    resource.is_fishing_spot
-      ? [fishingMasteryGain.min, fishingMasteryGain.max]
-      : getSkillGainAmount(successChance),
-  );
+  const skillGain = $derived.by(() => {
+    if (!canAttempt) return [0, 0];
+    if (resource.is_fishing_spot) {
+      return [fishingMasteryGain.min, fishingMasteryGain.max];
+    }
+    const success = resource.is_radiant_spark ? 1 : successChance / 100;
+    if (success <= 0) return [0, 0];
+    const { range, divisor } = gatheringSkillGainRule;
+    return [
+      (range[0] / (success * divisor)) * 100,
+      (range[1] / (success * divisor)) * 100,
+    ];
+  });
 
   const nonTrashDrops = $derived(
     drops.filter((item: GatheringResourceDrop) => !item.is_fishing_trash),
@@ -660,10 +653,10 @@
               </div>
               <div
                 class="font-mono font-medium {getSuccessChanceColor(
-                  getRadiantAetherChance(),
+                  radiantAetherChance,
                 )}"
               >
-                {getRadiantAetherChance().toFixed(1)}%
+                {radiantAetherChance.toFixed(1)}%
               </div>
             </div>
           {:else}
@@ -674,7 +667,15 @@
                   successChance,
                 )}"
               >
-                {successChance.toFixed(0)}%
+                {#if canAttempt}
+                  {successChance.toFixed(0)}%
+                {:else}
+                  <span class="text-sm">
+                    Cannot attempt yet. Need at least {(
+                      attemptFloor * 100
+                    ).toFixed(0)}% success.
+                  </span>
+                {/if}
               </div>
             </div>
           {/if}
@@ -682,12 +683,12 @@
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
                 ? "Fishing gain chance per cast"
-                : "Skill Gain Chance"}
+                : "Skill gain chance after gathering"}
             </div>
             <div class="font-mono font-medium">
               {resource.is_fishing_spot
                 ? fishingMasteryProcChance.toFixed(0)
-                : getSkillGainChance().toFixed(0)}%
+                : gatheringSkillGainChance.toFixed(0)}%
             </div>
           </div>
           <div>
@@ -697,10 +698,10 @@
                 : "Skill Gain Amount"}
             </div>
             <div class="font-mono">
-              {#if effortless}
+              {#if !canAttempt || effortless || skillLevel >= 100}
                 <span class="text-muted-foreground">—</span>
               {:else if resource.is_radiant_spark}
-                0.10% – 0.30%
+                {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%
                 <span class="text-muted-foreground text-xs">(fixed)</span>
               {:else if successChance > 0}
                 {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%

@@ -3,8 +3,10 @@
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
+  import { Alert } from "$lib/components/ui/alert";
   import Seo from "$lib/components/Seo.svelte";
   import type { DamageFormulaKind, HealBonusKind } from "$lib/types/skills";
+  import Info from "@lucide/svelte/icons/info";
 
   // ---------------------------------------------------------------------------
   // Static formula metadata
@@ -26,6 +28,7 @@
     { id: "special", label: "Special Mechanics" },
   ];
 
+  // Source: server-scripts/Equipment.cs:230-247,515-525; TargetDamageSkill.cs:218-227; FrontalDamageSkill.cs:88-92; TargetProjectileSkill.cs:189-200 — damage formulas describe working equipment, not subtraction of absent or broken weapon damage.
   const DAMAGE_FORMULA_DESC: Record<DamageFormulaKind, string> = {
     normal: "STR × 1.0 + damage from all equipment",
     ranger_melee: "STR × 1.0 + equipment damage, excluding bow damage",
@@ -43,14 +46,15 @@
       "STR × 1.0 + main-hand damage + ⌊off-hand damage × 0.5⌋ + other equipment damage + DEX × 2.5",
     magic_spell:
       "INT × 1.5 + magic damage from casting weapon and other equipment",
-    // Source: BardFinalCadenceSkill.cs:45-54 and Charisma.cs:21-36.
+    // Source: server-scripts/BardFinalCadenceSkill.cs:67-68 and Charisma.cs:27-36.
     bard_final_cadence:
       "round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2)))",
     magic_weapon:
       "INT × 1.5 + STR × 1.0 + equipment damage. Physical and magic portions are reduced separately",
     magic_weapon_ranger:
       "Magic: INT × 1.5 + magic equipment. Physical: STR × 1.0 + non-bow equipment damage. Wild Strike instead uses its empowered auto-attack rule below.",
-    manaburn: "Current Rage or Mana × 2 (ignores mitigation and resistance)",
+    manaburn:
+      "Current Rage × 2 (Rageblow) or current Mana × 3 (Mana Burn), without mitigation or resistance",
     monster_melee: "Physical damage based on monster level",
     monster_magic: "Magic damage based on monster level",
   };
@@ -327,6 +331,23 @@
           </tbody>
         </table>
       </div>
+      <Alert variant="info">
+        <Info />
+        <div>
+          <!-- Source: server-scripts/TargetProjectileSkill.cs:189-200; Equipment.cs:515-525 — with no main-hand weapon, a bow attack subtracts the bow's own damage. -->
+          <p class="font-medium">Weapon damage defects in the game</p>
+          <p>
+            With only a bow equipped, a Ranger's bow attack loses the bow's
+            listed damage. Equip a melee weapon in the main hand to avoid this.
+          </p>
+          <!-- Source: server-scripts/Equipment.cs:230-247; TargetDamageSkill.cs:218-227; FrontalDamageSkill.cs:88-92 — broken slot 13 equipment adds no damage but is still subtracted from melee damage. -->
+          <p>
+            A broken bow still subtracts its full damage from Ranger melee
+            attacks. A broken off-hand weapon subtracts half its damage, rounded
+            up, from Rogue melee attacks. Repair or unequip the broken item.
+          </p>
+        </div>
+      </Alert>
     </Card.Content>
   </Card.Root>
 

@@ -430,34 +430,43 @@
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <h3 class="text-sm font-semibold">Skill rank</h3>
-            <!-- Source: server-scripts/PetSkills.cs:OnStartServer — skill rank from owner level and veteran points. -->
+            <!-- Source: server-scripts/PetSkills.cs:25-45 — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards. -->
             <p class="mt-1 font-mono text-sm">
               ⌊level ÷ 5⌋ + ⌊veteran level ÷ 10⌋
             </p>
             <p class="mt-1 text-sm text-muted-foreground">
+              {#if cls === "Bard"}Bard skills have a minimum rank of 1.{/if}
               Each skill stops at its max rank.
             </p>
           </div>
           <div>
             <h3 class="text-sm font-semibold">Veteran levels</h3>
-            <!-- Source: server-scripts/Player.cs:10352-10365 — each summon adds total veteran points × 0.0025 to the Health and resource multipliers. -->
+            <!-- Source: server-scripts/Player.cs:4627-4652,10352-10365; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
-              {cls === "Bard"
-                ? "+0.25% Health multiplier per veteran level."
-                : `+0.25% Health and ${resourceName} multipliers per veteran level.`}
+              Each veteran level adds 0.25% of base Health to maximum Health{#if classDef.role === "mana" && cls !== "Bard"}
+                and 0.25% of base Mana to maximum Mana{/if}, before rounding.
             </p>
             <p class="mt-1 text-sm text-muted-foreground">
-              At veteran level {veteran}, {cls === "Bard"
-                ? `the Health multiplier gains +${veteranBonus}%`
-                : `the Health and ${resourceName} multipliers gain +${veteranBonus}%`}.
+              At veteran level {veteran}, the bonus is +{veteranBonus}% of base
+              Health{#if classDef.role === "mana" && cls !== "Bard"}
+                and +{veteranBonus}% of base Mana{/if}.
             </p>
+            {#if classDef.role === "energy"}
+              <p class="mt-1 text-sm text-muted-foreground">
+                Maximum Rage does not increase from veteran levels.
+              </p>
+            {:else if cls === "Bard"}
+              <p class="mt-1 text-sm text-muted-foreground">
+                A Bard's active-song limit does not rise with veteran levels.
+              </p>
+            {/if}
           </div>
         </div>
 
         <Alert variant="info">
           <Info />
           <div>
-            <!-- Source: server-scripts/Player.cs:4629-4652, Player.cs:10347-10348, Database.cs:SaveNewMercenary — the level-up bonus changes live stats only; a summon restores the saved hire roll, or rolls again when that roll was 0. -->
+            <!-- Source: server-scripts/Player.cs:4627-4652,10077-10122,10337-10365; Database.cs:1900-1921 — veteran damage is not saved, and a zero hire roll triggers separate random damage rolls on every summon. -->
             <p class="font-medium">
               Veteran damage bonus disappears after summoning again
             </p>
@@ -466,8 +475,12 @@
               physical damage and +1 magic damage.
             </p>
             <p>
-              The game does not save this bonus. The next summon restores the
-              damage rolled at hire, or rolls again if that roll was 0.
+              The game does not save this bonus. The next summon restores a
+              positive hire roll for both damage values.
+            </p>
+            <p>
+              If the saved hire roll is 0, the game rolls physical and magic
+              damage separately on every summon.
             </p>
           </div>
         </Alert>

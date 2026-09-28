@@ -11,6 +11,7 @@ import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { gatheringResourceDescription } from "$lib/server/meta-description";
+import { gatheringResourcePageIds } from "../../../../scripts/gathering-resource-ids.mjs";
 
 export const prerender = true;
 
@@ -21,15 +22,7 @@ export const entries: EntryGenerator = () => {
     .all() as { id: string; is_fishing_spot: number }[];
   db.close();
 
-  const ids = new Set<string>();
-  for (const resource of resources) {
-    ids.add(resource.id);
-    if (resource.is_fishing_spot) {
-      ids.add(resource.id.replace(/_[0-9a-f]{8}$/u, ""));
-    }
-  }
-
-  return Array.from(ids).map((id) => ({ id }));
+  return gatheringResourcePageIds(resources).map((id) => ({ id }));
 };
 
 export const load: PageServerLoad = ({ params }) => {

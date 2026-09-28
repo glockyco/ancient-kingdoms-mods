@@ -18,7 +18,6 @@ ZONE_REFERENCING_TABLES = {
     "gathering_resource_spawns",
     "houses",
     "item_zones_obtainable",
-    "item_zones_usable",
     "items",
     "luck_tokens",
     "monster_spawns",

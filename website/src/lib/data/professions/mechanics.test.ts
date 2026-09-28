@@ -70,6 +70,23 @@ describe("profession mechanics record", () => {
     ).toBeCloseTo(0.63);
   });
 
+  // Source: server-scripts/GatherItem.cs:567-575 — low tiers stop granting skill above strict thresholds.
+  test("herbalism gain uses a quadratic chance and strict effortless tiers", () => {
+    const mechanics = PROFESSION_MECHANICS.herbalism;
+    expect(skillGainChance(mechanics.skillGain, 50)).toBeCloseTo(0.8);
+    expect(skillGainChance(mechanics.skillGain, 100)).toBeCloseTo(0.35);
+    expect(isEffortlessAtTier(mechanics.effortless, 1, 50)).toBe(false);
+    expect(isEffortlessAtTier(mechanics.effortless, 1, 51)).toBe(true);
+    expect(isEffortlessAtTier(mechanics.effortless, 3, 100)).toBe(false);
+  });
+
+  // Source: server-scripts/GatherItem.cs:343-350 — a plant below 10% cannot be gathered.
+  test("herbalism reaches the attempt floor at 10% tier-four skill", () => {
+    const rule = PROFESSION_MECHANICS.herbalism.success;
+    expect(rawTierSuccessChance(rule, 4, 9)).toBeLessThan(rule.floor);
+    expect(rawTierSuccessChance(rule, 4, 10)).toBeCloseTo(rule.floor);
+  });
+
   test("uses strict no-skill thresholds", () => {
     const thresholds = PROFESSION_MECHANICS.mining.effortless;
     expect(isEffortlessAtTier(thresholds, 0, 25)).toBe(false);

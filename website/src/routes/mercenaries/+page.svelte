@@ -405,7 +405,7 @@
         <div>
           <div>It levels up with you.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel, PetSkills.cs:OnStartServer, Player.cs:10352-10365 -->
+            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,4627-4652,10352-10365; PetSkills.cs:25-45; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
             <p>
               <span class="block">A mercenary always has your level.</span>
               <span class="block">
@@ -417,15 +417,24 @@
                 each skill's max rank.
               </span>
               <span class="block">
-                Each veteran level adds 0.25% to its Health multiplier and to
-                its Mana or Rage multiplier.
+                Each veteran level adds 0.25% of base Health to maximum Health
+                and, for mana users other than Bards, 0.25% of base Mana to
+                maximum Mana, before rounding.
+              </span>
+              <span class="block">
+                Warriors and Rogues gain no maximum Rage from veteran levels.
+              </span>
+              <span class="block">
+                A Bard's active-song limit does not rise with veteran levels.
               </span>
             </p>
+            <!-- Source: server-scripts/PetSkills.cs:25-45 — Bard skill rank has a minimum of 1, and every skill has its own maximum rank. -->
             <p
               class="inline-block rounded-md bg-muted/50 px-3 py-1.5 font-mono text-sm text-foreground"
             >
               skill rank = ⌊level ÷ 5⌋ + ⌊veteran level ÷ 10⌋
             </p>
+            <p>Bard skill ranks have a minimum of 1.</p>
             <!-- Source: server-scripts/BardMercenarySkills.cs:60-104 — a Bard mercenary gains a third combat song at level 40, and Final Cadence requires level 50 with all combat songs active. -->
             <p>
               <span class="block"
@@ -441,7 +450,7 @@
             <Alert variant="info">
               <Info />
               <div>
-                <!-- Source: server-scripts/Player.cs:4629-4652, Player.cs:10347-10348, Database.cs:SaveNewMercenary -->
+                <!-- Source: server-scripts/Player.cs:4627-4652,10077-10122,10337-10365; Database.cs:1900-1921 — veteran damage is not saved, and a zero hire roll triggers separate random damage rolls on every summon. -->
                 <p class="font-medium">
                   Veteran damage bonus disappears after summoning again
                 </p>
@@ -450,8 +459,12 @@
                   physical damage and +1 magic damage.
                 </p>
                 <p>
-                  The game does not save this bonus. The next summon restores
-                  the damage rolled at hire, or rolls again if that roll was 0.
+                  The game does not save this bonus. The next summon restores a
+                  positive hire roll for both damage values.
+                </p>
+                <p>
+                  If the saved hire roll is 0, the game rolls physical and magic
+                  damage separately on every summon.
                 </p>
               </div>
             </Alert>

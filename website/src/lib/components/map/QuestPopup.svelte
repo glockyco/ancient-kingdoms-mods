@@ -5,6 +5,7 @@
   import { buildEntityUrl } from "$lib/map/url-state";
   import {
     loadQuestPopupDetails,
+    loadMapItemIconPaths,
     type QuestPopupDetails,
   } from "$lib/queries/popup";
   import { getQualityTextColorClass } from "$lib/utils/format";
@@ -36,18 +37,34 @@
   let details = $state<QuestPopupDetails | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let itemIconPaths = $state<Record<string, string | null> | null>(null);
 
   $effect(() => {
     isLoading = true;
     error = null;
     details = null;
+    itemIconPaths = null;
 
     loadQuestPopupDetails(questId)
-      .then((d) => {
+      .then(async (d) => {
+        const paths = await loadMapItemIconPaths(
+          d
+            ? [
+                ...d.rewardItems.map((item) => item.itemId),
+                ...d.objectives.flatMap((objective) =>
+                  objective.targetId &&
+                  ["gather", "have", "deliver", "equip"].includes(
+                    objective.type,
+                  )
+                    ? [objective.targetId]
+                    : [],
+                ),
+              ]
+            : [],
+        );
+        itemIconPaths = paths;
         details = d;
-        if (!d) {
-          error = "Quest not found";
-        }
+        if (!d) error = "Quest not found";
       })
       .catch((e) => {
         error = e instanceof Error ? e.message : "Failed to load quest";
@@ -195,6 +212,7 @@
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
+                  imageAvailable={itemIconPaths?.[obj.targetId]}
                   colorClass={getQualityTextColorClass(obj.quality ?? 0)}
                   class="truncate"
                   onSelect={onSelectItem}
@@ -206,6 +224,7 @@
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
+                  imageAvailable={itemIconPaths?.[obj.targetId]}
                   colorClass={getQualityTextColorClass(obj.quality ?? 0)}
                   class="truncate"
                   onSelect={onSelectItem}
@@ -217,6 +236,7 @@
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
+                  imageAvailable={itemIconPaths?.[obj.targetId]}
                   colorClass={getQualityTextColorClass(obj.quality ?? 0)}
                   class="truncate"
                   onSelect={onSelectItem}
@@ -227,6 +247,7 @@
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
+                  imageAvailable={itemIconPaths?.[obj.targetId]}
                   colorClass={getQualityTextColorClass(obj.quality ?? 0)}
                   class="truncate"
                   onSelect={onSelectItem}
@@ -286,6 +307,7 @@
               itemId={item.itemId}
               itemName={item.itemName}
               tooltipHtml={item.tooltipHtml}
+              imageAvailable={itemIconPaths?.[item.itemId]}
               colorClass={getQualityTextColorClass(item.quality)}
               class="truncate"
               onSelect={onSelectItem}
@@ -308,6 +330,7 @@
                 itemId={item.itemId}
                 itemName={item.itemName}
                 tooltipHtml={item.tooltipHtml}
+                imageAvailable={itemIconPaths?.[item.itemId]}
                 colorClass={getQualityTextColorClass(item.quality)}
                 class="truncate"
                 onSelect={onSelectItem}

@@ -449,35 +449,25 @@ function determineRecipeType(
   return "Crafting";
 }
 
-// Get recipe materials from a recipe (crafting or alchemy)
-function getRecipeMaterials(
+// Materials appear in item-name order, then item ID (and row ID for duplicates).
+export function getRecipeMaterials(
   db: Database.Database,
   recipeId: string,
   recipeType: "crafting" | "alchemy" | "scribing",
-): Array<{ item_id: string; amount: number }> {
-  const tableName =
-    recipeType === "crafting"
-      ? "crafting_recipes"
-      : recipeType === "alchemy"
-        ? "alchemy_recipes"
-        : "scribing_recipes";
-
-  const recipe = db
-    .prepare(`SELECT materials FROM ${tableName} WHERE id = ?`)
-    .get(recipeId) as { materials: string | null } | undefined;
-
-  if (!recipe?.materials) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(recipe.materials) as Array<{
-      item_id: string;
-      amount: number;
-    }>;
-  } catch {
-    return [];
-  }
+): Array<{ item_id: string; item_name: string; amount: number }> {
+  return db
+    .prepare(
+      `SELECT u.item_id, i.name AS item_name, u.amount
+       FROM item_usages_recipe u
+       JOIN items i ON i.id = u.item_id
+       WHERE u.recipe_id = ? AND u.recipe_type = ?
+       ORDER BY i.name COLLATE BINARY, i.id, u.id`,
+    )
+    .all(recipeId, recipeType) as Array<{
+    item_id: string;
+    item_name: string;
+    amount: number;
+  }>;
 }
 
 // Get merge components for items created by merging other items

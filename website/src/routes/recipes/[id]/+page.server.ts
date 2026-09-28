@@ -112,8 +112,7 @@ function loadCraftingRecipe(
         i.quality as result_quality,
         cr.result_amount,
         cr.station_type,
-        cr.crafting_exp,
-        cr.materials
+        cr.crafting_exp
       FROM crafting_recipes cr
       JOIN items i ON i.id = cr.result_item_id
       LEFT JOIN visual_assets va
@@ -132,7 +131,6 @@ function loadCraftingRecipe(
         result_amount: number;
         station_type: string | null;
         crafting_exp: number;
-        materials: string;
       }
     | undefined;
 
@@ -177,8 +175,7 @@ function loadAlchemyRecipe(
         i.taught_by_recipe_id,
         i.taught_by_recipe_name,
         ar.level_required,
-        ar.alchemy_exp,
-        ar.materials
+        ar.alchemy_exp
       FROM alchemy_recipes ar
       JOIN items i ON i.id = ar.result_item_id
       LEFT JOIN visual_assets va
@@ -198,7 +195,6 @@ function loadAlchemyRecipe(
         taught_by_recipe_name: string | null;
         level_required: number;
         alchemy_exp: number;
-        materials: string;
       }
     | undefined;
 
@@ -257,8 +253,7 @@ function loadScribingRecipe(
         va.public_path as result_visual_public_path,
         i.tooltip_html as result_tooltip_html,
         i.quality as result_quality,
-        sr.level_required,
-        sr.materials
+        sr.level_required
       FROM scribing_recipes sr
       JOIN items i ON i.id = sr.result_item_id
       LEFT JOIN visual_assets va
@@ -275,7 +270,6 @@ function loadScribingRecipe(
         result_tooltip_html: string | null;
         result_quality: number;
         level_required: number;
-        materials: string;
       }
     | undefined;
 

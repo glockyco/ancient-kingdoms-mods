@@ -125,24 +125,6 @@
     </div>
   </div>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Gathering Plants works</h2>
-    <!-- Source: server-scripts/GatherItem.cs:208-250,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
-    <p class="text-muted-foreground">
-      <span class="block">A growing plant cannot be gathered.</span>
-      <span class="block"
-        >You need at least a 10% success chance to harvest a plant.</span
-      >
-    </p>
-    <!-- Source: server-scripts/GatherItem.cs:379-400 — an allowed harvest starts regrowth before the success roll. -->
-    <p class="text-muted-foreground">
-      A ready plant starts regrowing when you attempt to harvest it with enough
-      inventory space and at least a 10% success chance, even if you gather
-      nothing.
-    </p>
-  </section>
-
-  <!-- Calculator -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
@@ -269,5 +251,15 @@
         {/each}
       </div>
     </div>
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Gathering Plants works</h2>
+    <!-- Source: server-scripts/GatherItem.cs:327-350,379-400 — only ready plants with a success chance of at least 10% can be attempted; accepted attempts start regrowth before the harvest roll. -->
+    <p class="text-muted-foreground">
+      A ready plant needs at least a 10% success chance and enough inventory
+      space to harvest. Once you attempt it, the plant starts regrowing even if
+      you gather nothing.
+    </p>
   </section>
 </div>

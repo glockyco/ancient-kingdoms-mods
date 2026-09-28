@@ -215,6 +215,7 @@
                       itemName={backpack.name}
                       colorClass={getQualityTextColorClass(backpack.quality)}
                       tooltipHtml={backpack.tooltip_html}
+                      imageAvailable={data.itemIconPaths[backpack.id]}
                       maxWidth="185px"
                     />
                   </td>
@@ -495,6 +496,7 @@
                         itemId={chest.id}
                         itemName={chest.name}
                         tooltipHtml={chest.tooltip_html}
+                        imageAvailable={data.itemIconPaths[chest.id]}
                       />
                     </td>
                     <td class="py-2 pr-4 font-mono"
