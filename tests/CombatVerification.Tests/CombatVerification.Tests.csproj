@@ -3,6 +3,9 @@
     <!-- Compiles repository sources only; the game install is not a build input. -->
     <RequiresGameInstall>false</RequiresGameInstall>
     <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <!-- Keep dotnet test on the VSTest adapter instead of MTP. -->
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -11,8 +14,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
-    <PackageReference Include="xunit"                  Version="2.*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="4.*" />
+    <PackageReference Include="xunit.v3"                  Version="4.0.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0" />
     <PackageReference Include="Newtonsoft.Json"        Version="13.0.4" />
   </ItemGroup>
 

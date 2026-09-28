@@ -25,7 +25,7 @@ public class SetupCommandTests
 
         var settings = new SetupCommand.Settings { NonInteractive = true };
         var command = new SetupCommand(tempRoot);
-        var result = await command.RunAsync(settings);
+        var result = await command.RunAsync(settings, TestContext.Current.CancellationToken);
 
         Assert.Equal(0, result);
         var contents = File.ReadAllText(propsPath);
@@ -55,7 +55,7 @@ public class SetupCommandTests
 
         var settings = new SetupCommand.Settings { NonInteractive = true };
         var command = new SetupCommand(tempRoot);
-        var result = await command.RunAsync(settings);
+        var result = await command.RunAsync(settings, TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
         Directory.Delete(tempRoot, recursive: true);

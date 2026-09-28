@@ -56,7 +56,7 @@ public class CommandRegistrationTests
             CommandCatalog.RegisterAll(config);
         });
 
-        Assert.Equal(0, app.Run(new[] { "--help" }));
+        Assert.Equal(0, app.Run(new[] { "--help" }, TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -68,6 +68,6 @@ public class CommandRegistrationTests
         app.Configure(CommandCatalog.RegisterAll);
 
         // A registered verb reaches its own help rather than failing to parse.
-        Assert.Equal(0, app.Run(new[] { verb, "--help" }));
+        Assert.Equal(0, app.Run(new[] { verb, "--help" }, TestContext.Current.CancellationToken));
     }
 }

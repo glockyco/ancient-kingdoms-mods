@@ -20,7 +20,7 @@ public class ExportCommandTests
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var command = CreateCommand(tempRoot, createExe: false);
 
-        var result = await command.RunAsync(new ExportCommand.Settings());
+        var result = await command.RunAsync(new ExportCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.Equal(ExitCodes.Unreachable, result);
         Directory.Delete(tempRoot, recursive: true);
@@ -38,7 +38,7 @@ public class ExportCommandTests
         var runner = new FakeProcessRunner();
         var command = CreateCommand(tempRoot, runner: runner);
 
-        var result = await command.RunAsync(new ExportCommand.Settings { Update = true });
+        var result = await command.RunAsync(new ExportCommand.Settings { Update = true }, TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
         Assert.Empty(runner.Calls);
@@ -53,7 +53,7 @@ public class ExportCommandTests
         runner.Enqueue(new ProcessResult(0, "", "", default));
         var command = CreateCommand(tempRoot, runner: runner);
 
-        await command.RunAsync(new ExportCommand.Settings { Screenshots = true });
+        await command.RunAsync(new ExportCommand.Settings { Screenshots = true }, TestContext.Current.CancellationToken);
 
         // Game launch args must not include --export-data or --export-screenshots
         var launchArgs = runner.Calls.Count > 0
@@ -91,7 +91,7 @@ public class ExportCommandTests
             },
             hotReplReadinessTimeout: TimeSpan.FromMilliseconds(100));
 
-        var result = await command.RunAsync(new ExportCommand.Settings());
+        var result = await command.RunAsync(new ExportCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.Equal(ExitCodes.ReadinessFailed, result);
         Assert.Contains("UnityDependencies_6000.3.17.zip", resultStore.ErrorDetails?.ToString());

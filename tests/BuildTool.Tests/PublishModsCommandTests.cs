@@ -30,7 +30,7 @@ public class PublishModsCommandTests
             runner.Enqueue(new ProcessResult(0, "", "", default));
             var command = new PublishModsCommand(tempRoot, runner);
 
-            var result = await command.RunAsync(new PublishModsCommand.Settings());
+            var result = await command.RunAsync(new PublishModsCommand.Settings(), TestContext.Current.CancellationToken);
 
             Assert.Equal(0, result);
             var call = Assert.Single(runner.Calls);
@@ -93,7 +93,7 @@ public class PublishModsCommandTests
             runner.Enqueue(new ProcessResult(1, "", "build failed", default));
             var command = new PublishModsCommand(tempRoot, runner);
 
-            var result = await command.RunAsync(new PublishModsCommand.Settings());
+            var result = await command.RunAsync(new PublishModsCommand.Settings(), TestContext.Current.CancellationToken);
 
             Assert.NotEqual(0, result);
             Assert.Equal("current-dll", File.ReadAllText(currentPath));

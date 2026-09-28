@@ -14,7 +14,7 @@ public class LogStreamTests
     public async Task ReadsIncrementalAppendsAndStopsOnCancellation()
     {
         var temp = Path.GetTempFileName();
-        await File.WriteAllTextAsync(temp, "line one\n");
+        await File.WriteAllTextAsync(temp, "line one\n", TestContext.Current.CancellationToken);
 
         using var cts = new CancellationTokenSource();
         var stream = new LogStream(temp, TimeSpan.FromMilliseconds(20));
@@ -24,11 +24,11 @@ public class LogStreamTests
         {
             await foreach (var chunk in stream.ReadAsync(cts.Token))
                 received.Add(chunk);
-        });
+        }, TestContext.Current.CancellationToken);
 
-        await Task.Delay(50);
-        await File.AppendAllTextAsync(temp, "line two\n");
-        await Task.Delay(100);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        await File.AppendAllTextAsync(temp, "line two\n", TestContext.Current.CancellationToken);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         cts.Cancel();
         try { await task; } catch (OperationCanceledException) { }
 
@@ -48,11 +48,11 @@ public class LogStreamTests
         var task = Task.Run(async () =>
         {
             await foreach (var _ in stream.ReadAsync(cts.Token)) { }
-        });
+        }, TestContext.Current.CancellationToken);
 
-        await Task.Delay(50);
-        await File.WriteAllTextAsync(temp, "appeared late\n");
-        await Task.Delay(100);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(temp, "appeared late\n", TestContext.Current.CancellationToken);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         cts.Cancel();
         try { await task; } catch (OperationCanceledException) { }
     }

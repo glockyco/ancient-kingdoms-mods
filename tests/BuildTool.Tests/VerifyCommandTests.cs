@@ -278,7 +278,7 @@ public sealed class VerifyCommandTests : IDisposable
             relevantProcessExists: _ => false);
 
         var exit = await command.RunAsync(
-            new VerifyCommand.Settings { AllowBuildMismatch = true });
+            new VerifyCommand.Settings { AllowBuildMismatch = true }, TestContext.Current.CancellationToken);
 
         // It proceeds past the gate; the run itself is what decides the outcome.
         Assert.DoesNotContain("does not match the decompiled evidence",

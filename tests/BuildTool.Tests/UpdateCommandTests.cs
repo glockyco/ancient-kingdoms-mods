@@ -24,7 +24,7 @@ public class UpdateCommandTests
         var runner = bottle.Runner();
         runner.OnValidate = () => bottle.SchedulerFinished("No Error");
 
-        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
+        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.Equal(0, result);
         Assert.Equal(2, runner.Calls.Count);
@@ -54,7 +54,7 @@ public class UpdateCommandTests
         var runner = bottle.Runner();
         runner.OnValidate = () => bottle.SchedulerFinished("No Error");
 
-        await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
+        await bottle.Command(runner).RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         var urls = runner.Calls
             .SelectMany(c => c.Arguments)
@@ -75,7 +75,7 @@ public class UpdateCommandTests
             bottle.SchedulerFinished("No Error");
         };
 
-        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
+        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.Equal(0, result);
         Assert.Equal("24878482", SteamAppManifests.Read(bottle.ManifestPath)!.BuildId);
@@ -96,7 +96,7 @@ public class UpdateCommandTests
         var elapsed = System.Diagnostics.Stopwatch.StartNew();
         var result = await bottle
             .Command(runner, completionTimeout: TimeSpan.FromSeconds(30))
-            .RunAsync(new UpdateCommand.Settings());
+            .RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
         elapsed.Stop();
 
         Assert.Equal(0, result);
@@ -115,7 +115,7 @@ public class UpdateCommandTests
 
         var result = await bottle
             .Command(runner, completionTimeout: TimeSpan.FromMilliseconds(200))
-            .RunAsync(new UpdateCommand.Settings());
+            .RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
     }
@@ -131,7 +131,7 @@ public class UpdateCommandTests
 
         var result = await bottle
             .Command(runner, completionTimeout: TimeSpan.FromMilliseconds(200))
-            .RunAsync(new UpdateCommand.Settings());
+            .RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
     }
@@ -143,7 +143,7 @@ public class UpdateCommandTests
         var runner = bottle.Runner();
         runner.OnValidate = () => bottle.SchedulerFinished("Suspended");
 
-        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
+        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
     }
@@ -161,7 +161,7 @@ public class UpdateCommandTests
 
         var result = await bottle
             .Command(runner, completionTimeout: TimeSpan.FromMilliseconds(200))
-            .RunAsync(new UpdateCommand.Settings());
+            .RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
     }
@@ -179,7 +179,7 @@ public class UpdateCommandTests
 
         var result = await bottle
             .Command(runner, manifestFlushTimeout: TimeSpan.FromMilliseconds(200))
-            .RunAsync(new UpdateCommand.Settings());
+            .RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
     }
@@ -199,7 +199,7 @@ public class UpdateCommandTests
 
         var result = await bottle
             .Command(runner, manifestFlushTimeout: TimeSpan.FromSeconds(10))
-            .RunAsync(new UpdateCommand.Settings());
+            .RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.Equal(0, result);
         Assert.Equal("24878482", SteamAppManifests.Read(bottle.ManifestPath)!.BuildId);
@@ -211,7 +211,7 @@ public class UpdateCommandTests
         using var bottle = new FakeBottle("24878482", createLauncher: false);
         var runner = bottle.Runner();
 
-        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
+        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
         Assert.Empty(runner.Calls);
@@ -224,7 +224,7 @@ public class UpdateCommandTests
         File.Delete(bottle.ManifestPath);
         var runner = bottle.Runner();
 
-        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
+        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.NotEqual(0, result);
         Assert.Empty(runner.Calls);

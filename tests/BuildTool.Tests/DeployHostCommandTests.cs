@@ -41,7 +41,7 @@ public class DeployHostCommandTests
             WinePrefix: "/prefix");
         var command = new DeployHostCommand(tempRoot, config, runner);
 
-        var result = await command.RunAsync(new DeployHostCommand.Settings { HotReplRepo = hotReplRepo });
+        var result = await command.RunAsync(new DeployHostCommand.Settings { HotReplRepo = hotReplRepo }, TestContext.Current.CancellationToken);
 
         Assert.Equal(0, result);
         Assert.Single(runner.Calls);

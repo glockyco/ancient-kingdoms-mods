@@ -27,7 +27,7 @@ public class DeployCommandTests
             WinePrefix: "/prefix");
         var command = new DeployCommand(tempRoot, config);
 
-        var result = await command.RunAsync(new DeployCommand.Settings());
+        var result = await command.RunAsync(new DeployCommand.Settings(), TestContext.Current.CancellationToken);
 
         Assert.Equal(0, result);
         Assert.Equal("data", File.ReadAllText(Path.Combine(modsPath, "DataExporter.dll")));
