@@ -325,6 +325,11 @@
       Opening a chest grants up to {data.buriedChestRewardLimit} unique rewards. Treasure
       Hunter increases only the relic rolls.
     </p>
+    <!-- Source: server-scripts/ChestItem.cs:16-20,70-73 — a chest opens only with one free slot per reward, or one fewer when the opened chest is the last in its stack. -->
+    <p class="text-muted-foreground">
+      To open a chest, you need {data.buriedChestRewardLimit} free inventory slots,
+      or {data.buriedChestRewardLimit - 1} if it is the last chest in its stack.
+    </p>
     {#if data.profession.achievement_id}
       <AchievementLink
         achievementId={data.profession.achievement_id}
