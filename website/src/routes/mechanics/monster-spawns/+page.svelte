@@ -1302,8 +1302,9 @@
         <li>
           <!-- Source: server-scripts/Monster.cs:504-512 and 1874-1877 — Halloween monsters start hidden and only respawn while the seasonal event is active. -->
           <span class="font-medium text-foreground">Seasonal monsters:</span>
-          Halloween monsters are hidden year-round and only spawn while the event
-          is active (and only at night — see the spawn windows above).
+          Halloween monsters spawn only during the <MechanicsLink
+            section="world#seasonal-events">Halloween event</MechanicsLink
+          >, and only at night (see the spawn windows above).
         </li>
       </ul>
     </Card.Content>
