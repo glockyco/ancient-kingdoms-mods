@@ -33,9 +33,10 @@ rule that changed without moving:
 uv run compendium classes check-races
 ```
 
-The pairing is typed by hand, and the game holds it in the character creator. This command compares the
-two and names each disagreement. A failure means the patch changed which classes a race allows. Correct `exported-data/classes.json` and regenerate, because the published value is wrong and
-the check is not.
+The pairing is typed by hand, and the game holds it in the character creator. This command compares
+the two and names each disagreement. A failure means the patch changed which classes a race allows.
+Correct `mods/DataExporter/Curated/classes.json` and regenerate the export. The exporter copies this
+file to `exported-data/classes.json`.
 
 Commit this phase before you change an exporter. A mechanic whose claim the tool refuses to anchor belongs in this commit, because the reconciliation cannot finish without it.
 

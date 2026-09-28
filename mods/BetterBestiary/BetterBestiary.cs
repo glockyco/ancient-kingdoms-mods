@@ -47,6 +47,6 @@ public sealed class BetterBestiary : MelonMod
 
         _reportedPatchException = true;
         if (Logger != null)
-            Logger.Warning($"Better Bestiary disabled its render patch after an error: {ex.Message}");
+            Logger.Error($"Better Bestiary disabled its render patch after an error: {ex}");
     }
 }

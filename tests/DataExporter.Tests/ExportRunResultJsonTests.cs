@@ -1,5 +1,6 @@
 using DataExporter.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace DataExporter.Tests
@@ -7,25 +8,33 @@ namespace DataExporter.Tests
     public class ExportRunResultJsonTests
     {
         [Fact]
-        public void RoundTrip_PreservesAllFields()
+        public void FailurePayload_ContainsExporterErrorWithoutUnusedMetadata()
         {
-            var original = new ExportRunResult
+            var result = new ExportRunResult
             {
-                Ok = true,
+                Ok = false,
                 Exporters =
                 {
-                    new ExporterRunResult { Name = "ok", Ok = true, Required = true, Count = 5 },
-                    new ExporterRunResult { Name = "fail", Ok = false, Required = false,
-                        Error = new ExporterRunError { Kind = "exporter_failed", Message = "boom" } },
+                    new ExporterRunResult
+                    {
+                        Name = "skills",
+                        Ok = false,
+                        Error = new ExporterRunError { Kind = "exporter_failed", Message = "Cannot write skills.json" },
+                    },
                 },
+                Errors = { "skills: Cannot write skills.json" },
             };
 
-            var json = JsonConvert.SerializeObject(original);
-            var roundTripped = JsonConvert.DeserializeObject<ExportRunResult>(json)!;
-
-            Assert.Equal(2, roundTripped.Exporters.Count);
-            Assert.Equal("fail", roundTripped.Exporters[1].Name);
-            Assert.Equal("boom", roundTripped.Exporters[1].Error!.Message);
+            var payload = JObject.Parse(JsonConvert.SerializeObject(result));
+            var exporter = Assert.IsType<JObject>(payload["exporters"]![0]);
+            Assert.Equal(false, (bool?)payload["ok"]);
+            Assert.Equal("skills", (string?)exporter["name"]);
+            Assert.Equal(false, (bool?)exporter["ok"]);
+            Assert.Equal("Cannot write skills.json", (string?)exporter["error"]?["message"]);
+            Assert.Null(exporter["required"]);
+            Assert.Null(exporter["count"]);
+            Assert.Null(exporter["outputPath"]);
+            Assert.Equal("skills: Cannot write skills.json", (string?)payload["errors"]![0]);
         }
     }
 }

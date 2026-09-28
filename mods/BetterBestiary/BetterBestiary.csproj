@@ -74,5 +74,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\DataExporter\GameIds.cs" Link="Shared\GameIds.cs" />
+    <Compile Include="..\DataExporter\Skills\SkillClassification.cs" Link="Shared\SkillClassification.cs" />
+  </ItemGroup>
+
 
 </Project>

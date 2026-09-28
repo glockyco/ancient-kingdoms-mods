@@ -17,14 +17,9 @@ public class LuckTokenExporter : BaseExporter
 
         var luckTokenList = new List<LuckTokenData>();
 
-        // Access GameManager singleton
         var gameManager = Il2Cpp.GameManager.singleton;
         if (gameManager == null)
-        {
-            Logger.Warning("GameManager.singleton is null, skipping luck token export");
-            WriteJson(luckTokenList, "luck_tokens.json");
-            return;
-        }
+            throw new System.InvalidOperationException("GameManager.singleton is unavailable; cannot export luck tokens.");
 
         // Get boss luck tokens dictionary
         var bossTokensDict = gameManager.luckTokensDict;

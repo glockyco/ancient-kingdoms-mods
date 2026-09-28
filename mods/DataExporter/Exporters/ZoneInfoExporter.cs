@@ -17,10 +17,7 @@ public class ZoneInfoExporter : BaseExporter
         var zoneInfoList = new List<ZoneInfoData>();
 
         if (Il2Cpp.ZoneInfo.zones == null)
-        {
-            Logger.Warning("ZoneInfo.zones is null - no zones to export");
-            return;
-        }
+            throw new System.InvalidOperationException("ZoneInfo.zones is unavailable; cannot export zones.");
 
         foreach (var kvp in Il2Cpp.ZoneInfo.zones)
         {

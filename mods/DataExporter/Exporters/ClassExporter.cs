@@ -19,24 +19,15 @@ public class ClassExporter : BaseExporter
 
         var networkManager = Il2CppMirror.NetworkManager.singleton;
         if (networkManager == null)
-        {
-            Logger.Warning("NetworkManager.singleton is null, cannot export classes");
-            return;
-        }
+            throw new InvalidOperationException("NetworkManager.singleton is unavailable; cannot export classes.");
 
-        var nmmo = networkManager.TryCast<Il2Cpp.NetworkManagerMMO>();
-        if (nmmo == null)
-        {
-            Logger.Warning("Could not cast to NetworkManagerMMO, cannot export classes");
-            return;
-        }
+        var nmmo = networkManager.TryCast<Il2Cpp.NetworkManagerMMO>()
+            ?? throw new InvalidOperationException("NetworkManagerMMO is unavailable; cannot export classes.");
 
-        var playerClasses = nmmo.playerClasses;
-        if (playerClasses == null)
-        {
-            Logger.Warning("playerClasses is null, cannot export classes");
-            return;
-        }
+        var playerClasses = nmmo.playerClasses
+            ?? throw new InvalidOperationException("NetworkManagerMMO.playerClasses is unavailable; cannot export classes.");
+        if (playerClasses.Count == 0)
+            throw new InvalidOperationException("NetworkManagerMMO.playerClasses is empty; cannot export classes.");
 
         Logger.Msg($"Found {playerClasses.Count} player classes");
 

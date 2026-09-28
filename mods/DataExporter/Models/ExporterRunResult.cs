@@ -12,15 +12,6 @@ namespace DataExporter.Models
         [JsonProperty("ok")]
         public bool Ok { get; set; }
 
-        [JsonProperty("required")]
-        public bool Required { get; set; } = true;
-
-        [JsonProperty("count", NullValueHandling = NullValueHandling.Ignore)]
-        public int? Count { get; set; }
-
-        [JsonProperty("outputPath", NullValueHandling = NullValueHandling.Ignore)]
-        public string OutputPath { get; set; }
-
         [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
         public ExporterRunError Error { get; set; }
     }

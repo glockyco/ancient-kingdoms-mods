@@ -27,11 +27,7 @@ public class GameConfigExporter : BaseExporter
 
         var gameManager = Il2Cpp.GameManager.singleton;
         if (gameManager == null)
-        {
-            Logger.Warning("GameManager.singleton is null, skipping game config export");
-            WriteJson(config, "game_config.json");
-            return;
-        }
+            throw new System.InvalidOperationException("GameManager.singleton is unavailable; cannot export game config.");
 
         // Export bestiary monsters (elites/bosses for Slayer skill)
         if (gameManager.elitesBosses != null)

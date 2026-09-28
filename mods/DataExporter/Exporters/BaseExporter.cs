@@ -153,22 +153,15 @@ public abstract class BaseExporter
 
     protected void WriteJson<T>(T data, string filename)
     {
-        try
+        var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings
         {
-            var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Include
-            });
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Include
+        });
 
-            var filePath = Path.Combine(ExportPath, filename);
-            File.WriteAllText(filePath, json);
-            Logger.Msg($"✓ Exported {filename}");
-        }
-        catch (Exception ex)
-        {
-            Logger.Error($"Failed to export {filename}: {ex.Message}");
-        }
+        var filePath = Path.Combine(ExportPath, filename);
+        File.WriteAllText(filePath, json);
+        Logger.Msg($"✓ Exported {filename}");
     }
 
     /// <summary>

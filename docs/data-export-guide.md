@@ -12,20 +12,60 @@ DataExporter output must come from authoritative runtime game data. Prefer direc
 
 ## Visual Assets
 
-Selected compendium images are exported by DataExporter at runtime, not by UnityPy or static asset-name matching. Current selected visual kinds are:
+The published `visual_assets` table contains these domain/kind pairs in the current database:
 
-- `monster/primary` from the direct `SpriteRenderer` on `Monster.gameObject`, or for modular monster rigs without a root sprite, from a runtime composite of body `SpriteRenderer` children under `Monster.gameObject/Front`; UI/auxiliary child renderers use the same exclusions as NPC composites
-- `npc/primary` from a runtime composite of body `SpriteRenderer` children under `Npc.gameObject/Front`; UI/auxiliary child renderers such as speech bubbles, bars, labels, minimap markers, and shadows are excluded
-- `item/icon` from `ScriptableItem.image`
-- `skill/icon` from `ScriptableSkill.image`
+| Domain/kind | Source |
+|---|---|
+| `achievement/icon` | Steam achievement icon downloaded during export |
+| `chest/primary` | `GatherItem.readySprite` |
+| `class/icon` | `Player.classIcon` |
+| `gathering_resource/icon` | `GatherItem.journalIcon` |
+| `item/icon` | `ScriptableItem.image`, or the runtime `FantasyHeroes` icon collection for a missing item sprite |
+| `item/pet` | The creature prefab of a friendly pet follower item |
+| `item/treasure_map` | `TreasureMapItem.imageLocation` |
+| `monster/primary` | Root `SpriteRenderer`, or a body composite under `Monster.gameObject/Front` |
+| `npc/primary` | Root `SpriteRenderer`, or a body composite under `Npc.gameObject/Front` |
+| `pet/icon` | `Pet.portraitIcon` |
+| `pet/primary` | The pet's root renderer or `Front` body composite |
+| `skill/icon` | `ScriptableSkill.image` |
+| `zone/thumbnail` | A crop of the stitched world screenshot based on zone bounds |
 
+The profession exporter also requests `profession/icon` when a runtime icon exists. The current
+database has no rows for that pair. DataExporter writes source PNGs and relative paths in
+`visual_assets.json`. `compendium build` records them in SQLite and publishes WebP images at paths
+such as `images/monsters/zarothak_the_tormentor/primary.webp`. The original `export_path` stays
+in the database for provenance.
 
-`compendium build` consumes `visual_assets.json`, stores the rows in SQLite, and copies files into `website/static/images/` using readable public paths such as `images/monsters/zarothak_the_tormentor/primary.png`. The original DataExporter `export_path` stays in the database for provenance.
-Do not add static fallback sources for missing selected sprites. Excluded sources include pets, treasure maps, monster boss/bestiary portraits, animation frames, NPC UI/auxiliary child renderers, skill effects, prefabs, and static Unity assets.
+Do not map entities by static Unity sprite names or use UnityPy images as fallback artwork.
+The runtime item icon collection is different: it resolves an explicit game item path to a loaded
+sprite. Do not replace missing runtime art with a plausible-looking asset from an inventory.
+
+### Selection evidence and omissions
+
+The Ancient Cyclops exposes a root `SpriteRenderer` (`Cyclops_1`). Humanoid monsters such as the
+Dracolyte Praetor and Scalebound Hierarch instead expose body sprites under `Front`.
+The composite excludes health bars, hit bars, labels, minimap controls, speech bubbles, shadows,
+and other UI renderers. These are not part of the creature. NPC composites use the same exclusion.
+
+Some monsters expose `Monster.imageBossBestiary` or `Monster.portraitBoss`. These may look like useful
+portraits, but the compendium uses the in-world monster image instead. Skill effect objects and
+prefabs are not skill icons. Pet equipment and auxiliary renderers are not part of the pet body.
+
+Runtime inspection found 4,669 monster objects, all with an `Animator`, 4,664 with a controller,
+and 188 distinct controllers. Ancient Cyclops clips contain idle, walking, attack, death, and
+special-attack sprite swaps at 12 FPS. The selected primary image is one pose, not an animation.
+If animations become a product, sample clips on cloned runtime objects and export separate frames;
+do not infer frames from static spritesheet names.
+
+When an entity has multiple rows for the same `(domain, entity_id, kind)`, review the ambiguity.
+Do not guess a preferred source.
 
 ## Runtime Requirements
 
-Runtime visual exports are meaningful only after the game is in the `World` scene and `Il2CppMirror.NetworkClient.localPlayer != null`. The `compendium.export` HotRepl command in `HotReplCommands` is responsible for reaching that state before calling `DataExporter.ExportAllData()`.
+Runtime visual exports are meaningful only after the game enters `World` and
+`Il2CppMirror.NetworkClient.localPlayer != null`. The `compendium.export` HotRepl command
+enters that state before calling `DataExporter.ExportAllData()`. Under CrossOver/Wine, file writes
+to macOS paths use Wine's `Z:` mapping. Manifest paths remain relative to `exported-data/`.
 
 ## BetterBestiary Skill Summaries
 

@@ -21,8 +21,8 @@ type exposes one.
 ## The curated class exception
 
 `ClassExporter` reads `NetworkManagerMMO.playerClasses` prefabs and writes `classes_combat.json` for the
-pipeline to merge with curated metadata. The curated half, `exported-data/classes.json`, is typed by
-hand because the game holds no runtime structure for it.
+pipeline to merge with curated metadata. Edit `mods/DataExporter/Curated/classes.json` by hand.
+The exporter embeds that source and overwrites `exported-data/classes.json` with a copy.
 
 Its race pairing restates a rule the character creator enforces, so `compendium classes check-races`
 compares the two. The check exists because a curated value that restates a game rule drifts silently.
@@ -34,7 +34,7 @@ exporter would have to drive the interface one race at a time.
 
 Create the typed model and exporter under `mods/DataExporter/`, then register it in
 `DataExporter.ExportAllData()`. An unregistered exporter fails no build and produces no file.
-`tests/DataExporter.Tests/ExporterRegistrationTests.cs` is what catches it.
+After the runtime export, verify that the result lists it and the file contains its data.
 
 `build-tool/Commands/CommandCatalog.cs` and `mods/HotReplCommands/Artifacts/ArtifactCollector.cs` own
 the orchestrated path and the artifact keys.

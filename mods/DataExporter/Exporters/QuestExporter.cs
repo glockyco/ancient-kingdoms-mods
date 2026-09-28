@@ -331,12 +331,11 @@ public class QuestExporter : BaseExporter
     {
         var map = new Dictionary<string, QuestLocationTriggerInfo>();
 
-        // Find all GameObjects and check for QuestLocation tag
-        // We use FindObjectsOfTypeAll on Transform to get all scene objects
-        // then check the tag manually to avoid IL2CPP interop issues with FindGameObjectsWithTag
+        // Find scene transforms without searching prefabs or using FindGameObjectsWithTag.
         var type = Il2CppType.Of<Transform>();
         var allTransforms = Resources.FindObjectsOfTypeAll(type);
 
+        var skippedNonQuestLocations = 0;
         foreach (var obj in allTransforms)
         {
             var transform = obj.TryCast<Transform>();
@@ -347,15 +346,9 @@ public class QuestExporter : BaseExporter
             if (go == null || !go.scene.IsValid())
                 continue;
 
-            // Check if this object has the QuestLocation tag
-            try
+            if (!go.CompareTag("QuestLocation"))
             {
-                if (go.tag != "QuestLocation")
-                    continue;
-            }
-            catch
-            {
-                // Tag access can throw if the tag doesn't exist
+                skippedNonQuestLocations++;
                 continue;
             }
 
@@ -391,6 +384,8 @@ public class QuestExporter : BaseExporter
                 : "no collider";
             Logger.Msg($"  QuestLocation trigger '{go.name}' -> zone: {zoneInfo.ZoneId}, pos: ({pos.x:F1}, {pos.y:F1}), {boundsStr}");
         }
+
+        Logger.Msg($"Skipped {skippedNonQuestLocations} scene objects without the QuestLocation tag.");
 
         return map;
     }

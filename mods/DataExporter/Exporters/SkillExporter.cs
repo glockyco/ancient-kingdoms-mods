@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DataExporter.Models;
+using DataExporter.Skills;
 using Il2CppInterop.Runtime;
 using MelonLoader;
 using UnityEngine;
@@ -45,7 +46,7 @@ public class SkillExporter : BaseExporter
                 // Base ScriptableSkill fields
                 id = SanitizeId(skill.name),
                 name = skill.nameSkill ?? skill.name,
-                skill_type = DetermineSkillType(skill),
+                skill_type = SkillClassification.DetermineSkillType(skill),
                 tier = skill.tier,
                 max_level = skill.maxLevel,
                 level_required = skill.requiredLevel.Get(1),
@@ -136,112 +137,6 @@ public class SkillExporter : BaseExporter
         Logger.Msg($"✓ Exported {skillList.Count} skills");
     }
 
-    private static string ToExportedDamageType(Il2Cpp.DamageType damageType)
-    {
-        return damageType switch
-        {
-            Il2Cpp.DamageType.Normal => "Physical",
-            Il2Cpp.DamageType.Magic => "Magic",
-            Il2Cpp.DamageType.Poison => "Poison",
-            Il2Cpp.DamageType.Fire => "Fire",
-            Il2Cpp.DamageType.Cold => "Cold",
-            Il2Cpp.DamageType.Disease => "Disease",
-            _ => "Unknown"
-        };
-    }
-
-    private static bool HasNegative(Il2Cpp.LinearFloat value)
-    {
-        return value.baseValue < 0f || value.bonusPerLevel < 0f;
-    }
-
-    private static bool HasNegative(Il2Cpp.LinearInt value)
-    {
-        return value.baseValue < 0 || value.bonusPerLevel < 0;
-    }
-
-    private static bool HasPositive(Il2Cpp.LinearInt value)
-    {
-        return value.baseValue > 0 || value.bonusPerLevel > 0;
-    }
-
-    // Source: server-scripts/Skills.cs:GetOverTimeDamageType — the runtime checks
-    // poison, fire, cold, disease, and melee flags in this order, then uses Magic.
-    private static string ResolveDamageOverTimeType(Il2Cpp.BuffSkill buffSkill)
-    {
-        if (buffSkill.isPoisonDebuff) return "Poison";
-        if (buffSkill.isFireDebuff) return "Fire";
-        if (buffSkill.isColdDebuff) return "Cold";
-        if (buffSkill.isDiseaseDebuff) return "Disease";
-        if (buffSkill.isMeleeDebuff) return "Physical";
-        return "Magic";
-    }
-
-    // Source: server-scripts/Combat.cs:891-919 — shield mitigation follows the
-    // same flag order and has no typed fallback when no flag is present.
-    private static string ResolveDamageShieldType(Il2Cpp.BuffSkill buffSkill)
-    {
-        if (buffSkill.isMeleeDebuff) return "Physical";
-        if (buffSkill.isPoisonDebuff) return "Poison";
-        if (buffSkill.isFireDebuff) return "Fire";
-        if (buffSkill.isColdDebuff) return "Cold";
-        if (buffSkill.isDiseaseDebuff) return "Disease";
-        if (buffSkill.isMagicDebuff) return "Magic";
-        return "Unknown";
-    }
-
-    private string DetermineSkillType(Il2Cpp.ScriptableSkill skill)
-    {
-        // Check specific types in order of specificity
-        var damageSkill = skill.TryCast<Il2Cpp.DamageSkill>();
-        if (damageSkill != null)
-        {
-            if (skill.TryCast<Il2Cpp.AreaObjectSpawnSkill>() != null) return "area_object_spawn";
-            if (skill.TryCast<Il2Cpp.AreaDamageSkill>() != null) return "area_damage";
-            if (skill.TryCast<Il2Cpp.FrontalDamageSkill>() != null) return "frontal_damage";
-            if (skill.TryCast<Il2Cpp.FrontalProjectilesSkill>() != null) return "frontal_projectiles";
-            if (skill.TryCast<Il2Cpp.TargetDamageSkill>() != null) return "target_damage";
-            if (skill.TryCast<Il2Cpp.TargetProjectileSkill>() != null) return "target_projectile";
-            if (skill.TryCast<Il2Cpp.BardFinalCadenceSkill>() != null) return "area_damage";
-            return "damage";  // Generic DamageSkill
-        }
-
-        var healSkill = skill.TryCast<Il2Cpp.HealSkill>();
-        if (healSkill != null)
-        {
-            if (skill.TryCast<Il2Cpp.AreaHealSkill>() != null) return "area_heal";
-            if (skill.TryCast<Il2Cpp.TargetHealSkill>() != null) return "target_heal";
-            return "heal";  // Generic HealSkill
-        }
-
-        var buffSkill = skill.TryCast<Il2Cpp.BuffSkill>();
-        if (buffSkill != null)
-        {
-            // Check debuff flags to classify as buff or debuff
-            bool isDebuff = buffSkill.isPoisonDebuff || buffSkill.isFireDebuff ||
-                           buffSkill.isColdDebuff || buffSkill.isDiseaseDebuff ||
-                           buffSkill.isMeleeDebuff || buffSkill.isMagicDebuff;
-
-            if (skill.TryCast<Il2Cpp.AreaBuffSkill>() != null) return isDebuff ? "area_debuff" : "area_buff";
-            if (skill.TryCast<Il2Cpp.AreaDebuffSkill>() != null) return "area_debuff";
-            if (skill.TryCast<Il2Cpp.TargetBuffSkill>() != null) return isDebuff ? "target_debuff" : "target_buff";
-            if (skill.TryCast<Il2Cpp.TargetDebuffSkill>() != null) return "target_debuff";
-            if (skill.TryCast<Il2Cpp.BardSongSkill>() != null) return "area_buff";
-            return isDebuff ? "debuff" : "buff";
-        }
-
-        var passiveSkill = skill.TryCast<Il2Cpp.PassiveSkill>();
-        if (passiveSkill != null) return "passive";
-
-        var summonSkill = skill.TryCast<Il2Cpp.SummonSkill>();
-        if (summonSkill != null) return "summon";
-
-        // SummonSkillMonsters inherits from ScriptableSkill directly, NOT from SummonSkill
-        var summonMonstersSkill = skill.TryCast<Il2Cpp.SummonSkillMonsters>();
-        if (summonMonstersSkill != null) return "summon_monsters";
-
-        return "unknown";
-    }
 
     private void PopulateDamageSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)
     {
@@ -258,7 +153,7 @@ public class SkillExporter : BaseExporter
             base_value = damageSkill.damagePercent.baseValue,
             bonus_per_level = damageSkill.damagePercent.bonusPerLevel
         };
-        skillData.damage_type = ToExportedDamageType(damageSkill.damageType);
+        skillData.damage_type = SkillClassification.ExportDamageType(damageSkill.damageType);
         skillData.is_assassination_skill = damageSkill.isAssasinationSkill;
         skillData.is_manaburn_skill = damageSkill.isManaburnSkill;
         skillData.lifetap_percent = new LinearStatBonusFloat
@@ -418,10 +313,8 @@ public class SkillExporter : BaseExporter
             skillData.is_disease_debuff = buffSkill.isDiseaseDebuff;
             skillData.is_melee_debuff = buffSkill.isMeleeDebuff;
             skillData.is_magic_debuff = buffSkill.isMagicDebuff;
-            if (HasNegative(bonusSkill.healingPerSecondBonus) || HasNegative(bonusSkill.healthPercentPerSecondBonus))
-                skillData.damage_over_time_type = ResolveDamageOverTimeType(buffSkill);
-            if (HasPositive(bonusSkill.damageShield))
-                skillData.damage_shield_type = ResolveDamageShieldType(buffSkill);
+            skillData.damage_over_time_type = SkillClassification.ResolveDamageOverTimeType(buffSkill);
+            skillData.damage_shield_type = SkillClassification.ResolveDamageShieldType(buffSkill);
             skillData.is_cleanse = buffSkill.isCleanseSpell;
             skillData.is_dispel = buffSkill.isDispel;
             skillData.ward_bonus = new LinearStatBonus { base_value = buffSkill.wardBonus.baseValue, bonus_per_level = buffSkill.wardBonus.bonusPerLevel };
@@ -532,24 +425,15 @@ public class SkillExporter : BaseExporter
         {
             var networkManager = Il2CppMirror.NetworkManager.singleton;
             if (networkManager == null)
-            {
-                Logger.Warning("NetworkManager.singleton is null, cannot build skill-to-classes mapping");
-                return mapping;
-            }
+                throw new System.InvalidOperationException("NetworkManager.singleton is unavailable; cannot map skills to classes.");
 
-            var nmmo = networkManager.TryCast<Il2Cpp.NetworkManagerMMO>();
-            if (nmmo == null)
-            {
-                Logger.Warning("Could not cast to NetworkManagerMMO, cannot build skill-to-classes mapping");
-                return mapping;
-            }
+            var nmmo = networkManager.TryCast<Il2Cpp.NetworkManagerMMO>()
+                ?? throw new System.InvalidOperationException("NetworkManagerMMO is unavailable; cannot map skills to classes.");
 
-            var playerClasses = nmmo.playerClasses;
-            if (playerClasses == null)
-            {
-                Logger.Warning("playerClasses is null, cannot build skill-to-classes mapping");
-                return mapping;
-            }
+            var playerClasses = nmmo.playerClasses
+                ?? throw new System.InvalidOperationException("NetworkManagerMMO.playerClasses is unavailable; cannot map skills to classes.");
+            if (playerClasses.Count == 0)
+                throw new System.InvalidOperationException("NetworkManagerMMO.playerClasses is empty; cannot map skills to classes.");
 
             Logger.Msg($"Found {playerClasses.Count} player classes");
 
@@ -568,17 +452,11 @@ public class SkillExporter : BaseExporter
 
                 var playerSkills = player.skills;
                 if (playerSkills == null)
-                {
-                    Logger.Msg($"  {className}: skills component is null");
-                    continue;
-                }
+                    throw new System.InvalidOperationException($"{className}.skills is unavailable; cannot map skills to classes.");
 
                 var skillTemplates = playerSkills.skillTemplates;
                 if (skillTemplates == null)
-                {
-                    Logger.Msg($"  {className}: skillTemplates is null");
-                    continue;
-                }
+                    throw new System.InvalidOperationException($"{className}.skills.skillTemplates is unavailable; cannot map skills to classes.");
 
                 Logger.Msg($"  {className}: {skillTemplates.Length} skills");
 

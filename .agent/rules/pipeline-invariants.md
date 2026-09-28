@@ -21,5 +21,5 @@ Do not put the database in `website/static/`.
 - Entity redaction follows declared references to a fixpoint. Attribute redaction keeps the entity and removes only the selected data.
 - `redactions.lock.json` and `citations.lock.json` are generated ledgers with different command sets, both registered in `build-pipeline/src/compendium/cli.py`. Change a ledger through its own commands and never by hand: a hand edit asserts a verification nobody performed.
 - A changed server-script citation requires review of the claim before re-anchoring.
-- A curated value that restates a game rule has a check. `compendium classes check-races` compares the class and race pairing in `exported-data/classes.json` against the character creator. It reads the gitignored snapshot, so it stays out of `compendium build`.
+- A curated game rule has a check. Edit race pairings in `mods/DataExporter/Curated/classes.json`. DataExporter copies them to `exported-data/classes.json`. `compendium classes check-races` reads the published copy. The check and `compendium build` both require the local decompiled snapshot. The build uses it for the planner payload.
 - Data models validate external JSON at the boundary. Avoid assertions after data enters typed internal code.
