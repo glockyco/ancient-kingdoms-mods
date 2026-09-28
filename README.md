@@ -41,9 +41,13 @@ The compendium is a fan-made wiki, interactive world map, and game database. It 
 | `exported-data/`   | Local game export output. Most generated files are gitignored.                                           |
 | `website/data/`    | Generated database the site reads. Gitignored.                                                           |
 | `website/static/`  | Published image and tile assets. Generated compendium assets are gitignored.                              |
-| `server-scripts*/` | Local decompiled server-script snapshots used to verify hardcoded mechanics. These are gitignored.       |
+| `server-scripts`   | Gitignored symlink to the current decompiled server scripts under `.decompiled/`.                        |
+| `.decompiled/`     | Gitignored game-build snapshots created by `scripts/update-server-scripts.sh`.                           |
 | `tests/`           | C# test projects.                                                                                        |
-| `docs/`            | Project notes, task plans, and contributor-oriented guides.                                              |
+| `docs/`            | Contributor guides, game defect reports, and combat-model evidence.                                      |
+| `openspec/`        | Current behavior specifications and active changes.                                                     |
+| `verification/`    | Combat fixtures and recorded game observations.                                                          |
+| `scripts/`         | Repository checks and server-script snapshot updates.                                                   |
 
 ## Compendium website
 
@@ -77,10 +81,10 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 | Mod                | Summary                                                                                                                                                                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CharacterCapture` | Writes the local player's versioned planner build to `UserData/CharacterCapture/character-capture.json`. The `character.capture` command reads progression, skills, learned books, equipment, owned items, and active companions. The `combatMeter.capture` command reads player and companion meter totals without resetting them. |
-| `CombatVerification` | Registers typed HotRepl commands for checking, building, and measuring a combat fixture against the running game: `fixture.validate` (needs the world loaded, because the game's class definitions arrive with it), `fixture.createCharacter` (needs character selection open), `fixture.buildCharacter` (brings a newly created character to a declared level, attribute allocation, skill levels, permanent learned books, equipment, and companions), `probe.statSheet` (the complete combat state of the player and its companions), `probe.targetState` (what a hit will meet on the target, and the timed effects changing it), `probe.actionInterval` (how often the player can act, stilling its attack loop first), and `probe.perHitDamage` (every hit inside a window, each naming its skill). Harmony-patches `Combat.DealDamageAt` to name the skill behind a hit, which is why a measurement can tell two rotations apart; the patch keeps nothing while no probe is reading. Used by the combat verification harness, not during play. |
+| `CombatVerification` | Registers typed HotRepl commands for combat fixtures: `fixture.validate`, `fixture.validateMatrix`, `fixture.createCharacter`, `fixture.buildCharacter`, `fixture.observe`, `probe.statSheet`, `probe.targetState`, `probe.actionInterval`, and `probe.perHitDamage`. The commands validate builds, measure combat state, and record observations in the running game. The mod is for the combat verification harness, not normal play. |
 | `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                                                                 |
 | `FieldDefaultValueHookFix` | Harmony-patches Il2CppInterop's `Class_GetFieldDefaultValue_Hook.FindTargetMethod` so the byte-signature scan does not land on the wrong function and crash the game on world entry. |
-| `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `world.enter` (job — drives the game to a spawned local player without exporting), `compendium.export` (job — handles world entry, data export, optional screenshots, artifact collection), and `game.quit`. Invoked by `build-tool export` over WebSocket. |
+| `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `world.enter` (job — enters a local world), `compendium.export` (job — exports game data and optional screenshots), `game.useScratchDatabase` (selects the verification scratch database), and `game.quit`. `build-tool export` and `build-tool verify` invoke these commands over WebSocket. |
 | `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. `build-tool export --screenshots` triggers it via the `compendium.export` HotRepl job.                                                                                                      |
 | `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                                                           |
 
@@ -130,11 +134,11 @@ dotnet run --project build-tool setup
 
 Setup creates `config.toml` only when it is absent and rewrites `Local.props`:
 
-- `Local.props` for the Ancient Kingdoms install path, export path, and optional Wine/CrossOver paths.
+- `Local.props` for the Ancient Kingdoms install, export directory, and required Wine/CrossOver paths.
 - `config.toml` for build-pipeline paths and tile settings.
 
-`deploy`, `deploy-host`, `launch`, `export`, and `update` require `Local.props`.
-`build` and `setup` do not require it, although mod MSBuild still needs the configured game paths.
+`deploy`, `deploy-host`, `launch`, `export`, `publish-mods`, and `update` require `Local.props` at command startup.
+`build`, `setup`, and `verify` do not check for it at startup. A mod build still needs the configured game paths, and `verify` needs the local configuration to run.
 
 ## Common workflows
 
@@ -182,9 +186,15 @@ uv run compendium stats
 
 # Check the curated class and race pairing against the game's character creator
 uv run compendium classes check-races
+
+# Verify source citations against the decompiled game snapshot
+uv run compendium citations check
+
+# Verify recorded redaction decisions against current data
+uv run compendium redactions check
 ```
 
-`compendium build` and `compendium stats` both use `website/data/compendium.db`. The database stays outside `website/static/`, because `static/` is published verbatim. The web build compresses the database and gives it a content-hashed name, so the browser downloads about 2.3 MB instead of 16.3 MB and can cache it permanently.
+`compendium build` and `compendium stats` both use `website/data/compendium.db`. The database stays outside `website/static/`, because `static/` is published verbatim. The web build compresses the database and gives it a content-hashed name, so the browser downloads about 2.2 MB instead of about 16.5 MB and can cache it permanently.
 
 Tile generation requires screenshot metadata from `MapScreenshotter` or `build-tool export --screenshots`.
 `uv run compendium tiles` validates boss/world-boss spawn coverage before publishing `website/static/tiles`; if boss positions sample as black/blank, re-run the in-game screenshot export before regenerating tiles.
@@ -211,6 +221,8 @@ Deploy from the website workspace:
 cd website
 pnpm cf-deploy
 ```
+
+`pnpm cf-deploy` builds the website before `wrangler deploy`. A failed build stops deployment.
 
 The pipeline writes the database to `website/data/` and image and tile assets to `website/static/`. The database is gitignored and must be created by the build pipeline before local browsing or production builds that depend on it.
 
@@ -252,38 +264,56 @@ dotnet run --project build-tool verify --fixture A-class-warrior
 
 `verify` measures each committed fixture in its own game session against a fresh scratch database and writes `verification/observations/<name>.json`. It does not compare observations with the engine; the website test suite does. Fixture-file loading rejects unsupported JSON fields, including nested fields, before launch. Planner build-envelope and scenario parsing also reject unsupported fields instead of discarding them.
 
-Fixture outer schema 2 separates `buildData` from `execution`. The `build` envelope still holds version identifiers. `buildData` contains the declared character, companions, consumables, and source provenance. `execution` contains the seed, window, repetitions, target, and actions. See [Combat model verification](docs/combat-model/verification.md) for the observation format, comparison protocol, and verdicts.
+Fixture outer schema 3 separates `buildData` from `execution`. The `build` envelope holds version identifiers. `buildData` contains the declared character, companions, consumables, and source provenance. `execution` contains the seed, window, repetitions, target, actions, and measurement protocol. See [Combat model verification](docs/combat-model/verification.md) for the observation format, comparison protocol, and verdicts.
 
 The command takes installation and port locks before changing scratch state. It backs up the existing player database and sidecars, then confirms the runtime launch identity and exact scratch path.
 Scratch paths with traversal or symbolic links are refused. An absent player database remains an absence to check after the run.
 
-Validation does not qualify scratch reuse. Each run prepares fresh scratch state, even without `--fresh-scratch`. Legacy validation markers cannot authorize reuse.
-After shutdown, the command removes unqualified scratch state only when both the endpoint and native game process have stopped.
+Each run prepares fresh scratch state.
+After shutdown, the command clears scratch state only when both the endpoint and native game process have stopped.
 If shutdown cannot be confirmed, it reports failure and leaves scratch state untouched. Player-save and sidecar hashes are checked after shutdown handling.
 
 Do not attach another HotRepl client during verification or export. A new WebSocket client disconnects the active client.
 
 ## Development checks
 
-Run the checks for the area you changed:
+Run checks that cover the changed area. Run release-wide checks for cross-subsystem changes and releases:
 
 ```bash
-# Website
-cd website
+# Website, from the repository root
+pnpm --filter website test
 pnpm check
 pnpm lint
 pnpm build
 
 # Build pipeline
 cd build-pipeline
+uv run pytest
 uv run ruff check .
 uv run mypy .
+uv run vulture src/ --min-confidence 80
+cd ..
 
-# Mods
+# Mods and build tool
+dotnet test tests/BetterBestiary.Tests
+dotnet test tests/BossSkillTracker.Tests
+dotnet test tests/CombatVerification.Tests
+dotnet test tests/BuildTool.Tests
+dotnet test tests/DataExporter.Tests
+dotnet test tests/HotReplCommands.Tests
 dotnet run --project build-tool build
+
+# Repository checks
+pnpm check:citations
+pnpm check:redactions
+pnpm check:clean
+scripts/check-agent-docs.sh
+
+# When changing the agent-guidance checker
+python3 scripts/check_agent_docs_test.py
 ```
 
-Pre-commit hooks run through `lefthook`, which replaces `lint-staged`. Website TypeScript/Svelte changes are formatted, linted, and checked. Python changes in `build-pipeline/` are formatted with Ruff, fixed with Ruff, and checked with mypy.
+Run website build checks for prerender or asset changes. `pnpm check` also checks Python types, unused Python code, unused website exports, and agent guidance. `pnpm check:citations` requires the `server-scripts` symlink. Git hooks are configured in `lefthook.yml`: pre-commit jobs cover formatting, linting, type checks, tests, mod builds, citations, redactions, and generated-data drift for the staged paths. The commit-message hook checks Conventional Commit syntax.
 
 ## Game mechanics accuracy
 
@@ -297,7 +327,7 @@ Use exported game data instead of hand-maintained values whenever possible. Some
 <!-- Source: server-scripts/FileName.cs:123-145 — brief explanation -->
 ```
 
-After each game update, re-export data and re-check source-cited mechanics against the relevant `server-scripts*/` snapshot before publishing changes.
+After each game update, re-export data and re-check source-cited mechanics against the current `server-scripts` snapshot before publishing changes. Run `scripts/update-server-scripts.sh <version>` to create the gitignored symlink into `.decompiled/<build>`. `compendium build` currently requires this symlink to read `server-scripts/SNAPSHOT.toml`.
 
 ## Troubleshooting
 
