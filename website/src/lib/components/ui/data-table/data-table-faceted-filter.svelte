@@ -142,6 +142,7 @@
       variant="ghost"
       size="sm"
       class="h-8 px-2"
+      aria-label="Clear {title} filter"
       onclick={() => column?.setFilterValue(undefined)}
     >
       <XIcon class="h-4 w-4" />

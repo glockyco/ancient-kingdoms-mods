@@ -28,7 +28,9 @@
 </script>
 
 <div class="mb-2">
-  <div class="text-xs text-muted-foreground mb-1">Focus</div>
+  <div id="zone-focus-label" class="text-xs text-muted-foreground mb-1">
+    Focus
+  </div>
   <Popover.Root bind:open>
     <Popover.Trigger>
       {#snippet child({ props })}
@@ -37,9 +39,13 @@
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-labelledby="zone-focus-label zone-focus-value"
           class="w-full justify-between font-normal"
         >
-          <span class={selectedZone ? "" : "text-muted-foreground"}>
+          <span
+            id="zone-focus-value"
+            class={selectedZone ? "" : "text-muted-foreground"}
+          >
             {selectedZone?.name ?? "All Zones"}
           </span>
           <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />

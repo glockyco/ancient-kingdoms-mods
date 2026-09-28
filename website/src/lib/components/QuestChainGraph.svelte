@@ -190,6 +190,7 @@
   {/if}
 {/snippet}
 
+<!-- The scroll region needs focus for arrow keys and pointer events for dragging. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
 <div
   bind:this={scrollContainer}
@@ -201,8 +202,8 @@
   onmouseup={handleMouseUp}
   onmouseleave={handleMouseLeave}
   onclickcapture={handleClick}
-  role="application"
-  aria-label="Quest chain graph - drag to scroll, use arrow keys to navigate"
+  role="region"
+  aria-label="Quest chain graph"
   tabindex="0"
   onkeydown={(e) => {
     if (!scrollContainer) return;

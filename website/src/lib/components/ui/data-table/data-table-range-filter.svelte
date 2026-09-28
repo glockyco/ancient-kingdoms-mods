@@ -121,7 +121,13 @@
     </Popover.Content>
   </Popover.Root>
   {#if hasFilter}
-    <Button variant="ghost" size="sm" class="h-8 px-2" onclick={clearFilter}>
+    <Button
+      variant="ghost"
+      size="sm"
+      class="h-8 px-2"
+      aria-label="Clear {title} filter"
+      onclick={clearFilter}
+    >
       <XIcon class="h-4 w-4" />
     </Button>
   {/if}
