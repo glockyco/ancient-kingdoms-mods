@@ -185,6 +185,13 @@ describe("committed observations", () => {
   it.skipIf(process.env.AK_REQUIRE_CURRENT_COMBAT_FIXTURES !== "1")(
     "cover every supported combat dimension with current observations",
     () => {
+      const nonPassing = verdicts.filter(
+        (verdict) => verdict.status !== "pass",
+      );
+      expect(
+        nonPassing,
+        `Fixtures without current passing observations:\n${formatVerdicts(nonPassing)}`,
+      ).toEqual([]);
       const coverage = coverageFrom(verdicts, corpus, catalog);
       expect(coverage.uncovered.handlers).toEqual([]);
       expect(coverage.uncovered.schools).toEqual([]);

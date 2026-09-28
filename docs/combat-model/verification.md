@@ -28,7 +28,7 @@ in a separate game session and writes `verification/observations/<fixture>.json`
 not write an observation, and the command continues with the remaining fixtures. Review every changed
 observation before committing it.
 
-Run the comparison from `website/`:
+Run the routine comparison from `website/`:
 
 ```bash
 pnpm test --run src/lib/planner/verification/verification.db.test.ts
@@ -37,6 +37,15 @@ pnpm test --run src/lib/planner/verification/verification.db.test.ts
 This test reads every fixture and committed observation, runs the production event engine with the
 fixture's seed and replicate count, and prints one verdict per fixture. It also derives handler,
 damage-school, class, and companion-archetype coverage from passing execution traces.
+
+For a full-domain claim, run the strict gate from the repository root:
+
+```bash
+pnpm --filter website test:combat-verification
+```
+
+The strict gate requires a current passing observation for every committed fixture. It also requires
+coverage of every supported handler, damage school, class, and companion archetype.
 
 ## Isolation guarantee
 
@@ -110,3 +119,4 @@ failure to make the fixture pass.
 A game-version update is incomplete while any fixture is stale or missing. The current corpus must
 contain no failed or inconclusive fixture and must credit every declared handler, school, supported
 class, and companion archetype before a full-domain claim is valid.
+Use `pnpm --filter website test:combat-verification` to verify these full-domain conditions.
