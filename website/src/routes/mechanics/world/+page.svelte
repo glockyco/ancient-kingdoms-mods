@@ -296,14 +296,12 @@
       <!-- Source: server-scripts/Portal.cs:47-63 — requiresEveryoneKey disallows a party key on walk-in portals; level and total item level are checked per player. server-scripts/InteractablePortal.cs:98-115 and server-scripts/PlayerParty.cs:203-213 — interactable portals accept a key from an online party member and check the interacting player's own thresholds. -->
       <p>
         <span class="block"
-          >At some walk-in portals, a key from any online party member admits
-          the player.</span
+          >A walk-in portal accepts a key from any online party member, unless
+          it requires each player's own key.</span
         >
         <span class="block"
-          >When a portal requires everyone's key, each player needs their own.</span
-        >
-        <span class="block"
-          >Portals you interact with accept a key from any online party member.</span
+          >A portal you interact with accepts a key from any online party
+          member.</span
         >
         <span class="block"
           >Each player still needs the required character level and total item
