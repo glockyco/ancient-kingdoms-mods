@@ -13,18 +13,8 @@ const config = {
     // not consume Worker invocations.
     adapter: adapter({}),
     prerender: {
+      // A 404 during prerendering is a broken internal link.
       handleHttpError: ({ path }) => {
-        // During prerendering, ignore 404s for routes that don't exist yet
-        // Item pages link to monsters/npcs/quests that aren't implemented
-        if (
-          path.startsWith("/monsters/") ||
-          path.startsWith("/npcs/") ||
-          path.startsWith("/quests/")
-        ) {
-          return; // Ignore these 404s, allow build to succeed
-        }
-
-        // All other 404s should fail the build (catches broken links)
         throw new Error(`404: ${path}`);
       },
     },
