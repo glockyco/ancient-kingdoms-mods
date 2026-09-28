@@ -30,8 +30,8 @@ const config: KnipConfig = {
         "src/routes/**/+{page,layout,error,server}.{ts,svelte}",
         "src/routes/**/+{page,layout,error}.server.ts",
         "src/app.{ts,html,css,d.ts}",
-        // scripts/ includes snapshot-mechanics.mjs (mechanics regression-test tool,
-        // documented in website/AGENTS.md; invoked via `node scripts/...`, not a package.json script)
+        // scripts/ includes snapshot-mechanics.mjs, documented in
+        // .agent/rules/website-mechanics.md and invoked directly with node.
         "scripts/*.{mjs,ts}",
         "wrangler.toml",
         "wrangler.redirect.toml",
@@ -39,14 +39,6 @@ const config: KnipConfig = {
         // automatically by knip's SvelteKit plugin; listing them here is redundant.
       ],
       project: ["src/**/*.{ts,svelte,css}", "scripts/**/*.{mjs,ts}"],
-      // Component library barrel re-exports (bits-ui/shadcn-style index.ts files):
-      // Knip can't trace Svelte component imports through them, producing false positives.
-      // Actual unused components still surface as unused files.
-      ignore: [
-        "src/lib/components/ui/**",
-        "src/lib/components/map/sidebar/index.ts",
-        "src/lib/components/monster-table/index.ts",
-      ],
       // @types/sql.js: required by src/sql.js-fts5.d.ts type bridge (import from "sql.js")
       // postcss: optional peer dep for eslint-plugin-svelte via postcss-load-config
       ignoreDependencies: ["@types/sql.js", "postcss"],
