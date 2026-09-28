@@ -81,8 +81,10 @@ pre-commit:
       run: cd build-pipeline && uv run compendium citations check
       skip:
         - run: "! test -d server-scripts"
+    # With lefthook's default glob matcher, "dir/**/*.py" skips files directly in
+    # dir, so each package directory below is matched with "dir/**".
     - name: redactions-check
-      glob: "{redactions.toml,redactions.lock.json,build-pipeline/src/compendium/redactions/**/*.py,build-pipeline/src/compendium/redaction.py}"
+      glob: "{redactions.toml,redactions.lock.json,build-pipeline/schema.sql,build-pipeline/src/compendium/redactions/**,build-pipeline/src/compendium/commands/redactions.py,build-pipeline/src/compendium/commands/build.py,build-pipeline/src/compendium/denormalizers/**,build-pipeline/src/compendium/loaders/**,build-pipeline/src/compendium/db.py,build-pipeline/src/compendium/config.py}"
       run: cd build-pipeline && uv run compendium redactions check
     - name: plans docs
       glob:
