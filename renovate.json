@@ -5,9 +5,9 @@
   ],
   "packageRules": [
     {
-      "description": "TypeScript 7.0 ships no compiler API. typescript-eslint, svelte-check, and knip need it, and no build step runs tsc. Remove this hold when typescript-eslint supports TypeScript 7 (https://github.com/typescript-eslint/typescript-eslint/issues/10940).",
+      "description": "TypeScript 7.0 ships no compiler API. typescript-eslint, svelte-check, and knip need it, and no build step runs tsc. TypeScript 7.1 is expected to restore the API, so Renovate may propose 7.1 and later. Remove this rule when that update lands (https://github.com/typescript-eslint/typescript-eslint/issues/10940).",
       "matchPackageNames": ["typescript"],
-      "allowedVersions": "<7"
+      "allowedVersions": "<7.0.0 || >=7.1.0"
     }
   ]
 }
