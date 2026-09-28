@@ -293,17 +293,21 @@
       "sha256": "0b4d8b8452b97d5828471fb462afd5cf4785d9c0f760f101686b1d44b232087c",
       "span": 1
     },
-    "ChestItem.cs:31": {
-      "sha256": "9b982b8fc390a7ceb9885f5d129f65e873b9fce947f5c83648297786de09e991",
-      "span": 1
-    },
-    "ChestItem.cs:60-62": {
-      "sha256": "d77ed9fbb1aead75c716d4dc315a793fe7c37a281e7a07d75cde4a186b9ee531",
-      "span": 3
+    "ChestItem.cs:30-31": {
+      "sha256": "747e60ca1d912da2a8cf14d8608127ab36b8db0b752c12888b3d25df63c7023c",
+      "span": 2
     },
     "ChestItem.cs:61": {
       "sha256": "a67003eaff157b5f061ebd170f476eae4e1b753b9100ff6eebdeade5ee91da0c",
       "span": 1
+    },
+    "ChestItem.cs:61-64": {
+      "sha256": "466cf9d6c7cd19f9515b19e343eadb0ca72eb37f3ba0a2626040c383b4a9e073",
+      "span": 4
+    },
+    "ChestItem.cs:61-66": {
+      "sha256": "ddcca4005fec6d51f11f01807b17417f5e8b7eb33b2f77f4a25dc305b5dfb242",
+      "span": 6
     },
     "ChestItem.cs:Use": {
       "span": 0
@@ -350,6 +354,10 @@
     "Combat.cs:1165": {
       "sha256": "95b1c94c3901b4c43b41fa8fae67e37a4ddf6372d50effd8158ed0f2d81cf8a4",
       "span": 1
+    },
+    "Combat.cs:117-145": {
+      "sha256": "22c656c7fd7268c82253ad3629ec05e56b0e6fc091d686baa09b8e6d10d00ff5",
+      "span": 29
     },
     "Combat.cs:1221-1229": {
       "sha256": "33cbf62f5408d4844802209c80c4fb2e33efc7f17bc7b8ad5b7cc228ef1596ca",
@@ -892,6 +900,12 @@
       "sha256": "258fa5e9c7f4cdaac24658786357bbd4308c12b61b0df9cd26ae64fc92afdb74",
       "span": 8
     },
+    "Dexterity.cs:GetPoisonDamageBonusPerPoint": {
+      "span": 0
+    },
+    "Dexterity.cs:GetRangedAttackBonusPerPoint": {
+      "span": 0
+    },
     "Energy.cs:12-17": {
       "sha256": "76f5cbc59c75c20aded28096595df0233c055c864d15836e3f99078e687777f0",
       "span": 6
@@ -1141,6 +1155,10 @@
       "sha256": "5f3fe1777694f01a5313907848a2b1d7bea69d9a43441b7570ddfe8fc4a7bd75",
       "span": 17
     },
+    "FrontalProjectilesSkill.cs:97-100": {
+      "sha256": "4086b1def7d6a4951f963bd3e2dbd8c6d4434480cde14d37a892e1744c048221",
+      "span": 4
+    },
     "GameManager.cs:1813-1829": {
       "sha256": "fe87f85dba734db1618e0c82e5e4f59fa9ce3a82d8ff88e524fb796c22687281",
       "span": 17
@@ -1208,6 +1226,10 @@
       "sha256": "03d41b35710c44491b6ef94fb84ba838ff67d11ee4221be4fed174837e177717",
       "span": 23
     },
+    "GatherItem.cs:360-365": {
+      "sha256": "bcb1d92f36bd9dd29b1b164c18e75177d9a4866aa6b5f8fb2c331cbd07ca02ce",
+      "span": 6
+    },
     "GatherItem.cs:368-376": {
       "sha256": "f3410bef61b21d9356e3a51f72327adc69492456f72a971b976f89dd8fab6d52",
       "span": 9
@@ -1263,6 +1285,10 @@
     "GatherItem.cs:588-597": {
       "sha256": "ef1ee973abdd13d7e12a6275898301c7255db56b9b250539e95d9dcfe2bfdfd4",
       "span": 10
+    },
+    "GatherItem.cs:588-603": {
+      "sha256": "8f348d32f555338c3fd3dcefb15d1467281ef01d928d6c0883a502a5e2d3e2b6",
+      "span": 16
     },
     "GatherItem.cs:591-593": {
       "sha256": "5af9b7f382b88a96b3047117598a9f5c85fbebb6138981c5db3c6c3c9189e8c2",
@@ -1485,6 +1511,9 @@
     "Intelligence.cs:96-99": {
       "sha256": "ae4221afd8e2833e8ee025819f0be49c5a01d2ff24e815b13983175a4db42e3f",
       "span": 4
+    },
+    "Intelligence.cs:GetMagicDamageBonus": {
+      "span": 0
     },
     "InteractablePortal.cs:101": {
       "sha256": "d61d0f7a50de7f0d6e227bb0780fe15c306531f340d9de173ec1577f6991a1d9",
@@ -3932,9 +3961,21 @@
       "sha256": "600f11caa0fe2f8236adeed4385872c1208f2689cfd5ed9d24a1bbf634f511c0",
       "span": 10
     },
+    "TargetDamageSkill.cs:183-199": {
+      "sha256": "86ac06a7cf4ed99511411af4f3349a01050c6e84ec19bb825eeb8d50d6f8770e",
+      "span": 17
+    },
     "TargetDamageSkill.cs:183-200": {
       "sha256": "6ba276e6272400a6d91dca7a6982028941c482c16ba16f22d7aec2e9ad4a0e8b",
       "span": 18
+    },
+    "TargetDamageSkill.cs:203-226": {
+      "sha256": "b3598499a155c9fb40fdf7daa5840453f8c704b0aafc58e104ce51ebe92506ab",
+      "span": 24
+    },
+    "TargetDamageSkill.cs:214-226": {
+      "sha256": "95ce9a2930fba8856840d90b02250d878ce155f443d2f415afef32123c595605",
+      "span": 13
     },
     "TargetDamageSkill.cs:218-222": {
       "sha256": "d65c216a065fddccd8c2627b76c33a4509004724ff8b0c985fc20d9399f98506",

@@ -2,6 +2,7 @@
   import { onMount, untrack } from "svelte";
   import { afterNavigate } from "$app/navigation";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
+  import { parseTableUrlState, serializeTableUrlState } from "./url-state";
   import {
     getCoreRowModel,
     getSortedRowModel,
@@ -244,216 +245,30 @@
     // Also save to localStorage
     saveToStorage();
 
-    const currentParams = new URL(window.location.href).searchParams;
-    const newParams: string[] = [];
-    const prefix = `${urlKey}.`;
-
-    // Keep params that don't belong to this table
-    currentParams.forEach((value, key) => {
-      if (!key.startsWith(prefix)) {
-        newParams.push(
-          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
-        );
-      }
-    });
-
-    // Add search text
-    if (globalFilter) {
-      newParams.push(
-        `${encodeURIComponent(`${prefix}search`)}=${encodeURIComponent(globalFilter)}`,
-      );
-    }
-
-    // Add hidden columns (only those that differ from initial visibility)
-    const hiddenCols = Object.entries(columnVisibility)
-      .filter(
-        ([id, visible]) => !visible && initialColumnVisibility[id] !== false,
-      )
-      .map(([id]) => id);
-    // Add shown columns that were initially hidden
-    const shownCols = Object.keys(initialColumnVisibility).filter(
-      (id) =>
-        initialColumnVisibility[id] === false && columnVisibility[id] !== false,
+    const queryString = serializeTableUrlState(
+      new URL(window.location.href).searchParams,
+      urlKey,
+      {
+        search: globalFilter,
+        filters: columnFilters,
+        visibility: columnVisibility,
+        pagination,
+        sorting,
+      },
+      initialColumnVisibility,
+      initialSorting,
     );
-    if (hiddenCols.length > 0) {
-      newParams.push(
-        `${encodeURIComponent(`${prefix}hide`)}=${encodeURIComponent(hiddenCols.join(","))}`,
-      );
-    }
-    if (shownCols.length > 0) {
-      newParams.push(
-        `${encodeURIComponent(`${prefix}show`)}=${encodeURIComponent(shownCols.join(","))}`,
-      );
-    }
-
-    // Add column filters with prefixed keys
-    for (const filter of columnFilters) {
-      const paramKey = `${prefix}${filter.id}`;
-
-      // Handle stat filters (object with stats array and mode)
-      if (
-        typeof filter.value === "object" &&
-        filter.value !== null &&
-        !Array.isArray(filter.value) &&
-        "stats" in filter.value &&
-        "mode" in filter.value
-      ) {
-        const { stats, mode } = filter.value as {
-          stats: string[];
-          mode: string;
-        };
-        // Always serialize mode, even with empty stats (so mode persists across reloads)
-        // Only skip if mode is "all" (default) and no stats selected
-        if (stats.length > 0 || mode !== "all") {
-          const statStr = `${stats.join(",")};${mode}`;
-          newParams.push(
-            `${encodeURIComponent(paramKey)}=${encodeURIComponent(statStr)}`,
-          );
-        }
-        continue;
-      }
-
-      // Handle range filters (arrays of [min, max] where values can be numbers or null)
-      if (
-        Array.isArray(filter.value) &&
-        filter.value.length === 2 &&
-        (typeof filter.value[0] === "number" ||
-          filter.value[0] === null ||
-          typeof filter.value[1] === "number" ||
-          filter.value[1] === null) &&
-        !Array.isArray(filter.value[0])
-      ) {
-        const [min, max] = filter.value as [number | null, number | null];
-        if (min !== null || max !== null) {
-          const rangeStr = `${min ?? ""}-${max ?? ""}`;
-          newParams.push(
-            `${encodeURIComponent(paramKey)}=${encodeURIComponent(rangeStr)}`,
-          );
-        }
-        continue;
-      }
-
-      // Handle faceted filters (string arrays)
-      const values = filter.value as string[] | undefined;
-      if (values && values.length > 0) {
-        newParams.push(
-          `${encodeURIComponent(paramKey)}=${encodeURIComponent(values.join(","))}`,
-        );
-      }
-    }
-
-    // Add page number (only if not on first page)
-    if (pagination.pageIndex > 0) {
-      newParams.push(
-        `${encodeURIComponent(`${prefix}page`)}=${pagination.pageIndex + 1}`,
-      );
-    }
-
-    // Add sorting (only if different from initial)
-    const sortingChanged =
-      JSON.stringify(sorting) !== JSON.stringify(initialSorting);
-    if (sortingChanged && sorting.length > 0) {
-      const sortStr = sorting
-        .map((s) => `${s.id}:${s.desc ? "desc" : "asc"}`)
-        .join(",");
-      newParams.push(
-        `${encodeURIComponent(`${prefix}sort`)}=${encodeURIComponent(sortStr)}`,
-      );
-    }
-
-    const queryString = newParams.join("&");
     const newUrl = queryString
       ? `${window.location.pathname}?${queryString}`
       : window.location.pathname;
     window.history.replaceState(history.state, "", newUrl);
   }
 
-  interface UrlTableState {
-    hasUrlState: boolean;
-    search: string | null;
-    filters: ColumnFiltersState;
-    visibility: VisibilityState;
-    page: number | null;
-    sorting: SortingState | null;
-  }
-
-  /** The table state this table's `{urlKey}.*` parameters describe. */
-  function readUrlState(): UrlTableState {
-    const prefix = `${urlKey}.`;
-    const restoredFilters: ColumnFiltersState = [];
-    const restoredVisibility: VisibilityState = {};
-    let hasUrlState = false;
-    let restoredSearch: string | null = null;
-    let restoredPage: number | null = null;
-    let restoredSorting: SortingState | null = null;
-
-    // Find all URL params that match our prefix (normalized to fix &amp; from Steam links)
-    new URLSearchParams(getNormalizedUrlSearch()).forEach((value, key) => {
-      if (key.startsWith(prefix)) {
-        hasUrlState = true;
-        const paramKey = key.slice(prefix.length);
-
-        if (paramKey === "search") {
-          restoredSearch = value;
-        } else if (paramKey === "hide") {
-          const hiddenCols = value.split(",").filter(Boolean);
-          for (const col of hiddenCols) {
-            restoredVisibility[col] = false;
-          }
-        } else if (paramKey === "show") {
-          const shownCols = value.split(",").filter(Boolean);
-          for (const col of shownCols) {
-            restoredVisibility[col] = true;
-          }
-        } else if (paramKey === "page") {
-          const pageNum = parseInt(value, 10);
-          if (!isNaN(pageNum) && pageNum > 0) {
-            restoredPage = pageNum - 1;
-          }
-        } else if (paramKey === "sort") {
-          const sortParts = value.split(",").filter(Boolean);
-          restoredSorting = sortParts.map((part) => {
-            const [id, dir] = part.split(":");
-            return { id, desc: dir === "desc" };
-          });
-        } else {
-          // Check if it's a stat filter (format: "stat1,stat2;mode" or ";mode" for mode-only)
-          const statFilterMatch = value.match(/^(.*);(any|all)$/);
-          if (statFilterMatch) {
-            const stats = statFilterMatch[1].split(",").filter(Boolean);
-            const mode = statFilterMatch[2] as "any" | "all";
-            restoredFilters.push({ id: paramKey, value: { stats, mode } });
-          } else {
-            // Check if it's a range filter (format: "min-max", "-max", "min-")
-            const rangeMatch = value.match(/^(-?\d*)-(-?\d*)$/);
-            if (rangeMatch) {
-              const min =
-                rangeMatch[1] !== "" ? parseInt(rangeMatch[1], 10) : null;
-              const max =
-                rangeMatch[2] !== "" ? parseInt(rangeMatch[2], 10) : null;
-              if (min !== null || max !== null) {
-                restoredFilters.push({ id: paramKey, value: [min, max] });
-              }
-            } else {
-              // Faceted filter (comma-separated values)
-              const values = value.split(",").filter(Boolean);
-              if (values.length > 0) {
-                restoredFilters.push({ id: paramKey, value: values });
-              }
-            }
-          }
-        }
-      }
-    });
-
-    return {
-      hasUrlState,
-      search: restoredSearch,
-      filters: restoredFilters,
-      visibility: restoredVisibility,
-      page: restoredPage,
-      sorting: restoredSorting,
-    };
+  function readUrlState() {
+    return parseTableUrlState(
+      new URLSearchParams(getNormalizedUrlSearch()),
+      urlKey!,
+    );
   }
 
   // A link to the same page with other filters, such as a search result that

@@ -29,6 +29,9 @@ export type AddExpr = { type: "add"; operands: Expr[] };
 /** Scaled product: operand × factor. */
 export type MulExpr = { type: "mul"; factor: number; operand: Expr };
 
+/** Unity Mathf.RoundToInt product: halfway values round to an even integer. */
+export type RoundMulExpr = { type: "round_mul"; factor: number; operand: Expr };
+
 /**
  * Floor-product: ⌊operand × factor⌋ (Mathf.FloorToInt in server code).
  * Used for the rogue player off-hand 0.5× penalty.
@@ -59,6 +62,7 @@ export type Expr =
   | ConstExpr
   | AddExpr
   | MulExpr
+  | RoundMulExpr
   | FloorMulExpr
   | RequireSlotExpr
   | SpecialExpr;

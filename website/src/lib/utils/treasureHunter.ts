@@ -2,42 +2,36 @@ import { PROFESSION_MECHANICS } from "$lib/data/professions/mechanics";
 
 const mechanics = PROFESSION_MECHANICS.treasure_hunter;
 
-/**
- * @typedef {object} ChestReward
- * @property {string} item_id
- * @property {string} item_name
- * @property {string | null} item_type
- * @property {number} quality
- * @property {string | null} tooltip_html
- * @property {number} roll_order
- * @property {number} base_roll_chance
- * @property {number} baseline_open_chance
- * @property {boolean} scales_with_treasure_hunter
- * @property {string | null} relic_buff_id
- * @property {string | null} relic_buff_name
- */
+export interface ChestReward {
+  item_id: string;
+  item_name: string;
+  item_type: string | null;
+  quality: number;
+  tooltip_html: string | null;
+  roll_order: number;
+  base_roll_chance: number;
+  baseline_open_chance: number;
+  scales_with_treasure_hunter: boolean;
+  relic_buff_id: string | null;
+  relic_buff_name: string | null;
+}
 
-/**
- * @typedef {ChestReward & {
- *   adjusted_open_chance: number,
- *   change_from_baseline: number,
- * }} AdjustedChestReward
- */
+export interface AdjustedChestReward extends ChestReward {
+  adjusted_open_chance: number;
+  change_from_baseline: number;
+}
 
-/**
- * @typedef {object} ChestSimulationOptions
- * @property {number} [trials]
- * @property {number} [seed]
- * @property {number} [targetRewards]
- * @property {number} [maxPasses]
- */
+export interface ChestSimulationOptions {
+  trials?: number;
+  seed?: number;
+  targetRewards?: number;
+  maxPasses?: number;
+}
 
 class SeededRandom {
-  /** @type {number} */
-  seed;
+  seed: number;
 
-  /** @param {number} seed */
-  constructor(seed) {
+  constructor(seed: number) {
     this.seed = seed >>> 0;
   }
 
@@ -60,12 +54,12 @@ class SeededRandom {
  * && item.data is RelicItem`), and the bonus is `treasureHunterLevel * 0.1f`
  * added to the per-roll probability.
  *
- * @param {ChestReward[]} rewards
- * @param {number} skill Treasure Hunter skill as a 0..1 fraction.
- * @param {ChestSimulationOptions} [options]
- * @returns {AdjustedChestReward[]}
  */
-export function calculateAdjustedChestRewards(rewards, skill, options = {}) {
+export function calculateAdjustedChestRewards(
+  rewards: ChestReward[],
+  skill: number,
+  options: ChestSimulationOptions = {},
+): AdjustedChestReward[] {
   const trials = options.trials ?? 50_000;
   const targetRewards = options.targetRewards ?? 3;
   const maxPasses = options.maxPasses ?? 10;
@@ -77,14 +71,13 @@ export function calculateAdjustedChestRewards(rewards, skill, options = {}) {
   const counts = new Map(orderedRewards.map((reward) => [reward.item_id, 0]));
 
   for (let trial = 0; trial < trials; trial++) {
-    const selectedItemNames = new Set();
+    const selectedItemNames = new Set<string>();
     let passes = 0;
 
     // Source: server-scripts/ChestItem.cs:24 — `while (num < numItemsPerChest && num2 < 10)`.
     while (selectedItemNames.size < targetRewards && passes < maxPasses) {
       for (const reward of orderedRewards) {
-        // Source: server-scripts/ChestItem.cs:31 — `!list.Contains(item.data.nameItem)` skips duplicates by display name.
-        if (selectedItemNames.has(reward.item_name)) continue;
+        // Source: server-scripts/ChestItem.cs:30-31 — the roll precedes the duplicate-name check.
 
         // Source: server-scripts/ChestItem.cs:30 — relics on Buried Treasure Chest get `treasureHunterLevel * 0.1f` added; the chest-name guard is enforced upstream by the loader scoping to `buried_treasure_chest`.
         const rollChance = reward.scales_with_treasure_hunter
@@ -95,12 +88,15 @@ export function calculateAdjustedChestRewards(rewards, skill, options = {}) {
             )
           : reward.base_roll_chance;
 
-        if (random.next() < rollChance) {
+        if (
+          random.next() < rollChance &&
+          !selectedItemNames.has(reward.item_name)
+        ) {
           selectedItemNames.add(reward.item_name);
           counts.set(reward.item_id, (counts.get(reward.item_id) ?? 0) + 1);
         }
 
-        // Source: server-scripts/ChestItem.cs:60-62 — break out of the reward loop once the slot count is reached.
+        // Source: server-scripts/ChestItem.cs:61-64 — break out of the reward loop once the slot count is reached.
         if (selectedItemNames.size >= targetRewards) break;
       }
 
@@ -118,11 +114,10 @@ export function calculateAdjustedChestRewards(rewards, skill, options = {}) {
   });
 }
 
-/**
- * @param {AdjustedChestReward} a
- * @param {AdjustedChestReward} b
- */
-export function sortChestRewardsForDisplay(a, b) {
+export function sortChestRewardsForDisplay(
+  a: AdjustedChestReward,
+  b: AdjustedChestReward,
+): number {
   if (a.scales_with_treasure_hunter !== b.scales_with_treasure_hunter) {
     return a.scales_with_treasure_hunter ? -1 : 1;
   }

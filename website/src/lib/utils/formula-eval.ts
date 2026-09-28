@@ -17,6 +17,7 @@ import type {
   OtherExpr,
   AddExpr,
   MulExpr,
+  RoundMulExpr,
   FloorMulExpr,
   RequireSlotExpr,
   SpecialExpr,
@@ -40,6 +41,11 @@ const other = (category: "phys" | "magic"): OtherExpr => ({
 const add = (operands: Expr[]): AddExpr => ({ type: "add", operands });
 const mul = (factor: number, operand: Expr): MulExpr => ({
   type: "mul",
+  factor,
+  operand,
+});
+const rmul = (factor: number, operand: Expr): RoundMulExpr => ({
+  type: "round_mul",
   factor,
   operand,
 });
@@ -127,7 +133,8 @@ export const FORMULA_EXPRS = {
     add([
       mul(1.0, add([s("str"), w("melee", "strength"), w("bow", "strength")])),
       w("bow", "damage"),
-      mul(1.5, add([s("dex"), w("bow", "dexterity")])),
+      // Source: server-scripts/Dexterity.cs:GetRangedAttackBonusPerPoint — round DEX × 1.5 to an even integer on ties.
+      rmul(1.5, add([s("dex"), w("bow", "dexterity")])),
       other("phys"),
     ]),
   ),
@@ -141,7 +148,8 @@ export const FORMULA_EXPRS = {
       mul(1.0, add([s("str"), w("main", "strength"), w("bow", "strength")])),
       w("main", "damage"),
       w("bow", "damage"),
-      mul(1.5, add([s("dex"), w("bow", "dexterity")])),
+      // Source: server-scripts/Dexterity.cs:GetRangedAttackBonusPerPoint — round the combined DEX bonus.
+      rmul(1.5, add([s("dex"), w("bow", "dexterity")])),
       other("phys"),
     ]),
   ),
@@ -154,7 +162,8 @@ export const FORMULA_EXPRS = {
       mul(1.0, add([s("str"), w("bow", "strength"), w("melee", "strength")])),
       w("bow", "damage"),
       w("melee", "damage"),
-      mul(1.5, add([s("dex"), w("bow", "dexterity")])),
+      // Source: server-scripts/Dexterity.cs:GetRangedAttackBonusPerPoint — mercenary DEX uses the same method.
+      rmul(1.5, add([s("dex"), w("bow", "dexterity")])),
       other("phys"),
     ]),
   ),
@@ -169,7 +178,8 @@ export const FORMULA_EXPRS = {
       mul(1.0, add([s("str"), w("main", "strength"), w("off", "strength")])),
       w("main", "damage"),
       fmul(0.5, w("off", "damage")),
-      mul(2.5, s("dex")),
+      // Source: server-scripts/Dexterity.cs:GetPoisonDamageBonusPerPoint — round DEX × 2.5 to an even integer on ties.
+      rmul(2.5, s("dex")),
       other("phys"),
     ]),
   ),
@@ -177,10 +187,10 @@ export const FORMULA_EXPRS = {
   // ── Magic ────────────────────────────────────────────────────────────────────
 
   // Pure spell damage: INT×1.5 + wand magic stat + other magic equipment.
-  // Source: Intelligence.cs — magicDamageBonusPerPoint = 1.5
+  // Source: server-scripts/Intelligence.cs:GetMagicDamageBonus — rounded INT × 1.5.
   magic_spell: req(
     "wand",
-    add([mul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
+    add([rmul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
   ),
 
   // Magic + weapon (e.g. holy_wrath): magic and physical components additive.
@@ -189,7 +199,8 @@ export const FORMULA_EXPRS = {
     "wand",
     add([
       // magic component
-      mul(1.5, s("int")),
+      // Source: server-scripts/Intelligence.cs:GetMagicDamageBonus — round INT × 1.5 to an even integer on ties.
+      rmul(1.5, s("int")),
       w("wand", "magic_damage"),
       other("magic"),
       // physical component
@@ -207,7 +218,8 @@ export const FORMULA_EXPRS = {
     "main",
     add([
       // magic component
-      mul(1.5, s("int")),
+      // Source: server-scripts/Intelligence.cs:GetMagicDamageBonus — round before combining magic and physical damage.
+      rmul(1.5, s("int")),
       w("wand", "magic_damage"),
       other("magic"),
       // physical component
@@ -263,6 +275,15 @@ export function evaluate(expr: Expr, ctx: EvalCtx): number | null {
     case "mul": {
       const v = evaluate(expr.operand, ctx);
       return v === null ? null : v * expr.factor;
+    }
+    case "round_mul": {
+      const v = evaluate(expr.operand, ctx);
+      if (v === null) return null;
+      const product = v * expr.factor;
+      const lower = Math.floor(product);
+      return product - lower === 0.5
+        ? lower + (lower % 2 === 0 ? 0 : 1)
+        : Math.round(product);
     }
     case "floor_mul": {
       const v = evaluate(expr.operand, ctx);
@@ -334,8 +355,12 @@ export function renderFormula(expr: Expr): string {
       return String(expr.value);
     case "add": {
       // Put stat terms before flat weapon and other-equipment damage.
-      const statTerms = expr.operands.filter((op) => op.type === "mul");
-      const flatTerms = expr.operands.filter((op) => op.type !== "mul");
+      const statTerms = expr.operands.filter(
+        (op) => op.type === "mul" || op.type === "round_mul",
+      );
+      const flatTerms = expr.operands.filter(
+        (op) => op.type !== "mul" && op.type !== "round_mul",
+      );
       const parts = [...statTerms, ...flatTerms]
         .map(renderFormula)
         .filter(Boolean);
@@ -348,6 +373,12 @@ export function renderFormula(expr: Expr): string {
       // expression is a sum — i.e. contains " + " after collapsing empties.
       const needsParens = inner.includes(" + ");
       return `${needsParens ? `(${inner})` : inner} × ${fmtFactor(expr.factor)}`;
+    }
+    case "round_mul": {
+      const inner = renderFormula(expr.operand);
+      if (!inner) return "";
+      const product = `${inner.includes(" + ") ? `(${inner})` : inner} × ${fmtFactor(expr.factor)}`;
+      return `round(${product})`;
     }
     case "floor_mul": {
       const inner = renderFormula(expr.operand);
@@ -437,7 +468,7 @@ export function renderFormulaDisplay(
     case "magic_weapon": {
       // Magic component: INT × 1.5 + casting weapon magic damage + other equipment magic damage.
       const magicStr = renderFormula(
-        add([mul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
+        add([rmul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
       );
       // Physical component: STR × 1 + main-hand weapon damage + other equipment damage.
       const physStr = renderFormula(
@@ -462,7 +493,7 @@ export function renderFormulaDisplay(
       // contributes, bow.dmg excluded). Wild Strike is rendered through its
       // skill-specific override and does not use this dual-component display.
       const magicStr = renderFormula(
-        add([mul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
+        add([rmul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
       );
       const physStr = renderFormula(
         add([
