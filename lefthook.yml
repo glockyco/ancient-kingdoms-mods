@@ -7,6 +7,9 @@
 # a package, jobs run top-to-bottom: format -> lint -> type-check -> test. Unlike
 # lint-staged, lefthook runs against the real working tree, so SvelteKit's
 # generated `.svelte-kit/types` are present and `svelte-check` reports accurately.
+#
+# With lefthook's default glob matcher, "dir/**/*.ext" skips files directly in
+# dir. A glob therefore lists "dir/*.ext" beside "dir/**/*.ext", or uses "dir/**".
 
 assert_lefthook_installed: true
 
@@ -26,15 +29,15 @@ pre-commit:
       run: nix develop --command pnpm exec eslint --fix --max-warnings 0 {staged_files}
       stage_fixed: true
     - name: website-check
-      glob: "website/**/*.{ts,svelte}"
+      glob: "{website/*.{ts,svelte},website/**/*.{ts,svelte}}"
       run: nix develop --command pnpm --filter website check
     - name: website-test
-      glob: "website/**/*.{ts,svelte}"
+      glob: "{website/*.{ts,svelte},website/**/*.{ts,svelte}}"
       run: nix develop --command pnpm --filter website test
     # Knip checks the committed home-counts module in clean CI and local checkouts.
     # The hook also catches unused exports before a local commit.
     - name: knip
-      glob: "{website/**/*.{ts,svelte,mjs,css},scripts/**,knip.config.ts,package.json,website/package.json}"
+      glob: "{website/*.{ts,svelte,mjs,css},website/**/*.{ts,svelte,mjs,css},scripts/**,knip.config.ts,package.json,website/package.json}"
       run: nix develop --command pnpm check:knip
     # These two artifacts are generated from website/data/compendium.db and then
     # committed, because a clean checkout has no database to derive them from. The
@@ -74,15 +77,13 @@ pre-commit:
     # website job above and consumed here, so this is the only job that compares the
     # two formatters. Without it the corpus is written and never checked.
     - name: dotnet-tests
-      glob: "{mods/**/*.cs,mods/*/*.csproj,build-tool/**/*.cs,build-tool/*.csproj,tests/**,Directory.Build.props}"
+      glob: "{mods/**/*.cs,mods/*/*.csproj,build-tool/*.cs,build-tool/**/*.cs,build-tool/*.csproj,tests/**,Directory.Build.props}"
       run: for project in tests/*/; do dotnet test "$project" || exit $?; done
     - name: citations-check
-      glob: "{website/src/**/*.{ts,js,svelte},build-pipeline/src/**/*.py,build-pipeline/schema.sql,mods/**/*.cs,citations.lock.json}"
+      glob: "{website/src/*.{ts,js,svelte},website/src/**/*.{ts,js,svelte},build-pipeline/src/**/*.py,build-pipeline/schema.sql,mods/**/*.cs,citations.lock.json}"
       run: cd build-pipeline && uv run compendium citations check
       skip:
         - run: "! test -d server-scripts"
-    # With lefthook's default glob matcher, "dir/**/*.py" skips files directly in
-    # dir, so each package directory below is matched with "dir/**".
     - name: redactions-check
       glob: "{redactions.toml,redactions.lock.json,build-pipeline/schema.sql,build-pipeline/src/compendium/redactions/**,build-pipeline/src/compendium/commands/redactions.py,build-pipeline/src/compendium/commands/build.py,build-pipeline/src/compendium/denormalizers/**,build-pipeline/src/compendium/loaders/**,build-pipeline/src/compendium/db.py,build-pipeline/src/compendium/config.py}"
       run: cd build-pipeline && uv run compendium redactions check
