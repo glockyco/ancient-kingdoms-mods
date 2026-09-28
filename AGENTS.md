@@ -6,7 +6,6 @@ This repository owns MelonLoader mods, the Python export-to-SQLite pipeline, and
 
 - Current behavior: `openspec/specs/`.
 - Active changes and tasks: `openspec/changes/`.
-- Project roadmap and historical planning index: `docs/plans/INDEX.md`.
 - Setup, architecture, and commands: `README.md`.
 
 Use OpenSpec for permanent behavior changes. Read all artifacts for the selected change before implementation. Validate completed changes with `openspec validate <change> --strict`.

@@ -22,18 +22,11 @@ def check(root: Path) -> tuple[list[str], dict[str, int]]:
     errors: list[str] = []
     excluded = EXCLUDED
 
-
-
-    def included(path: Path) -> bool:
-        rel = path.relative_to(root)
-        return not any(part in excluded for part in rel.parts) and rel.parts[:3] != ("docs", "plans", "archive")
-
-
     def walk() -> list[tuple[Path, list[str], list[str]]]:
         entries: list[tuple[Path, list[str], list[str]]] = []
         for directory, dirs, names in os.walk(root):
             current = Path(directory)
-            dirs[:] = [name for name in dirs if name not in excluded and not (current == root / "docs" / "plans" and name == "archive")]
+            dirs[:] = [name for name in dirs if name not in excluded]
             entries.append((current, dirs.copy(), names))
         return entries
 

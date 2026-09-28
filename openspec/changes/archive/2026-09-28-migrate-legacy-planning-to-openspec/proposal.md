@@ -3,8 +3,8 @@
 `docs/plans/` remains a legacy planning hub beside OpenSpec, so current work, shipped behavior, stale
 claims, and historical rationale can appear authoritative in two places. The repository needs one
 planning system. Evidence collection, reconciliation, and safe removal of independently stale records
-can proceed while other changes are active. The final authority cutover waits until the combat
-verification harness and gear planner changes are complete, so their active context remains stable.
+can proceed while other changes are active. The final authority cutover runs after every record has a
+verified disposition.
 
 ## What Changes
 
@@ -21,9 +21,11 @@ verification harness and gear planner changes are complete, so their active cont
 - Remove `docs/plans/INDEX.md`, remaining `docs/plans/` pointers, and obsolete planning-tool hooks after
   every owned record and reference is resolved.
 - Permit evidence collection, reconciliation, replacement planning, and safe removal of independently
-  stale records while `add-combat-verification-harness` and `add-gear-and-rotation-planner` remain active.
-- Defer the final index removal, repository-guidance cutover, and legacy-directory removal until both
-  prerequisite changes are complete and archived.
+  stale records while other changes are active.
+- Run the final index removal, repository-guidance cutover, and legacy-directory removal only after every
+  record has a verified disposition. The two combat changes that this cutover once waited for,
+  `add-combat-verification-harness` and `add-gear-and-rotation-planner`, were superseded by the archived
+  `rebuild-combat-model` and deleted in f10fc2b0, so no active change constrains the cutover.
 
 ## Capabilities
 
@@ -35,6 +37,8 @@ None.
 
 - `documentation-lifecycle`: define OpenSpec as the only owner of current behavior and active change
   planning, and require a lossless, reference-clean migration before a legacy planning hub is removed.
+- `agent-instructions`: name OpenSpec's archive, instead of the removed legacy plan archive, as the
+  historical record that the instruction check exempts.
 
 ## Impact
 
