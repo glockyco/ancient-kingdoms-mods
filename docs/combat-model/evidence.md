@@ -96,7 +96,7 @@ must be sampled, not treated as a fixed reachable rate.
 
 ## Default replicate count
 
-Measured on the committed planner payload for Ancient Kingdoms 0.9.32.4 (Steam build 25326396,
+Measured on the generated planner payload for Ancient Kingdoms 0.9.32.4 (Steam build 25326396,
 assembly `6dff3b0cb35dcd11ff8d6d6456f9db9a536c9258fbcc022321f3c527aef83771`) with model version 2.
 
 Build: `verification/fixtures/d/D-class-warrior.json`, a level 50 Human Warrior with 200 veteran

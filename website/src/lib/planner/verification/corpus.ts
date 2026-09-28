@@ -209,7 +209,7 @@ export function parseObservationRecord(
   };
 }
 
-/** The tracked planner payload records the assembly identity used by this model. */
+/** The generated planner payload records the assembly identity used by this model. */
 export function readPlannerAssemblySha256(repoRoot: string): string {
   const plannerData = requireRecord(
     JSON.parse(

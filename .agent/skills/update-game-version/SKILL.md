@@ -74,7 +74,7 @@ cd website
 pnpm test --run src/lib/planner/verification/verification.db.test.ts
 ```
 
-Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from the tracked planner payload generated from `server-scripts/SNAPSHOT.toml`. Stale observations are expected after a game update and do not fail the routine release gate.
+Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from the generated planner payload in `website/data/planner-data.json`, whose assembly identity comes from `server-scripts/SNAPSHOT.toml`. Stale observations are expected after a game update and do not fail the routine release gate.
 
 Do not refresh the complete combat fixture matrix only because the assembly changed. When the server-script diff changes behavior covered by one or more committed fixtures, run only those fixtures with repeated `--fixture <name>` options. Run the complete matrix when the verification framework or fixture corpus changes, or when the user explicitly requests it:
 
