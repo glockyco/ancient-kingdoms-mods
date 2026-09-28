@@ -83,7 +83,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: glockyco/HotRepl
-          ref: 7d9c49ed57f5436bf7b258207ea14236333b4ac6
+          ref: 50b646dafd74742e71c9c27ffdca2882da5d0177
           path: HotRepl
       - uses: actions/setup-dotnet@v5
         with:

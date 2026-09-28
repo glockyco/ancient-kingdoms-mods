@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
@@ -30,5 +31,34 @@ public class BuildCommandTests
         Assert.All(runner.Calls, call => Assert.Equal("dotnet", call.Program));
         Assert.All(runner.Calls, call => Assert.Contains("build", call.Arguments));
         Directory.Delete(tempRoot, recursive: true);
+    }
+
+    [Theory]
+    [InlineData("<Project><PropertyGroup><ANCIENT_KINGDOMS_PATH>/configured/game</ANCIENT_KINGDOMS_PATH></PropertyGroup></Project>", "Game path: /configured/game")]
+    [InlineData("<Project><PropertyGroup /></Project>", "Game path: ANCIENT_KINGDOMS_PATH is absent from Local.props")]
+    [InlineData(null, "Game path: Local.props is absent")]
+    public async Task ReportsTheGamePathUsedByTheBuild(string? propsXml, string expected)
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        Directory.CreateDirectory(Path.Combine(tempRoot, "mods"));
+        if (propsXml is not null)
+            File.WriteAllText(Path.Combine(tempRoot, "Local.props"), propsXml);
+
+        using var output = new StringWriter();
+        var originalOutput = Console.Out;
+        try
+        {
+            Console.SetOut(output);
+            var result = await new BuildCommand(tempRoot, new FakeProcessRunner())
+                .RunAsync(new BuildCommand.Settings(), TestContext.Current.CancellationToken);
+            Assert.Equal(0, result);
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+            Directory.Delete(tempRoot, recursive: true);
+        }
+
+        Assert.Contains(expected, output.ToString(), StringComparison.Ordinal);
     }
 }

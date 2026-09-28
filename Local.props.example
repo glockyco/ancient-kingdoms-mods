@@ -1,31 +1,21 @@
 <Project>
   <!--
-    Local configuration for Ancient Kingdoms mod development.
-
-    Option 1: Run 'dotnet run --project build-tool setup' to generate this file interactively.
-    Option 2: Copy this file to Local.props and edit manually.
-
-    Local.props is git-ignored and will not be committed.
+    Local configuration for Ancient Kingdoms on macOS with CrossOver.
+    Use the setup command in README.md to discover the game and write
+    Local.props. If you copy this example manually, replace every example path
+    with an absolute path on your machine. Local.props is gitignored.
   -->
 
   <PropertyGroup>
-    <!-- Required: Path to your Ancient Kingdoms installation -->
-    <ANCIENT_KINGDOMS_PATH>E:\SteamLibrary\steamapps\common\Ancient Kingdoms</ANCIENT_KINGDOMS_PATH>
+    <!-- Required: Game installation inside a CrossOver Steam bottle. -->
+    <ANCIENT_KINGDOMS_PATH>/Users/you/Library/Application Support/CrossOver/Bottles/Steam/drive_c/Program Files (x86)/Steam/steamapps/common/Ancient Kingdoms</ANCIENT_KINGDOMS_PATH>
 
-    <!-- Required: Path where DataExporter mod should save JSON files -->
-    <DATA_EXPORT_PATH>E:\Projects\ancient-kingdoms-mods\exported-data</DATA_EXPORT_PATH>
+    <!-- Required: Same export directory as paths.export_dir in config.toml. -->
+    <DATA_EXPORT_PATH>/Users/you/src/ancient-kingdoms-mods/exported-data</DATA_EXPORT_PATH>
 
-    <!-- macOS only: Required for launch, export, and any game-running command on macOS -->
-    <!-- <WINE_PATH>/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine</WINE_PATH> -->
-    <!-- <WINE_PREFIX>/Users/you/Library/Application Support/CrossOver/Bottles/Steam</WINE_PREFIX> -->
-
-    <!-- Optional: Override derived paths if needed -->
-    <!-- <MelonLoaderPath>$(ANCIENT_KINGDOMS_PATH)\MelonLoader</MelonLoaderPath> -->
-    <!-- <Il2CppAssembliesPath>$(MelonLoaderPath)\Il2CppAssemblies</Il2CppAssembliesPath> -->
-    <!-- <ModsPath>$(ANCIENT_KINGDOMS_PATH)\Mods</ModsPath> -->
-    <!-- Optional: Path to HotRepl repository (default: sibling ../HotRepl checkout). -->
-    <!-- Override if your HotRepl repo is not at the default path.                     -->
-    <!-- <HOTREPL_REPO_PATH>/path/to/HotRepl</HOTREPL_REPO_PATH>                        -->
+    <!-- Required: CrossOver Wine binary and the bottle containing the game. -->
+    <WINE_PATH>/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine</WINE_PATH>
+    <WINE_PREFIX>/Users/you/Library/Application Support/CrossOver/Bottles/Steam</WINE_PREFIX>
 
     <!-- Optional: HotRepl WebSocket endpoint (default: loopback). -->
     <!-- <HOTREPL_ENDPOINT>ws://127.0.0.1:18590</HOTREPL_ENDPOINT>  -->

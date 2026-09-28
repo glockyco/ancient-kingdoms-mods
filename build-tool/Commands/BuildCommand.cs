@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
+using BuildTool.Configuration;
 using BuildTool.Output;
 using Spectre.Console.Cli;
 
@@ -35,8 +36,16 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         Console.WriteLine("Building Ancient Kingdoms mods...");
-        var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH");
-        Console.WriteLine($"Game path: {gamePath}");
+        var propsPath = Path.Combine(_repoRoot, "Local.props");
+        if (!File.Exists(propsPath))
+            Console.WriteLine("Game path: Local.props is absent");
+        else
+        {
+            var gamePath = LocalConfigLoader.LoadGamePath(propsPath);
+            Console.WriteLine(gamePath is null
+                ? "Game path: ANCIENT_KINGDOMS_PATH is absent from Local.props"
+                : $"Game path: {gamePath}");
+        }
         Console.WriteLine();
 
         var modsRoot = Path.Combine(_repoRoot, "mods");
