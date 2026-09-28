@@ -12,12 +12,6 @@ const config = {
     // is prerendered at build time and served as a static asset, so it does
     // not consume Worker invocations.
     adapter: adapter({}),
-    prerender: {
-      // A 404 during prerendering is a broken internal link.
-      handleHttpError: ({ path }) => {
-        throw new Error(`404: ${path}`);
-      },
-    },
   },
 };
 
