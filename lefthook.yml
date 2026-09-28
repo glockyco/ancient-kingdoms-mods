@@ -75,7 +75,7 @@ pre-commit:
     # two formatters. Without it the corpus is written and never checked.
     - name: dotnet-tests
       glob: "{mods/**/*.cs,mods/*/*.csproj,build-tool/**/*.cs,build-tool/*.csproj,tests/**,Directory.Build.props}"
-      run: dotnet test tests/BetterBestiary.Tests && dotnet test tests/BossSkillTracker.Tests && dotnet test tests/BuildTool.Tests && dotnet test tests/DataExporter.Tests && dotnet test tests/HotReplCommands.Tests
+      run: for project in tests/*/; do dotnet test "$project" || exit $?; done
     - name: citations-check
       glob: "{website/src/**/*.{ts,js,svelte},build-pipeline/src/**/*.py,build-pipeline/schema.sql,mods/**/*.cs,citations.lock.json}"
       run: cd build-pipeline && uv run compendium citations check
