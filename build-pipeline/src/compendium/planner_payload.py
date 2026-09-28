@@ -224,7 +224,7 @@ def write_planner_payload(
     snapshot_path: Path,
     redaction_subject: Subject,
 ) -> PlannerPayloadResult:
-    """Replace both payload files only with a complete, verified payload."""
+    """Write and verify both payload files in the target directory."""
     raw_path = output_dir / RAW_PAYLOAD_NAME
     compressed_path = output_dir / COMPRESSED_PAYLOAD_NAME
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -254,7 +254,7 @@ def write_planner_payload(
 
 
 def remove_planner_payload_outputs(output_dir: Path) -> None:
-    """Delete both owned outputs before a build can fail or replace them."""
+    """Delete both payload files in the target directory."""
     _remove_outputs(
         output_dir / RAW_PAYLOAD_NAME,
         output_dir / COMPRESSED_PAYLOAD_NAME,
@@ -503,6 +503,7 @@ def _classify_effects(
 
 
 def _build_envelope(export_dir: Path, snapshot_path: Path) -> dict[str, Any]:
+    """Require the decompiled snapshot identity for every published planner payload."""
     snapshot = tomllib.loads(snapshot_path.read_text(encoding="utf-8"))
     game_config = _read_object(export_dir / "game_config.json")
     exported_version = game_config.get("game_version")

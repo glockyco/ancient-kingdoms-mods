@@ -16,21 +16,21 @@ from compendium.config import get_repo_root
 console = Console()
 
 SNAPSHOT_DIR = "server-scripts"
-CURATED_FILE = "exported-data/classes.json"
+PUBLISHED_FILE = "exported-data/classes.json"
 
 
 def run(config) -> int:
-    """Compare `compatible_races` in the curated class file against the game.
+    """Compare published `compatible_races` against the character creator.
 
-    Returns a process exit code. The check needs the decompiled snapshot, which is a
-    local artifact, so a missing snapshot is an error rather than a pass.
+    Edit `mods/DataExporter/Curated/classes.json`, then run DataExporter to update
+    the published copy. Both this check and the build require the local snapshot.
     """
     repo_root = get_repo_root()
     snapshot_root = repo_root / SNAPSHOT_DIR
-    curated_path = repo_root / CURATED_FILE
+    curated_path = repo_root / PUBLISHED_FILE
 
     if not curated_path.is_file():
-        console.print(f"[red]ERROR[/red] {CURATED_FILE} does not exist")
+        console.print(f"[red]ERROR[/red] {PUBLISHED_FILE} does not exist")
         return 1
 
     try:
@@ -54,7 +54,7 @@ def run(config) -> int:
     if problems:
         console.print(
             f"[red]{len(problems)} class(es) disagree with the game[/red] "
-            f"({CURATED_FILE})"
+            f"({PUBLISHED_FILE})"
         )
         for problem in problems:
             console.print(f"  {problem}")

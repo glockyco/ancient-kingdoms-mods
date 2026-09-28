@@ -123,10 +123,6 @@ def classes_check_races(ctx: typer.Context):
     raise typer.Exit(class_races_cmd.run(ctx.obj))
 
 
-if __name__ == "__main__":
-    app()
-
-
 redactions_app = typer.Typer(
     help="Record and verify what redaction removes from the compendium."
 )
@@ -173,3 +169,7 @@ def redactions_explain(
     from compendium.commands import redactions as redactions_cmd
 
     raise typer.Exit(redactions_cmd.run(ctx.obj, "explain", entity_id=entity_id))
+
+
+if __name__ == "__main__":
+    app()

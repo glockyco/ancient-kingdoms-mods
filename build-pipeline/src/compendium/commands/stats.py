@@ -2,6 +2,7 @@
 
 import sqlite3
 
+import typer
 from rich.console import Console
 from rich.table import Table
 
@@ -20,7 +21,7 @@ def run(config: dict) -> None:
     if not db_path.exists():
         console.print(f"[red]Error:[/red] Database not found: {db_path}")
         console.print("Run [cyan]compendium build[/cyan] first")
-        return
+        raise typer.Exit(1)
 
     # Connect to database
     conn = sqlite3.connect(db_path)

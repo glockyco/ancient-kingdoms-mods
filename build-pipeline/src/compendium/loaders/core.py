@@ -47,10 +47,6 @@ from compendium.models import (
     ZoneData,
     ZoneTriggerData,
 )
-
-console = Console()
-
-
 from compendium.visual_assets import (
     Encoding,
     PublishedAsset,
@@ -58,6 +54,15 @@ from compendium.visual_assets import (
     measure,
     publish,
 )
+
+console = Console()
+
+
+def _require_export(
+    filepath: Path, instruction: str = "Run the DataExporter mod in the game."
+) -> None:
+    if not filepath.is_file():
+        raise FileNotFoundError(f"Required input is missing: {filepath}. {instruction}")
 
 
 def _resolve_export_asset_path(export_dir: Path, export_path: str) -> Path:
@@ -78,10 +83,7 @@ def _record_visual_assets(
     Returns the number of rows inserted.
     """
     filepath = export_dir / "visual_assets.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No visual_assets.json found")
-        conn.commit()
-        return 0
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -141,6 +143,7 @@ def load_visual_assets(
 ) -> None:
     """Load runtime visual asset manifest rows and publish public images."""
     console.print("Loading visual assets...")
+    _require_export(export_dir / "visual_assets.json")
 
     images_dir = static_dir / "images"
     if images_dir.exists():
@@ -170,9 +173,9 @@ def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading static data...")
 
     filepath = export_dir / "static_data.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No static_data.json found")
-        return
+    _require_export(
+        filepath, "Restore the hand-maintained exported-data/static_data.json."
+    )
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -212,28 +215,22 @@ def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading classes...")
 
     filepath = export_dir / "classes.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No classes.json found")
-        return
+    _require_export(
+        filepath,
+        "Edit mods/DataExporter/Curated/classes.json and run the DataExporter mod.",
+    )
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # Merge combat stats from classes_combat.json if available
     combat_filepath = export_dir / "classes_combat.json"
-    combat_by_id: dict[str, dict] = {}
-    if combat_filepath.exists():
-        with open(combat_filepath, "r", encoding="utf-8") as f:
-            combat_data = json.load(f)
-        for entry in combat_data:
-            combat_by_id[entry["id"]] = entry
-        console.print(
-            f"  Merging combat stats from classes_combat.json ({len(combat_by_id)} entries)"
-        )
-    else:
-        console.print(
-            "  [yellow]Note:[/yellow] No classes_combat.json — combat stats will be zero"
-        )
+    _require_export(combat_filepath)
+    with open(combat_filepath, "r", encoding="utf-8") as f:
+        combat_data = json.load(f)
+    combat_by_id = {entry["id"]: entry for entry in combat_data}
+    console.print(
+        f"  Merging combat stats from classes_combat.json ({len(combat_by_id)} entries)"
+    )
 
     # Merge combat fields into each class entry
     for item in data:
@@ -439,8 +436,7 @@ def _load_achievements(
     """
 
     filepath = export_dir / "achievements.json"
-    if not filepath.exists():
-        raise FileNotFoundError("Required achievements.json export is unavailable")
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -540,9 +536,7 @@ def load_professions(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading professions...")
 
     filepath = export_dir / "professions.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No professions.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -578,9 +572,7 @@ def load_luck_tokens(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading luck tokens...")
 
     filepath = export_dir / "luck_tokens.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No luck_tokens.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -600,9 +592,7 @@ def load_altars(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading altars...")
 
     filepath = export_dir / "altars.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No altars.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -842,27 +832,22 @@ def load_monster_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
     }
 
     count = 0
-    skipped = 0
     for monster in monsters:
         for index, skill_id in enumerate(monster.skill_ids):
-            if skill_id in runtime_levels:
-                cursor.execute(
-                    "INSERT INTO monster_skills "
-                    "(monster_id, skill_id, skill_index, runtime_level) "
-                    "VALUES (?, ?, ?, ?)",
-                    (monster.id, skill_id, index, runtime_levels[skill_id]),
+            if skill_id not in runtime_levels:
+                raise ValueError(
+                    f"Monster {monster.id} references skill {skill_id} missing from skills.json"
                 )
-                count += 1
-            else:
-                skipped += 1
+            cursor.execute(
+                "INSERT INTO monster_skills "
+                "(monster_id, skill_id, skill_index, runtime_level) "
+                "VALUES (?, ?, ?, ?)",
+                (monster.id, skill_id, index, runtime_levels[skill_id]),
+            )
+            count += 1
 
     conn.commit()
-    if skipped > 0:
-        console.print(
-            f"  [green]OK[/green] Loaded {count} monster-skill links (skipped {skipped} unknown skill refs)"
-        )
-    else:
-        console.print(f"  [green]OK[/green] Loaded {count} monster-skill links")
+    console.print(f"  [green]OK[/green] Loaded {count} monster-skill links")
 
 
 def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -870,9 +855,7 @@ def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading pets...")
 
     filepath = export_dir / "pets.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No pets.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -959,9 +942,7 @@ def load_pet_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading pet skills...")
 
     filepath = export_dir / "pets.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No pets.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -976,38 +957,31 @@ def load_pet_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
     }
 
     count = 0
-    skipped = 0
     for pet in pets:
         for index, skill_id in enumerate(pet.skill_ids):
-            if skill_id in valid_skills:
-                cursor.execute(
-                    "INSERT INTO pet_skills (pet_id, skill_id, skill_index, is_innate) VALUES (?, ?, ?, 0)",
-                    (pet.id, skill_id, index),
+            if skill_id not in valid_skills:
+                raise ValueError(
+                    f"Pet {pet.id} references skill {skill_id} missing from skills.json"
                 )
-                count += 1
-            else:
-                skipped += 1
+            cursor.execute(
+                "INSERT INTO pet_skills (pet_id, skill_id, skill_index, is_innate) VALUES (?, ?, ?, 0)",
+                (pet.id, skill_id, index),
+            )
+            count += 1
 
         for index, skill_id in enumerate(pet.innate_skill_ids):
-            if skill_id in valid_skills:
-                cursor.execute(
-                    "INSERT INTO pet_skills (pet_id, skill_id, skill_index, is_innate) VALUES (?, ?, ?, 1)",
-                    (pet.id, skill_id, index),
+            if skill_id not in valid_skills:
+                raise ValueError(
+                    f"Pet {pet.id} references innate skill {skill_id} missing from skills.json"
                 )
-                count += 1
-            else:
-                console.print(
-                    f"  [yellow]SKIP[/yellow] Unknown innate skill ref: {skill_id} for pet {pet.id}"
-                )
-                skipped += 1
+            cursor.execute(
+                "INSERT INTO pet_skills (pet_id, skill_id, skill_index, is_innate) VALUES (?, ?, ?, 1)",
+                (pet.id, skill_id, index),
+            )
+            count += 1
 
     conn.commit()
-    if skipped > 0:
-        console.print(
-            f"  [green]OK[/green] Loaded {count} pet-skill links (skipped {skipped} unknown skill refs)"
-        )
-    else:
-        console.print(f"  [green]OK[/green] Loaded {count} pet-skill links")
+    console.print(f"  [green]OK[/green] Loaded {count} pet-skill links")
 
 
 def load_npcs(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -1092,9 +1066,7 @@ def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading treasure locations...")
 
     filepath = export_dir / "treasure_locations.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No treasure_locations.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -1135,9 +1107,7 @@ def load_traps(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading traps...")
 
     filepath = export_dir / "traps.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No traps.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -1452,9 +1422,7 @@ def load_scribing_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading scribing recipes...")
 
     filepath = export_dir / "scribing_recipes.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No scribing_recipes.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -1528,9 +1496,7 @@ def load_alchemy_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading alchemy tables...")
 
     filepath = export_dir / "alchemy_tables.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No alchemy_tables.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -1572,9 +1538,7 @@ def load_houses(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading houses...")
 
     filepath = export_dir / "houses.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No houses.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -1625,9 +1589,7 @@ def load_scribing_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading scribing tables...")
 
     filepath = export_dir / "scribing_tables.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No scribing_tables.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -1669,9 +1631,7 @@ def load_crafting_stations(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("Loading crafting stations...")
 
     filepath = export_dir / "crafting_stations.json"
-    if not filepath.exists():
-        console.print("  [yellow]SKIP[/yellow] No crafting_stations.json found")
-        return
+    _require_export(filepath)
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)

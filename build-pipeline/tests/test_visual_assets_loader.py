@@ -193,9 +193,7 @@ class VisualAssetLoaderTests(unittest.TestCase):
                 self.assertEqual(output.size, (4, 6))
             self.assertEqual((width, height), (4, 6))
 
-    def test_load_visual_assets_clears_stale_generated_assets_when_manifest_missing(
-        self,
-    ):
+    def test_load_visual_assets_rejects_missing_manifest_before_removing_images(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             export_dir = root / "exported-data"
@@ -207,13 +205,11 @@ class VisualAssetLoaderTests(unittest.TestCase):
 
             conn = create_database(root / "test.db", SCHEMA_PATH)
             try:
-                load_visual_assets(conn, export_dir, static_dir)
-                count = conn.execute("SELECT COUNT(*) FROM visual_assets").fetchone()[0]
+                with self.assertRaisesRegex(FileNotFoundError, "visual_assets.json"):
+                    load_visual_assets(conn, export_dir, static_dir)
             finally:
                 conn.close()
-
-            self.assertFalse(stale_path.exists())
-            self.assertEqual(count, 0)
+            self.assertEqual(stale_path.read_bytes(), b"stale")
 
 
 if __name__ == "__main__":

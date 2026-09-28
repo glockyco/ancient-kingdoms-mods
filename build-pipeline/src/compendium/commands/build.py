@@ -6,7 +6,12 @@ This module orchestrates the build pipeline:
 3. Runs denormalizations to create derived fields
 """
 
+import json
+import shutil
 import sqlite3
+import tempfile
+import tomllib
+from contextlib import closing
 from pathlib import Path
 
 from rich.console import Console
@@ -55,7 +60,8 @@ from compendium.loaders import (
 )
 from compendium.planner_inputs import verify_planner_inputs
 from compendium.planner_payload import (
-    remove_planner_payload_outputs,
+    COMPRESSED_PAYLOAD_NAME,
+    RAW_PAYLOAD_NAME,
     write_planner_payload,
 )
 from compendium.redactions import verify
@@ -76,8 +82,8 @@ def load_all(
     starting state as a build.
 
     Args:
-        static_dir: Where to publish image files. Without one, the two loaders
-            that hold artwork record their manifest rows and write no file.
+        static_dir: Where to write image files. Without one, the artwork loaders
+            record manifest rows but write no image files.
     """
     verify_export_locale(export_dir)  # Before anything reads a localized string
     load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
@@ -123,6 +129,71 @@ def load_all(
     load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
 
 
+def _verify_snapshot_identity(export_dir: Path, snapshot_path: Path) -> None:
+    if not snapshot_path.is_file():
+        raise FileNotFoundError(
+            f"Required snapshot is missing: {snapshot_path}. Generate the decompiled server-scripts snapshot before building."
+        )
+    with snapshot_path.open("rb") as handle:
+        snapshot = tomllib.load(handle)
+    for field in ("game_version", "steam_build_id", "assembly_sha256"):
+        if not isinstance(snapshot.get(field), str) or not snapshot[field]:
+            raise ValueError(
+                f"Required snapshot field {field!r} is missing in {snapshot_path}"
+            )
+
+    game_config_path = export_dir / "game_config.json"
+    if not game_config_path.is_file():
+        raise FileNotFoundError(
+            f"Required input is missing: {game_config_path}. Run the DataExporter mod in the game."
+        )
+    exported_version = json.loads(game_config_path.read_text(encoding="utf-8"))[
+        "game_version"
+    ]
+    if exported_version != snapshot["game_version"]:
+        raise ValueError(
+            f"Export game version {exported_version!r} does not match snapshot {snapshot['game_version']!r}"
+        )
+
+
+def _publish_staged_outputs(
+    stage_root: Path,
+    static_dir: Path,
+    data_dir: Path,
+    db_path: Path,
+) -> None:
+    outputs = (
+        (stage_root / "static" / "images", static_dir / "images"),
+        (stage_root / "data" / RAW_PAYLOAD_NAME, data_dir / RAW_PAYLOAD_NAME),
+        (
+            stage_root / "data" / COMPRESSED_PAYLOAD_NAME,
+            data_dir / COMPRESSED_PAYLOAD_NAME,
+        ),
+    )
+    backups: list[tuple[Path, Path]] = []
+    installed: list[Path] = []
+    try:
+        # A crash between atomic renames can expose outputs from different builds
+        # and leave staging files behind. A versioned consumer is needed for crash safety.
+        for index, (staged, live) in enumerate(outputs):
+            if live.exists():
+                backup = stage_root / f"previous-{index}"
+                live.replace(backup)
+                backups.append((backup, live))
+            staged.replace(live)
+            installed.append(live)
+        (stage_root / db_path.name).replace(db_path)
+    except Exception:
+        for live in reversed(installed):
+            if live.is_dir():
+                shutil.rmtree(live)
+            else:
+                live.unlink()
+        for backup, live in reversed(backups):
+            backup.replace(live)
+        raise
+
+
 def run(config: dict) -> None:
     """Build SQLite database from JSON exports.
 
@@ -141,63 +212,62 @@ def run(config: dict) -> None:
     data_dir = website_dir / "data"
     schema_path = repo_root / "build-pipeline" / "schema.sql"
 
-    # Ensure output directories exist
+    snapshot_path = repo_root / "server-scripts" / "SNAPSHOT.toml"
+    _verify_snapshot_identity(export_dir, snapshot_path)
+    verify_planner_inputs(export_dir)
+
     static_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
-    remove_planner_payload_outputs(data_dir)
-
     db_path = data_dir / config["build_pipeline"]["db_name"]
 
     console.print("[bold]Building database from JSON exports...[/bold]\n")
 
-    # Create database
-    conn = create_database(db_path, schema_path)
+    with tempfile.TemporaryDirectory(
+        prefix=".compendium-build-", dir=data_dir
+    ) as temp_dir:
+        stage_root = Path(temp_dir)
+        temp_db_path = stage_root / db_path.name
+        stage_static_dir = stage_root / "static"
+        stage_data_dir = stage_root / "data"
+        stage_data_dir.mkdir()
+        conn = create_database(temp_db_path, schema_path)
+        try:
+            load_all(conn, export_dir, stage_static_dir)
 
-    try:
-        verify_planner_inputs(export_dir)
-        # Load data in order (respecting foreign keys)
-        load_all(conn, export_dir, static_dir)
+            console.print()
+            subject = denormalize_all(conn)
+            publish_zone_thumbnails(conn, export_dir, stage_static_dir)
+            reconcile(conn, stage_static_dir)
 
-        # Denormalize data (must be done after all data is loaded)
-        console.print()
-        subject = denormalize_all(conn)
-        publish_zone_thumbnails(conn, export_dir, static_dir)
-        reconcile(conn, static_dir)
+            # Verify after every step that removes published content.
+            verify.check(conn, subject, resolve(conn), stage_static_dir / "images")
+            planner_payload = write_planner_payload(
+                conn, export_dir, stage_data_dir, snapshot_path, subject
+            )
+            console.print(
+                "  [green]OK[/green] Prepared planner payload "
+                f"({planner_payload.raw_size:,} raw bytes, "
+                f"{planner_payload.compressed_size:,} compressed bytes)"
+            )
+            conn.commit()
+        except Exception as e:
+            console.print(f"\n[bold red]Error building database:[/bold red] {e}")
+            raise
+        finally:
+            conn.close()
 
-        # The verification runs after every step that removes published content.
-        # `reconcile` is one of them: the rows in `visual_assets` for a removed
-        # entity stay until it deletes the row and the image file together.
-        verify.check(conn, subject, resolve(conn), static_dir / "images")
-        planner_payload = write_planner_payload(
-            conn,
-            export_dir,
-            data_dir,
-            repo_root / "server-scripts" / "SNAPSHOT.toml",
-            subject,
-        )
-        console.print(
-            "  [green]OK[/green] Published planner payload "
-            f"({planner_payload.raw_size:,} raw bytes, "
-            f"{planner_payload.compressed_size:,} compressed bytes)"
-        )
+        # VACUUM and ANALYZE require no active transaction.
+        with closing(
+            sqlite3.connect(temp_db_path, isolation_level=None)
+        ) as vacuum_conn:
+            vacuum_conn.execute("VACUUM")
+            console.print("  [green]OK[/green] Vacuumed database")
+            vacuum_conn.execute("ANALYZE")
+            console.print("  [green]OK[/green] Analyzed query statistics")
 
-        conn.commit()
-        console.print(
-            f"\n[bold green]OK Database built successfully:[/bold green] {db_path}"
-        )
+        (stage_static_dir / "images").mkdir(parents=True, exist_ok=True)
+        _publish_staged_outputs(stage_root, static_dir, data_dir, db_path)
 
-    except Exception as e:
-        console.print(f"\n[bold red]Error building database:[/bold red] {e}")
-        raise
-    finally:
-        conn.close()
-
-    # VACUUM and ANALYZE must run outside of any transaction
-    import sqlite3
-
-    vacuum_conn = sqlite3.connect(db_path, isolation_level=None)
-    vacuum_conn.execute("VACUUM")
-    console.print("  [green]OK[/green] Vacuumed database")
-    vacuum_conn.execute("ANALYZE")
-    console.print("  [green]OK[/green] Analyzed query statistics")
-    vacuum_conn.close()
+    console.print(
+        f"\n[bold green]OK Database built successfully:[/bold green] {db_path}"
+    )

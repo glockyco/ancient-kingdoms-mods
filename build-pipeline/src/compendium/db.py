@@ -159,9 +159,7 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
 
 
 def create_database(db_path: Path, schema_path: Path) -> sqlite3.Connection:
-    """Create fresh SQLite database from schema.
-
-    Removes any existing database file and creates a new one.
+    """Create a new SQLite database from schema without replacing an existing file.
 
     Args:
         db_path: Path to database file
@@ -172,10 +170,8 @@ def create_database(db_path: Path, schema_path: Path) -> sqlite3.Connection:
     """
     console.print(f"Creating database: {db_path}")
 
-    # Remove existing database
     if db_path.exists():
-        db_path.unlink()
-        console.print("  Removed existing database")
+        raise FileExistsError(f"Database already exists: {db_path}")
 
     # Read schema
     with open(schema_path, "r", encoding="utf-8") as f:

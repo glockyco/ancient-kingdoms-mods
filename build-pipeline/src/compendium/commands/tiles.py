@@ -26,6 +26,7 @@ from PIL import Image, ImageDraw
 from rich.console import Console
 from rich.progress import Progress
 
+from compendium.config import get_repo_root
 from compendium.redactions.config import load_redactions
 
 console = Console()
@@ -538,10 +539,10 @@ def run(config: dict) -> None:
     min_zoom = tile_config["min_zoom"]
     max_zoom = tile_config["max_zoom"]
     tile_size = tile_config["tile_size"]
-    quality = tile_config.get("webp_quality", tile_config.get("jpeg_quality", 85))
+    quality = tile_config["webp_quality"]
 
     # Paths
-    repo_root = Path(__file__).parent.parent.parent.parent.parent
+    repo_root = get_repo_root()
     export_dir = repo_root / config["paths"]["export_dir"]
     website_dir = repo_root / config["paths"]["website_dir"]
     final_tiles_dir = website_dir / "static" / "tiles"

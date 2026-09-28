@@ -7,10 +7,10 @@ creator, which enables or disables one class button per race.
 
 - Source: server-scripts/UICharacterEditor.cs:947-1509 - changeRace* methods
 
-`compatible_races` in `exported-data/classes.json` is transcribed from those methods.
-A build must not require the decompiled snapshot, because that snapshot is a local
-artifact and is not committed, so the transcription stays in the curated file and this
-module proves it still matches the game. Run the check whenever the game updates.
+`compatible_races` is edited in `mods/DataExporter/Curated/classes.json` and copied
+to `exported-data/classes.json` by DataExporter. The build currently requires the
+decompiled snapshot for the planner payload. This independent check compares the
+published copy with the character creator whenever the game updates.
 """
 
 from __future__ import annotations
