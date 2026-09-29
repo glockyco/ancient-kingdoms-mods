@@ -44,7 +44,7 @@ function passing(cases: readonly JudgedCase[]): JudgedCase[] {
  * Passing counts recorded when the ranking settings were last changed. A lower
  * count is a regression; a higher count means these numbers need updating.
  */
-const RECORDED_PASSES = { tuning: 97, development: 142, heldOut: 127 };
+const RECORDED_PASSES = { tuning: 94, development: 142, heldOut: 127 };
 
 /** Sampled entities whose every query variant passes, out of all sampled. */
 const RECORDED_ENTITY_PASSES = {

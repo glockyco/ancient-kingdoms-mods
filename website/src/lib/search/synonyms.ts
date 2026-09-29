@@ -13,5 +13,4 @@ export const SYNONYMS: Readonly<Record<string, readonly string[]>> = {
   rez: ["resurrection", "resurrect"],
   respec: ["reset", "specialization"],
   dmg: ["damage"],
-  sim: ["simulator"],
 };

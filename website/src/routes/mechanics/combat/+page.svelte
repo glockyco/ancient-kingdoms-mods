@@ -148,13 +148,6 @@
 
   <PageSections sections={SECTIONS} />
 
-  <div class="rounded-md border border-border bg-muted/20 px-4 py-3 text-sm">
-    For per-weapon and per-class auto-attack damage estimates, see the
-    <a href="/tools/combat-simulator" class="underline hover:text-foreground"
-      >Auto-Attack DPS Simulator</a
-    >.
-  </div>
-
   <!-- Source: server-scripts/Player.cs:4315-4325; PlayerSkills.cs:439-473 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
   <Card.Root id="targeting" class="bg-muted/30">
     <Card.Header>

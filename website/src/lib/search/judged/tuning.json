@@ -1010,18 +1010,6 @@
     "k": 1
   },
   {
-    "q": "combat simulator",
-    "intent": "page",
-    "expect": ["/tools/combat-simulator"],
-    "k": 1
-  },
-  {
-    "q": "simulator",
-    "intent": "page",
-    "expect": ["/tools/combat-simulator"],
-    "k": 1
-  },
-  {
     "q": "mercenary stats",
     "intent": "page",
     "expect": ["/mechanics/mercenary-stats"],
@@ -1056,11 +1044,5 @@
     "intent": "guide-title",
     "expect": ["/mechanics/inventory#bank"],
     "k": 1
-  },
-  {
-    "q": "sim",
-    "intent": "synonym",
-    "expect": ["/tools/combat-simulator"],
-    "k": 3
   }
 ]

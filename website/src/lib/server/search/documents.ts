@@ -340,11 +340,6 @@ function pageDocs(): IndexedDoc[] {
   docs.push(...overviews.values());
   docs.push(
     page("Map", "/map", "interactive world map locations"),
-    page(
-      "Combat Simulator",
-      "/tools/combat-simulator",
-      "calculator dps damage",
-    ),
     page("Game Mechanics", "/mechanics", "rules reference"),
   );
   return docs;

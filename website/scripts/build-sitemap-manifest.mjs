@@ -544,15 +544,11 @@ export function computeHashes() {
   });
 
   // Listed without a content hash on purpose. Each depends on several sources
-  // at once — the live game version, map tiles, simulator logic — so no single
+  // at once — the live game version and the map tiles — so no single
   // hash captures "changed" cleanly, and a wrong hash is worse than none. The
   // consequence is that IndexNow does not ping these on change; they are
   // rediscovered by ordinary crawling instead.
-  const bareUrls = [
-    `${SITE_URL}/`,
-    `${SITE_URL}/map`,
-    `${SITE_URL}/tools/combat-simulator`,
-  ];
+  const bareUrls = [`${SITE_URL}/`, `${SITE_URL}/map`];
 
   db.close();
   return { hashes, bareUrls };

@@ -1,6 +1,6 @@
 ## Context
 
-`website/DESIGN.md:139-157` defines a compact scale with 12 px labels but no minimum rendered-text rule. `website/src/lib/components/professions/MasteryCurve.svelte:42,85-89,109-171` uses a 720-unit SVG and 9.5–10-unit labels. A phone-width SVG shrinks the labels with the entire plot. `website/src/routes/mechanics/experience/+page.svelte:66,342-347,1403-1407` and `website/src/routes/mechanics/mercenary-stats/+page.svelte:1203-1210` use the same sizing pattern. Formula text and simulator controls also use `text-xs` (`routes/mechanics/combat/+page.svelte:344-351`; `routes/tools/combat-simulator/+page.svelte:1251-1353`).
+`website/DESIGN.md:139-157` defines a compact scale with 12 px labels but no minimum rendered-text rule. `website/src/lib/components/professions/MasteryCurve.svelte:42,85-89,109-171` uses a 720-unit SVG and 9.5–10-unit labels. A phone-width SVG shrinks the labels with the entire plot. `website/src/routes/mechanics/experience/+page.svelte:66,342-347,1403-1407` and `website/src/routes/mechanics/mercenary-stats/+page.svelte:1203-1210` use the same sizing pattern. Formula text also uses `text-xs` (`routes/mechanics/combat/+page.svelte:344-351`).
 
 `website/DESIGN.md:14-15` declares achievement amber and reference blue. `website/src/app.css:7-114,116-171` contains semantic role and quality colors but not those two roles. `website/src/lib/components/EntityLink.svelte:59,89-100` and ordinary route links repeat link color classes. The shared badge exists (`lib/components/ui/badge/badge.svelte:4-21`), yet the only direct consumers found are data-table subcomponents (`lib/components/ui/data-table/data-table-faceted-filter.svelte:12,52-67`, `data-table-range-filter.svelte:9,84`, `data-table-stat-toggle.svelte:5,30`). Existing `Card`, `Button`, `Input`, `Table`, and `DataTable` components provide a base. This proposal does not require recreating a historical inventory.
 
@@ -30,17 +30,12 @@ Audit each route family against its actual consumers before a primitive migratio
 
 Audit palette utilities, direct color literals, dynamic class construction, and raw control usage in the current tree. A local measurement found raw controls and palette literals, but such counts change as routes migrate; do not encode a repository-wide target count. Prefer a focused check that rejects newly introduced unsanctioned uses and permits narrowly documented map, chart, tooltip, item-quality, and game-authored exceptions. Audit dynamic classes for static enumerability without rejecting valid data-driven colors. Add behavioral tests only for a credible state or interaction regression. Review focus, loading, error, empty, overflow, and no-JavaScript states on changed surfaces. Remove temporary inventory output once checks are in place. Enforce the boundary rather than freezing an inventory of all existing exceptions.
 
-### Isolate the combat simulator
-
-Keep `routes/tools/combat-simulator/+page.svelte:1251-1353` in a separate task that can be dropped if the owner replaces that route. It must satisfy the same readability and contrast requirement while it remains published, but do not use its possible replacement to block repairs elsewhere. The simulator's formula and calculation model are not in this change.
-
 ## Risks / Trade-offs
 
 - [Larger type may expand dense tables and charts] → Check overflow and wrapping at 1440×900 and 390×844 before completing each file; preserve visible values.
 - [A general lint rule can reject meaningful quality, map, or chart colors] → Scope the checker to semantic interface roles and record narrow exceptions beside the rule.
 - [A primitive migration can change rendering or static HTML] → Compare accessible names, keyboard behavior, and HTML without JavaScript for each changed route.
 - [Mechanics presentation edits can change snapshot text] → Keep formulas unchanged and follow `rule://website-mechanics` for intentional visible-text changes.
-- [The simulator may be replaced] → Keep its migration separable from every other task and leave the owner decision explicit.
 
 ## Migration Plan
 

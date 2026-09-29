@@ -69,10 +69,7 @@ export type Expr =
 
 // ─── Evaluation context ───────────────────────────────────────────────────────
 
-/**
- * Minimal weapon stats needed by the evaluator.
- * WeaponItem (combat-sim.ts) satisfies this interface.
- */
+/** Minimal weapon stats needed by the evaluator. */
 export interface WeaponStats {
   strength: number;
   damage: number;

@@ -9,7 +9,6 @@ The website has a visual authority in `website/DESIGN.md`, but several live surf
 - Migrate demonstrated duplicate links, badges, buttons, fields, tables, and containers to existing primitives where their semantics match. Keep dense tables, formulas, and map layouts specialized.
 - Consolidate duplicated color-conversion, NPC-role color, and map-drop presentation rules at their existing ownership boundaries.
 - Add focused, repeatable checks for measurable drift. Review each changed page in light and dark mode at desktop and phone sizes, including keyboard, overflow, and no-JavaScript states.
-- Keep combat-simulator migration independent: an owner decision may replace that route before this work lands.
 
 ## Capabilities
 
