@@ -2,8 +2,6 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Fish from "@lucide/svelte/icons/fish";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -335,6 +333,140 @@
     </div>
   </section>
 
+  <section id="how-it-works" class="rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">How Fishing works</h2>
+    <!-- Source: server-scripts/Utils.cs:577-586 — Fishing spot success chance per tier. -->
+    <!-- Source: server-scripts/GatherItem.cs:698-706 — < 0.2 spot success hard-blocks fishing. -->
+    <!-- Source: server-scripts/GatherItem.cs:706-728,730-741,743-760,762-778,780-797 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
+    <!-- Source: server-scripts/GatherItem.cs:710-725 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
+    <!-- Source: server-scripts/GatherItem.cs:799-829 — Fishing mastery gain and XP table. -->
+    <!-- Source: server-scripts/GatherItem.cs:1102-1116 — click-window length per tier and valid response. -->
+    <!-- Source: server-scripts/Player.cs:9579-9593; server-scripts/PlayerInventory.cs:121-135 — a missing or invalid rod selection falls back to the best inventory rod; a cast starts after Random.Range(3, 8) seconds. -->
+
+    <div class="mt-4 divide-y">
+      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">1</div>
+        <div>
+          <div>
+            Carry a <a
+              href="#fishing-rods"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >Fishing Rod</a
+            >.
+          </div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            If your selected rod is missing or invalid, the game selects the
+            highest-quality Fishing Rod in your inventory.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">2</div>
+        <div>
+          <div>
+            Click a <a
+              href="#fishing-spots"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >Fishing Spot</a
+            >.
+          </div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            You can fish at {data.stats.spot_count} spots across {spotTiers.length}
+            tiers, from Tier {toRomanNumeral(lowestSpotTier)} to Tier
+            {toRomanNumeral(highestSpotTier)}.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">3</div>
+        <div>
+          <div>Interact with the spot when the fish bites.</div>
+          <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must fall inside the tier's bite window. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <span class="block">
+              After the {castDelay.min}–{castDelay.max} second cast delay, interact
+              with the spot again.
+            </span>
+            <span class="block">
+              The response window lasts 2 seconds at Tier I, 1.5 at Tier II, 1
+              at Tier III, and 0.75 at Tier IV.
+            </span>
+            <span class="block">An early or late response fails.</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">4</div>
+        <div>
+          <div>Wait for a bite.</div>
+          <!-- Source: server-scripts/GatherItem.cs:698-708 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Rod quality, Fishing skill, and spot tier decide whether the attempt
+            succeeds.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">5</div>
+        <div>
+          <div>Catch a fish, trash, or nothing.</div>
+          <!-- Source: server-scripts/GatherItem.cs:708-797 — after a bite, the spot's fish gets the first chance. On failure, lower-tier fish, trash, or escape can follow. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <span class="block">
+              When a fish bites, the game first tries to catch one of the fish
+              listed for that spot.
+            </span>
+            <span class="block">
+              If the first attempt does not catch a fish, higher-tier spots can
+              instead catch a random <a
+                href="#fishing-fallback-pools"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >fish from lower tiers</a
+              >.
+            </span>
+            <span class="block">
+              Tier II spots can catch Tier I fish, Tier III spots can catch Tier
+              I–II fish, and Tier IV spots can catch Tier I–III fish.
+            </span>
+          </p>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            If you catch no fish from the spot or a lower tier, you either catch
+            <a
+              href="#fishing-trash"
+              class="text-blue-600 hover:underline dark:text-blue-400">trash</a
+            > or the fish gets away.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">6</div>
+        <div>
+          <div>Gain experience and possibly Fishing skill.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            A bite gives experience based on the spot's tier and can improve
+            Fishing until you pass that tier's skill limit.
+          </p>
+          <p
+            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
+          >
+            <span>Max Level: {data.profession.max_level}%</span>
+            {#if data.profession.achievement_id}
+              <AchievementLink
+                achievementId={data.profession.achievement_id}
+                achievementName={data.profession.achievement_name}
+              />
+            {/if}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="calculator" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
@@ -615,7 +747,6 @@
       </p>
     {/if}
   </section>
-
   <section id="fishing-rods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <h2 class="text-xl font-semibold">Fishing Rods ({data.rods.length})</h2>
@@ -834,93 +965,6 @@
       </div>
     </div>
   </section>
-
-  <Card.Root id="how-it-works" class="bg-muted/30">
-    <Card.Header
-      ><Card.Title class="text-xl">How fishing works</Card.Title></Card.Header
-    >
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/GatherItem.cs:698-706,1098-1116 — fishing requires at least 20% spot success chance, and the bite window ranges from 2 to 0.75 seconds by tier. -->
-      <GuideFacts
-        facts={[
-          { value: "20%", label: "Minimum spot success chance" },
-          { value: "2–0.75 s", label: "Bite window by tier" },
-        ]}
-      />
-      <ol class="divide-y divide-border text-sm">
-        <!-- Source: server-scripts/Player.cs:9579-9585; server-scripts/PlayerInventory.cs:121-135 — invalid rod selection falls back to the highest-quality rod in inventory. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-          <span class="tabular-nums text-muted-foreground">1</span>
-          <div>
-            <p class="font-medium">
-              Carry a <a
-                href="#fishing-rods"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >fishing rod</a
-              > to a spot.
-            </p>
-            <p class="mt-0.5 text-muted-foreground">
-              If no usable rod is selected, the game selects your
-              highest-quality rod.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must be within the tier's bite window. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">2</span>
-          <div>
-            <p class="font-medium">Interact again when the fish bites.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Higher tiers give you less time to respond.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/GatherItem.cs:698-797 — a successful spot roll may produce the primary fish, a fallback catch or nothing. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">3</span>
-          <div>
-            <p class="font-medium">Check the catch.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              If the listed fish roll fails, you may get a <a
-                href="#fishing-fallback-pools"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >lower-tier fish</a
-              >,
-              <a
-                href="#fishing-trash"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >trash</a
-              >, or nothing.
-            </p>
-          </div>
-        </li>
-      </ol>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="text-left text-muted-foreground"
-            ><tr class="border-b"
-              ><th class="py-2 pr-4 font-medium">Spot tier</th><th
-                class="py-2 font-medium">Time to respond</th
-              ></tr
-            ></thead
-          >
-          <!-- Source: server-scripts/GatherItem.cs:1102-1109 — bite windows are 2, 1.5, 1 and 0.75 seconds for tiers I–IV. -->
-          <tbody class="divide-y">
-            <tr><td class="py-2 pr-4">I</td><td class="py-2">2 s</td></tr>
-            <tr><td class="py-2 pr-4">II</td><td class="py-2">1.5 s</td></tr>
-            <tr><td class="py-2 pr-4">III</td><td class="py-2">1 s</td></tr>
-            <tr><td class="py-2 pr-4">IV</td><td class="py-2">0.75 s</td></tr>
-          </tbody>
-        </table>
-      </div>
-      {#if data.profession.achievement_id}
-        <AchievementLink
-          achievementId={data.profession.achievement_id}
-          achievementName={data.profession.achievement_name}
-        />
-      {/if}
-    </Card.Content>
-  </Card.Root>
 
   <section id="fish-foods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">

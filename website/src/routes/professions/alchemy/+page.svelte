@@ -3,8 +3,6 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -167,82 +165,28 @@
     </div>
   </div>
 
-  <section class="space-y-4">
-    <h2 class="text-xl font-semibold flex items-center gap-2">
-      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
-      Calculator
-    </h2>
-    <div
-      class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
-    >
-      <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Alchemy Skill:</label>
-        <input
-          id="skill-slider"
-          type="range"
-          min="0"
-          max="100"
-          step="1"
-          bind:value={skillLevel}
-          class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-        />
-        <span class="font-mono w-12">{skillLevel}%</span>
-      </div>
-      <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Skill gain chance:</span>
-        <span class="font-mono text-foreground"
-          >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
-        >
-        <span class="text-xs">(per success)</span>
-      </div>
-    </div>
-    <div class="rounded-lg border overflow-x-auto">
-      <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(5, 1fr);"
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
+    <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — a known recipe cannot be learned again; learning consumes one recipe item. -->
+    <p class="text-muted-foreground">
+      <span class="block"
+        >Learning a new potion recipe consumes one recipe item.</span
       >
-        <div class="bg-muted/50 p-3 font-medium">Tier</div>
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
-        {#each [0, 1, 2, 3, 4] as tier (tier)}
-          {@const successChance = alchemySuccessPercent(tier, skillLevel)}
-          {@const skillGain = alchemySkillGainRange(tier, skillLevel)}
-          {@const recipeCount = recipeCountMap.get(tier) ?? 0}
-          {@const xp = xpByTierMap.get(tier)}
-          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
-          <div class="p-3 border-t">
-            {#if successChance === 0}
-              <span class="text-muted-foreground">—</span>
-            {:else}
-              <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {successChance.toFixed(0)}%
-              </span>
-            {/if}
-          </div>
-          <div class="p-3 border-t">
-            {#if skillGain}
-              <span class="font-mono"
-                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">
-            {#if xp}
-              <MechanicsLink section="experience"
-                >{xp.toLocaleString()}</MechanicsLink
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">{recipeCount}</div>
-        {/each}
-      </div>
-    </div>
+      <span class="block"
+        >A recipe you already know cannot be learned again.</span
+      >
+    </p>
+    <!-- Source: server-scripts/Player.cs:13206-13217,13230-13250 — brewing requires a learned recipe, output space, and at least 10% success chance; ingredients are consumed before the roll. -->
+    <p class="text-muted-foreground">
+      <span class="block"
+        >Brewing requires a learned recipe, room for the potion, and at least a
+        10% success chance.</span
+      >
+      <span class="block"
+        >You spend ingredients before you know whether the brew succeeds.</span
+      >
+      <span class="block">A failed brew does not return them.</span>
+    </p>
   </section>
 
   <!-- Station Locations -->
@@ -404,6 +348,85 @@
     </section>
   {/if}
 
+  <!-- Calculator -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
+      Calculator
+    </h2>
+    <div
+      class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
+    >
+      <div class="flex items-center gap-3">
+        <label for="skill-slider" class="shrink-0">Alchemy Skill:</label>
+        <input
+          id="skill-slider"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={skillLevel}
+          class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+        />
+        <span class="font-mono w-12">{skillLevel}%</span>
+      </div>
+      <div class="flex items-center gap-2 text-muted-foreground">
+        <span>Skill gain chance:</span>
+        <span class="font-mono text-foreground"
+          >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
+        >
+        <span class="text-xs">(per success)</span>
+      </div>
+    </div>
+    <div class="rounded-lg border overflow-x-auto">
+      <div
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: repeat(5, 1fr);"
+      >
+        <div class="bg-muted/50 p-3 font-medium">Tier</div>
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
+        {#each [0, 1, 2, 3, 4] as tier (tier)}
+          {@const successChance = alchemySuccessPercent(tier, skillLevel)}
+          {@const skillGain = alchemySkillGainRange(tier, skillLevel)}
+          {@const recipeCount = recipeCountMap.get(tier) ?? 0}
+          {@const xp = xpByTierMap.get(tier)}
+          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
+          <div class="p-3 border-t">
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
+          </div>
+          <div class="p-3 border-t">
+            {#if skillGain}
+              <span class="font-mono"
+                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">
+            {#if xp}
+              <MechanicsLink section="experience"
+                >{xp.toLocaleString()}</MechanicsLink
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">{recipeCount}</div>
+        {/each}
+      </div>
+    </div>
+  </section>
+
   <!-- Recipes Table -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
@@ -544,52 +567,4 @@
       </div>
     </div>
   </section>
-
-  <Card.Root id="how-it-works" class="bg-muted/30">
-    <Card.Header
-      ><Card.Title class="text-xl">How alchemy works</Card.Title></Card.Header
-    >
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/Player.cs:13230-13239; server-scripts/Utils.cs:541-550 — chance below 10% blocks a brew; tier I recipes always succeed. -->
-      <GuideFacts
-        facts={[
-          { value: "10%", label: "Minimum chance to brew" },
-          { value: "100%", label: "Tier I success chance" },
-        ]}
-      />
-      <ol class="divide-y divide-border text-sm">
-        <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — learning consumes a recipe item and rejects recipes already known. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-          <span class="tabular-nums text-muted-foreground">1</span>
-          <div>
-            <p class="font-medium">Learn a potion recipe.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Using the recipe consumes its item. You cannot learn it twice.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/Player.cs:13206-13217,13219-13239 — brewing requires a learned recipe, ingredients, space, and at least 10% success chance. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">2</span>
-          <div>
-            <p class="font-medium">Bring ingredients to an Alchemy Table.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Leave room for the potion. Recipes below the minimum success
-              chance cannot be brewed.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/Player.cs:13240-13250 — ingredients are removed before the success roll. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">3</span>
-          <div>
-            <p class="font-medium">Brew the potion.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              A failed brew consumes the ingredients and gives no potion.
-            </p>
-          </div>
-        </li>
-      </ol>
-    </Card.Content>
-  </Card.Root>
 </div>

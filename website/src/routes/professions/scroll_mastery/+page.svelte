@@ -2,8 +2,6 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -157,6 +155,97 @@
           {data.stats.scribing_table_count}
         </div>
         <div class="text-sm text-muted-foreground">Scribing tables</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">Scrolls and Scroll Mastery</h2>
+
+    <div class="mt-4 divide-y">
+      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">1</div>
+        <div>
+          <div>
+            Find a
+            <a
+              href="#scribing-tables"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >Scribing Table</a
+            >.
+          </div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Craft scrolls from recipes at a Scribing Table.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">2</div>
+        <div>
+          <div>Craft scrolls.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <!-- Source: server-scripts/Player.cs:13230-13250,13289-13294; server-scripts/Utils.cs:541-550; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
+            All current scroll recipes have 100% crafting success chance. Crafting
+            grants
+            <MechanicsLink section="experience#scribing-xp"
+              >Player Level × 100 XP</MechanicsLink
+            >. A double-XP effect doubles this crafting XP.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">3</div>
+        <div>
+          <div>Use scrolls.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            For scaling scrolls, divide your Scroll Mastery percentage by 5 and
+            round to the nearest whole number. Ranks range from 1 up to the
+            skill's maximum. Fixed-rank scrolls stay at rank 1.
+          </p>
+          <!-- Source: server-scripts/ScrollItem.cs:67-112 — a valid scroll applies a temporary skill and consumes one charge unless infiniteCharges is set. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <span class="block"
+              >Using a scroll casts its skill without teaching it to you.</span
+            >
+            <span class="block"
+              >A scroll with limited charges uses one charge.</span
+            >
+            <span class="block"
+              >Scrolls with unlimited charges do not use a charge.</span
+            >
+          </p>
+          <!-- Source: server-scripts/ScrollItem.cs:69-79; server-scripts/UsableItem.cs:CanUse — target, class, item level, and cooldown restrictions can prevent use. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <span class="block">You need a valid target to use a scroll.</span>
+            <span class="block"
+              >Class, item-level, and cooldown restrictions still apply.</span
+            >
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">4</div>
+        <div>
+          <div>Gain Scroll Mastery.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Crafting a scroll or using a scroll can raise Scroll Mastery. Both
+            use the same gain chance, but using a scroll grants more mastery.
+          </p>
+          <p
+            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
+          >
+            <span>Max Level: {data.profession.max_level}%</span>
+            {#if data.profession.achievement_id}
+              <AchievementLink
+                achievementId={data.profession.achievement_id}
+                achievementName={data.profession.achievement_name}
+              />
+            {/if}
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -398,58 +487,4 @@
       </div>
     </section>
   {/if}
-
-  <Card.Root id="how-it-works" class="bg-muted/30">
-    <Card.Header
-      ><Card.Title class="text-xl">How scroll mastery works</Card.Title
-      ></Card.Header
-    >
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/Player.cs:13230-13250,13289-13294; server-scripts/Utils.cs:541-550; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100% and grant player level × 100 XP. -->
-      <GuideFacts
-        facts={[
-          { value: "100%", label: "Listed scroll craft chance" },
-          { value: "Level × 100", label: "XP per craft" },
-        ]}
-      />
-      <ol class="divide-y divide-border text-sm">
-        <!-- Source: server-scripts/Player.cs:13230-13250,13289-13294 — scribing consumes ingredients and grants XP on success. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-          <span class="tabular-nums text-muted-foreground">1</span>
-          <div>
-            <p class="font-medium">Craft at a Scribing Table.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Each listed recipe succeeds. A double-XP effect doubles the <MechanicsLink
-                section="experience#scribing-xp">craft XP</MechanicsLink
-              >.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/ScrollItem.cs:67-112 — scrolls require valid targets, apply skills without teaching them, and consume a charge unless unlimited. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">2</span>
-          <div>
-            <p class="font-medium">Use the scroll on a valid target.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              It casts the skill without teaching it. Use consumes one charge
-              unless charges are unlimited.
-            </p>
-          </div>
-        </li>
-      </ol>
-      <!-- Source: server-scripts/ScrollItem.cs:100-104 — scroll rank scales with mastery but cannot exceed the skill's maximum rank. -->
-      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-        <li>
-          Fixed-rank scrolls stay at rank 1. Scaling scrolls use your mastery,
-          up to the skill's maximum rank.
-        </li>
-      </ul>
-      {#if data.profession.achievement_id}
-        <AchievementLink
-          achievementId={data.profession.achievement_id}
-          achievementName={data.profession.achievement_name}
-        />
-      {/if}
-    </Card.Content>
-  </Card.Root>
 </div>

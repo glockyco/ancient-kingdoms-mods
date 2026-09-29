@@ -3,8 +3,6 @@
   import { SvelteMap } from "svelte/reactivity";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -333,6 +331,106 @@
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">{questLevelRange}</div>
         <div class="text-sm text-muted-foreground">Quest levels</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">Adventurers' Guild Assignments</h2>
+
+    <div class="mt-4 divide-y">
+      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">1</div>
+        <div>
+          <div>
+            Visit any
+            <a
+              href="#adventurer-taskgivers"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >Adventurer Taskgiver</a
+            > to accept an Adventurer quest.
+          </div>
+          <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Every taskgiver offers quests from the same pool, so NPC choice does
+            not change which quests are available at your character's level.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">2</div>
+        <div>
+          <div>
+            The shared Adventurer
+            <a
+              href="#adventurer-quests"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >quest queue</a
+            >
+            resets daily.
+          </div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            A new quest queue begins at {queueResetTime} each day.
+            {#if mounted}
+              Next reset: {timeUntilReset}, at {localResetTime}.
+            {/if}
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">3</div>
+        <div>
+          <div>
+            <!-- Source: server-scripts/PlayerQuests.cs:50-51,227,445-446 — completed adventurer quests use DateTime.UtcNow ticks and remain completed for 24 hours. -->
+            After you complete an Adventurer quest, it stays on a 24-hour cooldown
+            for your character.
+          </div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            <!-- Source: server-scripts/Utils.cs:601-606 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
+            The taskgiver offers the first quest in today's queue that meets both
+            requirements:
+          </p>
+          <ul
+            class="mt-1 list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground"
+          >
+            <li>
+              Its recommended level is at or below your character's level.
+            </li>
+            <li>Your character has not completed it in the last 24 hours.</li>
+          </ul>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Completing a quest starts its 24-hour cooldown. The taskgiver then
+            offers the next quest in today's queue that meets both requirements.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">4</div>
+        <div>
+          <div>
+            Adventurer
+            <a
+              href="#adventurer-vendor-unlocks"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >vendor purchases</a
+            >
+            unlock by Adventuring percentage.
+          </div>
+          <p
+            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
+          >
+            <span>Max Level: {data.profession.max_level}%</span>
+            {#if data.profession.achievement_id}
+              <AchievementLink
+                achievementId={data.profession.achievement_id}
+                achievementName={data.profession.achievement_name}
+              />
+            {/if}
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -690,59 +788,4 @@
       </div>
     {/if}
   </section>
-
-  <Card.Root id="how-it-works" class="bg-muted/30">
-    <Card.Header>
-      <Card.Title class="text-xl">How adventuring works</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/Utils.cs:601-630; server-scripts/PlayerQuests.cs:220-229,445-446 — UTC day seeds the shared quest order and completed assignments have a 24-hour cooldown. -->
-      <GuideFacts
-        facts={[
-          { value: "00:00 UTC", label: "Queue changes" },
-          { value: "24 h", label: "Completed quest cooldown" },
-        ]}
-      />
-      <ol class="divide-y divide-border text-sm">
-        <!-- Source: server-scripts/Utils.cs:601-630 — taskgivers share one daily shuffled quest list. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-          <span class="tabular-nums text-muted-foreground">1</span>
-          <div>
-            <p class="font-medium">Talk to any taskgiver.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              All taskgivers use the same quest order. Changing NPCs does not
-              change the offer.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/Utils.cs:601-610; server-scripts/PlayerQuests.cs:220-229 — the first eligible quest not completed in the past 24 hours is offered. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">2</span>
-          <div>
-            <p class="font-medium">Accept the first eligible quest.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Your level must meet its recommended level. Recently completed
-              quests are skipped.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/PlayerQuests.cs:445-446; server-scripts/Utils.cs:601-610 — completion records its UTC time, so the next eligible quest becomes available. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">3</span>
-          <div>
-            <p class="font-medium">Complete the quest to advance the queue.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              That quest cannot be offered again for 24 hours.
-            </p>
-          </div>
-        </li>
-      </ol>
-      {#if data.profession.achievement_id}
-        <AchievementLink
-          achievementId={data.profession.achievement_id}
-          achievementName={data.profession.achievement_name}
-        />
-      {/if}
-    </Card.Content>
-  </Card.Root>
 </div>

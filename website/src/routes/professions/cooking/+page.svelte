@@ -3,8 +3,6 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
@@ -165,6 +163,71 @@
     </div>
   </div>
 
+  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
+    <h2 class="text-xl font-semibold">How Cooking works</h2>
+    <!-- Source: server-scripts/Player.cs:13503-13505,13529-13542,13565-13568,12478-12505 — baking checks output space, spends ingredients before success, and displays a burned result on failure without adding food. -->
+    <p class="text-muted-foreground">
+      <span class="block">Baking needs room for the food.</span>
+      <span class="block"
+        >You spend ingredients before you know whether baking succeeds.</span
+      >
+      <span class="block"
+        >A failed bake shows burned food in the oven, but gives you no food.</span
+      >
+    </p>
+    <!-- Source: server-scripts/FoodItem.cs:21-35 — eating food expires an existing buff in the same nonempty category before applying the new one. -->
+    <p class="text-muted-foreground">
+      Eating food replaces an active food buff in the same category instead of
+      stacking with it.
+    </p>
+  </section>
+
+  <!-- Station Locations -->
+  {#if data.locations.length > 0}
+    <section class="space-y-4">
+      <h2 class="text-xl font-semibold flex items-center gap-2">
+        <MapPin class="h-5 w-5 text-emerald-500" />
+        Cooking Oven Locations ({data.locations.length})
+      </h2>
+      <div class="rounded-lg border overflow-x-auto">
+        <table class="w-full whitespace-nowrap">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="text-left p-3 font-medium">Zone</th>
+              <th class="text-left p-3 font-medium">Sub-zone</th>
+              <th class="text-left p-3 font-medium">Map</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each data.locations as location (location.id)}
+              <tr class="border-t hover:bg-muted/30">
+                <td class="p-3">
+                  <a
+                    href="/zones/{location.zone_id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {location.zone_name}
+                  </a>
+                </td>
+                <td class="p-3 text-muted-foreground">
+                  {location.sub_zone_name ?? "—"}
+                </td>
+                <td class="p-3">
+                  <MapLink
+                    entityId={location.id}
+                    entityType="crafting_station"
+                    compact
+                  />
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {/if}
+
+  <!-- Calculator -->
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
@@ -242,51 +305,6 @@
       </div>
     </div>
   </section>
-
-  <!-- Station Locations -->
-  {#if data.locations.length > 0}
-    <section class="space-y-4">
-      <h2 class="text-xl font-semibold flex items-center gap-2">
-        <MapPin class="h-5 w-5 text-emerald-500" />
-        Cooking Oven Locations ({data.locations.length})
-      </h2>
-      <div class="rounded-lg border overflow-x-auto">
-        <table class="w-full whitespace-nowrap">
-          <thead class="bg-muted/50">
-            <tr>
-              <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Sub-zone</th>
-              <th class="text-left p-3 font-medium">Map</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each data.locations as location (location.id)}
-              <tr class="border-t hover:bg-muted/30">
-                <td class="p-3">
-                  <a
-                    href="/zones/{location.zone_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {location.zone_name}
-                  </a>
-                </td>
-                <td class="p-3 text-muted-foreground">
-                  {location.sub_zone_name ?? "—"}
-                </td>
-                <td class="p-3">
-                  <MapLink
-                    entityId={location.id}
-                    entityType="crafting_station"
-                    compact
-                  />
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  {/if}
 
   <!-- Recipes Table -->
   <section class="space-y-4">
@@ -431,51 +449,4 @@
       </div>
     </div>
   </section>
-
-  <Card.Root id="how-it-works" class="bg-muted/30">
-    <Card.Header
-      ><Card.Title class="text-xl">How cooking works</Card.Title></Card.Header
-    >
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/Utils.cs:565-574 — tier I food always succeeds, while tier II starts at 40% success with no Cooking skill. -->
-      <GuideFacts
-        facts={[
-          { value: "100%", label: "Tier I success chance" },
-          { value: "40%", label: "Tier II chance at 0% Cooking" },
-        ]}
-      />
-      <ol class="divide-y divide-border text-sm">
-        <!-- Source: server-scripts/Player.cs:13495-13518 — baking checks ingredients and room for the resulting food. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-          <span class="tabular-nums text-muted-foreground">1</span>
-          <div>
-            <p class="font-medium">Bring ingredients to an oven.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Leave room for the food before baking.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/Player.cs:13529-13542,13565-13568 — ingredients are removed before the cooking success roll. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">2</span>
-          <div>
-            <p class="font-medium">Bake the food.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              A failed bake consumes the ingredients and gives no food.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/FoodItem.cs:21-35 — eating replaces a buff in the same nonempty category. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">3</span>
-          <div>
-            <p class="font-medium">Eat the food for its buff.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              A new food buff replaces an active buff in the same category.
-            </p>
-          </div>
-        </li>
-      </ol>
-    </Card.Content>
-  </Card.Root>
 </div>
