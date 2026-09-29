@@ -336,8 +336,8 @@
         facts={[
           { value: "15", label: "Active quests at once" },
           { value: "3", label: "Tracked on screen" },
-          { value: "8 h", label: "Repeatable quest cooldown" },
-          { value: "24 h", label: "Guild assignment cooldown" },
+          { value: "8 h", label: "Repeatable quest cooldown (real time)" },
+          { value: "24 h", label: "Guild assignment cooldown (real time)" },
         ]}
       />
 
@@ -390,7 +390,8 @@
               <td class="py-2 pr-4"><QuestTypeBadge type="Deliver" /></td>
               <td class="py-2 pr-4">Items you hold, even from before</td>
               <td class="py-2 text-muted-foreground"
-                >The items are taken (keys stay)</td
+                >The items are taken. An equipped required item is taken if
+                inventory has too few. Keys stay.</td
               >
             </tr>
             <!-- Source: server-scripts/EquipItemQuest.cs:9-19 — fulfilled while every listed item is equipped. -->
@@ -399,7 +400,7 @@
               <td class="py-2 pr-4">Every listed item equipped at once</td>
               <td class="py-2 text-muted-foreground">You keep the items</td>
             </tr>
-            <!-- Source: server-scripts/AlchemyQuest.cs:13-16 — fulfilled once the brewed-potion count reaches the target. -->
+            <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13297-13312 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
             <tr>
               <td class="py-2 pr-4"><QuestTypeBadge type="Brew" /></td>
               <td class="py-2 pr-4">Potions you brew after you accept</td>
