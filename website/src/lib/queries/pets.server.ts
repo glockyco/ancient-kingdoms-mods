@@ -132,7 +132,56 @@ export function getAllSummons(): SummonListView[] {
     summoning_class_id: r.summoning_class_id,
     summoning_skill_id: r.summoning_skill_id,
     summoning_skill_name: r.summoning_skill_name,
+    summoning_item: null,
   }));
+}
+
+const WHISTLE_SUFFIX = " Whistle";
+
+/**
+ * Friendly pets, one per whistle item. The exporter records each whistle's
+ * summoned creature sprite as the item's "pet" artwork.
+ */
+export function getWhistlePets(): SummonListView[] {
+  const rows = query<{
+    id: string;
+    name: string;
+    public_path: string;
+    width: number;
+    height: number;
+    source_field: string;
+    source_type: string;
+  }>(
+    `SELECT i.id, i.name, va.public_path, va.width, va.height,
+            va.source_field, va.source_type
+     FROM items i
+     JOIN visual_assets va
+       ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'pet'
+     WHERE i.item_type = 'pet'
+     ORDER BY i.name`,
+  );
+  return rows.map((r) => {
+    if (!r.name.endsWith(WHISTLE_SUFFIX))
+      throw new Error(`Pet item ${r.id} is not named "... Whistle": ${r.name}`);
+    return {
+      id: r.id,
+      name: r.name.slice(0, -WHISTLE_SUFFIX.length),
+      kind: "Pet",
+      type_monster: "—",
+      level: 0,
+      visualAsset: {
+        public_path: r.public_path,
+        width: r.width,
+        height: r.height,
+        source_field: r.source_field,
+        source_type: r.source_type,
+      },
+      summoning_class_id: null,
+      summoning_skill_id: null,
+      summoning_skill_name: null,
+      summoning_item: { id: r.id, name: r.name },
+    };
+  });
 }
 
 /**

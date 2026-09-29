@@ -4,8 +4,8 @@ import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export type PetKind = "Mercenary" | "Companion" | "Familiar";
 
-/** The two non-mercenary kinds, both listed on the /summons overview. */
-export type SummonKind = Exclude<PetKind, "Mercenary">;
+/** The kinds listed on the /summons overview: skill summons and whistle pets. */
+export type SummonKind = Exclude<PetKind, "Mercenary"> | "Pet";
 
 /**
  * One mercenary class on the /mercenaries hub. Mercenaries are hired from
@@ -41,6 +41,8 @@ export interface SummonListView {
   summoning_class_id: string | null;
   summoning_skill_id: string | null;
   summoning_skill_name: string | null;
+  /** Whistle item that summons a pet; null for skill summons. */
+  summoning_item: { id: string; name: string } | null;
 }
 
 /**
