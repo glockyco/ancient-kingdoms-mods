@@ -75,18 +75,6 @@
     "AugmentItem.cs": {
       "span": 0
     },
-    "AvatarEvent.cs:231-249": {
-      "sha256": "ba06cbd48f7372a23435f0608d0a7a46ce02bb39d18948a2ffea28ceb631ae2c",
-      "span": 19
-    },
-    "AvatarEvent.cs:54-70": {
-      "sha256": "959208414a5500c9b5bade528e7477c792b1c217d6f961ec3324230be5875b87",
-      "span": 17
-    },
-    "AvatarEventAltar.cs:197-209": {
-      "sha256": "4b54f480ac28b04af2add241c9a8396cda4af41b0060fd4170dd9dd3bf5b2f8f",
-      "span": 13
-    },
     "BackpackItem.cs:11-18": {
       "sha256": "93b16d80247bb6c35447a2956abe03a7f4cabccffcef8fc95465a83ad2e9a1c8",
       "span": 8
@@ -879,14 +867,6 @@
     "DefaultEvent.cs:231": {
       "sha256": "0f48ba1d378ee94c1a97ea6c06dc241e959351ec47fa12bb1aa16df969af4d02",
       "span": 1
-    },
-    "DefaultEvent.cs:273-291": {
-      "sha256": "9d1565b0f5b68ef29109057ec153342c60ada09a5cf31b05138a8fba041e1607",
-      "span": 19
-    },
-    "DefaultEvent.cs:64-80": {
-      "sha256": "959208414a5500c9b5bade528e7477c792b1c217d6f961ec3324230be5875b87",
-      "span": 17
     },
     "Dexterity.cs:13-110": {
       "sha256": "32eed97d3a6604ac2cae0ca339f818a949738d0fb1bf9bf03be0f006a001996a",
@@ -2207,10 +2187,6 @@
     "Pet.cs:OnDeath": {
       "span": 0
     },
-    "PetFriendly.cs:335-359": {
-      "sha256": "2f9302244b937e7072e6f63dace10bd95e96a4f8341b93d5cb74c114c0a2b282",
-      "span": 25
-    },
     "PetFriendly.cs:379-386": {
       "sha256": "902a3e48724038c4c0153f825948fbb9d3a7817b08083b9dd12598dffcdf768d",
       "span": 8
@@ -2222,10 +2198,6 @@
     "PetFriendly.cs:433-454": {
       "sha256": "3ddf7f934dc67da4958bd234d05cb4688d8c113ec447a45fd9a4ecf9309eda63",
       "span": 22
-    },
-    "PetFriendly.cs:593-612": {
-      "sha256": "b74b371406d8f48d83c9a75bfab0beb773baec4c33d8bc2b5d1eefe350e3b155",
-      "span": 20
     },
     "PetFriendly.cs:688-702": {
       "sha256": "fd1a7fc798c9537be81e025464d317e8dc3d43be65d243be53c0e7a04dadd40a",
@@ -2262,10 +2234,6 @@
     "PetSkills.cs:60-108": {
       "sha256": "ea8ab44ee73ed7a313e80797c4f8033c02d13924797ae34c7988375936cf99cd",
       "span": 49
-    },
-    "PetSkills.cs:60-65": {
-      "sha256": "a61b97014729d3941055ae9a1d80ad1cbaa694ef3fcb66f6d8de7357540638cc",
-      "span": 6
     },
     "PetSkills.cs:60-75": {
       "sha256": "95a552d8efa461b31747e0bd0fcdeb5b584759fe52437c62d2480fae794102d1",
@@ -2707,10 +2675,6 @@
     "Player.cs:4113-4143": {
       "sha256": "9465f7d5eae3e3a7ffa4841cb8f89d8c0e1cd6c10b75597eb61fb5113a837ca9",
       "span": 31
-    },
-    "Player.cs:4125-4138": {
-      "sha256": "3fe959cfa01a9fb9804b3b0f0b431a763746bfb1810417f9e3f06b96afda5f68",
-      "span": 14
     },
     "Player.cs:4227-4263": {
       "sha256": "c97ba24db78d3901f47a2d727bae3d5492ef54408748b51d0a5aceb97876094a",
@@ -3248,10 +3212,6 @@
       "sha256": "ae406ef040f907c6573dec1f3d45560a34925bde9d819962e4b683b49a017c6a",
       "span": 13
     },
-    "PlayerQuests.cs:220-235": {
-      "sha256": "37fde636d09cbc0c58feb1d0c42aca69b65ba0da76ffd62c0a217fc462aaa1e1",
-      "span": 16
-    },
     "PlayerQuests.cs:227": {
       "sha256": "67809006d7f2583c4d2354fdfb52aac8820c223297604f292f21b078a3b59d39",
       "span": 1
@@ -3279,10 +3239,6 @@
     "PlayerQuests.cs:394-396": {
       "sha256": "72c22f045342371d34749dcaf9727bf9ccd61e0a413106531ac92cb6ef426dd4",
       "span": 3
-    },
-    "PlayerQuests.cs:41-60": {
-      "sha256": "542aeb00308e004bb60a2616eea46154f56e72b2fc6ddfb83df1d57fba509f0d",
-      "span": 20
     },
     "PlayerQuests.cs:440-443": {
       "sha256": "f3077a44ae6458a3c9d44cc57e4e42ed6352405f41d2d956cdeeaa8b6f8b744c",
@@ -3918,10 +3874,6 @@
       "sha256": "7d94a3bc6c848f18d252a821ae7fba03b588f7e1396540744b7ec000bb0fb7dd",
       "span": 64
     },
-    "SummonSkill.cs:34-85": {
-      "sha256": "649ce9f47e8911285e887e7be170073a0055254e6e3d0aeca00d4c88b7e98305",
-      "span": 52
-    },
     "SummonSkill.cs:55-76": {
       "sha256": "4dd4d4d51e6098a5ce14a7256bd06e6b079885505372dc838dcebd6821a34ad2",
       "span": 22
@@ -4203,14 +4155,6 @@
     "TreasureLocation.cs:87-90": {
       "sha256": "2baaaadfb0215936825e23013da8b1a782c867a5e910339ef6146c02f8ba7c76",
       "span": 4
-    },
-    "TrialAncientsEvent.cs:221-251": {
-      "sha256": "01f43ab691236ad10b53a74ac1aae77cc260d0ce9ac0c2dda573ec75a6fd8664",
-      "span": 31
-    },
-    "TrialAncientsEvent.cs:69-119": {
-      "sha256": "a43855fd58b5919c9c7362e4c63be0a1cc5e3f197c0fdffe7e801baccb1be213",
-      "span": 51
     },
     "UIBank.cs:294-307": {
       "sha256": "6f921bebfb7406304a55ae6d7abbc78197069fb0f2bd215f00534d3b9ef0a073",
@@ -4669,10 +4613,6 @@
     "Utils.cs:601-606": {
       "sha256": "4f19a21d7af5039c4413edb518cd00be7d0ad84838b87a5becc1c09a837b154c",
       "span": 6
-    },
-    "Utils.cs:601-630": {
-      "sha256": "0caf16d6cbe61040e61d6195a0c07d1e9642d2b32ab3793cc6723b5930ca0895",
-      "span": 30
     },
     "Utils.cs:614-630": {
       "sha256": "6cd6ae938b9b3d53e19c74ab64ec911b03622bff6ecf51554735bfc91d1bec5e",

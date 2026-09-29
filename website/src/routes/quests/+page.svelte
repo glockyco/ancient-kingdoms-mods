@@ -444,42 +444,4 @@
       </table>
     </div>
   </section>
-
-  <section id="repeatable-quests" class="space-y-4">
-    <h2 class="text-xl font-semibold">Repeatable quests</h2>
-    <!-- Source: server-scripts/PlayerQuests.cs:220-235,41-60,445-446; server-scripts/Utils.cs:601-630 — completed ordinary repeatables reopen after eight real hours; guild assignments have a 24-hour cooldown and a UTC-day selection. -->
-    <div class="overflow-x-auto rounded-md border bg-muted/30">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b">
-            <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
-              >Quest</th
-            >
-            <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
-              >Available again</th
-            >
-          </tr>
-        </thead>
-        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
-          <tr class="border-b last:border-0">
-            <td class="px-4 py-2">Repeatable quest</td>
-            <td class="px-4 py-2">8 real hours after you complete it</td>
-          </tr>
-          <tr class="border-b last:border-0">
-            <td class="px-4 py-2"
-              ><a
-                href="/professions/adventuring#how-it-works"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >Adventurers' Guild assignment</a
-              ></td
-            >
-            <td class="px-4 py-2"
-              >24 real hours after you complete it, if offered. The offer
-              changes each UTC day.</td
-            >
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
 </div>

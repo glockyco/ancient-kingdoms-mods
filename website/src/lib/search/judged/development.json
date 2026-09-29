@@ -734,7 +734,7 @@
   {
     "q": "seasonal events",
     "intent": "concept",
-    "expect": ["/altars#how-altars-work"],
+    "expect": ["/mechanics/world", "/mechanics/world#seasonal-events"],
     "k": 3
   },
   {

@@ -288,7 +288,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
       "31e0156b44ed4dd9a7efeb9e10cfd55f127092f8aa146874762c1a0b3d0ae682",
   },
   "world.events-and-trials": {
-    href: "/altars#how-altars-work",
+    href: "/altars",
     reviewedBodySha256:
       "5745b4f56540a28727a0287f57977b4d2dca2bd241c3e2cad744e0964e5491fa",
   },
