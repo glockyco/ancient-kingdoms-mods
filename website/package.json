@@ -20,7 +20,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:nodb": "vitest run --exclude '**/node_modules/**' --exclude '**/*.db.test.ts'",
+    "test:nodb": "vitest run --exclude '**/node_modules/**' --exclude '**/*.db.test.*'",
     "test:combat-verification": "AK_REQUIRE_CURRENT_COMBAT_FIXTURES=1 vitest run src/lib/planner/verification/verification.db.test.ts",
     "gen:home-counts": "node scripts/generate-home-counts.mjs",
     "gen:skill-effect-parity": "tsx scripts/gen-skill-effect-parity.ts",
