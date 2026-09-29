@@ -326,41 +326,45 @@
 
   <section id="how-quests-work" class="space-y-4">
     <h2 class="text-xl font-semibold">How quests work</h2>
-    <ol class="divide-y divide-border">
-      <!-- Source: server-scripts/PlayerQuests.cs:236-253 — any one completed predecessor meets the prerequisite. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-        <span class="text-sm tabular-nums text-muted-foreground">1</span>
-        <div>
-          <p class="font-medium">Accept the quest.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            If it lists several prerequisite quests, completing any one of them
-            is enough.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/UINpcQuests.cs:170-174; server-scripts/UIQuests.cs:124-140 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">2</span>
-        <div>
-          <p class="font-medium">Track up to 3 quests.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            You can have 15 active quests. Tracking a fourth untracks the oldest
-            one, which stays active.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/PlayerQuests.cs:463-469 — abandoning removes the quest record, including its progress. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">3</span>
-        <div>
-          <p class="font-medium">Complete the objective.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            What counts depends on the quest type. Abandoning a quest deletes
-            its progress.
-          </p>
-        </div>
-      </li>
-    </ol>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ol class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/PlayerQuests.cs:236-253 — any one completed predecessor meets the prerequisite. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="text-sm tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Accept the quest.</p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              If it lists several prerequisite quests, completing any one of
+              them is enough.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/UINpcQuests.cs:170-174; server-scripts/UIQuests.cs:124-140 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="text-sm tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Track up to 3 quests.</p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              You can have 15 active quests. Tracking a fourth untracks the
+              oldest one, which stays active.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/PlayerQuests.cs:463-469 — abandoning removes the quest record, including its progress. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="text-sm tabular-nums text-muted-foreground">3</span>
+          <div>
+            <p class="font-medium">Complete the objective.</p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              What counts depends on the quest type. Abandoning a quest deletes
+              its progress.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
   </section>
 
   <section id="quest-types" class="space-y-4">

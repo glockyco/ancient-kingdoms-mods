@@ -265,10 +265,19 @@
     </div>
 
     <!-- Source: server-scripts/DefaultEvent.cs:64-80,273-291; server-scripts/AvatarEvent.cs:54-70,231-249 — the activating player must remain alive inside the altar radius. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      At an altar, the player who used the offering must stay alive in the event
-      area. The attempt ends if that player leaves or dies, even if other
-      players remain.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <h3 class="flex h-10 items-center border-b px-4 font-medium">
+        Activating player
+      </h3>
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">
+          At an altar, the player who used the offering must stay alive in the
+          event area. The attempt ends if that player leaves or dies, even if
+          other players remain.
+        </li>
+      </ul>
+    </div>
   </section>
 </div>

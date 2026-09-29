@@ -157,11 +157,13 @@
   </section>
 
   <section id="classes" class="space-y-4">
-    <div>
-      <h2 class="text-xl font-semibold">Compare the classes</h2>
-      <p class="mt-1 text-sm text-muted-foreground">
-        Every recruiter hires every class.
-      </p>
+    <h2 class="text-xl font-semibold">Compare the classes</h2>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">Every recruiter hires every class.</li>
+      </ul>
     </div>
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <table class="w-full text-sm">
@@ -241,13 +243,17 @@
   </section>
 
   <section id="growth" class="space-y-4">
-    <div>
-      <h2 class="text-xl font-semibold">Attribute growth</h2>
-      <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel — each attribute gains 1 at every multiple of its class interval. -->
-      <p class="mt-1 text-sm text-muted-foreground">
-        Each table value is the number of levels a mercenary needs to gain +1 in
-        that attribute.
-      </p>
+    <h2 class="text-xl font-semibold">Attribute growth</h2>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel — each attribute gains 1 at every multiple of its class interval. -->
+        <li class="px-4 py-2.5">
+          Each table value is the number of levels a mercenary needs to gain +1
+          in that attribute.
+        </li>
+      </ul>
     </div>
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <table class="w-full text-sm">
@@ -294,58 +300,74 @@
       </table>
     </div>
     <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
-    <p class="text-sm text-muted-foreground">
-      Every class also gains +1 to each resistance every level.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">
+          Every class also gains +1 to each resistance every level.
+        </li>
+      </ul>
+    </div>
   </section>
 
   <section id="how-it-works" class="space-y-4">
     <h2 class="text-xl font-semibold">How mercenaries work</h2>
     <!-- Source: server-scripts/Player.cs:10115-10120,10290-10305 — a party has five places, and a full party cannot summon another mercenary. -->
-    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      A party has {MAX_PARTY} places. A full party cannot summon another mercenary.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">
+          A party has {MAX_PARTY} places. A full party cannot summon another mercenary.
+        </li>
+      </ul>
+    </div>
   </section>
 
   <section id="roster" class="space-y-4">
     <h2 class="text-xl font-semibold">Hire and manage a mercenary</h2>
-    <ol class="divide-y divide-border">
-      <!-- Source: server-scripts/Npc.cs:1893-1904; server-scripts/UIMercenaries.cs:374-440 — recruiters hire from level 10; the roster holds at most 10. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-        <span class="text-sm tabular-nums text-muted-foreground">1</span>
-        <div>
-          <p class="font-medium">
-            Hire at a <a href="#recruiters" class={link}>recruiter</a>.
-          </p>
-          <p class="mt-0.5 text-sm text-muted-foreground">
-            You can hire from level {MERC_MIN_LEVEL} and keep up to {MAX_HIRED}
-            mercenaries in your roster.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/UIMercenaries.cs:297-299; server-scripts/Player.cs:10115-10120,10290-10305 — the active limit rises at levels 20, 30 and 40 and a party holds five members. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">2</span>
-        <div>
-          <p class="font-medium">Summon it into your party.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Your active mercenary limit rises with your level, from 1 at level
-            10 to 4 at level 40.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/UITarget.cs:443-474; server-scripts/UIMercenaries.cs:530-582,588-615,646-700 — dismissing returns a mercenary to the roster; combat prevents dismissal, and deletion requires unequipping gear. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">3</span>
-        <div>
-          <p class="font-medium">Dismiss it when you need party space.</p>
-          <p class="mt-0.5 text-sm text-muted-foreground">
-            Dismissal keeps the mercenary in your roster but is unavailable
-            during combat. Unequip its gear before deleting it permanently.
-          </p>
-        </div>
-      </li>
-    </ol>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ol class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/Npc.cs:1893-1904; server-scripts/UIMercenaries.cs:374-440 — recruiters hire from level 10; the roster holds at most 10. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">
+              Hire at a <a href="#recruiters" class={link}>recruiter</a>.
+            </p>
+            <p class="mt-0.5 text-sm text-muted-foreground">
+              You can hire from level {MERC_MIN_LEVEL} and keep up to {MAX_HIRED}
+              mercenaries in your roster.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/UIMercenaries.cs:297-299; server-scripts/Player.cs:10115-10120,10290-10305 — the active limit rises at levels 20, 30 and 40 and a party holds five members. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Summon it into your party.</p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              Your active mercenary limit rises with your level, from 1 at level
+              10 to 4 at level 40.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/UITarget.cs:443-474; server-scripts/UIMercenaries.cs:530-582,588-615,646-700 — dismissing returns a mercenary to the roster; combat prevents dismissal, and deletion requires unequipping gear. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="tabular-nums text-muted-foreground">3</span>
+          <div>
+            <p class="font-medium">Dismiss it when you need party space.</p>
+            <p class="mt-0.5 text-sm text-muted-foreground">
+              Dismissal keeps the mercenary in your roster but is unavailable
+              during combat. Unequip its gear before deleting it permanently.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
 
     <div class="grid gap-4 lg:grid-cols-2">
       <div class="overflow-x-auto rounded-md border bg-muted/30">
@@ -433,51 +455,68 @@
         </table>
       </div>
     </div>
-    <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:9-20; server-scripts/UINpcTrading.cs:824-831; server-scripts/Player.cs:GetMercenaryResurrectionPrice — both prices receive a Charisma discount of 0.2% per point, capped at 25%. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Each Charisma point cuts these prices by 0.2%, up to 25%.
-    </p>
-    <!-- Source: server-scripts/Utils.cs:GetRandomChar; server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean — a recruiter's preferred race applies only when the class permits it. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      A recruiter's preferred race applies only if the class allows that race.
-      See <a href="/mechanics/mercenary-stats" class={link}
-        >race odds and stat ranges</a
-      >.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <h3 class="flex h-10 items-center border-b px-4 font-medium">
+        Hiring notes
+      </h3>
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:9-20; server-scripts/UINpcTrading.cs:824-831; server-scripts/Player.cs:GetMercenaryResurrectionPrice — both prices receive a Charisma discount of 0.2% per point, capped at 25%. -->
+        <li class="px-4 py-2.5">
+          Each Charisma point cuts these prices by 0.2%, up to 25%.
+        </li>
+        <!-- Source: server-scripts/Utils.cs:GetRandomChar; server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean — a recruiter's preferred race applies only when the class permits it. -->
+        <li class="px-4 py-2.5">
+          A recruiter's preferred race applies only if the class allows that
+          race. See <a href="/mechanics/mercenary-stats" class={link}
+            >race odds and stat ranges</a
+          >.
+        </li>
+      </ul>
+    </div>
   </section>
 
   <section class="space-y-4">
     <h2 class="text-xl font-semibold">Levels and veteran bonuses</h2>
-    <!-- Source: server-scripts/Player.cs:4627-4652,10337-10365; server-scripts/PetSkills.cs:25-45; server-scripts/Health.cs:28-41; server-scripts/Mana.cs:28-41; server-scripts/Energy.cs:27-39 — the mercenary matches player level, skill ranks grow every five player levels and ten veteran points, Health and Mana maxima grow but Rage maximum does not. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Mercenaries match your level. Their attributes and resistances follow the <a
-        href="#growth"
-        class={link}>growth table</a
-      >.
-    </p>
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Skill rank is ⌊your level ÷ 5⌋ + ⌊total veteran points ÷ 10⌋, capped by
-      each skill. Bard skills have a minimum rank of 1.
-    </p>
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Each veteran point adds 0.25% of base Health to maximum Health and 0.25%
-      of base Mana to maximum Mana for Mana users. It does not increase maximum
-      Rage or a Bard's active-song limit.
-    </p>
-    <!-- Source: server-scripts/Player.cs:4627-4652,10077-10122,10337-10365; server-scripts/Database.cs:1900-1921 — veteran damage gained while summoned is not saved; a zero saved hire roll can cause a fresh roll on every summon. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Veteran points gained while summoned add 1 physical and 1 magic damage
-      each. The game does not save these additions when you summon the mercenary
-      again.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/Player.cs:4627-4652,10337-10365; server-scripts/PetSkills.cs:25-45; server-scripts/Health.cs:28-41; server-scripts/Mana.cs:28-41; server-scripts/Energy.cs:27-39 — the mercenary matches player level, skill ranks grow every five player levels and ten veteran points, Health and Mana maxima grow but Rage maximum does not. -->
+        <li class="px-4 py-2.5">
+          Mercenaries match your level. Their attributes and resistances follow
+          the <a href="#growth" class={link}>growth table</a>.
+        </li>
+        <li class="px-4 py-2.5">
+          Skill rank is ⌊your level ÷ 5⌋ + ⌊total veteran points ÷ 10⌋, capped
+          by each skill. Bard skills have a minimum rank of 1.
+        </li>
+        <li class="px-4 py-2.5">
+          Each veteran point adds 0.25% of base Health to maximum Health and
+          0.25% of base Mana to maximum Mana for Mana users. It does not
+          increase maximum Rage or a Bard's active-song limit.
+        </li>
+        <!-- Source: server-scripts/Player.cs:4627-4652,10077-10122,10337-10365; server-scripts/Database.cs:1900-1921 — veteran damage gained while summoned is not saved; a zero saved hire roll can cause a fresh roll on every summon. -->
+        <li class="px-4 py-2.5">
+          Veteran points gained while summoned add 1 physical and 1 magic damage
+          each. The game does not save these additions when you summon the
+          mercenary again.
+        </li>
+      </ul>
+    </div>
   </section>
 
   <section id="resurrection" class="space-y-4">
     <h2 class="text-xl font-semibold">When a mercenary dies</h2>
     <!-- Source: server-scripts/Pet.cs:3966-3977 — the corpse remains for 300 seconds. -->
-    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      A corpse remains for 5 minutes.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">A corpse remains for 5 minutes.</li>
+      </ul>
+    </div>
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <table class="w-full min-w-[32rem] text-sm">
         <thead>
@@ -518,98 +557,121 @@
         </tbody>
       </table>
     </div>
-    <!-- Source: server-scripts/UIMercenaries.cs:618-644,817-839; server-scripts/Player.cs:10254-10273 — recruiter can revive one or all for their full combined price; paid return on respawn is all-or-none. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      A recruiter can revive one mercenary or all dead roster members. Reviving
-      all requires the full combined fee.
-    </p>
-    <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,ProcessMercenariesOnPlayerRespawn,10254-10273 — living mercenaries return when the player returns; dead summoned mercenaries return only if the player can pay the total fee. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      If you die, living mercenaries return when you do. Dead summoned
-      mercenaries return on respawn only if you can pay for all of them.
-    </p>
-    <!-- Source: server-scripts/UIMercenaries.cs:530-582; server-scripts/Pet.cs:5059-5075 — a dead mercenary must be resurrected before another summon, and healer mercenaries do not automatically resurrect allies. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      You cannot summon a dead mercenary until you resurrect it. Healer
-      mercenaries do not cast resurrection automatically.
-    </p>
-    <!-- Source: server-scripts/Pet.cs:3966-3977; server-scripts/Player.cs:GetMercenaryResurrectionPrice; server-scripts/Combat.cs:739-755 — gear stays equipped and death does not damage it. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Death does not damage the mercenary's equipped gear.
-    </p>
-    <!-- Source: server-scripts/Combat.cs:1157-1167,1350-1361 — Warrior and Rogue mercenaries can survive a fatal hit from owner level 50. -->
-    {#if deathSaveClasses.length > 0}
-      <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-        From level {DEATH_SAVE_MIN_LEVEL},
-        {#each deathSaveClasses as c, i (c.id)}{i > 0 ? " and " : ""}<a
-            href="{petHref(c.id, true)}#death-save-title"
-            class={link}>{c.type_monster}</a
-          >{/each} mercenaries can survive a fatal hit.
-      </p>
-    {/if}
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <h3 class="flex h-10 items-center border-b px-4 font-medium">
+        Death and revival notes
+      </h3>
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/UIMercenaries.cs:618-644,817-839; server-scripts/Player.cs:10254-10273 — recruiter can revive one or all for their full combined price; paid return on respawn is all-or-none. -->
+        <li class="px-4 py-2.5">
+          A recruiter can revive one mercenary or all dead roster members.
+          Reviving all requires the full combined fee.
+        </li>
+        <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,ProcessMercenariesOnPlayerRespawn,10254-10273 — living mercenaries return when the player returns; dead summoned mercenaries return only if the player can pay the total fee. -->
+        <li class="px-4 py-2.5">
+          If you die, living mercenaries return when you do. Dead summoned
+          mercenaries return on respawn only if you can pay for all of them.
+        </li>
+        <!-- Source: server-scripts/UIMercenaries.cs:530-582; server-scripts/Pet.cs:5059-5075 — a dead mercenary must be resurrected before another summon, and healer mercenaries do not automatically resurrect allies. -->
+        <li class="px-4 py-2.5">
+          You cannot summon a dead mercenary until you resurrect it. Healer
+          mercenaries do not cast resurrection automatically.
+        </li>
+        <!-- Source: server-scripts/Pet.cs:3966-3977; server-scripts/Player.cs:GetMercenaryResurrectionPrice; server-scripts/Combat.cs:739-755 — gear stays equipped and death does not damage it. -->
+        <li class="px-4 py-2.5">
+          Death does not damage the mercenary's equipped gear.
+        </li>
+        <!-- Source: server-scripts/Combat.cs:1157-1167,1350-1361 — Warrior and Rogue mercenaries can survive a fatal hit from owner level 50. -->
+        {#if deathSaveClasses.length > 0}
+          <li class="px-4 py-2.5">
+            From level {DEATH_SAVE_MIN_LEVEL},
+            {#each deathSaveClasses as c, i (c.id)}{i > 0 ? " and " : ""}<a
+                href="{petHref(c.id, true)}#death-save-title"
+                class={link}>{c.type_monster}</a
+              >{/each} mercenaries can survive a fatal hit.
+          </li>
+        {/if}
+      </ul>
+    </div>
   </section>
 
   <section id="equipment" class="space-y-4">
     <h2 class="text-xl font-semibold">Equipment</h2>
-    <ol class="divide-y divide-border">
-      <!-- Source: server-scripts/UITarget.cs:443-447; server-scripts/EquipmentItem.cs:157-212; server-scripts/MercenaryEquipment.cs:21-86 — target-panel helmet opens equipment; item slot, class and owner level are checked. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-        <span class="text-sm tabular-nums text-muted-foreground">1</span>
-        <div>
-          <p class="font-medium">
-            Select a mercenary and open its equipment with the helmet icon.
-          </p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Items must fit its class and slot, and you must meet their level
-            requirement.
-          </p>
-        </div>
-      </li>
-      <!-- Source: server-scripts/ScrollItem.cs:11-65; server-scripts/UIEquipmentMercenary.cs:163-171 — repair kits target the selected mercenary; without selection they repair player gear. -->
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">2</span>
-        <div>
-          <p class="font-medium">
-            Select the mercenary before using a repair kit.
-          </p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Otherwise the kit repairs your own gear.
-          </p>
-        </div>
-      </li>
-    </ol>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ol class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/UITarget.cs:443-447; server-scripts/EquipmentItem.cs:157-212; server-scripts/MercenaryEquipment.cs:21-86 — target-panel helmet opens equipment; item slot, class and owner level are checked. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">
+              Select a mercenary and open its equipment with the helmet icon.
+            </p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              Items must fit its class and slot, and you must meet their level
+              requirement.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/ScrollItem.cs:11-65; server-scripts/UIEquipmentMercenary.cs:163-171 — repair kits target the selected mercenary; without selection they repair player gear. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">
+              Select the mercenary before using a repair kit.
+            </p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              Otherwise the kit repairs your own gear.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
     <!-- Source: server-scripts/MercenaryEquipment.cs:116-187,201-256 — three unbroken matching armor pieces add set attributes, but mercenaries receive no five-piece skill bonus. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Three matching, unbroken armor pieces give the set's attribute bonus.
-      Mercenaries do not receive the five-piece skill bonus.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">
+          Three matching, unbroken armor pieces give the set's attribute bonus.
+          Mercenaries do not receive the five-piece skill bonus.
+        </li>
+      </ul>
+    </div>
   </section>
 
   <section id="auto-consume" class="space-y-4">
     <h2 class="text-xl font-semibold">Auto-Consume supplies</h2>
     <!-- Source: server-scripts/Pet.cs:288-302,2073-2162; server-scripts/UIEquipmentMercenary.cs:174-188; server-scripts/UIMercenaries.cs:576-583 — each mercenary has four dedicated supply slots and an individual saved toggle; they use supplies only during player combat. -->
-    <ol class="divide-y divide-border">
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-        <span class="text-sm tabular-nums text-muted-foreground">1</span>
-        <div>
-          <p class="font-medium">
-            Put supplies in the mercenary's dedicated slots.
-          </p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Supplies in your backpack do not count.
-          </p>
-        </div>
-      </li>
-      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-        <span class="text-sm tabular-nums text-muted-foreground">2</span>
-        <div>
-          <p class="font-medium">Enable Auto-Consume for each mercenary.</p>
-          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            It uses supplies only while you are in combat.
-          </p>
-        </div>
-      </li>
-    </ol>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ol class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">
+              Put supplies in the mercenary's dedicated slots.
+            </p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              Supplies in your backpack do not count.
+            </p>
+          </div>
+        </li>
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Enable Auto-Consume for each mercenary.</p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              It uses supplies only while you are in combat.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
 
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <table class="w-full min-w-[32rem] text-sm">
@@ -658,12 +720,21 @@
       </table>
     </div>
     <!-- Source: server-scripts/Pet.cs:2124-2162 — each healing/resource potion has a 15-second reuse timer; Bard cannot use the resource potion slot automatically. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Healing and resource potions each have a 15-second reuse delay.
-    </p>
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Bards do not use resource potions automatically.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <h3 class="flex h-10 items-center border-b px-4 font-medium">
+        Supply notes
+      </h3>
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">
+          Healing and resource potions each have a 15-second reuse delay.
+        </li>
+        <li class="px-4 py-2.5">
+          Bards do not use resource potions automatically.
+        </li>
+      </ul>
+    </div>
   </section>
 
   <section class="space-y-4">
@@ -672,9 +743,13 @@
   <section id="commands" class="space-y-4">
     <h2 class="text-xl font-semibold">Orders and stances</h2>
     <!-- Source: server-scripts/GameManager.cs:1813-1829,1832-1919,1986-2039; server-scripts/Player.cs:8819-8845 — orders apply to mercenaries and combat pets. -->
-    <p class="text-sm text-foreground">
-      These orders also affect your combat pet.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">These orders also affect your combat pet.</li>
+      </ul>
+    </div>
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <table class="w-full text-sm">
         <thead>
@@ -742,13 +817,20 @@
   <section id="ai-behavior" class="space-y-4">
     <h2 class="text-xl font-semibold">Healing and avoiding attacks</h2>
     <!-- Source: server-scripts/Pet.cs:4422-4459,4502-4539,4664-4679,5133-5171; server-scripts/PetSkills.cs:162-169 — Cleric and Druid healers consider player and companions; other party members must be within 12 units. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Cleric and Druid healers can heal you and your companions. Other party
-      members must be within 12 units of the healer.
-    </p>
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Offensive skills leave at least 35% of a healer's maximum Mana available.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">
+          Cleric and Druid healers can heal you and your companions. Other party
+          members must be within 12 units of the healer.
+        </li>
+        <li class="px-4 py-2.5">
+          Offensive skills leave at least 35% of a healer's maximum Mana
+          available.
+        </li>
+      </ul>
+    </div>
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <table class="w-full text-sm">
         <thead>
@@ -784,29 +866,42 @@
         </tbody>
       </table>
     </div>
-    <!-- Source: server-scripts/Pet.cs:4452-4499,4542-4585,4898-4939 — Cleanse takes priority; healers with the same owner avoid duplicate noncritical direct heals. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Healers use Cleanse before healing when it is ready.
-    </p>
-    <!-- Source: server-scripts/PetSkills.cs:60-75,111-118; server-scripts/Pet.cs:1333-1444 — Warriors choose Challenge first against one target; Battle Shout needs two nearby targets attacking party members. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Warriors prioritize Challenge. In aggressive stance, they use Battle Shout
-      against at least two nearby enemies attacking party members.
-    </p>
-    <!-- Source: server-scripts/MonsterSkills.cs:177-279; server-scripts/Pet.cs:2702-2709,2814-2835 — companions can evade telegraphed attacks with at least a one-second cast; aggressive Warriors and familiars do not. -->
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Companions can avoid area attacks with at least a 1-second cast if they
-      can reach safety. Aggressive Warriors and familiars do not.
-    </p>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <h3 class="flex h-10 items-center border-b px-4 font-medium">
+        Combat behavior
+      </h3>
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <!-- Source: server-scripts/Pet.cs:4452-4499,4542-4585,4898-4939 — Cleanse takes priority; healers with the same owner avoid duplicate noncritical direct heals. -->
+        <li class="px-4 py-2.5">
+          Healers use Cleanse before healing when it is ready.
+        </li>
+        <!-- Source: server-scripts/PetSkills.cs:60-75,111-118; server-scripts/Pet.cs:1333-1444 — Warriors choose Challenge first against one target; Battle Shout needs two nearby targets attacking party members. -->
+        <li class="px-4 py-2.5">
+          Warriors prioritize Challenge. In aggressive stance, they use Battle
+          Shout against at least two nearby enemies attacking party members.
+        </li>
+        <!-- Source: server-scripts/MonsterSkills.cs:177-279; server-scripts/Pet.cs:2702-2709,2814-2835 — companions can evade telegraphed attacks with at least a one-second cast; aggressive Warriors and familiars do not. -->
+        <li class="px-4 py-2.5">
+          Companions can avoid area attacks with at least a 1-second cast if
+          they can reach safety. Aggressive Warriors and familiars do not.
+        </li>
+      </ul>
+    </div>
   </section>
 
   <section id="recruiters" class="space-y-4">
-    <div>
-      <h2 class="text-xl font-semibold">Where to hire</h2>
-      <p class="mt-1 text-sm text-muted-foreground">
-        A preferred race applies only to the classes that allow it. Each
-        mercenary page shows the race that class gets.
-      </p>
+    <h2 class="text-xl font-semibold">Where to hire</h2>
+    <div
+      class="self-start overflow-hidden rounded-md border bg-muted/30 text-sm"
+    >
+      <ul class="divide-y [&>li:nth-child(even)]:bg-muted/30">
+        <li class="px-4 py-2.5">
+          A preferred race applies only to the classes that allow it. Each
+          mercenary page shows the race that class gets.
+        </li>
+      </ul>
     </div>
     <RecruiterTable
       recruiters={data.recruiters}
