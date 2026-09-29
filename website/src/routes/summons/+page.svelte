@@ -9,6 +9,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
@@ -51,7 +52,7 @@
         return filterValue.includes(value);
       },
     },
-    { accessorKey: "type_monster", header: "Class" },
+    { accessorKey: "type_monster", header: "Creature type" },
     { id: "summoned_by_class", header: "Summoned By", enableSorting: false },
     { id: "summoned_by_spell", header: "Spell", enableSorting: false },
   ];
@@ -149,101 +150,168 @@
     class="bg-muted/30"
   />
 
-  <Card.Root id="pets-and-familiars" class="bg-muted/30">
+  <Card.Root id="how-summons-work" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Combat pets and familiars</Card.Title>
+      <Card.Title class="text-xl">How summons work</Card.Title>
     </Card.Header>
-    <Card.Content class="space-y-4 leading-6 text-muted-foreground">
-      <!-- Source: server-scripts/SummonSkill.cs:22-85; server-scripts/PetSkills.cs:25-49,60-65; server-scripts/PlayerSkills.cs:1361-1371; server-scripts/Pet.cs:3966-3977 — combat pets and familiars share one active slot, but use different level and skill rules. -->
-      <p>
-        A combat pet and a familiar share 1 active pet slot. Summoning either
-        while that slot is occupied fails.
-      </p>
-      <dl class="grid gap-2 sm:grid-cols-[minmax(8rem,auto)_1fr]">
-        <dt class="font-medium text-foreground">Combat pet</dt>
-        <dd>
-          Matches your level, up to its cap. Its skills start at rank 1, reach
-          rank 2 at 20 total veteran points, and gain another rank every 10
-          points, up to each skill's cap. It attacks and disappears on death.
-        </dd>
-        <dt class="font-medium text-foreground">Familiar</dt>
-        <dd>
-          Matches your summoning skill rank. Its buffs stop at their maximum
-          rank. It does not attack and disappears on death.
-        </dd>
-      </dl>
-      <!-- Source: server-scripts/Pet.cs:2184-2195; server-scripts/PetSkills.cs:25-49,170-200; exported-data/skills.json:126808-126811,127043-127046,126473-126476 — familiars apply the exported Wizard buffs at their skill rank. -->
-      <div>
-        <h3 class="font-medium text-foreground">
-          Wizard familiar buffs per rank
-        </h3>
-        <ul class="mt-1 list-disc space-y-1 pl-5">
-          <li>
-            <a
-              href="/summons/blue_fairy"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >Blue Familiar</a
-            >: +2 Mana regeneration per second.
-          </li>
-          <li>
-            <a
-              href="/summons/red_fairy"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >Red Familiar</a
-            >: +1% accuracy.
-          </li>
-          <li>
-            <a
-              href="/summons/arcane_fairy"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >Arcane Familiar</a
-            >: +1.5% spell power.
-          </li>
-        </ul>
-      </div>
-      <!-- Source: server-scripts/Pet.cs:3952-3963,4194-4205; server-scripts/GameManager.cs:1832-1919 — combat pets accept companion attack orders. -->
-      <p>
-        Combat pets use companion <a
-          href="/mercenaries#commands"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >commands and stances</a
-        >.
-      </p>
-    </Card.Content>
-  </Card.Root>
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/SummonSkill.cs:22-85 — combat pets and familiars share one active slot. server-scripts/Player.cs:4112-4144 — three friendly followers can be active at once. server-scripts/PetSkills.cs:25-49; server-scripts/PlayerSkills.cs:1361-1371 — combat pet skills first reach rank 2 at 20 total veteran points. -->
+      <GuideFacts
+        facts={[
+          { value: "1", label: "Shared combat pet slot" },
+          { value: "3", label: "Whistle followers at once" },
+          { value: "20", label: "Veteran points for pet skill rank 2" },
+        ]}
+      />
 
-  <Card.Root id="friendly-followers" class="bg-muted/30">
-    <Card.Header>
-      <Card.Title>Friendly pets and whistles</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-4 leading-6 text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:4112-4144,4227-4263; server-scripts/FriendlyPetFollowerItem.cs:34-55,84-96 — up to three active followers, one per whistle type; another use dismisses, and portal travel recreates them. -->
-      <p>
-        Whistle followers do not use the combat pet slot. You can have up to 3
-        active followers, one per whistle type. Using that whistle again
-        dismisses its follower without consuming the whistle.
-      </p>
-      <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454; server-scripts/Player.cs:4227-4263 — followers need a matching inventory whistle; portal travel recreates them at the destination. -->
-      <p>
-        Keep each follower's whistle in your inventory. Without it, the follower
-        disappears. Active followers return at the destination after portal
-        travel.
-      </p>
-      <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:58-81; server-scripts/Player.cs:4184-4200 — whistle names support up to 20 characters and updates apply to active followers. -->
-      <p>
-        A whistle name can have up to 20 characters. It uses letters, with
-        spaces, apostrophes, or hyphens between letter groups. An empty name
-        restores the default. Renaming updates its active follower.
-      </p>
-      <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13156-13160 — petting a nearby follower grants 1–4 standing with its faction at most once every 30 seconds per animal. -->
-      <p>
-        Petting a nearby follower gives 1–4 standing with its faction at most
-        once per 30 seconds per animal. See <a
-          href="/mechanics/reputation#pets"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >petting and reputation</a
-        >.
-      </p>
+      <span class="block text-sm text-muted-foreground sm:hidden">
+        Scroll the table to compare all three →
+      </span>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[34rem] table-fixed text-sm">
+          <thead class="text-left text-muted-foreground">
+            <tr class="border-b">
+              <th class="w-[18%] py-2 pr-2 font-medium" scope="col">Rule</th>
+              <th class="w-[27%] py-2 pr-2 font-medium" scope="col">
+                Combat pet
+              </th>
+              <th class="w-[27%] py-2 pr-2 font-medium" scope="col">
+                Familiar
+              </th>
+              <th class="w-[28%] py-2 font-medium" scope="col">
+                Whistle follower
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y align-top">
+            <!-- Source: server-scripts/SummonSkill.cs:22-85; server-scripts/Player.cs:4112-4144 — combat pets and familiars share an occupied slot; whistle followers are separate. -->
+            <tr>
+              <th class="py-2 pr-2 text-left font-medium" scope="row">Slot</th>
+              <td class="py-2 pr-2">Shared pet slot</td>
+              <td class="py-2 pr-2">Shared pet slot</td>
+              <td class="py-2">Separate follower slots</td>
+            </tr>
+            <!-- Source: server-scripts/SummonSkill.cs:76; server-scripts/PetFriendly.cs:9-25,593-612 — combat pet matches player level up to its cap; familiar matches summon skill rank; follower has no level stat. -->
+            <tr>
+              <th class="py-2 pr-2 text-left font-medium" scope="row">Level</th>
+              <td class="py-2 pr-2">Your level, up to its cap</td>
+              <td class="py-2 pr-2">Summoning skill rank</td>
+              <td class="py-2">No level</td>
+            </tr>
+            <!-- Source: server-scripts/PetSkills.cs:60-65; server-scripts/Pet.cs:3952-3963; server-scripts/PetFriendly.cs:9-25,335-359 — combat pets attack; familiars and friendly followers do not. -->
+            <tr>
+              <th class="py-2 pr-2 text-left font-medium" scope="row">
+                Attacks
+              </th>
+              <td class="py-2 pr-2">Yes</td>
+              <td class="py-2 pr-2">No</td>
+              <td class="py-2">No</td>
+            </tr>
+            <!-- Source: server-scripts/Pet.cs:3966-3977; server-scripts/PetFriendly.cs:9-25 — combat pets and familiars disappear on death; friendly followers have no health or combat death. -->
+            <tr>
+              <th class="py-2 pr-2 text-left font-medium" scope="row">Death</th>
+              <td class="py-2 pr-2">Disappears</td>
+              <td class="py-2 pr-2">Disappears</td>
+              <td class="py-2">No combat death</td>
+            </tr>
+            <!-- Source: server-scripts/SummonSkill.cs:34-85; server-scripts/Player.cs:4125-4138 — one combat pet or familiar, plus three followers at most, one per whistle type. -->
+            <tr>
+              <th class="py-2 pr-2 text-left font-medium" scope="row">Limit</th>
+              <td class="py-2 pr-2">1 combined</td>
+              <td class="py-2 pr-2">1 combined</td>
+              <td class="py-2">3 total, 1 per whistle type</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-sm font-semibold">Wizard familiar buffs per rank</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="text-left text-muted-foreground">
+              <tr class="border-b">
+                <th class="py-2 pr-4 font-medium">Familiar</th>
+                <th class="py-2 pr-4 font-medium">Each rank gives you</th>
+                <th class="py-2 font-medium">Maximum rank</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <!-- Source: server-scripts/PetSkills.cs:25-49; server-scripts/Buff.cs:254; exported-data/skills.json:126601-126605,126808-126811 — Blue buff adds 2 Mana per second each rank up to rank 8. -->
+              <tr>
+                <th class="py-2 pr-4 text-left font-medium" scope="row">
+                  <a
+                    href="/summons/blue_fairy"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                    >Blue</a
+                  >
+                </th>
+                <td class="py-2 pr-4">+2 Mana per second</td>
+                <td class="py-2">8</td>
+              </tr>
+              <!-- Source: server-scripts/PetSkills.cs:25-49; server-scripts/Buff.cs:240; exported-data/skills.json:126868-126872,127043-127046 — Red buff adds 1% accuracy each rank up to rank 8. -->
+              <tr>
+                <th class="py-2 pr-4 text-left font-medium" scope="row">
+                  <a
+                    href="/summons/red_fairy"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                    >Red</a
+                  >
+                </th>
+                <td class="py-2 pr-4">+1% accuracy</td>
+                <td class="py-2">8</td>
+              </tr>
+              <!-- Source: server-scripts/PetSkills.cs:25-49; server-scripts/Buff.cs:91; exported-data/skills.json:126334-126338,126473-126476 — Arcane buff adds 1.5% spell power each rank up to rank 10. -->
+              <tr>
+                <th class="py-2 pr-4 text-left font-medium" scope="row">
+                  <a
+                    href="/summons/arcane_fairy"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                    >Arcane</a
+                  >
+                </th>
+                <td class="py-2 pr-4">+1.5% spell power</td>
+                <td class="py-2">10</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <!-- Source: server-scripts/PetSkills.cs:25-49; server-scripts/PlayerSkills.cs:1361-1371 — combat pet skill rank starts at 1, reaches 2 at 20 veteran points, then rises by one every 10 points up to each skill's cap. -->
+        <li>
+          Combat pet skills start at rank 1. After 20 total veteran points, each
+          10 points adds one rank up to the skill's cap.
+        </li>
+        <!-- Source: server-scripts/Pet.cs:3952-3963,4194-4205; server-scripts/GameManager.cs:1832-1919 — combat pets accept companion commands and stances. -->
+        <li>
+          Combat pets use companion <a
+            href="/mercenaries#commands"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >commands and stances</a
+          >.
+        </li>
+        <!-- Source: server-scripts/Player.cs:4112-4144; server-scripts/FriendlyPetFollowerItem.cs:34-55,84-96 — using an active follower's whistle again dismisses it without consuming the whistle. -->
+        <li>
+          Use a whistle again to dismiss its follower. This does not consume the
+          whistle.
+        </li>
+        <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454; server-scripts/Player.cs:4227-4263 — followers disappear without their matching inventory whistle and return after portal travel. -->
+        <li>
+          Keep each follower's whistle in your inventory or the follower
+          disappears. Active followers return after portal travel.
+        </li>
+        <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13156-13160 — petting a nearby follower grants 1–4 faction standing every 30 seconds per animal. -->
+        <li>
+          Petting a nearby follower gives 1–4 faction standing at most once
+          every 30 seconds per animal. See <a
+            href="/mechanics/reputation#pets"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >petting and reputation</a
+          >.
+        </li>
+      </ul>
     </Card.Content>
   </Card.Root>
 </div>

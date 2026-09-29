@@ -383,7 +383,7 @@
     "q": "whistles",
     "intent": "plural",
     "expect": [
-      "/summons#friendly-followers",
+      "/summons#how-summons-work",
       "/items/blue_puffling_whistle",
       "/items/brown_cat_whistle",
       "/items/brown_dog_whistle",

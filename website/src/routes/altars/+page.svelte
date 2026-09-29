@@ -10,6 +10,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import JsonLd from "$lib/components/JsonLd.svelte";
@@ -229,23 +230,58 @@
 
   <Card.Root id="how-altars-work" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Altar and Trial Rules</Card.Title>
+      <Card.Title class="text-xl">How altars and trials work</Card.Title>
     </Card.Header>
-    <Card.Content class="space-y-4 text-muted-foreground">
-      <!-- Source: server-scripts/EventAltar.cs:201-213; server-scripts/AvatarEventAltar.cs:197-209 — activating either altar consumes one required item. -->
-      <p>
-        Activating a Forgotten or Avatar altar consumes 1 required offering.
-      </p>
-      <!-- Source: server-scripts/DefaultEvent.cs:64-80,273-291; server-scripts/AvatarEvent.cs:54-70,231-249 — the attempt stops when its activating player dies or leaves the event radius. -->
-      <p>
-        The activating player must stay alive and inside the event area. If that
-        player leaves or dies, the attempt ends even when other players remain.
-      </p>
-      <!-- Source: server-scripts/TrialAncientsEvent.cs:222-251,69-88,91-119 — a 30-second preparation countdown precedes waves, and clearing the final wave completes the trial. -->
-      <p>
-        Entering the Trial of the Ancients area starts a 30-second preparation
-        countdown. Clear the final wave to complete the trial.
-      </p>
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/EventAltar.cs:201-213; server-scripts/AvatarEventAltar.cs:197-209 — activation consumes one required item. server-scripts/TrialAncientsEvent.cs:235-251 — entering the trial starts a 30-second preparation countdown. -->
+      <GuideFacts
+        facts={[
+          { value: "1", label: "Offering per altar attempt" },
+          { value: "30 s", label: "Trial preparation" },
+        ]}
+      />
+
+      <span class="block text-sm text-muted-foreground sm:hidden">
+        Scroll the table to see how to finish →
+      </span>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[35rem] text-sm">
+          <thead class="text-left text-muted-foreground">
+            <tr class="border-b">
+              <th class="py-2 pr-4 font-medium">Event</th>
+              <th class="py-2 pr-4 font-medium">How to start</th>
+              <th class="py-2 font-medium">How to finish</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <!-- Source: server-scripts/EventAltar.cs:201-213; server-scripts/AvatarEventAltar.cs:197-209; server-scripts/DefaultEvent.cs:103-150; server-scripts/AvatarEvent.cs:93-132 — an offering starts the altar, and the last wave must be cleared before its timer expires. -->
+            <tr>
+              <th class="py-2 pr-4 text-left font-medium" scope="row">
+                Forgotten or Avatar altar
+              </th>
+              <td class="py-2 pr-4">Use its required offering</td>
+              <td class="py-2">Clear the last wave before its timer ends</td>
+            </tr>
+            <!-- Source: server-scripts/TrialAncientsEvent.cs:69-119,221-251 — entering starts the preparation countdown, and clearing the final wave completes the trial. -->
+            <tr>
+              <th class="py-2 pr-4 text-left font-medium" scope="row">
+                Trial of the Ancients
+              </th>
+              <td class="py-2 pr-4">Enter the trial area</td>
+              <td class="py-2">Clear the final wave</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Source: server-scripts/DefaultEvent.cs:64-80,273-291; server-scripts/AvatarEvent.cs:54-70,231-249 — the activating player must remain alive inside the altar radius. -->
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>
+          At an altar, the player who used the offering must stay alive in the
+          event area. The attempt ends if that player leaves or dies, even if
+          other players remain.
+        </li>
+      </ul>
     </Card.Content>
   </Card.Root>
 </div>

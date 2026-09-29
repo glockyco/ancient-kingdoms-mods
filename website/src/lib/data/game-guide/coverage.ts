@@ -108,7 +108,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
       "678b5810112f285eb6d960be06f7bcd2ce756a37782e95190e113191451dfd19",
   },
   "companions.friendly-whistles": {
-    href: "/summons#friendly-followers",
+    href: "/summons#how-summons-work",
     reviewedBodySha256:
       "6557677fbd6c9897320b28d71334323f9e638af3c877462d187cf4660ef23a47",
   },
@@ -123,7 +123,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
       "c6b6d1c8c2fe83ec2b1e86f0d45285eee9846185486b41775af0ba011b437780",
   },
   "companions.pets-familiars": {
-    href: "/summons#pets-and-familiars",
+    href: "/summons#how-summons-work",
     reviewedBodySha256:
       "88fd3588edbb5a158041bba17057f155d814db895ce7cbfbe595627c24054f92",
   },

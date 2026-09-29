@@ -626,7 +626,7 @@
         {#if isPet}
           <p class="text-muted-foreground">
             Whistles summon a friendly follower that does not fight. See
-            <a href="/summons#friendly-followers" class={styles.link}>
+            <a href="/summons#how-summons-work" class={styles.link}>
               friendly follower rules
             </a>
             for the follower limit and naming.

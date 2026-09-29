@@ -78,7 +78,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
         source:
           "Source: server-scripts/SummonSkill.cs:22-41,79-86 — an occupied active-pet slot prevents summoning",
-        href: "/summons#pets-and-familiars",
+        href: "/summons#how-summons-work",
         linkText: "Pet rules",
       },
     ],

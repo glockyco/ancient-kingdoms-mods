@@ -710,7 +710,7 @@
   {
     "q": "familiar",
     "intent": "concept",
-    "expect": ["/summons#pets-and-familiars"],
+    "expect": ["/summons#how-summons-work"],
     "k": 3
   },
   {
