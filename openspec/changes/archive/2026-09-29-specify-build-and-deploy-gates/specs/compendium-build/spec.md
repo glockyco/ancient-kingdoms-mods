@@ -2,14 +2,14 @@
 
 ### Requirement: A missing export stops the build
 
-`compendium build` SHALL fail when an export file that it requires is absent. The error SHALL name the missing file and state how to produce it.
+`compendium build` SHALL fail when an export file that it requires is absent. The error SHALL name the missing file.
 
 Rationale: loaders returned early when their export file was absent. A partial export therefore produced a database that silently lacked whole entity types.
 
 #### Scenario: A required export file is absent
 
 - **WHEN** the export directory lacks a file that the build requires
-- **THEN** the build fails with `Required input is missing: <path>. Run the DataExporter mod in the game.`
+- **THEN** the build fails and the error names the missing file
 - **AND** the published outputs are unchanged
 
 ### Requirement: A failed build keeps the published outputs
