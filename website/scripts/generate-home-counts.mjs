@@ -44,9 +44,15 @@ const skills = count("SELECT COUNT(*) as count FROM skills");
 const mercenaries = count(
   "SELECT COUNT(*) as count FROM pets WHERE is_mercenary = 1",
 );
-const summons = count(
-  "SELECT COUNT(*) as count FROM pets WHERE is_mercenary = 0",
-);
+// /summons lists skill summons and whistle pets (getAllSummons, getWhistlePets).
+const summons =
+  count("SELECT COUNT(*) as count FROM pets WHERE is_mercenary = 0") +
+  count(
+    `SELECT COUNT(*) as count FROM items i
+     JOIN visual_assets va
+       ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'pet'
+     WHERE i.item_type = 'pet'`,
+  );
 const zones = count("SELECT COUNT(*) as count FROM zones");
 const quests = count("SELECT COUNT(*) as count FROM quests");
 const altars = count("SELECT COUNT(*) as count FROM altars");
