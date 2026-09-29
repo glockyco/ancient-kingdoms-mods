@@ -3644,10 +3644,6 @@
       "sha256": "44327f23fc3c87e6f113ca3e99f87ade0efa9dcdbf5c5db3994ba0c23fdc1744",
       "span": 17
     },
-    "ScrollItem.cs:69-79": {
-      "sha256": "c3222f3f8c37e904ff0292aeebe44fc1a0f5eaf36a34bac728a190f730e6ac8e",
-      "span": 11
-    },
     "ScrollItem.cs:86": {
       "sha256": "12508829dbcad93e34ae7218d2037a1e2608da9013845c2813a701793a338c61",
       "span": 1
@@ -4578,9 +4574,6 @@
     "UsableItem.cs:53": {
       "sha256": "5abb686461e6e67964da66a5c56418ee9b4662da8795266b72619142ccc69410",
       "span": 1
-    },
-    "UsableItem.cs:CanUse": {
-      "span": 0
     },
     "Utils.cs:506-525": {
       "sha256": "aede1b32af6cdbeb6e8b972509f0ca39f18e3564d4f3c73f88129055b6959ea7",

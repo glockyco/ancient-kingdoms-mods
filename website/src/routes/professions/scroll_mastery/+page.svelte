@@ -199,29 +199,11 @@
         <div class="text-sm text-muted-foreground">3</div>
         <div>
           <div>Use scrolls.</div>
+          <!-- Source: server-scripts/ScrollItem.cs:67-112 — a valid scroll casts its skill at rank round(mastery × 20), clamped to the skill's range, and consumes one charge unless infiniteCharges is set. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            For scaling scrolls, divide your Scroll Mastery percentage by 5 and
-            round to the nearest whole number. Ranks range from 1 up to the
-            skill's maximum. Fixed-rank scrolls stay at rank 1.
-          </p>
-          <!-- Source: server-scripts/ScrollItem.cs:67-112 — a valid scroll applies a temporary skill and consumes one charge unless infiniteCharges is set. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <span class="block"
-              >Using a scroll casts its skill without teaching it to you.</span
-            >
-            <span class="block"
-              >A scroll with limited charges uses one charge.</span
-            >
-            <span class="block"
-              >Scrolls with unlimited charges do not use a charge.</span
-            >
-          </p>
-          <!-- Source: server-scripts/ScrollItem.cs:69-79; server-scripts/UsableItem.cs:CanUse — target, class, item level, and cooldown restrictions can prevent use. -->
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <span class="block">You need a valid target to use a scroll.</span>
-            <span class="block"
-              >Class, item-level, and cooldown restrictions still apply.</span
-            >
+            A scroll casts its skill without teaching it. Scaling scrolls cast
+            at rank Scroll Mastery ÷ 5, fixed scrolls at rank 1. Each use costs
+            one charge.
           </p>
         </div>
       </div>
