@@ -187,7 +187,7 @@
             >
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           {#each rows as row (row.id)}
             <tr class="border-b last:border-0">
               <td class="px-4 py-2 font-medium">
@@ -264,7 +264,7 @@
             {/each}
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           {#each rows as row (row.id)}
             <tr class="border-b last:border-0">
               <td class="px-4 py-2 font-medium">
@@ -363,7 +363,7 @@
               </th>
             </tr>
           </thead>
-          <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+          <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
             <!-- Source: server-scripts/UIMercenaries.cs:297-299; server-scripts/Player.cs:10115-10120 — levels 10/20/30/40 allow one/two/three/four active mercenaries. -->
             {#each LIMIT_STEPS as step (step.level)}
               <tr class="border-b last:border-0">
@@ -396,7 +396,7 @@
               </th>
             </tr>
           </thead>
-          <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+          <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
             <!-- Source: server-scripts/UIMercenaries.cs:434-440; server-scripts/Player.cs:GetMercenaryResurrectionPrice — the hire and resurrection formulas give 20/8, 420/300, and 3420/2300 gold at the listed levels. -->
             <tr class="border-b last:border-0">
               <td class="px-4 py-2 font-medium">
@@ -493,7 +493,7 @@
             </th>
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           <!-- Source: server-scripts/TargetHealSkill.cs:232-253; server-scripts/Pet.cs:3966-3977 — resurrection skills and scrolls work while the five-minute corpse remains. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2 font-medium">Skill or scroll</td>
@@ -626,7 +626,7 @@
             </th>
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           <!-- Source: server-scripts/Pet.cs:2073-2123 — food and utility potions are checked every 5–10 seconds when their buff category is absent. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2 font-medium">Food</td>
@@ -687,7 +687,7 @@
             </th>
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           <!-- Source: server-scripts/Pet.cs:1488-1491,2198-2209,6007-6017; server-scripts/PetSkills.cs:170-200 — stance gates attacks, but support skills continue. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2 font-medium">Aggressive / Defensive</td>
@@ -761,7 +761,7 @@
             </th>
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           <!-- Source: server-scripts/Pet.cs:4588-4625 — heal-over-time checks allies below 70% Health without that buff. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2 font-medium">Heal-over-time buff</td>

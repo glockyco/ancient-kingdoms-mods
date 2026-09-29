@@ -243,7 +243,7 @@
             >
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           <!-- Source: server-scripts/EventAltar.cs:201-213; server-scripts/AvatarEventAltar.cs:197-209 — activation consumes one required item. server-scripts/DefaultEvent.cs:103-150; server-scripts/AvatarEvent.cs:93-132 — the last wave must be cleared before its timer expires. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2">Forgotten or Avatar altar</td>

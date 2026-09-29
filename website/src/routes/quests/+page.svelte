@@ -380,7 +380,7 @@
             >
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           <!-- Source: server-scripts/PlayerQuests.cs:295-309,322-349; server-scripts/KillQuest.cs:16-47 — kill and location progress advances only for accepted quests. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Kill" /></td>
@@ -456,7 +456,7 @@
             >
           </tr>
         </thead>
-        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+        <tbody class="[&>tr:nth-child(even)>*]:bg-muted/30">
           <tr class="border-b last:border-0">
             <td class="px-4 py-2">Repeatable quest</td>
             <td class="px-4 py-2">8 real hours after you complete it</td>
