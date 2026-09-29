@@ -117,7 +117,7 @@ failure to make the fixture pass.
   game build.
 - `missing`: the fixture has no committed observation. Record it before making a corpus-wide claim.
 
-A game-version update is incomplete while any fixture is stale or missing. The current corpus must
-contain no failed or inconclusive fixture and must credit every declared handler, school, supported
-class, and companion archetype before a full-domain claim is valid.
+Stale or missing fixtures do not block a game-version update. A full-domain claim is valid only when
+every fixture has a current passing observation, the corpus contains no failed or inconclusive
+fixture, and it credits every declared handler, school, supported class, and companion archetype.
 Use `pnpm --filter website test:combat-verification` to verify these full-domain conditions.
