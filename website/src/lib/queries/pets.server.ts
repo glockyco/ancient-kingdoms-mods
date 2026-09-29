@@ -140,7 +140,10 @@ const WHISTLE_SUFFIX = " Whistle";
 
 /**
  * Friendly pets, one per whistle item. The exporter records each whistle's
- * summoned creature sprite as the item's "pet" artwork.
+ * summoned creature sprite as the item's "pet" artwork. The game names a
+ * summoned pet after its owner ("<player>'s pet") or the player's custom name
+ * (FriendlyPetFollowerItem.ResolvePetName), so the whistle name is the only
+ * species label.
  */
 export function getWhistlePets(): SummonListView[] {
   const rows = query<{
