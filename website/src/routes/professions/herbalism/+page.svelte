@@ -2,6 +2,8 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import Leaf from "@lucide/svelte/icons/leaf";
@@ -253,13 +255,48 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Gathering Plants works</h2>
-    <!-- Source: server-scripts/GatherItem.cs:327-350,379-400 — only ready plants with a success chance of at least 10% can be attempted; accepted attempts start regrowth before the harvest roll. -->
-    <p class="text-muted-foreground">
-      A ready plant needs at least a 10% success chance and enough inventory
-      space to harvest. Once you attempt it, the plant starts regrowing even if
-      you gather nothing.
-    </p>
-  </section>
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header
+      ><Card.Title class="text-xl">How herbalism works</Card.Title></Card.Header
+    >
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/GatherItem.cs:343-350; server-scripts/Utils.cs:553-562 — below 10% success plants cannot be gathered, and tier I plants always succeed. -->
+      <GuideFacts
+        facts={[
+          { value: "10%", label: "Minimum chance to gather" },
+          { value: "100%", label: "Tier I success chance" },
+        ]}
+      />
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/GatherItem.cs:334-350 — a ready plant checks inventory space and Herbalism chance. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Find a ready plant.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Make room for the harvest. You cannot attempt plants below the
+              minimum success chance.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/GatherItem.cs:383-405,444-455 — attempting starts regrowth before the success roll, and success grants the plant. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Gather the plant.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              The plant starts regrowing even if you gather nothing.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <!-- Source: server-scripts/GatherItem.cs:565-584 — lower tiers stop granting mastery above the 25%, 50%, and 75% skill bands. -->
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>
+          Move to higher-tier plants as your skill rises. Lower tiers eventually
+          stop granting mastery.
+        </li>
+      </ul>
+    </Card.Content>
+  </Card.Root>
 </div>

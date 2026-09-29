@@ -2,6 +2,8 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import {
     calculateAdjustedChestRewards,
@@ -55,6 +57,12 @@
   function formatSignedPercentagePoints(value: number, digits = 1): string {
     const sign = value > 0 ? "+" : "";
     return `${sign}${(value * 100).toFixed(digits)} pp`;
+  }
+
+  function sameDestination(zone: string, subZone: string): boolean {
+    const normalize = (name: string) =>
+      name.toLocaleLowerCase().replace(/^the /, "");
+    return normalize(zone) === normalize(subZone);
   }
 </script>
 
@@ -267,7 +275,7 @@
                   >
                     {map.destination_zone_name}
                   </a>
-                  {#if map.destination_sub_zone_name}
+                  {#if map.destination_sub_zone_name && !sameDestination(map.destination_zone_name, map.destination_sub_zone_name)}
                     <span class="text-muted-foreground">
                       / {map.destination_sub_zone_name}</span
                     >
@@ -296,45 +304,72 @@
     </div>
   </section>
 
-  <section class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">Finding buried treasure</h2>
-    <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/TreasureMapItem.cs:12-15; server-scripts/Player.cs:9435-9452; server-scripts/TreasureLocation.cs:13-18,31-37 — using a map shows its location image, and the matching map must be carried at the dig site. -->
-    <p class="text-muted-foreground">
-      Use a treasure map to see its dig-site clue. Bring that map to the
-      matching location in the
-      <a
-        href="#treasure-maps"
-        class="text-blue-600 hover:underline dark:text-blue-400"
-        >Treasure Maps</a
-      >
-      table.
-    </p>
-    <!-- Source: server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — digging requires a shovel, the matching map, and inventory space; success consumes the map, grants a chest and +0.5% skill. -->
-    <p class="text-muted-foreground">
-      Carry a
-      <ItemLink
-        itemId={data.keyItems.shovel.id}
-        itemName={data.keyItems.shovel.name}
-        tooltipHtml={data.keyItems.shovel.tooltip_html}
-        imageAvailable={data.itemIconPaths[data.keyItems.shovel.id]}
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header
+      ><Card.Title class="text-xl">How treasure hunting works</Card.Title
+      ></Card.Header
+    >
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/TreasureLocation.cs:78-90; server-scripts/ChestItem.cs:16-30 — a dig gives 0.5% mastery, opening needs free slots equal to the reward limit, and capped skill adds 10 percentage points to relic rolls. -->
+      <GuideFacts
+        facts={[
+          { value: "+0.5%", label: "Mastery per treasure" },
+          {
+            value: String(data.buriedChestRewardLimit),
+            label: "Free slots to open a chest",
+          },
+          { value: "+10 pp", label: "Relic roll bonus at 100% skill" },
+        ]}
       />
-      and make room for a chest. A successful dig consumes the map and gives a chest.
-    </p>
-    <!-- Source: server-scripts/ChestItem.cs:24-31 — a Buried Treasure Chest grants unique rewards and applies the Treasure Hunter bonus only to relic rolls. -->
-    <p class="text-muted-foreground">
-      Opening a chest grants up to {data.buriedChestRewardLimit} unique rewards. Treasure
-      Hunter increases only the relic rolls.
-    </p>
-    <!-- Source: server-scripts/ChestItem.cs:16-20,70-73 — a chest opens only with one free slot per reward, or one fewer when the opened chest is the last in its stack. -->
-    <p class="text-muted-foreground">
-      To open a chest, you need {data.buriedChestRewardLimit} free inventory slots,
-      or {data.buriedChestRewardLimit - 1} if it is the last chest in its stack.
-    </p>
-    {#if data.profession.achievement_id}
-      <AchievementLink
-        achievementId={data.profession.achievement_id}
-        achievementName={data.profession.achievement_name}
-      />
-    {/if}
-  </section>
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/TreasureMapItem.cs:12-15; server-scripts/Player.cs:9435-9452; server-scripts/TreasureLocation.cs:13-18,31-37 — the map shows its dig-site clue and must be carried to the matching location. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Use a treasure map to see its clue.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Carry that map to its matching <a
+                href="#treasure-maps"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >dig site</a
+              >.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/TreasureLocation.cs:61-90,117-129 — a dig requires a shovel, matching map and room for its reward. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Dig with a shovel and room for a chest.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              The dig consumes the map and gives a chest.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/ChestItem.cs:16-31 — opening a chest checks free inventory slots and rolls unique rewards, with a bonus only for relics. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">3</span>
+          <div>
+            <p class="font-medium">Open the chest.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Rewards are unique. Treasure Hunter increases relic chances only.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <!-- Source: server-scripts/ChestItem.cs:16-20 — the last chest in a stack frees its own slot, reducing the required free slot count by one. -->
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>
+          The last chest in a stack needs only {data.buriedChestRewardLimit - 1} free
+          slots.
+        </li>
+      </ul>
+      {#if data.profession.achievement_id}
+        <AchievementLink
+          achievementId={data.profession.achievement_id}
+          achievementName={data.profession.achievement_name}
+        />
+      {/if}
+    </Card.Content>
+  </Card.Root>
 </div>

@@ -2,6 +2,8 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Fish from "@lucide/svelte/icons/fish";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -833,43 +835,92 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Fishing works</h2>
-    <!-- Source: server-scripts/Player.cs:9579-9585; server-scripts/PlayerInventory.cs:121-135 — an invalid rod selection falls back to the highest-quality rod in inventory. -->
-    <p class="text-muted-foreground">
-      Carry a
-      <a
-        href="#fishing-rods"
-        class="text-blue-600 hover:underline dark:text-blue-400">Fishing Rod</a
-      >. If no usable rod is selected, the game selects your highest-quality
-      rod.
-    </p>
-    <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must occur within 2, 1.5, 1, or 0.75 seconds for Tier I, II, III, or IV. -->
-    <p class="text-muted-foreground">
-      When the fish bites, interact again within 2 seconds at Tier I, 1.5 at
-      Tier II, 1 at Tier III, or 0.75 at Tier IV.
-    </p>
-    <!-- Source: server-scripts/GatherItem.cs:698-797 — after the spot success roll, a failed primary fish roll may yield a lower-tier fish, trash, or no catch. -->
-    <p class="text-muted-foreground">
-      A successful bite can yield a listed fish. If that catch fails,
-      higher-tier spots may give a
-      <a
-        href="#fishing-fallback-pools"
-        class="text-blue-600 hover:underline dark:text-blue-400"
-        >lower-tier fish</a
-      >,
-      <a
-        href="#fishing-trash"
-        class="text-blue-600 hover:underline dark:text-blue-400">trash</a
-      >, or nothing.
-    </p>
-    {#if data.profession.achievement_id}
-      <AchievementLink
-        achievementId={data.profession.achievement_id}
-        achievementName={data.profession.achievement_name}
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header
+      ><Card.Title class="text-xl">How fishing works</Card.Title></Card.Header
+    >
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/GatherItem.cs:698-706,1098-1116 — fishing requires at least 20% spot success chance, and the bite window ranges from 2 to 0.75 seconds by tier. -->
+      <GuideFacts
+        facts={[
+          { value: "20%", label: "Minimum spot success chance" },
+          { value: "2–0.75 s", label: "Bite window by tier" },
+        ]}
       />
-    {/if}
-  </section>
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/Player.cs:9579-9585; server-scripts/PlayerInventory.cs:121-135 — invalid rod selection falls back to the highest-quality rod in inventory. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">
+              Carry a <a
+                href="#fishing-rods"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >fishing rod</a
+              > to a spot.
+            </p>
+            <p class="mt-0.5 text-muted-foreground">
+              If no usable rod is selected, the game selects your
+              highest-quality rod.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must be within the tier's bite window. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Interact again when the fish bites.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Higher tiers give you less time to respond.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/GatherItem.cs:698-797 — a successful spot roll may produce the primary fish, a fallback catch or nothing. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">3</span>
+          <div>
+            <p class="font-medium">Check the catch.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              If the listed fish roll fails, you may get a <a
+                href="#fishing-fallback-pools"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >lower-tier fish</a
+              >,
+              <a
+                href="#fishing-trash"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >trash</a
+              >, or nothing.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-left text-muted-foreground"
+            ><tr class="border-b"
+              ><th class="py-2 pr-4 font-medium">Spot tier</th><th
+                class="py-2 font-medium">Time to respond</th
+              ></tr
+            ></thead
+          >
+          <!-- Source: server-scripts/GatherItem.cs:1102-1109 — bite windows are 2, 1.5, 1 and 0.75 seconds for tiers I–IV. -->
+          <tbody class="divide-y">
+            <tr><td class="py-2 pr-4">I</td><td class="py-2">2 s</td></tr>
+            <tr><td class="py-2 pr-4">II</td><td class="py-2">1.5 s</td></tr>
+            <tr><td class="py-2 pr-4">III</td><td class="py-2">1 s</td></tr>
+            <tr><td class="py-2 pr-4">IV</td><td class="py-2">0.75 s</td></tr>
+          </tbody>
+        </table>
+      </div>
+      {#if data.profession.achievement_id}
+        <AchievementLink
+          achievementId={data.profession.achievement_id}
+          achievementName={data.profession.achievement_name}
+        />
+      {/if}
+    </Card.Content>
+  </Card.Root>
 
   <section id="fish-foods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
@@ -882,7 +933,6 @@
           <thead class="bg-muted/50">
             <tr>
               <th class="p-3 text-left font-medium">Food</th>
-              <th class="p-3 text-left font-medium">Effect</th>
               <th class="p-3 text-left font-medium">Fish Ingredients</th>
             </tr>
           </thead>
@@ -897,18 +947,6 @@
                     imageAvailable={data.itemIconPaths[recipe.result_item_id]}
                     colorClass={getQualityTextColorClass(recipe.result_quality)}
                   />
-                </td>
-                <td class="p-3">
-                  {#if recipe.effect_skill_id && recipe.effect_skill_name}
-                    <a
-                      href="/skills/{recipe.effect_skill_id}"
-                      class="text-blue-600 hover:underline dark:text-blue-400"
-                    >
-                      {recipe.effect_skill_name}
-                    </a>
-                  {:else}
-                    <span class="text-muted-foreground">—</span>
-                  {/if}
                 </td>
                 <td class="p-3">
                   <div class="flex flex-wrap gap-x-3 gap-y-1">
@@ -956,7 +994,6 @@
             <thead class="bg-muted/50">
               <tr>
                 <th class="p-3 text-left font-medium">Potion</th>
-                <th class="p-3 text-left font-medium">Effect</th>
                 <th class="p-3 text-left font-medium">Fish Ingredients</th>
               </tr>
             </thead>
@@ -973,18 +1010,6 @@
                         recipe.result_quality,
                       )}
                     />
-                  </td>
-                  <td class="p-3">
-                    {#if recipe.effect_skill_id && recipe.effect_skill_name}
-                      <a
-                        href="/skills/{recipe.effect_skill_id}"
-                        class="text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        {recipe.effect_skill_name}
-                      </a>
-                    {:else}
-                      <span class="text-muted-foreground">—</span>
-                    {/if}
                   </td>
                   <td class="p-3">
                     <div class="flex flex-wrap gap-x-3 gap-y-1">

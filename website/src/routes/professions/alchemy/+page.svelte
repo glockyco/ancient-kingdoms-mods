@@ -3,6 +3,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -543,17 +545,51 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
-    <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — learning consumes one recipe item; known recipes cannot be learned again. -->
-    <p class="text-muted-foreground">
-      Learning a potion recipe consumes its recipe item. You cannot learn the
-      same recipe twice.
-    </p>
-    <!-- Source: server-scripts/Player.cs:13206-13217,13230-13250 — brewing checks the learned recipe and inventory space, then removes ingredients before the success roll. -->
-    <p class="text-muted-foreground">
-      Brewing needs a learned recipe and room for the potion. A failed brew
-      still consumes the ingredients.
-    </p>
-  </section>
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header
+      ><Card.Title class="text-xl">How alchemy works</Card.Title></Card.Header
+    >
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/Player.cs:13230-13239; server-scripts/Utils.cs:541-550 — chance below 10% blocks a brew; tier I recipes always succeed. -->
+      <GuideFacts
+        facts={[
+          { value: "10%", label: "Minimum chance to brew" },
+          { value: "100%", label: "Tier I success chance" },
+        ]}
+      />
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — learning consumes a recipe item and rejects recipes already known. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Learn a potion recipe.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Using the recipe consumes its item. You cannot learn it twice.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/Player.cs:13206-13217,13219-13239 — brewing requires a learned recipe, ingredients, space, and at least 10% success chance. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Bring ingredients to an Alchemy Table.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Leave room for the potion. Recipes below the minimum success
+              chance cannot be brewed.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/Player.cs:13240-13250 — ingredients are removed before the success roll. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">3</span>
+          <div>
+            <p class="font-medium">Brew the potion.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              A failed brew consumes the ingredients and gives no potion.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </Card.Content>
+  </Card.Root>
 </div>

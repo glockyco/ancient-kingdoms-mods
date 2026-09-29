@@ -2,6 +2,8 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
@@ -21,7 +23,7 @@
   const sections = [
     { id: "chance", label: "Aether chance" },
     { id: "locations", label: "Spark locations" },
-    { id: "how-it-works", label: "How Radiant Sparks work" },
+    { id: "how-it-works", label: "How radiant seeking works" },
     { id: "combat", label: "Aether in combat" },
   ];
 
@@ -181,16 +183,52 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="space-y-3">
-    <h2 class="text-xl font-semibold">How Radiant Sparks work</h2>
-    <!-- Source: server-scripts/GatherItem.cs:327-400,448-451 — a spark has no tool or skill threshold; each gather rolls for Radiant Aether. -->
-    <!-- Source: server-scripts/GatherItem.cs:379-382 — each attempt starts a random 100–3,600 second respawn wait. -->
-    <p class="max-w-2xl text-muted-foreground">
-      Gather sparks without a tool. Whether or not you find Radiant Aether, each
-      spark returns after {mechanics
-        .respawnSeconds[0]}–{mechanics.respawnSeconds[1].toLocaleString()} seconds.
-    </p>
-  </section>
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header
+      ><Card.Title class="text-xl">How radiant seeking works</Card.Title
+      ></Card.Header
+    >
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/GatherItem.cs:379-382; server-scripts/Player.cs:HasRadiantAether — sparks return in 100–3,600 seconds, and combat checks only slots 0–23. -->
+      <GuideFacts
+        facts={[
+          { value: "100–3,600 s", label: "Spark return time" },
+          { value: "24", label: "Inventory slots usable in combat" },
+        ]}
+      />
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/GatherItem.cs:343-365,379-382 — sparks have no tool or skill gate, and an attempt starts the respawn timer. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Gather a Radiant Spark.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              You need no tool. The spark begins its return timer when you
+              gather it.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/GatherItem.cs:448-451 — each spark rolls for Radiant Aether based on Radiant Seeker skill. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Check whether you found Radiant Aether.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Higher Radiant Seeker skill increases the chance. The spark
+              returns even if you find none.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <!-- Source: server-scripts/Player.cs:HasRadiantAether — combat checks only the first 24 inventory slots. -->
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>
+          Keep Aether in the first 24 inventory slots for combat. Backpack-added
+          slots do not count.
+        </li>
+      </ul>
+    </Card.Content>
+  </Card.Root>
 
   <section id="combat" class="space-y-4">
     <h2 class="text-xl font-semibold">Radiant Aether in combat</h2>

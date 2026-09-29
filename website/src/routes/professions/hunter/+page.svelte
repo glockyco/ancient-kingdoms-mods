@@ -2,6 +2,8 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import Crosshair from "@lucide/svelte/icons/crosshair";
 
@@ -181,17 +183,47 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Hunting works</h2>
-    <!-- Source: server-scripts/Monster.cs:2952-2965 — kills of isHunt creatures record Hunting progress and can increase skill. -->
-    <p class="text-muted-foreground">
-      Only kills of Hunting-journal targets can increase Hunting skill.
-    </p>
-    <!-- Source: server-scripts/Monster.cs:2981-2982,3049-3055 — non-boss hunt targets add half the Hunting fraction to item drops above Normal quality; bosses use a different loot path. -->
-    <p class="text-muted-foreground">
-      Against non-boss hunt targets, each 10% Hunting adds 5 percentage points
-      to the drop chance of items above Normal quality. Other targets and
-      Normal-quality items get no bonus.
-    </p>
-  </section>
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header
+      ><Card.Title class="text-xl">How hunting works</Card.Title></Card.Header
+    >
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/Monster.cs:2952-2960,3051-3055 — hunting mastery gain chance starts at 70%, and each 10% Hunting adds 5 percentage points to qualifying item drops. -->
+      <GuideFacts
+        facts={[
+          { value: "70%", label: "Skill gain chance at 0%" },
+          { value: "+5 pp", label: "Rare drop chance per 10% Hunting" },
+        ]}
+      />
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/Monster.cs:2952-2965 — only isHunt kills advance Hunting. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Choose a Hunting-journal target.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Other creatures do not increase Hunting skill.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/Monster.cs:2952-2965,3049-3055 — kills can raise skill and non-boss hunt drops above Normal gain a chance bonus. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Defeat the target.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Kills can raise Hunting skill and improve qualifying item drops.
+            </p>
+          </div>
+        </li>
+      </ol>
+      <!-- Source: server-scripts/Monster.cs:2981-2982,3049-3055 — bosses use a separate drop path, and only above-Normal items on non-boss hunt targets get the bonus. -->
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>
+          The drop bonus applies only to items above Normal quality from
+          non-boss hunt targets.
+        </li>
+      </ul>
+    </Card.Content>
+  </Card.Root>
 </div>

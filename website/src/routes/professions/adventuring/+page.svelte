@@ -3,6 +3,8 @@
   import { SvelteMap } from "svelte/reactivity";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -689,24 +691,58 @@
     {/if}
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">Adventurers' Guild Assignments</h2>
-    <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — every taskgiver uses the shared npcAdventurerReference quest list. -->
-    <p class="text-muted-foreground">
-      Every taskgiver offers quests from the same queue. Changing NPCs does not
-      change today's available quests.
-    </p>
-    <!-- Source: server-scripts/Utils.cs:601-610; server-scripts/PlayerQuests.cs:50-51,227,445-446 — the first level-eligible quest not completed in the past 24 hours is offered. -->
-    <p class="text-muted-foreground">
-      The taskgiver offers the first quest at or below your character's level
-      that your character has not completed in the last 24 hours. Completing it
-      starts its 24-hour cooldown and advances the queue.
-    </p>
-    {#if data.profession.achievement_id}
-      <AchievementLink
-        achievementId={data.profession.achievement_id}
-        achievementName={data.profession.achievement_name}
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title class="text-xl">How adventuring works</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/Utils.cs:601-630; server-scripts/PlayerQuests.cs:220-229,445-446 — UTC day seeds the shared quest order and completed assignments have a 24-hour cooldown. -->
+      <GuideFacts
+        facts={[
+          { value: "00:00 UTC", label: "Queue changes" },
+          { value: "24 h", label: "Completed quest cooldown" },
+        ]}
       />
-    {/if}
-  </section>
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/Utils.cs:601-630 — taskgivers share one daily shuffled quest list. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Talk to any taskgiver.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              All taskgivers use the same quest order. Changing NPCs does not
+              change the offer.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/Utils.cs:601-610; server-scripts/PlayerQuests.cs:220-229 — the first eligible quest not completed in the past 24 hours is offered. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Accept the first eligible quest.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Your level must meet its recommended level. Recently completed
+              quests are skipped.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/PlayerQuests.cs:445-446; server-scripts/Utils.cs:601-610 — completion records its UTC time, so the next eligible quest becomes available. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">3</span>
+          <div>
+            <p class="font-medium">Complete the quest to advance the queue.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              That quest cannot be offered again for 24 hours.
+            </p>
+          </div>
+        </li>
+      </ol>
+      {#if data.profession.achievement_id}
+        <AchievementLink
+          achievementId={data.profession.achievement_id}
+          achievementName={data.profession.achievement_name}
+        />
+      {/if}
+    </Card.Content>
+  </Card.Root>
 </div>

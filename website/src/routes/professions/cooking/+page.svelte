@@ -3,6 +3,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import * as Card from "$lib/components/ui/card";
+  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
@@ -430,17 +432,50 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Cooking works</h2>
-    <!-- Source: server-scripts/Player.cs:13503-13505,13529-13542,13565-13568 — baking checks inventory space and consumes ingredients before the success roll; failed bakes give no food. -->
-    <p class="text-muted-foreground">
-      Baking needs room for the food. A failed bake still consumes the
-      ingredients and gives no food.
-    </p>
-    <!-- Source: server-scripts/FoodItem.cs:21-35 — a food buff replaces the active buff in the same nonempty category. -->
-    <p class="text-muted-foreground">
-      Eating food replaces an active food buff in the same category instead of
-      stacking with it.
-    </p>
-  </section>
+  <Card.Root id="how-it-works" class="bg-muted/30">
+    <Card.Header
+      ><Card.Title class="text-xl">How cooking works</Card.Title></Card.Header
+    >
+    <Card.Content class="space-y-6">
+      <!-- Source: server-scripts/Utils.cs:565-574 — tier I food always succeeds, while tier II starts at 40% success with no Cooking skill. -->
+      <GuideFacts
+        facts={[
+          { value: "100%", label: "Tier I success chance" },
+          { value: "40%", label: "Tier II chance at 0% Cooking" },
+        ]}
+      />
+      <ol class="divide-y divide-border text-sm">
+        <!-- Source: server-scripts/Player.cs:13495-13518 — baking checks ingredients and room for the resulting food. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+          <span class="tabular-nums text-muted-foreground">1</span>
+          <div>
+            <p class="font-medium">Bring ingredients to an oven.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              Leave room for the food before baking.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/Player.cs:13529-13542,13565-13568 — ingredients are removed before the cooking success roll. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">2</span>
+          <div>
+            <p class="font-medium">Bake the food.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              A failed bake consumes the ingredients and gives no food.
+            </p>
+          </div>
+        </li>
+        <!-- Source: server-scripts/FoodItem.cs:21-35 — eating replaces a buff in the same nonempty category. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+          <span class="tabular-nums text-muted-foreground">3</span>
+          <div>
+            <p class="font-medium">Eat the food for its buff.</p>
+            <p class="mt-0.5 text-muted-foreground">
+              A new food buff replaces an active buff in the same category.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </Card.Content>
+  </Card.Root>
 </div>
