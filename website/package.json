@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "clean:workerd": "pkill -f 'workerd serve --binary --experimental' || true",
+    "clean:workerd": "pkill -P 1 -f 'workerd serve --binary --experimental' || true",
     "predev": "pnpm publish:mods && pnpm clean:workerd && pnpm exec tsx scripts/build-search-index.ts && node scripts/compress-databases.mjs",
     "dev": "vite dev",
     "build": "vite build",
