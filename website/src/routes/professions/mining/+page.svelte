@@ -2,8 +2,6 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -30,10 +28,10 @@
   const ROMAN = ["I", "II", "III", "IV", "V"];
 
   const sections = [
-    { id: "calculator", label: "Success by skill" },
+    { id: "how-it-works", label: "How Mining works" },
     { id: "pickaxes", label: "Pickaxes" },
+    { id: "calculator", label: "Success by skill" },
     { id: "ores", label: "Ores" },
-    { id: "how-it-works", label: "How mining works" },
     { id: "where", label: "Where to mine" },
     { id: "gems", label: "Bonus gems" },
     { id: "uses", label: "What ore is for" },
@@ -113,6 +111,109 @@
       >
     </p>
   </ProfessionHeader>
+
+  <section id="how-it-works" class="space-y-4">
+    <h2 class="text-xl font-semibold">How Mining and Pickaxes work</h2>
+    <ol class="divide-y divide-border">
+      <!-- Source: server-scripts/Player.cs:TryGetSelectedPickaxe — the gather needs a
+           Pickaxe-category weapon that is not broken. -->
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+        <span class="text-sm tabular-nums text-muted-foreground">1</span>
+        <div>
+          <p class="font-medium">Carry a pickaxe.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            On nodes where your success chance is below 100%, a higher-quality
+            <a
+              href="#pickaxes"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >pickaxe</a
+            > can improve it. A broken pickaxe does not work.
+          </p>
+          <!-- Source: server-scripts/Player.cs:9551-9556; server-scripts/PlayerInventory.cs:105-119 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            If no usable pickaxe is selected, the game selects the best one in
+            your inventory.
+          </p>
+        </div>
+      </li>
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — below 0.2 the node
+           refuses the attempt outright.
+           Source: server-scripts/PlayerInventory.cs:DecreaseDurabilityPickaxe — one
+           durability is spent before the success roll, so a failure still costs it. -->
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+        <span class="text-sm tabular-nums text-muted-foreground">2</span>
+        <div>
+          <p class="font-medium">Click a node.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            If your chance is less than {MINING_SUCCESS_FLOOR * 100}%, you
+            cannot mine the node. Each try costs 1 durability. This includes the
+            tries that fail.
+          </p>
+        </div>
+      </li>
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+        <span class="text-sm tabular-nums text-muted-foreground">3</span>
+        <div>
+          <p class="font-medium">Collect the ore.</p>
+          <!-- Source: server-scripts/GatherItem.cs:383-405,444-455,547-563 — success depletes the node and can give ore and a separate random drop. -->
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            A successful mine gives ore and a separate chance at a <a
+              href="#gems"
+              class="text-blue-600 hover:underline dark:text-blue-400">gem</a
+            >. Only a successful attempt depletes the node. A failure leaves it
+            ready.
+          </p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section id="pickaxes" class="space-y-4">
+    <h2 class="text-xl font-semibold">Pickaxes</h2>
+    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
+      You need 40% Mining to use a Rusty Pickaxe on a Tier V node. A Draconium
+      Pickaxe works at any skill.
+    </p>
+    <div class="overflow-x-auto rounded-lg border">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b bg-muted/50 text-left text-xs">
+            <th class="whitespace-nowrap p-3 font-medium">Pickaxe</th>
+            <th class="whitespace-nowrap p-3 text-right font-medium"
+              >Tier V at 100 Mining</th
+            >
+            <th class="p-3 font-medium">Where to get it</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each data.pickaxes as pickaxe (pickaxe.id)}
+            <tr class="border-b align-top last:border-0">
+              <td class="whitespace-nowrap p-3">
+                <ItemLink
+                  itemId={pickaxe.id}
+                  itemName={pickaxe.name}
+                  tooltipHtml={pickaxe.tooltip_html}
+                  imageAvailable={data.itemIconPaths[pickaxe.id]}
+                />
+              </td>
+              <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — on tier 4 the
+                   chance is quality × 0.05 plus skill × 0.5. -->
+              <td class="p-3 text-right tabular-nums"
+                >{miningSuccessPercent(4, pickaxe.quality, 100).toFixed(0)}%</td
+              >
+              <td class="p-3">
+                <ItemSourceLinks
+                  groups={pickaxe.source_groups}
+                  itemId={pickaxe.id}
+                  limit={2}
+                />
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <section id="calculator" class="space-y-4">
     <h2 class="text-xl font-semibold">Success by skill</h2>
@@ -211,53 +312,6 @@
     </div>
   </section>
 
-  <section id="pickaxes" class="space-y-4">
-    <h2 class="text-xl font-semibold">Pickaxes</h2>
-    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      You need 40% Mining to use a Rusty Pickaxe on a Tier V node. A Draconium
-      Pickaxe works at any skill.
-    </p>
-    <div class="overflow-x-auto rounded-lg border">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b bg-muted/50 text-left text-xs">
-            <th class="whitespace-nowrap p-3 font-medium">Pickaxe</th>
-            <th class="whitespace-nowrap p-3 text-right font-medium"
-              >Tier V at 100 Mining</th
-            >
-            <th class="p-3 font-medium">Where to get it</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each data.pickaxes as pickaxe (pickaxe.id)}
-            <tr class="border-b align-top last:border-0">
-              <td class="whitespace-nowrap p-3">
-                <ItemLink
-                  itemId={pickaxe.id}
-                  itemName={pickaxe.name}
-                  tooltipHtml={pickaxe.tooltip_html}
-                  imageAvailable={data.itemIconPaths[pickaxe.id]}
-                />
-              </td>
-              <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — on tier 4 the
-                   chance is quality × 0.05 plus skill × 0.5. -->
-              <td class="p-3 text-right tabular-nums"
-                >{miningSuccessPercent(4, pickaxe.quality, 100).toFixed(0)}%</td
-              >
-              <td class="p-3">
-                <ItemSourceLinks
-                  groups={pickaxe.source_groups}
-                  itemId={pickaxe.id}
-                  limit={2}
-                />
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  </section>
-
   <section id="ores" class="space-y-4">
     <h2 class="text-xl font-semibold">Ores</h2>
     <div class="overflow-x-auto rounded-lg border">
@@ -325,62 +379,6 @@
       </table>
     </div>
   </section>
-
-  <Card.Root id="how-it-works" class="bg-muted/30">
-    <Card.Header
-      ><Card.Title class="text-xl">How mining works</Card.Title></Card.Header
-    >
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/GatherItem.cs:353-366 — success below 20% blocks a mine, and accepted attempts spend one pickaxe durability before the roll. -->
-      <GuideFacts
-        facts={[
-          { value: "20%", label: "Minimum chance to mine" },
-          { value: "1", label: "Pickaxe durability per try" },
-        ]}
-      />
-      <ol class="divide-y divide-border text-sm">
-        <!-- Source: server-scripts/Player.cs:TryGetSelectedPickaxe; server-scripts/Player.cs:9551-9556; server-scripts/PlayerInventory.cs:105-119 — a working pickaxe is required, and invalid selection falls back to the best usable inventory pickaxe. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-          <span class="tabular-nums text-muted-foreground">1</span>
-          <div>
-            <p class="font-medium">Carry a working pickaxe.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              A higher-quality <a
-                href="#pickaxes"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >pickaxe</a
-              > can improve your chance. If none is selected, the game picks your
-              best working one.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/GatherItem.cs:353-366 — below 20% the node refuses an attempt; accepted attempts spend one durability before the success roll. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">2</span>
-          <div>
-            <p class="font-medium">Mine a ready node.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Below the minimum chance, you cannot try. A failed try still costs
-              one pickaxe durability.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/GatherItem.cs:383-405,444-455,547-563 — success depletes the node and can give ore and a separate random drop. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">3</span>
-          <div>
-            <p class="font-medium">Collect the ore.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Success gives ore and a separate chance at a <a
-                href="#gems"
-                class="text-blue-600 hover:underline dark:text-blue-400">gem</a
-              >. Only success depletes the node.
-            </p>
-          </div>
-        </li>
-      </ol>
-    </Card.Content>
-  </Card.Root>
 
   <section id="where" class="space-y-4">
     <h2 class="text-xl font-semibold">Where to mine</h2>

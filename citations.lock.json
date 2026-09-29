@@ -575,10 +575,6 @@
       "sha256": "5b227352fd43852807c2a575515bab7504e76f42ff6a1f4e389d808590c35f0d",
       "span": 87
     },
-    "Combat.cs:781-788": {
-      "sha256": "37e5b049b126a94618e4bd4e1adb4803426b6f6ff5932beb027b58bdbbd5268a",
-      "span": 8
-    },
     "Combat.cs:796-820": {
       "sha256": "b6d15db3cf8fb6b14c0b1b582f990d72ba8f8cd460466ce52d596f11adfd48eb",
       "span": 25
@@ -855,10 +851,6 @@
     "Database.cs:3118-3120": {
       "sha256": "23734c664b5a574cd9d409f800c556456df6ef660a79f41055ea390d89fe33ec",
       "span": 3
-    },
-    "Database.cs:3339-3346": {
-      "sha256": "f94b4aac6c74257fcaa8a6e1d08496f5f9c12eec1f6def2edef386c4763b225b",
-      "span": 8
     },
     "Database.cs:425-435": {
       "sha256": "2d70b7ae188d1b620a1b9dff437ede00223ffdf9162fcf934e8119c89bfd4eb9",
@@ -1258,10 +1250,6 @@
       "sha256": "03d41b35710c44491b6ef94fb84ba838ff67d11ee4221be4fed174837e177717",
       "span": 23
     },
-    "GatherItem.cs:353-366": {
-      "sha256": "20edde16f95df4221a6af6b4e243d693ef6cdc37a36339a2776e813dc70ce80c",
-      "span": 14
-    },
     "GatherItem.cs:360-365": {
       "sha256": "bcb1d92f36bd9dd29b1b164c18e75177d9a4866aa6b5f8fb2c331cbd07ca02ce",
       "span": 6
@@ -1293,10 +1281,6 @@
     "GatherItem.cs:446-451": {
       "sha256": "68d18237bded5e0a94412d38449e23b3de2e581bb6574ea3e367f8eb13c3708e",
       "span": 6
-    },
-    "GatherItem.cs:448-451": {
-      "sha256": "8589e297f196c40ec85f83c142e6e950225c8c27647e9aadb98ea46a913c2dcf",
-      "span": 4
     },
     "GatherItem.cs:547-563": {
       "sha256": "7a9be68a766ca334cf505384f739aa80ffa90c9c055dc7ffb5581ccd834620b2",
@@ -1807,10 +1791,6 @@
     "Monster.cs:2952-2965": {
       "sha256": "4bdf60d680d2cb93423ac1aa91178f6b0184aef1bd20f95bf3d74a49cd1fc5e9",
       "span": 14
-    },
-    "Monster.cs:2967-2979": {
-      "sha256": "f2823af85afba894a8cdca42cbd0f144401e667ce1f55e648c36ed77ec35c300",
-      "span": 13
     },
     "Monster.cs:2981-2982": {
       "sha256": "d8d93065d6c5181de4796eb45c813100fc0cce8cfd2f1e4283d617f0082fcef2",
@@ -3174,6 +3154,9 @@
       "sha256": "90e340b9d9fafabd3419ef9f5d0722584396e70d480fe47c4b035922daafa99e",
       "span": 9
     },
+    "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
+      "span": 0
+    },
     "PlayerLooting.cs:108-147": {
       "sha256": "347aa557e6785f2e7c3a2611607bf27802a6dea5639879021db20988058c0181",
       "span": 40
@@ -3601,6 +3584,10 @@
     "RelicItem.cs:54-58": {
       "sha256": "f48ee9e88980571d042d5e447e16044c5f1cf9a079facc83e0e41427ae0977a2",
       "span": 5
+    },
+    "ScriptableItem.cs:23-31": {
+      "sha256": "8129691a9f700a521aa7c2b0fc9d0fe0fa7574fa9f98695f047ec43b50aa9704",
+      "span": 9
     },
     "ScriptableItem.cs:47": {
       "sha256": "062626187f5bf897164e783144c81703879d5861c3cc0941d205a0d2c13cf65c",

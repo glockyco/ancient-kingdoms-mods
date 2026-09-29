@@ -2,8 +2,6 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
@@ -21,9 +19,9 @@
 
   const mechanics = PROFESSION_MECHANICS.radiant_seeker;
   const sections = [
+    { id: "how-it-works", label: "How Radiant Seeker works" },
     { id: "chance", label: "Aether chance" },
     { id: "locations", label: "Spark locations" },
-    { id: "how-it-works", label: "How radiant seeking works" },
     { id: "combat", label: "Aether in combat" },
   ];
 
@@ -86,6 +84,55 @@
       >
     </p>
   </ProfessionHeader>
+
+  <section id="how-it-works" class="space-y-4">
+    <h2 class="text-xl font-semibold">How Radiant Sparks work</h2>
+    <ol class="divide-y divide-border">
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+        <span class="text-sm tabular-nums text-muted-foreground">1</span>
+        <div>
+          <p class="font-medium">Find a Radiant Spark.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            The world has {data.resource.node_count} sparks in {data.resource
+              .zones.length}
+            zones. You do not need a tool.
+          </p>
+        </div>
+      </li>
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer -->
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+        <span class="text-sm tabular-nums text-muted-foreground">2</span>
+        <div>
+          <p class="font-medium">Gather the spark.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            A spark has no success check. Each gather gives {data.resource
+              .gathering_exp}
+            experience and can increase Radiant Seeker.
+          </p>
+        </div>
+      </li>
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer -->
+      <!-- Source: server-scripts/GatherItem.cs:Update -->
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+        <span class="text-sm tabular-nums text-muted-foreground">3</span>
+        <div>
+          <p class="font-medium">See whether you find Radiant Aether.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            Each spark has a 5% to 25% chance to give Radiant Aether, depending
+            on your Radiant Seeker skill. The spark returns after a random
+            {mechanics.respawnSeconds[0]} to {mechanics.respawnSeconds[1].toLocaleString()}
+            seconds (1 minute 40 seconds to 1 hour).
+          </p>
+        </div>
+      </li>
+    </ol>
+    <!-- Source: server-scripts/ScriptableItem.cs:23-31 — sellPrice, sellable, and tradable are separate item fields. -->
+    <!-- Source: exported-data/items.json — radiant_aether has sell_price 15 and tradable false. -->
+    <p class="text-muted-foreground">
+      Radiant Aether cannot be traded to another player, but it can be sold to a
+      merchant.
+    </p>
+  </section>
 
   <section id="chance" class="space-y-4">
     <h2 class="text-xl font-semibold">Aether chance</h2>
@@ -182,53 +229,6 @@
       {/each}
     </div>
   </section>
-
-  <Card.Root id="how-it-works" class="bg-muted/30">
-    <Card.Header
-      ><Card.Title class="text-xl">How radiant seeking works</Card.Title
-      ></Card.Header
-    >
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/GatherItem.cs:379-382; server-scripts/Player.cs:HasRadiantAether — sparks return in 100–3,600 seconds, and combat checks only slots 0–23. -->
-      <GuideFacts
-        facts={[
-          { value: "100–3,600 s", label: "Spark return time" },
-          { value: "24", label: "Inventory slots usable in combat" },
-        ]}
-      />
-      <ol class="divide-y divide-border text-sm">
-        <!-- Source: server-scripts/GatherItem.cs:343-365,379-382 — sparks have no tool or skill gate, and an attempt starts the respawn timer. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
-          <span class="tabular-nums text-muted-foreground">1</span>
-          <div>
-            <p class="font-medium">Gather a Radiant Spark.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              You need no tool. The spark begins its return timer when you
-              gather it.
-            </p>
-          </div>
-        </li>
-        <!-- Source: server-scripts/GatherItem.cs:448-451 — each spark rolls for Radiant Aether based on Radiant Seeker skill. -->
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
-          <span class="tabular-nums text-muted-foreground">2</span>
-          <div>
-            <p class="font-medium">Check whether you found Radiant Aether.</p>
-            <p class="mt-0.5 text-muted-foreground">
-              Higher Radiant Seeker skill increases the chance. The spark
-              returns even if you find none.
-            </p>
-          </div>
-        </li>
-      </ol>
-      <!-- Source: server-scripts/Player.cs:HasRadiantAether — combat checks only the first 24 inventory slots. -->
-      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-        <li>
-          Keep Aether in the first 24 inventory slots for combat. Backpack-added
-          slots do not count.
-        </li>
-      </ul>
-    </Card.Content>
-  </Card.Root>
 
   <section id="combat" class="space-y-4">
     <h2 class="text-xl font-semibold">Radiant Aether in combat</h2>
