@@ -45,9 +45,7 @@
         <span class="block"
           >A player with two active mercenaries uses three of the five places.</span
         >
-        <span class="block"
-          >Combat pets, familiars, and friendly followers use none.</span
-        >
+        <span class="block">Companions, familiars, and pets use none.</span>
       </p>
       <!-- Source: server-scripts/PlayerParty.cs:91-140 — capacity counts active mercenary references without checking health. -->
       <p>An active mercenary still uses a place while dead.</p>
