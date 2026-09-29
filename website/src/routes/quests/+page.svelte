@@ -10,14 +10,12 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import * as Card from "$lib/components/ui/card";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatClassName } from "$lib/utils/classes";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
-  import GuideFacts from "$lib/components/GuideFacts.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import { QUEST_FLAG_CONFIG } from "$lib/utils/quests";
 
@@ -326,108 +324,158 @@
     class="bg-muted/30"
   />
 
-  <Card.Root id="how-quests-work" class="bg-muted/30">
-    <Card.Header>
-      <Card.Title class="text-xl">How quests work</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-6">
-      <!-- Source: server-scripts/UINpcQuests.cs:170-174; server-scripts/UIQuests.cs:124-140 — 15 active quests, 3 tracked. server-scripts/PlayerQuests.cs:220-235,41-60,445-446; server-scripts/Utils.cs:601-630 — repeatables reopen after 8 hours, guild assignments after 24 hours. -->
-      <GuideFacts
-        facts={[
-          { value: "15", label: "Active quests at once" },
-          { value: "3", label: "Tracked on screen" },
-          { value: "8 h", label: "Repeatable quest cooldown (real time)" },
-          { value: "24 h", label: "Guild assignment cooldown (real time)" },
-        ]}
-      />
+  <section id="how-quests-work" class="space-y-4">
+    <h2 class="text-xl font-semibold">How quests work</h2>
+    <ol class="divide-y divide-border">
+      <!-- Source: server-scripts/PlayerQuests.cs:236-253 — any one completed predecessor meets the prerequisite. -->
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
+        <span class="text-sm tabular-nums text-muted-foreground">1</span>
+        <div>
+          <p class="font-medium">Accept the quest.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            If it lists several prerequisite quests, completing any one of them
+            is enough.
+          </p>
+        </div>
+      </li>
+      <!-- Source: server-scripts/UINpcQuests.cs:170-174; server-scripts/UIQuests.cs:124-140 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+        <span class="text-sm tabular-nums text-muted-foreground">2</span>
+        <div>
+          <p class="font-medium">Track up to 3 quests.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            You can have 15 active quests. Tracking a fourth untracks the oldest
+            one, which stays active.
+          </p>
+        </div>
+      </li>
+      <!-- Source: server-scripts/PlayerQuests.cs:463-469 — abandoning removes the quest record, including its progress. -->
+      <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+        <span class="text-sm tabular-nums text-muted-foreground">3</span>
+        <div>
+          <p class="font-medium">Complete the objective.</p>
+          <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+            What counts depends on the quest type. Abandoning a quest deletes
+            its progress.
+          </p>
+        </div>
+      </li>
+    </ol>
+  </section>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="text-left text-muted-foreground">
-            <tr class="border-b">
-              <th class="py-2 pr-4 font-medium">Type</th>
-              <th class="py-2 pr-4 font-medium">What counts</th>
-              <th class="py-2 font-medium">At turn-in</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y">
-            <!-- Source: server-scripts/PlayerQuests.cs:295-309,322-349; server-scripts/KillQuest.cs:16-47 — kill and location progress advances only for accepted quests. -->
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Kill" /></td>
-              <td class="py-2 pr-4">Kills after you accept the quest</td>
-              <td class="py-2 text-muted-foreground">Nothing is taken</td>
-            </tr>
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Discover" /></td>
-              <td class="py-2 pr-4">Reaching the place after you accept</td>
-              <td class="py-2 text-muted-foreground">Nothing is taken</td>
-            </tr>
-            <!-- Source: server-scripts/PlayerQuests.cs:333-349; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Find" /></td>
-              <td class="py-2 pr-4">Done as soon as you accept</td>
-              <td class="py-2 text-muted-foreground"
-                >Talk to the completion NPC</td
-              >
-            </tr>
-            <!-- Source: server-scripts/GatherQuest.cs:21-26,63-74; server-scripts/PlayerQuests.cs:100-108 — Gather quests record items collected after acceptance. -->
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Gather" /></td>
-              <td class="py-2 pr-4">Items you gather after you accept</td>
-              <td class="py-2 text-muted-foreground"
-                >You need not keep the items</td
-              >
-            </tr>
-            <!-- Source: server-scripts/GatherInventoryQuest.cs:15-96 — Have checks current items without removal; Deliver removes them. -->
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Have" /></td>
-              <td class="py-2 pr-4"
-                >Items, keys, or equipped items you hold, even from before</td
-              >
-              <td class="py-2 text-muted-foreground">You keep the items</td>
-            </tr>
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Deliver" /></td>
-              <td class="py-2 pr-4">Items you hold, even from before</td>
-              <td class="py-2 text-muted-foreground"
-                >The items are taken. An equipped required item is taken if
-                inventory has too few. Keys stay.</td
-              >
-            </tr>
-            <!-- Source: server-scripts/EquipItemQuest.cs:9-19 — fulfilled while every listed item is equipped. -->
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Equip" /></td>
-              <td class="py-2 pr-4">Every listed item equipped at once</td>
-              <td class="py-2 text-muted-foreground">You keep the items</td>
-            </tr>
-            <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13297-13312 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
-            <tr>
-              <td class="py-2 pr-4"><QuestTypeBadge type="Brew" /></td>
-              <td class="py-2 pr-4">Potions you brew after you accept</td>
-              <td class="py-2 text-muted-foreground">Nothing is taken</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <section id="quest-types" class="space-y-4">
+    <h2 class="text-xl font-semibold">Quest types</h2>
+    <div class="overflow-x-auto rounded-md border bg-muted/30">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b">
+            <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
+              >Type</th
+            >
+            <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
+              >What counts</th
+            >
+            <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
+              >At turn-in</th
+            >
+          </tr>
+        </thead>
+        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+          <!-- Source: server-scripts/PlayerQuests.cs:295-309,322-349; server-scripts/KillQuest.cs:16-47 — kill and location progress advances only for accepted quests. -->
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Kill" /></td>
+            <td class="px-4 py-2">Kills after you accept</td>
+            <td class="px-4 py-2 text-muted-foreground">Nothing is taken</td>
+          </tr>
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Discover" /></td>
+            <td class="px-4 py-2">Reaching the place after you accept</td>
+            <td class="px-4 py-2 text-muted-foreground">Nothing is taken</td>
+          </tr>
+          <!-- Source: server-scripts/PlayerQuests.cs:333-349; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Find" /></td>
+            <td class="px-4 py-2">Done as soon as you accept</td>
+            <td class="px-4 py-2 text-muted-foreground"
+              >Talk to the completion NPC</td
+            >
+          </tr>
+          <!-- Source: server-scripts/GatherQuest.cs:21-26,63-74; server-scripts/PlayerQuests.cs:100-108 — Gather quests record items collected after acceptance. -->
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Gather" /></td>
+            <td class="px-4 py-2">Items you gather after you accept</td>
+            <td class="px-4 py-2 text-muted-foreground"
+              >You need not keep the items</td
+            >
+          </tr>
+          <!-- Source: server-scripts/GatherInventoryQuest.cs:15-96 — Have checks current items without removal; Deliver removes them, taking an equipped required item when inventory has too few, and keeps stored keys. -->
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Have" /></td>
+            <td class="px-4 py-2"
+              >Items, keys, or equipped items you hold, even from before</td
+            >
+            <td class="px-4 py-2 text-muted-foreground">You keep the items</td>
+          </tr>
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Deliver" /></td>
+            <td class="px-4 py-2">Items you hold, even from before</td>
+            <td class="px-4 py-2 text-muted-foreground"
+              >The items are taken. An equipped required item is taken if
+              inventory has too few. Keys stay.</td
+            >
+          </tr>
+          <!-- Source: server-scripts/EquipItemQuest.cs:9-19 — fulfilled while every listed item is equipped. -->
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Equip" /></td>
+            <td class="px-4 py-2">Every listed item equipped at once</td>
+            <td class="px-4 py-2 text-muted-foreground">You keep the items</td>
+          </tr>
+          <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13297-13312 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"><QuestTypeBadge type="Brew" /></td>
+            <td class="px-4 py-2">Potions you brew after you accept</td>
+            <td class="px-4 py-2 text-muted-foreground">Nothing is taken</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-        <!-- Source: server-scripts/PlayerQuests.cs:236-253 — any one completed predecessor meets the prerequisite. -->
-        <li>
-          If a quest lists several prerequisites, any one of them is enough.
-        </li>
-        <li>
-          Tracking a fourth quest untracks the oldest one. It stays active.
-        </li>
-        <!-- Source: server-scripts/PlayerQuests.cs:463-469 — abandoning removes the quest record, including its progress. -->
-        <li>Abandoning a quest deletes its progress.</li>
-        <li>
-          <a
-            href="/professions/adventuring#how-it-works"
-            class="text-blue-600 hover:underline dark:text-blue-400"
-            >Adventurers' Guild assignments</a
-          > change each UTC day.
-        </li>
-      </ul>
-    </Card.Content>
-  </Card.Root>
+  <section id="repeatable-quests" class="space-y-4">
+    <h2 class="text-xl font-semibold">Repeatable quests</h2>
+    <!-- Source: server-scripts/PlayerQuests.cs:220-235,41-60,445-446; server-scripts/Utils.cs:601-630 — completed ordinary repeatables reopen after eight real hours; guild assignments have a 24-hour cooldown and a UTC-day selection. -->
+    <div class="overflow-x-auto rounded-md border bg-muted/30">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b">
+            <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
+              >Quest</th
+            >
+            <th class="h-10 whitespace-nowrap px-4 text-left font-medium"
+              >Available again</th
+            >
+          </tr>
+        </thead>
+        <tbody class="[&>tr:nth-child(even)>td]:bg-muted/30">
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2">Repeatable quest</td>
+            <td class="px-4 py-2">8 real hours after you complete it</td>
+          </tr>
+          <tr class="border-b last:border-0">
+            <td class="px-4 py-2"
+              ><a
+                href="/professions/adventuring#how-it-works"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >Adventurers' Guild assignment</a
+              ></td
+            >
+            <td class="px-4 py-2"
+              >24 real hours after you complete it, if offered. The offer
+              changes each UTC day.</td
+            >
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>

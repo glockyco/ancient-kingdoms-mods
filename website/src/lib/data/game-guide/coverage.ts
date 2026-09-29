@@ -328,7 +328,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
       "602706f20b7c4864f2721996e2fe1a7fe3a05a274dea1ba0e01c4cac6de2deef",
   },
   "world.quest-objectives": {
-    href: "/quests#how-quests-work",
+    href: "/quests#quest-types",
     reviewedBodySha256:
       "cffaedeb765df3c692e0b726d2c4c9f432dc0ef4a7b066334c505256f0d16122",
   },
