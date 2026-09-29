@@ -4,6 +4,10 @@
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
+    "AlchemyQuest.cs:13-16": {
+      "sha256": "180b374927f184d7fce2a8a212347b2263d6ee99f5e8bcd6c80a3b94aa032e39",
+      "span": 4
+    },
     "AreaBuffSkill.cs": {
       "span": 0
     },
@@ -474,10 +478,6 @@
     "Combat.cs:346-358": {
       "sha256": "bb25d7d4364fd1a5847b5c78b090b6dc14c46a0c14bbc929e044d90bd1ef536b",
       "span": 13
-    },
-    "Combat.cs:357": {
-      "sha256": "121c3ed29a22197b465fbdcf8532aa6007a873835ce00257973b21b2a0b5caf4",
-      "span": 1
     },
     "Combat.cs:368": {
       "sha256": "20b24f96befb9116ae8b849e36eacb7adc02719885389736470591fde9dc665b",
@@ -974,6 +974,10 @@
       "sha256": "01053c877f24ad6c6e71361e61050ddca4b752b1edad27b6eb76d1f7824aba1d",
       "span": 28
     },
+    "EquipItemQuest.cs:9-19": {
+      "sha256": "d4d02cf5cadd5589ab5d45803bbf837660ef4d229cb4b06a4e3469204c4cc61a",
+      "span": 11
+    },
     "Equipment.cs:230-247": {
       "sha256": "109e58a359a60963e30e02eaddf6ad926ce9ed4f998d35a6e2e330a4cf3e7454",
       "span": 18
@@ -1186,10 +1190,6 @@
     "GameManager.cs:OnBackpackKeyPressed": {
       "span": 0
     },
-    "GatherInventoryQuest.cs:15-54": {
-      "sha256": "89cb785f795e4ee14ec531fba0fba7017137258ef1f309670b8b356406037ac4",
-      "span": 40
-    },
     "GatherInventoryQuest.cs:15-96": {
       "sha256": "10ca0de8a2c61ef7c572998755fd1e1b6d177c34fa2339e8eaadd8f3c3412fa7",
       "span": 82
@@ -1201,10 +1201,6 @@
     "GatherInventoryQuest.cs:47": {
       "sha256": "c9c3a14131184f4302211992badd2aa2cee796fed5ed3ced8e436b0d44d27602",
       "span": 1
-    },
-    "GatherInventoryQuest.cs:57-62": {
-      "sha256": "6eeb90533ed0c304dfae17baf772bbd5b817e9b0a3714a9b314a9664193e18d4",
-      "span": 6
     },
     "GatherItem.cs:1098-1116": {
       "sha256": "8d3380110eb9950dd8533e070db89ff64030ef045cda6721d8fc707ff1542c02",
@@ -2616,10 +2612,6 @@
       "sha256": "ff431ab9b9ac255938850f18d6c69943fc4f6b4d8637f5ed32b73c6c0bee6d36",
       "span": 40
     },
-    "Player.cs:3347-3364": {
-      "sha256": "29efaa803e3c194a546285deb5e69030d5ae006e50b534e6c18feae620599150",
-      "span": 18
-    },
     "Player.cs:3357-3394": {
       "sha256": "556582287f0149b76554b01aa2c4868c077c073cea79868f902845609562e182",
       "span": 38
@@ -2765,9 +2757,6 @@
       "span": 34
     },
     "Player.cs:DestroyLivingMercenariesOnOwnerDeath": {
-      "span": 0
-    },
-    "Player.cs:EventRefractoryPeriod": {
       "span": 0
     },
     "Player.cs:GetMercenaryResurrectionPrice": {
@@ -3223,10 +3212,6 @@
       "sha256": "ae406ef040f907c6573dec1f3d45560a34925bde9d819962e4b683b49a017c6a",
       "span": 13
     },
-    "PlayerQuests.cs:220-235": {
-      "sha256": "37fde636d09cbc0c58feb1d0c42aca69b65ba0da76ffd62c0a217fc462aaa1e1",
-      "span": 16
-    },
     "PlayerQuests.cs:227": {
       "sha256": "67809006d7f2583c4d2354fdfb52aac8820c223297604f292f21b078a3b59d39",
       "span": 1
@@ -3254,10 +3239,6 @@
     "PlayerQuests.cs:394-396": {
       "sha256": "72c22f045342371d34749dcaf9727bf9ccd61e0a413106531ac92cb6ef426dd4",
       "span": 3
-    },
-    "PlayerQuests.cs:41-60": {
-      "sha256": "542aeb00308e004bb60a2616eea46154f56e72b2fc6ddfb83df1d57fba509f0d",
-      "span": 20
     },
     "PlayerQuests.cs:440-443": {
       "sha256": "f3077a44ae6458a3c9d44cc57e4e42ed6352405f41d2d956cdeeaa8b6f8b744c",
@@ -4629,10 +4610,6 @@
     "Utils.cs:601-610": {
       "sha256": "b712e00620053aecec0d863da09a028584b68cfeab79ba8188ac2663ae864288",
       "span": 10
-    },
-    "Utils.cs:601-630": {
-      "sha256": "0caf16d6cbe61040e61d6195a0c07d1e9642d2b32ab3793cc6723b5930ca0895",
-      "span": 30
     },
     "Utils.cs:614-630": {
       "sha256": "6cd6ae938b9b3d53e19c74ab64ec911b03622bff6ecf51554735bfc91d1bec5e",
