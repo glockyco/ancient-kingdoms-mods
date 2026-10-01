@@ -6,3 +6,12 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - workerd
+
+# deck.gl 9.3 accepts luma.gl 9.4, which fails its shader assertions. Keep
+# luma.gl on the release line that the pinned deck.gl suite was built for.
+overrides:
+  "@luma.gl/core": 9.3.6
+  "@luma.gl/engine": 9.3.6
+  "@luma.gl/gltf": 9.3.6
+  "@luma.gl/shadertools": 9.3.6
+  "@luma.gl/webgl": 9.3.6
