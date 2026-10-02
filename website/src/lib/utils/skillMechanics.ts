@@ -243,6 +243,9 @@ function mercDamageFormula(
   skill: SkillDetailView,
   typeMonster: string,
 ): DamageFormulaKind {
+  // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — a Bard mercenary also skips magic damage and scales the base with its own Charisma.
+  if (skill.is_bard_final_cadence) return "bard_final_cadence";
+
   // Source: TargetDamageSkill.cs — is_manaburn check precedes everything
   if (skill.is_manaburn_skill) return "manaburn";
 
@@ -501,7 +504,12 @@ export function computeMechanicsSpec(
         const label = `${tm} mercenary`;
         // Source: TargetBuffSkill.cs:419 — `caster is Pet { isMercenary: not false }` → pet3.wisdom.value
         // Source: AreaBuffSkill.cs:25 — same merc branch, no Ranger×3
-        buffPairs.push({ label, bonusAttrSource: "merc_wis", isAreaBuff });
+        // Source: server-scripts/BardMercenarySkills.cs:RefreshAura — a Bard mercenary's song buff carries the mercenary's Charisma.
+        buffPairs.push({
+          label,
+          bonusAttrSource: hasBardScaling ? "merc_cha" : "merc_wis",
+          isAreaBuff,
+        });
       }
       if (hasOtherCaster && (playerClasses.length > 0 || mercPets.length > 0)) {
         const parts: string[] = [];

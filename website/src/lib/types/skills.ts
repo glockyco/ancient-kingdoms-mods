@@ -324,6 +324,7 @@ export type BuffBonusAttrSource =
   | "player_ranger_wis" // WIS×3 (TargetBuffSkill only, not AreaBuffSkill) — e.g. ancestral_spirits
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
+  | "merc_cha" // Bard mercenary songs multiply eligible buff values by the mercenary's Charisma. Source: server-scripts/BardMercenarySkills.cs:RefreshAura
   | "player_wis_con_avg" // round((WIS+CON)/2) for ordinary player-cast mercenary buffs. Source: AreaBuffSkill.cs:52
   | "player_wis_con_cha_half" // round((WIS+CON+CHA)/2) for Leadership. Source: AreaBuffSkill.cs:14-17,52
   | "player_level" // casterLevel × 10 — relic skills (AreaBuffSkill.isRelic). Source: AreaBuffSkill.cs:34-37

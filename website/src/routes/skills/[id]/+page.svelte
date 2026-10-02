@@ -219,7 +219,9 @@
   // every eligible effect through their Charisma multiplier.
   const hasAttributeScaledBonuses = $derived(
     data.mechanicsSpec.buffContexts.some(
-      (ctx) => ctx.bonusAttrSource === "player_cha",
+      (ctx) =>
+        ctx.bonusAttrSource === "player_cha" ||
+        ctx.bonusAttrSource === "merc_cha",
     ) ||
       hasNonZeroField(skill.health_max_bonus) ||
       hasNonZeroField(skill.defense_bonus) ||
@@ -2197,10 +2199,14 @@
             <p class="font-mono">
               Final healing = base healing &times; critical multiplier
             </p>
+            <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply and BardFinalCadenceSkill.cs:HealNearbyAllies — a Bard mercenary uses its own Charisma and critical chance. -->
             <p class="text-muted-foreground">
+              {#if usedByBardMercenary}
+                <span class="block">CHA is the mercenary's Charisma.</span>
+              {/if}
               <span class="block"
-                >The Bard's critical chance determines one roll shared by every
-                recipient.</span
+                >The {usedByBardMercenary ? "mercenary's" : "Bard's"} critical chance
+                determines one roll shared by every recipient.</span
               >
               <span class="block"
                 >Damage uses the same Charisma multiplier before the usual magic
@@ -2430,7 +2436,8 @@
                   <p class="text-muted-foreground">
                     This buff receives no attribute bonus.
                   </p>
-                {:else if ctx.bonusAttrSource === "player_cha"}
+                {:else if ctx.bonusAttrSource === "player_cha" || ctx.bonusAttrSource === "merc_cha"}
+                  {@const mercenarySong = ctx.bonusAttrSource === "merc_cha"}
                   <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, BuffSkill.cs:ScaleFearResistChanceBonus, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
                   {#if hasBardFlatDamageScaling}
                     <p class="font-mono">
@@ -2463,10 +2470,21 @@
                       {/if}
                     </p>
                   {/if}
-                  {#if hasNonZeroField(skill.healing_per_second_bonus)}
+                  {#if mercenarySong || hasNonZeroField(skill.healing_per_second_bonus)}
+                    <!-- Source: server-scripts/BardMercenarySkills.cs:RefreshAura — a Bard mercenary's song buff carries the mercenary's Charisma and critical chance. -->
                     <p class="text-muted-foreground">
-                      Each healing tick can critically heal for 1.5&times; at
-                      the Bard's critical chance.
+                      {#if mercenarySong}
+                        <span class="block"
+                          >CHA is the mercenary's Charisma.</span
+                        >
+                      {/if}
+                      {#if hasNonZeroField(skill.healing_per_second_bonus)}
+                        <span class="block"
+                          >Each healing tick can critically heal for 1.5&times;
+                          at the {mercenarySong ? "mercenary's" : "Bard's"} critical
+                          chance.</span
+                        >
+                      {/if}
                     </p>
                   {/if}
                 {:else}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { SkillDetailView } from "$lib/types/skills";
+import type { SkillDetailView, SkillPet } from "$lib/types/skills";
 import { computeMechanicsSpec } from "./skillMechanics";
 
 function bardSkill(overrides: Partial<SkillDetailView>): SkillDetailView {
@@ -22,6 +22,14 @@ function bardSkill(overrides: Partial<SkillDetailView>): SkillDetailView {
     ...overrides,
   } as SkillDetailView;
 }
+
+const bardMercenary: SkillPet = {
+  id: "bard_mercenary",
+  name: "Bard Mercenary",
+  is_mercenary: true,
+  is_familiar: false,
+  type_monster: "Bard",
+};
 
 describe("Bard mechanics contexts", () => {
   test("uses Charisma for scaled buff songs", () => {
@@ -121,6 +129,49 @@ describe("Bard mechanics contexts", () => {
 
     expect(spec.damageContexts).toEqual([
       { casterLabels: ["Bard (player)"], formula: "bard_final_cadence" },
+    ]);
+  });
+
+  test("uses the mercenary's Charisma for Bard mercenary songs", () => {
+    const spec = computeMechanicsSpec(
+      bardSkill({
+        id: "mercenary_anthem_of_focus",
+        player_classes: [],
+        is_mercenary_skill: true,
+        accuracy_bonus: { base_value: 0.01, bonus_per_level: 0.005 },
+      }),
+      [bardMercenary],
+      false,
+    );
+
+    expect(spec.buffContexts).toEqual([
+      {
+        casterLabels: ["Bard mercenary"],
+        bonusAttrSource: "merc_cha",
+        isAreaBuff: true,
+      },
+    ]);
+  });
+
+  test("uses the Final Cadence formula for a Bard mercenary", () => {
+    const spec = computeMechanicsSpec(
+      bardSkill({
+        id: "mercenary_final_cadence",
+        player_classes: [],
+        skill_type: "area_damage",
+        is_bard_song: false,
+        scales_with_charisma: false,
+        is_bard_final_cadence: true,
+        is_mercenary_skill: true,
+        damage_type: "Magic",
+        damage: { base_value: 150, bonus_per_level: 150 },
+      }),
+      [bardMercenary],
+      false,
+    );
+
+    expect(spec.damageContexts).toEqual([
+      { casterLabels: ["Bard mercenary"], formula: "bard_final_cadence" },
     ]);
   });
 });

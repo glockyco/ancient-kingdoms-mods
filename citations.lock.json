@@ -143,6 +143,12 @@
       "sha256": "812da40a949f73961b26023954c90e72f8924dee872b48149a2b083fdf36eff0",
       "span": 2
     },
+    "BardFinalCadenceSkill.cs:Apply": {
+      "span": 0
+    },
+    "BardFinalCadenceSkill.cs:HealNearbyAllies": {
+      "span": 0
+    },
     "BardMercenarySkills.cs:60-104": {
       "sha256": "98e2e613a8e964444d4ec0ffaa7a587c605204427b261c9ace97c7b8408fab6b",
       "span": 45
