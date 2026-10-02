@@ -589,6 +589,16 @@ damage taken = damage − damage prevented</pre>
               class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS×3 × 0.004, 5.0))</pre>
           </div>
         </div>
+        <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply — Final Cadence heals by ScaleBardValue of healsHealth and the caster's Charisma, with no Wisdom bonus. -->
+        <p class="text-sm text-muted-foreground mt-2">
+          <span class="block">Final Cadence does not receive this bonus.</span>
+          <span class="block"
+            >Its healing is round(base heal × songPower), with songPower from <a
+              href="#buffs"
+              class="underline hover:text-foreground">Bard Song Scaling</a
+            >.</span
+          >
+        </p>
       </div>
 
       <div>
@@ -660,6 +670,12 @@ damage taken = damage − damage prevented</pre>
 wholeNumberValue = round(baseValue × songPower)
 percentageValue = baseValue × songPower</pre>
         <p class="text-sm text-muted-foreground mt-2">
+          <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardMercenarySkills.cs:RefreshAura — a song buff from a Bard or Bard mercenary carries that singer's Charisma. -->
+          <span class="block"
+            >CHA is the Charisma of the Bard or Bard mercenary that sings the
+            song.</span
+          >
+          <span class="block">Wisdom does not change Bard songs.</span>
           <span class="block"
             >Each Charisma point adds 0.1% of the base value.</span
           >
@@ -700,6 +716,10 @@ percentageValue = baseValue × songPower</pre>
 
       <div>
         <h3 class="font-semibold mb-2">Wisdom Bonuses by Buff Effect</h3>
+        <!-- Source: server-scripts/Buff.cs:ScaleWithCharisma and Skills.cs:GetFinalHealOverTime — Charisma-scaled song values skip the Wisdom additions. -->
+        <p class="text-sm text-muted-foreground mb-2">
+          Bard songs do not receive these bonuses.
+        </p>
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
@@ -766,16 +786,23 @@ percentageValue = baseValue × songPower</pre>
               </tr>
             </thead>
             <tbody>
+              <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardMercenarySkills.cs:RefreshAura — song buffs carry Charisma as their attribute. -->
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4 text-sm">Other players</td><td
+                ><td class="py-1 pr-4 text-sm">Bard songs</td><td
                   class="py-1 text-muted-foreground"
-                  >Targeted and area buffs use Wisdom</td
+                  >Use Charisma instead of Wisdom</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Player Rangers</td><td
                   class="py-1 text-muted-foreground"
                   >Targeted buffs use triple Wisdom. Area buffs use Wisdom</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4 text-sm">Other players</td><td
+                  class="py-1 text-muted-foreground"
+                  >Targeted and area buffs use Wisdom</td
                 ></tr
               >
               <tr class="border-b border-border/40"
@@ -791,9 +818,9 @@ percentageValue = baseValue × songPower</pre>
                 ></tr
               >
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4 text-sm">Mercenary buffs</td><td
-                  class="py-1 text-muted-foreground">Use Wisdom</td
-                ></tr
+                ><td class="py-1 pr-4 text-sm"
+                  >Mercenary buffs other than songs</td
+                ><td class="py-1 text-muted-foreground">Use Wisdom</td></tr
               >
               <tr
                 ><td class="py-1 pr-4 text-sm">Monster and NPC buffs</td><td
@@ -901,9 +928,10 @@ percentageValue = baseValue × songPower</pre>
             >Cacophony instead gains a rounded 0.75 damage per non-negative
             Charisma point.</span
           >
+          <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — a Charisma-scaled debuff returns GetCharisma before the Strength, Dexterity, and Intelligence branches. -->
           <span class="block"
-            >Strength, Dexterity, and Intelligence do not improve Bard debuff
-            songs.</span
+            >Bard debuff songs use Charisma instead of Strength, Dexterity, or
+            Intelligence.</span
           >
           <span class="block"
             >Charisma does not increase Song of Varensea's Movement Speed
@@ -923,6 +951,11 @@ percentageValue = baseValue × songPower</pre>
               </tr>
             </thead>
             <tbody>
+              <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — Charisma-scaled debuffs use Charisma. -->
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Bard debuff songs</td>
+                <td class="py-1 text-muted-foreground">CHA</td>
+              </tr>
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4"
                   >Melee debuffs (reduce physical defense)</td

@@ -124,9 +124,12 @@
         in place.
       </p>
       <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:133-240 — Bard songs use Charisma scaling for eligible effect values. -->
+      <!-- Source: server-scripts/Skills.cs:GetFinalHealOverTime and BuffSkill.cs:GetDebuffPowerAttribute — songs skip the Wisdom healing bonus and use Charisma before the Intelligence branch. -->
       <p>
+        Each Charisma point adds 0.1% song power, up to +200%.<br />
+        Wisdom and Intelligence do not change songs.<br />
         <MechanicsLink section="combat#buffs">Buff Scaling</MechanicsLink> gives the
-        Charisma formulas.<br />
+        Charisma formulas and exceptions.<br />
         See the <EntityLink href="/classes/bard" name="Bard class page" /> for skills
         and ranks.
       </p>

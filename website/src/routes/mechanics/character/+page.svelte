@@ -128,6 +128,10 @@
                   >Defense and Magic Resist buffs each gain round(Wisdom ×
                   0.15).</span
                 >
+                <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
+                <span class="block"
+                  >Bard songs and Final Cadence use Charisma instead of Wisdom.</span
+                >
                 <span class="block"
                   ><MechanicsLink section="combat#buffs"
                     >See the buff scaling rates</MechanicsLink
@@ -144,7 +148,13 @@
               <td class="p-2">
                 <span class="block">Improves purchase and sale prices.</span>
                 <span class="block"
-                  >Bard effects gain +0.1% power per point, up to +200% power.</span
+                  >Bard songs and Final Cadence gain +0.1% power per point, up
+                  to +200% power.</span
+                >
+                <span class="block"
+                  ><MechanicsLink section="combat#buffs"
+                    >See Bard Song Scaling</MechanicsLink
+                  > for the effects it does not change.</span
                 >
               </td>
             </tr>

@@ -187,9 +187,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   bard: {
     attributes: {
-      text: "Each point of Charisma adds 0.1% song power, up to +200%, and lowers the chance that a target resists your charm by 0.02 percentage points.",
+      text: "Each point of Charisma adds 0.1% song power, up to +200%, and lowers the chance that a target resists your charm by 0.02 percentage points. Wisdom and Intelligence do not change your songs or Final Cadence.",
       source:
-        "Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; server-scripts/BardCharmSongSkill.cs:66-71 — Charisma scales songs and reduces charm resistance",
+        "Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; server-scripts/BardCharmSongSkill.cs:66-71; server-scripts/BardSongSkill.cs:Apply; server-scripts/BardFinalCadenceSkill.cs:Apply — Charisma scales songs and Final Cadence and reduces charm resistance",
     },
     equipment: {
       text: "Your off-hand holds your instrument. Songs need it, so you cannot use a two-handed weapon.",

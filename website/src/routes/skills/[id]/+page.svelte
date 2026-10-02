@@ -2470,23 +2470,21 @@
                       {/if}
                     </p>
                   {/if}
-                  {#if mercenarySong || hasNonZeroField(skill.healing_per_second_bonus)}
-                    <!-- Source: server-scripts/BardMercenarySkills.cs:RefreshAura — a Bard mercenary's song buff carries the mercenary's Charisma and critical chance. -->
-                    <p class="text-muted-foreground">
-                      {#if mercenarySong}
-                        <span class="block"
-                          >CHA is the mercenary's Charisma.</span
-                        >
-                      {/if}
-                      {#if hasNonZeroField(skill.healing_per_second_bonus)}
-                        <span class="block"
-                          >Each healing tick can critically heal for 1.5&times;
-                          at the {mercenarySong ? "mercenary's" : "Bard's"} critical
-                          chance.</span
-                        >
-                      {/if}
-                    </p>
-                  {/if}
+                  <!-- Source: server-scripts/BardMercenarySkills.cs:RefreshAura — a Bard mercenary's song buff carries the mercenary's Charisma and critical chance. -->
+                  <!-- Source: server-scripts/BardSongSkill.cs:Apply, Buff.cs:ScaleWithCharisma, and Skills.cs:GetFinalHealOverTime — a song buff carries Charisma, and Charisma-scaled heals skip GetHealingPerSecondBuffBonus. -->
+                  <p class="text-muted-foreground">
+                    {#if mercenarySong}
+                      <span class="block">CHA is the mercenary's Charisma.</span
+                      >
+                    {/if}
+                    <span class="block">Wisdom does not change this song.</span>
+                    {#if hasNonZeroField(skill.healing_per_second_bonus)}
+                      <span class="block"
+                        >Each healing tick can critically heal for 1.5&times; at
+                        the {mercenarySong ? "mercenary's" : "Bard's"} critical chance.</span
+                      >
+                    {/if}
+                  </p>
                 {:else}
                   {#if ctx.bonusAttrSource === "player_ranger_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 — Ranger → wisdom.value * 3 -->
@@ -2768,6 +2766,10 @@
                         multiplier
                       </p>
                     {/if}
+                    <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — a Charisma-scaled debuff returns GetCharisma before the Intelligence branch. -->
+                    <p class="text-muted-foreground">
+                      Intelligence does not change this song.
+                    </p>
                   {:else}
                     <p class="font-mono">
                       Attribute contribution = {ctx.bonusAttrKind === "str"

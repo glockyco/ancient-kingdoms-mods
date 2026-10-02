@@ -188,6 +188,9 @@
       "sha256": "63bb65436f29cbf1b10d093a74d078b31d44eee8338b21b3e5e81c6eda02d275",
       "span": 40
     },
+    "BardSongSkill.cs:Apply": {
+      "span": 0
+    },
     "BardSongSkill.cs:TryApplyAuraBuff": {
       "span": 0
     },
@@ -263,6 +266,9 @@
     "BuffSkill.cs:73-83": {
       "sha256": "8b32d6149a986adc58660e3c21b38464076bc60972581c5e59be8429643d9afa",
       "span": 11
+    },
+    "BuffSkill.cs:GetDebuffPowerAttribute": {
+      "span": 0
     },
     "BuffSkill.cs:ScaleFearResistChanceBonus": {
       "span": 0
@@ -3804,6 +3810,9 @@
     "Skills.cs:990-1014": {
       "sha256": "79d824e79aa36ef98811dffae5ae0803be2a5bde84fac11e1966c0624eab5bb0",
       "span": 25
+    },
+    "Skills.cs:GetFinalHealOverTime": {
+      "span": 0
     },
     "Skills.cs:hasDoubleExp": {
       "span": 0
