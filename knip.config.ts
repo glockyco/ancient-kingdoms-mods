@@ -30,8 +30,8 @@ const config: KnipConfig = {
         "src/routes/**/+{page,layout,error,server}.{ts,svelte}",
         "src/routes/**/+{page,layout,error}.server.ts",
         "src/app.{ts,html,css,d.ts}",
-        // scripts/ includes snapshot-mechanics.mjs, documented in
-        // .agent/rules/website-mechanics.md and invoked directly with node.
+        // scripts/ includes snapshot-mechanics.mjs, documented in the README
+        // and invoked directly with node.
         "scripts/*.{mjs,ts}",
         "wrangler.toml",
         "wrangler.redirect.toml",

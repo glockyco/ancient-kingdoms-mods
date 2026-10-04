@@ -60,6 +60,14 @@ The website is a mostly prerendered SvelteKit app on Cloudflare, with a dynamic 
 - UI components built around bits-ui-compatible patterns.
 - Deployment through Wrangler, a Cloudflare Worker, and Cloudflare Static Assets.
 
+Conventions the code does not show on its own:
+
+- SQL lives in `src/lib/queries/`. Only `src/lib/database-assets.ts` imports the database archives, and its header explains why.
+- Detail pages render all rows in the prerendered HTML. Overview pages may paginate. Pages work without JavaScript.
+- Mechanics pages have text snapshots. After an intended visible change, run `pnpm build` and `node scripts/snapshot-mechanics.mjs --update` in `website/`, review the changed text, and commit the snapshots with the change. Visible mechanics text has one statement per line and no semicolons.
+- The game is 2D. The map uses game X and negated game Y, converted once in `src/lib/queries/map.server.ts`.
+- `src/lib/map/marker-registry.ts` owns every marker layer's precedence and presentation. Layers render in this order: terrain and zones, paths and ranges, ordinary markers, important markers, then selection and hover highlights.
+
 ## Mods
 
 The mod catalog includes player-facing utilities, data exporters, and development inspection tools. Several mods change local game state, such as teleporting or forcing respawns, so use them only in environments where that is appropriate.
@@ -100,6 +108,16 @@ dotnet test tests/BetterBestiary.Tests
 ```
 
 Port the formatter change until the test passes. A pre-commit hook fails the commit when the corpus is stale.
+
+### Runtime notes
+
+- Game behavior comes from `server-scripts/`, not from the near-empty `Assembly-CSharp.dll` stub.
+- Il2CppInterop exposes a game field as a property, so reflection by field name finds nothing. Read the property first.
+- `GetComponents<T>()` returns every match wrapped as `T`. All six attribute components report `PlayerAttribute`, so tell them apart by the member that holds them.
+- A plain server field reads as zero on a client of a remote server. A mod that reads one branches on `NetworkServer.active` and says which source its figures come from.
+- A refused engine call returns normally and changes nothing. Read the value, act, then read it again.
+- Times defined on the server, such as respawn deadlines, use the synchronized server time: the network manager's offset added to Mirror's network time.
+- A mod marked `[HarmonyDontPatchAll]` calls `HarmonyInstance.PatchAll()` once during initialization.
 
 ## Requirements
 
@@ -337,13 +355,16 @@ dotnet run --project build-tool build
 pnpm check:citations
 pnpm check:redactions
 pnpm check:clean
-scripts/check-agent-docs.sh
-
-# When changing the agent-guidance checker
-python3 scripts/check_agent_docs_test.py
 ```
 
-Run website build checks for prerender or asset changes. `pnpm check` also checks Python types, unused Python code, unused website exports, and agent guidance. `pnpm check:citations` requires the `server-scripts` symlink. Git hooks are configured in `lefthook.yml`: pre-commit jobs cover formatting, linting, type checks, tests, mod builds, citations, redactions, and generated-data drift for the staged paths. The commit-message hook checks Conventional Commit syntax.
+Run website build checks for prerender or asset changes. `pnpm check` also checks Python types, unused Python code, and unused website exports. `pnpm check:citations` requires the `server-scripts` symlink. Git hooks are configured in `lefthook.yml`: pre-commit jobs cover formatting, linting, type checks, tests, mod builds, citations, redactions, and generated-data drift for the staged paths. The commit-message hook checks Conventional Commit syntax.
+
+## Rules for changes
+
+- Develop in the primary checkout. `Local.props`, `config.toml`, the `server-scripts` symlink, and `website/data/` exist only there.
+- Fail when required game data, files, or runtime objects are missing. A default is valid only where the field's contract defines absence. `FieldDefaultValueHookFix` is the one sanctioned exception, and its source explains why. Do not add a second.
+- Change generated output through its producer, then regenerate. Exports, the database, published images and tiles, and `server-scripts` are gitignored. The tracked exceptions are hand-maintained: `exported-data/static_data.json` and `mods/DataExporter/Curated/classes.json`, whose copy in `exported-data/` the exporter overwrites.
+- Change `citations.lock.json` and `redactions.lock.json` only through `compendium citations` and `compendium redactions`. Each entry records a verification, so a hand edit claims one that never happened. Review the claim behind a changed citation before re-anchoring it.
 
 ## Game mechanics accuracy
 
@@ -402,6 +423,10 @@ uv run compendium tiles
 ```
 
 If tile generation fails with boss-position screenshot validation errors, the screenshot set is incomplete or blank around known boss/world-boss terrain. Fix the loaded mod set or game state, rerun `dotnet run --project build-tool export --screenshots`, then rerun `uv run compendium tiles`.
+
+### A mod change does nothing in the game
+
+A Harmony patch that no longer applies, an unregistered command, and a dead coroutine all fail without an error. Read `MelonLoader/Latest.log`, and confirm the change in the running game before reporting it as working.
 
 ### Automated export says no characters are available
 

@@ -35,7 +35,7 @@ Audit palette utilities, direct color literals, dynamic class construction, and 
 - [Larger type may expand dense tables and charts] → Check overflow and wrapping at 1440×900 and 390×844 before completing each file; preserve visible values.
 - [A general lint rule can reject meaningful quality, map, or chart colors] → Scope the checker to semantic interface roles and record narrow exceptions beside the rule.
 - [A primitive migration can change rendering or static HTML] → Compare accessible names, keyboard behavior, and HTML without JavaScript for each changed route.
-- [Mechanics presentation edits can change snapshot text] → Keep formulas unchanged and follow `rule://website-mechanics` for intentional visible-text changes.
+- [Mechanics presentation edits can change snapshot text] → Keep formulas unchanged and follow the README's mechanics snapshot workflow for intentional visible-text changes.
 
 ## Migration Plan
 

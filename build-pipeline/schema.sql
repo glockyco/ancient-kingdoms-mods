@@ -589,6 +589,10 @@ CREATE INDEX idx_item_source_entries_level ON item_source_entries(source_level);
 -- MONSTERS
 -- =============================================================================
 
+-- One row per monster template. Its scalar stat columns hold one spawn's values at one
+-- level. Each spawn's level, health, defense, and resistances are in monster_spawns.
+-- Derived combat stats such as block chance come from
+-- website/src/lib/utils/monster-stats.ts, which follows server-scripts/Combat.cs.
 CREATE TABLE monsters (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
