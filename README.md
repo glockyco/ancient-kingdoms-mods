@@ -44,7 +44,7 @@ The compendium is a fan-made wiki, interactive world map, and game database. It 
 | `server-scripts`   | Gitignored symlink to the current decompiled server scripts under `.decompiled/`.                        |
 | `.decompiled/`     | Gitignored game-build snapshots created by `scripts/update-server-scripts.sh`.                           |
 | `tests/`           | C# test projects.                                                                                        |
-| `docs/`            | Contributor guides, game defect reports, and combat-model evidence.                                      |
+| `docs/`            | Reports of defects in the game itself, written for its developer.                                        |
 | `openspec/`        | Current behavior specifications and active changes.                                                     |
 | `verification/`    | Combat fixtures and recorded game observations.                                                          |
 | `scripts/`         | Repository checks and server-script snapshot updates.                                                   |
@@ -89,6 +89,17 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 | `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                                                           |
 
 `build-tool` discovers mod projects under `mods/` recursively, so a mod can be built even if it is not listed in `AncientKingdomsMods.sln`.
+
+### BetterBestiary skill summaries
+
+BetterBestiary formats skill effects in the game with `mods/BetterBestiary/Skills/SkillEffectFormatter.cs`, a C# port of the website's `formatSkillEffect`, so it can describe skills from game versions that no export has seen. The TypeScript formatter stays the source of truth. A parity test holds the port string-identical over every exported skill, using a corpus baked from `compendium.db`. After re-exporting and rebuilding the data, or after changing `formatSkillEffect`, regenerate the corpus and run the test:
+
+```bash
+pnpm --filter website gen:skill-effect-parity
+dotnet test tests/BetterBestiary.Tests
+```
+
+Port the formatter change until the test passes. A pre-commit hook fails the commit when the corpus is stale.
 
 ## Requirements
 
@@ -169,6 +180,10 @@ dotnet run --project build-tool export --update
 ```
 
 The automated exporter requires at least one existing character because it selects the first character before entering the world and running exports.
+
+An exporter reads authoritative runtime data: direct fields and explicit references, with `TryCast<T>()` where the subtype matters. It never infers a value from a name, a threshold, or proximity. Absence follows each field's contract: `null` for a missing reference, `""` for missing text, and a declared default for a value type only where the contract defines one. `"unknown"` is valid only where the domain defines it, such as an unresolved zone. A value that is derived rather than read, such as zone containment, is documented at its exporter. JSON property names are snake_case.
+
+Under CrossOver, the game writes to macOS paths through Wine's `Z:` drive. Manifest paths stay relative to `exported-data/`.
 
 ### Build compendium data
 
@@ -264,7 +279,22 @@ dotnet run --project build-tool verify --fixture A-class-warrior
 
 `verify` measures each committed fixture in its own game session against a fresh scratch database and writes `verification/observations/<name>.json`. It does not compare observations with the engine; the website test suite does. Fixture-file loading rejects unsupported JSON fields, including nested fields, before launch. Planner build-envelope and scenario parsing also reject unsupported fields instead of discarding them.
 
-Fixture outer schema 3 separates `buildData` from `execution`. The `build` envelope holds version identifiers. `buildData` contains the declared character, companions, consumables, and source provenance. `execution` contains the seed, window, repetitions, target, actions, and measurement protocol. See [Combat model verification](docs/combat-model/verification.md) for the observation format, comparison protocol, and verdicts.
+Fixture outer schema 3 separates `buildData` from `execution`. The `build` envelope holds version identifiers. `buildData` contains the declared character, companions, consumables, and source provenance. `execution` contains the seed, window, repetitions, target, actions, and measurement protocol.
+
+Compare the observations with the engine from the repository root. The first command prints one verdict per fixture. The second is the strict gate that a claim about the whole domain needs: a current passing observation for every fixture, and coverage of every handler, damage school, class, and companion archetype.
+
+```bash
+pnpm --filter website test src/lib/planner/verification/verification.db.test.ts
+pnpm --filter website test:combat-verification
+```
+
+- `pass`: every compared quantity meets its criterion.
+- `fail`: a quantity is outside its criterion. Inspect the fixture, the observation, the game code, and the engine before changing either side. Never widen a tolerance to make a fixture pass.
+- `inconclusive`: nothing failed, but a random quantity has fewer samples than the fixture's minimum. Record more windows.
+- `stale`: the observation came from a different game assembly than the current planner data. Record it again on the current build.
+- `missing`: the fixture has no observation yet.
+
+Stale and missing fixtures do not block a game update.
 
 The command takes installation and port locks before changing scratch state. It backs up the existing player database and sidecars, then confirms the runtime launch identity and exact scratch path.
 Scratch paths with traversal or symbolic links are refused. An absent player database remains an absence to check after the run.

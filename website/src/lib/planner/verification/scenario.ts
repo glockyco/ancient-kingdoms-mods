@@ -9,7 +9,11 @@ import type { SimulationResult } from "../simulate";
 import { effectiveCastTime, playerSkillRefractory } from "../timing";
 import type { FixtureRecord, ObservationRecord } from "./corpus";
 
-/** The replicate count every fixture comparison uses. See docs/combat-model/evidence.md. */
+/**
+ * The replicate count every fixture comparison uses. 128 is the smallest power of two whose
+ * standard error stays below one percent of the mean, measured with the D-class-warrior fixture
+ * on Ancient Kingdoms 0.9.32.4: 2.59 % at 16, 1.10 % at 64, 0.78 % at 128.
+ */
 export const FIXTURE_REPLICATES = 128;
 
 export interface TargetReadback {

@@ -14,4 +14,4 @@
 ## 3. Prove and document
 
 - [ ] 3.1 Run a real `build-tool export` in the game and inspect the manifest, image hashes, class-combat rows, and locale. Build the resulting session with `compendium build`; verify a second failed export cannot change that session or the last successful database.
-- [ ] 3.2 Update `docs/data-export-guide.md`, configuration examples, and the game-version update procedure with separate session and curated paths. Verify examples match actual command output; remove obsolete tracked flat export copies without adding compatibility fallbacks.
+- [ ] 3.2 Update the exporter notes in `README.md` and the `export-game-data` skill, configuration examples, and the game-version update procedure with separate session and curated paths. Verify examples match actual command output; remove obsolete tracked flat export copies without adding compatibility fallbacks.

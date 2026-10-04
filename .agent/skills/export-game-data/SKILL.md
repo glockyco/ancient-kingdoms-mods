@@ -4,12 +4,9 @@ description: Apply the runtime discovery traps, the curated class exception, and
 ---
 # Export game data
 
-`docs/data-export-guide.md` owns field authority, absence values, and visual scope. Read it before
-adding a field. It separates a value the game states from one that only looks true. An exporter that
-infers from a name, a threshold or proximity publishes a confident wrong answer.
-
-This file carries what that guide does not: the ways runtime discovery misleads, and the one exporter
-that is deliberately unlike the others.
+The exporter rules, which data counts as authoritative and what an absent value looks like, are in
+the README under "Export game data". This skill adds the ways runtime discovery misleads, the one
+exporter that is deliberately unlike the others, and where each visual asset comes from.
 
 ## Runtime discovery
 
@@ -29,6 +26,34 @@ compares the two. The check exists because a curated value that restates a game 
 
 Do not extend `ClassExporter` to cover the pairing. It exists only as button state in the creator, so an
 exporter would have to drive the interface one race at a time.
+
+## Visual assets
+
+| Domain/kind | Source |
+|---|---|
+| `achievement/icon` | Steam achievement icon downloaded during export |
+| `chest/primary` | `GatherItem.readySprite` |
+| `class/icon` | `Player.classIcon` |
+| `gathering_resource/icon` | `GatherItem.journalIcon` |
+| `item/icon` | `ScriptableItem.image`, or the runtime `FantasyHeroes` icon collection for a missing item sprite |
+| `item/pet` | The creature prefab of a friendly pet follower item |
+| `item/treasure_map` | `TreasureMapItem.imageLocation` |
+| `monster/primary` | Root `SpriteRenderer`, or a body composite under `Monster.gameObject/Front` |
+| `npc/primary` | Root `SpriteRenderer`, or a body composite under `Npc.gameObject/Front` |
+| `pet/icon` | `Pet.portraitIcon` |
+| `pet/primary` | The pet's root renderer or `Front` body composite |
+| `skill/icon` | `ScriptableSkill.image` |
+| `zone/thumbnail` | A crop of the stitched world screenshot based on zone bounds |
+
+DataExporter writes source PNGs and their relative paths to `visual_assets.json`. `compendium build`
+records them in SQLite and publishes WebP images.
+
+Do not map entities by static Unity sprite names or use UnityPy images as fallback art. The runtime item
+icon collection is the one exception, because it resolves an explicit item path to a loaded sprite.
+Humanoid monsters and NPCs expose body sprites under `Front` instead of a root renderer. The composite
+excludes UI renderers such as health bars, labels, speech bubbles, and shadows. Boss portraits and
+bestiary images are not used. When an entity has several rows for the same `(domain, entity_id, kind)`,
+review the ambiguity instead of picking one.
 
 ## Registration and output
 
