@@ -29,10 +29,10 @@ export type EntityType =
  * Base interface for all map entities
  */
 export interface MapEntity {
-  id: string;
+  id: string; // spawn ID for a monster, entity ID for every other kind; detail routes need the entity ID
   type: EntityType;
   name: string;
-  position: [number, number] | null; // [x, y] in game coordinates, null for entities without spawns
+  position: [number, number] | null; // deck coordinates: game X and negated game Y (the game is 2D, Z is always 0), converted in queries/map.server.ts; null without spawns
   zoneId: string | null; // null for entities without spawns
   zoneName: string;
 }
