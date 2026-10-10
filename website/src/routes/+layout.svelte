@@ -14,12 +14,21 @@
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { onMount } from "svelte";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
+  import SiteHeader from "$lib/components/site-header/SiteHeader.svelte";
 
   let { children } = $props();
 
   const websiteNode = buildWebSite();
   const organizationNode = buildOrganization();
   const personNode = buildPerson();
+
+  // The map fills the viewport with its own sidebar, search, and controls,
+  // all placed against the screen edges, so it keeps the whole screen.
+  const isMap = $derived(
+    page.url.pathname === "/map" || page.url.pathname.startsWith("/map/"),
+  );
+  // The home page shows its own large search field.
+  const isHome = $derived(page.url.pathname === "/");
 
   onMount(() => {
     // Allow forcing theme via URL parameter (e.g. ?theme=dark for embeds)
@@ -80,6 +89,9 @@
 <ModeWatcher />
 <LoadingOverlay />
 <SearchPalette />
+{#if !isMap}
+  <SiteHeader search={!isHome} />
+{/if}
 <main>
   {@render children()}
 </main>

@@ -54,8 +54,6 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { serializeJsonLd } from "$lib/seo/jsonld";
-  import SupportButton from "$lib/components/SupportButton.svelte";
-  import SearchButton from "$lib/components/search/SearchButton.svelte";
 
   let { items }: BreadcrumbProps = $props();
 
@@ -87,7 +85,7 @@
     `script>`}
 </svelte:head>
 
-<div class="mb-4 flex items-center justify-between gap-3">
+<div class="mb-4">
   <nav aria-label="Breadcrumb" class="min-w-0">
     <ol
       class="flex min-w-0 items-center gap-2 overflow-hidden text-sm text-muted-foreground"
@@ -119,9 +117,4 @@
       {/each}
     </ol>
   </nav>
-
-  <div class="flex shrink-0 items-center gap-3">
-    <SearchButton />
-    <SupportButton compact iconRight hideLabelOnMobile class="shrink-0" />
-  </div>
 </div>

@@ -64,6 +64,17 @@
   --stat-mana: oklch(0.57 0.13 255);
   --stat-atk: oklch(0.62 0.16 36);
   --stat-spell: oklch(0.55 0.15 305);
+
+  /* Gold of the game's title art. Text and rules use --brand-gold, which is
+     darker on light surfaces so it keeps at least 4.5:1. Filled controls use
+     the fill pair in both themes. */
+  --brand-gold: oklch(0.52 0.11 70);
+  --brand-gold-fill: oklch(0.82 0.12 82);
+  --brand-gold-fill-foreground: oklch(0.24 0.04 70);
+
+  /* The night colour that surrounds the title-screen art. It is part of the
+     artwork, so it does not change with the theme. */
+  --title-night: #07051d;
 }
 
 .dark {
@@ -111,6 +122,8 @@
   --stat-mana: oklch(0.72 0.14 255);
   --stat-atk: oklch(0.74 0.16 40);
   --stat-spell: oklch(0.72 0.15 305);
+
+  --brand-gold: oklch(0.83 0.11 82);
 }
 
 @theme inline {
@@ -168,6 +181,10 @@
   --color-stat-mana: var(--stat-mana);
   --color-stat-atk: var(--stat-atk);
   --color-stat-spell: var(--stat-spell);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-fill: var(--brand-gold-fill);
+  --color-brand-gold-fill-foreground: var(--brand-gold-fill-foreground);
+  --color-title-night: var(--title-night);
 }
 
 @layer base {
