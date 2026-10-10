@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HotRepl.Control;
 using HotReplCommands.Dtos;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -110,10 +111,33 @@ namespace HotReplCommands.Tests
             var props = descriptor.ArgsSchema["properties"] as JObject;
             Assert.NotNull(props);
             Assert.Equal(
-                new[] { "focalPointsPath", "includeCreatures", "zoneIds" },
+                new[] { "focalPointsPath", "frameScale", "includeCreatures", "zoneIds" },
                 props!.Properties().Select(p => p.Name).OrderBy(n => n).ToArray());
             Assert.True(new ZoneShotsArgs().IncludeCreatures);
             Assert.Null(new ZoneShotsArgs().ZoneIds);
+            Assert.Null(new ZoneShotsArgs().FrameScale);
+        }
+
+        [Fact]
+        public void ZoneShotFocalFile_RoundTripsOptionalPerZoneScale()
+        {
+            const string json = "{\"frame_scale\":2,\"zones\":[" +
+                "{\"zone_id\":\"overworld\",\"x\":1,\"y\":2,\"comment\":\"Default frame\"}," +
+                "{\"zone_id\":\"dungeon\",\"x\":3,\"y\":4,\"comment\":\"Dungeon frame\",\"frame_scale\":1.5}]}";
+            var focal = JsonConvert.DeserializeObject<ZoneShotFocalFile>(json);
+            Assert.NotNull(focal);
+            Assert.Equal(2d, focal!.FrameScale);
+            Assert.Null(focal.Zones[0].FrameScale);
+            Assert.Equal(1.5d, focal.Zones[1].FrameScale);
+
+            var serialized = JObject.Parse(JsonConvert.SerializeObject(focal));
+            Assert.Equal(2d, serialized["frame_scale"]!.Value<double>());
+            Assert.Null(serialized["zones"]![0]!["frame_scale"]);
+            Assert.Equal(1.5d, serialized["zones"]![1]!["frame_scale"]!.Value<double>());
+            Assert.Null(serialized["zones"]![1]!["FrameScale"]);
+            var restored = serialized.ToObject<ZoneShotFocalFile>();
+            Assert.Null(restored!.Zones[0].FrameScale);
+            Assert.Equal(1.5d, restored.Zones[1].FrameScale);
         }
 
         [Fact]

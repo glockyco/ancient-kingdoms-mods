@@ -24,9 +24,7 @@ CAMERA_SIZE = 11.25
 console = Console()
 
 
-def _records(path: Path) -> dict[str, dict[str, Any]]:
-    with path.open(encoding="utf-8") as source:
-        rows = json.load(source)
+def _records(rows: Any, path: Path) -> dict[str, dict[str, Any]]:
     if not isinstance(rows, list):
         raise TypeError(f"Zone shot input must be an array: {path}")
     result = {}
@@ -47,6 +45,23 @@ def _number(row: dict[str, Any], key: str, zone_id: str) -> float:
     if not math.isfinite(value):
         raise ValueError(f"Zone '{zone_id}' requires finite {key}")
     return float(value)
+
+
+def _focal_points(path: Path) -> tuple[float, dict[str, dict[str, Any]]]:
+    with path.open(encoding="utf-8") as source:
+        data = json.load(source)
+    if not isinstance(data, dict):
+        raise TypeError(f"Zone shot focal input must be an object: {path}")
+    scale = _number(data, "frame_scale", "focal configuration")
+    if scale <= 0:
+        raise ValueError("Zone shot frame_scale must be positive")
+    points = _records(data.get("zones"), path)
+    for zone_id, point in points.items():
+        if "frame_scale" in point:
+            override = _number(point, "frame_scale", zone_id)
+            if override <= 0:
+                raise ValueError(f"Zone '{zone_id}' requires positive frame_scale")
+    return scale, points
 
 
 def _contains(bounds: tuple, x: float, y: float) -> bool:
@@ -74,9 +89,11 @@ def publish_zone_shots(
     bounds and the zone's live trigger rectangles are both valid containment
     evidence; triggers cover scenery beyond the entity-derived rectangle.
     """
-    focal = _records(focal_path)
+    scale, focal = _focal_points(focal_path)
     shots_dir = export_dir / "screenshots" / "zones"
-    captures = _records(shots_dir / "manifest.json")
+    manifest_path = shots_dir / "manifest.json"
+    with manifest_path.open(encoding="utf-8") as source:
+        captures = _records(json.load(source), manifest_path)
     zones = {
         row[0]: row[1:]
         for row in conn.execute(
@@ -108,6 +125,12 @@ def publish_zone_shots(
     # Validate the complete set before publishing any of it.
     for zone_id in sorted(required):
         point, capture = focal[zone_id], captures[zone_id]
+        effective_scale = point.get("frame_scale", scale)
+        # Positive dimensions use the same midpoint rule as Math.Round AwayFromZero.
+        source_size = tuple(
+            math.floor(dimension * effective_scale + 0.5) for dimension in SOURCE_SIZE
+        )
+        camera_size = CAMERA_SIZE * effective_scale
         if not isinstance(point.get("comment"), str):
             raise TypeError(f"Zone '{zone_id}' focal point requires a comment")
         x, y = (_number(point, key, zone_id) for key in ("x", "y"))
@@ -121,15 +144,22 @@ def publish_zone_shots(
                 raise ValueError(
                     f"Zone '{zone_id}' capture {key} differs from focal point"
                 )
-        if _number(capture, "camera_size", zone_id) != CAMERA_SIZE:
+        if not math.isclose(
+            _number(capture, "camera_size", zone_id),
+            camera_size,
+            rel_tol=1e-6,
+            abs_tol=1e-6,
+        ):
             raise ValueError(
-                f"Zone '{zone_id}' capture camera_size must be {CAMERA_SIZE}"
+                f"Zone '{zone_id}' capture camera_size must be {camera_size}"
             )
         if (
             tuple(_number(capture, key, zone_id) for key in ("width", "height"))
-            != SOURCE_SIZE
+            != source_size
         ):
-            raise ValueError(f"Zone '{zone_id}' manifest framing must be 1920x1080")
+            raise ValueError(
+                f"Zone '{zone_id}' manifest framing must be {source_size[0]}x{source_size[1]}"
+            )
         timestamp = capture.get("captured_at")
         if not isinstance(timestamp, str):
             raise TypeError(f"Zone '{zone_id}' requires captured_at")
@@ -145,9 +175,9 @@ def publish_zone_shots(
         if not source_path.is_file():
             raise FileNotFoundError(f"Missing zone shot PNG: {source_path}")
         with Image.open(source_path) as source:
-            if source.format != "PNG" or source.size != SOURCE_SIZE:
+            if source.format != "PNG" or source.size != source_size:
                 raise ValueError(
-                    f"Zone '{zone_id}' source framing must be a 1920x1080 PNG"
+                    f"Zone '{zone_id}' source framing must be a {source_size[0]}x{source_size[1]} PNG"
                 )
             source.load()
 

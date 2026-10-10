@@ -74,23 +74,38 @@ namespace HotReplCommands.Commands
             var focalPath = args.FocalPointsPath == null
                 ? Path.Combine(Path.GetDirectoryName(_exportDir), "build-pipeline", "zone_shot_focal_points.json")
                 : WritablePath(args.FocalPointsPath);
-            var points = JsonConvert.DeserializeObject<List<ZoneShotFocalPoint>>(File.ReadAllText(focalPath))
+            var focal = JsonConvert.DeserializeObject<ZoneShotFocalFile>(File.ReadAllText(focalPath))
                 ?? throw new InvalidDataException("Focal-point file is null.");
+            if (!double.IsFinite(focal.FrameScale) || focal.FrameScale <= 0)
+                throw new InvalidDataException("Focal-point frame_scale must be positive and finite.");
+            if (args.FrameScale.HasValue && (!double.IsFinite(args.FrameScale.Value) || args.FrameScale.Value <= 0))
+                throw new ArgumentOutOfRangeException(nameof(args.FrameScale), "frameScale must be positive and finite.");
+            var points = focal.Zones ?? throw new InvalidDataException("Focal-point zones are null.");
             if (points.Count == 0 || points.Select(p => p.zone_id).Distinct().Count() != points.Count)
                 throw new InvalidDataException("Focal-point file is empty or contains duplicate zones.");
             var runtimeZones = new Dictionary<string, int>();
             foreach (var pair in Il2Cpp.ZoneInfo.zones)
                 runtimeZones.Add(GameIds.Sanitize(pair.Value.name), pair.Key);
+            if (args.ZoneIds != null)
+                foreach (var id in args.ZoneIds)
+                    if (!points.Any(p => p.zone_id == id)) throw new InvalidDataException($"Unknown shot zone: {id}");
+            var shots = new List<(ZoneShotFocalPoint Point, int Width, int Height, float CameraSize)>(points.Count);
+            var maxTextureSize = SystemInfo.maxTextureSize;
             foreach (var point in points)
+            {
                 if (point.zone_id == "temple_of_valaark" || point.zone_id == "old_valorath" ||
                     !runtimeZones.ContainsKey(point.zone_id) || !float.IsFinite(point.x) || !float.IsFinite(point.y) ||
                     string.IsNullOrWhiteSpace(point.comment))
                     throw new InvalidDataException($"Invalid or excluded focal point: {point.zone_id}");
-            if (args.ZoneIds != null)
-            {
-                foreach (var id in args.ZoneIds)
-                    if (!points.Any(p => p.zone_id == id)) throw new InvalidDataException($"Unknown shot zone: {id}");
-                points = points.Where(p => args.ZoneIds.Contains(p.zone_id)).ToList();
+                if (point.FrameScale.HasValue && (!double.IsFinite(point.FrameScale.Value) || point.FrameScale.Value <= 0))
+                    throw new InvalidDataException($"Focal-point frame_scale must be positive and finite: {point.zone_id}");
+                var scale = args.FrameScale ?? point.FrameScale ?? focal.FrameScale;
+                var width = Math.Round(1920d * scale, MidpointRounding.AwayFromZero);
+                var height = Math.Round(1080d * scale, MidpointRounding.AwayFromZero);
+                if (width < 1 || height < 1 || width > maxTextureSize || height > maxTextureSize)
+                    throw new InvalidDataException($"Scaled capture exceeds supported texture dimensions: {point.zone_id}");
+                if (args.ZoneIds == null || args.ZoneIds.Contains(point.zone_id))
+                    shots.Add((point, (int)width, (int)height, (float)(11.25d * scale)));
             }
             var triggers = Resources.FindObjectsOfTypeAll(Il2CppType.Of<Il2Cpp.ZoneTrigger>())
                 .Select(o => o.TryCast<Il2Cpp.ZoneTrigger>())
@@ -99,9 +114,11 @@ namespace HotReplCommands.Commands
             Directory.CreateDirectory(output);
             var records = new List<ZoneShotRecord>();
             using var state = new CaptureState(player, camera, zones, args.IncludeCreatures);
-            foreach (var point in points)
+            foreach (var shot in shots)
             {
                 token.ThrowIfCancellationRequested();
+                var point = shot.Point;
+                state.Configure(shot.Width, shot.Height, shot.CameraSize);
                 var zone = runtimeZones[point.zone_id];
                 Il2Cpp.ZoneTrigger trigger = null;
                 var smallest = float.PositiveInfinity;
@@ -141,7 +158,7 @@ namespace HotReplCommands.Commands
                 yield return new WaitForEndOfFrame();
                 state.Readback(Path.Combine(output, point.zone_id + ".png"));
                 records.Add(new ZoneShotRecord { zone_id = point.zone_id, x = point.x, y = point.y,
-                    camera_size = 11.25f, width = 1920, height = 1080, captured_at = DateTime.UtcNow.ToString("o") });
+                    camera_size = shot.CameraSize, width = shot.Width, height = shot.Height, captured_at = DateTime.UtcNow.ToString("o") });
             }
             var manifest = Path.Combine(output, "manifest.json");
             File.WriteAllText(manifest, JsonConvert.SerializeObject(records, Formatting.Indented));
@@ -168,8 +185,10 @@ namespace HotReplCommands.Commands
             private readonly List<(GameObject Object, bool Active)> _objects = new();
             private readonly List<(Behaviour Component, bool Enabled)> _behaviours = new();
             private readonly Dictionary<int, (Renderer Renderer, bool ForceOff)> _renderers = new();
-            private readonly RenderTexture _render;
-            private readonly Texture2D _pixels;
+            private RenderTexture _render;
+            private Texture2D _pixels;
+            private int _width, _height;
+            private float _captureSize;
 
             public CaptureState(Il2Cpp.Player player, Camera camera, Il2Cpp.ZoneInfo zones, bool includeCreatures)
             {
@@ -182,22 +201,69 @@ namespace HotReplCommands.Commands
                 var environment = Il2Cpp.EnviromentSystem.singleton;
                 _lightColor = environment.globalLight.color; _lightIntensity = environment.globalLight.intensity;
                 _bloomColor = environment.bloom.tint.value; _orthographic = camera.orthographic;
-                foreach (var obj in zones.fullZones) Remember(obj);
-                foreach (var obj in zones.staticEnviroment) Remember(obj);
-                foreach (var b in camera.GetComponentsInChildren<Behaviour>(true))
+                try
                 {
-                    var name = b.GetIl2CppType().Name;
-                    if (name == "CinemachineBrain" || name == "PixelPerfectCamera") Disable(b);
+                    foreach (var obj in zones.fullZones) Remember(obj);
+                    foreach (var obj in zones.staticEnviroment) Remember(obj);
+                    foreach (var b in camera.GetComponentsInChildren<Behaviour>(true))
+                    {
+                        var name = b.GetIl2CppType().Name;
+                        if (name == "CinemachineBrain" || name == "PixelPerfectCamera") Disable(b);
+                    }
+                    foreach (var obj in Resources.FindObjectsOfTypeAll(Il2CppType.Of<Canvas>()))
+                    {
+                        var canvas = obj.TryCast<Canvas>();
+                        if (canvas?.gameObject != null && canvas.gameObject.scene.IsValid()) Disable(canvas);
+                    }
+                    camera.cullingMask &= ~(1 << 5);
                 }
-                foreach (var obj in Resources.FindObjectsOfTypeAll(Il2CppType.Of<Canvas>()))
+                catch
                 {
-                    var canvas = obj.TryCast<Canvas>();
-                    if (canvas?.gameObject != null && canvas.gameObject.scene.IsValid()) Disable(canvas);
+                    Dispose();
+                    throw;
                 }
-                _render = new RenderTexture(1920, 1080, 24); _render.Create();
-                _pixels = new Texture2D(1920, 1080, TextureFormat.RGB24, false);
-                camera.targetTexture = _render;
-                camera.cullingMask &= ~(1 << 5);
+            }
+
+            public void Configure(int width, int height, float cameraSize)
+            {
+                if (_width != width || _height != height)
+                {
+                    RenderTexture render = null;
+                    Texture2D pixels = null;
+                    try
+                    {
+                        render = new RenderTexture(width, height, 24);
+                        if (!render.Create())
+                            throw new InvalidOperationException($"Unity could not create a {width}×{height} capture texture.");
+                        pixels = new Texture2D(width, height, TextureFormat.RGB24, false);
+                        if (pixels.width != width || pixels.height != height || !pixels.isReadable)
+                            throw new InvalidOperationException($"Unity could not create a {width}×{height} readback texture.");
+                        // Detach both Unity targets before releasing the previous buffers.
+                        ReleaseBuffers();
+                        _render = render; _pixels = pixels;
+                        render = null; pixels = null;
+                        _width = width; _height = height;
+                    }
+                    finally
+                    {
+                        if (render != null) { render.Release(); UnityEngine.Object.Destroy(render); }
+                        if (pixels != null) UnityEngine.Object.Destroy(pixels);
+                    }
+                }
+                _captureSize = cameraSize;
+                _camera.targetTexture = _render;
+            }
+
+            private void ReleaseBuffers()
+            {
+                if (_render != null)
+                {
+                    if (_camera.targetTexture == _render) _camera.targetTexture = _target;
+                    if (RenderTexture.active == _render) RenderTexture.active = _active;
+                    _render.Release(); UnityEngine.Object.Destroy(_render);
+                    _render = null;
+                }
+                if (_pixels != null) { UnityEngine.Object.Destroy(_pixels); _pixels = null; }
             }
 
             private void Remember(GameObject obj)
@@ -217,7 +283,7 @@ namespace HotReplCommands.Commands
             {
                 _camera.transform.position = new Vector3(point.x, point.y, _cameraPosition.z);
                 _camera.transform.rotation = Quaternion.identity;
-                _camera.orthographic = true; _camera.orthographicSize = 11.25f; _camera.aspect = 16f / 9f;
+                _camera.orthographic = true; _camera.orthographicSize = _captureSize; _camera.aspect = (float)_width / _height;
                 foreach (var pair in _behaviours) if (pair.Component != null) pair.Component.enabled = false;
             }
             public void HideOverlays()
@@ -265,28 +331,36 @@ namespace HotReplCommands.Commands
                 // Suppress messages created by the last game Update before rendering synchronously.
                 HideOverlays();
                 _camera.Render();
-                RenderTexture.active = _render;
-                _pixels.ReadPixels(new Rect(0, 0, 1920, 1080), 0, 0); _pixels.Apply();
-                File.WriteAllBytes(path, ImageConversion.EncodeToPNG(_pixels));
-                RenderTexture.active = _active;
+                var active = RenderTexture.active;
+                try
+                {
+                    RenderTexture.active = _render;
+                    // PNG encoding reads the CPU copy; no Texture2D.Apply GPU upload is needed.
+                    _pixels.ReadPixels(new Rect(0, 0, _width, _height), 0, 0, false);
+                    File.WriteAllBytes(path, ImageConversion.EncodeToPNG(_pixels));
+                }
+                finally { RenderTexture.active = active; }
             }
             public void Dispose()
             {
-                _camera.targetTexture = _target; RenderTexture.active = _active;
-                _camera.transform.position = _cameraPosition; _camera.transform.rotation = _rotation;
-                _camera.orthographicSize = _size; _camera.aspect = _aspect; _camera.cullingMask = _mask;
-                _player.movement.Reset(); _player.movement.Warp(_position);
-                _player.NetworkidZone = _zone; _player.outdoorZone = _outdoor;
-                _player.globalLightIntensityZone = _intensity; _player.combat.Networkinvincible = _invincible;
-                _camera.orthographic = _orthographic;
-                var environment = Il2Cpp.EnviromentSystem.singleton;
-                environment.StartChangingBloomColor(_bloomColor);
-                environment.bloom.tint.value = _bloomColor;
-                environment.globalLight.color = _lightColor; environment.globalLight.intensity = _lightIntensity;
-                foreach (var pair in _objects) if (pair.Object != null) pair.Object.SetActive(pair.Active);
-                foreach (var pair in _renderers.Values) if (pair.Renderer != null) pair.Renderer.forceRenderingOff = pair.ForceOff;
-                foreach (var pair in _behaviours) if (pair.Component != null) pair.Component.enabled = pair.Enabled;
-                _render.Release(); UnityEngine.Object.Destroy(_render); UnityEngine.Object.Destroy(_pixels);
+                try
+                {
+                    _camera.targetTexture = _target; RenderTexture.active = _active;
+                    _camera.transform.position = _cameraPosition; _camera.transform.rotation = _rotation;
+                    _camera.orthographicSize = _size; _camera.aspect = _aspect; _camera.cullingMask = _mask;
+                    _player.movement.Reset(); _player.movement.Warp(_position);
+                    _player.NetworkidZone = _zone; _player.outdoorZone = _outdoor;
+                    _player.globalLightIntensityZone = _intensity; _player.combat.Networkinvincible = _invincible;
+                    _camera.orthographic = _orthographic;
+                    var environment = Il2Cpp.EnviromentSystem.singleton;
+                    environment.StartChangingBloomColor(_bloomColor);
+                    environment.bloom.tint.value = _bloomColor;
+                    environment.globalLight.color = _lightColor; environment.globalLight.intensity = _lightIntensity;
+                    foreach (var pair in _objects) if (pair.Object != null) pair.Object.SetActive(pair.Active);
+                    foreach (var pair in _renderers.Values) if (pair.Renderer != null) pair.Renderer.forceRenderingOff = pair.ForceOff;
+                    foreach (var pair in _behaviours) if (pair.Component != null) pair.Component.enabled = pair.Enabled;
+                }
+                finally { ReleaseBuffers(); }
             }
         }
     }

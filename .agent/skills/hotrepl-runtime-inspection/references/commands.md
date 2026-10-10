@@ -13,7 +13,7 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 | `compendium.export` | job | `{"screenshots": bool}` |
 | `game.quit` | sync | `{}` |
 | `game.useScratchDatabase` | sync | `{}` |
-| `capture.zoneShots` | job | `{"focalPointsPath": string?, "zoneIds": string[]?, "includeCreatures": bool?}` |
+| `capture.zoneShots` | job | `{"focalPointsPath": string?, "zoneIds": string[]?, "includeCreatures": bool?, "frameScale": number?}` |
 
 ## CombatVerification
 
@@ -45,8 +45,19 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 - `probe.actionInterval` observes no action when `windowSeconds` is absent or zero. Another action must drive the subject.
 - `fixture.buildCharacter` clears slots that the fixture does not declare because a created character has starter equipment.
 - `capture.zoneShots` requires a spawned player and the owned scratch database. It reads the checked-in
-  `build-pipeline/zone_shot_focal_points.json` by default, uses the actual gameplay camera at
-  orthographic size 11.25 and 1920×1080, and writes `screenshots/zones/<zone_id>.png` plus a manifest.
+  `build-pipeline/zone_shot_focal_points.json` by default. This object contains a positive finite
+  default `frame_scale` and a `zones` array of `zone_id`, `x`, `y`, and `comment` records, each with
+  an optional positive finite `frame_scale` override.
+  `frameScale` is absent by default. Supply it only to override every zone's scale for a FOV preview;
+  otherwise each row's scale overrides the file default. Publication captures must match each zone's
+  configured effective scale, which the pipeline validates.
+  All configured scales are validated before capture state changes. For each zone, the gameplay camera
+  uses orthographic size 11.25×effective scale and a native render texture of 1920×effective scale by
+  1080×effective scale (rounded to nearest, midpoint ties away from zero), maintaining 48 pixels per
+  world unit. Buffers are reused when dimensions match and replaced when they change.
+  It writes `screenshots/zones/<zone_id>.png` plus a manifest recording each zone's actual native
+  dimensions and camera size; the pipeline validates these and publishes 960×540 images with Lanczos
+  resampling.
   `zoneIds` limits a review capture; rerun without the subset for the final manifest.
   `includeCreatures` defaults to true; false hides creatures while retaining scenery and resources.
   HUD canvases, player renderers, nameplates, and health bars are hidden in either mode.

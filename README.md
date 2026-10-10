@@ -221,15 +221,27 @@ hotrepl run capture.zoneShots '{}' --json
 hotrepl run game.quit '{}' --json
 ```
 
-`capture.zoneShots` reads `build-pipeline/zone_shot_focal_points.json` and writes 1920×1080 PNGs plus
-capture provenance to `exported-data/screenshots/zones/manifest.json`. It uses the gameplay camera,
+`capture.zoneShots` reads `build-pipeline/zone_shot_focal_points.json` and writes native PNGs plus
+capture provenance to `exported-data/screenshots/zones/manifest.json`. The focal file is an object
+with a required positive finite `frame_scale` default and a `zones` array of `zone_id`, `x`, `y`,
+and `comment` records. Each record may provide its own positive finite numeric `frame_scale`;
+otherwise it inherits the default. For mixed framing, configure overworld rows at 2 and dungeon
+rows at 1.5 using `zones.is_dungeon` to distinguish them. The checked-in default remains 1.
+At scale 1, the render texture is 1920×1080 and the orthographic camera size is 11.25, preserving
+native 48 pixels per world unit. Scaling increases both camera size and render-texture dimensions
+(1920×scale by 1080×scale, rounded to nearest with midpoint ties away from zero), not pixel density.
+Omit `frameScale` to capture each zone at its configured scale. An explicit `frameScale` overrides
+all selected zones for previews; the pipeline refuses those captures unless they match each
+zone's configured scale.
+It uses the gameplay camera,
 area lighting, bloom, and current in-game daylight/weather; hides the HUD, entity labels/health bars,
 and local player; and restores the camera and scene afterwards. To review a composition, pass
 `{"zoneIds":["twilight_forest"]}`; compare a creature-free version with `"includeCreatures":false`.
 Run the complete command again after reviewing subsets so the manifest covers all released zones
 except the position-redacted Temple of Valaark. Old Valorath is unreleased and must never be captured.
-`compendium build` validates focal-point coverage and containment, rejects missing or mismatched
-captures, and publishes 960×540 lossy WebP shots. Boss portraits/bestiary sprites remain native,
+`compendium build` validates focal-point coverage and containment, rejects missing captures or
+camera/image dimensions inconsistent with each zone's effective focal scale, and publishes unchanged 960×540
+lossy WebP shots using Lanczos resampling. Boss portraits/bestiary sprites remain native,
 lossless images; the painted runtime world map is published at up to 2400 pixels wide.
 
 The database redirect refuses once a connection exists. On refusal, quit and relaunch rather than

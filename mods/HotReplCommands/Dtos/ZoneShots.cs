@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace HotReplCommands.Dtos
 {
@@ -13,6 +14,9 @@ namespace HotReplCommands.Dtos
         /// <summary>Keep creatures in the scene, with their labels and health bars hidden.</summary>
         [JsonProperty("includeCreatures")]
         public bool IncludeCreatures { get; set; } = true;
+        /// <summary>Optional preview override for every zone's configured native gameplay frame scale.</summary>
+        [JsonProperty("frameScale")]
+        public double? FrameScale { get; set; }
     }
 
     public sealed class ZoneShotsResult
@@ -23,12 +27,22 @@ namespace HotReplCommands.Dtos
         public string ManifestPath { get; set; }
     }
 
+    public sealed class ZoneShotFocalFile
+    {
+        [JsonProperty("frame_scale", Required = Required.Always)]
+        public double FrameScale { get; set; }
+        [JsonProperty("zones", Required = Required.Always)]
+        public List<ZoneShotFocalPoint> Zones { get; set; }
+    }
+
     public sealed class ZoneShotFocalPoint
     {
         public string zone_id { get; set; }
         public float x { get; set; }
         public float y { get; set; }
         public string comment { get; set; }
+        [JsonProperty("frame_scale", Required = Required.DisallowNull, NullValueHandling = NullValueHandling.Ignore)]
+        public double? FrameScale { get; set; }
     }
 
     public sealed class ZoneShotRecord
