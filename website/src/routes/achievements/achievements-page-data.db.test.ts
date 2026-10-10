@@ -72,7 +72,15 @@ describe("achievements page data", () => {
     });
   });
 
-  it("omits a relationship when the source has no single target", () => {
-    expect(findAchievement("KILL_WORLD_BOSSES").relationships).toEqual([]);
+  it("names the five bosses Bane of Titans checks, without Scaleblight", () => {
+    const achievement = findAchievement("KILL_WORLD_BOSSES");
+    expect(achievement.relationships.map((item) => item.href).sort()).toEqual([
+      "/monsters/ancient_cyclops",
+      "/monsters/nyxarion",
+      "/monsters/pyroth",
+      "/monsters/spirit_of_the_forest",
+      "/monsters/urzak_the_untamed",
+    ]);
+    expect(achievement.note).toContain("Scaleblight");
   });
 });

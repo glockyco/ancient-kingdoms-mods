@@ -10,6 +10,7 @@ import {
 } from "$lib/data/achievements/catalog";
 import {
   achievementAnchor,
+  achievementNotes,
   achievementRelationships,
   type AchievementRelationship,
 } from "$lib/data/achievements/relationships";
@@ -25,6 +26,8 @@ export interface AchievementPageRecord {
   displayOrder: number;
   iconPath: string;
   relationships: AchievementRelationship[];
+  /** What the game's text leaves out, or null. Hidden achievements have none. */
+  note: string | null;
   searchText: string;
 }
 
@@ -133,6 +136,7 @@ export function getAchievementsPageData(
       displayOrder: achievementOrderIndex[row.id],
       iconPath: entityImageUrl("achievement", row.id, "icon"),
       relationships,
+      note: hidden ? null : (achievementNotes[row.id] ?? null),
       searchText: [
         name,
         description,

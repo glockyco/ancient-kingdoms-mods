@@ -265,6 +265,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                       >
                         {achievement.description}
                       </p>
+                      {#if achievement.note}
+                        <p
+                          class="mt-1 text-pretty text-sm leading-6 text-muted-foreground"
+                        >
+                          {achievement.note}
+                        </p>
+                      {/if}
                       {#if achievement.relationships.length > 0}
                         <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2">
                           {#each achievement.relationships as relationship (relationship.href)}

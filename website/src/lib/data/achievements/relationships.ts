@@ -11,6 +11,16 @@ export function achievementAnchor(id: string): string {
   return id.toLowerCase().replaceAll("_", "-");
 }
 
+/**
+ * Facts the game's achievement text leaves out, shown under the description.
+ */
+export const achievementNotes: Record<string, string> = {
+  // Source: Player.cs:11517-11525 versus Utils.cs:291 — Scaleblight is in the
+  // game's world-boss list but not among the bosses the achievement checks.
+  KILL_WORLD_BOSSES:
+    "Requires each of the five bosses below once. Scaleblight, also a world boss, does not count.",
+};
+
 const professionLinks: Record<string, AchievementRelationship> = {
   ALCHEMY_MASTER: {
     kind: "profession",
@@ -164,6 +174,15 @@ export const achievementRelationships: Record<
       [relationship],
     ]),
   ),
+  // Source: Player.cs:11517-11525 — the achievement checks these five bosses by
+  // name, each killed at least once; it does not read Utils.worldBosses.
+  KILL_WORLD_BOSSES: [
+    monsterLinks.KILL_BLACK_DRAGON,
+    monsterLinks.KILL_PYROTH,
+    monsterLinks.KILL_ANCIENT_CYCLOPS,
+    monsterLinks.KILL_SPIRIT_FOREST,
+    monsterLinks.KILL_ORC_UNTAMED,
+  ],
   // Source: server-scripts/DefaultEvent.cs:137-143 — completing a Forgotten Altar event unlocks RESTORED_ALTAR.
   RESTORED_ALTAR: [
     { kind: "altar", label: "Forgotten Altars", href: "/altars" },
