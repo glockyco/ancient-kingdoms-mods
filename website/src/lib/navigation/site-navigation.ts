@@ -8,6 +8,8 @@ export interface NavigationLink {
   readonly href: string;
   readonly description?: string;
   readonly icon?: IconNode;
+  /** Shown in the bar only where it is wide; the Browse panel always lists it. */
+  readonly wideOnly?: true;
 }
 
 /** A column of the Browse panel. `more` links the full list of a column that names only some pages. */
@@ -63,6 +65,7 @@ export const PRIMARY_LINKS: readonly NavigationLink[] = [
   MAP,
   entity("item"),
   entity("monster"),
+  { ...entity("zone"), wideOnly: true },
   entity("recipe"),
   entity("class"),
 ];

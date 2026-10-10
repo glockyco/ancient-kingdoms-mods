@@ -114,7 +114,7 @@
     <nav class="site-nav" aria-label="Site">
       <ul class="primary">
         {#each PRIMARY_LINKS as link (link.href)}
-          <li>
+          <li class:wide-only={link.wideOnly}>
             <a
               href={link.href}
               aria-current={isCurrent(link.href) ? "page" : undefined}
@@ -553,6 +553,13 @@
       padding: 0;
     }
     .kofi span {
+      display: none;
+    }
+  }
+  /* Below 80rem the container is 64rem wide, too narrow for the links that
+     only a wide bar shows. */
+  @media (max-width: 80rem) {
+    .primary .wide-only {
       display: none;
     }
   }
