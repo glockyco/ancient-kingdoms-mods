@@ -54,6 +54,8 @@
              Link="Dtos\ExportProgressPayload.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Dtos\GameQuitResult.cs"
              Link="Dtos\GameQuitResult.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\ZoneShots.cs"
+             Link="Dtos\ZoneShots.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Artifacts\ArtifactCollector.cs"
              Link="Artifacts\ArtifactCollector.cs" />
   </ItemGroup>

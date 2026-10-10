@@ -125,6 +125,7 @@ class BuildFailureTests(unittest.TestCase):
             patch.object(build_command, "load_all", side_effect=stage_image),
             patch.object(build_command, "denormalize_all", return_value=object()),
             patch.object(build_command, "publish_zone_thumbnails"),
+            patch.object(build_command, "publish_zone_shots"),
             patch.object(build_command, "reconcile"),
             patch.object(build_command, "resolve"),
             patch.object(build_command.verify, "check"),

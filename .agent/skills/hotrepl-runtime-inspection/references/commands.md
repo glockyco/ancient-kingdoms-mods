@@ -13,6 +13,7 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 | `compendium.export` | job | `{"screenshots": bool}` |
 | `game.quit` | sync | `{}` |
 | `game.useScratchDatabase` | sync | `{}` |
+| `capture.zoneShots` | job | `{"focalPointsPath": string?, "zoneIds": string[]?, "includeCreatures": bool?}` |
 
 ## CombatVerification
 
@@ -43,3 +44,11 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 - `probe.perHitDamage` does not make a live run reproducible when it receives the same seed.
 - `probe.actionInterval` observes no action when `windowSeconds` is absent or zero. Another action must drive the subject.
 - `fixture.buildCharacter` clears slots that the fixture does not declare because a created character has starter equipment.
+- `capture.zoneShots` requires a spawned player and the owned scratch database. It reads the checked-in
+  `build-pipeline/zone_shot_focal_points.json` by default, uses the actual gameplay camera at
+  orthographic size 11.25 and 1920×1080, and writes `screenshots/zones/<zone_id>.png` plus a manifest.
+  `zoneIds` limits a review capture; rerun without the subset for the final manifest.
+  `includeCreatures` defaults to true; false hides creatures while retaining scenery and resources.
+  HUD canvases, player renderers, nameplates, and health bars are hidden in either mode.
+  The game's area/daylight/weather lighting runs while each composition settles, and capture state
+  is restored even when a coroutine fails. Excluded/unreleased zones are refused.

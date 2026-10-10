@@ -44,6 +44,7 @@ namespace HotReplCommands.Tests
             reg.Register(new JobStub<CompendiumExportArgs, CompendiumExportResult>("compendium.export"));
             reg.Register(new JobStub<WorldEnterArgs, WorldEnterResult>("world.enter"));
             reg.Register(new SyncStub<EmptyArgs, GameQuitResult>("game.quit"));
+            reg.Register(new JobStub<ZoneShotsArgs, ZoneShotsResult>("capture.zoneShots"));
             return reg;
         }
 
@@ -51,7 +52,7 @@ namespace HotReplCommands.Tests
 
         [Fact]
         public void AllCommandsDescribed()
-            => Assert.Equal(5, BuildRegistry().Describe().Count);
+            => Assert.Equal(6, BuildRegistry().Describe().Count);
 
         [Fact]
         public void WorldEnterArgs_CharacterIsOptional()
@@ -99,6 +100,20 @@ namespace HotReplCommands.Tests
             Assert.NotNull(props);
             Assert.True(props!.ContainsKey("screenshots"),
                 "Expected lower-camel 'screenshots' property in schema");
+        }
+
+        [Fact]
+        public void ZoneShotsArgs_UsesLowerCamelPropertiesAndKeepsCreaturesByDefault()
+        {
+            var descriptor = BuildRegistry().Describe()
+                .Single(d => d.Name == "capture.zoneShots");
+            var props = descriptor.ArgsSchema["properties"] as JObject;
+            Assert.NotNull(props);
+            Assert.Equal(
+                new[] { "focalPointsPath", "includeCreatures", "zoneIds" },
+                props!.Properties().Select(p => p.Name).OrderBy(n => n).ToArray());
+            Assert.True(new ZoneShotsArgs().IncludeCreatures);
+            Assert.Null(new ZoneShotsArgs().ZoneIds);
         }
 
         [Fact]

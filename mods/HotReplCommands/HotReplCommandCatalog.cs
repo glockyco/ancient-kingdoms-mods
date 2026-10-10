@@ -31,6 +31,7 @@ namespace HotReplCommands
             new Entry("compendium.export",    1, ControlCommandKind.Job,         true),
             new Entry("game.quit",            1, ControlCommandKind.Sync, true),
             new Entry("game.useScratchDatabase", 1, ControlCommandKind.Sync, true),
+            new Entry("capture.zoneShots",    1, ControlCommandKind.Job, true),
         };
     }
 }

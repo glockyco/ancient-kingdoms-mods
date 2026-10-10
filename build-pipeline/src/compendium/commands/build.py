@@ -69,6 +69,7 @@ from compendium.redactions.references import resolve
 from compendium.session import verify_export_locale
 from compendium.visual_assets import reconcile
 from compendium.zone_artwork import publish_zone_thumbnails
+from compendium.zone_shots import publish_zone_shots
 
 console = Console()
 
@@ -237,6 +238,12 @@ def run(config: dict) -> None:
             console.print()
             subject = denormalize_all(conn)
             publish_zone_thumbnails(conn, export_dir, stage_static_dir)
+            publish_zone_shots(
+                conn,
+                export_dir,
+                stage_static_dir,
+                repo_root / "build-pipeline" / "zone_shot_focal_points.json",
+            )
             reconcile(conn, stage_static_dir)
 
             # Verify after every step that removes published content.

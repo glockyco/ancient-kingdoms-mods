@@ -203,6 +203,39 @@ An exporter reads authoritative runtime data: direct fields and explicit referen
 
 Under CrossOver, the game writes to macOS paths through Wine's `Z:` drive. Manifest paths stay relative to `exported-data/`.
 
+Zone hero artwork uses native gameplay framing rather than a crop of the stitched map. With the
+game closed, build/deploy the mods, launch it, and immediately redirect its database before the
+start screen opens the player database:
+
+```bash
+dotnet run --project build-tool build
+dotnet run --project build-tool deploy
+dotnet run --project build-tool launch --wait
+hotrepl run game.useScratchDatabase '{}' --json
+# Confirm isScratch=true and the verification-scratch/game.dat path before continuing.
+# Create an owned fixture if the scratch roster has none; never select a player character.
+hotrepl run fixture.createCharacter '{"characterName":"HomeArt","class":"warrior","race":"human"}' --json
+hotrepl run world.enter '{"character":"HomeArt"}' --json
+hotrepl run compendium.export '{"screenshots":false}' --json
+hotrepl run capture.zoneShots '{}' --json
+hotrepl run game.quit '{}' --json
+```
+
+`capture.zoneShots` reads `build-pipeline/zone_shot_focal_points.json` and writes 1920×1080 PNGs plus
+capture provenance to `exported-data/screenshots/zones/manifest.json`. It uses the gameplay camera,
+area lighting, bloom, and current in-game daylight/weather; hides the HUD, entity labels/health bars,
+and local player; and restores the camera and scene afterwards. To review a composition, pass
+`{"zoneIds":["twilight_forest"]}`; compare a creature-free version with `"includeCreatures":false`.
+Run the complete command again after reviewing subsets so the manifest covers all released zones
+except the position-redacted Temple of Valaark. Old Valorath is unreleased and must never be captured.
+`compendium build` validates focal-point coverage and containment, rejects missing or mismatched
+captures, and publishes 960×540 lossy WebP shots. Boss portraits/bestiary sprites remain native,
+lossless images; the painted runtime world map is published at up to 2400 pixels wide.
+
+The database redirect refuses once a connection exists. On refusal, quit and relaunch rather than
+creating a fixture or entering the world against player data. Only one HotRepl client may own the
+connection at a time.
+
 ### Build compendium data
 
 ```bash

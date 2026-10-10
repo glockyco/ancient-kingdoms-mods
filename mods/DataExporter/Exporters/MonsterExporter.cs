@@ -246,6 +246,22 @@ public class MonsterExporter : BaseExporter
                 canonical.gameObject,
                 sceneVisualSource?.gameObject);
             ExportEntitySprite("monster", name, "Monster.gameObject", visualSource);
+            VisualAssets?.ExportSprite(
+                "monster",
+                name,
+                "portrait",
+                "Monster.portraitBoss",
+                canonical.portraitBoss != null ? canonical.portraitBoss.GetType().FullName : "UnityEngine.Sprite",
+                canonical.portraitBoss != null ? canonical.portraitBoss.name : null,
+                canonical.portraitBoss);
+            VisualAssets?.ExportSprite(
+                "monster",
+                name,
+                "bestiary",
+                "Monster.imageBossBestiary",
+                canonical.imageBossBestiary != null ? canonical.imageBossBestiary.GetType().FullName : "UnityEngine.Sprite",
+                canonical.imageBossBestiary != null ? canonical.imageBossBestiary.name : null,
+                canonical.imageBossBestiary);
 
 
             monsterList.Add(monsterData);

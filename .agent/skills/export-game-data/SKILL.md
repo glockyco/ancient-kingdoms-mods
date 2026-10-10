@@ -38,11 +38,15 @@ exporter would have to drive the interface one race at a time.
 | `item/icon` | `ScriptableItem.image`, or the runtime `FantasyHeroes` icon collection for a missing item sprite |
 | `item/pet` | The creature prefab of a friendly pet follower item |
 | `item/treasure_map` | `TreasureMapItem.imageLocation` |
+| `monster/bestiary` | `Monster.imageBossBestiary`, full-body bestiary poses distinct from the portrait crops and some world sprites |
+| `monster/portrait` | `Monster.portraitBoss` |
 | `monster/primary` | Root `SpriteRenderer`, or a body composite under `Monster.gameObject/Front` |
 | `npc/primary` | Root `SpriteRenderer`, or a body composite under `Npc.gameObject/Front` |
 | `pet/icon` | `Pet.portraitIcon` |
 | `pet/primary` | The pet's root renderer or `Front` body composite |
 | `skill/icon` | `ScriptableSkill.image` |
+| `world/map` | Live scene `UIMap.worldMap.sprite`, exported as `world/eratiath/map` |
+| `zone/shot` | Typed HotRepl `capture.zoneShots` job; native zone screenshots in `screenshots/zones/` with `manifest.json` |
 | `zone/thumbnail` | A crop of the stitched world screenshot based on zone bounds |
 
 DataExporter writes source PNGs and their relative paths to `visual_assets.json`. `compendium build`
@@ -51,8 +55,8 @@ records them in SQLite and publishes WebP images.
 Do not map entities by static Unity sprite names or use UnityPy images as fallback art. The runtime item
 icon collection is the one exception, because it resolves an explicit item path to a loaded sprite.
 Humanoid monsters and NPCs expose body sprites under `Front` instead of a root renderer. The composite
-excludes UI renderers such as health bars, labels, speech bubbles, and shadows. Boss portraits and
-bestiary images are not used. When an entity has several rows for the same `(domain, entity_id, kind)`,
+excludes UI renderers such as health bars, labels, speech bubbles, and shadows.
+When an entity has several rows for the same `(domain, entity_id, kind)`,
 review the ambiguity instead of picking one.
 
 ## Registration and output
@@ -61,8 +65,10 @@ Create the typed model and exporter under `mods/DataExporter/`, then register it
 `DataExporter.ExportAllData()`. An unregistered exporter fails no build and produces no file.
 After the runtime export, verify that the result lists it and the file contains its data.
 
-`build-tool/Commands/CommandCatalog.cs` and `mods/HotReplCommands/Artifacts/ArtifactCollector.cs` own
-the orchestrated path and the artifact keys.
+`build-tool/Commands/CommandCatalog.cs` registers CLI verbs;
+`build-tool/HotRepl/HotReplExportRunner.cs` validates required export artifacts, and
+`mods/HotReplCommands/Artifacts/ArtifactCollector.cs` owns the artifact keys. Visual-only exporters
+share `visual-assets.manifest`; they do not need an invented entity JSON artifact.
 
 ## Check
 

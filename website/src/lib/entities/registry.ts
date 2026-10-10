@@ -27,7 +27,15 @@ import { achievementAnchor } from "$lib/data/achievements/relationships";
 import { guideCoverage } from "$lib/data/game-guide/coverage";
 import manifest from "./entity-manifest.json";
 
-export type EntityImageKind = "icon" | "primary" | "thumbnail" | "treasure_map";
+export type EntityImageKind =
+  | "icon"
+  | "primary"
+  | "thumbnail"
+  | "treasure_map"
+  | "portrait"
+  | "bestiary"
+  | "map"
+  | "shot";
 
 type ManifestEntry = {
   readonly id: string;

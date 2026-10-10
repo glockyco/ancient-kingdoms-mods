@@ -15,6 +15,7 @@ namespace HotReplCommands.Tests
             => Assert.Equal(
                 new[]
                 {
+                    "capture.zoneShots",
                     "compendium.export",
                     "compendium.preflight",
                     "game.quit",
@@ -31,6 +32,7 @@ namespace HotReplCommands.Tests
         [InlineData("compendium.export",    1, ControlCommandKind.Job,         true)]
         [InlineData("game.quit",            1, ControlCommandKind.Sync, true)]
         [InlineData("game.useScratchDatabase", 1, ControlCommandKind.Sync, true)]
+        [InlineData("capture.zoneShots", 1, ControlCommandKind.Job, true)]
         public void Catalog_EntryHasExpectedMetadata(
             string name, int version, ControlCommandKind kind, bool mutates)
         {

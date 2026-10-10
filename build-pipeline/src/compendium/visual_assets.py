@@ -36,11 +36,12 @@ DOMAIN_DIRECTORIES = {
     "gathering_resource": "gathering_resources",
     "chest": "chests",
     "zone": "zones",
+    "world": "world",
 }
 
 # The table that owns each domain's entities, used to reconcile artwork against
-# redaction. A domain absent from this map has no owning table and is never pruned.
-DOMAIN_TABLES = {
+# redaction. None explicitly registers a domain without an owning entity table.
+DOMAIN_TABLES: dict[str, str | None] = {
     "achievement": "achievements",
     "item": "items",
     "monster": "monsters",
@@ -52,6 +53,7 @@ DOMAIN_TABLES = {
     "gathering_resource": "gathering_resources",
     "chest": "chests",
     "zone": "zones",
+    "world": None,
 }
 
 # Path segments must survive a URL and a filesystem untouched. Uppercase is allowed
@@ -81,11 +83,12 @@ class Encoding(Enum):
     """How a source image should be published.
 
     SPRITE art is pixel art shown deliberately larger than its source, so it is encoded
-    losslessly and its fully transparent padding is trimmed. PHOTO art is already lossy
-    and is re-encoded as such.
+    losslessly and its fully transparent padding is trimmed. SPRITE_NATIVE preserves
+    the complete source canvas. PHOTO art is encoded lossily.
     """
 
     SPRITE = "sprite"
+    SPRITE_NATIVE = "sprite_native"
     PHOTO = "photo"
 
 
@@ -127,6 +130,27 @@ def derive_public_path(domain: str, entity_id: str, kind: str) -> str:
     return f"images/{directory}/{entity_id}/{kind}{PUBLISHED_SUFFIX}"
 
 
+def runtime_encoding(domain: str, kind: str) -> Encoding:
+    """Select the delivery contract for a runtime manifest asset."""
+    if (domain, kind) == ("world", "map"):
+        return Encoding.PHOTO
+    if domain == "monster" and kind in {"portrait", "bestiary"}:
+        return Encoding.SPRITE_NATIVE
+    return Encoding.SPRITE
+
+
+def _asset_form(
+    image: Image.Image, encoding: Encoding, domain: str, kind: str
+) -> Image.Image:
+    published = _published_form(image, encoding)
+    if (domain, kind) == ("world", "map") and published.width > 2400:
+        return published.resize(
+            (2400, max(1, round(published.height * 2400 / published.width))),
+            Image.Resampling.LANCZOS,
+        )
+    return published
+
+
 def _published_form(image: Image.Image, encoding: Encoding) -> Image.Image:
     """The image as it will be published.
 
@@ -145,13 +169,14 @@ def _published_form(image: Image.Image, encoding: Encoding) -> Image.Image:
 
 def _encode(published: Image.Image, destination: Path, encoding: Encoding) -> None:
     """Write one published image as WebP."""
-    if encoding is Encoding.SPRITE:
+    if encoding in {Encoding.SPRITE, Encoding.SPRITE_NATIVE}:
         published.save(
             destination,
             "WEBP",
             lossless=True,
             quality=100,
             method=SPRITE_ENCODE_METHOD,
+            exact=encoding is Encoding.SPRITE_NATIVE,
         )
     else:
         published.save(
@@ -173,7 +198,7 @@ def measure(
     and not for an encode, and it publishes nothing.
     """
     with Image.open(source_path) as image:
-        published = _published_form(image, encoding)
+        published = _asset_form(image, encoding, domain, kind)
         return PublishedAsset(
             public_path=derive_public_path(domain, entity_id, kind),
             width=published.width,
@@ -195,7 +220,7 @@ def publish_image(
     destination = static_dir / public_path
     destination.parent.mkdir(parents=True, exist_ok=True)
 
-    published = _published_form(image, encoding)
+    published = _asset_form(image, encoding, domain, kind)
     _encode(published, destination, encoding)
 
     return PublishedAsset(
@@ -276,6 +301,8 @@ def reconcile(conn: sqlite3.Connection, static_dir: Path) -> int:
     removed = 0
 
     for domain, table in sorted(DOMAIN_TABLES.items()):
+        if table is None:
+            continue
         orphans = cursor.execute(
             f"""
             SELECT v.entity_id, v.kind, v.public_path

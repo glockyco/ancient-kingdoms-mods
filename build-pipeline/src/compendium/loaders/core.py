@@ -53,6 +53,7 @@ from compendium.visual_assets import (
     insert_asset,
     measure,
     publish,
+    runtime_encoding,
 )
 
 console = Console()
@@ -132,7 +133,7 @@ def record_visual_assets(conn: sqlite3.Connection, export_dir: Path) -> None:
             domain=asset.domain,
             entity_id=asset.entity_id,
             kind=asset.kind,
-            encoding=Encoding.SPRITE,
+            encoding=runtime_encoding(asset.domain, asset.kind),
         ),
     )
     console.print(f"  [green]OK[/green] Recorded {count} visual assets")
@@ -158,7 +159,7 @@ def load_visual_assets(
             domain=asset.domain,
             entity_id=asset.entity_id,
             kind=asset.kind,
-            encoding=Encoding.SPRITE,
+            encoding=runtime_encoding(asset.domain, asset.kind),
         ),
     )
     console.print(f"  [green]OK[/green] Loaded {count} visual assets")

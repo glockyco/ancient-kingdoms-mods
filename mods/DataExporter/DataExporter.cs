@@ -204,6 +204,11 @@ namespace DataExporter
                 var exporter = new GameGuideExporter(LoggerInstance, ExportPath);
                 exporter.Export();
             }));
+            result.Exporters.Add(RunExporter("worldMap", () =>
+            {
+                var exporter = new WorldMapExporter(LoggerInstance, ExportPath, visualAssets);
+                exporter.Export();
+            }));
             result.Exporters.Add(RunExporter("visualAssets.manifest", visualAssets.WriteManifest));
 
             result.Ok = result.Exporters.TrueForAll(exporter => exporter.Ok);

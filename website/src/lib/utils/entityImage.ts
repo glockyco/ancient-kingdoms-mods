@@ -10,6 +10,7 @@ const DOMAIN_DIRECTORIES = {
   gathering_resource: "gathering_resources",
   chest: "chests",
   zone: "zones",
+  world: "world",
 } as const;
 
 export type EntityImageDomain = keyof typeof DOMAIN_DIRECTORIES;
