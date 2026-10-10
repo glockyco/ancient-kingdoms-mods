@@ -591,7 +591,6 @@ interface MonsterDescriptionInput {
   is_elite: boolean;
   is_fabled: boolean;
   is_hunt: boolean;
-  is_summonable: boolean;
   level_min: number;
   level_max: number;
 }
@@ -601,10 +600,21 @@ interface AltarSpawnInfo {
   zone_name: string;
 }
 
+/**
+ * A fixed spawn the game holds back until its placeholder monsters are all
+ * dead (SummonMonster): `kill_count` of `kill_monster_name`.
+ */
+interface SummonSpawnInfo {
+  zone_name: string;
+  kill_monster_name: string;
+  kill_count: number;
+}
+
 export function monsterDescription(
   monster: MonsterDescriptionInput,
   zoneNames: string[],
   altarSpawn: AltarSpawnInfo | null,
+  summonSpawn: SummonSpawnInfo | null,
 ): string {
   // Source: build-pipeline schema — classification flags layer fabled > boss > elite > hunt
   let classification = "";
@@ -619,13 +629,16 @@ export function monsterDescription(
       ? `${monster.level_min}`
       : `${monster.level_min}-${monster.level_max}`;
 
-  // Origin precedence: altar > summonable-only > zone list. Bestiary entries
-  // that come from altar waves or scripted encounters never appear on a map.
+  // Origin precedence: altar > summon placeholders > zone list.
   let origin = "";
   if (altarSpawn) {
     origin = ` Summoned at ${altarSpawn.altar_name} in ${altarSpawn.zone_name}.`;
-  } else if (monster.is_summonable) {
-    origin = " Spawned by altar waves or scripted encounters only.";
+  } else if (summonSpawn) {
+    const placeholders =
+      summonSpawn.kill_count === 1
+        ? `${summonSpawn.kill_monster_name} is slain`
+        : `all ${summonSpawn.kill_count} ${summonSpawn.kill_monster_name}s are slain`;
+    origin = ` Appears in ${summonSpawn.zone_name} once ${placeholders}.`;
   } else if (zoneNames.length === 1) {
     origin = ` Found in ${zoneNames[0]}.`;
   } else if (zoneNames.length === 2 || zoneNames.length === 3) {

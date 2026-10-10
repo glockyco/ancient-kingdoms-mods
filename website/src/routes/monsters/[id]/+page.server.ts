@@ -801,6 +801,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
           zone_name: spawns.altar[0].zone_name,
         }
       : null;
+  const summonSpawn = spawns.summon[0] ?? null;
 
   const description = monsterDescription(
     {
@@ -811,11 +812,11 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       is_elite: monster.is_elite,
       is_fabled: monster.is_fabled,
       is_hunt: monster.is_hunt,
-      is_summonable: monster.is_summonable,
       type_name: monster.type_name,
     },
     zoneNames,
     altarSpawn,
+    summonSpawn,
   );
 
   return {
