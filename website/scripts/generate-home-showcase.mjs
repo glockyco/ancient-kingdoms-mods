@@ -337,7 +337,7 @@ if (listedProfessions.length !== professionRows.length) {
 }
 
 // Zones in the order of the zone list: by median monster level, then name.
-// A zone without a captured shot is one whose positions are withheld.
+// Position-suppressed zones can have shots: their captures use landmark anchors, not published coordinates.
 const zones = db
   .prepare(
     `SELECT z.id, z.name, z.level_median, z.is_dungeon

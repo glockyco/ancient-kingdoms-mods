@@ -48,6 +48,12 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
   `build-pipeline/zone_shot_focal_points.json` by default. This object contains a positive finite
   default `frame_scale` and a `zones` array of `zone_id`, `x`, `y`, and `comment` records, each with
   an optional positive finite `frame_scale` override.
+  Position-suppressed Temple of Valaark instead requires `anchor: {"monster": "<monster_id>"}` and
+  an optional relative `offset: [dx, dy]` in world units (default `[0,0]`); absolute `x`/`y` are refused.
+  The anchor must resolve to exactly one valid-scene monster spawn with the zone's authoritative
+  `idZone`. The resolved offset point must lie in a live zone trigger. The manifest stores only the
+  anchor and offset, never absolute coordinates. Normal zones refuse anchors and offsets.
+  Screenshots show only what an in-zone player sees; they do not authorize publishing temple geometry.
   `frameScale` is absent by default. Supply it only to override every zone's scale for a FOV preview;
   otherwise each row's scale overrides the file default. Publication captures must match each zone's
   configured effective scale, which the pipeline validates.

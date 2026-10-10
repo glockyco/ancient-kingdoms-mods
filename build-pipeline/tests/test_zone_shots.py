@@ -28,11 +28,9 @@ class ZoneShotTests(unittest.TestCase):
             "INSERT INTO zones (id, zone_id, name, bounds_min_x, bounds_min_y, bounds_max_x, bounds_max_y) "
             "VALUES ('forest', 1, 'Forest', 0, 0, 100, 100)"
         )
-        for index, zone_id in enumerate(("temple_of_valaark", "old_valorath"), 2):
-            self.conn.execute(
-                "INSERT INTO zones (id, zone_id, name) VALUES (?, ?, ?)",
-                (zone_id, index, zone_id),
-            )
+        self.conn.execute(
+            "INSERT INTO zones (id, zone_id, name) VALUES ('old_valorath', 3, 'Old Valorath')"
+        )
         self.focal = [{"zone_id": "forest", "x": 50, "y": 50, "comment": "Clearing"}]
         self.frame_scale = 1
         self.manifest = [
@@ -83,6 +81,118 @@ class ZoneShotTests(unittest.TestCase):
         with Image.open(self.static / row[6]) as image:
             self.assertEqual("WEBP", image.format)
             self.assertEqual((960, 540), image.size)
+
+    def add_anchored_temple(self):
+        self.conn.execute(
+            "INSERT INTO zones (id, zone_id, name) VALUES ('temple_of_valaark', 2, 'Temple of Valaark')"
+        )
+        self.focal.append(
+            {
+                "zone_id": "temple_of_valaark",
+                "anchor": {"monster": "temple_guardian"},
+                "comment": "Guardian chamber",
+            }
+        )
+        self.manifest.append(
+            {
+                key: value
+                for key, value in {
+                    **self.manifest[0],
+                    "zone_id": "temple_of_valaark",
+                    "anchor": {"monster": "temple_guardian"},
+                    "offset": [0, 0],
+                }.items()
+                if key not in ("x", "y")
+            }
+        )
+        Image.new("RGB", (1920, 1080), "blue").save(
+            self.shots / "temple_of_valaark.png"
+        )
+
+    def test_publishes_anchored_suppressed_zone_without_coordinates_or_bounds(self):
+        self.add_anchored_temple()
+        self.assertEqual(2, self.publish())
+        self.assertEqual(
+            (960, 540),
+            self.conn.execute(
+                "SELECT width, height FROM visual_assets WHERE entity_id = 'temple_of_valaark'"
+            ).fetchone(),
+        )
+
+    def test_rejects_absolute_suppressed_focal_coordinates(self):
+        self.add_anchored_temple()
+        for key in ("x", "y"):
+            with self.subTest(key=key):
+                self.focal[1][key] = 0
+                with self.assertRaisesRegex(ValueError, "forbids absolute coordinates"):
+                    self.publish()
+                del self.focal[1][key]
+
+    def test_rejects_absolute_suppressed_manifest_coordinates_even_null(self):
+        self.add_anchored_temple()
+        for key in ("x", "y"):
+            for value in (0, None):
+                with self.subTest(key=key, value=value):
+                    self.manifest[1][key] = value
+                    with self.assertRaisesRegex(
+                        ValueError, "forbids absolute coordinates"
+                    ):
+                        self.publish()
+                    del self.manifest[1][key]
+
+    def test_rejects_anchor_on_normal_zone_in_focal_or_manifest(self):
+        for row in (self.focal[0], self.manifest[0]):
+            row["anchor"] = {"monster": "forest_guardian"}
+            with self.assertRaisesRegex(ValueError, "Normal zone .* forbids anchor"):
+                self.publish()
+            del row["anchor"]
+
+    def test_rejects_unanchored_suppressed_zone(self):
+        self.add_anchored_temple()
+        del self.focal[1]["anchor"]
+        with self.assertRaisesRegex(ValueError, "requires one monster anchor"):
+            self.publish()
+
+    def test_rejects_invalid_anchor_and_offset(self):
+        self.add_anchored_temple()
+        for anchor in (
+            None,
+            {},
+            {"npc": "guardian"},
+            {"monster": "../guardian"},
+            {"monster": 1},
+        ):
+            with self.subTest(anchor=anchor):
+                self.focal[1]["anchor"] = anchor
+                with self.assertRaises((TypeError, ValueError)):
+                    self.publish()
+        self.focal[1]["anchor"] = {"monster": "temple_guardian"}
+        for offset in (None, [], [0], [0, 0, 0], [True, 0], [float("nan"), 0]):
+            with self.subTest(offset=offset):
+                self.focal[1]["offset"] = offset
+                with self.assertRaises((TypeError, ValueError)):
+                    self.publish()
+
+    def test_rejects_stale_anchor_or_offset(self):
+        self.add_anchored_temple()
+        self.manifest[1]["anchor"] = {"monster": "other_guardian"}
+        with self.assertRaisesRegex(ValueError, "anchor or offset differs"):
+            self.publish()
+        self.manifest[1]["anchor"] = self.focal[1]["anchor"]
+        self.manifest[1]["offset"] = [1, 0]
+        with self.assertRaisesRegex(ValueError, "anchor or offset differs"):
+            self.publish()
+
+    def test_rejects_unreleased_zone_even_anchored(self):
+        self.focal.append(
+            {
+                "zone_id": "old_valorath",
+                "anchor": {"monster": "guardian"},
+                "comment": "Unreleased",
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "Excluded zone"):
+            self.publish()
 
     def test_rejects_unknown_zone(self):
         self.focal[0]["zone_id"] = "unknown"

@@ -93,8 +93,8 @@ namespace HotReplCommands.Commands
             var maxTextureSize = SystemInfo.maxTextureSize;
             foreach (var point in points)
             {
-                if (point.zone_id == "temple_of_valaark" || point.zone_id == "old_valorath" ||
-                    !runtimeZones.ContainsKey(point.zone_id) || !float.IsFinite(point.x) || !float.IsFinite(point.y) ||
+                point.ValidatePosition();
+                if (!runtimeZones.ContainsKey(point.zone_id) ||
                     string.IsNullOrWhiteSpace(point.comment))
                     throw new InvalidDataException($"Invalid or excluded focal point: {point.zone_id}");
                 if (point.FrameScale.HasValue && (!double.IsFinite(point.FrameScale.Value) || point.FrameScale.Value <= 0))
@@ -120,6 +120,7 @@ namespace HotReplCommands.Commands
                 var point = shot.Point;
                 state.Configure(shot.Width, shot.Height, shot.CameraSize);
                 var zone = runtimeZones[point.zone_id];
+                var position = ResolvePosition(point, zone);
                 Il2Cpp.ZoneTrigger trigger = null;
                 var smallest = float.PositiveInfinity;
                 foreach (var candidate in triggers)
@@ -129,8 +130,8 @@ namespace HotReplCommands.Commands
                     if (collider == null) continue;
                     var bounds = collider.bounds;
                     // Bounds.Contains' generated IL2CPP internal-call wrapper is invalid in this host.
-                    if (point.x < bounds.min.x || point.x > bounds.max.x ||
-                        point.y < bounds.min.y || point.y > bounds.max.y) continue;
+                    if (position.x < bounds.min.x || position.x > bounds.max.x ||
+                        position.y < bounds.min.y || position.y > bounds.max.y) continue;
                     var area = bounds.size.x * bounds.size.y;
                     if (area >= smallest) continue;
                     smallest = area;
@@ -140,7 +141,7 @@ namespace HotReplCommands.Commands
                 state.ActivateZones(zone);
                 player.combat.Networkinvincible = true;
                 player.movement.Reset();
-                player.movement.Warp(new Vector2(point.x, point.y));
+                player.movement.Warp(position);
                 player.NetworkidZone = zone;
                 player.outdoorZone = trigger.outdoorZone;
                 player.globalLightIntensityZone = trigger.globalLightIntensity;
@@ -151,18 +152,37 @@ namespace HotReplCommands.Commands
                 {
                     token.ThrowIfCancellationRequested();
                     player.combat.Networkinvincible = true;
-                    state.Frame(point);
+                    state.Frame(position);
                     yield return null;
                 }
-                state.Frame(point);
+                state.Frame(position);
                 yield return new WaitForEndOfFrame();
                 state.Readback(Path.Combine(output, point.zone_id + ".png"));
                 records.Add(new ZoneShotRecord { zone_id = point.zone_id, x = point.x, y = point.y,
+                    anchor = point.anchor, offset = point.anchor == null ? null : point.offset ?? new float[] { 0, 0 },
                     camera_size = shot.CameraSize, width = shot.Width, height = shot.Height, captured_at = DateTime.UtcNow.ToString("o") });
             }
             var manifest = Path.Combine(output, "manifest.json");
             File.WriteAllText(manifest, JsonConvert.SerializeObject(records, Formatting.Indented));
             completion.TrySetResult(ControlCommandResult.Ok(new ZoneShotsResult { Count = records.Count, ManifestPath = manifest }));
+        }
+
+        private static Vector2 ResolvePosition(ZoneShotFocalPoint point, int zone)
+        {
+            if (point.anchor == null) return new Vector2(point.x.Value, point.y.Value);
+            Il2Cpp.Monster match = null;
+            foreach (var obj in Resources.FindObjectsOfTypeAll(Il2CppType.Of<Il2Cpp.Monster>()))
+            {
+                var monster = obj.TryCast<Il2Cpp.Monster>();
+                if (monster?.gameObject == null || !monster.gameObject.scene.IsValid() ||
+                    monster.idZone != zone || GameIds.Sanitize(monster.name) != point.anchor["monster"]) continue;
+                if (match != null)
+                    throw new InvalidDataException($"Monster anchor is ambiguous in zone: {point.zone_id}");
+                match = monster;
+            }
+            if (match == null) throw new InvalidDataException($"Monster anchor is absent from zone: {point.zone_id}");
+            // Use the authored spawn, not a moving creature's current position.
+            return match.startPosition + new Vector2(point.offset?[0] ?? 0, point.offset?[1] ?? 0);
         }
 
         private sealed class CaptureState : IDisposable
@@ -279,9 +299,9 @@ namespace HotReplCommands.Commands
                     if (_zones.staticEnviroment[i] != null) _zones.staticEnviroment[i].SetActive(i == zone);
                 }
             }
-            public void Frame(ZoneShotFocalPoint point)
+            public void Frame(Vector2 position)
             {
-                _camera.transform.position = new Vector3(point.x, point.y, _cameraPosition.z);
+                _camera.transform.position = new Vector3(position.x, position.y, _cameraPosition.z);
                 _camera.transform.rotation = Quaternion.identity;
                 _camera.orthographic = true; _camera.orthographicSize = _captureSize; _camera.aspect = (float)_width / _height;
                 foreach (var pair in _behaviours) if (pair.Component != null) pair.Component.enabled = false;

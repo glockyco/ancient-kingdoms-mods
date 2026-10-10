@@ -806,6 +806,18 @@ export const HOME_SHOWCASE: HomeShowcase = {
       },
     },
     {
+      id: "temple_of_valaark",
+      name: "Temple of Valaark",
+      levelMedian: 54,
+      isDungeon: true,
+      href: "/zones/temple_of_valaark",
+      shot: {
+        src: "/images/zones/temple_of_valaark/shot.webp",
+        width: 960,
+        height: 540,
+      },
+    },
+    {
       id: "trial_of_the_ancients",
       name: "Trial of the Ancients",
       levelMedian: null,

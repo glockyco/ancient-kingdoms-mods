@@ -24,6 +24,7 @@
   {"zone_id":"urord_nog_fortress","x":630.3,"y":214,"frame_scale":1.5,"comment":"Overseer Garok, the lit gate, and the pen"},
   {"zone_id":"winterforge","x":-100,"y":1105,"frame_scale":1.5,"comment":"Throne hall, red carpet, and guards"},
   {"zone_id":"northern_wastes","x":605,"y":1265,"frame_scale":2,"comment":"Ritual ring among crimson trees"},
+  {"zone_id":"temple_of_valaark","anchor":{"monster":"drakkan_the_destroyer"},"offset":[0,0],"frame_scale":1.5,"comment":"Drakkan the Destroyer's torchlit treasure chamber"},
   {"zone_id":"molten_sanctuary","x":-750,"y":675,"frame_scale":1.5,"comment":"Glowing lava chamber"}
   ]
 }

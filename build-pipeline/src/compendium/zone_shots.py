@@ -10,7 +10,7 @@ from typing import Any
 from PIL import Image
 from rich.console import Console
 
-from compendium.commands.tiles import redacted_zone_ids
+from compendium.redactions.config import load_redactions
 from compendium.visual_assets import (
     Encoding,
     insert_asset,
@@ -77,6 +77,23 @@ def _contains(bounds: tuple, x: float, y: float) -> bool:
     )
 
 
+def _anchor(row: dict[str, Any], zone_id: str) -> tuple[dict[str, str], list[float]]:
+    if "x" in row or "y" in row:
+        raise ValueError(f"Suppressed zone '{zone_id}' forbids absolute coordinates")
+    anchor = row.get("anchor")
+    if (
+        not isinstance(anchor, dict)
+        or set(anchor) != {"monster"}
+        or not isinstance(anchor["monster"], str)
+    ):
+        raise ValueError(f"Suppressed zone '{zone_id}' requires one monster anchor")
+    validate_segment(anchor["monster"], label="Monster anchor")
+    offset = row.get("offset", [0, 0])
+    if not isinstance(offset, list) or len(offset) != 2:
+        raise ValueError(f"Zone '{zone_id}' offset requires two finite numbers")
+    return anchor, [_number({"offset": value}, "offset", zone_id) for value in offset]
+
+
 def publish_zone_shots(
     conn: sqlite3.Connection,
     export_dir: Path,
@@ -100,7 +117,8 @@ def publish_zone_shots(
             "SELECT id, bounds_min_x, bounds_min_y, bounds_max_x, bounds_max_y FROM zones"
         )
     }
-    excluded = redacted_zone_ids()
+    redactions = load_redactions()
+    excluded = redactions.exclude_zone_ids
     required = set(zones) - excluded
     for label, records in (("focal points", focal), ("capture manifest", captures)):
         unknown = set(records) - set(zones)
@@ -133,17 +151,28 @@ def publish_zone_shots(
         camera_size = CAMERA_SIZE * effective_scale
         if not isinstance(point.get("comment"), str):
             raise TypeError(f"Zone '{zone_id}' focal point requires a comment")
-        x, y = (_number(point, key, zone_id) for key in ("x", "y"))
-        rectangles = [zones[zone_id], *triggers.get(zone_id, [])]
-        if not any(_contains(bounds, x, y) for bounds in rectangles):
-            raise ValueError(f"Zone '{zone_id}' focal point is outside zone bounds")
-        for key, value in (("x", x), ("y", y)):
-            if not math.isclose(
-                _number(capture, key, zone_id), value, abs_tol=0.001, rel_tol=0
-            ):
+        if zone_id in redactions.suppress_position_zone_ids:
+            if _anchor(point, zone_id) != _anchor(capture, zone_id):
                 raise ValueError(
-                    f"Zone '{zone_id}' capture {key} differs from focal point"
+                    f"Zone '{zone_id}' capture anchor or offset differs from focal point"
                 )
+            # The live capture verifies containment; published geometry is withheld.
+        else:
+            if any(
+                key in row for row in (point, capture) for key in ("anchor", "offset")
+            ):
+                raise ValueError(f"Normal zone '{zone_id}' forbids anchor or offset")
+            x, y = (_number(point, key, zone_id) for key in ("x", "y"))
+            rectangles = [zones[zone_id], *triggers.get(zone_id, [])]
+            if not any(_contains(bounds, x, y) for bounds in rectangles):
+                raise ValueError(f"Zone '{zone_id}' focal point is outside zone bounds")
+            for key, value in (("x", x), ("y", y)):
+                if not math.isclose(
+                    _number(capture, key, zone_id), value, abs_tol=0.001, rel_tol=0
+                ):
+                    raise ValueError(
+                        f"Zone '{zone_id}' capture {key} differs from focal point"
+                    )
         if not math.isclose(
             _number(capture, "camera_size", zone_id),
             camera_size,

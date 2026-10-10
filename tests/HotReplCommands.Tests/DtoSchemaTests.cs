@@ -141,6 +141,49 @@ namespace HotReplCommands.Tests
         }
 
         [Fact]
+        public void ZoneShotAnchor_RoundTripsWithoutAbsoluteCoordinates()
+        {
+            var point = JsonConvert.DeserializeObject<ZoneShotFocalPoint>(
+                "{\"zone_id\":\"temple_of_valaark\",\"anchor\":{\"monster\":\"guardian\"},\"offset\":[0,2]}")!;
+            point.ValidatePosition();
+            var record = new ZoneShotRecord { zone_id = point.zone_id, anchor = point.anchor, offset = point.offset };
+            var json = JObject.Parse(JsonConvert.SerializeObject(record));
+            Assert.Null(json["x"]);
+            Assert.Null(json["y"]);
+            Assert.Equal("guardian", json["anchor"]!["monster"]!.Value<string>());
+            Assert.Equal(2f, json["offset"]![1]!.Value<float>());
+        }
+
+        [Theory]
+        [InlineData("{\"zone_id\":\"temple_of_valaark\",\"anchor\":{\"monster\":\"guardian\"}}")]
+        [InlineData("{\"zone_id\":\"temple_of_valaark\",\"anchor\":{\"monster\":\"guardian\"},\"offset\":[0,2]}")]
+        [InlineData("{\"zone_id\":\"forest\",\"x\":1,\"y\":2}")]
+        public void ZoneShotPosition_AcceptsOneConvention(string json)
+            => JsonConvert.DeserializeObject<ZoneShotFocalPoint>(json)!.ValidatePosition();
+
+        [Theory]
+        [InlineData("{\"zone_id\":\"temple_of_valaark\",\"x\":0,\"anchor\":{\"monster\":\"guardian\"}}")]
+        [InlineData("{\"zone_id\":\"temple_of_valaark\",\"y\":0,\"anchor\":{\"monster\":\"guardian\"}}")]
+        [InlineData("{\"zone_id\":\"temple_of_valaark\"}")]
+        [InlineData("{\"zone_id\":\"temple_of_valaark\",\"anchor\":{\"npc\":\"guardian\"}}")]
+        [InlineData("{\"zone_id\":\"temple_of_valaark\",\"anchor\":{\"monster\":\"guardian\"},\"offset\":[0]}")]
+        [InlineData("{\"zone_id\":\"forest\",\"x\":1,\"y\":2,\"anchor\":{\"monster\":\"guardian\"}}")]
+        [InlineData("{\"zone_id\":\"forest\",\"x\":1,\"y\":2,\"offset\":[0,0]}")]
+        [InlineData("{\"zone_id\":\"old_valorath\",\"anchor\":{\"monster\":\"guardian\"}}")]
+        public void ZoneShotPosition_RejectsForbiddenConventions(string json)
+            => Assert.Throws<System.IO.InvalidDataException>(
+                () => JsonConvert.DeserializeObject<ZoneShotFocalPoint>(json)!.ValidatePosition());
+
+        [Theory]
+        [InlineData("x")]
+        [InlineData("y")]
+        [InlineData("anchor")]
+        [InlineData("offset")]
+        public void ZoneShotPosition_RejectsExplicitNull(string key)
+            => Assert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<ZoneShotFocalPoint>(
+                "{\"zone_id\":\"temple_of_valaark\",\"" + key + "\":null}"));
+
+        [Fact]
         public void PreflightResult_ReadyIsRequired()
         {
             var descriptor = BuildRegistry().Describe()

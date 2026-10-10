@@ -237,9 +237,16 @@ It uses the gameplay camera,
 area lighting, bloom, and current in-game daylight/weather; hides the HUD, entity labels/health bars,
 and local player; and restores the camera and scene afterwards. To review a composition, pass
 `{"zoneIds":["twilight_forest"]}`; compare a creature-free version with `"includeCreatures":false`.
-Run the complete command again after reviewing subsets so the manifest covers all released zones
-except the position-redacted Temple of Valaark. Old Valorath is unreleased and must never be captured.
-`compendium build` validates focal-point coverage and containment, rejects missing captures or
+Run the complete command again after reviewing subsets so the manifest covers all released zones.
+Position-suppressed zones use `anchor: {"monster": "<monster_id>"}` instead of absolute `x`/`y`,
+with an optional relative `offset: [dx, dy]` in world units (default `[0,0]`).
+The command resolves exactly one valid-scene monster spawn in that zone and verifies the offset point
+against the live zone trigger. The manifest records only the anchor and relative offset, never its
+resolved coordinates. Temple of Valaark screenshots are allowed because they show only what a player
+inside sees; absolute temple coordinates must never be checked in. Normal zones refuse anchors and
+continue using `x`/`y`. Old Valorath is unreleased and must never be captured.
+`compendium build` validates focal-point coverage and containment (live-command containment for
+anchored zones), rejects missing captures, coordinates in anchored manifests, or
 camera/image dimensions inconsistent with each zone's effective focal scale, and publishes unchanged 960×540
 lossy WebP shots using Lanczos resampling. Boss portraits/bestiary sprites remain native,
 lossless images; the painted runtime world map is published at up to 2400 pixels wide.
