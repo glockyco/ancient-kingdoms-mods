@@ -44,6 +44,7 @@ exporter would have to drive the interface one race at a time.
 | `npc/primary` | Root `SpriteRenderer`, or a body composite under `Npc.gameObject/Front` |
 | `pet/icon` | `Pet.portraitIcon` |
 | `pet/primary` | The pet's root renderer or `Front` body composite |
+| `profession/icon` | Live `UIProfessions` slot's authored `0/icon.Image.sprite`; the other images are decorative frames/labels |
 | `skill/icon` | `ScriptableSkill.image` |
 | `world/map` | Live scene `UIMap.worldMap.sprite`, exported as `world/eratiath/map` |
 | `zone/shot` | Typed HotRepl `capture.zoneShots` job; native zone screenshots in `screenshots/zones/` with `manifest.json` |
@@ -58,6 +59,12 @@ Humanoid monsters and NPCs expose body sprites under `Front` instead of a root r
 excludes UI renderers such as health bars, labels, speech bubbles, and shadows.
 When an entity has several rows for the same `(domain, entity_id, kind)`,
 review the ambiguity instead of picking one.
+
+Profession export requires exactly one valid-scene `UIProfessions` instance discovered through
+`Resources.FindObjectsOfTypeAll` and `TryCast`, not its singleton. All 13 explicit slot references must
+resolve to `0/icon.Image.sprite`; a missing registry, slot, or icon fails the export.
+`source_field` records that Image's exact hierarchy with sibling indices. Do not select a root Image
+or guess among decorative siblings: the live slots include backgrounds, borders and level labels.
 
 ## Registration and output
 

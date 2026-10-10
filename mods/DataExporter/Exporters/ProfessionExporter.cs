@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
 using DataExporter.Models;
+using Il2CppInterop.Runtime;
 using MelonLoader;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace DataExporter.Exporters;
 
@@ -174,43 +178,72 @@ public class ProfessionExporter : BaseExporter
             }
         };
 
-        // Try to extract icon paths from UIProfessions if available
-        TryUpdateIconsFromUI(professions);
+        UpdateIconsFromUI(professions);
 
         WriteJson(professions, "professions.json");
         Logger.Msg($"✓ Exported {professions.Count} professions");
     }
 
-    private void TryUpdateIconsFromUI(List<ProfessionData> professions)
+    private void UpdateIconsFromUI(List<ProfessionData> professions)
     {
-        var uiProfessions = Il2Cpp.UIProfessions.singleton;
-        if (uiProfessions == null)
+        Il2Cpp.UIProfessions uiProfessions = null;
+        foreach (var obj in Resources.FindObjectsOfTypeAll(Il2CppType.Of<Il2Cpp.UIProfessions>()))
         {
-            Logger.Msg("UIProfessions.singleton not available, profession icons unavailable");
-            return;
+            var candidate = obj.TryCast<Il2Cpp.UIProfessions>();
+            if (candidate == null || candidate.gameObject == null || !candidate.gameObject.scene.IsValid())
+                continue;
+
+            if (uiProfessions != null)
+                throw new InvalidOperationException("Multiple live UIProfessions scene instances are available.");
+            uiProfessions = candidate;
         }
+
+        if (uiProfessions == null)
+            throw new InvalidOperationException("A live UIProfessions scene instance is unavailable.");
+        if (VisualAssets == null)
+            throw new InvalidOperationException("The profession visual asset registry is unavailable.");
 
         foreach (var profession in professions)
         {
             var slot = GetSlotForProfession(uiProfessions, profession.id);
-            if (slot != null)
-            {
-                var image = slot.GetComponent<UnityEngine.UI.Image>();
-                if (image != null && image.sprite != null)
-                {
-                    profession.icon_path = image.sprite.name;
-                    VisualAssets?.ExportSprite(
-                        "profession",
-                        profession.id,
-                        "icon",
-                        "UIProfessionSlot.Image.sprite",
-                        image.sprite.GetType().FullName,
-                        image.sprite.name,
-                        image.sprite);
-                }
-            }
+            if (slot == null)
+                throw new InvalidOperationException($"The live UIProfessions slot for '{profession.id}' is unavailable.");
+
+            var image = GetIconImage(slot, profession.id);
+            var sprite = image.sprite;
+            profession.icon_path = sprite.name;
+            VisualAssets.ExportSprite(
+                "profession",
+                profession.id,
+                "icon",
+                $"{GetHierarchyPath(image.transform)}.Image.sprite",
+                sprite.GetType().FullName,
+                sprite.name,
+                sprite);
         }
-        Logger.Msg("Updated icon paths from UIProfessions UI");
+        Logger.Msg($"Exported {professions.Count} profession icons from live UIProfessions slots");
+    }
+
+    private static Image GetIconImage(Il2Cpp.UIProfessionSlot slot, string professionId)
+    {
+        // All 13 live slots author their icon here; the slot's other Images are UI frames/labels.
+        var icon = slot.transform.Find("0/icon")?.GetComponent<Image>();
+        if (icon == null || icon.sprite == null)
+            throw new InvalidOperationException(
+                $"Profession '{professionId}' is missing {GetHierarchyPath(slot.transform)}/0/icon.Image.sprite.");
+        return icon;
+    }
+
+    private static string GetHierarchyPath(Transform transform)
+    {
+        var names = new List<string>();
+        while (transform != null)
+        {
+            names.Add($"{transform.name}[{transform.GetSiblingIndex()}]");
+            transform = transform.parent;
+        }
+        names.Reverse();
+        return string.Join("/", names);
     }
 
     private Il2Cpp.UIProfessionSlot GetSlotForProfession(Il2Cpp.UIProfessions ui, string professionId)
