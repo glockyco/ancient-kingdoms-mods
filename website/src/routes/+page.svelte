@@ -1,16 +1,18 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
-  import ThemeToggle from "$lib/components/ThemeToggle.svelte";
-  import SupportButton from "$lib/components/SupportButton.svelte";
+  import TitleScreenHero from "$lib/components/home/TitleScreenHero.svelte";
+  import EntityGlyph from "$lib/components/EntityGlyph.svelte";
   import SteamIcon from "$lib/components/SteamIcon.svelte";
   import DiscordIcon from "$lib/components/DiscordIcon.svelte";
   import KofiIcon from "$lib/components/KofiIcon.svelte";
-  import GameVersionBanner from "$lib/components/GameVersionBanner.svelte";
-  import HomeSearch from "$lib/components/HomeSearch.svelte";
-  import { buttonVariants } from "$lib/components/ui/button";
   import { COMPENDIUM_VERSION } from "$lib/constants/version";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
+  import {
+    HOME_SHOWCASE,
+    type ShowcaseImage,
+  } from "$lib/generated/home-showcase";
   import { MECHANICS_GROUPS } from "$lib/data/mechanics";
+  import { entityRegistry, type EntityId } from "$lib/entities/registry";
   import {
     AK_MONITOR_DISCORD_URL,
     DISCORD_URL,
@@ -18,25 +20,6 @@
     STEAM_GUIDE_URL,
     STEAM_STORE_URL,
   } from "$lib/constants/links";
-  import Gem from "@lucide/svelte/icons/gem";
-  import MapPin from "@lucide/svelte/icons/map-pin";
-  import Skull from "@lucide/svelte/icons/skull";
-  import Users from "@lucide/svelte/icons/users";
-  import Scroll from "@lucide/svelte/icons/scroll";
-  import Zap from "@lucide/svelte/icons/zap";
-  import FlaskConical from "@lucide/svelte/icons/flask-conical";
-  import Flame from "@lucide/svelte/icons/flame";
-  import Leaf from "@lucide/svelte/icons/leaf";
-  import Box from "@lucide/svelte/icons/box";
-  import Hammer from "@lucide/svelte/icons/hammer";
-  import Map from "@lucide/svelte/icons/map";
-  import Star from "@lucide/svelte/icons/star";
-  import Cat from "@lucide/svelte/icons/cat";
-  import Swords from "@lucide/svelte/icons/swords";
-  import ArrowRight from "@lucide/svelte/icons/arrow-right";
-  import Trophy from "@lucide/svelte/icons/trophy";
-  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
-  import Shield from "@lucide/svelte/icons/shield";
 
   let { data } = $props();
 
@@ -44,330 +27,258 @@
   const description =
     "Look up items, monsters, NPCs, zones, quests, skills, and recipes from game files updated after each patch.";
 
-  // Primary database sections, ranked by usage. Each carries its own literal
-  // badge classes (Tailwind needs static strings) so the icon tint stays
-  // consistent with the per-page pattern used across the site. Counts come
-  // from a build-time snapshot compiled into this bundle, so these lists are
-  // plain constants rather than `$derived` over `data`.
-  const browse = [
-    {
-      title: "Items",
-      description: "Equipment, consumables, and treasures",
-      href: "/items",
-      icon: Gem,
-      badge: "bg-amber-500/10 text-amber-500",
-      count: HOME_COUNTS.items,
-      unit: "items",
-    },
-    {
-      title: "Monsters",
-      description: "Bosses, elites, and other creatures",
-      href: "/monsters",
-      icon: Skull,
-      badge: "bg-red-500/10 text-red-500",
-      count: HOME_COUNTS.monsters,
-      unit: "monsters",
-    },
-    {
-      title: "Zones",
-      description: "Overworld areas and dungeons",
-      href: "/zones",
-      icon: MapPin,
-      badge: "bg-emerald-500/10 text-emerald-500",
-      count: HOME_COUNTS.zones,
-      unit: "zones",
-    },
-    {
-      title: "Classes",
-      description: "Playable classes and skill trees",
-      href: "/classes",
-      icon: Star,
-      badge: "bg-indigo-500/10 text-indigo-500",
-      count: HOME_COUNTS.classes,
-      unit: "classes",
-    },
-    {
-      title: "Professions",
-      description: "Gathering, crafting, and combat",
-      href: "/professions",
-      icon: Hammer,
-      badge: "bg-yellow-500/10 text-yellow-500",
-      count: HOME_COUNTS.professions,
-      unit: "professions",
-    },
-    {
-      title: "Crafting Recipes",
-      description: "Alchemy, cooking, forge, and scribing",
-      href: "/recipes",
-      icon: FlaskConical,
-      badge: "bg-purple-500/10 text-purple-500",
-      count: HOME_COUNTS.recipes,
-      unit: "recipes",
-    },
+  /**
+   * Pixel art is shown at a whole multiple of its own size so every source
+   * pixel stays square. `box` is the side of the frame the art must fit.
+   */
+  function pixelSize(image: ShowcaseImage, box: number) {
+    const scale = Math.max(
+      1,
+      Math.min(3, Math.round(box / Math.max(image.width, image.height))),
+    );
+    return { width: image.width * scale, height: image.height * scale };
+  }
+
+  // Zones open in the order of the zone list; the first few are shown and the
+  // rest are one click away.
+  const ZONES_SHOWN = 8;
+  const zonesShown = HOME_SHOWCASE.zones.slice(0, ZONES_SHOWN);
+  const zonesMore = HOME_SHOWCASE.zones.slice(ZONES_SHOWN);
+
+  // Overview pages without a section of their own, in the order readers use them.
+  const directory: readonly { id: EntityId; count: number }[] = [
+    { id: "quest", count: HOME_COUNTS.quests },
+    { id: "skill", count: HOME_COUNTS.skills },
+    { id: "npc", count: HOME_COUNTS.npcs },
+    { id: "profession", count: HOME_COUNTS.professions },
+    { id: "mercenary", count: HOME_COUNTS.mercenaries },
+    { id: "summon", count: HOME_COUNTS.summons },
+    { id: "achievement", count: HOME_COUNTS.achievements },
+    { id: "faction", count: HOME_COUNTS.factions },
+    { id: "gathering_resource", count: HOME_COUNTS.gatheringResources },
+    { id: "chest", count: HOME_COUNTS.chests },
+    { id: "altar", count: HOME_COUNTS.altars },
+    { id: "trap", count: HOME_COUNTS.traps },
   ];
 
-  // Secondary sections, shown as compact tiles.
-  const more = [
-    {
-      title: "Achievements",
-      href: "/achievements",
-      icon: Trophy,
-      badge: "bg-amber-500/10 text-amber-500",
-      count: HOME_COUNTS.achievements,
-    },
-    {
-      title: "Factions",
-      href: "/factions",
-      icon: Shield,
-      badge: "bg-indigo-500/10 text-indigo-500",
-      count: HOME_COUNTS.factions,
-    },
-    {
-      title: "Mercenaries",
-      href: "/mercenaries",
-      icon: Swords,
-      badge: "bg-teal-500/10 text-teal-500",
-      count: HOME_COUNTS.mercenaries,
-    },
-    {
-      title: "Summons",
-      href: "/summons",
-      icon: Cat,
-      badge: "bg-cyan-500/10 text-cyan-500",
-      count: HOME_COUNTS.summons,
-    },
-    {
-      title: "Skills",
-      href: "/skills",
-      icon: Zap,
-      badge: "bg-purple-500/10 text-purple-500",
-      count: HOME_COUNTS.skills,
-    },
-    {
-      title: "Altars",
-      href: "/altars",
-      icon: Flame,
-      badge: "bg-orange-500/10 text-orange-500",
-      count: HOME_COUNTS.altars,
-    },
-    {
-      title: "NPCs",
-      href: "/npcs",
-      icon: Users,
-      badge: "bg-blue-500/10 text-blue-500",
-      count: HOME_COUNTS.npcs,
-    },
-    {
-      title: "Quests",
-      href: "/quests",
-      icon: Scroll,
-      badge: "bg-orange-500/10 text-orange-500",
-      count: HOME_COUNTS.quests,
-    },
-    {
-      title: "Gathering Resources",
-      href: "/gather-items",
-      icon: Leaf,
-      badge: "bg-lime-500/10 text-lime-500",
-      count: HOME_COUNTS.gatheringResources,
-    },
-    {
-      title: "Chests",
-      href: "/chests",
-      icon: Box,
-      badge: "bg-sky-500/10 text-sky-500",
-      count: HOME_COUNTS.chests,
-    },
-    {
-      title: "Traps",
-      href: "/traps",
-      icon: TriangleAlert,
-      badge: "bg-rose-500/10 text-rose-500",
-      count: HOME_COUNTS.traps,
-    },
-  ];
-
-  // Curated footer nav: the highest-traffic sections only (no Mechanics — it
-  // has its own section above).
   const footerLinks = [
     { label: "Map", href: "/map" },
     { label: "Items", href: "/items" },
     { label: "Monsters", href: "/monsters" },
-    { label: "Zones", href: "/zones" },
+    { label: "Recipes", href: "/recipes" },
     { label: "Classes", href: "/classes" },
-    { label: "Professions", href: "/professions" },
+    { label: "Zones", href: "/zones" },
   ];
 </script>
 
 <Seo {title} {description} path="/" />
 
-<div class="mx-auto max-w-5xl px-6 pt-8">
-  <div class="flex flex-col gap-9">
-    <!-- Hero -->
-    <div class="relative space-y-4 py-2 text-center">
-      <div class="flex items-center justify-between gap-2 sm:block">
-        <div class="flex items-center gap-1 sm:absolute sm:top-0 sm:left-0">
-          <ThemeToggle />
-          <a
-            href={STEAM_GUIDE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Steam Guide"
-            class={buttonVariants({ variant: "ghost", size: "icon" })}
-          >
-            <SteamIcon class="size-5" />
-          </a>
-          <a
-            href={DISCORD_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Join Discord"
-            class={buttonVariants({ variant: "ghost", size: "icon" })}
-          >
-            <DiscordIcon class="size-5" />
-          </a>
-        </div>
-        <div
-          aria-label="Support actions"
-          class="flex items-center sm:absolute sm:top-0 sm:right-0"
-        >
-          <SupportButton compact iconRight />
-        </div>
-      </div>
-      <img src="/logo.webp" alt="" class="mx-auto h-28 w-28" />
-      <h1 class="text-4xl font-bold tracking-tight md:text-5xl">
-        Ancient Kingdoms Compendium
-      </h1>
-      <p class="text-xl text-muted-foreground">
-        Fan-made wiki, world map, and searchable game database
-      </p>
-      <GameVersionBanner live={data.live} checkedAt={data.checkedAt} />
-      <HomeSearch />
-    </div>
+<TitleScreenHero live={data.live} checkedAt={data.checkedAt} />
 
-    <!-- Flagship: interactive world map -->
-    <a
-      href="/map"
-      class="group flex flex-col items-center gap-4 rounded-lg border bg-card p-6 text-center shadow-sm transition-colors hover:border-foreground/20 hover:bg-muted/40 sm:flex-row sm:gap-6 sm:p-7 sm:text-left"
-    >
-      <div
-        class="grid size-15 shrink-0 place-items-center rounded-xl bg-teal-500/10 text-teal-500"
-      >
-        <Map class="size-8" />
-      </div>
-      <div class="flex-1">
-        <h2 class="text-xl font-bold tracking-tight group-hover:underline">
-          Interactive World Map
-        </h2>
-        <p class="mt-1 text-muted-foreground">
-          Find monsters, NPCs, and resources across {HOME_COUNTS.zones} zones on the
-          map of Eratiath.
-        </p>
-      </div>
-      <span
-        class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground"
-      >
-        Explore <ArrowRight class="size-4" />
-      </span>
-    </a>
+<div class="container mx-auto flex flex-col gap-12 px-5 pt-10 pb-16 sm:px-8">
+  <section aria-labelledby="home-items">
+    {@render heading(
+      "home-items",
+      "Items",
+      "/items",
+      `All ${HOME_COUNTS.items.toLocaleString()} items`,
+    )}
+    <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
+      {#each HOME_SHOWCASE.itemGroups as group (group.label)}
+        {@const size = pixelSize(group.icon, 52)}
+        <li>
+          {@render entry(
+            group.href,
+            group.icon.src,
+            size,
+            group.label,
+            `${group.count.toLocaleString()} items`,
+          )}
+        </li>
+      {/each}
+    </ul>
+  </section>
 
-    <!-- Browse -->
-    <section>
-      {@render sectionLabel("Browse")}
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {#each browse as entry (entry.href)}
-          <a
-            href={entry.href}
-            class="group flex h-full flex-col gap-3 rounded-lg border bg-card p-5 shadow-sm transition-colors hover:border-foreground/20 hover:bg-muted/40"
-          >
-            <div
-              class="grid size-11 place-items-center rounded-xl {entry.badge}"
-            >
-              <entry.icon class="size-6" />
-            </div>
-            <div>
-              <h3 class="text-base font-semibold group-hover:underline">
-                {entry.title}
-              </h3>
-              <p class="mt-0.5 text-sm text-muted-foreground">
-                {entry.description}
-              </p>
-            </div>
-            <div
-              class="mt-auto flex items-center gap-1.5 pt-1 text-sm text-muted-foreground"
-            >
-              <span class="font-semibold tabular-nums text-foreground">
-                {entry.count.toLocaleString()}
-              </span>
-              <span>{entry.unit}</span>
-              <ArrowRight
-                class="ml-auto size-4 transition-transform group-hover:translate-x-0.5"
+  <section aria-labelledby="home-bosses">
+    {@render heading(
+      "home-bosses",
+      "World Bosses",
+      "/monsters",
+      `All ${HOME_COUNTS.monsters.toLocaleString()} monsters`,
+    )}
+    <ul class="bosses">
+      {#each HOME_SHOWCASE.worldBosses as boss (boss.id)}
+        <li>
+          <a href={boss.href} class="boss-card">
+            <span class="boss-stage dark" style:--glow={boss.glow}>
+              <img
+                src={boss.sprite.src}
+                width={boss.sprite.width}
+                height={boss.sprite.height}
+                alt=""
+                loading="lazy"
+                decoding="async"
               />
-            </div>
+              <span class="boss-level">
+                <span class="sr-only">Level</span><span aria-hidden="true"
+                  >Lv</span
+                >
+                {boss.level}
+              </span>
+            </span>
+            <span class="boss-text">
+              <span class="entry-name">{boss.name}</span>
+              <span class="entry-meta">{boss.zone}</span>
+            </span>
           </a>
-        {/each}
-      </div>
-    </section>
+        </li>
+      {/each}
+    </ul>
+  </section>
 
-    <!-- More -->
-    <section>
-      {@render sectionLabel("More")}
-      <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
-        {#each more as entry (entry.href)}
-          <a
-            href={entry.href}
-            class="group flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 transition-colors hover:border-border hover:bg-muted/50"
-          >
-            <div
-              class="grid size-8 shrink-0 place-items-center rounded-lg {entry.badge}"
+  <a href="/map" class="map-card dark">
+    <img
+      class="map-art"
+      src={HOME_SHOWCASE.worldMap.src}
+      width={HOME_SHOWCASE.worldMap.width}
+      height={HOME_SHOWCASE.worldMap.height}
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
+    <span class="map-copy">
+      <span class="map-title">Interactive World Map</span>
+      <span class="map-cta">Open the map <span aria-hidden="true">→</span></span
+      >
+    </span>
+  </a>
+
+  <section aria-labelledby="home-recipes">
+    {@render heading(
+      "home-recipes",
+      "Recipes",
+      "/recipes",
+      `All ${HOME_COUNTS.recipes.toLocaleString()} recipes`,
+    )}
+    <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
+      {#each HOME_SHOWCASE.crafting as recipeType (recipeType.type)}
+        {@const size = pixelSize(recipeType.icon, 52)}
+        <li>
+          {@render entry(
+            recipeType.href,
+            recipeType.icon.src,
+            size,
+            recipeType.type,
+            `${recipeType.count.toLocaleString()} recipes`,
+          )}
+        </li>
+      {/each}
+    </ul>
+  </section>
+
+  <section aria-labelledby="home-classes">
+    {@render heading(
+      "home-classes",
+      "Classes",
+      "/classes",
+      `All ${HOME_COUNTS.classes} classes`,
+    )}
+    <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
+      {#each HOME_SHOWCASE.classes as gameClass (gameClass.id)}
+        <li>
+          {@render entry(
+            gameClass.href,
+            gameClass.icon.src,
+            { width: gameClass.icon.width, height: gameClass.icon.height },
+            gameClass.name,
+            gameClass.role,
+          )}
+        </li>
+      {/each}
+    </ul>
+  </section>
+
+  <section aria-labelledby="home-zones">
+    {@render heading(
+      "home-zones",
+      "Zones",
+      "/zones",
+      `All ${HOME_COUNTS.zones} zones`,
+    )}
+    <ul class="zones">
+      {#each zonesShown as zone (zone.id)}
+        <li>{@render zoneCard(zone)}</li>
+      {/each}
+    </ul>
+    {#if zonesMore.length > 0}
+      <details class="more-zones">
+        <summary>Show {zonesMore.length} more zones</summary>
+        <ul class="zones">
+          {#each zonesMore as zone (zone.id)}
+            <li>{@render zoneCard(zone)}</li>
+          {/each}
+        </ul>
+      </details>
+    {/if}
+  </section>
+
+  <section aria-labelledby="home-more">
+    <h2 id="home-more" class="section-title mb-4">More to explore</h2>
+    <ul class="grid gap-1 sm:grid-cols-2 lg:grid-cols-4">
+      {#each directory as item (item.id)}
+        {@const def = entityRegistry[item.id]}
+        <li>
+          <a href={def.overviewHref} class="directory-link">
+            <span class="glyph"><EntityGlyph icon={def.icon} size={18} /></span>
+            <span class="flex-1 font-medium">{def.pluralLabel}</span>
+            <span class="text-sm text-muted-foreground tabular-nums"
+              >{item.count.toLocaleString()}</span
             >
-              <entry.icon class="size-4" />
-            </div>
-            <span class="text-sm font-medium group-hover:underline">
-              {entry.title}
-            </span>
-            <span class="ml-auto text-xs tabular-nums text-muted-foreground">
-              {entry.count.toLocaleString()}
-            </span>
           </a>
-        {/each}
-      </div>
-    </section>
+        </li>
+      {/each}
+    </ul>
+  </section>
 
-    <!-- Game mechanics -->
-    <section>
-      {@render sectionLabel("Game mechanics")}
-      <div class="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-5">
-        {#each MECHANICS_GROUPS as group (group.title)}
-          <div>
-            <h3 class="mb-1.5 text-sm font-semibold">{group.title}</h3>
-            <ul>
-              {#each group.pages as page (page.href)}
-                <li>
-                  <a
-                    href={page.href}
-                    class="block py-1 text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline"
+  <section aria-labelledby="home-mechanics">
+    {@render heading(
+      "home-mechanics",
+      "Mechanics",
+      "/mechanics",
+      "All mechanics",
+    )}
+    <div class="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
+      {#each MECHANICS_GROUPS as group (group.title)}
+        <div>
+          <h3 class="group-title">{group.title}</h3>
+          <ul>
+            {#each group.pages as page (page.href)}
+              <li>
+                <a href={page.href} class="mechanics-link">
+                  <span class="font-semibold">{page.title}</span>
+                  <span class="text-sm text-muted-foreground"
+                    >{page.summary}</span
                   >
-                    {page.title}
-                  </a>
-                </li>
-              {/each}
-            </ul>
-          </div>
-        {/each}
-      </div>
-    </section>
-  </div>
+                </a>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/each}
+    </div>
+  </section>
+</div>
 
-  <!-- Page foot: about prose + meta -->
-  <footer class="mt-12 border-t pt-10 pb-10">
+<footer class="border-t bg-muted/40">
+  <div class="container mx-auto px-5 py-10 sm:px-8">
+    <h2 class="sr-only">About the compendium</h2>
     <div
-      class="max-w-[66ch] space-y-3 text-sm leading-relaxed text-pretty text-muted-foreground"
+      class="max-w-[70ch] space-y-3 text-[0.9375rem] leading-relaxed text-pretty text-muted-foreground"
     >
       <p>
-        <strong>Ancient Kingdoms</strong> is a 2D pixel-art RPG by Ancient
-        Pixels, inspired by classic MMORPGs. You can play alone or in co-op in
-        the world of Eratiath. The game is in
+        <strong class="text-foreground">Ancient Kingdoms</strong> is a 2D
+        pixel-art RPG by Ancient Pixels, inspired by classic MMORPGs. You can
+        play alone or in co-op in the world of Eratiath. The game is in
         <a
           href={STEAM_STORE_URL}
           target="_blank"
@@ -378,10 +289,10 @@
         >.
       </p>
       <p>
-        The <strong>Ancient Kingdoms Compendium</strong> is a fan-made wiki, interactive
-        world map, and searchable game database. We update the listings from game
-        files after each patch. They cover items, monsters, NPCs, zones, quests, skills,
-        classes, professions, and more.
+        The <strong class="text-foreground">Ancient Kingdoms Compendium</strong> is
+        a fan-made wiki, interactive world map, and searchable game database. We update
+        the listings from game files after each patch. They cover items, monsters,
+        NPCs, zones, quests, skills, classes, professions, and more.
       </p>
       <p>
         Do you run a server? <a
@@ -395,10 +306,11 @@
         recovery, SteamCMD updates, backups, and RCON. The monitor is a separate community
         project, not part of the compendium.
       </p>
+      <p>Ancient Kingdoms artwork © Ancient Pixels, used with permission.</p>
     </div>
 
     <div
-      class="mt-10 flex flex-wrap items-center justify-between gap-x-10 gap-y-6 text-[0.8125rem] text-muted-foreground"
+      class="mt-8 flex flex-wrap items-center justify-between gap-x-10 gap-y-4 border-t pt-6 text-sm text-muted-foreground"
     >
       <div>Ancient Kingdoms Compendium · Updated for v{COMPENDIUM_VERSION}</div>
       <nav class="flex flex-wrap gap-x-4 gap-y-1" aria-label="Site sections">
@@ -414,7 +326,7 @@
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Steam Guide"
-          class={buttonVariants({ variant: "ghost", size: "icon" })}
+          class="footer-icon"
         >
           <SteamIcon class="size-5" />
         </a>
@@ -423,7 +335,7 @@
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Join Discord"
-          class={buttonVariants({ variant: "ghost", size: "icon" })}
+          class="footer-icon"
         >
           <DiscordIcon class="size-5" />
         </a>
@@ -432,19 +344,371 @@
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Support on Ko-fi"
-          class={buttonVariants({ variant: "ghost", size: "icon" })}
+          class="footer-icon"
         >
           <KofiIcon class="size-5" />
         </a>
       </div>
     </div>
-  </footer>
-</div>
+  </div>
+</footer>
 
-{#snippet sectionLabel(label: string)}
-  <p
-    class="mb-4 text-[0.6875rem] font-semibold tracking-[0.08em] text-muted-foreground uppercase"
+{#snippet heading(id: string, title: string, href: string, label: string)}
+  <div
+    class="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"
   >
-    {label}
-  </p>
+    <h2 {id} class="section-title">{title}</h2>
+    <a
+      {href}
+      class="text-[0.9375rem] font-medium text-brand-gold hover:underline"
+      >{label} <span aria-hidden="true">→</span></a
+    >
+  </div>
 {/snippet}
+
+{#snippet entry(
+  href: string,
+  src: string,
+  size: { width: number; height: number },
+  name: string,
+  meta: string,
+)}
+  <a {href} class="entry">
+    <span class="art">
+      <img
+        {src}
+        width={size.width}
+        height={size.height}
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+    </span>
+    <span class="min-w-0">
+      <span class="entry-name">{name}</span>
+      <span class="entry-meta">{meta}</span>
+    </span>
+  </a>
+{/snippet}
+
+{#snippet zoneCard(zone: (typeof HOME_SHOWCASE.zones)[number])}
+  <a href={zone.href} class="zone-card">
+    <img
+      src={zone.shot.src}
+      width={zone.shot.width}
+      height={zone.shot.height}
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
+    <span class="zone-copy">
+      <span class="entry-name">{zone.name}</span>
+      <span class="entry-meta"
+        >{zone.isDungeon ? "Dungeon" : "Overworld"}{zone.levelMedian === null
+          ? ""
+          : ` · Median level ${zone.levelMedian}`}</span
+      >
+    </span>
+  </a>
+{/snippet}
+
+<style>
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+
+  .map-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    min-height: 7rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--title-night);
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .map-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 45%;
+  }
+  .map-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgb(7 5 29 / 0.92) 0%,
+      rgb(7 5 29 / 0.75) 32%,
+      rgb(7 5 29 / 0.1) 68%,
+      transparent
+    );
+  }
+  /* The title opens the band at the left; the action closes it at the right,
+     on its own dark plate so the painted map stays legible behind it. */
+  .map-copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    min-height: 7rem;
+    padding: 1.25rem 2rem;
+  }
+  .map-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .map-cta {
+    padding: 0.55rem 1rem;
+    border: 1px solid color-mix(in oklab, var(--brand-gold) 65%, transparent);
+    border-radius: calc(var(--radius) - 2px);
+    background: rgb(7 5 29 / 0.82);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.4);
+    color: var(--brand-gold);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .map-card:hover .map-cta {
+    border-color: var(--brand-gold);
+  }
+
+  .entries {
+    display: grid;
+    gap: 0.75rem;
+  }
+  /* Every entry is the same two-line card. Hover changes only the frame
+     colour, so nothing on the page moves under the pointer. */
+  .entry,
+  .zone-card,
+  .boss-card {
+    display: flex;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--card-foreground);
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  .entry {
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.625rem;
+  }
+  .entry:hover,
+  .zone-card:hover,
+  .boss-card:hover {
+    border-color: color-mix(in oklab, var(--brand-gold) 65%, transparent);
+  }
+  .entry:hover .entry-name,
+  .zone-card:hover .entry-name,
+  .boss-card:hover .entry-name {
+    color: var(--brand-gold);
+  }
+  .entry:focus-visible,
+  .zone-card:focus-visible,
+  .boss-card:focus-visible,
+  .map-card:focus-visible,
+  .directory-link:focus-visible,
+  .mechanics-link:focus-visible {
+    outline: 2px solid var(--brand-gold);
+    outline-offset: 2px;
+  }
+  .art {
+    display: grid;
+    flex: none;
+    width: 4rem;
+    height: 4rem;
+    overflow: hidden;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: var(--muted);
+  }
+  .art img {
+    image-rendering: pixelated;
+  }
+
+  /* Each boss stands on a dark stage at the same height, scaled to fit, as
+     the sprites range from 90 to 333 pixels tall. */
+  .bosses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.75rem;
+  }
+  .boss-card {
+    flex-direction: column;
+    overflow: hidden;
+  }
+  /* The glow takes the boss's own dominant colour and sits behind its body,
+     so it reads as light from the sprite rather than a floor lamp. */
+  .boss-stage {
+    display: flex;
+    height: 11rem;
+    align-items: center;
+    justify-content: center;
+    /* The top strip holds the level badge clear of the sprite. */
+    padding: 2.5rem 0.75rem 0.75rem;
+    background:
+      radial-gradient(
+        circle closest-side at 50% 50%,
+        color-mix(in oklab, var(--glow) 24%, transparent),
+        transparent
+      ),
+      var(--title-night);
+  }
+  .boss-stage img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    image-rendering: pixelated;
+  }
+  .boss-text {
+    padding: 0.625rem 0.75rem 0.75rem;
+  }
+  /* The level sits on the stage, so the text below is two equal lines. */
+  .boss-stage {
+    position: relative;
+  }
+  .boss-level {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 999px;
+    background: rgb(7 5 29 / 0.75);
+    color: rgb(255 255 255 / 0.88);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  .entry-name {
+    display: block;
+    overflow: hidden;
+    font-weight: 600;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .entry-meta {
+    display: block;
+    margin-top: 0.15rem;
+    overflow: hidden;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .zones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.75rem;
+  }
+  .zone-card {
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .zone-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background: var(--title-night);
+  }
+  .zone-copy {
+    padding: 0.625rem 0.75rem 0.7rem;
+  }
+  .more-zones {
+    margin-top: 0.75rem;
+  }
+  .more-zones summary {
+    display: inline-flex;
+    cursor: pointer;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    list-style: none;
+  }
+  .more-zones summary::-webkit-details-marker {
+    display: none;
+  }
+  .more-zones summary:hover {
+    background: var(--muted);
+  }
+  .more-zones[open] summary {
+    margin-bottom: 0.75rem;
+  }
+
+  .directory-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: calc(var(--radius) - 2px);
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .directory-link:hover {
+    background: var(--muted);
+  }
+  .glyph {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: var(--muted);
+    color: var(--muted-foreground);
+  }
+
+  .group-title {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--brand-gold);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .mechanics-link {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.4rem 0;
+    text-decoration: none;
+  }
+  .mechanics-link:hover span:first-child {
+    color: var(--brand-gold);
+  }
+
+  .footer-icon {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: calc(var(--radius) - 2px);
+  }
+  .footer-icon:hover {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+</style>
