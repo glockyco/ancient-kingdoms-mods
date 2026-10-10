@@ -26,7 +26,8 @@
     "gen:home-showcase": "node scripts/generate-home-showcase.mjs",
     "gen:skill-effect-parity": "tsx scripts/gen-skill-effect-parity.ts",
     "cf-deploy": "pnpm build && (curl -fsSL --retry 3 --retry-delay 2 https://ancient-kingdoms.compendiums.org/sitemap-manifest.json -o .sitemap-manifest.prev.json || rm -f .sitemap-manifest.prev.json) && wrangler deploy && node scripts/indexnow-ping.mjs .sitemap-manifest.prev.json static/sitemap-manifest.json && rm -f .sitemap-manifest.prev.json",
-    "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
+    "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml",
+    "cf-deploy:demo": "pnpm build && wrangler deploy --env demo"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260729.1",

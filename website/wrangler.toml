@@ -20,3 +20,17 @@ custom_domain = true
 [assets]
 directory = ".svelte-kit/cloudflare"
 binding = "ASSETS"
+
+# A separate demo Worker for showing unreleased work, at
+# `ancient-kingdoms-compendium-demo.<account>.workers.dev`. It has no custom
+# domain (routes do not inherit into environments) and its pages keep their
+# canonical links to the production domain. Deploy with:
+# pnpm -C website cf-deploy:demo
+[env.demo]
+name = "ancient-kingdoms-compendium-demo"
+workers_dev = true
+routes = []
+
+[env.demo.assets]
+directory = ".svelte-kit/cloudflare"
+binding = "ASSETS"
