@@ -41,8 +41,9 @@
   }
 
   // Zones open in the order of the zone list; the first few are shown and the
-  // rest are one click away.
-  const ZONES_SHOWN = 8;
+  // rest are one click away. The grid has 1, 2, 3, or 4 columns, and twelve
+  // fills whole rows at each, so the row above "Show more" is never partial.
+  const ZONES_SHOWN = 12;
   const zonesShown = HOME_SHOWCASE.zones.slice(0, ZONES_SHOWN);
   const zonesMore = HOME_SHOWCASE.zones.slice(ZONES_SHOWN);
 
@@ -636,10 +637,27 @@
     white-space: nowrap;
   }
 
+  /* Explicit column steps rather than auto-fill, so the column count is
+     always a divisor of ZONES_SHOWN. */
   .zones {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    grid-template-columns: 1fr;
     gap: 0.75rem;
+  }
+  @media (min-width: 40rem) {
+    .zones {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 64rem) {
+    .zones {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 80rem) {
+    .zones {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
   .zone-card {
     flex-direction: column;
