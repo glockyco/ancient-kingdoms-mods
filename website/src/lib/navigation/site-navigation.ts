@@ -101,8 +101,8 @@ export const BROWSE_GROUPS: readonly NavigationGroup[] = [
       entity("zone"),
       entity("monster"),
       entity("npc"),
-      entity("quest"),
       entity("faction"),
+      entity("trap"),
     ],
   },
   {
@@ -113,8 +113,8 @@ export const BROWSE_GROUPS: readonly NavigationGroup[] = [
       entity("recipe"),
       entity("gathering_resource"),
       entity("chest"),
+      entity("quest"),
       entity("altar"),
-      entity("trap"),
     ],
   },
   {
