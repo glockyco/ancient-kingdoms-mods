@@ -40,12 +40,11 @@
     return { width: image.width * scale, height: image.height * scale };
   }
 
-  // Zones open in the order of the zone list; the first few are shown and the
-  // rest are one click away. The grid has 1, 2, 3, or 4 columns, and twelve
-  // fills whole rows at each, so the row above "Show more" is never partial.
-  const ZONES_SHOWN = 12;
-  const zonesShown = HOME_SHOWCASE.zones.slice(0, ZONES_SHOWN);
-  const zonesMore = HOME_SHOWCASE.zones.slice(ZONES_SHOWN);
+  // The zone grid steps through 1 to 5 columns and previews two full rows at
+  // the current count; the rest are one click away.
+  const ZONE_COLUMNS = [1, 2, 3, 4, 5] as const;
+  const zoneCount = HOME_SHOWCASE.zones.length;
+  let zonesOpen = $state(false);
 
   // Overview pages without a section of their own, in the order readers use them.
   const directory: readonly { id: EntityId; count: number }[] = [
@@ -74,6 +73,17 @@
 </script>
 
 <Seo {title} {description} path="/" />
+
+<svelte:head>
+  <!-- Without script the zone preview cannot open, so every zone shows. -->
+  <noscript>
+    <style>
+      #home-zone-grid > li {
+        display: list-item !important;
+      }
+    </style>
+  </noscript>
+</svelte:head>
 
 <!-- Both layouts render; the `home-classic` class on <html>, set before the
      first paint from the reader's choice, shows one of them. -->
@@ -215,21 +225,33 @@
         "/zones",
         `All ${HOME_COUNTS.zones} zones`,
       )}
-      <ul class="zones">
-        {#each zonesShown as zone (zone.id)}
+      <!-- One grid of every zone. Until it is opened, CSS shows the first two
+           rows at the current column count; the button names how many more
+           there are at each count. Without script every zone shows. -->
+      <ul id="home-zone-grid" class="zones" class:open={zonesOpen}>
+        {#each HOME_SHOWCASE.zones as zone (zone.id)}
           <li>{@render zoneCard(zone)}</li>
         {/each}
       </ul>
-      {#if zonesMore.length > 0}
-        <details class="more-zones">
-          <summary>Show {zonesMore.length} more zones</summary>
-          <ul class="zones">
-            {#each zonesMore as zone (zone.id)}
-              <li>{@render zoneCard(zone)}</li>
-            {/each}
-          </ul>
-        </details>
-      {/if}
+      <button
+        type="button"
+        class="more-zones js-only"
+        aria-expanded={zonesOpen}
+        aria-controls="home-zone-grid"
+        onclick={() => (zonesOpen = !zonesOpen)}
+      >
+        {#if zonesOpen}
+          Show fewer zones
+        {:else}
+          Show
+          {#each ZONE_COLUMNS as columns (columns)}
+            <span class="more-count" data-columns={columns}
+              >{zoneCount - 2 * columns}</span
+            >
+          {/each}
+          more zones
+        {/if}
+      </button>
     </section>
 
     <section aria-labelledby="home-more">
@@ -637,26 +659,85 @@
     white-space: nowrap;
   }
 
-  /* Explicit column steps rather than auto-fill, so the column count is
-     always a divisor of ZONES_SHOWN. */
+  /* The zone grid steps through 1 to 5 columns at the container's widths
+     (each card at least about 15rem wide). Until it is opened it shows two
+     full rows: 2 cards per column, so cards 2c+1 onwards hide and the button
+     counts the hidden ones for the same column count. */
   .zones {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
+  .zones:not(.open) > li:nth-child(n + 3),
+  .more-count:not([data-columns="1"]) {
+    display: none;
+  }
   @media (min-width: 40rem) {
     .zones {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .zones:not(.open) > li:nth-child(n + 3) {
+      display: list-item;
+    }
+    .zones:not(.open) > li:nth-child(n + 5) {
+      display: none;
+    }
+    .more-count[data-columns="1"] {
+      display: none;
+    }
+    .more-count[data-columns="2"] {
+      display: inline;
     }
   }
   @media (min-width: 64rem) {
     .zones {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+    .zones:not(.open) > li:nth-child(n + 5) {
+      display: list-item;
+    }
+    .zones:not(.open) > li:nth-child(n + 7) {
+      display: none;
+    }
+    .more-count[data-columns="2"] {
+      display: none;
+    }
+    .more-count[data-columns="3"] {
+      display: inline;
+    }
   }
   @media (min-width: 80rem) {
     .zones {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .zones:not(.open) > li:nth-child(n + 7) {
+      display: list-item;
+    }
+    .zones:not(.open) > li:nth-child(n + 9) {
+      display: none;
+    }
+    .more-count[data-columns="3"] {
+      display: none;
+    }
+    .more-count[data-columns="4"] {
+      display: inline;
+    }
+  }
+  @media (min-width: 96rem) {
+    .zones {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .zones:not(.open) > li:nth-child(n + 9) {
+      display: list-item;
+    }
+    .zones:not(.open) > li:nth-child(n + 11) {
+      display: none;
+    }
+    .more-count[data-columns="4"] {
+      display: none;
+    }
+    .more-count[data-columns="5"] {
+      display: inline;
     }
   }
   .zone-card {
@@ -675,25 +756,19 @@
   }
   .more-zones {
     margin-top: 0.75rem;
-  }
-  .more-zones summary {
-    display: inline-flex;
-    cursor: pointer;
     padding: 0.45rem 0.85rem;
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) - 2px);
     font-size: 0.9375rem;
     font-weight: 500;
-    list-style: none;
+    cursor: pointer;
   }
-  .more-zones summary::-webkit-details-marker {
-    display: none;
-  }
-  .more-zones summary:hover {
+  .more-zones:hover {
     background: var(--muted);
   }
-  .more-zones[open] summary {
-    margin-bottom: 0.75rem;
+  .more-zones:focus-visible {
+    outline: 2px solid var(--brand-gold);
+    outline-offset: 2px;
   }
 
   .directory-link {
