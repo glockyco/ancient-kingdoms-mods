@@ -301,6 +301,41 @@ const classes = db
     icon: artwork("class", row.id, "icon"),
   }));
 
+/**
+ * Professions in the categories and order of the profession list
+ * (routes/professions/+page.svelte), each with the icon its slot shows in the
+ * game's professions window.
+ */
+const PROFESSION_CATEGORIES = [
+  { id: "gathering", label: "Gathering" },
+  { id: "crafting", label: "Crafting" },
+  { id: "combat", label: "Combat" },
+  { id: "exploration", label: "Exploration" },
+];
+const professionRows = db
+  .prepare(
+    "SELECT id, name, description, category FROM professions ORDER BY name",
+  )
+  .all();
+const professionGroups = PROFESSION_CATEGORIES.map((category) => ({
+  label: category.label,
+  professions: professionRows
+    .filter((row) => row.category === category.id)
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      href: `/professions/${row.id}`,
+      icon: artwork("profession", row.id, "icon"),
+    })),
+}));
+const listedProfessions = professionGroups.flatMap(
+  (group) => group.professions,
+);
+if (listedProfessions.length !== professionRows.length) {
+  throw new Error("A profession has a category the home page does not list");
+}
+
 // Zones in the order of the zone list: by median monster level, then name.
 // A zone without a captured shot is one whose positions are withheld.
 const zones = db
@@ -332,6 +367,7 @@ const showcase = {
   worldBosses,
   crafting,
   classes,
+  professionGroups,
   zones,
 };
 
@@ -379,6 +415,19 @@ interface ShowcaseClass {
   readonly icon: ShowcaseImage;
 }
 
+interface ShowcaseProfession {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly href: string;
+  readonly icon: ShowcaseImage;
+}
+
+interface ShowcaseProfessionGroup {
+  readonly label: string;
+  readonly professions: readonly ShowcaseProfession[];
+}
+
 interface ShowcaseZone {
   readonly id: string;
   readonly name: string;
@@ -394,6 +443,7 @@ interface HomeShowcase {
   readonly worldBosses: readonly ShowcaseWorldBoss[];
   readonly crafting: readonly ShowcaseCraftingType[];
   readonly classes: readonly ShowcaseClass[];
+  readonly professionGroups: readonly ShowcaseProfessionGroup[];
   readonly zones: readonly ShowcaseZone[];
 }
 

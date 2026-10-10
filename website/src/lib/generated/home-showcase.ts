@@ -42,6 +42,19 @@ interface ShowcaseClass {
   readonly icon: ShowcaseImage;
 }
 
+interface ShowcaseProfession {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly href: string;
+  readonly icon: ShowcaseImage;
+}
+
+interface ShowcaseProfessionGroup {
+  readonly label: string;
+  readonly professions: readonly ShowcaseProfession[];
+}
+
 interface ShowcaseZone {
   readonly id: string;
   readonly name: string;
@@ -57,6 +70,7 @@ interface HomeShowcase {
   readonly worldBosses: readonly ShowcaseWorldBoss[];
   readonly crafting: readonly ShowcaseCraftingType[];
   readonly classes: readonly ShowcaseClass[];
+  readonly professionGroups: readonly ShowcaseProfessionGroup[];
   readonly zones: readonly ShowcaseZone[];
 }
 
@@ -347,6 +361,171 @@ export const HOME_SHOWCASE: HomeShowcase = {
         width: 64,
         height: 64,
       },
+    },
+  ],
+  professionGroups: [
+    {
+      label: "Gathering",
+      professions: [
+        {
+          id: "fishing",
+          name: "Fishing",
+          description: "Catch fish at fishing spots.",
+          href: "/professions/fishing",
+          icon: {
+            src: "/images/professions/fishing/icon.webp",
+            width: 28,
+            height: 29,
+          },
+        },
+        {
+          id: "herbalism",
+          name: "Herbalism",
+          description: "Gather plants and herbs.",
+          href: "/professions/herbalism",
+          icon: {
+            src: "/images/professions/herbalism/icon.webp",
+            width: 37,
+            height: 34,
+          },
+        },
+        {
+          id: "mining",
+          name: "Mining",
+          description: "Mine ore and minerals.",
+          href: "/professions/mining",
+          icon: {
+            src: "/images/professions/mining/icon.webp",
+            width: 37,
+            height: 36,
+          },
+        },
+        {
+          id: "radiant_seeker",
+          name: "Radiant Seeker",
+          description: "Collect scattered radiant sparks.",
+          href: "/professions/radiant_seeker",
+          icon: {
+            src: "/images/professions/radiant_seeker/icon.webp",
+            width: 42,
+            height: 43,
+          },
+        },
+      ],
+    },
+    {
+      label: "Crafting",
+      professions: [
+        {
+          id: "alchemy",
+          name: "Alchemy",
+          description: "Brew potions and elixirs.",
+          href: "/professions/alchemy",
+          icon: {
+            src: "/images/professions/alchemy/icon.webp",
+            width: 36,
+            height: 43,
+          },
+        },
+        {
+          id: "cooking",
+          name: "Cooking",
+          description: "Prepare food at cooking stations.",
+          href: "/professions/cooking",
+          icon: {
+            src: "/images/professions/cooking/icon.webp",
+            width: 36,
+            height: 28,
+          },
+        },
+        {
+          id: "scroll_mastery",
+          name: "Scroll Mastery",
+          description: "Craft and use scrolls at scribing tables.",
+          href: "/professions/scroll_mastery",
+          icon: {
+            src: "/images/professions/scroll_mastery/icon.webp",
+            width: 36,
+            height: 37,
+          },
+        },
+      ],
+    },
+    {
+      label: "Combat",
+      professions: [
+        {
+          id: "adventuring",
+          name: "Adventuring",
+          description: "Complete Adventurer's Guild quests.",
+          href: "/professions/adventuring",
+          icon: {
+            src: "/images/professions/adventuring/icon.webp",
+            width: 36,
+            height: 31,
+          },
+        },
+        {
+          id: "hunter",
+          name: "Hunter",
+          description: "Track and hunt creatures.",
+          href: "/professions/hunter",
+          icon: {
+            src: "/images/professions/hunter/icon.webp",
+            width: 36,
+            height: 34,
+          },
+        },
+        {
+          id: "slayer",
+          name: "Slayer",
+          description: "Defeat bosses and elites.",
+          href: "/professions/slayer",
+          icon: {
+            src: "/images/professions/slayer/icon.webp",
+            width: 37,
+            height: 37,
+          },
+        },
+      ],
+    },
+    {
+      label: "Exploration",
+      professions: [
+        {
+          id: "exploring",
+          name: "Exploring",
+          description: "Discover areas of the world.",
+          href: "/professions/exploring",
+          icon: {
+            src: "/images/professions/exploring/icon.webp",
+            width: 33,
+            height: 36,
+          },
+        },
+        {
+          id: "lore_keeping",
+          name: "Lore Keeping",
+          description: "Collect books and uncover lore.",
+          href: "/professions/lore_keeping",
+          icon: {
+            src: "/images/professions/lore_keeping/icon.webp",
+            width: 25,
+            height: 36,
+          },
+        },
+        {
+          id: "treasure_hunter",
+          name: "Treasure Hunter",
+          description: "Find treasure chests.",
+          href: "/professions/treasure_hunter",
+          icon: {
+            src: "/images/professions/treasure_hunter/icon.webp",
+            width: 31,
+            height: 30,
+          },
+        },
+      ],
     },
   ],
   zones: [

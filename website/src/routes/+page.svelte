@@ -218,6 +218,45 @@
       </ul>
     </section>
 
+    <section aria-labelledby="home-professions">
+      {@render heading(
+        "home-professions",
+        "Professions",
+        "/professions",
+        `All ${HOME_COUNTS.professions} professions`,
+      )}
+      <div class="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+        {#each HOME_SHOWCASE.professionGroups as group (group.label)}
+          <div>
+            <h3 class="group-title">{group.label}</h3>
+            <ul>
+              {#each group.professions as profession (profession.id)}
+                {@const size = pixelSize(profession.icon, 40)}
+                <li>
+                  <a href={profession.href} class="profession-link">
+                    <span class="profession-icon">
+                      <img
+                        src={profession.icon.src}
+                        width={size.width}
+                        height={size.height}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </span>
+                    <span class="min-w-0">
+                      <span class="entry-name">{profession.name}</span>
+                      <span class="entry-meta">{profession.description}</span>
+                    </span>
+                  </a>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/each}
+      </div>
+    </section>
+
     <section aria-labelledby="home-zones">
       {@render heading(
         "home-zones",
@@ -813,6 +852,34 @@
   }
   .mechanics-link:hover span:first-child {
     color: var(--brand-gold);
+  }
+  /* Professions list like mechanics, with each slot's icon from the game's
+     professions window. Descriptions wrap rather than truncate. */
+  .profession-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0;
+    text-decoration: none;
+  }
+  .profession-link .entry-meta {
+    white-space: normal;
+  }
+  .profession-link:hover .entry-name {
+    color: var(--brand-gold);
+  }
+  .profession-icon {
+    display: grid;
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) - 2px);
+    background: var(--muted);
+  }
+  .profession-icon img {
+    image-rendering: pixelated;
   }
 
   .footer-icon {
