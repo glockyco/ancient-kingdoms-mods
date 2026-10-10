@@ -536,18 +536,32 @@
     color: var(--foreground);
   }
 
-  @media (max-width: 1100px) {
+  /* The bar sits in the page container, which narrows in steps (80rem,
+     64rem, 48rem). As it narrows the bar gives up what no longer fits: below
+     90rem the labels of search and Ko-fi, which leaves room for wider system
+     fonts, and below 64rem the direct links, which the Browse panel also
+     lists. The steps are in rem, like the container, so a larger default
+     font collapses the bar sooner instead of pushing its tools off screen. */
+  @media (max-width: 90rem) {
+    .search-slot :global(button > :not(svg)) {
+      display: none;
+    }
+    .search-slot :global(button) {
+      width: 2.25rem;
+      height: 2.25rem;
+      justify-content: center;
+      padding: 0;
+    }
     .kofi span {
       display: none;
     }
+  }
+  @media (max-width: 70rem) {
     .columns {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
-
-  /* Below the width of the bar's links, the bar holds the brand and Browse;
-     the panel lists every destination. */
-  @media (max-width: 920px) {
+  @media (max-width: 64rem) {
     .primary {
       display: none;
     }
