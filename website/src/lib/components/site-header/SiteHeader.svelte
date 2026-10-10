@@ -13,14 +13,22 @@
   import DiscordIcon from "$lib/components/DiscordIcon.svelte";
   import KofiIcon from "$lib/components/KofiIcon.svelte";
   import SearchButton from "$lib/components/search/SearchButton.svelte";
+  import HomeLayoutToggle from "$lib/components/home/HomeLayoutToggle.svelte";
   import { DISCORD_URL, KOFI_URL, STEAM_GUIDE_URL } from "$lib/constants/links";
   import {
     BROWSE_GROUPS,
     PRIMARY_LINKS,
   } from "$lib/navigation/site-navigation";
 
-  /** False on a page that shows its own search field, so a page has one search. */
-  let { search = true }: { search?: boolean } = $props();
+  /**
+   * `search` is false on a page that shows its own search field, so a page
+   * has one search. `homeLayout` adds the switch between the home page's two
+   * layouts.
+   */
+  let {
+    search = true,
+    homeLayout = false,
+  }: { search?: boolean; homeLayout?: boolean } = $props();
 
   let browse = $state<HTMLDetailsElement>();
   // On a phone the panel stacks its columns, and each column opens on its own.
@@ -187,6 +195,7 @@
 
     <div class="tools">
       {#if search}<span class="search-slot"><SearchButton /></span>{/if}
+      {#if homeLayout}<HomeLayoutToggle />{/if}
       <ThemeToggle />
       <a
         class="tool"

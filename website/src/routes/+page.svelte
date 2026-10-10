@@ -1,6 +1,7 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
   import TitleScreenHero from "$lib/components/home/TitleScreenHero.svelte";
+  import ClassicHome from "$lib/components/home/ClassicHome.svelte";
   import EntityGlyph from "$lib/components/EntityGlyph.svelte";
   import SteamIcon from "$lib/components/SteamIcon.svelte";
   import DiscordIcon from "$lib/components/DiscordIcon.svelte";
@@ -73,285 +74,299 @@
 
 <Seo {title} {description} path="/" />
 
-<TitleScreenHero live={data.live} checkedAt={data.checkedAt} />
-
-<div class="container mx-auto flex flex-col gap-12 px-5 pt-10 pb-16 sm:px-8">
-  <section aria-labelledby="home-items">
-    {@render heading(
-      "home-items",
-      "Items",
-      "/items",
-      `All ${HOME_COUNTS.items.toLocaleString()} items`,
-    )}
-    <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
-      {#each HOME_SHOWCASE.itemGroups as group (group.label)}
-        {@const size = pixelSize(group.icon, 52)}
-        <li>
-          {@render entry(
-            group.href,
-            group.icon.src,
-            size,
-            group.label,
-            `${group.count.toLocaleString()} items`,
-          )}
-        </li>
-      {/each}
-    </ul>
-  </section>
-
-  <section aria-labelledby="home-bosses">
-    {@render heading(
-      "home-bosses",
-      "World Bosses",
-      "/monsters",
-      `All ${HOME_COUNTS.monsters.toLocaleString()} monsters`,
-    )}
-    <ul class="bosses">
-      {#each HOME_SHOWCASE.worldBosses as boss (boss.id)}
-        <li>
-          <a href={boss.href} class="boss-card">
-            <span class="boss-stage dark" style:--glow={boss.glow}>
-              <img
-                src={boss.sprite.src}
-                width={boss.sprite.width}
-                height={boss.sprite.height}
-                alt=""
-                loading="lazy"
-                decoding="async"
-              />
-              <span class="boss-level">
-                <span class="sr-only">Level</span><span aria-hidden="true"
-                  >Lv</span
-                >
-                {boss.level}
-              </span>
-            </span>
-            <span class="boss-text">
-              <span class="entry-name">{boss.name}</span>
-              <span class="entry-meta">{boss.zone}</span>
-            </span>
-          </a>
-        </li>
-      {/each}
-    </ul>
-  </section>
-
-  <a href="/map" class="map-card dark">
-    <img
-      class="map-art"
-      src={HOME_SHOWCASE.worldMap.src}
-      width={HOME_SHOWCASE.worldMap.width}
-      height={HOME_SHOWCASE.worldMap.height}
-      alt=""
-      loading="lazy"
-      decoding="async"
-    />
-    <span class="map-copy">
-      <span class="map-title">Interactive World Map</span>
-      <span class="map-cta">Open the map <span aria-hidden="true">→</span></span
-      >
-    </span>
-  </a>
-
-  <section aria-labelledby="home-recipes">
-    {@render heading(
-      "home-recipes",
-      "Recipes",
-      "/recipes",
-      `All ${HOME_COUNTS.recipes.toLocaleString()} recipes`,
-    )}
-    <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
-      {#each HOME_SHOWCASE.crafting as recipeType (recipeType.type)}
-        {@const size = pixelSize(recipeType.icon, 52)}
-        <li>
-          {@render entry(
-            recipeType.href,
-            recipeType.icon.src,
-            size,
-            recipeType.type,
-            `${recipeType.count.toLocaleString()} recipes`,
-          )}
-        </li>
-      {/each}
-    </ul>
-  </section>
-
-  <section aria-labelledby="home-classes">
-    {@render heading(
-      "home-classes",
-      "Classes",
-      "/classes",
-      `All ${HOME_COUNTS.classes} classes`,
-    )}
-    <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
-      {#each HOME_SHOWCASE.classes as gameClass (gameClass.id)}
-        <li>
-          {@render entry(
-            gameClass.href,
-            gameClass.icon.src,
-            { width: gameClass.icon.width, height: gameClass.icon.height },
-            gameClass.name,
-            gameClass.role,
-          )}
-        </li>
-      {/each}
-    </ul>
-  </section>
-
-  <section aria-labelledby="home-zones">
-    {@render heading(
-      "home-zones",
-      "Zones",
-      "/zones",
-      `All ${HOME_COUNTS.zones} zones`,
-    )}
-    <ul class="zones">
-      {#each zonesShown as zone (zone.id)}
-        <li>{@render zoneCard(zone)}</li>
-      {/each}
-    </ul>
-    {#if zonesMore.length > 0}
-      <details class="more-zones">
-        <summary>Show {zonesMore.length} more zones</summary>
-        <ul class="zones">
-          {#each zonesMore as zone (zone.id)}
-            <li>{@render zoneCard(zone)}</li>
-          {/each}
-        </ul>
-      </details>
-    {/if}
-  </section>
-
-  <section aria-labelledby="home-more">
-    <h2 id="home-more" class="section-title mb-4">More to explore</h2>
-    <ul class="grid gap-1 sm:grid-cols-2 lg:grid-cols-4">
-      {#each directory as item (item.id)}
-        {@const def = entityRegistry[item.id]}
-        <li>
-          <a href={def.overviewHref} class="directory-link">
-            <span class="glyph"><EntityGlyph icon={def.icon} size={18} /></span>
-            <span class="flex-1 font-medium">{def.pluralLabel}</span>
-            <span class="text-sm text-muted-foreground tabular-nums"
-              >{item.count.toLocaleString()}</span
-            >
-          </a>
-        </li>
-      {/each}
-    </ul>
-  </section>
-
-  <section aria-labelledby="home-mechanics">
-    {@render heading(
-      "home-mechanics",
-      "Mechanics",
-      "/mechanics",
-      "All mechanics",
-    )}
-    <div class="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
-      {#each MECHANICS_GROUPS as group (group.title)}
-        <div>
-          <h3 class="group-title">{group.title}</h3>
-          <ul>
-            {#each group.pages as page (page.href)}
-              <li>
-                <a href={page.href} class="mechanics-link">
-                  <span class="font-semibold">{page.title}</span>
-                  <span class="text-sm text-muted-foreground"
-                    >{page.summary}</span
-                  >
-                </a>
-              </li>
-            {/each}
-          </ul>
-        </div>
-      {/each}
-    </div>
-  </section>
+<!-- Both layouts render; the `home-classic` class on <html>, set before the
+     first paint from the reader's choice, shows one of them. -->
+<div class="classic-layout">
+  <ClassicHome live={data.live} checkedAt={data.checkedAt} />
 </div>
 
-<footer class="border-t bg-muted/40">
-  <div class="container mx-auto px-5 py-10 sm:px-8">
-    <h2 class="sr-only">About the compendium</h2>
-    <div
-      class="max-w-[70ch] space-y-3 text-[0.9375rem] leading-relaxed text-pretty text-muted-foreground"
-    >
-      <p>
-        <strong class="text-foreground">Ancient Kingdoms</strong> is a 2D
-        pixel-art RPG by Ancient Pixels, inspired by classic MMORPGs. You can
-        play alone or in co-op in the world of Eratiath. The game is in
-        <a
-          href={STEAM_STORE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-foreground underline underline-offset-2"
-        >
-          Early Access on Steam</a
-        >.
-      </p>
-      <p>
-        The <strong class="text-foreground">Ancient Kingdoms Compendium</strong> is
-        a fan-made wiki, interactive world map, and searchable game database. We update
-        the listings from game files after each patch. They cover items, monsters,
-        NPCs, zones, quests, skills, classes, professions, and more.
-      </p>
-      <p>
-        Do you run a server? <a
-          href={AK_MONITOR_DISCORD_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-foreground underline underline-offset-2"
-        >
-          Ancient Kingdoms Monitor</a
-        > by Thero manages a dedicated server from a desktop app: restarts, crash
-        recovery, SteamCMD updates, backups, and RCON. The monitor is a separate community
-        project, not part of the compendium.
-      </p>
-      <p>Ancient Kingdoms artwork © Ancient Pixels, used with permission.</p>
-    </div>
+<div class="title-layout">
+  <TitleScreenHero live={data.live} checkedAt={data.checkedAt} />
 
-    <div
-      class="mt-8 flex flex-wrap items-center justify-between gap-x-10 gap-y-4 border-t pt-6 text-sm text-muted-foreground"
-    >
-      <div>Ancient Kingdoms Compendium · Updated for v{COMPENDIUM_VERSION}</div>
-      <nav class="flex flex-wrap gap-x-4 gap-y-1" aria-label="Site sections">
-        {#each footerLinks as link (link.href)}
-          <a href={link.href} class="transition-colors hover:text-foreground">
-            {link.label}
-          </a>
+  <div class="container mx-auto flex flex-col gap-12 px-5 pt-10 pb-16 sm:px-8">
+    <section aria-labelledby="home-items">
+      {@render heading(
+        "home-items",
+        "Items",
+        "/items",
+        `All ${HOME_COUNTS.items.toLocaleString()} items`,
+      )}
+      <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
+        {#each HOME_SHOWCASE.itemGroups as group (group.label)}
+          {@const size = pixelSize(group.icon, 52)}
+          <li>
+            {@render entry(
+              group.href,
+              group.icon.src,
+              size,
+              group.label,
+              `${group.count.toLocaleString()} items`,
+            )}
+          </li>
         {/each}
-      </nav>
-      <div class="flex items-center gap-1">
-        <a
-          href={STEAM_GUIDE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Steam Guide"
-          class="footer-icon"
+      </ul>
+    </section>
+
+    <section aria-labelledby="home-bosses">
+      {@render heading(
+        "home-bosses",
+        "World Bosses",
+        "/monsters",
+        `All ${HOME_COUNTS.monsters.toLocaleString()} monsters`,
+      )}
+      <ul class="bosses">
+        {#each HOME_SHOWCASE.worldBosses as boss (boss.id)}
+          <li>
+            <a href={boss.href} class="boss-card">
+              <span class="boss-stage dark" style:--glow={boss.glow}>
+                <img
+                  src={boss.sprite.src}
+                  width={boss.sprite.width}
+                  height={boss.sprite.height}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="boss-level">
+                  <span class="sr-only">Level</span><span aria-hidden="true"
+                    >Lv</span
+                  >
+                  {boss.level}
+                </span>
+              </span>
+              <span class="boss-text">
+                <span class="entry-name">{boss.name}</span>
+                <span class="entry-meta">{boss.zone}</span>
+              </span>
+            </a>
+          </li>
+        {/each}
+      </ul>
+    </section>
+
+    <a href="/map" class="map-card dark">
+      <img
+        class="map-art"
+        src={HOME_SHOWCASE.worldMap.src}
+        width={HOME_SHOWCASE.worldMap.width}
+        height={HOME_SHOWCASE.worldMap.height}
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="map-copy">
+        <span class="map-title">Interactive World Map</span>
+        <span class="map-cta"
+          >Open the map <span aria-hidden="true">→</span></span
         >
-          <SteamIcon class="size-5" />
-        </a>
-        <a
-          href={DISCORD_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Join Discord"
-          class="footer-icon"
-        >
-          <DiscordIcon class="size-5" />
-        </a>
-        <a
-          href={KOFI_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Support on Ko-fi"
-          class="footer-icon"
-        >
-          <KofiIcon class="size-5" />
-        </a>
+      </span>
+    </a>
+
+    <section aria-labelledby="home-recipes">
+      {@render heading(
+        "home-recipes",
+        "Recipes",
+        "/recipes",
+        `All ${HOME_COUNTS.recipes.toLocaleString()} recipes`,
+      )}
+      <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
+        {#each HOME_SHOWCASE.crafting as recipeType (recipeType.type)}
+          {@const size = pixelSize(recipeType.icon, 52)}
+          <li>
+            {@render entry(
+              recipeType.href,
+              recipeType.icon.src,
+              size,
+              recipeType.type,
+              `${recipeType.count.toLocaleString()} recipes`,
+            )}
+          </li>
+        {/each}
+      </ul>
+    </section>
+
+    <section aria-labelledby="home-classes">
+      {@render heading(
+        "home-classes",
+        "Classes",
+        "/classes",
+        `All ${HOME_COUNTS.classes} classes`,
+      )}
+      <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
+        {#each HOME_SHOWCASE.classes as gameClass (gameClass.id)}
+          <li>
+            {@render entry(
+              gameClass.href,
+              gameClass.icon.src,
+              { width: gameClass.icon.width, height: gameClass.icon.height },
+              gameClass.name,
+              gameClass.role,
+            )}
+          </li>
+        {/each}
+      </ul>
+    </section>
+
+    <section aria-labelledby="home-zones">
+      {@render heading(
+        "home-zones",
+        "Zones",
+        "/zones",
+        `All ${HOME_COUNTS.zones} zones`,
+      )}
+      <ul class="zones">
+        {#each zonesShown as zone (zone.id)}
+          <li>{@render zoneCard(zone)}</li>
+        {/each}
+      </ul>
+      {#if zonesMore.length > 0}
+        <details class="more-zones">
+          <summary>Show {zonesMore.length} more zones</summary>
+          <ul class="zones">
+            {#each zonesMore as zone (zone.id)}
+              <li>{@render zoneCard(zone)}</li>
+            {/each}
+          </ul>
+        </details>
+      {/if}
+    </section>
+
+    <section aria-labelledby="home-more">
+      <h2 id="home-more" class="section-title mb-4">More to explore</h2>
+      <ul class="grid gap-1 sm:grid-cols-2 lg:grid-cols-4">
+        {#each directory as item (item.id)}
+          {@const def = entityRegistry[item.id]}
+          <li>
+            <a href={def.overviewHref} class="directory-link">
+              <span class="glyph"
+                ><EntityGlyph icon={def.icon} size={18} /></span
+              >
+              <span class="flex-1 font-medium">{def.pluralLabel}</span>
+              <span class="text-sm text-muted-foreground tabular-nums"
+                >{item.count.toLocaleString()}</span
+              >
+            </a>
+          </li>
+        {/each}
+      </ul>
+    </section>
+
+    <section aria-labelledby="home-mechanics">
+      {@render heading(
+        "home-mechanics",
+        "Mechanics",
+        "/mechanics",
+        "All mechanics",
+      )}
+      <div class="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
+        {#each MECHANICS_GROUPS as group (group.title)}
+          <div>
+            <h3 class="group-title">{group.title}</h3>
+            <ul>
+              {#each group.pages as page (page.href)}
+                <li>
+                  <a href={page.href} class="mechanics-link">
+                    <span class="font-semibold">{page.title}</span>
+                    <span class="text-sm text-muted-foreground"
+                      >{page.summary}</span
+                    >
+                  </a>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/each}
+      </div>
+    </section>
+  </div>
+
+  <footer class="border-t bg-muted/40">
+    <div class="container mx-auto px-5 py-10 sm:px-8">
+      <h2 class="sr-only">About the compendium</h2>
+      <div
+        class="max-w-[70ch] space-y-3 text-[0.9375rem] leading-relaxed text-pretty text-muted-foreground"
+      >
+        <p>
+          <strong class="text-foreground">Ancient Kingdoms</strong> is a 2D
+          pixel-art RPG by Ancient Pixels, inspired by classic MMORPGs. You can
+          play alone or in co-op in the world of Eratiath. The game is in
+          <a
+            href={STEAM_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-foreground underline underline-offset-2"
+          >
+            Early Access on Steam</a
+          >.
+        </p>
+        <p>
+          The <strong class="text-foreground"
+            >Ancient Kingdoms Compendium</strong
+          > is a fan-made wiki, interactive world map, and searchable game database.
+          We update the listings from game files after each patch. They cover items,
+          monsters, NPCs, zones, quests, skills, classes, professions, and more.
+        </p>
+        <p>
+          Do you run a server? <a
+            href={AK_MONITOR_DISCORD_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-foreground underline underline-offset-2"
+          >
+            Ancient Kingdoms Monitor</a
+          > by Thero manages a dedicated server from a desktop app: restarts, crash
+          recovery, SteamCMD updates, backups, and RCON. The monitor is a separate
+          community project, not part of the compendium.
+        </p>
+        <p>Ancient Kingdoms artwork © Ancient Pixels, used with permission.</p>
+      </div>
+
+      <div
+        class="mt-8 flex flex-wrap items-center justify-between gap-x-10 gap-y-4 border-t pt-6 text-sm text-muted-foreground"
+      >
+        <div>
+          Ancient Kingdoms Compendium · Updated for v{COMPENDIUM_VERSION}
+        </div>
+        <nav class="flex flex-wrap gap-x-4 gap-y-1" aria-label="Site sections">
+          {#each footerLinks as link (link.href)}
+            <a href={link.href} class="transition-colors hover:text-foreground">
+              {link.label}
+            </a>
+          {/each}
+        </nav>
+        <div class="flex items-center gap-1">
+          <a
+            href={STEAM_GUIDE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Steam Guide"
+            class="footer-icon"
+          >
+            <SteamIcon class="size-5" />
+          </a>
+          <a
+            href={DISCORD_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Join Discord"
+            class="footer-icon"
+          >
+            <DiscordIcon class="size-5" />
+          </a>
+          <a
+            href={KOFI_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Support on Ko-fi"
+            class="footer-icon"
+          >
+            <KofiIcon class="size-5" />
+          </a>
+        </div>
       </div>
     </div>
-  </div>
-</footer>
+  </footer>
+</div>
 
 {#snippet heading(id: string, title: string, href: string, label: string)}
   <div
@@ -413,6 +428,13 @@
 {/snippet}
 
 <style>
+  .classic-layout,
+  :global(html.home-classic) .title-layout {
+    display: none;
+  }
+  :global(html.home-classic) .classic-layout {
+    display: block;
+  }
   .section-title {
     font-size: 1.5rem;
     font-weight: 600;

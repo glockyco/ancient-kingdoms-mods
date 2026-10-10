@@ -42,6 +42,12 @@
           document.documentElement.classList.add("light");
         }
         // If no explicit preference, CSS media query handles it
+
+        // The home page's layout choice (HomeLayoutToggle), applied before
+        // the first paint so the other layout never flashes.
+        if (localStorage.getItem("home-layout") === "classic") {
+          document.documentElement.classList.add("home-classic");
+        }
       })();
     </script>
     %sveltekit.head%

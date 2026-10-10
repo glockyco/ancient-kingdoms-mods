@@ -90,7 +90,7 @@
 <LoadingOverlay />
 <SearchPalette />
 {#if !isMap}
-  <SiteHeader search={!isHome} />
+  <SiteHeader search={!isHome} homeLayout={isHome} />
 {/if}
 <main>
   {@render children()}
