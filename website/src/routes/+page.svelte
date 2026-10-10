@@ -162,6 +162,28 @@
       </span>
     </a>
 
+    <section aria-labelledby="home-classes">
+      {@render heading(
+        "home-classes",
+        "Classes",
+        "/classes",
+        `All ${HOME_COUNTS.classes} classes`,
+      )}
+      <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
+        {#each HOME_SHOWCASE.classes as gameClass (gameClass.id)}
+          <li>
+            {@render entry(
+              gameClass.href,
+              gameClass.icon.src,
+              { width: gameClass.icon.width, height: gameClass.icon.height },
+              gameClass.name,
+              gameClass.role,
+            )}
+          </li>
+        {/each}
+      </ul>
+    </section>
+
     <section aria-labelledby="home-recipes">
       {@render heading(
         "home-recipes",
@@ -179,28 +201,6 @@
               size,
               recipeType.type,
               `${recipeType.count.toLocaleString()} recipes`,
-            )}
-          </li>
-        {/each}
-      </ul>
-    </section>
-
-    <section aria-labelledby="home-classes">
-      {@render heading(
-        "home-classes",
-        "Classes",
-        "/classes",
-        `All ${HOME_COUNTS.classes} classes`,
-      )}
-      <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
-        {#each HOME_SHOWCASE.classes as gameClass (gameClass.id)}
-          <li>
-            {@render entry(
-              gameClass.href,
-              gameClass.icon.src,
-              { width: gameClass.icon.width, height: gameClass.icon.height },
-              gameClass.name,
-              gameClass.role,
             )}
           </li>
         {/each}
