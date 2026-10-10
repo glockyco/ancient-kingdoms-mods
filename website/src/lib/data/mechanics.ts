@@ -1,7 +1,7 @@
 /**
- * The game-mechanics reference pages, grouped by the categories of the in-game
- * Adventurer's Guide. The home page index, the site menu, and the /mechanics
- * hub all render this list, so a page registered here appears in each.
+ * The game-mechanics reference pages in five groups of three, so every
+ * column of the home page index ends level. The home page index, the site menu, and the /mechanics hub all
+ * render this list, so a page registered here appears in each.
  */
 export interface MechanicsPage {
   readonly title: string;
@@ -24,19 +24,13 @@ export interface MechanicsGroup {
 
 export const MECHANICS_GROUPS = [
   {
-    title: "Combat & progression",
+    title: "Character",
     pages: [
       {
         title: "Character Build",
         href: "/mechanics/character",
         description: "Attributes, resources, skills, and specializations",
         summary: "Attributes and skills",
-      },
-      {
-        title: "Combat",
-        href: "/mechanics/combat",
-        description: "Targeting, damage formulas, mitigation, and effects",
-        summary: "Damage and mitigation",
       },
       {
         title: "Experience",
@@ -46,16 +40,34 @@ export const MECHANICS_GROUPS = [
         featured: true,
       },
       {
+        title: "Housing & Appearance",
+        href: "/mechanics/housing",
+        description: "Furniture, wardrobe, and barbers",
+        summary: "Furniture and wardrobe",
+      },
+    ],
+  },
+  {
+    title: "Combat",
+    pages: [
+      {
+        title: "Combat",
+        href: "/mechanics/combat",
+        description: "Targeting, damage formulas, mitigation, and effects",
+        summary: "Damage and mitigation",
+      },
+      {
         title: "Death & Remains",
         href: "/mechanics/death",
         description: "What death costs, remains, and resurrection",
         summary: "Death costs and remains",
       },
       {
-        title: "Bard Songs & Charm",
-        href: "/mechanics/bard",
-        description: "Song slots, auras, and charming a monster",
-        summary: "Songs and charming",
+        title: "Monster Spawns",
+        href: "/mechanics/monster-spawns",
+        description: "Respawn timers, rare spawns, and missing bosses",
+        summary: "Respawns and rare spawns",
+        featured: true,
       },
     ],
   },
@@ -76,34 +88,16 @@ export const MECHANICS_GROUPS = [
         summary: "Stat ranges and odds",
         featured: true,
       },
-    ],
-  },
-  {
-    title: "Equipment & economy",
-    pages: [
       {
-        title: "Inventory",
-        href: "/mechanics/inventory",
-        description: "Storage, durability, armor sets, and merchants",
-        summary: "Storage and durability",
-        featured: true,
-      },
-      {
-        title: "Crafting & Augments",
-        href: "/mechanics/crafting",
-        description: "Craft Stations, recipes, and attaching augments",
-        summary: "Stations and augments",
-      },
-      {
-        title: "Housing & Appearance",
-        href: "/mechanics/housing",
-        description: "Furniture, wardrobe, and barbers",
-        summary: "Furniture and wardrobe",
+        title: "Bard Songs & Charm",
+        href: "/mechanics/bard",
+        description: "Song slots, auras, and charming a monster",
+        summary: "Songs and charming",
       },
     ],
   },
   {
-    title: "Party & community",
+    title: "Party & society",
     pages: [
       {
         title: "Party & Loot",
@@ -117,10 +111,17 @@ export const MECHANICS_GROUPS = [
         description: "Membership, invitations, and guild points",
         summary: "Membership and points",
       },
+      {
+        title: "Reputation",
+        href: "/mechanics/reputation",
+        description: "Faction standing, the tier ladder, and every source",
+        summary: "Faction standing",
+        featured: true,
+      },
     ],
   },
   {
-    title: "World & adventures",
+    title: "World & economy",
     pages: [
       {
         title: "World & Travel",
@@ -130,18 +131,17 @@ export const MECHANICS_GROUPS = [
         summary: "Binding, travel, and portals",
       },
       {
-        title: "Monster Spawns",
-        href: "/mechanics/monster-spawns",
-        description: "Respawn timers, rare spawns, and missing bosses",
-        summary: "Respawns and rare spawns",
+        title: "Inventory",
+        href: "/mechanics/inventory",
+        description: "Storage, durability, armor sets, and merchants",
+        summary: "Storage and durability",
         featured: true,
       },
       {
-        title: "Reputation",
-        href: "/mechanics/reputation",
-        description: "Faction standing, the tier ladder, and every source",
-        summary: "Faction standing",
-        featured: true,
+        title: "Crafting & Augments",
+        href: "/mechanics/crafting",
+        description: "Craft Stations, recipes, and attaching augments",
+        summary: "Stations and augments",
       },
     ],
   },
