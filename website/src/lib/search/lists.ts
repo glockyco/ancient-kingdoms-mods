@@ -103,6 +103,7 @@ export const FILTERED_LISTS: readonly FilteredList[] = [
   slot("WeaponSword", "1H Weapons", "one-handed swords"),
   slot("WeaponSword2H", "2H Weapons", "two-handed"),
   slot("WeaponWand", "Casting Weapons", "wands staves"),
+  itemType("armor_set_bonus", "Armor Set Bonuses", "set bonuses"),
   itemType("augment", "Augments"),
   itemType("backpack", "Backpacks", "bags"),
   itemType("book", "Books", "lore"),

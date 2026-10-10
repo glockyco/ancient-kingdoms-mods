@@ -317,37 +317,34 @@ describe("indexed content", () => {
   });
 
   test("every filtered list matches rows in the data", () => {
+    const countRows = (sql: string, value: string): number => {
+      const n: unknown = db.prepare(sql).pluck().get(value);
+      if (typeof n !== "number") throw new Error(`Not a count: ${String(n)}`);
+      return n;
+    };
     const count: Record<string, (value: string) => number> = {
       "item-slot": (value) =>
-        (
-          db
-            .prepare("SELECT count(*) n FROM items WHERE slot = ?")
-            .get(value) as { n: number }
-        ).n,
+        countRows("SELECT count(*) FROM items WHERE slot = ?", value),
+      // The item list files armor set bonuses under their own type.
       "item-type": (value) =>
-        (
-          db
-            .prepare("SELECT count(*) n FROM items WHERE item_type = ?")
-            .get(value) as { n: number }
-        ).n,
+        countRows(
+          `SELECT count(*) FROM items WHERE CASE
+             WHEN item_type = 'augment' AND augment_armor_set_name != ''
+             THEN 'armor_set_bonus' ELSE item_type END = ?`,
+          value,
+        ),
       "npc-role": (value) =>
-        (
-          db
-            .prepare(
-              "SELECT count(*) n FROM npcs WHERE json_extract(roles, '$.' || ?) = 1",
-            )
-            .get(value) as { n: number }
-        ).n,
+        countRows(
+          "SELECT count(*) FROM npcs WHERE json_extract(roles, '$.' || ?) = 1",
+          value,
+        ),
       "monster-class": (value) =>
-        (
-          db
-            .prepare(
-              `SELECT count(*) n FROM monsters WHERE CASE
-                 WHEN is_fabled THEN 'fabled' WHEN is_boss THEN 'boss'
-                 WHEN is_elite THEN 'elite' ELSE 'regular' END = ?`,
-            )
-            .get(value) as { n: number }
-        ).n,
+        countRows(
+          `SELECT count(*) FROM monsters WHERE CASE
+             WHEN is_fabled THEN 'fabled' WHEN is_boss THEN 'boss'
+             WHEN is_elite THEN 'elite' ELSE 'regular' END = ?`,
+          value,
+        ),
     };
     const empty = FILTERED_LISTS.filter(
       (list) => count[list.filter.kind](list.filter.value) === 0,

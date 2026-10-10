@@ -12,7 +12,11 @@
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import FishIcon from "@lucide/svelte/icons/fish";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
-  import { formatEquipmentCategory, formatItemType } from "$lib/utils/format";
+  import {
+    formatEquipmentCategory,
+    formatItemType,
+    itemListType,
+  } from "$lib/utils/format";
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import { isHouseChestItemId } from "$lib/inventory/house-chests";
@@ -122,11 +126,7 @@
   const isArmorSetMetadata = $derived(
     isAugment && Boolean(data.item.augment_armor_set_name),
   );
-  const itemTypeLabel = $derived(
-    isArmorSetMetadata
-      ? "Armor Set Bonus"
-      : formatItemType(data.item.item_type),
-  );
+  const itemTypeLabel = $derived(formatItemType(itemListType(data.item)));
   const isBackpack = $derived(data.item.item_type === "backpack");
   const isPet = $derived(data.item.item_type === "pet");
 

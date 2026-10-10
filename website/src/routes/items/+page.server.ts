@@ -1,4 +1,5 @@
 import { getItems, getItemZones } from "$lib/queries/items.server";
+import { itemListType } from "$lib/utils/format";
 import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
@@ -25,7 +26,7 @@ export const load: PageServerLoad = () => {
     id: item.id,
     name: item.name,
     visual_public_path: item.visual_public_path,
-    item_type: item.item_type,
+    item_type: itemListType(item),
     quality: item.quality,
     level_required: item.level_required,
     item_level: item.item_level,

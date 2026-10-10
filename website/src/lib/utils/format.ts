@@ -30,6 +30,7 @@ export function formatDuration(seconds: number): string {
  */
 const itemTypeDisplayNames: Record<string, string> = {
   ammo: "Ammo",
+  armor_set_bonus: "Armor Set Bonus",
   augment: "Augment",
   backpack: "Backpack",
   book: "Book",
@@ -53,6 +54,20 @@ const itemTypeDisplayNames: Record<string, string> = {
   treasure_map: "Treasure Map",
   weapon: "Weapon",
 };
+
+/**
+ * The type an item is listed and labelled under. The game records an armor
+ * set's bonus as an augment that names the set, but it is not an augment a
+ * player socketed, so it gets a type of its own.
+ */
+export function itemListType(item: {
+  readonly item_type: string;
+  readonly augment_armor_set_name: string | null;
+}): string {
+  return item.item_type === "augment" && item.augment_armor_set_name
+    ? "armor_set_bonus"
+    : item.item_type;
+}
 
 /**
  * Converts an internal item type to a display-friendly name.
