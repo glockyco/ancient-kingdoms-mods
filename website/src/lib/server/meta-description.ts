@@ -634,10 +634,12 @@ export function monsterDescription(
   if (altarSpawn) {
     origin = ` Summoned at ${altarSpawn.altar_name} in ${altarSpawn.zone_name}.`;
   } else if (summonSpawn) {
+    // The count is the trigger's own placeholders; other monsters of that
+    // kind in the zone do not count, so the text never says "all".
     const placeholders =
       summonSpawn.kill_count === 1
-        ? `${summonSpawn.kill_monster_name} is slain`
-        : `all ${summonSpawn.kill_count} ${summonSpawn.kill_monster_name}s are slain`;
+        ? `its placeholder ${summonSpawn.kill_monster_name} is slain`
+        : `its ${summonSpawn.kill_count} placeholder ${summonSpawn.kill_monster_name}s are slain`;
     origin = ` Appears in ${summonSpawn.zone_name} once ${placeholders}.`;
   } else if (zoneNames.length === 1) {
     origin = ` Found in ${zoneNames[0]}.`;
