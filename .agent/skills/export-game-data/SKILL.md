@@ -5,8 +5,9 @@ description: Apply the runtime discovery traps, the curated class exception, and
 # Export game data
 
 The exporter rules, which data counts as authoritative and what an absent value looks like, are in
-the README under "Export game data". This skill adds the ways runtime discovery misleads, the one
-exporter that is deliberately unlike the others, and where each visual asset comes from.
+the README under "Rules for changes", in "Game data and mechanics". This skill adds the ways runtime
+discovery misleads, the one exporter that is deliberately unlike the others, and where each visual
+asset comes from.
 
 ## Runtime discovery
 

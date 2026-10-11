@@ -191,7 +191,7 @@ no events. Each of the three fails in a way that looks like the others.
 ## Record absolute deadlines
 
 The monster deadline is `server-scripts/MonsterSkills.cs:nextSpecialCastTime`. Use the synchronized
-server time described in the README's mod runtime notes.
+server time that the README's rules for mods describe.
 
 Record the deadline rather than the difference. Coarse samples then reconstruct exact events, and a
 deadline that moves between samples reveals a decision the game made without a visible action.
