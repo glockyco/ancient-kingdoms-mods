@@ -1795,10 +1795,6 @@
       "sha256": "9521ca0a212032f3aff221f2bfc76d86cd9e158d7c1fead418f862c9836e4b77",
       "span": 95
     },
-    "Monster.cs:2687-2696": {
-      "sha256": "f46007bbef3102b74d24165a7219732b207cba803aab87967c71310828b25c00",
-      "span": 10
-    },
     "Monster.cs:2850-2853": {
       "sha256": "741c47add2a566c3f4cb5b4d2afc08afb7eafd340cf1378692c6eeb3f7d88da6",
       "span": 4
@@ -1895,6 +1891,10 @@
       "sha256": "1d8dbee09b70087f30dfbb07d5210b53a7ca921b17a09d59e428435c471e5fed",
       "span": 2
     },
+    "Monster.cs:759-787": {
+      "sha256": "8f41b95bba218292a5c5c0b16ac21f3a6af7dba21a37210c97677ac51cce05cf",
+      "span": 29
+    },
     "Monster.cs:769-779": {
       "sha256": "cf2fc42e1f3661484d9358c1791bc5c2c3b056fb327f835e63708e4d0e8e0b15",
       "span": 11
@@ -1923,6 +1923,9 @@
       "span": 0
     },
     "Monster.cs:EventTimeSpawn": {
+      "span": 0
+    },
+    "Monster.cs:OnAggro": {
       "span": 0
     },
     "Monster.cs:OnDeath": {

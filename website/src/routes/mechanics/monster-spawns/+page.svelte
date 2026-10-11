@@ -279,7 +279,7 @@
         </li>
         <li>
           <!-- Source: server-scripts/NetworkManagerMMO.cs:111 and Monster.cs:621-642 — saved deadlines are loaded at server start; bosses whose deadline has not passed start hidden. -->
-          <!-- Source: server-scripts/Monster.cs:698-716 — at server start only summonable, seasonal, and failed-roll rare monsters start hidden; everything else starts alive. -->
+          <!-- Source: server-scripts/Monster.cs:698-716,759-787 — summonable, seasonal, failed-roll rare monsters and bosses or elites with unexpired saved respawn deadlines can start hidden. -->
           <span class="block"
             >Restarting the server does not reset a dead boss's saved timer.</span
           >
@@ -1213,21 +1213,23 @@
     <Card.Header>
       <Card.Title>Chase Limits and Resets</Card.Title>
       <Card.Description>
-        Most monsters stop chasing at a set distance from home, while regular
-        dungeon monsters have no distance limit.
+        Most monsters have a chase limit measured from where combat started,
+        while regular dungeon monsters have no distance limit.
       </Card.Description>
     </Card.Header>
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Monster.cs:51,1301-1313,2306-2314 — chase limit is the per-monster follow distance, default 20 units, measured from the spawn point. -->
-          <!-- Source: server-scripts/Monster.cs:EventTargetTooFarToFollow; Monster.cs:1613-1627 — beyond the follow distance the monster drops its target, clears debuffs, and returns home with bonus sprint speed. -->
+          <!-- Source: server-scripts/Monster.cs:51,1301-1313,2306-2314 — followDistance defaults to 20; the anchor is nonzero originFollowPosition, otherwise combatStartPosition, otherwise current position. -->
+          <!-- Source: server-scripts/Monster.cs:EventTargetTooFarToFollow,GetMaxAggroTarget; Monster.cs:1613-1627 — an out-of-range target is replaced by the highest-aggro eligible reachable in-range target; otherwise debuffs clear and returningHomePoint starts with sprintSpeed 3.5. -->
           <span class="block"
-            >Most monsters stop chasing 20 units from where they first appear.</span
+            >The default chase limit is 20 units from the monster's position
+            when combat started, or from an explicitly configured origin.</span
           >
           <span class="block"
-            >They drop their target, lose their harmful effects, and return home
-            faster.</span
+            >If its target exceeds that limit, the monster switches to its
+            highest-aggro eligible target still inside it. If none is reachable,
+            it drops its target, loses harmful effects, and returns home faster.</span
           >
         </li>
         <li>
@@ -1242,14 +1244,15 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:2687-2696,717-718 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage. -->
+          <!-- Source: server-scripts/Monster.cs:OnAggro,EventEntityTooFarToFollow — returning non-dungeon-normal monsters require reachability and anchor distance within followDistance * 0.8; dungeon normal mobs skip this return-specific gate, not CanAttack or normal reachability. -->
           <span class="block"
-            >Returning monsters chase you again only within 80% of their maximum
-            chase distance.</span
+            >A returning monster re-engages only if you are reachable within 80%
+            of its chase distance and inside that radius of the same
+            combat-start position or configured origin.</span
           >
           <span class="block"
-            >Regular dungeon monsters can turn around and chase you at any
-            distance.</span
+            >Regular dungeon monsters skip this return-specific distance check,
+            but still need an attackable target and a reachable route.</span
           >
         </li>
         <li>
