@@ -174,9 +174,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/Combat.cs:1224-1233,1234-1283 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
-        text: "Mana Shield absorbs incoming damage by spending one mana per point. It ends when you run out of mana.",
+        text: "Mana Shield absorbs incoming damage by spending one mana per point. It ends when a hit needs more mana than you have; a hit that spends exactly your remaining mana leaves the shield active.",
         source:
-          "Source: server-scripts/Combat.cs:1284-1314 — shield drains mana and ends when depleted",
+          "Source: server-scripts/Combat.cs:1284-1314 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
