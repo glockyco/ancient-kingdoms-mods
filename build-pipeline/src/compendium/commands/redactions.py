@@ -6,7 +6,6 @@ the point the closure runs, so it reaches the same answer as a build without
 writing the published database.
 """
 
-import sqlite3
 import tempfile
 from pathlib import Path
 
@@ -168,21 +167,17 @@ def _verify(repo_root: Path, config: dict) -> int:
     """
     identifiers = _scan_identifiers(repo_root, config)
     website_dir = repo_root / config["paths"]["website_dir"]
-    search_db = website_dir / "data" / "search.db"
+    search_index = website_dir / "data" / "search-index.json"
     images = website_dir / "static" / "images"
     prerendered = website_dir / ".svelte-kit" / "output" / "prerendered"
 
     findings: list[verify.Finding] = []
     missing: list[str] = []
 
-    if search_db.exists():
-        conn = sqlite3.connect(search_db)
-        try:
-            findings += verify.scan(conn, identifiers)
-        finally:
-            conn.close()
+    if search_index.exists():
+        findings += verify.file_findings(search_index, identifiers, "search index")
     else:
-        missing.append("search.db")
+        missing.append("search index")
 
     if images.exists():
         findings += verify.path_findings(images, identifiers)

@@ -206,6 +206,23 @@ def path_findings(
     return findings
 
 
+def file_findings(path: Path, identifiers: set[str], surface: str) -> list[Finding]:
+    """Published text in one file that names removed content.
+
+    The search index is written by the website build after the pipeline exits,
+    so this pass reads it from disk.
+    """
+    if not identifiers or not path.is_file():
+        return []
+
+    matcher = _matcher(identifiers)
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    return [
+        Finding(surface, "", path.name, identifier)
+        for identifier in _found_in(matcher, text)
+    ]
+
+
 def content_findings(
     root: Path,
     identifiers: set[str],
