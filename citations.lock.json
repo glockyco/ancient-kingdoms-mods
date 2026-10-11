@@ -3000,6 +3000,10 @@
       "sha256": "22cc9d2d51bdba8f539e111d815a5d0543fad0a0c9b6d7b871ece50f54d87b67",
       "span": 11
     },
+    "Player.cs:8471-8478": {
+      "sha256": "9f47d3de65660bc4b1789c01d20e9c5986aef9f5d0b67d73d64a79fb2da0176e",
+      "span": 8
+    },
     "Player.cs:8869-8886": {
       "sha256": "1c4104be15264be2613972c6577c07b9ff4b659f74c1fbe9ac819e7e30287523",
       "span": 18
@@ -4966,10 +4970,6 @@
     "UINpcTrading.cs:558-571": {
       "sha256": "2696a8b5adab685704ad1fb94319a9149d8a11f9eadf00e25f82dd0b8ca754ec",
       "span": 14
-    },
-    "UINpcTrading.cs:823-830": {
-      "sha256": "86b8f69c545d5ad1947ba9586f5464e1587cf8baf2dc729990765fd38d872094",
-      "span": 8
     },
     "UINpcTrading.cs:837-844": {
       "sha256": "24e56e21fddf789f66c37d4edbc80b08b48ab59613d323894dc1cf8ad944e251",

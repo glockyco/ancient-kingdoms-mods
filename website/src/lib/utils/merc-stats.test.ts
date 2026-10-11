@@ -11,7 +11,7 @@ import {
   type Curves,
 } from "./merc-stats";
 
-// Curves from the shipped compendium DB (pets where is_mercenary=1).
+// Fixed class curves for arithmetic boundary tests.
 const CURVES: Curves = {
   Warrior: { hp_base: 110, hp_per: 110, mana_base: 0, mana_per: 0 },
   Rogue: { hp_base: 60, hp_per: 60, mana_base: 0, mana_per: 0 },
@@ -112,10 +112,16 @@ describe("hiring cost helpers", () => {
     expect(hirePrice(10, 0)).toBe(20);
     expect(hirePrice(50, 200)).toBe(3420);
   });
+  test("narrows the discount product before rounding upward", () => {
+    expect(hirePrice(10, 2, charismaDiscount(70))).toBe(43);
+    expect(resurrectionPrice(18, 3, charismaDiscount(70))).toBe(43);
+    expect(hirePrice(10, 2, charismaDiscount(10))).toBe(48);
+    expect(resurrectionPrice(18, 3, charismaDiscount(10))).toBe(48);
+  });
 
   test("charisma discount caps at 25%", () => {
     expect(charismaDiscount(0)).toBe(0);
-    expect(charismaDiscount(60)).toBeCloseTo(0.12, 10);
+    expect(charismaDiscount(60)).toBeCloseTo(0.12, 6);
     expect(charismaDiscount(125)).toBe(0.25);
     expect(charismaDiscount(200)).toBe(0.25);
   });

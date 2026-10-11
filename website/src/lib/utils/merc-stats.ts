@@ -317,10 +317,10 @@ export function pRaceAtRecruiter(
 
 /** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20, server-scripts/UINpcTrading.cs:837-844 — GetDiscountPurchaseBonus returns Charisma * 0.002 and CalculatePurchaseItemPrice caps it at 0.25. */
 export function charismaDiscount(charisma: number): number {
-  return clamp(charisma, 0, 125) * 0.002;
+  return multiplyF32(clamp(charisma, 0, 125), 0.002);
 }
 
-/** Source: server-scripts/UIMercenaries.cs:434-440, server-scripts/UINpcTrading.cs:823-830 — mercenary hire price plus Charisma discount. */
+/** Source: server-scripts/UIMercenaries.cs:434-440, server-scripts/UINpcTrading.cs:837-844 — double-precision base price, then a float32 Charisma product rounded upward. */
 export function hirePrice(
   level: number,
   veteran: number,
@@ -331,7 +331,7 @@ export function hirePrice(
     20 + 400 * ((L - 10) / 40) ** 2 + Math.max(0, veteran) * 15,
   );
   const d = clamp(discount, 0, 0.25);
-  return Math.max(1, base - ceilToInt(base * d));
+  return Math.max(1, base - ceilToInt(multiplyF32(base, d)));
 }
 
 /**
@@ -375,7 +375,7 @@ export function mercenarySkillRank(
   return Math.min(maximum, cls === "Bard" ? Math.max(1, rank) : rank);
 }
 
-/** Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice — round(5 + 295 × ((clamp(level, 1, 50) − 1) ÷ 49)^2.8 + 10 × veteran), less the Charisma discount (rounded up), at least 1. */
+/** Source: server-scripts/Player.cs:8471-8478 — double-precision resurrection curve and veteran fee, then a float32 Charisma product rounded upward. */
 export function resurrectionPrice(
   level: number,
   veteran: number,
@@ -383,7 +383,10 @@ export function resurrectionPrice(
 ): number {
   const x = (clamp(level, 1, 50) - 1) / 49;
   const base = iround(5 + 295 * x ** 2.8 + Math.max(0, veteran) * 10);
-  return Math.max(1, base - ceilToInt(base * clamp(discount, 0, 0.25)));
+  return Math.max(
+    1,
+    base - ceilToInt(multiplyF32(base, clamp(discount, 0, 0.25))),
+  );
 }
 
 /** Source: server-scripts/Combat.cs:1040 — the death-save rank is Mathf.RoundToInt(total veteran points ÷ 10). */
