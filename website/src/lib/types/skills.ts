@@ -361,16 +361,16 @@ export type TimingModel =
   // interval = cast_time + clamp(delay×(1−haste)/25, 0.25, 2.0); weapon refractory period.
   // Warrior and Rogue generate Rage; all other classes use Mana.
   | "player_auto" // e.g. crush_strike
-  // interval = cast_time × (1 − spellHaste) + 0.75s refractory; hard cap: 50% (Combat.cs:314-324).
-  // Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360, server-scripts/Player.cs:refractoryPeriodSkill
+  // interval = cast_time × (1 − spellHaste) + 0.75s refractory; the spell haste sum is unclamped.
+  // Source: server-scripts/Skills.cs:924-933, server-scripts/Player.cs:2873, server-scripts/Player.cs:refractoryPeriodSkill
   | "player_spell" // e.g. fire_blast, wind_shock, smite, mystic_spark
   | "companion" // flat cooldown: familiars, spells, and combat-pet skills other than index 0
   | "companion_auto" // non-familiar combat pet non-spell skill index 0: haste-reduced cooldown
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
-  // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by spell haste (cap 50%), cooldown not.
-  // Source: server-scripts/Skills.cs:924-933 (cast reduction), server-scripts/Skills.cs:1141-1169 (flat cooldown), server-scripts/Combat.cs:348-360 (cap)
+  // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by the unclamped spell haste sum, cooldown not.
+  // Source: server-scripts/Skills.cs:924-933 (cast reduction), server-scripts/Skills.cs:1141-1169 (flat cooldown), server-scripts/Pet.cs:2221-2226 (unclamped sum)
   | "merc_spell" // e.g. flame_blast, gale_burst, divine_smite
-  | "monster_spell" // spell cast time × (1−spellHaste) + flat cooldown
+  | "monster_spell" // spell cast time + flat cooldown; StartCast(skill, 0f) ignores spell haste
   | "monster"; // non-spell: cast_time + cooldown×(1−haste)
 
 export interface TimingContext {

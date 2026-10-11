@@ -1988,6 +1988,9 @@
     "Monster.cs:UpdateServer_DEAD": {
       "span": 0
     },
+    "Monster.cs:UseSkillNow": {
+      "span": 0
+    },
     "Monster.cs:UserCode_CmdLootMonster": {
       "span": 0
     },
@@ -2232,6 +2235,10 @@
       "sha256": "079db2f85f6f63bc33ee488b6690f65e1c2978837172e5b5b9e13adaad85ce76",
       "span": 3
     },
+    "Npc.cs:666": {
+      "sha256": "2b60aee24def2a704ca0494b5716ad3d6b885d5898497f2b1d45342c656da065",
+      "span": 1
+    },
     "Npc.cs:790-797": {
       "sha256": "9b8640a25c024a996066862e340399c2561e5fac194cb7eaed9861ef9de95a24",
       "span": 8
@@ -2329,6 +2336,10 @@
     "Pet.cs:2204-2215": {
       "sha256": "d2b114d7a23792959b553262a1464e49ebe9caf11e45c133b89426908c542c1c",
       "span": 12
+    },
+    "Pet.cs:2221-2226": {
+      "sha256": "fda0dd95375aac848684d4c95efb16a047d8ae3b4ad4d1267b35e800b84f71d1",
+      "span": 6
     },
     "Pet.cs:2373": {
       "sha256": "95934581b8207f6b9b387b6f287a97a2f9bf8264f296cec36811eb87782ed7e2",
@@ -2878,6 +2889,10 @@
     "Player.cs:2205-2208": {
       "sha256": "a2d6e97bff4fb95ffb7efe4b8963d31dc3b4591ab10c1732157c3735186d4b6c",
       "span": 4
+    },
+    "Player.cs:2873": {
+      "sha256": "9e8bfdf5f7f6d88d35d1737caa88fdecd7e93d33c286b874c814247f3b75bc59",
+      "span": 1
     },
     "Player.cs:3138-3196": {
       "sha256": "18c8fc991c4ffb10d6ee716c0cf27a8a6c65874b4196602cb7545ba2ecddc0ea",

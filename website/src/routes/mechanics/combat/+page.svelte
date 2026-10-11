@@ -1303,15 +1303,16 @@ percentageValue = baseValue × songPower</pre>
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
-              <!-- Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360 -->
+              <!-- Source: server-scripts/Skills.cs:924-933; server-scripts/Player.cs:2873 — StartCast subtracts the unclamped equipment and skill spellHasteBonus sum; Combat.spellHaste clamps only the displayed value to 50%. -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Player spell auto attack</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-sm"
-                  >Reduces cast time by up to 50%. The 0.75 s wait afterward
-                  stays unchanged.</td
+                  >Reduces cast time by its full amount, even above the 50% the
+                  character sheet shows. The 0.75 s wait afterward stays
+                  unchanged.</td
                 >
               </tr>
               <!-- Source: server-scripts/Skills.cs:1141-1169 — non-familiar non-mercenary pet skillIndex 0 uses haste for non-spells. -->
@@ -1330,14 +1331,15 @@ percentageValue = baseValue × songPower</pre>
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
-              <!-- Source: server-scripts/Combat.cs:348-360 -->
+              <!-- Source: server-scripts/Skills.cs:924-933; server-scripts/Pet.cs:2221-2226 — mercenary spells pass the unclamped equipment and skill spellHasteBonus sum to StartCast. -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Mercenary spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-sm"
-                  >Reduces cast time by up to 50%. Cooldown stays unchanged.</td
+                  >Reduces cast time by its full amount, even above 50%.
+                  Cooldown stays unchanged.</td
                 >
               </tr>
               <tr>

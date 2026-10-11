@@ -2991,7 +2991,7 @@
                     </p>
                   {/if}
                 {:else if ctx.model === "player_spell"}
-                  <!-- Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360 -->
+                  <!-- Source: server-scripts/Skills.cs:924-933; server-scripts/Player.cs:2873 — StartCast subtracts the unclamped equipment and skill spellHasteBonus sum; only Combat.spellHaste, shown on the character sheet, is clamped to 50%. -->
                   <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
                     interval = {skill.channel_pulses > 0
@@ -3000,7 +3000,9 @@
                   </p>
                   <p class="text-muted-foreground">
                     <span class="block"
-                      >Spell haste shortens cast time by up to 50%.</span
+                      >Spell haste shortens cast time by its full amount. The
+                      character sheet shows at most 50%, but casts use the full
+                      total.</span
                     >
                     <span class="block"
                       >The 0.75-second recovery time before the next cast does
@@ -3021,14 +3023,15 @@
                     >
                   </p>
                 {:else if ctx.model === "merc_spell"}
-                  <!-- Source: server-scripts/Skills.cs:924-933, server-scripts/Skills.cs:1141-1169, server-scripts/Combat.cs:348-360 -->
+                  <!-- Source: server-scripts/Skills.cs:924-933,1141-1169; server-scripts/Pet.cs:2221-2226 — mercenary spells pass the unclamped equipment and skill spellHasteBonus sum to StartCast. -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) +
                     cooldown
                   </p>
                   <p class="text-muted-foreground">
                     <span class="block"
-                      >Spell haste shortens cast time by up to 50%.</span
+                      >Spell haste shortens cast time by its full amount, even
+                      above the 50% the mercenary's sheet shows.</span
                     >
                     <span class="block">It does not shorten the cooldown.</span>
                   </p>
@@ -3042,9 +3045,10 @@
                     other companion skills keep their flat cooldown.
                   </p>
                 {:else if ctx.model === "monster_spell"}
-                  <p class="font-mono">
-                    interval = cast time &times; (1 &minus; spell haste) +
-                    cooldown
+                  <!-- Source: server-scripts/Monster.cs:UseSkillNow; server-scripts/Npc.cs:666 — StartCast(skill, 0f) ignores spell haste. -->
+                  <p class="font-mono">interval = cast time + cooldown</p>
+                  <p class="text-muted-foreground">
+                    Spell haste does not shorten monster or NPC casts.
                   </p>
                 {:else if ctx.model === "monster"}
                   <!-- Source: server-scripts/Monster.cs:2048-2054; Npc.cs:1302-1308 — non-spells call FinishCastMeleeAttackMonster. -->
