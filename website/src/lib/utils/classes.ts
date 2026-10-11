@@ -37,8 +37,8 @@ export const CLASS_CONFIG: Record<ClassName, ClassConfig> = {
   wizard: { abbrev: "WIZ", color: "#2a5073", name: "Wizard" },
   druid: { abbrev: "DRU", color: "#4a8f58", name: "Druid" },
   bard: { abbrev: "BRD", color: "#8f4a6f", name: "Bard" },
-  // Source: server-scripts/UICombatMeter.cs:225 — Necromancer combat-meter colour is #9164B4
-  necromancer: { abbrev: "NEC", color: "#9164B4", name: "Necromancer" },
+  // Site-chosen teal keeps the Necromancer pill distinct with readable white text.
+  necromancer: { abbrev: "NEC", color: "#2f6b6b", name: "Necromancer" },
 };
 
 /** Default config for unknown classes */
