@@ -133,8 +133,6 @@ export interface Skill {
   is_necromancer_pet_buff?: boolean;
   is_necromancer_reaper_form?: boolean;
   scales_with_intelligence?: boolean;
-  poison_disease_scales_with_intelligence?: boolean;
-  damage_over_time_bonus_per_intelligence_point?: number;
   lifetap_healing_percent_bonus?: string | LinearValue | null;
   damage_over_time_execute_bonus?: string | LinearValue | null;
 
@@ -218,6 +216,17 @@ export function formatLinearValue(
   }
 
   return formatSkillLevelFormula(lv, (value) => value.toLocaleString());
+}
+
+/** Formats every numeric term with its unit, without changing parity formatting. */
+export function formatLinearValueWithUnit(
+  value: LinearValue,
+  unit: string,
+): string {
+  const formatValue = (number: number) => `${number.toLocaleString()}${unit}`;
+  return value.bonus_per_level === 0
+    ? formatValue(value.base_value)
+    : formatSkillLevelFormula(value, formatValue);
 }
 
 function formatSkillLevelFormula(
@@ -780,18 +789,9 @@ function formatBuffDebuffStats(
     } else {
       const formattedType = formatDamageType(skill.damage_over_time_type);
       const typeLabel = formattedType ? ` ${formattedType}` : "";
-      // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — poisonDiseaseScalesWithIntelligence selects intelligence.value for poison/disease debuffs.
-      // Source: server-scripts/BuffSkill.cs:GetDamageOverTimeAttributeBonus — RoundToInt(attribute * damageOverTimeBonusPerIntelligencePoint) for Intelligence-scaled poison/disease.
-      const intelligenceBonus =
-        skill.poison_disease_scales_with_intelligence &&
-        !skill.scales_with_charisma &&
-        !skill.is_melee_debuff &&
-        (skill.is_poison_debuff || skill.is_disease_debuff) &&
-        skill.damage_over_time_bonus_per_intelligence_point !== undefined
-          ? ` + round(INT × ${skill.damage_over_time_bonus_per_intelligence_point.toLocaleString()})`
-          : "";
+      // Attribute scaling is documented in skill details, not effect summaries.
       parts.push(
-        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, options)}${intelligenceBonus}${typeLabel} dmg/s`,
+        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, options)}${typeLabel} dmg/s`,
       );
     }
   }

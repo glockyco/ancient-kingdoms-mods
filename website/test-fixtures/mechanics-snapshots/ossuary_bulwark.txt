@@ -1,1 +1,1 @@
-Mechanics Combat Pet Buff Targets your active combat pet. Your combat pet must be alive. Familiars and mercenaries cannot receive this buff. Range: 8m. Buff Scaling Attribute contribution = INT Defense skill value at level + attribute contribution × 0.15 Cast time = cast time × (1 − spell haste)
+Mechanics Combat Pet Buff Targets your living combat pet within 8 yd. Familiars and mercenaries cannot receive this buff. Buff Scaling Attribute contribution = INT Defense skill value at level + attribute contribution × 0.15 Cast time = cast time × (1 − spell haste)

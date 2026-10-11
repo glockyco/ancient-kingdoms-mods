@@ -14,6 +14,7 @@
     formatSkillEffect,
   } from "$lib/utils/formatSkillEffect";
   import type { ClassSkill } from "$lib/queries/classes.server";
+  import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
 
   let { skills, urlKey }: { skills: ClassSkill[]; urlKey: string } = $props();
 
@@ -51,7 +52,7 @@
       id: "effect",
       header: "Effect",
       enableSorting: false,
-      accessorFn: (row) => formatSkillEffect(row),
+      accessorFn: (row) => formatSkillEffect(skillRowToEffectInput(row)),
     },
     {
       id: "cost",

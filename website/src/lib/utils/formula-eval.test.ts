@@ -98,9 +98,9 @@ describe("server damage formula families", () => {
 });
 
 describe("Final Cadence display formulas", () => {
-  it("applies the player's repertoire after the first rounding, but not the mercenary's", () => {
+  it("applies the player's Melody bonus after the first rounding, but not the mercenary's", () => {
     expect(renderFormula(FORMULA_EXPRS.bard_final_cadence)).toBe(
-      "round(round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2))) × (1 + repertoire bonus))",
+      "round(round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2))) × (1 + Melody bonus))",
     );
     expect(renderFormula(FORMULA_EXPRS.bard_final_cadence_merc)).toBe(
       "round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2)))",

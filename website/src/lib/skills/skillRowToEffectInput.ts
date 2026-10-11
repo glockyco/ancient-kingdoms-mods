@@ -3,11 +3,9 @@ import type { Skill } from "$lib/utils/formatSkillEffect";
 /**
  * Build the `formatSkillEffect` input from a raw `skills` DB row.
  *
- * Single source for BOTH the `/skills` loader and the parity-corpus bake
- * (`website/scripts/gen-skill-effect-parity.ts`), so the mod's runtime C# port
- * is validated against the same formatter input the website renders. Mirrors the
- * object previously inlined in `website/src/routes/skills/+page.server.ts` — the
- * boolean coercions and the `pet_prefab_name` -> `pet_name` rename.
+ * Shared by skill, class, pet, and monster pages and the parity-corpus bake
+ * (`website/scripts/gen-skill-effect-parity.ts`). Coerces SQLite boolean columns
+ * and renames `pet_prefab_name` to `pet_name` for identical formatter inputs.
  */
 export function skillRowToEffectInput(
   row: unknown,
@@ -51,11 +49,6 @@ export function skillRowToEffectInput(
     is_necromancer_pet_buff: Boolean(r.is_necromancer_pet_buff),
     is_necromancer_reaper_form: Boolean(r.is_necromancer_reaper_form),
     scales_with_intelligence: Boolean(r.scales_with_intelligence),
-    poison_disease_scales_with_intelligence: Boolean(
-      r.poison_disease_scales_with_intelligence,
-    ),
-    damage_over_time_bonus_per_intelligence_point:
-      r.damage_over_time_bonus_per_intelligence_point,
     lifetap_healing_percent_bonus: r.lifetap_healing_percent_bonus,
     damage_over_time_execute_bonus: r.damage_over_time_execute_bonus,
     health_max_bonus: r.health_max_bonus,

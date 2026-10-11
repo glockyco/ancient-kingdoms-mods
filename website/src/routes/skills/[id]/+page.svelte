@@ -9,7 +9,7 @@
   import {
     formatLinearDuration as formatSkillLinearDuration,
     formatLinearPercent as formatSkillLinearPercent,
-    formatLinearValue as formatSkillLinear,
+    formatLinearValueWithUnit,
     hasNonZeroField,
   } from "$lib/utils/formatSkillEffect";
   import * as Tabs from "$lib/components/ui/tabs";
@@ -78,7 +78,7 @@
     suffix: string = "",
   ): string {
     if (!value) return "-";
-    return `${formatSkillLinear(value, undefined)}${suffix}`;
+    return formatLinearValueWithUnit(value, suffix);
   }
 
   function formatLinearAbs(
@@ -136,6 +136,11 @@
     return text
       .replace(/<color=(#[0-9A-Fa-f]{6})>/g, '<span style="color:$1">')
       .replace(/<\/color>/g, "</span>")
+      .replace(/<pos=[^>]*>/g, "    ")
+      .replace(
+        /<\/?(?:size|align|line-height|pos|voffset|space|indent)[^>]*>/g,
+        "",
+      )
       .replace(/\n/g, "<br>");
   }
 
@@ -662,12 +667,15 @@
                 bonus_per_level: Math.abs(val.bonus_per_level),
               }
             : val;
+        // Source: server-scripts/Skills.cs:1617-1623 — Reaper Form drains the caster's maximum Health each second.
         const label =
           def.key === "healing_per_second_bonus" && val.base_value < 0
             ? "Damage/sec"
             : def.key === "health_percent_per_second_bonus" &&
                 val.base_value < 0
-              ? "Damage %/sec"
+              ? skill.is_necromancer_reaper_form
+                ? "Self Health drain %/sec"
+                : "Damage %/sec"
               : def.label;
 
         cols.push({
@@ -1073,9 +1081,13 @@
               </dl>
             </Tabs.Content>
             <Tabs.Content value="tooltip">
+              <p class="mb-3 text-sm text-muted-foreground">
+                Skill level 1. Base values before equipment and attribute
+                bonuses.
+              </p>
               <div class="font-mono text-sm whitespace-pre-wrap">
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
-                {@html convertTooltip(skill.tooltip_template)}
+                {@html convertTooltip(data.gameTooltip)}
               </div>
             </Tabs.Content>
           </Tabs.Root>
@@ -1103,9 +1115,12 @@
             </div>
           </dl>
         {:else}
+          <p class="mb-3 text-sm text-muted-foreground">
+            Skill level 1. Base values before equipment and attribute bonuses.
+          </p>
           <div class="font-mono text-sm whitespace-pre-wrap">
             <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
-            {@html convertTooltip(skill.tooltip_template)}
+            {@html convertTooltip(data.gameTooltip)}
           </div>
         {/if}
       </Card.Content>
@@ -1799,10 +1814,13 @@
             {/if}
             {#if skill.health_percent_per_second_bonus}
               <div>
+                <!-- Source: server-scripts/Skills.cs:1617-1623 — Reaper Form drains the caster's maximum Health each second. -->
                 <dt class="text-muted-foreground">
-                  {isNegativeLinear(skill.health_percent_per_second_bonus)
-                    ? "Damage %/sec"
-                    : "Health %/sec"}
+                  {skill.is_necromancer_reaper_form
+                    ? "Self Health drain %/sec"
+                    : isNegativeLinear(skill.health_percent_per_second_bonus)
+                      ? "Damage %/sec"
+                      : "Health %/sec"}
                 </dt>
                 <dd class="font-medium">
                   {formatLinearPercentAbs(
@@ -1926,11 +1944,9 @@
                 Blinds the target.
               </p>
             {/if}
-            {#if skill.is_permanent}
+            {#if skill.is_permanent && !skill.is_necromancer_reaper_form}
               <p class="text-muted-foreground">
-                {skill.is_necromancer_reaper_form
-                  ? "The form has no time limit."
-                  : "The game hides the timer, but the effect still has a duration."}
+                The game hides the timer, but the effect still has a duration.
               </p>
             {/if}
           </div>
@@ -2047,16 +2063,21 @@
                 skill.health_cost_percent,
               )})
             </p>
+            <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:12,19-25,47-50 — each nonnegative Intelligence point adds 0.1% of the Health cost to healing. -->
             <p class="font-mono">
               Base heal = round(C &times; ({formatLinearPercent(
                 skill.healing_percent,
-              )} + max(INT, 0) &times; {skill.healing_percent_per_intelligence}))
+              )} + max(INT, 0) &times; {formatLinearPercent({
+                base_value: skill.healing_percent_per_intelligence,
+                bonus_per_level: 0,
+              })}))
             </p>
+            <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:37-44; server-scripts/TargetHealSkill.cs:125-132 — living eligible targets must be within cast range. -->
             <p class="text-muted-foreground">
               Targets another living player or a non-familiar pet, including
               mercenaries and other players' combat pets, within {formatLinear(
                 skill.cast_range,
-                "m",
+                " yd",
               )}. Cannot target yourself, familiars, monsters or NPCs. Your
               current Health must exceed C. Pays the full cost even if the
               target is already at maximum Health. Wisdom does not increase the
@@ -2072,8 +2093,7 @@
         {/if}
 
         {#if skill.is_necromancer_reaper_form}
-          <!-- Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — applying an active Reaper Form removes its buff. -->
-          <!-- Source: server-scripts/Buff.cs:BuffTimeRemaining — NecromancerReaperFormSkill returns at least 1 while buffTimeEnd is positive. -->
+          <!-- Source: server-scripts/NecromancerReaperFormSkill.cs:15-26; server-scripts/Buff.cs:347-355 — applying an active form removes it and its timer stays positive while active. -->
           <div class="space-y-2">
             <h3 class="font-semibold">Reaper Form</h3>
             <p class="text-muted-foreground">Toggle with no time limit.</p>
@@ -2085,14 +2105,16 @@
             </p>
             <!-- Source: server-scripts/NetworkManagerMMO.cs:116 — UpdateEnergies repeats every 1 second. -->
             <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks skip BreakMezz for NecromancerReaperFormSkill. -->
+            <!-- Source: server-scripts/Skills.cs:251-268,1617-1623 — the self-drain has no low-health guard and can kill the caster. -->
             <p class="text-muted-foreground">
-              Drain ignores resistance, wards and critical hits. It does not
-              break Sleep.
+              Drain ignores resistance, wards and critical hits. The drain can
+              kill you. It does not break Sleep.
             </p>
             <!-- Source: server-scripts/MountItem.cs:58-63 — removes reaperForm.formSkill before mounting. -->
             <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->
+            <!-- Source: server-scripts/UIBuffs.cs:292-303; server-scripts/Player.cs:10310-10328 — Reaper Form can be removed through the buff bar. -->
             <p class="text-muted-foreground">
-              Ends when toggled off or mounted.
+              Ends when toggled off, removed from your buff bar or mounted.
               {skill.remain_after_death
                 ? "The form survives death."
                 : "Death removes the form."}
@@ -2115,16 +2137,22 @@
         {/if}
 
         {#if skill.is_necromancer_pet_buff || skill.also_buff_active_pet}
-          <!-- Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet,CheckDistance — isPetSkill requires an owned living non-familiar, non-mercenary active pet. -->
+          <!-- Source: server-scripts/NecromancerPetBuffSkill.cs:6-28 — direct pet buffs require an owned living combat pet. -->
           <!-- Source: server-scripts/TargetBuffSkill.cs:477-482 — alsoBuffActivePet copies a self-buff to the owned living non-familiar, non-mercenary active pet within castRange. -->
           <div class="space-y-2">
             <h3 class="font-semibold">Combat Pet Buff</h3>
+            <!-- Source: server-scripts/TargetBuffSkill.cs:477-480; server-scripts/NecromancerPetBuffSkill.cs:24-28 — the pet must be within cast range. -->
             <p class="text-muted-foreground">
-              {skill.also_buff_active_pet
-                ? "When applied to yourself, the same buff also reaches your active combat pet."
-                : "Targets your active combat pet."}
-              Your combat pet must be alive. Familiars and mercenaries cannot receive
-              this buff. Range: {formatLinear(skill.cast_range, "m")}.
+              {#if skill.also_buff_active_pet}
+                When applied to yourself, the same buff also reaches your living
+                combat pet within {formatLinear(skill.cast_range, " yd")}.
+                Familiars and mercenaries cannot receive this copy.
+              {:else}
+                Targets your living combat pet within {formatLinear(
+                  skill.cast_range,
+                  " yd",
+                )}. Familiars and mercenaries cannot receive this buff.
+              {/if}
             </p>
           </div>
         {/if}
@@ -2161,6 +2189,13 @@
               the target, range or sight, stun or fear cancels the channel.
               Cancellation starts the full cooldown immediately, including when
               a pulse kills the target.
+            </p>
+            <!-- Source: server-scripts/PlayerSkills.cs:437-454,464-514,2145-2149,2237-2244 — a valid replacement skill cancels the channel with full cooldown and then starts or applies. -->
+            <p class="text-muted-foreground">
+              Using another skill cancels the channel, starts its full cooldown
+              immediately and starts the new skill. You must be free of stun and
+              fear. The new skill must be active, meet its casting requirements
+              and have a valid target within range and sight when required.
             </p>
           </div>
         {/if}
@@ -2438,14 +2473,14 @@
                 Requires active songs &gt;= active song limit.
               {/if}
             </p>
+            <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70 — the Melody bonus multiplies Charisma-scaled healing before a second rounding. -->
             <p class="font-mono">
               {#if usedByBardMercenary}
                 Base healing = round(skill healing at level &times; (1 +
                 min(max(CHA, 0) &times; 0.001, 2)))
               {:else}
                 Base healing = round(round(skill healing at level &times; (1 +
-                min(max(CHA, 0) &times; 0.001, 2))) &times; (1 + repertoire
-                bonus))
+                min(max(CHA, 0) &times; 0.001, 2))) &times; (1 + Melody bonus))
               {/if}
             </p>
             <p class="font-mono">
@@ -2456,14 +2491,14 @@
               Final healing = base healing &times; critical multiplier
             </p>
             {#if !usedByBardMercenary}
-              <!-- Source: server-scripts/PlayerSkills.cs:ConsumeFinalCadenceRepertoireBonus,CompleteBardSongCast — distinct completed manual songs in the preceding 40 seconds are consumed. -->
+              <!-- Source: server-scripts/PlayerSkills.cs:1157,1576-1603 — distinct completed manual songs in the preceding 40 seconds are consumed for the Melody bonus. -->
               <p class="text-muted-foreground">
-                Repertoire bonus: 0–3 distinct manually cast songs grant 0%, 4
-                grant 15%, 5 grant 25%, and 6 or more grant 30%. Only songs
-                completed less than 40 seconds ago count. Automatic renewal does
-                not count. Casting Final Cadence clears the repertoire. Damage
-                and healing are rounded once after Charisma scaling and again
-                after this bonus.
+                Melody bonus: 0–3 distinct manually cast songs grant 0%, 4 grant
+                15%, 5 grant 25%, and 6 or more grant 30%. Only songs completed
+                less than 40 seconds ago count. Automatic renewal does not
+                count. Casting Final Cadence clears the Melody bonus. Damage and
+                healing are rounded once after Charisma scaling and again after
+                this bonus.
               </p>
             {/if}
             <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply and BardFinalCadenceSkill.cs:HealNearbyAllies — a Bard mercenary uses its own Charisma and critical chance. -->
@@ -2475,13 +2510,14 @@
                 >The {usedByBardMercenary ? "mercenary's" : "Bard's"} critical chance
                 determines one roll shared by every recipient.</span
               >
+              <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70 — damage uses the same Charisma and Melody bonus as healing. -->
               <span class="block"
                 >Damage uses the same {usedByBardMercenary
                   ? "Charisma multiplier"
-                  : "Charisma and repertoire multipliers"} before the usual magic
-                damage reductions. Hits living, visible, attackable monsters within
-                range in the same zone. They must have a nonempty aggro list and speed
-                above −50.</span
+                  : "Charisma and Melody multipliers"} before the usual magic damage
+                reductions. Hits living, visible, attackable monsters within range
+                in the same zone. They must have a nonempty aggro list and speed above
+                −50.</span
               >
               <span class="block">Final Cadence does not heal familiars.</span>
               {#if usedByBardMercenary}

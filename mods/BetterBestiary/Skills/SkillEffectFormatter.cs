@@ -395,13 +395,8 @@ internal static class SkillEffectFormatter
                     ? FormatDamageType(skill.damage_over_time_type)
                     : "";
                 var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
-                var intelligenceBonus = skill.poison_disease_scales_with_intelligence
-                    && !skill.scales_with_charisma && !skill.is_melee_debuff
-                    && (skill.is_poison_debuff || skill.is_disease_debuff)
-                    && skill.damage_over_time_bonus_per_intelligence_point.HasValue
-                    ? $" + round(INT × {Loc(skill.damage_over_time_bonus_per_intelligence_point.Value)})"
-                    : "";
-                parts.Add($"{FormatLinearValue(Abs(hps))}{intelligenceBonus}{typeLabel} dmg/s");
+                // Attribute scaling is documented in skill details, not effect summaries.
+                parts.Add($"{FormatLinearValue(Abs(hps))}{typeLabel} dmg/s");
             }
         }
 

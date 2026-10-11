@@ -39,6 +39,7 @@ export interface SkillEffectRow {
   is_manaburn_skill: number;
   break_armor_prob: number;
   heals_health: string | null;
+  charmed_damage_percent: string | null;
   heals_mana: string | null;
   is_resurrect_skill: number;
   is_balance_health: number;
@@ -53,8 +54,6 @@ export interface SkillEffectRow {
   is_necromancer_pet_buff: number;
   is_necromancer_reaper_form: number;
   scales_with_intelligence: number;
-  poison_disease_scales_with_intelligence: number;
-  damage_over_time_bonus_per_intelligence_point: number;
   lifetap_healing_percent_bonus: string | null;
   damage_over_time_execute_bonus: string | null;
   health_max_bonus: string | null;
@@ -110,6 +109,15 @@ export interface SkillEffectRow {
   is_teleport: number;
   is_blindness: number;
   is_enrage: number;
+  scales_with_charisma: number;
+  is_bard_song: number;
+  is_bard_charm: number;
+  is_bard_final_cadence: number;
+  is_bard_virtuosity: number;
+  additional_active_bard_songs: number;
+  bard_song_duration_bonus_per_level: number;
+  extra_gather_item_chance: number;
+  food_and_drink_buff_duration_bonus_per_level: number;
   is_poison_debuff: number;
   is_disease_debuff: number;
   is_fire_debuff: number;

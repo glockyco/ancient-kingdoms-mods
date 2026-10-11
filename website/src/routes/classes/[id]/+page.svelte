@@ -40,6 +40,7 @@
     formatLinearValue,
     formatSkillEffect,
   } from "$lib/utils/formatSkillEffect";
+  import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
   import { getItemTooltips } from "$lib/queries/items";
   import type {
     ClassSkill,
@@ -311,7 +312,7 @@
       id: "effect",
       header: "Effect",
       enableSorting: false,
-      accessorFn: (row) => formatSkillEffect(row),
+      accessorFn: (row) => formatSkillEffect(skillRowToEffectInput(row)),
     },
     ...(!showSkillCost
       ? []

@@ -2,11 +2,9 @@
  * Shared SQL for every projection that feeds `formatSkillEffect`.
  *
  * `SKILL_EFFECT_COLUMNS` and `SKILL_EFFECT_JOINS` are the single definition of
- * the columns and joins the effect formatter reads. Every page that renders a
- * skill effect composes them, so a stat can never be visible on one page and
- * missing on another: a monster ability and the same row on `/skills` render
- * from identical data. `monsterAbilitiesQuery.ts` composes them for a monster's
- * ability table.
+ * the columns and joins the effect formatter reads. Class, pet, monster, and
+ * skills-list projections compose them so each renders identical effect data.
+ * The skill-detail query selects the complete skill row instead.
  *
  * `SKILLS_LIST_QUERY` is used by the `/skills` page loader
  * (`routes/skills/+page.server.ts`) and the BetterBestiary parity-corpus bake
@@ -59,8 +57,6 @@ export const SKILL_EFFECT_COLUMNS = `
       s.is_necromancer_pet_buff,
       s.is_necromancer_reaper_form,
       s.scales_with_intelligence,
-      s.poison_disease_scales_with_intelligence,
-      s.damage_over_time_bonus_per_intelligence_point,
       s.lifetap_healing_percent_bonus,
       s.damage_over_time_execute_bonus,
       s.health_max_bonus,

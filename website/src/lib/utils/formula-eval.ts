@@ -231,9 +231,9 @@ export const FORMULA_EXPRS = {
 
   // ── Special ──────────────────────────────────────────────────────────────────
 
-  // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — player damage rounds Charisma-scaled damage again after ConsumeFinalCadenceRepertoireBonus.
+  // Source: server-scripts/BardFinalCadenceSkill.cs:67-70 — player damage rounds Charisma-scaled damage again after the Melody bonus.
   bard_final_cadence: special(
-    "round(round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2))) × (1 + repertoire bonus))",
+    "round(round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2))) × (1 + Melody bonus))",
   ),
   bard_final_cadence_merc: special(
     "round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2)))",

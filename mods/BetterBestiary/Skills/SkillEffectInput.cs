@@ -128,8 +128,6 @@ internal sealed class SkillEffectInput
     public bool is_necromancer_pet_buff { get; set; }
     public bool is_necromancer_reaper_form { get; set; }
     public bool scales_with_intelligence { get; set; }
-    public bool poison_disease_scales_with_intelligence { get; set; }
-    public double? damage_over_time_bonus_per_intelligence_point { get; set; }
     public LinearValue lifetap_healing_percent_bonus { get; set; }
     public LinearValue damage_over_time_execute_bonus { get; set; }
 

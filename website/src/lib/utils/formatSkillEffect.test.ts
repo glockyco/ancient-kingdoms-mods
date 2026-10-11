@@ -192,19 +192,17 @@ describe("formatSkillEffect Necromancer mechanics", () => {
   });
 
   it.each(["Poison", "Disease"] as const)(
-    "shows the Intelligence contribution to %s DoTs",
+    "omits attribute contributions from %s DoT summaries",
     (type) => {
       const skill = {
         skill_type: "target_debuff",
         damage_over_time_type: type,
         is_poison_debuff: type === "Poison",
         is_disease_debuff: type === "Disease",
-        poison_disease_scales_with_intelligence: true,
-        damage_over_time_bonus_per_intelligence_point: 1.25,
         healing_per_second_bonus: { base_value: -180, bonus_per_level: -60 },
       } as Skill;
       expect(formatSkillEffect(skill)).toBe(
-        `120 + 60 × skill lvl + round(INT × 1.25) ${type.toLowerCase()} dmg/s`,
+        `120 + 60 × skill lvl ${type.toLowerCase()} dmg/s`,
       );
       expect(formatSkillEffect({ ...skill, scales_with_charisma: true })).toBe(
         `120 + 60 × skill lvl ${type.toLowerCase()} dmg/s`,

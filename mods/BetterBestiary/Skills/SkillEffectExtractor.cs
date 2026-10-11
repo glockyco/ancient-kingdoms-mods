@@ -172,8 +172,6 @@ internal static class SkillEffectExtractor
             input.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
             input.scales_with_charisma = buffSkill.scalesWithCharisma;
             input.scales_with_intelligence = buffSkill.scalesWithIntelligence;
-            input.poison_disease_scales_with_intelligence = buffSkill.poisonDiseaseScalesWithIntelligence;
-            input.damage_over_time_bonus_per_intelligence_point = buffSkill.damageOverTimeBonusPerIntelligencePoint;
             input.lifetap_healing_percent_bonus = new LinearValue(buffSkill.lifetapHealingPercentBonus.baseValue, buffSkill.lifetapHealingPercentBonus.bonusPerLevel);
 
             var areaBuffSkill = skill.TryCast<AreaBuffSkill>();

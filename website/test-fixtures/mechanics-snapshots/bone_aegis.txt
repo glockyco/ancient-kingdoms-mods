@@ -1,1 +1,1 @@
-Mechanics Combat Pet Buff When applied to yourself, the same buff also reaches your active combat pet. Your combat pet must be alive. Familiars and mercenaries cannot receive this buff. Range: 8m. Buff Scaling Attribute contribution = INT Ward Ward at skill level + attribute contribution × 2
+Mechanics Combat Pet Buff When applied to yourself, the same buff also reaches your living combat pet within 8 yd. Familiars and mercenaries cannot receive this copy. Buff Scaling Attribute contribution = INT Ward Ward at skill level + attribute contribution × 2

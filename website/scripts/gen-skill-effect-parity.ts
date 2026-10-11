@@ -18,7 +18,7 @@
  * Run: `pnpm --filter website gen:skill-effect-parity` (needs website/data/compendium.db).
  * The lefthook pre-commit drift guard re-runs this and fails on any diff.
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { query } from "$lib/db.server";
@@ -83,7 +83,13 @@ const outPath = resolve(
   here,
   "../../tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json",
 );
-mkdirSync(dirname(outPath), { recursive: true });
-writeFileSync(outPath, json, "utf8");
-
-console.log(`Wrote ${cases.length} skill-effect parity cases to ${outPath}`);
+if (process.argv.includes("--check")) {
+  if (readFileSync(outPath, "utf8") !== json) {
+    throw new Error("Skill-effect parity corpus is stale; regenerate it.");
+  }
+  console.log(`Checked ${cases.length} skill-effect parity cases`);
+} else {
+  mkdirSync(dirname(outPath), { recursive: true });
+  writeFileSync(outPath, json, "utf8");
+  console.log(`Wrote ${cases.length} skill-effect parity cases to ${outPath}`);
+}

@@ -1,6 +1,10 @@
 import { getDb, query, queryOne } from "$lib/db.server";
 import type { Class } from "$lib/types/classes";
-import type { DamageType } from "$lib/types/skills";
+import type { SkillEffectRow } from "$lib/skills/skillEffectRow";
+import {
+  SKILL_EFFECT_COLUMNS,
+  SKILL_EFFECT_JOINS,
+} from "$lib/skills/skillsListQuery";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import {
   getItemSourceSummaries,
@@ -22,7 +26,6 @@ export function getAllClasses(): Class[] {
       c.difficulty,
       c.resource_type,
       c.compatible_races,
-      c.game_version,
       va.public_path AS visual_public_path,
       va.width AS visual_width,
       va.height AS visual_height,
@@ -51,7 +54,6 @@ export function getClassById(id: string): Class | null {
       c.difficulty,
       c.resource_type,
       c.compatible_races,
-      c.game_version,
       va.public_path AS visual_public_path,
       va.width AS visual_width,
       va.height AS visual_height,
@@ -68,19 +70,13 @@ export function getClassById(id: string): Class | null {
 }
 
 /**
- * Skill for class detail page (minimal fields for DataTable)
+ * Skill effect row plus class-detail table metadata.
  */
-export interface ClassSkill {
-  id: string;
-  name: string;
-  /** Published skill/icon artwork, when the optional visual asset exists. */
-  visual_public_path: string | null;
+export interface ClassSkill extends SkillEffectRow {
   visual_width: number | null;
   visual_height: number | null;
   visual_source_field: string | null;
   visual_source_type: string | null;
-  skill_type: string;
-  level_required: number;
   prerequisite_skill_id: string | null;
   prerequisite_skill_name: string | null;
   prerequisite_level: number;
@@ -89,114 +85,12 @@ export interface ClassSkill {
   prerequisite2_level: number;
   required_weapon_category: string;
   is_innate?: boolean;
-  // All fields needed by formatSkillEffect
-  damage_type: DamageType | null;
-  damage_over_time_type: DamageType | null;
-  damage_shield_type: DamageType | null;
-  max_level: number;
-  damage: string | null;
-  damage_percent: string | null;
-  lifetap_percent: string | null;
-  knockback_chance: string | null;
-  knockback_distance: number | null;
-  stun_chance: string | null;
-  stun_time: string | null;
-  fear_chance: string | null;
-  fear_time: string | null;
-  aggro: string | null;
-  is_assassination_skill: boolean;
-  is_manaburn_skill: boolean;
-  break_armor_prob: number;
-  heals_health: string | null;
-  heals_mana: string | null;
-  charmed_damage_percent: string | null;
-  is_resurrect_skill: boolean;
-  is_balance_health: boolean;
-  health_max_bonus: string | null;
-  health_max_percent_bonus: string | null;
-  mana_max_bonus: string | null;
-  mana_max_percent_bonus: string | null;
-  energy_max_bonus: string | null;
-  defense_bonus: string | null;
-  ward_bonus: string | null;
-  magic_resist_bonus: string | null;
-  poison_resist_bonus: string | null;
-  fire_resist_bonus: string | null;
-  cold_resist_bonus: string | null;
-  disease_resist_bonus: string | null;
-  damage_bonus: string | null;
-  damage_percent_bonus: string | null;
-  magic_damage_bonus: string | null;
-  magic_damage_percent_bonus: string | null;
-  haste_bonus: string | null;
-  spell_haste_bonus: string | null;
-  speed_bonus: string | null;
-  critical_chance_bonus: string | null;
-  critical_resist_bonus: string | null;
-  accuracy_bonus: string | null;
-  block_chance_bonus: string | null;
-  fear_resist_chance_bonus: string | null;
-  fear_resist_chance_bonus_cap: number;
-  damage_shield: string | null;
-  cooldown_reduction_percent: string | null;
-  heal_on_hit_percent: string | null;
-  healing_per_second_bonus: string | null;
-  health_percent_per_second_bonus: string | null;
-  mana_per_second_bonus: string | null;
-  mana_percent_per_second_bonus: string | null;
-  energy_per_second_bonus: string | null;
-  energy_percent_per_second_bonus: string | null;
-  strength_bonus: string | null;
-  intelligence_bonus: string | null;
-  dexterity_bonus: string | null;
-  charisma_bonus: string | null;
-  wisdom_bonus: string | null;
-  constitution_bonus: string | null;
-  duration_base: number;
-  duration_per_level: number;
-  is_invisibility: boolean;
-  ignores_see_invisibility: boolean;
-  is_mana_shield: boolean;
-  is_cleanse: boolean;
-  is_dispel: boolean;
-  is_teleport: boolean;
-  is_blindness: boolean;
-  is_enrage: boolean;
-  scales_with_charisma: boolean;
-  is_bard_song: boolean;
-  is_bard_charm: boolean;
-  is_bard_final_cadence: boolean;
-  is_bard_virtuosity: boolean;
-  additional_active_bard_songs: number;
-  bard_song_duration_bonus_per_level: number;
-  extra_gather_item_chance: number;
-  food_and_drink_buff_duration_bonus_per_level: number;
-  summoned_monster_id: string | null;
-  summoned_monster_name: string | null;
-  summoned_monster_level: number | null;
-  summon_count_per_cast: number | null;
-  max_active_summons: number | null;
-  pet_name: string | null;
-  pet_prefab_name: string | null;
-  is_familiar: boolean;
-  affects_random_target: boolean;
-  area_object_size: number;
-  area_objects_to_spawn: number;
-  is_poison_debuff: boolean;
-  is_fire_debuff: boolean;
-  is_cold_debuff: boolean;
-  is_disease_debuff: boolean;
-  is_melee_debuff: boolean;
-  is_magic_debuff: boolean;
-  prob_ignore_cleanse: number;
   mana_cost: string | null;
   energy_cost: string | null;
   cooldown: string | null;
   cast_time: string | null;
-  is_veteran: boolean;
   learn_default: boolean;
   base_skill: boolean;
-  tier: number;
   required_spent_points: number;
   class_skill_position: number;
 }
@@ -208,15 +102,11 @@ export interface ClassSkill {
 export function getClassSkills(classId: string): ClassSkill[] {
   return query<ClassSkill>(
     `SELECT
-      s.id,
-      s.name,
-      va.public_path AS visual_public_path,
+      ${SKILL_EFFECT_COLUMNS},
       va.width AS visual_width,
       va.height AS visual_height,
       va.source_field AS visual_source_field,
       va.source_type AS visual_source_type,
-      s.skill_type,
-      s.level_required,
       s.prerequisite_skill_id,
       ps.name AS prerequisite_skill_name,
       s.prerequisite_level,
@@ -224,122 +114,18 @@ export function getClassSkills(classId: string): ClassSkill[] {
       ps2.name AS prerequisite2_skill_name,
       s.prerequisite2_level,
       s.required_weapon_category,
-      s.damage_type,
-      s.damage_over_time_type,
-      s.damage_shield_type,
-      s.max_level,
-      s.damage,
-      s.damage_percent,
-      s.lifetap_percent,
-      s.knockback_chance,
-      s.knockback_distance,
-      s.stun_chance,
-      s.stun_time,
-      s.fear_chance,
-      s.fear_time,
-      s.aggro,
-      s.is_assassination_skill,
-      s.is_manaburn_skill,
-      s.break_armor_prob,
-      s.heals_health,
-      s.heals_mana,
-      s.charmed_damage_percent,
-      s.is_resurrect_skill,
-      s.is_balance_health,
-      s.health_max_bonus,
-      s.health_max_percent_bonus,
-      s.mana_max_bonus,
-      s.mana_max_percent_bonus,
-      s.energy_max_bonus,
-      s.defense_bonus,
-      s.ward_bonus,
-      s.magic_resist_bonus,
-      s.poison_resist_bonus,
-      s.fire_resist_bonus,
-      s.cold_resist_bonus,
-      s.disease_resist_bonus,
-      s.damage_bonus,
-      s.damage_percent_bonus,
-      s.magic_damage_bonus,
-      s.magic_damage_percent_bonus,
-      s.haste_bonus,
-      s.spell_haste_bonus,
-      s.speed_bonus,
-      s.critical_chance_bonus,
-      s.critical_resist_bonus,
-      s.accuracy_bonus,
-      s.block_chance_bonus,
-      s.fear_resist_chance_bonus,
-      s.fear_resist_chance_bonus_cap,
-      s.damage_shield,
-      s.cooldown_reduction_percent,
-      s.heal_on_hit_percent,
-      s.healing_per_second_bonus,
-      s.health_percent_per_second_bonus,
-      s.mana_per_second_bonus,
-      s.mana_percent_per_second_bonus,
-      s.energy_per_second_bonus,
-      s.energy_percent_per_second_bonus,
-      s.strength_bonus,
-      s.intelligence_bonus,
-      s.dexterity_bonus,
-      s.charisma_bonus,
-      s.wisdom_bonus,
-      s.constitution_bonus,
-      s.duration_base,
-      s.duration_per_level,
-      s.is_invisibility,
-      s.ignores_see_invisibility,
-      s.is_mana_shield,
-      s.is_cleanse,
-      s.is_dispel,
-      s.is_teleport,
-      s.is_blindness,
-      s.is_enrage,
-      s.scales_with_charisma,
-      s.is_bard_song,
-      s.is_bard_charm,
-      s.is_bard_final_cadence,
-      s.is_bard_virtuosity,
-      s.additional_active_bard_songs,
-      s.bard_song_duration_bonus_per_level,
-      s.extra_gather_item_chance,
-      s.food_and_drink_buff_duration_bonus_per_level,
-      s.summoned_monster_id,
-      m.name as summoned_monster_name,
-      s.summoned_monster_level,
-      s.summon_count_per_cast,
-      s.max_active_summons,
-      s.pet_prefab_name as pet_name,
-      s.is_familiar,
-      s.affects_random_target,
-      s.area_object_size,
-      s.area_objects_to_spawn,
-      s.is_poison_debuff,
-      s.is_fire_debuff,
-      s.is_cold_debuff,
-      s.is_disease_debuff,
-      s.is_melee_debuff,
-      s.is_magic_debuff,
-      s.prob_ignore_cleanse,
       s.mana_cost,
       s.energy_cost,
       s.cooldown,
       s.cast_time,
-      s.is_veteran,
       s.learn_default,
       s.base_skill,
-      s.tier,
       s.required_spent_points,
       json_extract(s.class_skill_positions, '$.' || ?) AS class_skill_position
     FROM skills s
-    LEFT JOIN monsters m ON s.summoned_monster_id = m.id
+    ${SKILL_EFFECT_JOINS}
     LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
     LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
-    LEFT JOIN visual_assets va
-      ON va.domain = 'skill'
-     AND va.entity_id = s.id
-     AND va.kind = 'icon'
     WHERE (? IN (SELECT value FROM json_each(s.player_classes))
        OR 'all' IN (SELECT value FROM json_each(s.player_classes)))
       AND s.id != 'new_skill_placeholder'
