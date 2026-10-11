@@ -120,6 +120,7 @@ public class SkillExporter : BaseExporter
             PopulateBonusSkillFields(skill, skillData);  // Covers BuffSkill and PassiveSkill
             PopulateSummonSkillFields(skill, skillData);
             PopulateBardSkillFields(skill, skillData);
+            PopulateNecromancerSkillFields(skill, skillData);
 
             VisualAssets?.ExportSprite(
                 "skill",
@@ -210,6 +211,10 @@ public class SkillExporter : BaseExporter
             skillData.area_object_delay_damage = areaObjectSpawnSkill.delayDamage;
             skillData.area_objects_to_spawn = areaObjectSpawnSkill.objectsToSpawn;
         }
+
+        var channeledSkill = skill.TryCast<Il2Cpp.ChanneledTargetDamageSkill>();
+        if (channeledSkill != null)
+            skillData.channel_pulses = channeledSkill.channelPulses;
     }
 
     private void PopulateHealSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)
@@ -248,6 +253,7 @@ public class SkillExporter : BaseExporter
         skillData.can_buff_self = targetBuffSkill.canBuffSelf;
         skillData.can_buff_others = targetBuffSkill.canBuffOthers;
         skillData.is_double_exp_spell = targetBuffSkill.isDoubleExpSpell;
+        skillData.also_buff_active_pet = targetBuffSkill.alsoBuffActivePet;
     }
 
     private void PopulateBonusSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)
@@ -328,6 +334,14 @@ public class SkillExporter : BaseExporter
             skillData.is_decrease_resists_skill = buffSkill.isDecreaseResistsSkill;
             skillData.scales_with_charisma = buffSkill.scalesWithCharisma;
             skillData.damage_over_time_bonus_per_charisma_point = buffSkill.damageOverTimeBonusPerCharismaPoint;
+            skillData.scales_with_intelligence = buffSkill.scalesWithIntelligence;
+            skillData.poison_disease_scales_with_intelligence = buffSkill.poisonDiseaseScalesWithIntelligence;
+            skillData.damage_over_time_bonus_per_intelligence_point = buffSkill.damageOverTimeBonusPerIntelligencePoint;
+            skillData.lifetap_healing_percent_bonus = new LinearStatBonusFloat
+            {
+                base_value = buffSkill.lifetapHealingPercentBonus.baseValue,
+                bonus_per_level = buffSkill.lifetapHealingPercentBonus.bonusPerLevel,
+            };
 
             var areaBuffSkill = skill.TryCast<Il2Cpp.AreaBuffSkill>();
             if (areaBuffSkill != null)
@@ -357,6 +371,11 @@ public class SkillExporter : BaseExporter
             skillData.bard_song_duration_bonus_per_level = passiveSkill.bardSongDurationBonusPerLevel;
             skillData.extra_gather_item_chance = passiveSkill.extraGatherItemChance;
             skillData.food_and_drink_buff_duration_bonus_per_level = passiveSkill.foodAndDrinkBuffDurationBonusPerLevel;
+            skillData.damage_over_time_execute_bonus = new LinearStatBonusFloat
+            {
+                base_value = passiveSkill.damageOverTimeExecuteBonus.baseValue,
+                bonus_per_level = passiveSkill.damageOverTimeExecuteBonus.bonusPerLevel,
+            };
         }
     }
 
@@ -413,6 +432,46 @@ public class SkillExporter : BaseExporter
         }
 
         skillData.is_bard_virtuosity = skill.TryCast<Il2Cpp.BardVirtuositySkill>() != null;
+    }
+
+    private void PopulateNecromancerSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)
+    {
+        var bloodPact = skill.TryCast<Il2Cpp.NecromancerBloodPactSkill>();
+        if (bloodPact != null)
+        {
+            skillData.is_necromancer_blood_pact = true;
+            skillData.health_cost_percent = new LinearStatBonusFloat
+            {
+                base_value = bloodPact.healthCostPercent.baseValue,
+                bonus_per_level = bloodPact.healthCostPercent.bonusPerLevel,
+            };
+            skillData.mana_restored_percent = new LinearStatBonusFloat
+            {
+                base_value = bloodPact.manaRestoredPercent.baseValue,
+                bonus_per_level = bloodPact.manaRestoredPercent.bonusPerLevel,
+            };
+        }
+
+        var deathBloom = skill.TryCast<Il2Cpp.NecromancerDeathBloomSkill>();
+        if (deathBloom != null)
+        {
+            skillData.is_necromancer_death_bloom = true;
+            // Source: server-scripts/NecromancerDeathBloomSkill.cs:healthCostPercent — one flat value for every rank.
+            skillData.health_cost_percent = new LinearStatBonusFloat
+            {
+                base_value = deathBloom.healthCostPercent,
+                bonus_per_level = 0f,
+            };
+            skillData.healing_percent = new LinearStatBonusFloat
+            {
+                base_value = deathBloom.healingPercent.baseValue,
+                bonus_per_level = deathBloom.healingPercent.bonusPerLevel,
+            };
+            skillData.healing_percent_per_intelligence = deathBloom.healingPercentPerIntelligence;
+        }
+
+        skillData.is_necromancer_pet_buff = skill.TryCast<Il2Cpp.NecromancerPetBuffSkill>() != null;
+        skillData.is_necromancer_reaper_form = skill.TryCast<Il2Cpp.NecromancerReaperFormSkill>() != null;
     }
 
     private Dictionary<string, List<string>> BuildSkillToClassesMapping(

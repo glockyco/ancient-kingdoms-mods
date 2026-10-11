@@ -25,11 +25,6 @@ namespace CharacterCapture
 
     public static class CharacterStateReader
     {
-        private static readonly string[] ClassIds =
-        {
-            "warrior", "ranger", "cleric", "rogue", "wizard", "druid", "bard",
-        };
-
         public static CharacterCaptureSnapshot Read(Player player)
         {
             if (player == null) throw new ArgumentNullException(nameof(player));
@@ -272,12 +267,34 @@ namespace CharacterCapture
         {
             var classId = GameIds.Sanitize(player.className);
             var raceId = GameIds.Sanitize(player.raceName);
-            var rows = ProgressionRows.Create(player.level.max, Experience.maxVeteranLevel, ClassIds);
+            var rows = ProgressionRows.Create(player.level.max, Experience.maxVeteranLevel, RuntimeClassIds());
             var race = rows.races.SingleOrDefault(row => row.id == raceId)
                 ?? throw new InvalidOperationException($"Race '{raceId}' has no progression row.");
             var level = rows.class_levels.SingleOrDefault(row => row.class_id == classId && row.level == player.level.current)
                 ?? throw new InvalidOperationException($"Class '{classId}' level {player.level.current} has no progression row.");
             return Add(ToAttributes(race.starting_attributes), ToAttributes(level.automatic_attributes));
+        }
+
+        /// <summary>
+        /// The class prefabs the running game defines. ProgressionRows refuses a set that differs
+        /// from the schedules it models, so a new class fails the capture instead of misreading it.
+        /// </summary>
+        private static IEnumerable<string> RuntimeClassIds()
+        {
+            var networkManager = Il2CppMirror.NetworkManager.singleton?.TryCast<NetworkManagerMMO>()
+                ?? throw new InvalidOperationException("NetworkManagerMMO is unavailable.");
+            var playerClasses = networkManager.playerClasses;
+            if (playerClasses == null || playerClasses.Count == 0)
+                throw new InvalidOperationException("NetworkManagerMMO.playerClasses is unavailable.");
+
+            var classIds = new List<string>(playerClasses.Count);
+            foreach (var playerClass in playerClasses)
+            {
+                if (playerClass == null)
+                    throw new InvalidOperationException("A player class prefab is null.");
+                classIds.Add(GameIds.ClassId(playerClass.name));
+            }
+            return classIds;
         }
 
         private static AttributeValues ReadBookAttributes(Player player)

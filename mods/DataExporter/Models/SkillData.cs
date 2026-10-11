@@ -99,10 +99,33 @@ public class SkillData
     public bool can_heal_self { get; set; }  // TargetHealSkill only
     public bool can_heal_others { get; set; }  // TargetHealSkill only
 
+    // === NecromancerDeathBloomSkill fields ===
+    public bool is_necromancer_death_bloom { get; set; }
+    /// <summary>Death Bloom: multiplier on the Health spent, before the per-Intelligence bonus.</summary>
+    public LinearStatBonusFloat healing_percent { get; set; }
+    public float healing_percent_per_intelligence { get; set; }
+
+    // === NecromancerBloodPactSkill fields ===
+    public bool is_necromancer_blood_pact { get; set; }
+    public LinearStatBonusFloat mana_restored_percent { get; set; }
+
+    /// <summary>
+    /// Share of the caster's maximum Health that Blood Pact or Death Bloom spends. Death Bloom
+    /// authors a flat value, exported with a zero per-level bonus.
+    /// </summary>
+    public LinearStatBonusFloat health_cost_percent { get; set; }
+
+    // === ChanneledTargetDamageSkill fields ===
+    /// <summary>Damage pulses of a channeled skill; zero for a skill that is not channeled.</summary>
+    public int channel_pulses { get; set; }
+
     // === TargetBuffSkill fields (when skill_type = target_buff or target_debuff) ===
     public bool can_buff_self { get; set; }
     public bool can_buff_others { get; set; }
     public bool is_double_exp_spell { get; set; }
+    public bool also_buff_active_pet { get; set; }
+    public bool is_necromancer_pet_buff { get; set; }
+    public bool is_necromancer_reaper_form { get; set; }
 
     // === BuffSkill fields (when skill_type = buff or debuff) ===
     public float duration_base { get; set; }
@@ -144,6 +167,10 @@ public class SkillData
     public bool is_relic { get; set; }
     public bool scales_with_charisma { get; set; }
     public float damage_over_time_bonus_per_charisma_point { get; set; }
+    public bool scales_with_intelligence { get; set; }
+    public bool poison_disease_scales_with_intelligence { get; set; }
+    public float damage_over_time_bonus_per_intelligence_point { get; set; }
+    public LinearStatBonusFloat lifetap_healing_percent_bonus { get; set; }
     public bool is_bard_song { get; set; }
     public bool is_bard_charm { get; set; }
     public bool is_bard_final_cadence { get; set; }
@@ -195,6 +222,7 @@ public class SkillData
     public float bard_song_duration_bonus_per_level { get; set; }
     public float extra_gather_item_chance { get; set; }
     public float food_and_drink_buff_duration_bonus_per_level { get; set; }
+    public LinearStatBonusFloat damage_over_time_execute_bonus { get; set; }
 
     // === SummonSkill fields (when skill_type = summon) ===
     public bool is_familiar { get; set; }

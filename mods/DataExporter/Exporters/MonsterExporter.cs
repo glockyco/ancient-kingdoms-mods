@@ -84,6 +84,7 @@ public class MonsterExporter : BaseExporter
                 block_chance = canonical.combat?.blockChance ?? 0,
                 critical_chance = canonical.combat?.criticalChance ?? 0,
                 accuracy = canonical.combat?.accuracy ?? 0,
+                fear_immune = canonical.combat?.fearImmune ?? false,
 
                 // Stat scaling (LinearInt/LinearFloat: actual = base + bonus_per_level * (level - 1))
                 health_base = canonical.health?.baseHealth.baseValue ?? 0,

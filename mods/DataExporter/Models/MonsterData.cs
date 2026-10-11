@@ -65,6 +65,9 @@ public class MonsterData
     public float critical_chance { get; set; }
     public float accuracy { get; set; }
 
+    /// <summary>Combat.fearImmune: fear never lands on this monster. Bosses refuse fear regardless.</summary>
+    public bool fear_immune { get; set; }
+
     // Stat scaling (LinearInt/LinearFloat: actual = base + bonus_per_level * (level - 1))
     public int health_base { get; set; }
     public int health_per_level { get; set; }

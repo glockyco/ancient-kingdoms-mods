@@ -1055,6 +1055,10 @@
       "sha256": "4e9dde9d03b99e1a8457a354fc251cddb3f99046be3a91eacfee3099093d620d",
       "span": 239
     },
+    "Experience.cs:232-260": {
+      "sha256": "108c9c498839faf98e4b874fd2b8018577daaa54cf63579ea44100e4bf8783e5",
+      "span": 29
+    },
     "Experience.cs:26-36": {
       "sha256": "46f4a08d530647b7645b3f328be7d6b90718fb93de8e3287321478d3e7d15491",
       "span": 11
@@ -1916,6 +1920,12 @@
     "MountItem.cs:8": {
       "sha256": "6946d0bf5750987acb3124a4f4d8a2855bc6d50d329223ee58100949141c6b8c",
       "span": 1
+    },
+    "NecromancerBloodPactSkill.cs:Apply": {
+      "span": 0
+    },
+    "NecromancerDeathBloomSkill.cs:healthCostPercent": {
+      "span": 0
     },
     "NetworkManagerMMO.cs:105-117": {
       "sha256": "38f5d4aa099f761995ace8bc1d34b51c7a970f038b2287ab7fc343546044af3b",
@@ -3772,6 +3782,9 @@
       "span": 0
     },
     "Skills.cs:GetFinalHealOverTime": {
+      "span": 0
+    },
+    "Skills.cs:GetHealthPercentBonus": {
       "span": 0
     },
     "Skills.cs:OnDeath": {

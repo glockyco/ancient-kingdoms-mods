@@ -9,7 +9,7 @@ public static class ProgressionRows
 {
     private static readonly string[] ClassIds =
     {
-        "warrior", "ranger", "cleric", "rogue", "wizard", "druid", "bard",
+        "warrior", "ranger", "cleric", "rogue", "wizard", "druid", "bard", "necromancer",
     };
 
     public static ProgressionData Create(
@@ -78,6 +78,8 @@ public static class ProgressionRows
         "druid" => Attributes(level / 6, level / 5, level / 4, level / 3, level / 2, level / 6),
         // Source: server-scripts/Experience.cs:319-349
         "bard" => Attributes(level / 3, level / 5, level / 4, level / 6, level / 6, level / 2),
+        // Source: server-scripts/Experience.cs:232-260
+        "necromancer" => Attributes(level / 6, level / 3, level / 5, level / 2, level / 4, level / 6),
         _ => throw new ArgumentOutOfRangeException(nameof(classId)),
     };
 

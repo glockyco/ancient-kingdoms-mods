@@ -50,6 +50,7 @@ public class QuestExporter : BaseExporter
                 quest_type = DetermineQuestType(quest),
                 level_required = quest.requiredLevel,
                 level_recommended = quest.recommendedLevel,
+                veteran_level_recommended = quest.recommendedVeteranLevel,
                 start_npc_id = quest.startQuestNPC != null ? SanitizeId(quest.startQuestNPC.name) : null,
                 end_npc_id = quest.finishQuestNPC != null ? SanitizeId(quest.finishQuestNPC.name) : null,
                 zone_id_final_npc = quest.idZoneFinalNPC,
@@ -156,6 +157,7 @@ public class QuestExporter : BaseExporter
             AddClassReward(questData, quest.rewardItemWizard, "Wizard");
             AddClassReward(questData, quest.rewardItemDruid, "Druid");
             AddClassReward(questData, quest.rewardItemBard, "Bard");
+            AddClassReward(questData, quest.rewardItemNecromancer, "Necromancer");
 
             // Quest locations (objectives)
             if (quest.questLocation != null && quest.questLocation.Length > 0)

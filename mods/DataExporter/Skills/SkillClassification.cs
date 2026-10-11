@@ -6,6 +6,7 @@ namespace DataExporter.Skills;
 public static class SkillClassification
 {
     // Source: server-scripts/DamageSkill.cs, BuffSkill.cs, SummonSkillMonsters.cs — these classes define the skill hierarchy.
+    // Source: server-scripts/NecromancerBloodPactSkill.cs:Apply — Blood Pact derives from ScriptableSkill and converts the caster's Health into Mana.
     public static string DetermineSkillType(ScriptableSkill skill)
     {
         if (skill.TryCast<DamageSkill>() != null)
@@ -45,8 +46,11 @@ public static class SkillClassification
         if (skill.TryCast<PassiveSkill>() != null) return "passive";
         if (skill.TryCast<SummonSkill>() != null) return "summon";
         if (skill.TryCast<SummonSkillMonsters>() != null) return "summon_monsters";
+        if (skill.TryCast<NecromancerBloodPactSkill>() != null) return "health_to_mana";
 
-        return "unknown";
+        // A skill class this switch does not know is new game content whose fields nothing exports.
+        throw new System.InvalidOperationException(
+            $"Skill '{skill.name}' has the unclassified type {skill.GetIl2CppType().FullName}.");
     }
 
     // Source: server-scripts/DamageType.cs:1-9 — Normal is the physical damage type.

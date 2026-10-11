@@ -56,7 +56,7 @@ namespace CombatVerification.Materialization
         public string[] ClassesOfferedForRace { get; private set; } = Array.Empty<string>();
 
         private static readonly string[] Classes =
-            { "Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard" };
+            { "Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard", "Necromancer" };
 
         /// <summary>
         /// Drives the creator to produce one character. Yields until the creator finishes or the

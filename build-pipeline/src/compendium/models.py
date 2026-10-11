@@ -5,7 +5,7 @@ These models match the JSON structure exported by the C# DataExporter mod.
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 DamageType = Literal[
     "Physical", "Magic", "Poison", "Fire", "Cold", "Disease", "Unknown"
@@ -125,6 +125,8 @@ class MonsterData(BaseModel):
     block_chance: float = 0.0
     critical_chance: float = 0.0
     accuracy: float = 0.0
+    # Combat.fearImmune: fear never lands. Bosses refuse fear regardless.
+    fear_immune: bool = False
 
     # Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     health_base: int = 0
@@ -230,7 +232,6 @@ class PetData(BaseModel):
     is_familiar: bool = False
     type_monster: str
     level: int
-    health: int = 0
     mana: int = 0
     damage: int = 0
     magic_damage: int = 0
@@ -244,6 +245,9 @@ class PetData(BaseModel):
     critical_chance: float = 0.0
     has_buffs: bool = False
     has_heals: bool = False
+    # NecromancerPetStats keeps the pet at its owner's level and adds a bonus per
+    # owner veteran point.
+    has_necromancer_pet_stats: bool = False
     icon_path: str
     skill_ids: list[str] = []
     innate_skill_ids: list[str] = []
@@ -595,11 +599,16 @@ class QuestRewards(BaseModel):
 class QuestData(BaseModel):
     """Quest data from quests.json"""
 
+    # The loader keeps declared fields only, so an undeclared export field would vanish.
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
     quest_type: str
     level_required: int = 0
     level_recommended: int = 0
+    # Total veteran points before the Adventurer offers this quest; 0 means no gate.
+    veteran_level_recommended: int = Field(default=0, ge=0)
     zone_id_final_npc: int = -1
     zone_id_quest_action: int = -1
     finish_quest_locations: list[Any] = []
@@ -670,6 +679,9 @@ class SkillBonus(BaseModel):
 class SkillData(BaseModel):
     """Skill data from skills.json"""
 
+    # The loader keeps declared fields only, so an undeclared export field would vanish.
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
     skill_type: str
@@ -723,6 +735,10 @@ class SkillData(BaseModel):
     is_relic: bool = False
     scales_with_charisma: bool = False
     damage_over_time_bonus_per_charisma_point: float = Field(default=0.0, ge=0.0)
+    scales_with_intelligence: bool = False
+    poison_disease_scales_with_intelligence: bool = False
+    damage_over_time_bonus_per_intelligence_point: float = Field(default=0.0, ge=0.0)
+    lifetap_healing_percent_bonus: SkillBonus | None = None
     is_bard_song: bool = False
     is_bard_charm: bool = False
     is_bard_final_cadence: bool = False
@@ -732,9 +748,12 @@ class SkillData(BaseModel):
     bard_song_duration_bonus_per_level: float = 0.0
     extra_gather_item_chance: float = 0.0
     food_and_drink_buff_duration_bonus_per_level: float = 0.0
+    damage_over_time_execute_bonus: SkillBonus | None = None
     area_object_size: float = 0.0
     area_object_delay_damage: float = 0.0
     area_objects_to_spawn: int = 0
+    # ChanneledTargetDamageSkill damage pulses; 0 for a skill that is not channeled.
+    channel_pulses: int = Field(default=0, ge=0)
 
     @field_validator(
         "damage_type", "damage_over_time_type", "damage_shield_type", mode="before"
@@ -801,10 +820,22 @@ class SkillData(BaseModel):
     can_heal_self: bool = False
     can_heal_others: bool = False
 
+    # Necromancer skill classes. health_cost_percent is the share of maximum Health
+    # that Blood Pact or Death Bloom spends.
+    is_necromancer_blood_pact: bool = False
+    is_necromancer_death_bloom: bool = False
+    is_necromancer_pet_buff: bool = False
+    is_necromancer_reaper_form: bool = False
+    health_cost_percent: SkillBonus | None = None
+    mana_restored_percent: SkillBonus | None = None
+    healing_percent: SkillBonus | None = None
+    healing_percent_per_intelligence: float = Field(default=0.0, ge=0.0)
+
     # TargetBuffSkill-specific
     can_buff_self: bool = False
     can_buff_others: bool = False
     is_double_exp_spell: bool = False
+    also_buff_active_pet: bool = False
 
     # Buff/debuff
     duration_base: float = 0.0

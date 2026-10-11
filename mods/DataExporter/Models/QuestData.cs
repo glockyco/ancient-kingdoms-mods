@@ -51,6 +51,12 @@ public class QuestData
     public string quest_type { get; set; }  // kill/gather/gather_inventory/location/equip_item/alchemy
     public int level_required { get; set; }
     public int level_recommended { get; set; }
+
+    /// <summary>
+    /// Total veteran points an Adventurer quest needs before the Adventurer offers it; zero means no
+    /// veteran gate.
+    /// </summary>
+    public int veteran_level_recommended { get; set; }
     public string start_npc_id { get; set; }
     public string end_npc_id { get; set; }
     public int zone_id_final_npc { get; set; }

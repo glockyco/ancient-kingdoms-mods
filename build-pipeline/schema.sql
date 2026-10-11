@@ -616,6 +616,8 @@ CREATE TABLE monsters (
     block_chance REAL DEFAULT 0.0,
     critical_chance REAL DEFAULT 0.0,
     accuracy REAL DEFAULT 0.0,
+    -- Combat.fearImmune: fear never lands. Bosses refuse fear regardless.
+    fear_immune BOOLEAN NOT NULL DEFAULT 0,
 
     -- Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     health_base INTEGER DEFAULT 0,
@@ -1036,6 +1038,8 @@ CREATE TABLE quests (
     display_type TEXT,              -- Denormalized: Kill, Collect, Deliver, Obtain, Find, Discover, Equip, Alchemy
     level_required INTEGER DEFAULT 0,
     level_recommended INTEGER DEFAULT 0,
+    -- Total veteran points before the Adventurer offers this quest; 0 means no gate.
+    veteran_level_recommended INTEGER NOT NULL DEFAULT 0,
     zone_id_final_npc INTEGER DEFAULT -1,
     zone_id_quest_action INTEGER DEFAULT -1,
 
@@ -1169,6 +1173,8 @@ CREATE TABLE skills (
     area_object_size REAL DEFAULT 0.0,
     area_object_delay_damage REAL DEFAULT 0.0,
     area_objects_to_spawn INTEGER DEFAULT 0,
+    -- ChanneledTargetDamageSkill damage pulses; 0 for a skill that is not channeled.
+    channel_pulses INTEGER NOT NULL DEFAULT 0,
 
     -- Damage/Healing (stored as JSON for SkillBonusValue)
     damage TEXT,                    -- JSON: {"base_value": X, "bonus_per_level": Y}
@@ -1189,6 +1195,19 @@ CREATE TABLE skills (
     can_buff_self BOOLEAN DEFAULT 0,
     can_buff_others BOOLEAN DEFAULT 0,
     is_double_exp_spell BOOLEAN DEFAULT 0,
+    -- TargetBuffSkill: a self-cast also buffs the caster's living combat pet in range.
+    also_buff_active_pet BOOLEAN NOT NULL DEFAULT 0,
+
+    -- Necromancer skill classes. health_cost_percent is the share of maximum Health
+    -- that Blood Pact or Death Bloom spends (Death Bloom authors a flat value).
+    is_necromancer_blood_pact BOOLEAN NOT NULL DEFAULT 0,
+    is_necromancer_death_bloom BOOLEAN NOT NULL DEFAULT 0,
+    is_necromancer_pet_buff BOOLEAN NOT NULL DEFAULT 0,
+    is_necromancer_reaper_form BOOLEAN NOT NULL DEFAULT 0,
+    health_cost_percent TEXT,
+    mana_restored_percent TEXT,
+    healing_percent TEXT,
+    healing_percent_per_intelligence REAL NOT NULL DEFAULT 0.0,
     stun_chance TEXT,
     stun_time TEXT,
     fear_chance TEXT,
@@ -1227,6 +1246,10 @@ CREATE TABLE skills (
     is_relic BOOLEAN DEFAULT 0,
     scales_with_charisma BOOLEAN DEFAULT 0,
     damage_over_time_bonus_per_charisma_point REAL NOT NULL DEFAULT 0.0,
+    scales_with_intelligence BOOLEAN NOT NULL DEFAULT 0,
+    poison_disease_scales_with_intelligence BOOLEAN NOT NULL DEFAULT 0,
+    damage_over_time_bonus_per_intelligence_point REAL NOT NULL DEFAULT 0.0,
+    lifetap_healing_percent_bonus TEXT,
     is_bard_song BOOLEAN DEFAULT 0,
     is_bard_charm BOOLEAN DEFAULT 0,
     is_bard_final_cadence BOOLEAN DEFAULT 0,
@@ -1236,6 +1259,7 @@ CREATE TABLE skills (
     bard_song_duration_bonus_per_level REAL DEFAULT 0.0,
     extra_gather_item_chance REAL DEFAULT 0.0,
     food_and_drink_buff_duration_bonus_per_level REAL DEFAULT 0.0,
+    damage_over_time_execute_bonus TEXT,
 
     -- Stat bonuses (all stored as JSON for SkillBonusValue)
     health_max_bonus TEXT,
@@ -1656,7 +1680,6 @@ CREATE TABLE pets (
     is_familiar BOOLEAN DEFAULT 0,
     type_monster TEXT NOT NULL,         -- Class archetype (e.g. "Cleric", "Druid")
     level INTEGER NOT NULL,
-    health INTEGER DEFAULT 0,
     mana INTEGER DEFAULT 0,
     damage INTEGER DEFAULT 0,
     magic_damage INTEGER DEFAULT 0,
@@ -1670,6 +1693,9 @@ CREATE TABLE pets (
     critical_chance REAL DEFAULT 0.0,
     has_buffs BOOLEAN DEFAULT 0,
     has_heals BOOLEAN DEFAULT 0,
+    -- NecromancerPetStats keeps the pet at its owner's level and adds a bonus per
+    -- owner veteran point.
+    has_necromancer_pet_stats BOOLEAN NOT NULL DEFAULT 0,
     icon_path TEXT NOT NULL,
 
     -- Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))

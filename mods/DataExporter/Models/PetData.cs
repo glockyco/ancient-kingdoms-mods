@@ -17,9 +17,16 @@ public class PetData
     public bool has_buffs { get; set; }
     public bool has_heals { get; set; }
 
-    // Base stats (for mercenaries - familiars scale with owner)
+    /// <summary>
+    /// Whether the prefab carries NecromancerPetStats, which keeps the pet at its owner's level and
+    /// adds a bonus per owner veteran point.
+    /// </summary>
+    public bool has_necromancer_pet_stats { get; set; }
+
+    // Base stats (for mercenaries - familiars scale with owner). Health has no snapshot:
+    // Health.max adds the owner's pet passives, and a prefab has no spawned owner to read.
+    // Source: server-scripts/Skills.cs:GetHealthPercentBonus
     public int level { get; set; }
-    public int health { get; set; }
     public int mana { get; set; }
     public int energy { get; set; }
 
