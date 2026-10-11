@@ -67,15 +67,6 @@
   }
 </script>
 
-<!--
-THESIS: A compact achievement atlas makes all 38 unlock conditions easy to scan. It refuses a generic card wall.
-OWN-WORLD: The site’s neutral canvas, fine rules, square Steam art, restrained amber markers, and dense reference typography.
-STORY: Readers see the complete catalog, move by category, search exact terms, and open the related compendium page.
-FIRST VIEWPORT: The title and purpose occupy the left side. A twelve-icon trophy field forms the visual index on the right.
-FORM: The third grounded structure is a category atlas with a compact index. Seed key 6e8ae28a.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
--->
-
 <Seo
   title="Achievements - Ancient Kingdoms"
   description="All 38 Ancient Kingdoms Steam achievements, grouped by unlock type with related quests, bosses, professions, and mechanics guides."

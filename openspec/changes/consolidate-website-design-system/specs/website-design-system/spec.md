@@ -28,7 +28,7 @@ Text conveying a probability, status, result, or category SHALL achieve at least
 - **THEN** semantic state, link, focus, and supporting text remain distinguishable against their rendered surfaces
 
 ### Requirement: Declared tokens match rendered link and achievement colors
-The reference-link and achievement colors declared in `website/DESIGN.md` SHALL have corresponding light- and dark-theme roles in the applied website styles. Ordinary compendium links SHALL use the reference-link role. Achievement markers SHALL keep their existing category meaning.
+The reference-link and achievement colors SHALL be light- and dark-theme roles in the applied website styles. Ordinary compendium links SHALL use the reference-link role. Achievement markers SHALL keep their existing category meaning.
 
 #### Scenario: A reader follows a reference link
 - **WHEN** a reference link appears in a card, prose, or table

@@ -1,6 +1,6 @@
 ## 1. Contract and shared color roles
 
-- [ ] 1.1 Update `website/DESIGN.md:14-15,139-157,189-220` with a 14 CSS px rendered-text floor, theme-aware link and achievement roles, and text/non-text contrast thresholds. Verify the declared scale has no smaller informational-text role and agrees with the new spec.
+- [ ] 1.1 Inventory the informational text roles in `website/src/app.css` and shared components against this change's spec: the 14 CSS px rendered-text floor, theme-aware link and achievement roles, and text/non-text contrast thresholds. Verify no shared informational-text role is smaller than the floor.
 - [ ] 1.2 Add the matching light and dark tokens and Tailwind role mappings in `website/src/app.css:7-114,116-171`. Verify rendered reference links and achievement markers at 1440×900 and 390×844 in light and dark mode against the declared roles and contrast floor.
 
 ## 2. High-visibility readable text, one file at a time
@@ -9,7 +9,7 @@
 - [ ] 2.2 Repair the three responsive charts in `website/src/routes/mechanics/experience/+page.svelte:66,208-215,273-280,342-407,599-655,810-865,1403-1407`. Verify their labels, curves, and legends at 1440×900 and 390×844 in light and dark mode; no labels or explanatory values clip.
 - [ ] 2.3 Repair the chart and route-local text scale in `website/src/routes/mechanics/mercenary-stats/+page.svelte:699-712,714-1249`. Keep the local comparison layout and calculations. Verify labels, controls, tables, and chart results at 1440×900 and 390×844 in light and dark mode; measure SVG label size.
 - [ ] 2.4 Enlarge the formula blocks and undersized supporting text in `website/src/routes/mechanics/combat/+page.svelte:344-351,375-378,429-436,568,575,645,1213,1603` without changing formula content. Verify each formula remains legible and reachable at 1440×900 and 390×844 in light and dark mode; run the mechanics snapshot comparison if visible text changes.
-- [ ] 2.5 Replace off-scale informational type in `website/src/routes/+page.svelte:400-449` with the new minimum and hierarchy. Verify footer links and section labels at 1440×900 and 390×844 in light and dark mode, with keyboard focus and no horizontal clipping.
+- [ ] 2.5 Replace off-scale informational type in the home page footer (`website/src/routes/+page.svelte`) with the new minimum and hierarchy. Verify footer links and section labels at 1440×900 and 390×844 in light and dark mode, with keyboard focus and no horizontal clipping.
 - [ ] 2.6 Repair NPC-role chips and other small text in `website/src/lib/components/map/MapTooltip.svelte:119-145` without changing marker behavior. Verify NPC and keyed-chest tooltips at 1440×900 and 390×844 in light and dark mode; ensure their labels remain readable inside the map viewport.
 
 ## 3. State contrast, one route at a time
