@@ -11,11 +11,9 @@ Tools and website for maintaining the Ancient Kingdoms Compendium: exporting gam
 
 ## What this repository does
 
-This repository is organized around the compendium workflow:
-
 1. Export data, images, and map screenshots from Ancient Kingdoms with MelonLoader mods.
 2. Convert the exported JSON into a SQLite database and website-ready assets.
-3. Serve the mostly prerendered SvelteKit site through the Cloudflare adapter, with the home page rendered dynamically in a Cloudflare Worker.
+3. Serve the compendium, a fan-made wiki, interactive world map, and game database, from Cloudflare.
 4. Maintain optional gameplay and development mods for local testing, map work, boss tracking, and data collection.
 
 ```text
@@ -24,41 +22,32 @@ Game (IL2CPP Unity)
 exported-data/*.json + exported-data/images/ + exported-data/screenshots/
   ↓ Python build pipeline
 website/data/compendium.db + website/static/images/ + website/static/tiles/
-  ↓ SvelteKit mostly prerendered site
+  ↓ SvelteKit, mostly prerendered
 Cloudflare Worker + Static Assets
 ```
 
-The compendium is a fan-made wiki, interactive world map, and game database. It covers items, monsters, NPCs, zones, quests, altars, classes, skills, mercenaries, summons, professions, gathering resources, crafting recipes, chests, and the interactive world map.
-
 ## Repository layout
 
-| Path               | Purpose                                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------------------- |
-| `mods/`            | C# MelonLoader mods for player-facing utilities, data export, map capture, and development inspection.   |
-| `build-tool/`      | .NET command runner for setup, mod builds, deployment, automated exports, and HotRepl workflows.         |
-| `build-pipeline/`  | Python CLI that turns exported game data into SQLite, images, and map tiles for the website.             |
-| `website/`         | SvelteKit compendium site, mostly prerendered on Cloudflare with a dynamic home page.                     |
-| `exported-data/`   | Local game export output. Most generated files are gitignored.                                           |
-| `website/data/`    | Generated database the site reads. Gitignored.                                                           |
-| `website/static/`  | Published image and tile assets. Generated compendium assets are gitignored.                              |
-| `server-scripts`   | Gitignored symlink to the current decompiled server scripts under `.decompiled/`.                        |
-| `.decompiled/`     | Gitignored game-build snapshots created by `scripts/update-server-scripts.sh`.                           |
-| `tests/`           | C# test projects.                                                                                        |
-| `docs/`            | Reports of defects in the game itself, written for its developer.                                        |
-| `openspec/`        | Current behavior specifications and active changes.                                                     |
-| `verification/`    | Combat fixtures and recorded game observations.                                                          |
-| `scripts/`         | Repository checks and server-script snapshot updates.                                                   |
+| Path              | Purpose                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------ |
+| `mods/`           | C# MelonLoader mods for player-facing utilities, data export, map capture, and development inspection. |
+| `build-tool/`     | .NET command runner for setup, mod builds, deployment, automated exports, and HotRepl workflows.       |
+| `build-pipeline/` | Python CLI that turns exported game data into SQLite, images, and map tiles for the website.           |
+| `website/`        | SvelteKit compendium site.                                                                             |
+| `exported-data/`  | Local game export output. Most generated files are gitignored.                                         |
+| `website/data/`   | Generated database the site reads. Gitignored.                                                         |
+| `website/static/` | Published image and tile assets. Generated compendium assets are gitignored.                           |
+| `server-scripts`  | Gitignored symlink to the current decompiled server scripts under `.decompiled/`.                      |
+| `.decompiled/`    | Gitignored game-build snapshots created by `scripts/update-server-scripts.sh`.                         |
+| `tests/`          | C# test projects.                                                                                      |
+| `docs/`           | Reports of defects in the game itself, written for its developer.                                      |
+| `openspec/`       | Current behavior specifications and active changes.                                                    |
+| `verification/`   | Combat fixtures and recorded game observations.                                                        |
+| `scripts/`        | Repository checks and server-script snapshot updates.                                                  |
 
 ## Compendium website
 
-The website is a mostly prerendered SvelteKit app on Cloudflare, with a dynamic home page:
-
-- SvelteKit 2, Svelte 5, TypeScript, and Tailwind 4.
-- Mostly prerendered through `@sveltejs/adapter-cloudflare`, with the home page running dynamically in a Cloudflare Worker.
-- SQLite-backed content: `better-sqlite3` during prerendering, plus browser-side `sql.js-fts5` for map lookup/search interactions.
-- Interactive map rendering through deck.gl.
-- UI components built around bits-ui-compatible patterns.
-- Deployment through Wrangler, a Cloudflare Worker, and Cloudflare Static Assets.
+SvelteKit 2, Svelte 5, TypeScript, and Tailwind 4 on Cloudflare through `@sveltejs/adapter-cloudflare`. Pages are prerendered from the SQLite database with `better-sqlite3`. The home page renders in the Worker so it can show the live game version. In the browser, `sql.js-fts5` serves search and the deck.gl map.
 
 Conventions the code does not show on its own:
 
@@ -70,44 +59,42 @@ Conventions the code does not show on its own:
 
 ## Mods
 
-The mod catalog includes player-facing utilities, data exporters, and development inspection tools. Several mods change local game state, such as teleporting or forcing respawns, so use them only in environments where that is appropriate.
+Several mods change local game state, such as teleporting or forcing respawns. Use them only where that is appropriate.
 
 ### Player-facing and interactive mods
 
-| Mod                 | Summary                                                                                                                                                                                                            |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `BetterBestiary`   | Reveals Bestiary monster details, lore, stats, and loot tooltips without changing actual discovery or kill progress. Alt-left-click a monster to open its Bestiary page directly. Adds a toggleable Skills side panel listing each monster's skills (icon, effect summary, cooldown, cast time). Optional scanner can add loaded missing boss, elite, and fabled entries at runtime. |
-| `BossSkillTracker`  | In-combat HUD for boss, elite, and fabled monster ability cooldowns, grouped by enemy with icon cooldown bars and the shared special-cast gate. In a local world the gate is the monster's own deadline, and the readout spans that deadline and the basic attack cycle the monster must finish before it can select a skill. A remote server never sends the deadline, so a client derives the window from the game's bounds and marks the readout with a tilde. |
-| `BossTracker`       | Overlay panel for nearby bosses, elites, and fabled monsters, including alive/dead status, distance, direction, and respawn timers. Hold Right Shift and drag with left click to move the panel.                   |
-| `MapEnhancer`       | Automatically clears fog of war, enables Veteran Awareness, and improves minimap monster visibility. Living bosses are highlighted and dead bosses/elites remain visible as grey markers.                          |
-| `MapTeleporter`     | Alt-left-click on the open in-game map to teleport to that location.                                                                                                                                               |
-| `MonsterRespawner`  | Hold Alt to show world-space markers for dead monsters on respawn timers. Left-click a marker while Alt is held to make the monster ready to respawn.                                                              |
-| `ResourceRespawner` | Hold Alt to show world-space markers for gathered resources on cooldown, including plants, minerals, radiant sparks, chests, and other gatherables. Left-click while Alt is held to make the resource harvestable. |
+| Mod                 | Summary                                                                                                                                         |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BetterBestiary`    | Reveals Bestiary details, lore, stats, loot, and skills without changing discovery or kill progress. Alt-left-click a monster to open its page. |
+| `BossSkillTracker`  | In-combat HUD of boss, elite, and fabled monster ability cooldowns.                                                                             |
+| `BossTracker`       | Panel of nearby bosses, elites, and fabled monsters with status, distance, direction, and respawn timers. Right Shift and drag to move it.      |
+| `MapEnhancer`       | Clears fog of war, enables Veteran Awareness, highlights living bosses, and keeps dead bosses and elites on the minimap as grey markers.        |
+| `MapTeleporter`     | Alt-left-click the open in-game map to teleport there.                                                                                          |
+| `MonsterRespawner`  | Hold Alt to mark dead monsters. Left-click a marker to make the monster ready to respawn.                                                       |
+| `ResourceRespawner` | Hold Alt to mark gathered resources and chests on cooldown. Left-click a marker to make the resource harvestable.                               |
 
 ### Data and development mods
 
-| Mod                | Summary                                                                                                                                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CharacterCapture` | Writes the local player's versioned planner build to `UserData/CharacterCapture/character-capture.json`. The `character.capture` command reads progression, skills, learned books, equipment, owned items, and active companions. The `combatMeter.capture` command reads player and companion meter totals without resetting them. |
-| `CombatVerification` | Registers typed HotRepl commands for combat fixtures: `fixture.validate`, `fixture.validateMatrix`, `fixture.createCharacter`, `fixture.buildCharacter`, `fixture.observe`, `probe.statSheet`, `probe.targetState`, `probe.actionInterval`, and `probe.perHitDamage`. The commands validate builds, measure combat state, and record observations in the running game. The mod is for the combat verification harness, not normal play. |
-| `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                                                                 |
-| `FieldDefaultValueHookFix` | Harmony-patches Il2CppInterop's `Class_GetFieldDefaultValue_Hook.FindTargetMethod` so the byte-signature scan does not land on the wrong function and crash the game on world entry. |
-| `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `world.enter` (job — enters a local world), `compendium.export` (job — exports game data and optional screenshots), `game.useScratchDatabase` (selects the verification scratch database), and `game.quit`. `build-tool export` and `build-tool verify` invoke these commands over WebSocket. |
-| `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. `build-tool export --screenshots` triggers it via the `compendium.export` HotRepl job.                                                                                                      |
-| `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                                                           |
+| Mod                        | Summary                                                                                                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CharacterCapture`         | Writes the local player's planner build to `UserData/CharacterCapture/character-capture.json` and reads combat meter totals.                                       |
+| `CombatVerification`       | HotRepl commands for the combat verification harness. Not for normal play.                                                                                         |
+| `DataExporter`             | Shift-F9 exports game data to JSON and writes the visual asset manifest the build pipeline reads.                                                                  |
+| `FieldDefaultValueHookFix` | Patches an Il2CppInterop byte-signature scan that otherwise crashes the game on world entry.                                                                       |
+| `HotReplCommands`          | Typed HotRepl commands that `build-tool export` and `build-tool verify` drive: preflight, world summary and entry, export, scratch database, zone shots, and quit. |
+| `MapScreenshotter`         | Shift-F10 captures map screenshots for tile generation. `build-tool export --screenshots` triggers it.                                                             |
+| `HierarchyLogger`          | F9 in the World scene dumps the scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                |
 
-`build-tool` discovers mod projects under `mods/` recursively, so a mod can be built even if it is not listed in `AncientKingdomsMods.sln`.
+`build-tool` discovers mod projects under `mods/` recursively, so a mod builds even if it is not listed in `AncientKingdomsMods.sln`.
 
 ### BetterBestiary skill summaries
 
-BetterBestiary formats skill effects in the game with `mods/BetterBestiary/Skills/SkillEffectFormatter.cs`, a C# port of the website's `formatSkillEffect`, so it can describe skills from game versions that no export has seen. The TypeScript formatter stays the source of truth. A parity test holds the port string-identical over every exported skill, using a corpus baked from `compendium.db`. After re-exporting and rebuilding the data, or after changing `formatSkillEffect`, regenerate the corpus and run the test:
+`mods/BetterBestiary/Skills/SkillEffectFormatter.cs` ports the website's `formatSkillEffect`, which stays the source of truth. A parity test holds the two string-identical over every exported skill. After re-exporting the data or changing `formatSkillEffect`, regenerate the corpus and port the change until the test passes:
 
 ```bash
 pnpm --filter website gen:skill-effect-parity
 dotnet test tests/BetterBestiary.Tests
 ```
-
-Port the formatter change until the test passes. A pre-commit hook fails the commit when the corpus is stale.
 
 ### Runtime notes
 
@@ -130,44 +117,14 @@ Port the formatter change until the test passes. A pre-commit hook fails the com
 
 ## First-time setup
 
-### Toolchain
-
-`flake.nix` provides Node, pnpm, Python, uv, the .NET 10 SDK and sqlite at the
-versions this repo expects:
-
-```bash
-nix develop
-```
-
-With [direnv](https://direnv.net) and
-[nix-direnv](https://github.com/nix-community/nix-direnv), `direnv allow` enters
-the shell automatically on `cd`.
-
-Everything below assumes you are inside that shell, or are prefixing commands
-with `nix develop --command`. The game itself, CrossOver/Wine, MelonLoader and
-the generated IL2CPP assemblies are machine-local and stay outside it.
-
-### Dependencies
-
-Install JavaScript dependencies:
+`flake.nix` provides Node, pnpm, Python, uv, the .NET 10 SDK, and sqlite at the versions this repo expects. Enter it with `nix develop`, or with [direnv](https://direnv.net) and [nix-direnv](https://github.com/nix-community/nix-direnv) run `direnv allow` once. Everything below assumes that shell. The game, CrossOver, MelonLoader, and the generated IL2CPP assemblies stay machine-local.
 
 ```bash
 pnpm install
-```
-
-Generate local configuration:
-
-```bash
 dotnet run --project build-tool setup
 ```
 
-Setup creates `config.toml` only when it is absent and rewrites `Local.props`:
-
-- `Local.props` for the Ancient Kingdoms install, export directory, and required Wine/CrossOver paths.
-- `config.toml` for build-pipeline paths and tile settings.
-
-`deploy`, `deploy-host`, `launch`, `export`, `publish-mods`, and `update` require `Local.props` at command startup.
-`build`, `setup`, and `verify` do not check for it at startup. A mod build still needs the configured game paths, and `verify` needs the local configuration to run.
+Setup writes `Local.props` with the game install, export directory, and Wine paths, and creates `config.toml` with build-pipeline paths and tile settings when it is absent.
 
 ## Common workflows
 
@@ -179,7 +136,6 @@ dotnet run --project build-tool build
 
 # Copy built DLLs to the configured game Mods directory
 dotnet run --project build-tool deploy
-
 ```
 
 Close Ancient Kingdoms before deploying. DLLs can be locked while the game is running.
@@ -197,71 +153,25 @@ dotnet run --project build-tool export --screenshots
 dotnet run --project build-tool export --update
 ```
 
-The automated exporter requires at least one existing character because it selects the first character before entering the world and running exports.
+The automated exporter selects the first existing character, so the game needs at least one.
 
-An exporter reads authoritative runtime data: direct fields and explicit references, with `TryCast<T>()` where the subtype matters. It never infers a value from a name, a threshold, or proximity. Absence follows each field's contract: `null` for a missing reference, `""` for missing text, and a declared default for a value type only where the contract defines one. `"unknown"` is valid only where the domain defines it, such as an unresolved zone. A value that is derived rather than read, such as zone containment, is documented at its exporter. JSON property names are snake_case.
+### Capture zone shots
 
-Placement IDs use `prefix_{x}_{y}`, where the world position is rounded to the nearest whole
-unit with `Math.Round(..., MidpointRounding.AwayFromZero)` and negative zero is written as `0`.
-Existing descriptive prefixes are retained, except altars use `altar_{name}_{zone}` and treasure
-locations use `treasure_{mapId}_{zone}`. IDs do not contain runtime object numbers. The published
-IDs and URLs use this format directly, without aliases or redirects for older IDs.
-Duplicate placement IDs within an export set fail that exporter rather than adding a tie-breaker.
-
-Under CrossOver, the game writes to macOS paths through Wine's `Z:` drive. Manifest paths stay relative to `exported-data/`.
-
-Zone hero artwork uses native gameplay framing rather than a crop of the stitched map. With the
-game closed, build/deploy the mods, launch it, and immediately redirect its database before the
-start screen opens the player database:
+Zone shots come from the running game, framed by `build-pipeline/zone_shot_focal_points.json`. With the game closed:
 
 ```bash
 dotnet run --project build-tool build
 dotnet run --project build-tool deploy
 dotnet run --project build-tool launch --wait
-hotrepl run game.useScratchDatabase '{}' --json
-# Confirm isScratch=true and the verification-scratch/game.dat path before continuing.
-# Create an owned fixture if the scratch roster has none; never select a player character.
+hotrepl run game.useScratchDatabase '{}' --json   # must report isScratch=true
+# Only when the scratch roster has no fixture character:
 hotrepl run fixture.createCharacter '{"characterName":"HomeArt","class":"warrior","race":"human"}' --json
 hotrepl run world.enter '{"character":"HomeArt"}' --json
-hotrepl run compendium.export '{"screenshots":false}' --json
 hotrepl run capture.zoneShots '{}' --json
 hotrepl run game.quit '{}' --json
 ```
 
-`capture.zoneShots` reads `build-pipeline/zone_shot_focal_points.json` and writes native PNGs plus
-capture provenance to `exported-data/screenshots/zones/manifest.json`. The focal file is an object
-with a required positive finite `frame_scale` default and a `zones` array of `zone_id`, `x`, `y`,
-and `comment` records. Each record may provide its own positive finite numeric `frame_scale`;
-otherwise it inherits the default. For mixed framing, configure overworld rows at 2 and dungeon
-rows at 1.5 using `zones.is_dungeon` to distinguish them. The checked-in default remains 1.
-At scale 1, the render texture is 1920×1080 and the orthographic camera size is 11.25, preserving
-native 48 pixels per world unit. Scaling increases both camera size and render-texture dimensions
-(1920×scale by 1080×scale, rounded to nearest with midpoint ties away from zero), not pixel density.
-Omit `frameScale` to capture each zone at its configured scale. An explicit `frameScale` overrides
-all selected zones for previews; the pipeline refuses those captures unless they match each
-zone's configured scale.
-It uses the gameplay camera,
-area lighting, bloom, and current in-game daylight/weather; hides the HUD, entity labels/health bars,
-and local player; and restores the camera and scene afterwards. To review a composition, pass
-`{"zoneIds":["twilight_forest"]}`; compare a creature-free version with `"includeCreatures":false`.
-Run the complete command again after reviewing subsets so the manifest covers all released zones.
-Position-suppressed zones use `anchor: {"monster": "<monster_id>"}` instead of absolute `x`/`y`,
-with an optional relative `offset: [dx, dy]` in world units (default `[0,0]`).
-The command resolves exactly one valid-scene monster spawn in that zone and verifies the offset point
-against the live zone trigger. The manifest records only the anchor and relative offset, never its
-resolved coordinates. Temple of Valaark screenshots are allowed because they show only what a player
-inside sees; absolute temple coordinates stay out of focal-point configuration and manifests.
-Rounded coordinates in published placement IDs and URLs are allowed by owner choice.
-Normal zones refuse anchors and continue using `x`/`y`. Old Valorath is unreleased and must never be captured.
-`compendium build` validates focal-point coverage and containment (live-command containment for
-anchored zones), rejects missing captures, coordinates in anchored manifests, or
-camera/image dimensions inconsistent with each zone's effective focal scale, and publishes unchanged 960×540
-lossy WebP shots using Lanczos resampling. Boss portraits/bestiary sprites remain native,
-lossless images; the painted runtime world map is published at up to 2400 pixels wide.
-
-The database redirect refuses once a connection exists. On refusal, quit and relaunch rather than
-creating a fixture or entering the world against player data. Only one HotRepl client may own the
-connection at a time.
+Redirect to the scratch database before anything else, and never enter the world with a player character. If the redirect refuses, quit and relaunch. The focal-point format and the command's options are in `.agent/skills/hotrepl-runtime-inspection/references/commands.md`.
 
 ### Build compendium data
 
@@ -287,84 +197,50 @@ uv run compendium citations check
 uv run compendium redactions check
 ```
 
-`compendium build` and `compendium stats` both use `website/data/compendium.db`. The database stays outside `website/static/`, because `static/` is published verbatim. The web build compresses the database and gives it a content-hashed name, so the browser downloads about 2.2 MB instead of about 16.5 MB and can cache it permanently.
+The database stays outside `website/static/`, because `static/` is published verbatim. `compendium tiles` needs the screenshot metadata from `build-tool export --screenshots`.
 
-The pipeline preserves exported placement IDs unchanged in database rows, references, artwork paths,
-and published URLs. Position suppression removes map geometry and position fields, including
-embedded JSON positions, but the owner permits rounded positions to remain in placement IDs and
-URLs. Screenshot focal points and manifests for suppressed zones still use landmark anchors.
-
-Tile generation requires screenshot metadata from `MapScreenshotter` or `build-tool export --screenshots`.
-`uv run compendium tiles` validates boss/world-boss spawn coverage before publishing `website/static/tiles`; if boss positions sample as black/blank, re-run the in-game screenshot export before regenerating tiles.
-
-### Run the website locally
+### Run and deploy the website
 
 From the repository root:
 
 ```bash
 pnpm dev
-```
-
-Useful root scripts:
-
-```bash
 pnpm check
 pnpm lint
 pnpm build
 ```
 
-Deploy from the website workspace:
+Deploy from `website/`:
 
 ```bash
 cd website
-pnpm cf-deploy
+pnpm cf-deploy        # production; builds first and stops on a failed build
+pnpm cf-deploy:demo   # the same build on a separate demo Worker on workers.dev
 ```
 
-`pnpm cf-deploy` builds the website before `wrangler deploy`. A failed build stops deployment.
-
-The pipeline writes the database to `website/data/` and image and tile assets to `website/static/`. The database is gitignored and must be created by the build pipeline before local browsing or production builds that depend on it.
-
-`website/mod-downloads.json` selects the mods that the website publishes. Website development and production builds run `build-tool publish-mods`, which builds those projects and writes a public manifest to `/mods/manifest.json`. Each DLL has a stable path at `/mods/<project>.dll`. The generated download directory is gitignored and replaced only after all configured projects build successfully.
+`website/mod-downloads.json` selects the mods the site offers for download. Website builds produce them through `build-tool publish-mods`, each at a stable `/mods/<project>.dll` path with a manifest at `/mods/manifest.json`.
 
 ### HotRepl runtime inspection
 
 ```bash
-# Deploy the local HotRepl MelonLoader host into the configured game Mods directory.
 dotnet run --project build-tool deploy-host --hotrepl-repo /path/to/HotRepl
-
-# Launch the game and wait for MelonLoader bootstrap.
 dotnet run --project build-tool launch --wait
-
-# The published CLI is a root pnpm devDependency (`pnpm add -D -w @hotrepl/cli`),
-# so `pnpm install` puts it at ./node_modules/.bin/hotrepl. Run it directly or
-# through pnpm; both resolve the same binary.
 hotrepl --url ws://127.0.0.1:18590 info --json
 hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
-hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json
-hotrepl --url ws://127.0.0.1:18590 run world.enter '{}' --json
-hotrepl --url ws://127.0.0.1:18590 run character.capture '{}' --json
-hotrepl --url ws://127.0.0.1:18590 run combatMeter.capture '{}' --json
-hotrepl --url ws://127.0.0.1:18590 describe compendium.export --json
-hotrepl --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
 ```
 
-`build-tool` owns host deployment and game launch. HotRepl clients connect directly to
-`ws://127.0.0.1:18590` for inspection and automation.
+`pnpm install` provides the CLI at `./node_modules/.bin/hotrepl`. The typed commands are listed in `.agent/skills/hotrepl-runtime-inspection/references/commands.md`. Only one client holds the connection, and a new client disconnects the active one, so never attach during an export or a verification run.
 
 ### Combat fixture validation
 
-Close other Ancient Kingdoms instances before running:
+Close other Ancient Kingdoms instances, then:
 
 ```bash
 dotnet run --project build-tool verify
 dotnet run --project build-tool verify --fixture A-class-warrior
 ```
 
-`verify` measures each committed fixture in its own game session against a fresh scratch database and writes `verification/observations/<name>.json`. It does not compare observations with the engine; the website test suite does. Fixture-file loading rejects unsupported JSON fields, including nested fields, before launch. Planner build-envelope and scenario parsing also reject unsupported fields instead of discarding them.
-
-Fixture outer schema 3 separates `buildData` from `execution`. The `build` envelope holds version identifiers. `buildData` contains the declared character, companions, consumables, and source provenance. `execution` contains the seed, window, repetitions, target, actions, and measurement protocol.
-
-Compare the observations with the engine from the repository root. The first command prints one verdict per fixture. The second is the strict gate that a claim about the whole domain needs: a current passing observation for every fixture, and coverage of every handler, damage school, class, and companion archetype.
+`verify` measures each committed fixture in its own game session against a fresh scratch database and writes `verification/observations/<name>.json`. The website tests compare the observations with the engine. The first command below prints one verdict per fixture. The second is the strict gate that a claim about the whole domain needs: a current passing observation for every fixture, and coverage of every handler, damage school, class, and companion archetype.
 
 ```bash
 pnpm --filter website test src/lib/planner/verification/verification.db.test.ts
@@ -379,18 +255,9 @@ pnpm --filter website test:combat-verification
 
 Stale and missing fixtures do not block a game update.
 
-The command takes installation and port locks before changing scratch state. It backs up the existing player database and sidecars, then confirms the runtime launch identity and exact scratch path.
-Scratch paths with traversal or symbolic links are refused. An absent player database remains an absence to check after the run.
-
-Each run prepares fresh scratch state.
-After shutdown, the command clears scratch state only when both the endpoint and native game process have stopped.
-If shutdown cannot be confirmed, it reports failure and leaves scratch state untouched. Player-save and sidecar hashes are checked after shutdown handling.
-
-Do not attach another HotRepl client during verification or export. A new WebSocket client disconnects the active client.
-
 ## Development checks
 
-Run checks that cover the changed area. Run release-wide checks for cross-subsystem changes and releases:
+Run the checks that cover the changed area, and all of them for cross-subsystem changes and releases:
 
 ```bash
 # Website, from the repository root
@@ -422,18 +289,19 @@ pnpm check:redactions
 pnpm check:clean
 ```
 
-Run website build checks for prerender or asset changes. `pnpm check` also checks Python types, unused Python code, and unused website exports. `pnpm check:citations` requires the `server-scripts` symlink. Git hooks are configured in `lefthook.yml`: pre-commit jobs cover formatting, linting, type checks, tests, mod builds, citations, redactions, and generated-data drift for the staged paths. The commit-message hook checks Conventional Commit syntax.
+`pnpm check:citations` requires the `server-scripts` symlink. `lefthook.yml` runs the checks for the staged paths before each commit and checks Conventional Commit syntax.
 
 ## Rules for changes
 
 - Develop in the primary checkout. `Local.props`, `config.toml`, the `server-scripts` symlink, and `website/data/` exist only there.
 - Fail when required game data, files, or runtime objects are missing. A default is valid only where the field's contract defines absence. `FieldDefaultValueHookFix` is the one sanctioned exception, and its source explains why. Do not add a second.
+- Exporters read authoritative runtime data: direct fields and explicit references, with `TryCast<T>()` where the subtype matters. Never infer a value from a name, a threshold, or proximity. Absence follows each field's contract: `null` for a missing reference, `""` for missing text, and a declared default only where the contract defines one. Document a derived value, such as zone containment, at its exporter. JSON property names are snake_case, and manifest paths are relative to `exported-data/`.
 - Change generated output through its producer, then regenerate. Exports, the database, published images and tiles, and `server-scripts` are gitignored. The tracked exceptions are hand-maintained: `exported-data/static_data.json` and `mods/DataExporter/Curated/classes.json`, whose copy in `exported-data/` the exporter overwrites.
 - Change `citations.lock.json` and `redactions.lock.json` only through `compendium citations` and `compendium redactions`. Each entry records a verification, so a hand edit claims one that never happened. Review the claim behind a changed citation before re-anchoring it.
 
 ## Game mechanics accuracy
 
-Use exported game data instead of hand-maintained values whenever possible. Some mechanics cannot be derived from exports and are hardcoded in website or pipeline code. Hardcoded mechanics should cite the local server-script snapshot they came from:
+Use exported game data instead of hand-maintained values whenever possible. Mechanics that cannot be derived from exports are hardcoded in website or pipeline code and cite the server-script snapshot they came from:
 
 ```ts
 // Source: server-scripts/FileName.cs:123-145 — brief explanation
@@ -443,17 +311,13 @@ Use exported game data instead of hand-maintained values whenever possible. Some
 <!-- Source: server-scripts/FileName.cs:123-145 — brief explanation -->
 ```
 
-After each game update, re-export data and re-check source-cited mechanics against the current `server-scripts` snapshot before publishing changes. Run `scripts/update-server-scripts.sh <version>` to create the gitignored symlink into `.decompiled/<build>`. `compendium build` currently requires this symlink to read `server-scripts/SNAPSHOT.toml`.
+After each game update, re-export the data and re-check source-cited mechanics against the current snapshot before publishing. `scripts/update-server-scripts.sh <version>` creates the gitignored `server-scripts` symlink into `.decompiled/<build>`. `compendium build` reads `server-scripts/SNAPSHOT.toml`, so it needs that symlink.
 
 ## Troubleshooting
 
 ### `Local.props` is missing
 
-Run setup:
-
-```bash
-dotnet run --project build-tool setup
-```
+Run `dotnet run --project build-tool setup`.
 
 ### Mod build cannot find game assemblies
 
@@ -465,29 +329,11 @@ Close Ancient Kingdoms, then run deploy again.
 
 ### Website cannot load the database
 
-Run the build pipeline:
+Run `uv run compendium build` in `build-pipeline/`.
 
-```bash
-cd build-pipeline
-uv run compendium build
-```
+### Tile generation cannot find metadata or fails boss-position validation
 
-### Tile generation cannot find metadata
-
-Capture map screenshots first:
-
-```bash
-dotnet run --project build-tool export --screenshots
-```
-
-Then rerun:
-
-```bash
-cd build-pipeline
-uv run compendium tiles
-```
-
-If tile generation fails with boss-position screenshot validation errors, the screenshot set is incomplete or blank around known boss/world-boss terrain. Fix the loaded mod set or game state, rerun `dotnet run --project build-tool export --screenshots`, then rerun `uv run compendium tiles`.
+The screenshot set is missing, incomplete, or blank around known boss terrain. Fix the loaded mod set or game state, run `dotnet run --project build-tool export --screenshots`, then rerun `uv run compendium tiles`.
 
 ### A mod change does nothing in the game
 
@@ -499,9 +345,7 @@ Create at least one character in Ancient Kingdoms, then rerun the export command
 
 ## Support
 
-If the compendium is useful to you, Ko-fi is the easiest way to show support:
-
-<https://ko-fi.com/wowmuch>
+If the compendium is useful to you, Ko-fi is the easiest way to show support: <https://ko-fi.com/wowmuch>
 
 ## License
 
