@@ -17,6 +17,9 @@ public class PetData
     public bool has_buffs { get; set; }
     public bool has_heals { get; set; }
 
+    /// <summary>Pet.seekTargetBack: whether the pet may reposition behind its target.</summary>
+    public bool seek_target_back { get; set; }
+
     /// <summary>
     /// Whether the prefab carries NecromancerPetStats, which keeps the pet at its owner's level and
     /// adds a bonus per owner veteran point.
@@ -42,6 +45,9 @@ public class PetData
     public float block_chance { get; set; }
     public float accuracy { get; set; }
     public float critical_chance { get; set; }
+
+    /// <summary>Combat.fearImmune: fear never lands on this pet.</summary>
+    public bool fear_immune { get; set; }
 
     // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     public int health_base { get; set; }

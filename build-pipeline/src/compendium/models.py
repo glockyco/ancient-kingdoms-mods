@@ -243,8 +243,12 @@ class PetData(BaseModel):
     disease_resist: int = 0
     block_chance: float = 0.0
     critical_chance: float = 0.0
+    # Combat.fearImmune: fear never lands on this pet.
+    fear_immune: bool = False
     has_buffs: bool = False
     has_heals: bool = False
+    # Pet.seekTargetBack: whether the pet may reposition behind its target.
+    seek_target_back: bool = True
     # NecromancerPetStats keeps the pet at its owner's level and adds a bonus per
     # owner veteran point.
     has_necromancer_pet_stats: bool = False

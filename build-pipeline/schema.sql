@@ -1691,8 +1691,12 @@ CREATE TABLE pets (
     disease_resist INTEGER DEFAULT 0,
     block_chance REAL DEFAULT 0.0,
     critical_chance REAL DEFAULT 0.0,
+    -- Combat.fearImmune: fear never lands on this pet.
+    fear_immune BOOLEAN NOT NULL DEFAULT 0,
     has_buffs BOOLEAN DEFAULT 0,
     has_heals BOOLEAN DEFAULT 0,
+    -- Pet.seekTargetBack: whether the pet may reposition behind its target.
+    seek_target_back BOOLEAN NOT NULL DEFAULT 1,
     -- NecromancerPetStats keeps the pet at its owner's level and adds a bonus per
     -- owner veteran point.
     has_necromancer_pet_stats BOOLEAN NOT NULL DEFAULT 0,

@@ -55,6 +55,7 @@ public class PetExporter : BaseExporter
                 type_monster = pet.typeMonster ?? "Creature",
                 has_buffs = pet.hasBuffs,
                 has_heals = pet.hasHeals,
+                seek_target_back = pet.seekTargetBack,
                 has_necromancer_pet_stats = pet.GetComponent<Il2Cpp.NecromancerPetStats>() != null,
                 level = pet.level?.current ?? 0,
                 mana = pet.mana?.max ?? 0,
@@ -70,6 +71,7 @@ public class PetExporter : BaseExporter
                 block_chance = pet.combat?.blockChance ?? 0,
                 accuracy = pet.combat?.accuracy ?? 0,
                 critical_chance = pet.combat?.criticalChance ?? 0,
+                fear_immune = pet.combat?.fearImmune ?? false,
 
                 // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
                 health_base = pet.health?.baseHealth.baseValue ?? 0,
