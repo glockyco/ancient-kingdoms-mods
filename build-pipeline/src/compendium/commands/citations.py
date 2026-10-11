@@ -218,6 +218,11 @@ def _shift(locator: str, start: int) -> str:
 
 def _compare(snapshot: Snapshot, target: Target, entry: LockEntry | None) -> None:
     """Compare a freshly hashed target against its recorded anchor."""
+    # A claim naming code its region lacks is wrong whatever the ledger records,
+    # and `sync` refuses to anchor it, so reporting a missing key instead would
+    # send the reader to a command that cannot succeed.
+    if target.status == "unsupported":
+        return
     if entry is None:
         target.status = "changed"
         target.detail = "not in lockfile; run 'citations sync'"
@@ -228,7 +233,7 @@ def _compare(snapshot: Snapshot, target: Target, entry: LockEntry | None) -> Non
         return
     if target.status in {"file-only", "symbol"}:
         return
-    if target.status in {"suspect", "unsupported"}:
+    if target.status == "suspect":
         return
     if entry.sha256 is None:
         target.status = "changed"

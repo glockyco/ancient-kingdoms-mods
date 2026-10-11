@@ -117,6 +117,17 @@ class CompareTests(unittest.TestCase):
             _compare(snapshot, target, None)
             self.assertEqual(target.status, "changed")
 
+    def test_an_unsupported_claim_outranks_a_missing_lockfile_entry(self):
+        # `sync` refuses an unsupported claim, so `check` must name the claim
+        # problem rather than ask for a sync that cannot succeed.
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = self.build(directory, "alpha\nbeta\n")
+            target = make_target("Player.cs", "2")
+            target.status = "unsupported"
+            target.detail = "claim names code absent from the cited region"
+            _compare(snapshot, target, None)
+            self.assertEqual(target.status, "unsupported")
+
     def test_recorded_suspect_note_survives(self):
         with tempfile.TemporaryDirectory() as directory:
             snapshot = self.build(directory, "alpha\nbeta\n")
