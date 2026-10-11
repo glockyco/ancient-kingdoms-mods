@@ -95,7 +95,6 @@ namespace MapTeleporter
 
         /// <summary>
         /// Converts screen coordinates to world coordinates using the map system.
-        /// See docs/MAP_COORDINATE_SYSTEMS.md for detailed explanation.
         /// </summary>
         private bool ConvertScreenToWorld(Il2Cpp.UIMap uiMap, Vector2 screenPos, out Vector2 worldPos)
         {
@@ -105,14 +104,14 @@ namespace MapTeleporter
             // Critical: Use localMap (1200×1010), NOT rectTransformMap (1920×1080)
             if (uiMap.localMap == null)
             {
-                if (VerboseLogging) LoggerInstance.Error("localMap is null!");
+                LoggerInstance.Error("localMap is null!");
                 return false;
             }
 
             var localMapRT = uiMap.localMap.GetComponent<RectTransform>();
             if (localMapRT == null)
             {
-                if (VerboseLogging) LoggerInstance.Error("localMap has no RectTransform!");
+                LoggerInstance.Error("localMap has no RectTransform!");
                 return false;
             }
 
@@ -128,7 +127,7 @@ namespace MapTeleporter
 
             if (!conversionSuccess)
             {
-                if (VerboseLogging) LoggerInstance.Error("ScreenPointToLocalPointInRectangle failed!");
+                LoggerInstance.Error("ScreenPointToLocalPointInRectangle failed!");
                 return false;
             }
 
@@ -160,7 +159,7 @@ namespace MapTeleporter
             // STEP 4: Get Cinemachine virtual camera (the full map camera)
             if (uiMap.mapCamera == null)
             {
-                if (VerboseLogging) LoggerInstance.Error("mapCamera is null!");
+                LoggerInstance.Error("mapCamera is null!");
                 return false;
             }
 
