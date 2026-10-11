@@ -555,8 +555,10 @@ def run(config: dict) -> None:
     # Validate inputs
     if not metadata_path.exists():
         console.print(f"[red]Error:[/red] Metadata not found: {metadata_path}")
-        console.print("Run MapScreenshotter mod first to export screenshots")
-        return
+        console.print(
+            "Run `build-tool export --screenshots` to capture the screenshots"
+        )
+        raise typer.Exit(1)
 
     # Load metadata
     with open(metadata_path) as f:

@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import typer
 from PIL import Image, ImageDraw
 
 from compendium.commands.tiles import (
@@ -10,6 +11,7 @@ from compendium.commands.tiles import (
     find_blank_boss_spawn_samples,
     load_excluded_zones,
 )
+from compendium.commands.tiles import run as tiles_run
 
 
 class TileValidationTests(unittest.TestCase):
@@ -174,6 +176,26 @@ class TileValidationTests(unittest.TestCase):
 
         self.assertEqual((0, 0, 0), image.getpixel((12, 88)))
         self.assertEqual((255, 255, 255), image.getpixel((11, 88)))
+
+    def test_run_fails_without_screenshot_metadata(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            config = {
+                "build_pipeline": {
+                    "tiles": {
+                        "min_zoom": 0,
+                        "max_zoom": 0,
+                        "tile_size": 256,
+                        "webp_quality": 80,
+                    }
+                },
+                "paths": {
+                    "export_dir": str(Path(tmp) / "export"),
+                    "website_dir": str(Path(tmp) / "website"),
+                },
+            }
+            with self.assertRaises(typer.Exit) as raised:
+                tiles_run(config)
+        self.assertEqual(1, raised.exception.exit_code)
 
     @staticmethod
     def _bounds(zone: dict) -> tuple[float, float, float, float]:
