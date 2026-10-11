@@ -141,8 +141,8 @@
         <!-- Source: server-scripts/Player.cs:13182-13183; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
-          Resurrection restores Mana from maximum Health, a game defect, capped
-          at maximum Mana.
+          Because of a game defect, Resurrection restores Mana based on maximum
+          Health, up to maximum Mana.
         </p>
         <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget — Resurrection can target player remains or dead mercenaries. -->
         <p>

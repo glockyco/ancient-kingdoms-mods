@@ -467,7 +467,7 @@
             <span class="absolute right-0">40 min</span>
           </div>
           <p class="mt-1 text-muted-foreground">
-            Rolls at 20 and 40 minutes — one roll every interval.
+            The roll happens at 20 and 40 minutes, once per interval.
           </p>
         </div>
 
@@ -507,8 +507,8 @@
             <span class="absolute right-0">40 min</span>
           </div>
           <p class="mt-1 text-muted-foreground">
-            You return at 15 minutes. The roll still happens at 20 minutes,
-            right on schedule — the empty stretch cost nothing.
+            You return at 15 minutes. The roll still happens on schedule at 20
+            minutes, so the empty stretch costs nothing.
           </p>
         </div>
 
@@ -548,7 +548,7 @@
             <span class="absolute right-0">40 min</span>
           </div>
           <p class="mt-1 text-muted-foreground">
-            The timer ends at 20 minutes while the zone is empty — nothing
+            The timer ends at 20 minutes while the zone is empty, and nothing
             happens. The overdue roll fires at 30 minutes as you walk in. If it
             fails, the next roll is at 50 minutes.
           </p>
@@ -713,7 +713,7 @@
 
       <div class="space-y-4 text-sm">
         <p class="font-medium text-foreground">
-          Example — cycling renewals for a rare with a 25% chance
+          Example: cycling renewals for a rare with a 25% chance
         </p>
         <div>
           <div class="flex h-9 overflow-hidden rounded border border-border">
@@ -995,13 +995,13 @@
 
       <div class="space-y-4 text-sm">
         <p class="font-medium text-foreground">
-          Example schedules — a summon watching five guards, each guard back 8
+          Example schedules: a summon watching five guards, each guard back 8
           minutes after its death
         </p>
 
         <div>
           <p class="mb-1 text-muted-foreground">
-            Killing slowly — kills never add up
+            Killing slowly: kills never add up
           </p>
           <div class="space-y-1">
             {#each slowClearGuards as guard (guard.label)}
@@ -1055,8 +1055,8 @@
           <p class="mt-1 text-muted-foreground">
             One kill every two minutes, the fifth at minute 9. The first guard
             is already back at minute 8, so there is never a moment with all
-            five dead at once — the check never fires. No number of kills helps
-            while they are this spread out.
+            five dead at once, and the check never fires. No number of kills
+            helps while they are this spread out.
           </p>
         </div>
 
@@ -1117,7 +1117,7 @@
           </div>
           <p class="mt-1 text-muted-foreground">
             One kill per minute. From minute 4 to minute 8 all five guards are
-            dead at the same time — the check fires the instant the fifth dies,
+            dead at the same time. The check fires the instant the fifth dies,
             and the summon appears.
           </p>
         </div>
@@ -1132,13 +1132,13 @@
             </div>
             <div class="w-1 shrink-0 bg-blue-500"></div>
             <div class="flex w-[30%] items-center justify-center bg-muted/60">
-              <span class="truncate px-1">roll failed — nothing spawns</span>
+              <span class="truncate px-1">roll fails, nothing spawns</span>
             </div>
             <div
               class="w-1 shrink-0 border-l-2 border-dashed border-muted-foreground"
             ></div>
             <div class="flex w-[40%] items-center justify-center bg-muted/60">
-              <span class="truncate px-1">guards back — clear them again</span>
+              <span class="truncate px-1">guards back, clear them again</span>
             </div>
             <div class="w-1 shrink-0 bg-blue-500"></div>
             <div
@@ -1158,9 +1158,9 @@
           <p class="mt-1 text-muted-foreground">
             You clear all five guards by minute 4, but the roll fails. The next
             roll cannot fire before minute 24, a full interval later. The guards
-            do not need to stay dead in between — past minute 24 the roll simply
-            waits, and fires the moment all five are dead at once again. Here
-            you re-clear them just in time for minute 24.
+            do not need to stay dead in between. Past minute 24, the roll waits
+            and fires the moment all five are dead at once again. Here you
+            re-clear them just in time for minute 24.
           </p>
         </div>
 

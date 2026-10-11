@@ -885,8 +885,8 @@
         <h3 class="font-semibold mt-4 mb-2">Player Spell Intervals</h3>
         <Calculation calculation={timingCalculation(true)} />
         <p class="text-sm text-muted-foreground mt-2">
-          The character window stops at 50%, but casts use the full total, a
-          game defect. Its lower display limit is −50%. Enter your full
+          The character window shows spell haste between −50% and 50%. Because
+          of a game defect, casts use the full total, so enter your full
           equipment and skill total for this example.
         </p>
         <h3 class="font-semibold mt-4 mb-2">Other Attack Intervals</h3>
@@ -939,8 +939,9 @@
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-sm"
-                  >Reduces cast time using the full bonus above the 50% display
-                  cap, a game defect. The {seconds(0.75)} wait afterward stays unchanged.</td
+                  >Reduces cast time. Because of a game defect, it uses the full
+                  bonus, even above the 50% display cap. The {seconds(0.75)} wait
+                  afterward stays unchanged.</td
                 >
               </tr>
               <!-- Source: server-scripts/Skills.cs:1141-1169 — non-familiar non-mercenary pet skillIndex 0 uses haste for non-spells. -->
@@ -966,8 +967,9 @@
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-sm"
-                  >Reduces cast time using the full bonus above the 50% display
-                  cap, a game defect. Cooldown stays unchanged.</td
+                  >Reduces cast time. Because of a game defect, it uses the full
+                  bonus, even above the 50% display cap. Cooldown stays
+                  unchanged.</td
                 >
               </tr>
               <tr>
@@ -996,11 +998,10 @@
         <Calculation calculation={threatCalculation} />
         <!-- Source: server-scripts/DamageSkill.cs:90; TargetDamageSkill.cs:249; AreaDamageSkill.cs:149 — the tooltip shows one third of maximum Health while these hits add the full amount. -->
         <p class="text-sm text-muted-foreground mt-2">
-          The in-game threat tooltip understates the Health bonus, a game
-          defect. It shows one third of maximum Health. Eligible targeted and
-          direct area hits add all of it.
+          Because of a game defect, the in-game threat tooltip shows only one
+          third of maximum Health. Eligible targeted and direct area hits add
+          all of it.
         </p>
-        <!-- Source: server-scripts/Combat.cs:606-613 — negative listed threat reduces an existing monster entry with a minimum of 1 rather than using the positive-gain formula. -->
         <p class="text-sm text-muted-foreground mt-1">
           Negative skill threat instead reduces the attacker's existing monster
           threat, leaving at least 1.

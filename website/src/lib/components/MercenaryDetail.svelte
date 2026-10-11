@@ -7,7 +7,7 @@
   import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
   import RecruiterTable from "$lib/components/RecruiterTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import { formatPercent } from "$lib/calculation/format";
+  import { formatPercent, formatSeconds } from "$lib/calculation/format";
   import {
     TOTAL_VETERAN_POINTS,
     TOTAL_VETERAN_POINTS_NOTE,
@@ -158,16 +158,13 @@
           ),
           rank,
         ),
-        seconds:
-          Math.round(
-            linearAt(
-              {
-                base_value: deathSave.duration_base,
-                bonus_per_level: deathSave.duration_per_level,
-              },
-              rank,
-            ) * 100,
-          ) / 100,
+        seconds: linearAt(
+          {
+            base_value: deathSave.duration_base,
+            bonus_per_level: deathSave.duration_per_level,
+          },
+          rank,
+        ),
       };
     };
     return {
@@ -447,10 +444,11 @@
               >
               for your level and total veteran points.
             </p>
-            <p class="mt-1 text-sm text-muted-foreground">
-              {#if cls === "Bard"}Bard skills have a minimum rank of 1.{/if}
-              Each skill stops at its max rank.
-            </p>
+            {#if cls === "Bard"}
+              <p class="mt-1 text-sm text-muted-foreground">
+                Bard skills have a minimum rank of 1.
+              </p>
+            {/if}
           </div>
           <div>
             <h3 class="text-sm font-semibold">Total veteran points</h3>
@@ -607,15 +605,20 @@
             </Alert>
           {/if}
           <dl class="grid grid-cols-3 gap-3">
-            {@render stat("Invulnerable for", `${deathSaveInfo.now.seconds} s`)}
+            {@render stat(
+              "Invulnerable for",
+              formatSeconds(deathSaveInfo.now.seconds),
+            )}
             {@render stat("Rage cost", fmt(deathSaveInfo.now.rage))}
-            {@render stat("Cooldown", `${fmt(deathSaveInfo.cooldown)} s`)}
+            {@render stat("Cooldown", formatSeconds(deathSaveInfo.cooldown))}
           </dl>
           <p class="text-muted-foreground">
-            Duration and Rage cost rise with total veteran points, from {deathSaveInfo
-              .low.seconds} s for {deathSaveInfo.low.rage} Rage with 0 total veteran
-            points to {deathSaveInfo.high.seconds} s for {deathSaveInfo.high
-              .rage} Rage with
+            Duration and Rage cost rise with total veteran points, from {formatSeconds(
+              deathSaveInfo.low.seconds,
+            )} for {fmt(deathSaveInfo.low.rage)} Rage with 0 total veteran points
+            to {formatSeconds(deathSaveInfo.high.seconds)} for {fmt(
+              deathSaveInfo.high.rage,
+            )} Rage with
             {MAX_VETERAN} total veteran points.
           </p>
           <p class="text-muted-foreground">
