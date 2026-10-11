@@ -1,7 +1,7 @@
 <Project>
   <!--
     Local configuration for Ancient Kingdoms on macOS with CrossOver.
-    Use the setup command in README.md to discover the game and write
+    Use the setup command in CONTRIBUTING.md to discover the game and write
     Local.props. If you copy this example manually, replace every example path
     with an absolute path on your machine. Local.props is gitignored.
   -->

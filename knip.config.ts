@@ -16,7 +16,7 @@ const config: KnipConfig = {
       // uv is a Python package manager invoked from package.json scripts; not a Node binary.
       ignoreBinaries: ["uv"],
       // @hotrepl/cli provides the `hotrepl` binary invoked directly from the shell
-      // per README.md and the hotrepl-runtime-inspection skill. Commitlint is invoked
+      // per CONTRIBUTING.md and the hotrepl-runtime-inspection skill. Commitlint is invoked
       // by the commit-msg hook; Knip does not attribute that hook to its package.
       ignoreDependencies: ["@hotrepl/cli", "@commitlint/cli"],
     },
@@ -30,7 +30,7 @@ const config: KnipConfig = {
         "src/routes/**/+{page,layout,error,server}.{ts,svelte}",
         "src/routes/**/+{page,layout,error}.server.ts",
         "src/app.{ts,html,css,d.ts}",
-        // scripts/ includes snapshot-mechanics.mjs, documented in the README
+        // scripts/ includes snapshot-mechanics.mjs, documented in CONTRIBUTING.md
         // and invoked directly with node.
         "scripts/*.{mjs,ts}",
         "wrangler.toml",
