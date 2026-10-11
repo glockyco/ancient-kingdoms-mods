@@ -499,11 +499,15 @@ def _fix(repo_root: Path) -> int:
 
     # Re-key the lockfile in place. The content is byte-identical - only its
     # position moved - so the recorded hash and span carry over unchanged and no
-    # game version is needed to re-anchor.
-    for old_key, new_key in rekeys.items():
-        entry = lock.targets.pop(old_key, None)
-        if entry is not None:
-            lock.targets[new_key] = entry
+    # game version is needed to re-anchor. Every old key leaves before any new key
+    # is written, because a target can move onto the position that another target
+    # left: re-keying one at a time would overwrite that entry and drop the other.
+    relocated = {
+        new_key: lock.targets.pop(old_key)
+        for old_key, new_key in rekeys.items()
+        if old_key in lock.targets
+    }
+    lock.targets.update(relocated)
     lock.save(lock_path)
     console.print(
         f"Re-anchored {len(rekeys)} target(s) in [cyan]{LOCKFILE_NAME}[/cyan]."

@@ -8,6 +8,7 @@ from compendium.citations.lockfile import Lockfile
 from compendium.commands.citations import (
     Target,
     _compare,
+    _fix,
     _shift,
     _sync,
     _tool_mismatch,
@@ -304,6 +305,59 @@ class SyncGuardTests(unittest.TestCase):
 
             self.assertEqual(code, 0)
             self.assertIn("Player.cs:3", Lockfile.load(lock_path).targets)
+
+
+class FixTests(unittest.TestCase):
+    """`fix` relocates moved citations and carries their anchors with them."""
+
+    CITED_FILE = Path("website/src/lib/example.ts")
+
+    def test_a_target_moving_onto_a_vacated_position_keeps_both_anchors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            scripts = root / "server-scripts"
+            scripts.mkdir()
+            (scripts / "SNAPSHOT.toml").write_text(
+                'game_version = "1.2.3"\nilspycmd_version = "10.1.1.8388"\n',
+                encoding="utf-8",
+            )
+            # alpha moved from line 1 to 2, onto the line beta left for line 3.
+            (scripts / "Player.cs").write_text(
+                "inserted\nalpha\nbeta\ngamma\n", encoding="utf-8"
+            )
+            source = root / self.CITED_FILE
+            source.parent.mkdir(parents=True)
+            source.write_text(
+                "// Source: server-scripts/Player.cs:1 — alpha holds it\n"
+                "// Source: server-scripts/Player.cs:2 — beta holds it\n",
+                encoding="utf-8",
+            )
+            lock_path = root / "citations.lock.json"
+            Lockfile(
+                game_version="1.2.3",
+                ilspycmd_version="10.1.1.8388",
+                targets={
+                    "Player.cs:1": LockEntry(digest(["alpha"]), 1, None),
+                    "Player.cs:2": LockEntry(digest(["beta"]), 1, None),
+                },
+            ).save(lock_path)
+
+            with patch(
+                "compendium.commands.citations.iter_citation_files",
+                return_value=[self.CITED_FILE],
+            ):
+                code = _fix(root)
+
+            self.assertEqual(code, 0)
+            targets = Lockfile.load(lock_path).targets
+            self.assertEqual(set(targets), {"Player.cs:2", "Player.cs:3"})
+            self.assertEqual(targets["Player.cs:2"].sha256, digest(["alpha"]))
+            self.assertEqual(targets["Player.cs:3"].sha256, digest(["beta"]))
+            self.assertEqual(
+                source.read_text(encoding="utf-8"),
+                "// Source: server-scripts/Player.cs:2 — alpha holds it\n"
+                "// Source: server-scripts/Player.cs:3 — beta holds it\n",
+            )
 
 
 if __name__ == "__main__":
