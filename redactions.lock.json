@@ -945,6 +945,33 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:cursed_drassar_old_valorath@-655,227": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:cursed_drassar_old_valorath@-661,224": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:cursed_drassar_old_valorath@-668,227": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:cursed_drassar_old_valorath@-726,302": {
       "mechanism": "cascade",
       "pass": 1,
@@ -1027,6 +1054,33 @@
       ]
     },
     "monster_spawns:drassar_soulreaver_old_valorath@-729,342": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_soulreaver_old_valorath@-736,355": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_soulreaver_old_valorath@-741,360": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_soulreaver_old_valorath@-746,355": {
       "mechanism": "cascade",
       "pass": 1,
       "reason": "every source that made it reachable was removed",
@@ -1395,6 +1449,15 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:drassar_warrior_old_valorath@-832,329": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:drassar_warrior_old_valorath@-837,190": {
       "mechanism": "cascade",
       "pass": 1,
@@ -1701,6 +1764,141 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:plague_rat_old_valorath@-658,420": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-660,445": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-662,435": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-669,457": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-673,228": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-676,457": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-684,221": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-685,445": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-688,420": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-692,222": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-709,327": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-711,221": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-714,332": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-718,419": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-718,437": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:plague_rat_old_valorath@-719,225": {
       "mechanism": "cascade",
       "pass": 1,
@@ -1710,7 +1908,70 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:plague_rat_old_valorath@-719,296": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-721,248": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:plague_rat_old_valorath@-724,225": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-726,322": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-730,420": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-734,388": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-735,410": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-735,420": {
       "mechanism": "cascade",
       "pass": 1,
       "reason": "every source that made it reachable was removed",
@@ -1746,7 +2007,25 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:plague_rat_old_valorath@-740,317": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:plague_rat_old_valorath@-741,220": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-741,416": {
       "mechanism": "cascade",
       "pass": 1,
       "reason": "every source that made it reachable was removed",
@@ -1764,7 +2043,97 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:plague_rat_old_valorath@-746,437": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-748,374": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:plague_rat_old_valorath@-751,224": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-753,320": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-756,244": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-759,297": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-762,294": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-762,298": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-772,329": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-776,311": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-777,296": {
       "mechanism": "cascade",
       "pass": 1,
       "reason": "every source that made it reachable was removed",
@@ -1801,6 +2170,15 @@
       ]
     },
     "monster_spawns:plague_rat_old_valorath@-782,220": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-782,390": {
       "mechanism": "cascade",
       "pass": 1,
       "reason": "every source that made it reachable was removed",
@@ -1908,6 +2286,15 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:plague_rat_old_valorath@-815,337": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:plague_rat_old_valorath@-819,221": {
       "mechanism": "cascade",
       "pass": 1,
@@ -1989,6 +2376,15 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:plague_rat_old_valorath@-828,354": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:plague_rat_old_valorath@-831,146": {
       "mechanism": "cascade",
       "pass": 1,
@@ -2016,6 +2412,24 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:plague_rat_old_valorath@-832,389": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-834,336": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:plague_rat_old_valorath@-837,300": {
       "mechanism": "cascade",
       "pass": 1,
@@ -2026,6 +2440,15 @@
       ]
     },
     "monster_spawns:plague_rat_old_valorath@-837,305": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath@-837,386": {
       "mechanism": "cascade",
       "pass": 1,
       "reason": "every source that made it reachable was removed",
@@ -2214,6 +2637,744 @@
         "zones:old_valorath"
       ]
     },
+    "monster_spawns:sewage_slime_old_valorath@-660,429": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-660,453": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-663,420": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-664,456": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-665,442": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-668,449": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-669,434": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-673,431": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-677,434": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-678,449": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-681,442": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-681,456": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-682,420": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-686,430": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:sewage_slime_old_valorath@-687,453": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:the_ancient_ooze_old_valorath@-673,451": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-544,271": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-545,287": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-547,275": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-554,272": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-558,271": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-562,220": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-562,285": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-563,234": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-564,198": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-564,227": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-564,278": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-573,278": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-576,198": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-577,236": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-582,203": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-586,214": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-586,280": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-589,197": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-589,291": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-590,239": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-591,197": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-598,247": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-599,259": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-600,226": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-600,242": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-600,265": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-600,279": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-601,199": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-601,255": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-607,214": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-608,278": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-610,151": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-610,197": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-611,158": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-612,200": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-612,226": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-615,148": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-624,150": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-624,157": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-647,190": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-648,162": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-648,194": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-649,202": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-650,162": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-650,190": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-651,164": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-652,200": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-655,153": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-657,150": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-657,172": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-659,170": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-661,150": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-662,160": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-663,200": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-664,190": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-665,158": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-665,162": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-666,154": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-666,189": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-666,200": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_burrower_old_valorath@-666,203": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_sentinel_old_valorath@-657,196": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_sentinel_old_valorath@-687,191": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_sentinel_old_valorath@-687,200": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_sentinel_old_valorath@-697,191": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_sentinel_old_valorath@-698,200": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
     "monster_spawns:valorath_sentinel_old_valorath@-708,246": {
       "mechanism": "cascade",
       "pass": 1,
@@ -2224,6 +3385,15 @@
       ]
     },
     "monster_spawns:valorath_sentinel_old_valorath@-721,220": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:valorath_sentinel_old_valorath@-742,253": {
       "mechanism": "cascade",
       "pass": 1,
       "reason": "every source that made it reachable was removed",
@@ -2538,312 +3708,6 @@
         "zones:old_valorath"
       ]
     },
-    "monster_spawns:worm_old_valorath@-544,271": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-545,287": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-547,275": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-554,272": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-558,271": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-562,220": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-562,285": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-563,234": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-564,198": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-564,227": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-564,278": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-573,278": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-576,198": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-577,236": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-582,203": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-586,214": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-586,280": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-589,197": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-589,291": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-590,239": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-591,197": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-598,247": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-599,259": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-600,226": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-600,242": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-600,265": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-600,279": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-601,199": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-601,255": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-607,214": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-608,278": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-610,197": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-612,200": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
-    "monster_spawns:worm_old_valorath@-612,226": {
-      "mechanism": "cascade",
-      "pass": 1,
-      "reason": "every source that made it reachable was removed",
-      "via": [
-        "zone_triggers:zone_trigger_upper_old_valorath",
-        "zones:old_valorath"
-      ]
-    },
     "monsters:ancient_lich": {
       "mechanism": "cascade",
       "pass": 2,
@@ -2953,6 +3817,9 @@
         "monster_spawns:cursed_drassar_old_valorath@-614,280",
         "monster_spawns:cursed_drassar_old_valorath@-616,240",
         "monster_spawns:cursed_drassar_old_valorath@-628,241",
+        "monster_spawns:cursed_drassar_old_valorath@-655,227",
+        "monster_spawns:cursed_drassar_old_valorath@-661,224",
+        "monster_spawns:cursed_drassar_old_valorath@-668,227",
         "monster_spawns:cursed_drassar_old_valorath@-726,302",
         "monster_spawns:cursed_drassar_old_valorath@-732,278",
         "monster_spawns:cursed_drassar_old_valorath@-737,272",
@@ -2970,6 +3837,9 @@
       "reason": "every source that made it reachable was removed",
       "via": [
         "monster_spawns:drassar_soulreaver_old_valorath@-729,342",
+        "monster_spawns:drassar_soulreaver_old_valorath@-736,355",
+        "monster_spawns:drassar_soulreaver_old_valorath@-741,360",
+        "monster_spawns:drassar_soulreaver_old_valorath@-746,355",
         "monster_spawns:drassar_soulreaver_old_valorath@-754,342",
         "monster_spawns:drassar_soulreaver_old_valorath@-805,291",
         "monster_spawns:drassar_soulreaver_old_valorath@-819,264",
@@ -3024,6 +3894,7 @@
         "monster_spawns:drassar_warrior_old_valorath@-828,190",
         "monster_spawns:drassar_warrior_old_valorath@-832,187",
         "monster_spawns:drassar_warrior_old_valorath@-832,218",
+        "monster_spawns:drassar_warrior_old_valorath@-832,329",
         "monster_spawns:drassar_warrior_old_valorath@-837,190",
         "monster_spawns:drassar_warrior_old_valorath@-838,153",
         "monster_spawns:drassar_warrior_old_valorath@-843,271",
@@ -3068,18 +3939,53 @@
         "monster_spawns:plague_rat_old_valorath@-630,237",
         "monster_spawns:plague_rat_old_valorath@-636,240",
         "monster_spawns:plague_rat_old_valorath@-637,222",
+        "monster_spawns:plague_rat_old_valorath@-658,420",
+        "monster_spawns:plague_rat_old_valorath@-660,445",
+        "monster_spawns:plague_rat_old_valorath@-662,435",
+        "monster_spawns:plague_rat_old_valorath@-669,457",
+        "monster_spawns:plague_rat_old_valorath@-673,228",
+        "monster_spawns:plague_rat_old_valorath@-676,457",
+        "monster_spawns:plague_rat_old_valorath@-684,221",
+        "monster_spawns:plague_rat_old_valorath@-685,445",
+        "monster_spawns:plague_rat_old_valorath@-688,420",
+        "monster_spawns:plague_rat_old_valorath@-692,222",
+        "monster_spawns:plague_rat_old_valorath@-709,327",
+        "monster_spawns:plague_rat_old_valorath@-711,221",
+        "monster_spawns:plague_rat_old_valorath@-714,332",
+        "monster_spawns:plague_rat_old_valorath@-718,419",
+        "monster_spawns:plague_rat_old_valorath@-718,437",
         "monster_spawns:plague_rat_old_valorath@-719,225",
+        "monster_spawns:plague_rat_old_valorath@-719,296",
+        "monster_spawns:plague_rat_old_valorath@-721,248",
         "monster_spawns:plague_rat_old_valorath@-724,225",
+        "monster_spawns:plague_rat_old_valorath@-726,322",
+        "monster_spawns:plague_rat_old_valorath@-730,420",
+        "monster_spawns:plague_rat_old_valorath@-734,388",
+        "monster_spawns:plague_rat_old_valorath@-735,410",
+        "monster_spawns:plague_rat_old_valorath@-735,420",
         "monster_spawns:plague_rat_old_valorath@-736,220",
         "monster_spawns:plague_rat_old_valorath@-736,225",
         "monster_spawns:plague_rat_old_valorath@-737,222",
+        "monster_spawns:plague_rat_old_valorath@-740,317",
         "monster_spawns:plague_rat_old_valorath@-741,220",
+        "monster_spawns:plague_rat_old_valorath@-741,416",
         "monster_spawns:plague_rat_old_valorath@-746,224",
+        "monster_spawns:plague_rat_old_valorath@-746,437",
+        "monster_spawns:plague_rat_old_valorath@-748,374",
         "monster_spawns:plague_rat_old_valorath@-751,224",
+        "monster_spawns:plague_rat_old_valorath@-753,320",
+        "monster_spawns:plague_rat_old_valorath@-756,244",
+        "monster_spawns:plague_rat_old_valorath@-759,297",
+        "monster_spawns:plague_rat_old_valorath@-762,294",
+        "monster_spawns:plague_rat_old_valorath@-762,298",
+        "monster_spawns:plague_rat_old_valorath@-772,329",
+        "monster_spawns:plague_rat_old_valorath@-776,311",
+        "monster_spawns:plague_rat_old_valorath@-777,296",
         "monster_spawns:plague_rat_old_valorath@-779,220",
         "monster_spawns:plague_rat_old_valorath@-781,222",
         "monster_spawns:plague_rat_old_valorath@-781,225",
         "monster_spawns:plague_rat_old_valorath@-782,220",
+        "monster_spawns:plague_rat_old_valorath@-782,390",
         "monster_spawns:plague_rat_old_valorath@-793,222",
         "monster_spawns:plague_rat_old_valorath@-793,224",
         "monster_spawns:plague_rat_old_valorath@-794,220",
@@ -3091,6 +3997,7 @@
         "monster_spawns:plague_rat_old_valorath@-810,304",
         "monster_spawns:plague_rat_old_valorath@-811,268",
         "monster_spawns:plague_rat_old_valorath@-814,294",
+        "monster_spawns:plague_rat_old_valorath@-815,337",
         "monster_spawns:plague_rat_old_valorath@-819,221",
         "monster_spawns:plague_rat_old_valorath@-822,189",
         "monster_spawns:plague_rat_old_valorath@-823,231",
@@ -3100,11 +4007,15 @@
         "monster_spawns:plague_rat_old_valorath@-826,214",
         "monster_spawns:plague_rat_old_valorath@-826,301",
         "monster_spawns:plague_rat_old_valorath@-827,307",
+        "monster_spawns:plague_rat_old_valorath@-828,354",
         "monster_spawns:plague_rat_old_valorath@-831,146",
         "monster_spawns:plague_rat_old_valorath@-831,301",
         "monster_spawns:plague_rat_old_valorath@-832,310",
+        "monster_spawns:plague_rat_old_valorath@-832,389",
+        "monster_spawns:plague_rat_old_valorath@-834,336",
         "monster_spawns:plague_rat_old_valorath@-837,300",
         "monster_spawns:plague_rat_old_valorath@-837,305",
+        "monster_spawns:plague_rat_old_valorath@-837,386",
         "monster_spawns:plague_rat_old_valorath@-838,230",
         "monster_spawns:plague_rat_old_valorath@-840,180",
         "monster_spawns:plague_rat_old_valorath@-840,310",
@@ -3127,6 +4038,29 @@
         "monster_spawns:plague_rat_old_valorath@-876,190"
       ]
     },
+    "monsters:sewage_slime": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monster_spawns:sewage_slime_old_valorath@-660,429",
+        "monster_spawns:sewage_slime_old_valorath@-660,453",
+        "monster_spawns:sewage_slime_old_valorath@-663,420",
+        "monster_spawns:sewage_slime_old_valorath@-664,456",
+        "monster_spawns:sewage_slime_old_valorath@-665,442",
+        "monster_spawns:sewage_slime_old_valorath@-668,449",
+        "monster_spawns:sewage_slime_old_valorath@-669,434",
+        "monster_spawns:sewage_slime_old_valorath@-673,431",
+        "monster_spawns:sewage_slime_old_valorath@-677,434",
+        "monster_spawns:sewage_slime_old_valorath@-678,449",
+        "monster_spawns:sewage_slime_old_valorath@-681,442",
+        "monster_spawns:sewage_slime_old_valorath@-681,456",
+        "monster_spawns:sewage_slime_old_valorath@-682,420",
+        "monster_spawns:sewage_slime_old_valorath@-686,430",
+        "monster_spawns:sewage_slime_old_valorath@-687,453",
+        "skills:call_of_the_ooze"
+      ]
+    },
     "monsters:spectral_direwolf": {
       "mechanism": "cascade",
       "pass": 4,
@@ -3135,13 +4069,95 @@
         "skills:fabled_summon_spectral_wolves"
       ]
     },
+    "monsters:the_ancient_ooze": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monster_spawns:the_ancient_ooze_old_valorath@-673,451"
+      ]
+    },
+    "monsters:valorath_burrower": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monster_spawns:valorath_burrower_old_valorath@-544,271",
+        "monster_spawns:valorath_burrower_old_valorath@-545,287",
+        "monster_spawns:valorath_burrower_old_valorath@-547,275",
+        "monster_spawns:valorath_burrower_old_valorath@-554,272",
+        "monster_spawns:valorath_burrower_old_valorath@-558,271",
+        "monster_spawns:valorath_burrower_old_valorath@-562,220",
+        "monster_spawns:valorath_burrower_old_valorath@-562,285",
+        "monster_spawns:valorath_burrower_old_valorath@-563,234",
+        "monster_spawns:valorath_burrower_old_valorath@-564,198",
+        "monster_spawns:valorath_burrower_old_valorath@-564,227",
+        "monster_spawns:valorath_burrower_old_valorath@-564,278",
+        "monster_spawns:valorath_burrower_old_valorath@-573,278",
+        "monster_spawns:valorath_burrower_old_valorath@-576,198",
+        "monster_spawns:valorath_burrower_old_valorath@-577,236",
+        "monster_spawns:valorath_burrower_old_valorath@-582,203",
+        "monster_spawns:valorath_burrower_old_valorath@-586,214",
+        "monster_spawns:valorath_burrower_old_valorath@-586,280",
+        "monster_spawns:valorath_burrower_old_valorath@-589,197",
+        "monster_spawns:valorath_burrower_old_valorath@-589,291",
+        "monster_spawns:valorath_burrower_old_valorath@-590,239",
+        "monster_spawns:valorath_burrower_old_valorath@-591,197",
+        "monster_spawns:valorath_burrower_old_valorath@-598,247",
+        "monster_spawns:valorath_burrower_old_valorath@-599,259",
+        "monster_spawns:valorath_burrower_old_valorath@-600,226",
+        "monster_spawns:valorath_burrower_old_valorath@-600,242",
+        "monster_spawns:valorath_burrower_old_valorath@-600,265",
+        "monster_spawns:valorath_burrower_old_valorath@-600,279",
+        "monster_spawns:valorath_burrower_old_valorath@-601,199",
+        "monster_spawns:valorath_burrower_old_valorath@-601,255",
+        "monster_spawns:valorath_burrower_old_valorath@-607,214",
+        "monster_spawns:valorath_burrower_old_valorath@-608,278",
+        "monster_spawns:valorath_burrower_old_valorath@-610,151",
+        "monster_spawns:valorath_burrower_old_valorath@-610,197",
+        "monster_spawns:valorath_burrower_old_valorath@-611,158",
+        "monster_spawns:valorath_burrower_old_valorath@-612,200",
+        "monster_spawns:valorath_burrower_old_valorath@-612,226",
+        "monster_spawns:valorath_burrower_old_valorath@-615,148",
+        "monster_spawns:valorath_burrower_old_valorath@-624,150",
+        "monster_spawns:valorath_burrower_old_valorath@-624,157",
+        "monster_spawns:valorath_burrower_old_valorath@-647,190",
+        "monster_spawns:valorath_burrower_old_valorath@-648,162",
+        "monster_spawns:valorath_burrower_old_valorath@-648,194",
+        "monster_spawns:valorath_burrower_old_valorath@-649,202",
+        "monster_spawns:valorath_burrower_old_valorath@-650,162",
+        "monster_spawns:valorath_burrower_old_valorath@-650,190",
+        "monster_spawns:valorath_burrower_old_valorath@-651,164",
+        "monster_spawns:valorath_burrower_old_valorath@-652,200",
+        "monster_spawns:valorath_burrower_old_valorath@-655,153",
+        "monster_spawns:valorath_burrower_old_valorath@-657,150",
+        "monster_spawns:valorath_burrower_old_valorath@-657,172",
+        "monster_spawns:valorath_burrower_old_valorath@-659,170",
+        "monster_spawns:valorath_burrower_old_valorath@-661,150",
+        "monster_spawns:valorath_burrower_old_valorath@-662,160",
+        "monster_spawns:valorath_burrower_old_valorath@-663,200",
+        "monster_spawns:valorath_burrower_old_valorath@-664,190",
+        "monster_spawns:valorath_burrower_old_valorath@-665,158",
+        "monster_spawns:valorath_burrower_old_valorath@-665,162",
+        "monster_spawns:valorath_burrower_old_valorath@-666,154",
+        "monster_spawns:valorath_burrower_old_valorath@-666,189",
+        "monster_spawns:valorath_burrower_old_valorath@-666,200",
+        "monster_spawns:valorath_burrower_old_valorath@-666,203"
+      ]
+    },
     "monsters:valorath_sentinel": {
       "mechanism": "cascade",
       "pass": 2,
       "reason": "every source that made it reachable was removed",
       "via": [
+        "monster_spawns:valorath_sentinel_old_valorath@-657,196",
+        "monster_spawns:valorath_sentinel_old_valorath@-687,191",
+        "monster_spawns:valorath_sentinel_old_valorath@-687,200",
+        "monster_spawns:valorath_sentinel_old_valorath@-697,191",
+        "monster_spawns:valorath_sentinel_old_valorath@-698,200",
         "monster_spawns:valorath_sentinel_old_valorath@-708,246",
         "monster_spawns:valorath_sentinel_old_valorath@-721,220",
+        "monster_spawns:valorath_sentinel_old_valorath@-742,253",
         "monster_spawns:valorath_sentinel_old_valorath@-763,224",
         "monster_spawns:valorath_sentinel_old_valorath@-770,246",
         "monster_spawns:valorath_sentinel_old_valorath@-805,222",
@@ -3253,6 +4269,14 @@
         "monsters:drassar_warlock"
       ]
     },
+    "skills:call_of_the_ooze": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:the_ancient_ooze"
+      ]
+    },
     "skills:chaotic_bolt": {
       "mechanism": "cascade",
       "pass": 3,
@@ -3349,6 +4373,14 @@
         "monsters:fabled_zulkaz"
       ]
     },
+    "skills:ooze_grasp": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:the_ancient_ooze"
+      ]
+    },
     "skills:piercing_strike": {
       "mechanism": "cascade",
       "pass": 3,
@@ -3364,6 +4396,15 @@
       "reason": "every source that made it reachable was removed",
       "via": [
         "monsters:plague_rat"
+      ]
+    },
+    "skills:sewage_slime_attack": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:sewage_slime",
+        "monsters:the_ancient_ooze"
       ]
     },
     "skills:shattering_slam": {
@@ -3388,6 +4429,14 @@
       "reason": "every source that made it reachable was removed",
       "via": [
         "monsters:avatar_of_earth"
+      ]
+    },
+    "skills:toxic_miasma": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:valorath_burrower"
       ]
     },
     "skills:valorath_blight": {
@@ -3510,7 +4559,7 @@
     }
   },
   "snapshot": {
-    "game_version": "0.9.34.0",
+    "game_version": "0.9.35.0",
     "keys": "placement"
   },
   "suppressed_positions": {
