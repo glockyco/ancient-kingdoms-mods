@@ -4,13 +4,17 @@ An interactive world map and a searchable compendium for [Ancient Kingdoms](http
 
 [Open the compendium](https://ancient-kingdoms.compendiums.org) · [Steam Guide](https://steamcommunity.com/sharedfiles/filedetails/?id=3616580411) · [Project page](https://glockyco.com/projects/ancient-kingdoms/) · [Support on Ko-fi](https://ko-fi.com/wowmuch)
 
-![The compendium's world map, with monster and NPC filters and a boss's stats and drops](assets/ancient-kingdoms-compendium-map.png)
+<p align="center">
+  <a href="https://ancient-kingdoms.compendiums.org"><img src="assets/compendium-home.webp" width="640" alt="The compendium's home page: search, items, world bosses, classes, recipes, professions, zones, and mechanics"></a>
+</p>
 
 ## What's inside
 
 - **Map** (`/map`). The world of Eratiath with its zones, monsters, NPCs, gathering spots, chests, treasure, altars, traps, portals, houses, and crafting stations, with filters and search.
 - **Reference pages.** Items, monsters, NPCs, zones, quests, recipes, skills, classes, mercenaries, professions, and more: where each one is, what it drops or needs, and how they connect.
 - **Mechanics** (`/mechanics`). How combat, experience, monster spawns, death, crafting, and the game's other systems work, with the numbers the game code uses.
+
+![The world map with elites, fabled monsters, bosses, altars, and traps shown, and Urzak the Untamed selected with his patrol route, stats, and drops](assets/compendium-map.webp)
 
 Some content is left out on purpose, partly at the developers' request, such as zones that have not shipped.
 
