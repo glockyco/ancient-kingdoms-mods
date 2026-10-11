@@ -1,29 +1,104 @@
 <!--
-  A game calculation as named steps, with an optional worked example.
+  A game calculation as named steps, with a worked example the reader can rerun
+  with their own numbers.
 
   Each step names the quantity it produces in game terms and says how the game
   computes it in words: real stat names, never single letters or code names;
   percentages for multipliers; "at least" and "at most" for bounds. Rounding is
   a field, not prose, so every block words it the same way and defines
   "rounded" once. The example is evaluated with the game's arithmetic, never
-  typed by hand.
+  typed by hand. Without JavaScript the example stays static.
 -->
 <script lang="ts">
-  import type { Calculation } from "$lib/types/calculation";
+  import { onMount } from "svelte";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import type {
+    Calculation,
+    CalculationInput,
+    CalculationStep,
+  } from "$lib/types/calculation";
 
   let { calculation }: { calculation: Calculation } = $props();
 
+  const STORAGE_PREFIX = "calculation:";
   const ROUNDING_TEXT = {
     nearest: "rounded",
     down: "rounded down",
     up: "rounded up",
   } as const;
 
+  const inputs = $derived(calculation.inputs ?? []);
+  let overrides = $state<Record<string, number>>({});
+  let editing = $state(false);
+
+  const values = $derived({
+    ...Object.fromEntries(inputs.map((input) => [input.key, input.value])),
+    ...overrides,
+  });
+  const example = $derived(calculation.example?.(values));
+  const changed = $derived(
+    inputs.some((input) => values[input.key] !== input.value),
+  );
   const roundsToNearest = $derived(
     calculation.steps.some((step) => step.rounding === "nearest"),
   );
 
-  function describe(step: Calculation["steps"][number]): string {
+  // Character stats typed on an earlier page apply here too.
+  onMount(() => {
+    const remembered: Record<string, number> = {};
+    for (const input of inputs) {
+      if (!input.remember) continue;
+      const stored = readStored(input.key);
+      if (stored !== null) remembered[input.key] = clamp(input, stored);
+    }
+    overrides = remembered;
+  });
+
+  function readStored(key: string): number | null {
+    try {
+      const raw = localStorage.getItem(STORAGE_PREFIX + key);
+      const parsed = raw === null ? Number.NaN : Number(raw);
+      return Number.isFinite(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function clamp(input: CalculationInput, value: number): number {
+    return Math.min(input.max, Math.max(input.min, value));
+  }
+
+  function shown(input: CalculationInput): number {
+    const value = values[input.key];
+    return input.unit === "%" ? Math.round(value * 100) : value;
+  }
+
+  function update(input: CalculationInput, typed: number) {
+    if (!Number.isFinite(typed)) return;
+    const value = clamp(input, input.unit === "%" ? typed / 100 : typed);
+    overrides = { ...overrides, [input.key]: value };
+    if (!input.remember) return;
+    try {
+      localStorage.setItem(STORAGE_PREFIX + input.key, String(value));
+    } catch {
+      // Storage unavailable: the value still applies on this page.
+    }
+  }
+
+  function reset() {
+    overrides = {};
+    for (const input of inputs) {
+      if (!input.remember) continue;
+      try {
+        localStorage.removeItem(STORAGE_PREFIX + input.key);
+      } catch {
+        // Storage unavailable: nothing was remembered.
+      }
+    }
+  }
+
+  function describe(step: CalculationStep): string {
     return [
       step.expression,
       step.rounding ? ROUNDING_TEXT[step.rounding] : null,
@@ -43,18 +118,74 @@
       <dd class="mb-2 last:mb-0 sm:mb-0">{describe(step)}</dd>
     {/each}
   </dl>
-  {#if calculation.example}
-    {@const example = calculation.example}
-    <div class="space-y-1 border-t border-border/60 pt-3">
-      <p class="text-muted-foreground">
-        <span class="font-medium text-foreground">Example</span>
-        {#each example.given as input (input)}
-          <span aria-hidden="true" class="mx-1.5">·</span><span class="sr-only"
-            >,
-          </span>{input}
-        {/each}
+  {#if example}
+    <div class="space-y-2 border-t border-border/60 pt-3">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <p class="text-muted-foreground">
+          <span class="font-medium text-foreground"
+            >{changed ? "Your numbers" : "Example"}</span
+          >
+          {#if !editing}
+            {#each example.given as input (input)}
+              <span aria-hidden="true" class="mx-1.5">·</span><span
+                class="sr-only"
+                >,
+              </span>{input}
+            {/each}
+          {/if}
+        </p>
+        {#if inputs.length > 0}
+          <div class="js-only ml-auto flex gap-1">
+            {#if changed}
+              <Button variant="ghost" size="sm" onclick={reset}>Reset</Button>
+            {/if}
+            <Button
+              variant="outline"
+              size="sm"
+              aria-expanded={editing}
+              onclick={() => (editing = !editing)}
+              >{editing ? "Done" : "Use your numbers"}</Button
+            >
+          </div>
+        {/if}
+      </div>
+      {#if editing}
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {#each inputs as input (input.key)}
+            <label class="space-y-1">
+              <span class="block text-muted-foreground"
+                >{input.label}{input.unit ? ` (${input.unit})` : ""}</span
+              >
+              {#if input.key === "rank"}
+                <select
+                  class="border-input dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-2 text-sm"
+                  value={values[input.key]}
+                  onchange={(event) =>
+                    update(input, Number(event.currentTarget.value))}
+                >
+                  {#each Array.from({ length: input.max - input.min + 1 }, (_, index) => input.min + index) as rank (rank)}
+                    <option value={rank}>{rank}</option>
+                  {/each}
+                </select>
+              {:else}
+                <Input
+                  type="number"
+                  inputmode="decimal"
+                  min={input.unit === "%" ? input.min * 100 : input.min}
+                  max={input.unit === "%" ? input.max * 100 : input.max}
+                  step={input.step}
+                  value={shown(input)}
+                  oninput={(event) =>
+                    update(input, event.currentTarget.valueAsNumber)}
+                />
+              {/if}
+            </label>
+          {/each}
+        </div>
+      {/if}
+      <p class="font-semibold text-foreground" aria-live="polite">
+        {example.result}
       </p>
-      <p class="font-semibold text-foreground">{example.result}</p>
       {#each example.working as line (line)}
         <p class="text-muted-foreground">{line}</p>
       {/each}
