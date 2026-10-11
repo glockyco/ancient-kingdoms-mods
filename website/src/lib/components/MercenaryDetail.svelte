@@ -466,21 +466,16 @@
         <Alert variant="info">
           <Info />
           <div>
-            <!-- Source: server-scripts/Player.cs:4679-4704,10482-10527,10744-10774; Database.cs:1922-1943 — veteran damage is not saved, and a zero hire roll triggers separate random damage rolls on every summon. -->
-            <p class="font-medium">
-              Veteran damage bonus disappears after summoning again
+            <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+            <p class="font-medium">Veteran damage</p>
+            <p>
+              Each veteran point adds +1 base physical damage and +1 base magic
+              damage, including points earned before hiring.
             </p>
             <p>
-              A veteran level gained while the mercenary is summoned adds +1
-              physical damage and +1 magic damage.
-            </p>
-            <p>
-              The game does not save this bonus. The next summon restores a
-              positive hire roll for both damage values.
-            </p>
-            <p>
-              If the saved hire roll is 0, the game rolls physical and magic
-              damage separately on every summon.
+              Every resummon or reload restores the saved hire roll plus your
+              total veteran points to both damage values. A zero hire roll stays
+              zero before the veteran bonus; it is not rerolled.
             </p>
           </div>
         </Alert>

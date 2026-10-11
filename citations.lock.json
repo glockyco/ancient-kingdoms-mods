@@ -2246,6 +2246,10 @@
       "sha256": "3a162395c815337ab0877df8589820a326fe46967b9a31e935eca0e70aeecb99",
       "span": 15
     },
+    "Pet.cs:2969-3018": {
+      "sha256": "b367335b7a2d57bb930ddb063667170933d612405b0bf2af8c19a03d4d491350",
+      "span": 50
+    },
     "Pet.cs:3990-4001": {
       "sha256": "6d037054d1db036a2b6cf3f9b4e79f060ddf814b511a9a9c4fa2e74dbe173fa3",
       "span": 12
@@ -2317,6 +2321,9 @@
     "Pet.cs:955-963": {
       "sha256": "b1808623e9c39626cfcb4165c8ef8366bad1d676891e061613546c778373057b",
       "span": 9
+    },
+    "Pet.cs:IsValidCombatReacquireTarget": {
+      "span": 0
     },
     "Pet.cs:OnAggro": {
       "span": 0
@@ -2424,9 +2431,9 @@
       "sha256": "7bbe970ee19ea4bcead5f438d35ad600dbd3ac28c3cba2afc5c286bd4db59e91",
       "span": 15
     },
-    "Player.cs:10545-10562": {
-      "sha256": "15bf30750e69b6e88fd08265e379010c9b859b6d55c96cfb6de21c964c6ee5d5",
-      "span": 18
+    "Player.cs:10556-10562": {
+      "sha256": "1b9365ebecc524deb34117381d0de0dd31da159d8d0a16c65b05f6408948661f",
+      "span": 7
     },
     "Player.cs:10661-10680": {
       "sha256": "d51c3effed3b067cbd64a0e7550803b5c7c73ae8484f6ae6c14317142dfd3bb9",
@@ -2452,9 +2459,9 @@
       "sha256": "e1c0e0e7a57a2523f01fadde097e142ecc1ce034f149cb7d6dee06646df52b01",
       "span": 9
     },
-    "Player.cs:10754-10774": {
-      "sha256": "a9cf72c897d42efed723d1d1e525cc02ccf5630937fb893a8252cb544171ee06",
-      "span": 21
+    "Player.cs:10754-10761": {
+      "sha256": "ca036d9e89fd23048ff16b678a19786f20b34ff28f5a3d9d13a49513e48c88e0",
+      "span": 8
     },
     "Player.cs:10759-10774": {
       "sha256": "39a56597d2133a016be2cb71f25daf519127dca1b06aeee46d61bf0ef5f74d95",

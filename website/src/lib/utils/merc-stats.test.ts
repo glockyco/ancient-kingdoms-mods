@@ -31,24 +31,35 @@ describe("computeAll", () => {
   test("Warrior/Dwarf at level 50 veteran 200 (banker's rounding edge cases)", () => {
     const r = row("Warrior", "Dwarf", 50, 200);
     expect(r.hp).toEqual([8875, 9150]);
-    expect(r.atk).toEqual([16, 50]);
-    expect(r.spell).toEqual([15, 49]);
+    expect(r.atk).toEqual([216, 250]);
+    expect(r.spell).toEqual([215, 249]);
   });
 
   test("Warrior/Felarii base-combat factor (bc 0.95)", () => {
     const r = row("Warrior", "Felarii", 50, 200);
-    expect(r.atk).toEqual([16, 63]);
+    expect(r.atk).toEqual([216, 263]);
   });
 
   test("Wizard/Human caster row at 50/200", () => {
     const r = row("Wizard", "Human", 50, 200);
     expect(r.hp).toEqual([3875, 4000]);
     expect(r.mana).toEqual([1595, 1632]);
-    expect(r.spell).toEqual([38, 82]);
+    expect(r.spell).toEqual([238, 282]);
   });
 
   test("low level: Warrior/Dwarf at 20/0", () => {
     expect(row("Warrior", "Dwarf", 20, 0).hp).toEqual([2450, 2560]);
+  });
+
+  test("veteran points raise both ends of both damage ranges, including the zero hire roll", () => {
+    for (const veteran of [1, 10, 200]) {
+      const base = row("Warrior", "Dwarf", 50, 0);
+      const boosted = row("Warrior", "Dwarf", 50, veteran);
+      expect(boosted.atk).toEqual(base.atk!.map((value) => value + veteran));
+      expect(boosted.spell).toEqual(
+        base.spell!.map((value) => value + veteran),
+      );
+    }
   });
 
   test("ineligible race is marked, not computed", () => {
@@ -61,7 +72,7 @@ describe("computeAll", () => {
     expect(r.preferredOnly).toBe(true);
     expect(r.hp).toEqual([3875, 4000]);
     expect(r.mana).toEqual([1557, 1595]);
-    expect(r.spell).toEqual([38, 85]);
+    expect(r.spell).toEqual([238, 285]);
   });
 
   test("a Druid is never Drassar", () => {

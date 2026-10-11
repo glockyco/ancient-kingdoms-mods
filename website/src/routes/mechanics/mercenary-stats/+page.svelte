@@ -49,11 +49,11 @@
     spell: "Spell Power",
   };
   const TITLES: Record<StatKey, string> = {
-    hp: "Health at this level: base health + Constitution, multiplied by the Health factor rolled at hire and adjusted by your veteran level.",
-    mana: "Mana at this level: base mana + Intelligence, multiplied by the Mana factor rolled at hire and adjusted by your veteran level.",
-    atk: "Strength bonus at this level + the shared Attack Power and Spell Power bonus rolled at hire.",
+    hp: "Health at this level: round(base Health × (hire multiplier + 0.0025 × veteran points)) + 25 × Constitution.",
+    mana: "Mana at this level: round(base Mana × (hire multiplier + 0.0025 × veteran points)) + 20 × Intelligence.",
+    atk: "Strength at this level + the saved shared hire roll + total veteran points.",
     spell:
-      "round(INT×1.5) at this level + the shared Attack Power and Spell Power bonus rolled at hire.",
+      "round(INT×1.5) at this level + the saved shared hire roll + total veteran points.",
   };
   const TARGET_LABELS: Record<TargetKey, string> = {
     hp: "Health",
@@ -408,29 +408,23 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:10482-10527,10545-10562,10754-10774,4679-4704; Database.cs:1922-1943 — a positive hire roll is restored; a zero roll rerolls independently, and veteran damage gained while active is not saved. -->
+          <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning set base damage and base magic damage to the shared hire roll plus total veteran points, including a zero roll. -->
           <span class="block"
             ><b>Attack Power and Spell Power</b> include an attribute bonus: Strength
             for Attack Power and round(INT×1.5) for Spell Power.</span
           >
           <span class="block"
-            >At hire, both use the same rolled combat bonus.</span
+            >Both use the same saved hire roll, including zero, plus +1 for each
+            of your total veteran points.</span
           >
           <span class="block">Attributes grow with level.</span>
           <span class="block"
-            >A positive hire damage roll stays fixed between summons.</span
+            >Resummoning or reloading restores the same hire roll and reapplies
+            your full veteran damage bonus.</span
           >
           <span class="block"
-            >Game defect: a zero hire roll gives separate physical and magic
-            damage rolls on every summon.</span
-          >
-          <span class="block"
-            >Game defect: veteran levels earned while summoned add damage that
-            the next summon loses.</span
-          >
-          <span class="block"
-            >These ranges describe mercenaries hired at the level shown, not
-            later summons after a zero roll.</span
+            >These ranges describe mercenaries hired at the level shown. An
+            existing mercenary keeps the combat roll from its hiring level.</span
           >
         </li>
         <li>

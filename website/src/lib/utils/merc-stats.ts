@@ -173,7 +173,7 @@ export interface ClassResult {
 }
 
 /** Source: server-scripts/Player.cs:10477-10478,10482-10519,10545-10557 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
-/** Source: server-scripts/Player.cs:10744-10774 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning add total veteran points to the shared hire roll for base damage and base magic damage, including a zero roll. */
 /** Source: server-scripts/Player.cs:UpdateMercStatsByLevel — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
@@ -201,10 +201,10 @@ export function computeAll(
         hpAt(hpCurve, f32(R.hp[1]) + vetAdd, a.CON),
       ];
       const atk: [number, number] = [
-        Math.trunc(a.STR * STR_PHYS),
-        bc + Math.trunc(a.STR * STR_PHYS),
+        veteran + Math.trunc(a.STR * STR_PHYS),
+        bc + veteran + Math.trunc(a.STR * STR_PHYS),
       ];
-      const spell: [number, number] = [magAdd, bc + magAdd];
+      const spell: [number, number] = [veteran + magAdd, bc + veteran + magAdd];
       const mana: [number, number] | null = hasMana
         ? [
             manaAt(manaCurve, f32(R.mana[0]) + vetAdd, a.INT),

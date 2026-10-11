@@ -450,21 +450,16 @@
             <Alert variant="info">
               <Info />
               <div>
-                <!-- Source: server-scripts/Player.cs:4679-4704,10482-10527,10744-10774; Database.cs:1922-1943 — veteran damage is not saved, and a zero hire roll triggers separate random damage rolls on every summon. -->
-                <p class="font-medium">
-                  Veteran damage bonus disappears after summoning again
+                <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+                <p class="font-medium">Veteran damage</p>
+                <p>
+                  Each veteran point adds +1 base physical damage and +1 base
+                  magic damage, including points earned before hiring.
                 </p>
                 <p>
-                  A veteran level gained while a mercenary is summoned adds +1
-                  physical damage and +1 magic damage.
-                </p>
-                <p>
-                  The game does not save this bonus. The next summon restores a
-                  positive hire roll for both damage values.
-                </p>
-                <p>
-                  If the saved hire roll is 0, the game rolls physical and magic
-                  damage separately on every summon.
+                  Every resummon or reload restores the saved hire roll plus
+                  your total veteran points to both damage values. A zero hire
+                  roll stays zero before the veteran bonus; it is not rerolled.
                 </p>
               </div>
             </Alert>
@@ -479,6 +474,11 @@
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9208-9234 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
           <p class="text-sm leading-6 text-muted-foreground">
             These orders also apply to your combat pet.
+            <!-- Source: server-scripts/Pet.cs:IsValidCombatReacquireTarget,OnAggro — mercenaries reject Monster.isDummy when acquiring targets automatically. -->
+            Mercenaries skip training dummies when choosing targets automatically.
+            <!-- Source: server-scripts/Pet.cs:2969-3018 — Rogue and Bard mercenaries with seekTargetBack try to reposition behind living, non-fleeing, non-dummy Monster targets after a finished skill. -->
+            <!-- The export sets seek_target_back on every mercenary. -->
+            Rogue and Bard mercenaries try to move behind their targets after attacks.
           </p>
           <!-- Source: server-scripts/Pet.cs:1491-1494,2204-2215,6031-6041; PetSkills.cs:253-283 — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2348-2409,OnMercenaryStanceKeyPressed; Player.cs:9208-9234; Pet.cs:5399-5439,5969-6017 — group toggles, Warrior-first attack order, and movement commands. -->
