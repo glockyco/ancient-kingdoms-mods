@@ -129,7 +129,7 @@
               >pickaxe</a
             > can improve it. A broken pickaxe does not work.
           </p>
-          <!-- Source: server-scripts/Player.cs:9551-9556; server-scripts/PlayerInventory.cs:105-119 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
+          <!-- Source: server-scripts/Player.cs:9940-9945; server-scripts/PlayerInventory.cs:264-278 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             If no usable pickaxe is selected, the game selects the best one in
             your inventory.

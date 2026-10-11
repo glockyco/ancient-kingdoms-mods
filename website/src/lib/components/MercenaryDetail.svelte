@@ -144,7 +144,7 @@
     if (!deathSave) return null;
     const at = (veteranLevel: number) => {
       const rank = deathSaveRank(veteranLevel);
-      // Source: server-scripts/Combat.cs:1161-1165, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
+      // Source: server-scripts/Combat.cs:1040-1046, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
       return {
         rage: linearAt(
           requireLinearValue(
@@ -169,7 +169,7 @@
       now: at(veteran),
       low: at(0),
       high: at(MAX_VETERAN),
-      // Source: server-scripts/Combat.cs:1165 — the cooldown is cooldown.baseValue at every rank.
+      // Source: server-scripts/Combat.cs:1044 — the cooldown is cooldown.baseValue at every rank.
       cooldown: requireLinearValue(
         deathSave.cooldown,
         `${deathSave.id} cooldown`,
@@ -330,7 +330,7 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
-        <!-- Source: server-scripts/Player.cs:10337-10365, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
+        <!-- Source: server-scripts/Player.cs:10744-10774, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
           {#if stats.health}{@render stat("Health", range(stats.health))}{/if}
           {#if stats.mana}{@render stat("Mana", range(stats.mana))}{/if}
@@ -430,7 +430,7 @@
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <h3 class="text-sm font-semibold">Skill rank</h3>
-            <!-- Source: server-scripts/PetSkills.cs:25-45 — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards. -->
+            <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards. -->
             <p class="mt-1 font-mono text-sm">
               ⌊level ÷ 5⌋ + ⌊veteran level ÷ 10⌋
             </p>
@@ -441,7 +441,7 @@
           </div>
           <div>
             <h3 class="text-sm font-semibold">Veteran levels</h3>
-            <!-- Source: server-scripts/Player.cs:4627-4652,10352-10365; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:4679-4704,10759-10774; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
               Each veteran level adds 0.25% of base Health to maximum Health{#if classDef.role === "mana" && cls !== "Bard"}
                 and 0.25% of base Mana to maximum Mana{/if}, before rounding.
@@ -466,7 +466,7 @@
         <Alert variant="info">
           <Info />
           <div>
-            <!-- Source: server-scripts/Player.cs:4627-4652,10077-10122,10337-10365; Database.cs:1900-1921 — veteran damage is not saved, and a zero hire roll triggers separate random damage rolls on every summon. -->
+            <!-- Source: server-scripts/Player.cs:4679-4704,10482-10527,10744-10774; Database.cs:1922-1943 — veteran damage is not saved, and a zero hire roll triggers separate random damage rolls on every summon. -->
             <p class="font-medium">
               Veteran damage bonus disappears after summoning again
             </p>
@@ -578,7 +578,7 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
-          <!-- Source: server-scripts/Combat.cs:1350-1361,1157-1180 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
+          <!-- Source: server-scripts/Combat.cs:1361-1372,1038-1059 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
           <p>
             From level {DEATH_SAVE_MIN_LEVEL}, a lethal hit triggers
             <a
@@ -661,7 +661,7 @@
                 : "a shield"} in the off-hand.
             </li>
           {/if}
-          <!-- Source: server-scripts/Pet.cs:OnDeath, Combat.cs:739-755 — hits lower gear durability; death does not. -->
+          <!-- Source: server-scripts/Pet.cs:OnDeath, Combat.cs:741-757 — hits lower gear durability; death does not. -->
           <li>
             Gear stays on the mercenary when it dies, and death does not lower
             durability.
@@ -687,7 +687,7 @@
         <MapPin class="h-5 w-5 text-emerald-500" />
         Recruited At
       </h2>
-      <!-- Source: server-scripts/Npc.cs:1893-1904 — recruiters serve players from level 10. -->
+      <!-- Source: server-scripts/Npc.cs:1898-1909 — recruiters serve players from level 10. -->
       <p class="mb-3 text-sm text-muted-foreground">
         Every recruiter hires every mercenary class, from level 10.
         <a

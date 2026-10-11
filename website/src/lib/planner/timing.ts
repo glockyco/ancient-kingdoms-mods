@@ -8,7 +8,7 @@ export interface SkillTiming {
   followupDefaultAttack: boolean;
 }
 
-/** Source: server-scripts/Player.cs:3250-3289. */
+/** Source: server-scripts/Player.cs:GetSkillRefractoryPeriod. */
 export function playerWeaponInterval(
   weaponDelay: number,
   haste: number,
@@ -17,7 +17,7 @@ export function playerWeaponInterval(
   return clamp(divideF32(reducedDelay, 25), 0.25, 2);
 }
 
-/** Source: server-scripts/Skills.cs:862-887. */
+/** Source: server-scripts/Skills.cs:924-933. */
 export function effectiveCastTime(
   castTime: number,
   isSpell: boolean,
@@ -28,7 +28,7 @@ export function effectiveCastTime(
     : castTime;
 }
 
-/** Source: server-scripts/Player.cs:3250-3289. */
+/** Source: server-scripts/Player.cs:GetSkillRefractoryPeriod. */
 export function playerSkillRefractory(
   skill: Pick<SkillTiming, "isSpell" | "requiredWeaponCategory">,
   weaponDelay: number,
@@ -39,7 +39,7 @@ export function playerSkillRefractory(
     : 0.75;
 }
 
-/** Source: server-scripts/Skills.cs:990-1014. */
+/** Source: server-scripts/Skills.cs:1141-1169. */
 export function effectiveSkillCooldown(
   skill: Pick<SkillTiming, "cooldown" | "isSpell" | "followupDefaultAttack">,
   casterKind: "player" | "companion",
@@ -55,7 +55,7 @@ export function effectiveSkillCooldown(
   return skill.cooldown;
 }
 
-/** Source: server-scripts/TargetBuffSkill.cs:277-297. */
+/** Source: server-scripts/TargetBuffSkill.cs:280-300. */
 export function reduceActiveCooldown(
   remaining: number,
   reductionPercent: number,

@@ -325,9 +325,9 @@ export type BuffBonusAttrSource =
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
   | "merc_cha" // Bard mercenary songs multiply eligible buff values by the mercenary's Charisma. Source: server-scripts/BardMercenarySkills.cs:RefreshAura
-  | "player_wis_con_avg" // round((WIS+CON)/2) for ordinary player-cast mercenary buffs. Source: AreaBuffSkill.cs:52
-  | "player_wis_con_cha_half" // round((WIS+CON+CHA)/2) for Leadership. Source: AreaBuffSkill.cs:14-17,52
-  | "player_level" // casterLevel × 10 — relic skills (AreaBuffSkill.isRelic). Source: AreaBuffSkill.cs:34-37
+  | "player_wis_con_avg" // round((WIS+CON)/2) for ordinary player-cast mercenary buffs. Source: AreaBuffSkill.cs:58
+  | "player_wis_con_cha_half" // round((WIS+CON+CHA)/2) for Leadership. Source: AreaBuffSkill.cs:GetLeadershipAttributeBonus,58
+  | "player_level" // casterLevel × 10 — relic skills (AreaBuffSkill.isRelic). Source: AreaBuffSkill.cs:38-41
   | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
 export interface BuffContext {
@@ -342,12 +342,12 @@ export type TimingModel =
   // Warrior and Rogue generate Rage; all other classes use Mana.
   | "player_auto" // e.g. crush_strike
   // interval = cast_time × (1 − spellHaste) + 0.75s refractory; hard cap: 50% (Combat.cs:314-324).
-  // Source: server-scripts/Skills.cs:902-904, server-scripts/Combat.cs:346-358, server-scripts/Player.cs:refractoryPeriodSkill
+  // Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360, server-scripts/Player.cs:refractoryPeriodSkill
   | "player_spell" // e.g. fire_blast, wind_shock, smite, mystic_spark
   | "companion" // interval = cast_time + cooldown; companions, familiars, no-weapon followup
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
   // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by spell haste (cap 50%), cooldown not.
-  // Source: server-scripts/Skills.cs:902-904 (cast reduction), server-scripts/Skills.cs:1009-1012 (flat cooldown), server-scripts/Combat.cs:346-358 (cap)
+  // Source: server-scripts/Skills.cs:924-933 (cast reduction), server-scripts/Skills.cs:1141-1169 (flat cooldown), server-scripts/Combat.cs:348-360 (cap)
   | "merc_spell" // e.g. flame_blast, gale_burst, divine_smite
   // Monster.cs and Npc.cs both call FinishCastMeleeAttackMonster which haste-reduces
   // cooldown unconditionally regardless of isSpell — one model covers both.

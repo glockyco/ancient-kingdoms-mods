@@ -234,7 +234,7 @@
         <span class="block">Hostile covers −3,000 to below −500.</span>
         <span class="block">Hated begins below −3,000.</span>
       </p>
-      <!-- Source: server-scripts/Npc.cs:1727-1733; PlayerQuests.cs:131-143; ScriptableQuest.cs:39 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
+      <!-- Source: server-scripts/Npc.cs:1732-1738; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
         <span class="block"
           >An NPC refuses to talk to you when your reputation with its faction
@@ -257,7 +257,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:569-599 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
+      <!-- Source: server-scripts/Monster.cs:574-604 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
       <p>
         <span class="block"
           >A monster's level, maximum health, and rank determine reputation
@@ -301,7 +301,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Monster.cs:3171-3183 — the solo kill applies both lists. -->
+      <!-- Source: server-scripts/Monster.cs:3186-3198 — the solo kill applies both lists. -->
       <p>
         <span class="block"
           ><a
@@ -329,7 +329,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1577-1609 and 1624-1656 — party and solo faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1582-1614 and 1629-1661 — party and solo faction changes on an NPC death. -->
       <p>
         Every faction on the NPC's improve list goes up by
         <span class="font-mono">NPC level × 1.5</span>. A Notable NPC multiplies
@@ -410,7 +410,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:13156-13160 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:13334-13338 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         <span class="block"
           >Click an animal within 3 units to pet it for 1–4 reputation with its
@@ -439,7 +439,7 @@
           shop below 15,000 reputation.
         </li>
         <li>
-          <!-- Source: server-scripts/UINpcTrading.cs:381-385 — per-item faction requirement against the vendor's faction. -->
+          <!-- Source: server-scripts/UINpcTrading.cs:394-398 — per-item faction requirement against the vendor's faction. -->
           <strong class="text-foreground">Some items</strong> require additional reputation
           with the selling NPC's faction, even when the NPC opens their shop.
         </li>
@@ -455,7 +455,7 @@
           the quest up.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1727-1733 — faction values below -500 select the lowFactionMessages branch instead of services. -->
+          <!-- Source: server-scripts/Npc.cs:1732-1738 — faction values below -500 select the lowFactionMessages branch instead of services. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
           that faction will not talk to you. No shop, no quests, no services.
         </li>
@@ -479,7 +479,7 @@
         If you stop gaining or losing reputation with a faction, your points
         with that faction stay the same.
       </p>
-      <!-- Source: server-scripts/Player.cs:13156-13160, Monster.cs:3171-3183, Npc.cs:1631-1641, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:13334-13338, Monster.cs:3186-3198, Npc.cs:1636-1646, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         <span class="block">Reputation has no maximum or minimum.</span>

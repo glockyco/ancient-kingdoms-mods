@@ -28,7 +28,7 @@
     { id: "special", label: "Special Mechanics" },
   ];
 
-  // Source: server-scripts/Equipment.cs:230-247,515-525; TargetDamageSkill.cs:218-227; FrontalDamageSkill.cs:88-92; TargetProjectileSkill.cs:189-200 — damage formulas describe working equipment, not subtraction of absent or broken weapon damage.
+  // Source: server-scripts/Equipment.cs:230-247,515-525; TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:88-92; TargetProjectileSkill.cs:189-200 — damage formulas describe working equipment, not subtraction of absent or broken weapon damage.
   const DAMAGE_FORMULA_DESC: Record<DamageFormulaKind, string> = {
     normal: "STR × 1.0 + damage from all equipment",
     ranger_melee: "STR × 1.0 + equipment damage, excluding bow damage",
@@ -46,7 +46,7 @@
       "STR × 1.0 + main-hand damage + ⌊off-hand damage × 0.5⌋ + other equipment damage + DEX × 2.5",
     magic_spell:
       "INT × 1.5 + magic damage from casting weapon and other equipment",
-    // Source: server-scripts/BardFinalCadenceSkill.cs:67-68 and Charisma.cs:27-36.
+    // Source: server-scripts/BardFinalCadenceSkill.cs:67-70 and Charisma.cs:27-36.
     bard_final_cadence:
       "round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2)))",
     magic_weapon:
@@ -148,7 +148,7 @@
 
   <PageSections sections={SECTIONS} />
 
-  <!-- Source: server-scripts/Player.cs:4315-4325; PlayerSkills.cs:439-473 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
+  <!-- Source: server-scripts/Player.cs:4367-4377; PlayerSkills.cs:771-807 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
   <Card.Root id="targeting" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Targets, Range and Casting</Card.Title>
@@ -164,7 +164,7 @@
           non-hidden, attackable monster within 10 units if one exists.</span
         >
       </p>
-      <!-- Source: server-scripts/TargetHealSkill.cs:17-80,83-135; PlayerSkills.cs:414-437 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
+      <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,83-135; PlayerSkills.cs:747-770 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
       <p>
         <span class="block"
           >A targeted heal can reach yourself, another player, or a pet when the
@@ -182,8 +182,8 @@
           ally.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:310-317,399-405,475-557 — fear and stun block normal skill use; learned status, readiness, resources, equipment, ammunition, range, and visibility are checked. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:506-537 — out-of-range and obscured targets can start navigation and queue the cast. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:642-646,732-738,808-890 — fear and stun block normal skill use; learned status, readiness, resources, equipment, ammunition, range, and visibility are checked. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:839-870 — out-of-range and obscured targets can start navigation and queue the cast. -->
       <p>
         <span class="block">Fear and stun stop you from using skills.</span>
         <span class="block"
@@ -195,7 +195,7 @@
           move closer before casting the queued skill.</span
         >
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:620-679,825-854 — Bard song use and repetition continue while moving or casting ordinary skills. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:953-1012,1162-1191 — Bard song use and repetition continue while moving or casting ordinary skills. -->
       <p>
         <span class="block"
           >Bard songs can continue while you move or use combat skills.</span
@@ -333,7 +333,7 @@
             With only a bow equipped, a Ranger's bow attack loses the bow's
             listed damage. Equip a melee weapon in the main hand to avoid this.
           </p>
-          <!-- Source: server-scripts/Equipment.cs:230-247; TargetDamageSkill.cs:218-227; FrontalDamageSkill.cs:88-92 — broken slot 13 equipment adds no damage but is still subtracted from melee damage. -->
+          <!-- Source: server-scripts/Equipment.cs:230-247; TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:88-92 — broken slot 13 equipment adds no damage but is still subtracted from melee damage. -->
           <p>
             A broken bow still subtracts its full damage from Ranger melee
             attacks. A broken off-hand weapon subtracts half its damage, rounded
@@ -355,7 +355,7 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Combat.cs:1528-1531,1534-1537,1540-1543,1546-1549,1552-1555 GetProbResist* (formula), Combat.cs:632-639 (damage); TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:113-158 (debuff & dispel landing) -->
+        <!-- Source: server-scripts/Combat.cs:1539-1542,1545-1548,1551-1554,1557-1560,1563-1566 GetProbResist* (formula), Combat.cs:634-641 (damage); TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:113-158 (debuff & dispel landing) -->
         <h3 class="font-semibold mb-1">Resist Roll</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">resist chance = clamp(
@@ -499,7 +499,7 @@ damage taken = damage − damage prevented</pre>
     </Card.Content>
   </Card.Root>
 
-  <!-- Source: server-scripts/Combat.cs:671-690,774-779 — targeted damage and projectile skills gain advantage when both look directions match; resist chance is multiplied by 0.8, and damage gains 10% rounded up plus 1. -->
+  <!-- Source: server-scripts/Combat.cs:673-692,776-781 — targeted damage and projectile skills gain advantage when both look directions match; resist chance is multiplied by 0.8, and damage gains 10% rounded up plus 1. -->
   <Card.Root id="combat-advantage" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Combat Advantage</Card.Title>
@@ -516,7 +516,7 @@ damage taken = damage − damage prevented</pre>
         >
         <span class="block">The hit gains 10% damage, rounded up, plus 1.</span>
       </p>
-      <!-- Source: server-scripts/Combat.cs:774-779 — Rogues with learned skill index 15 and Rogue mercenaries receive 25% rather than 10% damage, rounded up, plus 1. -->
+      <!-- Source: server-scripts/Combat.cs:776-781 — Rogues with learned skill index 15 and Rogue mercenaries receive 25% rather than 10% damage, rounded up, plus 1. -->
       <p>
         <span class="block"
           >A Rogue with <a
@@ -527,7 +527,7 @@ damage taken = damage − damage prevented</pre>
         >
         <span class="block">Rogue mercenaries receive the same bonus.</span>
       </p>
-      <!-- Source: server-scripts/Combat.cs:687-696 — a moving player has 25 percentage points subtracted from avoidance chance, takes truncated 10% additional pre-mitigation damage, and may receive extra stun chance from Normal hits by attackers above level 5. -->
+      <!-- Source: server-scripts/Combat.cs:689-698 — a moving player has 25 percentage points subtracted from avoidance chance, takes truncated 10% additional pre-mitigation damage, and may receive extra stun chance from Normal hits by attackers above level 5. -->
       <p>
         <span class="block"
           >While you move, your chance to avoid a hit drops by 25 percentage
@@ -542,7 +542,7 @@ damage taken = damage − damage prevented</pre>
           points of stun chance and at least 0.5 seconds of stun duration.</span
         >
       </p>
-      <!-- Source: server-scripts/Combat.cs:565-569 — a monster returning home evades damage. -->
+      <!-- Source: server-scripts/Combat.cs:567-571 — a monster returning home evades damage. -->
       <p>
         <span class="block">A monster returning home evades incoming hits.</span
         >
@@ -602,7 +602,7 @@ damage taken = damage − damage prevented</pre>
       </div>
 
       <div>
-        <!-- Source: BuffSkill.cs:252-259, Skills.cs:1583-1602, and BardFinalCadenceSkill.cs:78-103 -->
+        <!-- Source: server-scripts/BuffSkill.cs:GetCasterCriticalChance, Skills.cs:GetFinalHealOverTime, and BardFinalCadenceSkill.cs:HealNearbyAllies -->
         <h3 class="font-semibold mb-1">Critical Heal</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -834,7 +834,7 @@ percentageValue = baseValue × songPower</pre>
     </Card.Content>
   </Card.Root>
 
-  <!-- Source: server-scripts/Buff.cs:9-25; Skills.cs:1178-1197 — effects have a timed end, a same-name effect replaces the old instance, and effects in a shared overwrite category expire when a new one arrives. -->
+  <!-- Source: server-scripts/Buff.cs:9-25; Skills.cs:1226-1245 — effects have a timed end, a same-name effect replaces the old instance, and effects in a shared overwrite category expire when a new one arrives. -->
   <Card.Root id="effects-and-control" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Buffs, Debuffs, Wards and Cleanse</Card.Title>
@@ -853,11 +853,11 @@ percentageValue = baseValue × songPower</pre>
           group.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:1560-1564 — a heavy slow resets monster movement. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:310-317 — FEAR and STUNNED states block skill use. -->
-      <!-- Source: server-scripts/Skills.cs:1547-1563 — BreakMezz ends mesmerize buffs. -->
-      <!-- Source: server-scripts/Combat.cs:760-762 — damage calls BreakMezz. -->
-      <!-- Source: server-scripts/Skills.cs:233-238 — a damage-over-time recovery tick calls BreakMezz. -->
+      <!-- Source: server-scripts/Monster.cs:1553-1557 — a heavy slow resets monster movement. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:642-646 — FEAR and STUNNED states block skill use. -->
+      <!-- Source: server-scripts/Skills.cs:BreakMezz — BreakMezz ends mesmerize buffs. -->
+      <!-- Source: server-scripts/Combat.cs:762-764 — damage calls BreakMezz. -->
+      <!-- Source: server-scripts/Skills.cs:251-256 — a damage-over-time recovery tick calls BreakMezz. -->
       <p>
         <span class="block"
           >Root stops movement but does not end on damage.</span
@@ -872,8 +872,8 @@ percentageValue = baseValue × songPower</pre>
           > for the control rules.</span
         >
       </p>
-      <!-- Source: server-scripts/Skills.cs:1832-1879 — ApplyWardToDoTDamage takes tick damage from the ward pool and passes the excess. -->
-      <!-- Source: server-scripts/Combat.cs:908-950 — damageShield buffs deal damage back to the attacker. -->
+      <!-- Source: server-scripts/Skills.cs:ApplyWardToDoTDamage — ApplyWardToDoTDamage takes tick damage from the ward pool and passes the excess. -->
+      <!-- Source: server-scripts/Combat.cs:910-952 — damageShield buffs deal damage back to the attacker. -->
       <p>
         <span class="block"
           >A ward absorbs damage-over-time ticks until its pool runs out.</span
@@ -891,7 +891,7 @@ percentageValue = baseValue × songPower</pre>
           > for direct hits.</span
         >
       </p>
-      <!-- Source: server-scripts/TargetBuffSkill.cs:318-331; BuffSkill.cs:43-54 — cleansing removes only debuffs whose elements match the spell; the exported Cleric Cleanse skill enables poison and disease. -->
+      <!-- Source: server-scripts/TargetBuffSkill.cs:321-334; BuffSkill.cs:56-67 — cleansing removes only debuffs whose elements match the spell; the exported Cleric Cleanse skill enables poison and disease. -->
       <p>
         Cleric's <a
           href="/skills/cleanse"
@@ -1029,7 +1029,7 @@ percentageValue = baseValue × songPower</pre>
                   class="py-1 text-muted-foreground">−INT×0.5</td
                 ></tr
               >
-              <!-- Source: server-scripts/Skills.cs:1609-1625 — poison and disease debuffs add RoundToInt(bonusAttribute * 1.5) before resistance. -->
+              <!-- Source: server-scripts/Skills.cs:1659-1692 — poison and disease debuffs add RoundToInt(bonusAttribute * 1.5) before resistance. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Poison/disease damage over time</td><td
                   class="py-1 text-muted-foreground"
@@ -1113,7 +1113,7 @@ percentageValue = baseValue × songPower</pre>
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod and 3190-3192 -->
+              <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod and 3217-3219 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Auto attack</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm">Player</td>
@@ -1121,8 +1121,8 @@ percentageValue = baseValue × songPower</pre>
                   >cast time + clamp(weapon delay × (1 − haste) / 25, 0.25, 2.0)</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:902-904 — castTimeEnd -= spellHasteBonus × castTime -->
-              <!-- Source: server-scripts/Combat.cs:346-358 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
+              <!-- Source: server-scripts/Skills.cs:924-933 — castTimeEnd -= spellHasteBonus × castTime -->
+              <!-- Source: server-scripts/Combat.cs:348-360 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
               <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f (post-cast refractory, blocks next cast) -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Spell auto attack</td>
@@ -1131,7 +1131,7 @@ percentageValue = baseValue × songPower</pre>
                   >cast time × (1 − spell haste) + 0.75 s</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:1009-1012 -->
+              <!-- Source: server-scripts/Skills.cs:1141-1169 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Attack</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
@@ -1139,7 +1139,7 @@ percentageValue = baseValue × songPower</pre>
                 >
                 <td class="py-2 font-mono text-sm">cast time + cooldown</td>
               </tr>
-              <!-- Source: server-scripts/Skills.cs:888-891 -->
+              <!-- Source: server-scripts/Skills.cs:1141-1159 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Auto attack</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
@@ -1149,7 +1149,7 @@ percentageValue = baseValue × songPower</pre>
                   >cast time + cooldown × (1 − haste)</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:888-891 -->
+              <!-- Source: server-scripts/Skills.cs:924-933,1141-1169 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
@@ -1159,7 +1159,7 @@ percentageValue = baseValue × songPower</pre>
                   >cast time × (1 − spell haste) + cooldown</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:914-915 -->
+              <!-- Source: server-scripts/Skills.cs:FinishCastMeleeAttackMonster -->
               <tr>
                 <td class="py-2 pr-4 text-sm">All attacks</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
@@ -1188,7 +1188,7 @@ percentageValue = baseValue × songPower</pre>
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/Combat.cs:337-343 — Mathf.Clamp(num, -0.8f, 0.8f) -->
+              <!-- Source: server-scripts/Combat.cs:339-345 — Mathf.Clamp(num, -0.8f, 0.8f) -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Player auto attack</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
@@ -1197,7 +1197,7 @@ percentageValue = baseValue × songPower</pre>
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
-              <!-- Source: server-scripts/Skills.cs:902-904, server-scripts/Combat.cs:346-358 -->
+              <!-- Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Player spell auto attack</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
@@ -1223,7 +1223,7 @@ percentageValue = baseValue × songPower</pre>
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
-              <!-- Source: server-scripts/Combat.cs:346-358 -->
+              <!-- Source: server-scripts/Combat.cs:348-360 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Mercenary spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
@@ -1268,9 +1268,9 @@ percentageValue = baseValue × songPower</pre>
       </div>
       <div>
         <!-- Source: server-scripts/DamageSkill.cs:49-67 — TryConsumeWildStrike checks the active Ranger follow-up buff, rounds ×(1 + 0.1 × buff level), sets DamageType.Magic, and selects WildStrikeTargetEffect. -->
-        <!-- Source: server-scripts/TargetDamageSkill.cs:239,282 — Apply consumes the override for a sword follow-up and passes it to DealDamageAt. -->
+        <!-- Source: server-scripts/TargetDamageSkill.cs:244,291 — ApplyDamage consumes the override for a sword follow-up and passes it to DealDamageAt. -->
         <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 — Apply consumes the override for a bow follow-up and passes it to the projectile effect. -->
-        <!-- Source: server-scripts/Combat.cs:368,774,840-847,944-955 — DealDamageAt runs the common pipeline, mitigates Magic once, and instantiates the override effect. -->
+        <!-- Source: server-scripts/Combat.cs:521,842-849,1189-1204 — DealDamageAt runs the common pipeline, mitigates Magic once, and instantiates the override effect. -->
         <h3 id="wild-strike" class="font-semibold mb-1 scroll-mt-24">
           Wild Strike
         </h3>
@@ -1311,7 +1311,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:847-884 — DealDamageAt stun branch -->
+        <!-- Source: server-scripts/Combat.cs:1066-1103 — DealDamageAt stun branch -->
         <h3 class="font-semibold mb-1">Stun</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -1329,7 +1329,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:86 (knockbackTime = 0.25f), 88 (knockbackObstacleDamageBonus = 0.0125f), 1348-1369 -->
+        <!-- Source: server-scripts/Combat.cs:88 (knockbackTime = 0.25f), 90 (knockbackObstacleDamageBonus = 0.0125f), 1139-1160 -->
         <h3 class="font-semibold mb-1">Knockback</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -1370,7 +1370,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:276-288 (fearResistChance), 885-910 (DealDamageAt fear branch) -->
+        <!-- Source: server-scripts/Combat.cs:278-290 (fearResistChance), 1104-1137 (DealDamageAt fear branch) -->
         <h3 class="font-semibold mb-1">Fear</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -1411,10 +1411,10 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Skills.cs:1547-1552 (BreakMezz — entity.speed <= -50f) -->
+        <!-- Source: server-scripts/Skills.cs:1592-1597 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
-        <!-- Source: server-scripts/Skills.cs:233-236 (DoT tick also calls BreakMezz) -->
-        <!-- Source: server-scripts/Monster.cs:1546-1560 (monster self-break: magic resist roll every 6s) -->
+        <!-- Source: server-scripts/Skills.cs:251-256 (DoT tick also calls BreakMezz) -->
+        <!-- Source: server-scripts/Monster.cs:1539-1553 (monster self-break: magic resist roll every 6s) -->
         <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Sleep</h3>
         <p class="text-sm text-muted-foreground">
@@ -1448,12 +1448,12 @@ percentageValue = baseValue × songPower</pre>
             >The Warrior skill Enrage is a different effect that changes damage
             and maximum health as shown on its skill page.</span
           >
-          <!-- Source: server-scripts/Combat.cs:770-803 — only Monster and Npc skill lists are scanned for PassiveSkill.isEnrage; threshold health/max < 0.1f -->
+          <!-- Source: server-scripts/Combat.cs:772-805 — only Monster and Npc skill lists are scanned for PassiveSkill.isEnrage; threshold health/max < 0.1f -->
         </p>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:12047-12051 -->
+        <!-- Source: server-scripts/Combat.cs:1344-1360, isParry; Player.cs:12225-12229 -->
         <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -1485,7 +1485,7 @@ percentageValue = baseValue × songPower</pre>
 
       <div>
         <!-- Source: server-scripts/TargetDamageSkill.cs — slot 13 fires at procEffectProbability * 0.5f; durability > 0 guard on both slots -->
-        <!-- Source: server-scripts/Combat.cs:1235 — proc weapons and scrolls are excluded from the damage-shield trigger. -->
+        <!-- Source: server-scripts/Combat.cs:1238 — proc weapons and scrolls are excluded from the damage-shield trigger. -->
         <h3 class="font-semibold mb-1">Weapon On-Hit Effects</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
@@ -1517,7 +1517,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); AreaBuffSkill.cs:184,262 (area cleanse counter rolls); Skills.cs:1611-1616 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:518-540 (GetCleanseCountersRemoved); TargetBuffSkill.cs:137-161 (HasMatchingCleanseDebuff), 239-429 (Apply cleanse branch); AreaBuffSkill.cs:183,261 (area cleanse counter rolls); Skills.cs:1866-1872 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           <span class="block"
@@ -1603,7 +1603,7 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:105-143 (resist gate), 173-205,209-234,238-250 (removal); AreaDebuffSkill.cs:113-158 (resist gate), 184-281 (removal); Combat.cs:1529-1556 GetProbResistMagic/Disease -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:105-143 (resist gate), 173-205,209-234,238-250 (removal); AreaDebuffSkill.cs:113-158 (resist gate), 184-281 (removal); Combat.cs:1540-1567 GetProbResistMagic/Disease -->
         <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
           <span class="block"
@@ -1667,7 +1667,7 @@ percentageValue = baseValue × songPower</pre>
         </p>
       </div>
 
-      <!-- Source: server-scripts/Skills.cs:938-958 AddOrRefreshBuff -->
+      <!-- Source: server-scripts/Skills.cs:AddOrRefreshBuff -->
       <div>
         <h3 class="font-semibold mb-1">Buff &amp; Debuff Overwrite</h3>
         <p class="text-sm text-muted-foreground mb-2">

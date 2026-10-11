@@ -112,7 +112,7 @@
                 >
               </td>
             </tr>
-            <!-- Source: server-scripts/Wisdom.cs:27-35,102-113; Buff.cs:47-60,113-150; TargetBuffSkill.cs:432-435; AreaBuffSkill.cs:42-46 — Wisdom raises direct healing and the stated protective buff amounts, not mana capacity or recovery. -->
+            <!-- Source: server-scripts/Wisdom.cs:27-35,102-113; Buff.cs:47-60,113-150; BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:434-445; AreaBuffSkill.cs:33-45 — Wisdom raises direct healing and the stated protective buff amounts, not mana capacity or recovery. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Wisdom</th>
               <td class="p-2">
@@ -161,7 +161,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Experience.cs:113-322 — levels award one allocatable attribute point and class-dependent automatic attribute growth. -->
+      <!-- Source: server-scripts/Experience.cs:114-352 — levels award one allocatable attribute point and class-dependent automatic attribute growth. -->
       <p>
         <span class="block"
           >Each level grants one attribute point to allocate and automatic
@@ -174,8 +174,8 @@
         >
       </p>
       <!-- Source: server-scripts/PlayerEquipment.cs:190-221,259-285 — equipment and augments apply attribute bonuses. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:1381-1403 — passive skills apply attribute bonuses. -->
-      <!-- Source: server-scripts/Skills.cs:1436-1468 — active buffs can change attribute values. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1782-1804 — passive skills apply attribute bonuses. -->
+      <!-- Source: server-scripts/Skills.cs:1484-1516 — active buffs can change attribute values. -->
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
@@ -232,7 +232,7 @@
               </td>
             </tr>
             <!-- Source: server-scripts/Energy.cs:12-17,27-51 and server-scripts/Strength.cs:80-87 — rage capacity scales with Strength and baseline recovery is zero. -->
-            <!-- Source: server-scripts/Combat.cs:994-1025,1364-1388 — damaging auto attacks and received single-target physical skill hits generate rage, with no melee-range check. -->
+            <!-- Source: server-scripts/Combat.cs:996-1007,1171-1188,1375-1399 — damaging auto attacks and received single-target physical skill hits generate rage, with no melee-range check. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Rage</th>
               <td class="p-2">Warrior, Rogue</td>
@@ -252,7 +252,7 @@
                 >
               </td>
             </tr>
-            <!-- Source: server-scripts/PlayerSkills.cs:38-47,108-109 and server-scripts/ScriptableSkill.cs:120-138 — Bard uses limited active songs that require an instrument. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:38-47,135-136 and server-scripts/ScriptableSkill.cs:120-138 — Bard uses limited active songs that require an instrument. -->
             <tr>
               <th class="p-2 font-medium text-foreground">Songs</th>
               <td class="p-2">Bard</td>
@@ -272,8 +272,8 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Combat.cs:1221-1229 — Wizard Mystic Spark restores floor(35% times min(hit damage, target health before hit)) as mana. -->
-      <!-- Source: server-scripts/Combat.cs:1281-1310 — Mana Shield spends one mana per point of damage absorbed. -->
+      <!-- Source: server-scripts/Combat.cs:1225-1233 — Wizard Mystic Spark restores floor(35% times min(hit damage, target health before hit)) as mana. -->
+      <!-- Source: server-scripts/Combat.cs:1284-1314 — Mana Shield spends one mana per point of damage absorbed. -->
       <p>
         <span class="block"
           >Wizard's Mystic Spark restores ⌊0.35 × min(hit damage, target health
@@ -299,7 +299,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Experience.cs:319-322 — each regular level awards one class skill point. -->
+      <!-- Source: server-scripts/Experience.cs:349-352 — each regular level awards one class skill point. -->
       <p>
         <span class="block"
           >Each regular level grants one class skill point.</span
@@ -313,7 +313,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Learning skills</h3>
         <!-- Source: server-scripts/ScriptableSkill.cs:53-70 — requirements include spent points, up to two ranked predecessors, level, and tier. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1504-1562 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1905-1963 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
         <p>
           <span class="block"
             >A rank can require a character level, unspent points, points
@@ -325,8 +325,8 @@
             rank.</span
           >
         </p>
-        <!-- Source: server-scripts/PlayerSkills.cs:1349-1358 — prerequisite checks exclude armor-set bonus levels. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1530-1562 — new choices are limited by tier, but existing choices can be upgraded. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1750-1759 — prerequisite checks exclude armor-set bonus levels. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1931-1963 — new choices are limited by tier, but existing choices can be upgraded. -->
         <p>
           <span class="block"
             >You can choose up to two different skills in tiers 1 and 3.</span
@@ -339,8 +339,8 @@
       </div>
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Veteran skills</h3>
-        <!-- Source: server-scripts/Experience.cs:38-38,45-53,335-372 — at the level cap filled XP bars grant Veteran Points with a separate maximum. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:57-62,1517-1528,2032-2049 — veteran upgrades spend Veteran Points, not class skill points. -->
+        <!-- Source: server-scripts/Experience.cs:38-38,45-53,366-408 — at the level cap filled XP bars grant Veteran Points with a separate maximum. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:59-64,1918-1929,2464-2481 — veteran upgrades spend Veteran Points, not class skill points. -->
         <p>
           <span class="block"
             >At level 50, further XP earns Veteran Points instead of levels, up
@@ -359,8 +359,8 @@
       </div>
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Second specialization</h3>
-        <!-- Source: server-scripts/UISkills.cs:238-289 — second specialization unlocks at level 50 for 100,000 gold. -->
-        <!-- Source: server-scripts/UISkills.cs:294-325 — switching requires no unspent class skill points, no combat, an idle living player, and a 10-minute interval. -->
+        <!-- Source: server-scripts/UISkills.cs:DualSpecButton2 — second specialization unlocks at level 50 for 10,000 gold. -->
+        <!-- Source: server-scripts/UISkills.cs:295-326 — switching requires no unspent class skill points, no combat, an idle living player, and a 10-minute interval. -->
         <p>
           <span class="block"
             >At level 50, a second specialization costs 100,000 gold.</span
@@ -371,8 +371,8 @@
           >
           <span class="block">You must wait 10 minutes between switches.</span>
         </p>
-        <!-- Source: server-scripts/Player.cs:14897-14927 — switching loads the chosen class-skill ranks and its skillbar, removes the pet, and leaves veteran ranks untouched. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1374-1422 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
+        <!-- Source: server-scripts/Player.cs:UserCode_CmdSetCurrentSpec__Int32__List_00601__List_00601 — switching loads the chosen class-skill ranks and its skillbar, removes the pet, and leaves veteran ranks untouched. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1775-1823 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
         <p>
           <span class="block"
             >Your second specialization stores another set of class skills for
@@ -396,8 +396,8 @@
             30, and 3,000 at level 40.</span
           >
         </p>
-        <!-- Source: server-scripts/Player.cs:10523-10529,10555-10589 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1374-1467 — each reset returns points only for its own skill pool. -->
+        <!-- Source: server-scripts/Player.cs:10932-10938,10964-10998 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1775-1868 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"
             >Resetting class skills refunds class skill points but leaves

@@ -210,7 +210,7 @@ function resolveLearnedBookGains(input: CasterStatInput): AttributeSet {
 }
 
 /**
- * Sources: server-scripts/Combat.cs:113-358, Health.cs:25-39, Mana.cs:25-39,
+ * Sources: server-scripts/Combat.cs:115-360, Health.cs:25-39, Mana.cs:25-39,
  * Energy.cs:24-35.
  */
 /**

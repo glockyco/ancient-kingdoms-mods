@@ -93,7 +93,7 @@ export function priorityPolicy(order: readonly string[]): ActionPolicy {
  * skills that a healer's reserve allows and the target does not already hold.
  * Otherwise the mercenary uses its default attack when ready.
  * Bard mercenaries are outside the planner domain. They override NextAttackSkill.
- * Source: server-scripts/Pet.cs:1333-1373; server-scripts/PetSkills.cs:NextAttackSkill; server-scripts/BardMercenarySkills.cs:NextAttackSkill.
+ * Source: server-scripts/Pet.cs:1335-1375; server-scripts/PetSkills.cs:NextAttackSkill; server-scripts/BardMercenarySkills.cs:NextAttackSkill.
  */
 export function companionPolicy(): ActionPolicy {
   return {
@@ -166,7 +166,7 @@ export function companionPolicy(): ActionPolicy {
   };
 }
 
-/** Source: server-scripts/PetSkills.cs:168-175. */
+/** Source: server-scripts/PetSkills.cs:251-258. */
 function dropsBelowHealerReserve(
   view: EntityView,
   action: EngineAction,

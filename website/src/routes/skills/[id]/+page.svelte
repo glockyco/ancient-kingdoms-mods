@@ -836,14 +836,14 @@
   /**
    * How each damage type is mitigated and avoided, mirroring the game one row per type.
    *
-   * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:842-859 — the
+   * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:844-861 — the
    * per-damage-type switch, each read multiplied by 0.0005.
-   * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:652-659 —
+   * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:654-661 —
    * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
    *
    * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
    * per point, and it also feeds the block roll at 0.0001 per point, because blockChance is
-   * derived from it. Source: server-scripts/Combat.cs:305-317. Both physical formulas refer
+   * derived from it. Source: server-scripts/Combat.cs:307-319. Both physical formulas refer
    * to Defense.
    *
    * Stat names are looked up here and never assembled from a fragment. Appending "Resist" to a
@@ -1284,7 +1284,7 @@
               </p>
             {/if}
             {#if skill.is_manaburn_skill}
-              <!-- Source: server-scripts/TargetDamageSkill.cs:127-155, TargetProjectileSkill.cs:211-220 — Rageblow spends all rage for double damage; Mana Burn spends all mana for triple damage. -->
+              <!-- Source: server-scripts/TargetDamageSkill.cs:132-160, TargetProjectileSkill.cs:211-220 — Rageblow spends all rage for double damage; Mana Burn spends all mana for triple damage. -->
               <p class="text-purple-600 dark:text-purple-400">
                 {skill.skill_type === "target_projectile"
                   ? "Mana Burn spends all your mana to deal three times that amount as damage."
@@ -1854,8 +1854,8 @@
               </p>
             {/if}
             {#if skill.is_invisibility}
-              <!-- Source: server-scripts/Entity.cs:346-362 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
-              <!-- Source: server-scripts/Skills.cs:983, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
+              <!-- Source: server-scripts/Entity.cs:363-379 — invisibility that ignores detection hides the target from every observer; ordinary invisibility yields to a monster that sees invisibility. -->
+              <!-- Source: server-scripts/Skills.cs:1012, server-scripts/UsableItem.cs:53 — casting a skill or using an item ends invisibility. -->
               <p class="text-purple-600 dark:text-purple-400">
                 <span class="block"
                   >Grants invisibility{#if skill.ignores_see_invisibility}, even
@@ -1964,7 +1964,7 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
-        <!-- Source: server-scripts/PetSkills.cs:OnStartServer — Bard mercenary skill ranks have a minimum of 1. -->
+        <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard mercenary skill ranks have a minimum of 1. -->
         {#if usedByMercenary && skill.max_level > 1}
           <p class="text-muted-foreground">
             {#if usedByBardMercenary}
@@ -2177,7 +2177,7 @@
         {/if}
 
         {#if skill.is_bard_final_cadence}
-          <!-- Source: BardFinalCadenceSkill.cs:17-68,78-135 -->
+          <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HasMaximumSongsActive,Apply,FindEnemies,HealNearbyAllies; PlayerSkills.cs:ConsumeFinalCadenceRepertoireBonus -->
           <div class="space-y-1">
             <h3 class="font-semibold">Final Cadence</h3>
             <p class="font-mono">
@@ -2286,7 +2286,7 @@
                   </li>
                 </ol>
                 {#if damageMechanics}
-                  <!-- Source: server-scripts/Combat.cs:842-859 — each 100 Defense or matching Resist points reduces damage by 5%, up to 90% before rounding. -->
+                  <!-- Source: server-scripts/Combat.cs:844-861 — each 100 Defense or matching Resist points reduces damage by 5%, up to 90% before rounding. -->
                   <p class="text-muted-foreground">
                     Every 100 points of {damageMechanics.avoidance === "block"
                       ? "Defense"
@@ -2315,7 +2315,7 @@
                     &times; 0.005, &minus;0.1, 0.1)<br />&nbsp;&nbsp;&minus;
                     attacker's Accuracy<br />, 0, 0.9)
                   </p>
-                  <!-- Source: server-scripts/Combat.cs:305-317,1528-1531 — blockChance adds defense × 0.0001, and GetProbResistMeleeDamage then applies level difference and casterAccuracy. -->
+                  <!-- Source: server-scripts/Combat.cs:307-319,1539-1542 — blockChance adds defense × 0.0001, and GetProbResistMeleeDamage then applies level difference and casterAccuracy. -->
                   <p class="text-muted-foreground">
                     Every 100 Defense adds 1 percentage point to block chance
                     before Accuracy and level difference.
@@ -2328,7 +2328,7 @@
                     attacker level) &times; 0.005<br />&nbsp;&nbsp;&minus;
                     attacker's Accuracy<br />, 0, 0.9)
                   </p>
-                  <!-- Source: server-scripts/Combat.cs:1540-1567 — GetProbResistMagic, Poison, Fire, Cold, and Disease each add magicResist, poisonResist, fireResist, coldResist, or diseaseResist × 0.0005. -->
+                  <!-- Source: server-scripts/Combat.cs:1551-1578 — GetProbResistMagic, Poison, Fire, Cold, and Disease each add magicResist, poisonResist, fireResist, coldResist, or diseaseResist × 0.0005. -->
                   <p class="text-muted-foreground">
                     Every 100 points of the matching Resist add 5 percentage
                     points to resist chance before Accuracy and level
@@ -2487,7 +2487,7 @@
                   </p>
                 {:else}
                   {#if ctx.bonusAttrSource === "player_ranger_wis"}
-                    <!-- Source: TargetBuffSkill.cs:419 — Ranger → wisdom.value * 3 -->
+                    <!-- Source: server-scripts/TargetBuffSkill.cs:434-438; BuffSkill.cs:GetBuffPowerAttribute — Ranger attribute contribution is tripled -->
                     <p class="font-mono">
                       Attribute contribution = WIS &times; 3 (Ranger Wisdom
                       tripled)
@@ -2503,7 +2503,7 @@
                       Attribute contribution = round((WIS + CON) / 2)
                     </p>
                   {:else if ctx.bonusAttrSource === "merc_wis"}
-                    <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
+                    <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — mercenary attribute contribution -->
                     <p class="font-mono">Attribute contribution = WIS</p>
                   {:else if ctx.bonusAttrSource === "player_level"}
                     <!-- Source: AreaBuffSkill.cs:34-37 — isRelic → num2 = caster.level.current * 10 -->
@@ -2626,7 +2626,7 @@
         {/if}
 
         <!-- C2. Attack Timing (spec-driven, per caster context) -->
-        <!-- Source: Skills.cs:762-773, Player.cs:2783, Skills.cs:814-815 -->
+        <!-- Source: server-scripts/Skills.cs:StartCast,ApplyFinishedCast,FinishCastMeleeAttackMonster; Player.cs:GetSkillRefractoryPeriod -->
         {#if data.mechanicsSpec.timingContexts.length > 0}
           <div class="space-y-2">
             <h3 class="font-semibold">Attack Timing</h3>
@@ -2638,8 +2638,8 @@
                   </p>
                 {/if}
                 {#if ctx.model === "player_auto"}
-                  <!-- Source: Player.cs:2783 — refractoryPeriod = clamp(delay*(1-haste)/25, 0.25, 2.0) -->
-                  <!-- Source: Skills.cs:772 — player cooldownEnd = now + cooldown (no haste reduction) -->
+                  <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod — recovery time = clamp(delay*(1-haste)/25, 0.25, 2.0) -->
+                  <!-- Source: server-scripts/Skills.cs:1167-1169 — player cooldownEnd = now + cooldown (no haste reduction) -->
                   <p class="font-mono">interval = cast time + recovery time</p>
                   <p class="font-mono">
                     recovery time = clamp(weapon delay &times; (1 &minus; haste)
@@ -2661,7 +2661,7 @@
                     </p>
                   {/if}
                 {:else if ctx.model === "player_spell"}
-                  <!-- Source: server-scripts/Skills.cs:902-904, server-scripts/Combat.cs:346-358 -->
+                  <!-- Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360 -->
                   <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) + 0.75s
@@ -2676,7 +2676,7 @@
                     >
                   </p>
                 {:else if ctx.model === "merc_auto"}
-                  <!-- Source: Skills.cs:766-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste) -->
+                  <!-- Source: server-scripts/Skills.cs:1141-1169 — followupDefaultAttack && !isSpell for a mercenary subtracts haste * cooldown -->
                   <p class="font-mono">
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
@@ -2689,7 +2689,7 @@
                     >
                   </p>
                 {:else if ctx.model === "merc_spell"}
-                  <!-- Source: server-scripts/Skills.cs:902-904, server-scripts/Skills.cs:1009-1012, server-scripts/Combat.cs:346-358 -->
+                  <!-- Source: server-scripts/Skills.cs:924-933, server-scripts/Skills.cs:1141-1169, server-scripts/Combat.cs:348-360 -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) +
                     cooldown
@@ -2708,7 +2708,7 @@
                 {:else}
                   <!-- companion: companions, familiars -->
                   <!-- Source: server-scripts/Pet.cs -->
-                  <!-- Source: server-scripts/Skills.cs:1009-1012 — companion cooldown remains flat -->
+                  <!-- Source: server-scripts/Skills.cs:1141-1169 — companion cooldown remains flat -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">
                     Haste does not shorten this cooldown.
@@ -2720,7 +2720,7 @@
         {/if}
 
         <!-- D. Debuff Scaling (spec-driven, per caster context) -->
-        <!-- Source: TargetDebuffSkill.cs:265-279 — bonusAttribute per caster type and skill flags. -->
+        <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — bonusAttribute per caster type and skill flags. -->
         <!-- Non-Player casters (monsters, NPCs, non-merc pets) fall through to bonusAttribute = 0. -->
         {#if isDebuffType && data.mechanicsSpec.debuffContexts.length > 0}
           <div class="space-y-3">
@@ -2853,7 +2853,7 @@
                       {#if hasNonZeroField(skill.healing_per_second_bonus)}
                         <dt class="text-muted-foreground">Damage per second</dt>
                         {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                          <!-- Source: server-scripts/Skills.cs:1609-1625 — the poison and disease branch adds RoundToInt(bonusAttribute * 1.5) before resistance. -->
+                          <!-- Source: server-scripts/Skills.cs:1659-1693 — the poison and disease branch adds RoundToInt(bonusAttribute * 1.5) before resistance. -->
                           <dd>
                             skill value at level + round(attribute contribution
                             &times; 1.5)
@@ -2881,7 +2881,7 @@
         {/if}
 
         <!-- D2. Resist Chance — shown for debuffs and dispels; cleanse has no resist roll, and Bard charm uses its custom formula above. -->
-        <!-- Source: server-scripts/Combat.cs:1523-1556 — GetProbResistMeleeDebuff adds defense × 0.0005, and each other GetProbResist* adds its matching resist × 0.0005, before diff_levels and casterAccuracy; resist gate TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:104-139 -->
+        <!-- Source: server-scripts/Combat.cs:1534-1567 — GetProbResistMeleeDebuff adds defense × 0.0005, and each other GetProbResist* adds its matching resist × 0.0005, before diff_levels and casterAccuracy; resist gate TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:104-139 -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_bard_charm && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
@@ -2901,7 +2901,7 @@
               &minus;0.1, 0.1)<br />&nbsp;&nbsp;&minus; skill user's Accuracy<br
               />, 0, 0.9)
             </p>
-            <!-- Source: server-scripts/Combat.cs:1523-1556 — each 100 points of the matching Defense or Resist add 5 percentage points before level difference and Accuracy. -->
+            <!-- Source: server-scripts/Combat.cs:1534-1567 — each 100 points of the matching Defense or Resist add 5 percentage points before level difference and Accuracy. -->
             <p class="text-muted-foreground">
               Every 100 points of the target's {skill.is_melee_debuff
                 ? "Defense"
@@ -2912,7 +2912,7 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
-        <!-- Source: server-scripts/Buff.cs:19 (3 counters); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1611-1616 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:19 (3 counters); BuffSkill.cs:518-540 (GetCleanseCountersRemoved); TargetBuffSkill.cs:137-161 (HasMatchingCleanseDebuff), 239-432 (Apply cleanse branch); Skills.cs:1866-1872 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
@@ -2955,7 +2955,7 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
-        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:470-492 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:19 (3 counters); Skills.cs:1611-1616 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:518-540 (GetCleanseCountersRemoved); TargetBuffSkill.cs:137-161 (HasMatchingCleanseDebuff), 239-432 (Apply cleanse branch); Buff.cs:19 (3 counters); Skills.cs:1866-1872 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">
@@ -3003,7 +3003,7 @@
           {@const playerCast =
             skill.is_scroll || skill.player_classes.length > 0}
           <div class="space-y-1">
-            <!-- Source: server-scripts/TargetDebuffSkill.cs:105-143 (resist gate), 173-205,209-234,238-250 (removal); AreaDebuffSkill.cs:104-139 (resist gate), 164-205,209-233,238-258 (removal); Combat.cs:1529-1556 GetProbResistMagic/Disease -->
+            <!-- Source: server-scripts/TargetDebuffSkill.cs:105-143 (resist gate), 173-205,209-234,238-250 (removal); AreaDebuffSkill.cs:104-139 (resist gate), 164-205,209-233,238-258 (removal); Combat.cs:1540-1567 GetProbResistMagic/Disease -->
             <h3 class="font-semibold">
               <a
                 href="/mechanics/combat#dispel"
@@ -3128,16 +3128,16 @@
         <!-- G. Special Mechanic Notes -->
         {#if isWildStrike}
           <!-- Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike) -->
-          <!-- Source: server-scripts/TargetDamageSkill.cs:239,282 (Apply) -->
+          <!-- Source: server-scripts/TargetDamageSkill.cs:244,291 (ApplyDamage) -->
           <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 (Apply) -->
-          <!-- Source: server-scripts/Combat.cs:368,774,840-847,944-955 (DealDamageAt) -->
+          <!-- Source: server-scripts/Combat.cs:521,776,842-849,1191-1204 (DealDamageAt) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Wild Strike</h3>
             <FormulaDisplay display={renderWildStrikeFormulaDisplay()} />
           </div>
         {/if}
         {#if skill.id === "parry"}
-          <!-- Source: server-scripts/Combat.cs:1106-1119, 1556-1566; Player.cs:12047-12051 -->
+          <!-- Source: server-scripts/Combat.cs:1344-1359, isParry; Player.cs:12225-12229 -->
           <div class="space-y-1">
             <h3 class="font-semibold">
               <a
@@ -3192,13 +3192,13 @@
           </p>
         {/if}
         {#if hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll}
-          <!-- Source: Skills.cs:673-675 — castTimeEnd reduction only when isSpell -->
+          <!-- Source: server-scripts/Skills.cs:924-933 — castTimeEnd reduction only when isSpell -->
           <p class="text-muted-foreground">
             Cast time = cast time &times; (1 &minus; spell haste)
           </p>
         {/if}
         {#if hasLinearValue(skill.fear_chance)}
-          <!-- Source: server-scripts/Combat.cs:978-1011 — DealDamageAt fear branch -->
+          <!-- Source: server-scripts/Combat.cs:1104-1138 — DealDamageAt fear branch -->
           <div class="space-y-1">
             <h3 class="font-semibold">Fear</h3>
             <p class="text-muted-foreground">
@@ -3214,7 +3214,7 @@
           </div>
         {/if}
         {#if skill.fear_resist_chance_bonus}
-          <!-- Source: server-scripts/Combat.cs:276-288 — fearResistChance property -->
+          <!-- Source: server-scripts/Combat.cs:278-290 — fearResistChance property -->
           <div class="space-y-1">
             <h3 class="font-semibold">Fear Resist</h3>
             <p class="text-muted-foreground">
@@ -3238,7 +3238,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.stun_chance)}
-          <!-- Source: server-scripts/Combat.cs:847-884 — DealDamageAt stun branch -->
+          <!-- Source: server-scripts/Combat.cs:1066-1103 — DealDamageAt stun branch -->
           <div class="space-y-1">
             <h3 class="font-semibold">Stun</h3>
             <p class="text-muted-foreground">
@@ -3255,7 +3255,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.knockback_chance)}
-          <!-- Source: server-scripts/Combat.cs:86 (knockbackTime = 0.25f), 88 (knockbackObstacleDamageBonus = 0.0125f), 1348-1369 -->
+          <!-- Source: server-scripts/Combat.cs:88 (knockbackTime = 0.25f), 90 (knockbackObstacleDamageBonus = 0.0125f), 1139-1159 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Knockback</h3>
             <p class="text-muted-foreground">
@@ -3303,9 +3303,9 @@
           </div>
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
-          <!-- Source: server-scripts/Skills.cs:1547-1552 (BreakMezz — entity.speed <= -50f) -->
+          <!-- Source: server-scripts/Skills.cs:1592-1597 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:DealDamageAt (any damage > 0 calls BreakMezz) -->
-          <!-- Source: server-scripts/Monster.cs:1546-1560 (monster self-break roll every 6s) -->
+          <!-- Source: server-scripts/Monster.cs:1539-1553 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
@@ -3325,7 +3325,7 @@
           </div>
         {/if}
         {#if skill.is_teleport}
-          <!-- Source: server-scripts/AreaBuffSkill.cs:126-139 — isTeleport branch -->
+          <!-- Source: server-scripts/AreaBuffSkill.cs:125-137 — isTeleport branch -->
           <div class="space-y-1">
             <h3 class="font-semibold">Teleport</h3>
             <p class="text-muted-foreground">
@@ -3340,8 +3340,8 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.block_chance_bonus)}
-          <!-- Source: server-scripts/Combat.cs:313-323 (blockChance property) -->
-          <!-- Source: server-scripts/Skills.cs:539-554 (GetBlockChanceBonus) -->
+          <!-- Source: server-scripts/Combat.cs:315-325 (blockChance property) -->
+          <!-- Source: server-scripts/Skills.cs:557-572 (GetBlockChanceBonus) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Block Chance</h3>
             <p class="text-muted-foreground">
@@ -3360,7 +3360,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.accuracy_bonus)}
-          <!-- Source: server-scripts/Combat.cs:1438-1441 (GetProbResistMeleeDamage, all GetProbResist*) -->
+          <!-- Source: server-scripts/Combat.cs:1449-1452 (GetProbResistMeleeDamage, all GetProbResist*) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Accuracy</h3>
             <p class="text-muted-foreground">
@@ -3375,7 +3375,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.critical_chance_bonus)}
-          <!-- Source: server-scripts/Combat.cs:280-295 (criticalChance), crit branch in DealDamageAt -->
+          <!-- Source: server-scripts/Combat.cs:282-297 (criticalChance), crit branch in DealDamageAt -->
           <div class="space-y-1">
             <h3 class="font-semibold">Critical Chance</h3>
             <p class="text-muted-foreground">
@@ -3390,7 +3390,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.critical_resist_bonus)}
-          <!-- Source: server-scripts/Combat.cs:291-303 (criticalResist, clamped 0-1), 512-517 (ApplyCriticalResistToMultiplier), 852-867 (crit damage), Dexterity.cs:34-37 -->
+          <!-- Source: server-scripts/Combat.cs:293-305 (criticalResist, clamped 0-1), 514-519 (ApplyCriticalResistToMultiplier), 854-869 (crit damage), Dexterity.cs:34-37 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Critical Resist</h3>
             <p class="text-muted-foreground">
@@ -3416,7 +3416,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.lifetap_percent)}
-          <!-- Source: server-scripts/Combat.cs:1056-1060 (lifetap heal after damage) -->
+          <!-- Source: server-scripts/Combat.cs:1318-1333 (lifetap heal after damage) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Lifetap</h3>
             <p class="text-muted-foreground">
@@ -3429,7 +3429,7 @@
           </div>
         {/if}
         {#if skill.break_armor_prob > 0}
-          <!-- Source: server-scripts/Combat.cs:539-567 (break armor roll, DecreaseDurability) -->
+          <!-- Source: server-scripts/Combat.cs:541-569 (break armor roll, DecreaseDurability) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Break Armor</h3>
             <p class="text-muted-foreground">
@@ -3451,7 +3451,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.heal_on_hit_percent)}
-          <!-- Source: server-scripts/Combat.cs:883-897 (heal on hit, melee non-spell only) -->
+          <!-- Source: server-scripts/Combat.cs:885-899 (heal on hit, melee non-spell only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Heal on Hit</h3>
             <p class="text-muted-foreground">
@@ -3466,7 +3466,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.cooldown_reduction_percent)}
-          <!-- Source: server-scripts/TargetBuffSkill.cs:266-281 (instant CD reduction on buff apply) -->
+          <!-- Source: server-scripts/TargetBuffSkill.cs:269-284 (instant CD reduction on buff apply) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Cooldown Reduction</h3>
             <p class="text-muted-foreground">
@@ -3481,7 +3481,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.damage_shield)}
-          <!-- Source: server-scripts/Combat.cs:886-896,898-919,934-944,796-820 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
+          <!-- Source: server-scripts/Combat.cs:888-898,900-921,936-946,798-822 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Damage Shield</h3>
             <p class="text-muted-foreground">
@@ -3509,7 +3509,7 @@
         {/if}
         {#if skill.is_blindness}
           <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcAddBlind and UserCode_TargetRpcRemoveBlind -->
-          <!-- Source: server-scripts/Skills.cs:1213-1215 (isBlindness check, Player only) -->
+          <!-- Source: server-scripts/Skills.cs:1261-1263 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>
             <p class="text-muted-foreground">

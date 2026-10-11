@@ -5,7 +5,7 @@ creation takes both as independent strings and cross-checks neither, and no runt
 structure lists the races a class allows. The rule exists only in the character
 creator, which enables or disables one class button per race.
 
-- Source: server-scripts/UICharacterEditor.cs:947-1509 - changeRace* methods
+- Source: server-scripts/UICharacterEditor.cs:1142-1780 - changeRace* methods
 
 `compatible_races` is edited in `mods/DataExporter/Curated/classes.json` and copied
 to `exported-data/classes.json` by DataExporter. The build currently requires the

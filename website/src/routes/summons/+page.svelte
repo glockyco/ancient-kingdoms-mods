@@ -38,7 +38,7 @@
     Array.from(new Set(data.summons.map((s) => s.kind))).sort(),
   );
 
-  // Source: server-scripts/PetSkills.cs:25-49; server-scripts/Buff.cs:91,240,254; exported-data/skills.json — each familiar's buff per rank and its maximum rank.
+  // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:91,240,254; exported-data/skills.json — each familiar's buff per rank and its maximum rank.
   const FAMILIAR_EFFECTS: Record<string, string> = {
     blue_fairy: "+2 Mana per second per rank, up to rank 8",
     red_fairy: "+1% accuracy per rank, up to rank 8",
@@ -215,7 +215,7 @@
           >
         </div>
         <dl class="divide-y">
-          <!-- Source: server-scripts/SummonSkill.cs:22-85 — a companion or familiar occupies the single summon slot, so a second summon fails while one is active. -->
+          <!-- Source: server-scripts/SummonSkill.cs:Apply — a companion or familiar occupies the single summon slot, so a second summon fails while one is active. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Slot</dt>
             <dd class="text-right">Shared summon slot</dd>
@@ -224,12 +224,12 @@
             <dt class="text-muted-foreground">Active</dt>
             <dd class="text-right">1 companion or familiar</dd>
           </div>
-          <!-- Source: server-scripts/SummonSkill.cs:76 — a familiar spawns at the summoning skill level, and a companion at the player level up to its cap. -->
+          <!-- Source: server-scripts/SummonSkill.cs:99 — a familiar spawns at the summoning skill level, and a companion at the player level up to its cap. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Level</dt>
             <dd class="text-right">Your level, capped</dd>
           </div>
-          <!-- Source: server-scripts/Pet.cs:3966-3977 — a dead combat pet or familiar is removed. -->
+          <!-- Source: server-scripts/Pet.cs:3990-4001 — a dead combat pet or familiar is removed. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">On death</dt>
             <dd class="text-right">Summon it again</dd>
@@ -238,9 +238,9 @@
         <ul
           class="list-disc space-y-1 border-t py-3 pl-8 pr-4 text-muted-foreground"
         >
-          <!-- Source: server-scripts/PetSkills.cs:25-49; server-scripts/PlayerSkills.cs:1361-1371 — combat pet skill rank starts at 1, reaches 2 at 20 veteran points, then rises every 10 points up to each skill's cap. -->
+          <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/PlayerSkills.cs:1762-1772 — combat pet skill rank starts at 1, reaches 2 at 20 veteran points, then rises every 10 points up to each skill's cap. -->
           <li>Skills gain a rank every 10 veteran points.</li>
-          <!-- Source: server-scripts/Pet.cs:3952-3963,4194-4205; server-scripts/GameManager.cs:1832-1919 — combat pets accept companion commands and stances. -->
+          <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean; server-scripts/GameManager.cs:OnMercenaryAttackKeyPressed — combat pets accept companion commands and stances. -->
           <li>
             Takes the mercenary <a
               href="/mercenaries#commands"
@@ -296,7 +296,7 @@
           >
         </div>
         <dl class="divide-y">
-          <!-- Source: server-scripts/Player.cs:4112-4144 — up to three followers, keyed by whistle item, outside the summon slot. -->
+          <!-- Source: server-scripts/Player.cs:4164-4196 — up to three followers, keyed by whistle item, outside the summon slot. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Slot</dt>
             <dd class="text-right">Own pet slots</dd>
@@ -320,9 +320,9 @@
         >
           <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:34-55,84-96 — using the whistle of an active follower dismisses it, and the whistle has unlimited charges. -->
           <li>Use the whistle again to dismiss the pet.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454; server-scripts/Player.cs:4227-4263 — a follower without its inventory whistle is removed, and active followers return after portal travel. -->
+          <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454; server-scripts/Player.cs:4279-4315 — a follower without its inventory whistle is removed, and active followers return after portal travel. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13156-13160 — petting grants 1–4 faction standing every 30 seconds per animal. -->
+          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13334-13338 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
             <a
               href="/mechanics/reputation#pets"

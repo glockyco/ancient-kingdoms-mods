@@ -157,21 +157,21 @@
           >) or the skillbar button.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:387-393 — backpack slots reject non-backpack items. -->Backpack
+          <!-- Source: server-scripts/PlayerInventory.cs:546-552 — backpack slots reject non-backpack items. -->Backpack
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:432-446 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
+          <!-- Source: server-scripts/PlayerInventory.cs:591-605 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
           <span class="block">Unique backpacks can only be equipped once.</span>
           <span class="block"
             >Other backpacks can occupy multiple bag slots.</span
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:417-433 — removal or downgrade is blocked if items would be locked away. -->Removing
+          <!-- Source: server-scripts/PlayerInventory.cs:576-592 — removal or downgrade is blocked if items would be locked away. -->Removing
           or downgrading a bag fails if its stored items would lose their slots.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:480-490,529-535,623-629 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:639-649,688-694,782-788 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
         <li>
           <span class="block"
             >You cannot move an equipped bag directly to the bank or a house
@@ -288,8 +288,8 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:403 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13328-13353 and 13363-13391 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:405 — characters start with one bank tab unlocked. -->
+        <!-- Source: server-scripts/Player.cs:13506-13531 and 13541-13569 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -300,7 +300,7 @@
           >Withdrawing transfers vault gold back to your character.</span
         >
       </p>
-      <!-- Source: server-scripts/Npc.cs:1722-1750 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
+      <!-- Source: server-scripts/Npc.cs:1727-1755 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
       <p class="text-sm text-muted-foreground">
         Open the bank at a banker while alive and out of combat.
       </p>
@@ -326,7 +326,7 @@
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:13284-13297 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:13462-13475 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -400,7 +400,7 @@
         <p>
           <span class="block"
             ><!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:13079-13091 — move mode hides the structure, then repositions the same one without charging gold. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:13257-13269 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -416,7 +416,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9985-10018 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:10390-10423 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -530,19 +530,19 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:67-93 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
+          <!-- Source: server-scripts/PlayerInventory.cs:226-252 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
           items try base carried slots first, then unlocked backpack slots.
         </li>
         <li>
-          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1795-1809 — stack increases are clamped by target max stack. -->Matching
+          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1979-1993 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:449-454 and 498-511 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
+          <!-- Source: server-scripts/PlayerInventory.cs:608-613 and 657-670 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
           Shift while you drag a stack onto an empty slot. An amount picker
           opens and moves the chosen amount into that slot.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:529-585,623-681,1717-1779 and server-scripts/PlayerBank.cs:53-72 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:688-744,782-840,1901-1963 and server-scripts/PlayerBank.cs:53-72 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
         <li>
           <span class="block"
             >Splitting also works between carried inventory and bank or house
@@ -553,11 +553,11 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:513-516 — non-split, non-merge inventory drag swaps slots. -->Other
+          <!-- Source: server-scripts/PlayerInventory.cs:672-675 — non-split, non-merge inventory drag swaps slots. -->Other
           carried-item drags swap source and destination slots.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:694-702 and 2007-2015 — non-destroyable carried items cannot be destroyed. -->Non-destroyable
+          <!-- Source: server-scripts/PlayerInventory.cs:853-861 and 2194-2202 — non-destroyable carried items cannot be destroyed. -->Non-destroyable
           items cannot be deleted.
         </li>
       </ul>
@@ -590,7 +590,7 @@
         <span class="block">Charisma raises the sale price by at most 25%.</span
         >
       </p>
-      <!-- Source: server-scripts/UINpcTrading.cs:97-113 and server-scripts/PlayerNpcTrading.cs:377-397 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:110-126 and server-scripts/PlayerNpcTrading.cs:377-397 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
       <p>
         <span class="block">Selling augmented gear triggers a warning.</span>
         <span class="block"
@@ -715,7 +715,7 @@
           Switching applies saved choices to all 16 equipment slots.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3118-3120 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3183-3185 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
           Template 1 starts out holding the gear your character was created with.
         </li>
         <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1640-1655 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
@@ -728,7 +728,7 @@
             the new template.</span
           >
         </li>
-        <!-- Source: server-scripts/PlayerEquipment.cs:526-565,596-605,679-685 and server-scripts/PlayerInventory.cs:67-93 — template selection searches equipped and carried slots, including unlocked backpack storage, for the saved item and augment pair. -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:526-565,596-605,679-685 and server-scripts/PlayerInventory.cs:226-252 — template selection searches equipped and carried slots, including unlocked backpack storage, for the saved item and augment pair. -->
         <li>
           <span class="block"
             >Switching uses equipped and carried gear, including unlocked
@@ -751,7 +751,7 @@
           gear cannot fit in carried storage.
         </li>
         <li>
-          <!-- Source: server-scripts/Database.cs:425-435,782-783,2665-2689 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
+          <!-- Source: server-scripts/Database.cs:425-435,803-804,2689-2713 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
           Templates belong to one character and do not carry across your other characters.
         </li>
       </ul>
@@ -771,7 +771,7 @@
         Equipment has 16 equipped slots, and each item defaults to 10 durability
         points.
       </p>
-      <!-- Source: server-scripts/Player.cs:4013-4023 — death reduces equipped item durability by one. -->
+      <!-- Source: server-scripts/Player.cs:4065-4075 — death reduces equipped item durability by one. -->
       <p>
         <span class="block"
           >Death reduces the durability of each equipped item by 1.</span
@@ -784,7 +784,7 @@
           > explains what happens to carried items.</span
         >
       </p>
-      <!-- Source: server-scripts/Combat.cs:733-755 — a successful armor-breaking skill rolls a random equipped slot and removes 1–4 durability if it contains working gear. -->
+      <!-- Source: server-scripts/Combat.cs:735-757 — a successful armor-breaking skill rolls a random equipped slot and removes 1–4 durability if it contains working gear. -->
       <p>
         Armor-breaking skills can remove 1–4 durability from a randomly chosen
         working equipment slot.
@@ -797,7 +797,7 @@
         >
         <span class="block">It stops counting toward armor set bonuses.</span>
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:9-65 — a repair kit restores damaged equipped items up to its quality; targeting an owned mercenary redirects it, and no qualifying item leaves the kit unused. -->
+      <!-- Source: server-scripts/ScrollItem.cs:37-91 — a repair kit restores damaged equipped items up to its quality; targeting an owned mercenary redirects it, and no qualifying item leaves the kit unused. -->
       <p>
         <span class="block"
           >A repair kit restores equipped items of its quality or lower to full
@@ -811,7 +811,7 @@
           damaged.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:22-56, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4462-4465 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4514-4517 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
@@ -895,7 +895,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PotionItem.cs:77-85,119-144, server-scripts/FoodItem.cs:14-35 and server-scripts/ScrollItem.cs:67-83 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
+      <!-- Source: server-scripts/PotionItem.cs:77-85,119-144, server-scripts/FoodItem.cs:14-35 and server-scripts/ScrollItem.cs:93-128 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
       <p>
         <span class="block">Potions restore resources or apply buffs.</span>
         <span class="block">Food and drink apply buffs.</span>
@@ -929,7 +929,7 @@
         Potion, food, and drink buffs replace active buffs in the same nonempty
         category instead of stacking with them.
       </p>
-      <!-- Source: server-scripts/Item.cs:20-24, server-scripts/PlayerNpcTrading.cs:250-257, server-scripts/PlayerTrading.cs:438-441 and server-scripts/PlayerInventory.cs:694-702 — sale, player trade, and destruction check separate item permissions. -->
+      <!-- Source: server-scripts/Item.cs:20-24, server-scripts/PlayerNpcTrading.cs:250-257, server-scripts/PlayerTrading.cs:438-441 and server-scripts/PlayerInventory.cs:853-861 — sale, player trade, and destruction check separate item permissions. -->
       <p>
         <span class="block"
           >An item can have different restrictions on selling, trading with

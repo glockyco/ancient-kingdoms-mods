@@ -467,7 +467,7 @@
 
       {#if isBackpack && data.item.backpack_is_unique}
         <div>
-          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:432-446 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
+          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:591-605 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
           <div class={styles.label}>Unique</div>
           <div class={styles.value}>Yes</div>
         </div>
@@ -1016,7 +1016,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1815-1822 -->
+                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1820-1827 -->
                 <div class={styles.value}>
                   {formatGold(10000)}g + Token of Redemption
                 </div>
@@ -1216,7 +1216,7 @@
               </div>
               <div>
                 <div class={styles.label}>Removing</div>
-                <!-- Source: server-scripts/UINpcTrading.cs:118-123,182-186 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
+                <!-- Source: server-scripts/UINpcTrading.cs:131-136,195-199 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
                 <div class={styles.value}>
                   Visit an Augmenter to remove a socketed augment. Removal costs {formatGold(
                     5000,
@@ -1693,7 +1693,7 @@
           <Card.Title>Mechanics</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-3 text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:4113-4143 — using the item summons the pet, or dismisses the one it already summoned. -->
+          <!-- Source: server-scripts/Player.cs:4165-4195 — using the item summons the pet, or dismisses the one it already summoned. -->
           <p>
             Use the whistle to summon the pet. Using it again dismisses that
             pet. Three pets can follow you at once.
@@ -1706,7 +1706,7 @@
             character&gt;'s pet".
           </p>
           <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <!-- Source: server-scripts/Player.cs:10980-10983 — portals respawn the followers at the destination. -->
+          <!-- Source: server-scripts/Player.cs:11158-11161 — portals respawn the followers at the destination. -->
           <p>
             The pet follows you, catches up when it falls far behind, and
             reappears beside you after you take a portal. It is cosmetic and

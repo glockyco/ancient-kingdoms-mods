@@ -49,7 +49,7 @@ export interface EffectApplication {
 /**
  * Adds an effect to one recipient's list. An effect with the same skill refreshes in place. Otherwise
  * every effect in the incoming effect's non-empty category expires, whatever its source or magnitude.
- * Source: server-scripts/Skills.cs:1159-1197 and server-scripts/TargetDebuffSkill.cs:288-331.
+ * Source: server-scripts/Skills.cs:1207-1245 and server-scripts/TargetDebuffSkill.cs:288-331.
  */
 export function applyEffect(
   effects: readonly TimedEffect[],
@@ -72,7 +72,7 @@ export function applyEffect(
 
 /**
  * Removes effects whose duration has elapsed. The game runs this pass on every entity update, so an
- * expired effect leaves within one frame. Source: server-scripts/Skills.cs:712-717,1248-1307.
+ * expired effect leaves within one frame. Source: server-scripts/Skills.cs:730-735,1296-1355.
  */
 export function cleanupExpiredEffects(
   effects: readonly TimedEffect[],
@@ -108,7 +108,7 @@ const TARGET_DEBUFF_STATS: ReadonlyArray<
  * Captures the caster's debuff-power attribute into the defensive penalties when the effect lands.
  * A negative defense bonus uses half Strength for a melee debuff and 40 percent otherwise; every
  * negative resist bonus uses 40 percent. Positive values add 15 percent.
- * Sources: server-scripts/BuffSkill.cs:ScaleHealingPerSecondBonus, server-scripts/BuffSkill.cs:435-466,
+ * Sources: server-scripts/BuffSkill.cs:ScaleHealingPerSecondBonus, server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,
  * and server-scripts/Buff.cs:114-230.
  */
 export function scaleTargetDebuff(
@@ -162,7 +162,7 @@ export function targetStatsWithEffects<T extends TargetCombatStats>(
 
 /**
  * Applies the debuff's resist school to its flat damage, then adds percentage-health damage.
- * Source: server-scripts/Skills.cs:1572-1829.
+ * Source: server-scripts/Skills.cs:1617-1905.
  */
 export function periodicEffectDamage(
   spec: EffectSpec,
@@ -195,7 +195,7 @@ export function periodicEffectDamage(
   return Math.max(0, resisted + percent);
 }
 
-/** Source: server-scripts/TargetBuffSkill.cs:277-297. */
+/** Source: server-scripts/TargetBuffSkill.cs:280-300. */
 export function applyCooldownReduction(
   readyAt: ReadonlyMap<string, number>,
   now: number,

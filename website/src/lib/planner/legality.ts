@@ -99,7 +99,7 @@ function predecessorIsLearned(
 
 /**
  * Replays skill upgrades against the same monotone gates as `PlayerSkills.CanUpgrade`.
- * Source: server-scripts/PlayerSkills.cs:1505-1560.
+ * Source: server-scripts/PlayerSkills.cs:1906-1961.
  */
 export function evaluateSkillAllocation(
   input: SkillAllocationInput,
@@ -286,7 +286,7 @@ export type ActionGateFailureCode =
 
 /**
  * Applies the exported preconditions that the engine checks before a cast.
- * Sources: server-scripts/ScriptableSkill.cs:198-239 and server-scripts/PlayerSkills.cs:1718-1722.
+ * Sources: server-scripts/ScriptableSkill.cs:198-239 and server-scripts/PlayerSkills.cs:2140-2144.
  */
 export function actionGateRefusal(
   skill: ActionGateSkill,

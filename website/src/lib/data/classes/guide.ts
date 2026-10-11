@@ -23,7 +23,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You gain rage when your auto attacks deal damage and when you take physical damage.",
         source:
-          "Source: server-scripts/Combat.cs:1364-1388 — rage gain from hits and follow-up attacks",
+          "Source: server-scripts/Combat.cs:1375-1399 — rage gain from hits and follow-up attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage formulas",
       },
@@ -44,14 +44,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Resurrection works on a player's remains or on a dead mercenary.",
         source:
-          "Source: server-scripts/TargetHealSkill.cs:17-35 — resurrection target selection",
+          "Source: server-scripts/TargetHealSkill.cs:CorrectedTarget — resurrection target selection",
         href: "/mechanics/death#death",
         linkText: "Death and remains",
       },
       {
         text: "Cleanse removes only poison and disease effects. An effect with high resistance can need more than one cast.",
         source:
-          "Source: server-scripts/TargetBuffSkill.cs:134-158,318-337 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
+          "Source: server-scripts/TargetBuffSkill.cs:137-161,321-340 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
         href: "/mechanics/combat#effects-and-control",
         linkText: "Cleanse rules",
       },
@@ -72,12 +72,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Spirit of Wolf does not work inside dungeons.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:405-412,645-650 — skills without allowDungeon cannot be cast in dungeons",
+          "Source: server-scripts/PlayerSkills.cs:742-747,980-983 — skills without allowDungeon cannot be cast in dungeons",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
         source:
-          "Source: server-scripts/SummonSkill.cs:22-41,79-86 — an occupied active-pet slot prevents summoning",
+          "Source: server-scripts/SummonSkill.cs:44-61,112-119 — an occupied active-pet slot prevents Druid summoning",
         href: "/summons#how-summons-work",
         linkText: "Pet rules",
       },
@@ -117,7 +117,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Game defect: A broken bow subtracts its damage from melee attacks despite giving none. Repair or unequip the bow before melee combat.",
         source:
-          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:218-222; server-scripts/FrontalDamageSkill.cs:88-92 — broken bows are still subtracted",
+          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:223-227; server-scripts/FrontalDamageSkill.cs:88-92 — broken bows are still subtracted",
         href: "/mechanics/combat#damage-formulas",
         linkText: "Broken-bow damage and defect note",
       },
@@ -143,14 +143,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when you take physical damage. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:422-440; server-scripts/Combat.cs:1364-1388 — rage recovery comes only from passive skill and buff bonuses; combat rage gain",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1375-1399 — rage recovery comes only from passive skill and buff bonuses; combat rage gain",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },
       {
         text: "Game defect: A broken off-hand weapon subtracts half its damage, rounded up, from melee attacks despite giving none. Repair or unequip it before melee combat.",
         source:
-          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:223-227 — broken off-hand weapons are still subtracted",
+          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:228-232 — broken off-hand weapons are still subtracted",
         href: "/mechanics/combat#damage-formulas",
         linkText: "Broken-weapon damage and defect note",
       },
@@ -171,17 +171,17 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Mystic Spark costs no mana and gives back 35% of its damage as mana, rounded down. Damage beyond the target's remaining health does not count.",
         source:
-          "Source: server-scripts/Combat.cs:1221-1229,1231-1278 — Mystic Spark caps mana return by target health and restores it before ward absorption",
+          "Source: server-scripts/Combat.cs:1224-1233,1234-1283 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
         text: "Mana Shield absorbs incoming damage by spending one mana per point. It ends when you run out of mana.",
         source:
-          "Source: server-scripts/Combat.cs:1281-1310 — shield drains mana and ends when depleted",
+          "Source: server-scripts/Combat.cs:1284-1314 — shield drains mana and ends when depleted",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:760-763; server-scripts/Skills.cs:1547-1564 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:762-765; server-scripts/Skills.cs:1592-1609 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -200,14 +200,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You can keep two songs active at once. Polyphony raises this to three.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1204-1215 — base two-song limit plus passive slots",
+          "Source: server-scripts/PlayerSkills.cs:1605-1616 — base two-song limit plus passive slots",
         href: "/mechanics/bard#songs",
         linkText: "Song rules",
       },
       {
         text: "When all song slots are full, a new song replaces the oldest one.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:940-974 — active songs refresh or displace the oldest",
+          "Source: server-scripts/PlayerSkills.cs:1278-1312 — active songs refresh or displace the oldest",
       },
     ],
   },

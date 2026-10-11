@@ -75,7 +75,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/UICharacterEditor.cs:480-482 and server-scripts/Database.cs:GetMaxLevelChar — Hardcore starts unchecked and unlocks only when the highest saved character level is 50. -->
+      <!-- Source: server-scripts/UICharacterEditor.cs:524-526 and server-scripts/Database.cs:GetMaxLevelChar — Hardcore starts unchecked and unlocks only when the highest saved character level is 50. -->
       <p>
         <span class="block"
           >Hardcore becomes selectable when a saved character reaches level 50.</span
@@ -84,7 +84,7 @@
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4042-4049,9392-9395 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4094-4101,9781-9784 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -104,7 +104,7 @@
       <Card.Title>Exploration and Maps</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/ZoneTrigger.cs:87-119,135-181 — a named area is recorded on first entry; discovery awards 10 city, 25 other, or 150 dungeon XP and increases Exploring. -->
+      <!-- Source: server-scripts/ZoneTrigger.cs:120-123,139-185 — a named area is recorded on first entry; discovery awards 10 city, 25 other, or 150 dungeon XP and increases Exploring. -->
       <p>
         <span class="block"
           >Discovering a named area gives experience once per character and
@@ -125,7 +125,7 @@
           > for the reward breakdown.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:258-324 — the game switches between its local and world maps. -->
+      <!-- Source: server-scripts/UIMap.cs:268-334 — the game switches between its local and world maps. -->
       <p>
         <span class="block">The in-game map has local and world views.</span>
         <span class="block"
@@ -136,7 +136,7 @@
           > shows mapped places and entrances.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:1195-1201,2228-2231 — some monsters only spawn within their configured in-game hour window. -->
+      <!-- Source: server-scripts/Monster.cs:1195-1201,2225-2228 — some monsters only spawn within their configured in-game hour window. -->
       <p>
         <span class="block"
           >Some monsters appear only during specific in-game hours.</span
@@ -147,7 +147,7 @@
           > for their timing rules.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:130-153,327-342 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
+      <!-- Source: server-scripts/UIMap.cs:140-163,337-352 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
       <p>
         <span class="block"
           >Temple of Valaark shows a special map instead of the normal map
@@ -179,7 +179,7 @@
           >Your notes appear on that zone's local map, not the world map.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:121-140 and server-scripts/UIMap.cs:138-153 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:121-140 and server-scripts/UIMap.cs:148-163 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
       <p>Temple of Valaark has no map notes.</p>
     </Card.Content>
   </Card.Root>
@@ -189,7 +189,7 @@
       <Card.Title>Binding and Travel</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1783-1793, server-scripts/Player.cs:9938-9945,9960-9970, and server-scripts/TargetBuffSkill.cs:311-316 — accepting a soul binder or Bind Affinity confirmation records the player's current position and zone. -->
+      <!-- Source: server-scripts/Npc.cs:1788-1798, server-scripts/Player.cs:10343-10350,10365-10375, and server-scripts/TargetBuffSkill.cs:314-319 — accepting a soul binder or Bind Affinity confirmation records the player's current position and zone. -->
       <p>
         <span class="block"
           >Confirming a binding saves your current position and zone as your new
@@ -203,8 +203,8 @@
       <p>Gate Scroll returns to your saved bind point without changing it.</p>
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: exported-data/items.json — scroll_of_binding has level_required 30. -->
-      <!-- Source: server-scripts/ScrollItem.cs:67-79 — a bind scroll is refused in a dungeon. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:408-412 — a bind spell is refused in a dungeon. -->
+      <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:741-745 — a bind spell is refused in a dungeon. -->
       <p>
         <span class="block">Scroll of Binding requires level 30.</span>
         <span class="block"
@@ -221,7 +221,7 @@
           >Temple of Valaark blocks travel items before they consume a charge.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:13884-13896 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14098-14110 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A travel NPC shows its offer and any gold cost before travel.</span
@@ -308,7 +308,7 @@
           level.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:10928-10979,3532-3534, server-scripts/Skills.cs:1360-1380, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:11143-11157,3570-3572, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >A successful portal transition removes invisibility, including
@@ -325,7 +325,7 @@
       <Card.Title>Seasonal Events</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-3 text-muted-foreground">
-      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2217-2227 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
+      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2214-2224 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
       <p>
         <span class="font-medium text-foreground"
           >Halloween: October 19 through November 1, inclusive (UTC).</span
@@ -335,7 +335,7 @@
           >seasonal monster spawns</MechanicsLink
         >.
       </p>
-      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Npc.cs:326-340,785-792,1426-1432 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
+      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Npc.cs:331-345,790-797,1431-1437 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
       <p>
         <span class="font-medium text-foreground"
           >Winter Festival: December 19 through January 6, inclusive (UTC).</span

@@ -37,7 +37,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:11558-11577 and server-scripts/Database.cs:1238-1276,1837-1866 — registrar creation costs 10,000 gold, needs a guildless character and account without an owned guild; names have 3–20 permitted characters. -->
+      <!-- Source: server-scripts/Player.cs:UserCode_CmdCreateGuild__String; Database.cs:CreateGuild; Database.cs:TryNormalizeGuildName — registrar creation costs 10,000 gold, needs a guildless character and account without an owned guild; names have 3–20 permitted characters. -->
       <p>
         <span class="block"
           >At a Guild Registrar, a guildless character can create a guild for
@@ -49,9 +49,9 @@
           allowed.</span
         >
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:15-21 and server-scripts/Database.cs:1136-1157 — at most 10 member characters, counted from guild_members rows. -->
+      <!-- Source: server-scripts/GuildSystem.cs:17; Database.cs:1158-1175 — at most 10 member characters, counted from guild_members rows. -->
       <p>A guild holds up to 10 member characters, not 10 accounts.</p>
-      <!-- Source: server-scripts/Database.cs:1123-1134,1169-1181,1383-1425 and server-scripts/UIGuildManagement.cs:168-185,246-267 — membership is per character, leader permissions belong to the owner account's enrolled characters, and a guildless owner-account alt can join the owned guild through Join if there is space. -->
+      <!-- Source: server-scripts/Database.cs:1145-1156,1191-1203,1405-1447 and server-scripts/UIGuildManagement.cs:168-185,246-267 — membership is per character, leader permissions belong to the owner account's enrolled characters, and a guildless owner-account alt can join the owned guild through Join if there is space. -->
       <p>
         <span class="block">Guild membership belongs to each character.</span>
         <span class="block"
@@ -63,7 +63,7 @@
           room.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:11655-11690 and server-scripts/Database.cs:1293-1336 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
+      <!-- Source: server-scripts/Player.cs:11833-11868 and server-scripts/Database.cs:1315-1358 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
       <p>
         <span class="block"
           >The leader can invite an online guildless character by name at the
@@ -71,7 +71,7 @@
         >
         <span class="block">A full guild cannot invite another member.</span>
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:11622-11640,11678-11689 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
+      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:11800-11818,11856-11867 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
       <p>
         <span class="block">An invitation expires after 5 minutes.</span>
         <span class="block"
@@ -79,7 +79,7 @@
           hours during the current server session.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:11706-11721 and server-scripts/Database.cs:1428-1461,1768-1782 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
+      <!-- Source: server-scripts/Player.cs:11884-11899 and server-scripts/Database.cs:1450-1483,1790-1804 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
       <p>
         <span class="block"
           >Leaving at the registrar removes only that character and clears its
@@ -91,7 +91,7 @@
         >
         <span class="block">An empty guild is deleted.</span>
       </p>
-      <!-- Source: server-scripts/Database.cs:2161-2170,2900-2902,2942-2946 and server-scripts/GuildSystem.cs:179-250,359-446 — character save carries guild state; online players on one server synchronize, with membership authoritative when a leader is present. -->
+      <!-- Source: server-scripts/Database.cs:2184-2193,2964-2966,3007-3011 and server-scripts/GuildSystem.cs:179-250,359-446 — character save carries guild state; online players on one server synchronize, with membership authoritative when a leader is present. -->
       <p>
         <span class="block">Each character saves its own guild membership.</span
         >
@@ -115,7 +115,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:2901-2917,2930-2942 and server-scripts/GuildSystem.cs:266-279 — credited highest-threat player receives points only when the monster is a boss and the player belongs to a guild; pets resolve to owner. -->
+      <!-- Source: server-scripts/Monster.cs:2916-2932,2945-2957 and server-scripts/GuildSystem.cs:266-279 — credited highest-threat player receives points only when the monster is a boss and the player belongs to a guild; pets resolve to owner. -->
       <p>
         <span class="block">Only a boss kill grants guild points.</span>
         <span class="block"
@@ -156,7 +156,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/GuildSystem.cs:267-278,400-430 and server-scripts/Database.cs:1207-1235,1349-1367,1428-1450 — points are credited to character save, displayed by member, start at zero on join, clear on leave and synchronize for online guildmates. -->
+      <!-- Source: server-scripts/GuildSystem.cs:267-278,400-430 and server-scripts/Database.cs:1229-1257,1371-1389,1450-1472 — points are credited to character save, displayed by member, start at zero on join, clear on leave and synchronize for online guildmates. -->
       <p>
         <span class="block"
           >Points belong to the credited character, not every guildmate or alt.</span

@@ -34,7 +34,7 @@ export function recoverResourceTick(
   return setResourceCurrent(state, state.current + state.recoveryPerTick);
 }
 
-/** Source: server-scripts/Skills.cs:414-439. */
+/** Source: server-scripts/Skills.cs:432-457. */
 export function resourceRecoveryPerTick(args: {
   base: number;
   passivePercent: number;
@@ -50,7 +50,7 @@ export function resourceRecoveryPerTick(args: {
   );
 }
 
-/** Source: server-scripts/Combat.cs:1583-1590. */
+/** Source: server-scripts/Combat.cs:1594-1601. */
 export function incomingPhysicalEnergyReturn(damage: number): number {
   if (damage <= 0) return 0;
   return floorToInt(
@@ -58,7 +58,7 @@ export function incomingPhysicalEnergyReturn(damage: number): number {
   );
 }
 
-/** Source: server-scripts/Combat.cs:1252-1262. */
+/** Source: server-scripts/Combat.cs:1255-1265. */
 export function followupEnergyReturn(
   landedDamage: number,
   targetCurrentHealth: number,
@@ -71,7 +71,7 @@ export function followupEnergyReturn(
   );
 }
 
-/** Source: server-scripts/Combat.cs:1005-1012. */
+/** Source: server-scripts/Combat.cs:1225-1233. */
 export function mysticSparkManaReturn(
   landedDamage: number,
   targetCurrentHealth: number,

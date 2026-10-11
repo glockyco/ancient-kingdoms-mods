@@ -53,7 +53,7 @@
   }
 
   // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — isScribingTable craft path
-  // Source: server-scripts/ScrollItem.cs:67-105 — scroll use path
+  // Source: server-scripts/ScrollItem.cs:108-124 — scroll use path
   // Both paths share the same gain chance:
   //   Mathf.Lerp(0.9, 0.02, scrollMasteryLevel^2) > Random.value, only while level < 1.
   function getMasteryGainChance(): number {
@@ -64,7 +64,7 @@
   }
 
   // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — crafting: Random.Range(5, 10) / 10000f
-  // Source: server-scripts/ScrollItem.cs:86 — use: Random.Range(10, 20) / 10000f
+  // Source: server-scripts/ScrollItem.cs:110 — use: Random.Range(10, 20) / 10000f
   const CRAFT_MASTERY_GAIN_MIN = 0.05;
   const CRAFT_MASTERY_GAIN_MAX = 0.09;
   const USE_MASTERY_GAIN_MIN = 0.1;
@@ -185,7 +185,7 @@
         <div>
           <div>Craft scrolls.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:13230-13250,13289-13294; server-scripts/Utils.cs:541-550; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
+            <!-- Source: server-scripts/Player.cs:13408-13428,13467-13472; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
             All current scroll recipes have 100% crafting success chance. Crafting
             grants
             <MechanicsLink section="experience#scribing-xp"
@@ -199,7 +199,7 @@
         <div class="text-sm text-muted-foreground">3</div>
         <div>
           <div>Use scrolls.</div>
-          <!-- Source: server-scripts/ScrollItem.cs:67-112 — a valid scroll casts its skill at rank round(mastery × 20), clamped to the skill's range, and consumes one charge unless infiniteCharges is set. -->
+          <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast — a valid scroll casts its skill at rank round(mastery × 20), clamped to the skill's range, and consumes one charge unless infiniteCharges is set. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             A scroll casts its skill without teaching it. Scaling scrolls cast
             at rank Scroll Mastery ÷ 5, fixed scrolls at rank 1. Each use costs

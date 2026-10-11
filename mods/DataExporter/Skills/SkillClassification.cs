@@ -61,13 +61,13 @@ public static class SkillClassification
         _ => "Unknown",
     };
 
-    // Source: server-scripts/Skills.cs:229-231 — negative healing or health-per-second values deal damage.
+    // Source: server-scripts/Skills.cs:247-249 — negative healing or health-per-second values deal damage.
     private static bool HasNegative(LinearFloat value) => value.baseValue < 0f || value.bonusPerLevel < 0f;
     private static bool HasNegative(LinearInt value) => value.baseValue < 0 || value.bonusPerLevel < 0;
-    // Source: server-scripts/Combat.cs:913-915 — only a positive damage shield is applied.
+    // Source: server-scripts/Combat.cs:915-917 — only a positive damage shield is applied.
     private static bool HasPositive(LinearInt value) => value.baseValue > 0 || value.bonusPerLevel > 0;
 
-    // Source: server-scripts/Skills.cs:796-825 — damage-over-time type uses this flag order and defaults to magic.
+    // Source: server-scripts/Skills.cs:814-843 — damage-over-time type uses this flag order and defaults to magic.
     public static string ResolveDamageOverTimeType(BuffSkill buffSkill)
     {
         if (!HasNegative(buffSkill.healingPerSecondBonus) &&
@@ -82,7 +82,7 @@ public static class SkillClassification
         return "Magic";
     }
 
-    // Source: server-scripts/Combat.cs:913-941 — damage-shield mitigation uses melee before poison, fire, cold, disease, and magic.
+    // Source: server-scripts/Combat.cs:915-943 — damage-shield mitigation uses melee before poison, fire, cold, disease, and magic.
     public static string ResolveDamageShieldType(BuffSkill buffSkill)
     {
         if (!HasPositive(buffSkill.damageShield))

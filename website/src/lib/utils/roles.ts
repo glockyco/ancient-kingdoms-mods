@@ -199,7 +199,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_soul_binder: {
     description: "This NPC sets your respawn point to the current area.",
   },
-  // Source: server-scripts/Npc.cs:1752-1775 — the innkeeper offers a drink for 25 gold.
+  // Source: server-scripts/Npc.cs:1757-1780 — the innkeeper offers a drink for 25 gold.
   is_inkeeper: {
     description: "This NPC sells food and drinks.",
     details: ["An innkeeper drink costs 25 gold."],
@@ -219,13 +219,13 @@ export const ROLE_DESCRIPTIONS: Partial<
       "You can have 1 active mercenary at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+.",
     ],
   },
-  // Source: server-scripts/Npc.cs:1861-1875
+  // Source: server-scripts/Npc.cs:1866-1880
   is_priestess: {
     description:
       'This NPC converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
     details: ["Bring Cursed Runes in your inventory."],
   },
-  // Source: server-scripts/UINpcTrading.cs:214-219,279-284 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
+  // Source: server-scripts/UINpcTrading.cs:227-232,292-297 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
   is_augmenter: {
     description: "This NPC removes augments from equipment.",
     details: [

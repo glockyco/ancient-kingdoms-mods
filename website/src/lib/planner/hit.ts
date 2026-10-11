@@ -91,7 +91,7 @@ export type PreparedHit =
       landed: (varianceRoll: number) => number;
       /** Landed non-critical damage at the extreme variance rolls. */
       supportBand: [number, number];
-      /** Critical damage for a landed amount. Source: server-scripts/Combat.cs:864-880. */
+      /** Critical damage for a landed amount. Source: server-scripts/Combat.cs:866-882. */
       critical: (landedDamage: number) => number;
     };
 
@@ -180,7 +180,7 @@ export function sampleHit(
 }
 
 /**
- * Sources: server-scripts/TargetDamageSkill.cs:159-236,
+ * Sources: server-scripts/TargetDamageSkill.cs:164-241,
  * FrontalDamageSkill.cs:60-101 and AreaDamageSkill.cs:85-106.
  */
 /**
@@ -246,7 +246,7 @@ export function weaponGateRefusal(
 }
 
 /**
- * Sources: server-scripts/PlayerSkills.cs:349-389 and
+ * Sources: server-scripts/PlayerSkills.cs:669-715 and
  * server-scripts/TargetProjectileSkill.cs:44-64.
  */
 export function hitRefusal(
@@ -275,7 +275,7 @@ export function hitRefusal(
  * A burn skill spends the caster's whole resource pool and deals a multiple of it, bypassing
  * avoidance and mitigation. The multiplier differs per handler: rage burn doubles, mana burn
  * triples.
- * Sources: server-scripts/TargetDamageSkill.cs:152-157 and
+ * Sources: server-scripts/TargetDamageSkill.cs:157-162 and
  * server-scripts/TargetProjectileSkill.cs:216-221.
  */
 function resourceBurnIntent(
@@ -330,7 +330,7 @@ function handlerCombatStat(caster: HitCaster, skill: DamageSkillSpec): number {
 }
 
 /**
- * Source: server-scripts/TargetDamageSkill.cs:218-223. A broken offhand still subtracts the damage
+ * Source: server-scripts/TargetDamageSkill.cs:223-228. A broken offhand still subtracts the damage
  * it no longer grants; see docs/game-bugs/broken-offhand-subtracts-damage-it-never-gave.md.
  */
 function targetDamageStat(caster: HitCaster, skill: DamageSkillSpec): number {
@@ -442,7 +442,7 @@ function baseCombatStat(
   return stat;
 }
 
-/** Source: server-scripts/Combat.cs:774-860. */
+/** Source: server-scripts/Combat.cs:776-862. */
 function landedNonCriticalDamage(
   intent: number,
   variance: number,

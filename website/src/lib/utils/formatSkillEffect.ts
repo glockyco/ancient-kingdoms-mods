@@ -499,7 +499,7 @@ function formatBuffDebuffStats(
   // Skills.cs:hasDoubleExp; Monster.cs:OnDeath — hasDoubleExp() doubles party and solo kill XP.
   if (skill.is_double_exp_spell) parts.push("2× XP from kills");
   if (skill.is_dispel) parts.push("dispels buffs");
-  // Source: server-scripts/TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff) — cleanse matches on the skill's own debuff type flags
+  // Source: server-scripts/TargetBuffSkill.cs:137-161 (HasMatchingCleanseDebuff) — cleanse matches on the skill's own debuff type flags
   if (skill.is_cleanse) {
     const all =
       skill.is_poison_debuff &&
@@ -522,8 +522,8 @@ function formatBuffDebuffStats(
   if (skill.is_blindness) parts.push("blinds");
   if (skill.is_invisibility) parts.push("grants invis");
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
-  // Source: server-scripts/BuffSkill.cs:illusionRace,73-83 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6378-6388 (ReSkinPlayer picks the illusion race)
+  // Source: server-scripts/BuffSkill.cs:illusionRace,86-96 (illusionRace, HasAppearanceIllusion),
+  // server-scripts/Player.cs:6766-6776 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
 
@@ -843,13 +843,13 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-194,199-209;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:8481-8498 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:8869-8886 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",
   winter_festival: "2× XP from kills, event duration",
   elixir_of_enlightened_learning: "2× XP from kills, 1740s + 60s × skill lvl",
-  // Source: server-scripts/TargetDamageSkill.cs:162-171, 183-200 — while active,
+  // Source: server-scripts/TargetDamageSkill.cs:167-176, 188-205 — while active,
   // Rogue followup (Weapon Strike) attacks switch to Poison damage type and gain
   // +DEX*2.5 bonus on top of normal combat.damage. Resisted by Poison Resist
   // instead of Defense. Duration stored in duration_base (10s).
@@ -888,7 +888,7 @@ export function formatSkillEffect(
     return HARDCODED_EFFECTS[skill.id];
   }
 
-  // Source: server-scripts/AreaBuffSkill.cs:126-139 — isTeleport teleports each party
+  // Source: server-scripts/AreaBuffSkill.cs:125-137 — isTeleport teleports each party
   // member to safety; no buff applied.
   if (skill.is_teleport) return "teleport party to safety, stun (1s)";
 
@@ -910,7 +910,7 @@ export function formatSkillEffect(
   // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
   // lists alone, and no NPC carries a skill, so a player passive with the flag
   // changes no damage.
-  // Source: server-scripts/Combat.cs:770-803 (enrage scan and damage bonus)
+  // Source: server-scripts/Combat.cs:772-805 (enrage scan and damage bonus)
   if (skill.skill_type === "passive" && skill.is_enrage) {
     parts.push("+50-75% damage below 10% HP");
   }

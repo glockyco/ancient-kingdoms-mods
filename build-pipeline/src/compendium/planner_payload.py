@@ -32,7 +32,7 @@ EXCLUDED_CLASS_REASONS: dict[str, str] = {
 }
 # Buffs the server applies to every player by state rather than by class: the rest buff
 # whenever the player is out of combat, or the serenity buff while a serenity item is worn.
-# Source: server-scripts/Player.cs:2198-2201.
+# Source: server-scripts/Player.cs:2205-2208.
 STATE_BUFF_SKILL_IDS = frozenset({"rest", "serenity"})
 ADMITTED_ITEM_TYPES = frozenset(
     {"equipment", "weapon", "augment", "food", "potion", "ammo", "book"}
@@ -144,7 +144,7 @@ _EXCLUDED_SKILL_FLAGS = frozenset(
         "is_invisibility",
         "is_mana_shield",
         # Orders the buff display and silences a chat line; no combat effect.
-        # Source: server-scripts/Skills.cs:754-758,1921.
+        # Source: server-scripts/Skills.cs:ShowOverTimeDamagePopup,SortBuffsForDisplay.
         "is_permanent",
         "is_resurrect_skill",
         "is_scroll",

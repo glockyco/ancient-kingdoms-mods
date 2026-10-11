@@ -379,7 +379,7 @@
         <span class="block"
           >Otherwise, the game draws a race from that class's pool.</span
         >
-        <!-- Source: server-scripts/Player.cs:10077-10122,10337-10365; Database.cs:1900-1921; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
+        <!-- Source: server-scripts/Player.cs:10482-10527,10744-10774; Database.cs:1922-1943; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
         <span class="block"
           >Hiring then sets three hidden values: a Health multiplier, a resource
           multiplier, and a combat value shared by Attack Power and Spell Power.</span
@@ -408,7 +408,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:10077-10122,10140-10152,10347-10365,4627-4652; Database.cs:1900-1921 — a positive hire roll is restored; a zero roll rerolls independently, and veteran damage gained while active is not saved. -->
+          <!-- Source: server-scripts/Player.cs:10482-10527,10545-10562,10754-10774,4679-4704; Database.cs:1922-1943 — a positive hire roll is restored; a zero roll rerolls independently, and veteran damage gained while active is not saved. -->
           <span class="block"
             ><b>Attack Power and Spell Power</b> include an attribute bonus: Strength
             for Attack Power and round(INT×1.5) for Spell Power.</span

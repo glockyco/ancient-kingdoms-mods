@@ -83,13 +83,13 @@
   <Card.Root id="shared-rewards" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Shared Rewards</Card.Title>
-      <!-- Source: server-scripts/Monster.cs:2930-2942,3102-3129 — nearby party members receive loot access and experience on a credited kill. -->
+      <!-- Source: server-scripts/Monster.cs:2945-2957,3117-3144 — nearby party members receive loot access and experience on a credited kill. -->
       <Card.Description
         >Nearby party players can share loot and XP from a monster kill.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:2901-2917,2930-2942 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
+      <!-- Source: server-scripts/Monster.cs:2916-2932,2945-2957 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
       <p>
         <span class="block"
           >The monster's highest-threat opponent gets kill credit, not the
@@ -105,7 +105,7 @@
         Sharing requires party members to be visible to the credited player and
         less than 40 world units from them.
       </p>
-      <!-- Source: server-scripts/Monster.cs:3102-3129 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
+      <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
         <span class="block"
           >Living players near the credited player can share kill XP.</span
@@ -136,7 +136,7 @@
         >
         <span class="block">Quest progress does not duplicate the item.</span>
       </p>
-      <!-- Source: server-scripts/PlayerLooting.cs:177-203 and server-scripts/Monster.cs:4553-4592 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:177-203 and server-scripts/Monster.cs:4570-4609 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
         <span class="block"
           >Items that do not require a roll go to the collector.</span
@@ -171,7 +171,7 @@
         <span class="block">The roll resolves sooner if everyone answers.</span>
         <span class="block">No answer by the deadline counts as Pass.</span>
       </p>
-      <!-- Source: server-scripts/Player.cs:13673-13679 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
+      <!-- Source: server-scripts/Player.cs:13851-13857 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -278,7 +278,7 @@
         <span class="block">Party and guild chat require membership.</span>
         <span class="block">Whispers do not reach offline characters.</span>
       </p>
-      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:3833-3853,3916-3937 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
+      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:3885-3905,3968-3989 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
       <p>
         <span class="block"
           >Select a living player in your zone and enter <code>/follow</code
@@ -288,7 +288,7 @@
         <span class="block">Following only moves you toward the player.</span>
         <span class="block">Following stops within 1 unit of the player.</span>
       </p>
-      <!-- Source: server-scripts/Player.cs:3856-3879,3883-3915 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
+      <!-- Source: server-scripts/Player.cs:3908-3931,3935-3967 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
         <span class="block"
           >Moving manually or using a skill cancels follow.</span

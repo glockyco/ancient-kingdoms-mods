@@ -64,7 +64,7 @@ namespace CombatVerification.Probes
 
             /// <summary>
             /// Whether the caster and the victim looked the same way when the hit landed, which is
-            /// the engine's test for a positional bonus. Source: server-scripts/Combat.cs:671.
+            /// the engine's test for a positional bonus. Source: server-scripts/Combat.cs:673.
             /// </summary>
             public bool SameFacing { get; }
 

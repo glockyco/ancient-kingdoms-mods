@@ -10,7 +10,7 @@ import {
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 
-// Source: server-scripts/Player.cs:10352-10365 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:10759-10774 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -28,7 +28,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:10077-10114 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:10482-10519 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -62,7 +62,7 @@ export const RACES: Record<string, RaceBands> = {
 /** Display order of every race a mercenary can be. */
 export const RACE_ORDER = Object.keys(RACES);
 
-/** Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean; Player.cs:10337-10364; Pet.cs:953-961 — Bard uses the Mana multiplier branch but displays songs. */
+/** Source: server-scripts/Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean; Player.cs:10744-10773; Pet.cs:955-963 — Bard uses the Mana multiplier branch but displays songs. */
 export type Role = "mana" | "energy";
 
 export interface ClassDef {
@@ -140,13 +140,13 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:10337-10354 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:10744-10763 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(multiplyF32(hpCurve, mult)) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:10337-10365 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:10744-10774 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(multiplyF32(manaCurve, mult)) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:10077-10114 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:10482-10519 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(multiplyF32(level, factor)) - 1;
 
@@ -172,8 +172,8 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:10072-10073,10077-10114,10140-10152 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
-/** Source: server-scripts/Player.cs:10337-10365 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:10477-10478,10482-10519,10545-10557 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
+/** Source: server-scripts/Player.cs:10744-10774 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
 /** Source: server-scripts/Player.cs:UpdateMercStatsByLevel — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
@@ -300,7 +300,7 @@ export function obtainableRaces(
 
 /**
  * P(get this race) when hiring a class from a recruiter that prefers `preferredRace`.
- * Source: server-scripts/Utils.cs:646-647 — a preference the class can be is forced,
+ * Source: server-scripts/Utils.cs:648-649 — a preference the class can be is forced,
  * otherwise the race is uniform over the class pool.
  */
 export function pRaceAtRecruiter(
@@ -315,12 +315,12 @@ export function pRaceAtRecruiter(
   return pool.includes(race) ? 1 / pool.length : 0;
 }
 
-/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20, server-scripts/UINpcTrading.cs:824-831 — GetDiscountPurchaseBonus returns Charisma * 0.002 and CalculatePurchaseItemPrice caps it at 0.25. */
+/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20, server-scripts/UINpcTrading.cs:837-844 — GetDiscountPurchaseBonus returns Charisma * 0.002 and CalculatePurchaseItemPrice caps it at 0.25. */
 export function charismaDiscount(charisma: number): number {
   return clamp(charisma, 0, 125) * 0.002;
 }
 
-/** Source: server-scripts/UIMercenaries.cs:434-440, server-scripts/UINpcTrading.cs:810-817 — mercenary hire price plus Charisma discount. */
+/** Source: server-scripts/UIMercenaries.cs:434-440, server-scripts/UINpcTrading.cs:823-830 — mercenary hire price plus Charisma discount. */
 export function hirePrice(
   level: number,
   veteran: number,
@@ -337,23 +337,23 @@ export function hirePrice(
 /**
  * The resource a mercenary class shows. Warriors and Rogues use Rage. A Bard
  * shows its active songs. The other classes use Mana.
- * Source: server-scripts/Pet.cs:953-961, Player.cs:10338-10346
+ * Source: server-scripts/Pet.cs:955-963, Player.cs:10745-10753
  */
 export function mercenaryResource(cls: string): "Rage" | "Mana" | "Songs" {
   if (cls === "Bard") return "Songs";
   return CLASSES[cls].role === "energy" ? "Rage" : "Mana";
 }
 
-/** Source: server-scripts/Npc.cs:1893-1904 — a recruiter serves only players at level 10 or higher. */
+/** Source: server-scripts/Npc.cs:1898-1909 — a recruiter serves only players at level 10 or higher. */
 export const MERC_MIN_LEVEL = 10;
-/** Source: server-scripts/Experience.cs:maxVeteranLevel, NetworkManagerMMO.cs:768-772 — total veteran points cap at 200. */
+/** Source: server-scripts/Experience.cs:maxVeteranLevel, NetworkManagerMMO.cs:772-776 — total veteran points cap at 200. */
 export const MAX_VETERAN = 200;
 /** Source: server-scripts/UIMercenaries.cs:380 — a player can have ten hired mercenaries. */
 export const MAX_HIRED = 10;
-/** Source: server-scripts/Player.cs:10115-10120 — a party holds at most five members. */
+/** Source: server-scripts/Player.cs:10520-10525 — a party holds at most five members. */
 export const MAX_PARTY = 5;
 
-/** Source: server-scripts/UIMercenaries.cs:297-299, Player.cs:10116 — the active limit is 1 below level 20, 2 at 20–29, 3 at 30–39, and 4 at 40+. */
+/** Source: server-scripts/UIMercenaries.cs:297-299, Player.cs:10521 — the active limit is 1 below level 20, 2 at 20–29, 3 at 30–39, and 4 at 40+. */
 export function activeMercenaryLimit(level: number): number {
   if (level >= 40) return 4;
   if (level >= 30) return 3;
@@ -363,7 +363,7 @@ export function activeMercenaryLimit(level: number): number {
 
 /**
  * Rank of each mercenary skill for its owner's progression.
- * Source: server-scripts/PetSkills.cs:OnStartServer — min(max rank, floor(level ÷ 5) + floor(veteran ÷ 10)), with a minimum of 1 for Bard mercenaries.
+ * Source: server-scripts/PetSkills.cs:RefreshSkillLevels — min(max rank, floor(level ÷ 5) + floor(veteran ÷ 10)), with a minimum of 1 for Bard mercenaries.
  */
 export function mercenarySkillRank(
   cls: string,
@@ -386,12 +386,12 @@ export function resurrectionPrice(
   return Math.max(1, base - ceilToInt(base * clamp(discount, 0, 0.25)));
 }
 
-/** Source: server-scripts/Combat.cs:1157-1162 — the death-save rank is Mathf.RoundToInt(total veteran points ÷ 10). */
+/** Source: server-scripts/Combat.cs:1040 — the death-save rank is Mathf.RoundToInt(total veteran points ÷ 10). */
 export function deathSaveRank(veteran: number): number {
   return iround(veteran / 10);
 }
 
-/** Source: server-scripts/Combat.cs:1159 — the death save needs an owner at level 50 or higher. */
+/** Source: server-scripts/Combat.cs:1038 — the death save needs an owner at level 50 or higher. */
 export const DEATH_SAVE_MIN_LEVEL = 50;
 
 /** P(stat >= target), discrete uniform over integers [lo, hi]. Use for base-combat. */

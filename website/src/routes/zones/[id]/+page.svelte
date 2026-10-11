@@ -653,8 +653,8 @@
         Renewal Sage
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        <!-- Source: server-scripts/Npc.cs:1733-1739; server-scripts/Player.cs:14192-14219 — renewal uses gold when priced and resets respawn timers for monsters that can return. -->
-        <!-- Source: server-scripts/UINpcTrading.cs:824-832 — Charisma can reduce the ordinary dungeon fee by up to 25%. -->
+        <!-- Source: server-scripts/Npc.cs:1738-1744; server-scripts/Player.cs:14406-14433 — renewal uses gold when priced and resets respawn timers for monsters that can return. -->
+        <!-- Source: server-scripts/UINpcTrading.cs:837-845 — Charisma can reduce the ordinary dungeon fee by up to 25%. -->
         <p class="flex flex-wrap items-center gap-x-1 gap-y-2">
           <EntityLink
             href="/npcs/{data.renewalSage.id}"

@@ -235,7 +235,7 @@ export const FORMULA_EXPRS = {
   bard_final_cadence: special(
     "round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2)))",
   ),
-  // Source: server-scripts/TargetDamageSkill.cs:127-155, TargetProjectileSkill.cs:211-220 — Rageblow uses Rage ×2; Mana Burn uses Mana ×3.
+  // Source: server-scripts/TargetDamageSkill.cs:132-160, TargetProjectileSkill.cs:211-220 — Rageblow uses Rage ×2; Mana Burn uses Mana ×3.
   manaburn: special(
     "Current Rage × 2 (Rageblow) or current Mana × 3 (Mana Burn) — ignores armor and resistance",
   ),
@@ -420,7 +420,7 @@ export function renderFormulaDisplay(
         specialNote: renderFormula(expr),
       };
 
-    // Source: server-scripts/TargetDamageSkill.cs:127-155, TargetProjectileSkill.cs:211-220 — resource and multiplier depend on the skill.
+    // Source: server-scripts/TargetDamageSkill.cs:132-160, TargetProjectileSkill.cs:211-220 — resource and multiplier depend on the skill.
     case "manaburn":
       return {
         preMitigation: null,
@@ -540,8 +540,8 @@ export function renderFormulaDisplay(
  * performs the common hit pipeline.
  *
  * Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike),
- * TargetDamageSkill.cs:239,282, TargetProjectileSkill.cs:221-222,252-256,
- * Combat.cs:368,774,840-847,944-955 (DealDamageAt).
+ * TargetDamageSkill.cs:244,291, TargetProjectileSkill.cs:221-222,252-256,
+ * Combat.cs:521,776,842-849,1191-1204 (DealDamageAt).
  */
 export function renderWildStrikeFormulaDisplay(): FormulaDisplay {
   return {

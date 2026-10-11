@@ -711,7 +711,7 @@ class Engine {
     }
   }
 
-  /** Source: server-scripts/Skills.cs:1023-1136. */
+  /** Source: server-scripts/Skills.cs:FinishCast,ApplyFinishedCast,FinishCastMeleeAttackMonster. */
   private onComplete(entity: EntityState, actionId: string, now: number): void {
     entity.castingUntil = null;
     const action = entity.actionsById.get(actionId)!;
@@ -965,7 +965,7 @@ class Engine {
       );
   }
 
-  /** Source: server-scripts/Skills.cs:712-717,1248-1307. */
+  /** Source: server-scripts/Skills.cs:730-735,1296-1355. */
   private onExpire(recipientId: string, now: number): void {
     const isTarget = recipientId === this.target.input.id;
     const entity = isTarget ? null : this.entity(recipientId);

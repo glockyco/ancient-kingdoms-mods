@@ -18,7 +18,7 @@ const ctx: EvalCtx = {
 };
 
 describe("server damage formula families", () => {
-  // Source: server-scripts/TargetDamageSkill.cs:203-226 and Combat.cs:117-145.
+  // Source: server-scripts/TargetDamageSkill.cs:208-231 and Combat.cs:119-147.
   it("subtracts the Ranger bow and halves the Rogue player's off-hand damage", () => {
     expect(evaluate(FORMULA_EXPRS.normal, ctx)).toBe(29);
     expect(evaluate(FORMULA_EXPRS.ranger_melee, ctx)).toBe(33);
@@ -34,12 +34,12 @@ describe("server damage formula families", () => {
     expect(evaluate(FORMULA_EXPRS.ranged_merc, ctx)).toBe(61);
   });
 
-  // Source: server-scripts/TargetDamageSkill.cs:183-199 and Dexterity.cs:GetPoisonDamageBonusPerPoint.
+  // Source: server-scripts/TargetDamageSkill.cs:188-204 and Dexterity.cs:GetPoisonDamageBonusPerPoint.
   it("floors player off-hand damage and rounds poison Dexterity", () => {
     expect(evaluate(FORMULA_EXPRS.poison_rogue, ctx)).toBe(37);
   });
 
-  // Source: server-scripts/Intelligence.cs:GetMagicDamageBonus and TargetDamageSkill.cs:214-226.
+  // Source: server-scripts/Intelligence.cs:GetMagicDamageBonus and TargetDamageSkill.cs:219-231.
   it("rounds Intelligence before adding physical and magic weapon components", () => {
     expect(evaluate(FORMULA_EXPRS.magic_spell, ctx)).toBe(28);
     expect(evaluate(FORMULA_EXPRS.magic_weapon, ctx)).toBe(57);

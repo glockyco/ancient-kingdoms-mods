@@ -47,7 +47,7 @@ internal static class SkillEffectFormatter
         // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
         // lists alone, and no NPC carries a skill, so a player passive with the flag
         // changes no damage.
-        // Source: server-scripts/Combat.cs:770-803 (enrage scan and damage bonus)
+        // Source: server-scripts/Combat.cs:772-805 (enrage scan and damage bonus)
         if (skill.skill_type == "passive" && skill.is_enrage)
             parts.Add("+50-75% damage below 10% HP");
         if (skill.is_bard_song)
@@ -271,8 +271,8 @@ internal static class SkillEffectFormatter
         if (skill.is_invisibility)
             parts.Add("grants invis");
         // A buff carrying illusionRace redraws the wearer as that race until it ends.
-        // Source: server-scripts/BuffSkill.cs:illusionRace,73-83 (illusionRace, HasAppearanceIllusion),
-        // server-scripts/Player.cs:6378-6388 (ReSkinPlayer picks the illusion race)
+        // Source: server-scripts/BuffSkill.cs:illusionRace,86-96 (illusionRace, HasAppearanceIllusion),
+        // server-scripts/Player.cs:6766-6776 (ReSkinPlayer picks the illusion race)
         if (!string.IsNullOrWhiteSpace(skill.illusion_race))
             parts.Add($"{skill.illusion_race} illusion");
         if (skill.is_mana_shield)

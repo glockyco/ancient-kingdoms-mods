@@ -32,7 +32,7 @@
   const LATE_GAME_START = 40;
   const XP_BASE_GROWTH = 1.258;
 
-  // Source: server-scripts/Experience.cs:26-36,425-433 and server-scripts/ExponentialLong.cs:11-14
+  // Source: server-scripts/Experience.cs:26-36,464-472 and server-scripts/ExponentialLong.cs:11-14
   // — required XP is Convert.ToInt64(78 * 1.258^(level-1)) up to level 40, then the
   // level-40 value grown by 1.18 per level. The game evaluates both in 32-bit floats,
   // so the values are listed rather than recomputed in double precision.
@@ -94,7 +94,7 @@
   const Y_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
   const X_TICKS = [1, 10, 20, 30, 40, 49];
 
-  // Source: server-scripts/Experience.cs:112-320 — every class raises one attribute on
+  // Source: server-scripts/Experience.cs:114-348 — every class raises one attribute on
   // each of the level multiples below, and two on every sixth level.
   const ATTRIBUTE_GAINS = [
     {
@@ -185,7 +185,7 @@
     },
   ];
 
-  // Source: server-scripts/Experience.cs:38,51-52,306-334 — the veteran cap and the
+  // Source: server-scripts/Experience.cs:38,51-52,372-407 — the veteran cap and the
   // experience each Veteran Point costs.
   const MAX_VETERAN_POINTS = 200;
   const VETERAN_BASE_COST = 1_000_000;
@@ -227,7 +227,7 @@
   const VET_X_TICKS = [0, 50, 100, 150, 200];
   const millions = (value: number) => `${Math.round(value / 1_000_000)}M`;
 
-  // Source: server-scripts/Experience.cs:503-539 — BalanceExperienceReward selects the level-gap multiplier.
+  // Source: server-scripts/Experience.cs:BalanceExperienceReward — BalanceExperienceReward selects the level-gap multiplier.
   // The switch is keyed on your level minus the monster's level.
   const ABOVE_MULTIPLIERS: Record<number, number> = {
     1: 0.99,
@@ -488,7 +488,7 @@
     <Card.Content class="space-y-6">
       <div class="space-y-2">
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Experience.cs:281-291 — every level grants one attribute point, one skill point, and a full heal while alive. -->
+          <!-- Source: server-scripts/Experience.cs:349-357 — every level grants one attribute point, one skill point, and a full heal while alive. -->
           <span class="block"
             >Each level grants one attribute point and one class skill point.</span
           >
@@ -563,7 +563,7 @@
     <Card.Content class="space-y-6">
       <div class="space-y-2">
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Experience.cs:300-330 — at the cap a filled bar grants a Veteran Point, an attribute point, a full heal, and a veteran level-up for your mercenaries. -->
+          <!-- Source: server-scripts/Experience.cs:372-390 — at the cap a filled bar grants a Veteran Point, an attribute point, a full heal, and a veteran level-up for your mercenaries. -->
           <span class="block"
             >At level {LEVEL_CAP}, filling the experience bar grants one Veteran
             Point and one attribute point instead of another level.</span
@@ -720,7 +720,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Spending and Counting</h3>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/PlayerSkills.cs:1361-1371 — the total counts unspent points plus the base levels of learned veteran skills. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1762-1772 — the total counts unspent points plus the base levels of learned veteran skills. -->
           <span class="block">Veteran Points buy ranks in veteran skills.</span>
           <span class="block"
             >Your total Veteran Points include both unspent points and ranks
@@ -732,7 +732,7 @@
           >
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:10555-10590 and server-scripts/Npc.cs:1817-1835 — a veteran master refunds spent veteran skill points for gold and a token. -->
+          <!-- Source: server-scripts/Player.cs:10964-10999 and server-scripts/Npc.cs:1822-1840 — a veteran master refunds spent veteran skill points for gold and a token. -->
           A veteran master refunds every spent Veteran Point for 10,000 gold and a
           {#if data.redemptionToken}
             <ItemLink
@@ -749,7 +749,7 @@
           {/if}.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Experience.cs:306-334 — earning stops at 200 total points and pays out the max-level reward item instead. -->
+          <!-- Source: server-scripts/Experience.cs:372-407 — earning stops at 200 total points and pays out the max-level reward item instead. -->
           <span class="block"
             >You can earn up to {MAX_VETERAN_POINTS} Veteran Points.</span
           >
@@ -808,7 +808,7 @@
             >Monsters 21 or more levels below you award no XP.</span
           >
         </p>
-        <!-- Source: server-scripts/Experience.cs:503-539 — BalanceExperienceReward -->
+        <!-- Source: server-scripts/Experience.cs:BalanceExperienceReward — BalanceExperienceReward -->
         <svg
           class="level-chart"
           viewBox="0 0 {DIFF_CHART.w} {DIFF_CHART.h}"
@@ -916,9 +916,9 @@
           Dungeon kills, the Forgotten Altar event, and Double XP buffs change
           the level-scaled XP award:
         </p>
-        <!-- Source: server-scripts/Experience.cs:496-503 — dungeon +10% bonus -->
+        <!-- Source: server-scripts/Experience.cs:573-577 — dungeon +10% bonus -->
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP skill (solo kill) -->
-        <!-- Source: server-scripts/Monster.cs:3164 — Forgotten Altar ×1.4 (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:3179 — Forgotten Altar ×1.4 (solo kill) -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
@@ -965,8 +965,8 @@
         </div>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,825 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:13293 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:13293 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:13459-13472 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:13467-13472 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
@@ -984,7 +984,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:3102-3130 — party kill XP award loop -->
+        <!-- Source: server-scripts/Monster.cs:3117-3145 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
@@ -1058,7 +1058,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <!-- Source: server-scripts/Experience.cs:32 — deathLossPercent = 0.1f -->
-      <!-- Source: server-scripts/Experience.cs:527-536 — Death() = max * 0.1f -->
+      <!-- Source: server-scripts/Experience.cs:Death — Death() = max * 0.1f -->
       <!-- Source: server-scripts/Player.cs:OnDeath — lossExp capped at experience.current -->
       <p class="text-sm text-muted-foreground">
         <span class="block"
@@ -1215,7 +1215,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:11733-11740 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:13459-13466 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1272,8 +1272,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13520-13526 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:11977-12002 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:13698-13704 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:13714-13746 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1312,7 +1312,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13520-13526 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:13698-13704 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

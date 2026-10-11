@@ -464,7 +464,7 @@ export function computeMechanicsSpec(
     const isAreaBuff = skill.skill_type === "area_buff";
 
     if (skill.is_relic) {
-      // Source: AreaBuffSkill.cs:34-37 — isRelic → num2 = caster.level.current * 10.
+      // Source: AreaBuffSkill.cs:38-41 — isRelic → caster.level.current * 10.
       // Relic items can be used by any player class regardless of skill.player_classes;
       // a single "Player" context covers all of them. No merc/pet path: relics are
       // player-only equipment usables.
@@ -481,20 +481,20 @@ export function computeMechanicsSpec(
           // Source: BardSongSkill.cs — Bard songs use the caster's Charisma.
           src = "player_cha";
         } else if (isAreaBuff && skill.is_mercenary_skill) {
-          // Source: AreaBuffSkill.cs:14-17,52 — Leadership uses round((WIS+CON+CHA)/2);
+          // Source: AreaBuffSkill.cs:GetLeadershipAttributeBonus,58 — Leadership uses round((WIS+CON+CHA)/2);
           // other player-cast mercenary buffs use round((WIS+CON)/2).
           src =
             skill.id === "leadership"
               ? "player_wis_con_cha_half"
               : "player_wis_con_avg";
         } else if (isAreaBuff) {
-          // Source: AreaBuffSkill.cs:25 — plain player.wisdom.value; NO Ranger×3 for area buffs
+          // Source: AreaBuffSkill.cs:33; BuffSkill.cs:GetBuffPowerAttribute — plain player.wisdom.value; NO Ranger×3 for area buffs
           src = "player_wis";
         } else if (cls === "ranger") {
-          // Source: TargetBuffSkill.cs:419 — player8.className=="Ranger" → wisdom.value * 3
+          // Source: TargetBuffSkill.cs:434-437; BuffSkill.cs:GetBuffPowerAttribute — Ranger → attribute * 3
           src = "player_ranger_wis";
         } else {
-          // Source: TargetBuffSkill.cs:419 — else → wisdom.value
+          // Source: TargetBuffSkill.cs:434; BuffSkill.cs:GetBuffPowerAttribute — else → wisdom.value
           src = "player_wis";
         }
         buffPairs.push({ label, bonusAttrSource: src, isAreaBuff });
@@ -502,8 +502,8 @@ export function computeMechanicsSpec(
       for (const pet of mercPets) {
         const tm = pet.type_monster ?? "Unknown";
         const label = `${tm} mercenary`;
-        // Source: TargetBuffSkill.cs:419 — `caster is Pet { isMercenary: not false }` → pet3.wisdom.value
-        // Source: AreaBuffSkill.cs:25 — same merc branch, no Ranger×3
+        // Source: TargetBuffSkill.cs:434; BuffSkill.cs:GetBuffPowerAttribute — `caster is Pet { isMercenary: not false }` → wisdom.value
+        // Source: AreaBuffSkill.cs:33; BuffSkill.cs:GetBuffPowerAttribute — same merc branch, no Ranger×3
         // Source: server-scripts/BardMercenarySkills.cs:RefreshAura — a Bard mercenary's song buff carries the mercenary's Charisma.
         buffPairs.push({
           label,
@@ -516,7 +516,7 @@ export function computeMechanicsSpec(
         if (hasMonsters) parts.push("Monster or NPC");
         if (hasNonMercPet) parts.push("Companion");
         if (hasFamiliar) parts.push("Familiar");
-        // Source: TargetBuffSkill.cs:419 — final else → 0
+        // Source: BuffSkill.cs:GetBuffPowerAttribute — final else → 0
         // Only shown when a player or merc also casts the skill; pure monster-only
         // buff skills have bonusAttrSource=none which is uninformative to players.
         buffPairs.push({
@@ -530,8 +530,8 @@ export function computeMechanicsSpec(
 
   // ---------- timing ----------
   // Only populated when followup_default_attack=true.
-  // Source: server-scripts/Skills.cs:1112-1116 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown, Combat.cs:334-343 (haste cap)
-  // Source: server-scripts/Player.cs:3357-3394 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:339-345 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
+  // Source: server-scripts/Player.cs:3394-3431 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ label: string; model: TimingModel }> = [];
 
@@ -555,12 +555,12 @@ export function computeMechanicsSpec(
     for (const pet of mercPets) {
       const tm = pet.type_monster ?? "Unknown";
       const label = `${tm} mercenary`;
-      // Source: Skills.cs:762-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste)
+      // Source: Skills.cs:1141-1159 — followupDefaultAttack && !isSpell → cooldown * (1 - haste)
       const model: TimingModel = isSpell ? "merc_spell" : "merc_auto";
       timingPairs.push({ label, model });
     }
     if (hasMonsters) {
-      // Source: Monster.cs:1625, Npc.cs:1266 — both call FinishCastMeleeAttackMonster
+      // Source: Monster.cs:2048-2054, Npc.cs:1302-1308 — both call FinishCastMeleeAttackMonster
       // unconditionally regardless of isSpell, so spells and non-spells have the same
       // haste-reduced cooldown behaviour. A single model covers both.
       const model: TimingModel = "monster";
