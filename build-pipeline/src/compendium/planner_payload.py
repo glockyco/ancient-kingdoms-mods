@@ -29,6 +29,12 @@ EXCLUDED_CLASS_REASONS: dict[str, str] = {
         "state, auras, renewal, and charm) has no combat model. The Bard mercenary "
         "(BardMercenarySkills) uses the same system."
     ),
+    "necromancer": (
+        "The Necromancer skill classes (NecromancerBloodPactSkill, NecromancerDeathBloomSkill, "
+        "NecromancerReaperFormSkill, NecromancerPetBuffSkill, and ChanneledTargetDamageSkill), "
+        "its Intelligence-scaled damage-over-time and execute rules, and its undead summons "
+        "(NecromancerPetStats) have no combat model."
+    ),
 }
 # Buffs the server applies to every player by state rather than by class: the rest buff
 # whenever the player is out of combat, or the serenity buff while a serenity item is worn.
