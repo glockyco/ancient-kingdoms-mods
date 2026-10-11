@@ -41,7 +41,19 @@
       {value}
       inputmode="numeric"
       aria-label={label}
-      oninput={(e) => onchange(e.currentTarget.valueAsNumber)}
+      oninput={(e) => {
+        const typed = e.currentTarget.valueAsNumber;
+        if (Number.isFinite(typed) && typed >= min && typed <= max)
+          onchange(typed);
+      }}
+      onchange={(e) => {
+        const typed = e.currentTarget.valueAsNumber;
+        const committed = Number.isFinite(typed)
+          ? Math.min(max, Math.max(min, typed))
+          : value;
+        e.currentTarget.value = String(committed);
+        onchange(committed);
+      }}
     />
     <button
       type="button"
