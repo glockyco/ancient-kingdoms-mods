@@ -15,7 +15,14 @@ export interface ClassConfig {
  * Canonical class name type (lowercase, as stored in database)
  */
 export type ClassName =
-  "warrior" | "cleric" | "ranger" | "rogue" | "wizard" | "druid" | "bard";
+  | "warrior"
+  | "cleric"
+  | "ranger"
+  | "rogue"
+  | "wizard"
+  | "druid"
+  | "bard"
+  | "necromancer";
 
 /**
  * Configuration for each player class.
@@ -30,6 +37,8 @@ export const CLASS_CONFIG: Record<ClassName, ClassConfig> = {
   wizard: { abbrev: "WIZ", color: "#2a5073", name: "Wizard" },
   druid: { abbrev: "DRU", color: "#4a8f58", name: "Druid" },
   bard: { abbrev: "BRD", color: "#8f4a6f", name: "Bard" },
+  // Source: server-scripts/UICombatMeter.cs:225 — Necromancer combat-meter colour is #9164B4
+  necromancer: { abbrev: "NEC", color: "#9164B4", name: "Necromancer" },
 };
 
 /** Default config for unknown classes */
@@ -59,6 +68,7 @@ export const ALL_CLASS_IDS = [
   "wizard",
   "druid",
   "bard",
+  "necromancer",
 ] as const;
 
 /**

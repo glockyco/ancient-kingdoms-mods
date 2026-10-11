@@ -27,6 +27,11 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
     reviewedBodySha256:
       "d342d7eb2253ebf60c648d4f690dc3c69eae46ac19c83d9a7b0c20cc2c085ca9",
   },
+  "classes.necromancer": {
+    href: "/classes/necromancer#class-guide",
+    reviewedBodySha256:
+      "af991d9a849aed095cfcf11bebcbbdbe79794baf96e53ad594b71fb25191af6a",
+  },
   "classes.ranger": {
     href: "/classes/ranger#class-guide",
     reviewedBodySha256:

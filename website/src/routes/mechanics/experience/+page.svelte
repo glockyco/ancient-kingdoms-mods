@@ -167,6 +167,17 @@
         "Intelligence, Wisdom",
       ],
     },
+    {
+      // Source: server-scripts/Experience.cs:232-260 — Necromancer gains Intelligence every 2 levels, Constitution every 3, Wisdom every 4, Dexterity every 5, and Strength plus Charisma every 6
+      className: "Necromancer",
+      gains: [
+        "Intelligence",
+        "Constitution",
+        "Wisdom",
+        "Dexterity",
+        "Strength, Charisma",
+      ],
+    },
   ];
 
   // Source: server-scripts/Experience.cs:current — tutorial messages fired on these levels.

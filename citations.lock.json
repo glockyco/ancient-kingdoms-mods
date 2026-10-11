@@ -1020,6 +1020,10 @@
       "sha256": "89773f8b2772811094052214f6a93f21b94a90707b22c7739e90a3aa6884659c",
       "span": 11
     },
+    "EquipmentItem.cs:130-148": {
+      "sha256": "b648e8ce493830ae90ff273f0cb60119f119c7ea22b9b9392c32c944e78d103f",
+      "span": 19
+    },
     "EquipmentItem.cs:157-212": {
       "sha256": "fa338110acb58527ffc013dd5290cb8636aa2b044f41cb00157dc274fadfc249",
       "span": 56
@@ -1921,11 +1925,43 @@
       "sha256": "6946d0bf5750987acb3124a4f4d8a2855bc6d50d329223ee58100949141c6b8c",
       "span": 1
     },
+    "NecromancerBloodPactSkill.cs:13-31": {
+      "sha256": "b2e3961d72f32fd3fd49a4108784613064eb16f65a33c0dfc4ef48d77e7793fa",
+      "span": 19
+    },
+    "NecromancerBloodPactSkill.cs:53-62": {
+      "sha256": "e5f85135349cb6bd75e1bb88636f90a60ec7970bcb942920698aef916eddafdd",
+      "span": 10
+    },
     "NecromancerBloodPactSkill.cs:Apply": {
       "span": 0
     },
+    "NecromancerDeathBloomSkill.cs:19-25": {
+      "sha256": "5d95fa9f9c46642331855f44aea3aab245b1e1687e652f7e2f149fd94016b4b8",
+      "span": 7
+    },
+    "NecromancerDeathBloomSkill.cs:28-45": {
+      "sha256": "c6bdcd40692a8aaf5fcf9f7810c17506e0685829702d34e25f7bc2b6b886d6aa",
+      "span": 18
+    },
+    "NecromancerDeathBloomSkill.cs:47-50": {
+      "sha256": "52ab526ec6689d64e9a372249e5cc191cafdcea391409c397ca7de1c9dc4c7c7",
+      "span": 4
+    },
+    "NecromancerDeathBloomSkill.cs:52-59": {
+      "sha256": "fbd32c1508bdf22af93c72a700910e4e237680422666df340c73f9b5a266407f",
+      "span": 8
+    },
+    "NecromancerDeathBloomSkill.cs:7-17": {
+      "sha256": "4bd4795922f57ac605e3e6e1df6886d47265e1b7f4c1010cea2147ae204081d3",
+      "span": 11
+    },
     "NecromancerDeathBloomSkill.cs:healthCostPercent": {
       "span": 0
+    },
+    "NecromancerPetStats.cs:28-99": {
+      "sha256": "7858b080fdaa483cec4e05997a0902f09fa5a8545f2d2d98a94cc0dfbb704c1a",
+      "span": 72
     },
     "NetworkManagerMMO.cs:105-117": {
       "sha256": "38f5d4aa099f761995ace8bc1d34b51c7a970f038b2287ab7fc343546044af3b",
@@ -3859,13 +3895,25 @@
       "sha256": "3606e6d1db9218fe1c484f327b5256be58cb4a014bb50684941d0bfafaa176db",
       "span": 18
     },
+    "SummonSkill.cs:106-118": {
+      "sha256": "3838c5787541dce38972da7e038ccefa606a619c2ba4a4be70cffe1bae17c893",
+      "span": 13
+    },
     "SummonSkill.cs:112-119": {
       "sha256": "c78f3f539359b800a76f07fcbc83718bbec910c35c2d756b6b9f69a09611f25f",
       "span": 8
     },
+    "SummonSkill.cs:12-32": {
+      "sha256": "bca924ff534cf888761cba89e2f59a008ccb05476b8b9d9be66018ca3ac3ecf1",
+      "span": 21
+    },
     "SummonSkill.cs:44-61": {
       "sha256": "f4cff247a27e5e10fc6badc9fbfbdceb414b5b3b3eed61a6b6c916db0f8dbbc5",
       "span": 18
+    },
+    "SummonSkill.cs:56": {
+      "sha256": "2ef9a8ee1ceae7c0bdd426405aabde7aa477586aa650672b44a516cb20130a6b",
+      "span": 1
     },
     "SummonSkill.cs:99": {
       "sha256": "0c4975ff003cca5d77dd2a1d596861d0bd6691d4efd0a7f8b2a3fef8a776216f",
@@ -4209,6 +4257,10 @@
     },
     "UIChest.cs": {
       "span": 0
+    },
+    "UICombatMeter.cs:225": {
+      "sha256": "3cbf5c4d0c5b24f707af04730f38685a899557114c2727a6f7ecebba7cce0ee6",
+      "span": 1
     },
     "UICraftingDetail.cs:33-63": {
       "sha256": "9d12bcdb26239ed49c518eb0e0ea416d86fc6f2090ea7f421332b9b71f374fb8",

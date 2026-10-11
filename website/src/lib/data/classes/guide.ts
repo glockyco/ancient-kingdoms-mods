@@ -211,4 +211,47 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       },
     ],
   },
+  necromancer: {
+    attributes: {
+      text: "Each Intelligence point adds 20 maximum mana and rounded 1.5 magic damage. Each Constitution point adds 25 maximum health, not health recovery. Wisdom adds 0.4% per point to ordinary direct heals, up to +500%; Death Bloom uses Intelligence instead.",
+      source:
+        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/Wisdom.cs:107-114; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — attribute bonuses; Death Bloom GetHealingAmount uses GetIntelligenceBonus",
+    },
+    equipment: {
+      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield. Check each item's class requirements before equipping it.",
+      source:
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-148 — Shield slot; two-handed restrictions and requiredClass check",
+    },
+    rules: [
+      {
+        text: "You can have one active pet. Summoning a different undead companion replaces your current pet; it does not add a second one. Using the active companion's summon skill commands it to attack instead.",
+        source:
+          "Source: server-scripts/SummonSkill.cs:12-32,56,106-118 — Necromancer UsesPetAttackCommand checks MatchesPet; a different non-familiar summon destroys and replaces NetworkactivePet",
+        href: "/summons#how-summons-work",
+        linkText: "Pet rules",
+      },
+      {
+        text: "Your undead companion follows your level, up to its level cap. Each of your veteran points adds 0.25% of its base maximum health, physical and magic damage, defense, and magic, poison, fire, cold, and disease resistance, rounded to whole points. The bonus reaches +50% at 200 veteran points.",
+        source:
+          "Source: server-scripts/NecromancerPetStats.cs:28-99 — RefreshFromOwner clamps owner level and veteran points to 200; GetVeteranBonus and GetHealthBonus use 0.0025 and RoundToInt for base stats",
+        href: "/summons",
+        linkText: "Undead companions",
+      },
+      {
+        // Exported skills.blood_pact: max_level 5; health_cost_percent and mana_restored_percent each { base_value: 0.05, bonus_per_level: 0.05 }.
+        text: "Blood Pact trades 5% of maximum health for 5% of maximum mana at rank 1; both percentages rise by 5 percentage points per rank, reaching 25% at rank 5. Health cost rounds up and mana restored rounds down. You must have more health than the cost, and the full cost is paid even when you need only a little mana.",
+        source:
+          "Source: server-scripts/NecromancerBloodPactSkill.cs:13-31,53-62 — GetHealthCost uses CeilToInt of health.max; GetManaRestored uses FloorToInt of mana.max; CanConvert requires health.current > healthCost; Apply caps mana gain but pays full health cost",
+        href: "/skills/blood_pact",
+        linkText: "Blood Pact costs by rank",
+      },
+      {
+        text: "Death Bloom spends 50% of your maximum health, rounded up, to heal another living player or a non-familiar pet. You must have more health than the cost. It cannot heal you or a familiar.",
+        source:
+          "Source: server-scripts/NecromancerDeathBloomSkill.cs:7-17,28-45,52-59 — healthCostPercent is 0.5; GetHealthCost rounds up; CheckSelf requires health above cost; CorrectedTarget excludes self and familiars",
+        href: "/skills/death_bloom",
+        linkText: "Death Bloom healing",
+      },
+    ],
+  },
 };
