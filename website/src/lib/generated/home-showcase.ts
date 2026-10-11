@@ -94,7 +94,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Equipment",
       href: "/items?items.item_type=equipment",
-      count: 751,
+      count: 776,
       icon: {
         src: "/images/items/dawnforged_chestplate/icon.webp",
         width: 30,
@@ -316,6 +316,17 @@ export const HOME_SHOWCASE: HomeShowcase = {
         src: "/images/classes/druid/icon.webp",
         width: 60,
         height: 60,
+      },
+    },
+    {
+      id: "necromancer",
+      name: "Necromancer",
+      role: "Ranged Magic DPS",
+      href: "/classes/necromancer",
+      icon: {
+        src: "/images/classes/necromancer/icon.webp",
+        width: 56,
+        height: 68,
       },
     },
     {
