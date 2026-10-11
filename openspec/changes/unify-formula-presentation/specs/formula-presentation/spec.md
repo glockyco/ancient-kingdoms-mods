@@ -8,7 +8,13 @@ Defines how the compendium presents a game formula so a reader can follow it wit
 
 ### Requirement: Formulas are worded steps
 
-A formula SHALL be presented as named steps. Each step SHALL name the quantity it produces in game terms and state how the game computes it in words, naming real stats and earlier steps. Visible text SHALL NOT use single-letter variables, code identifiers, or function notation such as `round()`, `clamp()`, `min()`, or `max()`. Operators SHALL be written as ×, ÷, +, and −.
+A rule that takes more than one operation SHALL be presented as named steps. A rule that takes one operation SHALL be stated as a sentence with a worked number, such as "drains 5% of your maximum Health each second, rounded, so 2,000 maximum Health loses 100". Each step SHALL name the quantity it produces in game terms and state how the game computes it in words, naming real stats and earlier steps. Visible text SHALL NOT use single-letter variables, code identifiers, or function notation such as `round()`, `clamp()`, `min()`, or `max()`. Operators SHALL be written as ×, ÷, +, and −.
+
+#### Scenario: A one-operation rule
+
+- **WHEN** a skill's rule multiplies one value by one percentage, such as Wild Strike's bonus on the next auto attack
+- **THEN** the page states it as a sentence with a worked number
+- **AND** it shows no calculation block
 
 #### Scenario: A formula has an intermediate quantity
 
@@ -23,7 +29,7 @@ A formula SHALL be presented as named steps. Each step SHALL name the quantity i
 
 ### Requirement: Units are the reader's units
 
-Multipliers and per-point coefficients SHALL be stated as percentages, such as "0.4% per point", not decimal fractions. A change to a chance SHALL be stated in percentage points. Durations SHALL use seconds and distances yards. A skill's level SHALL be called its rank.
+Multipliers and per-point coefficients SHALL be stated as percentages, such as "0.4% per point", not decimal fractions. A whole-number multiplier above 10 MAY be stated as a multiple, such as "× 20", where a percentage such as 2000% would be harder to read. A change to a chance SHALL be stated in percentage points. Durations SHALL use seconds below a minute and minutes and hours from a minute up. A skill's level SHALL be called its rank.
 
 #### Scenario: A coefficient is a fraction in the game code
 
@@ -51,7 +57,7 @@ A calculation whose outcome depends on numbers SHALL show a worked example. The 
 
 ### Requirement: Readers can rerun an example with their own numbers
 
-An example whose outcome depends on the reader's character or choices SHALL offer editable inputs that rerun the same computation as the reader types. Inputs that describe the reader's character SHALL persist in the browser across pages until the reader resets them. Without scripts, the static example SHALL remain. A calculator SHALL cover the reader's side only and SHALL NOT model a target's defenses.
+A calculation whose result depends on the reader's character or choices SHALL offer editable inputs that rerun the same computation as the reader types. Each input SHALL be a value the reader can read in the game, such as the Damage the character window shows. Inputs that describe the reader's character SHALL persist in the browser across pages and update every calculation on the page until the reader resets them. Without scripts, the static example SHALL remain. A calculator SHALL cover the reader's side only and SHALL NOT model a target's defenses.
 
 #### Scenario: A reader enters their maximum Health
 
@@ -65,13 +71,19 @@ An example whose outcome depends on the reader's character or choices SHALL offe
 
 ### Requirement: A general rule is stated once
 
-A page that applies a general combat rule SHALL link to the section that states it, instead of restating its formula. The damage pipeline, resistance and mitigation, and combat advantage rules SHALL be stated on the combat page.
+A page that applies a general combat rule SHALL link to the section that states it, instead of restating its formula. The damage pipeline, resistance and mitigation, combat advantage, cast and attack timing, lifetap, and Wild Strike rules SHALL be stated on the combat page. A skill page SHALL state only the skill's own values, such as its cast time or lifetap percentage, with a worked number.
 
 #### Scenario: A damage skill page
 
 - **WHEN** a damage skill page describes what happens to its hits
 - **THEN** it names the stat its damage meets and links to the combat page sections for the pipeline and resistance
 - **AND** it does not repeat their formulas
+
+#### Scenario: A spell page
+
+- **WHEN** a spell page describes its cast time
+- **THEN** it gives the skill's cast time and one worked number for spell haste
+- **AND** it links to the combat page's timing calculation
 
 ### Requirement: Formulas are readable
 
