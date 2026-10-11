@@ -306,7 +306,7 @@
     },
     {
       accessorKey: "max_level",
-      header: "Max Lvl",
+      header: "Max Rank",
     },
     {
       id: "effect",
@@ -1107,7 +1107,7 @@
           cooldown: "Cooldown",
           cast_time: "Cast Time",
           effect: "Effect",
-          max_level: "Max Lvl",
+          max_level: "Max Rank",
         }}
         urlKey="class-{data.class.id}-skills"
         pageSize={10}

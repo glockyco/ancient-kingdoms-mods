@@ -29,7 +29,7 @@ describe("formatSkillEffect stat bonuses", () => {
         critical_resist_bonus: { base_value: 0.05, bonus_per_level: 0.01 },
         duration_base: 60,
       } as Skill),
-    ).toBe("+4% + 1% × skill lvl critical resist, 1m");
+    ).toBe("+4% + 1% × rank critical resist, 1m");
   });
 });
 
@@ -44,7 +44,7 @@ describe("formatSkillEffect scaling formulas", () => {
     } as Skill;
 
     expect(formatSkillEffect(attack)).toBe(
-      "30 × skill lvl physical dmg, 0.7% + 0.3% × skill lvl stun (1s)",
+      "30 × rank physical dmg, 0.7% + 0.3% × rank stun (1s)",
     );
   });
 });
@@ -94,7 +94,7 @@ describe("formatSkillEffect Bard summaries", () => {
         },
         fear_resist_chance_bonus_cap: 0.7,
       } as Skill),
-    ).toBe("Bard song, +3.5% × skill lvl fear resist (max 70%)");
+    ).toBe("Bard song, +3.5% × rank fear resist (max 70%)");
   });
 
   it("identifies charm damage as a base value", () => {
@@ -138,7 +138,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         mana_restored_percent: { base_value: 0.05, bonus_per_level: 0.05 },
       } as Skill),
     ).toBe(
-      "spend ceil(max hp × (5% × skill lvl)), restore floor(max mana × (5% × skill lvl)) (capped at missing mana)",
+      "spend ceil(max hp × (5% × rank)), restore floor(max mana × (5% × rank)) (capped at missing mana)",
     );
   });
 
@@ -153,7 +153,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         heals_health: { base_value: 0, bonus_per_level: 0 },
       } as Skill),
     ).toBe(
-      "spend ceil(max hp × (50%)), heal target for round(health spent × (137.5% + 12.5% × skill lvl + 0.1% × max(0, INT)))",
+      "spend ceil(max hp × (50%)), heal target for round(health spent × (137.5% + 12.5% × rank + 0.1% × max(0, INT)))",
     );
   });
 
@@ -179,7 +179,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         is_necromancer_pet_buff: true,
         haste_bonus: { base_value: 0.05, bonus_per_level: 0.05 },
       } as Skill),
-    ).toBe("buffs your companion, +5% × skill lvl haste");
+    ).toBe("buffs your companion, +5% × rank haste");
     expect(
       formatSkillEffect({
         skill_type: "target_buff",
@@ -187,7 +187,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         ward_bonus: { base_value: 50, bonus_per_level: 50 },
       } as Skill),
     ).toBe(
-      "when self-cast, also buffs your companion in range, +50 × skill lvl ward",
+      "when self-cast, also buffs your companion in range, +50 × rank ward",
     );
   });
 
@@ -202,10 +202,10 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         healing_per_second_bonus: { base_value: -180, bonus_per_level: -60 },
       } as Skill;
       expect(formatSkillEffect(skill)).toBe(
-        `120 + 60 × skill lvl ${type.toLowerCase()} dmg/s`,
+        `120 + 60 × rank ${type.toLowerCase()} dmg/s`,
       );
       expect(formatSkillEffect({ ...skill, scales_with_charisma: true })).toBe(
-        `120 + 60 × skill lvl ${type.toLowerCase()} dmg/s`,
+        `120 + 60 × rank ${type.toLowerCase()} dmg/s`,
       );
     },
   );
@@ -219,7 +219,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
           bonus_per_level: 0.05,
         },
       } as Skill),
-    ).toBe("+5% × skill lvl DoT dmg vs targets below 30% hp");
+    ).toBe("+5% × rank DoT dmg vs targets below 30% hp");
     expect(
       formatSkillEffect({
         skill_type: "target_buff",
@@ -228,7 +228,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
           bonus_per_level: 0.05,
         },
       } as Skill),
-    ).toBe("+15% + 5% × skill lvl lifetap healing");
+    ).toBe("+15% + 5% × rank lifetap healing");
   });
 
   it("identifies damage as distributed over channel pulses", () => {
@@ -239,7 +239,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         damage: { base_value: 20, bonus_per_level: 20 },
         channel_pulses: 3,
       } as Skill),
-    ).toBe("20 × skill lvl magic dmg, channeled over 3 pulses");
+    ).toBe("20 × rank magic dmg, channeled over 3 pulses");
   });
 
   it("assigns an owner's pet passive max-health bonus to the companion", () => {
@@ -248,9 +248,9 @@ describe("formatSkillEffect Necromancer mechanics", () => {
       is_pet_skill: true,
       health_max_percent_bonus: { base_value: 0.02, bonus_per_level: 0.02 },
     } as Skill;
-    expect(formatSkillEffect(skill)).toBe("+2% × skill lvl companion max hp");
+    expect(formatSkillEffect(skill)).toBe("+2% × rank companion max hp");
     expect(formatSkillEffect({ ...skill, is_pet_skill: false })).toBe(
-      "+2% × skill lvl max hp",
+      "+2% × rank max hp",
     );
   });
 });

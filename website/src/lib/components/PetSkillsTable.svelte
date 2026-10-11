@@ -47,7 +47,7 @@
   const columns: ColumnDef<ClassSkill>[] = [
     { accessorKey: "name", header: "Skill", enableHiding: false },
     { accessorKey: "skill_type", header: "Type" },
-    { accessorKey: "max_level", header: "Max Lvl" },
+    { accessorKey: "max_level", header: "Max Rank" },
     {
       id: "effect",
       header: "Effect",

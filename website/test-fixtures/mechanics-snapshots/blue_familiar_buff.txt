@@ -1,1 +1,1 @@
-Mechanics When used by a familiar, skill level equals the summoning skill rank. Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s.
+Mechanics When used by a familiar, rank equals the summoning skill rank. Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s.

@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = skill user's level × 10 Damage per second skill value at level
+Mechanics Buff Scaling Attribute contribution = skill user's level × 10 Damage per second skill value at rank

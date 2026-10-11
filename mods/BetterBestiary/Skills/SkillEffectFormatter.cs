@@ -64,11 +64,11 @@ internal static class SkillEffectFormatter
         if (skill.additional_active_bard_songs != 0)
             parts.Add($"+{skill.additional_active_bard_songs} active Bard song");
         if (skill.bard_song_duration_bonus_per_level != 0)
-            parts.Add($"+{FormatPercent(skill.bard_song_duration_bonus_per_level)} song duration per skill lvl");
+            parts.Add($"+{FormatPercent(skill.bard_song_duration_bonus_per_level)} song duration per rank");
         if (skill.extra_gather_item_chance != 0)
             parts.Add($"{FormatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item");
         if (skill.food_and_drink_buff_duration_bonus_per_level != 0)
-            parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per skill lvl");
+            parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per rank");
         if (skill.is_necromancer_reaper_form)
             parts.Add("toggle form");
         if (skill.is_necromancer_pet_buff)
@@ -510,10 +510,10 @@ internal static class SkillEffectFormatter
         if (constant == 0)
         {
             var sign = value.bonus_per_level < 0 ? "−" : "";
-            return $"{sign}{perLevel} × skill lvl";
+            return $"{sign}{perLevel} × rank";
         }
 
-        return $"{formatValue(constant)} {operation} {perLevel} × skill lvl";
+        return $"{formatValue(constant)} {operation} {perLevel} × rank";
     }
 
     /// <summary>Mirror of formatSkillEffect's local <c>formatPercent</c>: value*100, one
@@ -563,10 +563,10 @@ internal static class SkillEffectFormatter
         ["improved_backstab"] = "+25% combat advantage dmg",
         ["bind_affinity"] = "set custom respawn & portal scroll destination",
         ["binding"] = "set custom respawn & portal scroll destination",
-        ["elixir_endurance"] = "potion buff duration +60s × skill lvl",
+        ["elixir_endurance"] = "potion buff duration +60s × rank",
         ["veteran_awareness"] = "reveals nearby monsters on minimap",
         ["parry"] = "negate & counter melee attack",
-        ["symbiosis"] = "pet inherits 10% × skill lvl of your attributes & resistances (max 50%)",
+        ["symbiosis"] = "pet inherits 10% × rank of your attributes & resistances (max 50%)",
         ["summon_player"] = "teleport target to caster, stun (2s)",
         ["disarm_trap"] = "detect and disarm traps",
         ["alchemy"] = "craft potions and elixirs",
@@ -586,14 +586,14 @@ internal static class SkillEffectFormatter
         ["sharp_senses"] = "reveal and disarm traps",
         ["halloween_event"] = "2× XP from kills, event duration",
         ["winter_festival"] = "2× XP from kills, event duration",
-        ["elixir_of_enlightened_learning"] = "2× XP from kills, 1740s + 60s × skill lvl",
+        ["elixir_of_enlightened_learning"] = "2× XP from kills, 1740s + 60s × rank",
         ["master_poisoner"] = "weapon strikes deal poison dmg (Attack Damage + DEX×2.5), resisted by Poison Resist, 10s",
         ["call_of_the_heroes"] = "teleport all active mercenaries to you, remove their fear",
         ["charge"] = "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
         ["teleport"] = "",
         ["new_skill_placeholder"] = "",
-        ["razor_of_wrath"] = "attack power +1% × skill lvl, scales with current rage (full rage = full bonus)",
-        ["arcane_edge"] = "spell power +1% × skill lvl, scales with current mana (full mana = full bonus)",
+        ["razor_of_wrath"] = "attack power +1% × rank, scales with current rage (full rage = full bonus)",
+        ["arcane_edge"] = "spell power +1% × rank, scales with current mana (full mana = full bonus)",
         ["divine_intervention"] = "grants invulnerability to nearby allies, 3s",
     };
 }

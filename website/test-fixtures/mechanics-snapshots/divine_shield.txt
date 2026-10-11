@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = WIS Defense skill value at level + attribute contribution × 0.15 Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.8s cast into 1.44s.
+Mechanics Buff Scaling Attribute contribution = WIS Defense skill value at rank + attribute contribution × 0.15 Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.8s cast into 1.44s.

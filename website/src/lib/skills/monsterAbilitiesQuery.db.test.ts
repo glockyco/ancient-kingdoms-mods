@@ -51,7 +51,7 @@ describe("monster ability effects", () => {
     );
     expect(intrinsic).toBeDefined();
     expect(formatSkillEffect(skillRowToEffectInput(intrinsic))).toBe(
-      "2 physical dmg, 0.9% + 0.1% × skill lvl stun (1s)",
+      "2 physical dmg, 0.9% + 0.1% × rank stun (1s)",
     );
 
     const antAttack = query<{ id: string; runtime_level: number }>(
@@ -85,7 +85,7 @@ describe("monster ability effects", () => {
       ).some((usage) => usage.runtime_level === 0),
     ).toBe(true);
     expect(formatSkillEffect(skillRowToEffectInput(dragonBreath))).toBe(
-      "115% + 25% × skill lvl fire weapon dmg",
+      "115% + 25% × rank fire weapon dmg",
     );
   });
 

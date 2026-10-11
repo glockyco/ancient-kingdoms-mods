@@ -858,7 +858,7 @@
         label: "Buff/Debuff Effects",
         show: hasBuffEffects,
       },
-      { id: "level-scaling", label: "Level Scaling", show: showLevelScaling },
+      { id: "level-scaling", label: "Rank Scaling", show: showLevelScaling },
       { id: "mechanics", label: "Mechanics", show: showMechanics },
       {
         id: "granted-by-items",
@@ -1012,7 +1012,7 @@
           {/if}
         </span>
       {/if}
-      <span>Max Level {skill.max_level}</span>
+      <span>Max Rank {skill.max_level}</span>
     </div>
   </div>
 
@@ -1088,8 +1088,7 @@
             </Tabs.Content>
             <Tabs.Content value="tooltip">
               <p class="mb-3 text-sm text-muted-foreground">
-                Skill level 1. Base values before equipment and attribute
-                bonuses.
+                Rank 1. Base values before equipment and attribute bonuses.
               </p>
               <div class="font-mono text-sm whitespace-pre-wrap">
                 <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
@@ -1122,7 +1121,7 @@
           </dl>
         {:else}
           <p class="mb-3 text-sm text-muted-foreground">
-            Skill level 1. Base values before equipment and attribute bonuses.
+            Rank 1. Base values before equipment and attribute bonuses.
           </p>
           <div class="font-mono text-sm whitespace-pre-wrap">
             <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
@@ -1178,7 +1177,7 @@
                 </a>
                 {#if skill.prerequisite_level > 0}
                   <span class="text-muted-foreground">
-                    Lvl {skill.prerequisite_level}
+                    Rank {skill.prerequisite_level}
                   </span>
                 {/if}
               </dd>
@@ -1197,7 +1196,7 @@
                 </a>
                 {#if skill.prerequisite2_level > 0}
                   <span class="text-muted-foreground">
-                    Lvl {skill.prerequisite2_level}
+                    Rank {skill.prerequisite2_level}
                   </span>
                 {/if}
               </dd>
@@ -1967,7 +1966,7 @@
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <TrendingUp class="h-5 w-5 text-emerald-500" />
-          Level Scaling
+          Rank Scaling
         </Card.Title>
       </Card.Header>
       <Card.Content>
@@ -1977,7 +1976,7 @@
               <tr class="border-b">
                 <th
                   class="py-2 pr-4 text-left font-medium text-muted-foreground"
-                  >Skill Level</th
+                  >Rank</th
                 >
                 {#if hasScrollMasteryScaling}
                   <th
@@ -2235,13 +2234,11 @@
         {#if usedByMercenary && skill.max_level > 1}
           <p class="text-muted-foreground">
             {#if usedByBardMercenary}
-              Bard mercenary skill level = min(max skill level, max(1,
-              floor(regular level &divide; 5) + floor(veteran level &divide;
-              10))).
+              Bard mercenary rank = min(max rank, max(1, floor(regular level
+              &divide; 5) + floor(veteran level &divide; 10))).
             {:else}
-              When used by a mercenary, skill level = floor(regular level
-              &divide; 5) + floor(veteran level &divide; 10), capped at max
-              skill level.
+              When used by a mercenary, rank = floor(regular level &divide; 5) +
+              floor(veteran level &divide; 10), capped at max rank.
             {/if}
           </p>
         {/if}
@@ -2253,8 +2250,7 @@
         {/if}
         {#if usedByFamiliar && skill.max_level > 1}
           <p class="text-muted-foreground">
-            When used by a familiar, skill level equals the summoning skill
-            rank.
+            When used by a familiar, rank equals the summoning skill rank.
           </p>
         {/if}
 
@@ -2269,7 +2265,7 @@
               >
             </h3>
             <p class="font-mono">
-              Skill level = clamp(round(Scroll Mastery% &divide; 5), 1, {skill.max_level})
+              Rank = clamp(round(Scroll Mastery% &divide; 5), 1, {skill.max_level})
             </p>
           </div>
         {/if}
@@ -2293,7 +2289,7 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Song Duration Bonus</h3>
             <p class="font-mono">
-              Song duration bonus = skill level &times; {formatPercent(
+              Song duration bonus = rank &times; {formatPercent(
                 skill.bard_song_duration_bonus_per_level,
               )}
             </p>
@@ -2413,7 +2409,7 @@
               Song multiplier = 1 + min(max(CHA, 0) &times; 0.001, 2)
             </p>
             <p class="font-mono">
-              Charmed damage = min(100%, skill value at level &times; song
+              Charmed damage = min(100%, skill value at rank &times; song
               multiplier)
             </p>
             <p class="font-mono">
@@ -2458,10 +2454,10 @@
             <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70 — the Melody bonus multiplies Charisma-scaled healing before a second rounding. -->
             <p class="font-mono">
               {#if usedByBardMercenary}
-                Base healing = round(skill healing at level &times; (1 +
+                Base healing = round(skill healing at rank &times; (1 +
                 min(max(CHA, 0) &times; 0.001, 2)))
               {:else}
-                Base healing = round(round(skill healing at level &times; (1 +
+                Base healing = round(round(skill healing at rank &times; (1 +
                 min(max(CHA, 0) &times; 0.001, 2))) &times; (1 + Melody bonus))
               {/if}
             </p>
@@ -2730,7 +2726,7 @@
                   <!-- Source: BardSongSkill.cs:42-51, Buff.cs:45-275, BuffSkill.cs:ScaleFearResistChanceBonus, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
                   {#if hasBardFlatDamageScaling}
                     <p class="font-mono">
-                      Damage per second = abs(skill value at level) +
+                      Damage per second = abs(skill value at rank) +
                       round(max(CHA, 0) &times; {formatNumber(
                         skill.damage_over_time_bonus_per_charisma_point,
                       )})
@@ -2743,19 +2739,18 @@
                   {/if}
                   {#if hasBardIntegerScaling}
                     <p class="font-mono">
-                      final value = round(base value at skill level &times; song
+                      final value = round(base value at rank &times; song
                       multiplier)
                     </p>
                   {/if}
                   {#if hasBardPercentageScaling}
                     <p class="font-mono">
                       {#if skill.fear_resist_chance_bonus_cap > 0}
-                        Fear Resist = min(base value at skill level &times; song
+                        Fear Resist = min(base value at rank &times; song
                         multiplier,
                         {formatPercent(skill.fear_resist_chance_bonus_cap)})
                       {:else}
-                        final value = base value at skill level &times; song
-                        multiplier
+                        final value = base value at rank &times; song multiplier
                       {/if}
                     </p>
                   {/if}
@@ -2822,20 +2817,20 @@
                     {#if hasNonZeroField(skill.health_max_bonus)}
                       <dt class="text-muted-foreground">Max Health</dt>
                       <dd>
-                        skill value at level + attribute contribution &times; 2
+                        skill value at rank + attribute contribution &times; 2
                       </dd>
                     {/if}
                     {#if hasNonZeroField(skill.defense_bonus)}
                       <dt class="text-muted-foreground">Defense</dt>
                       <dd>
-                        skill value at level + attribute contribution &times;
+                        skill value at rank + attribute contribution &times;
                         0.15
                       </dd>
                     {/if}
                     {#if hasNonZeroField(skill.magic_resist_bonus)}
                       <dt class="text-muted-foreground">Magic Resist</dt>
                       <dd>
-                        skill value at level + attribute contribution &times;
+                        skill value at rank + attribute contribution &times;
                         0.15
                       </dd>
                     {/if}
@@ -2843,47 +2838,43 @@
                       <dt class="text-muted-foreground">Ward</dt>
                       {#if ctx.isAreaBuff}
                         <!-- Source: AreaBuffSkill.cs — scroll runs before wardBonus transform (different order vs TargetBuff) -->
-                        <dd>
-                          Ward at skill level + attribute contribution &times; 2
-                        </dd>
+                        <dd>Ward at rank + attribute contribution &times; 2</dd>
                       {:else}
-                        <dd>
-                          Ward at skill level + attribute contribution &times; 2
-                        </dd>
+                        <dd>Ward at rank + attribute contribution &times; 2</dd>
                       {/if}
                     {/if}
                     {#if hasNonZeroField(skill.damage_shield)}
                       <dt class="text-muted-foreground">Damage Shield</dt>
                       <dd>
-                        skill value at level + attribute contribution &times;
+                        skill value at rank + attribute contribution &times;
                         0.75
                       </dd>
                     {/if}
                     {#if hasNonZeroField(skill.poison_resist_bonus)}
                       <dt class="text-muted-foreground">Poison Resist</dt>
                       <dd>
-                        skill value at level + attribute contribution &times;
+                        skill value at rank + attribute contribution &times;
                         0.15
                       </dd>
                     {/if}
                     {#if hasNonZeroField(skill.fire_resist_bonus)}
                       <dt class="text-muted-foreground">Fire Resist</dt>
                       <dd>
-                        skill value at level + attribute contribution &times;
+                        skill value at rank + attribute contribution &times;
                         0.15
                       </dd>
                     {/if}
                     {#if hasNonZeroField(skill.cold_resist_bonus)}
                       <dt class="text-muted-foreground">Cold Resist</dt>
                       <dd>
-                        skill value at level + attribute contribution &times;
+                        skill value at rank + attribute contribution &times;
                         0.15
                       </dd>
                     {/if}
                     {#if hasNonZeroField(skill.disease_resist_bonus)}
                       <dt class="text-muted-foreground">Disease Resist</dt>
                       <dd>
-                        skill value at level + attribute contribution &times;
+                        skill value at rank + attribute contribution &times;
                         0.15
                       </dd>
                     {/if}
@@ -2895,17 +2886,17 @@
                       </dt>
                       {#if isNegativeLinear(skill.healing_per_second_bonus)}
                         <!-- Source: Wisdom.cs:118-121 — GetHealingPerSecondBuffBonus returns 0 for healingPerSecondBonus <= 0; a DoT tick gets no attribute scaling -->
-                        <dd>skill value at level</dd>
+                        <dd>skill value at rank</dd>
                       {:else if skill.duration_base >= 60}
                         <!-- Source: Wisdom.cs:116-128 — buffs 60s or longer add flat bonusAttribute × 0.3 -->
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.3
                         </dd>
                       {:else}
                         <!-- Source: Wisdom.cs:116-128 — buffs under 60s scale base by min(bonusAttribute × 0.004, 5.0) -->
                         <dd>
-                          skill value at level &times; (1 + min(attribute
+                          skill value at rank &times; (1 + min(attribute
                           contribution &times; 0.004, 5.0))
                         </dd>
                       {/if}
@@ -2913,12 +2904,12 @@
                     {#if skill.id === "leadership" && hasNonZeroField(skill.damage_bonus)}
                       <!-- Source: Buff.cs:64-67 — Leadership-only: damageBonus.Get(level) + bonusAttribute on positive branch -->
                       <dt class="text-muted-foreground">Damage</dt>
-                      <dd>skill value at level + attribute contribution</dd>
+                      <dd>skill value at rank + attribute contribution</dd>
                     {/if}
                     {#if skill.id === "leadership" && hasNonZeroField(skill.magic_damage_bonus)}
                       <!-- Source: Buff.cs:84-87 — Leadership-only: magicDamageBonus.Get(level) + bonusAttribute on positive branch -->
                       <dt class="text-muted-foreground">Magic Damage</dt>
-                      <dd>skill value at level + attribute contribution</dd>
+                      <dd>skill value at rank + attribute contribution</dd>
                     {/if}
                   </dl>
                 {/if}
@@ -3065,7 +3056,7 @@
                     <!-- Source: Buff.cs:70-275, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
                     {#if hasBardFlatDamageScaling}
                       <p class="font-mono">
-                        Damage per second = abs(skill value at level) +
+                        Damage per second = abs(skill value at rank) +
                         round(max(CHA, 0) &times; {formatNumber(
                           skill.damage_over_time_bonus_per_charisma_point,
                         )})
@@ -3078,14 +3069,13 @@
                     {/if}
                     {#if hasBardIntegerScaling}
                       <p class="font-mono">
-                        final value = round(base value at skill level &times;
-                        song multiplier)
+                        final value = round(base value at rank &times; song
+                        multiplier)
                       </p>
                     {/if}
                     {#if hasBardPercentageScaling}
                       <p class="font-mono">
-                        final value = base value at skill level &times; song
-                        multiplier
+                        final value = base value at rank &times; song multiplier
                       </p>
                     {/if}
                     <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — a Charisma-scaled debuff returns GetCharisma before the Intelligence branch. -->
@@ -3107,7 +3097,7 @@
                       {#if hasNonZeroField(skill.defense_bonus)}
                         <dt class="text-muted-foreground">Defense reduction</dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.4
                         </dd>
                       {/if}
@@ -3116,7 +3106,7 @@
                           Magic Resist reduction
                         </dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.4
                         </dd>
                       {/if}
@@ -3125,7 +3115,7 @@
                           Poison Resist reduction
                         </dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.4
                         </dd>
                       {/if}
@@ -3134,7 +3124,7 @@
                           Fire Resist reduction
                         </dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.4
                         </dd>
                       {/if}
@@ -3143,7 +3133,7 @@
                           Cold Resist reduction
                         </dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.4
                         </dd>
                       {/if}
@@ -3152,14 +3142,14 @@
                           Disease Resist reduction
                         </dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.4
                         </dd>
                       {/if}
                       {#if hasNonZeroField(skill.damage_bonus)}
                         <dt class="text-muted-foreground">Damage reduction</dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.5
                         </dd>
                       {/if}
@@ -3168,7 +3158,7 @@
                           Magic Damage reduction
                         </dt>
                         <dd>
-                          skill value at level + attribute contribution &times;
+                          skill value at rank + attribute contribution &times;
                           0.5
                         </dd>
                       {/if}
@@ -3176,7 +3166,7 @@
                         <dt class="text-muted-foreground">Damage per second</dt>
                         <!-- Source: server-scripts/BuffSkill.cs:GetDamageOverTimeAttributeBonus — melee uses 0.5; poison/disease without poisonDiseaseScalesWithIntelligence uses 1.5; otherwise damageOverTimeBonusPerIntelligencePoint. -->
                         <dd>
-                          abs(skill value at level) + round(attribute
+                          abs(skill value at rank) + round(attribute
                           contribution &times;
                           {skill.is_melee_debuff
                             ? 0.5
@@ -3512,7 +3502,7 @@
           <p class="text-muted-foreground">
             Spell haste shortens the cast by its percentage, so 20% spell haste
             turns the {skill.cast_time.bonus_per_level !== 0
-              ? "skill level 1 "
+              ? "rank 1 "
               : ""}{Number(baseCast.toFixed(2))}s cast into {Number(
               Math.fround(baseCast * 0.8).toFixed(2),
             )}s.

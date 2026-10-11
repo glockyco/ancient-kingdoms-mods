@@ -239,10 +239,10 @@ function formatSkillLevelFormula(
 
   if (constant === 0) {
     const sign = value.bonus_per_level < 0 ? "−" : "";
-    return `${sign}${perLevel} × skill lvl`;
+    return `${sign}${perLevel} × rank`;
   }
 
-  return `${formatValue(constant)} ${operator} ${perLevel} × skill lvl`;
+  return `${formatValue(constant)} ${operator} ${perLevel} × rank`;
 }
 
 /**
@@ -891,11 +891,11 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   improved_backstab: "+25% combat advantage dmg",
   bind_affinity: "set custom respawn & portal scroll destination",
   binding: "set custom respawn & portal scroll destination",
-  elixir_endurance: "potion buff duration +60s × skill lvl",
+  elixir_endurance: "potion buff duration +60s × rank",
   veteran_awareness: "reveals nearby monsters on minimap",
   parry: "negate & counter melee attack",
   symbiosis:
-    "pet inherits 10% × skill lvl of your attributes & resistances (max 50%)",
+    "pet inherits 10% × rank of your attributes & resistances (max 50%)",
   summon_player: "teleport target to caster, stun (2s)",
   disarm_trap: "detect and disarm traps",
   alchemy: "craft potions and elixirs",
@@ -921,7 +921,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",
   winter_festival: "2× XP from kills, event duration",
-  elixir_of_enlightened_learning: "2× XP from kills, 1740s + 60s × skill lvl",
+  elixir_of_enlightened_learning: "2× XP from kills, 1740s + 60s × rank",
   // Source: server-scripts/TargetDamageSkill.cs:167-176, 188-205 — while active,
   // Rogue followup (Weapon Strike) attacks switch to Poison damage type and gain
   // +DEX*2.5 bonus on top of normal combat.damage. Resisted by Poison Resist
@@ -942,10 +942,10 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   new_skill_placeholder: "",
   // Source: server-scripts/Combat.cs — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:
-    "attack power +1% × skill lvl, scales with current rage (full rage = full bonus)",
+    "attack power +1% × rank, scales with current rage (full rage = full bonus)",
   // Source: server-scripts/Combat.cs — isResourceDepending passive: magic_damage_percent_bonus × (mana.current / mana.max)
   arcane_edge:
-    "spell power +1% × skill lvl, scales with current mana (full mana = full bonus)",
+    "spell power +1% × rank, scales with current mana (full mana = full bonus)",
   // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
   divine_intervention: "grants invulnerability to nearby allies, 3s",
 };
@@ -1007,7 +1007,7 @@ export function formatSkillEffect(
   }
   if (skill.bard_song_duration_bonus_per_level) {
     parts.push(
-      `+${formatPercent(skill.bard_song_duration_bonus_per_level)} song duration per skill lvl`,
+      `+${formatPercent(skill.bard_song_duration_bonus_per_level)} song duration per rank`,
     );
   }
   if (skill.extra_gather_item_chance) {
@@ -1017,7 +1017,7 @@ export function formatSkillEffect(
   }
   if (skill.food_and_drink_buff_duration_bonus_per_level) {
     parts.push(
-      `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per skill lvl`,
+      `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per rank`,
     );
   }
 

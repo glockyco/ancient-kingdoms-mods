@@ -1,1 +1,1 @@
-Mechanics Companion Buff When applied to yourself, the same buff also reaches your living companion within 8 yd. Familiars and mercenaries cannot receive this copy. Buff Scaling Attribute contribution = INT Ward Ward at skill level + attribute contribution × 2
+Mechanics Companion Buff When applied to yourself, the same buff also reaches your living companion within 8 yd. Familiars and mercenaries cannot receive this copy. Buff Scaling Attribute contribution = INT Ward Ward at rank + attribute contribution × 2

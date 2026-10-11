@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = skill user's level × 10 Healing per second skill value at level × (1 + min(attribute contribution × 0.004, 5.0)) Spell haste shortens the cast by its percentage, so 20% spell haste turns the 0.8s cast into 0.64s.
+Mechanics Buff Scaling Attribute contribution = skill user's level × 10 Healing per second skill value at rank × (1 + min(attribute contribution × 0.004, 5.0)) Spell haste shortens the cast by its percentage, so 20% spell haste turns the 0.8s cast into 0.64s.
