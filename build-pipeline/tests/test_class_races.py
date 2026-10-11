@@ -11,10 +11,19 @@ from compendium.class_races import (
     read_pairing,
 )
 
+CLASS_NAMES = ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard")
 
-def creator(*races: tuple[str, dict[str, bool]]) -> str:
-    """Synthetic creator source, one changeRace method for each race given."""
+
+def creator(
+    *races: tuple[str, dict[str, bool]],
+    classes: tuple[str, ...] = CLASS_NAMES,
+    extra: tuple[str, ...] = (),
+) -> str:
+    """Synthetic creator source: one changeClass method per class, one changeRace
+    method per race given, and any extra members verbatim."""
     parts = ["public class UICharacterEditor : MonoBehaviour", "{"]
+    for name in classes:
+        parts.extend([f"\tpublic void changeClass{name}()", "\t{", "\t}"])
     for suffix, states in races:
         parts.append(f"\tpublic void changeRace{suffix}()")
         parts.append("\t{")
@@ -22,31 +31,49 @@ def creator(*races: tuple[str, dict[str, bool]]) -> str:
         for name, enabled in states.items():
             parts.append(f"\t\t{name}Button.interactable = {str(enabled).lower()};")
         parts.append("\t}")
+    parts.extend(extra)
     parts.append("}")
     return "\n".join(parts)
 
 
-ALL_ENABLED = {
-    name: True
-    for name in ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard")
-}
+# The decompiled shape of the 0.9.35.0 Necromancer rule: case labels that allow,
+# and a default branch that allows one more race by comparison.
+RACE_ALLOWS_NECROMANCER = (
+    "\tprivate bool RaceAllowsNecromancer()",
+    "\t{",
+    "\t\tstring text = raceSelected;",
+    "\t\tint num;",
+    "\t\tswitch (text)",
+    "\t\t{",
+    "\t\tdefault:",
+    '\t\t\tnum = ((!(text == "Drassar")) ? 1 : 0);',
+    "\t\t\tbreak;",
+    '\t\tcase "Human":',
+    '\t\tcase "Dark Elf":',
+    "\t\t\tnum = 0;",
+    "\t\t\tbreak;",
+    "\t\t}",
+    "\t\treturn num == 0;",
+    "\t}",
+)
+
+ALL_ENABLED = {name: True for name in CLASS_NAMES}
 
 
 def without(*disabled: str) -> dict[str, bool]:
     return {name: name not in disabled for name in ALL_ENABLED}
 
 
+def with_necromancer_refresh(source: str) -> str:
+    return source.replace(
+        '\t\traceSelected = "x";',
+        '\t\traceSelected = "x";\n\t\tRefreshNecromancerAvailability();',
+    )
+
+
 def test_a_race_that_enables_every_button_allows_every_class():
     pairing = read_pairing(creator(("Human", ALL_ENABLED)))
-    assert pairing.classes_by_race["human"] == [
-        "Warrior",
-        "Ranger",
-        "Cleric",
-        "Rogue",
-        "Wizard",
-        "Druid",
-        "Bard",
-    ]
+    assert pairing.classes_by_race["human"] == list(CLASS_NAMES)
     assert pairing.races_by_class["Druid"] == ["human"]
 
 
@@ -59,6 +86,41 @@ def test_bard_availability_helper_sets_the_bard_rule():
     pairing = read_pairing(source)
 
     assert pairing.races_by_class["Bard"] == []
+
+
+def test_a_refresh_call_applies_the_race_switch_of_its_class():
+    source = with_necromancer_refresh(
+        creator(
+            ("Human", ALL_ENABLED),
+            ("DarkElf", ALL_ENABLED),
+            ("Drassar", ALL_ENABLED),
+            ("Elf", ALL_ENABLED),
+            classes=(*CLASS_NAMES, "Necromancer"),
+            extra=RACE_ALLOWS_NECROMANCER,
+        )
+    )
+
+    pairing = read_pairing(source)
+
+    assert pairing.races_by_class["Necromancer"] == ["dark_elf", "drassar", "human"]
+
+
+def test_a_race_switch_with_an_unknown_statement_is_refused():
+    """Guessing what an unfamiliar branch does would publish a rule the game lacks."""
+    unfamiliar = tuple(
+        line.replace("num = 0;", "num = Allowed(text);")
+        for line in RACE_ALLOWS_NECROMANCER
+    )
+    source = with_necromancer_refresh(
+        creator(
+            ("Human", ALL_ENABLED),
+            classes=(*CLASS_NAMES, "Necromancer"),
+            extra=unfamiliar,
+        )
+    )
+
+    with pytest.raises(PairingUnreadableError, match="Allowed"):
+        read_pairing(source)
 
 
 def test_a_disabled_button_removes_that_class_for_that_race():
@@ -93,9 +155,14 @@ def test_a_method_that_does_not_set_every_class_is_refused():
         read_pairing(partial)
 
 
+def test_source_without_any_class_method_is_refused():
+    with pytest.raises(PairingUnreadableError, match="No changeClass method"):
+        read_pairing(creator(("Human", ALL_ENABLED), classes=()))
+
+
 def test_source_without_any_race_method_is_refused():
     with pytest.raises(PairingUnreadableError, match="No changeRace method"):
-        read_pairing("public class UICharacterEditor { }")
+        read_pairing(creator())
 
 
 def test_a_matching_published_table_reports_nothing():
@@ -110,6 +177,23 @@ def test_a_matching_published_table_reports_nothing():
         "Bard": ["dwarf", "human"],
     }
     assert compare(published, pairing) == []
+
+
+def test_a_class_the_creator_adds_is_checked_rather_than_skipped():
+    """A patch that adds a class must fail the check until the table lists it."""
+    source = with_necromancer_refresh(
+        creator(
+            ("Human", ALL_ENABLED),
+            classes=(*CLASS_NAMES, "Necromancer"),
+            extra=RACE_ALLOWS_NECROMANCER,
+        )
+    )
+    pairing = read_pairing(source)
+    published = {name: ["human"] for name in CLASS_NAMES}
+
+    assert compare(published, pairing) == [
+        "Necromancer: absent from the published table"
+    ]
 
 
 def test_a_missing_race_is_named():
@@ -131,6 +215,6 @@ def test_a_race_the_game_refuses_is_named():
 def test_an_unknown_class_in_the_published_table_is_named():
     pairing = read_pairing(creator(("Human", ALL_ENABLED)))
     published = {name: ["human"] for name in ALL_ENABLED}
-    published["Necromancer"] = ["human"]
+    published["Paladin"] = ["human"]
     problems = compare(published, pairing)
-    assert "Necromancer: not a class the game defines" in problems
+    assert "Paladin: not a class the game defines" in problems

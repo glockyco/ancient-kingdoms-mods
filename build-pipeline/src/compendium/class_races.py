@@ -6,6 +6,11 @@ structure lists the races a class allows. The rule exists only in the character
 creator, which enables or disables one class button per race.
 
 - Source: server-scripts/UICharacterEditor.cs:1142-1780 - changeRace* methods
+- Source: server-scripts/UICharacterEditor.cs:RaceAllowsNecromancer - a switch on the selected race
+- Source: server-scripts/UICharacterEditor.cs:changeClassNecromancer - one changeClass method per class
+
+The class list comes from the creator's `changeClass*` methods rather than from this
+module, so a class that a patch adds is checked instead of skipped.
 
 `compatible_races` is edited in `mods/DataExporter/Curated/classes.json` and copied
 to `exported-data/classes.json` by DataExporter. The build currently requires the
@@ -19,12 +24,23 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-CLASSES = ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard")
-
+_CLASS_METHOD = re.compile(r"public void changeClass(\w+)\s*\(")
 _RACE_METHOD = re.compile(r"public void changeRace(\w+)\s*\(")
 _MEMBER = re.compile(r"^\t(?:public|private|protected|internal)\s")
 _BUTTON_STATE = re.compile(r"(\w+)Button\.interactable = (true|false)")
 _BARD_STATE = re.compile(r"SetBardAvailability\(raceAllowsBard:\s*(true|false)\)")
+# A race method that defers to `RaceAllows<Class>()` through this refresh call.
+_REFRESH_STATE = re.compile(r"Refresh(\w+)Availability\(\)")
+
+# The statements a decompiled `RaceAllows<Class>()` switch consists of. The reader
+# refuses any other statement rather than guessing what it does.
+_CASE_LABEL = re.compile(r'^case "([^"]+)":$')
+_ALLOW = "num = 0;"
+_REFUSE = "num = 1;"
+_DEFAULT_ALLOWS_ONE = re.compile(r'^num = \(\(!\(text == "([^"]+)"\)\) \? 1 : 0\);$')
+_IGNORED = frozenset(
+    {"{", "}", "string text = raceSelected;", "int num;", "switch (text)", "break;"}
+)
 
 
 class PairingUnreadableError(RuntimeError):
@@ -35,6 +51,7 @@ class PairingUnreadableError(RuntimeError):
 class Pairing:
     """Races each class accepts, keyed by class name, as race identifiers."""
 
+    classes: tuple[str, ...]
     races_by_class: dict[str, list[str]]
     classes_by_race: dict[str, list[str]]
 
@@ -44,13 +61,80 @@ def race_identifier(method_suffix: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", method_suffix).lower()
 
 
+def _race_name_identifier(name: str) -> str:
+    """Turn a creator race name such as `Dark Elf` into `dark_elf`."""
+    return name.lower().replace(" ", "_")
+
+
+def _member_body(lines: list[str], start: int) -> list[str]:
+    """The lines of the member declared at `start`, up to the next member."""
+    end = next(
+        (
+            index
+            for index in range(start + 1, len(lines))
+            if _MEMBER.match(lines[index])
+        ),
+        len(lines),
+    )
+    return lines[start:end]
+
+
+def _races_allowed(lines: list[str], class_name: str) -> frozenset[str]:
+    """Race identifiers that `RaceAllows<class_name>()` accepts."""
+    signature = f"bool RaceAllows{class_name}()"
+    start = next((index for index, line in enumerate(lines) if signature in line), None)
+    if start is None:
+        raise PairingUnreadableError(f"RaceAllows{class_name} was not found.")
+
+    body = [line.strip() for line in _member_body(lines, start)[1:]]
+    allowed: set[str] = set()
+    pending: list[str] = []
+    returns_allowed = False
+    for statement in body:
+        if not statement or statement in _IGNORED:
+            continue
+        if statement == "default:":
+            pending = []
+        elif match := _CASE_LABEL.match(statement):
+            pending.append(match.group(1))
+        elif statement == _ALLOW:
+            allowed.update(pending)
+            pending = []
+        elif statement == _REFUSE:
+            pending = []
+        elif match := _DEFAULT_ALLOWS_ONE.match(statement):
+            allowed.add(match.group(1))
+        elif statement == "return num == 0;":
+            returns_allowed = True
+        else:
+            raise PairingUnreadableError(
+                f"RaceAllows{class_name} has a statement this reader does not know: "
+                f"{statement!r}"
+            )
+    if not returns_allowed:
+        raise PairingUnreadableError(
+            f"RaceAllows{class_name} does not return num == 0."
+        )
+    return frozenset(_race_name_identifier(name) for name in allowed)
+
+
 def read_pairing(source: str) -> Pairing:
     """Read the class and race pairing from `UICharacterEditor` source text.
 
-    Each `changeRace*` method sets every class button's `interactable` state. A class
-    is allowed for that race when its button is enabled.
+    Each `changeRace*` method decides every class button's state. It sets the
+    button's `interactable` directly, calls the Bard helper with a constant, or
+    calls `Refresh<Class>Availability()`, which applies `RaceAllows<Class>()` to the
+    selected race. A class is allowed for that race when its button is enabled.
     """
     lines = source.split("\n")
+    classes = tuple(
+        dict.fromkeys(
+            match.group(1) for line in lines if (match := _CLASS_METHOD.search(line))
+        )
+    )
+    if not classes:
+        raise PairingUnreadableError("No changeClass method was found.")
+
     starts = [
         (index, match.group(1))
         for index, line in enumerate(lines)
@@ -59,38 +143,39 @@ def read_pairing(source: str) -> Pairing:
     if not starts:
         raise PairingUnreadableError("No changeRace method was found.")
 
+    rules: dict[str, frozenset[str]] = {}
     classes_by_race: dict[str, list[str]] = {}
     for index, suffix in starts:
-        end = next(
-            (
-                candidate
-                for candidate in range(index + 1, len(lines))
-                if _MEMBER.match(lines[candidate])
-            ),
-            len(lines),
-        )
-        body = "\n".join(lines[index:end])
-        states = dict(_BUTTON_STATE.findall(body))
+        race = race_identifier(suffix)
+        body = "\n".join(_member_body(lines, index))
+        states = {name: state == "true" for name, state in _BUTTON_STATE.findall(body)}
         bard_state = _BARD_STATE.search(body)
         if bard_state is not None:
-            states["Bard"] = bard_state.group(1)
+            states["Bard"] = bard_state.group(1) == "true"
+        for name in _REFRESH_STATE.findall(body):
+            if name not in rules:
+                rules[name] = _races_allowed(lines, name)
+            states[name] = race in rules[name]
 
-        missing = [name for name in CLASSES if name not in states]
+        missing = [name for name in classes if name not in states]
         if missing:
             raise PairingUnreadableError(
                 f"changeRace{suffix} does not set {', '.join(missing)}."
             )
 
-        race = race_identifier(suffix)
-        classes_by_race[race] = [name for name in CLASSES if states[name] == "true"]
+        classes_by_race[race] = [name for name in classes if states[name]]
 
     races_by_class = {
         name: sorted(
             race for race, allowed in classes_by_race.items() if name in allowed
         )
-        for name in CLASSES
+        for name in classes
     }
-    return Pairing(races_by_class=races_by_class, classes_by_race=classes_by_race)
+    return Pairing(
+        classes=classes,
+        races_by_class=races_by_class,
+        classes_by_race=classes_by_race,
+    )
 
 
 def read_pairing_from(snapshot_root: Path) -> Pairing:
@@ -108,7 +193,7 @@ def compare(published: dict[str, list[str]], pairing: Pairing) -> list[str]:
     published table matches the game.
     """
     problems: list[str] = []
-    for name in CLASSES:
+    for name in pairing.classes:
         if name not in published:
             problems.append(f"{name}: absent from the published table")
             continue
@@ -125,6 +210,6 @@ def compare(published: dict[str, list[str]], pairing: Pairing) -> list[str]:
             detail.append(f"lists {', '.join(extra)} which the game refuses")
         problems.append(f"{name}: {' and '.join(detail)}")
 
-    for name in sorted(set(published) - set(CLASSES)):
+    for name in sorted(set(published) - set(pairing.classes)):
         problems.append(f"{name}: not a class the game defines")
     return problems

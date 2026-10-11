@@ -75,5 +75,16 @@
     "resource_type": "songs",
     "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii"],
     "game_version": "0.9.32.3"
+  },
+  {
+    "id": "necromancer",
+    "name": "Necromancer",
+    "description": "Necromancers wield the forbidden magic of death, commanding undead servants and draining the life of their enemies. From a distance, they spread curses and decay while their minions fight at their side.",
+    "primary_role": "Ranged Magic DPS",
+    "secondary_role": "Debuffer",
+    "difficulty": 3,
+    "resource_type": "mana",
+    "compatible_races": ["human", "dark_elf", "fire_goblin", "drassar"],
+    "game_version": "0.9.35.0"
   }
 ]

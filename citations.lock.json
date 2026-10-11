@@ -4169,7 +4169,13 @@
       "sha256": "e6de7a8e0beb13d213c383a80dcb2ee80510e66d3ad72cd4df1595fe90ae13a6",
       "span": 3
     },
+    "UICharacterEditor.cs:RaceAllowsNecromancer": {
+      "span": 0
+    },
     "UICharacterEditor.cs:changeClassDruid": {
+      "span": 0
+    },
+    "UICharacterEditor.cs:changeClassNecromancer": {
       "span": 0
     },
     "UICharacterInfo.cs:265-273": {
