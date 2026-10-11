@@ -9,6 +9,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
@@ -425,9 +426,10 @@
       These companions track your regular level, up to {undeadCaps}. Each of
       your veteran points adds 0.25% of base Health to maximum Health and 0.25%
       of base physical damage, magic damage, defense, and each resistance,
-      rounded to a whole number. The bonus caps at +50% with 200 points. Their
-      stats and skill ranks refresh when you level up or gain a veteran point.
+      rounded. The bonus caps at +50% with 200 points. Their stats and skill
+      ranks refresh when you level up or gain a veteran point.
     </p>
+    <RoundingDefinition />
     <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces NetworkactivePet with a different non-familiar summon; a matching pet uses the summon key as an attack command; other classes receive You already have an active pet. -->
     <p>
       Casting a different undead summon replaces your active pet. Pressing the

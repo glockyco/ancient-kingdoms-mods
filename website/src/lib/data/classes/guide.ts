@@ -158,7 +158,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   wizard: {
     attributes: {
-      text: "Each Intelligence point adds 20 maximum mana and rounded 1.5 magic damage. Dexterity raises accuracy and critical chance.",
+      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded. Dexterity raises accuracy and critical chance.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — Intelligence increases maximum mana and magic damage",
     },

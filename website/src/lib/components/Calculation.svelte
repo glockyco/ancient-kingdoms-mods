@@ -5,14 +5,15 @@
   Each step names the quantity it produces in game terms and says how the game
   computes it in words: real stat names, never single letters or code names;
   percentages for multipliers; "at least" and "at most" for bounds. Rounding is
-  a field, not prose, so every block words it the same way and defines
-  "rounded" once. The example is evaluated with the game's arithmetic, never
-  typed by hand. Without JavaScript the example stays static.
+  a field, so every block words it the same way, and the page defines "rounded"
+  once, at its first use. The example is evaluated with the game's arithmetic,
+  never typed by hand. Without JavaScript the example stays static.
 -->
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import {
     forget,
     loadRemembered,
@@ -198,9 +199,6 @@
     </div>
   {/if}
   {#if roundsToNearest}
-    <p class="text-muted-foreground">
-      Rounded means to the nearest whole number. Exact halves go to the even
-      number, so 2.5 becomes 2.
-    </p>
+    <RoundingDefinition />
   {/if}
 </div>

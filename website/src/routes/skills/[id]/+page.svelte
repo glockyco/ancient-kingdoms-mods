@@ -26,6 +26,7 @@
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
   import Calculation from "$lib/components/Calculation.svelte";
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import {
     bloodPactCalculation,
     channelCalculation,
@@ -2229,6 +2230,7 @@
                   fmt.formatPercent,
                 )}
               </p>
+              <RoundingDefinition />
             {/if}
             <!-- Source: server-scripts/NetworkManagerMMO.cs:116 — UpdateEnergies repeats every 1 second. -->
             <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks skip BreakMezz for NecromancerReaperFormSkill. -->
@@ -2339,6 +2341,7 @@
                 href="/mechanics/combat#debuffs">damage over time</a
               > for the full tick.
             </p>
+            <RoundingDefinition />
             <p class="text-muted-foreground">
               You must remain in the game as the player who applied the debuff
               to another character. Ticks from pets and monsters receive no
@@ -2423,6 +2426,7 @@
               )} Scroll Mastery casts rank {scrollRank(skill.max_level)}. The
               Rank Scaling table lists the mastery each rank needs.
             </p>
+            <RoundingDefinition />
           </div>
         {/if}
 
@@ -2744,6 +2748,7 @@
                 Dexterity above 0, rounded, and deals Poison damage against
                 Poison Resist.
               </p>
+              <RoundingDefinition />
             {/if}
           </div>
         {/if}
@@ -2783,6 +2788,7 @@
               )} average, a character with {fmt.formatNumber(MAX_HEALTH.value)}
               maximum Health ends at {fmt.formatNumber(balancedHealth())}.
             </p>
+            <RoundingDefinition />
           </div>
         {:else if isHealType && !skill.is_resurrect_skill && data.mechanicsSpec.healContexts.length > 0}
           <div class="space-y-3">
@@ -3155,6 +3161,7 @@
                 href="/mechanics/combat#resistance">resistance</a
               >.
             </p>
+            <RoundingDefinition />
             <!-- Source: server-scripts/Skills.cs:460-475; Combat.cs:119-146 — the active buff's flat Damage bonus is already included in the character-window Damage used by the auto-attack calculators. -->
             <p class="text-muted-foreground">
               Use the <a
@@ -3531,6 +3538,7 @@
               below 2 yd. Several such effects each round their healing, then
               add together.
             </p>
+            <RoundingDefinition />
           </div>
         {/if}
         {#if hasLinearValue(skill.cooldown_reduction_percent)}

@@ -15,6 +15,7 @@
   import { onMount } from "svelte";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
   import SiteHeader from "$lib/components/site-header/SiteHeader.svelte";
+  import RoundingScope from "$lib/components/RoundingScope.svelte";
 
   let { children } = $props();
 
@@ -93,5 +94,9 @@
   <SiteHeader search={!isHome} homeLayout={isHome} />
 {/if}
 <main>
-  {@render children()}
+  {#key page.url.pathname}
+    <RoundingScope>
+      {@render children()}
+    </RoundingScope>
+  {/key}
 </main>

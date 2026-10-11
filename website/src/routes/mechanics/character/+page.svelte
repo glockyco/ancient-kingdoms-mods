@@ -5,6 +5,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { mysticSparkMana } from "$lib/calculation/character";
   import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
 
@@ -191,10 +192,7 @@
           </tbody>
         </table>
       </div>
-      <p>
-        Rounded values use the nearest whole number. Exact halves round to the
-        even number.
-      </p>
+      <RoundingDefinition />
       <!-- Source: server-scripts/Experience.cs:114-352 — levels award one allocatable attribute point and class-dependent automatic attribute growth. -->
       <p>
         <span class="block"

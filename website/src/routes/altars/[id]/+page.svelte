@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
@@ -215,9 +216,10 @@
           <!-- Source: server-scripts/DefaultEvent.cs:209-217 — each monster level is its base level + player level + Mathf.RoundToInt(total veteran points / 40) - 30 -->
           <p class="text-muted-foreground">
             Each monster's level is its base level plus your level, plus one
-            level for every 40 veteran points you have earned (rounded to the
-            nearest level), minus 30.
+            level for every 40 veteran points you have earned, rounded, minus
+            30.
           </p>
+          <RoundingDefinition />
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
               <label for="player-level" class="flex justify-between mb-2">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { base } from "$app/paths";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { untrack } from "svelte";
@@ -1014,6 +1015,9 @@
       <div class="rounded-lg border bg-muted/30 p-4">
         <h3 class="font-semibold">Attributes</h3>
         <p class="mt-2 text-muted-foreground">{data.guide.attributes.text}</p>
+        {#if /\brounded\b/.test(data.guide.attributes.text)}
+          <div class="mt-2"><RoundingDefinition /></div>
+        {/if}
         <a
           href="/mechanics/character#attributes"
           class="mt-3 inline-block text-blue-600 dark:text-blue-400 hover:underline"

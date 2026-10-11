@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Table from "$lib/components/ui/table";
   import {
@@ -263,12 +264,15 @@
                 <dt class="text-muted-foreground w-40 shrink-0">
                   Veteran bonus
                 </dt>
-                <dd>
-                  Each of your veteran points adds 0.25% of base Health to
-                  maximum Health and 0.25% of base physical damage, magic
-                  damage, defense, and each resistance, rounded to a whole
-                  number. The bonus caps at +50% with 200 points and refreshes
-                  whenever you gain a veteran point.
+                <dd class="space-y-1">
+                  <p>
+                    Each of your veteran points adds 0.25% of base Health to
+                    maximum Health and 0.25% of base physical damage, magic
+                    damage, defense, and each resistance, rounded. The bonus
+                    caps at +50% with 200 points and refreshes whenever you gain
+                    a veteran point.
+                  </p>
+                  <RoundingDefinition />
                 </dd>
               </div>
               <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces an active pet with a different non-familiar summon; the matching summon key commands its active pet. -->

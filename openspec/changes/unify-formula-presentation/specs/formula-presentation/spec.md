@@ -38,13 +38,13 @@ Multipliers and per-point coefficients SHALL be stated as percentages, such as "
 
 ### Requirement: Rounding is stated where it happens
 
-Each step that produces a whole number SHALL say how it rounds, as "rounded", "rounded down", or "rounded up". Wherever a calculation rounds to the nearest whole number, the page SHALL state that exact halves round to the even number.
+Each step or sentence that produces a whole number SHALL say how it rounds, as "rounded", "rounded down", or "rounded up". A page that rounds to the nearest whole number SHALL state once, at the first such use, that exact halves round to the even number.
 
-#### Scenario: A step rounds to the nearest whole number
+#### Scenario: A page rounds in several places
 
-- **WHEN** a calculation contains a step the game rounds to the nearest integer
-- **THEN** the step says "rounded"
-- **AND** the calculation states that exact halves round to the even number
+- **WHEN** a page contains several calculations or sentences that round to the nearest integer
+- **THEN** each says "rounded"
+- **AND** the page states the exact-halves rule once, at the first of them
 
 ### Requirement: Worked examples use the game's arithmetic
 
