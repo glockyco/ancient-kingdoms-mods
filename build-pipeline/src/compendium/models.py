@@ -932,7 +932,6 @@ class ClassData(BaseModel):
     difficulty: int  # 1-3 (Easy, Medium, Hard)
     resource_type: str  # "mana" or "energy"
     compatible_races: list[str]
-    game_version: str
 
     # Combat stats from classes_combat.json (LinearInt: actual = base + per_level * (level - 1))
     base_health_value: int = 0

@@ -117,7 +117,6 @@ CREATE TABLE classes (
     difficulty INTEGER NOT NULL,
     resource_type TEXT NOT NULL,
     compatible_races TEXT NOT NULL,      -- JSON array: ["human", "elf", "dwarf"]
-    game_version TEXT NOT NULL,
 
     -- Combat stats (LinearInt: actual = base + per_level * (level - 1))
     -- From classes_combat.json (exported from player prefabs at runtime)

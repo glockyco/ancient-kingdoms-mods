@@ -58,7 +58,7 @@ def _insert_classes(conn) -> None:
         conn.execute(
             "INSERT INTO classes "
             "(id, name, description, primary_role, difficulty, resource_type, "
-            "compatible_races, game_version) VALUES (?, ?, '', 'DPS', 1, 'mana', ?, 'test')",
+            "compatible_races) VALUES (?, ?, '', 'DPS', 1, 'mana', ?)",
             (class_id, class_id.title(), races),
         )
     conn.commit()

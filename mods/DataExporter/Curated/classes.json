@@ -7,8 +7,7 @@
     "secondary_role": "Melee DPS",
     "difficulty": 1,
     "resource_type": "energy",
-    "compatible_races": ["human", "elf", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar"],
-    "game_version": "0.9.7.1"
+    "compatible_races": ["human", "elf", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar"]
   },
   {
     "id": "ranger",
@@ -18,8 +17,7 @@
     "secondary_role": "Tank",
     "difficulty": 2,
     "resource_type": "mana",
-    "compatible_races": ["human", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar", "elf"],
-    "game_version": "0.9.7.1"
+    "compatible_races": ["human", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar", "elf"]
   },
   {
     "id": "cleric",
@@ -29,8 +27,7 @@
     "secondary_role": "Debuffing",
     "difficulty": 2,
     "resource_type": "mana",
-    "compatible_races": ["human", "elf", "dark_elf", "dwarf", "fire_goblin", "drassar"],
-    "game_version": "0.9.7.1"
+    "compatible_races": ["human", "elf", "dark_elf", "dwarf", "fire_goblin", "drassar"]
   },
   {
     "id": "rogue",
@@ -40,8 +37,7 @@
     "secondary_role": "Scout",
     "difficulty": 2,
     "resource_type": "energy",
-    "compatible_races": ["human", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar"],
-    "game_version": "0.9.7.1"
+    "compatible_races": ["human", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar"]
   },
   {
     "id": "wizard",
@@ -51,8 +47,7 @@
     "secondary_role": "Crowd Control",
     "difficulty": 3,
     "resource_type": "mana",
-    "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii", "drassar"],
-    "game_version": "0.9.7.1"
+    "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii", "drassar"]
   },
   {
     "id": "druid",
@@ -62,8 +57,7 @@
     "secondary_role": "Ranged Nature",
     "difficulty": 3,
     "resource_type": "mana",
-    "compatible_races": ["human", "elf", "fire_goblin", "felarii"],
-    "game_version": "0.9.7.1"
+    "compatible_races": ["human", "elf", "fire_goblin", "felarii"]
   },
   {
     "id": "bard",
@@ -73,8 +67,7 @@
     "secondary_role": "Debuffer",
     "difficulty": 3,
     "resource_type": "songs",
-    "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii"],
-    "game_version": "0.9.32.3"
+    "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii"]
   },
   {
     "id": "necromancer",
@@ -84,7 +77,6 @@
     "secondary_role": "Debuffer",
     "difficulty": 3,
     "resource_type": "mana",
-    "compatible_races": ["human", "dark_elf", "fire_goblin", "drassar"],
-    "game_version": "0.9.35.0"
+    "compatible_races": ["human", "dark_elf", "fire_goblin", "drassar"]
   }
 ]
