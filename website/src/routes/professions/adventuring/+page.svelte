@@ -353,7 +353,8 @@
           <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Every taskgiver offers quests from the same pool, so NPC choice does
-            not change which quests are available at your character's level.
+            not change availability at your character level and total Veteran
+            Points.
           </p>
         </div>
       </div>
@@ -388,8 +389,8 @@
             for your character.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
-            The taskgiver offers the first quest in today's queue that meets both
+            <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — the daily offer requires recommendedLevel <= level.current, recommendedVeteranLevel <= GetTotalVeteranPoints(), and !HasCompletedToday. -->
+            The taskgiver offers the first quest in today's queue that meets all three
             requirements:
           </p>
           <ul
@@ -398,11 +399,16 @@
             <li>
               Its recommended level is at or below your character's level.
             </li>
+            <li>
+              Its veteran requirement is at or below your total Veteran Points
+              (spent plus unspent). A requirement of 0 means no veteran gate.
+            </li>
             <li>Your character has not completed it in the last 24 hours.</li>
           </ul>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Completing a quest starts its 24-hour cooldown. The taskgiver then
-            offers the next quest in today's queue that meets both requirements.
+            offers the next quest in today's queue that meets all three
+            requirements.
           </p>
         </div>
       </div>
@@ -541,6 +547,8 @@
               <th class="p-3 text-left font-medium">Class Reward</th>
               <th class="p-3 text-right font-medium">Adventuring</th>
               <th class="p-3 text-right font-medium">Recommended Level</th>
+              <th class="p-3 text-right font-medium">Veteran Points Required</th
+              >
             </tr>
           </thead>
           <tbody>
@@ -623,6 +631,9 @@
                   {/if}
                 </td>
                 <td class="p-3 text-right">{quest.level_recommended}</td>
+                <td class="p-3 text-right">
+                  {quest.veteran_level_recommended || "None"}
+                </td>
               </tr>
             {/each}
           </tbody>

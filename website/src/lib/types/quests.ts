@@ -105,6 +105,7 @@ export interface QuestInfo {
   display_type: string;
   level_required: number;
   level_recommended: number;
+  veteran_level_recommended: number;
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;

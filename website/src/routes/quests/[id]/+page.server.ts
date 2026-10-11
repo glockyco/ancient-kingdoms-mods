@@ -124,6 +124,8 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       (questRaw.display_type as string) || (questRaw.quest_type as string),
     level_required: (questRaw.level_required as number) || 0,
     level_recommended: (questRaw.level_recommended as number) || 0,
+    veteran_level_recommended:
+      (questRaw.veteran_level_recommended as number) || 0,
     is_main_quest: Boolean(questRaw.is_main_quest),
     is_epic_quest: Boolean(questRaw.is_epic_quest),
     is_adventurer_quest: Boolean(questRaw.is_adventurer_quest),

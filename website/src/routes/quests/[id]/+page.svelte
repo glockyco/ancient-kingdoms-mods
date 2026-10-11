@@ -143,6 +143,12 @@
       {#if data.quest.level_recommended > 0}
         <span>Recommended Level: {data.quest.level_recommended}</span>
       {/if}
+      {#if data.quest.is_adventurer_quest}
+        <span>
+          Veteran Points Required: {data.quest.veteran_level_recommended ||
+            "None"}
+        </span>
+      {/if}
     </div>
   </div>
 

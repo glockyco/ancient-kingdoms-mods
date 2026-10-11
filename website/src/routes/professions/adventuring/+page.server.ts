@@ -25,6 +25,7 @@ interface AdventurerQuest {
   display_type: string;
   level_required: number;
   level_recommended: number;
+  veteran_level_recommended: number;
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
@@ -146,6 +147,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     display_type: string;
     level_required: number;
     level_recommended: number;
+    veteran_level_recommended: number;
     is_main_quest: number;
     is_epic_quest: number;
     is_adventurer_quest: number;
@@ -167,6 +169,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       display_type,
       level_required,
       level_recommended,
+      veteran_level_recommended,
       is_main_quest,
       is_epic_quest,
       is_adventurer_quest,
@@ -282,6 +285,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       display_type: raw.display_type,
       level_required: raw.level_required,
       level_recommended: raw.level_recommended,
+      veteran_level_recommended: raw.veteran_level_recommended,
       is_main_quest: !!raw.is_main_quest,
       is_epic_quest: !!raw.is_epic_quest,
       is_adventurer_quest: !!raw.is_adventurer_quest,
