@@ -74,9 +74,6 @@
   }
 
   // Game tooltip helpers
-  type PlayerClass =
-    "Warrior" | "Cleric" | "Ranger" | "Rogue" | "Wizard" | "Druid";
-
   // Check if tooltips have class-specific variants (vs just "_default")
   const hasClassSpecificTooltips = $derived(
     data.quest.tooltip_html !== null &&
@@ -86,12 +83,17 @@
   // Get available classes from tooltip (for class-specific quests)
   const tooltipClasses = $derived(
     hasClassSpecificTooltips && data.quest.tooltip_html
-      ? (Object.keys(data.quest.tooltip_html) as PlayerClass[])
+      ? Object.keys(data.quest.tooltip_html)
       : [],
   );
 
   // Selected class for tooltip display (for class-specific quests)
-  let selectedTooltipClass = $state<PlayerClass>("Warrior");
+  let tooltipClassSelection = $state("");
+  const selectedTooltipClass = $derived(
+    tooltipClasses.includes(tooltipClassSelection)
+      ? tooltipClassSelection
+      : (tooltipClasses[0] ?? ""),
+  );
 
   // Get the current tooltip HTML based on selection
   const currentTooltipHtml = $derived(() => {
@@ -137,17 +139,21 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      {#if data.quest.level_required > 0}
-        <span>Required Level: {data.quest.level_required}</span>
-      {/if}
-      {#if data.quest.level_recommended > 0}
-        <span>Recommended Level: {data.quest.level_recommended}</span>
-      {/if}
+      <!-- Source: server-scripts/Utils.cs:601-613 — Adventurer offers require the recommended level and total veteran points. -->
       {#if data.quest.is_adventurer_quest}
         <span>
-          Veteran Points Required: {data.quest.veteran_level_recommended ||
-            "None"}
+          Offered from level {data.quest.level_recommended}{data.quest
+            .veteran_level_recommended > 0
+            ? ` with ${data.quest.veteran_level_recommended} veteran points`
+            : ""}
         </span>
+      {:else}
+        {#if data.quest.level_required > 0}
+          <span>Required Level: {data.quest.level_required}</span>
+        {/if}
+        {#if data.quest.level_recommended > 0}
+          <span>Recommended Level: {data.quest.level_recommended}</span>
+        {/if}
       {/if}
     </div>
   </div>
@@ -718,7 +724,7 @@
               playerClass
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted hover:bg-muted/80'}"
-              onclick={() => (selectedTooltipClass = playerClass)}
+              onclick={() => (tooltipClassSelection = playerClass)}
             >
               {playerClass}
             </button>

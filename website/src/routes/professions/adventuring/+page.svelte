@@ -6,7 +6,11 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
-  import { getClassConfig } from "$lib/utils/classes";
+  import {
+    ALL_CLASS_IDS,
+    CLASS_CONFIG,
+    type ClassName,
+  } from "$lib/utils/classes";
   import Backpack from "@lucide/svelte/icons/backpack";
   import Scroll from "@lucide/svelte/icons/scroll";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -15,23 +19,11 @@
 
   let { data } = $props();
 
-  type PlayerClass =
-    "Warrior" | "Cleric" | "Ranger" | "Rogue" | "Wizard" | "Druid";
-
   type SortMode = "queue" | "level" | "name" | "adventuring";
-
-  const allClasses: PlayerClass[] = [
-    "Warrior",
-    "Cleric",
-    "Ranger",
-    "Rogue",
-    "Wizard",
-    "Druid",
-  ];
 
   const msPerDay = 24 * 60 * 60 * 1000;
 
-  let selectedClass = $state<PlayerClass>("Warrior");
+  let selectedClass = $state<ClassName>(ALL_CLASS_IDS[0]);
   let selectedDate = $state(toUtcDateInput(new Date()));
   let selectedSort = $state<SortMode>("queue");
   let selectedType = $state("All");
@@ -181,6 +173,12 @@
     });
   });
 
+  const hasClassRewards = $derived(
+    displayedQuests.some((quest) =>
+      quest.reward_items.some((item) => item.class_specific !== null),
+    ),
+  );
+
   const filteredVendorUnlocks = $derived(
     selectedUnlockRequirement === "All"
       ? data.vendorUnlocks
@@ -284,7 +282,7 @@
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View the daily Adventurer quest queue, taskgivers, class rewards, cooldown rules, and vendor unlocks.`}
+  description={`${data.profession.description} View the daily Adventurer quest queue, taskgivers, rewards, cooldown rules, and vendor unlocks.`}
   path="/professions/adventuring"
 />
 
@@ -449,24 +447,27 @@
           Adventurer Quests ({data.quests.length})
         </h2>
       </div>
-      <div class="flex flex-wrap gap-1">
-        {#each allClasses as playerClass (playerClass)}
-          {@const config = getClassConfig(playerClass)}
-          <button
-            type="button"
-            class="rounded px-2 py-1 text-xs transition-colors"
-            title={`Show ${playerClass} class rewards`}
-            style="background-color: {selectedClass === playerClass
-              ? config.color
-              : 'transparent'}; color: {selectedClass === playerClass
-              ? 'white'
-              : config.color}; border: 1px solid {config.color};"
-            onclick={() => (selectedClass = playerClass)}
-          >
-            {config.abbrev}
-          </button>
-        {/each}
-      </div>
+      {#if hasClassRewards}
+        <div class="flex flex-wrap gap-1">
+          <!-- Source: server-scripts/ScriptableQuest.cs:130-164 — quest rewards cover all eight playable classes -->
+          {#each ALL_CLASS_IDS as playerClass (playerClass)}
+            {@const config = CLASS_CONFIG[playerClass]}
+            <button
+              type="button"
+              class="rounded px-2 py-1 text-xs transition-colors"
+              title={`Show ${config.name} class rewards`}
+              style="background-color: {selectedClass === playerClass
+                ? config.color
+                : 'transparent'}; color: {selectedClass === playerClass
+                ? 'white'
+                : config.color}; border: 1px solid {config.color};"
+              onclick={() => (selectedClass = playerClass)}
+            >
+              {config.abbrev}
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
 
     <div class="rounded-lg border bg-muted/15 p-4">
@@ -544,7 +545,9 @@
               <th class="p-3 text-left font-medium">Quest</th>
               <th class="p-3 text-left font-medium">Objective</th>
               <th class="p-3 text-left font-medium">Rewards</th>
-              <th class="p-3 text-left font-medium">Class Reward</th>
+              {#if hasClassRewards}
+                <th class="p-3 text-left font-medium">Class Reward</th>
+              {/if}
               <th class="p-3 text-right font-medium">Adventuring</th>
               <th class="p-3 text-right font-medium">Recommended Level</th>
               <th class="p-3 text-right font-medium">Veteran Points Required</th
@@ -599,7 +602,7 @@
                   {#each quest.reward_items.filter((i) => i.class_specific === null) as item (item.item_id)}
                     <a
                       href="/items/{item.item_id}"
-                      class="text-blue-600 hover:underline dark:text-blue-400"
+                      class="block text-blue-600 hover:underline dark:text-blue-400"
                     >
                       {item.item_name}
                     </a>
@@ -607,18 +610,20 @@
                     <span class="text-muted-foreground">—</span>
                   {/each}
                 </td>
-                <td class="p-3">
-                  {#each quest.reward_items.filter((i) => i.class_specific === selectedClass) as item (item.item_id)}
-                    <a
-                      href="/items/{item.item_id}"
-                      class="text-blue-600 hover:underline dark:text-blue-400"
-                    >
-                      {item.item_name}
-                    </a>
-                  {:else}
-                    <span class="text-muted-foreground">—</span>
-                  {/each}
-                </td>
+                {#if hasClassRewards}
+                  <td class="p-3">
+                    {#each quest.reward_items.filter((i) => i.class_specific?.toLowerCase() === selectedClass) as item (item.item_id)}
+                      <a
+                        href="/items/{item.item_id}"
+                        class="block text-blue-600 hover:underline dark:text-blue-400"
+                      >
+                        {item.item_name}
+                      </a>
+                    {:else}
+                      <span class="text-muted-foreground">—</span>
+                    {/each}
+                  </td>
+                {/if}
                 <td class="p-3 text-right">
                   {#if quest.reward_adventuring_skill > 0}
                     <span

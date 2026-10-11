@@ -117,9 +117,8 @@ def _parse_quest_tooltip(
     reward_exp = rewards.get("exp", 0)
     reward_items = rewards.get("items", [])
 
-    # Get reward item names
-    # Generic items (no class_specific) go into REWARDITEM
-    # Class-specific item matching player_class goes into REWARDITEMCLASS
+    # Source: server-scripts/ScriptableQuest.cs:111-113,124-126 — generic and class rewards use separate tooltip placeholders.
+    # Collapsed shared class rewards retain their original placeholder.
     generic_reward_items = []
     class_reward_item = ""
 
@@ -128,7 +127,9 @@ def _parse_quest_tooltip(
         class_specific = item.get("class_specific")
         if item_id:
             item_name = _get_item_name(conn, item_id)
-            if class_specific:
+            if item.get("tooltip_placeholder") == "REWARDITEMCLASS":
+                class_reward_item = item_name
+            elif class_specific:
                 # Only include if it matches the player's class
                 if class_specific == player_class:
                     class_reward_item = item_name
@@ -351,10 +352,12 @@ def run(conn: sqlite3.Connection) -> None:
                 else None
             )
         else:
-            # No class-specific rewards - generate single tooltip (use "Warrior" as dummy class)
-            html = _parse_quest_tooltip(conn, quest, "Warrior", is_complete=False)
+            # No class-specific rewards - generate a single tooltip.
+            html = _parse_quest_tooltip(
+                conn, quest, player_classes[0], is_complete=False
+            )
             complete_html = _parse_quest_tooltip(
-                conn, quest, "Warrior", is_complete=True
+                conn, quest, player_classes[0], is_complete=True
             )
 
             # Store as JSON with single key for consistency

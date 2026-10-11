@@ -138,6 +138,10 @@
       "sha256": "1610df67e5a41a58fcd1ae0db9edf390e0be2a92ae1a3a34ce6427b2ea503836",
       "span": 44
     },
+    "BardFinalCadenceSkill.cs:63-70": {
+      "sha256": "6cac9f93f492ef638ced318281cd78857071f7759672c1a067757646726c3ed2",
+      "span": 8
+    },
     "BardFinalCadenceSkill.cs:67-70": {
       "sha256": "29b8dc2534b794403a1f62fb85f44379d84c62b4ef63e479a0e134ac7ab2d390",
       "span": 4
@@ -199,6 +203,10 @@
     "BardSongSkill.cs:TryApplyAuraBuff": {
       "span": 0
     },
+    "BonusSkill.cs:85-116": {
+      "sha256": "4959a70657ecf1036794d7a7ad8611e80f6d76b4796c72ef5fdf37262eaaf8d1",
+      "span": 32
+    },
     "BookItem.cs": {
       "span": 0
     },
@@ -226,6 +234,10 @@
       "sha256": "4d2746bd4c3c8c6308e4c3bb3ffbb3a57e590968fc7b92f989bca0ec12c6499b",
       "span": 1
     },
+    "Buff.cs:347-355": {
+      "sha256": "4bcda78bd7e5fdf45c77dd4beba004b49835b8c4973abd30e6f28f664683c946",
+      "span": 9
+    },
     "Buff.cs:47-60": {
       "sha256": "5e195bbf0a640b3c41d738a379c5cc56b54e6936a9ab317ad3634e597a463d71",
       "span": 14
@@ -242,9 +254,6 @@
       "sha256": "bfe166efaaf5af733c72a2a96884bf9ad1aff31b8a94e01e2eb8d2bc501286d5",
       "span": 15
     },
-    "Buff.cs:BuffTimeRemaining": {
-      "span": 0
-    },
     "Buff.cs:ScaleWithCharisma": {
       "span": 0
     },
@@ -259,9 +268,17 @@
       "sha256": "fdab61f4c42d479a591da0f6c12b12b10e70f75aa096a4c4c166e009f0ae3e9e",
       "span": 8
     },
-    "BuffSkill.cs:24-28": {
-      "sha256": "e9a39ff99362ec49582c2197dc79a7ac1733ca2dfc24069dffe7a20ae9f1ea75",
-      "span": 5
+    "BuffSkill.cs:237-271": {
+      "sha256": "d929a97037e0c66ececcfee300d8ee5e8ad1c793c6f7c8b300705b81d4f2b6bf",
+      "span": 35
+    },
+    "BuffSkill.cs:452-515": {
+      "sha256": "7cae9dd0302bcfe9f1424bbc6536dc497263bd1f31f67f3abf1119071b0cbfc1",
+      "span": 64
+    },
+    "BuffSkill.cs:473-515": {
+      "sha256": "02406c4e0ee79384aa9e9b7d435a6d4eff04d64c64748b5eb1775fa4278e1290",
+      "span": 43
     },
     "BuffSkill.cs:518-540": {
       "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
@@ -303,6 +320,10 @@
     "BuffSkill.cs:illusionRace": {
       "span": 0
     },
+    "ChanneledTargetDamageSkill.cs:24-47": {
+      "sha256": "02d3fc94261f092ab06ae38dcff2d2bc1ef3b426968c93ba0a2f77d1af8353b7",
+      "span": 24
+    },
     "ChestHouse.cs:167-175": {
       "sha256": "7bc920b10354e7828a8040b83814531c47d8fec606891be79438d4b8a856a848",
       "span": 9
@@ -313,10 +334,6 @@
     },
     "ChestHouse.cs:OnInteractClient": {
       "span": 0
-    },
-    "ChestItem.cs:11": {
-      "sha256": "1e2b00286ebe89f95da2271d834a581d422fc80358665231a4332ac8c788e717",
-      "span": 1
     },
     "ChestItem.cs:16-20": {
       "sha256": "78abe0e006510ca5bd91dad98b2253be32517c4b7c84b1d81ada169b70a3586f",
@@ -329,6 +346,10 @@
     "ChestItem.cs:24-31": {
       "sha256": "210e4ffadd4dc22ff461259a150c449a6dffdb7c7b34360d101fad7cacb70f20",
       "span": 8
+    },
+    "ChestItem.cs:24-32": {
+      "sha256": "2a195ed1b5f998fc966c8b8077b6b702e40641c11a40c0702847200b0e4363b7",
+      "span": 9
     },
     "ChestItem.cs:30": {
       "sha256": "0b4d8b8452b97d5828471fb462afd5cf4785d9c0f760f101686b1d44b232087c",
@@ -804,6 +825,10 @@
     "DamageSkill.cs:49-67": {
       "sha256": "6e8c209752a2cf2c4d71454d0e1bfd22119671baa59dd8cdf6ba5dc501d195da",
       "span": 19
+    },
+    "DamageSkill.cs:69-98": {
+      "sha256": "6d671be34626d738a0d0c8c23dcf4d8a35306dbea119f026ce374edcda649af5",
+      "span": 30
     },
     "DamageType.cs:1-9": {
       "sha256": "9a10de936e856a92c39be7ff91dc6c12b1c9a908eb83caea195b8420e74ca81c",
@@ -1519,6 +1544,10 @@
       "sha256": "13dda63d7ae1f011d82684ec4087cc3a6db792f0a82f2c913debdf34d4653753",
       "span": 17
     },
+    "Health.cs:34": {
+      "sha256": "dcf3a9b79f3b6981f9aa9217ed50803980486e2065754f3146ffd131d0586406",
+      "span": 1
+    },
     "Health.cs:59-71": {
       "sha256": "901a22ad5c260a9f3c7a811c9494ec574ec3fa1902cf866437aaa74c58ab087e",
       "span": 13
@@ -1638,8 +1667,16 @@
       "sha256": "d2885d11a459a06a8cab6347b65d0b0aca846413708ded735fcc27336d93229d",
       "span": 32
     },
+    "LinearFloat.cs:10-13": {
+      "sha256": "763cec18a21f78f199b888f0cb3d89253af53f25196e69b3b73ff41891d167f0",
+      "span": 4
+    },
     "LinearFloat.cs:Get": {
       "span": 0
+    },
+    "LinearInt.cs:10-13": {
+      "sha256": "942f5130d58b1f024aee055d3eac07fc871de26b7f7f91d9dec16a17cb49c661",
+      "span": 4
     },
     "LinearInt.cs:Get": {
       "span": 0
@@ -1984,6 +2021,10 @@
       "sha256": "e5f85135349cb6bd75e1bb88636f90a60ec7970bcb942920698aef916eddafdd",
       "span": 10
     },
+    "NecromancerBloodPactSkill.cs:64-66": {
+      "sha256": "36ff2335e2a9230ea348f9bf826f67e720ee401346f24e2eb9c0a17d65060471",
+      "span": 3
+    },
     "NecromancerBloodPactSkill.cs:Apply": {
       "span": 0
     },
@@ -1993,6 +2034,10 @@
     "NecromancerBloodPactSkill.cs:GetManaRestored": {
       "span": 0
     },
+    "NecromancerDeathBloomSkill.cs:12": {
+      "sha256": "c0b5b22715bf91ce366a1786966bae83c79c109c89f7db0284ac8d767a58a0c1",
+      "span": 1
+    },
     "NecromancerDeathBloomSkill.cs:19-25": {
       "sha256": "5d95fa9f9c46642331855f44aea3aab245b1e1687e652f7e2f149fd94016b4b8",
       "span": 7
@@ -2001,6 +2046,10 @@
       "sha256": "c6bdcd40692a8aaf5fcf9f7810c17506e0685829702d34e25f7bc2b6b886d6aa",
       "span": 18
     },
+    "NecromancerDeathBloomSkill.cs:37-44": {
+      "sha256": "b4e0389aaad90378a2b1a73cca68bce9dae08efb2a1cc49be20711c608309922",
+      "span": 8
+    },
     "NecromancerDeathBloomSkill.cs:47-50": {
       "sha256": "52ab526ec6689d64e9a372249e5cc191cafdcea391409c397ca7de1c9dc4c7c7",
       "span": 4
@@ -2008,6 +2057,10 @@
     "NecromancerDeathBloomSkill.cs:52-59": {
       "sha256": "fbd32c1508bdf22af93c72a700910e4e237680422666df340c73f9b5a266407f",
       "span": 8
+    },
+    "NecromancerDeathBloomSkill.cs:61-82": {
+      "sha256": "d49abf5627744875e04b9ae304a02aa6136f335a5d1160256cb0572ad02e9ee4",
+      "span": 22
     },
     "NecromancerDeathBloomSkill.cs:7-17": {
       "sha256": "4bd4795922f57ac605e3e6e1df6886d47265e1b7f4c1010cea2147ae204081d3",
@@ -2028,6 +2081,14 @@
     "NecromancerDeathBloomSkill.cs:healthCostPercent": {
       "span": 0
     },
+    "NecromancerPetBuffSkill.cs:24-28": {
+      "sha256": "88d63510f3a0bcb6140601c34200c4107e904e99f2836b26c85cad44bc622665",
+      "span": 5
+    },
+    "NecromancerPetBuffSkill.cs:6-28": {
+      "sha256": "779f2df425d68c3a847d48f5dc9643f14d396df085ebe3ad88a5f85fdf5eaeb9",
+      "span": 23
+    },
     "NecromancerPetBuffSkill.cs:HasLivingCombatPet": {
       "span": 0
     },
@@ -2035,12 +2096,32 @@
       "sha256": "7858b080fdaa483cec4e05997a0902f09fa5a8545f2d2d98a94cc0dfbb704c1a",
       "span": 72
     },
+    "NecromancerPetStats.cs:36": {
+      "sha256": "b93c2bbc5bb8b0e9645637906c8b7e7ffda2e06a4de9f49b261d2e4b7a866184",
+      "span": 1
+    },
+    "NecromancerPetStats.cs:36-48": {
+      "sha256": "95041b6dfdceb14e10681b4cbc6d963aaa87fcd69c281db73e00ab6f87b4dfac",
+      "span": 13
+    },
+    "NecromancerPetStats.cs:48": {
+      "sha256": "78bd678c3b6aa628d0a9c9861c35e3dd5722c3a4458d3c5a032b9461e8dc075d",
+      "span": 1
+    },
+    "NecromancerPetStats.cs:61-108": {
+      "sha256": "94eb5972c5fdcaa4ab006c211761a5d931dfe5733f48849e37b97a8251ae57ef",
+      "span": 48
+    },
     "NecromancerPetStats.cs:61-99": {
       "sha256": "c38a1120b5e646acccc168ce72b8f41f72b250b14539432ea8e209036a2ae254",
       "span": 39
     },
     "NecromancerPetStats.cs:RefreshFromOwner": {
       "span": 0
+    },
+    "NecromancerReaperFormSkill.cs:15-26": {
+      "sha256": "7c148bcbb3178ed876dde27ee1098fbc060da2bd2b1086fbcae123e31a8b6d53",
+      "span": 12
     },
     "NecromancerReaperFormSkill.cs:Apply": {
       "span": 0
@@ -2210,6 +2291,10 @@
     "PassiveSkill.cs": {
       "span": 0
     },
+    "PassiveSkill.cs:57-82": {
+      "sha256": "b57c06aaa180e723bfdc131cdf23c2042ac8bd28d508fb47374b7172ebd8f2e8",
+      "span": 26
+    },
     "Pet.cs": {
       "span": 0
     },
@@ -2261,9 +2346,9 @@
       "sha256": "3a162395c815337ab0877df8589820a326fe46967b9a31e935eca0e70aeecb99",
       "span": 15
     },
-    "Pet.cs:2969-3018": {
-      "sha256": "b367335b7a2d57bb930ddb063667170933d612405b0bf2af8c19a03d4d491350",
-      "span": 50
+    "Pet.cs:2969-3031": {
+      "sha256": "b0d12c341ff34243ece89697dcf78ff5e125b0a398c5236b33e5446dcb99cfba",
+      "span": 63
     },
     "Pet.cs:3990-4001": {
       "sha256": "6d037054d1db036a2b6cf3f9b4e79f060ddf814b511a9a9c4fa2e74dbe173fa3",
@@ -2402,6 +2487,10 @@
     "Player.cs": {
       "span": 0
     },
+    "Player.cs:10310-10328": {
+      "sha256": "65b327d29521463496ce64dc64548a3ca2f4f75d4d1c9e1f7aa7d04327df2b52",
+      "span": 19
+    },
     "Player.cs:10343-10350": {
       "sha256": "db606b72b28328ace48fd05a2571f46bb425574d931d5348271c97e719aebbe1",
       "span": 8
@@ -2502,6 +2591,10 @@
       "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",
       "span": 36
     },
+    "Player.cs:11049-11067": {
+      "sha256": "67d3e360acd3558812b7e26711f209ccd909eb19b2d6323a209703c5ab040390",
+      "span": 19
+    },
     "Player.cs:11143-11149": {
       "sha256": "1ec84dfe4cb7deea1f551e907f88544dc2842e1fcf3319ac7ad0bbbc945b789d",
       "span": 7
@@ -2557,6 +2650,10 @@
     "Player.cs:12225-12229": {
       "sha256": "03953bf1d86a7060725a2b14d37fd39aa331861d5f3100e1cc51d34971b1fd6b",
       "span": 5
+    },
+    "Player.cs:12291-12293": {
+      "sha256": "5fde844db61b3fd5e139e90ed09f5b9c735eda5e00ae51e0459015b101a6234b",
+      "span": 3
     },
     "Player.cs:12592-12605": {
       "sha256": "2faafae183fb39ce0e8c60cc386852204cfd7075a8082fea34279972f4633ca7",
@@ -2766,6 +2863,10 @@
       "sha256": "92644c5a6fe658e359ec385c912f7fb9c3672ac7e6641f31e3a63d4f79a89194",
       "span": 12
     },
+    "Player.cs:1460-1486": {
+      "sha256": "627768a79512d1c8a9d13f0efe94bdb0c762643c975f83dae6ba8815da217514",
+      "span": 27
+    },
     "Player.cs:1476-1490": {
       "sha256": "732d54825a1c9230defccda860901c7ff4dc64aa386a8546f773157d5a1c538b",
       "span": 15
@@ -2861,6 +2962,10 @@
     "Player.cs:4679-4704": {
       "sha256": "e876e9e941632c239e40b1da545b8e2cfbf5899e879c51896ad031aa86eeec3d",
       "span": 26
+    },
+    "Player.cs:5066-5081": {
+      "sha256": "2abf04d08449725a84c54263c6862259e0d3a08965076113c2c41035de9b8a35",
+      "span": 16
     },
     "Player.cs:5198-5233": {
       "sha256": "e33740fc28cd74de8510ebd91e39d8de35d8714d6f6b1335a8fc21e8f8420cbc",
@@ -3223,6 +3328,10 @@
     "PlayerEquipment.cs:OnEquipmentChanged": {
       "span": 0
     },
+    "PlayerInventory.cs:108-113": {
+      "sha256": "c6ec9058fd955aebbc51268250e6f364a875866c5688929d856ab48c5e6880b6",
+      "span": 6
+    },
     "PlayerInventory.cs:190-201": {
       "sha256": "9f6fd27d2a8056dc39b378373f4928d2a9586a73a9556d52b0f231a3b4a04bee",
       "span": 12
@@ -3431,6 +3540,10 @@
       "sha256": "72c22f045342371d34749dcaf9727bf9ccd61e0a413106531ac92cb6ef426dd4",
       "span": 3
     },
+    "PlayerQuests.cs:403-418": {
+      "sha256": "05eec55c15a58f91e780499e44d635b1d681e8cbb42b81cdeca01b6e60f273a9",
+      "span": 16
+    },
     "PlayerQuests.cs:440-443": {
       "sha256": "f3077a44ae6458a3c9d44cc57e4e42ed6352405f41d2d956cdeeaa8b6f8b744c",
       "span": 4
@@ -3458,6 +3571,10 @@
     "PlayerSkills.cs:1100-1191": {
       "sha256": "c51fd8138c29953e78066c3a8ff04e858e1433ace0f603ddb0c18d86c6798a24",
       "span": 92
+    },
+    "PlayerSkills.cs:1157": {
+      "sha256": "9c6e5da36fd8e55b323df2a3cf45f27cfee7b78e828c020d85322db5a67e8d28",
+      "span": 1
     },
     "PlayerSkills.cs:1162-1191": {
       "sha256": "db96bc6c88318fa90a5a7fd3fd4987e88da35976bd5e195030af0d9295bc1f7c",
@@ -3506,6 +3623,10 @@
     "PlayerSkills.cs:1553-1573": {
       "sha256": "9131c2a7a705d6aba1745a1d4167f315f09d51712c7d75998407d61834a133b5",
       "span": 21
+    },
+    "PlayerSkills.cs:1576-1603": {
+      "sha256": "0be3409655d1789bd346c2c9fa187210af634769920e2881c03c544c8ac72dda",
+      "span": 28
     },
     "PlayerSkills.cs:1605-1616": {
       "sha256": "69c8d54f2c0698f1deacc55fb3e384da304e785936b17a565564a8b720a0f417",
@@ -3571,6 +3692,14 @@
       "sha256": "9e737a1ba0a84bdd42c58c4395d1b8f331f16b5bd1b53b6e93cc6706d285b072",
       "span": 5
     },
+    "PlayerSkills.cs:2145-2149": {
+      "sha256": "91ae0464768585359beb77c454b42a4c4c5d30795707b0fd429c8cecfa92ce00",
+      "span": 5
+    },
+    "PlayerSkills.cs:2237-2244": {
+      "sha256": "0ead52dd1fe47a6730be8bbbcbfce6c794bb7490fc22ce4dfb863cd819d125c2",
+      "span": 8
+    },
     "PlayerSkills.cs:2270-2302": {
       "sha256": "56f7daffdd8fca1fb67b30404d3a1b5c685b59e13889790f56cd2f1be5ea40a5",
       "span": 33
@@ -3586,6 +3715,14 @@
     "PlayerSkills.cs:38-47": {
       "sha256": "ec02292c476ed7ed91ef749dfa85c38b8d56237810e14f2621a159b15714eb83",
       "span": 10
+    },
+    "PlayerSkills.cs:437-454": {
+      "sha256": "0f577c5d3e1ba0594e605eb3f4beeb1cf3c75ce3ec453b8b3af98f8a565ec7dd",
+      "span": 18
+    },
+    "PlayerSkills.cs:464-514": {
+      "sha256": "88dee3bd30dcd13a50d2fb66b9f5e55e4398417d4efe9a73933e17b72f03a57e",
+      "span": 51
     },
     "PlayerSkills.cs:59-64": {
       "sha256": "7dc03713bd78e37c02808a39c971453ecb5663bdfb24386092d0f3c5ab023680",
@@ -3765,6 +3902,18 @@
       "sha256": "062626187f5bf897164e783144c81703879d5861c3cc0941d205a0d2c13cf65c",
       "span": 1
     },
+    "ScriptableQuest.cs:111-113": {
+      "sha256": "d38c54c055354e48b41906b022ef4f69bb50ed75f7bb9f6367da43c09342df50",
+      "span": 3
+    },
+    "ScriptableQuest.cs:124-126": {
+      "sha256": "d38c54c055354e48b41906b022ef4f69bb50ed75f7bb9f6367da43c09342df50",
+      "span": 3
+    },
+    "ScriptableQuest.cs:130-164": {
+      "sha256": "28c31b713d4a956aa34a5cf281ec21fd61d81a4db7eb074f6333384ff4d0bbf4",
+      "span": 35
+    },
     "ScriptableQuest.cs:43": {
       "sha256": "c65796fc7331ddabfbc3a5584afe697085b93f52fdfd1b2c5985366454fb3d68",
       "span": 1
@@ -3809,6 +3958,10 @@
     "ScriptableSkill.cs:237-239": {
       "sha256": "3efdd0f0d0a984c2b4b89b670428354938f4182ec30b63d405e35308945d035d",
       "span": 3
+    },
+    "ScriptableSkill.cs:387-402": {
+      "sha256": "fac7186e03f9510946b242c8c6e080d93d87913fba9651853ef8669a4231772d",
+      "span": 16
     },
     "ScriptableSkill.cs:53-70": {
       "sha256": "18bfb07d68f37ce0fb353348871edcedfc2199edb5b35ac58125ad47f293fb5f",
@@ -3945,6 +4098,10 @@
       "sha256": "2747f786929876cede58342bf12c3eb4967ceef240bcf3d4ac171afac9683f35",
       "span": 34
     },
+    "Skills.cs:174-185": {
+      "sha256": "4d478065bb5ee05495dffb912a69f48be1c6d0c29fc055b9ab6a0c100f1fffcb",
+      "span": 12
+    },
     "Skills.cs:1752-1755": {
       "sha256": "744847d0abe73124d34705451ef9df04770445588a37d7f1aed0490a87c9b568",
       "span": 4
@@ -3964,6 +4121,10 @@
     "Skills.cs:251-256": {
       "sha256": "6a1ba70f4ae56da46d5440e549447250a8f01ef92364b49c50e78af46e7b5655",
       "span": 6
+    },
+    "Skills.cs:251-268": {
+      "sha256": "6680dfa2356d21054d228799b3292b96ad93df2e214b43c4ef73324a10d3c398",
+      "span": 18
     },
     "Skills.cs:432-457": {
       "sha256": "feda83e9b7f92e3be4c48553aa2b1eef491270a52a84d16ad233ce7f9cb0f6a2",
@@ -4117,6 +4278,10 @@
       "sha256": "f7dd7bf8fd715daefbe6392dd4634cfdbc952db25c7e7429273be3c1b3d3a9a3",
       "span": 25
     },
+    "SummonSkill.cs:84-97": {
+      "sha256": "ea2cf2a6cd7d2499c885cc5d1bde2e09b4741414ece8d72f221c4f6df8bd1672",
+      "span": 14
+    },
     "SummonSkill.cs:99": {
       "sha256": "0c4975ff003cca5d77dd2a1d596861d0bd6691d4efd0a7f8b2a3fef8a776216f",
       "span": 1
@@ -4183,6 +4348,10 @@
     "TargetBuffSkill.cs:434-445": {
       "sha256": "f0d7421497c5fba571a354805bd1f4dff57b1f2454eb86f234ce4e9fb6884a13",
       "span": 12
+    },
+    "TargetBuffSkill.cs:477-480": {
+      "sha256": "936fcf8e83f371ced2d4bec215ca50aa1771427a311c87be10167d586d8f2c31",
+      "span": 4
     },
     "TargetBuffSkill.cs:477-482": {
       "sha256": "6fd2c36faff6263fba4e2db06caa0b430c6ca6d0524c3a623be5666fc25f9d18",
@@ -4282,6 +4451,14 @@
     "TargetDebuffSkill.cs:288-331": {
       "sha256": "4e42372e16f62bba67b022f28017aa15158621dd9f29f56a5581083ffc73cbc5",
       "span": 44
+    },
+    "TargetHealSkill.cs:125-132": {
+      "sha256": "2412c79962d78ab652285360f42f1e97b3ee11662c88056d7584816d5e8588f4",
+      "span": 8
+    },
+    "TargetHealSkill.cs:137-143": {
+      "sha256": "6b1b0a8e3352f2a177dd43bbb1bed59406e03bba7899570049988acc9480f401",
+      "span": 7
     },
     "TargetHealSkill.cs:239-253": {
       "sha256": "5d928d7ebd843710732971ada28e5f8aad5cac1ef54c5ffc7623db462f24eaa2",
@@ -4439,6 +4616,10 @@
     "UIBigBackpack.cs": {
       "span": 0
     },
+    "UIBuffs.cs:292-303": {
+      "sha256": "b6183f97c63fe6fc5848fbb1e6ac2dd97941257723573a8e20fb6d4abf77beb8",
+      "span": 12
+    },
     "UICharacterEditor.cs:1142-1780": {
       "sha256": "0d420ed103a3fcaf631d66e820541790febfb52928d7c5291c230d106d4ef057",
       "span": 639
@@ -4478,10 +4659,6 @@
     },
     "UIChest.cs": {
       "span": 0
-    },
-    "UICombatMeter.cs:225": {
-      "sha256": "3cbf5c4d0c5b24f707af04730f38685a899557114c2727a6f7ecebba7cce0ee6",
-      "span": 1
     },
     "UICraftingDetail.cs:33-63": {
       "sha256": "9d12bcdb26239ed49c518eb0e0ea416d86fc6f2090ea7f421332b9b71f374fb8",
@@ -4847,6 +5024,10 @@
       "sha256": "5abb686461e6e67964da66a5c56418ee9b4662da8795266b72619142ccc69410",
       "span": 1
     },
+    "Utils.cs:423-451": {
+      "sha256": "cdfe7bd930e2b0fcc479824501b17bdbcebe4ae8545c8b706991fdaa2c15fcba",
+      "span": 29
+    },
     "Utils.cs:506-525": {
       "sha256": "aede1b32af6cdbeb6e8b972509f0ca39f18e3564d4f3c73f88129055b6959ea7",
       "span": 20
@@ -4870,6 +5051,10 @@
     "Utils.cs:577-587": {
       "sha256": "58d80bfd4776ca352a782a737792985b593fe24e18ca9cdc53a813625a193e68",
       "span": 11
+    },
+    "Utils.cs:601-613": {
+      "sha256": "07ca64e8656d63a25898c7993c52324acbac72d4a0570f920774044499c83470",
+      "span": 13
     },
     "Utils.cs:616-632": {
       "sha256": "6cd6ae938b9b3d53e19c74ab64ec911b03622bff6ecf51554735bfc91d1bec5e",
@@ -4952,6 +5137,10 @@
       "sha256": "2ba1f2bb5ee2287ba9fe8eff3ddca4c600c6487f37ec57714dae5078de6b53d2",
       "span": 47
     },
+    "ZoneTrigger.cs:180": {
+      "sha256": "3d968c0e7b9b4a0702e7279ec3a93ce07e72240f82b7457c639f97f2013f8b57",
+      "span": 1
+    },
     "ZoneTrigger.cs:94-100": {
       "sha256": "5b1f5fb7a319b900421aa12019eac0de9ed53ea253b78d78c92be470e5073aed",
       "span": 7
@@ -4966,10 +5155,6 @@
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:21-36": {
       "sha256": "d8e44db44b13b292891edac778d8a34a58ea289eaeb384f9dae2a742fcc68f83",
       "span": 16
-    },
-    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-36": {
-      "sha256": "300c9aedc2dd3280dddd81bdf1add7cb49cebf33104ed61ec6bc5cbcc94be116",
-      "span": 10
     },
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40": {
       "sha256": "df922b864fd95c98cc3102cc8e415f35d9788c3a278a0a043ac8605f4762e2dc",

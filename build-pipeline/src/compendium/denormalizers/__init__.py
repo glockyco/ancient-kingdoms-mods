@@ -96,6 +96,9 @@ def run_all(conn: sqlite3.Connection) -> verify.Subject:
     # Monster level ranges (from spawns, needed before item sources)
     monsters.run_levels(conn)
 
+    # Shared quest rewards must be normalized before item sources read them.
+    quests.run_rewards(conn)
+
     # Quest display_type (needed before item usages reads it)
     quests.run_display_type(conn)
 
