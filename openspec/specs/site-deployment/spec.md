@@ -13,7 +13,7 @@ Rationale: the command uploaded the build output that was already on disk. A dep
 
 #### Scenario: The build succeeds
 
-- **WHEN** a maintainer runs `pnpm cf-deploy` and the production build succeeds
+- **WHEN** the production build succeeds during `pnpm cf-deploy`
 - **THEN** the command uploads the output of that build
 
 #### Scenario: The build fails

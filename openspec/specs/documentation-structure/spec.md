@@ -8,14 +8,14 @@ Defines which document owns which kind of fact, so that each reader finds one do
 
 ### Requirement: Each kind of fact has one home
 
-Each fact SHALL live in the document that owns its kind, and any other document that needs it SHALL link to that home instead of restating it. The front page owns what the project is and offers. The contributor guide owns setup, workflows, checks, and troubleshooting. The architecture document owns structure, invariants, and cross-cutting concepts. Each mod's README owns that mod. Skills own procedures, and OpenSpec owns required behavior.
+Each fact SHALL live in the document that owns its kind, and any other document that needs it SHALL link to that home instead of restating it. The front page owns what the project is and offers. `CONTRIBUTING.md` owns setup, workflows, checks, and troubleshooting. The architecture document owns structure, invariants, and cross-cutting concepts. Each mod's README owns that mod. Skills own procedures, and OpenSpec owns required behavior.
 
 Rationale: the README grew into a grab-bag twice, because nothing named a home for a new fact other than the most visible file.
 
 #### Scenario: A workflow is added
 
-- **WHEN** a contributor documents a new way to run part of the pipeline
-- **THEN** the steps go into the contributor guide
+- **WHEN** a new way to run part of the pipeline is documented
+- **THEN** the steps go into `CONTRIBUTING.md`
 - **AND** the front page gains at most a link
 
 #### Scenario: An invariant is found
@@ -47,7 +47,7 @@ Rationale: the most visible file attracts every new fact. A limit sends a fact t
 
 #### Scenario: A guide link is removed
 
-- **WHEN** the front page no longer links to the contributor guide or to the architecture document
+- **WHEN** the front page no longer links to `CONTRIBUTING.md` or to the architecture document
 - **THEN** the documentation check fails and names the missing link
 
 ### Requirement: The front page lists the published mods
@@ -84,7 +84,7 @@ Rationale: visitors browse the mod folders directly, so a mod's own folder is wh
 
 #### Scenario: A reader opens a mod's README
 
-- **WHEN** a player or a contributor reads a mod's README
+- **WHEN** someone reads a mod's README
 - **THEN** it tells them what the mod does, how to use it, which settings it has, what it cannot do, and what it needs installed
 
 ### Requirement: Documentation references resolve
