@@ -37,6 +37,9 @@
   const uniqueKinds = $derived(
     Array.from(new Set(data.summons.map((s) => s.kind))).sort(),
   );
+  const undeadSummons = $derived(
+    data.summons.filter((summon) => summon.has_necromancer_pet_stats),
+  );
 
   // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:91,240,254; exported-data/skills.json — each familiar's buff per rank and its maximum rank.
   const FAMILIAR_EFFECTS: Record<string, string> = {
@@ -167,7 +170,7 @@
 
 <Seo
   title="Summons - Ancient Kingdoms"
-  description="Companions, familiars, and whistle pets in Ancient Kingdoms — which class or item summons each one and how summons differ."
+  description="Companions, Necromancer undead summons, familiars, and whistle pets in Ancient Kingdoms — their skills, veteran bonuses, and summoning rules."
   path="/summons"
 />
 
@@ -215,7 +218,7 @@
           >
         </div>
         <dl class="divide-y">
-          <!-- Source: server-scripts/SummonSkill.cs:Apply — a companion or familiar occupies the single summon slot, so a second summon fails while one is active. -->
+          <!-- Source: server-scripts/SummonSkill.cs:Apply — companions and familiars share NetworkactivePet; a Necromancer can replace it by casting a different non-familiar summon. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Slot</dt>
             <dd class="text-right">Shared summon slot</dd>
@@ -238,7 +241,7 @@
         <ul
           class="list-disc space-y-1 border-t py-3 pl-8 pr-4 text-muted-foreground"
         >
-          <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/PlayerSkills.cs:1762-1772 — combat pet skill rank starts at 1, reaches 2 at 20 veteran points, then rises every 10 points up to each skill's cap. -->
+          <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — combat pet skills use total veteran points divided by 10 and cap at each skill's maxLevel. -->
           <li>Skills gain a rank every 10 veteran points.</li>
           <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean; server-scripts/GameManager.cs:OnMercenaryAttackKeyPressed — combat pets accept companion commands and stances. -->
           <li>
@@ -247,6 +250,11 @@
               class="text-blue-600 hover:underline dark:text-blue-400"
               >commands and stances</a
             >.
+          </li>
+          <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — a non-mercenary, non-familiar pet receives healthMaxPercentBonus from its owner's learned isPetSkill passives rather than applying it to the owner. -->
+          <li>
+            Your pet passives with a maximum-health percentage bonus raise the
+            companion's maximum Health, not your own.
           </li>
         </ul>
       </div>
@@ -333,5 +341,42 @@
         </ul>
       </div>
     </div>
+  </section>
+
+  <section
+    aria-labelledby="undead-title"
+    class="rounded-lg border bg-muted/30 p-5 space-y-4"
+  >
+    <h2 id="undead-title" class="text-xl font-semibold">
+      Necromancer undead summons
+    </h2>
+    <ul class="flex flex-wrap gap-x-5 gap-y-2">
+      {#each undeadSummons as summon (summon.id)}
+        <li>
+          <a
+            href="/summons/{summon.id}"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {summon.name}
+          </a>
+        </li>
+      {/each}
+    </ul>
+    <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetHealthBonus,61-99; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.0025 per point to base Health, damage, magic damage, defense, and resistances. -->
+    <p>
+      These companions track your regular level. Each of your veteran points
+      adds 0.25% of base Health to maximum Health and 0.25% of base physical
+      damage, magic damage, defense, and each resistance, rounded to a whole
+      number. The bonus caps at +50% with 200 points. Their stats and skill
+      ranks refresh when you level up or gain a veteran point.
+    </p>
+    <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces NetworkactivePet with a different non-familiar summon; a matching pet uses the summon key as an attack command; other classes receive You already have an active pet. -->
+    <p>
+      Casting a different undead summon replaces your active pet. Pressing the
+      summon key for the undead pet already active commands it to attack your
+      target instead. Other classes cannot replace an active companion or
+      familiar by summoning another: the game reports "You already have an
+      active pet".
+    </p>
   </section>
 </div>

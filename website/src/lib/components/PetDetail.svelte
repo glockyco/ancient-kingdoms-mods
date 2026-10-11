@@ -159,26 +159,74 @@
           <dl class="space-y-2">
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
-              <dd>Matches your regular level, up to level {pet.level}</dd>
+              <dd>
+                {#if pet.has_necromancer_pet_stats}
+                  Tracks your regular level and refreshes when you level up.
+                {:else}
+                  Matches your regular level, up to level {pet.level}.
+                {/if}
+              </dd>
             </div>
+            <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — combat pet skill ranks use total veteran points divided by 10 and cap at each skill's maxLevel. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Skill ranks</dt>
               <dd>
-                Each skill starts at rank 1. It gains one rank at veteran level
-                20 and every 10 veteran levels after that, up to its maximum
-                rank.
+                Skills gain a rank every 10 veteran points, up to each skill's
+                maximum rank.
               </dd>
             </div>
+            {#if pet.has_necromancer_pet_stats}
+              <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetHealthBonus,61-99; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.0025 per point to base Health, damage, magic damage, defense, and resistances. -->
+              <div class="flex gap-2">
+                <dt class="text-muted-foreground w-40 shrink-0">
+                  Veteran bonus
+                </dt>
+                <dd>
+                  Each of your veteran points adds 0.25% of base Health to
+                  maximum Health and 0.25% of base physical damage, magic
+                  damage, defense, and each resistance, rounded to a whole
+                  number. The bonus caps at +50% with 200 points and refreshes
+                  whenever you gain a veteran point.
+                </dd>
+              </div>
+              <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces an active pet with a different non-familiar summon; the matching summon key commands its active pet. -->
+              <div class="flex gap-2">
+                <dt class="text-muted-foreground w-40 shrink-0">Summon key</dt>
+                <dd>
+                  Commands this pet while it is active. Casting a different
+                  undead summon replaces it.
+                </dd>
+              </div>
+            {:else if pet.classLink.class_id === "druid"}
+              <!-- Source: server-scripts/SummonSkill.cs:73-97 — each rank of Symbiosis copies 0.1 of the owner's attributes, defense, and resistances to the summoned pet. -->
+              <div class="flex gap-2">
+                <dt class="text-muted-foreground w-40 shrink-0">Symbiosis</dt>
+                <dd>
+                  Each rank of <a
+                    href="/skills/symbiosis"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Symbiosis</a
+                  > gives this companion 10% of your attributes, defense, and each
+                  resistance when summoned.
+                </dd>
+              </div>
+            {/if}
+            <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — a non-mercenary, non-familiar pet receives healthMaxPercentBonus from its owner's learned isPetSkill passives. -->
             <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">Symbiosis</dt>
+              <dt class="text-muted-foreground w-40 shrink-0">
+                Maximum Health
+              </dt>
               <dd>
-                Each level of the <a
-                  href="/skills/symbiosis"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >Symbiosis</a
-                > passive gives this companion 10% of your attributes
+                Your learned pet passives with a maximum-health percentage bonus
+                increase this companion's maximum Health, not your own.
               </dd>
             </div>
+            {#if pet.fear_immune}
+              <div class="flex gap-2">
+                <dt class="text-muted-foreground w-40 shrink-0">Fear</dt>
+                <dd>Immune to Fear.</dd>
+              </div>
+            {/if}
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>It vanishes when it dies. Summon it again to restore it.</dd>

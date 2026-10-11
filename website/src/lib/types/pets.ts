@@ -36,6 +36,7 @@ export interface SummonListView {
   kind: SummonKind;
   type_monster: string;
   level: number;
+  has_necromancer_pet_stats: boolean;
   /** Primary artwork exported for summons; absent when unavailable. */
   visualAsset: EntityVisualAsset | null;
   summoning_class_id: string | null;
@@ -85,6 +86,8 @@ export interface PetDetailView {
   has_heals: boolean;
   /** Pet.hasBuffs: the pet AI checks for allies to buff. */
   has_buffs: boolean;
+  has_necromancer_pet_stats: boolean;
+  fear_immune: boolean;
   /** For familiars: the summoning skill's max_level (= actual max familiar level). For others: same as level. */
   effective_max_level: number;
   classLink: PetClassLink;

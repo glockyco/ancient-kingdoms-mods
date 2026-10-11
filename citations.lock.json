@@ -1132,6 +1132,10 @@
       "sha256": "46f3f63b8816effb5b28cdc20519ec81cb330377f5f7aabe070bcdccf1041230",
       "span": 1
     },
+    "Experience.cs:380": {
+      "sha256": "578f5f1f7f98ce7c4b6e0df8515b12fb7d222de4ad925ff524fb19561e235348",
+      "span": 1
+    },
     "Experience.cs:44-53": {
       "sha256": "c16f37b160b675ac5ff76ec112155d294d96cdff767fd25102bba31c7f151d3a",
       "span": 10
@@ -1151,6 +1155,10 @@
     "Experience.cs:573-577": {
       "sha256": "181231f2d7fe12fa49950fe68f96c8bd58b202190b5631da5cfd8bf6a5c5dbf7",
       "span": 5
+    },
+    "Experience.cs:85": {
+      "sha256": "dfcc344bfca3daf15c4154dce58ad90aeedd6e6ec26a5ee3a82e1e00b03c6e78",
+      "span": 1
     },
     "Experience.cs:BalanceExperienceReward": {
       "span": 0
@@ -2026,6 +2034,13 @@
     "NecromancerPetStats.cs:28-99": {
       "sha256": "7858b080fdaa483cec4e05997a0902f09fa5a8545f2d2d98a94cc0dfbb704c1a",
       "span": 72
+    },
+    "NecromancerPetStats.cs:61-99": {
+      "sha256": "c38a1120b5e646acccc168ce72b8f41f72b250b14539432ea8e209036a2ae254",
+      "span": 39
+    },
+    "NecromancerPetStats.cs:RefreshFromOwner": {
+      "span": 0
     },
     "NecromancerReaperFormSkill.cs:Apply": {
       "span": 0
@@ -4097,6 +4112,10 @@
     "SummonSkill.cs:56": {
       "sha256": "2ef9a8ee1ceae7c0bdd426405aabde7aa477586aa650672b44a516cb20130a6b",
       "span": 1
+    },
+    "SummonSkill.cs:73-97": {
+      "sha256": "f7dd7bf8fd715daefbe6392dd4634cfdbc952db25c7e7429273be3c1b3d3a9a3",
+      "span": 25
     },
     "SummonSkill.cs:99": {
       "sha256": "0c4975ff003cca5d77dd2a1d596861d0bd6691d4efd0a7f8b2a3fef8a776216f",

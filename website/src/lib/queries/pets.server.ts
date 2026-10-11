@@ -96,6 +96,7 @@ export function getAllSummons(): SummonListView[] {
       id: string;
       name: string;
       is_familiar: boolean;
+      has_necromancer_pet_stats: number;
       type_monster: string;
       level: number;
       summoning_class_id: string | null;
@@ -103,7 +104,7 @@ export function getAllSummons(): SummonListView[] {
       summoning_skill_name: string | null;
     } & PetVisualAssetColumns
   >(
-    `SELECT p.id, p.name, p.is_familiar, p.type_monster, p.level,
+    `SELECT p.id, p.name, p.is_familiar, p.has_necromancer_pet_stats, p.type_monster, p.level,
             json_extract(s.player_classes, '$[0]') as summoning_class_id,
             s.id as summoning_skill_id,
             s.name as summoning_skill_name,
@@ -128,6 +129,7 @@ export function getAllSummons(): SummonListView[] {
     kind: r.is_familiar ? "Familiar" : "Companion",
     type_monster: r.type_monster,
     level: r.level,
+    has_necromancer_pet_stats: r.has_necromancer_pet_stats === 1,
     visualAsset: getVisualAsset(r),
     summoning_class_id: r.summoning_class_id,
     summoning_skill_id: r.summoning_skill_id,
@@ -172,6 +174,7 @@ export function getWhistlePets(): SummonListView[] {
       kind: "Pet",
       type_monster: "—",
       level: 0,
+      has_necromancer_pet_stats: false,
       visualAsset: {
         public_path: r.public_path,
         width: r.width,
@@ -214,9 +217,11 @@ export function getPetById(petId: string): PetDetailView | null {
     level: number;
     has_heals: number;
     has_buffs: number;
+    has_necromancer_pet_stats: number;
+    fear_immune: number;
   }>(
     `SELECT id, name, is_mercenary, is_familiar, type_monster, level,
-            has_heals, has_buffs
+            has_heals, has_buffs, has_necromancer_pet_stats, fear_immune
      FROM pets
      WHERE id = ?`,
     [petId],
@@ -282,6 +287,8 @@ export function getPetById(petId: string): PetDetailView | null {
     level: row.level,
     has_heals: row.has_heals === 1,
     has_buffs: row.has_buffs === 1,
+    has_necromancer_pet_stats: row.has_necromancer_pet_stats === 1,
+    fear_immune: row.fear_immune === 1,
     effective_max_level,
     classLink,
     skills,
