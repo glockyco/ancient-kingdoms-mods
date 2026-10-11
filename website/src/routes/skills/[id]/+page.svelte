@@ -2097,6 +2097,14 @@
           <div class="space-y-2">
             <h3 class="font-semibold">Reaper Form</h3>
             <p class="text-muted-foreground">Toggle with no time limit.</p>
+            <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active NecromancerReaperFormSkill buff multiplies the caster's debuff ticks on others by 1 + its magicDamagePercentBonus. -->
+            <p class="text-muted-foreground">
+              While the form is active, your magic damage gains {formatLinearPercent(
+                skill.magic_damage_percent_bonus,
+              )}, and your damage-over-time ticks on other targets gain the same
+              {formatLinearPercent(skill.magic_damage_percent_bonus)}. Lifetap
+              healing grows with the damage it is based on.
+            </p>
             <!-- Source: server-scripts/Skills.cs:1617-1623 — NecromancerReaperFormSkill returns RoundToInt(max(0, -healthPercentPerSecondBonus) × health.max) before ordinary DoT mitigation. -->
             <p class="font-mono">
               Health drain per second = round(max Health &times; {formatLinearPercentAbs(
