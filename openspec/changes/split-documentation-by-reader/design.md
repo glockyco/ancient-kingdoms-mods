@@ -1,6 +1,6 @@
 ## Context
 
-See proposal.md for motivation. The README is the only project document: it holds the pitch, the player mods, the architecture, the four commitments, setup, five workflows, the checks, the runtime facts, and troubleshooting. The skills hold procedures, OpenSpec holds required behavior, `redactions.toml` holds redaction rules, and `docs/game-bugs/` holds defect reports. On 2026-10-04 the repository retired its `AGENTS.md` files, its scoped rules, the `agent-instructions` spec, and the checker that enforced them, because they amounted to 453 lines of rules for about 40 lines of knowledge.
+See proposal.md for motivation. The README is the only project document: it holds the pitch, the player mods, the architecture, a list of principles, setup, five workflows, the checks, the runtime facts, and troubleshooting. The skills hold procedures, OpenSpec holds required behavior, `redactions.toml` holds redaction rules, and `docs/game-bugs/` holds defect reports. On 2026-10-04 the repository retired its `AGENTS.md` files, its scoped rules, the `agent-instructions` spec, and the checker that enforced them, because they amounted to 453 lines of rules for about 40 lines of knowledge.
 
 GitHub traffic for the 14 days before this change came almost entirely from search engines, and the most visited paths after the front page were `mods/` and individual mod folders. The repository has no stars or forks.
 
@@ -32,7 +32,7 @@ The reference study compared 12 widely cited READMEs and two sibling projects. T
 | Mods for players | `README.md` lists the four downloads. Each mod's README holds its inputs, settings, and limits. |
 | The mods behind it | `mods/README.md` catalogues all 14. The architecture document's code map names their roles. |
 | How it works | `README.md` keeps the diagram and one line per step. |
-| Concepts worth knowing, What the project protects, Game runtime facts, Repository layout | `ARCHITECTURE.md` |
+| Concepts worth knowing, What the project protects, Game runtime facts, Repository layout | `ARCHITECTURE.md`, keeping only invariants and concepts that the code and specs actually enforce. The "four commitments" framing was introduced by the previous rewrite and is not carried over. |
 | Getting started, Workflows, Checks, Troubleshooting, ignored local state | `CONTRIBUTING.md` |
 | Where knowledge lives | The `project-documentation` skill, linked from `CONTRIBUTING.md` |
 
@@ -104,4 +104,4 @@ Rollback is a revert of these commits. Nothing at runtime, in the data, or on th
 
 ## Open Questions
 
-- Whether the contributor guide invites outside pull requests. The guide documents the workflow either way, and the sentence can be added later without changing the structure.
+None. `CONTRIBUTING.md` is the maintainer's and agents' working guide for a solo project. It does not invite outside contributions or describe a contribution process.

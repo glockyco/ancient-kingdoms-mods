@@ -5,8 +5,8 @@ The README serves two readers who want different things. Players arrive from sea
 ## What Changes
 
 - `README.md` becomes a front page: what the project is, what the site offers, the published player mods with their downloads, how the pipeline works in one diagram, and links onward. It stays under 1,000 words.
-- New `CONTRIBUTING.md` holds requirements, setup, workflows, checks, and troubleshooting. GitHub shows it as a tab beside the README.
-- New `ARCHITECTURE.md` holds the code map, the commitments the project protects, the boundaries between its parts, the cross-cutting concepts, and the game runtime facts. It states only what rarely changes.
+- New `CONTRIBUTING.md` holds requirements, setup, workflows, checks, and troubleshooting for the maintainer and agents. It does not invite outside contributions. GitHub shows it as a tab beside the README.
+- New `ARCHITECTURE.md` holds the code map, the invariants the code and specs enforce, the boundaries between its parts, the cross-cutting concepts, and the game runtime facts. It states only what rarely changes.
 - New `mods/README.md` catalogues every mod, and each mod project gets a `README.md` with what it does, how it is used, its settings, its limits, and what it requires.
 - New skill `project-documentation` tells an agent where a new fact belongs and how to edit documentation without losing or duplicating facts.
 - New `compendium docs check`, run by `pnpm check:docs`, the pre-commit hook, and CI. It fails when a documentation link, anchor, repository path, `build-tool` verb, `pnpm` script, or `compendium` command does not resolve, when a mod project lacks a README, when the front page exceeds its budget or stops linking the two guides, or when its download list differs from `website/mod-downloads.json`.
