@@ -27,6 +27,7 @@ import type {
   CalculationStep,
 } from "$lib/types/calculation";
 import type {
+  Caster,
   DamageContext,
   DamageFormulaKind,
   SkillDetailView,
@@ -56,57 +57,81 @@ export function casterInputs(
     : inputs;
 }
 
+/** Whether a caster group's values belong to a mercenary rather than the reader. */
+export function isMercenaryGroup(casters: Caster[]): boolean {
+  return casters.some((caster) => caster.kind === "mercenary");
+}
+
 /** Share one calculation for identical player contexts, without mixing remembered player values with mercenary values. */
 export function calculationCasters(
-  labels: string[],
+  casters: Caster[],
   skill?: SkillDetailView,
-): string[] {
-  const groups = new Map<string, string[]>();
-  for (const label of labels) {
-    let key = label.includes("mercenary")
-      ? "mercenary"
-      : label.includes("(player)")
+): Caster[][] {
+  const groups = new Map<string, Caster[]>();
+  for (const caster of casters) {
+    let key: string =
+      caster.kind === "player" || caster.kind === "any_player"
         ? "player"
-        : "other";
-    if (key === "player" && skill) {
+        : caster.kind === "mercenary" || caster.kind === "weapon_effect"
+          ? caster.kind
+          : "other";
+    if (caster.kind === "player" && skill) {
       if (
-        label.startsWith("Ranger") &&
+        caster.classId === "ranger" &&
         ["target_damage", "frontal_damage"].includes(skill.skill_type)
       )
         key = "ranger";
       else if (
-        label.startsWith("Rogue") &&
+        caster.classId === "rogue" &&
         skill.skill_type === "target_damage"
       )
         key = "rogue";
     }
     const group = groups.get(key) ?? [];
-    group.push(label);
+    group.push(caster);
     groups.set(key, group);
   }
-  return [...groups.values()].map((group) => group.join(", "));
+  return [...groups.values()];
 }
 
-const CLASS_NAMES = ALL_CLASS_IDS.map(formatClassName);
+function casterName(caster: Caster): string {
+  switch (caster.kind) {
+    case "player":
+      return `${formatClassName(caster.classId)} (player)`;
+    case "any_player":
+      return "Player";
+    case "mercenary":
+      return `${caster.className} mercenary`;
+    case "weapon_effect":
+      return "Player or mercenary (weapon effect on hit)";
+    case "monster":
+      return "Monster or NPC";
+    case "companion":
+      return "Companion";
+    case "familiar":
+      return "Familiar";
+  }
+}
+
 const CLASS_LIST = new Intl.ListFormat("en", {
   style: "long",
   type: "conjunction",
 });
 
-/** Format player groups without repeating their caster category on every name. */
-export function calculationCasterLabel(labels: string): string {
-  const parts = labels.split(", ");
-  if (!parts.every((label) => label.endsWith(" (player)"))) return labels;
-  const names = parts.map((label) => label.slice(0, -" (player)".length));
-  if (
-    names.length === CLASS_NAMES.length &&
-    CLASS_NAMES.every((name) => names.includes(name))
-  )
-    return "Players";
-  names.sort(
-    (first, second) => CLASS_NAMES.indexOf(first) - CLASS_NAMES.indexOf(second),
+/** Name a caster group, listing player classes without repeating their caster category on every name. */
+export function calculationCasterLabel(casters: Caster[]): string {
+  const classIds = casters.flatMap((caster) =>
+    caster.kind === "player" ? [caster.classId] : [],
   );
-  return CLASS_LIST.format(names);
+  if (classIds.length < casters.length)
+    return casters.map(casterName).join(", ");
+  if (ALL_CLASS_IDS.every((id) => classIds.includes(id))) return "Players";
+  classIds.sort(
+    (first, second) =>
+      ALL_CLASS_IDS.indexOf(first as (typeof ALL_CLASS_IDS)[number]) -
+      ALL_CLASS_IDS.indexOf(second as (typeof ALL_CLASS_IDS)[number]),
+  );
+  return CLASS_LIST.format(classIds.map(formatClassName));
 }
 
 const MAGIC_KINDS: Partial<Record<DamageFormulaKind, true>> = {
@@ -254,10 +279,10 @@ export function cadenceCalculation(
 export function damageCalculation(
   skill: SkillDetailView,
   context: DamageContext,
-  casterLabel: string,
+  casters: Caster[],
 ): Calculation {
   const kind = context.formula;
-  const mercenary = casterLabel.includes("mercenary");
+  const mercenary = isMercenaryGroup(casters);
   if (kind === "bard_final_cadence" || kind === "bard_final_cadence_merc")
     return cadenceCalculation(skill, mercenary);
   if (kind === "manaburn") {
@@ -291,14 +316,15 @@ export function damageCalculation(
     "ranged_merc",
   ].includes(kind);
   const dexterityFactor = kind === "poison_rogue" ? 2.5 : 1.5;
+  const playerClass = (classId: string) =>
+    casters.some(
+      (caster) => caster.kind === "player" && caster.classId === classId,
+    );
   const subtractBow =
-    !mercenary &&
-    casterLabel.includes("Ranger") &&
+    playerClass("ranger") &&
     ["target_damage", "frontal_damage"].includes(skill.skill_type);
   const subtractOffhand =
-    !mercenary &&
-    casterLabel.includes("Rogue") &&
-    skill.skill_type === "target_damage";
+    playerClass("rogue") && skill.skill_type === "target_damage";
   const subtractMelee = kind === "ranged_player";
   const scroll = skill.is_scroll;
   const multiplied =

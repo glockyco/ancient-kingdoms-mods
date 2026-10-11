@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
-import type { SkillDetailView, SkillPet } from "$lib/types/skills";
+import type { Caster, SkillDetailView, SkillPet } from "$lib/types/skills";
 import { computeMechanicsSpec } from "./skillMechanics";
+
+const player = (classId: string): Caster => ({ kind: "player", classId });
+const mercenary = (className: string): Caster => ({
+  kind: "mercenary",
+  className,
+});
 
 function bardSkill(overrides: Partial<SkillDetailView>): SkillDetailView {
   return {
@@ -43,7 +49,7 @@ describe("Bard mechanics contexts", () => {
 
     expect(spec.buffContexts).toEqual([
       {
-        casterLabels: ["Bard (player)"],
+        casters: [player("bard")],
         bonusAttrSource: "player_cha",
         isAreaBuff: true,
       },
@@ -85,7 +91,7 @@ describe("Bard mechanics contexts", () => {
     );
 
     expect(spec.debuffContexts).toEqual([
-      { casterLabels: ["Bard (player)"], bonusAttrKind: "cha" },
+      { casters: [player("bard")], bonusAttrKind: "cha" },
     ]);
   });
 
@@ -105,7 +111,7 @@ describe("Bard mechanics contexts", () => {
 
     expect(spec.buffContexts).toEqual([
       {
-        casterLabels: ["Warrior (player)"],
+        casters: [player("warrior")],
         bonusAttrSource: "player_wis_con_cha_half",
         isAreaBuff: true,
       },
@@ -128,7 +134,7 @@ describe("Bard mechanics contexts", () => {
     );
 
     expect(spec.damageContexts).toEqual([
-      { casterLabels: ["Bard (player)"], formula: "bard_final_cadence" },
+      { casters: [player("bard")], formula: "bard_final_cadence" },
     ]);
   });
 
@@ -146,7 +152,7 @@ describe("Bard mechanics contexts", () => {
 
     expect(spec.buffContexts).toEqual([
       {
-        casterLabels: ["Bard mercenary"],
+        casters: [mercenary("Bard")],
         bonusAttrSource: "merc_cha",
         isAreaBuff: true,
       },
@@ -171,7 +177,7 @@ describe("Bard mechanics contexts", () => {
     );
 
     expect(spec.damageContexts).toEqual([
-      { casterLabels: ["Bard mercenary"], formula: "bard_final_cadence_merc" },
+      { casters: [mercenary("Bard")], formula: "bard_final_cadence_merc" },
     ]);
   });
 });
@@ -195,7 +201,7 @@ describe("Intelligence and combat-pet mechanics", () => {
         .buffContexts,
     ).toEqual([
       {
-        casterLabels: ["Ranger (player)", "Necromancer (player)"],
+        casters: [player("ranger"), player("necromancer")],
         bonusAttrSource: "player_int",
         isAreaBuff: true,
       },
@@ -299,7 +305,7 @@ describe("damage handler dispatch", () => {
     );
     expect(spec.damageContexts).toEqual([
       {
-        casterLabels: ["Ranger (player)", "Ranger mercenary"],
+        casters: [player("ranger"), mercenary("Ranger")],
         formula: "magic_spell",
       },
     ]);
@@ -415,6 +421,6 @@ test("monster healing follows the same critical gate without receiving a Wisdom 
     true,
   );
   expect(spec.healContexts).toEqual([
-    { casterLabels: ["Monster or NPC"], bonusKind: "none", canCrit: true },
+    { casters: [{ kind: "monster" }], bonusKind: "none", canCrit: true },
   ]);
 });

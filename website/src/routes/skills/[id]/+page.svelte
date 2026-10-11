@@ -39,6 +39,7 @@
     calculationCasters,
     calculationCasterLabel,
     damageStatInputs,
+    isMercenaryGroup,
   } from "$lib/skills/damage-calculations";
   import {
     aggroCalculation,
@@ -91,14 +92,14 @@
     if (skill.is_bard_final_cadence) return [];
     return data.mechanicsSpec.damageContexts.flatMap((ctx) =>
       calculationCasters(
-        ctx.casterLabels,
+        ctx.casters,
         ctx.formula === "manaburn" ? undefined : skill,
-      ).map((casterLabel) => ({
-        key: `${ctx.formula}:${casterLabel}`,
-        casterLabel,
+      ).map((casters) => ({
+        key: `${ctx.formula}:${calculationCasterLabel(casters)}`,
+        casters,
         kind: ctx.formula,
         stats: damageStatInputs(skill, ctx.formula),
-        calculation: damageCalculation(skill, ctx, casterLabel),
+        calculation: damageCalculation(skill, ctx, casters),
       })),
     );
   });
@@ -2733,7 +2734,7 @@
             {#each damageBlocks as block (block.key)}
               <div class="space-y-2">
                 <h4 class="font-medium text-muted-foreground">
-                  {calculationCasterLabel(block.casterLabel)}
+                  {calculationCasterLabel(block.casters)}
                 </h4>
                 {#if block.kind === "monster_magic" || block.kind === "monster_melee"}
                   <p class="text-muted-foreground">
@@ -2848,7 +2849,7 @@
             {#each data.mechanicsSpec.healContexts as ctx (ctx.bonusKind)}
               <div class="space-y-2">
                 <h4 class="font-medium text-muted-foreground">
-                  {calculationCasterLabel(ctx.casterLabels.join(", "))}
+                  {calculationCasterLabel(ctx.casters)}
                 </h4>
                 <Calculation
                   calculation={healingCalculation(skill, ctx.bonusKind)}
@@ -2885,10 +2886,10 @@
               {skill.is_bard_song ? "Song Scaling" : "Buff Scaling"}
             </h3>
             {#each data.mechanicsSpec.buffContexts as ctx (`${ctx.bonusAttrSource}:${ctx.isAreaBuff}`)}
-              {#each calculationCasters(ctx.casterLabels) as casterLabel (casterLabel)}
+              {#each calculationCasters(ctx.casters) as casters (calculationCasterLabel(casters))}
                 <div class="space-y-2">
                   <h4 class="font-medium text-muted-foreground">
-                    {calculationCasterLabel(casterLabel)}
+                    {calculationCasterLabel(casters)}
                   </h4>
                   {#if ctx.bonusAttrSource === "none"}
                     <p class="text-muted-foreground">
@@ -2900,7 +2901,7 @@
                         skill,
                         ctx.bonusAttrSource,
                         false,
-                        casterLabel.includes("mercenary"),
+                        isMercenaryGroup(casters),
                       )}
                     />
                     {#if skill.scales_with_charisma}
@@ -2929,10 +2930,10 @@
               {skill.is_bard_song ? "Song Scaling" : "Debuff Scaling"}
             </h3>
             {#each data.mechanicsSpec.debuffContexts as ctx (ctx.bonusAttrKind)}
-              {#each calculationCasters(ctx.casterLabels) as casterLabel (casterLabel)}
+              {#each calculationCasters(ctx.casters) as casters (calculationCasterLabel(casters))}
                 <div class="space-y-2">
                   <h4 class="font-medium text-muted-foreground">
-                    {calculationCasterLabel(casterLabel)}
+                    {calculationCasterLabel(casters)}
                   </h4>
                   {#if ctx.bonusAttrKind === "none"}
                     <p class="text-muted-foreground">
@@ -2944,7 +2945,7 @@
                         skill,
                         ctx.bonusAttrKind,
                         true,
-                        casterLabel.includes("mercenary"),
+                        isMercenaryGroup(casters),
                       )}
                     />
                     {#if skill.scales_with_charisma}

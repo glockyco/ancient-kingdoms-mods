@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 import type { Calculation } from "$lib/types/calculation";
-import type { DamageFormulaKind, SkillDetailView } from "$lib/types/skills";
+import type {
+  Caster,
+  DamageFormulaKind,
+  SkillDetailView,
+} from "$lib/types/skills";
 import {
   damageCalculation,
   cadenceCalculation,
@@ -38,57 +42,64 @@ function resultNumbers(
     Number(match[0].replaceAll(",", "")),
   );
 }
+const player = (classId: string): Caster => ({ kind: "player", classId });
+const mercenary = (className: string): Caster => ({
+  kind: "mercenary",
+  className,
+});
+const monster: Caster = { kind: "monster" };
+
 function damage(
   kind: DamageFormulaKind,
-  label: string,
+  caster: Caster,
   overrides: Partial<SkillDetailView> = {},
 ): Calculation {
   return damageCalculation(
     skill(overrides),
-    { formula: kind, casterLabels: [label] },
-    label,
+    { formula: kind, casters: [caster] },
+    [caster],
   );
 }
 
 describe("skill damage calculations", () => {
   test.each([
-    ["normal", "Warrior (player)", { damage: 201 }, 302],
-    ["magic_spell", "Wizard (player)", { magicDamage: 201 }, 302],
-    ["ranger_melee", "Ranger (player)", { damage: 201, bowDamage: 30 }, 256],
-    ["rogue_melee", "Rogue (player)", { damage: 201, offhandDamage: 31 }, 278],
-    ["rogue_melee_merc", "Rogue mercenary", { damage: 201 }, 302],
+    ["normal", player("warrior"), { damage: 201 }, 302],
+    ["magic_spell", player("wizard"), { magicDamage: 201 }, 302],
+    ["ranger_melee", player("ranger"), { damage: 201, bowDamage: 30 }, 256],
+    ["rogue_melee", player("rogue"), { damage: 201, offhandDamage: 31 }, 278],
+    ["rogue_melee_merc", mercenary("Rogue"), { damage: 201 }, 302],
     [
       "ranged_player",
-      "Ranger (player)",
+      player("ranger"),
       { damage: 201, dexterity: 3, meleeDamage: 30 },
       262,
     ],
     [
       "ranged_player_frontal",
-      "Ranger (player)",
+      player("ranger"),
       { damage: 201, dexterity: 3 },
       206,
     ],
-    ["ranged_merc", "Ranger mercenary", { damage: 201, dexterity: 3 }, 308],
+    ["ranged_merc", mercenary("Ranger"), { damage: 201, dexterity: 3 }, 308],
     [
       "poison_rogue",
-      "Rogue (player)",
+      player("rogue"),
       { damage: 201, dexterity: 3, offhandDamage: 31 },
       290,
     ],
-    ["magic_weapon", "Cleric (player)", { damage: 201, magicDamage: 100 }, 452],
+    ["magic_weapon", player("cleric"), { damage: 201, magicDamage: 100 }, 452],
     [
       "magic_weapon_ranger",
-      "Ranger (player)",
+      player("ranger"),
       { damage: 201, magicDamage: 100, bowDamage: 30 },
       406,
     ],
-  ] as [DamageFormulaKind, string, Record<string, number>, number][])(
+  ] as [DamageFormulaKind, Caster, Record<string, number>, number][])(
     "evaluates %s using character-window stats and nearest-even rounding",
-    (kind, label, values, expected) => {
+    (kind, caster, values, expected) => {
       const calculation = damage(
         kind,
-        label,
+        caster,
         kind === "ranged_player_frontal"
           ? {
               skill_type: "frontal_projectiles",
@@ -102,7 +113,7 @@ describe("skill damage calculations", () => {
     },
   );
   test("the ordinary auto-attack calculator exposes only the physical handler's inputs", () => {
-    const calculation = damage("rogue_melee", "Rogue (player)", {
+    const calculation = damage("rogue_melee", player("rogue"), {
       followup_default_attack: true,
     });
     expect(calculation.inputs?.map((input) => input.key)).toEqual([
@@ -116,14 +127,14 @@ describe("skill damage calculations", () => {
   });
   test("subtracts the Ranger's bow from elemental targeted skills, but not target projectiles", () => {
     expect(
-      resultNumbers(damage("magic_spell", "Ranger (player)"), {
+      resultNumbers(damage("magic_spell", player("ranger")), {
         magicDamage: 201,
         bowDamage: 30,
       })[0],
     ).toBe(256);
     expect(
       resultNumbers(
-        damage("magic_spell", "Ranger (player)", {
+        damage("magic_spell", player("ranger"), {
           skill_type: "target_projectile",
         }),
         { magicDamage: 201 },
@@ -133,7 +144,7 @@ describe("skill damage calculations", () => {
   test("scrolls ignore character values and a zero multiplier is not applied", () => {
     expect(
       resultNumbers(
-        damage("magic_spell", "Wizard (player)", {
+        damage("magic_spell", player("wizard"), {
           is_scroll: true,
           damage: { base_value: 201, bonus_per_level: 0 },
         }),
@@ -141,7 +152,7 @@ describe("skill damage calculations", () => {
     ).toBe(302);
     expect(
       resultNumbers(
-        damage("normal", "Warrior (player)", {
+        damage("normal", player("warrior"), {
           damage_percent: { base_value: 0, bonus_per_level: 0 },
           damage: { base_value: 1, bonus_per_level: 0 },
         }),
@@ -150,25 +161,23 @@ describe("skill damage calculations", () => {
     ).toBe(202);
   });
   test("monster damage has no calculator, mercenary values are not remembered", () => {
-    expect(damage("monster_magic", "Monster or NPC").inputs).toBeUndefined();
-    expect(resultNumbers(damage("monster_magic", "Monster or NPC"))[0]).toBe(
-      300,
-    );
+    expect(damage("monster_magic", monster).inputs).toBeUndefined();
+    expect(resultNumbers(damage("monster_magic", monster))[0]).toBe(300);
     expect(
-      damage("normal", "Warrior mercenary").inputs?.every(
+      damage("normal", mercenary("Warrior")).inputs?.every(
         (input) => !input.remember,
       ),
     ).toBe(true);
   });
   test("Rage burn doubles Rage, Mana Burn triples Mana", () => {
     expect(
-      resultNumbers(damage("manaburn", "Warrior (player)"), {
+      resultNumbers(damage("manaburn", player("warrior")), {
         resource: 101,
       })[0],
     ).toBe(202);
     expect(
       resultNumbers(
-        damage("manaburn", "Wizard (player)", {
+        damage("manaburn", player("wizard"), {
           skill_type: "target_projectile",
         }),
         { resource: 101 },
@@ -334,21 +343,21 @@ describe("healing and effect calculations", () => {
 });
 
 test("shared player calculations stay separate from mercenary values and weapon deductions", () => {
-  const labels = [
-    "Cleric (player)",
-    "Wizard (player)",
-    "Ranger (player)",
-    "Rogue (player)",
-    "Cleric mercenary",
+  const casters = [
+    player("cleric"),
+    player("wizard"),
+    player("ranger"),
+    player("rogue"),
+    mercenary("Cleric"),
   ];
   const magic = skill({ damage_type: "Magic", is_spell: true });
-  const results = calculationCasters(labels, magic).map(
-    (label) =>
+  const results = calculationCasters(casters, magic).map(
+    (group) =>
       resultNumbers(
         damageCalculation(
           magic,
-          { formula: "magic_spell", casterLabels: [label] },
-          label,
+          { formula: "magic_spell", casters: group },
+          group,
         ),
         { magicDamage: 201, bowDamage: 30, offhandDamage: 31 },
       )[0],
@@ -391,7 +400,7 @@ test("a non-positive listed aggro amount adds zero maximum Health", () => {
 });
 
 test("NPC magic weapon skills combine the NPC's own physical and magical stats without an editor", () => {
-  const attack = damage("monster_magic", "Monster or NPC", {
+  const attack = damage("monster_magic", monster, {
     damage_type: "Magic",
     is_spell: false,
     required_weapon_category: "Weapon",

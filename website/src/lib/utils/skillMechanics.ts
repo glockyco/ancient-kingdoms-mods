@@ -1,103 +1,29 @@
 import type {
   SkillDetailView,
   SkillPet,
+  Caster,
   DamageFormulaKind,
-  DamageContext,
   HealBonusKind,
-  HealContext,
   BuffBonusAttrSource,
-  BuffContext,
   TimingModel,
-  TimingContext,
   DebuffBonusAttrKind,
-  DebuffContext,
   SkillMechanicsSpec,
 } from "$lib/types/skills";
 import { ALL_CLASS_IDS } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 
-// ---------------------------------------------------------------------------
-// Helpers — group (label, formula) pairs into deduplicated context entries
-// ---------------------------------------------------------------------------
-
-/** Merge individual (label, formula) pairs into grouped DamageContext entries. */
-function groupDamage(
-  pairs: Array<{ label: string; formula: DamageFormulaKind }>,
-): DamageContext[] {
-  const map = new Map<DamageFormulaKind, string[]>();
-  for (const { label, formula } of pairs) {
-    if (!map.has(formula)) map.set(formula, []);
-    map.get(formula)!.push(label);
+/** Group (caster, rule) pairs by rule, in first-seen order, keeping each group's first pair for its rule fields. */
+function groupCasters<P extends { caster: Caster }>(
+  pairs: P[],
+  key: (pair: P) => string,
+): Array<{ casters: Caster[]; rule: P }> {
+  const groups = new Map<string, { casters: Caster[]; rule: P }>();
+  for (const pair of pairs) {
+    const group = groups.get(key(pair));
+    if (group) group.casters.push(pair.caster);
+    else groups.set(key(pair), { casters: [pair.caster], rule: pair });
   }
-  return [...map.entries()].map(([formula, casterLabels]) => ({
-    casterLabels,
-    formula,
-  }));
-}
-
-function groupHeal(
-  pairs: Array<{ label: string; bonusKind: HealBonusKind; canCrit: boolean }>,
-): HealContext[] {
-  // Key = bonusKind + canCrit — both must match to merge
-  const map = new Map<string, { labels: string[]; canCrit: boolean }>();
-  for (const { label, bonusKind, canCrit } of pairs) {
-    const key = `${bonusKind}:${canCrit}`;
-    if (!map.has(key)) map.set(key, { labels: [], canCrit });
-    map.get(key)!.labels.push(label);
-  }
-  return [...map.entries()].map(([key, { labels, canCrit }]) => ({
-    casterLabels: labels,
-    bonusKind: key.split(":")[0] as HealBonusKind,
-    canCrit,
-  }));
-}
-
-function groupBuff(
-  pairs: Array<{
-    label: string;
-    bonusAttrSource: BuffBonusAttrSource;
-    isAreaBuff: boolean;
-  }>,
-): BuffContext[] {
-  const map = new Map<string, { labels: string[]; isAreaBuff: boolean }>();
-  for (const { label, bonusAttrSource, isAreaBuff } of pairs) {
-    const key = `${bonusAttrSource}:${isAreaBuff}`;
-    if (!map.has(key)) map.set(key, { labels: [], isAreaBuff });
-    map.get(key)!.labels.push(label);
-  }
-  return [...map.entries()].map(([key, { labels, isAreaBuff }]) => ({
-    casterLabels: labels,
-    bonusAttrSource: key.split(":")[0] as BuffBonusAttrSource,
-    isAreaBuff,
-  }));
-}
-
-function groupTiming(
-  pairs: Array<{ label: string; model: TimingModel }>,
-): TimingContext[] {
-  const map = new Map<TimingModel, string[]>();
-  for (const { label, model } of pairs) {
-    if (!map.has(model)) map.set(model, []);
-    map.get(model)!.push(label);
-  }
-  return [...map.entries()].map(([model, casterLabels]) => ({
-    casterLabels,
-    model,
-  }));
-}
-
-function groupDebuff(
-  pairs: Array<{ label: string; bonusAttrKind: DebuffBonusAttrKind }>,
-): DebuffContext[] {
-  const map = new Map<DebuffBonusAttrKind, string[]>();
-  for (const { label, bonusAttrKind } of pairs) {
-    if (!map.has(bonusAttrKind)) map.set(bonusAttrKind, []);
-    map.get(bonusAttrKind)!.push(label);
-  }
-  return [...map.entries()].map(([bonusAttrKind, casterLabels]) => ({
-    casterLabels,
-    bonusAttrKind,
-  }));
+  return [...groups.values()];
 }
 
 /** Integer fields scaled by Buff.cs:45-275 and rounded by Charisma.cs:28-31. */
@@ -293,7 +219,11 @@ export function computeMechanicsSpec(
 
   // "other" covers monsters, NPCs, non-merc companion pets, and familiars.
   // None of these have class-specific formula branches in the server scripts.
-  const hasOtherCaster = hasMonsters || hasNonMercPet || hasFamiliar;
+  const otherCasters: Caster[] = [
+    ...(hasMonsters ? [{ kind: "monster" } as const] : []),
+    ...(hasNonMercPet ? [{ kind: "companion" } as const] : []),
+    ...(hasFamiliar ? [{ kind: "familiar" } as const] : []),
+  ];
 
   const isDamageSkill =
     skill.skill_type === "target_damage" ||
@@ -310,28 +240,25 @@ export function computeMechanicsSpec(
   // passive has no runtime scaling: PassiveSkill.Apply() is a no-op
 
   // ---------- damage ----------
-  const damagePairs: Array<{ label: string; formula: DamageFormulaKind }> = [];
+  const damagePairs: Array<{ caster: Caster; formula: DamageFormulaKind }> = [];
 
   if (isDamageSkill) {
     for (const cls of playerClasses) {
-      const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
-      damagePairs.push({ label, formula: playerDamageFormula(skill, cls) });
+      damagePairs.push({
+        caster: { kind: "player", classId: cls },
+        formula: playerDamageFormula(skill, cls),
+      });
     }
     for (const pet of mercPets) {
       // type_monster is "Ranger", "Rogue", etc. (title-case from DB)
       const tm = pet.type_monster ?? "Unknown";
-      const label = `${tm} mercenary`;
-      damagePairs.push({ label, formula: mercDamageFormula(skill, tm) });
-    }
-    if (hasOtherCaster) {
-      const parts: string[] = [];
-      if (hasMonsters) parts.push("Monster or NPC");
-      if (hasNonMercPet) parts.push("Companion");
-      if (hasFamiliar) parts.push("Familiar");
       damagePairs.push({
-        label: parts.join(", "),
-        formula: otherDamageFormula(skill),
+        caster: { kind: "mercenary", className: tm },
+        formula: mercDamageFormula(skill, tm),
       });
+    }
+    for (const caster of otherCasters) {
+      damagePairs.push({ caster, formula: otherDamageFormula(skill) });
     }
     // Source: TargetDamageSkill.cs — weapon procs fire through the full player damage
     // pipeline at level 1 via weaponItem.procEffect.Apply(player, 1). Enumerate every
@@ -341,7 +268,7 @@ export function computeMechanicsSpec(
     if (isWeaponProc) {
       for (const cls of ALL_CLASS_IDS) {
         damagePairs.push({
-          label: `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`,
+          caster: { kind: "player", classId: cls },
           formula: playerDamageFormula(skill, cls),
         });
       }
@@ -350,7 +277,7 @@ export function computeMechanicsSpec(
 
   // ---------- heal ----------
   const healPairs: Array<{
-    label: string;
+    caster: Caster;
     bonusKind: HealBonusKind;
     canCrit: boolean;
   }> = [];
@@ -360,37 +287,34 @@ export function computeMechanicsSpec(
     const canCrit = skill.skill_type === "area_heal" || skill.can_heal_others;
 
     for (const cls of playerClasses) {
-      const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
       const bonusKind: HealBonusKind =
         cls === "ranger"
           ? "player_ranger" // Source: Wisdom.cs — GetHealBonus(isRanger:true) → WIS×3×0.004
           : "player_other"; // Source: Wisdom.cs — GetHealBonus(isRanger:false) → WIS×0.004
-      healPairs.push({ label, bonusKind, canCrit });
-    }
-    for (const pet of mercPets) {
-      const tm = pet.type_monster ?? "Unknown";
-      const label = `${tm} mercenary`;
-      // Source: TargetHealSkill.cs — `caster is Pet { isMercenary: not false }` → pet.wisdom.GetHealBonus()
-      // GetHealBonus() called without the isRanger flag; no ×3 multiplier even for Ranger merc
-      healPairs.push({ label, bonusKind: "merc", canCrit });
-    }
-    if (hasOtherCaster) {
-      const parts: string[] = [];
-      if (hasMonsters) parts.push("Monster or NPC");
-      if (hasNonMercPet) parts.push("Companion");
-      if (hasFamiliar) parts.push("Familiar");
-      // Source: TargetHealSkill.cs — else branch → bonus = 0
       healPairs.push({
-        label: parts.join(", "),
-        bonusKind: "none",
+        caster: { kind: "player", classId: cls },
+        bonusKind,
         canCrit,
       });
+    }
+    for (const pet of mercPets) {
+      // Source: TargetHealSkill.cs — `caster is Pet { isMercenary: not false }` → pet.wisdom.GetHealBonus()
+      // GetHealBonus() called without the isRanger flag; no ×3 multiplier even for Ranger merc
+      healPairs.push({
+        caster: { kind: "mercenary", className: pet.type_monster ?? "Unknown" },
+        bonusKind: "merc",
+        canCrit,
+      });
+    }
+    // Source: TargetHealSkill.cs — else branch → bonus = 0
+    for (const caster of otherCasters) {
+      healPairs.push({ caster, bonusKind: "none", canCrit });
     }
   }
 
   // ---------- buff ----------
   const buffPairs: Array<{
-    label: string;
+    caster: Caster;
     bonusAttrSource: BuffBonusAttrSource;
     isAreaBuff: boolean;
   }> = [];
@@ -409,13 +333,12 @@ export function computeMechanicsSpec(
       // a single "Player" context covers all of them. No merc/pet path: relics are
       // player-only equipment usables.
       buffPairs.push({
-        label: "Player",
+        caster: { kind: "any_player" },
         bonusAttrSource: "player_level",
         isAreaBuff,
       });
     } else {
       for (const cls of playerClasses) {
-        const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
         let src: BuffBonusAttrSource;
         if (hasBardScaling) {
           // Source: BardSongSkill.cs — Bard songs use the caster's Charisma.
@@ -439,15 +362,20 @@ export function computeMechanicsSpec(
           // Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — scalesWithIntelligence selects intelligence, otherwise wisdom.
           src = skill.scales_with_intelligence ? "player_int" : "player_wis";
         }
-        buffPairs.push({ label, bonusAttrSource: src, isAreaBuff });
+        buffPairs.push({
+          caster: { kind: "player", classId: cls },
+          bonusAttrSource: src,
+          isAreaBuff,
+        });
       }
       for (const pet of mercPets) {
-        const tm = pet.type_monster ?? "Unknown";
-        const label = `${tm} mercenary`;
         // Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — mercenary buffs select intelligence when scalesWithIntelligence, otherwise wisdom.
         // Source: server-scripts/BardMercenarySkills.cs:RefreshAura — a Bard mercenary's song buff carries the mercenary's Charisma.
         buffPairs.push({
-          label,
+          caster: {
+            kind: "mercenary",
+            className: pet.type_monster ?? "Unknown",
+          },
           bonusAttrSource: hasBardScaling
             ? "merc_cha"
             : skill.scales_with_intelligence
@@ -456,19 +384,13 @@ export function computeMechanicsSpec(
           isAreaBuff,
         });
       }
-      if (hasOtherCaster && (playerClasses.length > 0 || mercPets.length > 0)) {
-        const parts: string[] = [];
-        if (hasMonsters) parts.push("Monster or NPC");
-        if (hasNonMercPet) parts.push("Companion");
-        if (hasFamiliar) parts.push("Familiar");
-        // Source: BuffSkill.cs:GetBuffPowerAttribute — final else → 0
-        // Only shown when a player or merc also casts the skill; pure monster-only
-        // buff skills have bonusAttrSource=none which is uninformative to players.
-        buffPairs.push({
-          label: parts.join(", "),
-          bonusAttrSource: "none",
-          isAreaBuff,
-        });
+      // Source: BuffSkill.cs:GetBuffPowerAttribute — final else → 0
+      // Only shown when a player or merc also casts the skill; pure monster-only
+      // buff skills have bonusAttrSource=none which is uninformative to players.
+      if (playerClasses.length > 0 || mercPets.length > 0) {
+        for (const caster of otherCasters) {
+          buffPairs.push({ caster, bonusAttrSource: "none", isAreaBuff });
+        }
       }
     }
   }
@@ -478,7 +400,7 @@ export function computeMechanicsSpec(
   // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:339-345 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
   // Source: server-scripts/Player.cs:3394-3431 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
-  const timingPairs: Array<{ label: string; model: TimingModel }> = [];
+  const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 
   if (
     skill.followup_default_attack ||
@@ -494,7 +416,6 @@ export function computeMechanicsSpec(
     const hasReqWeapon = Boolean(skill.required_weapon_category);
 
     for (const cls of playerClasses) {
-      const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
       // Source: Player.cs:2783 — delay-based refractory applies when !isSpell && hasReqWeapon
       // Source: Player.cs:refractoryPeriodSkill,3084-3087 — isSpell && !hasReqWeapon → flat 0.75s refractory (player_spell)
       // Note: spell auto-attacks have no required_weapon_category in the data, so isSpell alone is the discriminant.
@@ -504,24 +425,25 @@ export function computeMechanicsSpec(
           : isSpell
             ? "player_spell"
             : "companion";
-      timingPairs.push({ label, model });
+      timingPairs.push({ caster: { kind: "player", classId: cls }, model });
     }
     for (const pet of mercPets) {
-      const tm = pet.type_monster ?? "Unknown";
-      const label = `${tm} mercenary`;
       // Source: Skills.cs:1141-1159 — followupDefaultAttack && !isSpell → cooldown * (1 - haste)
       const model: TimingModel = isSpell ? "merc_spell" : "merc_auto";
-      timingPairs.push({ label, model });
+      timingPairs.push({
+        caster: { kind: "mercenary", className: pet.type_monster ?? "Unknown" },
+        model,
+      });
     }
     if (hasMonsters) {
       // Source: server-scripts/Monster.cs:2048-2054; Npc.cs:1302-1308 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
       const model: TimingModel = isSpell ? "monster_spell" : "monster";
-      timingPairs.push({ label: "Monster or NPC", model });
+      timingPairs.push({ caster: { kind: "monster" }, model });
     }
     // Source: server-scripts/Skills.cs:1141-1169 — only non-familiar combat-pet non-spell skillIndex 0 receives haste-reduced cooldown.
     for (const pet of usedByPets.filter((p) => !p.is_mercenary)) {
       timingPairs.push({
-        label: pet.is_familiar ? "Familiar" : "Companion",
+        caster: { kind: pet.is_familiar ? "familiar" : "companion" },
         model:
           !pet.is_familiar && !isSpell && pet.skill_index === 0
             ? "companion_auto"
@@ -552,7 +474,7 @@ export function computeMechanicsSpec(
       hasNonZeroField(skill.magic_damage_bonus));
 
   const debuffPairs: Array<{
-    label: string;
+    caster: Caster;
     bonusAttrKind: DebuffBonusAttrKind;
   }> = [];
 
@@ -568,8 +490,10 @@ export function computeMechanicsSpec(
           : "int";
 
     for (const cls of playerClasses) {
-      const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
-      debuffPairs.push({ label, bonusAttrKind: playerMercKind });
+      debuffPairs.push({
+        caster: { kind: "player", classId: cls },
+        bonusAttrKind: playerMercKind,
+      });
     }
     // Source: TargetDamageSkill.cs:246-276 and ProjectileSkillEffect.cs:143-155 —
     // weapon proc effects call Apply(player/pet, 1). TargetDebuffSkill.cs:273-280
@@ -577,31 +501,46 @@ export function computeMechanicsSpec(
     // player_classes entries of their own.
     if (isWeaponProc) {
       debuffPairs.push({
-        label: "Player or mercenary (weapon effect on hit)",
+        caster: { kind: "weapon_effect" },
         bonusAttrKind: playerMercKind,
       });
     }
     for (const pet of mercPets) {
-      const tm = pet.type_monster ?? "Unknown";
       debuffPairs.push({
-        label: `${tm} mercenary`,
+        caster: { kind: "mercenary", className: pet.type_monster ?? "Unknown" },
         bonusAttrKind: playerMercKind,
       });
     }
-    if (hasOtherCaster) {
-      const parts: string[] = [];
-      if (hasMonsters) parts.push("Monster or NPC");
-      if (hasNonMercPet) parts.push("Companion");
-      if (hasFamiliar) parts.push("Familiar");
-      debuffPairs.push({ label: parts.join(", "), bonusAttrKind: "none" });
+    for (const caster of otherCasters) {
+      debuffPairs.push({ caster, bonusAttrKind: "none" });
     }
   }
 
   return {
-    damageContexts: groupDamage(damagePairs),
-    healContexts: groupHeal(healPairs),
-    buffContexts: groupBuff(buffPairs),
-    timingContexts: groupTiming(timingPairs),
-    debuffContexts: groupDebuff(debuffPairs),
+    damageContexts: groupCasters(damagePairs, (pair) => pair.formula).map(
+      ({ casters, rule }) => ({ casters, formula: rule.formula }),
+    ),
+    healContexts: groupCasters(
+      healPairs,
+      (pair) => `${pair.bonusKind}:${pair.canCrit}`,
+    ).map(({ casters, rule }) => ({
+      casters,
+      bonusKind: rule.bonusKind,
+      canCrit: rule.canCrit,
+    })),
+    buffContexts: groupCasters(
+      buffPairs,
+      (pair) => `${pair.bonusAttrSource}:${pair.isAreaBuff}`,
+    ).map(({ casters, rule }) => ({
+      casters,
+      bonusAttrSource: rule.bonusAttrSource,
+      isAreaBuff: rule.isAreaBuff,
+    })),
+    timingContexts: groupCasters(timingPairs, (pair) => pair.model).map(
+      ({ casters, rule }) => ({ casters, model: rule.model }),
+    ),
+    debuffContexts: groupCasters(debuffPairs, (pair) => pair.bonusAttrKind).map(
+      ({ casters, rule }) => ({ casters, bonusAttrKind: rule.bonusAttrKind }),
+    ),
   };
 }

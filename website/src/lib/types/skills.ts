@@ -291,6 +291,21 @@ export interface SkillPet {
 // Mechanics spec — computed server-side, rendered declaratively
 // ------------------------------------------------------------
 
+/** Who casts a skill in one mechanics context. */
+export type Caster =
+  /** A player of one class, by lower-case class id such as "ranger". */
+  | { kind: "player"; classId: string }
+  /** Any player regardless of class, as for relics. */
+  | { kind: "any_player" }
+  /** A mercenary, by its class name such as "Ranger". */
+  | { kind: "mercenary"; className: string }
+  /** A weapon's on-hit effect, applied by a player or a mercenary. */
+  | { kind: "weapon_effect" }
+  /** A monster or NPC. */
+  | { kind: "monster" }
+  | { kind: "companion" }
+  | { kind: "familiar" };
+
 export type DamageFormulaKind =
   // Physical
   | "normal" // Character-window Damage.
@@ -316,8 +331,8 @@ export type DamageFormulaKind =
   | "monster_magic"; // The caster's own Magic Damage at its level.
 
 export interface DamageContext {
-  /** One or more caster descriptions that all share this formula. */
-  casterLabels: string[];
+  /** Every caster that shares this formula. */
+  casters: Caster[];
   formula: DamageFormulaKind;
 }
 
@@ -328,7 +343,7 @@ export type HealBonusKind =
   | "none"; // no bonus (monster, NPC, non-merc pet) — e.g. healing_circle
 
 export interface HealContext {
-  casterLabels: string[];
+  casters: Caster[];
   bonusKind: HealBonusKind;
   /** Area healing rolls for critical healing. Target healing requires can_heal_others. */
   canCrit: boolean;
@@ -349,7 +364,7 @@ export type BuffBonusAttrSource =
   | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
 export interface BuffContext {
-  casterLabels: string[];
+  casters: Caster[];
   bonusAttrSource: BuffBonusAttrSource;
   /** True for area_buff (different Ranger/ward behaviour vs target_buff). */
   isAreaBuff: boolean;
@@ -372,7 +387,7 @@ export type TimingModel =
   | "monster"; // non-spell: cast_time + cooldown×(1−haste)
 
 export interface TimingContext {
-  casterLabels: string[];
+  casters: Caster[];
   model: TimingModel;
 }
 
@@ -384,8 +399,8 @@ export type DebuffBonusAttrKind =
   | "none"; // monster/NPC/companion: 0 — e.g. ancient_curse
 
 export interface DebuffContext {
-  /** Caster labels that share this bonus attribute kind (e.g. ["Warrior (player)", "Rogue (player)"]). */
-  casterLabels: string[];
+  /** Every caster that shares this bonus attribute kind. */
+  casters: Caster[];
   /** How the bonus attribute is determined for this caster type.
    * Source: TargetDebuffSkill.cs:265-279 — non-Player (monster/NPC) falls through to default 0.
    */
