@@ -4,9 +4,7 @@ An interactive world map and a searchable compendium for [Ancient Kingdoms](http
 
 [Open the compendium](https://ancient-kingdoms.compendiums.org) · [Steam Guide](https://steamcommunity.com/sharedfiles/filedetails/?id=3616580411) · [Project page](https://glockyco.com/projects/ancient-kingdoms/) · [Support on Ko-fi](https://ko-fi.com/wowmuch)
 
-<p align="center">
-  <a href="https://ancient-kingdoms.compendiums.org"><img src="assets/compendium-home.webp" width="640" alt="The compendium's home page: search, items, world bosses, classes, recipes, professions, zones, and mechanics"></a>
-</p>
+[![The compendium's home page: search, items, world bosses, classes, recipes, professions, zones, and mechanics](assets/compendium-home.webp)](https://ancient-kingdoms.compendiums.org)
 
 ## What's inside
 
