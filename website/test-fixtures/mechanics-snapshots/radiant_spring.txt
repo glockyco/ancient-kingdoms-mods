@@ -1,1 +1,1 @@
-Mechanics Healing Formula Final Heal = Base Heal + round(Base Heal × min(WIS × 0.004, 5.0)) Critical Heal: 90% chance ×2.0 | 10% chance ×3.0 Cast time = cast time × (1 − spell haste)
+Mechanics Healing Formula Final Heal = Base Heal + round(Base Heal × min(WIS × 0.004, 5.0)) Critical Heal: 90% chance ×2.0 | 10% chance ×3.0 Spell haste shortens the cast by its percentage, so 20% spell haste turns the 2.5s cast into 2s.

@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = WIS Defense skill value at level + attribute contribution × 0.15 Magic Resist skill value at level + attribute contribution × 0.15 Cast time = cast time × (1 − spell haste)
+Mechanics Buff Scaling Attribute contribution = WIS Defense skill value at level + attribute contribution × 0.15 Magic Resist skill value at level + attribute contribution × 0.15 Spell haste shortens the cast by its percentage, so 20% spell haste turns the 0.5s cast into 0.4s.

@@ -1,1 +1,1 @@
-Mechanics Cast time = cast time × (1 − spell haste) Accuracy This skill's Accuracy bonus lowers the target's chance to block or resist an attack by the same number of percentage points. Total Accuracy is limited to a value between −50% and 100%.
+Mechanics Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s. Accuracy This skill's Accuracy bonus lowers the target's chance to block or resist an attack by the same number of percentage points. Total Accuracy is limited to a value between −50% and 100%.

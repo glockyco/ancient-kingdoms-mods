@@ -1,1 +1,1 @@
-Mechanics Healing Formula Final Heal = Base Heal (no bonus) Cast time = cast time × (1 − spell haste)
+Mechanics Healing Formula Final Heal = Base Heal (no bonus) Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s.

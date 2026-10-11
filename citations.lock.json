@@ -2031,15 +2031,14 @@
     "NecromancerBloodPactSkill.cs:Apply": {
       "span": 0
     },
+    "NecromancerBloodPactSkill.cs:CanConvert": {
+      "span": 0
+    },
     "NecromancerBloodPactSkill.cs:GetHealthCost": {
       "span": 0
     },
     "NecromancerBloodPactSkill.cs:GetManaRestored": {
       "span": 0
-    },
-    "NecromancerDeathBloomSkill.cs:12": {
-      "sha256": "c0b5b22715bf91ce366a1786966bae83c79c109c89f7db0284ac8d767a58a0c1",
-      "span": 1
     },
     "NecromancerDeathBloomSkill.cs:19-25": {
       "sha256": "5d95fa9f9c46642331855f44aea3aab245b1e1687e652f7e2f149fd94016b4b8",
@@ -2048,10 +2047,6 @@
     "NecromancerDeathBloomSkill.cs:28-45": {
       "sha256": "c6bdcd40692a8aaf5fcf9f7810c17506e0685829702d34e25f7bc2b6b886d6aa",
       "span": 18
-    },
-    "NecromancerDeathBloomSkill.cs:37-44": {
-      "sha256": "b4e0389aaad90378a2b1a73cca68bce9dae08efb2a1cc49be20711c608309922",
-      "span": 8
     },
     "NecromancerDeathBloomSkill.cs:47-50": {
       "sha256": "52ab526ec6689d64e9a372249e5cc191cafdcea391409c397ca7de1c9dc4c7c7",
@@ -2068,6 +2063,9 @@
     "NecromancerDeathBloomSkill.cs:7-17": {
       "sha256": "4bd4795922f57ac605e3e6e1df6886d47265e1b7f4c1010cea2147ae204081d3",
       "span": 11
+    },
+    "NecromancerDeathBloomSkill.cs:CheckSelf": {
+      "span": 0
     },
     "NecromancerDeathBloomSkill.cs:CorrectedTarget": {
       "span": 0
@@ -3727,9 +3725,17 @@
       "sha256": "c881cf3bfc13ed22183442eba4c1c726e8db31a56e725c9eeacf85d42e86ef1a",
       "span": 18
     },
+    "PlayerSkills.cs:361-362": {
+      "sha256": "a839fdcd7f1f68fe6de153a8c26b5352bcd84b9b2ca4d3bbee94cae42574b136",
+      "span": 2
+    },
     "PlayerSkills.cs:38-47": {
       "sha256": "ec02292c476ed7ed91ef749dfa85c38b8d56237810e14f2621a159b15714eb83",
       "span": 10
+    },
+    "PlayerSkills.cs:386-396": {
+      "sha256": "fa4aa50334f00ea1c1c8c6e83fb9431223f098ef3c7b4b11b88acfa8b7e95b61",
+      "span": 11
     },
     "PlayerSkills.cs:437-454": {
       "sha256": "0f577c5d3e1ba0594e605eb3f4beeb1cf3c75ce3ec453b8b3af98f8a565ec7dd",
@@ -4422,10 +4428,6 @@
     "TargetDamageSkill.cs:228-232": {
       "sha256": "1b275000a3991f18500c64ab98c8888db08e88372e5e0fff3e304823c4c9866f",
       "span": 5
-    },
-    "TargetDamageSkill.cs:238-248": {
-      "sha256": "0de811717db1b66c48c7300aacd83298dcf81d025f708f85502dad01f5918469",
-      "span": 11
     },
     "TargetDamageSkill.cs:244": {
       "sha256": "558733c5ec920748d1cb5453c6c9754a3b012725a9197b83e5b41f314c95680d",

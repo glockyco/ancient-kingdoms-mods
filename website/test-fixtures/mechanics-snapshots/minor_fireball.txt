@@ -1,1 +1,1 @@
-Mechanics Aggro Aggro = min(target health, skill aggro + caster maximum health + damage + round(stunChance × stunTime × 10) + round(fearChance × fearTime × 10) ) Cast time = cast time × (1 − spell haste)
+Mechanics Aggro Aggro = min(target health, skill aggro + caster maximum health + damage + round(stunChance × stunTime × 10) + round(fearChance × fearTime × 10) ) Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.4s cast into 1.12s.

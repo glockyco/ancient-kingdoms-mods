@@ -26,6 +26,12 @@
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
   import FormulaDisplay from "$lib/components/FormulaDisplay.svelte";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import {
+    bloodPactCalculation,
+    channelCalculation,
+    deathBloomCalculation,
+  } from "$lib/skills/calculations";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import Skull from "@lucide/svelte/icons/skull";
   import Cat from "@lucide/svelte/icons/cat";
@@ -2032,56 +2038,36 @@
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
         {#if skill.is_necromancer_blood_pact}
-          <!-- Source: server-scripts/NecromancerBloodPactSkill.cs:GetHealthCost,GetManaRestored,CanConvert,Apply — CeilToInt healthCostPercent cost, FloorToInt manaRestoredPercent restoration, full health cost and capped mana gain. -->
-          <div class="space-y-2">
+          <!-- Source: server-scripts/NecromancerBloodPactSkill.cs:CanConvert,Apply — both amounts must be positive, Mana below maximum and current Health above the cost; the full Health cost is paid when the Mana gain is capped. -->
+          <div class="space-y-3">
             <h3 class="font-semibold">Blood Pact</h3>
-            <p class="font-mono">
-              Health cost C = ceil(max Health &times; {formatLinearPercent(
-                skill.health_cost_percent,
-              )})
-            </p>
-            <p class="font-mono">
-              Mana restored M = floor(max Mana &times; {formatLinearPercent(
-                skill.mana_restored_percent,
-              )})
-            </p>
+            <Calculation calculation={bloodPactCalculation(skill)} />
             <p class="text-muted-foreground">
-              Mana must be below maximum and current Health must exceed the
-              Health cost C. Both the Health cost C and Mana restored M must be
-              positive. Mana restored is capped at your missing Mana. You pay
-              the full Health cost.
+              You can use it only while your Mana is below maximum, your current
+              Health is above the Health spent and both amounts are above 0. You
+              pay the full Health cost even when the Mana restored is capped.
             </p>
           </div>
         {/if}
 
         {#if skill.is_necromancer_death_bloom}
-          <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:GetHealthCost,GetIntelligenceBonus,GetHealingAmount,CheckSelf,CorrectedTarget,Apply — CeilToInt health cost and RoundToInt cost-based healing use Intelligence, not Wisdom, on another Player or non-familiar Pet. -->
-          <div class="space-y-2">
+          <div class="space-y-3">
             <h3 class="font-semibold">Death Bloom</h3>
-            <p class="font-mono">
-              Health cost C = ceil(max Health &times; {formatLinearPercent(
-                skill.health_cost_percent,
-              )})
+            <Calculation calculation={deathBloomCalculation(skill)} />
+            <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:GetIntelligenceBonus,GetHealingAmount — Max(0, intelligence.value) feeds the heal, and the override adds no Wisdom bonus. -->
+            <p class="text-muted-foreground">
+              Negative Intelligence counts as 0. Wisdom does not increase this
+              heal.
             </p>
-            <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:12,19-25,47-50 — each nonnegative Intelligence point adds 0.1% of the Health cost to healing. -->
-            <p class="font-mono">
-              Base heal = round(C &times; ({formatLinearPercent(
-                skill.healing_percent,
-              )} + max(INT, 0) &times; {formatLinearPercent({
-                base_value: skill.healing_percent_per_intelligence,
-                bonus_per_level: 0,
-              })}))
-            </p>
-            <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:37-44; server-scripts/TargetHealSkill.cs:125-132 — living eligible targets must be within cast range. -->
+            <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:CheckSelf,CorrectedTarget,Apply; server-scripts/TargetHealSkill.cs:125-132 — another living Player or non-familiar Pet within cast range; current Health must exceed the cost, which is paid in full. -->
             <p class="text-muted-foreground">
               Targets another living player or a non-familiar pet, including
               mercenaries and other players' companions, within {formatLinear(
                 skill.cast_range,
                 " yd",
               )}. Cannot target yourself, familiars, monsters or NPCs. Your
-              current Health must exceed C. Pays the full cost even if the
-              target is already at maximum Health. Wisdom does not increase the
-              heal.
+              current Health must be above the Health spent. You pay the full
+              cost even if the target is already at maximum Health.
             </p>
             <!-- Source: server-scripts/TargetHealSkill.cs:272-280 — canHealOthers uses caster criticalChance; critical healing multiplies by 3 when the second random roll exceeds 0.9, otherwise 2. -->
             <p class="text-muted-foreground">
@@ -2171,25 +2157,11 @@
             <h3 class="font-semibold">
               Channel: {skill.channel_pulses} Pulses
             </h3>
-            <p class="font-mono">
-              T = max(0.05s, cast time &times; {skill.is_spell
-                ? "(1 − spell haste)"
-                : "1"})
-            </p>
-            <p class="font-mono">
-              Pulse k occurs at T &times; (k + 1) / {skill.channel_pulses}, k =
-              0…{skill.channel_pulses - 1}.
-            </p>
-            <!-- Source: server-scripts/TargetDamageSkill.cs:238-248 — full finalDamage is divided by pulseCount, with remainder on the first pulses. -->
-            <p class="font-mono">
-              Pulse damage = floor(F / {skill.channel_pulses}) + 1 for the first
-              F mod {skill.channel_pulses} pulses, otherwise floor(F / {skill.channel_pulses}).
-            </p>
+            <Calculation calculation={channelCalculation(skill)} />
             <p class="text-muted-foreground">
-              F is the full pre-mitigation skill damage, recomputed for each
-              pulse. The final pulse occurs at the end. None occurs at the
-              start. Mana and energy are paid at the start and are not refunded
-              on interruption.
+              Full skill damage is recalculated before mitigation for each
+              pulse. No pulse occurs at the start. Mana and energy are paid at
+              the start and are not refunded on interruption.
             </p>
             <!-- Source: server-scripts/Player.cs:UpdateServer_CASTING — fear and stun cancel ChanneledTargetDamageSkill; stun skips halving the channel cooldown. -->
             <p class="text-muted-foreground">
@@ -3534,12 +3506,16 @@
             >
           </p>
         {/if}
-        {#if hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll}
-          <!-- Source: server-scripts/Skills.cs:924-933 — castTimeEnd reduction only when isSpell -->
+        {#if skill.cast_time && hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll && skill.channel_pulses === 0}
+          {@const baseCast = skill.cast_time.base_value}
+          <!-- Source: server-scripts/Skills.cs:924-933 — spells subtract spellHasteBonus × castTime from the cast. -->
           <p class="text-muted-foreground">
-            Cast time = {skill.channel_pulses > 0
-              ? "max(0.05s, cast time × (1 − spell haste))"
-              : "cast time × (1 − spell haste)"}
+            Spell haste shortens the cast by its percentage, so 20% spell haste
+            turns the {skill.cast_time.bonus_per_level !== 0
+              ? "skill level 1 "
+              : ""}{Number(baseCast.toFixed(2))}s cast into {Number(
+              Math.fround(baseCast * 0.8).toFixed(2),
+            )}s.
           </p>
         {/if}
         {#if hasLinearValue(skill.fear_chance)}

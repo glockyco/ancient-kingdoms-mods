@@ -1,1 +1,1 @@
-Mechanics Cast time = cast time × (1 − spell haste) Fear Resist When fear would apply, the target has a chance to resist it. Total Fear Resist from all sources is capped at 100%. At 100%, the target resists every fear effect.
+Mechanics Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s. Fear Resist When fear would apply, the target has a chance to resist it. Total Fear Resist from all sources is capped at 100%. At 100%, the target resists every fear effect.

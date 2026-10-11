@@ -1,1 +1,1 @@
-Mechanics Cast time = cast time × (1 − spell haste)
+Mechanics Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.7s cast into 1.36s.
