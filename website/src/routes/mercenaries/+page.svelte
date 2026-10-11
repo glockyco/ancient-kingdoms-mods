@@ -473,7 +473,7 @@
           <div>Give it orders.</div>
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9208-9234 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
           <p class="text-sm leading-6 text-muted-foreground">
-            These orders also apply to your combat pet.
+            These orders also apply to your companion.
             <!-- Source: server-scripts/Pet.cs:IsValidCombatReacquireTarget,OnAggro — mercenaries reject Monster.isDummy when acquiring targets automatically. -->
             Mercenaries skip training dummies when choosing targets automatically.
             <!-- Source: server-scripts/Pet.cs:2969-3031 — back-seeking enabled mercenaries reposition by class and frontal attacks, excluding Warriors. -->
@@ -950,8 +950,8 @@
     <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2708-2715,2820-2841 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
-        >Combat pets and mercenaries can evade monster area attacks with at
-        least a 1-second cast and a reachable safe destination.</span
+        >Companions and mercenaries can evade monster area attacks with at least
+        a 1-second cast and a reachable safe destination.</span
       >
       <span class="block"
         >Familiars and aggressive Warriors do not try this escape.</span

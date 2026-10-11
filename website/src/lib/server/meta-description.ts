@@ -1440,7 +1440,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
     : skill.is_necromancer_reaper_form
       ? "Toggleable Reaper Form"
       : skill.is_necromancer_pet_buff
-        ? "Buff for your living combat pet"
+        ? "Buff for your living companion"
         : (skill.channel_pulses ?? 0) > 0
           ? "Channeled single-target damage spell"
           : skill.skill_type === "summon" &&
@@ -1537,7 +1537,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
     case "Companion":
       // Source: server-scripts/SummonSkill.cs:99 — level = min(petMaxLevel, playerLevel)
       if (input.summoning_class_id === "necromancer") {
-        return ` Undead combat pet summoned by ${input.summoning_skill_name ?? "a Necromancer skill"}. Level follows the summoner, up to level ${input.level_max}.`;
+        return ` Undead companion summoned by ${input.summoning_skill_name ?? "a Necromancer skill"}. Level follows the summoner, up to level ${input.level_max}.`;
       }
       if (input.summoning_skill_name && className) {
         return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level matches the summoner, up to level ${input.level_max}.`;

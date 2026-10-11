@@ -87,7 +87,7 @@
               >
               <td class="py-3">
                 The Bard, nearby living party members in the same zone, and
-                their active combat pets and mercenaries.<br />
+                their active companions and mercenaries.<br />
                 Familiars do not receive these auras.
               </td>
             </tr>

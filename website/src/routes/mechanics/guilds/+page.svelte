@@ -122,7 +122,7 @@
           >The boss's highest-threat participant gets credit, not necessarily
           the last hitter.</span
         >
-        <span class="block">A mercenary or combat pet credits its owner.</span>
+        <span class="block">A mercenary or companion credits its owner.</span>
         <span class="block"
           >Only the credited player receives guild points, if they belong to a
           guild.</span

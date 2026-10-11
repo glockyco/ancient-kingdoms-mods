@@ -72,9 +72,9 @@ internal static class SkillEffectFormatter
         if (skill.is_necromancer_reaper_form)
             parts.Add("toggle form");
         if (skill.is_necromancer_pet_buff)
-            parts.Add("buffs your combat pet");
+            parts.Add("buffs your companion");
         if (skill.also_buff_active_pet)
-            parts.Add("when self-cast, also buffs your combat pet in range");
+            parts.Add("when self-cast, also buffs your companion in range");
         if (skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff" or "passive")
             FormatBuffDebuffStats(skill, parts);
 
@@ -318,7 +318,7 @@ internal static class SkillEffectFormatter
         // 3. Resource pools
         AddSignedValue(parts, ParseLinearValue(skill.health_max_bonus), "max hp", false);
         var healthPercentTarget = skill.skill_type == "passive" && skill.is_pet_skill
-            ? "combat pet max hp"
+            ? "companion max hp"
             : "max hp";
         AddSignedPercent(parts, ParseLinearValue(skill.health_max_percent_bonus), healthPercentTarget, false);
         AddSignedValue(parts, ParseLinearValue(skill.mana_max_bonus), "max mana", false);

@@ -1540,7 +1540,7 @@
           {#if skill.player_classes.includes("necromancer") && !skill.is_familiar}
             <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,56,106-113 — a different Necromancer combat-pet summon replaces the active pet; matching the active pet gives the attack command. -->
             <p class="mt-3 text-muted-foreground">
-              Summoning a different combat pet replaces your current pet. Using
+              Summoning a different companion replaces your current pet. Using
               this summon while its pet is active commands that pet to attack
               your target instead.
             </p>
@@ -2075,7 +2075,7 @@
             <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:37-44; server-scripts/TargetHealSkill.cs:125-132 — living eligible targets must be within cast range. -->
             <p class="text-muted-foreground">
               Targets another living player or a non-familiar pet, including
-              mercenaries and other players' combat pets, within {formatLinear(
+              mercenaries and other players' companions, within {formatLinear(
                 skill.cast_range,
                 " yd",
               )}. Cannot target yourself, familiars, monsters or NPCs. Your
@@ -2148,15 +2148,15 @@
           <!-- Source: server-scripts/NecromancerPetBuffSkill.cs:6-28 — direct pet buffs require an owned living combat pet. -->
           <!-- Source: server-scripts/TargetBuffSkill.cs:477-482 — alsoBuffActivePet copies a self-buff to the owned living non-familiar, non-mercenary active pet within castRange. -->
           <div class="space-y-2">
-            <h3 class="font-semibold">Combat Pet Buff</h3>
+            <h3 class="font-semibold">Companion Buff</h3>
             <!-- Source: server-scripts/TargetBuffSkill.cs:477-480; server-scripts/NecromancerPetBuffSkill.cs:24-28 — the pet must be within cast range. -->
             <p class="text-muted-foreground">
               {#if skill.also_buff_active_pet}
                 When applied to yourself, the same buff also reaches your living
-                combat pet within {formatLinear(skill.cast_range, " yd")}.
+                companion within {formatLinear(skill.cast_range, " yd")}.
                 Familiars and mercenaries cannot receive this copy.
               {:else}
-                Targets your living combat pet within {formatLinear(
+                Targets your living companion within {formatLinear(
                   skill.cast_range,
                   " yd",
                 )}. Familiars and mercenaries cannot receive this buff.
@@ -2236,7 +2236,7 @@
           <div class="space-y-2">
             <h3 class="font-semibold">Pet Maximum Health</h3>
             <p class="text-muted-foreground">
-              Your combat pet receives {formatLinearPercent(
+              Your companion receives {formatLinearPercent(
                 skill.health_max_percent_bonus,
               )} maximum Health. This passive does not increase your maximum Health,
               and does not affect familiars or mercenaries.
@@ -3038,8 +3038,8 @@
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
                   <p class="text-muted-foreground">
-                    Applies only to the combat pet's first skill. Familiars and
-                    other combat-pet skills keep their flat cooldown.
+                    Applies only to the companion's first skill. Familiars and
+                    other companion skills keep their flat cooldown.
                   </p>
                 {:else if ctx.model === "monster_spell"}
                   <p class="font-mono">

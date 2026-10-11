@@ -179,7 +179,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         is_necromancer_pet_buff: true,
         haste_bonus: { base_value: 0.05, bonus_per_level: 0.05 },
       } as Skill),
-    ).toBe("buffs your combat pet, +5% × skill lvl haste");
+    ).toBe("buffs your companion, +5% × skill lvl haste");
     expect(
       formatSkillEffect({
         skill_type: "target_buff",
@@ -187,7 +187,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         ward_bonus: { base_value: 50, bonus_per_level: 50 },
       } as Skill),
     ).toBe(
-      "when self-cast, also buffs your combat pet in range, +50 × skill lvl ward",
+      "when self-cast, also buffs your companion in range, +50 × skill lvl ward",
     );
   });
 
@@ -242,13 +242,13 @@ describe("formatSkillEffect Necromancer mechanics", () => {
     ).toBe("20 × skill lvl magic dmg, channeled over 3 pulses");
   });
 
-  it("assigns an owner's pet passive max-health bonus to the combat pet", () => {
+  it("assigns an owner's pet passive max-health bonus to the companion", () => {
     const skill = {
       skill_type: "passive",
       is_pet_skill: true,
       health_max_percent_bonus: { base_value: 0.02, bonus_per_level: 0.02 },
     } as Skill;
-    expect(formatSkillEffect(skill)).toBe("+2% × skill lvl combat pet max hp");
+    expect(formatSkillEffect(skill)).toBe("+2% × skill lvl companion max hp");
     expect(formatSkillEffect({ ...skill, is_pet_skill: false })).toBe(
       "+2% × skill lvl max hp",
     );

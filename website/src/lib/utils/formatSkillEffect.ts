@@ -606,7 +606,7 @@ function formatBuffDebuffStats(
   // Source: server-scripts/Skills.cs:GetHealthPercentBonus — isPetSkill passive healthMaxPercentBonus goes to non-mercenary, non-familiar Pet, not the owner.
   const healthPercentTarget =
     skill.skill_type === "passive" && skill.is_pet_skill
-      ? "combat pet max hp"
+      ? "companion max hp"
       : "max hp";
   if (healthMaxPctBonus) {
     const sign = healthMaxPctBonus.base_value > 0 ? "+" : "";
@@ -1024,10 +1024,10 @@ export function formatSkillEffect(
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — RemoveBuff when GetBuffIndexByName(nameSkill) >= 0; otherwise applies the buff.
   if (skill.is_necromancer_reaper_form) parts.push("toggle form");
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — activePet owned by the Necromancer, not isFamiliar or isMercenary, with health.current > 0.
-  if (skill.is_necromancer_pet_buff) parts.push("buffs your combat pet");
+  if (skill.is_necromancer_pet_buff) parts.push("buffs your companion");
   // Source: server-scripts/TargetBuffSkill.cs:477-482 — alsoBuffActivePet when entity == caster, living owned non-familiar/non-mercenary activePet within castRange.Get(skillLevel).
   if (skill.also_buff_active_pet) {
-    parts.push("when self-cast, also buffs your combat pet in range");
+    parts.push("when self-cast, also buffs your companion in range");
   }
   // 6. Buffs/debuffs
   // Always show buff/debuff stats (fixes bug where stats were suppressed if damage was present)

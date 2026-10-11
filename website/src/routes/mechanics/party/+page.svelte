@@ -95,7 +95,7 @@
           >The monster's highest-threat opponent gets kill credit, not the
           player who lands the final hit.</span
         >
-        <span class="block">A mercenary or combat pet credits its owner.</span>
+        <span class="block">A mercenary or companion credits its owner.</span>
         <span class="block"
           >Nearby party members gain loot access when the monster dies.</span
         >

@@ -1232,7 +1232,7 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">First non-spell skill</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Combat pets (not mercenaries or familiars)</td
+                  >Companions</td
                 >
                 <td class="py-2 font-mono text-sm"
                   >cast time + cooldown × (1 − haste)</td
@@ -1241,7 +1241,7 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Other skills</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Combat pets and familiars</td
+                  >Companions and familiars</td
                 >
                 <td class="py-2 font-mono text-sm">cast time + cooldown</td>
               </tr>
@@ -1318,8 +1318,8 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Companion or familiar</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Reduces the first non-spell skill's cooldown for combat pets.
-                  No effect on familiars or other pet skills</td
+                  >Reduces the first non-spell skill's cooldown for companions.
+                  No effect on familiars or other companion skills</td
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
