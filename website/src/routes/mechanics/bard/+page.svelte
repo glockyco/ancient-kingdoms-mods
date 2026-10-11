@@ -8,6 +8,7 @@
 
   const SECTIONS = [
     { id: "songs", label: "Bard Songs" },
+    { id: "cadence", label: "Final Cadence" },
     { id: "charm", label: "Bard Charm" },
   ];
 </script>
@@ -90,12 +91,18 @@
                 Familiars do not receive these auras.
               </td>
             </tr>
-            <!-- Source: server-scripts/BardAreaSongSkill.cs:CollectAuraCandidates; PlayerSkills.cs:1340-1444 — harmful area songs collect and apply effects to eligible enemies around the Bard. -->
+            <!-- Source: server-scripts/BardAreaSongSkill.cs:CollectAuraCandidates — CollectAuraCandidates removes Monsters with aggroList.Count == 0. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:1035-1043 — RefreshBardSongAura runs every 0.5 seconds. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:1316-1331 — fresh casts call RefreshBardSongAura with freshCast true. -->
             <tr class="border-b border-border/50">
               <th class="py-3 pr-5 text-left font-medium text-foreground"
                 >Harmful</th
               >
-              <td class="py-3">Enemies in range of the harmful song.</td>
+              <td class="py-3">
+                Eligible enemies in range. Monsters must have a non-empty aggro
+                list; they need not be fighting the Bard's party. This is
+                checked on each cast and every 0.5-second aura update.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -132,6 +139,63 @@
         Charisma formulas and exceptions.<br />
         See the <EntityLink href="/classes/bard" name="Bard class page" /> for skills
         and ranks.
+      </p>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root id="cadence" class="bg-muted/30">
+    <Card.Header><Card.Title>Final Cadence</Card.Title></Card.Header>
+    <Card.Content class="space-y-5 text-sm text-muted-foreground">
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HasMaximumSongsActive,67-70; PlayerSkills.cs:CompleteBardSongCast,ConsumeFinalCadenceRepertoireBonus — maximum active songs are required; manually completed songs younger than 40 seconds grant 15% at four, 25% at five, 30% at six or more, and consumption clears the repertoire. -->
+      <p>
+        Final Cadence requires your maximum number of active songs. Its damage
+        and healing use Charisma song power, then the repertoire bonus below.
+        Each value is rounded after Charisma scaling and again after the bonus.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[420px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-border text-foreground">
+              <th class="py-2 pr-5 text-left font-medium"
+                >Distinct songs cast by hand in the last 40 seconds</th
+              >
+              <th class="py-2 text-left font-medium">Damage and healing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-5">0–3</td>
+              <td class="py-2">No bonus</td>
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-5">4</td>
+              <td class="py-2">+15%</td>
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-5">5</td>
+              <td class="py-2">+25%</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-5">6 or more</td>
+              <td class="py-2">+30%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        A song counts once, when you finish casting it yourself; automatic
+        repeats do not count. Casting Final Cadence clears the count, even if it
+        hits no enemies. Bard mercenaries receive no repertoire bonus.
+      </p>
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — enemies must be Monsters with nonempty aggroList and speed above -50, alive, non-hidden, same-zone, visible and attackable; Pet casts require IsEngagedWithParty. -->
+      <p>
+        Damage reaches only living, visible, attackable monsters in range and in
+        the same zone with a non-empty aggro list. It skips unengaged monsters,
+        monsters in Sleep (speed −50 or below), and all non-monsters. A player's
+        cast does not require engagement with their own party; a mercenary's
+        cast does.
       </p>
     </Card.Content>
   </Card.Root>
@@ -200,10 +264,13 @@
         />
         It also ends if the Bard dies, changes zones, or leaves the game.
       </p>
-      <!-- Source: server-scripts/Monster.cs:EndBardCharm; PlayerSkills.cs:1631-1643 — ending an active charm can make a nearby released monster attack its former Bard. -->
+      <!-- Source: server-scripts/Monster.cs:EndBardCharm; PlayerSkills.cs:StopBardCharm; ZoneTrigger.cs:94-100; Player.cs:11143-11149 — hostile release requires a living Bard within followDistance, not zone equality; zone changes and portals call StopBardCharm for peaceful release. -->
       <p>
-        A released monster can attack its former Bard if the Bard is alive,
-        nearby, and in the same zone.
+        Expiry, stopping the song, or replacing a charm can make the released
+        monster attack its living former Bard within its follow distance;
+        hostile release does not check matching zones.<br />
+        Changing zones or using a portal releases the creature peacefully and frees
+        the charm's song slot.
       </p>
     </Card.Content>
   </Card.Root>

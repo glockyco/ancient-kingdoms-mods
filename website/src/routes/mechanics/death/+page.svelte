@@ -57,7 +57,8 @@
             >Your summoned pet disappears and your Bard songs stop.</span
           >
           <span class="block"
-            >Buffs end unless their effects survive death.</span
+            >Buffs, including Reaper Form, end unless their effects survive
+            death.</span
           >
           <span class="block"
             ><MechanicsLink section="inventory#durability-and-repair"

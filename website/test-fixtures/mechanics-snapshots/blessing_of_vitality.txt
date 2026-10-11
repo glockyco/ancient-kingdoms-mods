@@ -1,1 +1,1 @@
-Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Buff Scaling Attribute contribution = WIS Max Health skill value at level + attribute contribution × 2 Cast time = cast time × (1 − spell haste)
+Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Buff Scaling Attribute contribution = WIS (mercenary's own attribute) Max Health skill value at level + attribute contribution × 2 Cast time = cast time × (1 − spell haste)

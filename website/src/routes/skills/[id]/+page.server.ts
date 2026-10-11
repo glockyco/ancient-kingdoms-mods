@@ -141,6 +141,17 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     cooldown: parseLinear(skillRaw.cooldown),
     cast_time: parseLinear(skillRaw.cast_time),
     cast_range: parseLinear(skillRaw.cast_range),
+    channel_pulses: Number(skillRaw.channel_pulses ?? 0),
+    health_cost_percent: parseLinear(skillRaw.health_cost_percent),
+    mana_restored_percent: parseLinear(skillRaw.mana_restored_percent),
+    healing_percent: parseLinear(skillRaw.healing_percent),
+    healing_percent_per_intelligence: Number(
+      skillRaw.healing_percent_per_intelligence ?? 0,
+    ),
+    is_necromancer_blood_pact: Boolean(skillRaw.is_necromancer_blood_pact),
+    is_necromancer_death_bloom: Boolean(skillRaw.is_necromancer_death_bloom),
+    is_necromancer_pet_buff: Boolean(skillRaw.is_necromancer_pet_buff),
+    is_necromancer_reaper_form: Boolean(skillRaw.is_necromancer_reaper_form),
 
     // Damage
     damage: parseLinear(skillRaw.damage),
@@ -179,6 +190,11 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     can_buff_self: Boolean(skillRaw.can_buff_self),
     can_buff_others: Boolean(skillRaw.can_buff_others),
     buff_category: skillRaw.buff_category as string | null,
+    also_buff_active_pet: Boolean(skillRaw.also_buff_active_pet),
+    scales_with_intelligence: Boolean(skillRaw.scales_with_intelligence),
+    lifetap_healing_percent_bonus: parseLinear(
+      skillRaw.lifetap_healing_percent_bonus,
+    ),
 
     // Buff stat bonuses
     health_max_bonus: parseLinear(skillRaw.health_max_bonus),
@@ -273,6 +289,12 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_disease_debuff: Boolean(skillRaw.is_disease_debuff),
     is_melee_debuff: Boolean(skillRaw.is_melee_debuff),
     is_magic_debuff: Boolean(skillRaw.is_magic_debuff),
+    poison_disease_scales_with_intelligence: Boolean(
+      skillRaw.poison_disease_scales_with_intelligence,
+    ),
+    damage_over_time_bonus_per_intelligence_point: Number(
+      skillRaw.damage_over_time_bonus_per_intelligence_point ?? 0,
+    ),
     prob_ignore_cleanse: (skillRaw.prob_ignore_cleanse as number) || 0,
 
     // Passive mechanics
@@ -285,6 +307,9 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     extra_gather_item_chance: Number(skillRaw.extra_gather_item_chance ?? 0),
     food_and_drink_buff_duration_bonus_per_level: Number(
       skillRaw.food_and_drink_buff_duration_bonus_per_level ?? 0,
+    ),
+    damage_over_time_execute_bonus: parseLinear(
+      skillRaw.damage_over_time_execute_bonus,
     ),
 
     // Summon fields
@@ -319,7 +344,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
 
   // Get pets/mercenaries that use this skill
   const usedByPets = query<SkillPet>(
-    `SELECT DISTINCT p.id, p.name, p.is_mercenary, p.is_familiar, p.type_monster
+    `SELECT DISTINCT p.id, p.name, p.is_mercenary, p.is_familiar, p.type_monster, ps.skill_index
     FROM pet_skills ps
     JOIN pets p ON p.id = ps.pet_id
     WHERE ps.skill_id = ?
@@ -380,6 +405,12 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     mercenary_user_count: mercenaryUserCount,
     pet_user_count: petUserCount,
     granted_by: grantedByCounts,
+    is_necromancer_blood_pact: skill.is_necromancer_blood_pact,
+    is_necromancer_death_bloom: skill.is_necromancer_death_bloom,
+    is_necromancer_reaper_form: skill.is_necromancer_reaper_form,
+    is_necromancer_pet_buff: skill.is_necromancer_pet_buff,
+    channel_pulses: skill.channel_pulses,
+    is_familiar: skill.is_familiar,
   });
 
   return {

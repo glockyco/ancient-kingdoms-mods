@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = WIS × 3 (Ranger Wisdom tripled) Max Health skill value at level + attribute contribution × 2 Cast time = cast time × (1 − spell haste)
+Mechanics Buff Scaling Attribute contribution = WIS × 3 Max Health skill value at level + attribute contribution × 2 Cast time = cast time × (1 − spell haste)

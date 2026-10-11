@@ -306,6 +306,36 @@
     isPercent: boolean;
     suffix: string;
   }> = [
+    {
+      key: "health_cost_percent",
+      label: "Health cost %",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "mana_restored_percent",
+      label: "Max Mana restored %",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "healing_percent",
+      label: "Health-cost healing %",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "lifetap_healing_percent_bonus",
+      label: "Lifetap healing bonus",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "damage_over_time_execute_bonus",
+      label: "DoT execute bonus",
+      isPercent: true,
+      suffix: "",
+    },
     { key: "damage", label: "Damage", isPercent: false, suffix: "" },
     {
       key: "damage_percent",
@@ -607,7 +637,7 @@
     const cols: ScalingColumn[] = [];
 
     // Duration has its own format (not a LinearValue)
-    if (skill.duration_per_level > 0) {
+    if (!skill.is_necromancer_reaper_form && skill.duration_per_level > 0) {
       cols.push({
         label: "Duration",
         field: {
@@ -702,7 +732,18 @@
   // No isPlayerUsable dependency — monster-only skills are included when the spec
   // has computed contexts for them.
   const showMechanics = $derived(
-    skill.is_bard_song ||
+    skill.is_necromancer_blood_pact ||
+      skill.is_necromancer_death_bloom ||
+      skill.is_necromancer_reaper_form ||
+      skill.is_necromancer_pet_buff ||
+      skill.also_buff_active_pet ||
+      skill.channel_pulses > 0 ||
+      hasNonZeroField(skill.lifetap_healing_percent_bonus) ||
+      hasNonZeroField(skill.damage_over_time_execute_bonus) ||
+      (skill.skill_type === "passive" &&
+        skill.is_pet_skill &&
+        hasNonZeroField(skill.health_max_percent_bonus)) ||
+      skill.is_bard_song ||
       skill.is_bard_final_cadence ||
       skill.is_bard_virtuosity ||
       skill.additional_active_bard_songs > 0 ||
@@ -1481,6 +1522,14 @@
               </div>
             {/if}
           </dl>
+          {#if skill.player_classes.includes("necromancer") && !skill.is_familiar}
+            <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,56,106-113 — a different Necromancer combat-pet summon replaces the active pet; matching the active pet gives the attack command. -->
+            <p class="mt-3 text-muted-foreground">
+              Summoning a different combat pet replaces your current pet. Using
+              this summon while its pet is active commands that pet to attack
+              your target instead.
+            </p>
+          {/if}
         {/if}
       </Card.Content>
     </Card.Root>
@@ -1499,7 +1548,7 @@
         {#if hasAnyBonuses}
           <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
             <!-- 1. Duration -->
-            {#if skill.duration_base > 0 || skill.duration_per_level > 0}
+            {#if !skill.is_necromancer_reaper_form && (skill.duration_base > 0 || skill.duration_per_level > 0)}
               <div>
                 <dt class="text-muted-foreground">Duration</dt>
                 <dd class="font-medium">
@@ -1879,7 +1928,9 @@
             {/if}
             {#if skill.is_permanent}
               <p class="text-muted-foreground">
-                The game hides the timer, but the effect still has a duration.
+                {skill.is_necromancer_reaper_form
+                  ? "The form has no time limit."
+                  : "The game hides the timer, but the effect still has a duration."}
               </p>
             {/if}
           </div>
@@ -1964,6 +2015,202 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
+        {#if skill.is_necromancer_blood_pact}
+          <!-- Source: server-scripts/NecromancerBloodPactSkill.cs:GetHealthCost,GetManaRestored,CanConvert,Apply — CeilToInt healthCostPercent cost, FloorToInt manaRestoredPercent restoration, full health cost and capped mana gain. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">Blood Pact</h3>
+            <p class="font-mono">
+              Health cost C = ceil(max Health &times; {formatLinearPercent(
+                skill.health_cost_percent,
+              )})
+            </p>
+            <p class="font-mono">
+              Mana restored M = floor(max Mana &times; {formatLinearPercent(
+                skill.mana_restored_percent,
+              )})
+            </p>
+            <p class="text-muted-foreground">
+              Usable only with Mana below maximum, current Health strictly
+              greater than C, and positive C and M. Restores min(M, missing
+              Mana), but always pays the full Health cost.
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.is_necromancer_death_bloom}
+          <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:GetHealthCost,GetIntelligenceBonus,GetHealingAmount,CheckSelf,CorrectedTarget,Apply — CeilToInt health cost and RoundToInt cost-based healing use Intelligence, not Wisdom, on another Player or non-familiar Pet. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">Death Bloom</h3>
+            <p class="font-mono">
+              Health cost C = ceil(max Health &times; {formatLinearPercent(
+                skill.health_cost_percent,
+              )})
+            </p>
+            <p class="font-mono">
+              Base heal = round(C &times; ({formatLinearPercent(
+                skill.healing_percent,
+              )} + max(INT, 0) &times; {skill.healing_percent_per_intelligence}))
+            </p>
+            <p class="text-muted-foreground">
+              Targets another living player or a non-familiar pet, including
+              mercenaries and other players' combat pets, within {formatLinear(
+                skill.cast_range,
+                "m",
+              )}. Cannot target yourself, familiars, monsters or NPCs. Your
+              current Health must exceed C. Pays the full cost even if the
+              target is already at maximum Health. Wisdom does not increase the
+              heal.
+            </p>
+            <!-- Source: server-scripts/TargetHealSkill.cs:272-280 — canHealOthers uses caster criticalChance; critical healing multiplies by 3 when the second random roll exceeds 0.9, otherwise 2. -->
+            <p class="text-muted-foreground">
+              At your critical chance, the heal is doubled; 10% of critical
+              heals are tripled instead. Healing is capped by the target's
+              missing Health.
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.is_necromancer_reaper_form}
+          <!-- Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — applying an active Reaper Form removes its buff. -->
+          <!-- Source: server-scripts/Buff.cs:BuffTimeRemaining — NecromancerReaperFormSkill returns at least 1 while buffTimeEnd is positive. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">Reaper Form</h3>
+            <p class="text-muted-foreground">Toggle with no time limit.</p>
+            <!-- Source: server-scripts/Skills.cs:1617-1623 — NecromancerReaperFormSkill returns RoundToInt(max(0, -healthPercentPerSecondBonus) × health.max) before ordinary DoT mitigation. -->
+            <p class="font-mono">
+              Health drain per second = round(max Health &times; {formatLinearPercentAbs(
+                skill.health_percent_per_second_bonus,
+              )})
+            </p>
+            <!-- Source: server-scripts/NetworkManagerMMO.cs:116 — UpdateEnergies repeats every 1 second. -->
+            <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks skip BreakMezz for NecromancerReaperFormSkill. -->
+            <p class="text-muted-foreground">
+              Drain ignores resistance, wards and critical hits, and does not
+              break mesmerize.
+            </p>
+            <!-- Source: server-scripts/MountItem.cs:58-63 — removes reaperForm.formSkill before mounting. -->
+            <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->
+            <p class="text-muted-foreground">
+              Ends when toggled off or mounted. Death removes the form unless
+              its Remain After Death flag is set{skill.remain_after_death
+                ? " (set for this skill)"
+                : " (not set for this skill)"}.
+            </p>
+            <!-- Source: server-scripts/NetworkManagerMMO.cs:674-684 — restores NecromancerReaperFormSkill when saved remaining time is positive. -->
+            <p class="text-muted-foreground">The form persists across relog.</p>
+            <!-- Source: server-scripts/Player.cs:HasActiveAppearanceIllusion — active NecromancerReaperFormSkill is an appearance illusion. -->
+            <!-- Source: server-scripts/Player.cs:9310-9313 — HasActiveAppearanceIllusion blocks the barber. -->
+            <p class="text-muted-foreground">
+              The barber cannot change your appearance while the form is active.
+            </p>
+            <!-- Source: server-scripts/PlayerSkills.cs:636-646 — active NecromancerReaperFormSkill removal precedes FEAR and STUNNED checks. -->
+            <p class="text-muted-foreground">
+              Using the skill again dismisses it immediately, even while feared
+              or stunned.
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.is_necromancer_pet_buff || skill.also_buff_active_pet}
+          <!-- Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet,CheckDistance — isPetSkill requires an owned living non-familiar, non-mercenary active pet. -->
+          <!-- Source: server-scripts/TargetBuffSkill.cs:477-482 — alsoBuffActivePet copies a self-buff to the owned living non-familiar, non-mercenary active pet within castRange. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">Combat Pet Buff</h3>
+            <p class="text-muted-foreground">
+              {skill.also_buff_active_pet
+                ? "When applied to yourself, the same buff also reaches your active combat pet."
+                : "Targets your active combat pet."}
+              The pet must be yours, alive, and neither a familiar nor a mercenary.
+              Range: {formatLinear(skill.cast_range, "m")} (the skill's cast range).
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.channel_pulses > 0}
+          <!-- Source: server-scripts/PlayerSkills.cs:StartCast,UpdateChannel,CancelCast — channel duration minimum 0.05, upfront mana/energy costs, pulses at (k+1)/N, movement squared above 0.0001 cancels and starts full cooldown. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">
+              Channel: {skill.channel_pulses} Pulses
+            </h3>
+            <p class="font-mono">
+              T = max(0.05s, cast time &times; {skill.is_spell
+                ? "(1 − spell haste)"
+                : "1"})
+            </p>
+            <p class="font-mono">
+              Pulse k occurs at T &times; (k + 1) / {skill.channel_pulses}, k =
+              0…{skill.channel_pulses - 1}.
+            </p>
+            <!-- Source: server-scripts/TargetDamageSkill.cs:238-248 — full finalDamage is divided by pulseCount, with remainder on the first pulses. -->
+            <p class="font-mono">
+              Pulse damage = floor(F / {skill.channel_pulses}) + 1 for the first
+              F mod {skill.channel_pulses} pulses; otherwise floor(F / {skill.channel_pulses}).
+            </p>
+            <p class="text-muted-foreground">
+              F is the full pre-mitigation skill damage, recomputed for each
+              pulse. The final pulse occurs at the end; none occurs at the
+              start. Mana and energy are paid at the start and are not refunded
+              on interruption.
+            </p>
+            <!-- Source: server-scripts/Player.cs:UpdateServer_CASTING — fear and stun cancel ChanneledTargetDamageSkill; stun skips halving the channel cooldown. -->
+            <p class="text-muted-foreground">
+              Moving more than 0.01 units from your starting position, losing
+              the target, range or sight, stun or fear cancels the channel.
+              Cancellation starts the full cooldown immediately, including when
+              a pulse kills the target.
+            </p>
+          </div>
+        {/if}
+
+        {#if hasNonZeroField(skill.damage_over_time_execute_bonus)}
+          <!-- Source: server-scripts/Skills.cs:GetDamageOverTimeExecuteBonus,1873-1880 — below 0.3 health.max, sums learned source-player PassiveSkill.damageOverTimeExecuteBonus before critical tick scaling. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">Damage-over-Time Execute</h3>
+            <p class="text-muted-foreground">
+              Adds {formatLinearPercent(skill.damage_over_time_execute_bonus)} to
+              your debuff ticks when the target is strictly below 30% maximum Health.
+              Learned execute bonuses add together.
+            </p>
+            <p class="font-mono">
+              Tick = round(resisted, counter-scaled damage &times; (1 + summed
+              execute bonuses)), then critical scaling.
+            </p>
+            <p class="text-muted-foreground">
+              Requires you to remain spawned as the external player source of
+              the debuff. Pet- and monster-sourced ticks do not receive the
+              bonus.
+            </p>
+          </div>
+        {/if}
+
+        {#if skill.skill_type === "passive" && skill.is_pet_skill && hasNonZeroField(skill.health_max_percent_bonus)}
+          <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — owner's learned isPetSkill PassiveSkill.healthMaxPercentBonus goes to non-mercenary, non-familiar pets, not the owner. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">Pet Maximum Health</h3>
+            <p class="text-muted-foreground">
+              Your combat pet receives {formatLinearPercent(
+                skill.health_max_percent_bonus,
+              )} maximum Health. This passive does not increase your maximum Health,
+              and does not affect familiars or mercenaries.
+            </p>
+          </div>
+        {/if}
+
+        {#if hasNonZeroField(skill.lifetap_healing_percent_bonus)}
+          <!-- Source: server-scripts/Combat.cs:1318-1333 — active or isPermanent attacker buffs sum lifetapHealingPercentBonus for FloorToInt lifetap healing. -->
+          <div class="space-y-2">
+            <h3 class="font-semibold">Lifetap Healing Bonus</h3>
+            <p class="text-muted-foreground">
+              Adds {formatLinearPercent(skill.lifetap_healing_percent_bonus)} to the
+              lifetap healing multiplier, not to lifetap damage. Unexpired and permanent
+              buffs add together.
+            </p>
+            <p class="font-mono">
+              Healing = floor(lifetap percentage &times; damage after wards and
+              Mana Shield &times; (1 + summed bonuses)).
+            </p>
+          </div>
+        {/if}
         <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard mercenary skill ranks have a minimum of 1. -->
         {#if usedByMercenary && skill.max_level > 1}
           <p class="text-muted-foreground">
@@ -1980,8 +2227,8 @@
         {/if}
         {#if usedByCompanion && skill.max_level > 1}
           <p class="text-muted-foreground">
-            When used by a companion, skill level = floor(veteran level &divide;
-            10), capped at max skill level.
+            Companion skills gain a rank every 10 veteran points, capped at the
+            skill's maximum rank.
           </p>
         {/if}
         {#if usedByFamiliar && skill.max_level > 1}
@@ -2189,8 +2436,14 @@
               {/if}
             </p>
             <p class="font-mono">
-              Base healing = round(skill healing at level &times; (1 +
-              min(max(CHA, 0) &times; 0.001, 2)))
+              {#if usedByBardMercenary}
+                Base healing = round(skill healing at level &times; (1 +
+                min(max(CHA, 0) &times; 0.001, 2)))
+              {:else}
+                Base healing = round(round(skill healing at level &times; (1 +
+                min(max(CHA, 0) &times; 0.001, 2))) &times; (1 + repertoire
+                bonus))
+              {/if}
             </p>
             <p class="font-mono">
               Critical multiplier = 1 normally, 2 on a critical heal, or 3 on
@@ -2199,6 +2452,16 @@
             <p class="font-mono">
               Final healing = base healing &times; critical multiplier
             </p>
+            {#if !usedByBardMercenary}
+              <!-- Source: server-scripts/PlayerSkills.cs:ConsumeFinalCadenceRepertoireBonus,CompleteBardSongCast — distinct completed manual songs in the preceding 40 seconds are consumed. -->
+              <p class="text-muted-foreground">
+                Repertoire bonus: 0–3 distinct hand-cast songs = 0%; 4 = 15%; 5
+                = 25%; 6 or more = 30%. Only songs completed less than 40
+                seconds ago count; automatic renewal does not count. Casting
+                Final Cadence clears the repertoire. Damage and healing are
+                rounded once after Charisma scaling and again after this bonus.
+              </p>
+            {/if}
             <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply and BardFinalCadenceSkill.cs:HealNearbyAllies — a Bard mercenary uses its own Charisma and critical chance. -->
             <p class="text-muted-foreground">
               {#if usedByBardMercenary}
@@ -2209,8 +2472,12 @@
                 determines one roll shared by every recipient.</span
               >
               <span class="block"
-                >Damage uses the same Charisma multiplier before the usual magic
-                damage reductions.</span
+                >Damage uses the same {usedByBardMercenary
+                  ? "Charisma multiplier"
+                  : "Charisma and repertoire multipliers"} before the usual magic
+                damage reductions. Only living, visible, attackable monsters in the
+                same zone and range with a nonempty aggro list and speed above −50
+                are hit.</span
               >
               <span class="block">Final Cadence does not heal familiars.</span>
               {#if usedByBardMercenary}
@@ -2486,11 +2753,14 @@
                     {/if}
                   </p>
                 {:else}
-                  {#if ctx.bonusAttrSource === "player_ranger_wis"}
-                    <!-- Source: server-scripts/TargetBuffSkill.cs:434-438; BuffSkill.cs:GetBuffPowerAttribute — Ranger attribute contribution is tripled -->
+                  {#if ctx.bonusAttrSource === "player_ranger_wis" || ctx.bonusAttrSource === "player_ranger_int"}
+                    <!-- Source: server-scripts/TargetBuffSkill.cs:434-438 — Ranger multiplies GetBuffPowerAttribute by 3. -->
+                    <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — scalesWithIntelligence selects intelligence, otherwise wisdom. -->
                     <p class="font-mono">
-                      Attribute contribution = WIS &times; 3 (Ranger Wisdom
-                      tripled)
+                      Attribute contribution = {ctx.bonusAttrSource ===
+                      "player_ranger_int"
+                        ? "INT"
+                        : "WIS"} &times; 3
                     </p>
                   {:else if ctx.bonusAttrSource === "player_wis_con_cha_half"}
                     <!-- Source: AreaBuffSkill.cs:14-17,52 — Leadership uses GetLeadershipAttributeBonus(player3) -->
@@ -2502,17 +2772,27 @@
                     <p class="font-mono">
                       Attribute contribution = round((WIS + CON) / 2)
                     </p>
-                  {:else if ctx.bonusAttrSource === "merc_wis"}
-                    <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — mercenary attribute contribution -->
-                    <p class="font-mono">Attribute contribution = WIS</p>
+                  {:else if ctx.bonusAttrSource === "merc_wis" || ctx.bonusAttrSource === "merc_int"}
+                    <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — mercenary scalesWithIntelligence selects intelligence, otherwise wisdom. -->
+                    <p class="font-mono">
+                      Attribute contribution = {ctx.bonusAttrSource ===
+                      "merc_int"
+                        ? "INT"
+                        : "WIS"} (mercenary's own attribute)
+                    </p>
                   {:else if ctx.bonusAttrSource === "player_level"}
                     <!-- Source: AreaBuffSkill.cs:34-37 — isRelic → num2 = caster.level.current * 10 -->
                     <p class="font-mono">
                       Attribute contribution = skill user's level &times; 10
                     </p>
                   {:else}
-                    <!-- player_wis -->
-                    <p class="font-mono">Attribute contribution = WIS</p>
+                    <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — player scalesWithIntelligence selects intelligence, otherwise wisdom. -->
+                    <p class="font-mono">
+                      Attribute contribution = {ctx.bonusAttrSource ===
+                      "player_int"
+                        ? "INT"
+                        : "WIS"}
+                    </p>
                   {/if}
                   <dl
                     class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono"
@@ -2664,7 +2944,9 @@
                   <!-- Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360 -->
                   <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
-                    interval = cast time &times; (1 &minus; spell haste) + 0.75s
+                    interval = {skill.channel_pulses > 0
+                      ? "max(0.05s, cast time × (1 − spell haste))"
+                      : "cast time × (1 − spell haste)"} + 0.75s
                   </p>
                   <p class="text-muted-foreground">
                     <span class="block"
@@ -2700,15 +2982,29 @@
                     >
                     <span class="block">It does not shorten the cooldown.</span>
                   </p>
+                {:else if ctx.model === "companion_auto"}
+                  <!-- Source: server-scripts/Skills.cs:1141-1169 — non-mercenary, non-familiar pet skillIndex 0 gets haste-reduced cooldown for non-spells. -->
+                  <p class="font-mono">
+                    interval = cast time + cooldown &times; (1 &minus; haste)
+                  </p>
+                  <p class="text-muted-foreground">
+                    Applies to combat-pet skill 0 only; familiars and other
+                    combat-pet skills keep their flat cooldown.
+                  </p>
+                {:else if ctx.model === "monster_spell"}
+                  <p class="font-mono">
+                    interval = cast time &times; (1 &minus; spell haste) +
+                    cooldown
+                  </p>
                 {:else if ctx.model === "monster"}
-                  <!-- Source: Monster.cs:1625, Npc.cs:1266 — FinishCastMeleeAttackMonster (haste-reduced for all monster skills) -->
+                  <!-- Source: server-scripts/Monster.cs:2048-2054; Npc.cs:1302-1308 — non-spells call FinishCastMeleeAttackMonster. -->
                   <p class="font-mono">
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
                 {:else}
                   <!-- companion: companions, familiars -->
                   <!-- Source: server-scripts/Pet.cs -->
-                  <!-- Source: server-scripts/Skills.cs:1141-1169 — companion cooldown remains flat -->
+                  <!-- Source: server-scripts/Skills.cs:1141-1169 — familiar cooldown, spell cooldown, and non-mercenary pet skills other than skillIndex 0 remain flat. -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">
                     Haste does not shorten this cooldown.
@@ -2852,25 +3148,18 @@
                       {/if}
                       {#if hasNonZeroField(skill.healing_per_second_bonus)}
                         <dt class="text-muted-foreground">Damage per second</dt>
-                        {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                          <!-- Source: server-scripts/Skills.cs:1659-1693 — the poison and disease branch adds RoundToInt(bonusAttribute * 1.5) before resistance. -->
-                          <dd>
-                            skill value at level + round(attribute contribution
-                            &times; 1.5)
-                          </dd>
-                        {:else if skill.is_melee_debuff}
-                          <!-- melee (str × 0.5) or scroll of melee type -->
-                          <dd>
-                            skill value at level + attribute contribution
-                            &times; 0.5
-                          </dd>
-                        {:else}
-                          <!-- other (int × 1.25) or scroll of other type -->
-                          <dd>
-                            skill value at level + attribute contribution
-                            &times; 1.25
-                          </dd>
-                        {/if}
+                        <!-- Source: server-scripts/BuffSkill.cs:GetDamageOverTimeAttributeBonus — melee uses 0.5; poison/disease without poisonDiseaseScalesWithIntelligence uses 1.5; otherwise damageOverTimeBonusPerIntelligencePoint. -->
+                        <dd>
+                          abs(skill value at level) + round(attribute
+                          contribution &times;
+                          {skill.is_melee_debuff
+                            ? 0.5
+                            : (skill.is_poison_debuff ||
+                                  skill.is_disease_debuff) &&
+                                !skill.poison_disease_scales_with_intelligence
+                              ? 1.5
+                              : skill.damage_over_time_bonus_per_intelligence_point})
+                        </dd>
                       {/if}
                     </dl>
                   {/if}
@@ -3194,7 +3483,9 @@
         {#if hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll}
           <!-- Source: server-scripts/Skills.cs:924-933 — castTimeEnd reduction only when isSpell -->
           <p class="text-muted-foreground">
-            Cast time = cast time &times; (1 &minus; spell haste)
+            Cast time = {skill.channel_pulses > 0
+              ? "max(0.05s, cast time × (1 − spell haste))"
+              : "cast time × (1 − spell haste)"}
           </p>
         {/if}
         {#if hasLinearValue(skill.fear_chance)}
@@ -3203,12 +3494,18 @@
             <h3 class="font-semibold">Fear</h3>
             <p class="text-muted-foreground">
               <span class="block"
-                >Fear applies only when the skill's fear roll succeeds and the
-                target fails a separate fear resist roll.</span
+                >Fear requires a non-fear-immune target that is not a boss
+                monster, a successful fear roll and a failed fear resist roll,
+                and no stun from the same hit.</span
               >
               <span class="block"
                 >Fear lasts a random duration between half and all of the
                 skill's fear duration.</span
+              >
+              <!-- Source: server-scripts/Combat.cs:1104-1108; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear halves positive monster/NPC movement speed. -->
+              <span class="block"
+                >Fear applied by a Necromancer player halves a monster's or
+                NPC's positive movement speed while feared.</span
               >
             </p>
           </div>
@@ -3307,12 +3604,14 @@
           <!-- Source: server-scripts/Combat.cs:DealDamageAt (any damage > 0 calls BreakMezz) -->
           <!-- Source: server-scripts/Monster.cs:1539-1553 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
+          <!-- Source: server-scripts/Skills.cs:251-256 — NecromancerReaperFormSkill recovery drain skips BreakMezz. -->
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
             <p class="text-muted-foreground">
               <span class="block"
-                >Sleep stops movement, but any direct damage or damage-over-time
-                tick wakes the target.</span
+                >Sleep stops movement, but direct damage or ordinary
+                damage-over-time ticks wake the target. Reaper Form health drain
+                does not.</span
               >
               <span class="block"
                 >Bosses and elite monsters always resist sleep.</span
@@ -3421,10 +3720,15 @@
             <h3 class="font-semibold">Lifetap</h3>
             <p class="text-muted-foreground">
               <span class="block"
-                >Lifetap heals the attacker for a percentage of the health
-                damage dealt after damage reduction and critical-hit bonuses.</span
+                >Healing = floor(lifetap percentage &times; damage &times; (1 +
+                summed Lifetap Healing bonuses)).</span
               >
-              <span class="block">The game rounds the healing down.</span>
+              <span class="block"
+                >The bonuses come from the attacker's unexpired or permanent
+                buffs. Damage is measured after reductions, critical hits, wards
+                and Mana Shield, without capping it to the target's remaining
+                health. These bonuses increase healing, not damage.</span
+              >
             </p>
           </div>
         {/if}

@@ -1,0 +1,1 @@
+Mechanics Pet Maximum Health Your combat pet receives 2% × skill lvl maximum Health. This passive does not increase your maximum Health, and does not affect familiars or mercenaries.

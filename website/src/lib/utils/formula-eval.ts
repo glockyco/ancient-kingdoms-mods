@@ -231,8 +231,11 @@ export const FORMULA_EXPRS = {
 
   // ── Special ──────────────────────────────────────────────────────────────────
 
-  // Source: BardFinalCadenceSkill.cs:45-54 and Charisma.cs:21-36.
+  // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — player damage rounds Charisma-scaled damage again after ConsumeFinalCadenceRepertoireBonus.
   bard_final_cadence: special(
+    "round(round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2))) × (1 + repertoire bonus))",
+  ),
+  bard_final_cadence_merc: special(
     "round(skill damage at this level × (1 + min(max(CHA, 0) × 0.001, 2)))",
   ),
   // Source: server-scripts/TargetDamageSkill.cs:132-160, TargetProjectileSkill.cs:211-220 — Rageblow uses Rage ×2; Mana Burn uses Mana ×3.
@@ -414,6 +417,7 @@ export function renderFormulaDisplay(
     // ── Special prose ────────────────────────────────────────────────────────
 
     case "bard_final_cadence":
+    case "bard_final_cadence_merc":
       return {
         preMitigation: "Charisma-scaled Skill Damage",
         terms: [],

@@ -145,6 +145,9 @@
     "BardFinalCadenceSkill.cs:Apply": {
       "span": 0
     },
+    "BardFinalCadenceSkill.cs:FindEnemies": {
+      "span": 0
+    },
     "BardFinalCadenceSkill.cs:HasMaximumSongsActive": {
       "span": 0
     },
@@ -239,11 +242,18 @@
       "sha256": "bfe166efaaf5af733c72a2a96884bf9ad1aff31b8a94e01e2eb8d2bc501286d5",
       "span": 15
     },
+    "Buff.cs:BuffTimeRemaining": {
+      "span": 0
+    },
     "Buff.cs:ScaleWithCharisma": {
       "span": 0
     },
     "BuffSkill.cs": {
       "span": 0
+    },
+    "BuffSkill.cs:14-31": {
+      "sha256": "3792632f0045822dfe4cd78432b32dc570bfc8a16e6787b6792fae232a72b7be",
+      "span": 18
     },
     "BuffSkill.cs:209-216": {
       "sha256": "fdab61f4c42d479a591da0f6c12b12b10e70f75aa096a4c4c166e009f0ae3e9e",
@@ -374,6 +384,10 @@
       "sha256": "7a337d81774849faeee142ab800e84db3ef746258370ecde3eb8deeb750232b3",
       "span": 38
     },
+    "Combat.cs:1104-1108": {
+      "sha256": "957966c077f7f50999b2ed7c556b43aec095a04a924e650d37b502251c71aa97",
+      "span": 5
+    },
     "Combat.cs:1104-1137": {
       "sha256": "d60e584e4b643a4ada82d2a65612c71e235b744f721b829037e24a1fe0c606fe",
       "span": 34
@@ -433,6 +447,10 @@
     "Combat.cs:1284-1314": {
       "sha256": "f5440695849c8f0faf94475c1660a743dd375d530293a84d15d98d26ac3919c2",
       "span": 31
+    },
+    "Combat.cs:1315-1333": {
+      "sha256": "2854274d001fbbb28f576ba8dfb1065ee5e4a07d25a86990b017f42acf821b97",
+      "span": 19
     },
     "Combat.cs:1318-1328": {
       "sha256": "ddc81096d631d4808f9448371a245742737377545f1d8186991f7b36da2c981e",
@@ -1693,6 +1711,10 @@
       "sha256": "f787f5cbbe796de02caadad11eeb92894b106691f5219552ae80c94ba7f9478e",
       "span": 18
     },
+    "Monster.cs:2048-2054": {
+      "sha256": "874f8a60e9b0ceee65469bdfed373b591a09254ceb7ae5d6a8b07aec61887956",
+      "span": 7
+    },
     "Monster.cs:2167-2177": {
       "sha256": "fd301ea4a59a94c1643031cde5e493ed3561a7b6c14262dd4db4e2a196a262b1",
       "span": 11
@@ -1920,6 +1942,9 @@
     "Monster.cs:WarpPosition": {
       "span": 0
     },
+    "Monster.cs:speed": {
+      "span": 0
+    },
     "MonsterSkills.cs:177-279": {
       "sha256": "af829ec953e3fefec00184f0661431925d1bd3aed3254281d91bdd228a6c26f6",
       "span": 103
@@ -1927,6 +1952,10 @@
     "MountItem.cs:19-30": {
       "sha256": "ecfef22806084e40eefab2b715181fcb611da841d904845886cf3300a589a055",
       "span": 12
+    },
+    "MountItem.cs:58-63": {
+      "sha256": "76bd6851bb2b8356b5d307eca2e031f9b3d7bde7314c947088377c759ad6c3a1",
+      "span": 6
     },
     "MountItem.cs:8": {
       "sha256": "6946d0bf5750987acb3124a4f4d8a2855bc6d50d329223ee58100949141c6b8c",
@@ -1969,6 +1998,9 @@
       "sha256": "4bd4795922f57ac605e3e6e1df6886d47265e1b7f4c1010cea2147ae204081d3",
       "span": 11
     },
+    "NecromancerDeathBloomSkill.cs:CorrectedTarget": {
+      "span": 0
+    },
     "NecromancerDeathBloomSkill.cs:GetHealingAmount": {
       "span": 0
     },
@@ -1999,6 +2031,14 @@
       "sha256": "d45a9bae67e331c6b79ab395c59539599bfbad999249c6e87afbb51d60397ebc",
       "span": 1
     },
+    "NetworkManagerMMO.cs:116": {
+      "sha256": "7083d40a8ef4d1b3110132150c906081eceae1f83c4cd883b4d9fb876015b3ff",
+      "span": 1
+    },
+    "NetworkManagerMMO.cs:674-684": {
+      "sha256": "0d7d9a57941692e19cdef77f2ffaf9587e83806c9b4b977eb31fed7698825dcb",
+      "span": 11
+    },
     "NetworkManagerMMO.cs:768-771": {
       "sha256": "f08f72ef67d723703b504070cea9495410bfe8628df20bb2d0d3a6f4ad5e9cff",
       "span": 4
@@ -2012,6 +2052,10 @@
     },
     "Npc.cs": {
       "span": 0
+    },
+    "Npc.cs:1302-1308": {
+      "sha256": "874f8a60e9b0ceee65469bdfed373b591a09254ceb7ae5d6a8b07aec61887956",
+      "span": 7
     },
     "Npc.cs:1431-1437": {
       "sha256": "8fa2131bfc849e21f386d4f69896f1160569d40bfdebd4f142522cf1dd63ae57",
@@ -2096,6 +2140,9 @@
       "span": 0
     },
     "Npc.cs:UserCode_CmdLootMonster": {
+      "span": 0
+    },
+    "Npc.cs:speed": {
       "span": 0
     },
     "NpcTeleport.cs:21-40": {
@@ -2425,6 +2472,10 @@
     "Player.cs:10964-10999": {
       "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",
       "span": 36
+    },
+    "Player.cs:11143-11149": {
+      "sha256": "1ec84dfe4cb7deea1f551e907f88544dc2842e1fcf3319ac7ad0bbbc945b789d",
+      "span": 7
     },
     "Player.cs:11143-11157": {
       "sha256": "52d528b41ab858fb4441a0a962edd59f441912398bfed6ec0efbb8631944c14c",
@@ -2798,6 +2849,10 @@
       "sha256": "a1f939e1f818a4839e410d5480d8a016b6bb607ec83563d440946e6006419348",
       "span": 27
     },
+    "Player.cs:9310-9313": {
+      "sha256": "2a295bc5d192d1c39e7e79ea5bd0e2505de654d91089faa7cac7f567ac74a4c7",
+      "span": 4
+    },
     "Player.cs:9387-9410": {
       "sha256": "944cb4951035c359f934d203ccd3e393b4a50d197917b2777b64c0f5d014e36f",
       "span": 24
@@ -2827,6 +2882,9 @@
     "Player.cs:GetSkillRefractoryPeriod": {
       "span": 0
     },
+    "Player.cs:HasActiveAppearanceIllusion": {
+      "span": 0
+    },
     "Player.cs:HasDetectTraps": {
       "span": 0
     },
@@ -2849,6 +2907,9 @@
       "span": 0
     },
     "Player.cs:UpdateMercStatsByLevel": {
+      "span": 0
+    },
+    "Player.cs:UpdateServer_CASTING": {
       "span": 0
     },
     "Player.cs:UpdateServer_DEAD": {
@@ -3333,6 +3394,10 @@
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
     },
+    "PlayerSkills.cs:1035-1043": {
+      "sha256": "def87ab44b196c615f9c6fe67e1f826389866e2070a790c1e08f8d751dad474b",
+      "span": 9
+    },
     "PlayerSkills.cs:1047-1056": {
       "sha256": "0c0085c5468b6b941d327017e24146899514c05d38db4af84926a31a090963ac",
       "span": 10
@@ -3357,13 +3422,13 @@
       "sha256": "007dd1e9651c3ac193e4dd3c8d4e9a9873a7b9b58d7d04a897fde51a13c653de",
       "span": 35
     },
+    "PlayerSkills.cs:1316-1331": {
+      "sha256": "f5da0b47f6b9ed742d41eceb1ab70b5582c95993c4f03f0912c4981732720d7f",
+      "span": 16
+    },
     "PlayerSkills.cs:1333-1445": {
       "sha256": "d058a38b4da73d84b7881f9a2028dae6936f18b6803186e94f9588163528440b",
       "span": 113
-    },
-    "PlayerSkills.cs:1340-1444": {
-      "sha256": "4c3359b507fd46d6e8ba42a9e5e2ed89acd90d9072282d7c2bac505ea8564255",
-      "span": 105
     },
     "PlayerSkills.cs:1348-1423": {
       "sha256": "8e75ffe821a76a46bc159c9dfbb9fafc518e9780e3001e37a4cef35953b34576",
@@ -3473,6 +3538,10 @@
       "sha256": "7dc03713bd78e37c02808a39c971453ecb5663bdfb24386092d0f3c5ab023680",
       "span": 6
     },
+    "PlayerSkills.cs:636-646": {
+      "sha256": "dfeaaf19f832368969c89f998be1a6833cf2b78253475fb9a9574e8bf73972b8",
+      "span": 11
+    },
     "PlayerSkills.cs:642-646": {
       "sha256": "e3952f63be531054eede3a16334ff039fa0c28ca1197b1aff65ab1a39cc5da80",
       "span": 5
@@ -3530,6 +3599,15 @@
       "span": 0
     },
     "PlayerSkills.cs:GetMaximumActiveBardSongs": {
+      "span": 0
+    },
+    "PlayerSkills.cs:StartCast": {
+      "span": 0
+    },
+    "PlayerSkills.cs:StartDefaultAttackAfterMeleeSkill": {
+      "span": 0
+    },
+    "PlayerSkills.cs:StopBardCharm": {
       "span": 0
     },
     "PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32": {
@@ -3790,17 +3868,25 @@
       "sha256": "14989e4cfeead50e7bdea2e6e4edaf9703173cba7a4feba475780bdcf5fad5c9",
       "span": 289
     },
+    "Skills.cs:1620-1623": {
+      "sha256": "f05242f99e333a7d84cecddebcf0ee128dd46057edb32ad28becbc15055d505a",
+      "span": 4
+    },
     "Skills.cs:1659-1692": {
       "sha256": "2747f786929876cede58342bf12c3eb4967ceef240bcf3d4ac171afac9683f35",
       "span": 34
     },
-    "Skills.cs:1659-1693": {
-      "sha256": "84b4f85a5710a3d457b54e1a3869ace65867546636bb61e930c2c52e160c2ce6",
-      "span": 35
+    "Skills.cs:1752-1755": {
+      "sha256": "744847d0abe73124d34705451ef9df04770445588a37d7f1aed0490a87c9b568",
+      "span": 4
     },
     "Skills.cs:1866-1872": {
       "sha256": "945c73601ce940d016299c584d1be55e2bb0a73e812a5fa355af7f505de537b3",
       "span": 7
+    },
+    "Skills.cs:1873-1880": {
+      "sha256": "9768c8099dedb4bc219e0df1786b65dd9d6d791a97112d08f87bd1f4e76d1505",
+      "span": 8
     },
     "Skills.cs:247-249": {
       "sha256": "ed9fa4f4e7cbc39de6f7ee1763936d767609635c82e1f535462c0e3f84dbea44",
@@ -3829,6 +3915,10 @@
     "Skills.cs:814-843": {
       "sha256": "c87a0310cfac8fb2a8e284377e154e0936d436e13041163f87bc4c9a4292ed2b",
       "span": 30
+    },
+    "Skills.cs:911-920": {
+      "sha256": "8dc12e7946596ebfc8e5eb848cdceed0f6ffac66f3ad72d64661ab1682d19549",
+      "span": 10
     },
     "Skills.cs:924-933": {
       "sha256": "8d0d278e895fc229834918376c17813908f0e3f351c00fb3414817f2cb645415",
@@ -3930,6 +4020,10 @@
       "sha256": "3606e6d1db9218fe1c484f327b5256be58cb4a014bb50684941d0bfafaa176db",
       "span": 18
     },
+    "SummonSkill.cs:106-113": {
+      "sha256": "d5b29038d3fdd63f22c389b4a870b79d3cdcea9599a12207704a4a7638792631",
+      "span": 8
+    },
     "SummonSkill.cs:106-118": {
       "sha256": "3838c5787541dce38972da7e038ccefa606a619c2ba4a4be70cffe1bae17c893",
       "span": 13
@@ -3955,6 +4049,9 @@
       "span": 1
     },
     "SummonSkill.cs:Apply": {
+      "span": 0
+    },
+    "SummonSkill.cs:UsesPetAttackCommand": {
       "span": 0
     },
     "SummonSkillMonsters.cs": {
@@ -4069,6 +4166,10 @@
       "sha256": "1b275000a3991f18500c64ab98c8888db08e88372e5e0fff3e304823c4c9866f",
       "span": 5
     },
+    "TargetDamageSkill.cs:238-248": {
+      "sha256": "0de811717db1b66c48c7300aacd83298dcf81d025f708f85502dad01f5918469",
+      "span": 11
+    },
     "TargetDamageSkill.cs:244": {
       "sha256": "558733c5ec920748d1cb5453c6c9754a3b012725a9197b83e5b41f314c95680d",
       "span": 1
@@ -4116,6 +4217,10 @@
     "TargetHealSkill.cs:240-261": {
       "sha256": "98f640c5571abe8d151bb8015050530e5755abe3746b3f627f9f72f2e49a0ad8",
       "span": 22
+    },
+    "TargetHealSkill.cs:272-280": {
+      "sha256": "09958d3a044497e2f3592ae403cbf1bf373b580c5825ee3af25d2daa368538c4",
+      "span": 9
     },
     "TargetHealSkill.cs:83-135": {
       "sha256": "356a69a56b30e6aedd1870229225f674ffbbe000035cc08ca54514ca28f8b318",

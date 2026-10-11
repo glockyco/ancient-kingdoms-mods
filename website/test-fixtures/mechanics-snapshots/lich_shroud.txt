@@ -1,0 +1,1 @@
+Mechanics Lifetap Healing Bonus Adds 15% + 5% × skill lvl to the lifetap healing multiplier, not to lifetap damage. Unexpired and permanent buffs add together. Healing = floor(lifetap percentage × damage after wards and Mana Shield × (1 + summed bonuses)). Cast time = cast time × (1 − spell haste)

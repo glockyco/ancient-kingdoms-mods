@@ -171,7 +171,116 @@ describe("Bard mechanics contexts", () => {
     );
 
     expect(spec.damageContexts).toEqual([
-      { casterLabels: ["Bard mercenary"], formula: "bard_final_cadence" },
+      { casterLabels: ["Bard mercenary"], formula: "bard_final_cadence_merc" },
     ]);
+  });
+});
+
+describe("Intelligence and combat-pet mechanics", () => {
+  test("selects Intelligence for targeted, area and mercenary buffs with Ranger tripling only on targeted buffs", () => {
+    const skill = bardSkill({
+      is_bard_song: false,
+      scales_with_charisma: false,
+      scales_with_intelligence: true,
+      player_classes: ["ranger", "necromancer"],
+      skill_type: "target_buff",
+    });
+    expect(
+      computeMechanicsSpec(skill, [bardMercenary], false).buffContexts.map(
+        (c) => c.bonusAttrSource,
+      ),
+    ).toEqual(["player_ranger_int", "player_int", "merc_int"]);
+    expect(
+      computeMechanicsSpec({ ...skill, skill_type: "area_buff" }, [], false)
+        .buffContexts,
+    ).toEqual([
+      {
+        casterLabels: ["Ranger (player)", "Necromancer (player)"],
+        bonusAttrSource: "player_int",
+        isAreaBuff: true,
+      },
+    ]);
+  });
+
+  test("selects Intelligence for flagged poison/disease, preserving melee and Charisma priority", () => {
+    const skill = bardSkill({
+      skill_type: "target_debuff",
+      is_bard_song: false,
+      scales_with_charisma: false,
+      is_disease_debuff: true,
+      poison_disease_scales_with_intelligence: true,
+      healing_per_second_bonus: { base_value: -10, bonus_per_level: 0 },
+    });
+    expect(
+      computeMechanicsSpec(skill, [], false).debuffContexts[0].bonusAttrKind,
+    ).toBe("int");
+    expect(
+      computeMechanicsSpec(
+        { ...skill, poison_disease_scales_with_intelligence: false },
+        [],
+        false,
+      ).debuffContexts[0].bonusAttrKind,
+    ).toBe("dex");
+    expect(
+      computeMechanicsSpec({ ...skill, is_melee_debuff: true }, [], false)
+        .debuffContexts[0].bonusAttrKind,
+    ).toBe("str");
+    expect(
+      computeMechanicsSpec({ ...skill, scales_with_charisma: true }, [], false)
+        .debuffContexts[0].bonusAttrKind,
+    ).toBe("cha");
+  });
+
+  test("does not apply generic Wisdom healing to Death Bloom", () => {
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "target_heal",
+          is_necromancer_death_bloom: true,
+        }),
+        [],
+        false,
+      ).healContexts,
+    ).toEqual([]);
+  });
+
+  test("haste reduces combat-pet skill 0 cooldown, not familiar or secondary-skill cooldown", () => {
+    const skill = bardSkill({
+      skill_type: "target_damage",
+      is_spell: false,
+      player_classes: [],
+    });
+    const pet = { ...bardMercenary, is_mercenary: false, skill_index: 0 };
+    expect(
+      computeMechanicsSpec(skill, [pet], false).timingContexts[0].model,
+    ).toBe("companion_auto");
+    expect(
+      computeMechanicsSpec(
+        { ...skill, followup_default_attack: true },
+        [{ ...pet, is_familiar: true }],
+        false,
+      ).timingContexts[0].model,
+    ).toBe("companion");
+    expect(
+      computeMechanicsSpec(
+        { ...skill, followup_default_attack: true },
+        [{ ...pet, skill_index: 1 }],
+        false,
+      ).timingContexts[0].model,
+    ).toBe("companion");
+  });
+
+  test("monster spell cooldowns are flat while non-spells use haste", () => {
+    const skill = bardSkill({
+      followup_default_attack: true,
+      player_classes: [],
+    });
+    expect(computeMechanicsSpec(skill, [], true).timingContexts[0].model).toBe(
+      "monster_spell",
+    );
+    expect(
+      computeMechanicsSpec({ ...skill, is_spell: false }, [], true)
+        .timingContexts[0].model,
+    ).toBe("monster");
   });
 });

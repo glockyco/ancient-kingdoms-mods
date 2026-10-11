@@ -48,6 +48,8 @@
       "INT × 1.5 + magic damage from casting weapon and other equipment",
     // Source: server-scripts/BardFinalCadenceSkill.cs:67-70 and Charisma.cs:27-36.
     bard_final_cadence:
+      "round(round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2))) × repertoire multiplier)",
+    bard_final_cadence_merc:
       "round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2)))",
     magic_weapon:
       "INT × 1.5 + STR × 1.0 + equipment damage. Physical and magic portions are reduced separately",
@@ -70,6 +72,7 @@
     poison_rogue: "Poison",
     magic_spell: "Magic",
     bard_final_cadence: "Magic",
+    bard_final_cadence_merc: "Magic",
     magic_weapon: "Magic",
     magic_weapon_ranger: "Magic",
     manaburn: "Special",
@@ -88,6 +91,7 @@
     poison_rogue: "Rogue poison attacks",
     magic_spell: "Magic spells",
     bard_final_cadence: "Final Cadence",
+    bard_final_cadence_merc: "Mercenary Final Cadence",
     magic_weapon: "Magic weapon attacks",
     magic_weapon_ranger: "Ranger magic weapon attacks",
     manaburn: "Manaburn",
@@ -106,6 +110,7 @@
     "poison_rogue",
     "magic_spell",
     "bard_final_cadence",
+    "bard_final_cadence_merc",
     "magic_weapon",
     "magic_weapon_ranger",
     "manaburn",
@@ -185,7 +190,11 @@
       <!-- Source: server-scripts/PlayerSkills.cs:642-646,732-738,808-890 — fear and stun block normal skill use; learned status, readiness, resources, equipment, ammunition, range, and visibility are checked. -->
       <!-- Source: server-scripts/PlayerSkills.cs:839-870 — out-of-range and obscured targets can start navigation and queue the cast. -->
       <p>
-        <span class="block">Fear and stun stop you from using skills.</span>
+        <span class="block">Fear and stun block ordinary skill use.</span>
+        <!-- Source: server-scripts/PlayerSkills.cs:636-646 — active NecromancerReaperFormSkill and Fearless Stance are removed before the FEAR/STUNNED gate. -->
+        <span class="block"
+          >You can still dismiss an active Reaper Form or Fearless Stance.</span
+        >
         <span class="block"
           >Casting also requires a learned, ready skill, enough Mana or Rage,
           suitable equipment, and ammunition for applicable projectiles.</span
@@ -194,6 +203,18 @@
           >When a target is too far away or out of sight, your character can
           move closer before casting the queued skill.</span
         >
+      </p>
+      <!-- Source: server-scripts/Skills.cs:911-920 — StartCast calls StartDefaultAttackAfterMeleeSkill except for invisibility TargetBuffSkill. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:StartDefaultAttackAfterMeleeSkill — non-spell Weapon or Shield TargetDamageSkill or damaging TargetDebuffSkill casts queue the learned/default followupDefaultAttack on an attackable current target when no follow-up exists and CheckWeapon passes. -->
+      <p>
+        A non-spell weapon or shield skill queues your selected default attack
+        on your current attackable target when it deals targeted damage or
+        applies a damaging targeted debuff. The skill must require a weapon or
+        shield, and must not itself be a default auto-attack. Your selected
+        default attack must be valid, learned (or learned by default), and
+        usable with your weapon. An existing follow-up is preserved; the default
+        attack fills the pending slot only if it is empty. Invisibility buffs do
+        not trigger this rule.
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:953-1012,1162-1191 — Bard song use and repetition continue while moving or casting ordinary skills. -->
       <p>
@@ -593,11 +614,32 @@ damage taken = damage − damage prevented</pre>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block">Final Cadence does not receive this bonus.</span>
           <span class="block"
-            >Its healing is round(base heal × songPower), with songPower from <a
+            >Its healing is round(round(base heal × songPower) × repertoire
+            multiplier), with songPower from <a
               href="#buffs"
               class="underline hover:text-foreground">Bard Song Scaling</a
             >.</span
           >
+        </p>
+        <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70,FindEnemies; PlayerSkills.cs:CompleteBardSongCast,ConsumeFinalCadenceRepertoireBonus — Final Cadence rounds Charisma-scaled damage/healing with a consumed repertoire multiplier; only engaged Monsters with speed above -50 qualify as enemies. -->
+        <p class="text-sm text-muted-foreground mt-2">
+          Manually completing 4 distinct songs less than 40 seconds before Final
+          Cadence grants +15% damage and healing; 5 grant +25%, and 6 or more
+          grant +30%. Fewer grant no bonus. Automatic repeats do not count.
+          Final Cadence clears the repertoire, even if it hits no enemies.
+          Mercenaries receive no repertoire bonus. Its damage targets only
+          living, visible, attackable monsters in range and in the same zone
+          with a non-empty aggro list, excluding Sleep (speed −50 or below).
+          Mercenary casts also require the monster to be engaged with their
+          owner's party.
+        </p>
+        <!-- Source: server-scripts/Combat.cs:1315-1333 — lifetap healing is FloorToInt(lifetapPercent × remaining damage × (1 + summed active/permanent lifetapHealingPercentBonus)); the damage is not capped by remaining victim health. -->
+        <p class="text-sm text-muted-foreground mt-2">
+          Lifetap heals floor(lifetap percentage × damage remaining after Ward
+          and Mana Shield × (1 + healing bonus)). The healing bonus is the sum
+          of the lifetap healing bonuses of the attacker's active or permanent
+          buffs, such as Lich Shroud. It increases healing, not damage. The
+          damage used is not capped by the victim's remaining health.
         </p>
       </div>
 
@@ -658,7 +700,7 @@ damage taken = damage − damage prevented</pre>
     <Card.Header>
       <Card.Title>Buff Scaling</Card.Title>
       <Card.Description
-        >How Charisma, Wisdom, and character level change buffs.</Card.Description
+        >How Charisma, Wisdom, Intelligence, and character level change buffs.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-5">
@@ -715,8 +757,14 @@ percentageValue = baseValue × songPower</pre>
       </div>
 
       <div>
-        <h3 class="font-semibold mb-2">Wisdom Bonuses by Buff Effect</h3>
+        <h3 class="font-semibold mb-2">Attribute Bonuses by Buff Effect</h3>
         <!-- Source: server-scripts/Buff.cs:ScaleWithCharisma and Skills.cs:GetFinalHealOverTime — Charisma-scaled song values skip the Wisdom additions. -->
+        <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:434-445; AreaBuffSkill.cs:33-45 — scalesWithIntelligence selects Intelligence instead of Wisdom; Ranger targeted buffs triple the selected attribute. -->
+        <p class="text-sm text-muted-foreground mb-2">
+          A is Wisdom, or Intelligence for buffs that scale with Intelligence.
+          Ranger targeted buffs use three times that attribute; area buffs do
+          not.
+        </p>
         <p class="text-sm text-muted-foreground mb-2">
           Bard songs do not receive these bonuses.
         </p>
@@ -725,49 +773,50 @@ percentageValue = baseValue × songPower</pre>
             <thead>
               <tr class="border-b border-border">
                 <th class="text-left py-1 pr-4 font-medium">Buff Field</th>
-                <th class="text-left py-1 font-medium">WIS Scaling</th>
+                <th class="text-left py-1 font-medium">Attribute Scaling</th>
               </tr>
             </thead>
             <tbody>
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Max Health</td><td
-                  class="py-1 text-muted-foreground">base + WIS×2</td
+                  class="py-1 text-muted-foreground">base + A×2</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Defense</td><td
-                  class="py-1 text-muted-foreground">base + WIS×0.15</td
+                  class="py-1 text-muted-foreground">base + round(A×0.15)</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Magic Resist</td><td
-                  class="py-1 text-muted-foreground">base + WIS×0.15</td
+                  class="py-1 text-muted-foreground">base + round(A×0.15)</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Ward</td><td
-                  class="py-1 text-muted-foreground">base + WIS×2</td
+                  class="py-1 text-muted-foreground">base + A×2</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Damage Shield</td><td
-                  class="py-1 text-muted-foreground">base + WIS×0.75</td
+                  class="py-1 text-muted-foreground">base + round(A×0.75)</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Elemental Resists</td><td
-                  class="py-1 text-muted-foreground">base + WIS×0.15 each</td
+                  class="py-1 text-muted-foreground"
+                  >base + round(A×0.15) each</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Heal-over-Time (&lt;60s)</td><td
                   class="py-1 text-muted-foreground"
-                  >base × (1 + min(WIS×0.004, 5.0))</td
+                  >base + round(base × min(A×0.004, 5.0))</td
                 ></tr
               >
               <tr
                 ><td class="py-1 pr-4">Heal-over-Time (60s+)</td><td
-                  class="py-1 text-muted-foreground">base + WIS×0.3</td
+                  class="py-1 text-muted-foreground">base + round(A×0.3)</td
                 ></tr
               >
             </tbody>
@@ -796,18 +845,18 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Player Rangers</td><td
                   class="py-1 text-muted-foreground"
-                  >Targeted buffs use triple Wisdom. Area buffs use Wisdom</td
+                  >Targeted buffs use triple A. Area buffs use A</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Other players</td><td
                   class="py-1 text-muted-foreground"
-                  >Targeted and area buffs use Wisdom</td
+                  >Targeted and area buffs use A</td
                 ></tr
               >
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4 text-sm">Area buffs on mercenaries</td><td
-                  class="py-1 text-muted-foreground"
+                ><td class="py-1 pr-4 text-sm">Mercenary-skill area buffs</td
+                ><td class="py-1 text-muted-foreground"
                   >Use round((Wisdom + Constitution) / 2)</td
                 ></tr
               >
@@ -820,7 +869,7 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm"
                   >Mercenary buffs other than songs</td
-                ><td class="py-1 text-muted-foreground">Use Wisdom</td></tr
+                ><td class="py-1 text-muted-foreground">Use A</td></tr
               >
               <tr
                 ><td class="py-1 pr-4 text-sm">Monster and NPC buffs</td><td
@@ -854,17 +903,21 @@ percentageValue = baseValue × songPower</pre>
         >
       </p>
       <!-- Source: server-scripts/Monster.cs:1553-1557 — a heavy slow resets monster movement. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:642-646 — FEAR and STUNNED states block skill use. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:636-646 — active Reaper Form and Fearless Stance can be dismissed before FEAR/STUNNED blocks ordinary skill use. -->
       <!-- Source: server-scripts/Skills.cs:BreakMezz — BreakMezz ends mesmerize buffs. -->
       <!-- Source: server-scripts/Combat.cs:762-764 — damage calls BreakMezz. -->
-      <!-- Source: server-scripts/Skills.cs:251-256 — a damage-over-time recovery tick calls BreakMezz. -->
+      <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks call BreakMezz unless the buff is NecromancerReaperFormSkill. -->
       <p>
         <span class="block"
           >Root stops movement but does not end on damage.</span
         >
-        <span class="block">Stun prevents skill use.</span>
         <span class="block"
-          >Direct damage or a damage-over-time tick ends Sleep.</span
+          >Stun blocks ordinary skill use, but not dismissing an active Reaper
+          Form or Fearless Stance.</span
+        >
+        <span class="block"
+          >Direct damage or a damage-over-time tick ends Sleep, except Reaper
+          Form's health drain.</span
         >
         <span class="block"
           >See <a href="#special" class="underline hover:text-foreground"
@@ -876,7 +929,8 @@ percentageValue = baseValue × songPower</pre>
       <!-- Source: server-scripts/Combat.cs:910-952 — damageShield buffs deal damage back to the attacker. -->
       <p>
         <span class="block"
-          >A ward absorbs damage-over-time ticks until its pool runs out.</span
+          >A ward absorbs ordinary damage-over-time ticks until its pool runs
+          out.</span
         >
         <span class="block"
           >Any damage beyond the remaining ward reduces health.</span
@@ -964,7 +1018,9 @@ percentageValue = baseValue × songPower</pre>
               </tr>
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4">Poison and disease debuffs</td>
-                <td class="py-1 text-muted-foreground">DEX</td>
+                <td class="py-1 text-muted-foreground"
+                  >INT for Intelligence-scaled poison and disease; otherwise DEX</td
+                >
               </tr>
               <tr>
                 <td class="py-1 pr-4"
@@ -1029,11 +1085,13 @@ percentageValue = baseValue × songPower</pre>
                   class="py-1 text-muted-foreground">−INT×0.5</td
                 ></tr
               >
-              <!-- Source: server-scripts/Skills.cs:1659-1692 — poison and disease debuffs add RoundToInt(bonusAttribute * 1.5) before resistance. -->
+              <!-- Source: server-scripts/Skills.cs:1659-1692; BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus — poisonDiseaseScalesWithIntelligence selects INT and damageOverTimeBonusPerIntelligencePoint; Intelligence-scaled disease uses diseaseResist. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Poison/disease damage over time</td><td
                   class="py-1 text-muted-foreground"
-                  >+DEX×1.5, then reduced by Poison Resist</td
+                  >Unflagged: +round(DEX×1.5), reduced by Poison Resist.
+                  Intelligence-scaled: +round(INT×coefficient), reduced by the
+                  matching resist</td
                 ></tr
               >
               <tr class="border-b border-border/40"
@@ -1045,7 +1103,7 @@ percentageValue = baseValue × songPower</pre>
               <tr
                 ><td class="py-1 pr-4">Fire/cold/magic damage over time</td><td
                   class="py-1 text-muted-foreground"
-                  >+INT×1.25, reduced by the matching resist</td
+                  >+round(INT×coefficient), reduced by the matching resist</td
                 ></tr
               >
             </tbody>
@@ -1053,15 +1111,23 @@ percentageValue = baseValue × songPower</pre>
         </div>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block"
-            >Poison and disease damage-over-time effects add round(DEX × 1.5) to
-            each damage tick.</span
+            >Unflagged poison and disease add round(DEX × 1.5) per tick and both
+            use Poison Resist.</span
           >
           <span class="block"
-            >Poison Resist reduces both types, while Disease Resist does not
-            reduce these ticks.</span
+            >Intelligence-scaled poison uses Poison Resist; Intelligence-scaled
+            disease uses Disease Resist. Their reduction is ceil(damage ×
+            clamp(resist × 0.0005, 0, 0.9)).</span
+          >
+          <!-- Source: server-scripts/BuffSkill.cs:14-31,GetDamageOverTimeAttributeBonus — damageOverTimeBonusPerIntelligencePoint defaults to 1.25; Charisma-scaled effects skip the additional attribute bonus. -->
+          <span class="block"
+            >Intelligence-scaled DoTs use a per-skill Intelligence coefficient:
+            1.25 for most skills, or 1.15 for Ensnare. Each skill page shows its
+            formula. Charisma-scaled effects skip this extra attribute bonus.</span
           >
           <span class="block"
-            >Debuff layers, critical hits, and wards then change the damage.</span
+            >Debuff layers, execute bonuses, critical hits, and wards then
+            change the damage.</span
           >
         </p>
         <p class="text-sm text-muted-foreground mt-2">
@@ -1072,6 +1138,15 @@ percentageValue = baseValue × songPower</pre>
           <span class="block"
             >At 2 layers it deals 85%, and at 1 layer it deals 70%.</span
           >
+        </p>
+        <!-- Source: server-scripts/Skills.cs:GetDamageOverTimeExecuteBonus,1873-1880,1752-1755 — externally Player-sourced debuff recovery ticks below 30% health sum learned PassiveSkill.damageOverTimeExecuteBonus after counters and before critical scaling; percentage-health damage is added afterwards. -->
+        <p class="text-sm text-muted-foreground mt-2">
+          Below 30% of the victim's maximum health, debuff recovery ticks from
+          another player gain the sum of that caster's learned execute passive
+          bonuses, such as Deathly Focus. The player source must still exist.
+          Flat damage becomes round(damage × (1 + bonus)) after resistance and
+          cleanse counters, before critical scaling. Percentage-health damage is
+          added afterwards; non-tick calculations receive no execute bonus.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block"
@@ -1133,9 +1208,18 @@ percentageValue = baseValue × songPower</pre>
               </tr>
               <!-- Source: server-scripts/Skills.cs:1141-1169 -->
               <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 text-sm">Attack</td>
+                <td class="py-2 pr-4 text-sm">First non-spell skill</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Companions and familiars</td
+                  >Combat pets (not mercenaries or familiars)</td
+                >
+                <td class="py-2 font-mono text-sm"
+                  >cast time + cooldown × (1 − haste)</td
+                >
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 text-sm">Other skills</td>
+                <td class="py-2 pr-4 text-muted-foreground text-sm"
+                  >Combat pets and familiars</td
                 >
                 <td class="py-2 font-mono text-sm">cast time + cooldown</td>
               </tr>
@@ -1208,11 +1292,12 @@ percentageValue = baseValue × songPower</pre>
                   stays unchanged.</td
                 >
               </tr>
-              <!-- Source: server-scripts/Pet.cs -->
+              <!-- Source: server-scripts/Skills.cs:1141-1169 — non-familiar non-mercenary pet skillIndex 0 uses haste for non-spells. -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Companion or familiar</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >No effect</td
+                  >Reduces the first non-spell skill's cooldown for combat pets;
+                  no effect on familiars or other pet skills</td
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
@@ -1361,11 +1446,22 @@ percentageValue = baseValue × songPower</pre>
             >Mana Shield absorbs any direct damage left after Ward.</span
           >
           <span class="block"
-            >Ward also absorbs damage-over-time ticks before they reduce health.</span
+            >Ward also absorbs ordinary damage-over-time ticks before they
+            reduce health.</span
           >
           <span class="block"
-            >Wisdom adds 2 points to a ward's capacity per point.</span
+            >The selected buff attribute adds 2 points to a ward's capacity per
+            point.</span
           >
+        </p>
+      </div>
+      <!-- Source: server-scripts/Skills.cs:1620-1623,251-256 — NecromancerReaperFormSkill returns RoundToInt(max(0, -healthPercentPerSecondBonus) × health.max) before mitigation and skips BreakMezz. -->
+      <div>
+        <h3 class="font-semibold mb-1">Reaper Form Health Drain</h3>
+        <p class="text-sm text-muted-foreground">
+          Reaper Form drains round(maximum health × its drain percentage) per
+          recovery tick. This drain ignores resistance, wards, critical ticks,
+          and execute bonuses, and does not break Sleep.
         </p>
       </div>
 
@@ -1378,6 +1474,10 @@ percentageValue = baseValue × songPower</pre>
             fails a separate fear resistance roll.</span
           >
           <span class="block"
+            >Bosses and fear-immune targets, including the Necromancer's undead
+            companions, cannot be feared.</span
+          >
+          <span class="block"
             >Fear lasts for a random duration between half and all of the
             skill's listed fear duration.</span
           >
@@ -1385,6 +1485,11 @@ percentageValue = baseValue × songPower</pre>
             >Equipment and skills add fear resistance, up to 100%.</span
           >
           <span class="block">At 100%, the target is immune to fear.</span>
+          <!-- Source: server-scripts/Combat.cs:1104-1108; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
+          <span class="block"
+            >Fear inflicted by a Necromancer player halves a monster's or NPC's
+            positive movement speed while feared.</span
+          >
         </p>
       </div>
 
@@ -1413,7 +1518,7 @@ percentageValue = baseValue × songPower</pre>
       <div>
         <!-- Source: server-scripts/Skills.cs:1592-1597 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
-        <!-- Source: server-scripts/Skills.cs:251-256 (DoT tick also calls BreakMezz) -->
+        <!-- Source: server-scripts/Skills.cs:251-256 — damage-over-time recovery ticks call BreakMezz except NecromancerReaperFormSkill. -->
         <!-- Source: server-scripts/Monster.cs:1539-1553 (monster self-break: magic resist roll every 6s) -->
         <!-- Source: server-scripts/TargetDebuffSkill.cs:141 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Sleep</h3>
@@ -1422,7 +1527,8 @@ percentageValue = baseValue × songPower</pre>
             >A debuff that reduces movement speed to −50 or below causes Sleep.</span
           >
           <span class="block"
-            >A direct hit or damage-over-time tick immediately ends Sleep.</span
+            >A direct hit or ordinary damage-over-time tick immediately ends
+            Sleep; Reaper Form's health drain does not.</span
           >
           <span class="block"
             >Bosses and elite monsters automatically resist debuffs that reduce

@@ -1276,6 +1276,12 @@ interface SkillDescriptionInput {
   required_skill_points: number;
   required_spent_points: number;
   is_veteran: boolean;
+  is_necromancer_blood_pact?: boolean;
+  is_necromancer_death_bloom?: boolean;
+  is_necromancer_reaper_form?: boolean;
+  is_necromancer_pet_buff?: boolean;
+  channel_pulses?: number;
+  is_familiar?: boolean;
   /** Number of monsters that have this skill in monster_skills. */
   monster_count: number;
   /**
@@ -1304,6 +1310,7 @@ const SKILL_TYPE_LABELS: Record<string, string> = {
   area_debuff: "Area-of-effect debuff",
   target_heal: "Single-target heal",
   area_heal: "Party-wide heal",
+  health_to_mana: "Health-to-Mana conversion",
   passive: "Passive ability",
   summon_monsters: "Summon spell",
   summon: "Summon spell",
@@ -1415,7 +1422,23 @@ function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
  * Each section is omitted when it has no useful content.
  */
 export function skillDescription(skill: SkillDescriptionInput): string {
-  const typeLabel = humanizeSkillType(skill.skill_type);
+  // Source: server-scripts/NecromancerDeathBloomSkill.cs:CorrectedTarget — another living Player or non-familiar Pet only.
+  // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — owned living combat pet, not a familiar or mercenary.
+  // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — toggles the form buff.
+  // Source: server-scripts/SummonSkill.cs:56 — Necromancer non-familiar summons can replace an active pet when MatchesPet is false.
+  const typeLabel = skill.is_necromancer_death_bloom
+    ? "Health-sacrificing heal for another player or non-familiar pet"
+    : skill.is_necromancer_reaper_form
+      ? "Toggleable Reaper Form"
+      : skill.is_necromancer_pet_buff
+        ? "Buff for your living combat pet"
+        : (skill.channel_pulses ?? 0) > 0
+          ? "Channeled single-target damage spell"
+          : skill.skill_type === "summon" &&
+              !skill.is_familiar &&
+              skill.player_classes.includes("necromancer")
+            ? "Undead combat-pet summon; replaces a different active pet"
+            : humanizeSkillType(skill.skill_type);
   const ownership = skillOwnershipPhrase(skill);
 
   const tierPhrase =
@@ -1504,6 +1527,9 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       return " Summoned by a class skill. Level scales with the skill rank.";
     case "Companion":
       // Source: server-scripts/SummonSkill.cs:99 — level = min(petMaxLevel, playerLevel)
+      if (input.summoning_class_id === "necromancer") {
+        return ` Undead combat pet summoned by ${input.summoning_skill_name ?? "a Necromancer skill"}. Level follows the summoner, up to the pet's level cap.`;
+      }
       if (input.summoning_skill_name && className) {
         return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level matches the summoner.`;
       }

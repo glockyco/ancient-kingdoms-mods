@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = WIS × 3 (Ranger Wisdom tripled) Defense skill value at level + attribute contribution × 0.15 Cast time = cast time × (1 − spell haste)
+Mechanics Buff Scaling Attribute contribution = WIS × 3 Defense skill value at level + attribute contribution × 0.15 Cast time = cast time × (1 − spell haste)

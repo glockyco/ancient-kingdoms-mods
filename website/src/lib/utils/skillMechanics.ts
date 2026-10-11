@@ -166,7 +166,7 @@ function playerDamageFormula(
   skill: SkillDetailView,
   cls: string,
 ): DamageFormulaKind {
-  // Source: BardFinalCadenceSkill.cs — bypasses player magic damage and scales its base with Charisma.
+  // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — player damage uses ConsumeFinalCadenceRepertoireBonus after Charisma scaling and a second RoundToInt.
   if (skill.is_bard_final_cadence) return "bard_final_cadence";
 
   // Source: TargetDamageSkill.cs — is_manaburn check precedes everything
@@ -244,7 +244,7 @@ function mercDamageFormula(
   typeMonster: string,
 ): DamageFormulaKind {
   // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — a Bard mercenary also skips magic damage and scales the base with its own Charisma.
-  if (skill.is_bard_final_cadence) return "bard_final_cadence";
+  if (skill.is_bard_final_cadence) return "bard_final_cadence_merc";
 
   // Source: TargetDamageSkill.cs — is_manaburn check precedes everything
   if (skill.is_manaburn_skill) return "manaburn";
@@ -415,7 +415,7 @@ export function computeMechanicsSpec(
     canCrit: boolean;
   }> = [];
 
-  if (isHealSkill) {
+  if (isHealSkill && !skill.is_necromancer_death_bloom) {
     // Source: TargetHealSkill.cs — canCrit gate uses can_heal_others flag
     const canCrit = skill.can_heal_others;
 
@@ -488,26 +488,31 @@ export function computeMechanicsSpec(
               ? "player_wis_con_cha_half"
               : "player_wis_con_avg";
         } else if (isAreaBuff) {
-          // Source: AreaBuffSkill.cs:33; BuffSkill.cs:GetBuffPowerAttribute — plain player.wisdom.value; NO Ranger×3 for area buffs
-          src = "player_wis";
+          // Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — scalesWithIntelligence selects intelligence, otherwise wisdom.
+          src = skill.scales_with_intelligence ? "player_int" : "player_wis";
         } else if (cls === "ranger") {
           // Source: TargetBuffSkill.cs:434-437; BuffSkill.cs:GetBuffPowerAttribute — Ranger → attribute * 3
-          src = "player_ranger_wis";
+          src = skill.scales_with_intelligence
+            ? "player_ranger_int"
+            : "player_ranger_wis";
         } else {
-          // Source: TargetBuffSkill.cs:434; BuffSkill.cs:GetBuffPowerAttribute — else → wisdom.value
-          src = "player_wis";
+          // Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — scalesWithIntelligence selects intelligence, otherwise wisdom.
+          src = skill.scales_with_intelligence ? "player_int" : "player_wis";
         }
         buffPairs.push({ label, bonusAttrSource: src, isAreaBuff });
       }
       for (const pet of mercPets) {
         const tm = pet.type_monster ?? "Unknown";
         const label = `${tm} mercenary`;
-        // Source: TargetBuffSkill.cs:434; BuffSkill.cs:GetBuffPowerAttribute — `caster is Pet { isMercenary: not false }` → wisdom.value
-        // Source: AreaBuffSkill.cs:33; BuffSkill.cs:GetBuffPowerAttribute — same merc branch, no Ranger×3
+        // Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute — mercenary buffs select intelligence when scalesWithIntelligence, otherwise wisdom.
         // Source: server-scripts/BardMercenarySkills.cs:RefreshAura — a Bard mercenary's song buff carries the mercenary's Charisma.
         buffPairs.push({
           label,
-          bonusAttrSource: hasBardScaling ? "merc_cha" : "merc_wis",
+          bonusAttrSource: hasBardScaling
+            ? "merc_cha"
+            : skill.scales_with_intelligence
+              ? "merc_int"
+              : "merc_wis",
           isAreaBuff,
         });
       }
@@ -529,13 +534,22 @@ export function computeMechanicsSpec(
   }
 
   // ---------- timing ----------
-  // Only populated when followup_default_attack=true.
+  // Populated for follow-up attacks and non-spell combat-pet skill 0.
   // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:339-345 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
   // Source: server-scripts/Player.cs:3394-3431 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ label: string; model: TimingModel }> = [];
 
-  if (skill.followup_default_attack) {
+  if (
+    skill.followup_default_attack ||
+    usedByPets.some(
+      (p) =>
+        !p.is_mercenary &&
+        !p.is_familiar &&
+        p.skill_index === 0 &&
+        !skill.is_spell,
+    )
+  ) {
     const isSpell = skill.is_spell;
     const hasReqWeapon = Boolean(skill.required_weapon_category);
 
@@ -560,18 +574,19 @@ export function computeMechanicsSpec(
       timingPairs.push({ label, model });
     }
     if (hasMonsters) {
-      // Source: Monster.cs:2048-2054, Npc.cs:1302-1308 — both call FinishCastMeleeAttackMonster
-      // unconditionally regardless of isSpell, so spells and non-spells have the same
-      // haste-reduced cooldown behaviour. A single model covers both.
-      const model: TimingModel = "monster";
+      // Source: server-scripts/Monster.cs:2048-2054; Npc.cs:1302-1308 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
+      const model: TimingModel = isSpell ? "monster_spell" : "monster";
       timingPairs.push({ label: "Monster or NPC", model });
     }
-    // Non-merc companion pets and familiars use FinishCast (flat cooldown) — same shape as flat
-    if (hasNonMercPet || hasFamiliar) {
-      const parts: string[] = [];
-      if (hasNonMercPet) parts.push("Companion");
-      if (hasFamiliar) parts.push("Familiar");
-      timingPairs.push({ label: parts.join(", "), model: "companion" });
+    // Source: server-scripts/Skills.cs:1141-1169 — only non-familiar combat-pet non-spell skillIndex 0 receives haste-reduced cooldown.
+    for (const pet of usedByPets.filter((p) => !p.is_mercenary)) {
+      timingPairs.push({
+        label: pet.is_familiar ? "Familiar" : "Companion",
+        model:
+          !pet.is_familiar && !isSpell && pet.skill_index === 0
+            ? "companion_auto"
+            : "companion",
+      });
     }
   }
 
@@ -607,7 +622,8 @@ export function computeMechanicsSpec(
       ? "cha"
       : skill.is_melee_debuff
         ? "str"
-        : skill.is_poison_debuff || skill.is_disease_debuff
+        : (skill.is_poison_debuff || skill.is_disease_debuff) &&
+            !skill.poison_disease_scales_with_intelligence
           ? "dex"
           : "int";
 

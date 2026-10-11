@@ -86,6 +86,15 @@ export interface SkillDetailView {
   cooldown: LinearValue | null;
   cast_time: LinearValue | null;
   cast_range: LinearValue | null;
+  channel_pulses: number;
+  health_cost_percent: LinearValue | null;
+  mana_restored_percent: LinearValue | null;
+  healing_percent: LinearValue | null;
+  healing_percent_per_intelligence: number;
+  is_necromancer_blood_pact: boolean;
+  is_necromancer_death_bloom: boolean;
+  is_necromancer_pet_buff: boolean;
+  is_necromancer_reaper_form: boolean;
 
   // Damage
   damage: LinearValue | null;
@@ -122,6 +131,9 @@ export interface SkillDetailView {
   can_buff_self: boolean;
   can_buff_others: boolean;
   buff_category: string | null;
+  also_buff_active_pet: boolean;
+  scales_with_intelligence: boolean;
+  lifetap_healing_percent_bonus: LinearValue | null;
 
   // Buff stat bonuses
   health_max_bonus: LinearValue | null;
@@ -203,6 +215,8 @@ export interface SkillDetailView {
   is_disease_debuff: boolean;
   is_melee_debuff: boolean;
   is_magic_debuff: boolean;
+  poison_disease_scales_with_intelligence: boolean;
+  damage_over_time_bonus_per_intelligence_point: number;
   prob_ignore_cleanse: number;
 
   // Passive mechanics
@@ -210,6 +224,7 @@ export interface SkillDetailView {
   bard_song_duration_bonus_per_level: number;
   extra_gather_item_chance: number;
   food_and_drink_buff_duration_bonus_per_level: number;
+  damage_over_time_execute_bonus: LinearValue | null;
 
   // Summon fields
   summoned_monster_id: string | null;
@@ -269,6 +284,7 @@ export interface SkillPet {
   is_mercenary: boolean;
   is_familiar: boolean;
   type_monster: string | null;
+  skill_index?: number;
 }
 
 // ------------------------------------------------------------
@@ -294,7 +310,8 @@ export type DamageFormulaKind =
   | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric) — e.g. holy_wrath
   | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (Ranger) — e.g. wild_strike
   // Special
-  | "bard_final_cadence" // round(skillDamage(level) × Bard Charisma multiplier)
+  | "bard_final_cadence" // player: second rounding after consumed repertoire multiplier
+  | "bard_final_cadence_merc" // Charisma only; no repertoire multiplier
   | "manaburn" // energy/mana ×2, bypasses mitigation — e.g. rageblow
   // Monster / NPC (level-scaled, no player stats)
   | "monster_melee" // baseDamage(level) — e.g. ant_attack
@@ -321,6 +338,9 @@ export interface HealContext {
 
 export type BuffBonusAttrSource =
   | "player_cha" // Bard songs multiply eligible buff values by Charisma-derived Bard power
+  | "player_ranger_int" // INT×3 for targeted Intelligence-scaled buffs
+  | "player_int" // INT for Intelligence-scaled player buffs
+  | "merc_int" // mercenary INT for Intelligence-scaled buffs
   | "player_ranger_wis" // WIS×3 (TargetBuffSkill only, not AreaBuffSkill) — e.g. ancestral_spirits
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
@@ -344,14 +364,14 @@ export type TimingModel =
   // interval = cast_time × (1 − spellHaste) + 0.75s refractory; hard cap: 50% (Combat.cs:314-324).
   // Source: server-scripts/Skills.cs:924-933, server-scripts/Combat.cs:348-360, server-scripts/Player.cs:refractoryPeriodSkill
   | "player_spell" // e.g. fire_blast, wind_shock, smite, mystic_spark
-  | "companion" // interval = cast_time + cooldown; companions, familiars, no-weapon followup
+  | "companion" // flat cooldown: familiars, spells, and combat-pet skills other than index 0
+  | "companion_auto" // non-familiar combat pet non-spell skill index 0: haste-reduced cooldown
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
   // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by spell haste (cap 50%), cooldown not.
   // Source: server-scripts/Skills.cs:924-933 (cast reduction), server-scripts/Skills.cs:1141-1169 (flat cooldown), server-scripts/Combat.cs:348-360 (cap)
   | "merc_spell" // e.g. flame_blast, gale_burst, divine_smite
-  // Monster.cs and Npc.cs both call FinishCastMeleeAttackMonster which haste-reduces
-  // cooldown unconditionally regardless of isSpell — one model covers both.
-  | "monster"; // interval = cast_time + cooldown×(1−haste) — e.g. blood_attack
+  | "monster_spell" // spell cast time × (1−spellHaste) + flat cooldown
+  | "monster"; // non-spell: cast_time + cooldown×(1−haste)
 
 export interface TimingContext {
   casterLabels: string[];
@@ -360,8 +380,8 @@ export interface TimingContext {
 
 export type DebuffBonusAttrKind =
   | "str" // is_melee_debuff=1 — e.g. rangers_mark
-  | "dex" // is_poison_debuff=1 or is_disease_debuff=1 — e.g. poison_rend
-  | "int" // default (magic/elemental debuff) — e.g. symbol_of_the_arbiter
+  | "dex" // poison/disease without poison_disease_scales_with_intelligence
+  | "int" // Intelligence-scaled poison/disease, or other magic/elemental debuff
   | "cha" // Bard songs use Charisma as bonusAttribute
   | "none"; // monster/NPC/companion: 0 — e.g. ancient_curse
 
@@ -382,8 +402,8 @@ export interface SkillMechanicsSpec {
   /** One entry per distinct buff attr source; empty for non-buff/passive skills. */
   buffContexts: BuffContext[];
   /**
-   * Populated when followup_default_attack=true. Shows per-caster timing model.
-   * Empty for skills where timing is simply cast_time + cooldown with no haste interaction.
+   * Populated for followup_default_attack or non-spell combat-pet skill index 0.
+   * Shows the relevant cast and cooldown rules for each caster context.
    */
   timingContexts: TimingContext[];
   /** One entry per distinct debuff bonus attr kind; empty for non-debuff skills. */
