@@ -174,7 +174,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/Combat.cs:1224-1233,1234-1283 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
-        text: "Mana Shield absorbs incoming damage by spending one mana per point. It ends when a hit needs more mana than you have; a hit that spends exactly your remaining mana leaves the shield active.",
+        text: "Mana Shield absorbs incoming damage by spending one mana per point. It ends when a hit needs more mana than you have. A hit that spends exactly your remaining mana leaves the shield active.",
         source:
           "Source: server-scripts/Combat.cs:1284-1314 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
       },
@@ -213,7 +213,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   necromancer: {
     attributes: {
-      text: "Each Intelligence point adds 20 maximum mana and rounded 1.5 magic damage. Each Constitution point adds 25 maximum health, not health recovery. Wisdom adds 0.4% per point to ordinary direct heals, up to +500%; Death Bloom uses Intelligence instead.",
+      text: "Each Intelligence point adds 20 maximum mana and 1.5 magic damage, rounded to a whole number. Each Constitution point adds 25 maximum health but no health recovery. Wisdom adds 0.4% per point to ordinary direct heals, up to +500%. Death Bloom uses Intelligence instead.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/Wisdom.cs:107-114; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — attribute bonuses; Death Bloom GetHealingAmount uses GetIntelligenceBonus",
     },
@@ -224,7 +224,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     },
     rules: [
       {
-        text: "You can have one active pet. Summoning a different undead companion replaces your current pet; it does not add a second one. Using the active companion's summon skill commands it to attack instead.",
+        text: "You can have one active pet. Summoning a different undead companion replaces your current pet. Using the active companion's summon skill commands it to attack.",
         source:
           "Source: server-scripts/SummonSkill.cs:12-32,56,106-118 — Necromancer UsesPetAttackCommand checks MatchesPet; a different non-familiar summon destroys and replaces NetworkactivePet",
         href: "/summons#how-summons-work",
@@ -239,7 +239,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       },
       {
         // Exported skills.blood_pact: max_level 5; health_cost_percent and mana_restored_percent each { base_value: 0.05, bonus_per_level: 0.05 }.
-        text: "Blood Pact trades 5% of maximum health for 5% of maximum mana at rank 1; both percentages rise by 5 percentage points per rank, reaching 25% at rank 5. Health cost rounds up and mana restored rounds down. You must have more health than the cost, and the full cost is paid even when you need only a little mana.",
+        text: "Blood Pact trades 5% of maximum health for 5% of maximum mana at rank 1. Both percentages rise by 5 percentage points per rank, reaching 25% at rank 5. Health cost rounds up and mana restored rounds down. You must have more health than the cost, and the full cost is paid even when you need only a little mana.",
         source:
           "Source: server-scripts/NecromancerBloodPactSkill.cs:13-31,53-62 — GetHealthCost uses CeilToInt of health.max; GetManaRestored uses FloorToInt of mana.max; CanConvert requires health.current > healthCost; Apply caps mana gain but pays full health cost",
         href: "/skills/blood_pact",

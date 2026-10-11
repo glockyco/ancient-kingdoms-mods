@@ -294,8 +294,7 @@
         </li>
         <li>
           <!-- Source: server-scripts/Player.cs:14421-14433 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
-          For a dungeon boss, you can pay a Renewal Sage to restart its respawn —
-          see
+          For a dungeon boss, you can pay a Renewal Sage to restart its respawn. See
           <a
             href="#renewal-sages"
             class="text-blue-600 hover:underline dark:text-blue-400"
@@ -1227,9 +1226,10 @@
             when combat started, or from an explicitly configured origin.</span
           >
           <span class="block"
-            >If its target exceeds that limit, the monster switches to its
-            highest-aggro eligible target still inside it. If none is reachable,
-            it drops its target, loses harmful effects, and returns home faster.</span
+            >If its target exceeds that limit, the monster switches to the
+            reachable, attackable target inside the limit with the highest
+            aggro. If none is available, it drops its target, loses harmful
+            effects, and returns home faster.</span
           >
         </li>
         <li>
@@ -1246,13 +1246,13 @@
         <li>
           <!-- Source: server-scripts/Monster.cs:OnAggro,EventEntityTooFarToFollow — returning non-dungeon-normal monsters require reachability and anchor distance within followDistance * 0.8; dungeon normal mobs skip this return-specific gate, not CanAttack or normal reachability. -->
           <span class="block"
-            >A returning monster re-engages only if you are reachable within 80%
-            of its chase distance and inside that radius of the same
-            combat-start position or configured origin.</span
+            >A returning monster re-engages only if it can reach you and you are
+            within 80% of its chase distance from the position where combat
+            started, or from its configured origin.</span
           >
           <span class="block"
-            >Regular dungeon monsters skip this return-specific distance check,
-            but still need an attackable target and a reachable route.</span
+            >Regular dungeon monsters do not check distance while returning.
+            They still need an attackable target and a reachable route.</span
           >
         </li>
         <li>

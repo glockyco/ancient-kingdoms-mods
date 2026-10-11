@@ -347,7 +347,7 @@
           <h3 class="font-semibold">Experience per level</h3>
           <span class="text-xs text-muted-foreground"
             >Log scale &middot; <span class="text-emerald-500">green</span> shows
-            18% growth after 40; dashed shows continued 25.8% growth</span
+            18% growth after 40, while dashed shows continued 25.8% growth</span
           >
         </div>
         <svg

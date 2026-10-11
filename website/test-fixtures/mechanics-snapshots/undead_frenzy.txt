@@ -1,1 +1,1 @@
-Mechanics Combat Pet Buff Targets your active combat pet. The pet must be yours, alive, and neither a familiar nor a mercenary. Range: 8m (the skill's cast range). Cast time = cast time × (1 − spell haste)
+Mechanics Combat Pet Buff Targets your active combat pet. Your combat pet must be alive. Familiars and mercenaries cannot receive this buff. Range: 8m. Cast time = cast time × (1 − spell haste)

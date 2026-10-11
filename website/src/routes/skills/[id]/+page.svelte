@@ -2030,9 +2030,10 @@
               )})
             </p>
             <p class="text-muted-foreground">
-              Usable only with Mana below maximum, current Health strictly
-              greater than C, and positive C and M. Restores min(M, missing
-              Mana), but always pays the full Health cost.
+              Mana must be below maximum and current Health must exceed the
+              Health cost C. Both the Health cost C and Mana restored M must be
+              positive. Mana restored is capped at your missing Mana. You pay
+              the full Health cost.
             </p>
           </div>
         {/if}
@@ -2063,9 +2064,9 @@
             </p>
             <!-- Source: server-scripts/TargetHealSkill.cs:272-280 — canHealOthers uses caster criticalChance; critical healing multiplies by 3 when the second random roll exceeds 0.9, otherwise 2. -->
             <p class="text-muted-foreground">
-              At your critical chance, the heal is doubled; 10% of critical
-              heals are tripled instead. Healing is capped by the target's
-              missing Health.
+              Your critical chance applies to this heal. Critical heals restore
+              double Health, or triple Health in 10% of cases. Healing is capped
+              by the target's missing Health.
             </p>
           </div>
         {/if}
@@ -2085,19 +2086,21 @@
             <!-- Source: server-scripts/NetworkManagerMMO.cs:116 — UpdateEnergies repeats every 1 second. -->
             <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks skip BreakMezz for NecromancerReaperFormSkill. -->
             <p class="text-muted-foreground">
-              Drain ignores resistance, wards and critical hits, and does not
-              break mesmerize.
+              Drain ignores resistance, wards and critical hits. It does not
+              break Sleep.
             </p>
             <!-- Source: server-scripts/MountItem.cs:58-63 — removes reaperForm.formSkill before mounting. -->
             <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->
             <p class="text-muted-foreground">
-              Ends when toggled off or mounted. Death removes the form unless
-              its Remain After Death flag is set{skill.remain_after_death
-                ? " (set for this skill)"
-                : " (not set for this skill)"}.
+              Ends when toggled off or mounted.
+              {skill.remain_after_death
+                ? "The form survives death."
+                : "Death removes the form."}
             </p>
             <!-- Source: server-scripts/NetworkManagerMMO.cs:674-684 — restores NecromancerReaperFormSkill when saved remaining time is positive. -->
-            <p class="text-muted-foreground">The form persists across relog.</p>
+            <p class="text-muted-foreground">
+              The form persists when you log out and back in.
+            </p>
             <!-- Source: server-scripts/Player.cs:HasActiveAppearanceIllusion — active NecromancerReaperFormSkill is an appearance illusion. -->
             <!-- Source: server-scripts/Player.cs:9310-9313 — HasActiveAppearanceIllusion blocks the barber. -->
             <p class="text-muted-foreground">
@@ -2120,8 +2123,8 @@
               {skill.also_buff_active_pet
                 ? "When applied to yourself, the same buff also reaches your active combat pet."
                 : "Targets your active combat pet."}
-              The pet must be yours, alive, and neither a familiar nor a mercenary.
-              Range: {formatLinear(skill.cast_range, "m")} (the skill's cast range).
+              Your combat pet must be alive. Familiars and mercenaries cannot receive
+              this buff. Range: {formatLinear(skill.cast_range, "m")}.
             </p>
           </div>
         {/if}
@@ -2144,11 +2147,11 @@
             <!-- Source: server-scripts/TargetDamageSkill.cs:238-248 — full finalDamage is divided by pulseCount, with remainder on the first pulses. -->
             <p class="font-mono">
               Pulse damage = floor(F / {skill.channel_pulses}) + 1 for the first
-              F mod {skill.channel_pulses} pulses; otherwise floor(F / {skill.channel_pulses}).
+              F mod {skill.channel_pulses} pulses, otherwise floor(F / {skill.channel_pulses}).
             </p>
             <p class="text-muted-foreground">
               F is the full pre-mitigation skill damage, recomputed for each
-              pulse. The final pulse occurs at the end; none occurs at the
+              pulse. The final pulse occurs at the end. None occurs at the
               start. Mana and energy are paid at the start and are not refunded
               on interruption.
             </p>
@@ -2168,16 +2171,16 @@
             <h3 class="font-semibold">Damage-over-Time Execute</h3>
             <p class="text-muted-foreground">
               Adds {formatLinearPercent(skill.damage_over_time_execute_bonus)} to
-              your debuff ticks when the target is strictly below 30% maximum Health.
-              Learned execute bonuses add together.
+              your debuff ticks when the target is below 30% maximum Health. Learned
+              execute bonuses add together.
             </p>
             <p class="font-mono">
               Tick = round(resisted, counter-scaled damage &times; (1 + summed
               execute bonuses)), then critical scaling.
             </p>
             <p class="text-muted-foreground">
-              Requires you to remain spawned as the external player source of
-              the debuff. Pet- and monster-sourced ticks do not receive the
+              You must remain in the game as the player who applied the debuff
+              to another character. Ticks from pets and monsters receive no
               bonus.
             </p>
           </div>
@@ -2202,8 +2205,8 @@
             <h3 class="font-semibold">Lifetap Healing Bonus</h3>
             <p class="text-muted-foreground">
               Adds {formatLinearPercent(skill.lifetap_healing_percent_bonus)} to the
-              lifetap healing multiplier, not to lifetap damage. Unexpired and permanent
-              buffs add together.
+              lifetap healing multiplier. Lifetap damage is unchanged. Bonuses from
+              unexpired and permanent buffs add together.
             </p>
             <p class="font-mono">
               Healing = floor(lifetap percentage &times; damage after wards and
@@ -2455,11 +2458,12 @@
             {#if !usedByBardMercenary}
               <!-- Source: server-scripts/PlayerSkills.cs:ConsumeFinalCadenceRepertoireBonus,CompleteBardSongCast — distinct completed manual songs in the preceding 40 seconds are consumed. -->
               <p class="text-muted-foreground">
-                Repertoire bonus: 0–3 distinct hand-cast songs = 0%; 4 = 15%; 5
-                = 25%; 6 or more = 30%. Only songs completed less than 40
-                seconds ago count; automatic renewal does not count. Casting
-                Final Cadence clears the repertoire. Damage and healing are
-                rounded once after Charisma scaling and again after this bonus.
+                Repertoire bonus: 0–3 distinct manually cast songs grant 0%, 4
+                grant 15%, 5 grant 25%, and 6 or more grant 30%. Only songs
+                completed less than 40 seconds ago count. Automatic renewal does
+                not count. Casting Final Cadence clears the repertoire. Damage
+                and healing are rounded once after Charisma scaling and again
+                after this bonus.
               </p>
             {/if}
             <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply and BardFinalCadenceSkill.cs:HealNearbyAllies — a Bard mercenary uses its own Charisma and critical chance. -->
@@ -2475,9 +2479,9 @@
                 >Damage uses the same {usedByBardMercenary
                   ? "Charisma multiplier"
                   : "Charisma and repertoire multipliers"} before the usual magic
-                damage reductions. Only living, visible, attackable monsters in the
-                same zone and range with a nonempty aggro list and speed above −50
-                are hit.</span
+                damage reductions. Hits living, visible, attackable monsters within
+                range in the same zone. They must have a nonempty aggro list and speed
+                above −50.</span
               >
               <span class="block">Final Cadence does not heal familiars.</span>
               {#if usedByBardMercenary}
@@ -2988,8 +2992,8 @@
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
                   <p class="text-muted-foreground">
-                    Applies to combat-pet skill 0 only; familiars and other
-                    combat-pet skills keep their flat cooldown.
+                    Applies only to the combat pet's first skill. Familiars and
+                    other combat-pet skills keep their flat cooldown.
                   </p>
                 {:else if ctx.model === "monster_spell"}
                   <p class="font-mono">
@@ -3396,7 +3400,7 @@
                   this skill (chance shown above).</span
                 >
                 <span class="block"
-                  >The monster's Accuracy lowers your chance to resist; matching
+                  >The monster's Accuracy lowers your chance to resist. Matching
                   resistance raises it.</span
                 >
                 <span class="block">If you resist, your buffs stay.</span>
@@ -3494,9 +3498,9 @@
             <h3 class="font-semibold">Fear</h3>
             <p class="text-muted-foreground">
               <span class="block"
-                >Fear requires a non-fear-immune target that is not a boss
-                monster, a successful fear roll and a failed fear resist roll,
-                and no stun from the same hit.</span
+                >Boss monsters and fear-immune targets cannot be feared. Fear
+                requires a successful fear roll and a failed resistance roll.
+                Stun from the same hit prevents Fear.</span
               >
               <span class="block"
                 >Fear lasts a random duration between half and all of the
@@ -3727,7 +3731,7 @@
                 >The bonuses come from the attacker's unexpired or permanent
                 buffs. Damage is measured after reductions, critical hits, wards
                 and Mana Shield, without capping it to the target's remaining
-                health. These bonuses increase healing, not damage.</span
+                health. These bonuses increase healing. Damage is unchanged.</span
               >
             </p>
           </div>

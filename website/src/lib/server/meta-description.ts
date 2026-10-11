@@ -1437,7 +1437,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
           : skill.skill_type === "summon" &&
               !skill.is_familiar &&
               skill.player_classes.includes("necromancer")
-            ? "Undead combat-pet summon; replaces a different active pet"
+            ? "Undead combat-pet summon that replaces a different active pet"
             : humanizeSkillType(skill.skill_type);
   const ownership = skillOwnershipPhrase(skill);
 

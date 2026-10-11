@@ -352,9 +352,8 @@
           </div>
           <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Every taskgiver offers quests from the same pool, so NPC choice does
-            not change availability at your character level and total Veteran
-            Points.
+            Every taskgiver offers the same quest pool. Available quests depend
+            on your character level and total Veteran Points.
           </p>
         </div>
       </div>
@@ -401,7 +400,8 @@
             </li>
             <li>
               Its veteran requirement is at or below your total Veteran Points
-              (spent plus unspent). A requirement of 0 means no veteran gate.
+              (spent plus unspent). A requirement of 0 requires no Veteran
+              Points.
             </li>
             <li>Your character has not completed it in the last 24 hours.</li>
           </ul>

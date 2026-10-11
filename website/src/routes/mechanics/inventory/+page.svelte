@@ -811,7 +811,7 @@
           damaged.</span
         >
         <span class="block"
-          >Repair kits require the same 1-second cast as other scrolls; see
+          >Repair kits require the same 1-second cast as other scrolls. See
           <a
             href="#scroll-casting"
             class="text-blue-600 hover:underline dark:text-blue-400"
@@ -924,7 +924,7 @@
         Moving, changing or losing your target, starting a skill, changing or
         removing the casting item, stun, fear, death, trading, or cancelling the
         action interrupts the cast. A skill scroll needs a valid target at both
-        the start and completion; bind scrolls cannot be used in dungeons.
+        the start and completion. Bind scrolls cannot be used in dungeons.
       </p>
       <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 and server-scripts/CraftingStation.cs:8-10,50-58 — recipe items teach a potion recipe once; station crafting uses its configured material combinations. -->
       <p>

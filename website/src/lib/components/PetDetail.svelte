@@ -217,8 +217,9 @@
                 Maximum Health
               </dt>
               <dd>
-                Your learned pet passives with a maximum-health percentage bonus
-                increase this companion's maximum Health, not your own.
+                Your learned pet passives increase this companion's maximum
+                Health by their listed percentage. Your own maximum Health is
+                unchanged.
               </dd>
             </div>
             {#if pet.fear_immune}

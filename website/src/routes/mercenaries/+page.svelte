@@ -459,7 +459,7 @@
                 <p>
                   Every resummon or reload restores the saved hire roll plus
                   your total veteran points to both damage values. A zero hire
-                  roll stays zero before the veteran bonus; it is not rerolled.
+                  roll stays zero before the veteran bonus. It is not rerolled.
                 </p>
               </div>
             </Alert>

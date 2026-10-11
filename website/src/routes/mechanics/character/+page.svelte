@@ -88,7 +88,8 @@
                 <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus — poisonDiseaseScalesWithIntelligence selects Intelligence; unflagged poison and disease use Dexterity with a 1.5 multiplier. -->
                 <span class="block"
                   >Dexterity-scaled poison and disease damage-over-time effects
-                  gain round(Dexterity × 1.5).</span
+                  gain 1.5 damage per Dexterity point, rounded to a whole
+                  number.</span
                 >
               </td>
             </tr>
@@ -109,9 +110,10 @@
                 >
                 <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus; BuffSkill.cs:24-28 — poisonDiseaseScalesWithIntelligence selects Intelligence; damageOverTimeBonusPerIntelligencePoint defaults to 1.25. -->
                 <span class="block"
-                  >Intelligence-scaled damage-over-time effects, including
-                  flagged poison and disease debuffs, gain round(Intelligence ×
-                  the skill's Intelligence multiplier), normally 1.25.</span
+                  >Intelligence-scaled damage-over-time effects include some
+                  poison and disease debuffs. They gain damage equal to
+                  Intelligence times the skill's multiplier, rounded to a whole
+                  number. The multiplier is usually 1.25.</span
                 >
               </td>
             </tr>
@@ -130,9 +132,9 @@
                   capacity.</span
                 >
                 <span class="block"
-                  >Defense and Magic Resist buffs each gain round(selected
-                  attribute × 0.15). Ranger targeted buffs triple the selected
-                  attribute before scaling.</span
+                  >Defense and Magic Resist buffs each gain 0.15 times the
+                  selected attribute, rounded to a whole number. Ranger targeted
+                  buffs triple the selected attribute before scaling.</span
                 >
                 <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
                 <span class="block"
@@ -400,15 +402,16 @@
         </p>
         <!-- Source: server-scripts/Player.cs:GetTotalAttributePoints,ChangeAttributeSpec — each allocation has level.current - 1 + GetTotalVeteranPoints points; switching applies attribute differences and recalculates unspent points. -->
         <p>
-          Each specialization stores its own attribute allocation, with level −
-          1 + total Veteran Points to spend in each. At level 50 with 200
-          Veteran Points, each has 249 points. Switching swaps the allocation
-          and restores that specialization's unspent points.
+          Each specialization stores its own attribute allocation. Each has
+          points equal to your level minus 1, plus your total Veteran Points. At
+          level 50 with 200 Veteran Points, each has 249 points. Switching
+          applies that specialization's allocation and restores its unspent
+          points.
         </p>
         <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:15118-15121 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
-          If a saved character's attribute allocation cannot be inferred, its
-          assigned attributes reset for free on the first specialization switch.
+          If the game cannot determine a saved character's attribute allocation,
+          the first specialization switch resets assigned attributes for free.
         </p>
         <!-- Source: server-scripts/Utils.cs:506-525 — class skill reset price increases at levels 10, 20, 30, and 40. -->
         <p>

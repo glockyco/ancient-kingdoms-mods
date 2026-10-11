@@ -61,7 +61,7 @@
 
 <Seo
   title="Classes - Ancient Kingdoms"
-  description="The eight playable classes — Bard, Cleric, Druid, Necromancer, Ranger, Rogue, Warrior, and Wizard. Roles, resources, and full skill trees."
+  description="The eight playable classes: Bard, Cleric, Druid, Necromancer, Ranger, Rogue, Warrior, and Wizard. Roles, resources, and full skill trees."
   path="/classes"
 />
 

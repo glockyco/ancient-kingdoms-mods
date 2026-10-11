@@ -99,9 +99,9 @@
                 >Harmful</th
               >
               <td class="py-3">
-                Eligible enemies in range. Monsters must have a non-empty aggro
-                list; they need not be fighting the Bard's party. This is
-                checked on each cast and every 0.5-second aura update.
+                Enemy monsters in range with a non-empty aggro list. They need
+                not be fighting the Bard's party. Checked on each cast and every
+                0.5-second aura update.
               </td>
             </tr>
           </tbody>
@@ -185,17 +185,16 @@
       </div>
 
       <p>
-        A song counts once, when you finish casting it yourself; automatic
+        A song counts once, when you finish casting it yourself. Automatic
         repeats do not count. Casting Final Cadence clears the count, even if it
         hits no enemies. Bard mercenaries receive no repertoire bonus.
       </p>
       <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — enemies must be Monsters with nonempty aggroList and speed above -50, alive, non-hidden, same-zone, visible and attackable; Pet casts require IsEngagedWithParty. -->
       <p>
-        Damage reaches only living, visible, attackable monsters in range and in
-        the same zone with a non-empty aggro list. It skips unengaged monsters,
-        monsters in Sleep (speed −50 or below), and all non-monsters. A player's
-        cast does not require engagement with their own party; a mercenary's
-        cast does.
+        Damage hits living, visible, attackable monsters within range in the
+        same zone. They must have a non-empty aggro list and cannot be in Sleep
+        (speed −50 or below). A player's cast does not require engagement with
+        their own party. A mercenary's cast does.
       </p>
     </Card.Content>
   </Card.Root>
@@ -267,8 +266,8 @@
       <!-- Source: server-scripts/Monster.cs:EndBardCharm; PlayerSkills.cs:StopBardCharm; ZoneTrigger.cs:94-100; Player.cs:11143-11149 — hostile release requires a living Bard within followDistance, not zone equality; zone changes and portals call StopBardCharm for peaceful release. -->
       <p>
         Expiry, stopping the song, or replacing a charm can make the released
-        monster attack its living former Bard within its follow distance;
-        hostile release does not check matching zones.<br />
+        monster attack its living former Bard within its follow distance.
+        Hostile release does not check matching zones.<br />
         Changing zones or using a portal releases the creature peacefully and frees
         the charm's song slot.
       </p>

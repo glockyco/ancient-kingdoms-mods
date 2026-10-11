@@ -204,7 +204,7 @@
             A scroll takes 1 second to cast its skill without teaching it.
             Scaling scrolls cast at rank Scroll Mastery ÷ 5, fixed scrolls at
             rank 1. Successful completion consumes one charge unless the scroll
-            has infinite charges; mastery gains also occur on completion.
+            has infinite charges. Mastery gains also occur on completion.
           </p>
           <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, target change or disappearance, another active skill, or an empty or changed slot. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">

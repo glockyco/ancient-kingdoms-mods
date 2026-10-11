@@ -170,7 +170,7 @@
 
 <Seo
   title="Summons - Ancient Kingdoms"
-  description="Companions, Necromancer undead summons, familiars, and whistle pets in Ancient Kingdoms — their skills, veteran bonuses, and summoning rules."
+  description="Companions, Necromancer undead summons, familiars, and whistle pets in Ancient Kingdoms. Skills, veteran bonuses, and summoning rules."
   path="/summons"
 />
 
@@ -253,8 +253,8 @@
           </li>
           <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — a non-mercenary, non-familiar pet receives healthMaxPercentBonus from its owner's learned isPetSkill passives rather than applying it to the owner. -->
           <li>
-            Your pet passives with a maximum-health percentage bonus raise the
-            companion's maximum Health, not your own.
+            Your pet passives raise the companion's maximum Health by their
+            listed percentage. Your own maximum Health is unchanged.
           </li>
         </ul>
       </div>
@@ -373,10 +373,9 @@
     <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces NetworkactivePet with a different non-familiar summon; a matching pet uses the summon key as an attack command; other classes receive You already have an active pet. -->
     <p>
       Casting a different undead summon replaces your active pet. Pressing the
-      summon key for the undead pet already active commands it to attack your
-      target instead. Other classes cannot replace an active companion or
-      familiar by summoning another: the game reports "You already have an
-      active pet".
+      active undead pet's summon key commands it to attack your target. Other
+      classes must dismiss their active companion or familiar before summoning
+      another. Otherwise, the game reports "You already have an active pet".
     </p>
   </section>
 </div>

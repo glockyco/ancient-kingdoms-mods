@@ -212,7 +212,7 @@
         applies a damaging targeted debuff. The skill must require a weapon or
         shield, and must not itself be a default auto-attack. Your selected
         default attack must be valid, learned (or learned by default), and
-        usable with your weapon. An existing follow-up is preserved; the default
+        usable with your weapon. An existing follow-up is preserved. The default
         attack fills the pending slot only if it is empty. Invisibility buffs do
         not trigger this rule.
       </p>
@@ -614,8 +614,8 @@ damage taken = damage − damage prevented</pre>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block">Final Cadence does not receive this bonus.</span>
           <span class="block"
-            >Its healing is round(round(base heal × songPower) × repertoire
-            multiplier), with songPower from <a
+            >Its healing is rounded after song power, then multiplied by the
+            repertoire bonus and rounded again. Song power comes from <a
               href="#buffs"
               class="underline hover:text-foreground">Bard Song Scaling</a
             >.</span
@@ -624,22 +624,22 @@ damage taken = damage − damage prevented</pre>
         <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70,FindEnemies; PlayerSkills.cs:CompleteBardSongCast,ConsumeFinalCadenceRepertoireBonus — Final Cadence rounds Charisma-scaled damage/healing with a consumed repertoire multiplier; only engaged Monsters with speed above -50 qualify as enemies. -->
         <p class="text-sm text-muted-foreground mt-2">
           Manually completing 4 distinct songs less than 40 seconds before Final
-          Cadence grants +15% damage and healing; 5 grant +25%, and 6 or more
-          grant +30%. Fewer grant no bonus. Automatic repeats do not count.
+          Cadence grants +15% damage and healing, while 5 grant +25%, and 6 or
+          more grant +30%. Fewer grant no bonus. Automatic repeats do not count.
           Final Cadence clears the repertoire, even if it hits no enemies.
-          Mercenaries receive no repertoire bonus. Its damage targets only
-          living, visible, attackable monsters in range and in the same zone
-          with a non-empty aggro list, excluding Sleep (speed −50 or below).
-          Mercenary casts also require the monster to be engaged with their
-          owner's party.
+          Mercenaries receive no repertoire bonus. Its damage hits living,
+          visible, attackable monsters within range in the same zone. They must
+          have a non-empty aggro list and cannot be in Sleep (speed −50 or
+          below). Mercenary casts also require engagement with their owner's
+          party.
         </p>
         <!-- Source: server-scripts/Combat.cs:1315-1333 — lifetap healing is FloorToInt(lifetapPercent × remaining damage × (1 + summed active/permanent lifetapHealingPercentBonus)); the damage is not capped by remaining victim health. -->
         <p class="text-sm text-muted-foreground mt-2">
           Lifetap heals floor(lifetap percentage × damage remaining after Ward
           and Mana Shield × (1 + healing bonus)). The healing bonus is the sum
           of the lifetap healing bonuses of the attacker's active or permanent
-          buffs, such as Lich Shroud. It increases healing, not damage. The
-          damage used is not capped by the victim's remaining health.
+          buffs, such as Lich Shroud. Damage is unchanged. The damage used is
+          not capped by the victim's remaining health.
         </p>
       </div>
 
@@ -762,7 +762,7 @@ percentageValue = baseValue × songPower</pre>
         <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:434-445; AreaBuffSkill.cs:33-45 — scalesWithIntelligence selects Intelligence instead of Wisdom; Ranger targeted buffs triple the selected attribute. -->
         <p class="text-sm text-muted-foreground mb-2">
           A is Wisdom, or Intelligence for buffs that scale with Intelligence.
-          Ranger targeted buffs use three times that attribute; area buffs do
+          Ranger targeted buffs use three times that attribute. Area buffs do
           not.
         </p>
         <p class="text-sm text-muted-foreground mb-2">
@@ -912,8 +912,8 @@ percentageValue = baseValue × songPower</pre>
           >Root stops movement but does not end on damage.</span
         >
         <span class="block"
-          >Stun blocks ordinary skill use, but not dismissing an active Reaper
-          Form or Fearless Stance.</span
+          >Stun blocks ordinary skill use. You can still dismiss an active
+          Reaper Form or Fearless Stance.</span
         >
         <span class="block"
           >Direct damage or a damage-over-time tick ends Sleep, except Reaper
@@ -1019,7 +1019,7 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4">Poison and disease debuffs</td>
                 <td class="py-1 text-muted-foreground"
-                  >INT for Intelligence-scaled poison and disease; otherwise DEX</td
+                  >INT for Intelligence-scaled poison and disease, otherwise DEX</td
                 >
               </tr>
               <tr>
@@ -1111,19 +1111,20 @@ percentageValue = baseValue × songPower</pre>
         </div>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block"
-            >Unflagged poison and disease add round(DEX × 1.5) per tick and both
-            use Poison Resist.</span
+            >Dexterity-scaled poison and disease add 1.5 times Dexterity per
+            tick, rounded to a whole number. Both use Poison Resist.</span
           >
           <span class="block"
-            >Intelligence-scaled poison uses Poison Resist; Intelligence-scaled
+            >Intelligence-scaled poison uses Poison Resist. Intelligence-scaled
             disease uses Disease Resist. Their reduction is ceil(damage ×
             clamp(resist × 0.0005, 0, 0.9)).</span
           >
           <!-- Source: server-scripts/BuffSkill.cs:14-31,GetDamageOverTimeAttributeBonus — damageOverTimeBonusPerIntelligencePoint defaults to 1.25; Charisma-scaled effects skip the additional attribute bonus. -->
           <span class="block"
-            >Intelligence-scaled DoTs use a per-skill Intelligence coefficient:
-            1.25 for most skills, or 1.15 for Ensnare. Each skill page shows its
-            formula. Charisma-scaled effects skip this extra attribute bonus.</span
+            >Intelligence-scaled damage-over-time effects use a skill-specific
+            multiplier: 1.25 for most skills, or 1.15 for Ensnare. Each skill
+            page shows its formula. Charisma-scaled effects receive no extra
+            attribute bonus.</span
           >
           <span class="block"
             >Debuff layers, execute bonuses, critical hits, and wards then
@@ -1141,12 +1142,13 @@ percentageValue = baseValue × songPower</pre>
         </p>
         <!-- Source: server-scripts/Skills.cs:GetDamageOverTimeExecuteBonus,1873-1880,1752-1755 — externally Player-sourced debuff recovery ticks below 30% health sum learned PassiveSkill.damageOverTimeExecuteBonus after counters and before critical scaling; percentage-health damage is added afterwards. -->
         <p class="text-sm text-muted-foreground mt-2">
-          Below 30% of the victim's maximum health, debuff recovery ticks from
-          another player gain the sum of that caster's learned execute passive
-          bonuses, such as Deathly Focus. The player source must still exist.
-          Flat damage becomes round(damage × (1 + bonus)) after resistance and
-          cleanse counters, before critical scaling. Percentage-health damage is
-          added afterwards; non-tick calculations receive no execute bonus.
+          When a target falls below 30% of maximum health, another player's
+          debuff ticks gain that caster's learned execute bonuses, such as
+          Deathly Focus. The caster must remain in the game. These bonuses add
+          together. After resistance and cleanse counters, flat damage is
+          multiplied by 1 plus the bonus and rounded, then critical scaling
+          applies. Percentage-health damage is added afterwards. Damage outside
+          debuff ticks receives no execute bonus.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block"
@@ -1296,8 +1298,8 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Companion or familiar</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Reduces the first non-spell skill's cooldown for combat pets;
-                  no effect on familiars or other pet skills</td
+                  >Reduces the first non-spell skill's cooldown for combat pets.
+                  No effect on familiars or other pet skills</td
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
@@ -1528,7 +1530,7 @@ percentageValue = baseValue × songPower</pre>
           >
           <span class="block"
             >A direct hit or ordinary damage-over-time tick immediately ends
-            Sleep; Reaper Form's health drain does not.</span
+            Sleep. Reaper Form's health drain does not.</span
           >
           <span class="block"
             >Bosses and elite monsters automatically resist debuffs that reduce
