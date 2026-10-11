@@ -257,7 +257,7 @@ public class MapScreenshotter : MelonMod
             mod.LoggerInstance.Msg("All zones and environments activated");
 
             // Hide entities AFTER all zones are activated (so we catch monsters in all zones)
-            HideEntities(mod);
+            var hiddenEntities = HideEntities(mod);
 
             float boundsMinX = -880f;
             float boundsMaxX = 900f;
@@ -328,6 +328,8 @@ public class MapScreenshotter : MelonMod
                     totalScreenshots++;
                 }
             }
+
+            ShowEntities(mod, hiddenEntities);
 
             mod.LoggerInstance.Msg("Restoring original zone states...");
             // Deactivate zones that were originally inactive
@@ -549,92 +551,46 @@ public class MapScreenshotter : MelonMod
             return bounds;
         }
 
-        private void HideEntities(MapScreenshotter mod)
+        /// <summary>
+        /// Deactivates every active monster, NPC, and gather item and returns them, so that
+        /// <see cref="ShowEntities"/> can reactivate exactly these. FindObjectsOfType skips
+        /// inactive objects, so they cannot be found again by searching.
+        /// </summary>
+        private List<GameObject> HideEntities(MapScreenshotter mod)
         {
-            // Hide monsters
-            var monsterType = Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.Monster>();
-            var monsters = GameObject.FindObjectsOfType(monsterType);
-            var monsterCount = 0;
-            foreach (var obj in monsters)
-            {
-                var monster = obj.TryCast<Il2Cpp.Monster>();
-                if (monster?.gameObject != null)
-                {
-                    monster.gameObject.SetActive(false);
-                    monsterCount++;
-                }
-            }
-
-            // Hide NPCs
-            var npcType = Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.Npc>();
-            var npcs = GameObject.FindObjectsOfType(npcType);
-            var npcCount = 0;
-            foreach (var obj in npcs)
-            {
-                var npc = obj.TryCast<Il2Cpp.Npc>();
-                if (npc?.gameObject != null)
-                {
-                    npc.gameObject.SetActive(false);
-                    npcCount++;
-                }
-            }
-
-            // Hide gather items
-            var gatherType = Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.GatherItem>();
-            var gatherItems = GameObject.FindObjectsOfType(gatherType);
-            var gatherCount = 0;
-            foreach (var obj in gatherItems)
-            {
-                var gatherItem = obj.TryCast<Il2Cpp.GatherItem>();
-                if (gatherItem?.gameObject != null)
-                {
-                    gatherItem.gameObject.SetActive(false);
-                    gatherCount++;
-                }
-            }
-
+            var hidden = new List<GameObject>();
+            var monsterCount = HideAll<Il2Cpp.Monster>(hidden);
+            var npcCount = HideAll<Il2Cpp.Npc>(hidden);
+            var gatherCount = HideAll<Il2Cpp.GatherItem>(hidden);
             mod.LoggerInstance.Msg($"Hidden: {monsterCount} monsters, {npcCount} NPCs, {gatherCount} gather items");
+            return hidden;
         }
 
-        private void ShowEntities(MapScreenshotter mod)
+        private static int HideAll<T>(List<GameObject> hidden) where T : Component
         {
-            // Show monsters
-            var monsterType = Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.Monster>();
-            var monsters = GameObject.FindObjectsOfType(monsterType);
-            foreach (var obj in monsters)
+            var count = 0;
+            foreach (var obj in GameObject.FindObjectsOfType(Il2CppInterop.Runtime.Il2CppType.Of<T>()))
             {
-                var monster = obj.TryCast<Il2Cpp.Monster>();
-                if (monster?.gameObject != null)
-                {
-                    monster.gameObject.SetActive(true);
-                }
+                var gameObject = obj.TryCast<T>()?.gameObject;
+                if (gameObject == null || !gameObject.activeSelf) continue;
+                gameObject.SetActive(false);
+                hidden.Add(gameObject);
+                count++;
             }
+            return count;
+        }
 
-            // Show NPCs
-            var npcType = Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.Npc>();
-            var npcs = GameObject.FindObjectsOfType(npcType);
-            foreach (var obj in npcs)
+        private void ShowEntities(MapScreenshotter mod, List<GameObject> hidden)
+        {
+            var restored = 0;
+            foreach (var gameObject in hidden)
             {
-                var npc = obj.TryCast<Il2Cpp.Npc>();
-                if (npc?.gameObject != null)
-                {
-                    npc.gameObject.SetActive(true);
-                }
+                // An entity destroyed during the capture, such as a despawned monster, stays gone.
+                if (gameObject == null) continue;
+                gameObject.SetActive(true);
+                restored++;
             }
-
-            // Show gather items
-            var gatherType = Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.GatherItem>();
-            var gatherItems = GameObject.FindObjectsOfType(gatherType);
-            foreach (var obj in gatherItems)
-            {
-                var gatherItem = obj.TryCast<Il2Cpp.GatherItem>();
-                if (gatherItem?.gameObject != null)
-                {
-                    gatherItem.gameObject.SetActive(true);
-                }
-            }
-
-            mod.LoggerInstance.Msg("All entities restored");
+            mod.LoggerInstance.Msg($"Restored {restored} of {hidden.Count} hidden entities");
         }
     }
 
