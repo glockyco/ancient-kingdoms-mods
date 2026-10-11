@@ -85,7 +85,7 @@
                   >Poison damage from Rogue attacks gains a rounded +2.5 per
                   point.</span
                 >
-                <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus — poisonDiseaseScalesWithIntelligence selects Intelligence; unflagged poison and disease use Dexterity with a 1.5 multiplier. -->
+                <!-- Source: server-scripts/BuffSkill.cs:473-515 — non-melee poison and disease without Intelligence scaling use Dexterity times 1.5. -->
                 <span class="block"
                   >Dexterity-scaled poison and disease damage-over-time effects
                   gain 1.5 damage per Dexterity point, rounded to a whole
@@ -108,12 +108,13 @@
                   >Physical and magic damage reductions from debuffs gain a
                   rounded +0.5 per point.</span
                 >
-                <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus; BuffSkill.cs:24-28 — poisonDiseaseScalesWithIntelligence selects Intelligence; damageOverTimeBonusPerIntelligencePoint defaults to 1.25. -->
+                <!-- Source: server-scripts/BuffSkill.cs:473-515 — fire, cold, magic and Intelligence-scaled poison/disease use the skill's Intelligence coefficient, except Charisma-scaled effects. -->
                 <span class="block"
-                  >Intelligence-scaled damage-over-time effects include some
-                  poison and disease debuffs. They gain damage equal to
-                  Intelligence times the skill's multiplier, rounded to a whole
-                  number. The multiplier is usually 1.25.</span
+                  >Fire, cold, magic, and Intelligence-scaled poison and disease
+                  damage-over-time effects gain Intelligence times the skill's
+                  coefficient per tick, rounded to a whole number. The
+                  coefficient is usually 1.25 and is 1.15 for Ensnare.
+                  Charisma-scaled effects receive no attribute damage bonus.</span
                 >
               </td>
             </tr>
@@ -140,6 +141,15 @@
                 <span class="block"
                   >Bard songs and Final Cadence use Charisma instead of Wisdom.</span
                 >
+                <!-- Source: server-scripts/TargetHealSkill.cs:137-143; NecromancerDeathBloomSkill.cs:19-25,47-50 — scroll healing skips Wisdom and Death Bloom uses Intelligence. -->
+                <span class="block">
+                  <a
+                    href="/skills/death_bloom"
+                    class="underline hover:text-foreground">Death Bloom</a
+                  >
+                  uses Intelligence. Healing scrolls, including Major Restoration,
+                  receive no Wisdom bonus.
+                </span>
                 <span class="block"
                   ><MechanicsLink section="combat#buffs"
                     >See the buff scaling rates</MechanicsLink
@@ -180,11 +190,6 @@
             >See the class growth table</MechanicsLink
           > for the schedule.</span
         >
-      </p>
-      <!-- Source: server-scripts/Experience.cs:232-260 — Necromancer gains Intelligence every 2 levels, Constitution every 3, Wisdom every 4, Dexterity every 5, and Strength and Charisma every 6. -->
-      <p>
-        Necromancers gain Intelligence every 2 levels, Constitution every 3,
-        Wisdom every 4, Dexterity every 5, and Strength and Charisma every 6.
       </p>
       <!-- Source: server-scripts/PlayerEquipment.cs:190-221,259-285 — equipment and augments apply attribute bonuses. -->
       <!-- Source: server-scripts/PlayerSkills.cs:1782-1804 — passive skills apply attribute bonuses. -->

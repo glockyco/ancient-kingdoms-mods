@@ -146,11 +146,11 @@
   <Card.Root id="cadence" class="bg-muted/30">
     <Card.Header><Card.Title>Final Cadence</Card.Title></Card.Header>
     <Card.Content class="space-y-5 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HasMaximumSongsActive,67-70; PlayerSkills.cs:CompleteBardSongCast,ConsumeFinalCadenceRepertoireBonus — maximum active songs are required; manually completed songs younger than 40 seconds grant 15% at four, 25% at five, 30% at six or more, and consumption clears the repertoire. -->
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:63-70; exported-data/skills.json:152375 — maximum songs are required and the tooltip names the Melody bonus. -->
       <p>
         Final Cadence requires your maximum number of active songs. Its damage
-        and healing use Charisma song power, then the repertoire bonus below.
-        Each value is rounded after Charisma scaling and again after the bonus.
+        and healing use Charisma song power, then the Melody bonus below. Each
+        value is rounded after Charisma scaling and again after the bonus.
       </p>
 
       <div class="overflow-x-auto">
@@ -187,7 +187,7 @@
       <p>
         A song counts once, when you finish casting it yourself. Automatic
         repeats do not count. Casting Final Cadence clears the count, even if it
-        hits no enemies. Bard mercenaries receive no repertoire bonus.
+        hits no enemies. Bard mercenaries receive no Melody bonus.
       </p>
       <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — enemies must be Monsters with nonempty aggroList and speed above -50, alive, non-hidden, same-zone, visible and attackable; Pet casts require IsEngagedWithParty. -->
       <p>

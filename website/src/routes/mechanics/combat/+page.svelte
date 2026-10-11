@@ -46,9 +46,9 @@
       "STR × 1.0 + main-hand damage + ⌊off-hand damage × 0.5⌋ + other equipment damage + DEX × 2.5",
     magic_spell:
       "INT × 1.5 + magic damage from casting weapon and other equipment",
-    // Source: server-scripts/BardFinalCadenceSkill.cs:67-70 and Charisma.cs:27-36.
+    // Source: server-scripts/BardFinalCadenceSkill.cs:67-70; exported-data/skills.json:152375 — Charisma-scaled damage receives the Melody bonus.
     bard_final_cadence:
-      "round(round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2))) × repertoire multiplier)",
+      "round(round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2))) × (1 + Melody bonus))",
     bard_final_cadence_merc:
       "round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2)))",
     magic_weapon:
@@ -603,19 +603,25 @@ damage taken = damage − damage prevented</pre>
               class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS × 0.004, 5.0))</pre>
           </div>
           <div>
-            <p class="text-sm text-muted-foreground mb-1">
-              Ranger (all heals):
-            </p>
+            <p class="text-sm text-muted-foreground mb-1">Ranger:</p>
             <pre
               class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS×3 × 0.004, 5.0))</pre>
           </div>
         </div>
-        <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply — Final Cadence heals by ScaleBardValue of healsHealth and the caster's Charisma, with no Wisdom bonus. -->
+        <!-- Source: server-scripts/TargetHealSkill.cs:137-143; NecromancerDeathBloomSkill.cs:19-25,47-50 — scrolls skip Wisdom and Death Bloom uses Intelligence. -->
+        <p class="text-sm text-muted-foreground mt-2">
+          <a href="/skills/death_bloom" class="underline hover:text-foreground"
+            >Death Bloom</a
+          >
+          uses Intelligence. Healing scrolls, including Major Restoration, receive
+          no Wisdom bonus.
+        </p>
+        <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70; exported-data/skills.json:152375 — Final Cadence uses Charisma song power and the Melody bonus. -->
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block">Final Cadence does not receive this bonus.</span>
           <span class="block"
-            >Its healing is rounded after song power, then multiplied by the
-            repertoire bonus and rounded again. Song power comes from <a
+            >Its healing is rounded after song power, then multiplied by (1 +
+            Melody bonus) and rounded again. Song power comes from <a
               href="#buffs"
               class="underline hover:text-foreground">Bard Song Scaling</a
             >.</span
@@ -626,12 +632,11 @@ damage taken = damage − damage prevented</pre>
           Manually completing 4 distinct songs less than 40 seconds before Final
           Cadence grants +15% damage and healing, while 5 grant +25%, and 6 or
           more grant +30%. Fewer grant no bonus. Automatic repeats do not count.
-          Final Cadence clears the repertoire, even if it hits no enemies.
-          Mercenaries receive no repertoire bonus. Its damage hits living,
-          visible, attackable monsters within range in the same zone. They must
-          have a non-empty aggro list and cannot be in Sleep (speed −50 or
-          below). Mercenary casts also require engagement with their owner's
-          party.
+          Final Cadence clears the song count, even if it hits no enemies.
+          Mercenaries receive no Melody bonus. Its damage hits living, visible,
+          attackable monsters within range in the same zone. They must have a
+          non-empty aggro list and cannot be in Sleep (speed −50 or below).
+          Mercenary casts also require engagement with their owner's party.
         </p>
         <!-- Source: server-scripts/Combat.cs:1315-1333 — lifetap healing is FloorToInt(lifetapPercent × remaining damage × (1 + summed active/permanent lifetapHealingPercentBonus)); the damage is not capped by remaining victim health. -->
         <p class="text-sm text-muted-foreground mt-2">

@@ -918,6 +918,8 @@
         occur only when the cast completes successfully. Interrupted or failed
         casts use no charge and start no item cooldown. Infinite-charge scrolls
         do not consume a charge.
+        <!-- Source: server-scripts/PlayerInventory.cs:108-113 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
+        Starting a scroll cast cancels your current skill cast and clears queued skills.
       </p>
       <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3138-3196 — scroll casts cancel on an active skill, movement, target change or disappearance, changed or empty slot, death, stun, fear, cancel action or trade. -->
       <p>

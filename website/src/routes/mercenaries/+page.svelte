@@ -476,9 +476,11 @@
             These orders also apply to your combat pet.
             <!-- Source: server-scripts/Pet.cs:IsValidCombatReacquireTarget,OnAggro — mercenaries reject Monster.isDummy when acquiring targets automatically. -->
             Mercenaries skip training dummies when choosing targets automatically.
-            <!-- Source: server-scripts/Pet.cs:2969-3018 — Rogue and Bard mercenaries with seekTargetBack try to reposition behind living, non-fleeing, non-dummy Monster targets after a finished skill. -->
-            <!-- The export sets seek_target_back on every mercenary. -->
+            <!-- Source: server-scripts/Pet.cs:2969-3031 — back-seeking enabled mercenaries reposition by class and frontal attacks, excluding Warriors. -->
             Rogue and Bard mercenaries try to move behind their targets after attacks.
+            Ranger and Wizard mercenaries also do this against bosses and elites.
+            Every non-Warrior mercenary tries to move behind monsters with frontal-attack
+            skills.
           </p>
           <!-- Source: server-scripts/Pet.cs:1491-1494,2204-2215,6031-6041; PetSkills.cs:253-283 — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2348-2409,OnMercenaryStanceKeyPressed; Player.cs:9208-9234; Pet.cs:5399-5439,5969-6017 — group toggles, Warrior-first attack order, and movement commands. -->

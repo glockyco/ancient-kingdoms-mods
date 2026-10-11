@@ -190,10 +190,13 @@ export const ROLE_DESCRIPTIONS: Partial<
       'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
     ],
   },
+  // Source: server-scripts/Player.cs:5066-5081,11049-11067 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
-    description: "This NPC resets your attribute points.",
+    description:
+      "This NPC resets your current specialization's assigned attribute points.",
     details: [
       "The reset costs 100 gold at levels 1–9, 250 at 10–19, 500 at 20–29, 1,000 at 30–39, or 3,000 at 40+.",
+      "A curse or debuff prevents the reset.",
     ],
   },
   is_soul_binder: {
