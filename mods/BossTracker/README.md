@@ -1,14 +1,14 @@
 # BossTracker
 
-Lists loaded bosses, elites, and fabled monsters with alive status, direction, distance, and respawn countdowns.
+Lists the loaded bosses, elites, and fabled monsters with whether they are alive, their direction and distance, and when they respawn.
 
-[Download BossTracker.dll](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll).
+[Download BossTracker.dll](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll)
 
 ## Use
 
-With MelonLoader installed, put the DLL in the game's `Mods` folder alongside FieldDefaultValueHookFix.
+Install MelonLoader, then put the DLL in the game's `Mods` folder with FieldDefaultValueHookFix.
 
-The panel appears automatically in the World scene. Hold Right Shift and drag with the left mouse button to move it.
+The panel appears in the world. Hold Right Shift and drag it with the left mouse button to move it.
 
 ## Settings
 
@@ -24,8 +24,8 @@ In `UserData/MelonPreferences.cfg`, category `BossTracker`:
 
 ## Limits
 
-Respawn countdowns are host-only: they read `Monster.respawnTimeEnd`, a server field that is not synchronized to remote clients. Only loaded monsters are scanned.
+Respawn countdowns appear only in a world you host, solo play included. They come from `Monster.respawnTimeEnd`, which the server does not send to other players. Monsters outside the loaded area are not listed.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).

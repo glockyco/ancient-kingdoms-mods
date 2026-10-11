@@ -1,24 +1,22 @@
 # HotReplCommands
 
-Exposes typed HotRepl controls for world entry, exports, screenshots, and scratch-database isolation.
+Adds the HotRepl commands that `build-tool` and agents use to drive the game.
 
 Not published as a download. `build-tool deploy` installs it with the other mods.
 
 ## Use
 
-Use these registered HotRepl commands:
-
 | Command | Use |
 | --- | --- |
-| `compendium.preflight` | Checks export readiness. |
-| `world.summary` | Reads world state. |
-| `world.enter` | Enters the world with a selected character. |
-| `compendium.export` | Exports data and optionally map tiles. |
+| `compendium.preflight` | Checks that an export can start. |
+| `world.summary` | Reports the scene, the network state, the characters, and whether a player is in the world. |
+| `world.enter` | Enters the world with a chosen character. |
+| `compendium.export` | Runs DataExporter, and MapScreenshotter when asked. |
 | `game.quit` | Quits the game. |
-| `game.useScratchDatabase` | Redirects the database before it opens. |
-| `capture.zoneShots` | Captures zone images. |
+| `game.useScratchDatabase` | Points the game at the scratch database before the save opens. |
+| `capture.zoneShots` | Captures the zone images. |
 
-Exports use `DATA_EXPORT_PATH`; map tiles use its `screenshots` folder. Zone shots write `screenshots/zones/<zone_id>.png` and `manifest.json` under that export root. The scratch database is `verification-scratch/game.dat` beside the normal database.
+Exports go to `DATA_EXPORT_PATH`, and map screenshots to its `screenshots` folder. Zone shots go to `screenshots/zones/<zone_id>.png` under the same folder, with a `manifest.json`. The scratch database is `verification-scratch/game.dat`, next to the game's own database.
 
 ## Settings
 
@@ -26,8 +24,10 @@ None.
 
 ## Limits
 
-Scratch redirection refuses an already-open database. World entry and capture mutate game state.
+`game.useScratchDatabase` refuses once the game has opened its database. World entry and capture change the game state.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md). The HotRepl host must be installed with `build-tool deploy-host`. Requires [DataExporter](../DataExporter/README.md) and [MapScreenshotter](../MapScreenshotter/README.md) at runtime.
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+The HotRepl host, installed by `build-tool deploy-host`.
+[DataExporter](../DataExporter/README.md) and [MapScreenshotter](../MapScreenshotter/README.md) in the game.

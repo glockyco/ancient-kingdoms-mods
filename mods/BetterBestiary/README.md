@@ -1,14 +1,14 @@
 # BetterBestiary
 
-Reveals Bestiary details, adds loot tooltips and skill summaries, and opens entries directly from monsters.
+Shows the full Bestiary page for every monster: details, loot tooltips, and a skill summary.
 
-[Download BetterBestiary.dll](https://ancient-kingdoms.compendiums.org/mods/BetterBestiary.dll).
+[Download BetterBestiary.dll](https://ancient-kingdoms.compendiums.org/mods/BetterBestiary.dll)
 
 ## Use
 
-With MelonLoader installed, put the DLL in the game's `Mods` folder alongside FieldDefaultValueHookFix.
+Install MelonLoader, then put the DLL in the game's `Mods` folder with FieldDefaultValueHookFix.
 
-Open a Bestiary detail page and click **Skills** for its skill panel. Hold Alt and left-click a monster in the world to open its entry; clicks over UI are ignored.
+On a Bestiary page, click **Skills** to open the monster's skills. Hold Alt and left-click a monster in the world to open its page. Clicks on the interface are ignored.
 
 ## Settings
 
@@ -16,13 +16,13 @@ In `UserData/MelonPreferences.cfg`, category `BetterBestiary`:
 
 | Key | Default | Effect |
 | --- | --- | --- |
-| `AutoAddMissingBestiaryEntries` | `false` | Adds missing entries from loaded bosses, elites, and fabled monsters. |
+| `AutoAddMissingBestiaryEntries` | `false` | Adds Bestiary entries for loaded bosses, elites, and fabled monsters you have not met. |
 | `ShowSkillsPanelButton` | `true` | Shows the Skills button and panel. |
 
 ## Limits
 
-Uses runtime monster data. Its detail-render patch disables itself after an exception.
+If drawing a Bestiary page throws an exception, the mod stops changing Bestiary pages until the game restarts.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).

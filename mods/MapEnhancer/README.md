@@ -1,12 +1,12 @@
 # MapEnhancer
 
-Enables veteran awareness, clears map fog, and reveals existing monster map marks.
+Gives the character veteran awareness, clears the map's fog, and shows the monster marks the map already has.
 
 Not published as a download. `build-tool deploy` installs it with the other mods.
 
 ## Use
 
-Runs automatically in the World scene. Boss marks become cyan; dead bosses and elites retain grey marks, while other dead monsters are hidden.
+It works without input in the world. Bosses show in cyan. Dead bosses and elites stay on the map in grey, and other dead monsters disappear.
 
 ## Settings
 
@@ -14,8 +14,8 @@ None.
 
 ## Limits
 
-Cleared fog persists with the character through the game's fog save, even after the mod is removed. It only reveals monsters that already have map marks.
+The game saves the cleared fog with the character, so it stays cleared after the mod is removed. Monsters the map never marks stay hidden.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).

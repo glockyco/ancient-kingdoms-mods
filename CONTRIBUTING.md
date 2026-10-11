@@ -1,6 +1,6 @@
 # Working on this repository
 
-How to set up, run, check, and troubleshoot this repository, for its maintainer and the agents working with him. How the parts fit together is in [ARCHITECTURE.md](ARCHITECTURE.md), and step-by-step procedures for recurring work are in [`.agent/skills`](.agent/skills/).
+How to set up, run, check, and troubleshoot this repository, for the maintainer and the agents he works with. How the parts fit together is in [ARCHITECTURE.md](ARCHITECTURE.md), and step-by-step procedures for recurring work are in [`.agent/skills`](.agent/skills/).
 
 ## Requirements
 

@@ -1,38 +1,38 @@
 # Mods
 
-This catalogue lists the player, gameplay, and tooling mods; each mod's page covers its controls, settings, limits, and requirements.
+The mods in this repository, grouped by who uses them.
 
 ## Player installation
 
-Install MelonLoader, then put the downloaded DLLs in the game's `Mods` folder with FieldDefaultValueHookFix. The published downloads do not include the gameplay or development mods below.
+Install MelonLoader, then put the downloaded DLLs in the game's `Mods` folder with FieldDefaultValueHookFix. Only the first group is published as downloads.
 
 ## Published player mods
 
 | Mod | What it does | Download |
 | --- | --- | --- |
 | [FieldDefaultValueHookFix](FieldDefaultValueHookFix/README.md) | Prevents the crash on world entry caused by an incorrect Il2CppInterop method lookup. | [DLL](https://ancient-kingdoms.compendiums.org/mods/FieldDefaultValueHookFix.dll) |
-| [BetterBestiary](BetterBestiary/README.md) | Reveals Bestiary details, loot tooltips, and skill summaries. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BetterBestiary.dll) |
-| [BossSkillTracker](BossSkillTracker/README.md) | Shows named monsters' skill cooldowns and special gates. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossSkillTracker.dll) |
-| [BossTracker](BossTracker/README.md) | Lists named monsters' status, distance, direction, and respawn countdowns. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll) |
+| [BetterBestiary](BetterBestiary/README.md) | Shows every monster's full Bestiary page. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BetterBestiary.dll) |
+| [BossSkillTracker](BossSkillTracker/README.md) | Shows boss, elite, and fabled skill cooldowns. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossSkillTracker.dll) |
+| [BossTracker](BossTracker/README.md) | Lists nearby bosses, elites, and fabled monsters and their respawns. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll) |
 
 ## Gameplay mods kept out of downloads
 
 | Mod | What it does |
 | --- | --- |
-| [MapEnhancer](MapEnhancer/README.md) | Clears map fog and reveals existing monster map marks. |
-| [MapTeleporter](MapTeleporter/README.md) | Teleports to a position selected on the map. |
-| [MonsterRespawner](MonsterRespawner/README.md) | Shows dead monster markers and brings respawn deadlines forward. |
-| [ResourceRespawner](ResourceRespawner/README.md) | Shows resource cooldown markers and brings ready deadlines forward. |
+| [MapEnhancer](MapEnhancer/README.md) | Clears the map's fog and shows monster marks. |
+| [MapTeleporter](MapTeleporter/README.md) | Teleports to a point clicked on the map. |
+| [MonsterRespawner](MonsterRespawner/README.md) | Respawns dead monsters early. |
+| [ResourceRespawner](ResourceRespawner/README.md) | Makes gathering spots ready early. |
 
 ## Pipeline and development mods
 
 | Mod | What it does |
 | --- | --- |
-| [DataExporter](DataExporter/README.md) | Exports game data and visual assets. |
-| [MapScreenshotter](MapScreenshotter/README.md) | Captures tiled world-map images and metadata. |
-| [HotReplCommands](HotReplCommands/README.md) | Exposes typed world, export, capture, and isolation controls. |
-| [CombatVerification](CombatVerification/README.md) | Builds combat fixtures and measures runtime behavior. |
-| [CharacterCapture](CharacterCapture/README.md) | Reads the local character's build and combat meters. |
-| [HierarchyLogger](HierarchyLogger/README.md) | Dumps the World scene's object hierarchy. |
+| [DataExporter](DataExporter/README.md) | Exports the game data and images. |
+| [MapScreenshotter](MapScreenshotter/README.md) | Captures the world map as tiles. |
+| [HotReplCommands](HotReplCommands/README.md) | Adds the HotRepl commands that drive the game. |
+| [CombatVerification](CombatVerification/README.md) | Builds fixture characters and measures combat. |
+| [CharacterCapture](CharacterCapture/README.md) | Records the character's build and combat meters. |
+| [HierarchyLogger](HierarchyLogger/README.md) | Writes the World scene's hierarchy to a file. |
 
 Building and deploying is in [CONTRIBUTING.md](../CONTRIBUTING.md).

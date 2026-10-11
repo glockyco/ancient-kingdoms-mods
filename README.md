@@ -25,7 +25,7 @@ Install [MelonLoader](https://github.com/LavaGang/MelonLoader) in the game, then
 | [BossSkillTracker](mods/BossSkillTracker/README.md) | Shows the ability cooldowns of the bosses, elites, and fabled monsters you fight. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossSkillTracker.dll) |
 | [BossTracker](mods/BossTracker/README.md) | Lists nearby bosses, elites, and fabled monsters with their status, distance, direction, and respawn time. | [DLL](https://ancient-kingdoms.compendiums.org/mods/BossTracker.dll) |
 
-Each mod's page covers its controls, settings, and limits. The [mod catalogue](mods/README.md) also lists the mods behind the tooling.
+Click a mod for its controls and settings. The [mod catalogue](mods/README.md) also lists the mods behind the tooling.
 
 ## How it works
 

@@ -1,12 +1,12 @@
 # CharacterCapture
 
-Reads the local character's build and combat meters without changing gameplay state.
+Records the local character's build and the combat meter totals for the combat engine.
 
 Not published as a download. `build-tool deploy` installs it with the other mods.
 
 ## Use
 
-Use HotRepl command `character.capture` to overwrite `UserData/CharacterCapture/character-capture.json`. Use `combatMeter.capture` to return the player's and active companions' meters through the command channel.
+Run the HotRepl command `character.capture` to write the build to `UserData/CharacterCapture/character-capture.json`, replacing the previous file. Run `combatMeter.capture` to get the meter totals of the player and their active companions as the command's result.
 
 ## Settings
 
@@ -14,8 +14,9 @@ None.
 
 ## Limits
 
-Both commands require the World scene and a loaded local player. Character capture reports incomplete data rather than inventing missing state.
+Both commands need a character in the world. When the game does not expose part of the build, the capture marks it as incomplete.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md). The HotRepl host must be installed with `build-tool deploy-host`.
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+The HotRepl host, installed by `build-tool deploy-host`.

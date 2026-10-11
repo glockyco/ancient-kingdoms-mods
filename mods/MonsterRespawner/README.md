@@ -1,12 +1,12 @@
 # MonsterRespawner
 
-Shows dead monster countdown markers and lets the host bring their respawn deadline forward.
+Marks dead monsters with their respawn countdowns and lets the host respawn them early.
 
 Not published as a download. `build-tool deploy` installs it with the other mods.
 
 ## Use
 
-In the World scene, hold Alt and left-click a respawn marker to make that monster eligible on the next respawn check.
+In the world, hold Alt and left-click a monster's marker. The monster respawns at the game's next respawn check.
 
 ## Settings
 
@@ -14,8 +14,8 @@ None.
 
 ## Limits
 
-Host-only: countdowns and clicks read or write the unsynchronized server field `Monster.respawnTimeEnd`. Only dead, respawning, loaded monsters with a future deadline receive markers.
+It works only in a world you host, because it reads and writes `Monster.respawnTimeEnd`, which the server does not send to other players. Only loaded monsters that are waiting to respawn get markers.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).

@@ -1,6 +1,6 @@
 # Architecture
 
-How the parts of this repository fit together, for anyone changing its code. It states only what rarely changes. Setup and workflows are in [CONTRIBUTING.md](CONTRIBUTING.md), and step-by-step procedures are in [`.agent/skills`](.agent/skills/).
+How the parts of this repository fit together, for anyone changing its code. Setup and workflows are in [CONTRIBUTING.md](CONTRIBUTING.md), and step-by-step procedures are in [`.agent/skills`](.agent/skills/).
 
 ## Bird's-eye view
 
@@ -13,15 +13,15 @@ game ──decompile──> server-scripts/ ──cited by──> hardcoded mech
 
 ## Code map
 
-- **`mods/`** — MelonLoader mods (C#, `net6.0`), catalogued in [`mods/README.md`](mods/README.md). DataExporter and MapScreenshotter produce the exports. HotReplCommands, CombatVerification, and CharacterCapture register typed HotRepl commands that `build-tool` and agents drive. The rest are player and gameplay mods.
-- **`build-tool/`** — a .NET CLI. `Commands/CommandCatalog.cs` lists its verbs. `Game/` finds the install in the CrossOver bottle, launches it through Wine, and owns the session locks, the scratch database, and the save backups. `HotRepl/` runs exports and verification over the HotRepl connection.
-- **`build-pipeline/`** — the `compendium` CLI. `loaders/` read the exports into SQLite, `denormalizers/` derive the tables the site reads, `redactions/` removes withheld content, and `citations/` verifies `Source:` comments. `schema.sql` is the database schema, and `zone_shot_focal_points.json` frames the zone shots.
-- **`website/`** — the SvelteKit site. Routes under `src/routes/` load their data at build time. `src/lib/entities/entity-manifest.json` declares each entity kind's routes, search kind, and sitemap membership. `src/lib/map/marker-registry.ts` declares every map marker layer. `src/lib/planner/` reproduces the game's combat formulas.
-- **`verification/`** — combat fixtures and the observations that `build-tool verify` records in the game.
-- **`tests/`** — C# tests for the mods and `build-tool`. They compile repository sources and need no game install.
-- **`scripts/`** — the server-script snapshot script and the clean-checkout check.
-- **`openspec/`** — required behavior (`specs/`) and planned changes (`changes/`).
-- **`docs/game-bugs/`** — defect reports about the game itself, for its developer.
+- `mods/`: MelonLoader mods (C#, `net6.0`), catalogued in [`mods/README.md`](mods/README.md). DataExporter and MapScreenshotter produce the exports. HotReplCommands, CombatVerification, and CharacterCapture register typed HotRepl commands that `build-tool` and agents drive. The rest are player and gameplay mods.
+- `build-tool/`: a .NET CLI. `Commands/CommandCatalog.cs` lists its verbs. `Game/` finds the install in the CrossOver bottle, launches it through Wine, and owns the session locks, the scratch database, and the save backups. `HotRepl/` runs exports and verification over the HotRepl connection.
+- `build-pipeline/`: the `compendium` CLI. `loaders/` read the exports into SQLite, `denormalizers/` derive the tables the site reads, `redactions/` removes withheld content, and `citations/` verifies `Source:` comments. `schema.sql` is the database schema, and `zone_shot_focal_points.json` frames the zone shots.
+- `website/`: the SvelteKit site. Routes under `src/routes/` load their data at build time. `src/lib/entities/entity-manifest.json` declares each entity kind's routes, search kind, and sitemap membership. `src/lib/map/marker-registry.ts` declares every map marker layer. `src/lib/planner/` reproduces the game's combat formulas.
+- `verification/`: combat fixtures and the observations that `build-tool verify` records in the game.
+- `tests/`: C# tests for the mods and `build-tool`. They compile repository sources and need no game install.
+- `scripts/`: the server-script snapshot script and the clean-checkout check.
+- `openspec/`: required behavior (`specs/`) and planned changes (`changes/`).
+- `docs/game-bugs/`: defect reports about the game itself, for its developer.
 
 ## Boundaries
 

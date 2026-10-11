@@ -5,7 +5,7 @@ description: Decide where a fact belongs and keep the documentation true. Use wh
 
 # Project documentation
 
-Each reader has one document, and each fact has one home. Other documents link to the home instead of repeating the fact. The `documentation-structure` spec states the rules, and `pnpm check:docs` enforces the parts a machine can verify.
+Each fact is written in one document, and other documents link to it. The `documentation-structure` spec states the rules, and `pnpm check:docs` enforces the parts a machine can verify.
 
 ## Where a fact goes
 
@@ -29,7 +29,7 @@ Each reader has one document, and each fact has one home. Other documents link t
 - Search for the fact first. When it already has a home, link to it.
 - Describe current behaviour only. Leave out history.
 - Prefer fixing an error message to adding a troubleshooting entry, and fix a defect rather than documenting it as usage.
-- Use the shortest true sentence and one term for one thing.
+- Keep sentences short, and use the same term for the same thing.
 
 ## Moving or deleting
 
@@ -38,4 +38,4 @@ Each reader has one document, and each fact has one home. Other documents link t
 
 ## Checking
 
-Run `pnpm check:docs`. It reports links, anchors, repository paths, `build-tool` verbs, `pnpm` scripts, and `compendium` commands that do not resolve, mod projects without a README, a front page over budget or without its guide links, and downloads that differ from `website/mod-downloads.json`. It cannot tell whether a sentence is true or in the right document; that part is yours.
+Run `pnpm check:docs`. It reports links, anchors, repository paths, `build-tool` verbs, `pnpm` scripts, and `compendium` commands that do not resolve, mod projects without a README, a front page over budget or without its guide links, and downloads that differ from `website/mod-downloads.json`. It cannot tell whether a sentence is true or in the right document.

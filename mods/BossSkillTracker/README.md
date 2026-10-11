@@ -1,14 +1,14 @@
 # BossSkillTracker
 
-Shows skill cooldowns and special gates for bosses, elites, and fabled monsters.
+Shows the skill cooldowns of the bosses, elites, and fabled monsters you fight, and when each can next use a special skill.
 
-[Download BossSkillTracker.dll](https://ancient-kingdoms.compendiums.org/mods/BossSkillTracker.dll).
+[Download BossSkillTracker.dll](https://ancient-kingdoms.compendiums.org/mods/BossSkillTracker.dll)
 
 ## Use
 
-With MelonLoader installed, put the DLL in the game's `Mods` folder alongside FieldDefaultValueHookFix.
+Install MelonLoader, then put the DLL in the game's `Mods` folder with FieldDefaultValueHookFix.
 
-Enter combat to see relevant enemies, or select a qualifying monster outside combat for a preview. Drag an enemy header to move the panel when unlocked. Click the compact and lock controls to toggle them.
+The panel lists the monsters fighting you or your pet. Out of combat, select a boss, elite, or fabled monster to preview it. Drag a monster's header to move the panel. The compact button shrinks the rows, and the lock button stops dragging.
 
 ## Settings
 
@@ -22,12 +22,12 @@ In `UserData/MelonPreferences.cfg`, category `BossSkillTracker`:
 | `Locked` | `false` |
 | `Compact` | `false` |
 
-Initialization upgrades `PanelPositionVersion` to `2` and resets the position when its value is below `2`.
+When `PanelPositionVersion` is below `2`, the mod resets the panel position and sets it to `2`.
 
 ## Limits
 
-Requires a local player in the World scene and trackable skills. Combat discovery uses nearby monster colliders, not a world-wide list.
+The panel finds monsters near you, not every monster in the zone. In a world you host, the next-special timer is exact. On someone else's server, the game does not send that deadline, so the mod estimates it from the casts it sees.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).

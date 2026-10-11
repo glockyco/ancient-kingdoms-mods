@@ -1,12 +1,12 @@
 # ResourceRespawner
 
-Shows resource cooldown markers and lets the host bring their ready deadline forward.
+Marks gathering spots with their cooldowns and lets the host make them ready early.
 
 Not published as a download. `build-tool deploy` installs it with the other mods.
 
 ## Use
 
-In the World scene, hold Alt and left-click a resource marker to bring its ready deadline forward.
+In the world, hold Alt and left-click a spot's marker to make it ready.
 
 ## Settings
 
@@ -14,8 +14,8 @@ None.
 
 ## Limits
 
-Changing the deadline requires hosting; writing a local copy on a remote client does not change the server. Only loaded gather items that are not spawn-ready and have a future deadline receive markers.
+It works only in a world you host. On someone else's server, the change affects only your copy. Only loaded spots that are on cooldown get markers.
 
 ## Requirements
 
-MelonLoader, Ancient Kingdoms, and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
+MelonLoader and [FieldDefaultValueHookFix](../FieldDefaultValueHookFix/README.md).
