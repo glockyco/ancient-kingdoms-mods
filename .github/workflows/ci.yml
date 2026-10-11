@@ -134,3 +134,5 @@ jobs:
         run: uv run vulture src/ --min-confidence 80
       - name: Tests
         run: uv run pytest
+      - name: Documentation
+        run: uv run compendium docs check

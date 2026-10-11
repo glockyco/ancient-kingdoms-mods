@@ -28,6 +28,10 @@ def main(
     ),
 ):
     """Ancient Kingdoms Compendium build pipeline."""
+    # Documentation checks read the checkout only and run in CI without config.toml.
+    if ctx.invoked_subcommand == "docs":
+        return
+
     # Load configuration and store in context for commands
     try:
         cfg = load_config(config)
@@ -169,6 +173,18 @@ def redactions_explain(
     from compendium.commands import redactions as redactions_cmd
 
     raise typer.Exit(redactions_cmd.run(ctx.obj, "explain", entity_id=entity_id))
+
+
+docs_app = typer.Typer(help="Check repository documentation references and structure.")
+app.add_typer(docs_app, name="docs")
+
+
+@docs_app.command("check")
+def docs_check():
+    """Check tracked Markdown references and documentation structure."""
+    from compendium.commands import docs as docs_cmd
+
+    raise typer.Exit(docs_cmd.run())
 
 
 if __name__ == "__main__":

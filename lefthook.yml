@@ -87,6 +87,14 @@ pre-commit:
     - name: redactions-check
       glob: "{redactions.toml,redactions.lock.json,build-pipeline/schema.sql,build-pipeline/src/compendium/redactions/**,build-pipeline/src/compendium/commands/redactions.py,build-pipeline/src/compendium/commands/build.py,build-pipeline/src/compendium/denormalizers/**,build-pipeline/src/compendium/loaders/**,build-pipeline/src/compendium/db.py,build-pipeline/src/compendium/config.py}"
       run: cd build-pipeline && uv run compendium redactions check
+    # The documentation check reads every tracked Markdown file outside openspec/ and
+    # the inputs its references resolve against: package scripts, build-tool verbs,
+    # compendium commands, mod projects, and the published mod downloads.
+    - name: docs-check
+      glob: "{*.md,**/*.md,mods/*/*.csproj,website/mod-downloads.json,package.json,website/package.json,build-tool/Commands/CommandCatalog.cs,build-pipeline/src/compendium/cli.py,build-pipeline/src/compendium/docs/**,build-pipeline/src/compendium/commands/docs.py}"
+      exclude:
+        - "openspec/**"
+      run: cd build-pipeline && uv run compendium docs check
 
 commit-msg:
   jobs:
