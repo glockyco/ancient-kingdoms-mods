@@ -2753,6 +2753,10 @@
       "sha256": "a2d6e97bff4fb95ffb7efe4b8963d31dc3b4591ab10c1732157c3735186d4b6c",
       "span": 4
     },
+    "Player.cs:3138-3196": {
+      "sha256": "18c8fc991c4ffb10d6ee716c0cf27a8a6c65874b4196602cb7545ba2ecddc0ea",
+      "span": 59
+    },
     "Player.cs:3217-3219": {
       "sha256": "cc1be66a0cdd1cc16b5525cdbe2a3100b79e69ec39d6b26e8e7a431df894b0eb",
       "span": 3
@@ -3271,6 +3275,12 @@
       "span": 9
     },
     "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
+      "span": 0
+    },
+    "PlayerInventory.cs:StartScrollCast": {
+      "span": 0
+    },
+    "PlayerInventory.cs:UpdateScrollCast": {
       "span": 0
     },
     "PlayerLooting.cs:108-147": {
@@ -3805,6 +3815,14 @@
       "sha256": "ac1f39a1d4d189dcd25d5cfd0f6072d4d7b85d338b46c8c5cde42aecd731f728",
       "span": 1
     },
+    "ScrollItem.cs:13-16": {
+      "sha256": "c03cab15a2ec9353809347a1e48ab90eb8b72fada67bf8c79832d6575e7f285d",
+      "span": 4
+    },
+    "ScrollItem.cs:13-35": {
+      "sha256": "ba29966179385f052fee0434559f7ed207444b62a71d8d04a40444095149427e",
+      "span": 23
+    },
     "ScrollItem.cs:37-91": {
       "sha256": "b0fc99162e71a2d16d64b84fb26349da592ab30efd80171334f040765d95dac2",
       "span": 55
@@ -3816,6 +3834,14 @@
     "ScrollItem.cs:48-82": {
       "sha256": "e7fb417bf97a7b54027d7ee782dacd35f685cb9583b79f4e019f97072ffadd0f",
       "span": 35
+    },
+    "ScrollItem.cs:7": {
+      "sha256": "01b8f590af5cf51f089600317a920b7d5e97155e9924b3bdd69a07f58e530ea1",
+      "span": 1
+    },
+    "ScrollItem.cs:91-136": {
+      "sha256": "4942e4db8f83b42029212f51532523de8ca1c1867db6f58b36f7835ea2759c30",
+      "span": 46
     },
     "ScrollItem.cs:93-128": {
       "sha256": "0ac219041455a2e40103877343ef492f3089f836ab1432ed67e7bafd990e169b",

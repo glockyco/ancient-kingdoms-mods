@@ -810,6 +810,14 @@
           >A kit remains unused if none of the equipped gear it can repair is
           damaged.</span
         >
+        <span class="block"
+          >Repair kits require the same 1-second cast as other scrolls; see
+          <a
+            href="#scroll-casting"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >scroll casting</a
+          >.</span
+        >
       </p>
       <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4514-4517 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
@@ -902,6 +910,21 @@
         <span class="block"
           >Spell scrolls activate a skill without teaching it.</span
         >
+      </p>
+      <!-- Source: server-scripts/ScrollItem.cs:7,13-35,91-136; PlayerInventory.cs:StartScrollCast,UpdateScrollCast — ScrollItem casts for 1 second; UseAfterCast applies the effect, item cooldown and charge consumption only after successful completion. -->
+      <p id="scroll-casting">
+        All skill scrolls, bind scrolls, and repair kits take 1 second to cast.
+        The effect, item cooldown, invisibility removal, and charge consumption
+        occur only when the cast completes successfully. Interrupted or failed
+        casts use no charge and start no item cooldown. Infinite-charge scrolls
+        do not consume a charge.
+      </p>
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3138-3196 — scroll casts cancel on an active skill, movement, target change or disappearance, changed or empty slot, death, stun, fear, cancel action or trade. -->
+      <p>
+        Moving, changing or losing your target, starting a skill, changing or
+        removing the casting item, stun, fear, death, trading, or cancelling the
+        action interrupts the cast. A skill scroll needs a valid target at both
+        the start and completion; bind scrolls cannot be used in dungeons.
       </p>
       <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 and server-scripts/CraftingStation.cs:8-10,50-58 — recipe items teach a potion recipe once; station crafting uses its configured material combinations. -->
       <p>

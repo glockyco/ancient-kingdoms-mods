@@ -201,9 +201,17 @@
           <div>Use scrolls.</div>
           <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast — a valid scroll casts its skill at rank round(mastery × 20), clamped to the skill's range, and consumes one charge unless infiniteCharges is set. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A scroll casts its skill without teaching it. Scaling scrolls cast
-            at rank Scroll Mastery ÷ 5, fixed scrolls at rank 1. Each use costs
-            one charge.
+            A scroll takes 1 second to cast its skill without teaching it.
+            Scaling scrolls cast at rank Scroll Mastery ÷ 5, fixed scrolls at
+            rank 1. Successful completion consumes one charge unless the scroll
+            has infinite charges; mastery gains also occur on completion.
+          </p>
+          <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, target change or disappearance, another active skill, or an empty or changed slot. -->
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Interrupting the cast uses no charge and starts no item cooldown.
+            See <MechanicsLink section="inventory#scroll-casting"
+              >scroll casting and interruptions</MechanicsLink
+            >.
           </p>
         </div>
       </div>
