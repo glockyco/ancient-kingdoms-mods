@@ -56,6 +56,26 @@ start screen appears. A slow start to a session reaches that point.
 Treat the refusal as the guard working. Do not continue into anything that creates or changes a
 character after it, because the target is then player data. Quit, relaunch, and redirect first.
 
+## Capture zone shots
+
+`compendium build` needs a shot of every published zone, framed by
+`build-pipeline/zone_shot_focal_points.json`. Capture them in a scratch session. With the mods
+deployed and the game closed:
+
+```sh
+dotnet run --project build-tool launch --wait
+pnpm exec hotrepl run game.useScratchDatabase '{}' --json   # must report isScratch=true
+# Only when the scratch roster has no fixture character:
+pnpm exec hotrepl run fixture.createCharacter '{"characterName":"HomeArt","class":"warrior","race":"human"}' --json
+pnpm exec hotrepl run world.enter '{"character":"HomeArt"}' --json
+pnpm exec hotrepl run capture.zoneShots '{}' --json
+pnpm exec hotrepl run game.quit '{}' --json
+```
+
+The redirect needs `ancientkingdoms_Data/verification-scratch/` in the game folder, and only
+`build-tool verify` creates it. On a machine that has never run `verify`, create the empty directory
+first. `references/commands.md` gives the focal-point format and the capture's options.
+
 ## One endpoint for each instance
 
 Two instances on one port do not both serve. The first keeps the endpoint, so every later command

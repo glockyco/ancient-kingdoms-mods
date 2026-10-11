@@ -1,13 +1,23 @@
 ---
 name: export-game-data
-description: Apply the runtime discovery traps, the curated class exception, and exporter registration. Use when adding or changing Ancient Kingdoms DataExporter models, exporters, or runtime images.
+description: Apply the exporter data contract, the runtime discovery traps, the curated class exception, and exporter registration. Use when adding or changing Ancient Kingdoms DataExporter models, exporters, or runtime images.
 ---
 # Export game data
 
-The exporter rules, which data counts as authoritative and what an absent value looks like, are in
-the README under "Rules for changes", in "Game data and mechanics". This skill adds the ways runtime
-discovery misleads, the one exporter that is deliberately unlike the others, and where each visual
-asset comes from.
+This skill holds the exporter data contract, the ways runtime discovery misleads, the one exporter
+that is deliberately unlike the others, and where each visual asset comes from.
+
+## Data contract
+
+Read authoritative runtime data: direct fields and explicit references, with `TryCast<T>()` where the
+subtype matters. Never infer a value from a name, a threshold, or proximity.
+
+Absence follows each field's contract: `null` for a missing reference, `""` for missing text, and a
+declared default only where the contract defines one. Any other missing value fails the export. The
+JSON writer omits a `null` property unless the model sets `NullValueHandling.Include`.
+
+Document a derived value, such as zone containment, at its exporter. JSON property names are
+snake_case, and manifest paths are relative to `exported-data/`.
 
 ## Runtime discovery
 
