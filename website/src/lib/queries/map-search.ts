@@ -304,8 +304,13 @@ function parseRoles(
   }
 }
 
-function itemBoundsQuery(idsJson: string): Promise<GeometryRow[]> {
-  return query<GeometryRow>(
+type GeometryQuery = (sql: string, params: string[]) => Promise<unknown[]>;
+
+function itemBoundsQuery(
+  idsJson: string,
+  execute: GeometryQuery = query,
+): Promise<GeometryRow[]> {
+  return execute(
     `
     SELECT item_id id, MIN(x) min_x, MAX(x) max_x, MIN(y) min_y, MAX(y) max_y,
       NULL zone_id, NULL zone_name, NULL level, COUNT(*) spawn_count,
@@ -365,7 +370,29 @@ function itemBoundsQuery(idsJson: string): Promise<GeometryRow[]> {
     GROUP BY item_id
   `,
     Array.from({ length: 8 }, () => idsJson),
-  );
+  ) as Promise<GeometryRow[]>;
+}
+
+/** Physical locations available when the map selects this item. */
+export async function getItemMapBounds(
+  itemId: string,
+  execute: GeometryQuery = query,
+): Promise<MapSearchBounds | null> {
+  const [row] = await itemBoundsQuery(JSON.stringify([itemId]), execute);
+  if (
+    row?.min_x == null ||
+    row.max_x == null ||
+    row.min_y == null ||
+    row.max_y == null
+  ) {
+    return null;
+  }
+  return {
+    minX: row.min_x,
+    maxX: row.max_x,
+    minY: row.min_y,
+    maxY: row.max_y,
+  };
 }
 
 async function itemRows(

@@ -1,6 +1,10 @@
 import Database from "better-sqlite3";
 import { describe, expect, test } from "vitest";
-import { getGatherSources } from "./item-sources";
+import {
+  getGatherSources,
+  getPackSources,
+  getRandomSources,
+} from "./item-sources";
 
 function createDb() {
   const db = new Database(":memory:");
@@ -178,4 +182,37 @@ describe("getGatherSources", () => {
 
     db.close();
   });
+});
+
+test("container source queries use canonical reachability without losing contents", () => {
+  const db = new Database(":memory:");
+  db.exec(`
+    CREATE TABLE items (id TEXT PRIMARY KEY, name TEXT, quality INTEGER);
+    CREATE TABLE item_sources_pack (item_id TEXT, pack_item_id TEXT, amount INTEGER);
+    CREATE TABLE item_sources_random (item_id TEXT, random_item_id TEXT, probability REAL);
+    CREATE TABLE item_source_entries (item_id TEXT, source_type TEXT, source_id TEXT);
+    INSERT INTO items VALUES
+      ('gem', 'Gem', 1), ('reachable', 'Reachable', 1),
+      ('unreachable', 'Unreachable', 1);
+    INSERT INTO item_sources_pack VALUES
+      ('gem', 'reachable', 1), ('gem', 'unreachable', 1);
+    INSERT INTO item_sources_random VALUES
+      ('gem', 'reachable', 0.5), ('gem', 'unreachable', 1);
+    INSERT INTO item_source_entries VALUES
+      ('gem', 'pack', 'reachable'), ('gem', 'random', 'reachable');
+  `);
+
+  expect(
+    getPackSources(db, "gem").map((source) => source.pack_item_id),
+  ).toEqual(["reachable"]);
+  expect(
+    getRandomSources(db, "gem").map((source) => source.random_item_id),
+  ).toEqual(["reachable"]);
+  expect(
+    db.prepare("SELECT COUNT(*) count FROM item_sources_pack").get(),
+  ).toEqual({ count: 2 });
+  expect(
+    db.prepare("SELECT COUNT(*) count FROM item_sources_random").get(),
+  ).toEqual({ count: 2 });
+  db.close();
 });

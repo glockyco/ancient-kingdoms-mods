@@ -10,6 +10,8 @@ import { getItemSources } from "$lib/server/item-sources";
 import { getItemUsages } from "$lib/server/item-usages";
 import { getRecipeMaterials } from "$lib/server/obtainability";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
+import { getItemMapBounds } from "$lib/queries/map-search";
+import { getItemSourceSummaries } from "$lib/server/item-source-summary";
 
 const FISHERMAN_COSTUME_IDS = new Set([
   "fishermans_hat",
@@ -32,7 +34,11 @@ export const entries: EntryGenerator = () => {
 };
 
 // Load item data at build time (for SSR/prerendering)
-export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
+export const load: PageServerLoad = async ({
+  params,
+}): Promise<
+  ItemDetailPageData & { hasMapLocation: boolean; hasKnownSource: boolean }
+> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as
@@ -107,6 +113,11 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   // Load item sources and usages from normalized junction tables
   const sources = getItemSources(db, params.id);
   const usages = getItemUsages(db, params.id);
+  const hasKnownSource = getItemSourceSummaries(db, [params.id]).length > 0;
+  const hasMapLocation =
+    (await getItemMapBounds(params.id, async (sql, bindings) =>
+      db.prepare(sql).all(...bindings),
+    )) !== null;
 
   const recipeMaterials: ItemDetailPageData["recipeMaterials"] = {};
   for (const recipe of sources.recipes) {
@@ -304,6 +315,8 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     title,
     sources,
     usages,
+    hasKnownSource,
+    hasMapLocation,
     fishing_role: fishingRole,
     fishing_effect: fishingEffect,
     recipeMaterials,

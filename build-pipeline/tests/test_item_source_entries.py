@@ -127,6 +127,58 @@ class ItemSourceEntriesTests(unittest.TestCase):
 
         self.assertEqual(self.rows_for("rare_gem"), [("pack", "satchel", "Satchel", 1)])
 
+    def test_unreachable_container_chain_and_cycle_are_not_sources(self):
+        for item_id in ("outer_chest", "inner_pack", "gem", "cycle_a", "cycle_b"):
+            self.insert_item(item_id, item_id)
+        self.conn.executescript("""
+            INSERT INTO item_sources_random (item_id, random_item_id, probability)
+            VALUES ('inner_pack', 'outer_chest', 1),
+                   ('cycle_a', 'cycle_b', 1);
+            INSERT INTO item_sources_pack (item_id, pack_item_id, amount)
+            VALUES ('gem', 'inner_pack', 1), ('cycle_b', 'cycle_a', 1);
+        """)
+
+        source_entries.run(self.conn)
+
+        self.assertEqual(
+            self.conn.execute("SELECT COUNT(*) FROM item_source_entries").fetchone()[0],
+            0,
+        )
+        # Forward contents still exist on the containers' own pages.
+        self.assertEqual(
+            self.conn.execute("SELECT COUNT(*) FROM item_sources_random").fetchone()[0],
+            2,
+        )
+        self.assertEqual(
+            self.conn.execute("SELECT COUNT(*) FROM item_sources_pack").fetchone()[0],
+            2,
+        )
+
+    def test_reachable_nested_containers_keep_sources_and_real_drops(self):
+        for item_id in ("outer_chest", "inner_pack", "gem", "unreachable_chest"):
+            self.insert_item(item_id, item_id)
+        self.conn.executescript("""
+            INSERT INTO monsters (id, name, level) VALUES ('dragon', 'Dragon', 50);
+            INSERT INTO item_sources_monster (item_id, monster_id, drop_rate)
+            VALUES ('outer_chest', 'dragon', 1), ('gem', 'dragon', 0.1);
+            INSERT INTO item_sources_random (item_id, random_item_id, probability)
+            VALUES ('inner_pack', 'outer_chest', 1),
+                   ('gem', 'unreachable_chest', 1);
+            INSERT INTO item_sources_pack (item_id, pack_item_id, amount)
+            VALUES ('gem', 'inner_pack', 1);
+        """)
+
+        source_entries.run(self.conn)
+
+        self.assertEqual(
+            [(row[0], row[1]) for row in self.rows_for("inner_pack")],
+            [("random", "outer_chest")],
+        )
+        self.assertEqual(
+            [(row[0], row[1]) for row in self.rows_for("gem")],
+            [("drop", "dragon"), ("pack", "inner_pack")],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

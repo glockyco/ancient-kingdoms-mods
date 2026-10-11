@@ -4,6 +4,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
@@ -350,6 +351,14 @@
     };
   });
 
+  // Source: server-scripts/ChestItem.cs:24-32,61-64 — guaranteed rolls give fixed contents up to the opening limit.
+  const hasFixedChestContents = $derived(
+    Boolean(
+      computed.chestRewards?.length &&
+      computed.chestRewards.every((reward) => reward.probability >= 1),
+    ),
+  );
+
   const hasStatsCard = $derived(
     !isAugment &&
       ((computed.stats && Object.keys(computed.stats).length > 0) ||
@@ -391,7 +400,9 @@
   <div>
     <div class="flex flex-wrap items-center gap-3">
       <h1 class="text-4xl font-bold">{data.item.name}</h1>
-      <MapLink entityId={data.item.id} entityType="item" />
+      {#if data.hasMapLocation}
+        <MapLink entityId={data.item.id} entityType="item" />
+      {/if}
       <span
         class="px-3 py-1 rounded text-sm font-medium text-white {qualityColors[
           data.item.quality
@@ -1603,6 +1614,20 @@
 
   <!-- Relationships -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {#if !data.hasKnownSource}
+      <Card.Root class="bg-muted/30 self-start">
+        <Card.Header>
+          <Card.Title>Sources</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <ItemSourceLinks
+            groups={[]}
+            itemId={data.item.id}
+            emptyLabel="No known source"
+          />
+        </Card.Content>
+      </Card.Root>
+    {/if}
     <!-- Dropped By -->
     {#if computed.droppedBy && computed.droppedBy.length > 0}
       <Card.Root class="bg-muted/30">
@@ -2171,7 +2196,7 @@
       </Card.Root>
     {/if}
 
-    <!-- Possible Items (for simple random items, not chest-type items with weighted rewards) -->
+    <!-- Possible Items (for simple random items, not chest-type items) -->
     {#if data.randomOutcomes && data.randomOutcomes.length > 0 && (!computed.chestRewards || computed.chestRewards.length === 0)}
       <Card.Root class="bg-muted/30">
         <Card.Header>
@@ -2200,10 +2225,17 @@
         <Card.Header>
           <Card.Title>Chest Rewards</Card.Title>
           <Card.Description>
-            Each opening gives up to {data.item.chest_num_items}
-            {data.item.chest_num_items === 1 ? "item" : "items"}. An item cannot
-            appear twice in one opening. The drop chances come from 100,000
-            simulated openings.
+            {#if hasFixedChestContents}
+              Each opening gives {Math.min(
+                data.item.chest_num_items,
+                computed.chestRewards.length,
+              )} fixed {data.item.chest_num_items === 1 ? "item" : "items"}.
+            {:else}
+              Each opening gives up to {data.item.chest_num_items}
+              {data.item.chest_num_items === 1 ? "item" : "items"}. An item
+              cannot appear twice in one opening. The drop chances come from
+              100,000 simulated openings.
+            {/if}
           </Card.Description>
         </Card.Header>
         <Card.Content>

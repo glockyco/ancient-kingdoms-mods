@@ -487,6 +487,12 @@ export function getPackSources(
 		FROM item_sources_pack isp
 		JOIN items pi ON isp.pack_item_id = pi.id
 		WHERE isp.item_id = ?
+		  AND EXISTS (
+		    SELECT 1 FROM item_source_entries entries
+		    WHERE entries.item_id = isp.item_id
+		      AND entries.source_type = 'pack'
+		      AND entries.source_id = isp.pack_item_id
+		  )
 		ORDER BY pi.name ASC
 	`);
 
@@ -510,6 +516,12 @@ export function getRandomSources(
 		FROM item_sources_random isr
 		JOIN items ri ON isr.random_item_id = ri.id
 		WHERE isr.item_id = ?
+		  AND EXISTS (
+		    SELECT 1 FROM item_source_entries entries
+		    WHERE entries.item_id = isr.item_id
+		      AND entries.source_type = 'random'
+		      AND entries.source_id = isr.random_item_id
+		  )
 		ORDER BY isr.probability DESC, ri.name ASC
 	`);
 

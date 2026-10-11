@@ -215,6 +215,31 @@ def _insert_container_sources(cursor: sqlite3.Cursor) -> None:
     )
 
 
+def _remove_unreachable_container_sources(cursor: sqlite3.Cursor) -> None:
+    """Keep contents relations, but only publish reachable containers as sources.
+
+    Start from non-container sources and traverse outward. A sourceless chain or
+    cycle cannot make itself reachable by referring to its own containers.
+    """
+    cursor.execute(
+        """
+        WITH RECURSIVE reachable(item_id) AS (
+            SELECT item_id
+            FROM item_source_entries
+            WHERE source_type NOT IN ('pack', 'random')
+            UNION
+            SELECT entries.item_id
+            FROM item_source_entries entries
+            JOIN reachable ON reachable.item_id = entries.source_id
+            WHERE entries.source_type IN ('pack', 'random')
+        )
+        DELETE FROM item_source_entries
+        WHERE source_type IN ('pack', 'random')
+          AND source_id NOT IN (SELECT item_id FROM reachable)
+        """
+    )
+
+
 def run(conn: sqlite3.Connection) -> None:
     """Populate canonical item source summary rows."""
     console.print("Denormalizing item source entries...")
@@ -224,6 +249,7 @@ def run(conn: sqlite3.Connection) -> None:
     _insert_direct_sources(cursor)
     _insert_gather_and_chest_sources(cursor)
     _insert_container_sources(cursor)
+    _remove_unreachable_container_sources(cursor)
 
     count = cursor.execute("SELECT COUNT(*) FROM item_source_entries").fetchone()[0]
     conn.commit()
