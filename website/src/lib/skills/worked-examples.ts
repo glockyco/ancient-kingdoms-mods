@@ -8,7 +8,8 @@ import type { LinearValue } from "$lib/types/skills";
 /*
  * Worked numbers for the skill rules that take one operation. The skill page
  * states each as a sentence with one of these numbers, computed with the
- * game's arithmetic at rank 1. Multi-step rules use calculation blocks instead.
+ * game's arithmetic at the rank the sentence names, normally the highest.
+ * Multi-step rules use calculation blocks instead.
  */
 
 /** The hit the sentences use, before or after the defenses the rule names. */
@@ -31,39 +32,44 @@ export function drainMagnitude(value: LinearValue): LinearValue {
 }
 
 // Source: server-scripts/Skills.cs:1617-1623 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
-export function reaperDrain(rate: LinearValue): number {
-  const share = Math.max(0, -atRank(rate, 1));
+export function reaperDrain(rate: LinearValue, rank: number): number {
+  const share = Math.max(0, -atRank(rate, rank));
   return iround(multiplyF32(MAX_HEALTH.value, share));
 }
 
 // Source: server-scripts/Skills.cs:1903-1938 — a positive execute bonus multiplies the tick, which then rounds.
-export function executeTick(bonus: LinearValue): number {
-  return damageOverTimeBonuses(EXAMPLE_HIT, 3, 0, atRank(bonus, 1)).total;
+export function executeTick(bonus: LinearValue, rank: number): number {
+  return damageOverTimeBonuses(EXAMPLE_HIT, 3, 0, atRank(bonus, rank)).total;
 }
 
 // Source: server-scripts/Combat.cs:1318-1333 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
-export function lifetapFromHit(share: LinearValue): number {
-  return lifetapHeal(EXAMPLE_HIT, atRank(share, 1), 0);
+export function lifetapFromHit(share: LinearValue, rank: number): number {
+  return lifetapHeal(EXAMPLE_HIT, atRank(share, rank), 0);
 }
 
 /** Lifetap healing a full-damage lifetap of EXAMPLE_HIT restores with this bonus. */
-export function lifetapWithBonus(bonus: LinearValue): number {
-  return lifetapHeal(EXAMPLE_HIT, 1, atRank(bonus, 1));
+export function lifetapWithBonus(bonus: LinearValue, rank: number): number {
+  return lifetapHeal(EXAMPLE_HIT, 1, atRank(bonus, rank));
 }
 
 // Source: server-scripts/Combat.cs:883-897 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
-export function healOnHit(share: LinearValue): number {
-  return iround(multiplyF32(atRank(share, 1), EXAMPLE_HIT));
+export function healOnHit(share: LinearValue, rank: number): number {
+  return iround(multiplyF32(atRank(share, rank), EXAMPLE_HIT));
 }
 
-/** Wild Strike's empowered hit at rank 1 for an EXAMPLE_HIT auto attack. */
-export function wildStrikeHit(): number {
-  return wildStrikeDamage(EXAMPLE_HIT, 1);
+/** Wild Strike's empowered hit for an EXAMPLE_HIT auto attack. */
+export function wildStrikeHit(rank: number): number {
+  return wildStrikeDamage(EXAMPLE_HIT, rank);
 }
 
 // Source: server-scripts/PlayerSkills.cs:1271,1618-1628 — learned song-duration bonuses add, then multiply the base duration.
 export function songDuration(baseSeconds: number, bonus: number): number {
   return multiplyF32(baseSeconds, addF32(1, bonus));
+}
+
+/** An EXAMPLE_SONG_SECONDS song lengthened by a passive's per-rank bonus at this rank. */
+export function passiveSongDuration(perRank: number, rank: number): number {
+  return songDuration(EXAMPLE_SONG_SECONDS, multiplyF32(perRank, rank));
 }
 
 // Source: server-scripts/ScrollItem.cs:125 — a scroll casts at RoundToInt(mastery × 20), between rank 1 and the skill's maximum.

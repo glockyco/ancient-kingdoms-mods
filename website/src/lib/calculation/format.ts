@@ -71,8 +71,8 @@ export function scalesWithRank(value: LinearValue, maxRank: number): boolean {
 }
 
 /**
- * "Each rank adds 5%, reaching 25% at rank 5." for a sentence that already
- * states the rank 1 value, or "" when the value does not scale.
+ * "Rank 1 gives 5%, and each rank adds 5%." for a sentence that already states
+ * the highest rank's value, or "" when the value does not scale.
  */
 export function describeRankGrowth(
   value: LinearValue,
@@ -81,7 +81,7 @@ export function describeRankGrowth(
 ): string {
   if (!scalesWithRank(value, maxRank)) return "";
   const verb = value.bonus_per_level > 0 ? "adds" : "removes";
-  return `Each rank ${verb} ${format(Math.abs(value.bonus_per_level))}, reaching ${format(atRank(value, maxRank))} at rank ${maxRank}.`;
+  return `Rank 1 gives ${format(value.base_value)}, and each rank ${verb} ${format(Math.abs(value.bonus_per_level))}.`;
 }
 
 /** "Damage: 20 + 20 × (3 − 1) = 60" for a value that changes with rank, or nothing when it does not. */

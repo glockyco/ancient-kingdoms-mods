@@ -48,7 +48,7 @@ Each step or sentence that produces a whole number SHALL say how it rounds, as "
 
 ### Requirement: Worked examples use the game's arithmetic
 
-A calculation whose outcome depends on numbers SHALL show a worked example. The example SHALL state its inputs, give the outcome first, and then show the substituted arithmetic. It SHALL be computed from the published data with the game's arithmetic, including single-precision intermediate values and the game's rounding, and SHALL NOT be typed by hand.
+A calculation whose outcome depends on numbers SHALL show a worked example. The example SHALL state its inputs, give the outcome first, and then show the substituted arithmetic. A skill's example SHALL use its highest rank unless the reader chooses another. It SHALL be computed from the published data with the game's arithmetic, including single-precision intermediate values and the game's rounding, and SHALL NOT be typed by hand.
 
 #### Scenario: The data changes
 

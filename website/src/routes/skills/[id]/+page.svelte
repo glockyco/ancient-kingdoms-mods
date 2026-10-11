@@ -57,6 +57,7 @@
     healOnHit,
     lifetapFromHit,
     lifetapWithBonus,
+    passiveSongDuration,
     reaperDrain,
     scrollRank,
     songDuration,
@@ -65,7 +66,7 @@
   import { mercenaryRank } from "$lib/calculation/mercenaries";
   import { DAMAGE, MAGIC_DAMAGE, MAX_HEALTH } from "$lib/calculation/inputs";
   import * as fmt from "$lib/calculation/format";
-  import { spellInterval, wildStrikeDamage } from "$lib/calculation/combat";
+  import { spellInterval } from "$lib/calculation/combat";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import Skull from "@lucide/svelte/icons/skull";
   import Cat from "@lucide/svelte/icons/cat";
@@ -806,6 +807,23 @@
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff",
   );
 
+  // Source: server-scripts/Combat.cs:1534-1578 — melee debuffs resist with Defense, the others with their matching resistance.
+  const debuffResistance = $derived(
+    skill.is_melee_debuff
+      ? "Defense"
+      : skill.is_poison_debuff
+        ? "Poison Resist"
+        : skill.is_fire_debuff
+          ? "Fire Resist"
+          : skill.is_cold_debuff
+            ? "Cold Resist"
+            : skill.is_disease_debuff
+              ? "Disease Resist"
+              : skill.is_magic_debuff
+                ? "Magic Resist"
+                : null,
+  );
+
   // showMechanics: true iff at least one inner mechanics section will actually render.
   // Mirrors the exact conditions of each inner section to avoid empty cards.
   // No isPlayerUsable dependency — monster-only skills are included when the spec
@@ -1285,14 +1303,11 @@
           <p
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
           >
-            Each rank costs {skill.required_skill_points} veteran points and contributes
-            1 point to your Veteran Level and the next veteran point's experience
-            requirement. A token reset refunds 1 point per rank and permanently loses
-            {skill.required_skill_points - 1} spent {skill.required_skill_points -
-              1 ===
-            1
-              ? "point"
-              : "points"} per rank.
+            Each rank costs {skill.required_skill_points} veteran points, but a game
+            defect counts it as 1 point toward your Veteran Level and the next veteran
+            point's experience cost. A token reset refunds 1 point per rank, so each
+            reset loses {skill.required_skill_points - 1}
+            {skill.required_skill_points - 1 === 1 ? "point" : "points"} per rank.
           </p>
         {/if}
       </Card.Content>
@@ -1359,10 +1374,15 @@
                   href="/mechanics/combat#timing">Spell haste</a
                 >
                 shortens the cast by its percentage, so 20% spell haste turns the
-                {skill.cast_time.bonus_per_level
-                  ? "rank 1 "
-                  : ""}{fmt.formatSeconds(skill.cast_time.base_value)} cast into {fmt.formatSeconds(
-                  spellInterval(skill.cast_time.base_value, 0.2).casting,
+                {fmt.formatSeconds(
+                  fmt.atRank(skill.cast_time, skill.max_level),
+                )} cast{fmt.scalesWithRank(skill.cast_time, skill.max_level)
+                  ? ` at rank ${skill.max_level}`
+                  : ""} into {fmt.formatSeconds(
+                  spellInterval(
+                    fmt.atRank(skill.cast_time, skill.max_level),
+                    0.2,
+                  ).casting,
                 )}.
               </p>
             {/if}
@@ -2184,7 +2204,7 @@
               mercenaries and other players' companions, within {formatLinear(
                 skill.cast_range,
                 " yd",
-              )}. Cannot target yourself, familiars, monsters or NPCs. Your
+              )}. It cannot target you, familiars, monsters or NPCs. Your
               current Health must be above the Health spent. You pay the full
               cost even if the target is already at maximum Health.
             </p>
@@ -2201,7 +2221,7 @@
           <!-- Source: server-scripts/NecromancerReaperFormSkill.cs:15-26; server-scripts/Buff.cs:347-355 — applying an active form removes it and its timer stays positive while active. -->
           <div class="space-y-2">
             <h3 class="font-semibold">Reaper Form</h3>
-            <p class="text-muted-foreground">Toggle with no time limit.</p>
+            <p class="text-muted-foreground">The form has no time limit.</p>
             <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active NecromancerReaperFormSkill buff multiplies the caster's debuff ticks on others by 1 + its magicDamagePercentBonus. -->
             <p class="text-muted-foreground">
               While the form is active, your magic damage gains {formatLinearPercent(
@@ -2217,14 +2237,19 @@
               <!-- Source: server-scripts/Skills.cs:1617-1623 — NecromancerReaperFormSkill drains RoundToInt(max(0, -healthPercentPerSecondBonus) × health.max) before ordinary DoT mitigation. -->
               <p class="text-muted-foreground">
                 Each second, the form drains {fmt.formatPercent(
-                  fmt.atRank(drain, 1),
-                )} of your maximum Health, rounded, so {fmt.formatNumber(
-                  MAX_HEALTH.value,
-                )} maximum Health loses {fmt.formatNumber(
-                  reaperDrain(skill.health_percent_per_second_bonus),
-                )}{fmt.scalesWithRank(drain, skill.max_level)
-                  ? " at rank 1"
-                  : ""}. {fmt.describeRankGrowth(
+                  fmt.atRank(drain, skill.max_level),
+                )} of your maximum Health{fmt.scalesWithRank(
+                  drain,
+                  skill.max_level,
+                )
+                  ? ` at rank ${skill.max_level}`
+                  : ""}, rounded. With {fmt.formatNumber(MAX_HEALTH.value)} maximum
+                Health, you lose {fmt.formatNumber(
+                  reaperDrain(
+                    skill.health_percent_per_second_bonus,
+                    skill.max_level,
+                  ),
+                )} Health each second. {fmt.describeRankGrowth(
                   drain,
                   skill.max_level,
                   fmt.formatPercent,
@@ -2243,7 +2268,8 @@
             <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->
             <!-- Source: server-scripts/UIBuffs.cs:292-303; server-scripts/Player.cs:10310-10328 — Reaper Form can be removed through the buff bar. -->
             <p class="text-muted-foreground">
-              Ends when toggled off, removed from your buff bar or mounted.
+              It ends when you toggle it off, remove it from your buff bar or
+              mount.
               {skill.remain_after_death
                 ? "The form survives death."
                 : "Death removes the form."}
@@ -2324,13 +2350,13 @@
             <p class="text-muted-foreground">
               While the target is below 30% of its maximum Health, your
               damage-over-time ticks deal {fmt.formatPercent(
-                fmt.atRank(execute, 1),
-              )} more, rounded, so a {fmt.formatNumber(EXAMPLE_HIT)}-damage tick
-              deals {fmt.formatNumber(executeTick(execute))}{fmt.scalesWithRank(
-                execute,
-                skill.max_level,
-              )
-                ? " at rank 1"
+                fmt.atRank(execute, skill.max_level),
+              )} more damage, rounded, so a {fmt.formatNumber(
+                EXAMPLE_HIT,
+              )}-damage tick deals {fmt.formatNumber(
+                executeTick(execute, skill.max_level),
+              )}{fmt.scalesWithRank(execute, skill.max_level)
+                ? ` at rank ${skill.max_level}`
                 : ""}. {fmt.describeRankGrowth(
                 execute,
                 skill.max_level,
@@ -2355,10 +2381,19 @@
           <div class="space-y-2">
             <h3 class="font-semibold">Pet Maximum Health</h3>
             <p class="text-muted-foreground">
-              Your companion receives {formatLinearPercent(
-                skill.health_max_percent_bonus,
-              )} maximum Health. This passive does not increase your maximum Health,
-              and does not affect familiars or mercenaries.
+              Your companion receives {fmt.formatPercent(
+                fmt.atRank(skill.health_max_percent_bonus!, skill.max_level),
+              )} more maximum Health{fmt.scalesWithRank(
+                skill.health_max_percent_bonus!,
+                skill.max_level,
+              )
+                ? ` at rank ${skill.max_level}`
+                : ""}. {fmt.describeRankGrowth(
+                skill.health_max_percent_bonus!,
+                skill.max_level,
+                fmt.formatPercent,
+              )} This passive does not increase your own maximum Health, and does
+              not affect familiars or mercenaries.
             </p>
           </div>
         {/if}
@@ -2369,13 +2404,14 @@
           <div class="space-y-2">
             <h3 class="font-semibold">Lifetap Healing Bonus</h3>
             <p class="text-muted-foreground">
-              Your lifetap healing is {fmt.formatPercent(fmt.atRank(bonus, 1))} higher,
-              so a lifetap that would heal {fmt.formatNumber(EXAMPLE_HIT)} heals
-              {fmt.formatNumber(lifetapWithBonus(bonus))}{fmt.scalesWithRank(
-                bonus,
-                skill.max_level,
-              )
-                ? " at rank 1"
+              Your lifetap healing is {fmt.formatPercent(
+                fmt.atRank(bonus, skill.max_level),
+              )} higher, so a lifetap that would heal {fmt.formatNumber(
+                EXAMPLE_HIT,
+              )} heals {fmt.formatNumber(
+                lifetapWithBonus(bonus, skill.max_level),
+              )}{fmt.scalesWithRank(bonus, skill.max_level)
+                ? ` at rank ${skill.max_level}`
                 : ""}. {fmt.describeRankGrowth(
                 bonus,
                 skill.max_level,
@@ -2420,11 +2456,11 @@
               >
             </h3>
             <p class="text-muted-foreground">
-              A scroll casts this skill at rank Scroll Mastery ÷ 5, rounded,
-              from rank 1 to rank {skill.max_level}, so {fmt.formatPercent(
-                EXAMPLE_SCROLL_MASTERY,
-              )} Scroll Mastery casts rank {scrollRank(skill.max_level)}. The
-              Rank Scaling table lists the mastery each rank needs.
+              A scroll casts this skill at one rank per 5 percentage points of
+              Scroll Mastery, rounded, from rank 1 up to rank {skill.max_level}.
+              At {fmt.formatPercent(EXAMPLE_SCROLL_MASTERY)} Scroll Mastery, it casts
+              at rank {scrollRank(skill.max_level)}. The Rank Scaling table
+              lists the mastery each rank needs.
             </p>
             <RoundingDefinition />
           </div>
@@ -2452,12 +2488,14 @@
             <p class="text-muted-foreground">
               Each rank lengthens your songs by {fmt.formatPercent(
                 skill.bard_song_duration_bonus_per_level,
-              )}, so a {fmt.formatSeconds(EXAMPLE_SONG_SECONDS)} song lasts {fmt.formatSeconds(
-                songDuration(
-                  EXAMPLE_SONG_SECONDS,
+              )}, so at rank {skill.max_level} a {fmt.formatSeconds(
+                EXAMPLE_SONG_SECONDS,
+              )} song lasts {fmt.formatSeconds(
+                passiveSongDuration(
                   skill.bard_song_duration_bonus_per_level,
+                  skill.max_level,
                 ),
-              )} at rank 1. Learned song-duration bonuses add together.
+              )}. Learned song-duration bonuses add together.
             </p>
           </div>
         {/if}
@@ -2510,28 +2548,31 @@
               from level 40 onward.
             </p>
             <p class="text-muted-foreground">
-              Polyphony and learned song duration bonuses do not apply to the
+              Polyphony and learned song-duration bonuses do not apply to the
               mercenary.
             </p>
           </div>
         {:else if skill.is_bard_song}
+          {@const songSeconds = fmt.atRank(
+            {
+              base_value: skill.duration_base,
+              bonus_per_level: skill.duration_per_level,
+            },
+            skill.max_level,
+          )}
           <!-- Source: PlayerSkills.cs:911-917,1169-1180 -->
           <!-- Source: server-scripts/PlayerSkills.cs:1271,1618-1628 — learned song-duration bonuses add, then multiply the base duration. -->
           <div class="space-y-1">
             <h3 class="font-semibold">Song Aura</h3>
             <p class="text-muted-foreground">
-              The song lasts {fmt.describeRankScaling(
-                {
-                  base_value: skill.duration_base,
-                  bonus_per_level: skill.duration_per_level,
-                },
-                skill.max_level,
-                fmt.formatSeconds,
-              )}. Learned song-duration bonuses lengthen it by their total, so a
-              {fmt.formatPercent(EXAMPLE_SONG_BONUS)} bonus makes {fmt.formatSeconds(
-                skill.duration_base,
-              )} into {fmt.formatSeconds(
-                songDuration(skill.duration_base, EXAMPLE_SONG_BONUS),
+              The song lasts {fmt.formatSeconds(
+                songSeconds,
+              )}{skill.duration_per_level && skill.max_level > 1
+                ? ` at rank ${skill.max_level}`
+                : ""}. Learned song-duration bonuses lengthen it by their total
+              percentage, so with a {fmt.formatPercent(EXAMPLE_SONG_BONUS)} bonus
+              it lasts {fmt.formatSeconds(
+                songDuration(songSeconds, EXAMPLE_SONG_BONUS),
               )}.
             </p>
           </div>
@@ -2585,8 +2626,8 @@
                 class="text-blue-600 dark:text-blue-400 hover:underline"
                 href="/mechanics/combat#resistance">Magic Resist roll</a
               >, without Accuracy. Each level the target is above you adds 2.5
-              percentage points to its chance to resist. Each nonnegative point
-              of your Charisma removes 0.02 percentage points. The final chance
+              percentage points to its chance to resist. Each point of your
+              Charisma above 0 removes 0.02 percentage points. The final chance
               is between 0% and 95%.
             </p>
             <p class="text-muted-foreground">
@@ -2611,10 +2652,11 @@
             <h3 class="font-semibold">Final Cadence</h3>
             <p>
               {#if usedByBardMercenary}
-                Requires mercenary level 50 or higher and the full combat song
-                limit active.
+                The mercenary casts it only from level 50, while it sustains its
+                full combat song limit.
               {:else}
-                Requires the full active song limit.
+                You can cast it only while you sustain your full active song
+                limit.
               {/if}
             </p>
             <Calculation
@@ -2639,8 +2681,9 @@
                 determines one roll shared by every recipient.</span
               >
               <span class="block"
-                >Hits living, visible, attackable monsters within range in the
-                same zone. They need a nonempty aggro list and speed above −50.</span
+                >Its damage hits living, visible, attackable monsters within
+                range in the same zone that have a nonempty aggro list and speed
+                above −50.</span
               >
               <span class="block">Final Cadence does not heal familiars.</span>
               {#if usedByBardMercenary}
@@ -2650,8 +2693,11 @@
                 >
               {/if}
             </p>
+            <!-- Source: server-scripts/Combat.cs:654-661,844-861,1539-1580 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
             <p class="text-muted-foreground">
-              Damage meets Magic Resist through the <a
+              The target's Magic Resist reduces the damage by 5% per 100 points,
+              at most 90%, and gives 5 percentage points of chance per 100
+              points to resist it entirely. See the <a
                 class="text-blue-600 dark:text-blue-400 hover:underline"
                 href="/mechanics/combat#damage-pipeline">damage pipeline</a
               >,
@@ -2704,22 +2750,27 @@
               <!-- Source: server-scripts/Combat.cs:700-703,836-875 — Mana Burn and Rageblow skip avoidance and mitigation, not variance, combat advantage, level adjustment or critical scaling. -->
               <p class="text-muted-foreground">
                 This skill skips avoidance and damage reduction from Defense or
-                resistance. Variance, level adjustment and eligible critical
-                hits still apply through the <a
+                resistance. Variance, combat advantage, level adjustment and
+                eligible critical hits still apply. See the <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="/mechanics/combat#damage-pipeline">damage pipeline</a
-                >, including
-                <a
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                  href="/mechanics/combat#combat-advantage">combat advantage</a
                 >.
               </p>
             {:else if damageMechanics}
+              <!-- Source: server-scripts/Combat.cs:307-319,844-861,1539-1580 — the matching stat reduces damage by 0.0005 per point, at most 0.9, rounded up; Defense adds 0.0001 per point to blockChance, at most 0.8; a resist stat adds 0.0005 per point to the resist chance. -->
               <p class="text-muted-foreground">
-                This skill's damage meets the target's {damageMechanics.stat} and
-                faces {damageMechanics.avoidance === "block"
-                  ? "a block-and-miss roll using Block Chance and Defense"
-                  : `a resist roll using ${damageMechanics.stat}`}. See the
+                {#if damageMechanics.avoidance === "block"}
+                  The target's Defense reduces this damage by 5% per 100 points,
+                  at most 90%, with the reduction rounded up. The hit can also
+                  be blocked or missed, at the target's base block chance plus 1
+                  percentage point per 100 Defense and any block bonuses, at
+                  most 80%.
+                {:else}
+                  The target's {damageMechanics.stat} reduces this damage by 5% per
+                  100 points, at most 90%, with the reduction rounded up, and gives
+                  5 percentage points of chance per 100 points to resist the hit entirely.
+                {/if}
+                See the
                 <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="/mechanics/combat#damage-pipeline">damage pipeline</a
@@ -2728,7 +2779,8 @@
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="/mechanics/combat#resistance"
                   >resistance and avoidance</a
-                >, and
+                >
+                for level differences and Accuracy, and
                 <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="/mechanics/combat#combat-advantage"
@@ -2770,8 +2822,8 @@
               <!-- Source: server-scripts/DamageSkill.cs:ToolTip; TargetDamageSkill.cs:249; AreaDamageSkill.cs:149-154 — the tooltip divides maximum Health by three, direct hits add it in full. -->
               <!-- Runtime verification: docs/game-bugs/threat-tooltip-understates-health-bonus.md -->
               <p class="text-muted-foreground">
-                The skill tooltip shows a third of your maximum Health here, but
-                the game adds all of it.
+                The skill's tooltip shows only a third of your maximum Health
+                for this bonus, but the game adds all of it.
               </p>
             {/if}
           </div>
@@ -2782,11 +2834,11 @@
           <div class="space-y-2">
             <h3 class="font-semibold">Balance Health</h3>
             <p class="text-muted-foreground">
-              Every affected character's Health becomes the group's average
-              Health percentage of its own maximum Health, rounded. With a {fmt.formatPercent(
+              Every affected character ends at the group's average Health
+              percentage, applied to its own maximum Health and rounded. At a {fmt.formatPercent(
                 EXAMPLE_SHARED_HEALTH,
               )} average, a character with {fmt.formatNumber(MAX_HEALTH.value)}
-              maximum Health ends at {fmt.formatNumber(balancedHealth())}.
+              maximum Health ends at {fmt.formatNumber(balancedHealth())} Health.
             </p>
             <RoundingDefinition />
           </div>
@@ -2908,20 +2960,13 @@
           </div>
         {/if}
 
-        <!-- Source: server-scripts/Combat.cs:1534-1578; TargetDebuffSkill.cs:105-143; AreaDebuffSkill.cs:104-139 — matching debuff resistance selects Defense or the actual elemental resist stat. -->
-        {#if isDebuffType && !skill.is_cleanse && !skill.is_bard_charm && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
+        <!-- Source: server-scripts/Combat.cs:1534-1578; TargetDebuffSkill.cs:105-143; AreaDebuffSkill.cs:104-139 — the debuff resist chance adds 0.0005 per point of Defense or the matching resist, at most 0.9. -->
+        {#if isDebuffType && !skill.is_cleanse && !skill.is_bard_charm && debuffResistance}
           <p class="text-muted-foreground">
-            The target resists this debuff using {skill.is_melee_debuff
-              ? "Defense"
-              : skill.is_poison_debuff
-                ? "Poison Resist"
-                : skill.is_fire_debuff
-                  ? "Fire Resist"
-                  : skill.is_cold_debuff
-                    ? "Cold Resist"
-                    : skill.is_disease_debuff
-                      ? "Disease Resist"
-                      : "Magic Resist"}. See
+            The target's {debuffResistance} gives it 5 percentage points of chance
+            per 100 points to resist this {skill.is_dispel
+              ? "skill"
+              : "debuff"}, at most 90%. See
             <a
               class="text-blue-600 dark:text-blue-400 hover:underline"
               href="/mechanics/combat#resistance">resistance and avoidance</a
@@ -3027,8 +3072,9 @@
               </p>
               <p class="text-muted-foreground">
                 <span class="block"
-                  ><span class="font-medium">1. Resist.</span> Your Accuracy lowers
-                  the monster's chance to resist this skill (shown above).</span
+                  ><span class="font-medium">1. Resist.</span> The monster rolls
+                  to resist this skill with its {debuffResistance}, and your
+                  Accuracy lowers the chance.</span
                 >
                 <span class="block"
                   >If the monster resists, no buffs are removed.</span
@@ -3108,12 +3154,9 @@
               </p>
               <p class="text-muted-foreground">
                 <span class="block"
-                  ><span class="font-medium">1. Resist.</span> You roll to resist
-                  this skill (chance shown above).</span
-                >
-                <span class="block"
-                  >The monster's Accuracy lowers your chance to resist. Matching
-                  resistance raises it.</span
+                  ><span class="font-medium">1. Resist.</span> You roll to
+                  resist this skill with your {debuffResistance}, and the
+                  monster's Accuracy lowers the chance.</span
                 >
                 <span class="block">If you resist, your buffs stay.</span>
               </p>
@@ -3141,12 +3184,12 @@
             <p class="text-muted-foreground">
               The next sword or bow auto attack consumes the buff. After its
               ordinary damage calculation, the hit deals 10% more per Wild
-              Strike rank, rounded, and becomes Magic damage that meets Magic
-              Resist. A {fmt.formatNumber(EXAMPLE_HIT)}-damage auto attack deals {fmt.formatNumber(
-                wildStrikeHit(),
-              )} at rank 1 and {fmt.formatNumber(
-                wildStrikeDamage(EXAMPLE_HIT, skill.max_level),
-              )} at rank {skill.max_level}. See
+              Strike rank, rounded, and becomes Magic damage, which Magic Resist
+              reduces. At rank {skill.max_level}, a {fmt.formatNumber(
+                EXAMPLE_HIT,
+              )}-damage auto attack deals {fmt.formatNumber(
+                wildStrikeHit(skill.max_level),
+              )}. See
               <a
                 class="text-blue-600 dark:text-blue-400 hover:underline"
                 href="/mechanics/combat#wild-strike">Wild Strike</a
@@ -3456,7 +3499,7 @@
                 as an ordinary hit.</span
               >
               <span class="block"
-                >Each positive point of Dexterity adds 0.05 percentage points of
+                >Each point of Dexterity above 0 adds 0.05 percentage points of
                 Critical Resist.</span
               >
               <span class="block"
@@ -3471,12 +3514,14 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Lifetap</h3>
             <p class="text-muted-foreground">
-              Heals you for {fmt.formatPercent(fmt.atRank(share, 1))} of each hit's
-              damage after the target's defenses, Ward and Mana Shield, rounded down,
-              so a {fmt.formatNumber(EXAMPLE_HIT)}-damage hit heals {fmt.formatNumber(
-                lifetapFromHit(share),
+              Heals you for {fmt.formatPercent(
+                fmt.atRank(share, skill.max_level),
+              )} of each hit's damage after the target's defenses, Ward and Mana Shield,
+              rounded down, so a {fmt.formatNumber(EXAMPLE_HIT)}-damage hit
+              heals {fmt.formatNumber(
+                lifetapFromHit(share, skill.max_level),
               )}{fmt.scalesWithRank(share, skill.max_level)
-                ? " at rank 1"
+                ? ` at rank ${skill.max_level}`
                 : ""}. {fmt.describeRankGrowth(
                 share,
                 skill.max_level,
@@ -3519,14 +3564,14 @@
             <h3 class="font-semibold">Heal on Hit</h3>
             <p class="text-muted-foreground">
               The affected target heals anyone who hits it in melee for {fmt.formatPercent(
-                fmt.atRank(share, 1),
+                fmt.atRank(share, skill.max_level),
               )} of each hit's damage after defenses and critical hits, rounded, up
               to the attacker's missing Health. A {fmt.formatNumber(
                 EXAMPLE_HIT,
               )}-damage hit heals {fmt.formatNumber(
-                healOnHit(share),
+                healOnHit(share, skill.max_level),
               )}{fmt.scalesWithRank(share, skill.max_level)
-                ? " at rank 1"
+                ? ` at rank ${skill.max_level}`
                 : ""}. {fmt.describeRankGrowth(
                 share,
                 skill.max_level,
@@ -3572,8 +3617,8 @@
               <span class="block"
                 >The shield uses the caster's attribute contribution stored when
                 the buff is applied. See Buff Scaling above for the amount. The
-                reflected hit meets the attacker's matching Defense or resist
-                through <a
+                attacker's Defense or matching resist reduces the reflected hit.
+                See <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="/mechanics/combat#resistance"
                   >resistance and mitigation</a

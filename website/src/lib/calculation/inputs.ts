@@ -62,14 +62,14 @@ export const HASTE: CalculationInput = {
   remember: true,
 };
 
-/** A skill's rank, from 1 to its maximum. Not remembered: each skill has its own. */
+/** A skill's rank, from 1 to its maximum, starting at the maximum. Not remembered: each skill has its own. */
 export function rankInput(maxRank: number): CalculationInput {
   return {
     key: "rank",
     label: "Rank",
     phrase: "rank",
     options: Array.from({ length: maxRank }, (_, index) => index + 1),
-    value: 1,
+    value: maxRank,
     min: 1,
     max: maxRank,
     step: 1,

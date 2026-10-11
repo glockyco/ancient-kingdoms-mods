@@ -1,1 +1,1 @@
-Mechanics The target resists this debuff using Fire Resist. See resistance and avoidance for Accuracy and level differences. Cleanse Resistance This debuff cannot be cleansed.
+Mechanics The target's Fire Resist gives it 5 percentage points of chance per 100 points to resist this debuff, at most 90%. See resistance and avoidance for Accuracy and level differences. Cleanse Resistance This debuff cannot be cleansed.

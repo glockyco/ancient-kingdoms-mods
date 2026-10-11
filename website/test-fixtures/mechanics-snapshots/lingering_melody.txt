@@ -1,1 +1,1 @@
-Mechanics Song Duration Bonus Each rank lengthens your songs by 10%, so a 20s song lasts 22s at rank 1. Learned song-duration bonuses add together.
+Mechanics Song Duration Bonus Each rank lengthens your songs by 10%, so at rank 5 a 20s song lasts 30s. Learned song-duration bonuses add together.

@@ -1,1 +1,1 @@
-Mechanics Balance Health Every affected character's Health becomes the group's average Health percentage of its own maximum Health, rounded. With a 62.5% average, a character with 2,000 maximum Health ends at 1,250.
+Mechanics Balance Health Every affected character ends at the group's average Health percentage, applied to its own maximum Health and rounded. At a 62.5% average, a character with 2,000 maximum Health ends at 1,250 Health. Rounded means to the nearest whole number. Exact halves go to the even number, so 2.5 becomes 2.

@@ -686,7 +686,11 @@ export function aggroCalculation(
     ...(caster !== "other" ? { inputs } : {}),
     example(values) {
       if (caster === "other")
-        values = { rank: 1, hitDamage: 200, maxHealth: MAX_HEALTH.value };
+        values = {
+          rank: skill.max_level,
+          hitDamage: 200,
+          maxHealth: MAX_HEALTH.value,
+        };
       const aggro = atRank(skill.aggro!, values.rank);
       const stunChance = atRank(skill.stun_chance ?? zero, values.rank);
       const stunTime = atRank(skill.stun_time ?? zero, values.rank);

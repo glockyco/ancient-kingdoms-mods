@@ -433,7 +433,7 @@ export function damageCalculation(
     steps,
     ...(!other ? { inputs } : {}),
     example(values) {
-      const rank = other ? 1 : values.rank;
+      const rank = other ? skill.max_level : values.rank;
       const base = atRank(
         skill.damage ?? { base_value: 0, bonus_per_level: 0 },
         rank,
@@ -515,7 +515,7 @@ export function damageCalculation(
         given: other
           ? [
               `example caster with 200 ${magic ? "Magic Damage" : "Damage"}${weaponMagic ? " and 200 Damage" : ""} at its level`,
-              "skill rank 1",
+              `skill rank ${skill.max_level}`,
             ]
           : inputs.map((input) => describeInput(input, values[input.key])),
         result: `${number(result)} damage before the target's defenses`,

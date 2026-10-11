@@ -1,1 +1,1 @@
-Mechanics Pet Maximum Health Your companion receives 2% × rank maximum Health. This passive does not increase your maximum Health, and does not affect familiars or mercenaries.
+Mechanics Pet Maximum Health Your companion receives 20% more maximum Health at rank 10. Rank 1 gives 2%, and each rank adds 2%. This passive does not increase your own maximum Health, and does not affect familiars or mercenaries.
