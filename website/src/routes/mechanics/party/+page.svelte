@@ -104,7 +104,7 @@
       <!-- Source: server-scripts/PlayerParty.cs:74-88 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
       <p>
         Sharing requires party members to be visible to the credited player and
-        less than 40 world units from them.
+        closer than 40 yd to them.
       </p>
       <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
@@ -277,7 +277,7 @@
         >
         <span class="block">Party membership is not required.</span>
         <span class="block">Following only moves you toward the player.</span>
-        <span class="block">Following stops within 1 unit of the player.</span>
+        <span class="block">Following stops within 1 yd of the player.</span>
       </p>
       <!-- Source: server-scripts/Player.cs:3908-3931,3935-3967 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
@@ -286,7 +286,7 @@
         >
         <span class="block"
           >Either player's death, a hidden or absent target, a zone change, or a
-          target jump over 8 units also ends following.</span
+          target jump over 8 yd also ends following.</span
         >
       </p>
     </Card.Content>

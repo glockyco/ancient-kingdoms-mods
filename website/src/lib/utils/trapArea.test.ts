@@ -28,7 +28,7 @@ describe("trap areas", () => {
           [-730, 803],
         ],
       ]),
-    ).toBe("2 × 8 units");
+    ).toBe("2 × 8 yd");
   });
 
   test("reads a barely rotated collider as the box it is", () => {
@@ -41,7 +41,7 @@ describe("trap areas", () => {
           [860.524, 278.519],
         ],
       ]),
-    ).toBe("2.1 × 1.9 units");
+    ).toBe("2.1 × 1.9 yd");
   });
 
   test("states an irregular patch as its reach, not its shape", () => {
@@ -57,6 +57,6 @@ describe("trap areas", () => {
           [0, 4],
         ],
       ]),
-    ).toBe("reaches 4 × 4 units");
+    ).toBe("reaches 4 × 4 yd");
   });
 });

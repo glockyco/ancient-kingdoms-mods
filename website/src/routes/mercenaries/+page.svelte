@@ -857,7 +857,7 @@
         party members and companions.</span
       >
       <span class="block"
-        >Other party members must be within 12 units of the healer.</span
+        >Other party members must be within 12 yd of the healer.</span
       >
       <span class="block"
         >Healers prioritize allies with less Health, allies under attack, and
@@ -935,7 +935,7 @@
       >
       <span class="block"
         >In aggressive stance, Battle Shout takes priority when at least two
-        attackable monsters within 20 units of you attack party members and are
+        attackable monsters within 20 yd of you attack party members and are
         close enough to each other for the shout.</span
       >
     </p>

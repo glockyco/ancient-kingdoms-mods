@@ -310,7 +310,7 @@
       <p class="text-sm text-muted-foreground">
         <span class="block"
           >The bank stays open only while you are alive, out of combat, and
-          within 2 units of the selected banker.</span
+          within 2 yd of the selected banker.</span
         >
         <span class="block">Moving away or entering combat closes it.</span>
       </p>
@@ -575,9 +575,9 @@
       <!-- Source: server-scripts/PlayerNpcTrading.cs:170-226 — trading requires an idle player near a merchant; purchases check token or gold cost and storage for the full delivered quantity, including pack contents. -->
       <p>
         <span class="block"
-          >Buying requires an idle character within 2.4 units of a merchant.</span
+          >Buying requires an idle character within 2.4 yd of a merchant.</span
         >
-        <span class="block">Selling and buyback require a 2-unit range.</span>
+        <span class="block">Selling and buyback work within 2 yd.</span>
         <span class="block">Purchases cost gold or the specified token.</span>
         <span class="block">The full quantity must fit in carried storage.</span
         >
@@ -639,7 +639,7 @@
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
           <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — loot pickup states and 2.4-unit reach check. -->Loot
-          pickup requires 2.4-unit range.
+          pickup works within 2.4 yd.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — gold deposits directly as carried gold and splits among nearby party members. -->Gold

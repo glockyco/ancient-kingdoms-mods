@@ -188,7 +188,7 @@
         <!-- Event Radius -->
         <div class="flex justify-between">
           <span class="text-muted-foreground">Event Radius</span>
-          <span>{data.altar.radiusEvent} units</span>
+          <span>{data.altar.radiusEvent} yd</span>
         </div>
 
         <!-- Init Message -->

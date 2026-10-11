@@ -180,7 +180,7 @@
         >
         <span class="block"
           >A targeted attack without a valid target selects the nearest
-          non-hidden, attackable monster within 10 units if one exists.</span
+          non-hidden, attackable monster within 10 yd if one exists.</span
         >
       </p>
       <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,83-135; PlayerSkills.cs:747-770 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->

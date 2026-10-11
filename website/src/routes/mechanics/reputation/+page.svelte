@@ -408,7 +408,7 @@
       <!-- Source: server-scripts/Player.cs:13334-13338 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         <span class="block"
-          >Click an animal within 3 units to pet it for 1–4 reputation with its
+          >Click an animal within 3 yd to pet it for 1–4 reputation with its
           faction.</span
         >
         <span class="block"

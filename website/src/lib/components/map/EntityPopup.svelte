@@ -596,7 +596,7 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {monster.moveDistance.toFixed(0)} units</span
+          >Wanders {monster.moveDistance.toFixed(0)} yd</span
         >
       </div>
     {/if}
@@ -830,7 +830,7 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {npc.moveDistance.toFixed(0)} units</span
+          >Wanders {npc.moveDistance.toFixed(0)} yd</span
         >
       </div>
     {/if}
@@ -1206,7 +1206,7 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-amber-400"></span>
         <span class="text-muted-foreground"
-          >Event radius {altar.radiusEvent} units</span
+          >Event radius {altar.radiusEvent} yd</span
         >
       </div>
     {/if}

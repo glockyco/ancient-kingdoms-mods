@@ -2326,8 +2326,8 @@
             </p>
             <!-- Source: server-scripts/Player.cs:UpdateServer_CASTING — fear and stun cancel ChanneledTargetDamageSkill; stun skips halving the channel cooldown. -->
             <p class="text-muted-foreground">
-              Moving more than 0.01 units from your starting position, losing
-              the target, range or sight, stun or fear cancels the channel.
+              Moving more than 0.01 yd from your starting position, losing the
+              target, range or sight, stun or fear cancels the channel.
               Cancellation starts the full cooldown immediately, including when
               a pulse kills the target.
             </p>
@@ -3347,8 +3347,9 @@
                 same hit and the target is not already stunned.</span
               >
               <span class="block"
-                >It pushes the target back{#if skill.knockback_distance}
-                  {skill.knockback_distance}m{/if} and stuns them for 0.25 seconds.</span
+                >It pushes the target back{skill.knockback_distance
+                  ? ` ${skill.knockback_distance} yd`
+                  : ""} and stuns them for 0.25 seconds.</span
               >
               <span class="block"
                 >If an obstacle blocks the path, the target also takes 1.25% of

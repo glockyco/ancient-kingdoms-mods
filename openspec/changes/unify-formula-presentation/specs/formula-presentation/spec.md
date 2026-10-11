@@ -29,12 +29,17 @@ A rule that takes more than one operation SHALL be presented as named steps. A r
 
 ### Requirement: Units are the reader's units
 
-Multipliers and per-point coefficients SHALL be stated as percentages, such as "0.4% per point", not decimal fractions. A whole-number multiplier above 10 MAY be stated as a multiple, such as "× 20", where a percentage such as 2000% would be harder to read. A change to a chance SHALL be stated in percentage points. Durations SHALL use seconds below a minute and minutes and hours from a minute up. A skill's level SHALL be called its rank.
+Multipliers and per-point coefficients SHALL be stated as percentages, such as "0.4% per point", not decimal fractions. A whole-number multiplier above 10 MAY be stated as a multiple, such as "× 20", where a percentage such as 2000% would be harder to read. A change to a chance SHALL be stated in percentage points. Durations SHALL use seconds below a minute and minutes and hours from a minute up. Distances SHALL be stated in yd, the unit the game's tooltips use for world distances. A skill's level SHALL be called its rank.
 
 #### Scenario: A coefficient is a fraction in the game code
 
 - **WHEN** the game multiplies a stat by 0.004
 - **THEN** the page states 0.4% per point
+
+#### Scenario: A rule depends on a distance
+
+- **WHEN** the game checks that a character is within 2 world units
+- **THEN** the page states 2 yd
 
 ### Requirement: Rounding is stated where it happens
 

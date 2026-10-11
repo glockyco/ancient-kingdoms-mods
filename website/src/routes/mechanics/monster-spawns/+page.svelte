@@ -1243,8 +1243,8 @@
           <!-- Source: server-scripts/Monster.cs:51,1301-1313,2306-2314 — followDistance defaults to 20; the anchor is nonzero originFollowPosition, otherwise combatStartPosition, otherwise current position. -->
           <!-- Source: server-scripts/Monster.cs:EventTargetTooFarToFollow,GetMaxAggroTarget; Monster.cs:1613-1627 — an out-of-range target is replaced by the highest-aggro eligible reachable in-range target; otherwise debuffs clear and returningHomePoint starts with sprintSpeed 3.5. -->
           <span class="block"
-            >The default chase limit is 20 units from the monster's position
-            when combat started, or from an explicitly configured origin.</span
+            >The default chase limit is 20 yd from the monster's position when
+            combat started, or from an explicitly configured origin.</span
           >
           <span class="block"
             >If its target exceeds that limit, the monster switches to the

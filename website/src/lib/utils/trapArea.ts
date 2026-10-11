@@ -1,7 +1,7 @@
 /**
  * Trap areas are exported as closed rings of world-space points, one per
- * collider path. Distances are world units, the same unit the altar event
- * radius is stated in.
+ * collider path. A world unit is the yard the game's tooltips show, as in
+ * "4 yd range", so areas read in yd like every other distance.
  */
 export type TrapAreaRing = [number, number][];
 
@@ -20,9 +20,9 @@ export function formatTrapArea(rings: TrapAreaRing[]): string {
   const [width, height] = getExtent(rings);
 
   if (rings.length === 1 && isRectangle(rings[0])) {
-    return `${width} × ${height} units`;
+    return `${width} × ${height} yd`;
   }
-  return `reaches ${width} × ${height} units`;
+  return `reaches ${width} × ${height} yd`;
 }
 
 /** Width and height of the area, rounded to the tenth of a unit shown. */
