@@ -57,7 +57,7 @@ both multiply their base curve by their multiplier.
 `Energy.max` never reads `multiplierEnergy`:
 
 ```csharp
-// server-scripts/Energy.cs:27-39
+// server-scripts/Energy.cs:max
 public override int max
 {
     get
@@ -76,14 +76,14 @@ public override int max
 `Mana.max` does read its own:
 
 ```csharp
-// server-scripts/Mana.cs:31
+// server-scripts/Mana.cs:max
 int num3 = (int)Math.Round((float)baseMana.Get(level.current) * multiplierMana);
 ```
 
-`multiplierEnergy` is declared at `server-scripts/Energy.cs:19-21` and written in eight places: the
-hire roll at `server-scripts/Player.cs:9815`, the veteran accumulation at `Player.cs:9832`, the four
-level-up paths at `Player.cs:4529`, `4572`, `4615` and `4660`, and the reload at `Player.cs:9972` and
-`9990`. Outside the generated network plumbing in `Energy.cs`, nothing reads it.
+`multiplierEnergy` is declared at `server-scripts/Energy.cs:multiplierEnergy` and written in eight places: the
+hire roll at `server-scripts/Player.cs:10550`, the veteran accumulation at `Player.cs:10569`, the four
+level-up paths at `Player.cs:4695`, `4738`, `4781` and `4826`, and the reload at `Player.cs:10748` and
+`10768`. Outside the generated network plumbing in `Energy.cs`, nothing reads it.
 
 ## Evidence
 

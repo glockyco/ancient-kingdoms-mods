@@ -9,19 +9,19 @@ description: Inspect or control the running Ancient Kingdoms game through HotRep
 
 1. Deploy the host with `build-tool deploy-host`. See `build-tool/Commands/DeployHostCommand.cs:DeployHostCommand`.
 2. Launch the game and wait for the bootstrap. See `build-tool/Commands/LaunchCommand.cs:LaunchCommand`.
-3. Query the running game from another terminal with `hotrepl`.
+3. Query the running game from another terminal with `pnpm exec hotrepl`.
 
 HotRepl accepts one WebSocket client. A new client disconnects the existing client, including one that only requests a handshake.
-Do not run `hotrepl info` or another client while `build-tool verify` or `build-tool export` owns the connection.
+Do not run `pnpm exec hotrepl info` or another client while `build-tool verify` or `build-tool export` owns the connection.
 Use a TCP connection without a WebSocket handshake to check whether the endpoint is occupied.
 
 ```sh
 dotnet run --project build-tool deploy-host --hotrepl-repo <HotRepl-repo>
 dotnet run --project build-tool launch --wait
-hotrepl info --json
-hotrepl run game.useScratchDatabase '{}' --json
-hotrepl run world.summary '{}' --json
-hotrepl run world.enter '{}' --json
+pnpm exec hotrepl info --json
+pnpm exec hotrepl run game.useScratchDatabase '{}' --json
+pnpm exec hotrepl run world.summary '{}' --json
+pnpm exec hotrepl run world.enter '{}' --json
 ```
 
 ## Redirect before database access

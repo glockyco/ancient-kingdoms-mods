@@ -69,7 +69,7 @@ if (slot.amount > 0 && slot.durability > 0)
 ```
 
 The correction that removes the bow tests only that the slot is occupied
-(`server-scripts/TargetDamageSkill.cs:218-222`):
+(`server-scripts/TargetDamageSkill.cs:ApplyDamage`):
 
 ```csharp
 if (caster is Player { className: "Ranger" } player5 && player5.equipment.slots[13].amount > 0)
@@ -80,7 +80,7 @@ if (caster is Player { className: "Ranger" } player5 && player5.equipment.slots[
 ```
 
 The Rogue correction immediately below it has the same shape and removes half the offhand weapon's
-damage (`server-scripts/TargetDamageSkill.cs:223-227`). `server-scripts/FrontalDamageSkill.cs:88-92`
+damage (`server-scripts/TargetDamageSkill.cs:ApplyDamage`). `server-scripts/FrontalDamageSkill.cs:88-92`
 repeats the Ranger form.
 
 Attribute bonuses are also gated on durability

@@ -246,12 +246,12 @@ def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     classes = [ClassData(**item) for item in data]
 
-    # Validation: assert at least 6 classes exist to catch export errors
+    # Guard band: reject suspiciously small exports, not an exact class census.
     if len(classes) < 6:
         msg = f"Expected at least 6 classes, found {len(classes)}"
         raise ValueError(msg)
 
-    # Warning: unexpected growth if more than 8 classes
+    # Warn above the guard band's upper bound so new classes prompt review.
     if len(classes) > 8:
         console.print(
             f"  [yellow]Warning:[/yellow] Found {len(classes)} classes (expected 6-8)"

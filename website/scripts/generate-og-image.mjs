@@ -6,7 +6,7 @@
  * all require image/png or image/jpeg, none accept SVG or webp). resvg-js
  * rasterises an inline SVG composition of the project logo plus brand text
  * onto a 1200x630 canvas, then writes the result next to the static assets
- * picked up by adapter-static.
+ * picked up by adapter-cloudflare.
  *
  * Run automatically via the "prebuild" npm script. The output is committed
  * so deploys do not depend on this script succeeding in CI.

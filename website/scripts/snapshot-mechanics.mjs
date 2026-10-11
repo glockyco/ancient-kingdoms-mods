@@ -7,13 +7,20 @@
  *
  * Without --update: compares against existing snapshots in test-fixtures/mechanics-snapshots/
  *   and reports any diffs. Exit code 1 if unexpected changes found.
- * With --update: writes (or overwrites) snapshot files.
+ * With --update: writes (or overwrites) snapshot files and deletes orphans.
  *
- * Reads HTML from: .svelte-kit/output/prerendered/pages/skills/<id>/index.html
+ * Reads HTML from: .svelte-kit/output/prerendered/pages/skills/<id>.html
  * Snapshots at:    test-fixtures/mechanics-snapshots/<id>.txt
  */
 
-import { readdir, readFile, writeFile, mkdir, access } from "node:fs/promises";
+import {
+  readdir,
+  readFile,
+  writeFile,
+  mkdir,
+  access,
+  unlink,
+} from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { parse } from "node-html-parser";
 
@@ -76,6 +83,18 @@ async function main() {
   let missing = 0;
   let skipped = 0;
   const changedSkills = [];
+  const pageIds = new Set(skillDirs);
+  const orphanSnapshots = (await readdir(SNAPSHOTS_DIR))
+    .filter((name) => name.endsWith(".txt") && !pageIds.has(name.slice(0, -4)))
+    .sort();
+
+  for (const name of orphanSnapshots) {
+    if (UPDATE) {
+      await unlink(join(SNAPSHOTS_DIR, name));
+    } else {
+      console.log(`  ORPHAN: ${name.slice(0, -4)} (no prerendered page)`);
+    }
+  }
 
   for (const skillId of skillDirs) {
     const htmlPath = join(PAGES_DIR, `${skillId}.html`);
@@ -142,14 +161,15 @@ async function main() {
       `Snapshots written for ${skillDirs.length - skipped} skills (${skipped} had no mechanics card).`,
     );
     console.log(`Snapshots at: ${SNAPSHOTS_DIR}`);
+    console.log(`Deleted ${orphanSnapshots.length} orphan snapshots.`);
   } else {
     const total = skillDirs.length - skipped;
     console.log(`\nChecked ${total} skills with mechanics cards.`);
-    if (changed === 0 && missing === 0) {
+    if (changed === 0 && missing === 0 && orphanSnapshots.length === 0) {
       console.log("✓ All snapshots match.");
     } else {
       console.log(
-        `✗ ${changed} changed, ${missing} new: ${changedSkills.join(", ")}`,
+        `✗ ${changed} changed, ${missing} new, ${orphanSnapshots.length} orphan: ${changedSkills.join(", ")}`,
       );
       process.exit(1);
     }

@@ -39,7 +39,7 @@ const config: KnipConfig = {
         // automatically by knip's SvelteKit plugin; listing them here is redundant.
       ],
       project: ["src/**/*.{ts,svelte,css}", "scripts/**/*.{mjs,ts}"],
-      // @types/sql.js: required by src/sql.js-fts5.d.ts type bridge (import from "sql.js")
+      // @types/sql.js: required by website/src/lib/sql.js-fts5.d.ts type bridge (import from "sql.js")
       // postcss: optional peer dep for eslint-plugin-svelte via postcss-load-config
       ignoreDependencies: ["@types/sql.js", "postcss"],
       // pkill is a system binary used by the clean:workerd script

@@ -40,7 +40,7 @@ Two behaviours are self-consistent. Either Fire Goblin allows Druid, in which ca
 
 ## Cause
 
-`server-scripts/UICharacterEditor.cs:1466-1475`:
+`server-scripts/UICharacterEditor.cs:changeRaceFireGoblin`:
 
 ```csharp
 if (classIndexSelected == 5)
@@ -57,7 +57,7 @@ DruidButton.interactable = true;
 
 Class index 5 is Druid. The guard forces the selection to Warrior, and the next line leaves the Druid button enabled.
 
-`changeRaceDrassar` and `changeRaceDarkElf` carry the same guard and also disable the button, at `server-scripts/UICharacterEditor.cs:1143-1150` and `1303-1312`. `changeRaceDwarf` disables Druid and Wizard and guards both, at `1389-1396`. Fire Goblin keeps the guard and drops the matching button state, which suggests the guard was left in place when Druid became available to Fire Goblin.
+`changeRaceDrassar` and `changeRaceDarkElf` carry the same guard and also disable the button, at `server-scripts/UICharacterEditor.cs:changeRaceDrassar` and `server-scripts/UICharacterEditor.cs:changeRaceDarkElf`. `server-scripts/UICharacterEditor.cs:changeRaceDwarf` disables Druid and Wizard and guards both. Fire Goblin keeps the guard and drops the matching button state, which suggests the guard was left in place when Druid became available to Fire Goblin.
 
 ## Suggested fix
 

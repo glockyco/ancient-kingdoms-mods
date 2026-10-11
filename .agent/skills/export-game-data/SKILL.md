@@ -48,7 +48,7 @@ exporter would have to drive the interface one race at a time.
 
 | Domain/kind | Source |
 |---|---|
-| `achievement/icon` | Steam achievement icon downloaded during export |
+| `achievement/icon` | Steam achievement icon downloaded during export; recorded by `compendium build`, not the visual-assets manifest |
 | `chest/primary` | `GatherItem.readySprite` |
 | `class/icon` | `Player.classIcon` |
 | `gathering_resource/icon` | `GatherItem.journalIcon` |
@@ -64,10 +64,10 @@ exporter would have to drive the interface one race at a time.
 | `profession/icon` | Live `UIProfessions` slot's authored `0/icon.Image.sprite`; the other images are decorative frames/labels |
 | `skill/icon` | `ScriptableSkill.image` |
 | `world/map` | Live scene `UIMap.worldMap.sprite`, exported as `world/eratiath/map` |
-| `zone/shot` | Typed HotRepl `capture.zoneShots` job; native zone screenshots in `screenshots/zones/` with `manifest.json` |
-| `zone/thumbnail` | A crop of the stitched world screenshot based on zone bounds |
+| `zone/shot` | Typed HotRepl `capture.zoneShots` job; native zone screenshots in `screenshots/zones/` with `manifest.json`; recorded by `compendium build`, not the visual-assets manifest |
+| `zone/thumbnail` | A crop of the stitched world screenshot based on zone bounds; recorded by `compendium build`, not the visual-assets manifest |
 
-DataExporter writes source PNGs and their relative paths to `visual_assets.json`. `compendium build`
+For the other kinds, DataExporter writes source PNGs and their relative paths to `visual_assets.json`. `compendium build`
 records them in SQLite and publishes WebP images.
 
 Do not map entities by static Unity sprite names or use UnityPy images as fallback art. The runtime item

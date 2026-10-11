@@ -8,7 +8,7 @@ An interactive world map and a searchable compendium for [Ancient Kingdoms](http
 
 ## What it offers
 
-- **Map** (`/map`). The world of Eratiath with its zones, monsters, NPCs, gathering spots, chests, treasure, altars, traps, portals, and crafting stations, with filters and search.
+- **Map** (`/map`). The world of Eratiath with its zones, monsters, NPCs, gathering spots, chests, treasure, altars, traps, portals, houses, and crafting stations, with filters and search.
 - **Reference pages.** Items, monsters, NPCs, zones, quests, recipes, skills, classes, mercenaries, professions, and more: where each one is, what it drops or needs, and how they connect.
 - **Mechanics** (`/mechanics`). How combat, experience, monster spawns, death, crafting, and the game's other systems work, with the numbers the game code uses.
 
@@ -204,6 +204,7 @@ pnpm check:citations                         # needs server-scripts
 pnpm check:redactions                        # needs the full export
 pnpm check:clean                             # the build-pipeline CI gates on a clean checkout of HEAD
 pnpm build
+nix build --no-link ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).openspec"
 (cd website && node scripts/snapshot-mechanics.mjs)
 ```
 

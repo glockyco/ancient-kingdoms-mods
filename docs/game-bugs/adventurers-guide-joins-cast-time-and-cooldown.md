@@ -14,7 +14,7 @@ A skill page in the Adventurer's Guide shows the cast time and the cooldown with
 
 The line that states how long a skill takes to cast and how long the player waits before the next cast is hard to read. A player can read `cast1m 30s` as one value.
 
-182 of the 415 skill entries in the guide have this layout. The count comes from the English tooltip templates.
+182 of the 415 skill entries in the guide have this layout in 0.9.34.0. In 0.9.35.0, 190 of 474 entries have it. These counts are derived from English `tooltip_template` values matching `[ \t]+\{COOLDOWN\}`, counting each (class, skill) entry separately.
 
 ## Steps to reproduce
 
@@ -45,7 +45,7 @@ The guide shows a separator between the two values, as the skill bar tooltip doe
 return CooldownColumnSpacing.Replace(template, "<pos=50%>{COOLDOWN}");
 ```
 
-`GameWikiContent.SkillBody` then removes every layout tag, `pos` included, and replaces it with nothing, at `.decompiled/steam-25548782-a676445a44fe/GameWikiContent.cs:23` and `:257`:
+`GameWikiContent.SkillBody` then removes every layout tag, `pos` included, and replaces it with nothing, at `server-scripts/GameWikiContent.cs:LayoutTags` and `server-scripts/GameWikiContent.cs:SkillBody`:
 
 ```csharp
 private static readonly Regex LayoutTags = new Regex("</?(?:size|pos|space|align|width|margin|voffset|line-height|indent|cspace|mspace)(?:=[^>]*)?>", RegexOptions.IgnoreCase);

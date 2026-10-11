@@ -56,6 +56,10 @@ Tile validation must pass before replacement. Investigate redaction drift. Run `
 
 Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it and changes generated fixtures, so treat each one as its own concern.
 
+Re-read each report in `docs/game-bugs/` against the server-script diff. Delete fixed reports with their index rows, re-anchor moved references, and re-count derived figures.
+
+**When the patch adds a class:** review silent omissions in `website/src/lib/utils/classes.ts`, `website/src/lib/data/classes/guide.ts`, the class count in `website/src/routes/classes/+page.svelte`, the growth table in `website/src/routes/mechanics/experience/+page.svelte`, and any hard-coded class pickers. `classes check-races` and exporter skill classification fail loudly; passing them does not cover these consumers.
+
 A patch can edit the in-game Adventurer's Guide. `website/src/lib/data/game-guide/coverage.db.test.ts` names every guide article that is new, removed, or edited since its compendium section was reviewed. For each named article, update the section and its digest in `coverage.ts` together.
 
 See `website/scripts/snapshot-mechanics.mjs` for mechanics snapshot generation and its `--update` option.

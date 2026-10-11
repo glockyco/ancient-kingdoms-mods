@@ -39,7 +39,7 @@ The drop onto the first storage slot is refused with the same message as the dro
 
 ## Cause
 
-`server-scripts/PlayerInventory.cs:480-486`:
+`server-scripts/PlayerInventory.cs:OnDragAndDrop_InventorySlot_InventorySlot`:
 
 ```csharp
 if (isCombinedBackpackSlot(slotIndices[0]))
@@ -51,9 +51,9 @@ if (isCombinedBackpackSlot(slotIndices[0]))
     }
 ```
 
-Extended storage starts at index 24 (`CombinedStartIndex`, `PlayerInventory.cs:29`), and the base inventory is indices 0 to 23 (`PlayerInventory.cs:67-79`). The guard tests `> 24`, so it lets index 24 through.
+Extended storage starts at index 24 (`PlayerInventory.cs:CombinedStartIndex`), and the base inventory is indices 0 to 23 (`PlayerInventory.cs:EnumeratePreferredSlotsOrdered`). The guard tests `> 24`, so it lets index 24 through.
 
-The next check, `WouldRemovingBackpackLockOccupiedSlots` at `PlayerInventory.cs:487-491`, runs before the move. The target slot is still empty at that point, so the check passes and the swap at `PlayerInventory.cs:513-516` places the backpack in the slot that its own removal locks.
+The next check, `WouldRemovingBackpackLockOccupiedSlots`, runs before the move in `PlayerInventory.cs:OnDragAndDrop_InventorySlot_InventorySlot`. The target slot is still empty at that point, so the check passes and the subsequent `CmdSwapInventoryInventory` call places the backpack in the slot that its own removal locks.
 
 ## Suggested fix
 
@@ -67,7 +67,7 @@ Change the guard to `slotIndices[1] >= 24`.
 
 ## Notes
 
-- The drops were simulated at the event-system level. With the Combined Backpack window open, the equipped-backpack slot object and the first four storage-slot objects are active, tagged `InventorySlot`, and accept drops. Each drop raised Unity's drop event on the target slot object, with the equipped-backpack slot as the dragged object. That event reaches the game's handler through `UIDragAndDropable.OnDrop` at `server-scripts/UIDragAndDropable.cs:149-166`. The simulation did not move a pointer or begin a drag, so it does not show the mouse input itself.
+- The drops were simulated at the event-system level. With the Combined Backpack window open, the equipped-backpack slot object and the first four storage-slot objects are active, tagged `InventorySlot`, and accept drops. Each drop raised Unity's drop event on the target slot object, with the equipped-backpack slot as the dragged object. That event reaches the game's handler through `server-scripts/UIDragAndDropable.cs:OnDrop`. The simulation did not move a pointer or begin a visual drag.
 - The sequence was run twice. Between runs, the backpack was returned to its equipment slot with the inventory's own swap method, because the player cannot reach it.
 - Whether equipping a second backpack makes the hidden backpack reachable again was not tested.
 - The defect is in the game's own drag-and-drop rules and needs no mods to observe.

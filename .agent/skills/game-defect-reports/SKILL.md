@@ -45,7 +45,7 @@ A screenshot shows an interface defect that numbers cannot. Capture one for ever
 Capture with the typed job `unity.screenshot.capture`. It waits for the end of the frame, includes the interface, and returns a PNG artifact with a Windows `path` and a `sha256`. Translate the path with `build-tool/Game/WinePath.cs:ToHost`, which maps `C:\` to `drive_c` under `WINE_PREFIX` from `Local.props`, then check the hash.
 
 ```sh
-hotrepl run unity.screenshot.capture '{}' --json
+pnpm exec hotrepl run unity.screenshot.capture '{}' --json
 ```
 
 A host built before HotRepl commit `5d36398` refuses with `Unity PNG encoding is not available in this runtime.` Redeploy it with `build-tool deploy-host --hotrepl-repo <HotRepl-repo>` from a checkout that contains that commit.
@@ -62,7 +62,7 @@ nix shell nixpkgs#libwebp --command cwebp -q 82 -resize 1400 0 in.png -o docs/ga
 
 The measurements come from a modded, macOS CrossOver installation. A developer can dismiss a report for either reason, so remove both objections.
 
-- Cite the source lines. The developer can then confirm the defect by reading, without reproducing it.
+- Cite with `File.cs:Member` where one member holds the cause, because Markdown line ranges are not verified; the developer can then confirm the defect by reading, without reproducing it.
 - Give steps a player can follow with no mods installed.
 - Say that the mods only read state and drive the game's own commands.
 - Say that the defect is in game logic rather than in the platform.

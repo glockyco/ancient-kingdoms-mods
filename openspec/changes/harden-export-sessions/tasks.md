@@ -3,7 +3,7 @@
 - [ ] 1.1 Add one exporter descriptor list to `mods/DataExporter/DataExporter.cs` for each remaining required exporter and its output paths. Verify duplicate IDs, duplicate paths, and unregistered exporters fail focused `DataExporter.Tests` registration checks.
 - [ ] 1.2 Make exporters and `VisualAssetRegistry` write to a per-run staging path. Verify a simulated failure after an earlier exporter leaves the previous promoted session and active pointer unchanged.
 - [ ] 1.3 Build a manifest after all exporters finish. Check top-level counts, sizes, SHA-256 digests, referenced images, game version, locale, and verified installed-build provenance. Verify corruption or an omitted file prevents promotion.
-- [ ] 1.4 Make `ArtifactCollector.cs:24-42` consume only the promoted run manifest, not `exported-data/*.json`. Verify stale `doors.json` and `interactive_objects.json` and tracked curated `static_data.json` are not presented as current-run artifacts.
+- [ ] 1.4 Make `ArtifactCollector.cs:24-42` consume only the promoted run manifest, not `exported-data/*.json`. Verify files from older runs and tracked curated `static_data.json` are not presented as current-run artifacts.
 
 ## 2. Separate curated composition
 
@@ -14,4 +14,4 @@
 ## 3. Prove and document
 
 - [ ] 3.1 Run a real `build-tool export` in the game and inspect the manifest, image hashes, class-combat rows, and locale. Build the resulting session with `compendium build`; verify a second failed export cannot change that session or the last successful database.
-- [ ] 3.2 Update the exporter notes in `README.md` and the `export-game-data` skill, configuration examples, and the game-version update procedure with separate session and curated paths. Verify examples match actual command output; remove obsolete tracked flat export copies without adding compatibility fallbacks.
+- [ ] 3.2 Update the exporter notes in `README.md` and the `export-game-data` skill, configuration examples, and the game-version update procedure with separate session and curated paths. Verify examples match actual command output without adding compatibility fallbacks.

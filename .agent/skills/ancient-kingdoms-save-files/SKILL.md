@@ -34,7 +34,7 @@ The plaintext export is sensitive. Keep it inside the timestamped work/backup di
 
 ## Inspect character corruption
 
-Start with table/row counts, then narrow to the affected character names. Use `server-scripts/Database.cs:1968-1976` for the character-keyed table inventory.
+Start with table/row counts, then narrow to the affected character names. Use `server-scripts/Database.cs:CharacterDelete` for the character-keyed table inventory.
 
 - Detect orphaned child rows: names present in child tables but absent from `characters`.
 - Detect duplicate/corrupt core rows with `NOT INDEXED`. A corrupt index can hide physical rows.
@@ -60,7 +60,7 @@ Then summarize the repaired records with counts from all character child tables.
 
 ## Runtime verification
 
-At the title/start scene, `Il2Cpp.Database.connection` may be null. See `server-scripts/Database.cs:757-762` for connection initialization and `server-scripts/Database.cs:814-834` for cleanup.
+At the title/start scene, `Il2Cpp.Database.connection` may be null. See `server-scripts/Database.cs:ConnectInternal` for connection initialization and `server-scripts/Database.cs:CloseConnection` for cleanup.
 
 Safe runtime reads:
 

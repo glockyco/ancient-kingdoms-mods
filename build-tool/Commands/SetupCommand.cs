@@ -163,6 +163,8 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
         });
 
         Console.WriteLine("Next steps:");
+        Console.WriteLine("  Close the game before deploy-host and deploy.");
+        Console.WriteLine("  dotnet run --project build-tool deploy-host");
         Console.WriteLine("  dotnet run --project build-tool build");
         Console.WriteLine("  dotnet run --project build-tool deploy");
         Console.WriteLine("  dotnet run --project build-tool export");
