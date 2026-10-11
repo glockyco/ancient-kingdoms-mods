@@ -2201,7 +2201,8 @@
         {/if}
 
         {#if hasNonZeroField(skill.damage_over_time_execute_bonus)}
-          <!-- Source: server-scripts/Skills.cs:GetDamageOverTimeExecuteBonus,1873-1880 — below 0.3 health.max, sums learned source-player PassiveSkill.damageOverTimeExecuteBonus before critical tick scaling. -->
+          <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — after the NecromancerReaperFormSkill multiplier, below 0.3 health.max, sums learned source-player PassiveSkill damageOverTimeExecuteBonus. -->
+          <!-- Source: server-scripts/Skills.cs:1873-1876 — ApplyDamageOverTimeBonuses runs before ApplyCriticalToOverTime. -->
           <div class="space-y-2">
             <h3 class="font-semibold">Damage-over-Time Execute</h3>
             <p class="text-muted-foreground">
@@ -2211,7 +2212,8 @@
             </p>
             <p class="font-mono">
               Tick = round(resisted, counter-scaled damage &times; (1 + summed
-              execute bonuses)), then critical scaling.
+              execute bonuses)), after any Reaper Form bonus and before critical
+              scaling.
             </p>
             <p class="text-muted-foreground">
               You must remain in the game as the player who applied the debuff

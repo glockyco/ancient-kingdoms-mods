@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.35.0",
+    "game_version": "0.9.35.1",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -4087,7 +4087,7 @@
       "span": 7
     },
     "Skills.cs:1617-1905": {
-      "sha256": "14989e4cfeead50e7bdea2e6e4edaf9703173cba7a4feba475780bdcf5fad5c9",
+      "sha256": "8dbf0ec63acdcfe3ec845561a62ede4708591edf7887bc2da434a08e590d1c75",
       "span": 289
     },
     "Skills.cs:1620-1623": {
@@ -4102,17 +4102,17 @@
       "sha256": "4d478065bb5ee05495dffb912a69f48be1c6d0c29fc055b9ab6a0c100f1fffcb",
       "span": 12
     },
-    "Skills.cs:1752-1755": {
-      "sha256": "744847d0abe73124d34705451ef9df04770445588a37d7f1aed0490a87c9b568",
-      "span": 4
+    "Skills.cs:1753-1755": {
+      "sha256": "2fb834dae3c0e75bda23d4571fa58659aae1344f06ae593f2583afa7fd1cef82",
+      "span": 3
     },
     "Skills.cs:1866-1872": {
       "sha256": "945c73601ce940d016299c584d1be55e2bb0a73e812a5fa355af7f505de537b3",
       "span": 7
     },
-    "Skills.cs:1873-1880": {
-      "sha256": "9768c8099dedb4bc219e0df1786b65dd9d6d791a97112d08f87bd1f4e76d1505",
-      "span": 8
+    "Skills.cs:1873-1876": {
+      "sha256": "317842ef5c3c14713343aba331257e65148942c0ca83df8fe6108381a8e113ca",
+      "span": 4
     },
     "Skills.cs:247-249": {
       "sha256": "ed9fa4f4e7cbc39de6f7ee1763936d767609635c82e1f535462c0e3f84dbea44",
@@ -4157,6 +4157,9 @@
     "Skills.cs:AddOrRefreshBuff": {
       "span": 0
     },
+    "Skills.cs:ApplyDamageOverTimeBonuses": {
+      "span": 0
+    },
     "Skills.cs:ApplyWardToDoTDamage": {
       "span": 0
     },
@@ -4167,9 +4170,6 @@
       "span": 0
     },
     "Skills.cs:FinishCastMeleeAttackMonster": {
-      "span": 0
-    },
-    "Skills.cs:GetDamageOverTimeExecuteBonus": {
       "span": 0
     },
     "Skills.cs:GetFinalHealOverTime": {

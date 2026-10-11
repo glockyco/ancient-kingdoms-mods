@@ -1145,15 +1145,30 @@ percentageValue = baseValue × songPower</pre>
             >At 2 layers it deals 85%, and at 1 layer it deals 70%.</span
           >
         </p>
-        <!-- Source: server-scripts/Skills.cs:GetDamageOverTimeExecuteBonus,1873-1880,1752-1755 — externally Player-sourced debuff recovery ticks below 30% health sum learned PassiveSkill.damageOverTimeExecuteBonus after counters and before critical scaling; percentage-health damage is added afterwards. -->
+        <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — externally Player-sourced debuff ticks are multiplied by 1 + the caster's active NecromancerReaperFormSkill magicDamagePercentBonus and rounded, then below 30% health by 1 + summed learned PassiveSkill damageOverTimeExecuteBonus and rounded. -->
+        <!-- Source: server-scripts/Skills.cs:1873-1876 — ApplyDamageOverTimeBonuses runs before ApplyCriticalToOverTime. -->
+        <!-- Source: server-scripts/Skills.cs:1753-1755 — healthPercentPerSecondBonus damage is added to the bonused tick afterwards. -->
         <p class="text-sm text-muted-foreground mt-2">
-          When a target falls below 30% of maximum health, another player's
-          debuff ticks gain that caster's learned execute bonuses, such as
-          Deathly Focus. The caster must remain in the game. These bonuses add
-          together. After resistance and cleanse counters, flat damage is
-          multiplied by 1 plus the bonus and rounded, then critical scaling
-          applies. Percentage-health damage is added afterwards. Damage outside
-          debuff ticks receives no execute bonus.
+          Another player's debuff ticks gain two bonuses after resistance and
+          cleanse counters. Each multiplies flat damage by 1 plus the bonus and
+          rounds it. The caster must remain in the game.
+        </p>
+        <ul class="text-sm text-muted-foreground mt-1 list-disc pl-5">
+          <li>
+            While the caster's <a
+              href="/skills/reaper_form"
+              class="underline hover:text-foreground">Reaper Form</a
+            > is active, ticks gain the form's magic damage bonus.
+          </li>
+          <li>
+            When the target is below 30% of maximum health, ticks then gain the
+            caster's learned execute bonuses, such as Deathly Focus. These add
+            together.
+          </li>
+        </ul>
+        <p class="text-sm text-muted-foreground mt-2">
+          Critical scaling applies next. Percentage-health damage is added
+          afterwards and receives neither bonus.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block"

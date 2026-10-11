@@ -672,7 +672,7 @@ function formatBuffDebuffStats(
     );
   }
   const dotExecute = parseLinearValue(skill.damage_over_time_execute_bonus);
-  // Source: server-scripts/Skills.cs:GetDamageOverTimeExecuteBonus — health.current below health.max * 0.3f sums PassiveSkill.damageOverTimeExecuteBonus.Get(skill.level).
+  // Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — health.current below health.max * 0.3f sums PassiveSkill.damageOverTimeExecuteBonus.Get(skill.level).
   if (dotExecute) {
     parts.push(
       `+${formatLinearPercent(dotExecute, options)} DoT dmg vs targets below 30% hp`,
