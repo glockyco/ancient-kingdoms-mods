@@ -46,6 +46,17 @@
   const zoneCount = HOME_SHOWCASE.zones.length;
   let zonesOpen = $state(false);
 
+  // The boss grid fits as many 10rem columns as its width allows, then spreads
+  // the bosses evenly over the rows that needs: six in a five-wide grid become
+  // two rows of three rather than five and one. `--fit-N` is the column count
+  // for a grid wide enough for N columns; the container queries below pick it.
+  const BOSS_FIT = [2, 3, 4, 5, 6, 7, 8] as const;
+  const bossCount = HOME_SHOWCASE.worldBosses.length;
+  const bossColumns = BOSS_FIT.map(
+    (fit) =>
+      `--fit-${fit}: ${Math.ceil(bossCount / Math.ceil(bossCount / fit))}`,
+  ).join("; ");
+
   // Overview pages without a section of their own, in the order readers use them.
   const directory: readonly { id: EntityId; count: number }[] = [
     { id: "quest", count: HOME_COUNTS.quests },
@@ -125,7 +136,7 @@
         "/monsters",
         `All ${HOME_COUNTS.monsters.toLocaleString()} monsters`,
       )}
-      <ul class="bosses">
+      <ul class="bosses" style={bossColumns}>
         {#each HOME_SHOWCASE.worldBosses as boss (boss.id)}
           <li>
             <a href={boss.href} class="boss-card">
@@ -628,8 +639,47 @@
      the sprites range from 90 to 333 pixels tall. */
   .bosses {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    grid-template-columns: repeat(var(--columns, 1), minmax(0, 1fr));
     gap: 0.75rem;
+  }
+  /* N columns of at least 10rem with 0.75rem gaps need N × 10.75rem − 0.75rem. */
+  section:has(> .bosses) {
+    container-type: inline-size;
+  }
+  @container (min-width: 20.75rem) {
+    .bosses {
+      --columns: var(--fit-2);
+    }
+  }
+  @container (min-width: 31.5rem) {
+    .bosses {
+      --columns: var(--fit-3);
+    }
+  }
+  @container (min-width: 42.25rem) {
+    .bosses {
+      --columns: var(--fit-4);
+    }
+  }
+  @container (min-width: 53rem) {
+    .bosses {
+      --columns: var(--fit-5);
+    }
+  }
+  @container (min-width: 63.75rem) {
+    .bosses {
+      --columns: var(--fit-6);
+    }
+  }
+  @container (min-width: 74.5rem) {
+    .bosses {
+      --columns: var(--fit-7);
+    }
+  }
+  @container (min-width: 85.25rem) {
+    .bosses {
+      --columns: var(--fit-8);
+    }
   }
   .boss-card {
     flex-direction: column;
