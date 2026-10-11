@@ -29,5 +29,5 @@
 
 ## 5. Verify the whole change
 
-- [ ] 5.1 Run the build-pipeline gates (`ruff format --check`, `ruff check`, `mypy`, `vulture`, `pytest`), `pnpm check:knip`, and `pnpm check:docs`. Render the front page, both guides, the catalogue, and one mod README through GitHub's Markdown API and review them in a browser. Verify that every gate passes and that each page reads correctly.
-- [ ] 5.2 Run `openspec validate split-documentation-by-reader --strict` and the repository's OpenSpec Nix check. Verify that both pass.
+- [x] 5.1 Run the build-pipeline gates (`ruff format --check`, `ruff check`, `mypy`, `vulture`, `pytest`), `pnpm check:knip`, and `pnpm check:docs`. Render the front page, both guides, the catalogue, and one mod README through GitHub's Markdown API and review them in a browser. Verify that every gate passes and that each page reads correctly.
+- [x] 5.2 Run `openspec validate split-documentation-by-reader --strict` and the repository's OpenSpec Nix check. Verify that both pass.
