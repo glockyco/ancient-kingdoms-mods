@@ -33,9 +33,9 @@
   import {
     OWNER_LIMITS,
     mercenaryOwner,
-    restoreMercenaryOwner,
     setMercenaryOwner,
   } from "$lib/utils/mercenary-owner.svelte";
+  import { loadRemembered } from "$lib/calculation/remembered.svelte";
   import { linearAt, requireLinearValue } from "$lib/utils/linear-value";
   import { formatEquipmentCategory } from "$lib/utils/format";
   import { petHref } from "$lib/utils/pets";
@@ -59,7 +59,7 @@
     links: MercenaryLink[];
   } = $props();
 
-  onMount(restoreMercenaryOwner);
+  onMount(loadRemembered);
 
   const cls = $derived(pet.type_monster);
   const classDef = $derived(CLASSES[cls]);

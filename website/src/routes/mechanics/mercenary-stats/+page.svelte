@@ -17,9 +17,9 @@
   import {
     OWNER_LIMITS,
     mercenaryOwner,
-    restoreMercenaryOwner,
     setMercenaryOwner,
   } from "$lib/utils/mercenary-owner.svelte";
+  import { loadRemembered } from "$lib/calculation/remembered.svelte";
   import { onMount } from "svelte";
   import {
     CLASSES,
@@ -90,7 +90,7 @@
   let cRecruiter = $state<string>("");
   const cCharisma = $derived(mercenaryOwner.charisma);
 
-  onMount(restoreMercenaryOwner);
+  onMount(loadRemembered);
   let frac = $state<Record<TargetKey, number>>({
     hp: 0.5,
     mana: 0.5,

@@ -13,6 +13,12 @@
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
+  import {
+    forget,
+    loadRemembered,
+    remember,
+    rememberedValue,
+  } from "$lib/calculation/remembered.svelte";
   import type {
     Calculation,
     CalculationInput,
@@ -21,7 +27,6 @@
 
   let { calculation }: { calculation: Calculation } = $props();
 
-  const STORAGE_PREFIX = "calculation:";
   const ROUNDING_TEXT = {
     nearest: "rounded",
     down: "rounded down",
@@ -29,13 +34,13 @@
   } as const;
 
   const inputs = $derived(calculation.inputs ?? []);
-  let overrides = $state<Record<string, number>>({});
+  // Values this block's reader typed that are not character stats.
+  let situational = $state<Record<string, number>>({});
   let editing = $state(false);
 
-  const values = $derived({
-    ...Object.fromEntries(inputs.map((input) => [input.key, input.value])),
-    ...overrides,
-  });
+  const values = $derived(
+    Object.fromEntries(inputs.map((input) => [input.key, valueOf(input)])),
+  );
   const example = $derived(calculation.example?.(values));
   const changed = $derived(
     inputs.some((input) => values[input.key] !== input.value),
@@ -44,25 +49,13 @@
     calculation.steps.some((step) => step.rounding === "nearest"),
   );
 
-  // Character stats typed on an earlier page apply here too.
-  onMount(() => {
-    const remembered: Record<string, number> = {};
-    for (const input of inputs) {
-      if (!input.remember) continue;
-      const stored = readStored(input.key);
-      if (stored !== null) remembered[input.key] = clamp(input, stored);
-    }
-    overrides = remembered;
-  });
+  onMount(loadRemembered);
 
-  function readStored(key: string): number | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_PREFIX + key);
-      const parsed = raw === null ? Number.NaN : Number(raw);
-      return Number.isFinite(parsed) ? parsed : null;
-    } catch {
-      return null;
-    }
+  function valueOf(input: CalculationInput): number {
+    const own = input.remember
+      ? rememberedValue(input.key)
+      : situational[input.key];
+    return own === undefined ? input.value : clamp(input, own);
   }
 
   function clamp(input: CalculationInput, value: number): number {
@@ -95,25 +88,13 @@
   }
 
   function update(input: CalculationInput, value: number) {
-    overrides = { ...overrides, [input.key]: value };
-    if (!input.remember) return;
-    try {
-      localStorage.setItem(STORAGE_PREFIX + input.key, String(value));
-    } catch {
-      // Storage unavailable: the value still applies on this page.
-    }
+    if (input.remember) remember(input.key, value);
+    else situational = { ...situational, [input.key]: value };
   }
 
   function reset() {
-    overrides = {};
-    for (const input of inputs) {
-      if (!input.remember) continue;
-      try {
-        localStorage.removeItem(STORAGE_PREFIX + input.key);
-      } catch {
-        // Storage unavailable: nothing was remembered.
-      }
-    }
+    situational = {};
+    for (const input of inputs) if (input.remember) forget(input.key);
   }
 
   function describe(step: CalculationStep): string {

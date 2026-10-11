@@ -1,55 +1,33 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  mercenaryOwner,
-  restoreMercenaryOwner,
-  setMercenaryOwner,
-} from "./mercenary-owner.svelte";
+  forget,
+  loadRemembered,
+  rememberedValue,
+} from "$lib/calculation/remembered.svelte";
+import { mercenaryOwner, setMercenaryOwner } from "./mercenary-owner.svelte";
 
 let storage: Map<string, string>;
 beforeEach(() => {
   storage = new Map();
   vi.stubGlobal("localStorage", {
+    get length() {
+      return storage.size;
+    },
+    key: (index: number) => [...storage.keys()][index] ?? null,
     getItem: (key: string) => storage.get(key) ?? null,
     setItem: (key: string, value: string) => storage.set(key, value),
     removeItem: (key: string) => storage.delete(key),
   });
+  for (const key of ["level", "veteran", "charisma"]) forget(key);
 });
 afterEach(() => vi.unstubAllGlobals());
 
-describe("shared mercenary owner storage", () => {
-  it("migrates the legacy record without overwriting newer calculation values", () => {
-    storage.set(
-      "ak.mercenaryOwner",
-      JSON.stringify({ level: 31, veteran: 17, charisma: 70 }),
-    );
-    storage.set("calculation:charisma", "100");
-    restoreMercenaryOwner();
-    expect({ ...mercenaryOwner }).toEqual({
-      level: 31,
-      veteran: 17,
-      charisma: 100,
-    });
-    expect(storage.get("calculation:level")).toBe("31");
-    expect(storage.get("calculation:veteran")).toBe("17");
-    expect(storage.has("ak.mercenaryOwner")).toBe(false);
-  });
-  it("writes only the changed raw number and rereads values on the next mount", () => {
-    restoreMercenaryOwner();
-    storage.set("calculation:charisma", "70");
-    setMercenaryOwner("level", 31);
-    expect(storage.get("calculation:level")).toBe("31");
-    expect(storage.get("calculation:charisma")).toBe("70");
-    restoreMercenaryOwner();
-    expect(mercenaryOwner.charisma).toBe(70);
-    storage.delete("calculation:charisma");
-    restoreMercenaryOwner();
-    expect(mercenaryOwner.charisma).toBe(0);
-  });
-  it("bounds and rounds owner controls without rewriting a shared stat on read", () => {
+describe("mercenary owner values", () => {
+  it("bounds and rounds stored values without rewriting them", () => {
     storage.set("calculation:level", "30.5");
     storage.set("calculation:veteran", "-1");
     storage.set("calculation:charisma", "500");
-    restoreMercenaryOwner();
+    loadRemembered();
     expect({ ...mercenaryOwner }).toEqual({
       level: 31,
       veteran: 0,
@@ -57,11 +35,25 @@ describe("shared mercenary owner storage", () => {
     });
     expect(storage.get("calculation:charisma")).toBe("500");
   });
-  it("removes malformed legacy data and ignores nonfinite shared data", () => {
-    storage.set("ak.mercenaryOwner", "invalid");
+
+  it("shares a set value with every calculation that reads the key", () => {
+    setMercenaryOwner("charisma", 70.4);
+    expect(rememberedValue("charisma")).toBe(70);
+    expect(storage.get("calculation:charisma")).toBe("70");
+  });
+
+  it("falls back to defaults for missing or nonfinite stored values", () => {
     storage.set("calculation:level", "NaN");
-    restoreMercenaryOwner();
+    loadRemembered();
     expect(mercenaryOwner.level).toBe(50);
-    expect(storage.has("ak.mercenaryOwner")).toBe(false);
+    expect(mercenaryOwner.charisma).toBe(0);
+  });
+
+  it("drops a value that another page removed from storage", () => {
+    storage.set("calculation:charisma", "70");
+    loadRemembered();
+    storage.delete("calculation:charisma");
+    loadRemembered();
+    expect(mercenaryOwner.charisma).toBe(0);
   });
 });
