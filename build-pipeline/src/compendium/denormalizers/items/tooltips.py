@@ -80,11 +80,18 @@ def _convert_unity_markup_to_html(text: str) -> str:
     # Remove <line-height=N%> tags
     html = re.sub(r"<line-height=\d+%>", "", html)
 
-    # Convert <align="right">text</align> to <div style="text-align: right">text</div>
+    # Preserve supported alignment and remove remaining TextMeshPro layout tags.
     html = re.sub(
-        r'<align="right">(.*?)</align>',
-        r'<div style="text-align: right">\1</div>',
+        r'<align=["\']?(left|center|right|justify)["\']?>(.*?)</align>',
+        r'<div style="text-align: \1">\2</div>',
         html,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    html = re.sub(
+        r"</?(?:align|line-height|pos|voffset|space|indent)\b[^>]*>",
+        "",
+        html,
+        flags=re.IGNORECASE,
     )
 
     return html
