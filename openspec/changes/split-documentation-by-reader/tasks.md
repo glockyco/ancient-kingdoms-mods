@@ -1,9 +1,9 @@
 ## 1. Document every mod
 
-- [ ] 1.1 Write `README.md` for the published player mods: `FieldDefaultValueHookFix`, `BetterBestiary`, `BossSkillTracker`, and `BossTracker`. Give each the design's sections and its download link. Verify every input, setting key and default, and limit stated against that mod's source, including BossTracker's host-only respawn countdowns.
-- [ ] 1.2 Write `README.md` for the gameplay mods kept out of the downloads: `MapEnhancer`, `MapTeleporter`, `MonsterRespawner`, and `ResourceRespawner`. State what each changes in the world or on the character, including MapEnhancer's fog persisting with the character. Verify each statement against the mod's source and `server-scripts`.
-- [ ] 1.3 Write `README.md` for the pipeline and development mods: `DataExporter`, `MapScreenshotter`, `HotReplCommands`, `CombatVerification`, `CharacterCapture`, and `HierarchyLogger`. List each mod's hotkeys or HotRepl commands, outputs, and dependencies on the HotRepl host or sibling mods. Verify each command name against its registration and each output path against the code that writes it.
-- [ ] 1.4 Write `mods/README.md`: player installation, the three groups with one line per mod linking its README, and how `build-tool` builds and deploys the rest. Verify that it links every directory under `mods/` that holds a project file exactly once.
+- [x] 1.1 Write `README.md` for the published player mods: `FieldDefaultValueHookFix`, `BetterBestiary`, `BossSkillTracker`, and `BossTracker`. Give each the design's sections and its download link. Verify every input, setting key and default, and limit stated against that mod's source, including BossTracker's host-only respawn countdowns.
+- [x] 1.2 Write `README.md` for the gameplay mods kept out of the downloads: `MapEnhancer`, `MapTeleporter`, `MonsterRespawner`, and `ResourceRespawner`. State what each changes in the world or on the character, including MapEnhancer's fog persisting with the character. Verify each statement against the mod's source and `server-scripts`.
+- [x] 1.3 Write `README.md` for the pipeline and development mods: `DataExporter`, `MapScreenshotter`, `HotReplCommands`, `CombatVerification`, `CharacterCapture`, and `HierarchyLogger`. List each mod's hotkeys or HotRepl commands, outputs, and dependencies on the HotRepl host or sibling mods. Verify each command name against its registration and each output path against the code that writes it.
+- [x] 1.4 Write `mods/README.md`: player installation, the three groups with one line per mod linking its README, and how `build-tool` builds and deploys the rest. Verify that it links every directory under `mods/` that holds a project file exactly once.
 
 ## 2. Split the project documents
 
