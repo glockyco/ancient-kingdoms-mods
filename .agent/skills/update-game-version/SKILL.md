@@ -34,9 +34,9 @@ uv run compendium classes check-races
 ```
 
 The pairing is typed by hand, and the game holds it in the character creator. This command compares
-the two and names each disagreement. A failure means the patch changed which classes a race allows.
-Correct `mods/DataExporter/Curated/classes.json` and regenerate the export. The exporter copies this
-file to `exported-data/classes.json`.
+the two and names each disagreement. A failure means the patch added a class or changed which classes
+a race allows. Correct `mods/DataExporter/Curated/classes.json` and regenerate the export. The exporter
+copies this file to `exported-data/classes.json`.
 
 Commit this phase before you change an exporter. A mechanic whose claim the tool refuses to anchor belongs in this commit, because the reconciliation cannot finish without it.
 
@@ -46,7 +46,7 @@ See `build-tool/Commands/CommandCatalog.cs` for the update, launch, build, deplo
 
 When an exporter reads a changed field, update its model, exporter, pipeline schema, and validation before generating new data. MelonLoader must regenerate IL2CPP assemblies after a Unity or metadata change.
 
-If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed. Deployment copies Release DLLs but does not prune stale DLLs.
+If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed: keep the previous export, then compare the world map image hash, `zone_info.json`, and `zone_triggers.json`. Deployment copies Release DLLs but does not prune stale DLLs.
 
 ## 4. Regenerate consumers
 
@@ -98,6 +98,8 @@ Commit coherent concerns as they pass, in this order:
 6. redaction ledger
 7. map artifacts
 8. version publication
+
+The pre-commit hooks read the working tree, not the staged change. A staged source file runs `citations check`, and a staged schema, loader, or redaction file runs `redactions check`. Sync the citation ledger in the commit that adds its citations, with later concerns' edits set aside while you sync. When the exporter contract changes the schema or a loader, commit the redaction ledger before it.
 
 Use `skill://commit-policy`. Do not hold a completed concern for a later big-bang split.
 
