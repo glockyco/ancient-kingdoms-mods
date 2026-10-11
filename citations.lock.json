@@ -259,6 +259,10 @@
       "sha256": "fdab61f4c42d479a591da0f6c12b12b10e70f75aa096a4c4c166e009f0ae3e9e",
       "span": 8
     },
+    "BuffSkill.cs:24-28": {
+      "sha256": "e9a39ff99362ec49582c2197dc79a7ac1733ca2dfc24069dffe7a20ae9f1ea75",
+      "span": 5
+    },
     "BuffSkill.cs:518-540": {
       "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
       "span": 23
@@ -2733,9 +2737,17 @@
       "sha256": "0c568eae175f95118b9dd7ef360ac3752a52aa4a19c20e54e0711e1188689fe8",
       "span": 19
     },
+    "Player.cs:1460-1471": {
+      "sha256": "92644c5a6fe658e359ec385c912f7fb9c3672ac7e6641f31e3a63d4f79a89194",
+      "span": 12
+    },
     "Player.cs:1476-1490": {
       "sha256": "732d54825a1c9230defccda860901c7ff4dc64aa386a8546f773157d5a1c538b",
       "span": 15
+    },
+    "Player.cs:15118-15121": {
+      "sha256": "068ce8df3e3dfb51f87a00730f8f157392fa6e93e468d2eb0fcabeb17e18593c",
+      "span": 4
     },
     "Player.cs:2205-2208": {
       "sha256": "a2d6e97bff4fb95ffb7efe4b8963d31dc3b4591ab10c1732157c3735186d4b6c",
@@ -2882,6 +2894,9 @@
     "Player.cs:GetSkillRefractoryPeriod": {
       "span": 0
     },
+    "Player.cs:GetTotalAttributePoints": {
+      "span": 0
+    },
     "Player.cs:HasActiveAppearanceIllusion": {
       "span": 0
     },
@@ -2889,6 +2904,9 @@
       "span": 0
     },
     "Player.cs:HasRadiantAether": {
+      "span": 0
+    },
+    "Player.cs:InitializeAttributeSpecs": {
       "span": 0
     },
     "Player.cs:IsBarberSessionValid": {

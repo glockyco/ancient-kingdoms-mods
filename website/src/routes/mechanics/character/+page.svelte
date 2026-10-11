@@ -85,9 +85,10 @@
                   >Poison damage from Rogue attacks gains a rounded +2.5 per
                   point.</span
                 >
+                <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus — poisonDiseaseScalesWithIntelligence selects Intelligence; unflagged poison and disease use Dexterity with a 1.5 multiplier. -->
                 <span class="block"
-                  >Poison and disease damage-over-time effects gain a rounded
-                  +1.5 per point.</span
+                  >Dexterity-scaled poison and disease damage-over-time effects
+                  gain round(Dexterity × 1.5).</span
                 >
               </td>
             </tr>
@@ -106,13 +107,15 @@
                   >Physical and magic damage reductions from debuffs gain a
                   rounded +0.5 per point.</span
                 >
+                <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus; BuffSkill.cs:24-28 — poisonDiseaseScalesWithIntelligence selects Intelligence; damageOverTimeBonusPerIntelligencePoint defaults to 1.25. -->
                 <span class="block"
-                  >Magic, fire, and cold damage-over-time effects gain a rounded
-                  +1.25 per point.</span
+                  >Intelligence-scaled damage-over-time effects, including
+                  flagged poison and disease debuffs, gain round(Intelligence ×
+                  the skill's Intelligence multiplier), normally 1.25.</span
                 >
               </td>
             </tr>
-            <!-- Source: server-scripts/Wisdom.cs:27-35,102-113; Buff.cs:47-60,113-150; BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:434-445; AreaBuffSkill.cs:33-45 — Wisdom raises direct healing and the stated protective buff amounts, not mana capacity or recovery. -->
+            <!-- Source: server-scripts/Wisdom.cs:27-35,102-113; Buff.cs:47-60,113-150; BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:434-445; AreaBuffSkill.cs:33-45 — protective buffs select Intelligence when scalesWithIntelligence, otherwise Wisdom; TargetBuffSkill triples the selected attribute for Rangers. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Wisdom</th>
               <td class="p-2">
@@ -121,12 +124,15 @@
                   Rangers, with a +500% cap.</span
                 >
                 <span class="block"
-                  >Each Wisdom point adds +2 maximum health to buffs that grant
-                  maximum health, and +2 ward capacity to ward buffs.</span
+                  >Protective buffs use Wisdom, or Intelligence when the skill
+                  scales with Intelligence. Each selected attribute point adds
+                  +2 maximum health to maximum-health buffs and +2 ward
+                  capacity.</span
                 >
                 <span class="block"
-                  >Defense and Magic Resist buffs each gain round(Wisdom ×
-                  0.15).</span
+                  >Defense and Magic Resist buffs each gain round(selected
+                  attribute × 0.15). Ranger targeted buffs triple the selected
+                  attribute before scaling.</span
                 >
                 <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
                 <span class="block"
@@ -173,6 +179,11 @@
           > for the schedule.</span
         >
       </p>
+      <!-- Source: server-scripts/Experience.cs:232-260 — Necromancer gains Intelligence every 2 levels, Constitution every 3, Wisdom every 4, Dexterity every 5, and Strength and Charisma every 6. -->
+      <p>
+        Necromancers gain Intelligence every 2 levels, Constitution every 3,
+        Wisdom every 4, Dexterity every 5, and Strength and Charisma every 6.
+      </p>
       <!-- Source: server-scripts/PlayerEquipment.cs:190-221,259-285 — equipment and augments apply attribute bonuses. -->
       <!-- Source: server-scripts/PlayerSkills.cs:1782-1804 — passive skills apply attribute bonuses. -->
       <!-- Source: server-scripts/Skills.cs:1484-1516 — active buffs can change attribute values. -->
@@ -215,9 +226,10 @@
           <tbody>
             <!-- Source: server-scripts/Mana.cs:28-54 — max mana and mana recovery have distinct calculations. -->
             <!-- Source: server-scripts/Intelligence.cs:21-28,96-99 and server-scripts/Wisdom.cs:27-35,102-105 — Intelligence adds pool but neither attribute adds recovery. -->
+            <!-- Source: server-scripts/Player.cs:1460-1471 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Mana</th>
-              <td class="p-2">Cleric, Druid, Ranger, Wizard</td>
+              <td class="p-2">Cleric, Druid, Necromancer, Ranger, Wizard</td>
               <td class="p-2">
                 <span class="block"
                   >Intelligence adds +20 maximum mana per point.</span
@@ -363,7 +375,7 @@
         <!-- Source: server-scripts/UISkills.cs:295-326 — switching requires no unspent class skill points, no combat, an idle living player, and a 10-minute interval. -->
         <p>
           <span class="block"
-            >At level 50, a second specialization costs 100,000 gold.</span
+            >At level 50, a second specialization costs 10,000 gold.</span
           >
           <span class="block"
             >Switching requires all class skill points spent and a living
@@ -385,6 +397,18 @@
             >Switching loads the selected class skills and skillbar, removes
             your pet, and stops Bard songs.</span
           >
+        </p>
+        <!-- Source: server-scripts/Player.cs:GetTotalAttributePoints,ChangeAttributeSpec — each allocation has level.current - 1 + GetTotalVeteranPoints points; switching applies attribute differences and recalculates unspent points. -->
+        <p>
+          Each specialization stores its own attribute allocation, with level −
+          1 + total Veteran Points to spend in each. At level 50 with 200
+          Veteran Points, each has 249 points. Switching swaps the allocation
+          and restores that specialization's unspent points.
+        </p>
+        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:15118-15121 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
+        <p>
+          If a saved character's attribute allocation cannot be inferred, its
+          assigned attributes reset for free on the first specialization switch.
         </p>
         <!-- Source: server-scripts/Utils.cs:506-525 — class skill reset price increases at levels 10, 20, 30, and 40. -->
         <p>
