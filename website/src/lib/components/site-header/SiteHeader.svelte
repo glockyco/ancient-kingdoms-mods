@@ -651,4 +651,34 @@
       padding-inline: calc(0.5rem + var(--entry-pad));
     }
   }
+  /* Below 30rem the brand, Browse, search, theme switch, and Ko-fi no longer
+     fit, and the bar widened every page past the screen. The Browse panel
+     already links Ko-fi in its footer, so the bar drops it, tightens its
+     spacing, and lets the brand text clip as a last resort. */
+  @media (max-width: 30rem) {
+    .kofi {
+      display: none;
+    }
+    .bar-inner {
+      gap: 0.375rem;
+      padding: 0 0.625rem;
+    }
+    .brand {
+      flex: 0 1 auto;
+      min-width: 0;
+      gap: 0.45rem;
+    }
+    .brand-copy {
+      min-width: 0;
+    }
+    .brand-copy strong,
+    .brand-copy span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .brand-copy strong {
+      font-size: 0.9375rem;
+    }
+  }
 </style>
