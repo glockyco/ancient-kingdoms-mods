@@ -40,6 +40,8 @@ internal static class SkillEffectFormatter
         var parts = new List<string>();
 
         FormatDamage(skill, parts);
+        if (skill.channel_pulses > 0)
+            parts.Add($"channeled over {skill.channel_pulses} pulses");
         FormatHealing(skill, parts);
         FormatCrowdControl(skill, parts);
         FormatSummons(skill, parts);
@@ -67,6 +69,12 @@ internal static class SkillEffectFormatter
             parts.Add($"{FormatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item");
         if (skill.food_and_drink_buff_duration_bonus_per_level != 0)
             parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per skill lvl");
+        if (skill.is_necromancer_reaper_form)
+            parts.Add("toggle form");
+        if (skill.is_necromancer_pet_buff)
+            parts.Add("buffs your combat pet");
+        if (skill.also_buff_active_pet)
+            parts.Add("when self-cast, also buffs your combat pet in range");
         if (skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff" or "passive")
             FormatBuffDebuffStats(skill, parts);
 
@@ -140,6 +148,23 @@ internal static class SkillEffectFormatter
 
     private static void FormatHealing(SkillEffectInput skill, List<string> parts)
     {
+        var cost = ParseLinearValue(skill.health_cost_percent);
+        var restored = ParseLinearValue(skill.mana_restored_percent);
+        if (skill.is_necromancer_blood_pact && cost != null && restored != null)
+        {
+            parts.Add($"spend ceil(max hp × ({FormatLinearPercent(cost)})), restore floor(max mana × ({FormatLinearPercent(restored)})) (capped at missing mana)");
+            return;
+        }
+        var healing = ParseLinearValue(skill.healing_percent);
+        if (skill.is_necromancer_death_bloom && cost != null && healing != null)
+        {
+            var bonus = skill.healing_percent_per_intelligence != 0
+                ? $" + {FormatPercent(skill.healing_percent_per_intelligence)} × max(0, INT)"
+                : "";
+            parts.Add($"spend ceil(max hp × ({FormatLinearPercent(cost)})), heal target for round(health spent × ({FormatLinearPercent(healing)}{bonus}))");
+            return;
+        }
+
         var heal = ParseLinearValue(skill.heals_health);
         if (heal != null)
             parts.Add($"{FormatLinearValue(heal)} hp");
@@ -292,7 +317,10 @@ internal static class SkillEffectFormatter
 
         // 3. Resource pools
         AddSignedValue(parts, ParseLinearValue(skill.health_max_bonus), "max hp", false);
-        AddSignedPercent(parts, ParseLinearValue(skill.health_max_percent_bonus), "max hp", false);
+        var healthPercentTarget = skill.skill_type == "passive" && skill.is_pet_skill
+            ? "combat pet max hp"
+            : "max hp";
+        AddSignedPercent(parts, ParseLinearValue(skill.health_max_percent_bonus), healthPercentTarget, false);
         AddSignedValue(parts, ParseLinearValue(skill.mana_max_bonus), "max mana", false);
         AddSignedPercent(parts, ParseLinearValue(skill.mana_max_percent_bonus), "max mana", false);
         AddSignedValue(parts, ParseLinearValue(skill.energy_max_bonus), "max rage", false);
@@ -302,6 +330,12 @@ internal static class SkillEffectFormatter
         AddSignedPercent(parts, ParseLinearValue(skill.damage_percent_bonus), "phys dmg", true);
         AddSignedValue(parts, ParseLinearValue(skill.magic_damage_bonus), "magic dmg", true);
         AddSignedPercent(parts, ParseLinearValue(skill.magic_damage_percent_bonus), "magic dmg", true);
+        var lifetapHealing = ParseLinearValue(skill.lifetap_healing_percent_bonus);
+        if (lifetapHealing != null)
+            parts.Add($"+{FormatLinearPercent(lifetapHealing)} lifetap healing");
+        var dotExecute = ParseLinearValue(skill.damage_over_time_execute_bonus);
+        if (dotExecute != null)
+            parts.Add($"+{FormatLinearPercent(dotExecute)} DoT dmg vs targets below 30% hp");
 
         // 4. Defense
         AddSignedValue(parts, ParseLinearValue(skill.defense_bonus), "def", true);
@@ -361,7 +395,13 @@ internal static class SkillEffectFormatter
                     ? FormatDamageType(skill.damage_over_time_type)
                     : "";
                 var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
-                parts.Add($"{FormatLinearValue(Abs(hps))}{typeLabel} dmg/s");
+                var intelligenceBonus = skill.poison_disease_scales_with_intelligence
+                    && !skill.scales_with_charisma && !skill.is_melee_debuff
+                    && (skill.is_poison_debuff || skill.is_disease_debuff)
+                    && skill.damage_over_time_bonus_per_intelligence_point.HasValue
+                    ? $" + round(INT × {Loc(skill.damage_over_time_bonus_per_intelligence_point.Value)})"
+                    : "";
+                parts.Add($"{FormatLinearValue(Abs(hps))}{intelligenceBonus}{typeLabel} dmg/s");
             }
         }
 
@@ -371,7 +411,10 @@ internal static class SkillEffectFormatter
             var typeLabel = hpPct.base_value < 0 && skill.damage_over_time_type != null
                 ? FormatDamageType(skill.damage_over_time_type)
                 : "";
-            AddSignedPercent(parts, hpPct, typeLabel.Length > 0 ? typeLabel + " hp/s" : "hp/s", true);
+            if (skill.is_necromancer_reaper_form && hpPct.base_value < 0)
+                parts.Add($"{FormatLinearPercent(Abs(hpPct))} max hp drain/s");
+            else
+                AddSignedPercent(parts, hpPct, typeLabel.Length > 0 ? typeLabel + " hp/s" : "hp/s", true);
         }
 
         var mps = ParseLinearValue(skill.mana_per_second_bonus);

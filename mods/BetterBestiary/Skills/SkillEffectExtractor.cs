@@ -24,6 +24,7 @@ internal static class SkillEffectExtractor
             id = GameIds.Sanitize(skill.name),
             skill_type = SkillClassification.DetermineSkillType(skill),
             damage_type = null,
+            is_pet_skill = skill.isPetSkill,
         };
 
         PopulateDamage(skill, input);
@@ -31,6 +32,7 @@ internal static class SkillEffectExtractor
         PopulateTargetBuff(skill, input);
         PopulateBonus(skill, input);
         PopulateBard(skill, input);
+        PopulateNecromancer(skill, input);
         PopulateSummon(skill, input);
 
         return input;
@@ -57,6 +59,9 @@ internal static class SkillEffectExtractor
         input.fear_time = new LinearValue(damageSkill.fearTime.baseValue, damageSkill.fearTime.bonusPerLevel);
         input.aggro = new LinearValue(damageSkill.aggro.baseValue, damageSkill.aggro.bonusPerLevel);
         input.break_armor_prob = damageSkill.breakArmorProb;
+        var channel = skill.TryCast<ChanneledTargetDamageSkill>();
+        if (channel != null)
+            input.channel_pulses = channel.channelPulses;
 
         var areaDamageSkill = skill.TryCast<AreaDamageSkill>();
         if (areaDamageSkill != null)
@@ -93,6 +98,7 @@ internal static class SkillEffectExtractor
 
         input.is_mana_shield = targetBuffSkill.isManaShield;
         input.is_double_exp_spell = targetBuffSkill.isDoubleExpSpell;
+        input.also_buff_active_pet = targetBuffSkill.alsoBuffActivePet;
     }
 
     private static void PopulateBonus(ScriptableSkill skill, SkillEffectInput input)
@@ -165,6 +171,10 @@ internal static class SkillEffectExtractor
             input.is_blindness = buffSkill.isBlindness;
             input.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
             input.scales_with_charisma = buffSkill.scalesWithCharisma;
+            input.scales_with_intelligence = buffSkill.scalesWithIntelligence;
+            input.poison_disease_scales_with_intelligence = buffSkill.poisonDiseaseScalesWithIntelligence;
+            input.damage_over_time_bonus_per_intelligence_point = buffSkill.damageOverTimeBonusPerIntelligencePoint;
+            input.lifetap_healing_percent_bonus = new LinearValue(buffSkill.lifetapHealingPercentBonus.baseValue, buffSkill.lifetapHealingPercentBonus.bonusPerLevel);
 
             var areaBuffSkill = skill.TryCast<AreaBuffSkill>();
             if (areaBuffSkill != null)
@@ -179,6 +189,7 @@ internal static class SkillEffectExtractor
             input.bard_song_duration_bonus_per_level = passiveSkill.bardSongDurationBonusPerLevel;
             input.extra_gather_item_chance = passiveSkill.extraGatherItemChance;
             input.food_and_drink_buff_duration_bonus_per_level = passiveSkill.foodAndDrinkBuffDurationBonusPerLevel;
+            input.damage_over_time_execute_bonus = new LinearValue(passiveSkill.damageOverTimeExecuteBonus.baseValue, passiveSkill.damageOverTimeExecuteBonus.bonusPerLevel);
         }
     }
 
@@ -207,6 +218,29 @@ internal static class SkillEffectExtractor
         }
 
         input.is_bard_virtuosity = skill.TryCast<BardVirtuositySkill>() != null;
+    }
+
+    private static void PopulateNecromancer(ScriptableSkill skill, SkillEffectInput input)
+    {
+        var bloodPact = skill.TryCast<NecromancerBloodPactSkill>();
+        if (bloodPact != null)
+        {
+            input.is_necromancer_blood_pact = true;
+            input.health_cost_percent = new LinearValue(bloodPact.healthCostPercent.baseValue, bloodPact.healthCostPercent.bonusPerLevel);
+            input.mana_restored_percent = new LinearValue(bloodPact.manaRestoredPercent.baseValue, bloodPact.manaRestoredPercent.bonusPerLevel);
+        }
+
+        var deathBloom = skill.TryCast<NecromancerDeathBloomSkill>();
+        if (deathBloom != null)
+        {
+            input.is_necromancer_death_bloom = true;
+            input.health_cost_percent = new LinearValue(deathBloom.healthCostPercent, 0);
+            input.healing_percent = new LinearValue(deathBloom.healingPercent.baseValue, deathBloom.healingPercent.bonusPerLevel);
+            input.healing_percent_per_intelligence = deathBloom.healingPercentPerIntelligence;
+        }
+
+        input.is_necromancer_pet_buff = skill.TryCast<NecromancerPetBuffSkill>() != null;
+        input.is_necromancer_reaper_form = skill.TryCast<NecromancerReaperFormSkill>() != null;
     }
 
     private static void PopulateSummon(ScriptableSkill skill, SkillEffectInput input)

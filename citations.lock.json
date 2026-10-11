@@ -271,6 +271,9 @@
     "BuffSkill.cs:GetCasterCriticalChance": {
       "span": 0
     },
+    "BuffSkill.cs:GetDamageOverTimeAttributeBonus": {
+      "span": 0
+    },
     "BuffSkill.cs:GetDebuffPowerAttribute": {
       "span": 0
     },
@@ -430,6 +433,10 @@
     "Combat.cs:1284-1314": {
       "sha256": "f5440695849c8f0faf94475c1660a743dd375d530293a84d15d98d26ac3919c2",
       "span": 31
+    },
+    "Combat.cs:1318-1328": {
+      "sha256": "ddc81096d631d4808f9448371a245742737377545f1d8186991f7b36da2c981e",
+      "span": 11
     },
     "Combat.cs:1318-1333": {
       "sha256": "b7bbcd74d4876b9ea82741a2ac1fbd09e7f2b386846bdda04020ba89364ba47b",
@@ -1936,6 +1943,12 @@
     "NecromancerBloodPactSkill.cs:Apply": {
       "span": 0
     },
+    "NecromancerBloodPactSkill.cs:GetHealthCost": {
+      "span": 0
+    },
+    "NecromancerBloodPactSkill.cs:GetManaRestored": {
+      "span": 0
+    },
     "NecromancerDeathBloomSkill.cs:19-25": {
       "sha256": "5d95fa9f9c46642331855f44aea3aab245b1e1687e652f7e2f149fd94016b4b8",
       "span": 7
@@ -1956,12 +1969,27 @@
       "sha256": "4bd4795922f57ac605e3e6e1df6886d47265e1b7f4c1010cea2147ae204081d3",
       "span": 11
     },
+    "NecromancerDeathBloomSkill.cs:GetHealingAmount": {
+      "span": 0
+    },
+    "NecromancerDeathBloomSkill.cs:GetHealthCost": {
+      "span": 0
+    },
+    "NecromancerDeathBloomSkill.cs:GetIntelligenceBonus": {
+      "span": 0
+    },
     "NecromancerDeathBloomSkill.cs:healthCostPercent": {
+      "span": 0
+    },
+    "NecromancerPetBuffSkill.cs:HasLivingCombatPet": {
       "span": 0
     },
     "NecromancerPetStats.cs:28-99": {
       "sha256": "7858b080fdaa483cec4e05997a0902f09fa5a8545f2d2d98a94cc0dfbb704c1a",
       "span": 72
+    },
+    "NecromancerReaperFormSkill.cs:Apply": {
+      "span": 0
     },
     "NetworkManagerMMO.cs:105-117": {
       "sha256": "38f5d4aa099f761995ace8bc1d34b51c7a970f038b2287ab7fc343546044af3b",
@@ -3754,6 +3782,10 @@
       "sha256": "05c86ffad6c1e5f7c813f598e6ce605f709c6ebe05b27b9cd9c62a6744056f73",
       "span": 18
     },
+    "Skills.cs:1617-1623": {
+      "sha256": "6f9cd4f113b732022fc246a851aee02bc5751265e59b42b0c37815192c9c19c3",
+      "span": 7
+    },
     "Skills.cs:1617-1905": {
       "sha256": "14989e4cfeead50e7bdea2e6e4edaf9703173cba7a4feba475780bdcf5fad5c9",
       "span": 289
@@ -3815,6 +3847,9 @@
       "span": 0
     },
     "Skills.cs:FinishCastMeleeAttackMonster": {
+      "span": 0
+    },
+    "Skills.cs:GetDamageOverTimeExecuteBonus": {
       "span": 0
     },
     "Skills.cs:GetFinalHealOverTime": {
@@ -3979,6 +4014,10 @@
       "sha256": "f0d7421497c5fba571a354805bd1f4dff57b1f2454eb86f234ce4e9fb6884a13",
       "span": 12
     },
+    "TargetBuffSkill.cs:477-482": {
+      "sha256": "6fd2c36faff6263fba4e2db06caa0b430c6ca6d0524c3a623be5666fc25f9d18",
+      "span": 6
+    },
     "TargetDamageSkill.cs": {
       "span": 0
     },
@@ -4033,6 +4072,10 @@
     "TargetDamageSkill.cs:244": {
       "sha256": "558733c5ec920748d1cb5453c6c9754a3b012725a9197b83e5b41f314c95680d",
       "span": 1
+    },
+    "TargetDamageSkill.cs:245-248": {
+      "sha256": "46a3025e79ff0ddff60658bfd6ad7ed31f57c15b667da8e9e8c2586ccb098363",
+      "span": 4
     },
     "TargetDamageSkill.cs:291": {
       "sha256": "b461db9bf044cbf2945cf6a233c88d605cc09c3d3c8e8eee6d8e3b12e1eb761d",

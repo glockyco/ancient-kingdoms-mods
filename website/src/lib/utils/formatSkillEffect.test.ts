@@ -127,3 +127,132 @@ describe("formatSkillEffect enrage passives", () => {
     ).toBe("+50-75% damage below 10% HP");
   });
 });
+
+describe("formatSkillEffect Necromancer mechanics", () => {
+  it("shows Blood Pact rounding and missing-mana cap", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "health_to_mana",
+        is_necromancer_blood_pact: true,
+        health_cost_percent: { base_value: 0.05, bonus_per_level: 0.05 },
+        mana_restored_percent: { base_value: 0.05, bonus_per_level: 0.05 },
+      } as Skill),
+    ).toBe(
+      "spend ceil(max hp × (5% × skill lvl)), restore floor(max mana × (5% × skill lvl)) (capped at missing mana)",
+    );
+  });
+
+  it("uses health spent and Intelligence rather than heals_health for Death Bloom", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "target_heal",
+        is_necromancer_death_bloom: true,
+        health_cost_percent: { base_value: 0.5, bonus_per_level: 0 },
+        healing_percent: { base_value: 1.5, bonus_per_level: 0.125 },
+        healing_percent_per_intelligence: 0.001,
+        heals_health: { base_value: 0, bonus_per_level: 0 },
+      } as Skill),
+    ).toBe(
+      "spend ceil(max hp × (50%)), heal target for round(health spent × (137.5% + 12.5% × skill lvl + 0.1% × max(0, INT)))",
+    );
+  });
+
+  it("identifies Reaper Form's toggle and max-health drain", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "target_buff",
+        is_necromancer_reaper_form: true,
+        is_permanent: true,
+        duration_base: 10,
+        health_percent_per_second_bonus: {
+          base_value: -0.05,
+          bonus_per_level: 0,
+        },
+      } as Skill),
+    ).toBe("toggle form, 5% max hp drain/s");
+  });
+
+  it("identifies combat-pet buffs separately from self-cast pet sharing", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "target_buff",
+        is_necromancer_pet_buff: true,
+        haste_bonus: { base_value: 0.05, bonus_per_level: 0.05 },
+      } as Skill),
+    ).toBe("buffs your combat pet, +5% × skill lvl haste");
+    expect(
+      formatSkillEffect({
+        skill_type: "target_buff",
+        also_buff_active_pet: true,
+        ward_bonus: { base_value: 50, bonus_per_level: 50 },
+      } as Skill),
+    ).toBe(
+      "when self-cast, also buffs your combat pet in range, +50 × skill lvl ward",
+    );
+  });
+
+  it.each(["Poison", "Disease"] as const)(
+    "shows the Intelligence contribution to %s DoTs",
+    (type) => {
+      const skill = {
+        skill_type: "target_debuff",
+        damage_over_time_type: type,
+        is_poison_debuff: type === "Poison",
+        is_disease_debuff: type === "Disease",
+        poison_disease_scales_with_intelligence: true,
+        damage_over_time_bonus_per_intelligence_point: 1.25,
+        healing_per_second_bonus: { base_value: -180, bonus_per_level: -60 },
+      } as Skill;
+      expect(formatSkillEffect(skill)).toBe(
+        `120 + 60 × skill lvl + round(INT × 1.25) ${type.toLowerCase()} dmg/s`,
+      );
+      expect(formatSkillEffect({ ...skill, scales_with_charisma: true })).toBe(
+        `120 + 60 × skill lvl ${type.toLowerCase()} dmg/s`,
+      );
+    },
+  );
+
+  it("shows DoT execute and lifetap-healing bonuses without implying direct damage bonuses", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "passive",
+        damage_over_time_execute_bonus: {
+          base_value: 0.05,
+          bonus_per_level: 0.05,
+        },
+      } as Skill),
+    ).toBe("+5% × skill lvl DoT dmg vs targets below 30% hp");
+    expect(
+      formatSkillEffect({
+        skill_type: "target_buff",
+        lifetap_healing_percent_bonus: {
+          base_value: 0.2,
+          bonus_per_level: 0.05,
+        },
+      } as Skill),
+    ).toBe("+15% + 5% × skill lvl lifetap healing");
+  });
+
+  it("identifies damage as distributed over channel pulses", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "target_damage",
+        damage_type: "Magic",
+        damage: { base_value: 20, bonus_per_level: 20 },
+        channel_pulses: 3,
+      } as Skill),
+    ).toBe("20 × skill lvl magic dmg, channeled over 3 pulses");
+  });
+
+  it("assigns an owner's pet passive max-health bonus to the combat pet", () => {
+    const skill = {
+      skill_type: "passive",
+      is_pet_skill: true,
+      health_max_percent_bonus: { base_value: 0.02, bonus_per_level: 0.02 },
+    } as Skill;
+    expect(formatSkillEffect(skill)).toBe("+2% × skill lvl combat pet max hp");
+    expect(formatSkillEffect({ ...skill, is_pet_skill: false })).toBe(
+      "+2% × skill lvl max hp",
+    );
+  });
+});

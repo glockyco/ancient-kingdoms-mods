@@ -53,6 +53,10 @@ export interface Skill {
   charmed_damage_percent?: string | LinearValue | null;
   is_resurrect_skill?: boolean;
   is_balance_health?: boolean;
+  health_cost_percent?: string | LinearValue | null;
+  mana_restored_percent?: string | LinearValue | null;
+  healing_percent?: string | LinearValue | null;
+  healing_percent_per_intelligence?: number;
 
   // Buff/debuff stat fields (38 BonusSkill fields)
   health_max_bonus?: string | LinearValue | null;
@@ -121,6 +125,18 @@ export interface Skill {
   bard_song_duration_bonus_per_level?: number;
   extra_gather_item_chance?: number;
   food_and_drink_buff_duration_bonus_per_level?: number;
+  is_pet_skill?: boolean;
+  channel_pulses?: number;
+  also_buff_active_pet?: boolean;
+  is_necromancer_blood_pact?: boolean;
+  is_necromancer_death_bloom?: boolean;
+  is_necromancer_pet_buff?: boolean;
+  is_necromancer_reaper_form?: boolean;
+  scales_with_intelligence?: boolean;
+  poison_disease_scales_with_intelligence?: boolean;
+  damage_over_time_bonus_per_intelligence_point?: number;
+  lifetap_healing_percent_bonus?: string | LinearValue | null;
+  damage_over_time_execute_bonus?: string | LinearValue | null;
 
   // Summon fields
   summoned_monster_id?: string | null;
@@ -351,6 +367,31 @@ function formatHealing(
   options: SkillEffectFormatOptions | undefined,
 ): string[] {
   const parts: string[] = [];
+  const cost = parseLinearValue(skill.health_cost_percent);
+  const restored = parseLinearValue(skill.mana_restored_percent);
+  // Source: server-scripts/NecromancerBloodPactSkill.cs:GetHealthCost — CeilToInt(health.max * healthCostPercent.Get(skillLevel)).
+  // Source: server-scripts/NecromancerBloodPactSkill.cs:GetManaRestored — FloorToInt(mana.max * manaRestoredPercent.Get(skillLevel)).
+  // Source: server-scripts/NecromancerBloodPactSkill.cs:Apply — Math.Min(GetManaRestored, mana.max - mana.current); subtracts GetHealthCost.
+  if (skill.is_necromancer_blood_pact && cost && restored) {
+    parts.push(
+      `spend ceil(max hp × (${formatLinearPercent(cost, options)})), restore floor(max mana × (${formatLinearPercent(restored, options)})) (capped at missing mana)`,
+    );
+    return parts;
+  }
+  const healing = parseLinearValue(skill.healing_percent);
+  // Source: server-scripts/NecromancerDeathBloomSkill.cs:GetHealthCost — CeilToInt(health.max * healthCostPercent).
+  // Source: server-scripts/NecromancerDeathBloomSkill.cs:GetHealingAmount — RoundToInt(GetHealthCost * (healingPercent.Get(skillLevel) + GetIntelligenceBonus)).
+  // Source: server-scripts/NecromancerDeathBloomSkill.cs:GetIntelligenceBonus — Max(0, intelligence.value) * healingPercentPerIntelligence.
+  if (skill.is_necromancer_death_bloom && cost && healing) {
+    const intelligence = skill.healing_percent_per_intelligence ?? 0;
+    const bonus = intelligence
+      ? ` + ${formatPercent(intelligence)} × max(0, INT)`
+      : "";
+    parts.push(
+      `spend ceil(max hp × (${formatLinearPercent(cost, options)})), heal target for round(health spent × (${formatLinearPercent(healing, options)}${bonus}))`,
+    );
+    return parts;
+  }
 
   const heal = parseLinearValue(skill.heals_health);
   if (heal) {
@@ -553,10 +594,15 @@ function formatBuffDebuffStats(
   }
 
   const healthMaxPctBonus = parseLinearValue(skill.health_max_percent_bonus);
+  // Source: server-scripts/Skills.cs:GetHealthPercentBonus — isPetSkill passive healthMaxPercentBonus goes to non-mercenary, non-familiar Pet, not the owner.
+  const healthPercentTarget =
+    skill.skill_type === "passive" && skill.is_pet_skill
+      ? "combat pet max hp"
+      : "max hp";
   if (healthMaxPctBonus) {
     const sign = healthMaxPctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(healthMaxPctBonus, options)} max hp`,
+      `${sign}${formatLinearPercent(healthMaxPctBonus, options)} ${healthPercentTarget}`,
     );
   }
 
@@ -609,6 +655,20 @@ function formatBuffDebuffStats(
     );
   }
 
+  const lifetapHealing = parseLinearValue(skill.lifetap_healing_percent_bonus);
+  // Source: server-scripts/Combat.cs:1318-1328 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
+  if (lifetapHealing) {
+    parts.push(
+      `+${formatLinearPercent(lifetapHealing, options)} lifetap healing`,
+    );
+  }
+  const dotExecute = parseLinearValue(skill.damage_over_time_execute_bonus);
+  // Source: server-scripts/Skills.cs:GetDamageOverTimeExecuteBonus — health.current below health.max * 0.3f sums PassiveSkill.damageOverTimeExecuteBonus.Get(skill.level).
+  if (dotExecute) {
+    parts.push(
+      `+${formatLinearPercent(dotExecute, options)} DoT dmg vs targets below 30% hp`,
+    );
+  }
   // 4. Defense (mitigation stats grouped together)
   const defenseBonus = parseLinearValue(skill.defense_bonus);
   if (defenseBonus && defenseBonus.base_value !== 0) {
@@ -720,8 +780,18 @@ function formatBuffDebuffStats(
     } else {
       const formattedType = formatDamageType(skill.damage_over_time_type);
       const typeLabel = formattedType ? ` ${formattedType}` : "";
+      // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — poisonDiseaseScalesWithIntelligence selects intelligence.value for poison/disease debuffs.
+      // Source: server-scripts/BuffSkill.cs:GetDamageOverTimeAttributeBonus — RoundToInt(attribute * damageOverTimeBonusPerIntelligencePoint) for Intelligence-scaled poison/disease.
+      const intelligenceBonus =
+        skill.poison_disease_scales_with_intelligence &&
+        !skill.scales_with_charisma &&
+        !skill.is_melee_debuff &&
+        (skill.is_poison_debuff || skill.is_disease_debuff) &&
+        skill.damage_over_time_bonus_per_intelligence_point !== undefined
+          ? ` + round(INT × ${skill.damage_over_time_bonus_per_intelligence_point.toLocaleString()})`
+          : "";
       parts.push(
-        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, options)}${typeLabel} dmg/s`,
+        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, options)}${intelligenceBonus}${typeLabel} dmg/s`,
       );
     }
   }
@@ -732,8 +802,11 @@ function formatBuffDebuffStats(
     const formattedType =
       hpPct.base_value < 0 ? formatDamageType(skill.damage_over_time_type) : "";
     const typeLabel = formattedType ? ` ${formattedType}` : "";
+    // Source: server-scripts/Skills.cs:1617-1623 — NecromancerReaperFormSkill drains RoundToInt(Max(0, -healthPercentPerSecondBonus) * health.max).
     parts.push(
-      `${sign}${formatLinearPercent(hpPct, options)}${typeLabel} hp/s`,
+      skill.is_necromancer_reaper_form && hpPct.base_value < 0
+        ? `${formatLinearPercent({ base_value: -hpPct.base_value, bonus_per_level: -hpPct.bonus_per_level }, options)} max hp drain/s`
+        : `${sign}${formatLinearPercent(hpPct, options)}${typeLabel} hp/s`,
     );
   }
 
@@ -896,6 +969,10 @@ export function formatSkillEffect(
 
   // 1. Damage
   parts.push(...formatDamage(skill, options));
+  // Source: server-scripts/TargetDamageSkill.cs:245-248 — pulseCount partitions finalDamage across pulses.
+  if (skill.channel_pulses && skill.channel_pulses > 0) {
+    parts.push(`channeled over ${skill.channel_pulses} pulses`);
+  }
 
   // 2. Healing
   parts.push(...formatHealing(skill, options));
@@ -944,6 +1021,14 @@ export function formatSkillEffect(
     );
   }
 
+  // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — RemoveBuff when GetBuffIndexByName(nameSkill) >= 0; otherwise applies the buff.
+  if (skill.is_necromancer_reaper_form) parts.push("toggle form");
+  // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — activePet owned by the Necromancer, not isFamiliar or isMercenary, with health.current > 0.
+  if (skill.is_necromancer_pet_buff) parts.push("buffs your combat pet");
+  // Source: server-scripts/TargetBuffSkill.cs:477-482 — alsoBuffActivePet when entity == caster, living owned non-familiar/non-mercenary activePet within castRange.Get(skillLevel).
+  if (skill.also_buff_active_pet) {
+    parts.push("when self-cast, also buffs your combat pet in range");
+  }
   // 6. Buffs/debuffs
   // Always show buff/debuff stats (fixes bug where stats were suppressed if damage was present)
   if (

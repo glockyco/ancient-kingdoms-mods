@@ -10,8 +10,7 @@ namespace BetterBestiary.Skills;
 /// <c>formatSkillEffect</c>). Field names match the website's <c>skillRowToEffectInput</c>
 /// output verbatim so the golden parity corpus deserializes straight onto it, and
 /// the runtime <see cref="SkillEffectExtractor"/> fills the same shape from a live
-/// <c>ScriptableSkill</c>. Fields the website mapper omits (e.g.
-/// <c>is_double_exp_spell</c>) keep their default here, matching its behaviour.
+/// <c>ScriptableSkill</c>. Omitted optional fields keep their default values.
 ///
 /// Nullable is disabled: this type is compiled into the mod against the stripped
 /// Il2Cpp mscorlib, which lacks the NullableContext attributes.
@@ -50,6 +49,10 @@ internal sealed class SkillEffectInput
     public LinearValue charmed_damage_percent { get; set; }
     public bool is_resurrect_skill { get; set; }
     public bool is_balance_health { get; set; }
+    public LinearValue health_cost_percent { get; set; }
+    public LinearValue mana_restored_percent { get; set; }
+    public LinearValue healing_percent { get; set; }
+    public double healing_percent_per_intelligence { get; set; }
 
     // Buff/debuff stat bonuses
     public LinearValue health_max_bonus { get; set; }
@@ -117,6 +120,18 @@ internal sealed class SkillEffectInput
     public double bard_song_duration_bonus_per_level { get; set; }
     public double extra_gather_item_chance { get; set; }
     public double food_and_drink_buff_duration_bonus_per_level { get; set; }
+    public bool is_pet_skill { get; set; }
+    public int channel_pulses { get; set; }
+    public bool also_buff_active_pet { get; set; }
+    public bool is_necromancer_blood_pact { get; set; }
+    public bool is_necromancer_death_bloom { get; set; }
+    public bool is_necromancer_pet_buff { get; set; }
+    public bool is_necromancer_reaper_form { get; set; }
+    public bool scales_with_intelligence { get; set; }
+    public bool poison_disease_scales_with_intelligence { get; set; }
+    public double? damage_over_time_bonus_per_intelligence_point { get; set; }
+    public LinearValue lifetap_healing_percent_bonus { get; set; }
+    public LinearValue damage_over_time_execute_bonus { get; set; }
 
     // Summon
     public string summoned_monster_id { get; set; }
