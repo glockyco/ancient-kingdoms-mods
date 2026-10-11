@@ -42,7 +42,7 @@ public class CraftingStationExporter : BaseExporter
 
             var data = new CraftingStationData
             {
-                id = $"{SanitizeId(name)}_{zoneInfo.ZoneId}_{station.GetInstanceID()}",
+                id = PlacementId($"{SanitizeId(name)}_{zoneInfo.ZoneId}", station.transform.position),
                 name = name,
                 zone_id = zoneInfo.ZoneId,
                 sub_zone_id = zoneInfo.SubZoneId,

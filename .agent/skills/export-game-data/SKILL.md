@@ -15,6 +15,12 @@ taken from it is not a count of what exists in the world. Require a non-null gam
 scene. Use `TryCast<T>()` for an IL2CPP specialization, and prefer an authoritative `idZone` where the
 type exposes one.
 
+Placement IDs are `prefix_{x}_{y}`: round the authored world position to whole units with
+`Math.Round(..., MidpointRounding.AwayFromZero)` and write negative zero as `0`. Retain existing
+descriptive prefixes, except `altar_{name}_{zone}` and `treasure_{mapId}_{zone}`. Do not use
+runtime object numbers or create aliases or redirects for old IDs. Monster and NPC IDs use
+the same `startPosition` as their exported position and zone.
+
 ## The curated class exception
 
 `ClassExporter` reads `NetworkManagerMMO.playerClasses` prefabs and writes `classes_combat.json` for the

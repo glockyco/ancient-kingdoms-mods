@@ -201,6 +201,13 @@ The automated exporter requires at least one existing character because it selec
 
 An exporter reads authoritative runtime data: direct fields and explicit references, with `TryCast<T>()` where the subtype matters. It never infers a value from a name, a threshold, or proximity. Absence follows each field's contract: `null` for a missing reference, `""` for missing text, and a declared default for a value type only where the contract defines one. `"unknown"` is valid only where the domain defines it, such as an unresolved zone. A value that is derived rather than read, such as zone containment, is documented at its exporter. JSON property names are snake_case.
 
+Placement IDs use `prefix_{x}_{y}`, where the world position is rounded to the nearest whole
+unit with `Math.Round(..., MidpointRounding.AwayFromZero)` and negative zero is written as `0`.
+Existing descriptive prefixes are retained, except altars use `altar_{name}_{zone}` and treasure
+locations use `treasure_{mapId}_{zone}`. IDs do not contain runtime object numbers. The published
+IDs and URLs use this format directly, without aliases or redirects for older IDs.
+Duplicate placement IDs within an export set fail that exporter rather than adding a tie-breaker.
+
 Under CrossOver, the game writes to macOS paths through Wine's `Z:` drive. Manifest paths stay relative to `exported-data/`.
 
 Zone hero artwork uses native gameplay framing rather than a crop of the stitched map. With the
@@ -243,8 +250,9 @@ with an optional relative `offset: [dx, dy]` in world units (default `[0,0]`).
 The command resolves exactly one valid-scene monster spawn in that zone and verifies the offset point
 against the live zone trigger. The manifest records only the anchor and relative offset, never its
 resolved coordinates. Temple of Valaark screenshots are allowed because they show only what a player
-inside sees; absolute temple coordinates must never be checked in. Normal zones refuse anchors and
-continue using `x`/`y`. Old Valorath is unreleased and must never be captured.
+inside sees; absolute temple coordinates stay out of focal-point configuration and manifests.
+Rounded coordinates in published placement IDs and URLs are allowed by owner choice.
+Normal zones refuse anchors and continue using `x`/`y`. Old Valorath is unreleased and must never be captured.
 `compendium build` validates focal-point coverage and containment (live-command containment for
 anchored zones), rejects missing captures, coordinates in anchored manifests, or
 camera/image dimensions inconsistent with each zone's effective focal scale, and publishes unchanged 960×540
@@ -280,6 +288,11 @@ uv run compendium redactions check
 ```
 
 `compendium build` and `compendium stats` both use `website/data/compendium.db`. The database stays outside `website/static/`, because `static/` is published verbatim. The web build compresses the database and gives it a content-hashed name, so the browser downloads about 2.2 MB instead of about 16.5 MB and can cache it permanently.
+
+The pipeline preserves exported placement IDs unchanged in database rows, references, artwork paths,
+and published URLs. Position suppression removes map geometry and position fields, including
+embedded JSON positions, but the owner permits rounded positions to remain in placement IDs and
+URLs. Screenshot focal points and manifests for suppressed zones still use landmark anchors.
 
 Tile generation requires screenshot metadata from `MapScreenshotter` or `build-tool export --screenshots`.
 `uv run compendium tiles` validates boss/world-boss spawn coverage before publishing `website/static/tiles`; if boss positions sample as black/blank, re-run the in-game screenshot export before regenerating tiles.

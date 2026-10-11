@@ -69,7 +69,7 @@ public class TrapExporter : BaseExporter
 
             var data = new TrapData
             {
-                id = $"trap_{zoneInfo.ZoneId}_{trap.GetInstanceID()}",
+                id = PlacementId($"trap_{zoneInfo.ZoneId}", trap.transform.position),
                 name = trap.name,
                 zone_id = zoneInfo.ZoneId,
                 sub_zone_id = zoneInfo.SubZoneId,
@@ -137,7 +137,7 @@ public class TrapExporter : BaseExporter
 
             var data = new TrapData
             {
-                id = $"dangerous_ground_{zoneInfo.ZoneId}_{ground.GetInstanceID()}",
+                id = PlacementId($"dangerous_ground_{zoneInfo.ZoneId}", ground.transform.position),
                 name = ground.name,
                 zone_id = zoneInfo.ZoneId,
                 sub_zone_id = zoneInfo.SubZoneId,
@@ -184,7 +184,7 @@ public class TrapExporter : BaseExporter
 
             var data = new TrapData
             {
-                id = $"wall_trap_{zoneInfo.ZoneId}_{wallTrap.GetInstanceID()}",
+                id = PlacementId($"wall_trap_{zoneInfo.ZoneId}", wallTrap.transform.position),
                 name = wallTrap.name,
                 zone_id = zoneInfo.ZoneId,
                 sub_zone_id = zoneInfo.SubZoneId,

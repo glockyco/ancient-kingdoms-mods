@@ -21,6 +21,34 @@ Rationale: every recorded baseline in this repository compares against the expor
 - **WHEN** a game build changes a value the export publishes
 - **THEN** the export reports that difference
 
+### Requirement: Placement identifiers describe authored world positions
+
+Placement identifiers SHALL use `prefix_{x}_{y}`, with world coordinates rounded to nearest whole
+units using `Math.Round(..., MidpointRounding.AwayFromZero)` and negative zero normalized to `0`.
+Existing descriptive prefixes SHALL remain unchanged, except altars SHALL use
+`altar_{name}_{zone}` and treasure locations SHALL use `treasure_{mapId}_{zone}`.
+Monster and NPC placement identifiers SHALL use the same `startPosition` as their exported
+position and zone. Runtime object numbers SHALL NOT determine placement identifiers.
+The pipeline and website SHALL use these identifiers directly, without old-ID aliases or redirects.
+Duplicate placement identifiers within one export set SHALL fail the export rather than receive
+runtime-dependent tie-breakers.
+
+#### Scenario: A midpoint position
+
+- **WHEN** a placement stands at world position `(1.5, -1.5)`
+- **THEN** its identifier ends in `_2_-2`
+
+#### Scenario: A position rounds to zero
+
+- **WHEN** a placement coordinate is negative and rounds to zero
+- **THEN** that identifier component is `0`, not `-0`
+
+#### Scenario: Runtime object numbers change
+
+- **WHEN** a new session assigns different runtime object numbers without moving a placement
+- **THEN** its identifier remains unchanged
+
+
 ### Requirement: A published value does not depend on the exporting session
 
 A value the export writes SHALL be a function of the game's data. It SHALL NOT depend on the character that ran the export, on that character's progress, on the language the client had selected, on where an actor stood, on which way it faced, or on when during the session the export ran.

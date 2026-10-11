@@ -45,7 +45,7 @@ public class ScribingTableExporter : BaseExporter
 
             var data = new ScribingTableData
             {
-                id = $"{SanitizeId(name)}_{zoneInfo.ZoneId}_{table.GetInstanceID()}",
+                id = PlacementId($"{SanitizeId(name)}_{zoneInfo.ZoneId}", table.transform.position),
                 name = name,
                 zone_id = zoneInfo.ZoneId,
                 sub_zone_id = zoneInfo.SubZoneId,

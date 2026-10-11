@@ -56,9 +56,9 @@ function createDb() {
       ('iron_node', 'Iron Node', 3, 0, 0, 0, NULL),
       ('rough_fishing_spot', 'Rough Fishing Spot', 0, 0, 1, 1, 'rusty_rod');
     INSERT INTO gathering_resource_spawns VALUES
-      ('fish_spawn_1', 'rough_fishing_spot', 'lone_lands'),
-      ('fish_spawn_2', 'rough_fishing_spot', 'lone_lands'),
-      ('fish_spawn_3', 'rough_fishing_spot', 'crescent_coast');
+      ('rough_fishing_spot_lone_lands_-10_0', 'rough_fishing_spot', 'lone_lands'),
+      ('rough_fishing_spot_lone_lands_20_30', 'rough_fishing_spot', 'lone_lands'),
+      ('rough_fishing_spot_crescent_coast_40_-50', 'rough_fishing_spot', 'crescent_coast');
     INSERT INTO fish VALUES
       ('driftscale_catfish', 0),
       ('rough_dummy_one', 0),
@@ -98,7 +98,7 @@ describe("getGatherSources", () => {
       expect.arrayContaining([
         expect.objectContaining({
           resource_id: "rough_fishing_spot",
-          spawn_id: "fish_spawn_1",
+          spawn_id: "rough_fishing_spot_lone_lands_-10_0",
           zone_id: "lone_lands",
           zone_name: "The Lone-lands",
           is_fishing_spot: 1,
@@ -109,7 +109,7 @@ describe("getGatherSources", () => {
         }),
         expect.objectContaining({
           resource_id: "rough_fishing_spot",
-          spawn_id: "fish_spawn_2",
+          spawn_id: "rough_fishing_spot_lone_lands_20_30",
           zone_id: "lone_lands",
           zone_name: "The Lone-lands",
           is_fishing_spot: 1,
@@ -119,7 +119,7 @@ describe("getGatherSources", () => {
         }),
         expect.objectContaining({
           resource_id: "rough_fishing_spot",
-          spawn_id: "fish_spawn_3",
+          spawn_id: "rough_fishing_spot_crescent_coast_40_-50",
           zone_id: "crescent_coast",
           zone_name: "Crescent Coast",
           is_fishing_spot: 1,
@@ -132,7 +132,9 @@ describe("getGatherSources", () => {
 
     // per cast: floor success(rusty q0, 0%)=0.3 x 0.20/3 = 0.02 ;
     //           ceiling success(gilded q4, 100%)=1 x 0.76/3 = 0.2533
-    const primary = sources.find((s) => s.spawn_id === "fish_spawn_1")!;
+    const primary = sources.find(
+      (s) => s.spawn_id === "rough_fishing_spot_lone_lands_-10_0",
+    )!;
     expect(primary.fishing_chance_min).toBeCloseTo(0.02, 5);
     expect(primary.fishing_chance_max).toBeCloseTo(0.25333, 4);
 

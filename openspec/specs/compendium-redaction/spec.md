@@ -93,12 +93,13 @@ Rationale: reachability, deletion, and geometry were each derived separately fro
 
 ### Requirement: Position suppression removes geometry and keeps entities
 
-For a zone under position suppression, the published output SHALL contain no position, boundary, destination coordinate, or path geometry belonging to that zone, including geometry embedded in JSON values. Every entity of that zone SHALL remain published with its non-geometric data.
+For a zone under position suppression, the published output SHALL contain no map geometry or position fields belonging to that zone, including boundaries, destination coordinates, path geometry, and positions embedded in JSON values. Every entity of that zone SHALL remain published with its non-geometric data. By owner choice, rounded positions in published placement identifiers and URLs SHALL remain unchanged; these identifiers are not suppressed map geometry.
 
 #### Scenario: Entities survive
 
 - **WHEN** a zone is under position suppression
-- **THEN** its monsters, spawn records, and other entities remain published without coordinates
+- **THEN** its monsters, spawn records, and other entities remain published without position fields
+- **AND** their placement identifiers and URLs retain their rounded position components
 
 #### Scenario: Geometry inside JSON
 
@@ -300,9 +301,9 @@ Rationale: two configured mechanisms deleted rows outside the closure. Two quest
 
 The build SHALL record every redaction decision in a version-controlled ledger. Each removed entity's record SHALL state the mechanism that removed it, the reason, and the already-removed entities the decision followed.
 
-Each record SHALL be identified by something that survives a game build. Where a row's own identifier is derived from the runtime object the exporter read, the record SHALL be identified by the placement instead: the zone the row stands in and its position, rounded so that a coordinate carries no more precision than the data supports. Where a row's own identifier is already reproducible, the record SHALL keep it.
+Each record SHALL be identified by something that survives a game build. For a positioned placement, the ledger SHALL use the descriptive identifier prefix followed by `@x,y`, with coordinates rounded using the ledger's existing rounding. The exported identifier's signed whole-unit `_{x}_{y}` suffix SHALL be removed before forming that key. Where a row has no position or is not a placement, the record SHALL keep its identifier.
 
-The identifiers the compendium publishes SHALL NOT change on account of this. The ledger and the published data may identify the same row differently.
+The ledger SHALL retain its existing identity and rounding independently of the published placement-ID format. The ledger and the published data may identify the same row differently.
 
 A verification step SHALL compare the recorded decisions against those the current data produces and SHALL fail when they differ. Updating the ledger SHALL be a deliberate step, never a side effect of building.
 
@@ -315,8 +316,8 @@ Rationale: the invariant check proves nothing excluded survived. The ledger prov
 
 #### Scenario: A placement is recorded
 
-- **WHEN** the removed row's identifier comes from the runtime object the exporter read
-- **THEN** the ledger identifies it by its zone and its rounded position
+- **WHEN** a removed placement has a position and a published `prefix_{x}_{y}` identifier
+- **THEN** the ledger identifies it as `prefix@x,y` using its existing coordinate rounding
 - **AND** the record still names the entity the placement puts in the world
 
 #### Scenario: A patch renumbers placements

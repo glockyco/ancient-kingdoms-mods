@@ -50,7 +50,7 @@ public class TreasureLocationExporter : BaseExporter
 
             var locationData = new TreasureLocationData
             {
-                id = $"treasure_{mapId}_{location.GetInstanceID()}",
+                id = PlacementId($"treasure_{mapId}_{zoneInfo.ZoneId}", location.transform.position),
                 zone_id = zoneInfo.ZoneId,
                 sub_zone_id = zoneInfo.SubZoneId,
                 position = new Position(

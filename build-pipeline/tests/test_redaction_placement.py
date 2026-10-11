@@ -1,8 +1,8 @@
 """What identity the ledger records a removed row under.
 
-A placement identifier the exporter writes ends in the runtime number of the
-object it read, which differs in the next game build. These tests hold the
-ledger to recording where a placement stands instead.
+Placement identifiers end in whole-unit world coordinates. These tests hold
+the ledger to recording where a placement stands independently of its
+published identifier's representation.
 """
 
 import sqlite3
@@ -83,7 +83,7 @@ class PlacementTestCase(unittest.TestCase):
 
 class RecordedIdentityTests(PlacementTestCase):
     def test_a_removed_placement_is_recorded_where_it_stands(self):
-        self._spawn("plague_rat_old_valorath_1838820", 807.57, 746.67)
+        self._spawn("plague_rat_old_valorath_808_747", 807.57, 746.67)
 
         self.assertEqual(
             self._keys("monster_spawns"),
@@ -91,7 +91,7 @@ class RecordedIdentityTests(PlacementTestCase):
         )
 
     def test_the_recorded_identity_still_names_the_placed_entity(self):
-        self._spawn("plague_rat_old_valorath_1838820", 807.57, 746.67)
+        self._spawn("plague_rat_old_valorath_808_747", 807.57, 746.67)
 
         key = self._keys("monster_spawns")[0]
 
@@ -108,18 +108,18 @@ class RecordedIdentityTests(PlacementTestCase):
     def test_a_row_with_no_position_keeps_its_identifier(self):
         self.conn.execute(
             "INSERT INTO monster_spawns (id, monster_id, zone_id) "
-            "VALUES ('plague_rat_old_valorath_1838820', 'plague_rat', ?)",
+            "VALUES ('plague_rat_old_valorath_808_747', 'plague_rat', ?)",
             (REDACTED,),
         )
         self.conn.commit()
 
         self.assertEqual(
             self._keys("monster_spawns"),
-            ["monster_spawns:plague_rat_old_valorath_1838820"],
+            ["monster_spawns:plague_rat_old_valorath_808_747"],
         )
 
     def test_a_parent_is_named_by_the_identity_it_is_recorded_under(self):
-        self._spawn("plague_rat_old_valorath_1838820", 807.57, 746.67)
+        self._spawn("plague_rat_old_valorath_808_747", 807.57, 746.67)
 
         ledger = self._ledger()
 
@@ -129,19 +129,19 @@ class RecordedIdentityTests(PlacementTestCase):
 
 
 class BuildStabilityTests(PlacementTestCase):
-    def test_renumbering_a_placement_leaves_the_ledger_unchanged(self):
-        self._spawn("plague_rat_old_valorath_1838820", 807.57, 746.67)
+    def test_coordinate_suffix_is_not_used_as_the_ledger_position(self):
+        self._spawn("plague_rat_old_valorath_808_747", 807.57, 746.67)
         before = self._ledger()
 
         self.conn.execute(
-            "UPDATE monster_spawns SET id = 'plague_rat_old_valorath_2447901'"
+            "UPDATE monster_spawns SET id = 'plague_rat_old_valorath_809_748'"
         )
         self.conn.commit()
 
         self.assertEqual(compare(before, self._ledger()), [])
 
     def test_moving_a_placement_beyond_the_rounding_changes_its_entry(self):
-        self._spawn("plague_rat_old_valorath_1838820", 807.57, 746.67)
+        self._spawn("plague_rat_old_valorath_808_747", 807.57, 746.67)
         before = self._ledger()
 
         self.conn.execute("UPDATE monster_spawns SET position_x = 812.31")
@@ -157,7 +157,7 @@ class BuildStabilityTests(PlacementTestCase):
         self.assertEqual([d.kind for d in chained], ["changed"])
 
     def test_a_nudge_below_the_rounding_does_not(self):
-        self._spawn("plague_rat_old_valorath_1838820", 807.57, 746.67)
+        self._spawn("plague_rat_old_valorath_808_747", 807.57, 746.67)
         before = self._ledger()
 
         self.conn.execute("UPDATE monster_spawns SET position_x = 807.61")
@@ -166,8 +166,8 @@ class BuildStabilityTests(PlacementTestCase):
         self.assertEqual(compare(before, self._ledger()), [])
 
     def test_two_placements_of_one_entity_are_recorded_apart(self):
-        self._spawn("plague_rat_old_valorath_1838820", 807.57, 746.67)
-        self._spawn("plague_rat_old_valorath_1838821", 120.0, 44.4)
+        self._spawn("plague_rat_old_valorath_808_747", 807.57, 746.67)
+        self._spawn("plague_rat_old_valorath_120_44", 120.0, 44.4)
 
         self.assertEqual(len(self._keys("monster_spawns")), 2)
 
@@ -212,9 +212,9 @@ class KeySpaceTests(unittest.TestCase):
 
 
 class StemTests(unittest.TestCase):
-    def test_a_runtime_number_is_dropped(self):
+    def test_coordinate_suffix_is_dropped(self):
         self.assertEqual(
-            stem("plague_rat_old_valorath_1838820"), "plague_rat_old_valorath"
+            stem("plague_rat_old_valorath_808_747"), "plague_rat_old_valorath"
         )
 
     def test_an_authored_name_is_kept(self):
@@ -222,9 +222,18 @@ class StemTests(unittest.TestCase):
 
     def test_a_name_holding_a_number_keeps_it(self):
         self.assertEqual(
-            stem("chest_rf_greendungeon1_1_crescent_coast_1694614"),
+            stem("chest_rf_greendungeon1_1_crescent_coast_-12_0"),
             "chest_rf_greendungeon1_1_crescent_coast",
         )
+
+    def test_negative_coordinates_are_dropped(self):
+        self.assertEqual(
+            stem("altar_forgotten_old_valorath_-12_-34"),
+            "altar_forgotten_old_valorath",
+        )
+
+    def test_a_single_trailing_number_is_kept(self):
+        self.assertEqual(stem("authored_name_123"), "authored_name_123")
 
 
 class ScanSetTests(unittest.TestCase):

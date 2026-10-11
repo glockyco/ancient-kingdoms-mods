@@ -304,7 +304,7 @@ public class NpcExporter : BaseExporter
                     : npc.originFollowPosition;
                 var spawnData = new NpcSpawnData
                 {
-                    id = $"{name}_{zoneInfo.ZoneId}_{npc.GetInstanceID()}",
+                    id = PlacementId($"{name}_{zoneInfo.ZoneId}", placed),
                     npc_id = name,  // reference to canonical NPC
                     zone_id = zoneInfo.ZoneId,
                     sub_zone_id = zoneInfo.SubZoneId,

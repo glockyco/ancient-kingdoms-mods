@@ -57,7 +57,7 @@ public class PortalExporter : BaseExporter
 
             var portalData = new PortalData
             {
-                id = $"portal_{fromZoneInfo.ZoneId}_to_{toZoneInfo.ZoneId}_{portal.GetInstanceID()}",
+                id = PlacementId($"portal_{fromZoneInfo.ZoneId}_to_{toZoneInfo.ZoneId}", portal.transform.position),
                 is_interactable = false,
                 from_zone_id = fromZoneInfo.ZoneId,
                 from_sub_zone_id = fromZoneInfo.SubZoneId,
@@ -118,7 +118,7 @@ public class PortalExporter : BaseExporter
 
             var portalData = new PortalData
             {
-                id = $"iportal_{fromZoneInfo.ZoneId}_to_{toZoneInfo.ZoneId}_{portal.GetInstanceID()}",
+                id = PlacementId($"iportal_{fromZoneInfo.ZoneId}_to_{toZoneInfo.ZoneId}", portal.transform.position),
                 is_interactable = true,
                 from_zone_id = fromZoneInfo.ZoneId,
                 from_sub_zone_id = fromZoneInfo.SubZoneId,

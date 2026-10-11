@@ -13,6 +13,10 @@ public abstract class BaseExporter
     protected readonly MelonLogger.Instance Logger;
     protected readonly string ExportPath;
     protected readonly VisualAssetRegistry VisualAssets;
+    private readonly PlacementIds _placementIds = new();
+
+    protected string PlacementId(string prefix, Vector3 position) =>
+        _placementIds.Register(prefix, position.x, position.y);
 
     private static Il2CppSystem.Object[] _zoneTriggers;
 

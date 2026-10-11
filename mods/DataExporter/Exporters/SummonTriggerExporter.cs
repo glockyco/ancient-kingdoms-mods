@@ -91,8 +91,9 @@ public class SummonTriggerExporter : BaseExporter
                 if (placeholder == null)
                     continue;
 
-                var phZoneId = GetZoneId((byte)placeholder.idZone);
-                var placeholderId = $"{SanitizeId(placeholder.name)}_{phZoneId}_{placeholder.GetInstanceID()}";
+                var placed = PlacedPosition(placeholder.startPosition, placeholder.transform.position);
+                var phZoneId = GetZoneInfoFromPosition(placed).ZoneId;
+                var placeholderId = PlacementIds.Format($"{SanitizeId(placeholder.name)}_{phZoneId}", placed.x, placed.y);
 
                 triggerData.placeholder_monster_ids.Add(placeholderId);
             }

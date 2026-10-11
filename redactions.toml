@@ -20,11 +20,12 @@ ids = [
 ]
 
 # Zones in which the game itself withholds positional information from the
-# player. Every entity of the zone stays published. All of its geometry is
-# removed, so the compendium discloses no more than the game does.
+# player. Every entity of the zone stays published. Map geometry and position
+# fields in tables/data, including embedded JSON, are removed. By owner choice,
+# rounded positions may remain in published placement IDs and URLs.
 # In-game screenshots are allowed: they show only what a player inside sees.
-# Absolute coordinates in these zones are never checked in; screenshot focal
-# points and manifests use landmark anchors with relative offsets instead.
+# Screenshot focal points and manifests use landmark anchors with relative
+# offsets, never absolute coordinates.
 #
 # Temple of Valaark: the client closes the live map and substitutes a static
 # illustration, disables the player marker, refuses teleport items, and returns

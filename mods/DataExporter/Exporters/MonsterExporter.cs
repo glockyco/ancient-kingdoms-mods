@@ -279,7 +279,7 @@ public class MonsterExporter : BaseExporter
                 var zoneInfo = GetZoneInfoFromPosition(placed);
                 var spawnData = new MonsterSpawnData
                 {
-                    id = $"{name}_{zoneInfo.ZoneId}_{monster.GetInstanceID()}",
+                    id = PlacementId($"{name}_{zoneInfo.ZoneId}", placed),
                     monster_id = name,  // reference to canonical monster
                     zone_id = zoneInfo.ZoneId,
                     sub_zone_id = zoneInfo.SubZoneId,
