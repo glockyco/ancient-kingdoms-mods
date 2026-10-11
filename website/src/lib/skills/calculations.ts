@@ -4,6 +4,7 @@ import {
   formatNumber as number,
   formatPercent as percent,
   formatSeconds as seconds,
+  rankWorkingLines,
 } from "$lib/calculation/format";
 import {
   INTELLIGENCE,
@@ -22,7 +23,6 @@ import {
 } from "$lib/planner/engine-math";
 import type { Calculation } from "$lib/types/calculation";
 import type { LinearValue, SkillDetailView } from "$lib/types/skills";
-import { rankWorkingLines } from "./calculation-working";
 
 const MISSING_MANA = situational("missingMana", "Missing Mana", 600);
 const SKILL_DAMAGE = situational("skillDamage", "Full skill damage", 1000);

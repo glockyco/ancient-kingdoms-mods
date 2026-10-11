@@ -67,6 +67,8 @@ export function rankInput(maxRank: number): CalculationInput {
   return {
     key: "rank",
     label: "Rank",
+    phrase: "rank",
+    options: Array.from({ length: maxRank }, (_, index) => index + 1),
     value: 1,
     min: 1,
     max: maxRank,

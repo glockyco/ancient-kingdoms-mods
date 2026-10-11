@@ -1,8 +1,10 @@
 import {
   atRank,
+  describeInput,
   describeRankScaling,
   formatNumber as number,
   formatPercent as percent,
+  rankWorkingLines,
 } from "$lib/calculation/format";
 import {
   DAMAGE,
@@ -31,21 +33,26 @@ import type {
 } from "$lib/types/skills";
 import { melodyBonus } from "$lib/calculation/bard";
 import { bardBonus, bardPower, songValue } from "$lib/calculation/combat";
-import { givenInput, rankWorkingLines } from "./calculation-working";
 import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 
+/** Attribute a calculation's quantities to a mercenary instead of the reader, so its values are labelled as the mercenary's and never remembered as the reader's. */
 export function casterInputs(
   inputs: CalculationInput[],
   mercenary: boolean,
 ): CalculationInput[] {
   return mercenary
-    ? inputs.map((input) => ({
-        ...input,
-        label:
-          input.key === "rank" ? input.label : `Mercenary's ${input.label}`,
-        remember: false,
-      }))
+    ? inputs.map((input) =>
+        input.options
+          ? input
+          : {
+              ...input,
+              label: `Mercenary's ${input.label}`,
+              phrase: input.phrase ?? input.label,
+              owner: "the mercenary",
+              remember: false,
+            },
+      )
     : inputs;
 }
 
@@ -235,7 +242,7 @@ export function cadenceCalculation(
           );
       }
       return {
-        given: inputs.map((input) => givenInput(input, values[input.key])),
+        given: inputs.map((input) => describeInput(input, values[input.key])),
         result: `${number(evaluated[0].value.total)} damage before the target's defenses and ${number(evaluated[1].value.total)} Health restored before critical healing and missing-Health limits`,
         working,
       };
@@ -310,13 +317,36 @@ export function damageCalculation(
             ...statInputs,
             ...(dexterity ? [DEXTERITY] : []),
             ...(subtractBow
-              ? [situational("bowDamage", "Bow weapon damage", 30)]
+              ? [
+                  {
+                    ...situational("bowDamage", "Bow weapon damage", 30),
+                    phrase: "bow weapon damage",
+                  },
+                ]
               : []),
             ...(subtractOffhand
-              ? [situational("offhandDamage", "Off-hand weapon damage", 31)]
+              ? [
+                  {
+                    ...situational(
+                      "offhandDamage",
+                      "Off-hand weapon damage",
+                      31,
+                    ),
+                    phrase: "off-hand weapon damage",
+                  },
+                ]
               : []),
             ...(subtractMelee
-              ? [situational("meleeDamage", "Equipped melee weapon damage", 30)]
+              ? [
+                  {
+                    ...situational(
+                      "meleeDamage",
+                      "Equipped melee weapon damage",
+                      30,
+                    ),
+                    phrase: "equipped melee weapon damage",
+                  },
+                ]
               : []),
           ]
         : []),
@@ -487,7 +517,7 @@ export function damageCalculation(
               `example caster with 200 ${magic ? "Magic Damage" : "Damage"}${weaponMagic ? " and 200 Damage" : ""} at its level`,
               "skill rank 1",
             ]
-          : inputs.map((input) => givenInput(input, values[input.key])),
+          : inputs.map((input) => describeInput(input, values[input.key])),
         result: `${number(result)} damage before the target's defenses`,
         working,
       };

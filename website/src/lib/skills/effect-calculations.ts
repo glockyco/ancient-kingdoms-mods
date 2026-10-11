@@ -1,9 +1,11 @@
 import {
   atRank,
+  describeInput,
   describeRankScaling,
   formatNumber as number,
   formatPercent as percent,
   formatSeconds as seconds,
+  rankWorkingLines,
 } from "$lib/calculation/format";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import {
@@ -39,7 +41,6 @@ import {
   wisdomHeal,
 } from "$lib/calculation/combat";
 import { hitThreat } from "$lib/calculation/combat-rules";
-import { givenInput, rankWorkingLines } from "./calculation-working";
 
 const zero = { base_value: 0, bonus_per_level: 0 };
 function linear(
@@ -589,7 +590,7 @@ export function effectScalingCalculation(
         },
       );
       return {
-        given: inputs.map((input) => givenInput(input, values[input.key])),
+        given: inputs.map((input) => describeInput(input, values[input.key])),
         result: results.join(", "),
         working,
       };

@@ -177,7 +177,7 @@
               <span class="block text-muted-foreground"
                 >{input.label}{input.unit ? ` (${input.unit})` : ""}</span
               >
-              {#if input.key === "rank"}
+              {#if input.options}
                 <select
                   class="border-input dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-2 text-sm"
                   value={values[input.key]}
@@ -187,8 +187,8 @@
                       clamp(input, Number(event.currentTarget.value)),
                     )}
                 >
-                  {#each Array.from({ length: input.max - input.min + 1 }, (_, index) => input.min + index) as rank (rank)}
-                    <option value={rank}>{rank}</option>
+                  {#each input.options as option (option)}
+                    <option value={option}>{option}</option>
                   {/each}
                 </select>
               {:else}

@@ -1,4 +1,5 @@
 import { addF32, multiplyF32 } from "$lib/planner/engine-math";
+import type { CalculationInput } from "$lib/types/calculation";
 import type { LinearValue } from "$lib/types/skills";
 
 /** "1,234" */
@@ -81,4 +82,34 @@ export function describeRankGrowth(
   if (!scalesWithRank(value, maxRank)) return "";
   const verb = value.bonus_per_level > 0 ? "adds" : "removes";
   return `Each rank ${verb} ${format(Math.abs(value.bonus_per_level))}, reaching ${format(atRank(value, maxRank))} at rank ${maxRank}.`;
+}
+
+/** "Damage: 20 + 20 × (3 − 1) = 60" for a value that changes with rank, or nothing when it does not. */
+export function rankWorkingLines(
+  name: string,
+  value: LinearValue,
+  rank: number,
+  format: (value: number) => string,
+): string[] {
+  if (value.bonus_per_level === 0) return [];
+  return [
+    `${name}: ${format(value.base_value)} ${value.bonus_per_level > 0 ? "+" : "−"} ${format(Math.abs(value.bonus_per_level))} × (${rank} − 1) = ${format(atRank(value, rank))}`,
+  ];
+}
+
+/**
+ * How an example names an input value: "rank 3" for a value chosen from a
+ * list, "200 Damage" for a quantity, and "the mercenary's 200 Damage" when the
+ * value belongs to someone other than the reader.
+ */
+export function describeInput(input: CalculationInput, value: number): string {
+  const noun = input.phrase ?? input.label;
+  if (input.options) return `${noun} ${formatNumber(value)}`;
+  const amount =
+    input.unit === "%"
+      ? formatPercent(value)
+      : input.unit === "s"
+        ? formatSeconds(value)
+        : formatNumber(value);
+  return `${input.owner ? `${input.owner}'s ` : ""}${amount} ${noun}`;
 }

@@ -17,7 +17,14 @@ export interface CalculationInput {
    * blocks and pages, so a reader enters their maximum Health once.
    */
   key: string;
+  /** The form label, such as "Off-hand weapon damage". */
   label: string;
+  /** How the example names the quantity, such as "off-hand weapon damage". Defaults to the label. */
+  phrase?: string;
+  /** Whose value this is when it is not the reader's, such as "the mercenary". */
+  owner?: string;
+  /** A fixed set of values, such as a skill's ranks, chosen from a list instead of typed. */
+  options?: readonly number[];
   /** The example's value. Percentages are fractions: 0.2 means 20%. */
   value: number;
   min: number;
@@ -25,7 +32,7 @@ export interface CalculationInput {
   /** Step between values, in the unit the reader types. Percentage inputs accept any fraction. */
   step: number;
   unit?: "%" | "s";
-  /** A stat of the reader's character, kept when they move to another page. */
+  /** A stat of the reader's character, kept when they move to another page and shared by every calculation that uses the key. */
   remember?: boolean;
 }
 
