@@ -235,7 +235,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 0.25% of its base maximum health, physical and magic damage, defense, and magic, poison, fire, cold, and disease resistance, rounded to whole points. The bonus reaches +50% at 200 veteran points.",
         source:
           "Source: server-scripts/NecromancerPetStats.cs:28-99 — RefreshFromOwner caps pet level at Level.max and veteran points at 200; GetVeteranBonus and GetHealthBonus use 0.0025 and RoundToInt for base stats",
-        href: "/summons",
+        href: "/summons?summons.class=necromancer",
         linkText: "Undead companions",
       },
       {

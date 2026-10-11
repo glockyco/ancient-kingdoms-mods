@@ -37,6 +37,15 @@
   const uniqueKinds = $derived(
     Array.from(new Set(data.summons.map((s) => s.kind))).sort(),
   );
+  const uniqueClasses = $derived(
+    Array.from(
+      new Set(
+        data.summons
+          .map((s) => s.summoning_class_id)
+          .filter((id): id is string => id !== null),
+      ),
+    ).sort(),
+  );
   const undeadSummons = $derived(
     data.summons.filter((summon) => summon.has_necromancer_pet_stats),
   );
@@ -89,6 +98,16 @@
       enableSorting: false,
     },
     { id: "obtain", header: "How to get it", enableSorting: false },
+    {
+      id: "class",
+      header: "Class",
+      accessorFn: (summon) => summon.summoning_class_id ?? "",
+      enableHiding: false,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        if (!filterValue || filterValue.length === 0) return true;
+        return filterValue.includes(row.getValue(columnId) as string);
+      },
+    },
   ];
 
   const kindCounts = $derived(
@@ -176,6 +195,17 @@
       options={uniqueKinds.map((k) => ({ label: k, value: k }))}
     />
   {/if}
+  {@const classCol = table.getColumn("class")}
+  {#if classCol}
+    <DataTableFacetedFilter
+      column={classCol}
+      title="Class"
+      options={uniqueClasses.map((c) => ({
+        label: getClassConfig(c).name,
+        value: c,
+      }))}
+    />
+  {/if}
 {/snippet}
 
 <Seo
@@ -201,6 +231,7 @@
       { id: "kind", desc: false },
       { id: "name", desc: false },
     ]}
+    initialColumnVisibility={{ class: false }}
     urlKey="summons"
     showPagination={true}
     showSearch={true}
