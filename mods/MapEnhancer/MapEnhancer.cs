@@ -16,7 +16,7 @@ namespace MapEnhancer
         private string lastSceneName = "";
         private Vector3 lastPlayerPosition = Vector3.zero;
         private const float TELEPORT_DISTANCE_THRESHOLD = 50f;
-        private bool fogCleared = false;
+        private bool fogAttempted = false;
 
         public override void OnInitializeMelon()
         {
@@ -33,7 +33,7 @@ namespace MapEnhancer
                 if (lastSceneName == "World")
                 {
                     cachedMonsters = null;
-                    fogCleared = false;
+                    fogAttempted = false;
                 }
                 lastSceneName = currentScene;
                 return;
@@ -48,19 +48,20 @@ namespace MapEnhancer
                     player.hasVeteranAwareness = true;
                 }
 
-                if (!fogCleared)
+                if (!fogAttempted)
                 {
-                    var fogManagerObj = GameObject.Find("FogOfWarManager");
-                    if (fogManagerObj != null)
+                    var fogTeam = GameObject.Find("FogOfWarManager")?.GetComponent<FogOfWarTeam>();
+                    if (fogTeam != null)
                     {
-                        var fogTeam = fogManagerObj.GetComponent<FogOfWarTeam>();
-                        if (fogTeam != null)
-                        {
-                            fogTeam.SetAll(FogOfWarValueType.Visible, 0);
-                            fogTeam.SetAll(FogOfWarValueType.Partial, 0);
-                            fogCleared = true;
-                        }
+                        fogTeam.SetAll(FogOfWarValueType.Visible, 0);
+                        fogTeam.SetAll(FogOfWarValueType.Partial, 0);
                     }
+                    else
+                    {
+                        LoggerInstance.Error("FogOfWarManager with a FogOfWarTeam not found in the World scene. The map fog stays.");
+                    }
+                    // One attempt per world entry: a missing manager is reported once, not every frame.
+                    fogAttempted = true;
                 }
             }
 

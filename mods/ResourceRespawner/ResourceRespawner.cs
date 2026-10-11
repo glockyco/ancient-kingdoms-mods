@@ -15,6 +15,7 @@ namespace ResourceRespawner
     {
         private Il2CppSystem.Object[] cachedGatherItems = null;
         private Il2Cpp.NetworkManagerMMO cachedNetworkManager = null;
+        private bool reportedMissingNetworkManager = false;
         private string lastSceneName = "";
         private Vector3 lastPlayerPosition = Vector3.zero;
         private const float TELEPORT_DISTANCE_THRESHOLD = 50f;
@@ -74,6 +75,11 @@ namespace ResourceRespawner
                 {
                     cachedNetworkManager = allNetworkManagers[0].Cast<Il2Cpp.NetworkManagerMMO>();
                 }
+            }
+            if (cachedNetworkManager == null && !reportedMissingNetworkManager)
+            {
+                LoggerInstance.Error("NetworkManagerMMO not found, so server time is unknown. Cooldown markers are off.");
+                reportedMissingNetworkManager = true;
             }
 
             bool sceneChanged = lastSceneName != currentScene;

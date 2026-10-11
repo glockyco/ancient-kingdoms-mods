@@ -18,14 +18,16 @@ public static class GameAccess
     /// </summary>
     public static bool HostsServer => NetworkServer.active;
 
-    public static double ServerTime
-    {
-        get
-        {
-            var nm = NetworkManager.singleton != null ? NetworkManager.singleton.TryCast<NetworkManagerMMO>() : null;
-            return nm != null ? NetworkTime.time + nm.offsetNetworkTime : NetworkTime.time;
-        }
-    }
+    /// <summary>
+    /// The game's network manager, whose <c>offsetNetworkTime</c> turns <c>NetworkTime.time</c>
+    /// into server time. Null when the singleton is missing or of another type.
+    /// </summary>
+    public static NetworkManagerMMO NetworkManagerMmo =>
+        NetworkManager.singleton != null ? NetworkManager.singleton.TryCast<NetworkManagerMMO>() : null;
+
+    /// <summary>The sum the game's <c>getServerTimeCorrected()</c> returns.</summary>
+    public static double ServerTime(NetworkManagerMMO networkManager) =>
+        NetworkTime.time + networkManager.offsetNetworkTime;
 
     public static Entity Pet(Player localPlayer)
     {

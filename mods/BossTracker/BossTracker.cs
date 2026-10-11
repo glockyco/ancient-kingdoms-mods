@@ -26,6 +26,7 @@ namespace BossTracker
         // Caching
         private Il2CppSystem.Object[] cachedMonsters = null;
         private Il2Cpp.NetworkManagerMMO cachedNetworkManager = null;
+        private bool reportedMissingNetworkManager = false;
         private string lastSceneName = "";
         private Vector3 lastPlayerPosition = Vector3.zero;
         private const float TELEPORT_DISTANCE_THRESHOLD = 50f;
@@ -68,7 +69,7 @@ namespace BossTracker
             var canvas = GameObject.Find("Canvas");
             if (canvas == null)
             {
-                LoggerInstance.Warning("Could not find Canvas to attach tracker UI");
+                LoggerInstance.Error("Could not find Canvas to attach tracker UI");
                 return;
             }
 
@@ -168,6 +169,11 @@ namespace BossTracker
                 {
                     cachedNetworkManager = allNetworkManagers[0].Cast<Il2Cpp.NetworkManagerMMO>();
                 }
+            }
+            if (cachedNetworkManager == null && !reportedMissingNetworkManager)
+            {
+                LoggerInstance.Error("NetworkManagerMMO not found, so server time is unknown. Respawn countdowns are off.");
+                reportedMissingNetworkManager = true;
             }
 
             // Track bosses/elites

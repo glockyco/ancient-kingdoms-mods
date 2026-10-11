@@ -17,6 +17,7 @@ public sealed class BossSkillTrackerMod : MelonMod
     private EnemyDiscovery _discovery;
     private readonly List<EnemyInfo> _enemies = new();
     private float _scanTimer;
+    private bool _reportedMissingNetworkManager;
 
     public override void OnInitializeMelon()
     {
@@ -34,7 +35,21 @@ public sealed class BossSkillTrackerMod : MelonMod
             return;
         }
 
-        double now = GameAccess.ServerTime;
+        // Every cooldown and gate deadline is in server time, so without the network manager's
+        // offset the panel would show wrong figures; it stays hidden instead.
+        var networkManager = GameAccess.NetworkManagerMmo;
+        if (networkManager == null)
+        {
+            if (!_reportedMissingNetworkManager)
+            {
+                LoggerInstance.Error("NetworkManager.singleton is not a NetworkManagerMMO, so server time is unknown. The panel stays hidden.");
+                _reportedMissingNetworkManager = true;
+            }
+            _hud.SetVisible(false);
+            return;
+        }
+
+        double now = GameAccess.ServerTime(networkManager);
         _scanTimer += Time.deltaTime;
         if (_scanTimer >= Tuning.ScanIntervalSeconds)
         {
