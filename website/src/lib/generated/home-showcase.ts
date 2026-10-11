@@ -94,7 +94,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Equipment",
       href: "/items?items.item_type=equipment",
-      count: 776,
+      count: 771,
       icon: {
         src: "/images/items/dawnforged_chestplate/icon.webp",
         width: 30,

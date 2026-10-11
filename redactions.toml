@@ -44,9 +44,9 @@ zone_ids = ["old_valorath"]
 # Name an entity here when nothing in the data distinguishes it from content
 # that is deliberately published, so no rule over the references can select it.
 #
-# old_valorath_token: no source, no usage, no zone reference. It is one of 82
-# items with neither source nor usage, several of which are published on
-# purpose, so no derivable rule can select it.
+# old_valorath_token: no source, no usage, no zone reference. Many items have
+# neither source nor usage, several of them published on purpose, so no
+# derivable rule can select it.
 #
 # relics_of_the_ancient_faith and the_lost_warden: quests that must not appear
 # in any listing or relationship. Naming a quest also removes what only that
@@ -71,13 +71,14 @@ zone_ids = ["old_valorath"]
 # reaches. Without this entry the compendium publishes a key that no player can
 # obtain, for a door it does not show.
 #
-# The seven Old Valorath armour sets: no drop table names them yet, so no monster,
-# vendor, chest or recipe gives them and nothing in a row says Old Valorath.
-# A rule over the references cannot select them either. They carry
+# The eight Old Valorath armour sets: no drop table names them yet, so no monster,
+# vendor, chest or recipe gives them and no reference in their rows points at
+# Old Valorath. A rule over the references cannot select them either. They carry
 # is_bestiary_drop, but that flag marks what the bestiary shows when a boss,
 # elite or fabled monster is given the item, so it does not promise a source.
-# Forty-two released items are equally sourceless, the draconium set and the
-# starting clothes among them.
+# Released items are equally sourceless, the draconium set and the starting
+# clothes among them. Only the developer's free-text item comments place the
+# Necromancer's Lich set in Old Valorath.
 #
 # Only the pieces are named. Each set bonus is an item that names the pieces it
 # is composed of, and the closure removes an aggregate whose every member is
@@ -126,6 +127,12 @@ ids = [
     "hallowed_keeper_greaves",
     "hallowed_keeper_helm",
     "hallowed_keeper_sabatons",
+
+    "boots_of_the_lich",
+    "gloves_of_the_lich",
+    "hood_of_the_lich",
+    "leggings_of_the_lich",
+    "vestments_of_the_lich",
 
     "valorathian_minstrel_boots",
     "valorathian_minstrel_breastplate",

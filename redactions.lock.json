@@ -42,6 +42,10 @@
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },
+    "items:boots_of_the_lich": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "items:deathwhisper_armor_bonus_set": {
       "mechanism": "cascade",
       "pass": 1,
@@ -296,6 +300,10 @@
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },
+    "items:gloves_of_the_lich": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "items:hallowed_keeper_armor_bonus_set": {
       "mechanism": "cascade",
       "pass": 1,
@@ -328,12 +336,32 @@
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },
+    "items:hood_of_the_lich": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "items:key_to_the_north_wing": {
       "mechanism": "cascade",
       "pass": 2,
       "reason": "every source that made it reachable was removed",
       "via": [
         "quests:relics_of_the_ancient_faith"
+      ]
+    },
+    "items:leggings_of_the_lich": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:lich_vestments_armor_bonus_set": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "items:boots_of_the_lich",
+        "items:gloves_of_the_lich",
+        "items:hood_of_the_lich",
+        "items:leggings_of_the_lich",
+        "items:vestments_of_the_lich"
       ]
     },
     "items:living_earth": {
@@ -393,6 +421,10 @@
       "reason": "named in the manual exclusion list"
     },
     "items:valorathian_minstrel_leggings": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:vestments_of_the_lich": {
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },

@@ -248,7 +248,7 @@ The entity's own identifier is not a reference. An identifier that contains the 
 
 The configuration SHALL accept an explicit list of entity identifiers to exclude, and the build SHALL remove them together with their dependents.
 
-Rationale: unreleased content can exist with no reference edge at all. `old_valorath_token` had no source, no usage, and no zone reference, which made it indistinguishable by reference from the 90 unconnected items the compendium publishes on purpose. Such content can only be named.
+Rationale: unreleased content can exist with no reference edge at all. `old_valorath_token` had no source, no usage, and no zone reference, which made it indistinguishable by reference from the unconnected items the compendium publishes on purpose. Such content can only be named.
 
 #### Scenario: Identifier listed explicitly
 

@@ -12,7 +12,7 @@ Removal is therefore a subtraction:
 The closure supplies the transitive part, so this module contains no loop.
 
 Content that is reachable from nothing is absent from both results. The
-subtraction therefore keeps the 96 items that have no source.
+subtraction therefore keeps items that have no source.
 
 A row with its own identifier is a node. A junction row is an edge. In a
 junction row, the reference that reaches names the target, and the reference

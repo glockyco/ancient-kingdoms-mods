@@ -192,7 +192,7 @@ class UnconnectedContentTests(ReachabilityTestCase):
     """Content reachable from nothing is untouched.
 
     Removal is the difference between two closures, not a hunt for orphans. The
-    published database holds 94 items with no source, several on purpose.
+    published database holds many items with no source, several on purpose.
     """
 
     def test_an_item_with_no_source_at_all_survives(self):
