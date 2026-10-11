@@ -1,7 +1,7 @@
 # Typed control commands
 
-Read command implementations and XML documentation in `mods/HotReplCommands/Commands/` and
-`mods/CombatVerification/Commands/`.
+Read command implementations and XML documentation in `mods/HotReplCommands/Commands/`,
+`mods/CombatVerification/Commands/`, and `mods/CharacterCapture/CaptureCommands.cs`.
 
 ## HotReplCommands
 
@@ -20,12 +20,21 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 | Command | Kind | Arguments |
 | --- | --- | --- |
 | `fixture.validate` | sync | `FixtureDescriptor` |
+| `fixture.validateMatrix` | sync | `FixtureMatrix` |
 | `fixture.createCharacter` | job | `{"characterName": string, "class": string, "race": string, "replaceCharacterName": string?}` |
 | `probe.statSheet` | sync | `{}` |
 | `probe.targetState` | job | `{}` |
 | `probe.perHitDamage` | job | `{"windowSeconds": number, "seed": int?}` |
 | `probe.actionInterval` | job | `{"windowSeconds": number?}` |
 | `fixture.buildCharacter` | job | `{"build": {...}, "buildData": {"character": {...}, "companions": [...], "consumables": [...], "learnedBookIds": [...], "provenance": {...}}}` |
+| `fixture.observe` | job | `{"fixture": FixtureDescriptor}` |
+
+## CharacterCapture
+
+| Command | Kind | Arguments |
+| --- | --- | --- |
+| `character.capture` | sync | `{}` |
+| `combatMeter.capture` | sync | `{}` |
 
 ## HotRepl Unity commands
 
@@ -44,6 +53,8 @@ Read command implementations and XML documentation in `mods/HotReplCommands/Comm
 - `probe.perHitDamage` does not make a live run reproducible when it receives the same seed.
 - `probe.actionInterval` observes no action when `windowSeconds` is absent or zero. Another action must drive the subject.
 - `fixture.buildCharacter` clears slots that the fixture does not declare because a created character has starter equipment.
+- `fixture.observe` writes `observation.json` beside the scratch database and returns it as an artifact. Outside the scratch database it fails with `notScratch` after measuring.
+- `character.capture` writes `UserData/CharacterCapture/character-capture.json` and returns it as an artifact. `combatMeter.capture` returns the meters inline. Both need a spawned player.
 - `capture.zoneShots` requires a spawned player and the owned scratch database. It reads the checked-in
   `build-pipeline/zone_shot_focal_points.json` by default. This object contains a positive finite
   default `frame_scale` and a `zones` array of `zone_id`, `x`, `y`, and `comment` records, each with
