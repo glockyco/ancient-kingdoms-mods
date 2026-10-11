@@ -15,7 +15,7 @@ import {
 } from "$lib/utils/format";
 
 import { QUALITY_NAMES } from "$lib/constants/quality";
-import { ALL_CLASS_IDS } from "$lib/utils/classes";
+import { ALL_CLASS_IDS, getResourceDisplayName } from "$lib/utils/classes";
 
 // =============================================================================
 // Items
@@ -395,10 +395,19 @@ function treasureMapDescription(): string {
 }
 
 function chestContainerDescription(item: Item): string {
-  // Source: server-scripts/ChestItem.cs:11,24 — yields numItemsPerChest from a weighted reward table
-  const n = item.chest_num_items > 0 ? item.chest_num_items : 1;
+  // Source: server-scripts/ChestItem.cs:24-32,61-66 — guaranteed rolls produce fixed contents, otherwise chance rolls stop at the opening limit or after ten passes.
+  const rewards = JSON.parse(item.chest_rewards || "[]") as Array<{
+    probability: number;
+  }>;
+  const fixed =
+    rewards.length > 0 && rewards.every((reward) => reward.probability >= 1);
+  const n = fixed
+    ? Math.min(item.chest_num_items, rewards.length)
+    : item.chest_num_items;
   const itemsWord = n === 1 ? "item" : "items";
-  return `Loot container. Yields ${n} ${itemsWord} from a weighted reward pool.`;
+  return fixed
+    ? `Loot container. Contains ${n} fixed ${itemsWord}.`
+    : `Loot container. Yields up to ${n} ${itemsWord} from a chance-based reward pool.`;
 }
 
 function randomDescription(item: Item, ctx: ItemMetaContext): string {
@@ -1485,11 +1494,9 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:99; Player.cs:10545-10559,UpdateMercStatsByLevel — familiar level scales with
-// summoning skill rank, companion level matches summoner, mercenaries hire at
-// player level and gain attributes per level. We deliberately don't print
-// numeric levels or stats: every value in the DB pets row is a build-time
-// placeholder.
+// Source: server-scripts/SummonSkill.cs:99; Player.cs:10545-10559,UpdateMercStatsByLevel — familiar level follows
+// summoning skill rank, companions match the summoner up to Level.max, and
+// mercenaries hire at player level and gain attributes per level.
 
 export interface PetDescriptionInput {
   name: string;
@@ -1498,6 +1505,8 @@ export interface PetDescriptionInput {
   type_monster: string;
   has_buffs: boolean;
   has_heals: boolean;
+  level_max: number;
+  effective_max_level: number;
   /** The summon skill that creates this pet (familiars/companions). */
   summoning_skill_name: string | null;
   /** Class id of the summoning skill (lowercase, e.g. "druid"). */
@@ -1522,18 +1531,18 @@ function petOriginPhrase(input: PetDescriptionInput): string {
     case "Familiar":
       // Source: server-scripts/SummonSkill.cs:99 — level = skillLevel
       if (input.summoning_skill_name && className) {
-        return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level scales with the skill rank.`;
+        return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level follows the skill rank, up to rank ${input.effective_max_level}.`;
       }
-      return " Summoned by a class skill. Level scales with the skill rank.";
+      return ` Summoned by a class skill. Level follows the skill rank, up to rank ${input.effective_max_level}.`;
     case "Companion":
       // Source: server-scripts/SummonSkill.cs:99 — level = min(petMaxLevel, playerLevel)
       if (input.summoning_class_id === "necromancer") {
-        return ` Undead combat pet summoned by ${input.summoning_skill_name ?? "a Necromancer skill"}. Level follows the summoner, up to the pet's level cap.`;
+        return ` Undead combat pet summoned by ${input.summoning_skill_name ?? "a Necromancer skill"}. Level follows the summoner, up to level ${input.level_max}.`;
       }
       if (input.summoning_skill_name && className) {
-        return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level matches the summoner.`;
+        return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level matches the summoner, up to level ${input.level_max}.`;
       }
-      return " Summoned by a class skill. Level matches the summoner.";
+      return ` Summoned by a class skill. Level matches the summoner, up to level ${input.level_max}.`;
     case "Mercenary":
       // Source: server-scripts/Player.cs:10545-10559; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
@@ -1601,10 +1610,8 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // Classes
 // =============================================================================
 //
-// Source: server-scripts class definitions — each class has a primary role,
-// optional secondary role, and energy/mana resource. We use formatResourceName
-// so the in-game word "Rage" shows for energy users instead of the schema
-// column name.
+// Role labels come from curated class metadata.
+// Source: server-scripts/Player.cs:1460-1486 — classes display Mana, Rage or Active Songs.
 
 interface ClassDescriptionInput {
   name: string;
@@ -1625,14 +1632,14 @@ function loreSnippet(description: string): string {
 }
 
 export function classDescription(klass: ClassDescriptionInput): string {
-  const resource = formatResourceName(klass.resource_type);
+  const resource = getResourceDisplayName(klass.resource_type);
   const role = klass.secondary_role
-    ? `${klass.primary_role} with ${klass.secondary_role.toLowerCase()}`
+    ? `${klass.primary_role}. Secondary role: ${klass.secondary_role}`
     : klass.primary_role;
   const lore = loreSnippet(klass.description);
   const lorePhrase = lore ? ` ${lore}` : "";
 
-  return `${role}, uses ${resource}.${lorePhrase}`;
+  return `${role}. Uses ${resource}.${lorePhrase}`;
 }
 
 // =============================================================================

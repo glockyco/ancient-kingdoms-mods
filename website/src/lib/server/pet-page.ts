@@ -52,6 +52,8 @@ function loadPet(
       type_monster: pet.type_monster,
       has_heals: pet.has_heals,
       has_buffs: pet.has_buffs,
+      level_max: pet.level_max,
+      effective_max_level: pet.effective_max_level,
       summoning_skill_name: pet.classLink.skill_name ?? null,
       summoning_class_id: isMercenary ? null : (pet.classLink.class_id ?? null),
     },

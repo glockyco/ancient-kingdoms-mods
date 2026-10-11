@@ -58,6 +58,8 @@ public class PetExporter : BaseExporter
                 seek_target_back = pet.seekTargetBack,
                 has_necromancer_pet_stats = pet.GetComponent<Il2Cpp.NecromancerPetStats>() != null,
                 level = pet.level?.current ?? 0,
+                level_max = pet.level?.max ?? 0,
+                health_multiplier = pet.health?.multiplierHealth ?? 1f,
                 mana = pet.mana?.max ?? 0,
                 energy = pet.energy?.max ?? 0,
                 damage = pet.combat?.damage ?? 0,

@@ -1,12 +1,77 @@
 import { test } from "vitest";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   itemDescription,
   npcDescription,
   questDescription,
   skillDescription,
+  classDescription,
 } from "./meta-description.ts";
 import type { Item } from "$lib/queries/items";
+
+const classMetadata = JSON.parse(
+  readFileSync(
+    new URL(
+      "../../../../mods/DataExporter/Curated/classes.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+
+test("classDescription includes every class role and its displayed resource", () => {
+  const resourceNames: Record<string, string> = {
+    energy: "Rage",
+    mana: "Mana",
+    songs: "Active Songs",
+  };
+  for (const klass of classMetadata) {
+    const out = classDescription(klass);
+    assert.ok(out.includes(klass.primary_role), klass.name);
+    if (klass.secondary_role) {
+      assert.ok(out.includes(klass.secondary_role), klass.name);
+    }
+    assert.ok(out.includes(resourceNames[klass.resource_type]), klass.name);
+  }
+});
+
+test("chest descriptions distinguish guaranteed contents from chance rolls", () => {
+  const chest = {
+    item_type: "chest",
+    chest_num_items: 2,
+    chest_rewards: JSON.stringify([
+      { item_id: "robe", probability: 1 },
+      { item_id: "staff", probability: 1 },
+    ]),
+  } as Item;
+  const fixed = itemDescription(chest);
+  assert.match(fixed, /2 fixed items/);
+  assert.doesNotMatch(fixed, /chance|weighted|up to/);
+
+  const chance = itemDescription({
+    ...chest,
+    chest_rewards: JSON.stringify([
+      { item_id: "robe", probability: 1 },
+      { item_id: "staff", probability: 0.25 },
+    ]),
+  });
+  assert.match(chance, /up to 2 items/);
+  assert.match(chance, /chance-based/);
+  assert.doesNotMatch(chance, /fixed|weighted/);
+});
+
+test("guaranteed chest contents respect the opening limit", () => {
+  const description = itemDescription({
+    item_type: "chest",
+    chest_num_items: 1,
+    chest_rewards: JSON.stringify([
+      { item_id: "robe", probability: 1 },
+      { item_id: "staff", probability: 1 },
+    ]),
+  } as Item);
+  assert.match(description, /1 fixed item\./);
+});
 
 test("npcDescription identifies a barber as the primary service role", () => {
   const out = npcDescription(

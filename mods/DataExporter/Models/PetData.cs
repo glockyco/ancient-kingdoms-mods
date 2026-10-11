@@ -30,6 +30,19 @@ public class PetData
     // Health.max adds the owner's pet passives, and a prefab has no spawned owner to read.
     // Source: server-scripts/Skills.cs:GetHealthPercentBonus
     public int level { get; set; }
+
+    /// <summary>
+    /// Level.max: a summoned non-familiar pet takes its owner's level up to this cap.
+    /// Source: server-scripts/SummonSkill.cs:99
+    /// </summary>
+    public int level_max { get; set; }
+
+    /// <summary>
+    /// Health.multiplierHealth: maximum Health is round(baseHealth at the pet's level × this).
+    /// Source: server-scripts/Health.cs:34
+    /// </summary>
+    public float health_multiplier { get; set; }
+
     public int mana { get; set; }
     public int energy { get; set; }
 

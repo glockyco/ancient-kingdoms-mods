@@ -232,6 +232,10 @@ class PetData(BaseModel):
     is_familiar: bool = False
     type_monster: str
     level: int
+    # Level.max: a summoned non-familiar pet takes its owner's level up to this cap.
+    level_max: int
+    # Health.multiplierHealth: maximum Health is round(base Health at level × this).
+    health_multiplier: float
     mana: int = 0
     damage: int = 0
     magic_damage: int = 0

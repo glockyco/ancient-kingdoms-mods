@@ -1,6 +1,11 @@
 import { query, queryOne } from "$lib/db.server";
 import type { ClassSkill } from "./classes.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
+import { iround, multiplyF32 } from "$lib/planner/engine-math";
+import {
+  SKILL_EFFECT_COLUMNS,
+  SKILL_EFFECT_JOINS,
+} from "$lib/skills/skillsListQuery";
 import type {
   MercenaryDetailView,
   MercenaryProfile,
@@ -11,11 +16,68 @@ import type {
   PetKind,
   PetClassLink,
   PetRecruiter,
+  PetStatId,
+  PetStatCurves,
+  PetStatSnapshot,
 } from "$lib/types/pets";
 import {
   getMercenaryCurves,
   getMercenaryLinks,
 } from "$lib/queries/mercenaries.server";
+
+const PET_STATS: { id: PetStatId; name: string; isPercent?: boolean }[] = [
+  { id: "health", name: "Health" },
+  { id: "damage", name: "Physical damage" },
+  { id: "magic_damage", name: "Magic damage" },
+  { id: "defense", name: "Defense" },
+  { id: "magic_resist", name: "Magic resistance" },
+  { id: "poison_resist", name: "Poison resistance" },
+  { id: "fire_resist", name: "Fire resistance" },
+  { id: "cold_resist", name: "Cold resistance" },
+  { id: "disease_resist", name: "Disease resistance" },
+  { id: "block_chance", name: "Block chance", isPercent: true },
+  { id: "critical_chance", name: "Critical chance", isPercent: true },
+];
+const PET_STAT_COLUMNS = PET_STATS.flatMap(({ id }) => [
+  `${id}_base`,
+  `${id}_per_level`,
+]).join(", ");
+
+export function getPetStatSnapshots(
+  curves: PetStatCurves,
+  maxLevel: number,
+  hasVeteranBonus: boolean,
+): PetStatSnapshot[] {
+  // Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13 — base plus growth for each level after 1.
+  return PET_STATS.flatMap(({ id, name, isPercent = false }) => {
+    let level1 = isPercent
+      ? Math.fround(curves[`${id}_base`])
+      : curves[`${id}_base`];
+    const growth = curves[`${id}_per_level`];
+    if (level1 === 0 && growth === 0) return [];
+    let atCap = isPercent
+      ? Math.fround(level1 + multiplyF32(growth, maxLevel - 1))
+      : level1 + growth * (maxLevel - 1);
+    let veteranBase = atCap;
+    if (id === "health") {
+      // Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:48 — Health rounds after its multiplier, while the veteran bonus uses the unrounded scaled base.
+      level1 = iround(multiplyF32(level1, curves.health_multiplier));
+      veteranBase = multiplyF32(atCap, curves.health_multiplier);
+      atCap = iround(veteranBase);
+    }
+    // Source: server-scripts/NecromancerPetStats.cs:36-48,61-108 — 200 veteran points add a rounded 50% of base stats, not block or critical chance.
+    const bonus =
+      hasVeteranBonus && !isPercent
+        ? iround(
+            multiplyF32(
+              id === "health" ? multiplyF32(veteranBase, 200) : atCap * 200,
+              0.0025,
+            ),
+          )
+        : 0;
+    return [{ name, isPercent, level1, atCap, withVeteran: atCap + bonus }];
+  });
+}
 
 function getPetKind(is_mercenary: boolean, is_familiar: boolean): PetKind {
   if (is_mercenary) return "Mercenary";
@@ -99,12 +161,13 @@ export function getAllSummons(): SummonListView[] {
       has_necromancer_pet_stats: number;
       type_monster: string;
       level: number;
+      level_max: number;
       summoning_class_id: string | null;
       summoning_skill_id: string | null;
       summoning_skill_name: string | null;
     } & PetVisualAssetColumns
   >(
-    `SELECT p.id, p.name, p.is_familiar, p.has_necromancer_pet_stats, p.type_monster, p.level,
+    `SELECT p.id, p.name, p.is_familiar, p.has_necromancer_pet_stats, p.type_monster, p.level, p.level_max,
             json_extract(s.player_classes, '$[0]') as summoning_class_id,
             s.id as summoning_skill_id,
             s.name as summoning_skill_name,
@@ -129,6 +192,7 @@ export function getAllSummons(): SummonListView[] {
     kind: r.is_familiar ? "Familiar" : "Companion",
     type_monster: r.type_monster,
     level: r.level,
+    level_max: r.level_max,
     has_necromancer_pet_stats: r.has_necromancer_pet_stats === 1,
     visualAsset: getVisualAsset(r),
     summoning_class_id: r.summoning_class_id,
@@ -174,6 +238,7 @@ export function getWhistlePets(): SummonListView[] {
       kind: "Pet",
       type_monster: "—",
       level: 0,
+      level_max: null,
       has_necromancer_pet_stats: false,
       visualAsset: {
         public_path: r.public_path,
@@ -208,20 +273,24 @@ export function getPetVisualAsset(petId: string): EntityVisualAsset | null {
  * Get a single pet's full detail data.
  */
 export function getPetById(petId: string): PetDetailView | null {
-  const row = queryOne<{
-    id: string;
-    name: string;
-    is_mercenary: boolean;
-    is_familiar: boolean;
-    type_monster: string;
-    level: number;
-    has_heals: number;
-    has_buffs: number;
-    has_necromancer_pet_stats: number;
-    fear_immune: number;
-  }>(
-    `SELECT id, name, is_mercenary, is_familiar, type_monster, level,
-            has_heals, has_buffs, has_necromancer_pet_stats, fear_immune
+  const row = queryOne<
+    {
+      id: string;
+      name: string;
+      is_mercenary: boolean;
+      is_familiar: boolean;
+      type_monster: string;
+      level: number;
+      level_max: number;
+      has_heals: number;
+      has_buffs: number;
+      has_necromancer_pet_stats: number;
+      fear_immune: number;
+    } & PetStatCurves
+  >(
+    `SELECT id, name, is_mercenary, is_familiar, type_monster, level, level_max,
+            has_heals, has_buffs, has_necromancer_pet_stats, fear_immune, health_multiplier,
+            ${PET_STAT_COLUMNS}
      FROM pets
      WHERE id = ?`,
     [petId],
@@ -263,9 +332,9 @@ export function getPetById(petId: string): PetDetailView | null {
     };
   }
 
-  // For familiars the effective max level is the summoning skill's max_level,
-  // not the pet template's level field (which is always 1).
-  let effective_max_level = row.level;
+  // Familiars take the summoning skill rank without the companion level clamp.
+  // Source: server-scripts/SummonSkill.cs:99 — familiar level equals skillLevel.
+  let effective_max_level = row.level_max;
   if (row.is_familiar && classLink.skill_id) {
     const skillMaxLevel = queryOne<{ max_level: number }>(
       `SELECT max_level FROM skills WHERE id = ?`,
@@ -285,6 +354,12 @@ export function getPetById(petId: string): PetDetailView | null {
     kind,
     type_monster: row.type_monster,
     level: row.level,
+    level_max: row.level_max,
+    stats: getPetStatSnapshots(
+      row,
+      effective_max_level,
+      row.has_necromancer_pet_stats === 1,
+    ),
     has_heals: row.has_heals === 1,
     has_buffs: row.has_buffs === 1,
     has_necromancer_pet_stats: row.has_necromancer_pet_stats === 1,
@@ -399,119 +474,22 @@ export function getSummonIds(): string[] {
 function getPetSkills(petId: string): ClassSkill[] {
   return query<ClassSkill>(
     `SELECT
-      s.id,
-      s.name,
-      va.public_path as visual_public_path,
+      ${SKILL_EFFECT_COLUMNS},
       va.width as visual_width,
       va.height as visual_height,
       va.source_field as visual_source_field,
       va.source_type as visual_source_type,
-      s.skill_type,
-      s.level_required,
-      s.damage_type,
-      s.damage_over_time_type,
-      s.damage_shield_type,
-      s.max_level,
-      s.damage,
-      s.damage_percent,
-      s.lifetap_percent,
-      s.knockback_chance,
-      s.knockback_distance,
-      s.stun_chance,
-      s.stun_time,
-      s.fear_chance,
-      s.fear_time,
-      s.aggro,
-      s.is_assassination_skill,
-      s.is_manaburn_skill,
-      s.break_armor_prob,
-      s.heals_health,
-      s.heals_mana,
-      s.is_resurrect_skill,
-      s.is_balance_health,
-      s.health_max_bonus,
-      s.health_max_percent_bonus,
-      s.mana_max_bonus,
-      s.mana_max_percent_bonus,
-      s.energy_max_bonus,
-      s.defense_bonus,
-      s.ward_bonus,
-      s.magic_resist_bonus,
-      s.poison_resist_bonus,
-      s.fire_resist_bonus,
-      s.cold_resist_bonus,
-      s.disease_resist_bonus,
-      s.damage_bonus,
-      s.damage_percent_bonus,
-      s.magic_damage_bonus,
-      s.magic_damage_percent_bonus,
-      s.haste_bonus,
-      s.spell_haste_bonus,
-      s.speed_bonus,
-      s.critical_chance_bonus,
-      s.critical_resist_bonus,
-      s.accuracy_bonus,
-      s.block_chance_bonus,
-      s.fear_resist_chance_bonus,
-      s.fear_resist_chance_bonus_cap,
-      s.damage_shield,
-      s.cooldown_reduction_percent,
-      s.heal_on_hit_percent,
-      s.healing_per_second_bonus,
-      s.health_percent_per_second_bonus,
-      s.mana_per_second_bonus,
-      s.mana_percent_per_second_bonus,
-      s.energy_per_second_bonus,
-      s.energy_percent_per_second_bonus,
-      s.strength_bonus,
-      s.intelligence_bonus,
-      s.dexterity_bonus,
-      s.charisma_bonus,
-      s.wisdom_bonus,
-      s.constitution_bonus,
-      s.duration_base,
-      s.duration_per_level,
-      s.is_invisibility,
-      s.ignores_see_invisibility,
-      s.is_mana_shield,
-      s.is_cleanse,
-      s.is_dispel,
-      s.is_blindness,
-      s.is_enrage,
-      s.summoned_monster_id,
-      m.name as summoned_monster_name,
-      s.summoned_monster_level,
-      s.summon_count_per_cast,
-      s.max_active_summons,
-      s.pet_prefab_name as pet_name,
-      s.is_familiar,
-      s.affects_random_target,
-      s.area_object_size,
-      s.area_objects_to_spawn,
-      s.is_poison_debuff,
-      s.is_fire_debuff,
-      s.is_cold_debuff,
-      s.is_disease_debuff,
-      s.is_melee_debuff,
-      s.is_magic_debuff,
-      s.prob_ignore_cleanse,
       s.mana_cost,
       s.energy_cost,
       s.cooldown,
       s.cast_time,
-      s.is_veteran,
       s.learn_default,
       s.base_skill,
-      s.tier,
       s.required_spent_points,
       ps.is_innate
     FROM pet_skills ps
     JOIN skills s ON s.id = ps.skill_id
-    LEFT JOIN monsters m ON s.summoned_monster_id = m.id
-    LEFT JOIN visual_assets va
-      ON va.domain = 'skill'
-     AND va.entity_id = s.id
-     AND va.kind = 'icon'
+    ${SKILL_EFFECT_JOINS}
     WHERE ps.pet_id = ?
     ORDER BY ps.is_innate ASC, ps.skill_index`,
     [petId],

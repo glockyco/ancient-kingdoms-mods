@@ -1679,6 +1679,10 @@ CREATE TABLE pets (
     is_familiar BOOLEAN DEFAULT 0,
     type_monster TEXT NOT NULL,         -- Class archetype (e.g. "Cleric", "Druid")
     level INTEGER NOT NULL,
+    -- Level.max: a summoned non-familiar pet takes its owner's level up to this cap.
+    level_max INTEGER NOT NULL,
+    -- Health.multiplierHealth: maximum Health is round(base Health at level × this).
+    health_multiplier REAL NOT NULL,
     mana INTEGER DEFAULT 0,
     damage INTEGER DEFAULT 0,
     magic_damage INTEGER DEFAULT 0,

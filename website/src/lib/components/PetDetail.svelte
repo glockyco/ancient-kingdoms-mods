@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
+  import * as Table from "$lib/components/ui/table";
   import {
     DataTable,
     type ColumnDef,
@@ -11,6 +12,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import { getClassConfig } from "$lib/utils/classes";
   import type { PetClassLink, PetDetailView } from "$lib/types/pets";
+  import type { PetHealthPassive } from "$lib/queries/pet-passives.server";
   import { petHref } from "$lib/utils/pets";
   import { base } from "$app/paths";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
@@ -27,7 +29,7 @@
     description,
     visualAsset,
   }: {
-    pet: PetDetailView;
+    pet: PetDetailView & { healthPassives?: PetHealthPassive[] };
     description: string;
     visualAsset: EntityVisualAsset | null;
   } = $props();
@@ -40,6 +42,15 @@
     { accessorKey: "class_id", header: "Class" },
     { accessorKey: "skill_id", header: "Via Skill" },
   ];
+
+  const statsScale = $derived(
+    pet.stats.some((stat) => stat.level1 !== stat.atCap),
+  );
+  const statUnit = $derived(pet.kind === "Familiar" ? "Rank" : "Level");
+  const formatStat = (value: number, isPercent: boolean) =>
+    isPercent
+      ? `${(value * 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}%`
+      : value.toLocaleString("en-US");
 </script>
 
 {#snippet renderSummonedByCell({
@@ -138,6 +149,75 @@
     />
   </section>
 
+  <section aria-labelledby="pet-stats-title" class="space-y-4">
+    <h2 id="pet-stats-title" class="text-xl font-semibold">Base stats</h2>
+    <!-- Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13; SummonSkill.cs:99 — stats scale from their base values with level, companions stop at Level.max, and familiars use the summoning skill rank. -->
+    <!-- Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:48 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
+    <!-- Source: server-scripts/NecromancerPetStats.cs:36-48,61-108 — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances, not block or critical chance. -->
+    <div class="overflow-x-auto rounded-md border bg-muted/30">
+      <Table.Root class="text-base">
+        <Table.Header>
+          <Table.Row>
+            <Table.Head class="table-cell">Stat</Table.Head>
+            {#if statsScale}
+              <Table.Head class="table-cell text-right">{statUnit} 1</Table.Head
+              >
+              <Table.Head class="table-cell text-right">
+                {statUnit}
+                {pet.effective_max_level}
+              </Table.Head>
+            {:else}
+              <Table.Head class="table-cell text-right">All levels</Table.Head>
+            {/if}
+            {#if pet.has_necromancer_pet_stats}
+              <Table.Head class="table-cell text-right whitespace-normal">
+                Level {pet.level_max}<br />+200 veteran points
+              </Table.Head>
+            {/if}
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {#each pet.stats as stat, index (stat.name)}
+            <Table.Row class={index % 2 === 1 ? "[&>td]:bg-muted/50" : ""}>
+              <Table.Cell class="table-cell font-medium">{stat.name}</Table.Cell
+              >
+              <Table.Cell class="table-cell text-right tabular-nums">
+                {formatStat(stat.level1, stat.isPercent)}
+              </Table.Cell>
+              {#if statsScale}
+                <Table.Cell class="table-cell text-right tabular-nums">
+                  {formatStat(stat.atCap, stat.isPercent)}
+                </Table.Cell>
+              {/if}
+              {#if pet.has_necromancer_pet_stats}
+                <Table.Cell class="table-cell text-right tabular-nums">
+                  {formatStat(stat.withVeteran, stat.isPercent)}
+                </Table.Cell>
+              {/if}
+            </Table.Row>
+          {/each}
+        </Table.Body>
+      </Table.Root>
+    </div>
+    <!-- Source: server-scripts/Skills.cs:174-185; SummonSkill.cs:84-97 — owner pet-health passives add maximum Health, while Symbiosis copies attributes, defense, and resistances at summon time. -->
+    <p class="text-muted-foreground">
+      These values exclude owner passives and other buffs.
+      {#if pet.healthPassives?.length}
+        {#each pet.healthPassives as passive (passive.id)}
+          <a
+            href="/skills/{passive.id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >{passive.name}</a
+          >
+          adds to maximum Health when learned.
+        {/each}
+      {/if}
+      {#if pet.classLink.class_id === "druid"}
+        Symbiosis adds your copied attributes, defense, and resistances.
+      {/if}
+    </p>
+  </section>
+
   {#if pet.skills.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
@@ -157,13 +237,15 @@
       <Card.Content>
         {#if pet.kind === "Companion"}
           <dl class="space-y-2">
+            <!-- Source: server-scripts/SummonSkill.cs:99; NecromancerPetStats.cs:36 — companion level is capped by Level.max, and undead companions refresh from their owner's level. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>
                 {#if pet.has_necromancer_pet_stats}
-                  Tracks your regular level and refreshes when you level up.
+                  Matches your regular level, up to level {pet.level_max}, and
+                  refreshes when you level up.
                 {:else}
-                  Matches your regular level, up to level {pet.level}.
+                  Matches your regular level, up to level {pet.level_max}.
                 {/if}
               </dd>
             </div>
@@ -211,17 +293,26 @@
                 </dd>
               </div>
             {/if}
-            <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — a non-mercenary, non-familiar pet receives healthMaxPercentBonus from its owner's learned isPetSkill passives. -->
-            <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">
-                Maximum Health
-              </dt>
-              <dd>
-                Your learned pet passives increase this companion's maximum
-                Health by their listed percentage. Your own maximum Health is
-                unchanged.
-              </dd>
-            </div>
+            {#if pet.healthPassives?.length}
+              <!-- Source: server-scripts/Skills.cs:174-185 — learned pet maximum-health passives apply to the companion and exclude the owner. -->
+              <div class="flex gap-2">
+                <dt class="text-muted-foreground w-40 shrink-0">
+                  Maximum Health
+                </dt>
+                <dd>
+                  {#each pet.healthPassives as passive (passive.id)}
+                    <a
+                      href="/skills/{passive.id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{passive.name}</a
+                    >
+                    increases this companion's maximum Health by its listed percentage
+                    when learned.
+                  {/each}
+                  Your own maximum Health is unchanged.
+                </dd>
+              </div>
+            {/if}
             {#if pet.fear_immune}
               <div class="flex gap-2">
                 <dt class="text-muted-foreground w-40 shrink-0">Fear</dt>
@@ -240,6 +331,7 @@
               <dd>It grants a buff but does not attack.</dd>
             </div>
             <div class="flex gap-2">
+              <!-- Source: server-scripts/SummonSkill.cs:99 — familiar level equals the summoning skill rank without the companion Level.max clamp. -->
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>
                 Its level matches your rank in
@@ -252,7 +344,7 @@
                 {:else}
                   the summoning skill.
                 {/if}
-                It cannot exceed level {pet.effective_max_level}.
+                Its maximum rank is {pet.effective_max_level}.
               </dd>
             </div>
             <div class="flex gap-2">

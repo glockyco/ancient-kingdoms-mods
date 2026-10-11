@@ -41,6 +41,16 @@
     data.summons.filter((summon) => summon.has_necromancer_pet_stats),
   );
 
+  const levelCaps = (summons: SummonListView[]) =>
+    [...new Set(summons.map((summon) => summon.level_max))]
+      .filter((cap): cap is number => cap !== null)
+      .sort((a, b) => a - b)
+      .map((cap) => `level ${cap}`)
+      .join(" or ");
+  const companionCaps = $derived(
+    levelCaps(data.summons.filter((summon) => summon.kind === "Companion")),
+  );
+  const undeadCaps = $derived(levelCaps(undeadSummons));
   // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:91,240,254; exported-data/skills.json — each familiar's buff per rank and its maximum rank.
   const FAMILIAR_EFFECTS: Record<string, string> = {
     blue_fairy: "+2 Mana per second per rank, up to rank 8",
@@ -230,7 +240,7 @@
           <!-- Source: server-scripts/SummonSkill.cs:99 — a familiar spawns at the summoning skill level, and a companion at the player level up to its cap. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Level</dt>
-            <dd class="text-right">Your level, capped</dd>
+            <dd class="text-right">Your level, up to {companionCaps}</dd>
           </div>
           <!-- Source: server-scripts/Pet.cs:3990-4001 — a dead combat pet or familiar is removed. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
@@ -251,10 +261,27 @@
               >commands and stances</a
             >.
           </li>
-          <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — a non-mercenary, non-familiar pet receives healthMaxPercentBonus from its owner's learned isPetSkill passives rather than applying it to the owner. -->
+          {#if data.healthPassives.length}
+            <!-- Source: server-scripts/Skills.cs:174-185 — learned pet maximum-health passives apply to companions owned by the passive's class. -->
+            <li>
+              {#each data.healthPassives as passive (passive.id)}
+                <a
+                  href="/skills/{passive.id}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{passive.name}</a
+                >
+                increases its class's companions' maximum Health by its listed percentage
+                when learned.
+              {/each}
+              Your own maximum Health is unchanged.
+            </li>
+          {/if}
+          <!-- Source: server-scripts/Pet.cs:2969-3031 — back-seeking companions flank for melee first skills, bosses, elites or frontal attacks, while close ranged companions step away. -->
           <li>
-            Your pet passives raise the companion's maximum Health by their
-            listed percentage. Your own maximum Health is unchanged.
+            Companions that seek targets' backs try to move behind monsters
+            after attacks when their first skill is melee, the target is a boss
+            or elite, or it has a frontal-attack skill. Skeleton does not seek
+            targets' backs. Ranged companions that stand too close step away.
           </li>
         </ul>
       </div>
@@ -364,11 +391,11 @@
     </ul>
     <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetHealthBonus,61-99; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.0025 per point to base Health, damage, magic damage, defense, and resistances. -->
     <p>
-      These companions track your regular level. Each of your veteran points
-      adds 0.25% of base Health to maximum Health and 0.25% of base physical
-      damage, magic damage, defense, and each resistance, rounded to a whole
-      number. The bonus caps at +50% with 200 points. Their stats and skill
-      ranks refresh when you level up or gain a veteran point.
+      These companions track your regular level, up to {undeadCaps}. Each of
+      your veteran points adds 0.25% of base Health to maximum Health and 0.25%
+      of base physical damage, magic damage, defense, and each resistance,
+      rounded to a whole number. The bonus caps at +50% with 200 points. Their
+      stats and skill ranks refresh when you level up or gain a veteran point.
     </p>
     <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces NetworkactivePet with a different non-familiar summon; a matching pet uses the summon key as an attack command; other classes receive You already have an active pet. -->
     <p>

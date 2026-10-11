@@ -36,6 +36,8 @@ export interface SummonListView {
   kind: SummonKind;
   type_monster: string;
   level: number;
+  /** Level.max for skill summons, null for level-less whistle pets. */
+  level_max: number | null;
   has_necromancer_pet_stats: boolean;
   /** Primary artwork exported for summons; absent when unavailable. */
   visualAsset: EntityVisualAsset | null;
@@ -73,6 +75,32 @@ export interface PetRecruiter {
   zone_name: string;
 }
 
+export type PetStatId =
+  | "health"
+  | "damage"
+  | "magic_damage"
+  | "defense"
+  | "magic_resist"
+  | "poison_resist"
+  | "fire_resist"
+  | "cold_resist"
+  | "disease_resist"
+  | "block_chance"
+  | "critical_chance";
+
+export type PetStatCurves = Record<
+  `${PetStatId}_${"base" | "per_level"}`,
+  number
+> & { health_multiplier: number };
+
+export interface PetStatSnapshot {
+  name: string;
+  isPercent: boolean;
+  level1: number;
+  atCap: number;
+  withVeteran: number;
+}
+
 /**
  * Full pet detail page data.
  */
@@ -82,13 +110,15 @@ export interface PetDetailView {
   kind: PetKind;
   type_monster: string;
   level: number;
+  level_max: number;
+  stats: PetStatSnapshot[];
   /** Pet.hasHeals: the pet AI checks for allies to heal. */
   has_heals: boolean;
   /** Pet.hasBuffs: the pet AI checks for allies to buff. */
   has_buffs: boolean;
   has_necromancer_pet_stats: boolean;
   fear_immune: boolean;
-  /** For familiars: the summoning skill's max_level (= actual max familiar level). For others: same as level. */
+  /** Familiar summon skill's maximum rank, otherwise Level.max. */
   effective_max_level: number;
   classLink: PetClassLink;
   skills: ClassSkill[];

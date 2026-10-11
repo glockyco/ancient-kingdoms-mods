@@ -213,9 +213,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   necromancer: {
     attributes: {
-      text: "Each Intelligence point adds 20 maximum mana and 1.5 magic damage, rounded to a whole number. Each Constitution point adds 25 maximum health but no health recovery. Wisdom adds 0.4% per point to ordinary direct heals, up to +500%. Death Bloom uses Intelligence instead.",
+      text: "Intelligence adds 20 maximum mana and rounded 1.5 magic damage per point. It also strengthens Bone Aegis's ward, Mend Undead's health recovery, Ossuary Bulwark's Defense, and Death Bloom's healing. Each tick of your damage-over-time spells gains round(Intelligence × 1.25) damage. Constitution adds 25 maximum health per point but no health recovery.",
       source:
-        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/Wisdom.cs:107-114; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — attribute bonuses; Death Bloom GetHealingAmount uses GetIntelligenceBonus",
+        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:452-515; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
     equipment: {
       text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield. Check each item's class requirements before equipping it.",
@@ -231,9 +231,10 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         linkText: "Pet rules",
       },
       {
-        text: "Your undead companion follows your level, up to its level cap. Each of your veteran points adds 0.25% of its base maximum health, physical and magic damage, defense, and magic, poison, fire, cold, and disease resistance, rounded to whole points. The bonus reaches +50% at 200 veteran points.",
+        // Source: server-scripts/NecromancerPetStats.cs:36; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in exported-data/pets.json.
+        text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 0.25% of its base maximum health, physical and magic damage, defense, and magic, poison, fire, cold, and disease resistance, rounded to whole points. The bonus reaches +50% at 200 veteran points.",
         source:
-          "Source: server-scripts/NecromancerPetStats.cs:28-99 — RefreshFromOwner clamps owner level and veteran points to 200; GetVeteranBonus and GetHealthBonus use 0.0025 and RoundToInt for base stats",
+          "Source: server-scripts/NecromancerPetStats.cs:28-99 — RefreshFromOwner caps pet level at Level.max and veteran points at 200; GetVeteranBonus and GetHealthBonus use 0.0025 and RoundToInt for base stats",
         href: "/summons",
         linkText: "Undead companions",
       },

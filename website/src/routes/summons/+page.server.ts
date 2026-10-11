@@ -1,4 +1,5 @@
 import { getAllSummons, getWhistlePets } from "$lib/queries/pets.server";
+import { getPetHealthPassives } from "$lib/queries/pet-passives.server";
 import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
@@ -6,5 +7,6 @@ export const prerender = true;
 export const load: PageServerLoad = () => {
   return {
     summons: [...getAllSummons(), ...getWhistlePets()],
+    healthPassives: getPetHealthPassives(),
   };
 };
