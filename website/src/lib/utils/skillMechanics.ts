@@ -101,9 +101,7 @@ function groupDebuff(
 }
 
 /** Integer fields scaled by Buff.cs:45-275 and rounded by Charisma.cs:28-31. */
-export function hasCharismaScaledIntegerEffect(
-  skill: SkillDetailView,
-): boolean {
+function hasCharismaScaledIntegerEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_bonus) ||
     hasNonZeroField(skill.mana_max_bonus) ||
@@ -125,9 +123,7 @@ export function hasCharismaScaledIntegerEffect(
 }
 
 /** Percentage fields scaled by Buff.cs:59-275 and Charisma.cs:33-36. */
-export function hasCharismaScaledPercentageEffect(
-  skill: SkillDetailView,
-): boolean {
+function hasCharismaScaledPercentageEffect(skill: SkillDetailView): boolean {
   return (
     hasNonZeroField(skill.health_max_percent_bonus) ||
     hasNonZeroField(skill.damage_percent_bonus) ||
@@ -166,144 +162,101 @@ function playerDamageFormula(
   skill: SkillDetailView,
   cls: string,
 ): DamageFormulaKind {
-  // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — player damage uses ConsumeFinalCadenceRepertoireBonus after Charisma scaling and a second RoundToInt.
   if (skill.is_bard_final_cadence) return "bard_final_cadence";
-
-  // Source: TargetDamageSkill.cs — is_manaburn check precedes everything
-  if (skill.is_manaburn_skill) return "manaburn";
-
-  const dt = skill.damage_type;
-  const isSpell = skill.is_spell;
-  const skillType = skill.skill_type;
-  const reqWeapon = skill.required_weapon_category;
-
-  // Ranger projectile checks must precede the elemental check because
-  // FrontalProjectilesSkill.cs:97 and TargetProjectileSkill.cs apply combat.damage+DEX
-  // regardless of damage_type — if we hit the elemental check first for a Magic-type
-  // Ranger frontal (e.g. forest_guardians_aid), we'd return the wrong formula.
-  //
-  // Source: FrontalProjectilesSkill.cs:97-100 — Ranger check precedes damage type switch
-  if (skillType === "frontal_projectiles" && cls === "ranger")
-    return "ranged_player_frontal";
-  // Source: TargetProjectileSkill.cs:195-200 — Player Ranger + Bow requirement
+  // Source: server-scripts/TargetDamageSkill.cs:132-159; TargetProjectileSkill.cs:216-219 — only Warrior/Rogue melee burns Rage, only Wizard projectiles burn Mana.
   if (
-    skillType === "target_projectile" &&
-    reqWeapon === "Bow" &&
-    cls === "ranger"
+    skill.is_manaburn_skill &&
+    ((skill.skill_type === "target_damage" &&
+      (cls === "warrior" || cls === "rogue")) ||
+      (skill.skill_type === "target_projectile" && cls === "wizard"))
+  )
+    return "manaburn";
+  const dt = skill.damage_type;
+  const type = skill.skill_type;
+  const elemental =
+    dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease";
+  // Source: server-scripts/FrontalProjectilesSkill.cs:94-108 — Ranger precedes damage type. Area damage has no class-specific or magic-weapon branch.
+  if (type === "frontal_projectiles") {
+    if (cls === "ranger") return "ranged_player_frontal";
+    if (dt === "Poison" && cls === "rogue") return "poison_rogue";
+    return elemental || dt === "Poison" ? "magic_spell" : "normal";
+  }
+  if (type === "area_damage") return elemental ? "magic_spell" : "normal";
+  // Source: server-scripts/TargetProjectileSkill.cs:184-204 — the elemental branch precedes Bow handling.
+  if (
+    type === "target_projectile" &&
+    !elemental &&
+    skill.required_weapon_category === "Bow"
   )
     return "ranged_player";
-
-  // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
-  // adds combat.damage on top of combat.magicDamage; must be checked before the broad elemental guard.
-  // Rangers additionally subtract the bow slot bonus (TargetDamageSkill.cs:218-222),
-  // the same reduction as ranger_melee.
-  // The reusable Ranger formula remains the unbuffed calculation. Wild Strike's
-  // active-buff conversion, rounding, and target effect are rendered by its
-  // skill-specific mechanics note rather than changing this shared dispatch.
-  if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
-    return cls === "ranger" ? "magic_weapon_ranger" : "magic_weapon";
-
-  // Source: TargetDamageSkill.cs switch(damageType) — Magic/Fire/Cold/Disease always use
-  // combat.magicDamage regardless of isSpell. The && isSpell guard was incorrect.
-  if (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease")
-    return "magic_spell";
-
-  // Source: TargetDamageSkill.cs:184-199 — Poison dispatch
-  if (dt === "Poison" && cls === "rogue") return "poison_rogue";
-  if (dt === "Poison") return "magic_spell";
-
-  // Source: TargetDamageSkill.cs:218-221, FrontalDamageSkill.cs:88-92
-  // Ranger subtracts bow slot bonus from combat.damage (Normal type only)
   if (
-    (skillType === "target_damage" || skillType === "frontal_damage") &&
-    dt === "Physical" &&
-    cls === "ranger"
+    dt === "Magic" &&
+    !skill.is_spell &&
+    skill.required_weapon_category?.startsWith("Weapon")
+  ) {
+    return cls === "ranger" && type !== "target_projectile"
+      ? "magic_weapon_ranger"
+      : "magic_weapon";
+  }
+  if (elemental) return "magic_spell";
+  if (dt === "Poison") return cls === "rogue" ? "poison_rogue" : "magic_spell";
+  if (
+    cls === "ranger" &&
+    (type === "target_damage" || type === "frontal_damage")
   )
     return "ranger_melee";
-
-  // Source: TargetDamageSkill.cs:223-226 — Rogue subtracts ceil(off-hand × 0.5)
-  if (
-    (skillType === "target_damage" || skillType === "frontal_damage") &&
-    dt === "Physical" &&
-    cls === "rogue"
-  )
-    return "rogue_melee";
-
-  // Default: combat.damage (STR×1.0 + all equipment)
+  // Source: server-scripts/TargetDamageSkill.cs:228-231; FrontalDamageSkill.cs:60-93 — only the single-target handler deducts the Rogue's off-hand.
+  if (cls === "rogue" && type === "target_damage") return "rogue_melee";
   return "normal";
 }
 
 /**
- * Resolve the damage formula for a mercenary pet by type_monster.
- * Source: server-scripts/TargetDamageSkill.cs (Rogue merc Poison path),
- *         server-scripts/TargetProjectileSkill.cs (Ranger merc ranged path),
- *         server-scripts/FrontalProjectilesSkill.cs (Ranger merc frontal path)
+ * Resolve the mercenary's contribution from the actual damage handler.
  */
 function mercDamageFormula(
   skill: SkillDetailView,
   typeMonster: string,
 ): DamageFormulaKind {
-  // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — a Bard mercenary also skips magic damage and scales the base with its own Charisma.
   if (skill.is_bard_final_cadence) return "bard_final_cadence_merc";
-
-  // Source: TargetDamageSkill.cs — is_manaburn check precedes everything
-  if (skill.is_manaburn_skill) return "manaburn";
-
   const dt = skill.damage_type;
-  const isSpell = skill.is_spell;
-  const skillType = skill.skill_type;
-  const reqWeapon = skill.required_weapon_category;
-
-  // FrontalProjectilesSkill.cs:97 only checks `caster is Player { className: "Ranger" }` —
-  // a merc Pet is not a Player, so merc Ranger frontal falls to the else branch: combat.damage only.
-  // No Ranger merc has frontal_projectiles skills today, but the dispatch must be correct.
-  // Source: TargetProjectileSkill.cs — `caster is Pet { isMercenary: not false, typeMonster: "Ranger" }`
-  // combat.damage + pet2.dexterity.GetRangedAttackBonusPerPoint() (DEX×1.5)
-  if (skillType === "target_projectile" && typeMonster === "Ranger")
-    return "ranged_merc";
-
-  // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
-  if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
-    return "magic_weapon";
-
-  // Source: TargetDamageSkill.cs switch(damageType) — all elemental types always use
-  // combat.magicDamage regardless of isSpell.
-  if (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease")
-    return "magic_spell";
-
-  // Source: TargetDamageSkill.cs — `caster is Pet { isMercenary: not false, typeMonster: "Rogue" }`
-  if (dt === "Poison" && typeMonster === "Rogue") return "poison_rogue";
-  if (dt === "Poison") return "magic_spell";
-
-  // Source: TargetDamageSkill.cs:223-226 — the `caster is Player { className: "Rogue" }` guard
-  // does NOT apply to Pet/merc casters. Rogue mercs dual-wield daggers; both contribute
-  // at full damage (no 0.5× off-hand penalty).
+  const type = skill.skill_type;
+  const elemental =
+    dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease";
+  // Source: server-scripts/AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:97-108 — neither handler gives a mercenary a class-specific Dexterity bonus.
+  if (type === "area_damage") return elemental ? "magic_spell" : "normal";
+  if (type === "frontal_projectiles")
+    return elemental || dt === "Poison" ? "magic_spell" : "normal";
   if (
-    (skillType === "target_damage" || skillType === "frontal_damage") &&
-    dt === "Physical" &&
-    typeMonster === "Rogue"
+    dt === "Magic" &&
+    !skill.is_spell &&
+    skill.required_weapon_category?.startsWith("Weapon")
   )
-    return "rogue_melee_merc";
-
-  // Default: combat.damage (STR×1.0 + all equipment)
-  return "normal";
+    return "magic_weapon";
+  if (elemental) return "magic_spell";
+  // Source: server-scripts/TargetProjectileSkill.cs:189-191 — Ranger mercenary is tested after the elemental branch and before Poison.
+  if (type === "target_projectile" && typeMonster === "Ranger")
+    return "ranged_merc";
+  // Source: server-scripts/TargetDamageSkill.cs:188-203; FrontalDamageSkill.cs:72-80; TargetProjectileSkill.cs:191 — only single-target melee Poison gives Rogue mercenaries the Dexterity bonus.
+  if (dt === "Poison") {
+    if (type === "target_damage")
+      return typeMonster === "Rogue" ? "poison_rogue" : "magic_spell";
+    if (type === "target_projectile") return "magic_spell";
+    return "normal";
+  }
+  return typeMonster === "Rogue" ? "rogue_melee_merc" : "normal";
 }
 
-/**
- * Resolve the damage formula for a monster, NPC, or non-merc pet.
- * Source: TargetDamageSkill.cs switch(damageType) — no class-specific branches.
- * Monsters use level-scaled base values; no STR/INT/equipment contributions.
- */
+// Source: server-scripts/TargetDamageSkill.cs:180-215; TargetProjectileSkill.cs:184-191; AreaDamageSkill.cs:88-89; FrontalDamageSkill.cs:64-80; FrontalProjectilesSkill.cs:107-108 — each handler picks combat.magicDamage or combat.damage from damageType, and Poison lands on a different side per handler, independent of isSpell.
 function otherDamageFormula(skill: SkillDetailView): DamageFormulaKind {
   const dt = skill.damage_type;
-  const isSpell = skill.is_spell;
-
-  if (
-    (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease") &&
-    isSpell
-  )
-    return "monster_magic";
-  return "monster_melee";
+  const elemental =
+    dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease";
+  const poisonMagic =
+    dt === "Poison" &&
+    ["target_damage", "target_projectile", "frontal_projectiles"].includes(
+      skill.skill_type,
+    );
+  return elemental || poisonMagic ? "monster_magic" : "monster_melee";
 }
 
 // ---------------------------------------------------------------------------
@@ -386,24 +339,11 @@ export function computeMechanicsSpec(
     // Guarded on isWeaponProc only; weapon procs always have player_classes=[] so
     // damagePairs is always empty at this point when isWeaponProc is true.
     if (isWeaponProc) {
-      const formulaMap = new Map<DamageFormulaKind, string[]>();
       for (const cls of ALL_CLASS_IDS) {
-        const f = playerDamageFormula(skill, cls);
-        const group = formulaMap.get(f) ?? [];
-        group.push(cls);
-        formulaMap.set(f, group);
-      }
-      for (const [formula, classes] of formulaMap) {
-        // Every class on the same formula produces one clean label.
-        const label =
-          classes.length === ALL_CLASS_IDS.length
-            ? "Player (weapon effect on hit)"
-            : classes
-                .map(
-                  (c) => `${c.charAt(0).toUpperCase() + c.slice(1)} (player)`,
-                )
-                .join(", ");
-        damagePairs.push({ label, formula });
+        damagePairs.push({
+          label: `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`,
+          formula: playerDamageFormula(skill, cls),
+        });
       }
     }
   }
@@ -416,8 +356,8 @@ export function computeMechanicsSpec(
   }> = [];
 
   if (isHealSkill && !skill.is_necromancer_death_bloom) {
-    // Source: TargetHealSkill.cs — canCrit gate uses can_heal_others flag
-    const canCrit = skill.can_heal_others;
+    // Source: server-scripts/TargetHealSkill.cs:273-276; AreaHealSkill.cs:109-111 — target healing requires canHealOthers, area healing always rolls for critical healing.
+    const canCrit = skill.skill_type === "area_heal" || skill.can_heal_others;
 
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
@@ -443,7 +383,7 @@ export function computeMechanicsSpec(
       healPairs.push({
         label: parts.join(", "),
         bonusKind: "none",
-        canCrit: false,
+        canCrit,
       });
     }
   }

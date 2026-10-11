@@ -1,1 +1,1 @@
-Mechanics Healing Formula Final Heal = Base Heal + round(Base Heal × min(WIS × 0.004, 5.0)) Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s.
+Mechanics Balance Health Every affected character's Health becomes the group's average Health percentage of its own maximum Health, rounded. With a 62.5% average, a character with 2,000 maximum Health ends at 1,250.

@@ -1,106 +1,31 @@
 import {
+  atRank,
+  describeRankScaling,
+  formatNumber as number,
+  formatPercent as percent,
+  formatSeconds as seconds,
+} from "$lib/calculation/format";
+import {
+  INTELLIGENCE,
+  MAX_HEALTH,
+  MAX_MANA,
+  SPELL_HASTE,
+  rankInput,
+  situational,
+} from "$lib/calculation/inputs";
+import {
   addF32,
   ceilToInt,
   floorToInt,
   iround,
   multiplyF32,
 } from "$lib/planner/engine-math";
-import type { Calculation, CalculationInput } from "$lib/types/calculation";
+import type { Calculation } from "$lib/types/calculation";
 import type { LinearValue, SkillDetailView } from "$lib/types/skills";
+import { rankWorkingLines } from "./calculation-working";
 
-/*
- * Example inputs. Round numbers keep the arithmetic easy to follow; they
- * illustrate the rule and are not typical values for any level. Inputs that
- * describe the reader's character share a key, so a value typed on one page
- * carries to the next.
- */
-const MAX_HEALTH: CalculationInput = {
-  key: "maxHealth",
-  label: "Maximum Health",
-  value: 2000,
-  min: 1,
-  max: 1_000_000,
-  step: 1,
-  remember: true,
-};
-const MAX_MANA: CalculationInput = {
-  key: "maxMana",
-  label: "Maximum Mana",
-  value: 1500,
-  min: 1,
-  max: 1_000_000,
-  step: 1,
-  remember: true,
-};
-const MISSING_MANA: CalculationInput = {
-  key: "missingMana",
-  label: "Missing Mana",
-  value: 600,
-  min: 0,
-  max: 1_000_000,
-  step: 1,
-};
-const INTELLIGENCE: CalculationInput = {
-  key: "intelligence",
-  label: "Intelligence",
-  value: 100,
-  min: 0,
-  max: 100_000,
-  step: 1,
-  remember: true,
-};
-const SPELL_HASTE: CalculationInput = {
-  key: "spellHaste",
-  label: "Spell haste",
-  value: 0.2,
-  min: -1,
-  max: 1,
-  step: 1,
-  unit: "%",
-  remember: true,
-};
-const SKILL_DAMAGE: CalculationInput = {
-  key: "skillDamage",
-  label: "Full skill damage",
-  value: 1000,
-  min: 0,
-  max: 10_000_000,
-  step: 1,
-};
-
-function rankInput(skill: SkillDetailView): CalculationInput {
-  return {
-    key: "rank",
-    label: "Rank",
-    value: 1,
-    min: 1,
-    max: skill.max_level,
-    step: 1,
-  };
-}
-
-const number = (value: number): string => value.toLocaleString("en-US");
-const percent = (value: number): string =>
-  `${Number((value * 100).toFixed(2))}%`;
-const seconds = (value: number): string => `${Number(value.toFixed(2))}s`;
-
-// Source: server-scripts/LinearFloat.cs:10-13 — Get returns bonusPerLevel * (level - 1) + baseValue in float.
-function atRank(value: LinearValue, rank: number): number {
-  return addF32(multiplyF32(value.bonus_per_level, rank - 1), value.base_value);
-}
-
-/** "150% at rank 1, +12.5% per rank (200% at rank 5)". */
-export function describeRankScaling(
-  value: LinearValue,
-  maxRank: number,
-  format: (value: number) => string,
-): string {
-  if (value.bonus_per_level === 0 || maxRank <= 1) {
-    return format(value.base_value);
-  }
-  const sign = value.bonus_per_level > 0 ? "+" : "−";
-  return `${format(value.base_value)} at rank 1, ${sign}${format(Math.abs(value.bonus_per_level))} per rank (${format(atRank(value, maxRank))} at rank ${maxRank})`;
-}
+const MISSING_MANA = situational("missingMana", "Missing Mana", 600);
+const SKILL_DAMAGE = situational("skillDamage", "Full skill damage", 1000);
 
 function requireLinear(
   value: LinearValue | null,
@@ -128,28 +53,41 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
   return {
     steps: [
       {
+        name: "Health cost percentage",
+        expression: describeRankScaling(cost, skill.max_level, percent),
+      },
+      {
         name: "Health spent",
-        expression: `${describeRankScaling(cost, skill.max_level, percent)} of your maximum Health`,
+        expression: "Maximum Health × Health cost percentage",
         rounding: "up",
       },
       {
+        name: "Skill heal percentage",
+        expression: describeRankScaling(healing, skill.max_level, percent),
+      },
+      {
+        name: "Intelligence heal percentage",
+        expression: `${percent(perIntelligence)} per point of Intelligence above 0`,
+      },
+      {
         name: "Heal percentage",
-        expression: `${describeRankScaling(healing, skill.max_level, percent)}, plus ${percent(perIntelligence)} per point of Intelligence`,
+        expression: "Skill heal percentage + Intelligence heal percentage",
       },
       {
         name: "Healing",
-        expression: "Health spent × heal percentage",
+        expression: "Health spent × Heal percentage",
         rounding: "nearest",
       },
     ],
-    inputs: [rankInput(skill), MAX_HEALTH, INTELLIGENCE],
+    inputs: [rankInput(skill.max_level), MAX_HEALTH, INTELLIGENCE],
     example: ({ rank, maxHealth, intelligence }) => {
       const costShare = atRank(cost, rank);
       const spent = ceilToInt(multiplyF32(maxHealth, costShare));
-      const healPercentage = addF32(
-        atRank(healing, rank),
-        multiplyF32(Math.max(0, intelligence), perIntelligence),
+      const intelligenceShare = multiplyF32(
+        Math.max(0, intelligence),
+        perIntelligence,
       );
+      const healPercentage = addF32(atRank(healing, rank), intelligenceShare);
       const healed = iround(multiplyF32(spent, healPercentage));
       return {
         given: [
@@ -159,9 +97,12 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
         ],
         result: `Heals ${number(healed)} Health`,
         working: [
-          `Health spent: ${percent(costShare)} of ${number(maxHealth)} = ${number(spent)}`,
-          `Heal percentage: ${percent(atRank(healing, rank))} + ${number(Math.max(0, intelligence))} × ${percent(perIntelligence)} = ${percent(healPercentage)}`,
-          `Healing: ${number(spent)} × ${percent(healPercentage)} = ${number(healed)}`,
+          ...rankWorkingLines("Health cost percentage", cost, rank, percent),
+          `Health spent: ${number(maxHealth)} × ${percent(costShare)} = ${number(spent)}, rounded up`,
+          ...rankWorkingLines("Skill heal percentage", healing, rank, percent),
+          `Intelligence heal percentage: ${number(Math.max(0, intelligence))} × ${percent(perIntelligence)} = ${percent(intelligenceShare)}`,
+          `Heal percentage: ${percent(atRank(healing, rank))} + ${percent(intelligenceShare)} = ${percent(healPercentage)}`,
+          `Healing: ${number(spent)} × ${percent(healPercentage)} = ${number(healed)}, rounded`,
         ],
       };
     },
@@ -211,13 +152,16 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
         rounding: "up",
       },
       {
-        name: "Mana restored",
-        expression: `${shared ? "conversion" : "Mana"} percentage of your maximum Mana`,
+        name: "Mana from conversion",
+        expression: `${shared ? "Conversion" : "Mana"} percentage × your maximum Mana`,
         rounding: "down",
-        limit: "at most your missing Mana",
+      },
+      {
+        name: "Mana restored",
+        expression: "Smaller of Mana from conversion and your missing Mana",
       },
     ],
-    inputs: [rankInput(skill), MAX_HEALTH, MAX_MANA, MISSING_MANA],
+    inputs: [rankInput(skill.max_level), MAX_HEALTH, MAX_MANA, MISSING_MANA],
     example: ({ rank, maxHealth, maxMana, missingMana }) => {
       const missing = Math.min(missingMana, maxMana);
       const spent = ceilToInt(multiplyF32(maxHealth, atRank(cost, rank)));
@@ -232,57 +176,66 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
         ],
         result: `Spends ${number(spent)} Health and restores ${number(restored)} Mana`,
         working: [
-          `Health spent: ${percent(atRank(cost, rank))} of ${number(maxHealth)} = ${number(spent)}`,
-          `Mana restored: ${percent(atRank(restore, rank))} of ${number(maxMana)} = ${number(rolled)}${rolled > missing ? `, capped at ${number(restored)}` : ""}`,
+          ...(shared
+            ? rankWorkingLines("Conversion percentage", cost, rank, percent)
+            : [
+                ...rankWorkingLines("Health percentage", cost, rank, percent),
+                ...rankWorkingLines("Mana percentage", restore, rank, percent),
+              ]),
+          `Health spent: ${percent(atRank(cost, rank))} × ${number(maxHealth)} = ${number(spent)}, rounded up`,
+          `Mana from conversion: ${percent(atRank(restore, rank))} × ${number(maxMana)} = ${number(rolled)}, rounded down`,
+          `Mana restored: smaller of ${number(rolled)} and ${number(missing)} = ${number(restored)}`,
         ],
       };
     },
   };
 }
 
-const PULSE_FRACTIONS: Record<number, string> = {
-  2: "half",
-  3: "third",
-  4: "quarter",
-};
-
 // Source: server-scripts/PlayerSkills.cs:361-362,386-396 — channel duration is Max(0.05, castTime × (1 − spellHasteBonus)) for spells; pulse k lands at duration × (k + 1) / pulses, the last at cast end.
 // Source: server-scripts/TargetDamageSkill.cs:245-248 — each pulse deals finalDamage / pulses, plus 1 while pulse < finalDamage % pulses.
 export function channelCalculation(skill: SkillDetailView): Calculation {
   const pulses = skill.channel_pulses;
   const castTime = requireLinear(skill.cast_time, "cast_time", skill.id);
-  const fraction = PULSE_FRACTIONS[pulses] ?? `1/${pulses}`;
   const castScales = castTime.bonus_per_level !== 0;
 
   return {
     steps: [
       {
+        name: "Base cast time",
+        expression: describeRankScaling(castTime, skill.max_level, seconds),
+      },
+      {
         name: "Channel time",
         expression: skill.is_spell
-          ? "cast time × (1 − spell haste)"
-          : "cast time",
-        limit: "at least 0.05s",
+          ? "Base cast time × (100% − spell haste)"
+          : "Base cast time",
+        limit: `at least ${seconds(0.05)}`,
       },
       {
         name: "Pulse times",
-        expression: `${pulses} pulses, one at the end of each ${fraction} of the channel time`,
+        expression: `${pulses} pulses, spaced by Channel time ÷ ${pulses}`,
       },
       {
-        name: "Pulse damage",
-        expression: `full skill damage split into ${pulses} whole-number parts, with any remainder added 1 at a time to the earliest pulses`,
+        name: "Damage per pulse",
+        expression: `Full skill damage ÷ ${pulses}`,
+        rounding: "down",
+      },
+      {
+        name: "Extra damage",
+        expression: `Full skill damage − Damage per pulse × ${pulses}, added 1 at a time to the earliest pulses`,
       },
     ],
     inputs: [
-      ...(castScales ? [rankInput(skill)] : []),
+      ...(castScales ? [rankInput(skill.max_level)] : []),
       ...(skill.is_spell ? [SPELL_HASTE] : []),
       SKILL_DAMAGE,
     ],
     example: ({ rank = 1, spellHaste = 0, skillDamage }) => {
       const baseCast = atRank(castTime, rank);
-      const channelTime = Math.max(
-        0.05,
-        skill.is_spell ? multiplyF32(baseCast, 1 - spellHaste) : baseCast,
-      );
+      const rawChannelTime = skill.is_spell
+        ? multiplyF32(baseCast, addF32(1, -spellHaste))
+        : baseCast;
+      const channelTime = Math.max(0.05, rawChannelTime);
       const damage = Math.max(0, Math.floor(skillDamage));
       const share = Math.floor(damage / pulses);
       const remainder = damage % pulses;
@@ -299,10 +252,19 @@ export function channelCalculation(skill: SkillDetailView): Calculation {
           return `${number(pulseDamage)}${index === 0 ? " damage" : ""} at ${seconds(time)}`;
         }).join(", ")}`,
         working: [
-          skill.is_spell
-            ? `Channel time: ${seconds(baseCast)} × (1 − ${percent(spellHaste)}) = ${seconds(channelTime)}`
-            : `Channel time: ${seconds(channelTime)}`,
-          `Pulse damage: ${number(damage)} ÷ ${pulses} = ${number(share)}${remainder > 0 ? ` with ${number(remainder)} left over` : ""}`,
+          ...rankWorkingLines("Base cast time", castTime, rank, seconds),
+          ...(skill.is_spell
+            ? [
+                `Channel time: ${seconds(baseCast)} × (100% − ${percent(spellHaste)}) = ${seconds(rawChannelTime)}${channelTime !== rawChannelTime ? `, limited to ${seconds(channelTime)}` : ""}`,
+              ]
+            : channelTime !== baseCast
+              ? [
+                  `Channel time: larger of ${seconds(baseCast)} and ${seconds(0.05)} = ${seconds(channelTime)}`,
+                ]
+              : []),
+          `Pulse times: ${seconds(channelTime)} ÷ ${pulses} = ${seconds(channelTime / pulses)}`,
+          `Damage per pulse: ${number(damage)} ÷ ${pulses} = ${number(share)}, rounded down`,
+          `Extra damage: ${number(damage)} − ${number(share)} × ${pulses} = ${number(remainder)}`,
         ],
       };
     },

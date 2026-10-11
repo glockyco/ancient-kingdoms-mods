@@ -1,1 +1,1 @@
-Mechanics Ward absorbs damage first. Mana Shield then absorbs the remaining damage using mana. Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.1s cast into 0.88s.
+Mechanics Ward absorbs damage first. Mana Shield then absorbs the remaining damage using mana.

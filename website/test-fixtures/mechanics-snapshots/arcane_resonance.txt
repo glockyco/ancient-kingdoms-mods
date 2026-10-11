@@ -1,1 +1,0 @@
-Mechanics Spell haste shortens the cast by its percentage, so 20% spell haste turns the 0.7s cast into 0.56s.

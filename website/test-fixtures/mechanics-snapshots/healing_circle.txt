@@ -1,1 +1,1 @@
-Mechanics Healing Formula Final Heal = Base Heal (no bonus) Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s.
+Mechanics Healing Monster or NPC Health restored 20,000, at most the recipient's missing Health Example ·,rank 1 20,000 Health restored before critical healing and missing-Health limits Critical heals restore double Health, or triple Health in 10% of cases.

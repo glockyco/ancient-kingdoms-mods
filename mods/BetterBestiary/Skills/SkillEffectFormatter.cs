@@ -152,16 +152,16 @@ internal static class SkillEffectFormatter
         var restored = ParseLinearValue(skill.mana_restored_percent);
         if (skill.is_necromancer_blood_pact && cost != null && restored != null)
         {
-            parts.Add($"spend ceil(max hp × ({FormatLinearPercent(cost)})), restore floor(max mana × ({FormatLinearPercent(restored)})) (capped at missing mana)");
+            parts.Add($"spend {FormatLinearPercent(cost)} max hp (rounded up), restore {FormatLinearPercent(restored)} max mana (rounded down, at most missing mana)");
             return;
         }
         var healing = ParseLinearValue(skill.healing_percent);
         if (skill.is_necromancer_death_bloom && cost != null && healing != null)
         {
             var bonus = skill.healing_percent_per_intelligence != 0
-                ? $" + {FormatPercent(skill.healing_percent_per_intelligence)} × max(0, INT)"
+                ? $" + {FormatPercent(skill.healing_percent_per_intelligence)} per INT"
                 : "";
-            parts.Add($"spend ceil(max hp × ({FormatLinearPercent(cost)})), heal target for round(health spent × ({FormatLinearPercent(healing)}{bonus}))");
+            parts.Add($"spend {FormatLinearPercent(cost)} max hp (rounded up), heal target for health spent × ({FormatLinearPercent(healing)}{bonus}) (rounded)");
             return;
         }
 

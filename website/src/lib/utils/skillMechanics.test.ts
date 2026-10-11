@@ -284,3 +284,137 @@ describe("Intelligence and combat-pet mechanics", () => {
     ).toBe("monster");
   });
 });
+
+describe("damage handler dispatch", () => {
+  test("elemental bow projectiles use Magic Damage before the ranged branch", () => {
+    const spec = computeMechanicsSpec(
+      bardSkill({
+        skill_type: "target_projectile",
+        damage_type: "Magic",
+        required_weapon_category: "Bow",
+        player_classes: ["ranger"],
+      }),
+      [{ ...bardMercenary, type_monster: "Ranger" }],
+      false,
+    );
+    expect(spec.damageContexts).toEqual([
+      {
+        casterLabels: ["Ranger (player)", "Ranger mercenary"],
+        formula: "magic_spell",
+      },
+    ]);
+  });
+  test("Poison area and frontal damage do not give Rogue mercenaries a poison bonus", () => {
+    const pet = { ...bardMercenary, type_monster: "Rogue" };
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "area_damage",
+          damage_type: "Poison",
+          player_classes: ["rogue"],
+        }),
+        [pet],
+        true,
+      ).damageContexts.map((context) => context.formula),
+    ).toEqual(["normal", "monster_melee"]);
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "frontal_damage",
+          damage_type: "Poison",
+          player_classes: ["rogue"],
+        }),
+        [pet],
+        true,
+      ).damageContexts.map((context) => context.formula),
+    ).toEqual(["poison_rogue", "normal", "monster_melee"]);
+  });
+  test("frontal projectiles give a player Ranger priority, but mercenary elemental shots stay magical", () => {
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "frontal_projectiles",
+          damage_type: "Magic",
+          player_classes: ["ranger"],
+        }),
+        [{ ...bardMercenary, type_monster: "Ranger" }],
+        true,
+      ).damageContexts.map((context) => context.formula),
+    ).toEqual(["ranged_player_frontal", "magic_spell", "monster_magic"]);
+  });
+  test("Rogue frontal attacks do not use the single-target off-hand deduction", () => {
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "frontal_damage",
+          damage_type: "Physical",
+          player_classes: ["rogue"],
+        }),
+        [],
+        false,
+      ).damageContexts[0].formula,
+    ).toBe("normal");
+  });
+  test("non-spell elemental monsters use Magic Damage, Poison depends on the handler", () => {
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "target_damage",
+          damage_type: "Fire",
+          is_spell: false,
+          player_classes: [],
+        }),
+        [],
+        true,
+      ).damageContexts[0].formula,
+    ).toBe("monster_magic");
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "target_damage",
+          damage_type: "Poison",
+          player_classes: [],
+        }),
+        [],
+        true,
+      ).damageContexts[0].formula,
+    ).toBe("monster_magic");
+  });
+  test("only the matching player resource-burn handlers consume a resource", () => {
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "target_projectile",
+          is_manaburn_skill: true,
+          player_classes: ["wizard"],
+        }),
+        [bardMercenary],
+        false,
+      ).damageContexts.map((context) => context.formula),
+    ).toEqual(["manaburn", "normal"]);
+  });
+});
+
+test("area healing rolls for critical healing without can_heal_others", () => {
+  const spec = computeMechanicsSpec(
+    bardSkill({ skill_type: "area_heal", can_heal_others: false }),
+    [],
+    false,
+  );
+  expect(spec.healContexts[0].canCrit).toBe(true);
+});
+
+test("monster healing follows the same critical gate without receiving a Wisdom bonus", () => {
+  const spec = computeMechanicsSpec(
+    bardSkill({
+      skill_type: "area_heal",
+      can_heal_others: false,
+      player_classes: [],
+    }),
+    [],
+    true,
+  );
+  expect(spec.healContexts).toEqual([
+    { casterLabels: ["Monster or NPC"], bonusKind: "none", canCrit: true },
+  ]);
+});

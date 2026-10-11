@@ -1,1 +1,1 @@
-Mechanics Companion Buff Targets your living companion within 8 yd. Familiars and mercenaries cannot receive this buff. Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s.
+Mechanics Companion Buff Targets your living companion within 8 yd. Familiars and mercenaries cannot receive this buff.

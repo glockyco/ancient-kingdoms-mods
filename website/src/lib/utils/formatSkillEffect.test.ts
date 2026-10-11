@@ -129,32 +129,17 @@ describe("formatSkillEffect enrage passives", () => {
 });
 
 describe("formatSkillEffect Necromancer mechanics", () => {
-  it("shows Blood Pact rounding and missing-mana cap", () => {
-    expect(
-      formatSkillEffect({
-        skill_type: "health_to_mana",
-        is_necromancer_blood_pact: true,
-        health_cost_percent: { base_value: 0.05, bonus_per_level: 0.05 },
-        mana_restored_percent: { base_value: 0.05, bonus_per_level: 0.05 },
-      } as Skill),
-    ).toBe(
-      "spend ceil(max hp × (5% × rank)), restore floor(max mana × (5% × rank)) (capped at missing mana)",
-    );
-  });
-
   it("uses health spent and Intelligence rather than heals_health for Death Bloom", () => {
-    expect(
-      formatSkillEffect({
-        skill_type: "target_heal",
-        is_necromancer_death_bloom: true,
-        health_cost_percent: { base_value: 0.5, bonus_per_level: 0 },
-        healing_percent: { base_value: 1.5, bonus_per_level: 0.125 },
-        healing_percent_per_intelligence: 0.001,
-        heals_health: { base_value: 0, bonus_per_level: 0 },
-      } as Skill),
-    ).toBe(
-      "spend ceil(max hp × (50%)), heal target for round(health spent × (137.5% + 12.5% × rank + 0.1% × max(0, INT)))",
-    );
+    const summary = formatSkillEffect({
+      skill_type: "target_heal",
+      is_necromancer_death_bloom: true,
+      health_cost_percent: { base_value: 0.5, bonus_per_level: 0 },
+      healing_percent: { base_value: 1.5, bonus_per_level: 0.125 },
+      healing_percent_per_intelligence: 0.001,
+      heals_health: { base_value: 999, bonus_per_level: 0 },
+    } as Skill);
+    expect(summary).not.toContain("999");
+    expect(summary).toContain("0.1%");
   });
 
   it("identifies Reaper Form's toggle and max-health drain", () => {

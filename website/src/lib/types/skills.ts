@@ -291,31 +291,29 @@ export interface SkillPet {
 // Mechanics spec — computed server-side, rendered declaratively
 // ------------------------------------------------------------
 
-export type WeaponSlotName = "main" | "off" | "bow" | "melee" | "wand";
-
 export type DamageFormulaKind =
   // Physical
-  | "normal" // STR×1.0 + all equipment — e.g. slam
-  | "ranger_melee" // STR×1.0 + all equip − bow slot bonus (slot 13) — e.g. swift_slash
-  | "rogue_melee" // STR×1.0 + main-hand + ⌊50% off-hand⌋ + other equip — e.g. ambush
-  | "rogue_melee_merc" // STR×1.0 + main-hand + off-hand (full, no penalty) + other equip — e.g. pierce
+  | "normal" // Character-window Damage.
+  | "ranger_melee" // Character-window Damage, with the bow deduction in the melee handler.
+  | "rogue_melee" // Character-window Damage, with the rounded-up off-hand deduction in single-target melee.
+  | "rogue_melee_merc" // Mercenary Damage, with no player off-hand deduction.
   // Ranged (physical+DEX)
-  | "ranged_player" // STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus — e.g. archer_shot
-  | "ranged_player_frontal" // STR×1.0 + all equip + DEX×1.5 (no subtraction) — e.g. forest_guardians_aid
-  | "ranged_merc" // STR×1.0 + bow + melee weapon + other equip + DEX×1.5 — e.g. explorer_shot
+  | "ranged_player" // Character-window Damage plus rounded Dexterity bonus, minus equipped melee weapon damage.
+  | "ranged_player_frontal" // Character-window Damage plus rounded Dexterity bonus, without weapon subtraction.
+  | "ranged_merc" // Mercenary Damage plus its rounded Dexterity bonus.
   // Poison
-  | "poison_rogue" // STR×1.0 + main-hand + ⌊50% off-hand⌋ + other equip + DEX×2.5 — e.g. deadly_strike
+  | "poison_rogue" // Damage plus the rounded poison Dexterity bonus. Player single-target melee also deducts off-hand damage.
   // Magic
-  | "magic_spell" // INT×1.5 + equipment — e.g. fireball
-  | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric) — e.g. holy_wrath
-  | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (Ranger) — e.g. wild_strike
+  | "magic_spell" // Character-window Magic Damage, including percentage bonuses.
+  | "magic_weapon" // Magic Damage plus Damage, both already percentage-scaled.
+  | "magic_weapon_ranger" // Magic Damage plus Damage, then the bow deduction.
   // Special
   | "bard_final_cadence" // player: second rounding after consumed repertoire multiplier
   | "bard_final_cadence_merc" // Charisma only; no repertoire multiplier
-  | "manaburn" // energy/mana ×2, bypasses mitigation — e.g. rageblow
-  // Monster / NPC (level-scaled, no player stats)
-  | "monster_melee" // baseDamage(level) — e.g. ant_attack
-  | "monster_magic"; // baseMagicDamage(level) — e.g. abyssal_orb
+  | "manaburn" // Warrior/Rogue single-target melee burns Rage for double damage. Wizard projectile burns Mana for triple damage.
+  // Monster / NPC
+  | "monster_melee" // The caster's own Damage at its level.
+  | "monster_magic"; // The caster's own Magic Damage at its level.
 
 export interface DamageContext {
   /** One or more caster descriptions that all share this formula. */
@@ -324,15 +322,15 @@ export interface DamageContext {
 }
 
 export type HealBonusKind =
-  | "player_ranger" // base × min((WIS×3)×0.004, 5.0) — e.g. breeze
-  | "player_other" // base × min(WIS×0.004, 5.0) — e.g. healing
-  | "merc" // base × min(WIS×0.004, 5.0) using merc's own WIS; no ×3 for Ranger merc — e.g. swift_bloom
+  | "player_ranger" // Skill healing plus a separately rounded Wisdom bonus, using triple Wisdom and capped at 500%.
+  | "player_other" // Skill healing plus a separately rounded Wisdom bonus, capped at 500%.
+  | "merc" // Mercenary's own Wisdom, without the Ranger player's triple-Wisdom bonus.
   | "none"; // no bonus (monster, NPC, non-merc pet) — e.g. healing_circle
 
 export interface HealContext {
   casterLabels: string[];
   bonusKind: HealBonusKind;
-  /** Whether the critical heal path applies (can_heal_others only). */
+  /** Area healing rolls for critical healing. Target healing requires can_heal_others. */
   canCrit: boolean;
 }
 

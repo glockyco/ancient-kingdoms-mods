@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = WIS Ward Ward at rank + attribute contribution × 2 Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1s cast into 0.8s.
+Mechanics Buff Scaling Druid Skill Ward 1,000 at rank 1, +200 per rank (1,800 at rank 5)Ward Skill Ward + Wisdom × 2 Example ·,rank 1·,100 Wisdom Use your numbers 1,200 Ward Skill Ward: 1,000 + 200 × (1 − 1) = 1,000Ward: 1,000 + 100 × 2 = 1,200

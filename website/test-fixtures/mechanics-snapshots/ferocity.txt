@@ -1,1 +1,0 @@
-Mechanics Companion skills gain a rank every 10 veteran points, capped at the skill's maximum rank. Spell haste shortens the cast by its percentage, so 20% spell haste turns the 0.5s cast into 0.4s.

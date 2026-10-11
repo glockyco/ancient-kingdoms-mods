@@ -1,1 +1,1 @@
-Mechanics Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.5s cast into 1.2s. Teleport This skill teleports each party member in range to the nearest safe city. Each player is stunned for 1 second on arrival.
+Mechanics Teleport This skill teleports each party member in range to the nearest safe city. Each player is stunned for 1 second on arrival.

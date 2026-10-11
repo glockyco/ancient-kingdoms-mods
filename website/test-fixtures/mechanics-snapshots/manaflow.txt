@@ -1,1 +1,0 @@
-Mechanics When used by a mercenary, rank = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max rank. Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.8s cast into 1.44s.

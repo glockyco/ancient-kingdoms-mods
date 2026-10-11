@@ -1,1 +1,1 @@
-Mechanics Resist Chance clamp( target's Magic Resist × 0.0005 + clamp((target level − skill user level) × 0.005, −0.1, 0.1) − skill user's Accuracy , 0, 0.9) Every 100 points of the target's matching Resist add 5 percentage points to resist chance before level difference and Accuracy. Cleanse Resistance This debuff cannot be cleansed.
+Mechanics The target resists this debuff using Magic Resist. See resistance and avoidance for Accuracy and level differences. Cleanse Resistance This debuff cannot be cleansed.

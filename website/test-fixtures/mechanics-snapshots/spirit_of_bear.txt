@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = WIS Max Health skill value at rank + attribute contribution × 2 Spell haste shortens the cast by its percentage, so 20% spell haste turns the 1.7s cast into 1.36s.
+Mechanics Buff Scaling Druid Skill amount 60 at rank 1, +60 per rank (300 at rank 5)Maximum Health Skill amount + Wisdom × 2 Example ·,rank 1·,100 Wisdom Use your numbers 260 Maximum Health Skill amount: 60 + 60 × (1 − 1) = 60Maximum Health: 60 + 100 × 2 = 260

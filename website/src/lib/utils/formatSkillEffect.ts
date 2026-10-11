@@ -383,7 +383,7 @@ function formatHealing(
   // Source: server-scripts/NecromancerBloodPactSkill.cs:Apply — Math.Min(GetManaRestored, mana.max - mana.current); subtracts GetHealthCost.
   if (skill.is_necromancer_blood_pact && cost && restored) {
     parts.push(
-      `spend ceil(max hp × (${formatLinearPercent(cost, options)})), restore floor(max mana × (${formatLinearPercent(restored, options)})) (capped at missing mana)`,
+      `spend ${formatLinearPercent(cost, options)} max hp (rounded up), restore ${formatLinearPercent(restored, options)} max mana (rounded down, at most missing mana)`,
     );
     return parts;
   }
@@ -394,10 +394,10 @@ function formatHealing(
   if (skill.is_necromancer_death_bloom && cost && healing) {
     const intelligence = skill.healing_percent_per_intelligence ?? 0;
     const bonus = intelligence
-      ? ` + ${formatPercent(intelligence)} × max(0, INT)`
+      ? ` + ${formatPercent(intelligence)} per INT`
       : "";
     parts.push(
-      `spend ceil(max hp × (${formatLinearPercent(cost, options)})), heal target for round(health spent × (${formatLinearPercent(healing, options)}${bonus}))`,
+      `spend ${formatLinearPercent(cost, options)} max hp (rounded up), heal target for health spent × (${formatLinearPercent(healing, options)}${bonus}) (rounded)`,
     );
     return parts;
   }

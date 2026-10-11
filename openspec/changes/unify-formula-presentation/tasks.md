@@ -7,10 +7,10 @@
 
 ## 2. Skill page mechanics card
 
-- [ ] 2.1 Replace `FormulaDisplay` and `renderFormulaDisplay()` with damage builders per damage handler: steps in words, the rank multiplier, and a calculator whose inputs are the character window's Damage or Magic Damage plus the handler's skill-specific terms; delete the component and dead code; verify each builder with a unit test that includes a rounding edge, and check a magic, a melee, a ranged, a Rogue poison, and a magic-weapon skill page.
-- [ ] 2.2 Replace the damage pipeline list, damage reduction, resist and block chance formulas, and the moving-target and backstab rows with a sentence naming the stat the skill's damage meets and links to the combat page sections; verify on Fireball and a physical skill.
-- [ ] 2.3 Convert healing, lifetap, aggro, execute, buff and debuff scaling, Bard song, charm, Final Cadence, timing, scroll, mercenary and familiar rank, and crowd-control blocks to calculations or sentences per the spec; verify no monospace formula, single-letter variable, code name, or function notation remains on the card (grep plus a rendered-text scan of all skill pages).
-- [ ] 2.4 Regenerate the mechanics snapshots and review a sample of the word diff; verify `node scripts/snapshot-mechanics.mjs` reports all snapshots matching.
+- [x] 2.1 Replace `FormulaDisplay` and `renderFormulaDisplay()` with damage builders per damage handler: steps in words, the rank multiplier, and a calculator whose inputs are the character window's Damage or Magic Damage plus the handler's skill-specific terms; delete the component and dead code; verify each builder with a unit test that includes a rounding edge, and check a magic, a melee, a ranged, a Rogue poison, and a magic-weapon skill page.
+- [x] 2.2 Replace the damage pipeline list, damage reduction, resist and block chance formulas, and the moving-target and backstab rows with a sentence naming the stat the skill's damage meets and links to the combat page sections; verify on Fireball and a physical skill.
+- [x] 2.3 Convert healing, lifetap, aggro, execute, buff and debuff scaling, Bard song, charm, Final Cadence, timing, scroll, mercenary and familiar rank, and crowd-control blocks to calculations or sentences per the spec; verify no monospace formula, single-letter variable, code name, or function notation remains on the card (grep plus a rendered-text scan of all skill pages).
+- [x] 2.4 Regenerate the mechanics snapshots and review a sample of the word diff; verify `node scripts/snapshot-mechanics.mjs` reports all snapshots matching.
 
 ## 3. Combat page
 

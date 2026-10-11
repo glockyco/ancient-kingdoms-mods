@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Attribute contribution = WIS × 3 Max Health skill value at rank + attribute contribution × 2 Spell haste shortens the cast by its percentage, so 20% spell haste turns the 0.7s cast into 0.56s.
+Mechanics Buff Scaling Ranger Attribute contribution Three times your WisdomSkill amount 75 at rank 1, +75 per rank (375 at rank 5)Maximum Health Skill amount + Attribute contribution × 2 Example ·,rank 1·,100 Wisdom Use your numbers 675 Maximum Health Attribute contribution: 100 × 3 = 300Skill amount: 75 + 75 × (1 − 1) = 75Maximum Health: 75 + 300 × 2 = 675
