@@ -155,6 +155,7 @@ public class QuestExporter : BaseExporter
             AddClassReward(questData, quest.rewardItemRogue, "Rogue");
             AddClassReward(questData, quest.rewardItemWizard, "Wizard");
             AddClassReward(questData, quest.rewardItemDruid, "Druid");
+            AddClassReward(questData, quest.rewardItemBard, "Bard");
 
             // Quest locations (objectives)
             if (quest.questLocation != null && quest.questLocation.Length > 0)
