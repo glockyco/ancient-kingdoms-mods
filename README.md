@@ -298,6 +298,7 @@ pnpm check:clean
 - Exporters read authoritative runtime data: direct fields and explicit references, with `TryCast<T>()` where the subtype matters. Never infer a value from a name, a threshold, or proximity. Absence follows each field's contract: `null` for a missing reference, `""` for missing text, and a declared default only where the contract defines one. Document a derived value, such as zone containment, at its exporter. JSON property names are snake_case, and manifest paths are relative to `exported-data/`.
 - Change generated output through its producer, then regenerate. Exports, the database, published images and tiles, and `server-scripts` are gitignored. The tracked exceptions are hand-maintained: `exported-data/static_data.json` and `mods/DataExporter/Curated/classes.json`, whose copy in `exported-data/` the exporter overwrites.
 - Change `citations.lock.json` and `redactions.lock.json` only through `compendium citations` and `compendium redactions`. Each entry records a verification, so a hand edit claims one that never happened. Review the claim behind a changed citation before re-anchoring it.
+- Keep this README to orientation, workflows, these rules, and troubleshooting. Put procedures and tool references in `.agent/skills/`, required behavior and export formats in `openspec/specs/`, and redaction decisions in `redactions.toml`.
 
 ## Game mechanics accuracy
 
