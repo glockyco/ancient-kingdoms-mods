@@ -23,7 +23,7 @@
 
 ## 5. Skill page structure
 
-- [ ] 5.1 Move the skill page's script logic (rank table, cost and timing, tooltip and header helpers) into modules under `website/src/lib/skills/` with unit tests for the rules they decide; verify zero mechanics snapshot differences and identical rendered text on every prerendered skill page.
+- [x] 5.1 Move the skill page's script logic (rank table, cost and timing, tooltip and header helpers) into modules under `website/src/lib/skills/` with unit tests for the rules they decide; verify zero mechanics snapshot differences and identical rendered text on every prerendered skill page.
 - [ ] 5.2 Split the mechanics card into one component per mechanic under `website/src/lib/components/skill-mechanics/`, each holding its markup, calculation, and citations, rendered from an ordered section list that `skillMechanics.ts` derives with unit-tested applicability rules; verify zero mechanics snapshot differences and identical rendered text on every prerendered skill page.
 
 ## 6. Release
