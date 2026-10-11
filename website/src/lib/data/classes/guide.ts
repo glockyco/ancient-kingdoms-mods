@@ -31,7 +31,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   cleric: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain round(Wisdom × 0.15). Intelligence adds 20 maximum mana and rounded 1.5 magic damage per point.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -59,7 +59,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   druid: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain round(Wisdom × 0.15). Intelligence adds 20 maximum mana and rounded 1.5 magic damage per point.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -90,7 +90,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:107-114 — attribute effects and Ranger multiplier",
     },
     equipment: {
-      text: "Your off-hand holds your bow, not a shield. Your main-hand weapon stays available for melee skills.",
+      text: "Your bow goes in the off-hand slot. Your main-hand weapon stays available for melee skills.",
       source:
         "Source: server-scripts/ScriptableSkill.cs:120-143; server-scripts/PlayerEquipment.cs:856-900 — bow slot and main-hand weapon",
     },
@@ -213,7 +213,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   necromancer: {
     attributes: {
-      text: "Intelligence adds 20 maximum mana and rounded 1.5 magic damage per point. It also strengthens Bone Aegis's ward, Mend Undead's health recovery, Ossuary Bulwark's Defense, and Death Bloom's healing. Each tick of your damage-over-time spells gains round(Intelligence × 1.25) damage. Constitution adds 25 maximum health per point but no health recovery.",
+      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded. It also strengthens Bone Aegis's ward, Mend Undead's health recovery, Ossuary Bulwark's Defense, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum health per point but no health recovery.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:452-515; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },

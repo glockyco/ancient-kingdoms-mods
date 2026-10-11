@@ -7,6 +7,11 @@
   import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
   import RecruiterTable from "$lib/components/RecruiterTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { formatPercent } from "$lib/calculation/format";
+  import {
+    TOTAL_VETERAN_POINTS,
+    TOTAL_VETERAN_POINTS_NOTE,
+  } from "$lib/calculation/inputs";
   import type { ClassSkill } from "$lib/queries/classes.server";
   import type { MercenaryDetailView, MercenaryLink } from "$lib/types/pets";
   import {
@@ -142,8 +147,8 @@
   const deathSave = $derived(pet.skills.find((s) => s.is_innate) ?? null);
   const deathSaveInfo = $derived.by(() => {
     if (!deathSave) return null;
-    const at = (veteranLevel: number) => {
-      const rank = deathSaveRank(veteranLevel);
+    const at = (totalVeteranPoints: number) => {
+      const rank = deathSaveRank(totalVeteranPoints);
       // Source: server-scripts/Combat.cs:1040-1046, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
       return {
         rage: linearAt(
@@ -298,7 +303,7 @@
           onchange={(v) => setMercenaryOwner("level", v)}
         />
         <NumberField
-          label="Veteran level"
+          label={TOTAL_VETERAN_POINTS.label}
           value={veteran}
           min={OWNER_LIMITS.veteran[0]}
           max={OWNER_LIMITS.veteran[1]}
@@ -308,7 +313,7 @@
         <NumberField
           label="Charisma"
           hint={discount > 0
-            ? `−${Math.round(discount * 100)}% prices`
+            ? `−${formatPercent(discount)} prices`
             : "no discount"}
           value={mercenaryOwner.charisma}
           min={OWNER_LIMITS.charisma[0]}
@@ -316,6 +321,9 @@
           compact
           onchange={(v) => setMercenaryOwner("charisma", v)}
         />
+        <p class="text-sm text-muted-foreground sm:col-span-3">
+          {TOTAL_VETERAN_POINTS_NOTE}
+        </p>
       </Card.Content>
     </Card.Root>
   </section>
@@ -326,7 +334,7 @@
       class="mb-4 text-xl font-semibold flex items-center gap-2"
     >
       <TrendingUp class="h-5 w-5 text-emerald-500" />
-      At level {level}, veteran level {veteran}
+      At level {level}, with {veteran} total veteran points
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
@@ -431,8 +439,13 @@
           <div>
             <h3 class="text-sm font-semibold">Skill rank</h3>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards. -->
-            <p class="mt-1 font-mono text-sm">
-              ⌊level ÷ 5⌋ + ⌊veteran level ÷ 10⌋
+            <p class="mt-1 text-sm">
+              <a
+                href="/mercenaries#skill-ranks"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >See the skill-rank calculation</a
+              >
+              for your level and total veteran points.
             </p>
             <p class="mt-1 text-sm text-muted-foreground">
               {#if cls === "Bard"}Bard skills have a minimum rank of 1.{/if}
@@ -440,24 +453,25 @@
             </p>
           </div>
           <div>
-            <h3 class="text-sm font-semibold">Veteran levels</h3>
+            <h3 class="text-sm font-semibold">Total veteran points</h3>
             <!-- Source: server-scripts/Player.cs:4679-4704,10759-10774; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
-              Each veteran level adds 0.25% of base Health to maximum Health{#if classDef.role === "mana" && cls !== "Bard"}
+              Each total veteran point adds 0.25% of base Health to maximum
+              Health{#if classDef.role === "mana" && cls !== "Bard"}
                 and 0.25% of base Mana to maximum Mana{/if}, before rounding.
             </p>
             <p class="mt-1 text-sm text-muted-foreground">
-              At veteran level {veteran}, the bonus is +{veteranBonus}% of base
-              Health{#if classDef.role === "mana" && cls !== "Bard"}
+              With {veteran} total veteran points, the bonus is +{veteranBonus}%
+              of base Health{#if classDef.role === "mana" && cls !== "Bard"}
                 and +{veteranBonus}% of base Mana{/if}.
             </p>
             {#if classDef.role === "energy"}
               <p class="mt-1 text-sm text-muted-foreground">
-                Maximum Rage does not increase from veteran levels.
+                Maximum Rage stays the same as total veteran points rise.
               </p>
             {:else if cls === "Bard"}
               <p class="mt-1 text-sm text-muted-foreground">
-                A Bard's active-song limit does not rise with veteran levels.
+                A Bard's active-song limit follows character level.
               </p>
             {/if}
           </div>
@@ -469,13 +483,12 @@
             <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
             <p class="font-medium">Veteran damage</p>
             <p>
-              Each veteran point adds +1 base physical damage and +1 base magic
-              damage, including points earned before hiring.
+              Each total veteran point adds +1 base physical damage and +1 base
+              magic damage.
             </p>
             <p>
               Every resummon or reload restores the saved hire roll plus your
-              total veteran points to both damage values. A zero hire roll stays
-              zero before the veteran bonus. It is not rerolled.
+              total veteran points to both damage values.
             </p>
           </div>
         </Alert>
@@ -599,10 +612,11 @@
             {@render stat("Cooldown", `${fmt(deathSaveInfo.cooldown)} s`)}
           </dl>
           <p class="text-muted-foreground">
-            Duration and Rage cost rise with your veteran level, from {deathSaveInfo
-              .low.seconds} s for {deathSaveInfo.low.rage} Rage at veteran level 0
-            to {deathSaveInfo.high.seconds} s for {deathSaveInfo.high.rage} Rage at
-            veteran level {MAX_VETERAN}.
+            Duration and Rage cost rise with total veteran points, from {deathSaveInfo
+              .low.seconds} s for {deathSaveInfo.low.rage} Rage with 0 total veteran
+            points to {deathSaveInfo.high.seconds} s for {deathSaveInfo.high
+              .rage} Rage with
+            {MAX_VETERAN} total veteran points.
           </p>
           <p class="text-muted-foreground">
             Without enough Rage, the hit kills the mercenary.

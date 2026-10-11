@@ -4,6 +4,11 @@
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import {
+    rareSpawnOdds,
+    rareSpawnWait,
+  } from "$lib/calculation/monster-spawns";
   import type {
     BossRespawn,
     RareSpawn,
@@ -564,6 +569,18 @@
         The average column is the expected wait from one kill to the next
         appearance while the zone stays active (corpse time not included).
       </p>
+      {#if data.rareSpawns[0]}
+        <p class="text-sm">Worked wait for {data.rareSpawns[0].name}:</p>
+        <Calculation
+          calculation={rareSpawnWait(
+            data.rareSpawns[0].respawn_probability,
+            data.rareSpawns[0].respawn_time,
+          )}
+        />
+        <p class="text-sm text-muted-foreground">
+          A single wait can be shorter or longer.
+        </p>
+      {/if}
       <div
         class="max-h-96 overflow-x-auto overflow-y-auto rounded border border-border/50"
       >
@@ -753,12 +770,11 @@
           </div>
           <p class="mt-1 text-muted-foreground">
             You kill the rare at minute 0 and step out. Each renewal marks the
-            timer as due, and each step back inside fires one roll right away —
-            no need to run to the spawn spot. Every roll is an independent 25%
-            chance: in this example the third one happens to succeed, and the
-            rare then stands at its spawn point until you come for it. No number
-            of rolls guarantees a spawn — see the odds below. Without renewals,
-            a failed roll would not repeat until its full interval passed.
+            timer as due, and each step back inside fires one roll immediately.
+            Every roll has a 25% chance. The third roll succeeds in this
+            example, and the rare stands at its spawn point until you arrive.
+            Between ordinary rolls, a failed attempt waits the full respawn
+            interval.
           </p>
         </div>
         <p class="text-muted-foreground">
@@ -806,10 +822,15 @@
             </tbody>
           </table>
         </div>
-        <p class="text-sm text-muted-foreground">
-          Each roll is independent. The odds grow with every roll but never
-          reach certainty — a streak of failures is always possible.
-        </p>
+        {#if data.rareSpawns[0]}
+          <p class="text-sm">Worked odds for {data.rareSpawns[0].name}:</p>
+          <Calculation
+            calculation={rareSpawnOdds(
+              data.rareSpawns[0].respawn_probability,
+              data.rareSpawns[0].respawn_time,
+            )}
+          />
+        {/if}
       </div>
 
       {#if data.renewalSages.length > 0}

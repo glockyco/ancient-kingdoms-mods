@@ -22,7 +22,7 @@ export interface CalculationInput {
   value: number;
   min: number;
   max: number;
-  /** Whole numbers only, in the unit the reader types. */
+  /** Step between values, in the unit the reader types. Percentage inputs accept any fraction. */
   step: number;
   unit?: "%" | "s";
   /** A stat of the reader's character, kept when they move to another page. */
@@ -31,17 +31,26 @@ export interface CalculationInput {
 
 /** A worked example, evaluated with the game's arithmetic. */
 export interface CalculationExample {
-  /** The inputs the example assumes, worded for display. */
+  /** The inputs the example assumes, worded for display, such as "100 Wisdom". */
   given: string[];
-  /** The outcome, stated first. */
+  /** The outcome as a phrase without a final period, such as "Heals 1,040 Health". */
   result: string;
-  /** The substituted arithmetic that produces the outcome, one line per step. */
+  /**
+   * The substituted arithmetic, one line per step and in step order, each as
+   * "Step name: arithmetic = value", plus ", rounded" (or "rounded down" or
+   * "rounded up") where the step rounds, and ", limited to N" only when the
+   * step's limit changed the value. A step that takes the smaller of two
+   * values reads "smaller of A and B = value". No final period. A line names
+   * only terms its step names.
+   */
   working: string[];
 }
 
 export interface Calculation {
   steps: CalculationStep[];
   inputs?: CalculationInput[];
+  /** One or two sentences under the steps that define a term the steps use. */
+  note?: string;
   /** Evaluates the example for input values keyed by `CalculationInput.key`. */
   example?: (values: Record<string, number>) => CalculationExample;
 }

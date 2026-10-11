@@ -5,15 +5,54 @@
   import * as Card from "$lib/components/ui/card";
   import { Alert } from "$lib/components/ui/alert";
   import Seo from "$lib/components/Seo.svelte";
-  import type { DamageFormulaKind, HealBonusKind } from "$lib/types/skills";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import {
+    mitigationCalculation,
+    avoidanceCalculation,
+    healingCalculation,
+    songCalculation,
+    buffCalculation,
+    BUFF_EFFECTS,
+    type BuffEffect,
+    timingCalculation,
+    lifetapCalculation,
+    wildStrikeCalculation,
+    receivedHitCalculation,
+  } from "$lib/calculation/combat";
+  import {
+    characterDamageCalculation,
+    pipelineCalculation,
+    advantageCalculation,
+    damageOverTimeCalculation,
+    threatCalculation,
+    cleanseCalculation,
+    dispelCalculation,
+    dealtRageCalculation,
+  } from "$lib/calculation/combat-rules";
   import Info from "@lucide/svelte/icons/info";
+  import { formatSeconds as seconds } from "$lib/calculation/format";
+  import {
+    DEFENSE,
+    MAGIC_RESIST,
+    FIRE_RESIST,
+    COLD_RESIST,
+    POISON_RESIST,
+    DISEASE_RESIST,
+  } from "$lib/calculation/inputs";
+  const MITIGATION_STATS = [
+    DEFENSE,
+    MAGIC_RESIST,
+    FIRE_RESIST,
+    COLD_RESIST,
+    POISON_RESIST,
+    DISEASE_RESIST,
+  ];
+  let mitigationKey = $state(DEFENSE.key);
+  const mitigationStat = $derived(
+    MITIGATION_STATS.find((stat) => stat.key === mitigationKey) ?? DEFENSE,
+  );
+  let buffEffect = $state<BuffEffect>("defense");
 
-  // ---------------------------------------------------------------------------
-  // Static formula metadata
-  // ---------------------------------------------------------------------------
-
-  // Every section on the page, in document order. Drives the jump list. The
-  // ids match each Card.Root below.
   const SECTIONS = [
     { id: "targeting", label: "Targets, Range and Casting" },
     { id: "damage-pipeline", label: "Damage Pipeline" },
@@ -28,110 +67,85 @@
     { id: "special", label: "Special Mechanics" },
   ];
 
-  // Source: server-scripts/Equipment.cs:230-247,515-525; TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:88-92; TargetProjectileSkill.cs:189-200 — damage formulas describe working equipment, not subtraction of absent or broken weapon damage.
-  const DAMAGE_FORMULA_DESC: Record<DamageFormulaKind, string> = {
-    normal: "STR × 1.0 + damage from all equipment",
-    ranger_melee: "STR × 1.0 + equipment damage, excluding bow damage",
-    rogue_melee:
-      "STR × 1.0 + main-hand damage + ⌊off-hand damage × 0.5⌋ + other equipment damage",
-    rogue_melee_merc:
-      "STR × 1.0 + full main-hand and off-hand damage + other equipment damage",
-    ranged_player:
-      "STR × 1.0 + bow and armor damage + DEX × 1.5, excluding melee weapon damage",
-    ranged_player_frontal:
-      "STR × 1.0 + DEX × 1.5 + all equipment damage, including melee weapons",
-    ranged_merc:
-      "STR × 1.0 + DEX × 1.5 + bow, melee weapon, and other equipment damage",
-    poison_rogue:
-      "STR × 1.0 + main-hand damage + ⌊off-hand damage × 0.5⌋ + other equipment damage + DEX × 2.5",
-    magic_spell:
-      "INT × 1.5 + magic damage from casting weapon and other equipment",
-    // Source: server-scripts/BardFinalCadenceSkill.cs:67-70; exported-data/skills.json:152375 — Charisma-scaled damage receives the Melody bonus.
-    bard_final_cadence:
-      "round(round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2))) × (1 + Melody bonus))",
-    bard_final_cadence_merc:
-      "round(base skill damage × (1 + min(max(CHA, 0) × 0.001, 2)))",
-    magic_weapon:
-      "INT × 1.5 + STR × 1.0 + equipment damage. Physical and magic portions are reduced separately",
-    magic_weapon_ranger:
-      "Magic: INT × 1.5 + magic equipment. Physical: STR × 1.0 + non-bow equipment damage. Wild Strike instead uses its empowered auto-attack rule below.",
-    manaburn:
-      "Current Rage × 2 (Rageblow) or current Mana × 3 (Mana Burn), without mitigation or resistance",
-    monster_melee: "Physical damage based on monster level",
-    monster_magic: "Magic damage based on monster level",
-  };
-
-  const DAMAGE_FORMULA_GROUP_LABEL: Record<DamageFormulaKind, string> = {
-    normal: "Physical",
-    ranger_melee: "Physical",
-    rogue_melee: "Physical",
-    rogue_melee_merc: "Physical",
-    ranged_player: "Ranged",
-    ranged_player_frontal: "Ranged",
-    ranged_merc: "Ranged",
-    poison_rogue: "Poison",
-    magic_spell: "Magic",
-    bard_final_cadence: "Magic",
-    bard_final_cadence_merc: "Magic",
-    magic_weapon: "Magic",
-    magic_weapon_ranger: "Magic",
-    manaburn: "Special",
-    monster_melee: "Monster",
-    monster_magic: "Monster",
-  };
-
-  const DAMAGE_FORMULA_LABEL: Record<DamageFormulaKind, string> = {
-    normal: "Other physical attacks",
-    ranger_melee: "Ranger melee",
-    rogue_melee: "Rogue melee",
-    rogue_melee_merc: "Rogue mercenary melee",
-    ranged_player: "Player bow attacks",
-    ranged_player_frontal: "Ranger bow attacks in front",
-    ranged_merc: "Mercenary bow attacks",
-    poison_rogue: "Rogue poison attacks",
-    magic_spell: "Magic spells",
-    bard_final_cadence: "Final Cadence",
-    bard_final_cadence_merc: "Mercenary Final Cadence",
-    magic_weapon: "Magic weapon attacks",
-    magic_weapon_ranger: "Ranger magic weapon attacks",
-    manaburn: "Manaburn",
-    monster_melee: "Monster physical attacks",
-    monster_magic: "Monster magic attacks",
-  };
-
-  const DAMAGE_FORMULA_ORDER: DamageFormulaKind[] = [
-    "normal",
-    "ranger_melee",
-    "rogue_melee",
-    "rogue_melee_merc",
-    "ranged_player",
-    "ranged_player_frontal",
-    "ranged_merc",
-    "poison_rogue",
-    "magic_spell",
-    "bard_final_cadence",
-    "bard_final_cadence_merc",
-    "magic_weapon",
-    "magic_weapon_ranger",
-    "manaburn",
-    "monster_melee",
-    "monster_magic",
+  // Source: server-scripts/TargetDamageSkill.cs:180-242; TargetProjectileSkill.cs:184-219; FrontalDamageSkill.cs:63-101; FrontalProjectilesSkill.cs:75-104 — handlers start with character-window damage and then subtract weapon terms, add attributes, and apply the skill multiplier.
+  const DAMAGE_FORMULAS = [
+    ["Physical", "Other physical attacks", "Damage"],
+    [
+      "Physical",
+      "Ranger targeted and frontal melee",
+      "Damage − listed bow damage",
+    ],
+    [
+      "Physical",
+      "Rogue targeted melee",
+      "Damage − 50% of listed off-hand damage, with the subtraction rounded up",
+    ],
+    [
+      "Physical",
+      "Rogue mercenary melee",
+      "Damage, including full damage from both weapons",
+    ],
+    [
+      "Ranged",
+      "Player targeted bow attacks",
+      "Damage + 150% of Dexterity, rounded, − listed main-hand weapon damage",
+    ],
+    [
+      "Ranged",
+      "Ranger bow attacks in front",
+      "Damage + 150% of Dexterity, rounded, including melee weapon damage",
+    ],
+    [
+      "Ranged",
+      "Mercenary bow attacks",
+      "Damage + 150% of Dexterity, rounded, including melee weapon damage",
+    ],
+    [
+      "Poison",
+      "Rogue targeted poison attacks",
+      "Damage + 250% of Dexterity, rounded, − 50% of listed off-hand damage, with the subtraction rounded up. Mercenaries retain full off-hand damage",
+    ],
+    [
+      "Poison",
+      "Rogue projectile and frontal poison attacks",
+      "Damage + 250% of Dexterity, rounded",
+    ],
+    [
+      "Magic",
+      "Magic, fire, cold, and disease spells",
+      "Magic Damage. Ranger targeted and frontal damage skills still subtract listed bow damage, and Rogue targeted damage skills still subtract half the listed off-hand damage, rounded up",
+    ],
+    [
+      "Magic",
+      "Final Cadence",
+      "Base skill damage × song power, rounded, then × (100% + Melody bonus), rounded again. Mercenaries use song power alone",
+    ],
+    [
+      "Magic",
+      "Magic weapon attacks",
+      "Magic Damage + Damage. The combined hit meets Magic Resist once",
+    ],
+    [
+      "Magic",
+      "Rogue targeted magic weapon attacks",
+      "Magic Damage + Damage − 50% of listed off-hand damage, with the subtraction rounded up. The combined hit meets Magic Resist once",
+    ],
+    [
+      "Magic",
+      "Ranger magic weapon attacks",
+      "Magic Damage + Damage − listed bow damage. Wild Strike uses its empowered auto-attack rule below",
+    ],
+    [
+      "Special",
+      "Rageblow and Mana Burn",
+      "200% of current Rage for Rageblow, or 300% of current Mana for Mana Burn",
+    ],
+    [
+      "Monster",
+      "Monster physical and magic attacks",
+      "The corresponding Damage or Magic Damage stat, including level-based base damage and applicable bonuses",
+    ],
   ];
-
-  const HEAL_BONUS_DESC: Record<HealBonusKind, string> = {
-    player_ranger: "Base heal + round(base heal × min(WIS × 3 × 0.004, 5))",
-    player_other: "Base heal + round(base heal × min(WIS × 0.004, 5))",
-    merc: "Base heal + round(base heal × min(WIS × 0.004, 5)). Ranger mercenaries do not get the 3× bonus",
-    none: "No Wisdom bonus",
-  };
-
-  const HEAL_BONUS_LABEL: Record<HealBonusKind, string> = {
-    player_ranger: "Player Ranger",
-    player_other: "Other players",
-    merc: "Mercenaries",
-    none: "Monsters, NPCs, and other pets",
-  };
-  const HEAL_BONUS_KINDS = Object.keys(HEAL_BONUS_DESC) as HealBonusKind[];
 </script>
 
 <Seo
@@ -140,7 +154,7 @@
   path="/mechanics/combat"
 />
 
-<div class="container mx-auto p-8 space-y-8 max-w-4xl">
+<div class="combat-page container mx-auto p-4 sm:p-8 space-y-8 max-w-4xl">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -161,8 +175,8 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <p>
         <span class="block"
-          >Players can attack living monsters and NPCs, but not other players or
-          Bard-charmed monsters.</span
+          >Players can attack living monsters and NPCs. Other players and
+          Bard-charmed monsters are protected from player attacks.</span
         >
         <span class="block"
           >A targeted attack without a valid target selects the nearest
@@ -179,12 +193,9 @@
           >Selecting a monster can instead heal the player or pet it is
           attacking.</span
         >
+        <span class="block">Self-only heals target you.</span>
         <span class="block"
-          >Heals that target only yourself cannot heal another character.</span
-        >
-        <span class="block"
-          >Resurrection targets player remains or a dead mercenary, not a living
-          ally.</span
+          >Resurrection targets only player remains or a dead mercenary.</span
         >
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:642-646,732-738,808-890 — fear and stun block normal skill use; learned status, readiness, resources, equipment, ammunition, range, and visibility are checked. -->
@@ -209,12 +220,10 @@
       <p>
         A non-spell weapon or shield skill queues your selected default attack
         on your current attackable target when it deals targeted damage or
-        applies a damaging targeted debuff. The skill must require a weapon or
-        shield, and must not itself be a default auto-attack. Your selected
-        default attack must be valid, learned (or learned by default), and
-        usable with your weapon. An existing follow-up is preserved. The default
-        attack fills the pending slot only if it is empty. Invisibility buffs do
-        not trigger this rule.
+        applies a damaging targeted debuff. This applies to skills other than
+        default auto attacks and invisibility buffs. The pending follow-up slot
+        must be empty. Your selected default attack must be valid, learned (or
+        learned by default), and usable with your weapon.
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:953-1012,1162-1191 — Bard song use and repetition continue while moving or casting ordinary skills. -->
       <p>
@@ -229,98 +238,61 @@
     </Card.Content>
   </Card.Root>
 
-  <!-- ── §1 Damage Pipeline ─────────────────────────────────────────────── -->
+  <!-- Source: server-scripts/Combat.cs:673-875,883-1007,1171-1398 — ordered direct-hit pipeline, including avoidance, moving damage, on-hit effects, resource gains, shields, lifetap, and critical scaling. -->
   <Card.Root id="damage-pipeline" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Damage Pipeline</Card.Title>
       <Card.Description
-        >Damaging hits follow these steps, except Manaburn, which skips
-        mitigation and critical hit checks.</Card.Description
+        >Direct hits use these steps in order. Each step uses the damage left by
+        the previous step.</Card.Description
       >
     </Card.Header>
-    <Card.Content class="space-y-4">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="border-b border-border">
-              <th class="text-left py-2 pr-4 font-medium w-8">Step</th>
-              <th class="text-left py-2 font-medium">Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b border-border/50">
-              <td class="py-2 pr-4 text-muted-foreground">1</td>
-              <td class="py-2"
-                ><strong>Base damage</strong>: depends on the attack (see Damage
-                Formulas below)</td
-              >
-            </tr>
-            <tr class="border-b border-border/50">
-              <td class="py-2 pr-4 text-muted-foreground">2</td>
-              <td class="py-2"><strong>Variance</strong>: random ×0.9–1.1</td>
-            </tr>
-            <tr class="border-b border-border/50">
-              <td class="py-2 pr-4 text-muted-foreground">3</td>
-              <td class="py-2"
-                ><strong>Backstab</strong>: +10% (+25% with Improved Backstab)
-                plus 1 flat, when the attacker is behind the target</td
-              >
-            </tr>
-            <tr class="border-b border-border/50">
-              <td class="py-2 pr-4 text-muted-foreground">4</td>
-              <td class="py-2"
-                ><strong>Level difference</strong>: ±2% per level, max ±20%</td
-              >
-            </tr>
-            <tr class="border-b border-border/50">
-              <td class="py-2 pr-4 text-muted-foreground">5</td>
-              <td class="py-2"
-                ><strong>Slayer reduction</strong>: −(Slayer level × 10%)</td
-              >
-            </tr>
-            <tr class="border-b border-border/50">
-              <td class="py-2 pr-4 text-muted-foreground">6</td>
-              <td class="py-2"
-                ><strong>Enrage</strong>: monsters with an enrage passive deal
-                50–75% more damage below 10% health on non-spell attacks</td
-              >
-            </tr>
-            <tr class="border-b border-border/50">
-              <td class="py-2 pr-4 text-muted-foreground">7</td>
-              <td class="py-2">
-                <strong>Physical mitigation</strong>:
-                <code class="font-mono text-xs bg-muted px-1 rounded"
-                  >damage − ⌈damage × clamp(defense × 0.0005, 0, 0.9)⌉</code
-                > (max 90%)
-              </td>
-            </tr>
-            <tr>
-              <td class="py-2 pr-4 text-muted-foreground">8</td>
-              <td class="py-2"
-                ><strong>Critical hit</strong>: attacker Critical Chance + skill
-                critical bonus determines the chance. A critical hit deals ×1.5
-                damage (Radiant Aether: ×3). Target Critical Resist reduces only
-                the extra damage: multiplier = 1 + (critical multiplier − 1) ×
-                (1 − Critical Resist). At full Critical Resist, the hit deals
-                the same damage as a non-critical hit</td
-              >
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="text-sm text-muted-foreground">
-        <strong>Manaburn exception:</strong> ignores physical mitigation and critical
-        hits. Damage = current Rage or Mana × 2.
+    <Card.Content class="space-y-4 text-sm">
+      <Calculation calculation={pipelineCalculation} />
+      <p class="text-muted-foreground">
+        See <a href="#damage-formulas" class="underline hover:text-foreground"
+          >Damage Formulas</a
+        >
+        for the starting hit,
+        <a href="#resistance" class="underline hover:text-foreground"
+          >Resistance and Mitigation</a
+        >
+        for avoidance and damage reduction, and
+        <a href="#combat-advantage" class="underline hover:text-foreground"
+          >Combat Advantage</a
+        > for movement and from-behind adjustments.
+      </p>
+      <!-- Source: server-scripts/Combat.cs:864-875 — critical checks require post-mitigation damage above 3, and Monster AreaDamageSkill casts skip them. -->
+      <p class="text-muted-foreground">
+        Critical checks require more than 3 damage after mitigation. The chance
+        uses attacker Critical Chance plus the skill's critical bonus. Monster
+        area damage skills skip this check. For eligible non-auto skills,
+        Radiant Aether uses a 200% critical extra percentage.
+      </p>
+      <!-- Source: server-scripts/Combat.cs:700-703,776-875 — Manaburn bypasses avoidance and mitigation but still goes through variance, advantage, level adjustment, and critical checks. -->
+      <p class="text-muted-foreground">
+        <strong>Rageblow and Mana Burn:</strong> bypass avoidance and mitigation,
+        but still receive variance, advantage, level adjustment, and eligible critical
+        hits. Ward and Mana Shield still absorb their damage.
       </p>
     </Card.Content>
   </Card.Root>
-
   <!-- ── §2 Damage Formulas ─────────────────────────────────────────────── -->
   <Card.Root id="damage-formulas" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Damage Formulas</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-6">
+      <h3 class="font-semibold">Character Window Damage and Magic Damage</h3>
+      <Calculation calculation={characterDamageCalculation} />
+      <!-- Source: server-scripts/TargetDamageSkill.cs:238-242; TargetProjectileSkill.cs:211-219; FrontalDamageSkill.cs:98-101 — handlers add the flat skill value, then round after a positive skill multiplier. -->
+      <p class="text-sm text-muted-foreground">
+        The table gives the starting stat for each attack. Add the skill's flat
+        damage, then apply its listed damage percentage and round if it has a
+        positive multiplier. Scrolls omit character stats and use their own
+        skill damage. Use the skill page's calculator for its damage before
+        defenses.
+      </p>
       <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
           <thead>
@@ -331,15 +303,11 @@
             </tr>
           </thead>
           <tbody>
-            {#each DAMAGE_FORMULA_ORDER as kind (kind)}
+            {#each DAMAGE_FORMULAS as [category, attack, formula] (attack)}
               <tr class="border-b border-border/40 hover:bg-muted/20">
-                <td class="py-1 pr-4 text-muted-foreground text-sm"
-                  >{DAMAGE_FORMULA_GROUP_LABEL[kind]}</td
-                >
-                <td class="py-1 pr-4 text-sm">{DAMAGE_FORMULA_LABEL[kind]}</td>
-                <td class="py-1 text-sm text-muted-foreground"
-                  >{DAMAGE_FORMULA_DESC[kind]}</td
-                >
+                <td class="py-2 pr-4 text-muted-foreground">{category}</td>
+                <td class="py-2 pr-4">{attack}</td>
+                <td class="py-2 text-muted-foreground">{formula}</td>
               </tr>
             {/each}
           </tbody>
@@ -370,208 +338,102 @@
     <Card.Header>
       <Card.Title>Resistance &amp; Mitigation</Card.Title>
       <Card.Description
-        >How Defense and resistance reduce physical, magic, fire, cold, poison,
-        and disease damage.</Card.Description
+        >Defense and matching resist stats decide avoidance and how much damage
+        you take.</Card.Description
       >
     </Card.Header>
-    <Card.Content class="space-y-5">
-      <div>
-        <!-- Source: server-scripts/Combat.cs:1539-1542,1545-1548,1551-1554,1557-1560,1563-1566 GetProbResist* (formula), Combat.cs:634-641 (damage); TargetDebuffSkill.cs:105-143 / AreaDebuffSkill.cs:113-158 (debuff & dispel landing) -->
-        <h3 class="font-semibold mb-1">Resist Roll</h3>
-        <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">resist chance = clamp(
-  matching resistance × 0.0005
-  + clamp((target level − attacker level) × 0.005, −0.1, 0.1)
-  − attacker Accuracy
-, 0, 0.9)</pre>
-        <p class="text-sm text-muted-foreground mt-1">
-          <span class="block"
-            >Magic, fire, cold, poison, and disease hits have a resistance roll.</span
-          >
-          <span class="block"
-            >When resistance succeeds, you take no damage from that hit.</span
-          >
-          <span class="block"
-            >Physical hits instead check whether the target blocks or the
-            attacker misses.</span
-          >
-          <span class="block"
-            >The matching resistance also decides whether debuffs and dispels
-            land.</span
-          >
-          <span class="block">Physical debuffs check Defense.</span>
-          <span class="block"
-            >Attacker Accuracy lowers that resistance chance.</span
-          >
-        </p>
-      </div>
-
-      <div>
-        <h3 class="font-semibold mb-2">Mitigation</h3>
-        <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">damage prevented = ⌈damage × clamp(matching stat × 0.0005, 0, 0.9)⌉
-damage taken = damage − damage prevented</pre>
-        <p class="text-sm text-muted-foreground mt-1">
-          <span class="block"
-            >When a hit lands, the matching stat reduces its damage by up to
-            90%.</span
-          >
-          <span class="block"
-            >You take the damage left after the reduction.</span
-          >
-          <span class="block"
-            >The table shows which stat reduces each damage type.</span
-          >
-        </p>
-        <div class="overflow-x-auto mt-2">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium">Damage type</th>
-                <th class="text-left py-1 font-medium">Mitigation stat</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Physical</td>
-                <td class="py-1 text-muted-foreground">Defense</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Magic</td>
-                <td class="py-1 text-muted-foreground">Magic Resist</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Fire</td>
-                <td class="py-1 text-muted-foreground">Fire Resist</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Cold</td>
-                <td class="py-1 text-muted-foreground">Cold Resist</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Disease</td>
-                <td class="py-1 text-muted-foreground">Disease Resist</td>
-              </tr>
-              <tr>
-                <td class="py-1 pr-4">Poison</td>
-                <td class="py-1 text-muted-foreground">Poison Resist</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="font-semibold mb-1">Physical Block / Miss</h3>
-        <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">miss or block chance = clamp(
-  clamp(base block chance + Defense × 0.0001 + block bonuses, 0, 0.8)
-  + clamp((target level − attacker level) × 0.005, −0.1, 0.1)
-  − attacker Accuracy
-, 0, 0.9)</pre>
-        <p class="text-sm text-muted-foreground mt-1">
-          A blocked or missed physical hit deals no damage.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="font-semibold mb-2">Situational Modifiers</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium">Modifier</th>
-                <th class="text-left py-1 font-medium">Effect</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Moving target</td>
-                <td class="py-1 text-muted-foreground"
-                  >Resist chance −0.25, damage +10%</td
-                >
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Backstab</td>
-                <td class="py-1 text-muted-foreground">Resist chance ×0.8</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Manaburn</td>
-                <td class="py-1 text-muted-foreground"
-                  >Bypasses all mitigation and resist</td
-                >
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Resistance-reducing skill</td>
-                <td class="py-1 text-muted-foreground"
-                  >Target resistance chance −30 percentage points</td
-                >
-              </tr>
-              <tr>
-                <td class="py-1 pr-4">Boss/elite + large speed debuff</td>
-                <td class="py-1 text-muted-foreground"
-                  >Forced resist regardless of roll</td
-                >
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <Card.Content class="space-y-5 text-sm">
+      <!-- Source: server-scripts/Combat.cs:1551-1580; TargetDebuffSkill.cs:105-143; AreaDebuffSkill.cs:113-158 — elemental damage, debuffs, and dispels use the matching resistance roll. -->
+      <h3 class="font-semibold">Resist Roll</h3>
+      <Calculation calculation={avoidanceCalculation()} />
+      <p class="text-muted-foreground">
+        Magic, fire, cold, poison, and disease hits use the matching resist
+        stat. A successful resist prevents all damage from that hit. Debuffs and
+        dispels use the same landing roll. Physical debuffs use Defense at the
+        same rate as an elemental resist.
+      </p>
+      <!-- Source: server-scripts/Combat.cs:307-317,1539-1548 — physical hits use capped block chance rather than the physical debuff formula. -->
+      <h3 class="font-semibold">Physical Block and Miss</h3>
+      <Calculation calculation={avoidanceCalculation(true)} />
+      <p class="text-muted-foreground">
+        A block or miss prevents all damage from the physical hit. From-behind
+        attacks and moving players adjust avoidance after these bounds. See <a
+          href="#combat-advantage"
+          class="underline hover:text-foreground">Combat Advantage</a
+        >.
+      </p>
+      <h3 class="font-semibold">Mitigation</h3>
+      <label for="mitigation-stat" class="block font-medium"
+        >Your defensive stat</label
+      >
+      <select
+        id="mitigation-stat"
+        bind:value={mitigationKey}
+        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+      >
+        {#each MITIGATION_STATS as stat (stat.key)}
+          <option value={stat.key}>{stat.label}</option>
+        {/each}
+      </select>
+      {#key mitigationKey}
+        <Calculation calculation={mitigationCalculation(mitigationStat)} />
+      {/key}
+      <table class="w-full text-sm border-collapse">
+        <thead
+          ><tr
+            ><th class="text-left py-2 pr-4">Damage type</th><th
+              class="text-left py-2">Your mitigation stat</th
+            ></tr
+          ></thead
+        >
+        <tbody>
+          {#each [["Physical", "Defense"], ["Magic", "Magic Resist"], ["Fire", "Fire Resist"], ["Cold", "Cold Resist"], ["Poison", "Poison Resist"], ["Disease", "Disease Resist"]] as [type, stat] (type)}
+            <tr
+              ><td class="py-2 pr-4">{type}</td><td
+                class="py-2 text-muted-foreground">{stat}</td
+              ></tr
+            >
+          {/each}
+        </tbody>
+      </table>
+      <!-- Source: server-scripts/TargetDebuffSkill.cs:135-143; AreaDebuffSkill.cs:142-158 — resistance-reducing debuffs subtract 30 percentage points, while a speed bonus below −10 forces boss/elite resistance. -->
+      <p class="text-muted-foreground">
+        A resistance-reducing debuff lowers its landing resistance chance by 30
+        percentage points, to a minimum of zero. Bosses and elite monsters
+        automatically resist debuffs that reduce Movement Speed below −10.
+      </p>
     </Card.Content>
   </Card.Root>
 
   <!-- Source: server-scripts/Combat.cs:673-692,776-781 — targeted damage and projectile skills gain advantage when both look directions match; resist chance is multiplied by 0.8, and damage gains 10% rounded up plus 1. -->
   <Card.Root id="combat-advantage" class="bg-muted/30">
-    <Card.Header>
-      <Card.Title>Combat Advantage</Card.Title>
-    </Card.Header>
+    <Card.Header><Card.Title>Combat Advantage</Card.Title></Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <!-- Source: server-scripts/Combat.cs:673-698,776-781 — targeted strikes and projectiles gain advantage when look directions match. Moving-player penalties apply to incoming hits. -->
       <p>
-        <span class="block"
-          >Targeted strikes and projectiles gain combat advantage when attacker
-          and target face the same direction.</span
-        >
-        <span class="block"
-          >The target's chance to avoid the hit falls by 20% of its current
-          chance.</span
-        >
-        <span class="block">The hit gains 10% damage, rounded up, plus 1.</span>
+        Targeted strikes and projectiles gain from-behind advantage when
+        attacker and target face the same direction.
       </p>
-      <!-- Source: server-scripts/Combat.cs:776-781 — Rogues with learned skill index 15 and Rogue mercenaries receive 25% rather than 10% damage, rounded up, plus 1. -->
+      <Calculation calculation={advantageCalculation} />
+      <!-- Source: server-scripts/Combat.cs:693-697 — against a moving player, stunChance gains Clamp(0.1 − 0.01 × level difference, 0.01, 0.1), capped at 1, and stunTime is at least 0.5 seconds. -->
       <p>
-        <span class="block"
-          >A Rogue with <a
-            href="/skills/improved_backstab"
-            class="text-blue-600 hover:underline dark:text-blue-400"
-            >Improved Backstab</a
-          > gains 25% damage, rounded up, plus 1 instead.</span
-        >
-        <span class="block">Rogue mercenaries receive the same bonus.</span>
+        Against a moving player, physical hits from attackers above level 5 also
+        add 10 percentage points of stun chance minus 1 percentage point per
+        target level above the attacker. The addition stays between 1 and 10
+        percentage points, total stun chance stays at most 100%, and stun
+        duration is at least 0.5 seconds.
       </p>
-      <!-- Source: server-scripts/Combat.cs:689-698 — a moving player has 25 percentage points subtracted from avoidance chance, takes truncated 10% additional pre-mitigation damage, and may receive extra stun chance from Normal hits by attackers above level 5. -->
+      <!-- Source: server-scripts/Combat.cs:766-774 — five player cast slots are interrupted and grant damage advantage plus 75 percentage points of critical chance. -->
       <p>
-        <span class="block"
-          >While you move, your chance to avoid a hit drops by 25 percentage
-          points, to a minimum of zero.</span
-        >
-        <span class="block"
-          >The incoming hit also gains 10% damage before mitigation, with the
-          extra amount rounded down.</span
-        >
-        <span class="block"
-          >Physical hits from attackers above level 5 gain 1–10 percentage
-          points of stun chance and at least 0.5 seconds of stun duration.</span
-        >
+        Interrupting a player's vulnerable cast adds the from-behind damage
+        bonus and 75 percentage points of critical chance. Avoidance still
+        follows the attack's position and the target's movement.
       </p>
-      <!-- Source: server-scripts/Combat.cs:567-571 — a monster returning home evades damage. -->
+      <!-- Source: server-scripts/Combat.cs:567-571 — returning-home monsters evade incoming hits. -->
       <p>
-        <span class="block">A monster returning home evades incoming hits.</span
-        >
-        <span class="block"
-          >See <MechanicsLink section="monster-spawns#leashing"
-            >Leashing and Resets</MechanicsLink
-          > for its reset rules.</span
-        >
+        A monster returning home evades incoming hits. See <MechanicsLink
+          section="monster-spawns#leashing">Leashing and Resets</MechanicsLink
+        > for its reset rules.
       </p>
       <p>
         See <a href="#damage-pipeline" class="underline hover:text-foreground"
@@ -580,8 +442,7 @@ damage taken = damage − damage prevented</pre>
         and
         <a href="#resistance" class="underline hover:text-foreground"
           >Resistance and Mitigation</a
-        >
-        for the rest of the hit calculation.
+        > for the rest of the hit calculation.
       </p>
     </Card.Content>
   </Card.Root>
@@ -593,58 +454,49 @@ damage taken = damage − damage prevented</pre>
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <h3 class="font-semibold mb-2">WIS Heal Bonus</h3>
-        <div class="space-y-3">
-          <div>
-            <p class="text-sm text-muted-foreground mb-1">
-              All classes except Ranger:
-            </p>
-            <pre
-              class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS × 0.004, 5.0))</pre>
-          </div>
-          <div>
-            <p class="text-sm text-muted-foreground mb-1">Ranger:</p>
-            <pre
-              class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS×3 × 0.004, 5.0))</pre>
-          </div>
-        </div>
+        <h3 class="font-semibold mb-2">Wisdom Heal Bonus</h3>
+        <p class="text-sm text-muted-foreground mb-2">
+          Other players and mercenaries:
+        </p>
+        <Calculation calculation={healingCalculation()} />
+        <p class="text-sm text-muted-foreground mt-3 mb-2">
+          Player Rangers, with triple Wisdom:
+        </p>
+        <Calculation calculation={healingCalculation(true)} />
         <!-- Source: server-scripts/TargetHealSkill.cs:137-143; NecromancerDeathBloomSkill.cs:19-25,47-50 — scrolls skip Wisdom and Death Bloom uses Intelligence. -->
         <p class="text-sm text-muted-foreground mt-2">
           <a href="/skills/death_bloom" class="underline hover:text-foreground"
             >Death Bloom</a
           >
-          uses Intelligence. Healing scrolls, including Major Restoration, receive
-          no Wisdom bonus.
+          uses Intelligence. Healing scrolls, including Major Restoration, use their
+          listed healing regardless of Wisdom, before critical checks.
         </p>
         <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70; exported-data/skills.json:152375 — Final Cadence uses Charisma song power and the Melody bonus. -->
         <p class="text-sm text-muted-foreground mt-2">
-          <span class="block">Final Cadence does not receive this bonus.</span>
-          <span class="block"
-            >Its healing is rounded after song power, then multiplied by (1 +
-            Melody bonus) and rounded again. Song power comes from <a
-              href="#buffs"
-              class="underline hover:text-foreground">Bard Song Scaling</a
-            >.</span
-          >
+          Final Cadence ignores Wisdom and scales its damage and healing with <a
+            href="#buffs"
+            class="underline hover:text-foreground">song power</a
+          >, then the Melody bonus:
         </p>
+        <Calculation calculation={songCalculation(true)} />
         <!-- Source: server-scripts/BardFinalCadenceSkill.cs:67-70,FindEnemies; PlayerSkills.cs:CompleteBardSongCast,ConsumeFinalCadenceRepertoireBonus — Final Cadence rounds Charisma-scaled damage/healing with a consumed repertoire multiplier; only engaged Monsters with speed above -50 qualify as enemies. -->
         <p class="text-sm text-muted-foreground mt-2">
-          Manually completing 4 distinct songs less than 40 seconds before Final
-          Cadence grants +15% damage and healing, while 5 grant +25%, and 6 or
-          more grant +30%. Fewer grant no bonus. Automatic repeats do not count.
-          Final Cadence clears the song count, even if it hits no enemies.
-          Mercenaries receive no Melody bonus. Its damage hits living, visible,
-          attackable monsters within range in the same zone. They must have a
-          non-empty aggro list and cannot be in Sleep (speed −50 or below).
+          Melody counts distinct songs you manually complete less than 40
+          seconds before Final Cadence. Four give 15% extra damage and healing,
+          five give 25%, and six or more give 30%. Up to three give 0%. Final
+          Cadence consumes the song count, including casts with zero enemy hits.
+          Its damage hits living, visible, attackable monsters within range in
+          the same zone, with an aggro entry and Movement Speed above −50.
           Mercenary casts also require engagement with their owner's party.
         </p>
         <!-- Source: server-scripts/Combat.cs:1315-1333 — lifetap healing is FloorToInt(lifetapPercent × remaining damage × (1 + summed active/permanent lifetapHealingPercentBonus)); the damage is not capped by remaining victim health. -->
+        <h3 id="lifetap" class="font-semibold mt-4 mb-2 scroll-mt-24">
+          Lifetap
+        </h3>
+        <Calculation calculation={lifetapCalculation()} />
         <p class="text-sm text-muted-foreground mt-2">
-          Lifetap heals floor(lifetap percentage × damage remaining after Ward
-          and Mana Shield × (1 + healing bonus)). The healing bonus is the sum
-          of the lifetap healing bonuses of the attacker's active or permanent
-          buffs, such as Lich Shroud. Damage is unchanged. The damage used is
-          not capped by the victim's remaining health.
+          Lifetap restores Health and leaves damage unchanged. Overkill damage
+          contributes to the healing.
         </p>
       </div>
 
@@ -668,35 +520,26 @@ damage taken = damage − damage prevented</pre>
             all recipients.</span
           >
           <span class="block"
-            >Healing-over-time ticks can also crit for ×1.5.</span
+            >Healing-over-time critical ticks heal for 150% of the normal tick,
+            rounded.</span
           >
           <span class="block"
             >Their chance uses the caster's Critical Chance when the buff
             starts.</span
           >
+          <!-- Source: server-scripts/Skills.cs:329-346 — over-time critical checks require base duration below 30 seconds and more than 3 flat healing. -->
+          <span class="block"
+            >Only buffs with a base duration below 30 seconds and more than 3
+            healing per tick can have critical healing ticks.</span
+          >
         </p>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="border-b border-border">
-              <th class="text-left py-1 pr-4 font-medium">Healer</th>
-              <th class="text-left py-1 font-medium">Formula Applied</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each HEAL_BONUS_KINDS as kind (kind)}
-              <tr class="border-b border-border/40 hover:bg-muted/20">
-                <td class="py-1 pr-4 text-sm">{HEAL_BONUS_LABEL[kind]}</td>
-                <td class="py-1 text-muted-foreground"
-                  >{HEAL_BONUS_DESC[kind]}</td
-                >
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+      <!-- Source: server-scripts/TargetHealSkill.cs:137-143; AreaHealSkill.cs:101-105 — only player and mercenary casters receive Wisdom healing additions. -->
+      <p class="text-sm text-muted-foreground">
+        Ranger mercenaries use the ordinary Wisdom bonus. Monsters, NPCs, and
+        other pets use base healing before critical checks.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -710,29 +553,14 @@ damage taken = damage − damage prevented</pre>
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Charisma.cs:21-36, Buff.cs:ScaleWithCharisma, and BuffSkill.cs:ScaleFearResistChanceBonus and ScaleHealingPerSecondBonus -->
+        <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; Buff.cs:276-291; BuffSkill.cs:ScaleFearResistChanceBonus,ScaleHealingPerSecondBonus — song power scales whole-number and percentage effects. -->
         <h3 class="font-semibold mb-2">Bard Song Scaling</h3>
-        <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">songPower = 1 + min(max(CHA, 0) × 0.001, 2)
-wholeNumberValue = round(baseValue × songPower)
-percentageValue = baseValue × songPower</pre>
+        <Calculation calculation={songCalculation()} />
         <p class="text-sm text-muted-foreground mt-2">
           <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardMercenarySkills.cs:RefreshAura — a song buff from a Bard or Bard mercenary carries that singer's Charisma. -->
           <span class="block"
-            >CHA is the Charisma of the Bard or Bard mercenary that sings the
-            song.</span
-          >
-          <span class="block">Wisdom does not change Bard songs.</span>
-          <span class="block"
-            >Each Charisma point adds 0.1% of the base value.</span
-          >
-          <span class="block"
-            >At 2,000 Charisma, the bonus reaches its 200% limit and the value
-            triples.</span
-          >
-          <span class="block"
-            >Songs can increase Ward, Defense, damage, resistance, resource
-            recovery, Accuracy, Critical Chance, Haste, and Spell Haste.</span
+            >Bard songs use only the Charisma of the Bard or Bard mercenary
+            singing them.</span
           >
           <span class="block"
             >Whole-number values include Ward, Defense, flat damage and
@@ -746,17 +574,14 @@ percentageValue = baseValue × songPower</pre>
             >Fear Resistance follows the formula up to the song's listed limit.</span
           >
           <span class="block"
-            >Cacophony instead gains a rounded 0.75 damage per second for each
-            non-negative Charisma point.</span
+            >Cacophony's damage per second uses its base value + 75% of
+            non-negative Charisma, with the Charisma addition rounded.</span
           >
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block"
-            >Charisma does not increase a song's Movement Speed, primary
-            attributes, maximum Mana percentage, Damage Shield, or Heal on Hit.</span
-          >
-          <span class="block"
-            >Each song page shows the formulas for that song's effects.</span
+            >Charisma leaves Movement Speed, primary attributes, maximum Mana
+            percentage, Damage Shield, and Heal on Hit at their listed values.</span
           >
         </p>
       </div>
@@ -766,12 +591,7 @@ percentageValue = baseValue × songPower</pre>
         <!-- Source: server-scripts/Buff.cs:ScaleWithCharisma and Skills.cs:GetFinalHealOverTime — Charisma-scaled song values skip the Wisdom additions. -->
         <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:434-445; AreaBuffSkill.cs:33-45 — scalesWithIntelligence selects Intelligence instead of Wisdom; Ranger targeted buffs triple the selected attribute. -->
         <p class="text-sm text-muted-foreground mb-2">
-          A is Wisdom, or Intelligence for buffs that scale with Intelligence.
-          Ranger targeted buffs use three times that attribute. Area buffs do
-          not.
-        </p>
-        <p class="text-sm text-muted-foreground mb-2">
-          Bard songs do not receive these bonuses.
+          These attribute additions apply to non-song buffs.
         </p>
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
@@ -782,51 +602,33 @@ percentageValue = baseValue × songPower</pre>
               </tr>
             </thead>
             <tbody>
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Max Health</td><td
-                  class="py-1 text-muted-foreground">base + A×2</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Defense</td><td
-                  class="py-1 text-muted-foreground">base + round(A×0.15)</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Magic Resist</td><td
-                  class="py-1 text-muted-foreground">base + round(A×0.15)</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Ward</td><td
-                  class="py-1 text-muted-foreground">base + A×2</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Damage Shield</td><td
-                  class="py-1 text-muted-foreground">base + round(A×0.75)</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Elemental Resists</td><td
-                  class="py-1 text-muted-foreground"
-                  >base + round(A×0.15) each</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Heal-over-Time (&lt;60s)</td><td
-                  class="py-1 text-muted-foreground"
-                  >base + round(base × min(A×0.004, 5.0))</td
-                ></tr
-              >
-              <tr
-                ><td class="py-1 pr-4">Heal-over-Time (60s+)</td><td
-                  class="py-1 text-muted-foreground">base + round(A×0.3)</td
-                ></tr
-              >
+              {#each [["Maximum Health", "Base bonus + 200% of buff attribute"], ["Defense and each resist", "Base bonus + 15% of buff attribute, with the attribute addition rounded"], ["Ward", "Base capacity + 200% of buff attribute"], ["Damage Shield", "Base damage + 75% of buff attribute, with the attribute addition rounded"], [`Healing over time, base duration below ${seconds(60)}`, "Base healing + base healing × 0.4% per buff attribute point above 0, limited to a 500% bonus, with the extra healing rounded"], [`Healing over time, base duration at least ${seconds(60)}`, "Base healing + 30% of buff attribute above 0, with the attribute addition rounded"]] as [effect, formula] (effect)}
+                <tr
+                  ><td class="py-2 pr-4">{effect}</td><td
+                    class="py-2 text-muted-foreground">{formula}</td
+                  ></tr
+                >
+              {/each}
             </tbody>
           </table>
         </div>
+        <label for="buff-effect" class="block text-sm font-medium mb-2"
+          >Buff effect</label
+        >
+        <select
+          id="buff-effect"
+          bind:value={buffEffect}
+          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-3"
+        >
+          {#each Object.entries(BUFF_EFFECTS) as [effect, label] (effect)}
+            <option value={effect}>{label}</option>
+          {/each}
+        </select>
+        <p class="text-sm text-muted-foreground mb-3">
+          Enter your Wisdom, or Intelligence for buffs that scale with it. For a
+          player Ranger's targeted buff, enter three times that attribute.
+        </p>
+        <Calculation calculation={buffCalculation(buffEffect)} />
       </div>
 
       <div>
@@ -843,38 +645,40 @@ percentageValue = baseValue × songPower</pre>
               <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardMercenarySkills.cs:RefreshAura — song buffs carry Charisma as their attribute. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Bard songs</td><td
-                  class="py-1 text-muted-foreground"
-                  >Use Charisma instead of Wisdom</td
+                  class="py-1 text-muted-foreground">Use Charisma</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Player Rangers</td><td
                   class="py-1 text-muted-foreground"
-                  >Targeted buffs use triple A. Area buffs use A</td
+                  >Targeted buffs use triple the selected attribute. Area buffs
+                  use it unchanged</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Other players</td><td
                   class="py-1 text-muted-foreground"
-                  >Targeted and area buffs use A</td
+                  >Targeted and area buffs use the selected attribute unchanged</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Mercenary-skill area buffs</td
                 ><td class="py-1 text-muted-foreground"
-                  >Use round((Wisdom + Constitution) / 2)</td
+                  >Half of Wisdom + Constitution, rounded</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm">Leadership</td><td
                   class="py-1 text-muted-foreground"
-                  >Uses round((Wisdom + Constitution + Charisma) / 2)</td
+                  >Half of Wisdom + Constitution + Charisma, rounded</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 text-sm"
                   >Mercenary buffs other than songs</td
-                ><td class="py-1 text-muted-foreground">Use A</td></tr
+                ><td class="py-1 text-muted-foreground"
+                  >Use the selected buff attribute</td
+                ></tr
               >
               <tr
                 ><td class="py-1 pr-4 text-sm">Monster and NPC buffs</td><td
@@ -888,7 +692,7 @@ percentageValue = baseValue × songPower</pre>
     </Card.Content>
   </Card.Root>
 
-  <!-- Source: server-scripts/Buff.cs:9-25; Skills.cs:1226-1245 — effects have a timed end, a same-name effect replaces the old instance, and effects in a shared overwrite category expire when a new one arrives. -->
+  <!-- Source: server-scripts/Buff.cs:9-25; Skills.cs:1226-1245 — effects have a timed end and reapplying the same effect replaces it and restarts its duration. -->
   <Card.Root id="effects-and-control" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Buffs, Debuffs, Wards and Cleanse</Card.Title>
@@ -902,33 +706,15 @@ percentageValue = baseValue × songPower</pre>
         <span class="block"
           >Reapplying the same effect replaces it and restarts its duration.</span
         >
-        <span class="block"
-          >Applying an effect replaces other effects in the same overwrite
-          group.</span
-        >
       </p>
-      <!-- Source: server-scripts/Monster.cs:1553-1557 — a heavy slow resets monster movement. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:636-646 — active Reaper Form and Fearless Stance can be dismissed before FEAR/STUNNED blocks ordinary skill use. -->
-      <!-- Source: server-scripts/Skills.cs:BreakMezz — BreakMezz ends mesmerize buffs. -->
-      <!-- Source: server-scripts/Combat.cs:762-764 — damage calls BreakMezz. -->
-      <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks call BreakMezz unless the buff is NecromancerReaperFormSkill. -->
       <p>
-        <span class="block"
-          >Root stops movement but does not end on damage.</span
+        See <a href="#special" class="underline hover:text-foreground"
+          >Special Mechanics</a
         >
-        <span class="block"
-          >Stun blocks ordinary skill use. You can still dismiss an active
-          Reaper Form or Fearless Stance.</span
-        >
-        <span class="block"
-          >Direct damage or a damage-over-time tick ends Sleep, except Reaper
-          Form's health drain.</span
-        >
-        <span class="block"
-          >See <a href="#special" class="underline hover:text-foreground"
-            >Special Mechanics</a
-          > for the control rules.</span
-        >
+        for Root, Stun, and Sleep, and
+        <a href="#targeting" class="underline hover:text-foreground"
+          >Targets, Range and Casting</a
+        > for casting restrictions.
       </p>
       <!-- Source: server-scripts/Skills.cs:ApplyWardToDoTDamage — ApplyWardToDoTDamage takes tick damage from the ward pool and passes the excess. -->
       <!-- Source: server-scripts/Combat.cs:910-952 — damageShield buffs deal damage back to the attacker. -->
@@ -941,8 +727,7 @@ percentageValue = baseValue × songPower</pre>
           >Any damage beyond the remaining ward reduces health.</span
         >
         <span class="block"
-          >A damage shield deals damage back to attackers instead of adding
-          health.</span
+          >A damage shield deals damage back to attackers.</span
         >
         <span class="block"
           >See <a href="#special" class="underline hover:text-foreground"
@@ -976,25 +761,14 @@ percentageValue = baseValue × songPower</pre>
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Buff.cs:ScaleWithCharisma, BuffSkill.cs:ScaleHealingPerSecondBonus, and Charisma.cs:21-36 -->
+        <!-- Source: server-scripts/Buff.cs:276-291; BuffSkill.cs:473-515 — Bard debuff songs use Charisma and skip the separate damage-over-time attribute addition. -->
         <h3 class="font-semibold mb-1">Bard Debuff Songs</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
-            >Charisma multiplies the whole-number and percentage effects of Bard
-            debuff songs by Song Power.</span
-          >
-          <span class="block"
-            >Cacophony instead gains a rounded 0.75 damage per non-negative
-            Charisma point.</span
-          >
-          <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — a Charisma-scaled debuff returns GetCharisma before the Strength, Dexterity, and Intelligence branches. -->
-          <span class="block"
-            >Bard debuff songs use Charisma instead of Strength, Dexterity, or
-            Intelligence.</span
-          >
-          <span class="block"
-            >Charisma does not increase Song of Varensea's Movement Speed
-            reduction.</span
+            >Bard debuff songs use <a
+              href="#buffs"
+              class="underline hover:text-foreground">Bard Song Scaling</a
+            >, including Cacophony's separate damage addition.</span
           >
         </p>
       </div>
@@ -1013,25 +787,26 @@ percentageValue = baseValue × songPower</pre>
               <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — Charisma-scaled debuffs use Charisma. -->
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4">Bard debuff songs</td>
-                <td class="py-1 text-muted-foreground">CHA</td>
+                <td class="py-1 text-muted-foreground">Charisma</td>
               </tr>
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4"
                   >Melee debuffs (reduce physical defense)</td
                 >
-                <td class="py-1 text-muted-foreground">STR</td>
+                <td class="py-1 text-muted-foreground">Strength</td>
               </tr>
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4">Poison and disease debuffs</td>
                 <td class="py-1 text-muted-foreground"
-                  >INT for Intelligence-scaled poison and disease, otherwise DEX</td
+                  >Intelligence for Intelligence-scaled poison and disease,
+                  otherwise Dexterity</td
                 >
               </tr>
               <tr>
                 <td class="py-1 pr-4"
                   >All other debuffs (magic, fire, cold, untagged)</td
                 >
-                <td class="py-1 text-muted-foreground">INT</td>
+                <td class="py-1 text-muted-foreground">Intelligence</td>
               </tr>
             </tbody>
           </table>
@@ -1049,139 +824,42 @@ percentageValue = baseValue × songPower</pre>
               </tr>
             </thead>
             <tbody>
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Defense reduction</td><td
-                  class="py-1 text-muted-foreground"
-                  >−STR×0.5 (melee-type debuffs) or −INT×0.4 (all others)</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Magic Resist reduction</td><td
-                  class="py-1 text-muted-foreground">−INT×0.4</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Fire Resist reduction</td><td
-                  class="py-1 text-muted-foreground">−INT×0.4</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Cold Resist reduction</td><td
-                  class="py-1 text-muted-foreground">−INT×0.4</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Disease Resist reduction</td><td
-                  class="py-1 text-muted-foreground">−INT×0.4</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Poison Resist reduction</td><td
-                  class="py-1 text-muted-foreground">−INT×0.4</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Damage reduction</td><td
-                  class="py-1 text-muted-foreground">−INT×0.5</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Magic Damage reduction</td><td
-                  class="py-1 text-muted-foreground">−INT×0.5</td
-                ></tr
-              >
-              <!-- Source: server-scripts/Skills.cs:1659-1692; BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus — poisonDiseaseScalesWithIntelligence selects INT and damageOverTimeBonusPerIntelligencePoint; Intelligence-scaled disease uses diseaseResist. -->
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Poison/disease damage over time</td><td
-                  class="py-1 text-muted-foreground"
-                  >Unflagged: +round(DEX×1.5), reduced by Poison Resist.
-                  Intelligence-scaled: +round(INT×coefficient), reduced by the
-                  matching resist</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Physical damage over time</td><td
-                  class="py-1 text-muted-foreground"
-                  >+STR×0.5, reduced by defense mitigation</td
-                ></tr
-              >
-              <tr
-                ><td class="py-1 pr-4">Fire/cold/magic damage over time</td><td
-                  class="py-1 text-muted-foreground"
-                  >+round(INT×coefficient), reduced by the matching resist</td
-                ></tr
-              >
+              <!-- Source: server-scripts/Buff.cs:69-228; BuffSkill.cs:473-515; Skills.cs:1644-1755,1822-1842 — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
+              {#each [["Defense reduction", "Base reduction + 50% of selected debuff attribute for melee debuffs, or 40% for other debuffs, with the attribute addition rounded"], ["Each resist reduction", "Base reduction + 40% of selected debuff attribute, with the attribute addition rounded"], ["Damage and Magic Damage reduction", "Base reduction + 50% of selected debuff attribute, with the attribute addition rounded"], ["Dexterity-scaled poison and disease ticks", "Base tick + 150% of Dexterity, with the attribute addition rounded. Both meet Poison Resist"], ["Intelligence-scaled poison and disease ticks", "Base tick + the skill's percentage of Intelligence, with the attribute addition rounded. Poison meets Poison Resist and disease meets Disease Resist"], ["Physical damage-over-time ticks", "Base tick + 50% of Strength, with the attribute addition rounded. Meets Defense"], ["Fire, cold, and magic ticks", "Base tick + the skill's percentage of Intelligence, with the attribute addition rounded. Meets the matching resist"]] as [effect, formula] (effect)}
+                <tr
+                  ><td class="py-2 pr-4">{effect}</td><td
+                    class="py-2 text-muted-foreground">{formula}</td
+                  ></tr
+                >
+              {/each}
             </tbody>
           </table>
         </div>
+        <!-- Source: server-scripts/BuffSkill.cs:14-31,508-515 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
         <p class="text-sm text-muted-foreground mt-2">
-          <span class="block"
-            >Dexterity-scaled poison and disease add 1.5 times Dexterity per
-            tick, rounded to a whole number. Both use Poison Resist.</span
-          >
-          <span class="block"
-            >Intelligence-scaled poison uses Poison Resist. Intelligence-scaled
-            disease uses Disease Resist. Their reduction is ceil(damage ×
-            clamp(resist × 0.0005, 0, 0.9)).</span
-          >
-          <!-- Source: server-scripts/BuffSkill.cs:14-31,GetDamageOverTimeAttributeBonus — damageOverTimeBonusPerIntelligencePoint defaults to 1.25; Charisma-scaled effects skip the additional attribute bonus. -->
-          <span class="block"
-            >Intelligence-scaled damage-over-time effects use a skill-specific
-            multiplier: 1.25 for most skills, or 1.15 for Ensnare. Each skill
-            page shows its formula. Charisma-scaled effects receive no extra
-            attribute bonus.</span
-          >
-          <span class="block"
-            >Debuff layers, execute bonuses, critical hits, and wards then
-            change the damage.</span
-          >
+          Most Intelligence-scaled ticks add 125% of Intelligence, while Ensnare
+          adds 115%. Each skill page shows its percentage. Charisma-scaled songs
+          receive no separate attribute addition.
         </p>
+        <Calculation calculation={damageOverTimeCalculation} />
+        <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses,ApplyCriticalToOverTime — Reaper Form and execute require a different, online player caster, while critical chance is captured when the buff starts. -->
         <p class="text-sm text-muted-foreground mt-2">
-          <span class="block"
-            ><strong>Damage after cleansing:</strong> with 3 debuff layers, each tick
-            deals full damage.</span
+          Reaper Form and execute bonuses apply to a debuff from another player
+          who remains in the game. Critical chance uses the caster's Critical
+          Chance when the debuff starts. Percentage-health damage receives
+          neither bonus nor critical scaling. See <a
+            href="#resistance"
+            class="underline hover:text-foreground">Resistance and Mitigation</a
           >
-          <span class="block"
-            >At 2 layers it deals 85%, and at 1 layer it deals 70%.</span
-          >
+          and
+          <a href="#damage-pipeline" class="underline hover:text-foreground"
+            >Damage Pipeline</a
+          > for the shared defense and critical rules.
         </p>
-        <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — externally Player-sourced debuff ticks are multiplied by 1 + the caster's active NecromancerReaperFormSkill magicDamagePercentBonus and rounded, then below 30% health by 1 + summed learned PassiveSkill damageOverTimeExecuteBonus and rounded. -->
-        <!-- Source: server-scripts/Skills.cs:1873-1876 — ApplyDamageOverTimeBonuses runs before ApplyCriticalToOverTime. -->
-        <!-- Source: server-scripts/Skills.cs:1753-1755 — healthPercentPerSecondBonus damage is added to the bonused tick afterwards. -->
+        <!-- Source: server-scripts/Skills.cs:329-346 — critical damage-over-time checks require base duration below 30 seconds and more than 3 flat damage. -->
         <p class="text-sm text-muted-foreground mt-2">
-          Another player's debuff ticks gain two bonuses after resistance and
-          cleanse counters. Each multiplies flat damage by 1 plus the bonus and
-          rounds it. The caster must remain in the game.
-        </p>
-        <ul class="text-sm text-muted-foreground mt-1 list-disc pl-5">
-          <li>
-            While the caster's <a
-              href="/skills/reaper_form"
-              class="underline hover:text-foreground">Reaper Form</a
-            > is active, ticks gain the form's magic damage bonus.
-          </li>
-          <li>
-            When the target is below 30% of maximum health, ticks then gain the
-            caster's learned execute bonuses, such as Deathly Focus. These add
-            together.
-          </li>
-        </ul>
-        <p class="text-sm text-muted-foreground mt-2">
-          Critical scaling applies next. Percentage-health damage is added
-          afterwards and receives neither bonus.
-        </p>
-        <p class="text-sm text-muted-foreground mt-2">
-          <span class="block"
-            ><strong>Critical damage-over-time:</strong> a critical tick deals ×1.5
-            damage.</span
-          >
-          <span class="block"
-            >The chance uses the caster's Critical Chance when the debuff
-            starts.</span
-          >
-          <span class="block"
-            >Target Critical Resist reduces the extra damage.</span
-          >
+          Critical damage-over-time checks require a base duration below 30
+          seconds and more than 3 flat damage per tick.
         </p>
       </div>
     </Card.Content>
@@ -1196,89 +874,40 @@ percentageValue = baseValue × songPower</pre>
       >
     </Card.Header>
     <Card.Content class="space-y-6">
-      <!-- Interval formulas -->
-      <!-- Sources: Player.cs:2783, Skills.cs:673-675, Skills.cs:765-768, Skills.cs:814-815, Combat.cs:314-324, Monster.cs:2553, Npc.cs:625 -->
+      <!-- Source: server-scripts/Player.cs:3394-3431; Skills.cs:924-933,1141-1169 — player delays, companion cooldowns, and full spell-haste cast adjustment. -->
       <div>
-        <h3 class="font-semibold mb-2">Interval Formulas</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium">Attack</th>
-                <th class="text-left py-1 pr-4 font-medium">Attacker</th>
-                <th class="text-left py-1 font-medium">Interval</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod and 3217-3219 -->
-              <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 text-sm">Auto attack</td>
-                <td class="py-2 pr-4 text-muted-foreground text-sm">Player</td>
-                <td class="py-2 font-mono text-sm"
-                  >cast time + clamp(weapon delay × (1 − haste) / 25, 0.25, 2.0)</td
-                >
-              </tr>
-              <!-- Source: server-scripts/Skills.cs:924-933 — castTimeEnd -= spellHasteBonus × castTime -->
-              <!-- Source: server-scripts/Combat.cs:348-360 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
-              <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f (post-cast refractory, blocks next cast) -->
-              <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 text-sm">Spell auto attack</td>
-                <td class="py-2 pr-4 text-muted-foreground text-sm">Player</td>
-                <td class="py-2 font-mono text-sm"
-                  >cast time × (1 − spell haste) + 0.75 s</td
-                >
-              </tr>
-              <!-- Source: server-scripts/Skills.cs:1141-1169 -->
-              <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 text-sm">First non-spell skill</td>
-                <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Companions</td
-                >
-                <td class="py-2 font-mono text-sm"
-                  >cast time + cooldown × (1 − haste)</td
-                >
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 text-sm">Other skills</td>
-                <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Companions and familiars</td
-                >
-                <td class="py-2 font-mono text-sm">cast time + cooldown</td>
-              </tr>
-              <!-- Source: server-scripts/Skills.cs:1141-1159 -->
-              <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 text-sm">Auto attack</td>
-                <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Mercenaries</td
-                >
-                <td class="py-2 font-mono text-sm"
-                  >cast time + cooldown × (1 − haste)</td
-                >
-              </tr>
-              <!-- Source: server-scripts/Skills.cs:924-933,1141-1169 -->
-              <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 text-sm">Spell</td>
-                <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Mercenaries</td
-                >
-                <td class="py-2 font-mono text-sm"
-                  >cast time × (1 − spell haste) + cooldown</td
-                >
-              </tr>
-              <!-- Source: server-scripts/Skills.cs:FinishCastMeleeAttackMonster -->
-              <tr>
-                <td class="py-2 pr-4 text-sm">All attacks</td>
-                <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Monsters and NPCs</td
-                >
-                <td class="py-2 font-mono text-sm"
-                  >Non-spell: cast time + cooldown × (1 − haste)<br />Spell:
-                  cast time + cooldown</td
-                >
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <h3 class="font-semibold mb-2">Player Attack Intervals</h3>
+        <!-- Source: server-scripts/Combat.cs:335-346 — the character's Haste is capped before it changes weapon delay. -->
+        <p class="text-sm text-muted-foreground mb-2">
+          Haste stays between −80% and 80% before it changes weapon delay.
+        </p>
+        <Calculation calculation={timingCalculation()} />
+        <h3 class="font-semibold mt-4 mb-2">Player Spell Intervals</h3>
+        <Calculation calculation={timingCalculation(true)} />
+        <p class="text-sm text-muted-foreground mt-2">
+          The character window stops at 50%, but casts use the full total, a
+          game defect. Its lower display limit is −50%. Enter your full
+          equipment and skill total for this example.
+        </p>
+        <h3 class="font-semibold mt-4 mb-2">Other Attack Intervals</h3>
+        <table class="w-full text-sm border-collapse">
+          <thead
+            ><tr
+              ><th class="text-left py-2 pr-4">Attack</th><th
+                class="text-left py-2">Interval in seconds</th
+              ></tr
+            ></thead
+          >
+          <tbody>
+            {#each [["Companion's first non-spell skill", "Cast time + cooldown × (100% − Haste)"], ["Other companion and familiar skills", "Cast time + cooldown"], ["Mercenary auto attack", "Cast time + cooldown × (100% − Haste)"], ["Mercenary spell", "Cast time − cast time × full Spell Haste + cooldown"], ["Monster and NPC non-spell attacks", "Cast time + cooldown × (100% − Haste)"], ["Monster and NPC spells", "Cast time + cooldown"]] as [attack, formula] (attack)}
+              <tr
+                ><td class="py-2 pr-4">{attack}</td><td
+                  class="py-2 text-muted-foreground">{formula}</td
+                ></tr
+              >
+            {/each}
+          </tbody>
+        </table>
       </div>
 
       <!-- Haste effects -->
@@ -1298,8 +927,8 @@ percentageValue = baseValue × songPower</pre>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 text-sm">Player auto attack</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Reduces delay (minimum 0.25 s, maximum 2.0 s, haste limit
-                  80%).</td
+                  >Reduces delay (minimum {seconds(0.25)}, maximum {seconds(2)},
+                  haste limit 80%).</td
                 >
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
               </tr>
@@ -1310,9 +939,8 @@ percentageValue = baseValue × songPower</pre>
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-sm"
-                  >Reduces cast time by its full amount, even above the 50% the
-                  character sheet shows. The 0.75 s wait afterward stays
-                  unchanged.</td
+                  >Reduces cast time using the full bonus above the 50% display
+                  cap, a game defect. The {seconds(0.75)} wait afterward stays unchanged.</td
                 >
               </tr>
               <!-- Source: server-scripts/Skills.cs:1141-1169 — non-familiar non-mercenary pet skillIndex 0 uses haste for non-spells. -->
@@ -1338,14 +966,14 @@ percentageValue = baseValue × songPower</pre>
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-sm"
-                  >Reduces cast time by its full amount, even above 50%.
-                  Cooldown stays unchanged.</td
+                  >Reduces cast time using the full bonus above the 50% display
+                  cap, a game defect. Cooldown stays unchanged.</td
                 >
               </tr>
               <tr>
                 <td class="py-2 pr-4 text-sm">Monster or NPC</td>
                 <td class="py-2 pr-4 text-muted-foreground text-sm"
-                  >Reduces cooldown for non-spell attacks, but not for spells</td
+                  >Reduces cooldown for non-spell attacks</td
                 >
                 <!-- Source: server-scripts/Monster.cs:UpdateServer_CASTING, server-scripts/Npc.cs — hardcoded StartCast(skill, 0f) bypasses spell haste entirely -->
                 <td class="py-2 text-muted-foreground text-sm">No effect</td>
@@ -1365,14 +993,17 @@ percentageValue = baseValue × songPower</pre>
     <Card.Content class="space-y-5">
       <div>
         <h3 class="font-semibold mb-1">Threat</h3>
-        <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">threat gained = skill threat + (attacker maximum health if skill threat > 0)
-       + damage dealt
-       + round(stun chance × stun duration × 10)
-       + round(fear chance × fear duration × 10)</pre>
+        <Calculation calculation={threatCalculation} />
+        <!-- Source: server-scripts/DamageSkill.cs:90; TargetDamageSkill.cs:249; AreaDamageSkill.cs:149 — the tooltip shows one third of maximum Health while these hits add the full amount. -->
+        <p class="text-sm text-muted-foreground mt-2">
+          The in-game threat tooltip understates the Health bonus, a game
+          defect. It shows one third of maximum Health. Eligible targeted and
+          direct area hits add all of it.
+        </p>
+        <!-- Source: server-scripts/Combat.cs:606-613 — negative listed threat reduces an existing monster entry with a minimum of 1 rather than using the positive-gain formula. -->
         <p class="text-sm text-muted-foreground mt-1">
-          Monsters gain at most their target's current health as threat from one
-          attack.
+          Negative skill threat instead reduces the attacker's existing monster
+          threat, leaving at least 1.
         </p>
       </div>
       <div>
@@ -1388,14 +1019,15 @@ percentageValue = baseValue × songPower</pre>
             >Wild Strike empowers the Ranger's next sword or bow auto attack.</span
           >
           <span class="block"
-            >Add Wild Strike's damage to that attack, multiply by (1 + 0.1 ×
-            Wild Strike's level), and round the total.</span
+            >Its empowerment applies after the auto attack's own damage
+            calculation.</span
           >
           <span class="block"
             >The whole hit deals magic damage, which Magic Resist can block or
             reduce.</span
           >
         </p>
+        <Calculation calculation={wildStrikeCalculation()} />
       </div>
       <div>
         <!-- Source: server-scripts/Combat.cs:DealDamageAt — auto-attack rage gain on dealing damage. -->
@@ -1406,17 +1038,15 @@ percentageValue = baseValue × songPower</pre>
         <p class="text-sm text-muted-foreground mb-2">
           Warrior and Rogue generate Rage from two sources:
         </p>
-        <ul class="ml-4 list-disc text-sm text-muted-foreground">
-          <li>
-            An auto attack that deals damage grants ⌊min(damage, target health
-            before the hit) × 0.25⌋ Rage.
-          </li>
-          <li>
-            Taking physical damage from a single-target skill grants
-            ⌊clamp(√damage × 0.35, 1, 25)⌋ Rage. Warrior and Rogue mercenaries
-            use the same rule for those hits.
-          </li>
-        </ul>
+        <h4 class="font-medium mt-3 mb-2">Dealing an auto attack</h4>
+        <Calculation calculation={dealtRageCalculation} />
+        <h4 class="font-medium mt-3 mb-2">
+          Receiving a single-target physical skill
+        </h4>
+        <Calculation calculation={receivedHitCalculation()} />
+        <p class="text-sm text-muted-foreground mt-2">
+          Warrior and Rogue mercenaries use the same Rage rules.
+        </p>
       </div>
 
       <div>
@@ -1426,12 +1056,8 @@ percentageValue = baseValue × songPower</pre>
           <span class="block"
             >A hit stuns its target if the skill's stun chance roll succeeds.</span
           >
-          <span class="block"
-            >Stun cannot affect a target that is already feared.</span
-          >
-          <span class="block"
-            >Another stun extends the existing stun instead of replacing it.</span
-          >
+          <span class="block">Fear protects the target from stun.</span>
+          <span class="block">Another stun extends the existing stun.</span>
           <span class="block">Bear mounts resist 90% of stuns.</span>
           <span class="block">A stun dismounts a player.</span>
         </p>
@@ -1450,8 +1076,8 @@ percentageValue = baseValue × songPower</pre>
             them for 0.25 seconds.</span
           >
           <span class="block"
-            >If an obstacle blocks the path, the target takes at least 1 extra
-            damage, or 1.25% of the hit's damage rounded up.</span
+            >If an obstacle blocks the path, the target takes 1.25% of the hit's
+            damage, rounded up, at least 1.</span
           >
           <span class="block"
             >Knockback requires a level difference below 15 unless a boss
@@ -1474,8 +1100,9 @@ percentageValue = baseValue × songPower</pre>
             reduce health.</span
           >
           <span class="block"
-            >The selected buff attribute adds 2 points to a ward's capacity per
-            point.</span
+            >See <a href="#buffs" class="underline hover:text-foreground"
+              >Buff Scaling</a
+            > for the ward capacity you receive.</span
           >
         </p>
       </div>
@@ -1483,9 +1110,12 @@ percentageValue = baseValue × songPower</pre>
       <div>
         <h3 class="font-semibold mb-1">Reaper Form Health Drain</h3>
         <p class="text-sm text-muted-foreground">
-          Reaper Form drains round(maximum health × its drain percentage) per
-          recovery tick. This drain ignores resistance, wards, critical ticks,
-          and execute bonuses, and does not break Sleep.
+          Reaper Form drains its listed percentage of your maximum Health per
+          recovery tick, rounded. See the <a
+            href="/skills/reaper_form"
+            class="underline hover:text-foreground">Reaper Form calculation</a
+          > for your amount. This drain ignores resistance, wards, critical ticks,
+          and execute bonuses, and preserves Sleep.
         </p>
       </div>
 
@@ -1499,16 +1129,16 @@ percentageValue = baseValue × songPower</pre>
           >
           <span class="block"
             >Bosses and fear-immune targets, including the Necromancer's undead
-            companions, cannot be feared.</span
+            companions, are protected from fear.</span
           >
           <span class="block"
             >Fear lasts for a random duration between half and all of the
             skill's listed fear duration.</span
           >
           <span class="block"
-            >Equipment and skills add fear resistance, up to 100%.</span
+            >Equipment and skills add Fear Resistance up to 100%, which grants
+            immunity.</span
           >
-          <span class="block">At 100%, the target is immune to fear.</span>
           <!-- Source: server-scripts/Combat.cs:1104-1108; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
           <span class="block"
             >Fear inflicted by a Necromancer player halves a monster's or NPC's
@@ -1525,10 +1155,11 @@ percentageValue = baseValue × songPower</pre>
         <h3 class="font-semibold mb-1">Root</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block">Root stops the target's movement.</span>
-          <span class="block">Damage does not break Root.</span>
+          <span class="block">Root persists through damage.</span>
           <span class="block"
-            >Every 2 seconds, a rooted monster has a Magic Resist / 1,000 chance
-            to break free, limited to 5–95%.</span
+            >Every 2 seconds, a rooted monster rolls a break-free chance of 0.1
+            percentage points per Magic Resist, between 5% and 95%. For example,
+            100 Magic Resist gives 10%.</span
           >
           <span class="block"
             >Every second, a rooted NPC has a 10% chance to break free.</span
@@ -1552,33 +1183,28 @@ percentageValue = baseValue × songPower</pre>
           >
           <span class="block"
             >A direct hit or ordinary damage-over-time tick immediately ends
-            Sleep. Reaper Form's health drain does not.</span
+            Sleep.</span
           >
           <span class="block"
             >Bosses and elite monsters automatically resist debuffs that reduce
             movement speed below −10.</span
           >
           <span class="block"
-            >Every 6 seconds, a sleeping monster has a Magic Resist / 1,000
-            chance to wake, limited to 5–95%.</span
+            >Every 6 seconds, a sleeping monster makes the same Magic Resist
+            break-free roll described under Root.</span
           >
         </p>
       </div>
 
       <div>
+        <!-- Source: server-scripts/Combat.cs:792-823 — Monster and NPC Enrage modifies non-spell hits in the damage pipeline. -->
         <h3 class="font-semibold mb-1">Enrage</h3>
         <p class="text-sm text-muted-foreground">
-          <span class="block"
-            >Below 10% health, a monster with the Enrage passive deals 50–75%
-            more damage with non-spell skills.</span
-          >
-          <span class="block">The bonus is rolled separately for each hit.</span
-          >
-          <span class="block"
-            >The Warrior skill Enrage is a different effect that changes damage
-            and maximum health as shown on its skill page.</span
-          >
-          <!-- Source: server-scripts/Combat.cs:772-805 — only Monster and Npc skill lists are scanned for PassiveSkill.isEnrage; threshold health/max < 0.1f -->
+          Monster and NPC Enrage follow the <a
+            href="#damage-pipeline"
+            class="underline hover:text-foreground">Damage Pipeline</a
+          >. The Warrior skill Enrage changes damage and maximum Health as shown
+          on its skill page.
         </p>
       </div>
 
@@ -1593,17 +1219,8 @@ percentageValue = baseValue × songPower</pre>
             >During the cast, Parry blocks a single-target physical melee hit
             from that attacker.</span
           >
-          <span class="block"
-            >The counterattack deals half of the health damage the hit would
-            have dealt after mitigation, Ward, and Mana Shield.</span
-          >
-          <span class="block"
-            >That amount is rounded and limited to 1–5,000 damage.</span
-          >
-          <span class="block"
-            >A fully absorbed hit does not trigger the counterattack.</span
-          >
         </p>
+        <Calculation calculation={receivedHitCalculation(true)} />
       </div>
 
       <div>
@@ -1626,8 +1243,7 @@ percentageValue = baseValue × songPower</pre>
             >A Rogue's off-hand weapon triggers its effect at half the listed
             chance.</span
           >
-          <span class="block"
-            >Weapon on-hit effects do not trigger damage shields.</span
+          <span class="block">Weapon on-hit effects bypass Damage Shields.</span
           >
         </p>
       </div>
@@ -1654,80 +1270,31 @@ percentageValue = baseValue × songPower</pre>
             >Cleanse is cast on yourself or an ally and removes harmful debuffs.</span
           >
           <span class="block"
-            >Cleanse does not have a resistance roll when it lands.</span
-          >
-          <span class="block"
-            >Each debuff's Cleanse Resist determines how many layers a cast
-            removes.</span
-          >
-          <span class="block"
-            >At 100% Cleanse Resist, Cleanse removes none.</span
+            >Cleanse bypasses the landing resistance roll.</span
           >
           <span class="block"
             >Cleanse removes debuffs only of its listed elements.</span
           >
+        </p>
+        <p class="text-sm text-muted-foreground mb-2">
           <span class="block"
-            >A fire-and-cold cleanse cannot remove poison, disease, or magic
-            debuffs.</span
+            >Limited-use Cleanse items require a removable matching debuff. A
+            Cleanse skill can be cast even when the target has no matching
+            debuff.</span
           >
         </p>
         <p class="text-sm text-muted-foreground mb-2">
           <span class="block"
-            >An item with limited Cleanse uses cannot be used unless the target
-            has a debuff it can remove.</span
-          >
-          <span class="block"
-            >A Cleanse skill can still be cast with no matching debuff.</span
+            >Each debuff starts with three layers and expires when the last
+            layer is removed.</span
           >
         </p>
-        <p class="text-sm text-muted-foreground mb-2">
-          <span class="block"
-            >Each debuff starts with three layers and disappears only after all
-            three are removed.</span
-          >
-          <span class="block"
-            >Cleanse Resist determines how many layers each cast removes:</span
-          >
-        </p>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium">Cleanse Resist</th>
-                <th class="text-left py-1 font-medium">Result of one cast</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">0</td><td
-                  class="py-1 text-muted-foreground"
-                  >Removes all 3 layers in one cast</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Between 0 and 100%</td><td
-                  class="py-1 text-muted-foreground"
-                  >Removes 1 layer for certain, then tries twice more. Each
-                  extra layer has a (100% &minus; Cleanse Resist) &times; (1 +
-                  caster Accuracy) chance to come off. At 100% chance, all 3
-                  layers come off at once</td
-                ></tr
-              >
-              <tr
-                ><td class="py-1 pr-4">100%</td><td
-                  class="py-1 text-muted-foreground">Cannot be cleansed</td
-                ></tr
-              >
-            </tbody>
-          </table>
-        </div>
+        <Calculation calculation={cleanseCalculation} />
         <p class="text-sm text-muted-foreground mt-2">
           <span class="block"
-            >A debuff remains until a later Cleanse removes its last layer.</span
-          >
-          <span class="block"
-            >Damage-over-time ticks deal 85% of full damage with 2 layers and
-            70% with 1 layer.</span
+            >See <a href="#debuffs" class="underline hover:text-foreground"
+              >Debuff Mechanics</a
+            > for tick damage after layers are removed.</span
           >
         </p>
       </div>
@@ -1744,56 +1311,33 @@ percentageValue = baseValue × songPower</pre>
             >Monsters with Dispel skills can cast them on players and their
             pets.</span
           >
-          <span class="block"
-            >The resistance roll and buff removal are separate steps.</span
-          >
         </p>
         <p class="text-sm text-muted-foreground mb-2">
-          <span class="block"
-            ><strong>1. Resist:</strong> the target uses the resistance matching the
-            dispel's element, adjusted for level difference and the caster's Accuracy.</span
-          >
-          <span class="block"
-            >Higher caster Accuracy lowers the chance of resisting.</span
-          >
-          <span class="block"
-            >If the target resists, Dispel removes no buffs.</span
-          >
+          <strong>1. Landing:</strong> Dispel first uses the
+          <a href="#resistance" class="underline hover:text-foreground"
+            >matching resistance roll</a
+          >. Buff removal requires a successful landing.
         </p>
         <p class="text-sm text-muted-foreground mb-2">
           <span class="block"
             ><strong>2. Removal:</strong> if Dispel lands on a player, it removes
-            all buffs except Rest.</span
+            eligible targeted and area buffs except Rest.</span
           >
           <span class="block"
-            >If Dispel lands on a pet, it removes all buffs.</span
+            >On pets, it removes eligible targeted and area buffs, including
+            Rest.</span
           >
           <span class="block"
-            >For monsters, Dispel checks each buff separately.</span
-          >
-          <span class="block"
-            >A monster loses a buff only if a random number from 0 to 1 exceeds
-            its Dispel Resist minus the caster's reduction:</span
+            >A monster's targeted and area buffs each use their own removal
+            roll:</span
           >
         </p>
-        <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">Dispel Resist reduction
-  single-target spell:   Accuracy × 0.5
-  single-target scroll:  clamp(round(Mastery% ÷ 5), 1, 20) × 0.01
-  area dispel:           0</pre>
+        <Calculation calculation={dispelCalculation} />
         <p class="text-sm text-muted-foreground mt-2">
-          <span class="block"
-            >The caster lowers a monster buff's Dispel Resist with Accuracy when
-            using a spell.</span
-          >
-          <span class="block"
-            >A scroll instead uses the caster's
-            <a
-              href="/professions/scroll_mastery"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >Scroll Mastery</a
-            >, lowering Dispel Resist by 1 percentage point per rank.</span
-          >
+          A single-target scroll uses its cast rank from <a
+            href="/professions/scroll_mastery"
+            class="underline hover:text-foreground">Scroll Mastery</a
+          >.
         </p>
       </div>
 
@@ -1803,7 +1347,7 @@ percentageValue = baseValue × songPower</pre>
         <p class="text-sm text-muted-foreground mb-2">
           <span class="block"
             >A newly applied buff replaces every existing buff in its overwrite
-            group, regardless of level or strength.</span
+            group, regardless of rank or strength.</span
           >
           <span class="block"
             >For example, <a
@@ -1839,3 +1383,26 @@ percentageValue = baseValue × songPower</pre>
     </Card.Content>
   </Card.Root>
 </div>
+
+<style>
+  .combat-page {
+    min-width: 0;
+  }
+  .combat-page :global([data-slot="card-content"]) {
+    min-width: 0;
+  }
+  .combat-page :global(nav[aria-label="Page sections"] p) {
+    font-size: 14px;
+  }
+  table {
+    table-layout: fixed;
+    overflow-wrap: anywhere;
+  }
+  tbody :global(tr:nth-child(even)) {
+    background-color: var(--muted);
+  }
+  th,
+  td {
+    vertical-align: top;
+  }
+</style>

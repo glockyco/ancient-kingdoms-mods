@@ -4,6 +4,9 @@
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import { mysticSparkMana } from "$lib/calculation/character";
+  import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
 
   const SECTIONS = [
     { id: "attributes", label: "The Six Attributes" },
@@ -51,9 +54,9 @@
                   >+1 physical damage and +10 maximum rage per point.</span
                 >
                 <span class="block"
-                  >Strength adds a rounded 0.5 per point to physical
-                  damage-over-time effects and Defense reductions from melee
-                  debuffs.</span
+                  >Physical damage-over-time effects and Defense reductions from
+                  melee debuffs gain 50% of Strength, rounded. With 100
+                  Strength, they gain 50.</span
                 >
               </td>
             </tr>
@@ -62,8 +65,10 @@
               <th class="p-2 font-medium text-foreground">Constitution</th>
               <td class="p-2">
                 <span class="block"
-                  >+25 maximum health, rounded +0.25 Poison Resist, and +0.03
-                  percentage points of block chance per point.</span
+                  >+25 maximum Health and +0.03 percentage points of block
+                  chance per Constitution point. Poison Resist gains 25% of
+                  Constitution, rounded. With 100 Constitution, you receive 25
+                  Poison Resist.</span
                 >
                 <span class="block"
                   >It does not add armor or health recovery.</span
@@ -79,17 +84,18 @@
                   and +0.03 percentage points of critical chance per point.</span
                 >
                 <span class="block"
-                  >Bow damage gains a rounded +1.5 per point.</span
+                  >Bow damage gains 150% of Dexterity, rounded. With 100
+                  Dexterity, it gains 150 damage.</span
                 >
                 <span class="block"
-                  >Poison damage from Rogue attacks gains a rounded +2.5 per
-                  point.</span
+                  >Poison damage from Rogue attacks gains 250% of Dexterity,
+                  rounded. With 100 Dexterity, it gains 250 damage.</span
                 >
                 <!-- Source: server-scripts/BuffSkill.cs:473-515 — non-melee poison and disease without Intelligence scaling use Dexterity times 1.5. -->
                 <span class="block"
                   >Dexterity-scaled poison and disease damage-over-time effects
-                  gain 1.5 damage per Dexterity point, rounded to a whole
-                  number.</span
+                  gain 150% of Dexterity per tick, rounded. With 100 Dexterity,
+                  they gain 150 damage per tick.</span
                 >
               </td>
             </tr>
@@ -98,23 +104,28 @@
               <th class="p-2 font-medium text-foreground">Intelligence</th>
               <td class="p-2">
                 <span class="block"
-                  >+20 maximum mana and rounded +1.5 magic damage per point.</span
+                  >+20 maximum Mana per Intelligence point. Magic damage gains
+                  150% of Intelligence, rounded. With 100 Intelligence, it gains
+                  150.</span
                 >
                 <span class="block"
                   >Defense, Magic Resist, and elemental resistance reductions
-                  from magical debuffs gain a rounded +0.4 per point.</span
+                  from magical debuffs gain 40% of Intelligence, rounded. With
+                  100 Intelligence, the reduction grows by 40.</span
                 >
                 <span class="block"
-                  >Physical and magic damage reductions from debuffs gain a
-                  rounded +0.5 per point.</span
+                  >Physical and magic damage reductions from debuffs gain 50% of
+                  Intelligence, rounded. With 100 Intelligence, the reduction
+                  grows by 50.</span
                 >
                 <!-- Source: server-scripts/BuffSkill.cs:473-515 — fire, cold, magic and Intelligence-scaled poison/disease use the skill's Intelligence coefficient, except Charisma-scaled effects. -->
                 <span class="block"
                   >Fire, cold, magic, and Intelligence-scaled poison and disease
-                  damage-over-time effects gain Intelligence times the skill's
-                  coefficient per tick, rounded to a whole number. The
-                  coefficient is usually 1.25 and is 1.15 for Ensnare.
-                  Charisma-scaled effects receive no attribute damage bonus.</span
+                  damage-over-time effects gain the skill's percentage of
+                  Intelligence per tick, rounded. Usually this is 125%, giving
+                  125 damage per tick with 100 Intelligence. Ensnare uses 115%,
+                  giving 115 instead. Charisma-scaled effects receive no
+                  attribute damage bonus.</span
                 >
               </td>
             </tr>
@@ -133,8 +144,9 @@
                   capacity.</span
                 >
                 <span class="block"
-                  >Defense and Magic Resist buffs each gain 0.15 times the
-                  selected attribute, rounded to a whole number. Ranger targeted
+                  >Defense and Magic Resist buffs each gain 15% of the selected
+                  attribute, rounded. With 100 selected attribute points, you
+                  receive 15 extra Defense or Magic Resist. Ranger targeted
                   buffs triple the selected attribute before scaling.</span
                 >
                 <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
@@ -179,6 +191,10 @@
           </tbody>
         </table>
       </div>
+      <p>
+        Rounded values use the nearest whole number. Exact halves round to the
+        even number.
+      </p>
       <!-- Source: server-scripts/Experience.cs:114-352 — levels award one allocatable attribute point and class-dependent automatic attribute growth. -->
       <p>
         <span class="block"
@@ -295,18 +311,18 @@
       <!-- Source: server-scripts/Combat.cs:1284-1314 — Mana Shield spends one mana per point of damage absorbed. -->
       <p>
         <span class="block"
-          >Wizard's Mystic Spark restores ⌊0.35 × min(hit damage, target health
-          before hit)⌋ mana.</span
+          >Wizard's Mystic Spark restores Mana before shields absorb its hit.</span
         >
         <span class="block"
           >Mana Shield spends one mana for each damage point it prevents.</span
         >
         <span class="block"
-          ><MechanicsLink section="combat#special"
-            >See ward and Mana Shield priority</MechanicsLink
+          ><MechanicsLink section="combat#damage-pipeline"
+            >See when wards and Mana Shield absorb damage</MechanicsLink
           >.</span
         >
       </p>
+      <Calculation calculation={mysticSparkMana()} />
     </Card.Content>
   </Card.Root>
 
@@ -362,12 +378,12 @@
         <!-- Source: server-scripts/PlayerSkills.cs:59-64,1918-1929,2464-2481 — veteran upgrades spend Veteran Points, not class skill points. -->
         <p>
           <span class="block"
-            >At level 50, further XP earns Veteran Points instead of levels, up
-            to the veteran limit of 200.</span
+            >At level 50, further XP grants Veteran Points while your total is
+            below 200.</span
           >
           <span class="block"
-            >Veteran skills spend Veteran Points rather than class skill points,
-            but still have rank, prerequisite, and tier limits.</span
+            >Veteran skill upgrades spend unspent Veteran Points and follow
+            rank, prerequisite, and tier limits.</span
           >
           <span class="block"
             ><MechanicsLink section="experience#veteran-points"
@@ -408,11 +424,12 @@
         <!-- Source: server-scripts/Player.cs:GetTotalAttributePoints,ChangeAttributeSpec — each allocation has level.current - 1 + GetTotalVeteranPoints points; switching applies attribute differences and recalculates unspent points. -->
         <p>
           Each specialization stores its own attribute allocation. Each has
-          points equal to your level minus 1, plus your total Veteran Points. At
-          level 50 with 200 Veteran Points, each has 249 points. Switching
+          points equal to your level minus 1, plus your total veteran points. At
+          level 50 with 200 total veteran points, each has 249 points. Switching
           applies that specialization's allocation and restores its unspent
           points.
         </p>
+        <p>{TOTAL_VETERAN_POINTS_NOTE}</p>
         <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:15118-15121 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           If the game cannot determine a saved character's attribute allocation,

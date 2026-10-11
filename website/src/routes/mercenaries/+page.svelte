@@ -6,6 +6,9 @@
   import RecruiterTable from "$lib/components/RecruiterTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { Alert } from "$lib/components/ui/alert";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import { mercenaryPrice, mercenaryRank } from "$lib/calculation/mercenaries";
+  import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import {
     CLASSES,
@@ -30,6 +33,9 @@
 
   const link = "text-blue-600 hover:underline dark:text-blue-400";
   const fmt = (n: number) => n.toLocaleString("en-US");
+  const rankCalculation = mercenaryRank();
+  // The roster section defines the total once for all calculations on this page.
+  delete rankCalculation.note;
 
   const collectionNode = $derived(
     buildCollectionPage({
@@ -290,7 +296,7 @@
     <div class="mt-4 divide-y">
       <div
         id="roster"
-        class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]"
+        class="grid grid-cols-1 gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]"
       >
         <div class="text-sm text-muted-foreground">1</div>
         <div>
@@ -306,14 +312,12 @@
                 >Recruiters serve you from level {MERC_MIN_LEVEL}.</span
               >
               <span class="block">
-                The price is {fmt(hirePrice(MERC_MIN_LEVEL, 0))} gold at level {MERC_MIN_LEVEL}.
+                The base price is {fmt(hirePrice(MERC_MIN_LEVEL, 0))} gold at level
+                {MERC_MIN_LEVEL}.
               </span>
               <span class="block">
                 It rises to {fmt(hirePrice(50, MAX_VETERAN))} gold at level 50 with
-                veteran level {MAX_VETERAN}.
-              </span>
-              <span class="block">
-                Charisma lowers the price by 0.2% for each point, up to 25%.
+                {MAX_VETERAN} total veteran points.
               </span>
               <span class="block">
                 A recruiter that prefers a race hires that race when the class
@@ -326,17 +330,13 @@
                 >
               </span>
             </p>
-            <p
-              class="inline-block rounded-md bg-muted/50 px-3 py-1.5 font-mono text-sm text-foreground"
-            >
-              price = round(20 + 400 × ((level − 10) ÷ 40)² + 15 × veteran
-              level)
-            </p>
+            <Calculation calculation={mercenaryPrice()} />
+            <p id="total-veteran-points">{TOTAL_VETERAN_POINTS_NOTE}</p>
           </div>
         </div>
       </div>
 
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+      <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">2</div>
         <div>
           <div>Summon it into your party.</div>
@@ -374,7 +374,7 @@
         </div>
       </div>
       <!-- Source: server-scripts/UITarget.cs:443-474; UIMercenaries.cs:530-582,588-615,646-700; Player.cs:10896-10918 — combat prevents target-panel dismissal, recall rejects dead mercenaries, and deletion checks equipped gear. -->
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+      <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
           <div>Manage your roster.</div>
@@ -400,7 +400,7 @@
         </div>
       </div>
 
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+      <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">4</div>
         <div>
           <div>It levels up with you.</div>
@@ -413,27 +413,22 @@
                 <a href="#growth" class={link}>growth table</a> shows.
               </span>
               <span class="block">
-                Its skill ranks rise with your level and veteran level, up to
-                each skill's max rank.
+                Each total veteran point adds 0.25% of base Health to maximum
+                Health and, for mana users other than Bards, 0.25% of base Mana
+                to maximum Mana, before rounding.
               </span>
               <span class="block">
-                Each veteran level adds 0.25% of base Health to maximum Health
-                and, for mana users other than Bards, 0.25% of base Mana to
-                maximum Mana, before rounding.
+                Warriors and Rogues keep the same maximum Rage as total veteran
+                points rise.
               </span>
               <span class="block">
-                Warriors and Rogues gain no maximum Rage from veteran levels.
-              </span>
-              <span class="block">
-                A Bard's active-song limit does not rise with veteran levels.
+                A Bard's active-song limit follows character level.
               </span>
             </p>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard skill rank has a minimum of 1, and every skill has its own maximum rank. -->
-            <p
-              class="inline-block rounded-md bg-muted/50 px-3 py-1.5 font-mono text-sm text-foreground"
-            >
-              skill rank = ⌊level ÷ 5⌋ + ⌊veteran level ÷ 10⌋
-            </p>
+            <div id="skill-ranks">
+              <Calculation calculation={rankCalculation} />
+            </div>
             <p>Bard skill ranks have a minimum of 1.</p>
             <!-- Source: server-scripts/BardMercenarySkills.cs:60-104 — a Bard mercenary gains a third combat song at level 40, and Final Cadence requires level 50 with all combat songs active. -->
             <p>
@@ -453,13 +448,12 @@
                 <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
                 <p class="font-medium">Veteran damage</p>
                 <p>
-                  Each veteran point adds +1 base physical damage and +1 base
-                  magic damage, including points earned before hiring.
+                  Each total veteran point adds +1 base physical damage and +1
+                  base magic damage.
                 </p>
                 <p>
                   Every resummon or reload restores the saved hire roll plus
-                  your total veteran points to both damage values. A zero hire
-                  roll stays zero before the veteran bonus. It is not rerolled.
+                  your total veteran points to both damage values.
                 </p>
               </div>
             </Alert>
@@ -467,7 +461,10 @@
         </div>
       </div>
 
-      <div id="commands" class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+      <div
+        id="commands"
+        class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]"
+      >
         <div class="text-sm text-muted-foreground">5</div>
         <div class="space-y-3">
           <div>Give it orders.</div>
@@ -587,7 +584,10 @@
         </div>
       </div>
 
-      <div id="resurrection" class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+      <div
+        id="resurrection"
+        class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]"
+      >
         <div class="text-sm text-muted-foreground">6</div>
         <div>
           <div>If it dies, resurrect it.</div>
@@ -660,26 +660,20 @@
             <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:741-757 -->
             <p>
               <span class="block">
-                The fee is {fmt(resurrectionPrice(MERC_MIN_LEVEL, 0))} gold at level
+                The base fee is {fmt(resurrectionPrice(MERC_MIN_LEVEL, 0))} gold at
+                level
                 {MERC_MIN_LEVEL}.
               </span>
               <span class="block">
                 It rises to {fmt(resurrectionPrice(50, MAX_VETERAN))} gold at level
-                50 with veteran level {MAX_VETERAN}.
+                50 with {MAX_VETERAN} total veteran points.
               </span>
               <span class="block">
-                Charisma lowers the fee in the same way as the hire price.
-              </span>
-              <span class="block">
-                Gear stays on the mercenary, and death does not lower its
-                durability.
+                Gear stays on the mercenary at its current durability after
+                death.
               </span>
             </p>
-            <p
-              class="inline-block rounded-md bg-muted/50 px-3 py-1.5 font-mono text-sm text-foreground"
-            >
-              fee = round(5 + 295 × ((level − 1) ÷ 49)^2.8 + 10 × veteran level)
-            </p>
+            <Calculation calculation={mercenaryPrice(true)} />
             <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
             <!-- Source: exported-data/items.json — scroll_of_resurrection has level_required 30. -->
             <!-- Source: server-scripts/Pet.cs:5083-5099 — mercenary healing AI skips resurrection skills. -->
@@ -697,7 +691,7 @@
         </div>
       </div>
 
-      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+      <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">7</div>
         <div>
           <div>If you die, your mercenaries leave.</div>
@@ -763,9 +757,7 @@
       <span class="block"
         >Target your mercenary first, or the kit repairs your own gear.</span
       >
-      <span class="block"
-        >Hiding a helmet changes its appearance, not its equipment slot.</span
-      >
+      <span class="block">A hidden helmet remains equipped.</span>
     </p>
     <p class="text-sm leading-6">
       <a href="#auto-consume" class={link}

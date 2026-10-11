@@ -5,6 +5,13 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { getQualityTextColorClass } from "$lib/utils/format";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import {
+    levelExperience,
+    veteranExperience,
+    killExperience,
+    deathExperience,
+  } from "$lib/calculation/experience";
 
   let { data } = $props();
 
@@ -205,7 +212,7 @@
   /** Experience for the point that takes the total from `points` to `points + 1`. */
   const veteranStepCost = (points: number) =>
     VETERAN_BASE_COST + VETERAN_COST_PER_POINT * points;
-  /** Experience spent by the time a character holds `points` Veteran Points. */
+  /** Experience converted into points when every point stays unspent. */
   const veteranSpent = (points: number) =>
     points * VETERAN_BASE_COST +
     (VETERAN_COST_PER_POINT * points * (points - 1)) / 2;
@@ -331,16 +338,10 @@
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Experience.cs:current and GetRequiredExperience — each full experience bar consumes its own cost and advances the level, and the requirement curve changes shape at level 40. -->
         <span class="block"
-          >Experience needed for the next level increases by 25.8% at each level
-          through 40.</span
-        >
-        <span class="block"
-          >After level 40, each new requirement increases by 18% instead.</span
-        >
-        <span class="block"
           >Extra experience after a level-up counts toward the next level.</span
         >
       </p>
+      <Calculation calculation={levelExperience(XP_TO_NEXT_LEVEL)} />
 
       <div class="space-y-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
@@ -574,35 +575,22 @@
     <Card.Content class="space-y-6">
       <div class="space-y-2">
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Experience.cs:372-390 — at the cap a filled bar grants a Veteran Point, an attribute point, a full heal, and a veteran level-up for your mercenaries. -->
+          <!-- Source: server-scripts/Experience.cs:372-390 — at the cap a filled bar grants a Veteran Point, an attribute point, a full heal, and a veteran bonus refresh for mercenaries. -->
           <span class="block"
             >At level {LEVEL_CAP}, filling the experience bar grants one Veteran
             Point and one attribute point instead of another level.</span
           >
           <span class="block"
-            >It also refills health and mana and grants your mercenaries a
-            veteran level.</span
+            >It also refills health and mana and refreshes your mercenaries'
+            veteran bonuses.</span
           >
         </p>
-        <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Experience.cs:44-53 — the max-level bar costs 1,000,000 plus 20,000 per total Veteran Point. -->
-          <span class="block"
-            >The next Veteran Point costs
-            <span class="font-mono font-medium"
-              >{fmt(VETERAN_BASE_COST)} + {fmt(VETERAN_COST_PER_POINT)} &times; Veteran
-              Points already earned</span
-            > XP.</span
-          >
-          <span class="block"
-            >The first costs {fmt(VETERAN_BASE_COST)} XP, and each following point
-            costs {fmt(VETERAN_COST_PER_POINT)} XP more than the last.</span
-          >
-        </p>
+        <Calculation calculation={veteranExperience()} />
       </div>
 
       <div class="space-y-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
-          <h3 class="font-semibold">Experience spent on Veteran Points</h3>
+          <h3 class="font-semibold">Experience needed with points unspent</h3>
           <span class="text-xs text-muted-foreground"
             >Dashed line marks all {LEVEL_CAP} levels for scale</span
           >
@@ -611,7 +599,7 @@
           class="level-chart"
           viewBox="0 0 {VET_CHART.w} {VET_CHART.h}"
           role="img"
-          aria-label="Total experience spent to reach a given number of Veteran Points"
+          aria-label="Experience needed to reach each total of veteran points while keeping points unspent"
         >
           {#each VET_Y_TICKS as tick (tick)}
             <line
@@ -675,7 +663,7 @@
             class="tick"
             x={(VET_CHART.left + VET_CHART.right) / 2}
             y={VET_CHART.h - 4}
-            text-anchor="middle">Veteran Points</text
+            text-anchor="middle">Total veteran points</text
           >
         </svg>
       </div>
@@ -689,7 +677,7 @@
           <span class="font-mono text-lg font-medium text-foreground"
             >{pickedVeteran}</span
           >
-          <span class="font-semibold">Veteran Points</span>
+          <span class="font-semibold">total veteran points</span>
         </label>
         <input
           id="veteran-picker"
@@ -707,7 +695,9 @@
             </dd>
           </div>
           <div>
-            <dt class="text-xs text-muted-foreground">Spent to get here</dt>
+            <dt class="text-xs text-muted-foreground">
+              XP with points unspent
+            </dt>
             <dd class="font-mono text-foreground">{fmt(veteranBehind)}</dd>
           </div>
           <div>
@@ -720,31 +710,23 @@
           </div>
         </dl>
         <p class="text-sm text-muted-foreground">
-          Filling all {MAX_VETERAN_POINTS} Veteran Points takes {fmt(
-            VETERAN_TOTAL,
-          )}
-          experience, roughly {(VETERAN_TOTAL / TOTAL_TO_CAP).toFixed(0)} times the
-          climb from level 1 to {LEVEL_CAP}.
+          Reaching {MAX_VETERAN_POINTS} total veteran points with points unspent takes
+          {fmt(VETERAN_TOTAL)} XP, roughly {(
+            VETERAN_TOTAL / TOTAL_TO_CAP
+          ).toFixed(0)}
+          times the climb from level 1 to {LEVEL_CAP}.
         </p>
       </div>
 
       <div class="space-y-2">
         <h3 class="font-semibold">Spending and Counting</h3>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/PlayerSkills.cs:1762-1772 — the total counts unspent points plus the base levels of learned veteran skills. -->
-          <span class="block">Veteran Points buy ranks in veteran skills.</span>
-          <span class="block"
-            >Your total Veteran Points include both unspent points and ranks
-            purchased in veteran skills.</span
-          >
-          <span class="block"
-            >Spending a point does not lower the total used to calculate the
-            next point's cost.</span
-          >
+          Veteran Points buy ranks in veteran skills.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:10964-10999 and server-scripts/Npc.cs:1822-1840 — a veteran master refunds spent veteran skill points for gold and a token. -->
-          A veteran master refunds every spent Veteran Point for 10,000 gold and a
+          <!-- Source: server-scripts/Player.cs:10964-10999; server-scripts/Npc.cs:1822-1840; server-scripts/PlayerSkills.cs:1826-1853 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
+          A veteran master resets your learned veteran skill ranks for 10,000 gold
+          and a
           {#if data.redemptionToken}
             <ItemLink
               itemId={data.redemptionToken.id}
@@ -762,10 +744,10 @@
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:372-407 — earning stops at 200 total points and pays out the max-level reward item instead. -->
           <span class="block"
-            >You can earn up to {MAX_VETERAN_POINTS} Veteran Points.</span
+            >Further XP grants Veteran Points while your total is below {MAX_VETERAN_POINTS}.</span
           >
           <span class="block"
-            >After that, each filled experience bar grants a
+            >At that total, each filled experience bar grants a
             {#if data.maxLevelReward}
               <ItemLink
                 itemId={data.maxLevelReward.id}
@@ -808,6 +790,7 @@
           >
         </p>
       </div>
+      <Calculation calculation={killExperience()} />
 
       <div class="space-y-2">
         <h3 class="font-semibold">Level Difference Scaling</h3>
@@ -941,11 +924,13 @@
             <tbody>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">Dungeon kill</td>
-                <td class="p-2 text-right font-mono">+10% flat</td>
+                <td class="p-2 text-right"
+                  >Adds 10 percentage points to the level adjustment</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">Forgotten Altar event</td>
-                <td class="p-2 text-right font-mono">×1.4</td>
+                <td class="p-2 text-right">40% more XP, rounded</td>
               </tr>
               {#if data.doubleExpSkills.length > 0}
                 {#each data.doubleExpSkills as skill, i (skill.id)}
@@ -962,13 +947,13 @@
                       >
                       <span class="text-muted-foreground text-xs">(buff)</span>
                     </td>
-                    <td class="p-2 text-right font-mono">×2</td>
+                    <td class="p-2 text-right">100% more XP</td>
                   </tr>
                 {/each}
               {:else}
                 <tr class="hover:bg-muted/30">
                   <td class="p-2">Double XP buff</td>
-                  <td class="p-2 text-right font-mono">×2</td>
+                  <td class="p-2 text-right">100% more XP</td>
                 </tr>
               {/if}
             </tbody>
@@ -999,24 +984,12 @@
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
-        <p class="text-sm text-muted-foreground">
-          <span class="block">Nearby party members share kill XP evenly.</span>
-          <span class="block"
-            >A party bonus raises each member's award above the solo award, as
-            the table shows.</span
-          >
-          <span class="block"
-            >Every member uses the highest-level party member's level difference
-            from the monster.</span
-          >
-          <span class="block">Mercenaries do not count as party members.</span>
-        </p>
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="border-b">
-                <th class="text-left p-2 font-medium">Party size</th>
-                <th class="text-right p-2 font-medium">XP per member</th>
+                <th class="text-left p-2 font-medium">Nearby party players</th>
+                <th class="text-right p-2 font-medium">XP per living player</th>
               </tr>
             </thead>
             <tbody>
@@ -1055,6 +1028,11 @@
             </tbody>
           </table>
         </div>
+        <!-- Source: server-scripts/Monster.cs:3117-3145 — the award loop counts and pays party players in proximity, not their mercenaries. -->
+        <p class="text-sm text-muted-foreground">
+          Mercenaries do not count as nearby party players, so they take no
+          share.
+        </p>
       </div>
     </Card.Content>
   </Card.Root>
@@ -1071,14 +1049,7 @@
       <!-- Source: server-scripts/Experience.cs:32 — deathLossPercent = 0.1f -->
       <!-- Source: server-scripts/Experience.cs:Death — Death() = max * 0.1f -->
       <!-- Source: server-scripts/Player.cs:OnDeath — lossExp capped at experience.current -->
-      <p class="text-sm text-muted-foreground">
-        <span class="block"
-          >On death, you lose 10% of the XP needed for your next level.</span
-        >
-        <span class="block"
-          >Your current level's XP cannot drop below zero.</span
-        >
-      </p>
+      <Calculation calculation={deathExperience()} />
       <p class="text-sm text-muted-foreground">
         <a
           href="/mechanics/death#death"
@@ -1267,9 +1238,8 @@
     <Card.Content>
       <!-- Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — isScribingTable overrides num5 = level.current * 100 -->
       <p class="text-sm text-muted-foreground">
-        Each successful craft awards <span class="font-mono font-medium"
-          >character level &times; 100</span
-        > XP.
+        Each successful craft awards 100 XP per character level before Double XP
+        buffs. At level 40, you receive 4,000 XP before those buffs.
       </p>
     </Card.Content>
   </Card.Root>

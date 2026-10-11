@@ -5,6 +5,8 @@
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import { repairCost, merchantPrice } from "$lib/calculation/inventory";
   import {
     SOURCE_TYPE_CONFIG,
     type ItemSourceType,
@@ -359,7 +361,7 @@
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Housing.cs:33-49 — entering an unowned house area opens the house purchase flow. -->
         <!-- Source: server-scripts/ChestHouse.cs:OnInteractClient and UserCode_CmdOpenChestHouse__NetworkIdentity__String — only the owning account can open house chest UI. -->
-        <!-- Source: server-scripts/StrucItemUi.cs:32-35 — purchase warning says same-color chests share storage. -->
+        <!-- Source: server-scripts/UIChest.cs:42-56; server-scripts/PlayerChest.cs:259-290,309-318 — chest type selects a shared section and fixed 70-slot range. -->
         <span class="block">Your account can own a house.</span>
         <span class="block"
           >A house claimed by another account cannot be purchased.</span
@@ -368,8 +370,7 @@
           >Each chest type opens one account-wide section with 70 slots.</span
         >
         <span class="block"
-          >A second chest of the same type gives another access point, not
-          another 70 slots.</span
+          >Additional chests of the same type open the same shared section.</span
         >
       </p>
       <!-- Source: server-scripts/Housing.cs:33-49 and server-scripts/ChestHouse.cs:83-98,167-175 — the house claim and chest access compare account identity. -->
@@ -585,11 +586,9 @@
         >
       </p>
       <!-- Source: server-scripts/PlayerNpcTrading.cs:250-318,52-60 — only sellable items are accepted; damaged equipment loses sale value; Charisma adds at most 25% to the sale price. -->
-      <p>
-        <span class="block">Damaged equipment sells for less.</span>
-        <span class="block">Charisma raises the sale price by at most 25%.</span
-        >
-      </p>
+      <p>Damaged equipment sells for less.</p>
+      <Calculation calculation={merchantPrice(false)} />
+      <Calculation calculation={merchantPrice(true)} />
       <!-- Source: server-scripts/UINpcTrading.cs:110-126 and server-scripts/PlayerNpcTrading.cs:377-397 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
       <p>
         <span class="block">Selling augmented gear triggers a warning.</span>
@@ -623,12 +622,8 @@
         <span class="block"
           >They repair equipped and carried gear and active mercenary equipment.</span
         >
-        <span class="block"
-          >Repair cost is round(sell value × missing durability fraction × 50%),
-          less a Charisma purchase discount of at most 50%.</span
-        >
-        <span class="block">The minimum cost is 1 gold.</span>
       </p>
+      <Calculation calculation={repairCost()} />
     </Card.Content>
   </Card.Root>
 
@@ -880,8 +875,7 @@
       <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241 and server-scripts/EquipmentItem.cs:525-527 — mercenary set processing has the three-piece attribute threshold but no five-piece skill threshold. -->
       <p>
         <span class="block"
-          >Mercenaries receive the three-piece attribute bonus, not the
-          five-piece skill bonus.</span
+          >Mercenary armor sets grant only the three-piece attribute bonus.</span
         >
         <span class="block"
           >See <a

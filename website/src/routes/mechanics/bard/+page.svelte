@@ -5,6 +5,8 @@
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import { finalCadenceMelody } from "$lib/calculation/bard";
 
   const SECTIONS = [
     { id: "songs", label: "Bard Songs" },
@@ -133,10 +135,10 @@
       <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:133-240 — Bard songs use Charisma scaling for eligible effect values. -->
       <!-- Source: server-scripts/Skills.cs:GetFinalHealOverTime and BuffSkill.cs:GetDebuffPowerAttribute — songs skip the Wisdom healing bonus and use Charisma before the Intelligence branch. -->
       <p>
-        Each Charisma point adds 0.1% song power, up to +200%.<br />
-        Wisdom and Intelligence do not change songs.<br />
-        <MechanicsLink section="combat#buffs">Buff Scaling</MechanicsLink> gives the
-        Charisma formulas and exceptions.<br />
+        Bard songs scale with Charisma alone. Wisdom and Intelligence leave them
+        unchanged.<br />
+        <MechanicsLink section="combat#buffs">Buff Scaling</MechanicsLink> shows the
+        calculation and the effects it changes.<br />
         See the <EntityLink href="/classes/bard" name="Bard class page" /> for skills
         and ranks.
       </p>
@@ -149,8 +151,7 @@
       <!-- Source: server-scripts/BardFinalCadenceSkill.cs:63-70; exported-data/skills.json:152375 — maximum songs are required and the tooltip names the Melody bonus. -->
       <p>
         Final Cadence requires your maximum number of active songs. Its damage
-        and healing use Charisma song power, then the Melody bonus below. Each
-        value is rounded after Charisma scaling and again after the bonus.
+        and healing use Charisma song power, then the Melody bonus below.
       </p>
 
       <div class="overflow-x-auto">
@@ -183,6 +184,7 @@
           </tbody>
         </table>
       </div>
+      <Calculation calculation={finalCadenceMelody()} />
 
       <p>
         A song counts once, when you finish casting it yourself. Automatic

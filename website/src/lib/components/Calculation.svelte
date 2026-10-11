@@ -71,12 +71,30 @@
 
   function shown(input: CalculationInput): number {
     const value = values[input.key];
-    return input.unit === "%" ? Math.round(value * 100) : value;
+    // Strip float noise such as 62.50000000000001 without hiding real fractions.
+    return input.unit === "%" ? Number((value * 100).toFixed(4)) : value;
   }
 
-  function update(input: CalculationInput, typed: number) {
+  function toValue(input: CalculationInput, typed: number): number {
+    return input.unit === "%" ? typed / 100 : typed;
+  }
+
+  // While typing, apply only in-range values: clamping each keystroke would
+  // turn the "1" of "10" into the minimum before the "0" arrives.
+  function preview(input: CalculationInput, typed: number) {
     if (!Number.isFinite(typed)) return;
-    const value = clamp(input, input.unit === "%" ? typed / 100 : typed);
+    const value = toValue(input, typed);
+    if (value === clamp(input, value)) update(input, value);
+  }
+
+  function commit(input: CalculationInput, field: HTMLInputElement) {
+    const typed = field.valueAsNumber;
+    if (Number.isFinite(typed))
+      update(input, clamp(input, toValue(input, typed)));
+    field.value = String(shown(input));
+  }
+
+  function update(input: CalculationInput, value: number) {
     overrides = { ...overrides, [input.key]: value };
     if (!input.remember) return;
     try {
@@ -118,6 +136,9 @@
       <dd class="mb-2 last:mb-0 sm:mb-0">{describe(step)}</dd>
     {/each}
   </dl>
+  {#if calculation.note}
+    <p class="text-muted-foreground">{calculation.note}</p>
+  {/if}
   {#if example}
     <div class="space-y-2 border-t border-border/60 pt-3">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -161,7 +182,10 @@
                   class="border-input dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-2 text-sm"
                   value={values[input.key]}
                   onchange={(event) =>
-                    update(input, Number(event.currentTarget.value))}
+                    update(
+                      input,
+                      clamp(input, Number(event.currentTarget.value)),
+                    )}
                 >
                   {#each Array.from({ length: input.max - input.min + 1 }, (_, index) => input.min + index) as rank (rank)}
                     <option value={rank}>{rank}</option>
@@ -173,10 +197,11 @@
                   inputmode="decimal"
                   min={input.unit === "%" ? input.min * 100 : input.min}
                   max={input.unit === "%" ? input.max * 100 : input.max}
-                  step={input.step}
+                  step={input.unit === "%" ? "any" : input.step}
                   value={shown(input)}
                   oninput={(event) =>
-                    update(input, event.currentTarget.valueAsNumber)}
+                    preview(input, event.currentTarget.valueAsNumber)}
+                  onchange={(event) => commit(input, event.currentTarget)}
                 />
               {/if}
             </label>

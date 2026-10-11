@@ -4,6 +4,16 @@
   import NumberField from "$lib/components/NumberField.svelte";
   import RangeSlider from "$lib/components/RangeSlider.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import {
+    mercenaryStats,
+    mercenaryHiringOdds,
+  } from "$lib/calculation/mercenary-stats";
+  import { formatPercent } from "$lib/calculation/format";
+  import {
+    TOTAL_VETERAN_POINTS,
+    TOTAL_VETERAN_POINTS_NOTE,
+  } from "$lib/calculation/inputs";
   import {
     OWNER_LIMITS,
     mercenaryOwner,
@@ -49,11 +59,11 @@
     spell: "Spell Power",
   };
   const TITLES: Record<StatKey, string> = {
-    hp: "Health at this level: round(base Health × (hire multiplier + 0.0025 × veteran points)) + 25 × Constitution.",
-    mana: "Mana at this level: round(base Mana × (hire multiplier + 0.0025 × veteran points)) + 20 × Intelligence.",
-    atk: "Strength at this level + the saved shared hire roll + total veteran points.",
+    hp: "Base Health × (saved hire percentage + 0.25% per total veteran point), rounded, then add 25 Health per Constitution.",
+    mana: "Base Mana × (saved hire percentage + 0.25% per total veteran point), rounded, then add 20 Mana per Intelligence.",
+    atk: "Strength at this level + the saved shared hire roll + total Veteran Points.",
     spell:
-      "round(INT×1.5) at this level + the saved shared hire roll + total veteran points.",
+      "150% of Intelligence, rounded, + the saved shared hire roll + total veteran points.",
   };
   const TARGET_LABELS: Record<TargetKey, string> = {
     hp: "Health",
@@ -62,14 +72,6 @@
   };
 
   const fmt = (n: number) => n.toLocaleString("en-US");
-  const pct = (p: number) =>
-    p >= 0.0995
-      ? Math.round(p * 100) + "%"
-      : p >= 0.00995
-        ? (p * 100).toFixed(1) + "%"
-        : p > 0
-          ? (p * 100).toFixed(2) + "%"
-          : "0%";
   const goldFmt = (n: number) =>
     n >= 1e6
       ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M"
@@ -89,7 +91,11 @@
   const cCharisma = $derived(mercenaryOwner.charisma);
 
   onMount(restoreMercenaryOwner);
-  let frac = $state<Record<TargetKey, number>>({ hp: 0, mana: 0, atk: 0 });
+  let frac = $state<Record<TargetKey, number>>({
+    hp: 0.5,
+    mana: 0.5,
+    atk: 0.5,
+  });
 
   const results = $derived(computeAll(level, veteran, data.curves));
   const shown = $derived(results.filter((c) => active.has(c.cls)));
@@ -272,7 +278,7 @@
     if (!listedByClass[cCls].includes(cRace))
       return `No recruiter listed here hires ${cRace}, so you cannot hire a ${cRace} ${cCls}.`;
     if (preferredRace)
-      return `${recruiter} only hires ${preferredRace}, not ${cRace} ${cCls}.`;
+      return `${recruiter} hires ${preferredRace} for the chosen class.`;
     return "";
   }
 
@@ -333,7 +339,7 @@
 
 <Seo
   title="Mercenary Stat Ranges - Ancient Kingdoms"
-  description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, at any level and veteran level, plus the gold and hires needed to roll a great one."
+  description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, by character level and total veteran points, plus hiring odds and average costs."
   path="/mechanics/mercenary-stats"
 />
 
@@ -356,7 +362,7 @@
   <p class="lead">
     <span class="block"
       >Compare possible mercenary Health, Mana, Attack Power, and Spell Power by
-      class, race, level, and veteran level.</span
+      class, race, level, and total veteran points.</span
     >
     <span class="block"
       >A recruiter guarantees its preferred race only if that race can take the
@@ -367,6 +373,7 @@
       mercenaries can have different stats.</span
     >
   </p>
+  <p class="text-sm text-muted-foreground">{TOTAL_VETERAN_POINTS_NOTE}</p>
 
   <details class="howto">
     <summary>How to read these ranges</summary>
@@ -399,25 +406,12 @@
       <ul>
         <li>
           <span class="block"
-            ><b>Health &amp; Mana</b> change with the mercenary's current level and
-            your veteran level.</span
-          >
-          <span class="block"
             >For an existing mercenary, compare totals with the row at its
             current level.</span
           >
         </li>
         <li>
           <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning set base damage and base magic damage to the shared hire roll plus total veteran points, including a zero roll. -->
-          <span class="block"
-            ><b>Attack Power and Spell Power</b> include an attribute bonus: Strength
-            for Attack Power and round(INT×1.5) for Spell Power.</span
-          >
-          <span class="block"
-            >Both use the same saved hire roll, including zero, plus +1 for each
-            of your total veteran points.</span
-          >
-          <span class="block">Attributes grow with level.</span>
           <span class="block"
             >Resummoning or reloading restores the same hire roll and reapplies
             your full veteran damage bonus.</span
@@ -445,6 +439,9 @@
         <span class="block">Bard displays active songs instead of Mana.</span>
         <span class="block">These classes have no rolled Mana column.</span>
       </p>
+      <Calculation
+        calculation={mercenaryStats(cd, level, veteran, data.curves, cRace)}
+      />
     </div>
   </details>
 
@@ -459,7 +456,7 @@
         onchange={(v) => setMercenaryOwner("level", v)}
       />
       <NumberField
-        label="Veteran level"
+        label={TOTAL_VETERAN_POINTS.label}
         hint="Health & Mana · +0.25% each"
         value={veteran}
         min={OWNER_LIMITS.veteran[0]}
@@ -580,7 +577,7 @@
       >
       <span class="block"
         >The calculator shows your chance per hire and average gold cost at the
-        selected level and veteran level.</span
+        selected level and total veteran points.</span
       >
     </p>
     <div class="cost-grid">
@@ -637,7 +634,7 @@
           </label>
           <div class="field">
             <span>Hire discount</span><span class="disc-val"
-              >−{Math.round(discount * 100)}%</span
+              >−{formatPercent(discount)}</span
             >
           </div>
         </div>
@@ -650,7 +647,7 @@
                   ><span class="colmark" style={`background:${STAT_HUE[k]}`}
                   ></span>{TARGET_LABELS[k]}</span
                 >
-                <span class="top">top {pct(read.p)}</span>
+                <span class="top">top {formatPercent(read.p)}</span>
               </div>
               <RangeSlider
                 value={Math.round((frac[k] ?? 0) * 1000)}
@@ -675,20 +672,20 @@
         <div class="stats3">
           <div class="stat3">
             <span class="k">Chance / hire</span><span class="v"
-              >{pTotal > 0 ? pct(pTotal) : "0%"}</span
+              >{formatPercent(pTotal)}</span
             >
           </div>
           <div class="stat3">
             <span class="k">Avg hires</span><span class="v"
               >{Number.isFinite(avgHires)
-                ? `~${fmt(Math.round(avgHires))}`
+                ? `about ${fmt(Number(avgHires.toFixed(1)))}`
                 : "∞"}</span
             >
           </div>
           <div class="stat3">
             <span class="k">Avg gold</span><span class="v"
               >{Number.isFinite(avgGold)
-                ? `~${goldFmt(Math.round(avgGold))}`
+                ? `about ${fmt(Math.round(avgGold))}`
                 : "∞"}</span
             >
           </div>
@@ -696,10 +693,11 @@
         {#if pRace === 0 && impossibleText}
           <p class="eq zero">{impossibleText}</p>
         {:else}
-          <p class="eq">
-            chance per hire = chosen race <b>{pct(pRace)}</b> × stat rolls
-            <b>{pct(pRolls)}</b> · {fmt(price)} gold per hire
-          </p>
+          <div class="text-sm">
+            <Calculation
+              calculation={mercenaryHiringOdds(pRace, pRolls, price)}
+            />
+          </div>
           <!-- eslint-disable-next-line svelte/no-at-html-tags — drawChart returns static SVG assembled from numeric inputs and fixed labels. -->
           <div id="c-chart">{@html chartSvg}</div>
           <p class="chart-cap">
@@ -1022,7 +1020,7 @@
   }
   .howto-body {
     padding: 0.2rem 1.05rem 1.05rem;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--muted-foreground);
   }
   .howto-body p {
@@ -1191,9 +1189,6 @@
     color: var(--muted-foreground);
     font-variant-numeric: tabular-nums;
     margin: 0 0 1.1rem;
-  }
-  .eq b {
-    color: var(--foreground);
   }
   .eq.zero {
     color: var(--stat-atk);

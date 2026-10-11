@@ -4,6 +4,8 @@
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import { partyGold } from "$lib/calculation/party";
 
   const SECTIONS = [
     { id: "party", label: "Party" },
@@ -92,8 +94,7 @@
       <!-- Source: server-scripts/Monster.cs:2916-2932,2945-2957 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
       <p>
         <span class="block"
-          >The monster's highest-threat opponent gets kill credit, not the
-          player who lands the final hit.</span
+          >The monster's highest-threat opponent gets kill credit.</span
         >
         <span class="block">A mercenary or companion credits its owner.</span>
         <span class="block"
@@ -107,27 +108,17 @@
       </p>
       <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
-        <span class="block"
-          >Living players near the credited player can share kill XP.</span
+        See <MechanicsLink section="experience#kill-xp"
+          >Experience</MechanicsLink
         >
-        <span class="block"
-          >The highest level among nearby players sets the level adjustment for
-          everyone's XP share.</span
-        >
-        <span class="block">Mercenaries do not take extra XP shares.</span>
-        <span class="block"
-          >See <MechanicsLink section="experience">Experience</MechanicsLink> for
-          the formula.</span
-        >
+        for the kill XP sharing calculation.
       </p>
       <!-- Source: server-scripts/PlayerLooting.cs:149-168 and server-scripts/PlayerParty.cs:74-88 — gold is shared around its picker, each recipient receives the ceiling of gold divided by nearby member count. -->
       <p>
-        <span class="block"
-          >When someone collects gold, each nearby party player receives the
-          pickup amount divided by the nearby player count, rounded up.</span
-        >
+        <span class="block">Nearby party players share collected gold.</span>
         <span class="block">Distance is measured from the gold collector.</span>
       </p>
+      <Calculation calculation={partyGold()} />
       <!-- Source: server-scripts/PlayerLooting.cs:108-147 — matching unfinished GatherQuest objectives advance for nearby party members on monster or chest pickup; the loot is consumed rather than copied. -->
       <p>
         <span class="block"

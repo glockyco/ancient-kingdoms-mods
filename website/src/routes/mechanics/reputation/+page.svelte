@@ -3,6 +3,11 @@
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import {
+    reputationExample,
+    npcReputation,
+  } from "$lib/calculation/reputation";
   import {
     FACTION_ACCENTS,
     FACTION_ACCENT_FALLBACK,
@@ -161,7 +166,7 @@
       <Card.Title>The Nine Tiers</Card.Title>
       <Card.Description>
         Each faction has nine standing tiers. Quests and vendors check your
-        reputation points, not your tier name.
+        reputation points.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -241,8 +246,7 @@
           falls below −500.</span
         >
         <span class="block"
-          >A quest checks your reputation points with its named faction, not
-          your tier or points with another faction.</span
+          >A quest's reputation requirement applies to its named faction.</span
         >
       </p>
     </Card.Content>
@@ -268,7 +272,7 @@
         >
       </p>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[640px] border-collapse text-sm">
+        <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-4 text-left font-medium">Rank</th>
@@ -277,26 +281,26 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="border-b border-border/50 hover:bg-muted/30">
+            <tr
+              class="border-b border-border/50 odd:bg-muted/30 hover:bg-muted/50"
+            >
               <td class="py-2 pr-4">Boss</td>
-              <td class="py-2 pr-4 font-mono"
-                >(level + round(max health / 2000)) × 20</td
-              >
-              <td class="py-2 font-mono">level × 2</td>
+              <td class="py-2 pr-4">Base gain × 20</td>
+              <td class="py-2">200% of monster level</td>
             </tr>
-            <tr class="border-b border-border/50 hover:bg-muted/30">
+            <tr
+              class="border-b border-border/50 odd:bg-muted/30 hover:bg-muted/50"
+            >
               <td class="py-2 pr-4">Elite</td>
-              <td class="py-2 pr-4 font-mono"
-                >(level + round(max health / 2000)) × 10</td
-              >
-              <td class="py-2 font-mono">level × 1</td>
+              <td class="py-2 pr-4">1000% of base gain</td>
+              <td class="py-2">Monster level</td>
             </tr>
-            <tr class="border-b border-border/50 hover:bg-muted/30">
+            <tr
+              class="border-b border-border/50 odd:bg-muted/30 hover:bg-muted/50"
+            >
               <td class="py-2 pr-4">Normal</td>
-              <td class="py-2 pr-4 font-mono"
-                >level + round(max health / 2000)</td
-              >
-              <td class="py-2 font-mono">level × 0.75</td>
+              <td class="py-2 pr-4">Base gain</td>
+              <td class="py-2">75% of monster level, without rounding</td>
             </tr>
           </tbody>
         </table>
@@ -309,11 +313,9 @@
             class="text-blue-600 hover:underline dark:text-blue-400">Valaark</a
           > is a level 70 boss with 3,000,000 health.</span
         >
-        <span class="block"
-          >Killing Valaark gives (70 + 1,500) × 20 =
-          <strong class="text-foreground">+31,400</strong> Ancient Gods reputation.</span
-        >
+        <span class="block">The worked example below uses Valaark.</span>
       </p>
+      <Calculation calculation={reputationExample()} />
       <p>
         Every nearby party member receives the full monster-kill reputation.
       </p>
@@ -331,25 +333,19 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Npc.cs:1582-1614 and 1629-1661 — party and solo faction changes on an NPC death. -->
       <p>
-        Every faction on the NPC's improve list goes up by
-        <span class="font-mono">NPC level × 1.5</span>. A Notable NPC multiplies
-        this positive amount by 60. Every faction on the decrease list goes down
-        by <span class="font-mono">NPC level × 5</span>.
-      </p>
-      <p>
         In the current data,
         <a
           href="/npcs/king_darin"
           class="text-blue-600 hover:underline dark:text-blue-400">King Darin</a
         >
-        is the only Notable NPC. Killing him gives +5,400
+        is the only Notable NPC. Killing him improves
         <a
           href="/factions/the_forsaken"
           class="text-blue-600 hover:underline dark:text-blue-400"
           >The Forsaken</a
-        > reputation and costs −300 Children of Illithor reputation. Health, loot,
-        and the Notable classification do not change the negative amount.
+        > reputation and lowers Children of Illithor reputation.
       </p>
+      <Calculation calculation={npcReputation()} />
       <p>
         Every nearby party member receives the full reputation change from an
         NPC kill.
@@ -368,9 +364,8 @@
       <!-- Source: server-scripts/PlayerQuests.cs:440-443 — quest completion raises the start NPC's faction. -->
       <p>
         <span class="block"
-          >Handing in an ordinary quest gives
-          <span class="font-mono">recommended level × 20</span>
-          reputation with its starting quest giver's faction.</span
+          >Handing in an ordinary quest gives 20 reputation per recommended
+          level with its starting quest giver's faction.</span
         >
         <span class="block">A level 40 quest gives 800.</span>
       </p>

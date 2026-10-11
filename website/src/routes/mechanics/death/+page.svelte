@@ -4,6 +4,8 @@
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import { deathRecovery } from "$lib/calculation/death";
 
   const SECTIONS = [{ id: "death", label: "Death and Remains" }];
 </script>
@@ -74,7 +76,7 @@
         <!-- Source: server-scripts/Entity.cs:346-357 — Revive rounds the specified fraction of maximum health. -->
         <p>
           Respawning leaves your remains where you died and returns you to your
-          bind point at 50% health.
+          bind point.
         </p>
         <!-- Source: server-scripts/PlayerDead.cs:8-8,82-95,132-137 — remains expire 900 seconds after creation or after use. -->
         <!-- Source: server-scripts/Player.cs:4054-4057 — a new death destroys the prior remains. -->
@@ -108,7 +110,7 @@
                 <th class="p-2 font-medium text-foreground"
                   >Collect your remains</th
                 >
-                <td class="p-2 font-mono">50%</td>
+                <td class="p-2">50%, rounded</td>
                 <td class="p-2">
                   <span class="block"
                     >Collect your remains after respawning at your bind point.</span
@@ -124,21 +126,24 @@
                 <th class="p-2 font-medium text-foreground"
                   >Accept Resurrection</th
                 >
-                <td class="p-2 font-mono">75%</td>
+                <td class="p-2">75%, rounded</td>
                 <td class="p-2">
                   <span class="block"
-                    >Resurrection returns you to your remains at 60% health
-                    after you respawn.</span
+                    >Resurrection returns you to your remains after you respawn.</span
                   >
-                  <span class="block"
-                    >You also regain mana equal to 20% of maximum health, up to
-                    your maximum mana.</span
-                  >
+                  <span class="block">It restores Health and Mana.</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+        <Calculation calculation={deathRecovery()} />
+        <!-- Source: server-scripts/Player.cs:13182-13183; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
+        <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
+        <p>
+          Resurrection restores Mana from maximum Health, a game defect, capped
+          at maximum Mana.
+        </p>
         <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget — Resurrection can target player remains or dead mercenaries. -->
         <p>
           <span class="block"
@@ -158,7 +163,7 @@
           >
         </p>
         <!-- Source: server-scripts/Player.cs:13163-13193 — resurrection restores resources and XP without changing equipment durability. -->
-        <p>Resurrection does not repair equipment.</p>
+        <p>Equipment keeps its current durability after Resurrection.</p>
       </div>
 
       <!-- Source: server-scripts/Player.cs:4094-4101,9781-9784 — Hardcore death deletes the character instead of saving the normal death state. -->

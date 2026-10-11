@@ -6,6 +6,8 @@
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import Calculation from "$lib/components/Calculation.svelte";
+  import { slayerMasteryCalculation } from "$lib/calculation/slayer";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -506,11 +508,8 @@
       100% needs kills from a minimum of 100 targets.
     </p>
 
-    <div class="overflow-x-auto">
-      <p class="min-w-max font-mono text-sm">
-        Slayer = min(100%, Σ 0.02% × min(50, account kills per target))
-      </p>
-    </div>
+    <!-- Source: server-scripts/Database.cs:3406-3414 — each target adds 0.02% per account kill up to 50 kills, and the total stops at 100%. -->
+    <Calculation calculation={slayerMasteryCalculation()} />
 
     <div class="max-w-2xl space-y-3 text-pretty text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:OnDeath -->

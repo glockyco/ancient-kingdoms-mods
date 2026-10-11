@@ -2,8 +2,8 @@
 
 ## 1. Shared calculation foundation
 
-- [ ] 1.1 Move number, percent, second, and rank-scaling formatting and the rank evaluation helper into a shared module under `website/src/lib/calculation/`, used by the pilot builders; verify `svelte-check` and that the three pilot pages render unchanged text.
-- [ ] 1.2 Let `Calculation.svelte` render steps without an example and accept remembered inputs for character stats (Damage, Magic Damage, attributes, haste); verify on the dev server that a block without inputs shows no button and a remembered value carries to another page.
+- [x] 1.1 Move number, percent, second, and rank-scaling formatting and the rank evaluation helper into a shared module under `website/src/lib/calculation/`, used by the pilot builders; verify `svelte-check` and that the three pilot pages render unchanged text.
+- [x] 1.2 Let `Calculation.svelte` render steps without an example and accept remembered inputs for character stats (Damage, Magic Damage, attributes, haste); verify on the dev server that a block without inputs shows no button and a remembered value carries to another page.
 
 ## 2. Skill page mechanics card
 
@@ -14,12 +14,12 @@
 
 ## 3. Combat page
 
-- [ ] 3.1 Convert the combat page's formula boxes and formula tables (damage formulas, pipeline, resistance and mitigation, healing, buff scaling, debuffs, timing, special mechanics) to calculations, sentences, or tables of worded formulas, keeping the anchors skill pages link to; verify on the dev server at 1440 and 390 pixels wide and that each linked anchor exists.
+- [x] 3.1 Convert the combat page's formula boxes and formula tables (damage formulas, pipeline, resistance and mitigation, healing, buff scaling, debuffs, timing, special mechanics) to calculations, sentences, or tables of worded formulas, keeping the anchors skill pages link to; verify on the dev server at 1440 and 390 pixels wide and that each linked anchor exists.
 
 ## 4. Other mechanics pages
 
-- [ ] 4.1 Convert formula text on the experience, reputation, monster spawn, inventory, party, death, character, and Bard mechanics pages; verify no monospace formula or code notation remains (grep plus rendered-text scan).
-- [ ] 4.2 Convert the mercenary hire price, stat, and veteran formulas on `/mercenaries`, `/mercenaries/[id]`, and `/mechanics/mercenary-stats`; verify the existing mercenary calculator still produces the same numbers.
+- [x] 4.1 Convert formula text on the experience, reputation, monster spawn, inventory, party, death, character, and Bard mechanics pages; verify no monospace formula or code notation remains (grep plus rendered-text scan).
+- [x] 4.2 Convert the mercenary hire price, stat, and veteran formulas on `/mercenaries`, `/mercenaries/[id]`, and `/mechanics/mercenary-stats`; verify the existing mercenary calculator still produces the same numbers.
 
 ## 5. Skill page structure
 

@@ -14,7 +14,8 @@ export interface MercenaryOwner {
   charisma: number;
 }
 
-const STORAGE_KEY = "ak.mercenaryOwner";
+const STORAGE_PREFIX = "calculation:";
+const LEGACY_STORAGE_KEY = "ak.mercenaryOwner";
 
 /** Source: server-scripts/NetworkManagerMMO.cs:768-771 — the player level cap is 50. */
 export const MAX_LEVEL = 50;
@@ -34,47 +35,60 @@ const DEFAULTS: MercenaryOwner = {
 };
 
 const owner = $state<MercenaryOwner>({ ...DEFAULTS });
-let restored = false;
 
 function bounded(key: keyof MercenaryOwner, value: number): number {
   const [lo, hi] = OWNER_LIMITS[key];
   return Math.min(hi, Math.max(lo, Math.round(value)));
 }
 
-function save(): void {
+function save(key: keyof MercenaryOwner): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(owner));
+    localStorage.setItem(STORAGE_PREFIX + key, String(owner[key]));
   } catch {
-    // Storage is unavailable, for example in a private window. The values
-    // stay in memory for this page.
+    // Storage unavailable: controls keep their values in memory.
   }
 }
 
 /**
- * Load the saved values. Call from `onMount` so that it runs only in the
- * browser. A saved value that is not a finite number keeps its default.
+ * Read the shared calculation values whenever a mercenary page mounts.
+ * A legacy record fills only missing shared keys, then is removed.
  */
 export function restoreMercenaryOwner(): void {
-  if (restored) return;
-  restored = true;
-  let raw: string | null;
   try {
-    raw = localStorage.getItem(STORAGE_KEY);
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy !== null) {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(legacy);
+      } catch {
+        parsed = null;
+      }
+      if (typeof parsed === "object" && parsed !== null) {
+        for (const key of Object.keys(
+          OWNER_LIMITS,
+        ) as (keyof MercenaryOwner)[]) {
+          const value = (parsed as Record<string, unknown>)[key];
+          if (
+            localStorage.getItem(STORAGE_PREFIX + key) === null &&
+            typeof value === "number" &&
+            Number.isFinite(value)
+          ) {
+            localStorage.setItem(
+              STORAGE_PREFIX + key,
+              String(bounded(key, value)),
+            );
+          }
+        }
+      }
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }
+    for (const key of Object.keys(OWNER_LIMITS) as (keyof MercenaryOwner)[]) {
+      const raw = localStorage.getItem(STORAGE_PREFIX + key);
+      const value = raw === null ? Number.NaN : Number(raw);
+      owner[key] = Number.isFinite(value) ? bounded(key, value) : DEFAULTS[key];
+    }
   } catch {
-    return;
-  }
-  if (raw === null) return;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return;
-  }
-  if (typeof parsed !== "object" || parsed === null) return;
-  for (const key of Object.keys(OWNER_LIMITS) as (keyof MercenaryOwner)[]) {
-    const value = (parsed as Record<string, unknown>)[key];
-    if (typeof value === "number" && Number.isFinite(value))
-      owner[key] = bounded(key, value);
+    // Storage unavailable: controls keep their values in memory.
   }
 }
 
@@ -85,7 +99,7 @@ export function setMercenaryOwner(
 ): void {
   if (!Number.isFinite(value)) return;
   owner[key] = bounded(key, value);
-  save();
+  save(key);
 }
 
 /** The shared values. Read them in markup or `$derived` to stay reactive. */
