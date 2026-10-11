@@ -1,7 +1,7 @@
 ## 1. Repair source data and typed boundaries
 
-- [ ] 1.1 Change `mods/DataExporter/Exporters/ProfessionExporter.cs:92-114` to publish 17 Lore Keeping books and 46 Exploring discoveries; verify against `server-scripts/Player.cs:12113-12116` and `ZoneTrigger.cs:175-176` and inspect exported records.
-- [ ] 1.2 Remove the Exploring-only count override in `website/src/routes/professions/+page.server.ts:54-65`; verify a rebuilt profession-index loader reads both authoritative denominators from the database.
+- [x] 1.1 Change `mods/DataExporter/Exporters/ProfessionExporter.cs:92-114` to publish 17 Lore Keeping books and 46 Exploring discoveries; verify against `server-scripts/Player.cs:UserCode_CmdTryLearnBook__String` and `server-scripts/ZoneTrigger.cs:NewZoneDiscovered` and inspect exported records.
+- [x] 1.2 Remove the Exploring-only count override in `website/src/routes/professions/+page.server.ts:54-65`; verify a rebuilt profession-index loader reads both authoritative denominators from the database.
 - [ ] 1.3 Preserve applicable exported gathering gold, random drops, and chest chance through `build-pipeline/schema.sql:1433-1510` and `loaders/core.py:1170-1290`; verify database rows equal representative exported records and chest-only fields remain on chests.
 - [ ] 1.4 Repair `mods/DataExporter/Exporters/CraftingRecipeExporter.cs:87-95` so non-cooking stations do not all become `unknown`; verify game-backed station examples and rebuilt recipe classifications without guessing from output names.
 - [ ] 1.5 Add a focused profession-count denormalizer under `build-pipeline/src/compendium/denormalizers/professions/` for counts needed by the route inventories; verify each stored total matches the corresponding source rows and does not override game completion rules.
