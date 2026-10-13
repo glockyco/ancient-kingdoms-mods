@@ -1064,18 +1064,19 @@
             </tbody>
           </table>
         </div>
-        <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT; TargetDebuffSkill.cs:Apply — the shared Dexterity poison/disease branch applies Poison Resist; Disease Resist is still used when disease debuffs land. This probable defect is source-derived, not runtime-verified. -->
+        <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT; TargetDebuffSkill.cs:Apply — the shared Dexterity poison/disease branch applies Poison Resist; Disease Resist is still used when disease debuffs land. -->
+        <!-- Runtime verification: docs/game-bugs/dexterity-scaled-disease-ticks-use-poison-resist.md -->
         <p class="text-sm text-muted-foreground mt-2">
-          A probable game defect makes Dexterity-scaled disease damage over
-          time, such as
+          Because of a game defect, disease damage over time that scales with
+          Dexterity, such as
           <a
             href="/skills/virulent_slash"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Virulent Slash</a
-          >, use Poison Resist for damage reduction even though Disease Resist
-          determines whether the debuff lands. The skill still displays disease
-          damage. This is derived from the game code, not verified in a game
-          run.
+          >, is reduced by the target's Poison Resist, while Disease Resist
+          decides whether the debuff lands. The ticks still show as disease
+          damage. Monster disease debuffs that do not scale with Intelligence
+          follow the same rule.
         </p>
         <!-- Source: server-scripts/BuffSkill.cs:14-31,508-515 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
         <p class="text-sm text-muted-foreground mt-2">
