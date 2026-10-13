@@ -22,7 +22,7 @@
   // The ids match each Card.Root below.
   const SECTIONS = [
     { id: "cycle", label: "The Respawn Cycle" },
-    { id: "empty-zones", label: "Empty Zones" },
+    { id: "empty-zones", label: "Empty Zones Are Switched Off" },
     { id: "bosses", label: "Boss Respawn Timers" },
     { id: "missing-boss", label: "Why a Boss Is Absent" },
     { id: "rare-spawns", label: "Rare Spawns" },
@@ -69,13 +69,36 @@
     return percent > 99 ? ">99%" : `${Math.round(percent)}%`;
   }
 
+  // Source: server-scripts/Monster.cs:UpdateServer_DEAD; SummonMonster.cs:Update — summon rolls also require the fixed guard group's readiness.
   function formatAverageWait(rare: RareSpawn): string {
+    if (rare.is_summonable) return "Depends on guards";
     const seconds = rare.respawn_time / rare.respawn_probability;
     return formatDuration(Math.round(seconds / 60) * 60);
   }
 
   function formatGameHour(hour: number): string {
     return `${hour}:00`;
+  }
+
+  // Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeSpawn — chance, guard readiness and game-time windows can delay respawn.
+  /** The notes after a boss's level in the respawn list, each linking where it is explained. */
+  function bossNotes(boss: BossRespawn): { text: string; href?: string }[] {
+    return [
+      ...(boss.respawn_probability < 1
+        ? [{ text: `${formatChance(boss.respawn_probability)} spawn chance` }]
+        : []),
+      ...(boss.is_summonable
+        ? [{ text: "guards must die", href: "#summons" }]
+        : []),
+      ...(boss.spawn_time_start !== 0 || boss.spawn_time_end !== 0
+        ? [
+            {
+              text: `${formatGameHour(boss.spawn_time_start)}–${formatGameHour(boss.spawn_time_end)}`,
+              href: "#spawn-windows",
+            },
+          ]
+        : []),
+    ];
   }
 
   // Guard timelines for the summon example schedules. killedAt is the kill
@@ -104,7 +127,7 @@
 
 <Seo
   title="Monster Spawn Mechanics - Ancient Kingdoms"
-  description="How monster spawning works in Ancient Kingdoms: respawn timers, boss respawn times, rare spawn chances, dungeon renewals, night-only monsters, kill-triggered summons, and zone resets."
+  description="How monster spawning works in Ancient Kingdoms: respawn timers, boss respawn times, rare spawn chances, dungeon renewals, day- and night-only monsters, kill-triggered summons, and zone resets."
   path="/mechanics/monster-spawns"
 />
 
@@ -192,13 +215,14 @@
         </li>
       </ol>
       <p>
-        <!-- Source: website/data/compendium.db monsters table — regular respawning monsters use respawn_time 40-7200 and death_time 5-300. -->
+        <!-- Source: server-scripts/Monster.cs:OnDeath; website/data/compendium.db:monsters — respawn timers exclude corpse time; respawning enemies excluding Dummy: regular 40–1800 s, elites 480–7200 s, bosses 600–28800 s. -->
         <span class="block"
-          >Regular monsters have respawn timers from 40 seconds to 2 hours, most
-          often 6 minutes.</span
+          >Regular monsters have respawn timers from 40 seconds to 30 minutes,
+          most often 6 minutes.</span
         >
         <span class="block"
-          >Bosses have longer timers (<a
+          >Elite respawn timers range from 8 minutes to 2 hours. Boss timers
+          range from 10 minutes to 8 hours (<a
             href="#bosses"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >see below</a
@@ -283,23 +307,32 @@
           When a boss or elite dies, the server saves its respawn deadline.
         </li>
         <li>
-          <!-- Source: server-scripts/NetworkManagerMMO.cs:111 and Monster.cs:621-642 — saved deadlines are loaded at server start; bosses whose deadline has not passed start hidden. -->
-          <!-- Source: server-scripts/Monster.cs:698-716,759-787 — summonable, seasonal, failed-roll rare monsters and bosses or elites with unexpired saved respawn deadlines can start hidden. -->
+          <!-- Source: server-scripts/Monster.cs:SetRespawnBosses — saved future deadlines load at start but are capped to now plus one respawn interval. -->
+          <!-- Source: server-scripts/Monster.cs:Start,SetRespawnBosses — regular rares roll at start; summoned and Halloween monsters start hidden; rare bosses and elites wait a full interval when no saved deadline remains. -->
           <span class="block"
-            >Restarting the server does not reset a dead boss's saved timer.</span
+            >After a restart, a boss or elite with an unfinished saved timer
+            waits for it to end. The remaining wait is capped at one full
+            respawn interval.</span
           >
           <span class="block"
-            >Regular monsters return alive after a server restart.</span
+            >Most regular monsters return alive after a restart. Regular rare
+            monsters roll their spawn chance. Summoned and Halloween monsters
+            start hidden.</span
+          >
+          <span class="block"
+            >Rare bosses and elites start hidden. If their saved timer has
+            ended, they wait one full roll interval before their first attempt.</span
           >
         </li>
         <li>
-          <!-- Source: website/data/compendium.db monsters table — bosses use death_time 300; respawnTimeEnd = deathTimeEnd + respawnTime, fixed at death (Monster.cs:2078-2079). -->
-          A boss returns after its listed timer plus approximately 5 minutes for its
-          corpse.
+          <!-- Source: server-scripts/Monster.cs:OnDeath; website/data/compendium.db:monsters — boss corpse periods are 300 s, except Var'noth and Velkrax 120 s and Embermaw 60 s. -->
+          A boss's earliest return is its listed timer plus its corpse time: 5 minutes
+          for most bosses, 2 minutes for Var'noth and Velkrax, and 1 minute for Embermaw.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:14421-14433 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
-          For a dungeon boss, you can pay a Renewal Sage to restart its respawn. See
+          <!-- Source: server-scripts/Player.cs:UserCode_CmdResetDungeon__Int32__Int64; Monster.cs:UpdateServer_DEAD — renewal clears saved and active deadlines without bypassing guards, chance or spawn windows. -->
+          For a dungeon boss, you can pay a Renewal Sage to end its respawn timer.
+          Its guards, spawn chance, and game-time window still apply. See
           <a
             href="#renewal-sages"
             class="text-blue-600 hover:underline dark:text-blue-400"
@@ -309,6 +342,7 @@
       </ul>
 
       <div class="space-y-3 text-sm">
+        <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD,EventTimeSpawn — chance, summon guards and game-time windows still gate a due boss respawn. -->
         {#each bossTiers as [respawnTime, bosses] (respawnTime)}
           <div class="flex gap-4">
             <div class="w-14 shrink-0 pt-px text-right font-mono">
@@ -318,15 +352,24 @@
               class="flex flex-wrap gap-x-1.5 gap-y-0.5 border-l border-border pl-4"
             >
               {#each bosses as boss, i (boss.id)}
-                <span class="whitespace-nowrap">
-                  <a
+                <span class="whitespace-nowrap"
+                  ><a
                     href="/monsters/{boss.id}"
                     class="text-blue-600 hover:underline dark:text-blue-400"
                     >{boss.name}</a
-                  ><span class="text-muted-foreground">
-                    ({boss.level}){i < bosses.length - 1 ? "," : ""}</span
                   >
-                </span>
+                  <span class="text-muted-foreground">({boss.level})</span
+                  >{#each bossNotes(boss) as note (note.text)}<span
+                      aria-hidden="true"
+                      class="mx-1">·</span
+                    >{#if note.href}<a
+                        href={note.href}
+                        class="text-blue-600 dark:text-blue-400 hover:underline"
+                        >{note.text}</a
+                      >{:else}<span class="text-muted-foreground"
+                        >{note.text}</span
+                      >{/if}{/each}{i < bosses.length - 1 ? "," : ""}</span
+                >
               {/each}
             </div>
           </div>
@@ -375,10 +418,25 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:2214-2215,2230-2234; SummonMonster.cs:36-69 — a summoned encounter waits for its linked group to qualify. -->
+          <!-- Source: server-scripts/Monster.cs:SetRespawnBosses — rare bosses wait a new full interval after restart when their saved timer is already due. -->
           <tr class="border-b border-border/50">
             <td class="py-2 pr-4"
-              >All linked guards need to die after respawning.</td
+              >It is a rare boss waiting for its first roll after a server
+              restart.</td
+            >
+            <td class="py-2"
+              ><a
+                href="#bosses"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Boss Respawn Timers</a
+              ></td
+            >
+          </tr>
+          <!-- Source: server-scripts/SummonMonster.cs:Update,AreAllPlaceholdersDead — after the summon dies the game must observe a living guard followed by the whole fixed group dead together. -->
+          <tr class="border-b border-border/50">
+            <td class="py-2 pr-4"
+              >Its guards have not met the conditions for another summon
+              attempt. See the guard requirements below.</td
             >
             <td class="py-2"
               ><a href="#summons" class="underline hover:text-foreground"
@@ -386,21 +444,14 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:2222-2224 — Halloween encounters remain hidden while the event is inactive. -->
-          <tr class="border-b border-border/50">
-            <td class="py-2 pr-4">Its seasonal event is inactive.</td>
-            <td class="py-2"
-              ><a href="#other-spawns" class="underline hover:text-foreground"
-                >Other Ways Monsters Appear</a
-              ></td
-            >
-          </tr>
           <!-- Source: server-scripts/Monster.cs:1613-1627,1770-1787 — a monster can return home and reset health rather than die. -->
           <tr>
-            <td class="py-2 pr-4">It leashed and returned home.</td>
+            <td class="py-2 pr-4"
+              >It chased too far, returned home, and reset to full health.</td
+            >
             <td class="py-2"
               ><a href="#leashing" class="underline hover:text-foreground"
-                >Leashing and Resets</a
+                >Chase Limits and Resets</a
               ></td
             >
           </tr>
@@ -420,7 +471,7 @@
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:2216-2221 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
-        <!-- Source: server-scripts/Monster.cs:711-716 — the same roll happens once at server start. -->
+        <!-- Source: server-scripts/Monster.cs:Start,SetRespawnBosses — regular rares can roll at server start; rare bosses and elites instead wait for a timer. -->
         <span class="block"
           >When a rare monster's respawn timer ends, the game rolls its chance
           to appear.</span
@@ -440,7 +491,9 @@
 
       <div class="space-y-4 text-sm">
         <p class="font-medium text-foreground">
-          Example with a 20-minute roll interval, rare killed at 0:00
+          <!-- Source: server-scripts/Monster.cs:OnDeath — the first roll deadline includes corpse time; this axis starts after that period. -->
+          Example: a 20-minute roll interval and a 2-minute corpse period. The timeline
+          starts 2 minutes after the kill.
         </p>
 
         <div>
@@ -565,9 +618,12 @@
         </p>
       </div>
 
+      <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — independent timed rolls give interval ÷ chance only when no summon guard check is required. -->
       <p class="text-sm text-muted-foreground">
-        The average column is the expected wait from one kill to the next
-        appearance while the zone stays active (corpse time not included).
+        The listed respawn timer is the interval between spawn rolls. Average
+        wait excludes corpse time and assumes a player stays in the zone.
+        Summoned rares also require their guard group to be dead together, so
+        their average wait cannot be calculated from the timer alone.
       </p>
       {#if data.rareSpawns[0]}
         <p class="text-sm">Worked wait for {data.rareSpawns[0].name}:</p>
@@ -624,7 +680,15 @@
                   >
                 </td>
                 <td class="py-2 pr-4 text-right font-mono">{rare.level}</td>
-                <td class="py-2 pr-4">{rare.zone ?? "Unknown"}</td>
+                <td class="py-2 pr-4">
+                  {#each rare.zones as zone, i (zone.id)}
+                    {i > 0 ? ", " : ""}<a
+                      href="/zones/{zone.id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{zone.name}</a
+                    >
+                  {:else}Unknown{/each}
+                </td>
                 <td class="py-2 pr-4 text-right font-mono"
                   >{formatDuration(rare.respawn_time)}</td
                 >
@@ -674,9 +738,10 @@
           You must pay the gold fee quoted by the sage.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1738-1744; UINpcTrading.cs:837-844 — the table gives base fees, while Charisma discounts most quoted fees up to 25%; dungeon 100 uses its undiscounted fee. -->
-          The table lists base fees before the Charisma discount of up to 25% available
-          at most sages.
+          <!-- Source: server-scripts/Npc.cs:InteractNpc; UINpcTrading.cs:CalculatePurchaseItemPrice — all listed sages use Charisma's capped 25% purchase discount. -->
+          The table lists base fees before the Charisma discount of up to 25%. See
+          <MechanicsLink section="inventory#merchants">Merchants</MechanicsLink
+          >.
         </li>
       </ul>
       <!-- Source: server-scripts/Player.cs:14421-14434; Portal.cs:33-63 — renewal changes monster deadlines only, while portal keys, level and item-level requirements remain checked on entry. -->
@@ -773,8 +838,8 @@
             timer as due, and each step back inside fires one roll immediately.
             Every roll has a 25% chance. The third roll succeeds in this
             example, and the rare stands at its spawn point until you arrive.
-            Between ordinary rolls, a failed attempt waits the full respawn
-            interval.
+            Without a renewal, a failed roll waits a full roll interval before
+            the next roll.
           </p>
         </div>
         <p class="text-muted-foreground">
@@ -825,10 +890,7 @@
         {#if data.rareSpawns[0]}
           <p class="text-sm">Worked odds for {data.rareSpawns[0].name}:</p>
           <Calculation
-            calculation={rareSpawnOdds(
-              data.rareSpawns[0].respawn_probability,
-              data.rareSpawns[0].respawn_time,
-            )}
+            calculation={rareSpawnOdds(data.rareSpawns[0].respawn_probability)}
           />
         {/if}
       </div>
@@ -846,7 +908,13 @@
             <tbody>
               {#each data.renewalSages as sage (sage.id)}
                 <tr class="border-b border-border/50 hover:bg-muted/30">
-                  <td class="py-2 pr-4">{sage.dungeon_name}</td>
+                  <td class="py-2 pr-4"
+                    ><a
+                      href="/zones/{sage.dungeon_id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{sage.dungeon_name}</a
+                    ></td
+                  >
                   <td class="py-2 pr-4">
                     <a
                       href="/npcs/{sage.id}"
@@ -877,6 +945,8 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
+        <!-- Source: server-scripts/Player.cs:LateUpdate — the minimap clock displays the current game hour and minute. -->
+        <span class="block">The minimap clock shows game time.</span>
         <!-- Source: server-scripts/Monster.cs:EventTimeSpawn — game hour = ((server time % 3600) / 2.5) / 60, so one in-game day lasts exactly one real hour and one game hour lasts 2.5 real minutes. -->
         <span class="block"
           >One in-game day lasts exactly one real hour, so each game hour is 2.5
@@ -922,7 +992,15 @@
                   >
                 </td>
                 <td class="py-2 pr-4 text-right font-mono">{monster.level}</td>
-                <td class="py-2 pr-4">{monster.zone ?? "Unknown"}</td>
+                <td class="py-2 pr-4">
+                  {#each monster.zones as zone, i (zone.id)}
+                    {i > 0 ? ", " : ""}<a
+                      href="/zones/{zone.id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{zone.name}</a
+                    >
+                  {:else}Unknown{/each}
+                </td>
                 <td class="py-2 pr-4 font-mono"
                   >{formatGameHour(monster.spawn_time_start)}–{formatGameHour(
                     monster.spawn_time_end,
@@ -938,8 +1016,17 @@
       </div>
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:2222-2225 — Halloween monsters additionally only respawn while the Halloween event is active. -->
-        The Pumpkin Head and the Witch additionally require the Halloween event to
-        be active.
+        <a
+          href="/monsters/pumpkin_head"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >The Pumpkin Head</a
+        >
+        and
+        <a
+          href="/monsters/witch"
+          class="text-blue-600 dark:text-blue-400 hover:underline">the Witch</a
+        >
+        additionally require the Halloween event to be active.
       </p>
     </Card.Content>
   </Card.Root>
@@ -955,8 +1042,8 @@
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:698-705 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
-        <!-- Source: server-scripts/SummonMonster.cs:26,36-46,52-69 — once per second the trigger checks for a fresh alive-to-all-dead placeholder cycle; kills are not counted. -->
-        <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
+        <!-- Source: server-scripts/SummonMonster.cs:Update,AreAllPlaceholdersDead — checks the fixed placed group at one-second intervals; while the summon is dead the group must be observed with a living guard and then all dead. -->
+        <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — spawn rolls require an elapsed timer and current guard readiness; a configured arrival message is sent to the zone. -->
         <span class="block"
           >Each summoned monster watches a fixed group of guards.</span
         >
@@ -964,11 +1051,17 @@
           >The game does not count kills toward its appearance.</span
         >
         <span class="block"
-          >All guards must first be alive, then dead together for a new attempt.</span
+          >While the summoned monster is dead, the game must first find at least
+          one guard alive, then find the entire group dead together. These
+          guards are specific monsters, not every monster of their type in the
+          zone.</span
         >
         <span class="block"
-          >If the summoned monster's timer has ended, killing the last guard
-          triggers its chance to appear.</span
+          >Once the timer has ended and the guards meet those conditions, the
+          game rolls the summoned monster's chance to appear.</span
+        >
+        <span class="block"
+          >The game checks this guard group at one-second intervals.</span
         >
         <span class="block">Many announce their arrival to the zone.</span>
       </p>
@@ -985,11 +1078,7 @@
           the same time.</span
         >
         <span class="block"
-          >The intervals are in the <a
-            href="#rare-spawns"
-            class="text-blue-600 hover:underline dark:text-blue-400"
-            >rare spawn table</a
-          >.</span
+          >Respawn timers and corpse periods are listed below.</span
         >
       </p>
 
@@ -1053,10 +1142,10 @@
             </div>
           </div>
           <p class="mt-1 text-muted-foreground">
-            One kill every two minutes, the fifth at minute 9. The first guard
-            is already back at minute 8, so there is never a moment with all
-            five dead at once, and the check never fires. No number of kills
-            helps while they are this spread out.
+            Kills at minutes 0, 2, 4, 6 and 9. The first guard is already back
+            at minute 8, so there is never a moment with all five dead at once,
+            and the check never fires. No number of kills helps while they are
+            this spread out.
           </p>
         </div>
 
@@ -1116,9 +1205,10 @@
             </div>
           </div>
           <p class="mt-1 text-muted-foreground">
-            One kill per minute. From minute 4 to minute 8 all five guards are
-            dead at the same time. The check fires the instant the fifth dies,
-            and the summon appears.
+            <!-- Source: server-scripts/SummonMonster.cs:Update; Monster.cs:UpdateServer_DEAD — the guard check runs at one-second intervals; spawning also requires an elapsed timer and a successful roll. -->
+            One kill per minute. From minute 4 to minute 8 all five guards are dead
+            at the same time. At the next guard check, the summon can appear if its
+            timer has ended and its spawn roll succeeds.
           </p>
         </div>
 
@@ -1189,7 +1279,12 @@
             <tr class="border-b border-border">
               <th class="py-2 pr-4 text-left font-medium">Summon</th>
               <th class="py-2 pr-4 text-left font-medium">Zone</th>
-              <th class="py-2 pr-4 text-left font-medium">Kill requirement</th>
+              <th class="py-2 pr-4 text-left font-medium"
+                >Specific guards (all dead at once)</th
+              >
+              <th class="py-2 pr-4 text-left font-medium"
+                >Respawn timer and corpse time</th
+              >
               <th class="py-2 text-right font-medium">Chance</th>
             </tr>
           </thead>
@@ -1211,14 +1306,35 @@
                     >
                   {/if}
                 </td>
-                <td class="py-2 pr-4">{trigger.zone_name ?? "Unknown"}</td>
                 <td class="py-2 pr-4">
-                  {trigger.placeholder_count}× {trigger.placeholder_names ??
-                    "Unknown"}
+                  {#if trigger.zone_id}<a
+                      href="/zones/{trigger.zone_id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{trigger.zone_name}</a
+                    >{:else}Unknown{/if}
+                </td>
+                <td class="py-2 pr-4">
+                  {#each trigger.guards as guard, i (guard.id)}
+                    {i > 0 ? ", " : ""}{guard.count}
+                    <a
+                      href="/monsters/{guard.id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{guard.name}</a
+                    >
+                    {guard.count === 1 ? "guard" : "guards"}
+                  {/each}
+                </td>
+                <!-- Source: server-scripts/Monster.cs:OnDeath — earliest return is corpse time plus respawn timer, subject to guards and chance. -->
+                <td class="py-2 pr-4">
+                  {#if trigger.respawn_time !== null && trigger.death_time !== null}
+                    {formatDuration(trigger.respawn_time)} plus {formatDuration(
+                      trigger.death_time,
+                    )} corpse time
+                  {:else}Unknown{/if}
                 </td>
                 <td class="py-2 text-right font-mono">
                   {trigger.spawn_chance === null
-                    ? "—"
+                    ? "Unknown"
                     : formatChance(trigger.spawn_chance)}
                 </td>
               </tr>
@@ -1233,43 +1349,44 @@
     <Card.Header>
       <Card.Title>Chase Limits and Resets</Card.Title>
       <Card.Description>
-        Most monsters have a chase limit measured from where combat started,
-        while regular dungeon monsters have no distance limit.
+        Most monsters have a chase limit measured from where combat started.
+        Regular dungeon monsters skip this distance check.
       </Card.Description>
     </Card.Header>
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Monster.cs:51,1301-1313,2306-2314 — followDistance defaults to 20; the anchor is nonzero originFollowPosition, otherwise combatStartPosition, otherwise current position. -->
-          <!-- Source: server-scripts/Monster.cs:EventTargetTooFarToFollow,GetMaxAggroTarget; Monster.cs:1613-1627 — an out-of-range target is replaced by the highest-aggro eligible reachable in-range target; otherwise debuffs clear and returningHomePoint starts with sprintSpeed 3.5. -->
+          <!-- Source: server-scripts/Monster.cs:EventEntityTooFarToFollow,GetMaxAggroTarget,UpdateServer_MOVING,speed; website/data/compendium.db:monsters — enemy chase limits span 10–100 yd, most use 30 yd, then 40 yd; returning adds 3.5 speed. -->
           <span class="block"
-            >The default chase limit is 20 yd from the monster's position when
-            combat started, or from an explicitly configured origin.</span
+            >Chase limits range from 10 to 100 yd. Most monsters use 30 yd, and
+            40 yd is also common. Distance is measured from where combat
+            started, though some monsters use a fixed point.</span
           >
           <span class="block"
             >If its target exceeds that limit, the monster switches to the
             reachable, attackable target inside the limit with the highest
-            aggro. If none is available, it drops its target, loses harmful
-            effects, and returns home faster.</span
+            <MechanicsLink section="combat#special">threat</MechanicsLink>. If
+            none is available, it drops its target, loses harmful effects, and
+            returns home with 3.5 additional movement speed.</span
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:717-718,1308-1310 — the distance check is skipped entirely for non-boss, non-elite monsters in dungeon zones. -->
-          <!-- Source: server-scripts/Monster.cs:1590-1598 — chasing ends when the target is no longer reachable by pathfinding. -->
+          <!-- Source: server-scripts/Monster.cs:Start,EventEntityTooFarToFollow — dungeon monsters that are neither bosses nor elites skip the anchor-distance check. -->
+          <!-- Source: server-scripts/Monster.cs:EventTargetUnreachable,UpdateServer_MOVING — an unreachable target is removed from threat and cleared. -->
           <span class="block"
-            >Regular monsters inside dungeons have no distance limit.</span
+            >Regular monsters inside dungeons skip the chase-limit distance
+            check, but still stop when pathfinding cannot reach you.</span
           >
-          <span class="block">They chase you while a route to you exists.</span>
           <span class="block"
-            >Bosses and elites still stop chasing at their usual distance.</span
+            >Bosses and elites still use their chase limit.</span
           >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:OnAggro,EventEntityTooFarToFollow — returning non-dungeon-normal monsters require reachability and anchor distance within followDistance * 0.8; dungeon normal mobs skip this return-specific gate, not CanAttack or normal reachability. -->
           <span class="block"
             >A returning monster re-engages only if it can reach you and you are
-            within 80% of its chase distance from the position where combat
-            started, or from its configured origin.</span
+            within 80% of its chase limit from where combat started (or its
+            fixed point). For a 30 yd limit, that is 24 yd.</span
           >
           <span class="block"
             >Regular dungeon monsters do not check distance while returning.
@@ -1301,34 +1418,43 @@
     <Card.Content>
       <ul class="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Monster.cs:2167-2177 — on death a monster can spawn a replacement at its corpse position with a configured probability; the replacement never respawns. -->
+          <!-- Source: server-scripts/Monster.cs:OnDeath; website/data/compendium.db:monsters — Large Shade Beast has a 100% Keeper Remnant replacement; spawned replacements cannot respawn. -->
           <span class="block"
-            ><span class="font-medium text-foreground"
-              >After another monster dies:</span
-            > one monster can cause another to appear at its corpse.</span
-          >
-          <span class="block">The new monster does not respawn.</span>
-          <span class="block"
-            >A Large Shade Beast always leaves a Keeper Remnant behind.</span
+            ><span class="font-medium text-foreground">On death:</span>
+            a
+            <a
+              href="/monsters/large_shade_beast"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >Large Shade Beast</a
+            >
+            always leaves a
+            <a
+              href="/monsters/keeper_remnant"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >Keeper Remnant</a
+            >
+            at its corpse. The Keeper Remnant never respawns.</span
           >
         </li>
         <li>
-          <!-- Source: website/data/compendium.db monster_spawns table — 231 spawns have spawn_type 'altar', spawned in waves by altar events. -->
+          <!-- Source: server-scripts/EventAltar.cs:UserCode_CmdStartEvent__NetworkIdentity; AvatarEventAltar.cs:UserCode_CmdStartEvent__NetworkIdentity; DefaultEvent.cs:SummonMonsters; AvatarEvent.cs:SummonMonsters; Monster.cs:EventRespawnTimeElapsed; website/data/compendium.db:altars,monsters — activation consumes the required item, events spawn waves, and their monsters have respawn disabled. -->
           <span class="font-medium text-foreground">Altar events:</span>
           <a
             href="/altars"
-            class="text-blue-600 hover:underline dark:text-blue-400"
-            >forgotten altars</a
-          > spawn their monsters in waves when a player activates the event with the
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Forgotten Altars, the Altar of War, and the Ancient Altar</a
+          >
+          spawn their monsters in waves when a player activates the event with the
           required item. These monsters belong to the event and do not respawn on
           their own.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:698-705,2222-2225 — Halloween monsters start hidden and only respawn while the seasonal event is active. -->
+          <!-- Source: server-scripts/Monster.cs:Start,UpdateServer_DEAD,IsHourBetween; website/data/compendium.db:monsters — Halloween monsters start hidden and require the event and a 20:00–8:00 window. -->
           <span class="font-medium text-foreground">Seasonal monsters:</span>
           Halloween monsters spawn only during the <MechanicsLink
             section="world#seasonal-events">Halloween event</MechanicsLink
-          >, and only at night (see the spawn windows above).
+          >, and only between 20:00 and 8:00 game time (see the spawn windows
+          above).
         </li>
       </ul>
     </Card.Content>

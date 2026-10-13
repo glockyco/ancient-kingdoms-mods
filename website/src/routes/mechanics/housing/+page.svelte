@@ -44,11 +44,11 @@
         house owned by your account.
       </p>
       <p>
-        House purchase rules and <a
+        House purchase rules and house chests are covered on the
+        <a
           href="/mechanics/inventory#house-chests"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >house chests</a
-        > are covered in Inventory and Equipment.
+          class="text-blue-600 dark:text-blue-400 hover:underline">Inventory</a
+        > page.
       </p>
       <!-- Source: server-scripts/CustomStrucUI.cs:165-256 and server-scripts/Player.cs:13225-13242 — placement requires a footprint inside the owned buildable zone without a structure overlap; gold is deducted when the structure is created. -->
       <ul class="list-disc space-y-1 pl-5">
@@ -71,8 +71,21 @@
       <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:58-69 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13370-13387,13672-13713 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          Home workstations include a Craft Station, Cooking Oven, and Alchemy
-          Workbench.
+          Home workstations include a <a
+            href="/items/craft_station"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Craft Station</a
+          >,
+          <a
+            href="/items/cooking_oven"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Cooking Oven</a
+          >, and
+          <a
+            href="/items/alchemy_workbench"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Alchemy Workbench</a
+          >.
         </li>
         <li>
           Home workstations use the same ingredients and recipes as stations
@@ -105,12 +118,23 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:IsBarberSessionValid; Player.cs:UserCode_CmdStartBarber__NetworkIdentity; Player.cs:UserCode_CmdApplyBarberAppearance__String__String__String__String__String — a nearby living barber serves a living player outside combat and appearance illusions; the player needs 100 gold to open and pays only on successful Apply. -->
+      <!-- Source: server-scripts/Player.cs:IsBarberSessionValid,HasActiveAppearanceIllusion,UserCode_CmdStartBarber__NetworkIdentity,UserCode_CmdApplyBarberAppearance__String__String__String__String__String — requires a living player outside combat, within 2.5 yd of a living barber, without an illusion buff or Reaper Form; 100 gold is charged on Apply. -->
       <ul class="list-disc space-y-1 pl-5">
-        <li>A barber changes your appearance for 100 gold.</li>
         <li>
-          You must be alive, out of combat, near a living barber, and free of an
-          active appearance illusion.
+          A <a
+            href="/npcs?npcs.role_keys=is_barber"
+            class="text-blue-600 dark:text-blue-400 hover:underline">barber</a
+          > changes your appearance for 100 gold.
+        </li>
+        <li>
+          You must be alive, out of combat, and within 2.5 yd of a living
+          barber. The barber refuses you while an appearance-changing illusion
+          or
+          <a
+            href="/skills/reaper_form"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Reaper Form</a
+          > is active.
         </li>
         <li>
           You need 100 gold to open the service, but payment happens only on a
@@ -122,10 +146,12 @@
       <ul class="list-disc space-y-1 pl-5">
         <li>Style choices depend on your current race and gender.</li>
         <li>
-          Depending on your character, the options cover hair, beard, pattern,
-          crest, or body style.
+          Felarii choose Pattern. Drassar choose Crest and Body Type. Male
+          Humans, Dwarves, and Fire Goblins can choose Beard.
         </li>
-        <li>Supported races can change hair and eye colors.</li>
+        <li>
+          Every race except Felarii and Drassar can change hair and eye colors.
+        </li>
       </ul>
       <!-- Source: server-scripts/UIBarber.cs:499-515,526-558 and server-scripts/Player.cs:6567-6609 — the preview changes the local appearance, hair color updates beard color, and Cancel restores the prior appearance without payment. -->
       <ul class="list-disc space-y-1 pl-5">
@@ -141,19 +167,35 @@
       <!-- Source: server-scripts/Structure.cs:154-161 and server-scripts/UIWardrobe.cs:38-57,97-118,146-180 and server-scripts/Player.cs:14527-14545 — wardrobe furniture opens the saved appearances, with independent head, chest, and leg skin slots that can be cleared. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          Wardrobe furniture lets you select or clear saved Head, Chest, and
-          Legs appearances.
+          <a
+            href="/items/wardrobe"
+            class="text-blue-600 dark:text-blue-400 hover:underline">Wardrobe</a
+          > furniture lets you select or clear saved Head, Chest, and Legs appearances.
         </li>
         <li>
           Those appearance slots change the displayed outfit without replacing
           equipment.
         </li>
       </ul>
-      <!-- Source: server-scripts/GatherItem.cs:708-726 — each matching Fisherman's costume appearance adds 0.02 to the fishing reward probability after the fishing spot succeeds. -->
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractFishServer — after a successful spot check, each selected Fisherman's costume piece adds 0.02 to the chance of receiving the selected fish from that spot. -->
       <p>
-        The Fisherman's Hat, Fisherman's Garb, and Fisherman's Trousers each add
-        2 percentage points to the fishing reward check while selected in the
-        wardrobe.
+        The <a
+          href="/items/fishermans_hat"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Fisherman's Hat</a
+        >,
+        <a
+          href="/items/fishermans_garb"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Fisherman's Garb</a
+        >, and
+        <a
+          href="/items/fishermans_trousers"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Fisherman's Trousers</a
+        > each add 2 percentage points to the chance of catching a fish listed for
+        that spot after a bite. Select their appearances in the wardrobe to receive
+        the bonus.
       </p>
       <p>All three add 6 percentage points.</p>
       <p>

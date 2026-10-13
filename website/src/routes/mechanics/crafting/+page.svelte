@@ -7,7 +7,7 @@
 
   const SECTIONS = [
     { id: "crafting", label: "Crafting at a Station" },
-    { id: "augments", label: "Augments" },
+    { id: "augments", label: "Attaching and Removing Augments" },
   ];
 </script>
 
@@ -59,21 +59,28 @@
           >recipe list</a
         > for ingredients and results.
       </p>
-      <!-- Source: server-scripts/Player.cs:13672-13713,13747-13767 — output capacity and all ingredient quantities are checked before materials are removed; the non-food branch produces the result without a success roll. -->
+      <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — Craft Station crafting checks output capacity and ingredients, then produces non-food results without a success roll; cooking is a separate success check. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           A craft needs every listed material and enough inventory space for its
           result.
         </li>
         <li>
-          Non-food crafting consumes the materials and always produces the
-          result.
+          Crafting at a <a
+            href="/items/craft_station"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Craft Station</a
+          >
+          consumes the materials and always produces the result.
         </li>
         <li>
           <a
             href="/professions/cooking"
             class="text-blue-600 hover:underline dark:text-blue-400">Cooking</a
-          > rolls for success after consuming ingredients.
+          >
+          rolls for success after consuming ingredients.
+          <!-- Source: server-scripts/UICraftingStation.cs:Craft — cooking is refused when GetSuccessProbCooking is below 0.1. -->
+          The oven refuses a dish whose success chance is below 10%.
         </li>
         <li>
           <a
@@ -123,8 +130,12 @@
       <!-- Source: server-scripts/UICraftingStation.cs:53-69,142-159,288-315 and server-scripts/Player.cs:13590-13632 — two station materials trigger attachment, equipment and augment must be in inventory, and the client checks defensive category compatibility. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          Put an augment and an equipment piece from your inventory into a Craft
-          Station.
+          Put an augment and an equipment piece from your inventory into a
+          <a
+            href="/items/craft_station"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Craft Station</a
+          >.
         </li>
         <li>Ammunition cannot receive an augment.</li>
         <li>
@@ -136,13 +147,12 @@
       </ul>
       <!-- Source: server-scripts/Player.cs:13605-13632 and server-scripts/Inventory.cs:67-92 — attaching requires an unaugmented copy, consumes the loose augment, and returns the equipment with maximum durability. -->
       <ul class="list-disc space-y-1 pl-5">
-        <li>An equipment piece holds one augment.</li>
         <li>
           Attaching an augment consumes the loose augment and returns the
           equipment with that augment attached.
         </li>
         <li>
-          The returned piece has full durability, even if it was worn before
+          The returned piece has full durability, even if it was damaged before
           attachment.
         </li>
       </ul>
@@ -154,8 +164,12 @@
       <!-- Source: server-scripts/UINpcTrading.cs:216-233,281-298 and server-scripts/PlayerNpcTrading.cs:377-398 — the removal service lists carried and equipped items; its price depends on augment quality, and it needs space for the returned augment. -->
       <div class="space-y-2">
         <p>
-          An augment-removal merchant can detach an augment from carried or
-          equipped gear.
+          An <a
+            href="/npcs?npcs.role_keys=is_augmenter"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >augment-removal merchant</a
+          >
+          can detach an augment from carried or equipped gear.
         </p>
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-sm">
@@ -177,7 +191,7 @@
                 ></tr
               >
               <tr
-                ><td class="py-2 pr-4">Other qualities</td><td
+                ><td class="py-2 pr-4">Normal and Uncommon</td><td
                   class="py-2 text-right tabular-nums">5,000 gold</td
                 ></tr
               >
@@ -194,9 +208,9 @@
       <p>Sale confirmation warns when equipment has an augment attached.</p>
       <p>Remove an augment before selling if you want to keep it.</p>
       <p>
-        For general equipment repair and storage, see <MechanicsLink
+        For general equipment repair, see <MechanicsLink
           section="inventory#durability-and-repair"
-          >Inventory and Equipment</MechanicsLink
+          >Equipment Durability and Repair</MechanicsLink
         >.
       </p>
     </Card.Content>

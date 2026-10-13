@@ -1,9 +1,9 @@
 import type { Calculation } from "$lib/types/calculation";
-import { formatPercent, formatSeconds } from "./format";
+import { formatPercent } from "./format";
 import { situational } from "./inputs";
 
-// Source: server-scripts/Monster.cs:2214-2219,2866-2877 — a failed independent probability roll starts another respawn interval. Expected waits and repeated-roll odds below are derived from that process, not game-side stat calculations.
-export function rareSpawnOdds(chance: number, interval: number): Calculation {
+// Source: server-scripts/Monster.cs:UpdateServer_DEAD,OnDeath — failed independent rolls restart the respawn timer; the first deadline also includes corpse time. Odds and average waits are derived from these rolls for non-summoned rares in an active zone.
+export function rareSpawnOdds(chance: number): Calculation {
   return {
     steps: [
       {
@@ -27,7 +27,6 @@ export function rareSpawnOdds(chance: number, interval: number): Calculation {
         given: [
           `${formatPercent(chance)} chance per roll`,
           `${rolls} independent rolls`,
-          `${formatSeconds(interval)} between rolls without renewals`,
         ],
         result: `${formatPercent(1 - allFail)} chance of at least one spawn`,
         working: [
@@ -39,23 +38,39 @@ export function rareSpawnOdds(chance: number, interval: number): Calculation {
     },
   };
 }
+function duration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainder = Number((seconds % 60).toFixed(2));
+  return (
+    [
+      [hours, "h"],
+      [minutes, "min"],
+      [remainder, "s"],
+    ]
+      .filter(([amount]) => Number(amount) > 0)
+      .map(([amount, unit]) => `${amount} ${unit}`)
+      .join(" ") || "0 s"
+  );
+}
+
 export function rareSpawnWait(chance: number, interval: number): Calculation {
   const seconds = interval / chance;
   return {
     steps: [
       {
-        name: "Expected wait",
-        expression: "Respawn interval ÷ spawn chance, excluding corpse time",
+        name: "Average wait",
+        expression: "Respawn timer ÷ spawn chance, excluding corpse time",
       },
     ],
     example: () => ({
       given: [
-        `${formatSeconds(interval)} interval`,
+        `${duration(interval)} respawn timer`,
         `${formatPercent(chance)} spawn chance`,
       ],
-      result: `About ${formatSeconds(seconds)} on average`,
+      result: `About ${duration(seconds)} on average`,
       working: [
-        `Expected wait: ${formatSeconds(interval)} ÷ ${formatPercent(chance)} = about ${formatSeconds(seconds)}`,
+        `Average wait: ${duration(interval)} ÷ ${formatPercent(chance)} = about ${duration(seconds)}`,
       ],
     }),
   };

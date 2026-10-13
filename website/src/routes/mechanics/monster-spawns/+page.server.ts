@@ -9,6 +9,15 @@ export interface BossRespawn {
   name: string;
   level: number;
   respawn_time: number;
+  respawn_probability: number;
+  is_summonable: number;
+  spawn_time_start: number;
+  spawn_time_end: number;
+}
+
+export interface SpawnZone {
+  id: string;
+  name: string;
 }
 
 export interface RareSpawn {
@@ -17,7 +26,8 @@ export interface RareSpawn {
   level: number;
   respawn_time: number;
   respawn_probability: number;
-  zone: string | null;
+  zones: SpawnZone[];
+  is_summonable: number;
 }
 
 export interface SpawnWindowMonster {
@@ -26,7 +36,7 @@ export interface SpawnWindowMonster {
   level: number;
   spawn_time_start: number;
   spawn_time_end: number;
-  zone: string | null;
+  zones: SpawnZone[];
 }
 
 export interface SummonTrigger {
@@ -34,9 +44,11 @@ export interface SummonTrigger {
   summoned_entity_id: string;
   summoned_entity_name: string;
   summon_message: string;
+  zone_id: string | null;
   zone_name: string | null;
-  placeholder_names: string | null;
-  placeholder_count: number;
+  guards: { id: string; name: string; count: number }[];
+  respawn_time: number | null;
+  death_time: number | null;
   spawn_chance: number | null;
 }
 
@@ -45,6 +57,7 @@ export interface RenewalSage {
   name: string;
   base_fee: number;
   dungeon_name: string;
+  dungeon_id: string;
 }
 
 export interface RespawnMechanicsPageData {
@@ -55,14 +68,16 @@ export interface RespawnMechanicsPageData {
   renewalSages: RenewalSage[];
 }
 
-const ZONE_FOR_MONSTER = `
-  COALESCE(
-    NULLIF(m.zone_bestiary, ''),
-    (
-      SELECT GROUP_CONCAT(DISTINCT z.name)
+// Source: website/data/compendium.db:monster_spawns — use placed spawn zones, not the bestiary's descriptive area.
+const ZONES_FOR_MONSTER = `
+  (
+    SELECT json_group_array(json_object('id', id, 'name', name))
+    FROM (
+      SELECT DISTINCT z.id, z.name
       FROM monster_spawns ms
       JOIN zones z ON z.id = ms.zone_id
       WHERE ms.monster_id = m.id
+      ORDER BY z.name
     )
   )
 `;
@@ -73,7 +88,8 @@ export const load: PageServerLoad = (): RespawnMechanicsPageData => {
   const bosses = db
     .prepare(
       `
-      SELECT m.id, m.name, m.level, m.respawn_time
+      SELECT m.id, m.name, m.level, m.respawn_time, m.respawn_probability,
+        m.is_summonable, m.spawn_time_start, m.spawn_time_end
       FROM monsters m
       WHERE (m.is_boss = 1 OR m.is_world_boss = 1) AND m.does_respawn = 1
       ORDER BY m.respawn_time DESC, m.level DESC, m.name
@@ -85,43 +101,58 @@ export const load: PageServerLoad = (): RespawnMechanicsPageData => {
     .prepare(
       `
       SELECT m.id, m.name, m.level, m.respawn_time, m.respawn_probability,
-        ${ZONE_FOR_MONSTER} AS zone
+        m.is_summonable, ${ZONES_FOR_MONSTER} AS zones
       FROM monsters m
       WHERE m.respawn_probability < 1 AND m.does_respawn = 1
       ORDER BY m.level, m.name
     `,
     )
-    .all() as RareSpawn[];
+    .all()
+    .map((row) => {
+      const rare = row as Omit<RareSpawn, "zones"> & { zones: string };
+      return { ...rare, zones: JSON.parse(rare.zones) as SpawnZone[] };
+    });
 
   const spawnWindowMonsters = db
     .prepare(
       `
       SELECT m.id, m.name, m.level, m.spawn_time_start, m.spawn_time_end,
-        ${ZONE_FOR_MONSTER} AS zone
+        ${ZONES_FOR_MONSTER} AS zones
       FROM monsters m
       WHERE m.spawn_time_start != 0 OR m.spawn_time_end != 0
       ORDER BY m.level DESC, m.name
     `,
     )
-    .all() as SpawnWindowMonster[];
+    .all()
+    .map((row) => {
+      const monster = row as Omit<SpawnWindowMonster, "zones"> & {
+        zones: string;
+      };
+      return { ...monster, zones: JSON.parse(monster.zones) as SpawnZone[] };
+    });
 
+  // Source: server-scripts/SummonMonster.cs:IsSummonDead — a summon trigger only counts a summonable NPC as dead.
+  // NpcExporter reads the NPC template, which marks Astral Projection as not summonable, so the
+  // template's timer and chance are unverified for the scene's summon and stay unknown here.
   const summonTriggers = db
     .prepare(
       `
       SELECT st.summoned_entity_type, st.summoned_entity_id,
-        st.summoned_entity_name, st.summon_message, z.name AS zone_name,
+        st.summoned_entity_name, st.summon_message, z.id AS zone_id, z.name AS zone_name,
         (
-          SELECT GROUP_CONCAT(DISTINCT mo.name)
-          FROM summon_trigger_placeholders sp
-          JOIN monster_spawns ms ON ms.id = sp.spawn_id
-          JOIN monsters mo ON mo.id = ms.monster_id
-          WHERE sp.trigger_id = st.id
-        ) AS placeholder_names,
-        (
-          SELECT COUNT(*)
-          FROM summon_trigger_placeholders sp
-          WHERE sp.trigger_id = st.id
-        ) AS placeholder_count,
+          SELECT json_group_array(json_object('id', id, 'name', name, 'count', guard_count))
+          FROM (
+            SELECT mo.id, mo.name, COUNT(*) AS guard_count
+            FROM summon_trigger_placeholders sp
+            JOIN monster_spawns ms ON ms.id = sp.spawn_id
+            JOIN monsters mo ON mo.id = ms.monster_id
+            WHERE sp.trigger_id = st.id
+            GROUP BY mo.id, mo.name
+            ORDER BY mo.name
+          )
+        ) AS guards,
+        summoned.respawn_time AS respawn_time,
+        summoned.death_time AS death_time,
         summoned.respawn_probability AS spawn_chance
       FROM summon_triggers st
       LEFT JOIN zones z ON z.id = st.zone_id
@@ -131,13 +162,20 @@ export const load: PageServerLoad = (): RespawnMechanicsPageData => {
       ORDER BY st.summoned_entity_name
     `,
     )
-    .all() as SummonTrigger[];
+    .all()
+    .map((row) => {
+      const trigger = row as Omit<SummonTrigger, "guards"> & { guards: string };
+      return {
+        ...trigger,
+        guards: JSON.parse(trigger.guards) as SummonTrigger["guards"],
+      };
+    });
 
   const renewalSages = db
     .prepare(
       `
       SELECT n.id, n.name, n.gold_required_respawn_dungeon AS base_fee,
-        z.name AS dungeon_name
+        z.id AS dungeon_id, z.name AS dungeon_name
       FROM npcs n
       JOIN zones z ON z.zone_id = n.respawn_dungeon_id
       WHERE n.respawn_dungeon_id > 0

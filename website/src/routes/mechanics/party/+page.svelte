@@ -47,7 +47,13 @@
         <span class="block"
           >A player with two active mercenaries uses three of the five places.</span
         >
-        <span class="block">Companions, familiars, and pets use none.</span>
+        <span class="block"
+          ><a
+            href="/summons"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Companions, familiars, and pets</a
+          > use none.</span
+        >
       </p>
       <!-- Source: server-scripts/PlayerParty.cs:91-140 — capacity counts active mercenary references without checking health. -->
       <p>An active mercenary still uses a place while dead.</p>
@@ -61,9 +67,15 @@
           player accepts.</span
         >
       </p>
-      <!-- Source: server-scripts/Party.cs:13-29 and server-scripts/PartySystem.cs:35-56,88-100 — the inviter is leader and only the leader can kick or dismiss. -->
+      <!-- Source: server-scripts/Party.cs:master; PartySystem.cs:FormParty,AddToParty,LeaveParty,KickFromParty,DismissParty; PlayerParty.cs:UserCode_CmdInvite__String — any member can invite; the first remaining member leads a party that continues after its leader leaves. -->
       <p>
-        <span class="block">The inviter becomes leader.</span>
+        <span class="block"
+          >The player who starts the party leads it. Any member can invite.</span
+        >
+        <span class="block"
+          >If the party continues after the leader leaves, the remaining member
+          who joined earliest becomes leader.</span
+        >
         <span class="block"
           >Only the leader can remove a member or dismiss the party.</span
         >
@@ -96,15 +108,18 @@
         <span class="block"
           >The monster's highest-threat opponent gets kill credit.</span
         >
-        <span class="block">A mercenary or companion credits its owner.</span>
+        <span class="block"
+          >A mercenary, companion, or charmed monster credits its owner.</span
+        >
         <span class="block"
           >Nearby party members gain loot access when the monster dies.</span
         >
       </p>
       <!-- Source: server-scripts/PlayerParty.cs:74-88 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
       <p>
-        Sharing requires party members to be visible to the credited player and
-        closer than 40 yd to them.
+        Sharing requires party members to be closer than 40 yd to the credited
+        player and to have that player loaded in their game. This is not a
+        stealth check.
       </p>
       <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
@@ -210,8 +225,16 @@
       <p>
         <span class="block"
           >If a won item needs inventory space after the roll and no longer
-          fits, the game tries an empty bank slot, then an empty house-chest
-          slot.</span
+          fits, the game tries an <a
+            href="/mechanics/inventory#bank"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >empty bank slot</a
+          >, then an
+          <a
+            href="/mechanics/inventory#house-chests"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >empty house-chest slot</a
+          >.</span
         >
         <span class="block">With neither available, the item is lost.</span>
       </p>
@@ -238,7 +261,7 @@
           <tbody>
             <tr class="border-b border-border/50"
               ><td class="py-2 pr-6 font-mono">None</td><td class="py-2"
-                >Players nearby in the same network area</td
+                >Players near you</td
               ></tr
             >
             <tr class="border-b border-border/50"
@@ -253,7 +276,11 @@
             >
             <tr class="border-b border-border/50"
               ><td class="py-2 pr-6 font-mono">/g</td><td class="py-2"
-                >Online members of your guild</td
+                >Online members of your <a
+                  href="/mechanics/guilds"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >guild</a
+                ></td
               ></tr
             >
             <tr
@@ -264,6 +291,8 @@
           </tbody>
         </table>
       </div>
+      <!-- Source: server-scripts/PlayerChat.cs:UserCode_CmdMsgLocal__String__String — local messages exceeding 120 characters are discarded. -->
+      <p>Local messages longer than 120 characters are not sent.</p>
       <!-- Source: server-scripts/PlayerChat.cs:457-504,540-546 — party/guild chat requires membership; whispers only reach online characters. -->
       <p>
         <span class="block">Party and guild chat require membership.</span>
@@ -277,7 +306,10 @@
         >
         <span class="block">Party membership is not required.</span>
         <span class="block">Following only moves you toward the player.</span>
-        <span class="block">Following stops within 1 yd of the player.</span>
+        <span class="block"
+          >You stop moving within 1 yd of the player and keep following when
+          they move.</span
+        >
       </p>
       <!-- Source: server-scripts/Player.cs:3908-3931,3935-3967 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>

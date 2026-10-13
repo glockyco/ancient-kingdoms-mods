@@ -150,8 +150,11 @@
       <!-- Source: server-scripts/UIMap.cs:140-163,337-352 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
       <p>
         <span class="block"
-          >Temple of Valaark shows a special map instead of the normal map
-          panel.</span
+          ><a
+            href="/zones/temple_of_valaark"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Temple of Valaark</a
+          > shows a special map instead of the normal map panel.</span
         >
         <span class="block"
           >The Temple of Valaark map also hides your marker.</span
@@ -189,26 +192,56 @@
       <Card.Title>Binding and Travel</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1788-1798, server-scripts/Player.cs:10343-10350,10365-10375, and server-scripts/TargetBuffSkill.cs:314-319 — accepting a soul binder or Bind Affinity confirmation records the player's current position and zone. -->
+      <!-- Source: server-scripts/Npc.cs:InteractNpc; Player.cs:UserCode_CmdBindPlayer; TargetBuffSkill.cs:Apply; ScrollItem.cs:UseAfterCast; website/data/compendium.db:skills.bind_affinity — confirming a binder or bind spell saves the player's current zone and position; Bind Affinity belongs to Ranger, Cleric, Wizard, Druid and Necromancer. -->
       <p>
         <span class="block"
           >Confirming a binding saves your current position and zone as your new
           bind point.</span
         >
         <span class="block"
-          >A soul binder or Bind Affinity can ask you to confirm a binding.</span
+          >A <a
+            href="/npcs?npcs.role_keys=is_soul_binder"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >soul binder</a
+          >, the
+          <a
+            href="/skills/bind_affinity"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Bind Affinity</a
+          >
+          spell, or a
+          <a
+            href="/items/scroll_of_binding"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Scroll of Binding</a
+          >
+          asks you to confirm a binding. Bind Affinity is available to Rangers, Clerics,
+          Wizards, Druids, and Necromancers.</span
         >
       </p>
       <!-- Source: server-scripts/TravelItem.cs:22-41 — a Bind Point travel item reads the saved bind point and teleports without changing it. The exported gate_scroll item is a TravelItem. -->
-      <p>Gate Scroll returns to your saved bind point without changing it.</p>
+      <p>
+        <a
+          href="/items/gate_scroll"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Gate Scroll</a
+        > returns to your saved bind point without changing it.
+      </p>
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: exported-data/items.json — scroll_of_binding has level_required 30. -->
       <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
       <!-- Source: server-scripts/PlayerSkills.cs:741-745 — a bind spell is refused in a dungeon. -->
       <p>
-        <span class="block">Scroll of Binding requires level 30.</span>
         <span class="block"
-          >Binding scrolls and binding spells cannot be used in dungeons.</span
+          ><a
+            href="/items/scroll_of_binding"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Scroll of Binding</a
+          > requires level 30.</span
+        >
+        <span class="block"
+          >The Scroll of Binding and bind spells such as Bind Affinity cannot be
+          used in dungeons.</span
         >
       </p>
       <!-- Source: server-scripts/TravelItem.cs:15-42 — blocked use in zone 23 returns before consuming a charge; successful use decrements one charge unless the item has infinite charges. -->
@@ -218,13 +251,22 @@
           and consume one charge on successful use.</span
         >
         <span class="block"
-          >Temple of Valaark blocks travel items before they consume a charge.</span
+          ><a
+            href="/zones/temple_of_valaark"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Temple of Valaark</a
+          > blocks travel items before they consume a charge. Gate Scroll works in
+          other dungeons.</span
         >
       </p>
       <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14098-14110 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
-          >A travel NPC shows its offer and any gold cost before travel.</span
+          >A <a
+            href="/npcs?npcs.role_keys=is_teleporter"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >travel NPC</a
+          > shows its offer and any gold cost before travel.</span
         >
         <span class="block">Paid travel requires enough gold.</span>
       </p>
@@ -273,41 +315,30 @@
               <th scope="row" class="py-2 pr-6 text-left font-medium"
                 >Living monster</th
               >
-              <td class="py-2">The specified monster must die first.</td>
+              <td class="py-2">Blocked while a specific monster is alive.</td>
             </tr>
             <tr class="border-b border-border/60">
               <th scope="row" class="py-2 pr-6 text-left font-medium">Key</th>
               <td class="py-2"
-                >A key from any online party member suffices unless each player
-                needs their own.</td
+                >Walk-in portals accept a key from any online party member
+                unless each player needs their own key. Portals you click accept
+                a key from any online party member.</td
               >
             </tr>
+            <!-- Source: server-scripts/Portal.cs:OnTriggerEnter2D; InteractablePortal.cs:OnClick; UIEquipment.cs:Update — entry checks each player's own level and total item level, reports missing thresholds, and the equipment window displays the total. -->
             <tr>
               <th scope="row" class="py-2 pr-6 text-left font-medium"
                 >Level and total item level</th
               >
               <td class="py-2"
-                >Your character must meet each listed threshold.</td
+                >Each player needs the required character level and total item
+                level. A refusal message states the requirement. The equipment
+                window shows your total item level.</td
               >
             </tr>
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Portal.cs:47-63 — requiresEveryoneKey disallows a party key on walk-in portals; level and total item level are checked per player. server-scripts/InteractablePortal.cs:98-115 and server-scripts/PlayerParty.cs:203-213 — interactable portals accept a key from an online party member and check the interacting player's own thresholds. -->
-      <p>
-        <span class="block"
-          >A walk-in portal accepts a key from any online party member, unless
-          it requires each player's own key.</span
-        >
-        <span class="block"
-          >A portal you interact with accepts a key from any online party
-          member.</span
-        >
-        <span class="block"
-          >Each player still needs the required character level and total item
-          level.</span
-        >
-      </p>
       <!-- Source: server-scripts/Player.cs:11143-11157,3570-3572, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
@@ -324,7 +355,7 @@
     <Card.Header>
       <Card.Title>Seasonal Events</Card.Title>
     </Card.Header>
-    <Card.Content class="space-y-3 text-muted-foreground">
+    <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2214-2224 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
       <p>
         <span class="font-medium text-foreground"

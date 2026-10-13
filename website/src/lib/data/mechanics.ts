@@ -102,7 +102,7 @@ export const MECHANICS_GROUPS = [
       {
         title: "Party & Loot",
         href: "/mechanics/party",
-        description: "Party places, shared rewards, and loot rolls",
+        description: "Party size, shared rewards, and loot rolls",
         summary: "Shared rewards and rolls",
       },
       {
