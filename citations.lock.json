@@ -19,14 +19,6 @@
       "sha256": "07d3ca4f05e26d24f69bc4fbcd86457001866bd1411bc4259e31276b463df39a",
       "span": 3
     },
-    "AreaBuffSkill.cs:183": {
-      "sha256": "e9f7655d0ea0761a3f75537ccd59a918ee78b831e603ae1bc01799480a2aacf4",
-      "span": 1
-    },
-    "AreaBuffSkill.cs:261": {
-      "sha256": "06b2b3ae29c04cfad8703e674150e300e5bab2a893630874adfce5a7847bd9a3",
-      "span": 1
-    },
     "AreaBuffSkill.cs:33-45": {
       "sha256": "25c73de3892df8a1466f7ff02e40b645e5baf48098a588aa075057581077ab39",
       "span": 13
@@ -41,16 +33,8 @@
     "AreaDamageSkill.cs": {
       "span": 0
     },
-    "AreaDamageSkill.cs:124-149": {
-      "sha256": "c82a68fd0aee7523bf9093f1c5af65a3e9e6c1aafaa91a78aabb741e99d9e79e",
-      "span": 26
-    },
     "AreaDamageSkill.cs:135": {
       "sha256": "db3cd25d4c3689a046166440c41c9491beb9687a043ca35657c6363834d367af",
-      "span": 1
-    },
-    "AreaDamageSkill.cs:149": {
-      "sha256": "8cd410fc828bcf3aa0ddaad236633a406ab37074c5e6a24798162e510e34169d",
       "span": 1
     },
     "AreaDamageSkill.cs:149-154": {
@@ -65,10 +49,6 @@
       "sha256": "8441f33c031cc23555cad3b8de1429dc9e66b310364f9146cbf33d25dce399f8",
       "span": 2
     },
-    "AreaDamageSkill.cs:93": {
-      "sha256": "f0925da5245ec088dd10df82506f3ff556f0271284b787e853a8f8cd76f726b1",
-      "span": 1
-    },
     "AreaDamageSkill.cs:Apply": {
       "span": 0
     },
@@ -76,21 +56,9 @@
       "sha256": "537368ae3ca6c7eb02bbdfcb423c271df709202c40cec2bdfeb59dd84656aa59",
       "span": 36
     },
-    "AreaDebuffSkill.cs:113-158": {
-      "sha256": "22018087a171a86f28734d1f253c09811ee025090bfdee4f5eb1e84416995e29",
-      "span": 46
-    },
-    "AreaDebuffSkill.cs:142-158": {
-      "sha256": "7268863a5a0d4a29c795a05123d8da2050a92bf97998fc4349888978cb0094d4",
-      "span": 17
-    },
     "AreaDebuffSkill.cs:164-205": {
       "sha256": "0b42b24a0e30745a10f68ac2a3d7688ccdce6d81fc5f783a41f7140ac4e28a13",
       "span": 42
-    },
-    "AreaDebuffSkill.cs:184-281": {
-      "sha256": "77d8db70064bf077f7ea6c836c4952f276b55a867111e1504cbdbbb0fe08452c",
-      "span": 98
     },
     "AreaDebuffSkill.cs:209-233": {
       "sha256": "64d0628be4de76397642226d506d86df33a0e8f81b77a9ce26a526011e4f9682",
@@ -100,16 +68,8 @@
       "sha256": "69bd2f9c444fac992cd7ff4007ab532be71be08129c89251801e05956a4420da",
       "span": 21
     },
-    "AreaDebuffSkill.cs:244-280": {
-      "sha256": "32a0b641310dc2768d6b4dbff6e504b75313673ee60cfd756df416f7861b66f7",
-      "span": 37
-    },
     "AreaDebuffSkill.cs:Apply": {
       "span": 0
-    },
-    "AreaHealSkill.cs:101-105": {
-      "sha256": "9ba15dc5b4dd8787c84794375966b797009f5f7252beb49ef05829ccc68163d7",
-      "span": 5
     },
     "AreaHealSkill.cs:101-117": {
       "sha256": "4bb50f41c278111d8ac47da611950e32d72b51f91e809ee2b2931ee8ed547dd6",
@@ -118,10 +78,6 @@
     "AreaHealSkill.cs:109-111": {
       "sha256": "c487eb880690d195ce941d5839d6ff6c06508e4ad4db6a47d8dda8a103ed892a",
       "span": 3
-    },
-    "AreaHealSkill.cs:109-117": {
-      "sha256": "4ef34092edad73aad8cf7feff24614254534ef50a23d92deb306bea6af9397eb",
-      "span": 9
     },
     "AreaHealSkill.cs:125-150": {
       "sha256": "937962db1d25ebef7afa56fc16c9abdadadc7ce826ca783eb177a6a56aac0463",
@@ -133,10 +89,6 @@
     },
     "AreaHealSkill.cs:Apply": {
       "span": 0
-    },
-    "AreaObjectSpawnSkill.cs:119-122": {
-      "sha256": "d04926e7051ed25130c743bc3221becdc677698333c1269e0b838b4992fa94e4",
-      "span": 4
     },
     "AreaObjectSpawnSkill.cs:AreaObjectSpawner": {
       "span": 0
@@ -181,10 +133,6 @@
       "sha256": "21f5d8a4bbb033b30358cc3b14cd77a8c7bdaaad56747446f8bb76bb7b9f9892",
       "span": 12
     },
-    "BardCharmSongSkill.cs:20-44": {
-      "sha256": "1f230d91f3993e8c7ae3b11e0db01b47d46608d28e0575ca1ab99f4c47850918",
-      "span": 25
-    },
     "BardCharmSongSkill.cs:33-59": {
       "sha256": "a309ed8da6af277b9835864575508577023d37ea734835331aa4303eba9cfdec",
       "span": 27
@@ -192,10 +140,6 @@
     "BardCharmSongSkill.cs:61-64": {
       "sha256": "ca542ea58b90b105ff3938e7851d83e55a01a6438307dbcbd3b151fcf689376f",
       "span": 4
-    },
-    "BardCharmSongSkill.cs:61-70": {
-      "sha256": "8eb6f967470fe2edf7ca8876022b9f03dd0f054858932a7fba6a0692a6bdbf92",
-      "span": 10
     },
     "BardCharmSongSkill.cs:66-70": {
       "sha256": "250a5e1798fb664d81e8b67e09d574e044916ba330c49028aff0870b975cc703",
@@ -205,17 +149,9 @@
       "sha256": "5f446aec2b9d59d4ca1c14b6a9143c459e115c939271f9ea737ef21096a0a16d",
       "span": 6
     },
-    "BardCharmSongSkill.cs:8-18": {
-      "sha256": "b6fad3ab6df81a357a93233eac4057e36577fcbbd5070fe5a0c15a4e5c015bcd",
-      "span": 11
-    },
     "BardCharmSongSkill.cs:90-119": {
       "sha256": "2c03d667791f71725062867d00e1374507301dda03614eb3856933db24983885",
       "span": 30
-    },
-    "BardCharmSongSkill.cs:90-124": {
-      "sha256": "9363ec0a3cd3bd6ea485d1176ebfbbdbb081539f063afef29dbcc13e275a48d5",
-      "span": 35
     },
     "BardCharmSongSkill.cs:90-133": {
       "sha256": "1610df67e5a41a58fcd1ae0db9edf390e0be2a92ae1a3a34ce6427b2ea503836",
@@ -232,10 +168,6 @@
     },
     "BardCharmSongSkill.cs:IsValidCharmTarget": {
       "span": 0
-    },
-    "BardFinalCadenceSkill.cs:63-70": {
-      "sha256": "6cac9f93f492ef638ced318281cd78857071f7759672c1a067757646726c3ed2",
-      "span": 8
     },
     "BardFinalCadenceSkill.cs:67-70": {
       "sha256": "29b8dc2534b794403a1f62fb85f44379d84c62b4ef63e479a0e134ac7ab2d390",
@@ -286,14 +218,6 @@
       "sha256": "f81ab64fc7d1fe86fa3e8ee33fa4f263dc04cb12080d13757849e62f38042a26",
       "span": 6
     },
-    "BardSongSkill.cs:35-71": {
-      "sha256": "e36abfe960847d2d80f2e6534b2118e6cec571b3dabbe79c2cbf4758200a92e9",
-      "span": 37
-    },
-    "BardSongSkill.cs:35-75": {
-      "sha256": "16719839de9cb7f48a8c725b4bdf0a63dff20e856a4c887f7ee4a008693aa60b",
-      "span": 41
-    },
     "BardSongSkill.cs:78-117": {
       "sha256": "63bb65436f29cbf1b10d093a74d078b31d44eee8338b21b3e5e81c6eda02d275",
       "span": 40
@@ -303,10 +227,6 @@
     },
     "BardSongSkill.cs:TryApplyAuraBuff": {
       "span": 0
-    },
-    "BardVirtuositySkill.cs:6-13": {
-      "sha256": "139e004801ff8527fd94c873b8aeb60e610cb075fa2e94379acf631e62d9cf44",
-      "span": 8
     },
     "BardVirtuositySkill.cs:IsDamageBonusActive": {
       "span": 0
@@ -332,10 +252,6 @@
     "Buff.cs:133-240": {
       "sha256": "1be628f7ca1b9e88af0984a3a14198c5ddaf32b210122d903505efd1aefbc7d7",
       "span": 108
-    },
-    "Buff.cs:19": {
-      "sha256": "a86273c97a2fbd04185b8ae8ada63be74fae6a3fd7f8ca6e7c9e2adf2f5a6d99",
-      "span": 1
     },
     "Buff.cs:240": {
       "sha256": "19f1068bf2cf50f90ce5e3b03a3f540a7ef4cc034c679478edca94d2aab5a0d9",
@@ -369,10 +285,6 @@
       "sha256": "fe5ea2340d0f3dcb02aeac91d0c596c672facaf6d6293a0222c1cb8cae1162e5",
       "span": 160
     },
-    "Buff.cs:9-25": {
-      "sha256": "54641868c7b0a8a9ee1a248893bcf60a4d4b3b4d205b2d7c205d88b6a3df8fdb",
-      "span": 17
-    },
     "Buff.cs:91": {
       "sha256": "1183e2b18860871e4f5cfa529bed47b0f8d2ee514717fa30cb6fa470d4d83769",
       "span": 1
@@ -398,10 +310,6 @@
     "BuffSkill.cs:14-31": {
       "sha256": "3792632f0045822dfe4cd78432b32dc570bfc8a16e6787b6792fae232a72b7be",
       "span": 18
-    },
-    "BuffSkill.cs:209-216": {
-      "sha256": "fdab61f4c42d479a591da0f6c12b12b10e70f75aa096a4c4c166e009f0ae3e9e",
-      "span": 8
     },
     "BuffSkill.cs:218-235": {
       "sha256": "13d379cf3086b5ef2fbe868598c93b0244cdc488f6932ef31d6bce0f422980f1",
@@ -572,10 +480,6 @@
       "sha256": "957966c077f7f50999b2ed7c556b43aec095a04a924e650d37b502251c71aa97",
       "span": 5
     },
-    "Combat.cs:1104-1137": {
-      "sha256": "d60e584e4b643a4ada82d2a65612c71e235b744f721b829037e24a1fe0c606fe",
-      "span": 34
-    },
     "Combat.cs:1104-1138": {
       "sha256": "efaf26b406dc942bfc5001b1d6debc80a5af8e76c05b4ef45b7c9e8339953fa7",
       "span": 35
@@ -583,10 +487,6 @@
     "Combat.cs:1139-1159": {
       "sha256": "e48191593a90daf605fb6b22f18de451a0326f6c1e46a72329e80eb9bdd942d5",
       "span": 21
-    },
-    "Combat.cs:1139-1160": {
-      "sha256": "48df0b613926b4b3a20e28295b242b85cefb4015f6b7ebd8ce0c27fcb3d07e4f",
-      "span": 22
     },
     "Combat.cs:115-360": {
       "sha256": "e3c31ed5f847746b0340a32ec6be94b60af7480337418528f8a2eb7187ff5457",
@@ -604,18 +504,6 @@
       "sha256": "a287276650d7f57b2fc2bfe5c46aec72a6b002f4ea9d2a03b2b875ee04b41986",
       "span": 16
     },
-    "Combat.cs:119-146": {
-      "sha256": "4b6d8424d33e3ca80835aa01a04007118589131353e82bce95efb70c842b8c6a",
-      "span": 28
-    },
-    "Combat.cs:119-178": {
-      "sha256": "e119a056e0dfbad3bc1da8f2500e8b4497947b18178fa2a6e004669a9cff0e64",
-      "span": 60
-    },
-    "Combat.cs:1191-1204": {
-      "sha256": "c7c2d8bf6a58a51b937ca4ad92bd09b626916888029b910d9c32304503a19577",
-      "span": 14
-    },
     "Combat.cs:1224-1233": {
       "sha256": "49fd774778e9c15ce843ca758b66154c60fec04644f1542ed2a32b4b47507f7c",
       "span": 10
@@ -632,17 +520,9 @@
       "sha256": "2a23ac132d1049cba208449d456c9eedad7bf060da4b23aa5572ab8701925d6d",
       "span": 50
     },
-    "Combat.cs:1236-1311": {
-      "sha256": "ebe4b854fe0bf118302f2b9db682926aabedfe07371fb328ad2d12344013b505",
-      "span": 76
-    },
     "Combat.cs:1236-1314": {
       "sha256": "aa2b291c8dba93b85d12200493b1b539fee84e48c5fb1af7addcf02f2964094b",
       "span": 79
-    },
-    "Combat.cs:1238": {
-      "sha256": "feae588cd7010377ff87f53db7cd3170cce1a1e9c4a25ae8e55f94ef0b535ac8",
-      "span": 1
     },
     "Combat.cs:1255-1265": {
       "sha256": "9561dd9a5543f812d94161b233f5c78f2cc52177b94c3e6f1e60088aaee91962",
@@ -664,10 +544,6 @@
       "sha256": "b7bbcd74d4876b9ea82741a2ac1fbd09e7f2b386846bdda04020ba89364ba47b",
       "span": 16
     },
-    "Combat.cs:1344-1359": {
-      "sha256": "1f6e7c94fb05c03a21f87f8942c86acc972b73be707e012b3a92a0810b14fac6",
-      "span": 16
-    },
     "Combat.cs:1344-1360": {
       "sha256": "6f8c6238defad13212d9eb85079cc2c6db901c7241dcac6a8f42607c432aa4a5",
       "span": 17
@@ -679,14 +555,6 @@
     "Combat.cs:1375-1399": {
       "sha256": "b47a22152c63f9354dbc37087942c4beba36c5e664eaa584bc2b5a6927ca8720",
       "span": 25
-    },
-    "Combat.cs:1395-1398": {
-      "sha256": "3074568b08bcb0378a9f870e6e85f4c7d70af996d477b96bdeb3ad10483ffaaa",
-      "span": 4
-    },
-    "Combat.cs:1449-1452": {
-      "sha256": "d137709b59f337588b73f56120fd1cec4336ea26cc41d42f5d837a87a665565b",
-      "span": 4
     },
     "Combat.cs:1534-1578": {
       "sha256": "36bb32a9a6138a90844b90e87a3f79c9068a7ef6e778a84c324a2c6405fd9c5f",
@@ -708,10 +576,6 @@
       "sha256": "9b0842b14d2ce46030e5fffeb143379a7a0a1013386df2f399fc4ea989a59f1d",
       "span": 28
     },
-    "Combat.cs:1551-1580": {
-      "sha256": "54113591d605b6b8f8e460ed0aa0398cc1b43be66f2c02963f598972e42be3ba",
-      "span": 30
-    },
     "Combat.cs:1594-1600": {
       "sha256": "17a5815b99012d1b8fd508a3ef98f4b11578159f5fb35c443dcde32587952d33",
       "span": 7
@@ -719,14 +583,6 @@
     "Combat.cs:1594-1601": {
       "sha256": "240a38eb27d311639b4e4d58e8ef72fc266231b4eb9c9dcd808061c6c28b4715",
       "span": 8
-    },
-    "Combat.cs:278-290": {
-      "sha256": "9b4f713f550dad4eb92cd4d4dcb7337efa8c91ef16c7dadefdf0c498e3d30a77",
-      "span": 13
-    },
-    "Combat.cs:282-297": {
-      "sha256": "a0e1e45c4adea72a2cddc909dbd7d20207077a96c798205a79dbfde0bc052126",
-      "span": 16
     },
     "Combat.cs:293-305": {
       "sha256": "950d764ea1fc53b88ad01dfc2fc1a4fe83897b1a9670c0d129130761dca73b64",
@@ -739,10 +595,6 @@
     "Combat.cs:307-319": {
       "sha256": "d33f51c716c69013c5217e70978df7b99cd432b85f3467941dec4f8c16c8bda8",
       "span": 13
-    },
-    "Combat.cs:315-325": {
-      "sha256": "a484f396a987eb531350d74c18a1b8c063c379e5d86ea8058e0d51ebfad2d61f",
-      "span": 11
     },
     "Combat.cs:335-346": {
       "sha256": "d6f5a11e8d7e30ce7c916edd4b0a270133e7bb992eadc21d96d060631d107d51",
@@ -764,10 +616,6 @@
       "sha256": "3c8eb2d51dd11ae2fb4c6e32e37b4276becccdad2bfdcc8c5ac1c65a56f771a6",
       "span": 1
     },
-    "Combat.cs:541-569": {
-      "sha256": "184aef9af0ce805a369dd6d2dd20f63101484d5f0ae8dd056088cb49468e4a94",
-      "span": 29
-    },
     "Combat.cs:567-571": {
       "sha256": "2a43a3ace8db82b926a20e8141d2bd11499998ea4c7516f27a52ca810ba77276",
       "span": 5
@@ -775,14 +623,6 @@
     "Combat.cs:602-613": {
       "sha256": "2ac223b1ecf19826f8205927371a9a75aa337e193b0c46f38d758a4d665731f0",
       "span": 12
-    },
-    "Combat.cs:605": {
-      "sha256": "c9d59d529e02d55f502834ab637f48806bb8768d64d6e24dc7e473267117a531",
-      "span": 1
-    },
-    "Combat.cs:637": {
-      "sha256": "7e23d27b2c535a6a182c2c3762e9a8127b194ef67279b8865921651345580c12",
-      "span": 1
     },
     "Combat.cs:654-661": {
       "sha256": "646f5a5e6e6d84d938617ad919b44440b5f39fc0ca15e34bfdebb2f330c22dc6",
@@ -824,10 +664,6 @@
       "sha256": "d38c2ee744c59bb1d462392e9f47556f8ea04cb2c5b93c4c7278dcd707436638",
       "span": 4
     },
-    "Combat.cs:735-757": {
-      "sha256": "33725ca3987bf23b60f1f14aa42e4e38b0c0b92265fba8c7939dcf289d777524",
-      "span": 23
-    },
     "Combat.cs:741-757": {
       "sha256": "24167489d5a293de6bf3a3376c41ba3fed1a36266e4a8176aca0e8f40d316ffd",
       "span": 17
@@ -836,17 +672,9 @@
       "sha256": "bf33b74842319b30412e84a412e4e85df66fddc878715a77200d254f7ef4ae52",
       "span": 4
     },
-    "Combat.cs:766-774": {
-      "sha256": "447b9d9d25218f7b774768aef2f932ea7de1c8543bcfcc925b8d4f05b437959b",
-      "span": 9
-    },
     "Combat.cs:772-805": {
       "sha256": "c8043431a140936cc2e4d514414f227e93c2dba8eb4cef447b5c80edf812df79",
       "span": 34
-    },
-    "Combat.cs:776": {
-      "sha256": "1f003cfd7baac216e54a0e7f9cd3b45dd2d9abe1ab31a018b6c22cd646020854",
-      "span": 1
     },
     "Combat.cs:776-781": {
       "sha256": "102613cfbd8fddc709a7a51dac684f08fa4bbc74d446b9dacfac9a45bf5b64dc",
@@ -855,18 +683,6 @@
     "Combat.cs:776-862": {
       "sha256": "5b227352fd43852807c2a575515bab7504e76f42ff6a1f4e389d808590c35f0d",
       "span": 87
-    },
-    "Combat.cs:776-875": {
-      "sha256": "1567f62d1134cc0cdeb670471266dbb67faa5b140c8719d167871bd1c7721f1e",
-      "span": 100
-    },
-    "Combat.cs:792-823": {
-      "sha256": "fa73ab7d4dcab732bbbfb07d86927868feba017ea5b264a21eadba52b07bf18d",
-      "span": 32
-    },
-    "Combat.cs:798-822": {
-      "sha256": "b6d15db3cf8fb6b14c0b1b582f990d72ba8f8cd460466ce52d596f11adfd48eb",
-      "span": 25
     },
     "Combat.cs:836-862": {
       "sha256": "df1e5b06049c7b545a6c9f09dc93f75774b35f9774949111583625308ced664a",
@@ -880,10 +696,6 @@
       "sha256": "33bc369656e46d2aeba5721b5b019e4897c27fe36aa4cb1bc23ad41d7528706e",
       "span": 8
     },
-    "Combat.cs:842-860": {
-      "sha256": "93cb0f23b0702f820e40f44fbd7efea2fe062aa20dc37bfd9b60468a6a4ab1cf",
-      "span": 19
-    },
     "Combat.cs:844-861": {
       "sha256": "27346174649e7bdde412da23759b741d997bb760c098ff679ad875a1dd5daf85",
       "span": 18
@@ -891,10 +703,6 @@
     "Combat.cs:854-869": {
       "sha256": "1ad404b5a61084946fb0534fd3af80d4f80230403a78b1668a83def9536cd745",
       "span": 16
-    },
-    "Combat.cs:864-875": {
-      "sha256": "e6392eda58030afcbbe52a17438b07bdd57b2556e22fabeccfd1045335fb630e",
-      "span": 12
     },
     "Combat.cs:866-882": {
       "sha256": "7dc0231284fe6f33656bc6a249f6d775affc9eef0fc05db57f39372c6b6f96a2",
@@ -912,25 +720,13 @@
       "sha256": "21429fc58b159076f3f02e9606a5ce05d6af667d9892a5600900b3fb9c664ad3",
       "span": 15
     },
-    "Combat.cs:888-898": {
-      "sha256": "70245a2ba88d22604e4ba0c1782f8238d7f730f8c048f9f27203cda1078f137c",
-      "span": 11
-    },
     "Combat.cs:90": {
       "sha256": "12b4a5cb8c3083e2e92b100b71e85fef716a11e7f5c567831d46b99eff89bac5",
       "span": 1
     },
-    "Combat.cs:900-921": {
-      "sha256": "5ad1008461194a9204d2dc4a2dbbc42297944c80f225c4d94aef91561933b4c9",
-      "span": 22
-    },
     "Combat.cs:910-923": {
       "sha256": "c818f39d8ea19e9d05607b38b9117c00167f933c2d96d0e164c7e77dbf01eae5",
       "span": 14
-    },
-    "Combat.cs:910-952": {
-      "sha256": "fce5fd452cdaf915a0989f44a37968c4f69714a2d8870b34eb1982ddb1aa0bbb",
-      "span": 43
     },
     "Combat.cs:915-917": {
       "sha256": "98a6610097fc91bc873779ebe6fa1284ee4fb6e08440a4e447f81e6d7edbda75",
@@ -939,10 +735,6 @@
     "Combat.cs:915-943": {
       "sha256": "1da9755eec156e1afdcff5f6513dfa9c74f78d8bab5025fa1f9431d526a8845d",
       "span": 29
-    },
-    "Combat.cs:936-946": {
-      "sha256": "dc804044bda4e525e6b4902cea770a21ee2a404b7840ba0f92c04f1cbc5eeeb0",
-      "span": 11
     },
     "Combat.cs:996-1007": {
       "sha256": "9e942324f272668382883943e67993fb648eff3206b1c4733652b67d3e1619bf",
@@ -1091,10 +883,6 @@
     "DamageSkill.cs:69-98": {
       "sha256": "6d671be34626d738a0d0c8c23dcf4d8a35306dbea119f026ce374edcda649af5",
       "span": 30
-    },
-    "DamageSkill.cs:90": {
-      "sha256": "079b03b57471746aa1092e51f1538e19e7752d8122ca31f9ae58bcb10577057f",
-      "span": 1
     },
     "DamageSkill.cs:ToolTip": {
       "span": 0
@@ -1312,10 +1100,6 @@
       "sha256": "19a470b34ecbb99e1d10ebfc6e37f3b15dde43caeea0c145cbe696ad7572b791",
       "span": 9
     },
-    "Entity.cs:346-356": {
-      "sha256": "df99def0ece1060b948e51a928ae0a9551ae508b13b3cf3ad0bfe9447a5f46b1",
-      "span": 11
-    },
     "Entity.cs:346-357": {
       "sha256": "02e0075cbb1670d37b435db51ba960f679dd9c0a580e4d959d5b9ba3a47d3626",
       "span": 12
@@ -1354,10 +1138,6 @@
     "EquipmentItem.cs:107-120": {
       "sha256": "479e11474f0a94ada836d6e6aeeada401bfb4af5e16d858d8898bca1e8abbcc4",
       "span": 14
-    },
-    "EquipmentItem.cs:13-16": {
-      "sha256": "c7eee12c5f97b8a29082fb36f4e0e835ba11ae1d806426cfa5eb145685a13a14",
-      "span": 4
     },
     "EquipmentItem.cs:130-140": {
       "sha256": "89773f8b2772811094052214f6a93f21b94a90707b22c7739e90a3aa6884659c",
@@ -1561,10 +1341,6 @@
       "sha256": "90f6de21b0801abc914a0121b87133decf3256d95ddf32d0f08195b8f3cf38f3",
       "span": 34
     },
-    "FrontalDamageSkill.cs:63-101": {
-      "sha256": "8d1dc473d2708229ae6d062b9a83aeae860db6622eb3eeebf241fba83d169577",
-      "span": 39
-    },
     "FrontalDamageSkill.cs:64-80": {
       "sha256": "02ede5e7d1c578652d3791e7e8096f2a136b2f8f12cdbcdd1e0b31bab70ec078",
       "span": 17
@@ -1576,10 +1352,6 @@
     "FrontalDamageSkill.cs:88-92": {
       "sha256": "985966c3c03a2e73d4d34c54961fff91dd114d993ab4d6b48809397a5698e873",
       "span": 5
-    },
-    "FrontalDamageSkill.cs:98-101": {
-      "sha256": "42f9bdc5e62b6a201b0f0dfc3e5d68b82f923ccca443575ad981284adf236a5f",
-      "span": 4
     },
     "FrontalDamageSkill.cs:Apply": {
       "span": 0
@@ -1594,10 +1366,6 @@
     "FrontalProjectilesSkill.cs:156": {
       "sha256": "53aa5b9263d673cf2a57993c03330093d84f2bb7ec9f2d6fb769f64d5fbd21df",
       "span": 1
-    },
-    "FrontalProjectilesSkill.cs:75-104": {
-      "sha256": "def92a9da008c159e7a6f008333ae2f150c1e14beff0ae3116b805c55dfeae9d",
-      "span": 30
     },
     "FrontalProjectilesSkill.cs:94-108": {
       "sha256": "3cf1f0e1bd988c0ab59ceaa9741db45f8bd2e36e1a95ffa3658349532b579666",
@@ -1761,10 +1529,6 @@
       "sha256": "4d11f9ec1f0119171a1db7ccdfaab880ab2693a138a6f885201526e1bdf194f4",
       "span": 15
     },
-    "GatherItem.cs:632-639": {
-      "sha256": "e13cb755ddfbbd44a32137f515d3e4bec6573c4950f819b9d583178b5c7d5988",
-      "span": 8
-    },
     "GatherItem.cs:640": {
       "sha256": "2b80ff405c2b608adfe4e2263c3f75258634ab52326656cc2735b9aba207dff5",
       "span": 1
@@ -1788,10 +1552,6 @@
     "GatherItem.cs:708-711": {
       "sha256": "539e3a5da06787bca121518f265b71f7e06a7f77881059ab02d93e082ccd8ae5",
       "span": 4
-    },
-    "GatherItem.cs:708-726": {
-      "sha256": "b87e46ac6bc24960ba442dde805a5fdb7bf23e89cb6fac081ee063f8789e7e16",
-      "span": 19
     },
     "GatherItem.cs:708-797": {
       "sha256": "e88f7227e44795731bcea0b6497c97a3a1c85bbda41332c39863a7dc84f4b70b",
@@ -2034,10 +1794,6 @@
       "sha256": "bc5101f0d5ebb9a7cf90c800ff4f95d06b065adb974553964c9059d085360bee",
       "span": 26
     },
-    "Item.cs:20-24": {
-      "sha256": "d0c72360e2fe010e174f4e112ab45d36e3785926cffa20ba023645001ee4f424",
-      "span": 5
-    },
     "ItemSlot.cs:23-27": {
       "sha256": "afee63d5f00438ade638efa0f9749b2db1b6ce894984ed1d1a9747f0c18e9cf9",
       "span": 5
@@ -2133,21 +1889,9 @@
       "sha256": "18682fb76622b4338396336324f6fca63a1fbf750be35e1689ff254fe771ec25",
       "span": 7
     },
-    "Monster.cs:1301-1313": {
-      "sha256": "59305faa9c15a1b9aa728251d30500c6376ff63153e7fecf9e138639b583a024",
-      "span": 13
-    },
-    "Monster.cs:1308-1310": {
-      "sha256": "c404a56e4c75333a091e054f20289d2e220c21ab42ad311485ebbb83fde6a3e2",
-      "span": 3
-    },
     "Monster.cs:1539-1553": {
       "sha256": "a314071035e10b17e1590b9897ccfe919b06c65de88c1d66413fe9d9ad2bfa1e",
       "span": 15
-    },
-    "Monster.cs:1590-1598": {
-      "sha256": "5453b028533f43969062f621f1a1f10949bf0febe1f96ef2c0a8dfb1636806ae",
-      "span": 9
     },
     "Monster.cs:1613-1627": {
       "sha256": "db7564dacf9dfe0955a8f91c9ecd3a220be464be54230dee759108eb857115f9",
@@ -2165,18 +1909,6 @@
       "sha256": "874f8a60e9b0ceee65469bdfed373b591a09254ceb7ae5d6a8b07aec61887956",
       "span": 7
     },
-    "Monster.cs:2167-2177": {
-      "sha256": "fd301ea4a59a94c1643031cde5e493ed3561a7b6c14262dd4db4e2a196a262b1",
-      "span": 11
-    },
-    "Monster.cs:2214-2215": {
-      "sha256": "e5188ed33225fb7bf4b8dc8fd3225a81b215ebf58e3e1933dc6412956c2090c0",
-      "span": 2
-    },
-    "Monster.cs:2214-2219": {
-      "sha256": "36b824b013da3e9201509d0ad9ccbab95a9feeeecbb54f9cfc98896984c3aadb",
-      "span": 6
-    },
     "Monster.cs:2214-2220": {
       "sha256": "c40805e2f98f8c8a229d240842850f0e2d9d0cd022d095cffd605b46d59d4844",
       "span": 7
@@ -2193,10 +1925,6 @@
       "sha256": "81467e298a8952d95dd3b1a8199605657b8951e41666e4fc4dfa2df0e98a0d89",
       "span": 6
     },
-    "Monster.cs:2222-2224": {
-      "sha256": "3426971b41eb1ee609ae227863ed3c8afa02588579a84b0b32d5194ca95c9ed6",
-      "span": 3
-    },
     "Monster.cs:2222-2225": {
       "sha256": "fc1a84671f746f85eeedc6646cbea17f31494f8801e5dc270135c6c9389f0f29",
       "span": 4
@@ -2209,10 +1937,6 @@
       "sha256": "1921d8e97be791f92fc1e1314559788913a13bb46f74d7c561316ae1b0de74c4",
       "span": 4
     },
-    "Monster.cs:2230-2234": {
-      "sha256": "bdbbfa4c04f4605102acbeb24d16629a8c21ceeb1d62f81202b07cc52fd8eff9",
-      "span": 5
-    },
     "Monster.cs:2247-2260": {
       "sha256": "085f0a879d62aed3d3f2cd4395acebcecb5107fc5999733ed8da605810cf8d93",
       "span": 14
@@ -2220,14 +1944,6 @@
     "Monster.cs:2262-2270": {
       "sha256": "4228f4f3caf5b7f0f00b968050efb35234c9afba25032c01459d291a787137a9",
       "span": 9
-    },
-    "Monster.cs:2306-2314": {
-      "sha256": "d46e254ad43c97a87f7470bf39dbbb56b485c097b09592bf56eab1809d104aeb",
-      "span": 9
-    },
-    "Monster.cs:2349-2371": {
-      "sha256": "ed2294a8c2fb41ab3b879713574426de0752debb980e6d38260d8297a73c41c3",
-      "span": 23
     },
     "Monster.cs:2446-2464": {
       "sha256": "7851f7128e8d9b8154f0499a066f53fbcbad753db8c470c87f26e56600456628",
@@ -2248,10 +1964,6 @@
     "Monster.cs:2850-2853": {
       "sha256": "741c47add2a566c3f4cb5b4d2afc08afb7eafd340cf1378692c6eeb3f7d88da6",
       "span": 4
-    },
-    "Monster.cs:2866-2877": {
-      "sha256": "e6cfe64f1b7f05ca0315b176603e7da25c3173c3fdfa379e3eed80fc6a392452",
-      "span": 12
     },
     "Monster.cs:2867-2877": {
       "sha256": "8c4477daf55efcd3dcf0f01695c7ea54ca9ed1411b2cb3e87fbadc4fe4d8e260",
@@ -2293,10 +2005,6 @@
       "sha256": "33ce60bfb9cef6ce40442b5fa1be0a7133e76ec77d613e99676c626eec3a2d13",
       "span": 13
     },
-    "Monster.cs:3179": {
-      "sha256": "7b9be9355a9ce8e72455dc101ea5682e725926d2a7ca7a7b3ec970593846326e",
-      "span": 1
-    },
     "Monster.cs:3186-3198": {
       "sha256": "7b5d7ffd9818178b0c99c7f5ee2f1c4dc514486c3da7c27176505363bd3f0d9c",
       "span": 13
@@ -2308,10 +2016,6 @@
     "Monster.cs:4570-4609": {
       "sha256": "9482355022b53dddc8ccdec93c2b3669a06219382c796d628fa1dcdb158fc340",
       "span": 40
-    },
-    "Monster.cs:51": {
-      "sha256": "08d5af723fc82a2bb29c642aa07312fda3c301e7fbca9f32d7612c0a2a1ad2ae",
-      "span": 1
     },
     "Monster.cs:574-598": {
       "sha256": "e802ad22bc0691c9aff0b5eda0e1c1fc97442ab596a4c694ffb19ab6dca65eee",
@@ -2325,10 +2029,6 @@
       "sha256": "953c990e988177fe3436f6d2ad9d8af29e5da82750e6dba072e58a6d20139151",
       "span": 31
     },
-    "Monster.cs:621-642": {
-      "sha256": "8ffdc85b22b1c984f9ea91a9d8b0a0cc1a6e862fffdb7e316e1a4665377b3421",
-      "span": 22
-    },
     "Monster.cs:695-706": {
       "sha256": "52f9a369a1429e23c62f101e86b11090d42fdbc9dfe81337e136e2b54fda1a66",
       "span": 12
@@ -2336,22 +2036,6 @@
     "Monster.cs:698-705": {
       "sha256": "64f7810d481bb0c8886b9caaef6379c49084550ac5bf7900b6b9abb3f292ac72",
       "span": 8
-    },
-    "Monster.cs:698-716": {
-      "sha256": "20efaa4cdfca98301f93e3f455a085ce91af010651ca2dd8d5576ae99665374e",
-      "span": 19
-    },
-    "Monster.cs:711-716": {
-      "sha256": "5aca3c5db99603c05c02ba80e2a69c9e52f452cc02b9d1b616a428168c97e4a6",
-      "span": 6
-    },
-    "Monster.cs:717-718": {
-      "sha256": "1d8dbee09b70087f30dfbb07d5210b53a7ca921b17a09d59e428435c471e5fed",
-      "span": 2
-    },
-    "Monster.cs:759-787": {
-      "sha256": "8f41b95bba218292a5c5c0b16ac21f3a6af7dba21a37210c97677ac51cce05cf",
-      "span": 29
     },
     "Monster.cs:769-779": {
       "sha256": "cf2fc42e1f3661484d9358c1791bc5c2c3b056fb327f835e63708e4d0e8e0b15",
@@ -2378,9 +2062,6 @@
       "span": 0
     },
     "Monster.cs:EventRespawnTimeElapsed": {
-      "span": 0
-    },
-    "Monster.cs:EventTargetTooFarToFollow": {
       "span": 0
     },
     "Monster.cs:EventTargetUnreachable": {
@@ -2565,10 +2246,6 @@
       "sha256": "38f5d4aa099f761995ace8bc1d34b51c7a970f038b2287ab7fc343546044af3b",
       "span": 13
     },
-    "NetworkManagerMMO.cs:111": {
-      "sha256": "d45a9bae67e331c6b79ab395c59539599bfbad999249c6e87afbb51d60397ebc",
-      "span": 1
-    },
     "NetworkManagerMMO.cs:116": {
       "sha256": "7083d40a8ef4d1b3110132150c906081eceae1f83c4cd883b4d9fb876015b3ff",
       "span": 1
@@ -2646,10 +2323,6 @@
       "sha256": "902e0c35a92a9795c0b8c4cb39b07d69dc116629a9e9aa9ac4dfe24f1aeed8e2",
       "span": 24
     },
-    "Npc.cs:1788-1798": {
-      "sha256": "9a23cb65628588c0412039e77183457cefd7bf4aeae9b952c4889210d8f045dd",
-      "span": 11
-    },
     "Npc.cs:1820-1827": {
       "sha256": "42bdeb8ed396aa2cc0cd6a9341777aa979985ea4b224d4edaca2f7a8dc2cbb4c",
       "span": 8
@@ -2726,10 +2399,6 @@
       "sha256": "022c89cbb619a69dd0e59622e0da555362678951cdd73369a73a79329cb34eef",
       "span": 1
     },
-    "Party.cs:13-29": {
-      "sha256": "85cc32ec7e50d6d4ef2fec1eca110e34ec2fc0d8ab8c6fb122f0aec23f2861f6",
-      "span": 17
-    },
     "Party.cs:48-75": {
       "sha256": "cf77247b5743d9b41edcd1764aedebe9f94e4384c9d68fae8df2596ddb7e47de",
       "span": 28
@@ -2741,17 +2410,9 @@
     "Party.cs:master": {
       "span": 0
     },
-    "PartySystem.cs:35-56": {
-      "sha256": "8e81d02af00b7f9701238b2b04317b40930ec8f3938fc302f93228918d1adf9f",
-      "span": 22
-    },
     "PartySystem.cs:60-85": {
       "sha256": "349f5ee9dfb980f7d68de7303233a3fd2956724a65167d35f51ea7a4cc5cce01",
       "span": 26
-    },
-    "PartySystem.cs:88-100": {
-      "sha256": "fb137bd5bd93b8224173c7e9a74e8687a51eed653bfb1e82ac842c9a4e8f0686",
-      "span": 13
     },
     "PartySystem.cs:FormParty": {
       "span": 0
@@ -2985,14 +2646,6 @@
       "sha256": "65b327d29521463496ce64dc64548a3ca2f4f75d4d1c9e1f7aa7d04327df2b52",
       "span": 19
     },
-    "Player.cs:10343-10350": {
-      "sha256": "db606b72b28328ace48fd05a2571f46bb425574d931d5348271c97e719aebbe1",
-      "span": 8
-    },
-    "Player.cs:10365-10375": {
-      "sha256": "5e1ee7b6c32e61cf07785a713f213bdb9a1d0a72319f5ebbec24506ab5f4fc96",
-      "span": 11
-    },
     "Player.cs:10390-10423": {
       "sha256": "9ad9dba9506188716e3e663a7d0208afd60ee567114d6ba3e6f72bac75838c9a",
       "span": 34
@@ -3101,10 +2754,6 @@
       "sha256": "67d3e360acd3558812b7e26711f209ccd909eb19b2d6323a209703c5ab040390",
       "span": 19
     },
-    "Player.cs:11143-11149": {
-      "sha256": "1ec84dfe4cb7deea1f551e907f88544dc2842e1fcf3319ac7ad0bbbc945b789d",
-      "span": 7
-    },
     "Player.cs:11143-11157": {
       "sha256": "52d528b41ab858fb4441a0a962edd59f441912398bfed6ec0efbb8631944c14c",
       "span": 15
@@ -3153,10 +2802,6 @@
       "sha256": "f82cfed35b232e8e2ca5237c34b789287d1d8078b39b8d33983800aa19d915f3",
       "span": 8
     },
-    "Player.cs:12225-12229": {
-      "sha256": "03953bf1d86a7060725a2b14d37fd39aa331861d5f3100e1cc51d34971b1fd6b",
-      "span": 5
-    },
     "Player.cs:12291-12293": {
       "sha256": "5fde844db61b3fd5e139e90ed09f5b9c735eda5e00ae51e0459015b101a6234b",
       "span": 3
@@ -3180,10 +2825,6 @@
     "Player.cs:12833-12837": {
       "sha256": "93a48315e4fff0bb6c76d21eb6913d04cff2442bbc67b247d06f4e5423d5b36d",
       "span": 5
-    },
-    "Player.cs:13139-13149": {
-      "sha256": "29e5b6abe55ec5ab1156d1f2312c3159499e60807b1e553b0aebb668f98c311b",
-      "span": 11
     },
     "Player.cs:13163-13193": {
       "sha256": "c4ec6e3cf37723e3ca50fb30fe21ca6f4d71cb44e61c9c74047d96cae55e17dd",
@@ -3325,10 +2966,6 @@
       "sha256": "6ce91286b6ae36c993731128b3d18dd0aecfbb4fcac508cc75ddcaeccec5b732",
       "span": 17
     },
-    "Player.cs:13747-13767": {
-      "sha256": "8305918beaa9942d4f098c937f9b172b8d159a33af43e04b41c47c61c3e38fcc",
-      "span": 21
-    },
     "Player.cs:13813-13820": {
       "sha256": "b8a389e3afa33317dc511ab44d0dfc347d9e21753835db6ac8ea2e470fc9518e",
       "span": 8
@@ -3421,10 +3058,6 @@
       "sha256": "09479191530a20e1755b8a816ce5f7d8ac4f5fb3eeaa4453e193fa1a000b8b7c",
       "span": 28
     },
-    "Player.cs:3556-3569": {
-      "sha256": "e913f12190d98f86f7836fe9aeb60e6006c8d7c61c928e45ac7e3f6491056318",
-      "span": 14
-    },
     "Player.cs:3570-3572": {
       "sha256": "2a65bfce13c36cfbebaa381b0b3d0fd42650e923b2e10b64fb276e2d987c9431",
       "span": 3
@@ -3456,10 +3089,6 @@
     "Player.cs:4059-4091": {
       "sha256": "8f0dab3dcf86f1305466ca3bc44cda16a1f2abc70e2817fbda8fc2cf329587f7",
       "span": 33
-    },
-    "Player.cs:4065-4075": {
-      "sha256": "95700b009f5b86e6dbaff21b7a2e51723c72b5589a3105cdf6e9b4f1a787b07c",
-      "span": 11
     },
     "Player.cs:4081-4088": {
       "sha256": "b36791a509be1bdb60452e089a851bb19307233188f94a4a81a79d20b87056ee",
@@ -3629,9 +3258,6 @@
     "Player.cs:UpdateServer_DEAD": {
       "span": 0
     },
-    "Player.cs:UserCode_CmdApplyBarberAppearance__String__String__String__String__String": {
-      "span": 0
-    },
     "Player.cs:UserCode_CmdBindPlayer": {
       "span": 0
     },
@@ -3666,9 +3292,6 @@
       "span": 0
     },
     "Player.cs:UserCode_CmdSpawnStruc__Int32__String__Vector3__Quaternion__Boolean": {
-      "span": 0
-    },
-    "Player.cs:UserCode_CmdStartBarber__NetworkIdentity": {
       "span": 0
     },
     "Player.cs:UserCode_TargetRpcAddBlind": {
@@ -3938,10 +3561,6 @@
       "sha256": "d4e26f6671e798eb2d952155f82ef4473d82bf3b302feb4a4725e4af20f87638",
       "span": 15
     },
-    "PlayerInventory.cs:2194-2202": {
-      "sha256": "fc750d393ec1437295a8cf2b93ff572ae1e2c9de618b8724a9af1ab86aeffa4f",
-      "span": 9
-    },
     "PlayerInventory.cs:226-252": {
       "sha256": "98ec203ff45627ab4c9b6302cde55ed8905b49be2cccf82867a9705c28515b25",
       "span": 27
@@ -3998,10 +3617,6 @@
       "sha256": "ce7b174c4b36d1a2ea92a6a000e9ebea04a7229fdf12c0814e5af3b22b8df59e",
       "span": 59
     },
-    "PlayerInventory.cs:853-861": {
-      "sha256": "90e340b9d9fafabd3419ef9f5d0722584396e70d480fe47c4b035922daafa99e",
-      "span": 9
-    },
     "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
       "span": 0
     },
@@ -4044,10 +3659,6 @@
       "sha256": "b959f94576ef0cf33c1458c8eb5d599907637bead61c2d07e15724853e3f7dab",
       "span": 31
     },
-    "PlayerNpcTrading.cs:250-257": {
-      "sha256": "12e6c77603ee9ebe4946bc89d62c887c6ab0df4ae9b6e5876df59577add29e70",
-      "span": 8
-    },
     "PlayerNpcTrading.cs:250-318": {
       "sha256": "4608c68a8d80e011eccc125c191bf1642a0a67df0bfe16ac0a8cbf8acae9c43e",
       "span": 69
@@ -4075,10 +3686,6 @@
     "PlayerNpcTrading.cs:413-479": {
       "sha256": "18a51b197841340c7cfa56141e676845270d67d483db3a7f70ab350ac5d441e0",
       "span": 67
-    },
-    "PlayerNpcTrading.cs:45-60": {
-      "sha256": "d356eb00c66d84c6a49ece98b7714af3cfe12f66d45ea54e9eb0be456da2b46a",
-      "span": 16
     },
     "PlayerNpcTrading.cs:495-526": {
       "sha256": "cf369839b1a351c02f20883b9607ac91dd4402bbaa8b205d4e70676cd0b76fcc",
@@ -4194,10 +3801,6 @@
       "sha256": "c51fd8138c29953e78066c3a8ff04e858e1433ace0f603ddb0c18d86c6798a24",
       "span": 92
     },
-    "PlayerSkills.cs:1157": {
-      "sha256": "9c6e5da36fd8e55b323df2a3cf45f27cfee7b78e828c020d85322db5a67e8d28",
-      "span": 1
-    },
     "PlayerSkills.cs:1162-1191": {
       "sha256": "db96bc6c88318fa90a5a7fd3fd4987e88da35976bd5e195030af0d9295bc1f7c",
       "span": 30
@@ -4222,25 +3825,9 @@
       "sha256": "f5da0b47f6b9ed742d41eceb1ab70b5582c95993c4f03f0912c4981732720d7f",
       "span": 16
     },
-    "PlayerSkills.cs:1333-1445": {
-      "sha256": "d058a38b4da73d84b7881f9a2028dae6936f18b6803186e94f9588163528440b",
-      "span": 113
-    },
-    "PlayerSkills.cs:1348-1423": {
-      "sha256": "8e75ffe821a76a46bc159c9dfbb9fafc518e9780e3001e37a4cef35953b34576",
-      "span": 76
-    },
     "PlayerSkills.cs:135-136": {
       "sha256": "ef3656a6257777c1e6f8c357da00f0de43f00cd9d9340891a4f7321d598c71cd",
       "span": 2
-    },
-    "PlayerSkills.cs:1377-1437": {
-      "sha256": "8d523373e6d376629a30efd4ff0ef8b732bbdf0a37f2b3177761085a423786a1",
-      "span": 61
-    },
-    "PlayerSkills.cs:1471-1484": {
-      "sha256": "a425b6ce0bf1cbd1aaa721ab62494f50b7e3e485738a19e11b47b6f3d3bc64df",
-      "span": 14
     },
     "PlayerSkills.cs:1531-1542": {
       "sha256": "2db1e18f2a5418f064c80a9de5f243ecd215b63682209290e5afd01cbf54fdd3",
@@ -4253,10 +3840,6 @@
     "PlayerSkills.cs:1576-1602": {
       "sha256": "b8e4ff26f4da8badc0510e31da0d7e0bcb70eccadbe1ac8748884dc967299efd",
       "span": 27
-    },
-    "PlayerSkills.cs:1576-1603": {
-      "sha256": "0be3409655d1789bd346c2c9fa187210af634769920e2881c03c544c8ac72dda",
-      "span": 28
     },
     "PlayerSkills.cs:1605-1616": {
       "sha256": "69c8d54f2c0698f1deacc55fb3e384da304e785936b17a565564a8b720a0f417",
@@ -4345,10 +3928,6 @@
     "PlayerSkills.cs:2270-2302": {
       "sha256": "56f7daffdd8fca1fb67b30404d3a1b5c685b59e13889790f56cd2f1be5ea40a5",
       "span": 33
-    },
-    "PlayerSkills.cs:2344-2363": {
-      "sha256": "7b028ddc9e641f6fe0302f1543b62f2b6d657ed98519949a52a9624b2fdb815a",
-      "span": 20
     },
     "PlayerSkills.cs:2464-2481": {
       "sha256": "c881cf3bfc13ed22183442eba4c1c726e8db31a56e725c9eeacf85d42e86ef1a",
@@ -4481,10 +4060,6 @@
     "PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32": {
       "span": 0
     },
-    "PlayerTrading.cs:438-441": {
-      "sha256": "be450637926f8ff2140b05be22829b8c188758a3efbaa7a51cd6e106d4ac9fb0",
-      "span": 4
-    },
     "PlayerTrading.cs:UserCode_CmdOfferItem__Int32__Int32": {
       "span": 0
     },
@@ -4504,10 +4079,6 @@
       "sha256": "4e068304f3252686431a0155e1fd69bcf1ef8fa1ebc84eecddc0259237a6007e",
       "span": 1
     },
-    "Portal.cs:47-63": {
-      "sha256": "62844468de0890c26a364856967a3bdc007440080cd756e73c633065437c9fbb",
-      "span": 17
-    },
     "Portal.cs:49": {
       "sha256": "4f103f02cec1f25483ad56ff0766abf8f67ccbdf054fb955b8417d3ea35d6859",
       "span": 1
@@ -4518,10 +4089,6 @@
     "PotionItem.cs:119-144": {
       "sha256": "02d6a2cca901f039c9b9a72563133691ec4019cf8aeabe63f51fbc046112dd78",
       "span": 26
-    },
-    "PotionItem.cs:124-144": {
-      "sha256": "127ecce1a788e3629e33abafe34d2c219cce7a778214e2201f52a1d4e20e4f64",
-      "span": 21
     },
     "PotionItem.cs:138-142": {
       "sha256": "3e5baf955aa06b67997399ca44ffbece573945527fc1403f7857dc2c8dcedd44",
@@ -4752,10 +4319,6 @@
       "sha256": "bb97a8069a53184a3c639a403dc9696f6566feedbf3984d3c6c28f6d787b0c1f",
       "span": 39
     },
-    "Skills.cs:1226-1245": {
-      "sha256": "8a4d202ee79bd7eee85696b00b3bd2645ec68a7ce6b4f7f42e8ae0ea132fdc22",
-      "span": 20
-    },
     "Skills.cs:1261-1263": {
       "sha256": "06485cb714fee867b915d4fbbca7b8ce07907b050972dd1a26da84ba1293e5bc",
       "span": 3
@@ -4788,10 +4351,6 @@
       "sha256": "8dbf0ec63acdcfe3ec845561a62ede4708591edf7887bc2da434a08e590d1c75",
       "span": 289
     },
-    "Skills.cs:1620-1623": {
-      "sha256": "f05242f99e333a7d84cecddebcf0ee128dd46057edb32ad28becbc15055d505a",
-      "span": 4
-    },
     "Skills.cs:1644-1755": {
       "sha256": "3b085f7883b31c413786925bf7be5780de92e0ca041f23f34e20a9929e79bf32",
       "span": 112
@@ -4803,14 +4362,6 @@
     "Skills.cs:1822-1842": {
       "sha256": "6f3a10a81090d46306f5ae1d003f270acbf6c7e9d7851097bb3e446166ad2d93",
       "span": 21
-    },
-    "Skills.cs:1866-1872": {
-      "sha256": "945c73601ce940d016299c584d1be55e2bb0a73e812a5fa355af7f505de537b3",
-      "span": 7
-    },
-    "Skills.cs:1866-1876": {
-      "sha256": "9346f89ca4a325c369cc15e89d1ecad0271429c5ac6740d3454cc87d653f4be8",
-      "span": 11
     },
     "Skills.cs:1903-1938": {
       "sha256": "53550eb751ccb6289e043967f31b87c11f9d64c9c15fe4122f480962106560e9",
@@ -4832,14 +4383,6 @@
       "sha256": "3694becdc4c29a9d7f5dc1999bb14fd3e5f9629b8a2d353cb897b987ce6fbf04",
       "span": 12
     },
-    "Skills.cs:323-359": {
-      "sha256": "8905dab27e7443de0027b12d7e225f98a1eb0da53ce265db9869d704538f4527",
-      "span": 37
-    },
-    "Skills.cs:329-346": {
-      "sha256": "38b0f87e65ea01bc5def60486cf48b35088c85f643e61e2232fdd4947a2c285e",
-      "span": 18
-    },
     "Skills.cs:432-457": {
       "sha256": "feda83e9b7f92e3be4c48553aa2b1eef491270a52a84d16ad233ce7f9cb0f6a2",
       "span": 26
@@ -4848,14 +4391,6 @@
       "sha256": "e6983024f05a24d22beff3164a1966c37c05bdf44e5c8c0f6dde9f4dcf60fc89",
       "span": 19
     },
-    "Skills.cs:460-475": {
-      "sha256": "8606fa56793020e8db1c41f0e8b73e2235df3acefe7139ae2607205f138a427b",
-      "span": 16
-    },
-    "Skills.cs:557-572": {
-      "sha256": "d6b87eaa264d0a168c91e3feb42392d34816f3efb046f844a24a8aab00262d64",
-      "span": 16
-    },
     "Skills.cs:730-735": {
       "sha256": "baae6998f98001d47c20b20ccb151c2447c150344339af22be575aab7d0268d5",
       "span": 6
@@ -4863,10 +4398,6 @@
     "Skills.cs:814-843": {
       "sha256": "c87a0310cfac8fb2a8e284377e154e0936d436e13041163f87bc4c9a4292ed2b",
       "span": 30
-    },
-    "Skills.cs:911-920": {
-      "sha256": "8dc12e7946596ebfc8e5eb848cdceed0f6ffac66f3ad72d64661ab1682d19549",
-      "span": 10
     },
     "Skills.cs:924-933": {
       "sha256": "8d0d278e895fc229834918376c17813908f0e3f351c00fb3414817f2cb645415",
@@ -4929,10 +4460,6 @@
       "sha256": "221bd535777161228eac5c046af7cbf34776e099bc0822dea1cf32f52b075a25",
       "span": 4
     },
-    "Strength.cs:7-17": {
-      "sha256": "c0112d16fb4700527b4a04f71b8653eb8fb5e71f0c488a8f8f92fb2614fca6cb",
-      "span": 11
-    },
     "Strength.cs:80-83": {
       "sha256": "0135adf41a87290d54c202a294ace6645e84a952a400703b666d54ba90066e5c",
       "span": 4
@@ -4940,10 +4467,6 @@
     "Strength.cs:80-87": {
       "sha256": "4a6c5233fa93f897ddb81a1d91d4de6d41d389288c7b783e6fb38298e5b6ebb6",
       "span": 8
-    },
-    "Strength.cs:80-98": {
-      "sha256": "def771dd8465b4638d67e216973d534804aacc1207a98a4a554470c17241e14b",
-      "span": 19
     },
     "Strength.cs:GetDamageBonus": {
       "span": 0
@@ -4960,31 +4483,11 @@
       "sha256": "577ac4f2ddfef6ce747451cd52cf2f4ce15f23f0c2c8ce1eea415dbe3256a0a7",
       "span": 8
     },
-    "SummonMonster.cs:26": {
-      "sha256": "e7e6726c2a19073d372892caec2bc876510bfff1e5e6e3454220230c621c6de7",
-      "span": 1
-    },
-    "SummonMonster.cs:36-46": {
-      "sha256": "b7eae97f00a56792ea8a6c6c5658b7693f3ed94825279b0efb4286dfb5b2cea8",
-      "span": 11
-    },
-    "SummonMonster.cs:36-69": {
-      "sha256": "4f1509b60b5a7fd2bdcff2a44787c4ca8adff93e1f779bf697fd881c0e6f0e36",
-      "span": 34
-    },
-    "SummonMonster.cs:52-69": {
-      "sha256": "3606e6d1db9218fe1c484f327b5256be58cb4a014bb50684941d0bfafaa176db",
-      "span": 18
-    },
     "SummonMonster.cs:IsSummonDead": {
       "span": 0
     },
     "SummonMonster.cs:Update": {
       "span": 0
-    },
-    "SummonSkill.cs:106-113": {
-      "sha256": "d5b29038d3fdd63f22c389b4a870b79d3cdcea9599a12207704a4a7638792631",
-      "span": 8
     },
     "SummonSkill.cs:106-118": {
       "sha256": "3838c5787541dce38972da7e038ccefa606a619c2ba4a4be70cffe1bae17c893",
@@ -5048,25 +4551,9 @@
       "sha256": "f89b57734b0816a8686394c576e78e5ee8bc4b4fcaa9bc88cbeeeadbf6f98bb3",
       "span": 1
     },
-    "TargetBuffSkill.cs:239-429": {
-      "sha256": "f64165b667b4a45cb157191606a3a79bd2d01b0ef9e492c5fa2c82291af31354",
-      "span": 191
-    },
-    "TargetBuffSkill.cs:239-432": {
-      "sha256": "eaa4716444f03b369dc72c89260e659d51ba0cf3c07972c501d03760d1209c06",
-      "span": 194
-    },
-    "TargetBuffSkill.cs:269-284": {
-      "sha256": "237623feeefe1f9d21910526f97beca966df9b8ef54ac3124ecca2c32fea039e",
-      "span": 16
-    },
     "TargetBuffSkill.cs:280-300": {
       "sha256": "3127fe76a997a53a01a8fa4663243f7ae08f9274384f29ea1b90be8ae8bf5f63",
       "span": 21
-    },
-    "TargetBuffSkill.cs:314-319": {
-      "sha256": "7a7aba46950c446bf1a7765ada52c5ed7ed9bfdc423eef2abbe92485f26b64f7",
-      "span": 6
     },
     "TargetBuffSkill.cs:321-334": {
       "sha256": "33084e7aa11308b70ceb6f4ada2e0171e0bca73b23c1f0f47bb3a0c46e43a216",
@@ -5132,10 +4619,6 @@
       "sha256": "929c21caf199afd13b3e88d08cce47449397b660dc51b7773da4d32f96c55d52",
       "span": 36
     },
-    "TargetDamageSkill.cs:180-242": {
-      "sha256": "5dfa3874db42996d4663fc8e2781d5a87a531b2cd425076accc40eb2a1c32ecc",
-      "span": 63
-    },
     "TargetDamageSkill.cs:188-203": {
       "sha256": "21e8a8d8f03dd674bfc9fcb60124fb24d24f686fcd209de376100e963be67489",
       "span": 16
@@ -5162,10 +4645,6 @@
     },
     "TargetDamageSkill.cs:228-232": {
       "sha256": "1b275000a3991f18500c64ab98c8888db08e88372e5e0fff3e304823c4c9866f",
-      "span": 5
-    },
-    "TargetDamageSkill.cs:238-242": {
-      "sha256": "7916132583390d976db4da738d9eb356053effd1b2802026bca6fc11d13705fa",
       "span": 5
     },
     "TargetDamageSkill.cs:244": {
@@ -5195,14 +4674,6 @@
       "sha256": "300de2db672363ed14f5fa7689d884b74b1d988503c8aa3cdfca168882541477",
       "span": 39
     },
-    "TargetDebuffSkill.cs:135-143": {
-      "sha256": "67603aba1f6d81d342b4ba896ee51bf15aad0504730ec30c02bdeb498c6b7c4b",
-      "span": 9
-    },
-    "TargetDebuffSkill.cs:141": {
-      "sha256": "f95958d1819f82afc7f7bfe6e9429285d871d00ddd40180ae8a29ade51fbed09",
-      "span": 1
-    },
     "TargetDebuffSkill.cs:173-205": {
       "sha256": "db1ff9db1b1b118949cbb68232c82fde9d0954d52b218ebbc74f7d1a07ccd081",
       "span": 33
@@ -5210,10 +4681,6 @@
     "TargetDebuffSkill.cs:209-234": {
       "sha256": "2ef3bc240d0ed2494b699c35b15805fb940faf35ef22ae8a482587d2a10d4978",
       "span": 26
-    },
-    "TargetDebuffSkill.cs:238-249": {
-      "sha256": "ab14f6642112e6e42a8f5b13e0b624b06b20c9b712170069957f630fd75e1144",
-      "span": 12
     },
     "TargetDebuffSkill.cs:238-250": {
       "sha256": "83b36782463e2d140930b42b1addf903e680a959343a264c88f6b410cdc934bd",
@@ -5225,18 +4692,6 @@
     },
     "TargetDebuffSkill.cs:Apply": {
       "span": 0
-    },
-    "TargetHealSkill.cs:125-132": {
-      "sha256": "2412c79962d78ab652285360f42f1e97b3ee11662c88056d7584816d5e8588f4",
-      "span": 8
-    },
-    "TargetHealSkill.cs:137-142": {
-      "sha256": "b347313d1b35c96109f6647c24c658b510e74b94408c4f03ff503168ceecefec",
-      "span": 6
-    },
-    "TargetHealSkill.cs:137-143": {
-      "sha256": "6b1b0a8e3352f2a177dd43bbb1bed59406e03bba7899570049988acc9480f401",
-      "span": 7
     },
     "TargetHealSkill.cs:137-144": {
       "sha256": "686d2eca2f777e1c21bbc561d12ece0d6955932b04689db00858f92ee85f77c0",
@@ -5257,10 +4712,6 @@
     "TargetHealSkill.cs:240-261": {
       "sha256": "98f640c5571abe8d151bb8015050530e5755abe3746b3f627f9f72f2e49a0ad8",
       "span": 22
-    },
-    "TargetHealSkill.cs:272-280": {
-      "sha256": "09958d3a044497e2f3592ae403cbf1bf373b580c5825ee3af25d2daa368538c4",
-      "span": 9
     },
     "TargetHealSkill.cs:273-276": {
       "sha256": "730d957dcd596b0607ad1a501fadaf15e7d5fbeab91d405a24ca71814c87f6d9",
@@ -5313,10 +4764,6 @@
       "sha256": "4d58d2cd10d7d4a32db9a52f502f74aa6a42457ef70b34a332b2fff9228787e2",
       "span": 21
     },
-    "TargetProjectileSkill.cs:184-219": {
-      "sha256": "2aca6df3c8339541a556ef735cab0b62371ac7fd7b4aa367093cc52828aed716",
-      "span": 36
-    },
     "TargetProjectileSkill.cs:189-191": {
       "sha256": "a65536a65d239c4bde3c19c88654ef0861d7826683b1f9ba7f0631ba8935b16e",
       "span": 3
@@ -5332,10 +4779,6 @@
     "TargetProjectileSkill.cs:196-201": {
       "sha256": "0ca5ff965dc228c3633c4cde94fb59371dbfa6bc5319a6d3ded0251ea15aacfe",
       "span": 6
-    },
-    "TargetProjectileSkill.cs:211-219": {
-      "sha256": "567efdb915947826020f9a83893b5ed7b86f607b7330fedf307039313dbf9392",
-      "span": 9
     },
     "TargetProjectileSkill.cs:211-220": {
       "sha256": "73044a97e95406b56967c0906a6aeb707bc8e12335d0b1bdbfa2194786f3389c",
@@ -5658,10 +5101,6 @@
     "UIGuildManagement.cs:Refresh": {
       "span": 0
     },
-    "UIHousing.cs:73": {
-      "sha256": "5eb19937c8d697587ff245086bafec086636794d9bdbfbe178a37b32bba5fc8f",
-      "span": 1
-    },
     "UIHousing.cs:Start": {
       "span": 0
     },
@@ -5831,10 +5270,6 @@
       "sha256": "164875a119a56d5bee40b674d1d5793ee66f32e033204855312b287a5491ab09",
       "span": 9
     },
-    "UINpcTrading.cs:837-855": {
-      "sha256": "8629f9be36e4c6973fe42c7885dfa32d8aad29fda4dd1b540cd127cd3876a26a",
-      "span": 19
-    },
     "UINpcTrading.cs:CalculatePurchaseItemPrice": {
       "span": 0
     },
@@ -5995,17 +5430,9 @@
       "sha256": "ae4221afd8e2833e8ee025819f0be49c5a01d2ff24e815b13983175a4db42e3f",
       "span": 4
     },
-    "Wisdom.cs:102-113": {
-      "sha256": "5f9df9ee0b6d12aa48e55feacbc198229b4720f438b17e455c1a24b3f0b3310f",
-      "span": 12
-    },
     "Wisdom.cs:107-114": {
       "sha256": "afc4768b3ae223ef0664b20ec8e7a367414b00b6815e1a74684fec841b3a5562",
       "span": 8
-    },
-    "Wisdom.cs:107-127": {
-      "sha256": "f4d13f244523102e9ab625ccd89e0690660e11f07dc877f16497058bdadb57f1",
-      "span": 21
     },
     "Wisdom.cs:116-127": {
       "sha256": "9ac9e10137a2639a5f27b8565f4d09aaa6fe7b3b2c30562ff7531c79f64ac776",
@@ -6058,17 +5485,9 @@
       "sha256": "2fad3cfa84fd4ec7390a42a05541fe2c4c7481d21e32a329f09577579a7c2159",
       "span": 4
     },
-    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-25": {
-      "sha256": "47dc41f44332bf1f67e8764a5dea1ce2aa543a47140fc1fba7b8b504d136ae73",
-      "span": 9
-    },
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40": {
       "sha256": "df922b864fd95c98cc3102cc8e415f35d9788c3a278a0a043ac8605f4762e2dc",
       "span": 14
-    },
-    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:9-40": {
-      "sha256": "64d2854e52d7e09be0d8d0487ef3d4e9128a7651453bd957e3f62261d22314d4",
-      "span": 32
     },
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier": {
       "span": 0
