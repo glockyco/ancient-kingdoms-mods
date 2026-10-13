@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mercenaryPrice, mercenaryRank } from "./mercenaries";
-import { TOTAL_VETERAN_POINTS, TOTAL_VETERAN_POINTS_NOTE } from "./inputs";
+import { TOTAL_VETERAN_POINTS_NOTE } from "./inputs";
 
 describe("mercenary calculations", () => {
   it("rounds fractional base prices before discounting", () => {
@@ -50,7 +50,8 @@ describe("mercenary calculations", () => {
     ).toContain("15");
     expect(mercenaryRank().note).toBe(TOTAL_VETERAN_POINTS_NOTE);
     expect(
-      mercenaryPrice().inputs!.find((input) => input.key === "veteran")?.label,
-    ).toBe(TOTAL_VETERAN_POINTS.label);
+      mercenaryPrice().inputs!.find((input) => input.key === "veteran")
+        ?.remember,
+    ).toBe(true);
   });
 });

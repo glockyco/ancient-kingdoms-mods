@@ -10,10 +10,7 @@
     mercenaryHiringOdds,
   } from "$lib/calculation/mercenary-stats";
   import { formatPercent } from "$lib/calculation/format";
-  import {
-    TOTAL_VETERAN_POINTS,
-    TOTAL_VETERAN_POINTS_NOTE,
-  } from "$lib/calculation/inputs";
+  import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import {
     OWNER_LIMITS,
     mercenaryOwner,
@@ -59,11 +56,15 @@
     spell: "Spell Power",
   };
   const TITLES: Record<StatKey, string> = {
-    hp: "Base Health × (saved hire percentage + 0.25% per total veteran point), rounded, then add 25 Health per Constitution.",
-    mana: "Base Mana × (saved hire percentage + 0.25% per total veteran point), rounded, then add 20 Mana per Intelligence.",
-    atk: "Strength at this level + the saved shared hire roll + total Veteran Points.",
+    // Source: server-scripts/Player.cs:10560-10574; Health.cs:max; Constitution.cs:GetHealthBonus — maximum Health combines the saved hire multiplier, veteran bonus and Constitution.
+    hp: "Multiply base Health by the combined percentage from the saved Health hire roll and 0.25% per veteran point (VT), round, then add 25 Health per point of Constitution.",
+    // Source: server-scripts/Player.cs:10560-10574; Mana.cs:max; Intelligence.cs:GetManaBonus — maximum Mana combines the saved hire multiplier, veteran bonus and Intelligence.
+    mana: "Multiply base Mana by the combined percentage from the saved Mana hire roll and 0.25% per veteran point (VT), round, then add 20 Mana per point of Intelligence.",
+    // Source: server-scripts/Player.cs:10556-10562; Strength.cs:GetDamageBonus — Attack Power adds Strength, the combat hire roll and veteran points.
+    atk: "Add Strength at this level, the saved combat hire roll and veteran points (VT).",
+    // Source: server-scripts/Player.cs:10556-10562; Intelligence.cs:GetMagicDamageBonus — Spell Power adds rounded Intelligence scaling, the combat hire roll and veteran points.
     spell:
-      "150% of Intelligence, rounded, + the saved shared hire roll + total veteran points.",
+      "Round 150% of Intelligence, then add the saved combat hire roll and veteran points (VT).",
   };
   const TARGET_LABELS: Record<TargetKey, string> = {
     hp: "Health",
@@ -332,14 +333,14 @@
       ${grid}${xt}
       <polyline class="curve" points="${pts.join(" ")}"/>
       ${dots}${now}
-      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">minimum stats — top X% on each stat roll →</text>
+      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">minimum stats: top percentage of each stat roll →</text>
     </svg>`;
   }
 </script>
 
 <Seo
   title="Mercenary Stat Ranges - Ancient Kingdoms"
-  description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, by character level and total veteran points, plus hiring odds and average costs."
+  description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, by character level and veteran points (VT), plus hiring odds and average costs."
   path="/mechanics/mercenary-stats"
 />
 
@@ -362,15 +363,16 @@
   <p class="lead">
     <span class="block"
       >Compare possible mercenary Health, Mana, Attack Power, and Spell Power by
-      class, race, level, and total veteran points.</span
+      class, race, level, and veteran points (VT).</span
     >
     <span class="block"
       >A recruiter guarantees its preferred race only if that race can take the
       chosen class.</span
     >
+    <!-- Source: server-scripts/Player.cs:10482-10519 — each hire generates independent Health and resource rolls and one combat roll. -->
     <span class="block"
-      >Each hire also rolls hidden bonuses, so two otherwise identical
-      mercenaries can have different stats.</span
+      >Each hire rolls its stat bonuses, so two otherwise identical mercenaries
+      can have different stats.</span
     >
   </p>
   <p class="text-sm text-muted-foreground">{TOTAL_VETERAN_POINTS_NOTE}</p>
@@ -388,8 +390,9 @@
         >
         <!-- Source: server-scripts/Player.cs:10482-10527,10744-10774; Database.cs:1922-1943; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
         <span class="block"
-          >Hiring then sets three hidden values: a Health multiplier, a resource
-          multiplier, and a combat value shared by Attack Power and Spell Power.</span
+          >Hiring sets three hire rolls: a Health multiplier, a resource
+          multiplier, and a combat hire roll shared by Attack Power and Spell
+          Power.</span
         >
         <span class="block"
           >Warriors and Rogues roll a resource multiplier, but their Rage
@@ -400,37 +403,37 @@
         >
         <span class="block">Other classes use the multiplier for Mana.</span>
         <span class="block"
-          >These values determine where the hire falls within each range.</span
+          >These hire rolls determine where the hire falls within each range.</span
         >
       </p>
       <ul>
         <li>
+          <!-- Source: server-scripts/Player.cs:10744-10774; Health.cs:max; Mana.cs:max — saved resource multipliers scale current base resources, before equipment bonuses. -->
           <span class="block"
-            >For an existing mercenary, compare totals with the row at its
-            current level.</span
+            >Without equipment, an existing mercenary's Health and Mana fall
+            within the row at its current level.</span
           >
         </li>
         <li>
           <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning set base damage and base magic damage to the shared hire roll plus total veteran points, including a zero roll. -->
           <span class="block"
-            >Resummoning or reloading restores the same hire roll and reapplies
-            your full veteran damage bonus.</span
+            >Resummoning or reloading restores the same combat hire roll and
+            reapplies your full veteran Attack Power and Spell Power bonus.</span
           >
           <span class="block"
-            >These ranges describe mercenaries hired at the level shown. An
-            existing mercenary keeps the combat roll from its hiring level.</span
+            >Without equipment, Attack Power and Spell Power equal the current
+            row's lowest values plus the saved combat hire roll. Set Level to
+            the hiring level to see the largest possible combat hire roll.</span
           >
         </li>
         <li>
           <span class="block"><b>Every class lists every race.</b></span>
           <span class="block">A "–" means that race cannot take the class.</span
           >
+          <!-- Source: server-scripts/Utils.cs:GetRandomChar; website/data/compendium.db npcs.preferred_mercenary_race — no recruiter prefers Drassar, and no random pool includes it. -->
           <span class="block"
-            >Some races are absent from every class's random hiring pool, but a
-            recruiter that prefers one can still hire it for an allowed class.</span
-          >
-          <span class="block"
-            >If no listed recruiter prefers that race, you cannot hire it.</span
+            >No recruiter hires Drassar, so you cannot hire a Drassar mercenary.
+            Its rows show what one would roll.</span
           >
         </li>
       </ul>
@@ -455,9 +458,10 @@
         max={OWNER_LIMITS.level[1]}
         onchange={(v) => setMercenaryOwner("level", v)}
       />
+      <!-- Source: server-scripts/Player.cs:CmdBuyMercenary; UICharacterInfo.cs:Update — VT adds base-resource multipliers and both combat-power bonuses. -->
       <NumberField
-        label={TOTAL_VETERAN_POINTS.label}
-        hint="Health & Mana · +0.25% each"
+        label="Veteran points (VT)"
+        hint="+0.25% of base Health & Mana, +1 Attack & Spell Power each"
         value={veteran}
         min={OWNER_LIMITS.veteran[0]}
         max={OWNER_LIMITS.veteran[1]}
@@ -570,15 +574,22 @@
   <section class="cost-sec" aria-label="Hiring cost and odds">
     <h2>Hiring odds &amp; cost</h2>
     <p class="sub">
-      <span class="block">Each hire rerolls the hidden bonuses.</span>
+      <!-- Source: server-scripts/Player.cs:10482-10519 — each hire generates new random stat bonuses. -->
+      <span class="block">Each hire rolls new stat bonuses.</span>
       <span class="block"
         >Choose a recruiter that can provide your chosen race, then set the
         lowest stats you want.</span
       >
       <span class="block"
         >The calculator shows your chance per hire and average gold cost at the
-        selected level and total veteran points.</span
+        selected level and veteran points (VT).</span
       >
+      <!-- Source: server-scripts/UIMercenaries.cs:ButtonSummonMercenary; Player.cs:CmdBuyMercenary — hiring checks active limits below level 40 and the ten-mercenary roster cap. -->
+      <span class="block">
+        Each hire joins your party if there is room. Below level 40, dismiss an
+        active mercenary before hiring again if you are at your active limit. At
+        10 hired, delete one before the next hire.
+      </span>
     </p>
     <div class="cost-grid">
       <div class="cost-inputs">
@@ -612,9 +623,9 @@
             >
               {#each data.taverns as tavern (tavern.npc_name)}
                 <option value={tavern.npc_name}
-                  >{tavern.zone_name} · {tavern.npc_name} — {recruiterSpecialty(
+                  >{tavern.zone_name} · {tavern.npc_name} ({recruiterSpecialty(
                     tavern.preferred_race,
-                  )}</option
+                  )})</option
                 >
               {/each}
             </select>
@@ -705,7 +716,13 @@
               >Average gold needed to hire a mercenary meeting these stat
               thresholds, including the chance of getting the chosen race.</span
             >
-            <span class="block">The dot marks your selected thresholds.</span>
+            <!-- Source: server-scripts/Player.cs:10482-10519 — stat rolls are independent. drawChart expresses their combined chance as equal per-roll chances and clamps the displayed range to 5–100%. -->
+            <span class="block"
+              >Within the chart's range, the dot shows your thresholds' combined
+              chance spread evenly across the stat rolls. A 25% position means
+              the top 25% of each roll. The chart spans the top 5% through 100%
+              of each roll.</span
+            >
           </p>
         {/if}
       </div>

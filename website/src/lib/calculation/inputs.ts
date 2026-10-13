@@ -102,10 +102,9 @@ export const DISEASE_RESIST = characterStat(
   100,
 );
 
-// Source: server-scripts/PlayerSkills.cs:1762-1772,1826-1853,2477-2480; server-scripts/Experience.cs:45-53 — the total and reset refund count learned base ranks without weighting their costs.
-// Observed: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md — two-point ranks lower VT and XP cost, and paid resets lose the second point.
+// Source: server-scripts/UICharacterInfo.cs:Update; server-scripts/PlayerSkills.cs:GetTotalVeteranPoints; server-scripts/Experience.cs:ShowVeteranLevelUp — the character window's VT total (Veteran Level) includes unspent points and learned base ranks.
 export const TOTAL_VETERAN_POINTS_NOTE =
-  "Total veteran points are your unspent veteran points plus the ranks of your learned veteran skills. A game defect counts a veteran skill rank that costs 2 points as 1 point. Each such rank lowers your Veteran Level by 1 and the next point's experience cost by 20,000 XP, and a token reset refunds only 1 of its 2 points.";
+  'Total veteran points (Veteran Level) are your unspent veteran points plus your learned veteran skill ranks. The character window shows them as the VT number beside your level, as in "Level 50 (VT 20)". Use 0 if no VT number appears.';
 
 export const TOTAL_VETERAN_POINTS: CalculationInput = {
   ...situational("veteran", "Total veteran points", 20),

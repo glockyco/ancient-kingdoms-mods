@@ -68,13 +68,13 @@ export function mercenaryStats(
         : []),
       {
         name: "Health multiplier",
-        expression: "Health hire roll + 0.25% × total Veteran Points",
+        expression: "Health hire roll + 0.25% × veteran points (VT)",
       },
       ...(result.hasMana
         ? [
             {
               name: "Mana multiplier",
-              expression: "Mana hire roll + 0.25% × total Veteran Points",
+              expression: "Mana hire roll + 0.25% × veteran points (VT)",
             },
           ]
         : []),
@@ -105,18 +105,17 @@ export function mercenaryStats(
           ]
         : []),
       {
-        name: "Combat roll ceiling",
-        expression: `Hiring level × ${formatPercent(bands.bc)} for ${race}`,
-        rounding: "nearest",
+        name: "Highest combat hire roll",
+        expression: `Hiring level × ${formatPercent(bands.bc)} for ${race}, rounded, − 1`,
       },
       {
-        name: "Shared hire roll",
+        name: "Combat hire roll",
         expression:
-          "Random whole number from 0 through combat roll ceiling − 1, saved when hired",
+          "Random whole number from 0 through the highest combat hire roll, saved when hired",
       },
       {
         name: "Attack Power",
-        expression: "Saved shared hire roll + total Veteran Points + Strength",
+        expression: "Saved combat hire roll + veteran points (VT) + Strength",
       },
       {
         name: "Intelligence contribution",
@@ -126,13 +125,13 @@ export function mercenaryStats(
       {
         name: "Spell Power",
         expression:
-          "Saved shared hire roll + total Veteran Points + Intelligence contribution",
+          "Saved combat hire roll + veteran points (VT) + Intelligence contribution",
       },
     ],
     example: () => ({
       given: [
-        `${race} ${cls}, level ${level}, ${veteran} total veteran points`,
-        "Lowest resource rolls and shared hire roll of 0",
+        `${race} ${cls} (class and race from Hiring odds & cost), level ${level}, ${veteran} veteran points (VT)`,
+        `Lowest Health${result.hasMana ? " and Mana" : ""} hire rolls and a combat hire roll of 0`,
         "No equipment",
       ],
       result: `${formatNumber(row.hp![0])} Health${row.mana ? `, ${formatNumber(row.mana[0])} Mana` : ""}, ${formatNumber(row.atk![0])} Attack Power and ${formatNumber(row.spell![0])} Spell Power`,
@@ -170,8 +169,8 @@ export function mercenaryStats(
               `Maximum Mana: ${formatNumber(scaledMana)} + 20 × ${result.attrs.INT} = ${formatNumber(row.mana![0])}`,
             ]
           : []),
-        `Combat roll ceiling: ${level} × ${formatPercent(bands.bc)} = ${combatCeiling}, rounded`,
-        `Shared hire roll: chosen within 0 through ${combatCeiling} − 1 = 0`,
+        `Highest combat hire roll: ${level} × ${formatPercent(bands.bc)}, rounded, − 1 = ${combatCeiling - 1}`,
+        `Combat hire roll: chosen within 0 through ${combatCeiling - 1} = 0`,
         `Attack Power: 0 + ${veteran} + ${result.attrs.STR} = ${formatNumber(row.atk![0])}`,
         `Intelligence contribution: 150% × ${result.attrs.INT} = ${spellBonus}, rounded`,
         `Spell Power: 0 + ${veteran} + ${spellBonus} = ${formatNumber(row.spell![0])}`,
@@ -198,7 +197,10 @@ export function mercenaryHiringOdds(
           "Chance of the chosen race × chance its stat rolls meet your thresholds",
       },
       { name: "Expected hires", expression: "1 ÷ qualifying hire chance" },
-      { name: "Expected gold", expression: "Expected hires × gold per hire" },
+      {
+        name: "Expected gold",
+        expression: "Gold per hire ÷ qualifying hire chance",
+      },
     ],
     example: () => ({
       given: [
@@ -215,11 +217,11 @@ export function mercenaryHiringOdds(
         ...(chance > 0
           ? [
               `Expected hires: 1 ÷ ${formatPercent(chance)} = about ${formatNumber(roundedHires)}`,
-              `Expected gold: about ${formatNumber(roundedHires)} × ${formatNumber(price)} = about ${formatNumber(roundedGold)} gold`,
+              `Expected gold: ${formatNumber(price)} ÷ ${formatPercent(chance)} = about ${formatNumber(roundedGold)} gold`,
             ]
           : [
               "Expected hires: 1 ÷ 0% = no finite expectation",
-              `Expected gold: no finite expected hires × ${formatNumber(price)} = no finite expectation`,
+              `Expected gold: ${formatNumber(price)} ÷ 0% = no finite expectation`,
             ]),
       ],
     }),

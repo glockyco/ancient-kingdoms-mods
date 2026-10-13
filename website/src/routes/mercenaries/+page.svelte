@@ -40,7 +40,7 @@
   const collectionNode = $derived(
     buildCollectionPage({
       path: "/mercenaries",
-      name: "Mercenaries — Ancient Kingdoms Compendium",
+      name: "Mercenaries - Ancient Kingdoms Compendium",
       description: `The ${data.mercenaries.length} hireable mercenary classes in Ancient Kingdoms, compared.`,
       items: data.mercenaries.map((m) => ({
         name: m.name,
@@ -317,7 +317,7 @@
               </span>
               <span class="block">
                 It rises to {fmt(hirePrice(50, MAX_VETERAN))} gold at level 50 with
-                {MAX_VETERAN} total veteran points.
+                {MAX_VETERAN} veteran points (VT).
               </span>
               <span class="block">
                 A recruiter that prefers a race hires that race when the class
@@ -331,7 +331,14 @@
               </span>
             </p>
             <Calculation calculation={mercenaryPrice()} />
-            <p id="total-veteran-points">{TOTAL_VETERAN_POINTS_NOTE}</p>
+            <p id="total-veteran-points">
+              {TOTAL_VETERAN_POINTS_NOTE}
+              See
+              <a href="/mechanics/experience#veteran-points" class={link}
+                >Veteran Points</a
+              >
+              for the counting and reset rules.
+            </p>
           </div>
         </div>
       </div>
@@ -428,8 +435,11 @@
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard skill rank has a minimum of 1, and every skill has its own maximum rank. -->
             <div id="skill-ranks">
               <Calculation calculation={rankCalculation} />
+              <p class="mt-2 text-muted-foreground">
+                Find Max Rank in the Skills table on each
+                <a href="#classes" class={link}>mercenary class page</a>.
+              </p>
             </div>
-            <p>Bard skill ranks have a minimum of 1.</p>
             <!-- Source: server-scripts/BardMercenarySkills.cs:60-104 — a Bard mercenary gains a third combat song at level 40, and Final Cadence requires level 50 with all combat songs active. -->
             <p>
               <span class="block"
@@ -438,8 +448,11 @@
                 > can sustain three combat songs from level 40 instead of two.</span
               >
               <span class="block"
-                >At level 50, Final Cadence requires all three combat songs to
-                be active.</span
+                >At level 50, <a
+                  href="/skills/mercenary_final_cadence"
+                  class={link}>Final Cadence</a
+                >
+                requires all three combat songs to be active.</span
               >
             </p>
             <Alert variant="info">
@@ -470,7 +483,8 @@
           <div>Give it orders.</div>
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9208-9234 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
           <p class="text-sm leading-6 text-muted-foreground">
-            These orders also apply to your companion.
+            These orders apply to your mercenaries and combat companion. In this
+            table, "companion" includes both.
             <!-- Source: server-scripts/Pet.cs:IsValidCombatReacquireTarget,OnAggro — mercenaries reject Monster.isDummy when acquiring targets automatically. -->
             Mercenaries skip training dummies when choosing targets automatically.
             <!-- Source: server-scripts/Pet.cs:2969-3031 — back-seeking enabled mercenaries reposition by class and frontal attacks, excluding Warriors. -->
@@ -532,6 +546,7 @@
                     ></td
                   ></tr
                 >
+                <!-- Source: server-scripts/Pet.cs:UserCode_CmdAttackTarget__NetworkIdentity — individual orders break the target's enchanted sleep. -->
                 <tr class="border-b"
                   ><th class="py-2 pr-5 font-medium text-foreground"
                     >Individual attack</th
@@ -541,7 +556,10 @@
                       Hold Position.</span
                     ><span class="block"
                       >The order interrupts its current action.</span
-                    ><span class="block">It wakes a mesmerized target.</span
+                    ><span class="block"
+                      >It ends <a href="/mechanics/combat#special" class={link}
+                        >Sleep</a
+                      > on the target.</span
                     ><span class="block"
                       >The companion must be in aggressive stance.</span
                     ></td
@@ -666,7 +684,7 @@
               </span>
               <span class="block">
                 It rises to {fmt(resurrectionPrice(50, MAX_VETERAN))} gold at level
-                50 with {MAX_VETERAN} total veteran points.
+                50 with {MAX_VETERAN} veteran points (VT).
               </span>
               <span class="block">
                 Gear stays on the mercenary at its current durability after
@@ -710,8 +728,10 @@
             </span>
             <!-- Source: server-scripts/UIRespawn.cs:30-63 — the paid mercenary return is available only through non-Hardcore respawn. -->
             <span class="block">
-              Hardcore characters have no normal respawn, so this does not apply
-              to them.
+              <a href="/mechanics/world#game-modes" class={link}
+                >Hardcore characters</a
+              >
+              have no normal respawn, so this does not apply to them.
             </span>
           </p>
         </div>
@@ -741,8 +761,11 @@
         >Equipment and augments increase a mercenary's attributes.</span
       >
       <span class="block"
-        >Three matching, unbroken armor-set pieces give the set's attribute
-        bonus.</span
+        >Three matching, unbroken <a
+          href="/mechanics/inventory#armor-sets"
+          class={link}>armor-set pieces</a
+        >
+        give the set's attribute bonus.</span
       >
       <span class="block"
         >Mercenaries do not receive the five-piece skill bonus.</span
@@ -782,7 +805,7 @@
       >
       <span class="block">Supplies are used only while you are in combat.</span>
     </p>
-    <!-- Source: server-scripts/Pet.cs:2079-2168 — food and utility buff checks occur every 5–10 seconds; health and resource checks every 1–3 seconds with 15-second reuse and 90% efficiency gates. -->
+    <!-- Source: server-scripts/Pet.cs:UpdateServer — integer Random.Range checks food and utility potions every 5–9 seconds, Health and resource potions every 1–2 seconds, with 15-second reuse and 90% efficiency gates. -->
     <div class="overflow-x-auto">
       <table class="w-full min-w-[32rem] text-left text-sm leading-6">
         <thead class="border-b text-foreground">
@@ -798,7 +821,7 @@
               class="py-2"
               ><span class="block"
                 >The mercenary eats food when it has no food buff.</span
-              ><span class="block">It checks every 5–10 seconds.</span></td
+              ><span class="block">It checks every 5–9 seconds.</span></td
             ></tr
           >
           <tr class="border-b"
@@ -808,7 +831,7 @@
               ><span class="block"
                 >The mercenary uses a utility potion when it has no buff from
                 the potion's category.</span
-              ><span class="block">It checks every 5–10 seconds.</span></td
+              ><span class="block">It checks every 5–9 seconds.</span></td
             ></tr
           >
           <tr class="border-b"
@@ -820,7 +843,7 @@
               ><span class="block"
                 >The mercenary must be missing at least 90% of the Health that
                 the potion restores.</span
-              ><span class="block">It checks every 1–3 seconds.</span></td
+              ><span class="block">It checks every 1–2 seconds.</span></td
             ></tr
           >
           <tr
@@ -834,7 +857,7 @@
               ><span class="block"
                 >The mercenary must be missing at least 90% of the Rage or Mana
                 that the potion restores.</span
-              ><span class="block">It checks every 1–3 seconds.</span></td
+              ><span class="block">It checks every 1–2 seconds.</span></td
             ></tr
           >
         </tbody>
@@ -919,9 +942,14 @@
       </table>
     </div>
     <!-- Source: server-scripts/Pet.cs:4476-4523,4566-4609,4922-4963 — cleansing takes priority and same-owner healers avoid duplicate noncritical direct heals. -->
+    <!-- Source: server-scripts/Pet.cs:TryQueueHealSkill; website/data/compendium.db pet_skills, skills.is_cleanse — healer cleansing takes priority, using each class's cleanse skill. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
-        >Healers cleanse before healing when Cleanse is ready.</span
+        >Healers cleanse before healing when their cleanse skill is ready:
+        <a href="/skills/radiant_cleansing" class={link}>Radiant Cleansing</a>
+        for Clerics or
+        <a href="/skills/puritys_touch" class={link}>Purity's Touch</a>
+        for Druids.</span
       >
       <span class="block"
         >Healers with the same owner avoid duplicate direct heals unless the
@@ -931,19 +959,22 @@
     <!-- Source: server-scripts/PetSkills.cs:143-158,194-201; Pet.cs:1335-1448 — Warrior Challenge is chosen first; Battle Shout needs two nearby valid monsters already attacking party members. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
-        >Warriors prioritize Challenge against one target.</span
+        >Warriors prioritize <a href="/skills/challenge" class={link}
+          >Challenge</a
+        > against one target.</span
       >
       <span class="block"
-        >In aggressive stance, Battle Shout takes priority when at least two
-        attackable monsters within 20 yd of you attack party members and are
-        close enough to each other for the shout.</span
+        >In aggressive stance, <a href="/skills/battle_shout" class={link}
+          >Battle Shout</a
+        > takes priority when at least two attackable monsters within 20 yd of you
+        attack party members and are close enough to each other for the shout.</span
       >
     </p>
     <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2708-2715,2820-2841 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
-        >Companions and mercenaries can evade monster area attacks with at least
-        a 1-second cast and a reachable safe destination.</span
+        >Companions and mercenaries can step out of a monster's area attack
+        whose cast takes at least 1 second, if a reachable safe spot exists.</span
       >
       <span class="block"
         >Familiars and aggressive Warriors do not try this escape.</span

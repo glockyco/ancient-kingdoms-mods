@@ -29,8 +29,8 @@ export function mercenaryPrice(resurrection = false): Calculation {
       {
         name: "Base price",
         expression: resurrection
-          ? "5 gold + 295 gold × level progress raised to 2.8 + 10 gold × total veteran points"
-          : "20 gold + 400 gold × level progress × level progress + 15 gold × total veteran points",
+          ? "5 gold + 295 gold × level progress raised to 2.8 + 10 gold × veteran points (VT)"
+          : "20 gold + 400 gold × level progress × level progress + 15 gold × veteran points (VT)",
         rounding: "nearest",
       },
       {
@@ -56,7 +56,7 @@ export function mercenaryPrice(resurrection = false): Calculation {
         max: 50,
         remember: true,
       },
-      TOTAL_VETERAN_POINTS,
+      { ...TOTAL_VETERAN_POINTS, label: "Veteran points (VT)" },
       CHARISMA,
     ],
     example: ({ level, veteran, charisma }) => {
@@ -73,7 +73,7 @@ export function mercenaryPrice(resurrection = false): Calculation {
       return {
         given: [
           `Level ${level}`,
-          `${veteran} total veteran points`,
+          `${veteran} veteran points (VT)`,
           `${charisma} Charisma`,
         ],
         result: `${formatNumber(total)} gold ${resurrection ? "resurrection fee" : "hire price"}`,
@@ -103,13 +103,13 @@ export function mercenaryRank(maxRank?: number, bard = false): Calculation {
       },
       {
         name: "Veteran contribution",
-        expression: "Total veteran points ÷ 10",
+        expression: "Veteran points (VT) ÷ 10",
         rounding: "down",
       },
       {
         name: "Skill rank",
         expression: "Level contribution + veteran contribution",
-        limit: `at most the skill's maximum rank${bard ? ", at least 1 for Bard skills" : ""}`,
+        limit: "at most the skill's maximum rank",
       },
     ],
     inputs: [
@@ -119,11 +119,15 @@ export function mercenaryRank(maxRank?: number, bard = false): Calculation {
         max: 50,
         remember: true,
       },
-      TOTAL_VETERAN_POINTS,
+      { ...TOTAL_VETERAN_POINTS, label: "Veteran points (VT)" },
       ...(maxRank === undefined
         ? [
             {
-              ...situational("maximumRank", "Skill's maximum rank", 5),
+              ...situational(
+                "maximumRank",
+                "Skill's maximum rank (Max Rank on the mercenary's page)",
+                5,
+              ),
               min: 1,
               max: 100,
             },
@@ -139,7 +143,7 @@ export function mercenaryRank(maxRank?: number, bard = false): Calculation {
       return {
         given: [
           `Level ${level}`,
-          `${veteran} total veteran points`,
+          `${veteran} veteran points (VT)`,
           `Maximum rank ${cap}`,
         ],
         result: `Skill rank ${rank}`,

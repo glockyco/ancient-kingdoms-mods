@@ -6,7 +6,10 @@
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
-  import { finalCadenceMelody } from "$lib/calculation/bard";
+  import {
+    bardCharmResistance,
+    finalCadenceMelody,
+  } from "$lib/calculation/bard";
 
   const SECTIONS = [
     { id: "songs", label: "Bard Songs" },
@@ -48,11 +51,12 @@
         Performing continues while moving or casting an ordinary skill.<br />
         Selecting another song changes which song repeats.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1162-1191,1531-1542,2344-2363 — repetition stops when its eligibility fails or the Bard stops the selected song. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:CanContinueBardSong,UserCode_CmdStopBardSong__Int32; UIBuffs.cs:Update — buff-bar clicks stop and remove a song. -->
       <p>
-        Repetition stops if the Bard dies, loses the required equipment, or
-        enters a state other than idle, moving, or casting.<br />
-        Stopping a song also stops its repetition.
+        Repetition stops if the Bard dies, is stunned or feared, starts a trade,
+        visits a barber, or unequips the instrument.<br />
+        Click a song's icon in your buff bar to stop it. This removes its effects
+        and stops it repeating.
       </p>
       <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2270-2302 — Instrument requirements are checked before starting and during continued performance. -->
       <p>
@@ -62,7 +66,11 @@
       <!-- Source: server-scripts/PlayerSkills.cs:1269-1313,1605-1616,1631-1643,1660-1672 — the default limit is two, passive bonuses add slots, and a new song displaces the oldest refreshed entry. -->
       <p>
         Two songs can remain active by default.<br />
-        Polyphony adds one slot, for three active songs.<br />
+        <a
+          href="/skills/polyphony"
+          class="text-blue-600 dark:text-blue-400 hover:underline">Polyphony</a
+        >
+        adds one slot, for three active songs.<br />
         A new song at the limit removes the least recently refreshed song and its
         effects.
       </p>
@@ -70,7 +78,7 @@
       <p>
         Earlier songs remain after a switch until they expire, are stopped, or
         are displaced.<br />
-        Stopping repetition alone does not remove an active song.
+        When repetition ends on its own, it does not remove the active song.
       </p>
 
       <div class="overflow-x-auto">
@@ -88,8 +96,9 @@
                 >Beneficial</th
               >
               <td class="py-3">
-                The Bard, nearby living party members in the same zone, and
-                their active companions and mercenaries.<br />
+                The Bard, living party members within the song's tooltip range
+                in the same zone, and their active companions and mercenaries.<br
+                />
                 Familiars do not receive these auras.
               </td>
             </tr>
@@ -101,42 +110,47 @@
                 >Harmful</th
               >
               <td class="py-3">
-                Enemy monsters in range with a non-empty aggro list. They need
-                not be fighting the Bard's party. Checked on each cast and every
-                0.5-second aura update.
+                Enemy monsters within the song's range that are already fighting
+                anyone, not only the Bard's party. Checked on each cast and
+                every 0.5-second aura update.
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Source: server-scripts/PlayerSkills.cs:1333-1445, Buff.cs:9-25 — leaving removes an aura; a song without a buff category can restore the saved effect with its remaining duration and counters on re-entry. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; website/data/compendium.db skills.buff_category — categorized songs apply fresh effects; other songs restore suspended effects. -->
       <p>
         Leaving a song's range removes that Bard's aura.<br />
-        Returning can restore the remaining effect of a song that does not share a
-        buff category with other songs.<br />
+        March of Celerity, Anthem of Focus, Grand Symphony, Wayfarer's Rhythm and
+        <a
+          href="/skills/aegis_aria"
+          class="text-blue-600 dark:text-blue-400 hover:underline">Aegis Aria</a
+        >
+        apply a fresh effect when you return to range. Other songs restore the effect's
+        remaining time and strength.<br />
         If cleansing weakened a harmful effect, leaving and returning does not restore
-        its original strength.
+        its original strength. Aegis Aria can restore its ward on re-entry.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1348-1423, BardSongSkill.cs:35-71, Skills.cs:1207-1245 — songs with a buff category apply a fresh effect on re-entry. Aegis Aria is a Ward-category song in the exported skills. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:BeginBardSong,CompleteBardSongCast; Skills.cs:ApplyFinishedCast — automatic repeats apply a fresh cast and clear attempted recipients. -->
       <p>
-        Songs that share a buff category instead apply a fresh effect when you
-        return to range.<br />
-        Aegis Aria can restore its ward this way before the next cast.
+        A resisted or removed aura is tried again at the song's next cast,
+        including an automatic repeat.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1377-1437 — fresh casts reset attempted recipients, while ordinary aura updates do not retry resisted or removed uncategorized effects. -->
-      <p>A resisted or removed aura needs a fresh song cast to apply again.</p>
-      <!-- Source: server-scripts/BardSongSkill.cs:35-75 — songs in the same beneficial category compare stacking strength; an equal or stronger existing effect blocks the newcomer. -->
+      <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff; website/data/compendium.db skills.buff_category — same-category songs compare strength across Bards and mercenary versions. -->
       <p>
-        Similar beneficial songs in the same category do not stack.<br />
-        The stronger effect wins, and an equal-strength effect already present stays
-        in place.
+        Two Bards' March of Celerity, Anthem of Focus, Grand Symphony or
+        Wayfarer's Rhythm (including a Bard mercenary's version) do not stack.
+        The stronger wins, and an equal effect already present stays.
       </p>
       <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:133-240 — Bard songs use Charisma scaling for eligible effect values. -->
       <!-- Source: server-scripts/Skills.cs:GetFinalHealOverTime and BuffSkill.cs:GetDebuffPowerAttribute — songs skip the Wisdom healing bonus and use Charisma before the Intelligence branch. -->
       <p>
-        Bard songs scale with Charisma alone. Wisdom and Intelligence leave them
-        unchanged.<br />
+        Bard songs scale with <a
+          href="/mechanics/character#attributes"
+          class="text-blue-600 dark:text-blue-400 hover:underline">Charisma</a
+        >
+        alone. Wisdom and Intelligence leave them unchanged.<br />
         <MechanicsLink section="combat#buffs">Buff Scaling</MechanicsLink> shows the
         calculation and the effects it changes.<br />
         See the <EntityLink href="/classes/bard" name="Bard class page" /> for skills
@@ -146,12 +160,21 @@
   </Card.Root>
 
   <Card.Root id="cadence" class="bg-muted/30">
-    <Card.Header><Card.Title>Final Cadence</Card.Title></Card.Header>
+    <Card.Header
+      ><Card.Title
+        ><a
+          href="/skills/final_cadence"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Final Cadence</a
+        ></Card.Title
+      ></Card.Header
+    >
     <Card.Content class="space-y-5 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:63-70; exported-data/skills.json:152375 — maximum songs are required and the tooltip names the Melody bonus. -->
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply,ToolTip,FormatScaledValue — the tooltip includes Charisma scaling before Melody is applied. -->
       <p>
-        Final Cadence requires your maximum number of active songs. Its damage
-        and healing use Charisma song power, then the Melody bonus below.
+        Final Cadence requires your maximum number of active songs. The tooltip
+        shows its Charisma bonus separately. Add that bonus to the listed damage
+        or healing before applying the Melody bonus below.
       </p>
 
       <div class="overflow-x-auto">
@@ -189,21 +212,34 @@
       <p>
         A song counts once, when you finish casting it yourself. Automatic
         repeats do not count. Casting Final Cadence clears the count, even if it
-        hits no enemies. Bard mercenaries receive no Melody bonus.
+        hits no enemies. <a
+          href="/mercenaries/bard_mercenary"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Bard mercenaries</a
+        > receive no Melody bonus.
       </p>
       <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — enemies must be Monsters with nonempty aggroList and speed above -50, alive, non-hidden, same-zone, visible and attackable; Pet casts require IsEngagedWithParty. -->
       <p>
-        Damage hits living, visible, attackable monsters within range in the
-        same zone. They must have a non-empty aggro list and cannot be in Sleep
-        (speed −50 or below). A player's cast does not require engagement with
-        their own party. A mercenary's cast does.
+        Your Final Cadence hits living, visible, attackable monsters within
+        range in the same zone that are fighting anyone and are not
+        <a
+          href="/mechanics/combat#special"
+          class="text-blue-600 dark:text-blue-400 hover:underline">asleep</a
+        >. A Bard mercenary's cast hits only monsters targeting you, your party,
+        or their companions or mercenaries.
       </p>
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="charm" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Bard Charm: Verse of Beguilement</Card.Title>
+      <Card.Title
+        >Bard Charm: <a
+          href="/skills/verse_of_beguilement"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Verse of Beguilement</a
+        ></Card.Title
+      >
       <!-- Source: server-scripts/BardCharmSongSkill.cs:90-133, server-scripts/Monster.cs:BeginBardCharm — a successful charm changes one monster into a Bard-controlled ally. -->
       <Card.Description>
         Charm turns one monster into a temporary ally.
@@ -218,19 +254,22 @@
         Debuff immunity blocks it.<br />
         Other targets can resist it.
       </p>
-      <!-- Source: server-scripts/BardCharmSongSkill.cs:8-18,61-70,90-124, server-scripts/BuffSkill.cs:209-216, server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40 — each nonnegative Charisma point lowers charm resistance by 0.02 percentage points; each extra monster level adds 2.5 percentage points; retained damage scales from 45% to at most 100%. -->
+      <!-- Source: server-scripts/Combat.cs:GetProbResistMagic; BardCharmSongSkill.cs:GetCharmResistChance — clamp the base roll before applying Charm's level and Charisma adjustments. -->
       <p>
-        Each nonnegative Charisma point reduces the charm resist chance by 0.02
-        percentage points.<br />
-        Each magic resistance point adds 0.05 percentage points to the monster's base
-        resist chance, up to 90% before other modifiers.<br />
-        The base roll also changes by 0.5 percentage points per level of difference,
-        up to 10 points either way.<br />
-        Each level above the Bard adds another 2.5 percentage points.<br />
-        The final resist chance cannot exceed 95%.<br />
-        A charmed monster starts at 45% of its usual physical damage.<br />
-        Each nonnegative Charisma point adds 0.045 percentage points to that share,
-        up to 100%.
+        Charm's resist chance depends on your level and Charisma, and the
+        monster's level and Magic Resist. Read the monster's Magic Resist on its
+        <a
+          href="/monsters"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >monster page</a
+        >.
+      </p>
+      <Calculation calculation={bardCharmResistance()} />
+      <!-- Source: server-scripts/Combat.cs:DealDamageAt; BardCharmSongSkill.cs:GetCharmedDamageMultiplier; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier — the Charm multiplier applies to every damage type. -->
+      <p>
+        A charmed monster deals 45% of its usual damage.<br />
+        Each point of Charisma adds 0.045 percentage points to that share, up to 100%.
+        Negative Charisma counts as 0.
       </p>
       <!-- Source: server-scripts/Monster.cs:2476-2542,2564-2658 — the charmed creature follows its owner when idle and finds reachable nearby monsters that threaten the Bard's group. -->
       <p>
@@ -239,13 +278,14 @@
         party.<br />
         It does not automatically attack each monster the Bard selects.
       </p>
-      <!-- Source: server-scripts/BardCharmSongSkill.cs:20-44,120-133, PlayerSkills.cs:1471-1484, Monster.cs:2349-2371 — an active charm is preferred for renewal, a different charm releases the old one, and another Bard's charm is invalid. -->
+      <!-- Source: server-scripts/BardCharmSongSkill.cs:GetCharmTarget; PlayerSkills.cs:UserCode_CmdStopBardSong__Int32,RemoveActiveBardSong — a buff-bar click releases the current charm before another can be selected. -->
       <p>
         A Bard can control one charmed creature at a time.<br />
         Another Bard cannot take control of that creature while its charm lasts.<br
         />
         Selecting a different monster does not replace an active charm.<br />
-        Releasing the old charm makes a new target possible.
+        To charm another monster, first stop the charm by clicking its song icon in
+        your buff bar.
       </p>
       <!-- Source: server-scripts/BardCharmSongSkill.cs:120-133, PlayerSkills.cs:1261-1313,1646-1653 — a successful charm is tracked as an active Bard song and occupies a slot. -->
       <p>
@@ -265,11 +305,16 @@
         />
         It also ends if the Bard dies, changes zones, or leaves the game.
       </p>
-      <!-- Source: server-scripts/Monster.cs:EndBardCharm; PlayerSkills.cs:StopBardCharm; ZoneTrigger.cs:94-100; Player.cs:11143-11149 — hostile release requires a living Bard within followDistance, not zone equality; zone changes and portals call StopBardCharm for peaceful release. -->
+      <!-- Source: server-scripts/Monster.cs:EndBardCharm; PlayerSkills.cs:StopBardCharm; ZoneTrigger.cs:OnTriggerEnter2D; Player.cs:CmdPortalDestination — ordinary release is hostile within chase distance; zone and portal release is peaceful. -->
       <p>
-        Expiry, stopping the song, or replacing a charm can make the released
-        monster attack its living former Bard within its follow distance.
-        Hostile release does not check matching zones.<br />
+        Expiry or stopping the song makes the released monster attack its former
+        Bard if the Bard is alive and within its
+        <a
+          href="/mechanics/monster-spawns#leashing"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >chase limit</a
+        >
+        (20 yd by default).<br />
         Changing zones or using a portal releases the creature peacefully and frees
         the charm's song slot.
       </p>
