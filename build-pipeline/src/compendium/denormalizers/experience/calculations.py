@@ -223,13 +223,20 @@ def run(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Calculated discovery_exp for {zone_count} zones"
     )
 
-    # Calculate gathering_exp for gathering resources
-    cursor.execute("SELECT id, level FROM gathering_resources")
+    # Source: server-scripts/GatherItem.cs:630-644,817-828 — only plants, minerals,
+    # radiant sparks (excluding quest-only rewards), and successful catches pay XP.
+    cursor.execute("""
+        SELECT gr.id, gr.level, gr.is_plant, gr.is_mineral,
+               gr.is_radiant_spark, gr.is_fishing_spot, i.is_quest_item
+        FROM gathering_resources gr
+        LEFT JOIN items i ON i.id = gr.item_reward_id
+    """)
     resources = cursor.fetchall()
 
     resource_count = 0
-    for resource_id, level in resources:
-        gathering_exp = get_gathering_exp(level or 0)
+    for resource_id, level, plant, mineral, spark, fishing, quest_item in resources:
+        pays_exp = fishing or ((plant or mineral or spark) and not quest_item)
+        gathering_exp = get_gathering_exp(level or 0) if pays_exp else 0
         cursor.execute(
             "UPDATE gathering_resources SET gathering_exp = ? WHERE id = ?",
             (gathering_exp, resource_id),
