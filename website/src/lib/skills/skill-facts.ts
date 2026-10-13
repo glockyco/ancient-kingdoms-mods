@@ -56,6 +56,8 @@ export interface SkillFacts {
   usedByBardMercenary: boolean;
   usedByCompanion: boolean;
   usedByFamiliar: boolean;
+  /** The skills that summon the familiars using this skill, which set its rank. */
+  familiarSummonSkills: { id: string; name: string }[];
   shortensCast: boolean;
   timingModels: Set<TimingModel>;
   hasteCooldownCasters: string;
@@ -223,6 +225,11 @@ export function skillFacts(
     (p) => !p.is_mercenary && !p.is_familiar,
   );
   const usedByFamiliar = usedByPets.some((p) => p.is_familiar);
+  const familiarSummonSkills = usedByPets.flatMap((p) =>
+    p.is_familiar && p.summon_skill_id && p.summon_skill_name
+      ? [{ id: p.summon_skill_id, name: p.summon_skill_name }]
+      : [],
+  );
 
   // Source: server-scripts/Skills.cs:924-933 — player and mercenary spells subtract their spell-haste percentage of the cast time; monsters cast with 0 spell haste.
   const shortensCast =
@@ -307,6 +314,7 @@ export function skillFacts(
     usedByBardMercenary,
     usedByCompanion,
     usedByFamiliar,
+    familiarSummonSkills,
     shortensCast,
     timingModels,
     hasteCooldownCasters,

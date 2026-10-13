@@ -1,1 +1,1 @@
-Mechanics A familiar uses its summoning skill's rank, at most rank 8.
+Mechanics This skill's rank equals the rank of the skill that summoned the familiar, up to rank 8. Summoned by Invoke Blue Familiar.

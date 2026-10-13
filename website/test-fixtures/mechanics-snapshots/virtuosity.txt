@@ -1,1 +1,1 @@
-Mechanics Virtuosity Virtuosity activates when the number of active songs reaches the active song limit.
+Mechanics Virtuosity Virtuosity's damage bonus applies only while you have as many songs active as your active song limit allows.

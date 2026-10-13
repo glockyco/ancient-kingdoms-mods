@@ -502,11 +502,15 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     [params.id],
   );
 
-  // Get pets/mercenaries that use this skill
+  // Get pets/mercenaries that use this skill. A familiar takes its rank from the skill that
+  // summons it, joined by prefab name as the pets pages do.
   const usedByPets = query<SkillPet>(
-    `SELECT DISTINCT p.id, p.name, p.is_mercenary, p.is_familiar, p.type_monster, ps.skill_index
+    `SELECT DISTINCT p.id, p.name, p.is_mercenary, p.is_familiar, p.type_monster, ps.skill_index,
+      summon.id AS summon_skill_id, summon.name AS summon_skill_name
     FROM pet_skills ps
     JOIN pets p ON p.id = ps.pet_id
+    LEFT JOIN skills summon
+      ON p.is_familiar = 1 AND lower(summon.pet_prefab_name) = lower(p.name)
     WHERE ps.skill_id = ?
     ORDER BY p.name`,
     [params.id],

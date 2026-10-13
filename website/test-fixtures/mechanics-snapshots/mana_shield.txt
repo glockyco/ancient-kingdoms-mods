@@ -1,1 +1,1 @@
-Mechanics Ward absorbs damage first. Mana Shield then absorbs the remaining damage using mana.
+Mechanics Ward absorbs damage first. Mana Shield then absorbs the rest, spending 1 Mana for each point of damage. If your Mana runs out, the shield ends and the remaining damage reduces your Health.

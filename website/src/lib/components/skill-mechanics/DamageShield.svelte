@@ -10,9 +10,9 @@
       >Scroll skills and weapon effects triggered on hit cannot trigger it.</span
     >
     <span class="block"
-      >The shield uses the caster's attribute contribution stored when the buff
-      is applied. See Buff Scaling above for the amount. The attacker's Defense
-      or matching resist reduces the reflected hit. See <a
+      >The reflected amount uses the caster's attributes at the moment the buff
+      was applied, as Buff Scaling above shows. The attacker's Defense or
+      matching resist reduces the reflected hit. See <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#resistance">resistance and mitigation</a
       >.</span

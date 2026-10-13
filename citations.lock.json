@@ -271,6 +271,10 @@
     "BardSongSkill.cs:TryApplyAuraBuff": {
       "span": 0
     },
+    "BardVirtuositySkill.cs:6-13": {
+      "sha256": "139e004801ff8527fd94c873b8aeb60e610cb075fa2e94379acf631e62d9cf44",
+      "span": 8
+    },
     "BonusSkill.cs:85-116": {
       "sha256": "4959a70657ecf1036794d7a7ad8611e80f6d76b4796c72ef5fdf37262eaaf8d1",
       "span": 32
@@ -558,6 +562,10 @@
       "sha256": "2a23ac132d1049cba208449d456c9eedad7bf060da4b23aa5572ab8701925d6d",
       "span": 50
     },
+    "Combat.cs:1236-1311": {
+      "sha256": "ebe4b854fe0bf118302f2b9db682926aabedfe07371fb328ad2d12344013b505",
+      "span": 76
+    },
     "Combat.cs:1236-1314": {
       "sha256": "aa2b291c8dba93b85d12200493b1b539fee84e48c5fb1af7addcf02f2964094b",
       "span": 79
@@ -733,6 +741,10 @@
     "Combat.cs:673-875": {
       "sha256": "6f9a33671abce751e2f5e8a1d022cac1e7840dd6966f025dfc60cc8ebb87c384",
       "span": 203
+    },
+    "Combat.cs:674": {
+      "sha256": "151287ab9218a23c60b64969299988ddebd3116c0c03da5babd6edd3ca76b42b",
+      "span": 1
     },
     "Combat.cs:693-697": {
       "sha256": "6d078d77b1d10c9f362dc516e9a19439e9a90fa5e3ad7f50bfde7426e556f50b",

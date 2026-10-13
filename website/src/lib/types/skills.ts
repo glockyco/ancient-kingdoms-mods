@@ -285,6 +285,9 @@ export interface SkillPet {
   is_familiar: boolean;
   type_monster: string | null;
   skill_index?: number;
+  /** For a familiar, the skill that summons it and sets its rank. */
+  summon_skill_id?: string | null;
+  summon_skill_name?: string | null;
 }
 
 // ------------------------------------------------------------
