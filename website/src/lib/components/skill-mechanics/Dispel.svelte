@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/skills/skill-format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -6,6 +7,9 @@
   const { debuffResistance } = $derived(mechanics.facts);
   const playerCast = $derived(
     skill.is_scroll || skill.player_classes.length > 0,
+  );
+  const resistantBuffs = $derived(
+    skill.monster_buffs_with_cleanse_resist ?? [],
   );
 </script>
 
@@ -53,6 +57,18 @@
           : ""}.</span
       >
     </p>
+    {#if resistantBuffs.length > 0}
+      <p class="text-muted-foreground">
+        Monster buffs with Cleanse Resist:
+        {#each resistantBuffs as buff, index (buff.id)}{index > 0 ? ", " : ""}<a
+            href="/skills/{buff.id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >{buff.name}</a
+          >
+          ({formatPercent(buff.prob_ignore_cleanse)}){/each}. Every other
+        monster buff has 0%.
+      </p>
+    {/if}
     {#if skill.skill_type === "target_debuff"}
       {#if skill.is_scroll}
         <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetDebuffSkill.cs:Apply — scroll cast rank is rounded Scroll Mastery × 20; each rank reduces probIgnoreCleanse by 1 percentage point. -->

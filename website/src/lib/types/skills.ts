@@ -193,6 +193,12 @@ export interface SkillDetailView {
   is_mana_shield: boolean;
   is_cleanse: boolean;
   is_dispel: boolean;
+  /** For a dispel: the monster buffs whose Cleanse Resist is above 0%, highest first. */
+  monster_buffs_with_cleanse_resist?: {
+    id: string;
+    name: string;
+    prob_ignore_cleanse: number;
+  }[];
   is_teleport: boolean;
   is_blindness: boolean;
   is_enrage: boolean;

@@ -502,6 +502,22 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_mana_shield: Boolean(skillRaw.is_mana_shield),
     is_cleanse: Boolean(skillRaw.is_cleanse),
     is_dispel: Boolean(skillRaw.is_dispel),
+    // Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — a dispel tests each TargetBuffSkill or AreaBuffSkill buff on a monster against its probIgnoreCleanse.
+    ...(skillRaw.is_dispel
+      ? {
+          monster_buffs_with_cleanse_resist: query<{
+            id: string;
+            name: string;
+            prob_ignore_cleanse: number;
+          }>(
+            `SELECT DISTINCT s.id, s.name, s.prob_ignore_cleanse
+             FROM skills s JOIN monster_skills ms ON ms.skill_id = s.id
+             WHERE s.skill_type IN ('target_buff', 'area_buff')
+               AND s.is_cleanse = 0 AND s.prob_ignore_cleanse > 0
+             ORDER BY s.prob_ignore_cleanse DESC, s.name`,
+          ),
+        }
+      : {}),
     is_teleport: Boolean(skillRaw.is_teleport),
     is_blindness: Boolean(skillRaw.is_blindness),
     is_enrage: Boolean(skillRaw.is_enrage),

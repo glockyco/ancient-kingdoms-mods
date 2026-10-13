@@ -359,8 +359,9 @@ function gatheringPayload(db, id) {
 }
 
 function skillPayload(db, id) {
+  const row = rowById(db, "skills", id);
   return {
-    row: rowById(db, "skills", id),
+    row,
     monsterUsers: rowsByColumn(db, "monster_skills", "skill_id", id),
     petUsers: rowsByColumn(db, "pet_skills", "skill_id", id),
     scrollItems: rowsByColumn(db, "items", "scroll_skill_id", id),
@@ -368,6 +369,19 @@ function skillPayload(db, id) {
     potionItems: rowsByColumn(db, "items", "potion_buff_id", id),
     foodItems: rowsByColumn(db, "items", "food_buff_id", id),
     relicItems: rowsByColumn(db, "items", "relic_buff_id", id),
+    // A dispel page lists every monster buff with Cleanse Resist.
+    ...(row?.is_dispel
+      ? {
+          monsterBuffs: all(
+            db,
+            `SELECT DISTINCT s.id, s.name, s.prob_ignore_cleanse
+             FROM skills s JOIN monster_skills ms ON ms.skill_id = s.id
+             WHERE s.skill_type IN ('target_buff', 'area_buff')
+               AND s.is_cleanse = 0 AND s.prob_ignore_cleanse > 0
+             ORDER BY s.id`,
+          ),
+        }
+      : {}),
   };
 }
 
