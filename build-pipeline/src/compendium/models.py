@@ -738,6 +738,8 @@ class SkillData(BaseModel):
     followup_default_attack: bool = False
     base_skill: bool = False
     affects_random_target: bool = False
+    # AreaDamageSkill.projectile is set; projectile hits omit the caster's maximum Health threat.
+    area_projectile: bool
     is_aura: bool = False
     is_teleport: bool = False
     is_relic: bool = False

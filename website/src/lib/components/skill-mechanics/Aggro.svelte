@@ -14,9 +14,12 @@
   const negativeThreat = $derived(
     skill.aggro !== null && atRank(skill.aggro, 1) < 0,
   );
+  // Source: server-scripts/AreaDamageSkill.cs:Apply — projectile hits add no maximum Health to threat.
   const damageThreat = $derived(
     skill.skill_type === "target_damage" ||
-      (skill.skill_type === "area_damage" && !skill.is_bard_final_cadence),
+      (skill.skill_type === "area_damage" &&
+        !skill.is_bard_final_cadence &&
+        !skill.area_projectile),
   );
 </script>
 

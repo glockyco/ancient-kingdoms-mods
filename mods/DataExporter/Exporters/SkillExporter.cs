@@ -201,6 +201,8 @@ public class SkillExporter : BaseExporter
         if (areaDamageSkill != null)
         {
             skillData.affects_random_target = areaDamageSkill.affectsRandomTarget;
+            // Source: server-scripts/AreaDamageSkill.cs:Apply — a projectile prefab replaces the direct DealDamageAt call.
+            skillData.area_projectile = areaDamageSkill.projectile != null;
         }
 
         // AreaObjectSpawnSkill specific

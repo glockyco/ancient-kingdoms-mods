@@ -241,6 +241,8 @@ export interface SkillDetailView {
 
   // AoE fields
   affects_random_target: boolean;
+  /** An area damage skill whose hits travel as projectiles. */
+  area_projectile: boolean;
   area_object_size: number;
   area_objects_to_spawn: number;
 }

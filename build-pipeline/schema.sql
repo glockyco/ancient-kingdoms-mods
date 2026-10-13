@@ -1169,6 +1169,8 @@ CREATE TABLE skills (
     base_skill BOOLEAN DEFAULT 0,
     break_armor_prob REAL DEFAULT 0.0,
     affects_random_target BOOLEAN DEFAULT 0,
+    -- AreaDamageSkill.projectile is set: hits travel as projectiles without the caster's maximum Health threat.
+    area_projectile BOOLEAN NOT NULL DEFAULT 0,
     area_object_size REAL DEFAULT 0.0,
     area_object_delay_damage REAL DEFAULT 0.0,
     area_objects_to_spawn INTEGER DEFAULT 0,

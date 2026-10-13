@@ -87,6 +87,9 @@ public class SkillData
     public LinearStatBonus aggro { get; set; }
     public float break_armor_prob { get; set; }
     public bool affects_random_target { get; set; }  // AreaDamageSkill only
+    /// <summary>AreaDamageSkill.projectile is set: each hit travels as a projectile that carries the skill's damage,
+    /// crowd control and listed threat, but not the caster's maximum Health or the skill's lifetap and knockback.</summary>
+    public bool area_projectile { get; set; }
     public float area_object_size { get; set; }  // AreaObjectSpawnSkill only
     public float area_object_delay_damage { get; set; }  // AreaObjectSpawnSkill only
     public int area_objects_to_spawn { get; set; }  // AreaObjectSpawnSkill only

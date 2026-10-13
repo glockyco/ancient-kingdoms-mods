@@ -141,6 +141,9 @@ _MODELLED_SKILL_FLAGS = frozenset(
 _EXCLUDED_SKILL_FLAGS = frozenset(
     {
         "allow_dungeon",
+        # Projectile delivery changes threat and drops the skill's lifetap and knockback, not its
+        # damage against a stationary target. Source: server-scripts/AreaDamageSkill.cs:Apply.
+        "area_projectile",
         "can_heal_others",
         "can_heal_self",
         "is_balance_health",

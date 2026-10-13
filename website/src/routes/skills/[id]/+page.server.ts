@@ -563,6 +563,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
 
     // AoE fields
     affects_random_target: Boolean(skillRaw.affects_random_target),
+    area_projectile: Boolean(skillRaw.area_projectile),
     area_object_size: (skillRaw.area_object_size as number) || 0,
     area_objects_to_spawn: (skillRaw.area_objects_to_spawn as number) || 0,
   };

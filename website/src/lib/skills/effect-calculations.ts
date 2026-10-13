@@ -638,7 +638,7 @@ export function effectScalingCalculation(
 }
 
 // Source: server-scripts/Combat.cs:DealDamageAt; TargetDamageSkill.cs:ApplyDamage — positive explicit threat adds the caster's maximum Health, hit damage and separately rounded control terms, capped at target current Health.
-// Source: server-scripts/AreaDamageSkill.cs:Apply — projectile delivery omits the Health contribution; this delivery flag is not exported.
+// Source: server-scripts/AreaDamageSkill.cs:Apply — projectile delivery omits the Health contribution.
 export function aggroCalculation(
   skill: SkillDetailView,
   caster: "player" | "mercenary" | "other" = skill.player_classes.length > 0
@@ -647,7 +647,9 @@ export function aggroCalculation(
 ): Calculation {
   const direct =
     skill.skill_type === "target_damage" ||
-    (skill.skill_type === "area_damage" && !skill.is_bard_final_cadence);
+    (skill.skill_type === "area_damage" &&
+      !skill.is_bard_final_cadence &&
+      !skill.area_projectile);
   const dealsDamage = !!(
     hasNonZeroField(skill.damage) ||
     hasNonZeroField(skill.damage_percent) ||
@@ -734,9 +736,9 @@ export function aggroCalculation(
               "Use the rank from Mercenary Skill Rank on this page. The examples use the same owner level and veteran points.",
             ]
           : []),
-        ...(skill.skill_type === "area_damage" && direct
+        ...(skill.skill_type === "area_damage" && skill.area_projectile
           ? [
-              "An area skill that delivers its hits as projectiles adds no Health contribution.",
+              "This skill's hits travel as projectiles, which add no Health contribution.",
             ]
           : []),
       ].join(" ") || undefined,
