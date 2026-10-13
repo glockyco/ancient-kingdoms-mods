@@ -753,6 +753,10 @@ function addMechanicsHashes(db, hashes) {
             db,
             "SELECT * FROM skills WHERE break_armor_prob > 0 ORDER BY id",
           ),
+          dungeonRefusedPotions: all(
+            db,
+            "SELECT id, name FROM items WHERE potion_buff_id IS NOT NULL AND potion_buff_allow_dungeon = 0 ORDER BY id",
+          ),
         };
         break;
       case "mercenary-stats":

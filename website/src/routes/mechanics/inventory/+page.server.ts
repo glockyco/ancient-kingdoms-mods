@@ -67,6 +67,7 @@ export interface InventoryMechanicsPageData {
   itemIconPaths: Record<string, string | null>;
   reputationTiers: ReputationTier[];
   armorBreakingSkills: { id: string; name: string; break_armor_prob: number }[];
+  dungeonRefusedPotions: { id: string; name: string }[];
 }
 
 function getBackpackRows(db: Database.Database): BackpackRow[] {
@@ -193,6 +194,12 @@ export const load: PageServerLoad = (): InventoryMechanicsPageData => {
           "SELECT id, name, break_armor_prob FROM skills WHERE break_armor_prob > 0 ORDER BY name",
         )
         .all() as InventoryMechanicsPageData["armorBreakingSkills"],
+      // Source: server-scripts/PotionItem.cs:Use — a buff potion whose buff disallows dungeons is refused there.
+      dungeonRefusedPotions: db
+        .prepare(
+          "SELECT id, name FROM items WHERE potion_buff_id IS NOT NULL AND potion_buff_allow_dungeon = 0 ORDER BY name",
+        )
+        .all() as InventoryMechanicsPageData["dungeonRefusedPotions"],
     };
   } finally {
     db.close();
