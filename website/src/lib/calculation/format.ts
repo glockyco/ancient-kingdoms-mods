@@ -4,7 +4,7 @@ import type { LinearValue } from "$lib/types/skills";
 
 /** "1,234" */
 export const formatNumber = (value: number): string =>
-  value.toLocaleString("en-US");
+  value.toLocaleString("en-US").replace(/^-/, "−");
 
 /**
  * 0.125 → "12.5%". Two decimals, trailing zeros dropped. A nonzero value too
@@ -17,9 +17,9 @@ export function formatPercent(value: number): string {
     const digits = percent.toLocaleString("en-US", {
       maximumSignificantDigits: 2,
     });
-    return `${digits}%`;
+    return `${digits.replace(/^-/, "−")}%`;
   }
-  return `${Number(percent.toFixed(2))}%`;
+  return `${String(Number(percent.toFixed(2))).replace(/^-/, "−")}%`;
 }
 
 /**
