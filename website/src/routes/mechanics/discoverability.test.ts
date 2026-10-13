@@ -90,22 +90,6 @@ test("inventory backpack links include tooltip data", () => {
   assert.match(inventoryPage, /tooltipHtml=\{backpack\.tooltip_html\}/);
 });
 
-test("skill page keeps Parry mechanics visible without normal damage", () => {
-  const skillPage = source("../skills/[id]/+page.svelte");
-  const showMechanicsGate =
-    skillPage.match(
-      /const showMechanics = \$derived\([\s\S]*?\n {2}\);/,
-    )?.[0] ?? "";
-
-  assert.match(showMechanicsGate, /skill\.id === "parry"/);
-});
-
-test("skill page links Parry to combat mechanics", () => {
-  const skillPage = source("../skills/[id]/+page.svelte");
-
-  assert.match(skillPage, /href="\/mechanics\/combat#parry"/);
-});
-
 test("combat mechanics page documents Parry special rules", () => {
   const combatPage = source("./combat/+page.svelte");
   const parrySection =

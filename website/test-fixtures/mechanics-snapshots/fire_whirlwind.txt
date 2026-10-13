@@ -1,0 +1,1 @@
+Mechanics Stun Stun applies on one roll, but cannot affect a feared target. Another stun extends the existing stun instead of replacing its end time. Bear mounts resist 90% of stun attempts.

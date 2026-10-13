@@ -3,6 +3,7 @@ import type {
   SkillPet,
   SkillItemSource,
   SkillMechanicsSpec,
+  TimingModel,
 } from "$lib/types/skills";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import { hasLinearValue } from "./skill-format";
@@ -23,10 +24,10 @@ import { hasLinearValue } from "./skill-format";
  * Stat names are looked up here and never assembled from a fragment. Appending "Resist" to a
  * damage type once produced `physicalResist`, which the game does not implement.
  */
-type DamageMechanics = {
+export interface DamageMechanics {
   stat: string;
   avoidance: "block" | "resist";
-};
+}
 
 const DAMAGE_MECHANICS: Record<string, DamageMechanics> = {
   Physical: { stat: "Defense", avoidance: "block" },
@@ -37,12 +38,41 @@ const DAMAGE_MECHANICS: Record<string, DamageMechanics> = {
   Disease: { stat: "Disease Resist", avoidance: "resist" },
 };
 
+/** What the skill page derives from a skill and the pets that use it. */
+export interface SkillFacts {
+  isWildStrike: boolean;
+  losesVeteranPoints: boolean;
+  hasScrollMasteryScaling: boolean;
+  hasScrollDispelScaling: boolean;
+  hasBuffEffects: boolean;
+  hasAnyBonuses: boolean;
+  hasAttributeScaledBonuses: boolean;
+  hasCrowdControl: boolean;
+  hasDamage: boolean;
+  hasActualDamage: boolean;
+  meaningfulWeapon: boolean;
+  hasRequirements: boolean;
+  usedByMercenary: boolean;
+  usedByBardMercenary: boolean;
+  usedByCompanion: boolean;
+  usedByFamiliar: boolean;
+  shortensCast: boolean;
+  timingModels: Set<TimingModel>;
+  hasteCooldownCasters: string;
+  isDamageType: boolean;
+  isHealType: boolean;
+  isBuffType: boolean;
+  isDebuffType: boolean;
+  debuffResistance: string | null;
+  damageMechanics: DamageMechanics | null;
+}
+
 export function skillFacts(
   skill: SkillDetailView,
   usedByPets: SkillPet[],
   mechanicsSpec: SkillMechanicsSpec,
   grantedByItems: SkillItemSource[],
-) {
+): SkillFacts {
   const isWildStrike = skill.id === "wild_strike";
   const losesVeteranPoints =
     skill.is_veteran && skill.required_skill_points > 1;
@@ -51,7 +81,7 @@ export function skillFacts(
   );
   const hasScrollMasteryScaling = isScrollTriggered && skill.max_level > 1;
   const hasScrollDispelScaling = hasScrollMasteryScaling && skill.is_dispel;
-  const hasStatBonuses =
+  const hasStatBonuses = !!(
     skill.health_max_bonus ||
     skill.health_max_percent_bonus ||
     skill.mana_max_bonus ||
@@ -74,29 +104,33 @@ export function skillFacts(
     skill.fear_resist_chance_bonus ||
     skill.damage_shield ||
     skill.cooldown_reduction_percent ||
-    skill.heal_on_hit_percent;
+    skill.heal_on_hit_percent
+  );
 
-  const hasRegenBonuses =
+  const hasRegenBonuses = !!(
     skill.healing_per_second_bonus ||
     skill.health_percent_per_second_bonus ||
     skill.mana_per_second_bonus ||
     skill.mana_percent_per_second_bonus ||
     skill.energy_per_second_bonus ||
-    skill.energy_percent_per_second_bonus;
+    skill.energy_percent_per_second_bonus
+  );
 
-  const hasResistBonuses =
+  const hasResistBonuses = !!(
     skill.poison_resist_bonus ||
     skill.fire_resist_bonus ||
     skill.cold_resist_bonus ||
-    skill.disease_resist_bonus;
+    skill.disease_resist_bonus
+  );
 
-  const hasAttributeBonuses =
+  const hasAttributeBonuses = !!(
     skill.strength_bonus ||
     skill.intelligence_bonus ||
     skill.dexterity_bonus ||
     skill.constitution_bonus ||
     skill.wisdom_bonus ||
-    skill.charisma_bonus;
+    skill.charisma_bonus
+  );
 
   // is_cleanse is excluded: cleanse description is in the effect summary,
   // and the card adds nothing unless the skill also has stat bonuses or other effects.
@@ -148,14 +182,15 @@ export function skillFacts(
     hasLinearValue(skill.fear_chance) ||
     hasLinearValue(skill.knockback_chance);
 
-  const hasDamage =
+  const hasDamage = !!(
     skill.damage ||
     skill.damage_percent ||
     skill.aggro ||
     hasLinearValue(skill.lifetap_percent) ||
     skill.break_armor_prob > 0 ||
     skill.is_assassination_skill ||
-    skill.is_manaburn_skill;
+    skill.is_manaburn_skill
+  );
 
   // Source: server-scripts/AreaDamageSkill.cs:93, TargetDamageSkill.cs — num2 only set when damage > 0
   // Aggro-only skills call DealDamageAt with amountDamage=0, so no damage formula applies
@@ -169,15 +204,15 @@ export function skillFacts(
   // "Weapon" means any melee weapon (StartsWith match) — not a meaningful restriction.
   // Source: server-scripts/ScriptableSkill.cs — CheckWeapon(), line 100
   const meaningfulWeapon =
-    skill.required_weapon_category &&
+    !!skill.required_weapon_category &&
     skill.required_weapon_category !== "Weapon";
 
   const hasRequirements =
     skill.level_required > 1 ||
     skill.required_skill_points > 1 ||
     skill.required_spent_points > 0 ||
-    skill.prerequisite_skill_id ||
-    skill.prerequisite2_skill_id ||
+    !!skill.prerequisite_skill_id ||
+    !!skill.prerequisite2_skill_id ||
     meaningfulWeapon;
   // Pet/mercenary usage flags for skill-level notes inside the mechanics card
   const usedByMercenary = usedByPets.some((p) => p.is_mercenary);
@@ -258,13 +293,8 @@ export function skillFacts(
   return {
     isWildStrike,
     losesVeteranPoints,
-    isScrollTriggered,
     hasScrollMasteryScaling,
     hasScrollDispelScaling,
-    hasStatBonuses,
-    hasRegenBonuses,
-    hasResistBonuses,
-    hasAttributeBonuses,
     hasBuffEffects,
     hasAnyBonuses,
     hasAttributeScaledBonuses,
