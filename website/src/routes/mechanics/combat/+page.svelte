@@ -1457,8 +1457,9 @@
             cannot also cause fear, even if a Bear Mount prevents that stun.</span
           >
           <span class="block"
-            >Bosses and fear-immune targets, including the Necromancer's undead
-            companions, are protected from fear.</span
+            >Monsters and companions whose pages list Immune to Fear cannot be
+            feared. That includes every boss and the Necromancer's undead
+            companions.</span
           >
           <span class="block"
             >Fear lasts for a random duration between half and all of the

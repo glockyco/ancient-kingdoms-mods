@@ -264,10 +264,15 @@ function rowsByJsonRole(db, role) {
 function monsterPayload(db, id) {
   const drops = rowsByColumn(db, "item_sources_monster", "monster_id", id);
   const dropItemIds = drops.map((drop) => drop.item_id);
+  const spawns = rowsByColumn(db, "monster_spawns", "monster_id", id);
   return {
     row: rowById(db, "monsters", id),
     drops,
-    spawns: rowsByColumn(db, "monster_spawns", "monster_id", id),
+    spawns,
+    // The chase limit display depends on whether each spawn zone is a dungeon.
+    spawnZones: rowsByIds(db, "zones", [
+      ...new Set(spawns.map((spawn) => spawn.zone_id)),
+    ]),
     skills: rowsByColumn(db, "monster_skills", "monster_id", id),
     dropItems: rowsByIds(db, "items", dropItemIds),
     dropItemQuestUsages: rowsByValues(

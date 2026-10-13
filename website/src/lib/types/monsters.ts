@@ -222,6 +222,10 @@ export interface MonsterInfo {
   // Movement and detection
   speed: number;
   aggro_range: number;
+  /** Chase limit in yd. */
+  follow_distance: number;
+  /** Where the chase limit applies: regular monsters placed in dungeons never use it. */
+  chase_limit_scope: "everywhere" | "outside_dungeons" | "nowhere";
 
   // Loot
   gold_min: number | null;
@@ -244,6 +248,7 @@ export interface MonsterInfo {
   // Combat flags
   see_invisibility: boolean;
   is_immune_debuffs: boolean;
+  fear_immune: boolean;
   yell_friends: boolean;
   flee_on_low_hp: boolean;
   no_aggro_monster: boolean;

@@ -11,7 +11,11 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Fear</h3>
   <p class="text-muted-foreground">
-    <span class="block">Bosses and fear-immune targets cannot be feared.</span>
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt — fear skips bosses and targets whose Combat.fearImmune is set. -->
+    <span class="block"
+      >Monsters and companions whose pages list Immune to Fear cannot be feared.
+      Every boss is immune.</span
+    >
     <span class="block"
       >A hit rolls against the fear chance only when it does not stun: the skill
       has no stun chance, its stun roll fails, or the target is already feared.

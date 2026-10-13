@@ -327,6 +327,11 @@
     [
       { flag: data.monster.see_invisibility, label: "Sees Invisibility" },
       { flag: data.monster.is_immune_debuffs, label: "Immune to Debuffs" },
+      // Source: server-scripts/Combat.cs:DealDamageAt — fear never lands on a boss or on a target whose Combat.fearImmune is set.
+      {
+        flag: data.monster.is_boss || data.monster.fear_immune,
+        label: "Immune to Fear",
+      },
       { flag: data.monster.yell_friends, label: "Calls for Help" },
       { flag: data.monster.flee_on_low_hp, label: "Flees on Low HP" },
       { flag: data.monster.has_aura, label: "Has Aura" },
@@ -1215,6 +1220,22 @@
             {formatPercent(displayBlockChance)}
           </div>
         </div>
+        {#if data.monster.follow_distance > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">
+              <a
+                href="/mechanics/monster-spawns#leashing"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Chase Limit</a
+              >
+            </div>
+            <div class="font-medium">
+              {data.monster.chase_limit_scope === "nowhere"
+                ? "None in dungeons"
+                : `${data.monster.follow_distance.toLocaleString()} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
+            </div>
+          </div>
+        {/if}
       </div>
 
       {#if resistances.length > 0 || abilities.length > 0}

@@ -61,6 +61,22 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     throw error(404, `Monster not found: ${params.id}`);
   }
 
+  // Source: server-scripts/Monster.cs:Start,EventEntityTooFarToFollow — a regular monster placed in a dungeon never checks its chase limit; bosses and elites always do.
+  const placements = db
+    .prepare(
+      `SELECT COALESCE(SUM(z.is_dungeon = 1), 0) AS dungeon,
+         COALESCE(SUM(z.is_dungeon = 0), 0) AS open
+       FROM monster_spawns ms JOIN zones z ON z.id = ms.zone_id
+       WHERE ms.monster_id = ?`,
+    )
+    .get(params.id) as { dungeon: number; open: number };
+  const chaseLimitScope: MonsterInfo["chase_limit_scope"] =
+    monsterRaw.is_boss || monsterRaw.is_elite || placements.dungeon === 0
+      ? "everywhere"
+      : placements.open === 0
+        ? "nowhere"
+        : "outside_dungeons";
+
   // Parse JSON fields
   const drops: MonsterDrop[] = monsterRaw.drops
     ? JSON.parse(monsterRaw.drops as string)
@@ -176,6 +192,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     // Movement and detection
     speed: (monsterRaw.speed as number) || 0,
     aggro_range: (monsterRaw.aggro_range as number) || 0,
+    follow_distance: (monsterRaw.follow_distance as number) || 0,
+    chase_limit_scope: chaseLimitScope,
     gold_min: monsterRaw.gold_min as number | null,
     gold_max: monsterRaw.gold_max as number | null,
     probability_drop_gold: (monsterRaw.probability_drop_gold as number) || 0,
@@ -193,6 +211,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       (monsterRaw.placeholder_spawn_probability as number) || 0,
     see_invisibility: Boolean(monsterRaw.see_invisibility),
     is_immune_debuffs: Boolean(monsterRaw.is_immune_debuffs),
+    fear_immune: Boolean(monsterRaw.fear_immune),
     yell_friends: Boolean(monsterRaw.yell_friends),
     flee_on_low_hp: Boolean(monsterRaw.flee_on_low_hp),
     no_aggro_monster: Boolean(monsterRaw.no_aggro_monster),
