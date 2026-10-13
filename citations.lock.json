@@ -35,6 +35,9 @@
       "sha256": "372f6983752c21777c3d103925ee6addeeb24c74b47f42735becf0952aba8f37",
       "span": 26
     },
+    "AreaBuffSkill.cs:Apply": {
+      "span": 0
+    },
     "AreaDamageSkill.cs": {
       "span": 0
     },
@@ -128,11 +131,23 @@
       "sha256": "0225ae4bcb34a44086af388b2f7ba30fbab503ae1dce654c29557afba9f1ba93",
       "span": 19
     },
+    "AreaHealSkill.cs:Apply": {
+      "span": 0
+    },
     "AreaObjectSpawnSkill.cs:119-122": {
       "sha256": "d04926e7051ed25130c743bc3221becdc677698333c1269e0b838b4992fa94e4",
       "span": 4
     },
+    "AreaObjectSpawnSkill.cs:AreaObjectSpawner": {
+      "span": 0
+    },
     "AugmentItem.cs": {
+      "span": 0
+    },
+    "AvatarEvent.cs:SummonMonsters": {
+      "span": 0
+    },
+    "AvatarEventAltar.cs:UserCode_CmdStartEvent__NetworkIdentity": {
       "span": 0
     },
     "BackpackItem.cs:11-18": {
@@ -206,6 +221,18 @@
       "sha256": "1610df67e5a41a58fcd1ae0db9edf390e0be2a92ae1a3a34ce6427b2ea503836",
       "span": 44
     },
+    "BardCharmSongSkill.cs:GetCharmResistChance": {
+      "span": 0
+    },
+    "BardCharmSongSkill.cs:GetCharmTarget": {
+      "span": 0
+    },
+    "BardCharmSongSkill.cs:GetCharmedDamageMultiplier": {
+      "span": 0
+    },
+    "BardCharmSongSkill.cs:IsValidCharmTarget": {
+      "span": 0
+    },
     "BardFinalCadenceSkill.cs:63-70": {
       "sha256": "6cac9f93f492ef638ced318281cd78857071f7759672c1a067757646726c3ed2",
       "span": 8
@@ -234,6 +261,9 @@
       "sha256": "adef4a6da1be6c5c81349cf21298e0570c66f5f758796b1eed39305498f669fb",
       "span": 10
     },
+    "BardMercenarySkills.cs:CanUseFinalCadence": {
+      "span": 0
+    },
     "BardMercenarySkills.cs:LateUpdate": {
       "span": 0
     },
@@ -247,6 +277,9 @@
       "span": 0
     },
     "BardMercenarySkills.cs:RefreshAura": {
+      "span": 0
+    },
+    "BardMercenarySkills.cs:StartSongCast": {
       "span": 0
     },
     "BardSongSkill.cs:26-31": {
@@ -275,11 +308,17 @@
       "sha256": "139e004801ff8527fd94c873b8aeb60e610cb075fa2e94379acf631e62d9cf44",
       "span": 8
     },
+    "BardVirtuositySkill.cs:IsDamageBonusActive": {
+      "span": 0
+    },
     "BonusSkill.cs:85-116": {
       "sha256": "4959a70657ecf1036794d7a7ad8611e80f6d76b4796c72ef5fdf37262eaaf8d1",
       "span": 32
     },
     "BookItem.cs": {
+      "span": 0
+    },
+    "Buff.cs": {
       "span": 0
     },
     "Buff.cs:113-150": {
@@ -338,7 +377,19 @@
       "sha256": "1183e2b18860871e4f5cfa529bed47b0f8d2ee514717fa30cb6fa470d4d83769",
       "span": 1
     },
+    "Buff.cs:Buff": {
+      "span": 0
+    },
     "Buff.cs:ScaleWithCharisma": {
+      "span": 0
+    },
+    "Buff.cs:damageBonus": {
+      "span": 0
+    },
+    "Buff.cs:defenseBonus": {
+      "span": 0
+    },
+    "Buff.cs:healthMaxBonus": {
       "span": 0
     },
     "BuffSkill.cs": {
@@ -392,13 +443,22 @@
       "sha256": "8b32d6149a986adc58660e3c21b38464076bc60972581c5e59be8429643d9afa",
       "span": 11
     },
+    "BuffSkill.cs:GetBuffDurationMultiplier": {
+      "span": 0
+    },
     "BuffSkill.cs:GetBuffPowerAttribute": {
       "span": 0
     },
     "BuffSkill.cs:GetCasterCriticalChance": {
       "span": 0
     },
+    "BuffSkill.cs:GetCleanseCountersRemoved": {
+      "span": 0
+    },
     "BuffSkill.cs:GetDebuffPowerAttribute": {
+      "span": 0
+    },
+    "BuffSkill.cs:IgnoreImmuneDebuff": {
       "span": 0
     },
     "BuffSkill.cs:ScaleFearResistChanceBonus": {
@@ -407,7 +467,13 @@
     "BuffSkill.cs:ScaleHealingPerSecondBonus": {
       "span": 0
     },
+    "BuffSkill.cs:ToolTip": {
+      "span": 0
+    },
     "BuffSkill.cs:buffTime": {
+      "span": 0
+    },
+    "BuffSkill.cs:ignoreSeeInvisibility": {
       "span": 0
     },
     "BuffSkill.cs:illusionRace": {
@@ -557,6 +623,10 @@
     "Combat.cs:1225-1233": {
       "sha256": "c7e4db20d4dae425a43b6e148d286246619594be55be3597213e62dbaf2ef3d3",
       "span": 9
+    },
+    "Combat.cs:1225-1314": {
+      "sha256": "bbc24ada927915a20b1c1b45869e89dcbbbf7cc8f3e33c3c8f2f750db72faf8e",
+      "span": 90
     },
     "Combat.cs:1234-1283": {
       "sha256": "2a23ac132d1049cba208449d456c9eedad7bf060da4b23aa5572ab8701925d6d",
@@ -881,7 +951,28 @@
     "Combat.cs:DealDamageAt": {
       "span": 0
     },
+    "Combat.cs:GetProbResistMagic": {
+      "span": 0
+    },
+    "Combat.cs:GetProbResistMeleeDebuff": {
+      "span": 0
+    },
+    "Combat.cs:accuracy": {
+      "span": 0
+    },
     "Combat.cs:blockChance": {
+      "span": 0
+    },
+    "Combat.cs:criticalChance": {
+      "span": 0
+    },
+    "Combat.cs:damage": {
+      "span": 0
+    },
+    "Combat.cs:fearResistChance": {
+      "span": 0
+    },
+    "Combat.cs:isParry": {
       "span": 0
     },
     "Constitution.cs:13-15": {
@@ -911,6 +1002,12 @@
     "Constitution.cs:73-76": {
       "sha256": "439e9dc00617b4d2465c86f1ff9503cbd1b1361c8215cfd57d755622592a4984",
       "span": 4
+    },
+    "Constitution.cs:GetHealthBonus": {
+      "span": 0
+    },
+    "Constitution.cs:GetPoisonResistBonus": {
+      "span": 0
     },
     "CraftingStation.cs:50-58": {
       "sha256": "f1b599bc4672adb28d014f72ff4ba0f6ae1442c6673342f5ee9d271192ce8700",
@@ -1000,6 +1097,9 @@
       "span": 1
     },
     "DamageSkill.cs:ToolTip": {
+      "span": 0
+    },
+    "DamageSkill.cs:TryConsumeWildStrike": {
       "span": 0
     },
     "DamageType.cs:1-9": {
@@ -1099,6 +1199,9 @@
     "Database.cs:CreateGuild": {
       "span": 0
     },
+    "Database.cs:GetGuildManagementText": {
+      "span": 0
+    },
     "Database.cs:GetMaxLevelChar": {
       "span": 0
     },
@@ -1127,6 +1230,9 @@
     "DefaultEvent.cs:231": {
       "sha256": "0f48ba1d378ee94c1a97ea6c06dc241e959351ec47fa12bb1aa16df969af4d02",
       "span": 1
+    },
+    "DefaultEvent.cs:SummonMonsters": {
+      "span": 0
     },
     "Dexterity.cs:13-110": {
       "sha256": "32eed97d3a6604ac2cae0ca339f818a949738d0fb1bf9bf03be0f006a001996a",
@@ -1180,6 +1286,9 @@
       "sha256": "7faad9b62c3651e036f5ac55712c2d8d3ca3156a07ec30c893fe4f51f8b4e921",
       "span": 11
     },
+    "Energy.cs:max": {
+      "span": 0
+    },
     "EnergyResource.cs:21-34": {
       "sha256": "91ff8cc25bbc7d98062f38962d27f44bea71f29ef39de603ec6422af56e2fd82",
       "span": 14
@@ -1195,6 +1304,9 @@
     "EnergyResource.cs:84-95": {
       "sha256": "bb56d73bbbfab7d3c0d812fa07e39519ccb42e2ec6a348412c9f170812f9eb49",
       "span": 12
+    },
+    "EnergyResource.cs:current": {
+      "span": 0
     },
     "Entity.cs:225-233": {
       "sha256": "19a470b34ecbb99e1d10ebfc6e37f3b15dde43caeea0c145cbe696ad7572b791",
@@ -1236,6 +1348,9 @@
       "sha256": "e9b79de110336cb6a64e5b7cdc153f5e694dfec2a592170a7c6c8c062622961a",
       "span": 53
     },
+    "Equipment.cs:GetEquippedWeaponIndex": {
+      "span": 0
+    },
     "EquipmentItem.cs:107-120": {
       "sha256": "479e11474f0a94ada836d6e6aeeada401bfb4af5e16d858d8898bca1e8abbcc4",
       "span": 14
@@ -1272,12 +1387,21 @@
       "sha256": "ace3350470cf9821cc9da999bc577b66e51199c15ca88ca2f8f8a57faa218bed",
       "span": 9
     },
+    "EquipmentItem.cs:CanClassUse": {
+      "span": 0
+    },
     "EquipmentItem.cs:CanEquipMercenary": {
+      "span": 0
+    },
+    "EquipmentItem.cs:ToolTip": {
       "span": 0
     },
     "EventAltar.cs:201-213": {
       "sha256": "a72c88f5dbaa5c08a3c363f37797157575967b308a3ae683c02d5d88df5ed16e",
       "span": 13
+    },
+    "EventAltar.cs:UserCode_CmdStartEvent__NetworkIdentity": {
+      "span": 0
     },
     "Experience.cs:114-348": {
       "sha256": "6d3c080f6e1b690efce5f11f9180dd318fb78bbbac2e271b4b57396a63dc57a1",
@@ -1376,7 +1500,13 @@
     "Experience.cs:Death": {
       "span": 0
     },
+    "Experience.cs:ShowVeteranLevelUp": {
+      "span": 0
+    },
     "Experience.cs:current": {
+      "span": 0
+    },
+    "Experience.cs:max": {
       "span": 0
     },
     "Experience.cs:maxVeteranLevel": {
@@ -1396,6 +1526,9 @@
     "FoodItem.cs:21-35": {
       "sha256": "58e804084a6ef0d1ac0a941d1c4ea8321b0ac425d89882cb3a70597132265cb1",
       "span": 15
+    },
+    "FoodItem.cs:Use": {
+      "span": 0
     },
     "FriendlyPetFollowerItem.cs:16-23": {
       "sha256": "3eb0b8ef4f745e2188a793dbd6861de6ec32cd4480649c5bb95f2308af222dfe",
@@ -1448,6 +1581,9 @@
       "sha256": "42f9bdc5e62b6a201b0f0dfc3e5d68b82f923ccca443575ad981284adf236a5f",
       "span": 4
     },
+    "FrontalDamageSkill.cs:Apply": {
+      "span": 0
+    },
     "FrontalProjectilesSkill.cs": {
       "span": 0
     },
@@ -1479,9 +1615,15 @@
       "sha256": "34b62aa704d930030cf3bc84d6bea200c944dc5ad0942ab74fa280c7169f8a27",
       "span": 12
     },
+    "FrontalProjectilesSkill.cs:Apply": {
+      "span": 0
+    },
     "GameManager.cs:2348-2409": {
       "sha256": "91ea436261be3c5c88e7d632fb3ba34555cb6a5dce83fe04ddf924831fad852e",
       "span": 62
+    },
+    "GameManager.cs:ExtraSkillbarKeyPressed": {
+      "span": 0
     },
     "GameManager.cs:OnBackpackKeyPressed": {
       "span": 0
@@ -1503,6 +1645,9 @@
     "GatherInventoryQuest.cs:47": {
       "sha256": "c9c3a14131184f4302211992badd2aa2cee796fed5ed3ced8e436b0d44d27602",
       "span": 1
+    },
+    "GatherInventoryQuest.cs:OnCompleted": {
+      "span": 0
     },
     "GatherItem.cs:1098-1116": {
       "sha256": "8d3380110eb9950dd8533e070db89ff64030ef045cda6721d8fc707ff1542c02",
@@ -1612,6 +1757,10 @@
       "sha256": "f865c2bd6b0f192a33150c08b58bb3f8616000b368d195f2d580766ebdf81a22",
       "span": 10
     },
+    "GatherItem.cs:630-644": {
+      "sha256": "4d11f9ec1f0119171a1db7ccdfaab880ab2693a138a6f885201526e1bdf194f4",
+      "span": 15
+    },
     "GatherItem.cs:632-639": {
       "sha256": "e13cb755ddfbbd44a32137f515d3e4bec6573c4950f819b9d583178b5c7d5988",
       "span": 8
@@ -1704,6 +1853,9 @@
       "sha256": "479e152f46e154dcc5442fd4a1e04204416c6484a609c44eb16ec5c5616cd554",
       "span": 9
     },
+    "GatherItem.cs:OnInteractFishServer": {
+      "span": 0
+    },
     "GatherItem.cs:OnInteractServer": {
       "span": 0
     },
@@ -1758,6 +1910,15 @@
       "sha256": "18b9fbd3a6507463fa6500d29fa22cca74ce35f96f2934ac7830523e4947ac5f",
       "span": 63
     },
+    "GuildSystem.cs:AwardBossKillGuildPoints": {
+      "span": 0
+    },
+    "GuildSystem.cs:GetBossGuildPointReward": {
+      "span": 0
+    },
+    "HealSkill.cs:ToolTip": {
+      "span": 0
+    },
     "Health.cs:25-39": {
       "sha256": "faf742aa7931fe6c3484de105554516be7275383df4663fae807da3ee8553b55",
       "span": 15
@@ -1778,6 +1939,9 @@
       "sha256": "901a22ad5c260a9f3c7a811c9494ec574ec3fa1902cf866437aaa74c58ab087e",
       "span": 13
     },
+    "Health.cs:max": {
+      "span": 0
+    },
     "Housing.cs:13": {
       "sha256": "9c841860b2f57982b47cdbbae6d9d37fc94593a5dab2b9fdd35802518b660f3e",
       "span": 1
@@ -1793,6 +1957,9 @@
     "Housing.cs:47": {
       "sha256": "7d4f145372a62c5dbb30d07b000d9109fa5377d68a20c9f4801a81032fada134",
       "span": 1
+    },
+    "Housing.cs:OnTriggerEnter2D": {
+      "span": 0
     },
     "HousingManager.cs:18-19": {
       "sha256": "ec9959f71974d4eb831ed2def2ee8ad97451b55e6b361ef247b2a7fd07d7faa1",
@@ -1842,6 +2009,12 @@
       "sha256": "ae4221afd8e2833e8ee025819f0be49c5a01d2ff24e815b13983175a4db42e3f",
       "span": 4
     },
+    "Intelligence.cs:GetMagicDamageBonus": {
+      "span": 0
+    },
+    "Intelligence.cs:GetManaBonus": {
+      "span": 0
+    },
     "InteractablePortal.cs:101": {
       "sha256": "d61d0f7a50de7f0d6e227bb0780fe15c306531f340d9de173ec1577f6991a1d9",
       "span": 1
@@ -1854,6 +2027,9 @@
       "sha256": "9f65205b676b6396b46415827cc1eef74d76cadf04b45cd721dcd2033311d0ec",
       "span": 35
     },
+    "InteractablePortal.cs:OnClick": {
+      "span": 0
+    },
     "Inventory.cs:67-92": {
       "sha256": "bc5101f0d5ebb9a7cf90c800ff4f95d06b065adb974553964c9059d085360bee",
       "span": 26
@@ -1865,6 +2041,9 @@
     "ItemSlot.cs:23-27": {
       "sha256": "afee63d5f00438ade638efa0f9749b2db1b6ce894984ed1d1a9747f0c18e9cf9",
       "span": 5
+    },
+    "ItemSlot.cs:ToolTip": {
+      "span": 0
     },
     "ItemsRollSystem.cs:175-182": {
       "sha256": "aa200993af53d220440f43d521a350667c9dc0299c3a6a8e11d9b0732dbee10a",
@@ -1919,6 +2098,9 @@
     "Mana.cs:28-54": {
       "sha256": "843bd78c652d6be38f6a41aab418db030ac121f9f79a8a4b14c91828241ebcc4",
       "span": 27
+    },
+    "Mana.cs:max": {
+      "span": 0
     },
     "MercenaryEquipment.cs:116-187": {
       "sha256": "a230f3d6dd1085d33dcba05a534925d1085307945cfa4e7369b519b3e522fc6c",
@@ -2192,7 +2374,16 @@
     "Monster.cs:EndBardCharm": {
       "span": 0
     },
+    "Monster.cs:EventEntityTooFarToFollow": {
+      "span": 0
+    },
+    "Monster.cs:EventRespawnTimeElapsed": {
+      "span": 0
+    },
     "Monster.cs:EventTargetTooFarToFollow": {
+      "span": 0
+    },
+    "Monster.cs:EventTargetUnreachable": {
       "span": 0
     },
     "Monster.cs:EventTimeDespawn": {
@@ -2213,10 +2404,19 @@
     "Monster.cs:OnEnable": {
       "span": 0
     },
+    "Monster.cs:SetRespawnBosses": {
+      "span": 0
+    },
+    "Monster.cs:Start": {
+      "span": 0
+    },
     "Monster.cs:UpdateServer_CASTING": {
       "span": 0
     },
     "Monster.cs:UpdateServer_DEAD": {
+      "span": 0
+    },
+    "Monster.cs:UpdateServer_IDLE": {
       "span": 0
     },
     "Monster.cs:UserCode_CmdLootMonster": {
@@ -2231,6 +2431,9 @@
     "MonsterSkills.cs:177-279": {
       "sha256": "af829ec953e3fefec00184f0661431925d1bd3aed3254281d91bdd228a6c26f6",
       "span": 103
+    },
+    "MonsterSkills.cs:OnStartServer": {
+      "span": 0
     },
     "MountItem.cs:19-30": {
       "sha256": "ecfef22806084e40eefab2b715181fcb611da841d904845886cf3300a589a055",
@@ -2291,6 +2494,9 @@
     "NecromancerDeathBloomSkill.cs:7-17": {
       "sha256": "4bd4795922f57ac605e3e6e1df6886d47265e1b7f4c1010cea2147ae204081d3",
       "span": 11
+    },
+    "NecromancerDeathBloomSkill.cs:Apply": {
+      "span": 0
     },
     "NecromancerDeathBloomSkill.cs:CheckSelf": {
       "span": 0
@@ -2380,6 +2586,9 @@
       "span": 5
     },
     "NetworkManagerMMO.cs:DoServerDisconnect": {
+      "span": 0
+    },
+    "NetworkManagerMMO.cs:OnStartServer": {
       "span": 0
     },
     "Npc.cs": {
@@ -2480,7 +2689,19 @@
     "Npc.cs:BarberPrice": {
       "span": 0
     },
+    "Npc.cs:CalculateRewardExp": {
+      "span": 0
+    },
     "Npc.cs:InteractNpc": {
+      "span": 0
+    },
+    "Npc.cs:OnDeath": {
+      "span": 0
+    },
+    "Npc.cs:OnInteract": {
+      "span": 0
+    },
+    "Npc.cs:UpdateServer_IDLE": {
       "span": 0
     },
     "Npc.cs:UserCode_CmdLootMonster": {
@@ -2517,6 +2738,9 @@
       "sha256": "ae6368e42c7d80edb9e9a9f537e54e8eb590d9636e542f0131953430d483782a",
       "span": 1
     },
+    "Party.cs:master": {
+      "span": 0
+    },
     "PartySystem.cs:35-56": {
       "sha256": "8e81d02af00b7f9701238b2b04317b40930ec8f3938fc302f93228918d1adf9f",
       "span": 22
@@ -2528,6 +2752,9 @@
     "PartySystem.cs:88-100": {
       "sha256": "fb137bd5bd93b8224173c7e9a74e8687a51eed653bfb1e82ac842c9a4e8f0686",
       "span": 13
+    },
+    "PartySystem.cs:FormParty": {
+      "span": 0
     },
     "PassiveSkill.cs": {
       "span": 0
@@ -2676,6 +2903,24 @@
     "Pet.cs:OnDeath": {
       "span": 0
     },
+    "Pet.cs:Pet": {
+      "span": 0
+    },
+    "Pet.cs:TryQueueHealSkill": {
+      "span": 0
+    },
+    "Pet.cs:TryStartAttackIfInRange": {
+      "span": 0
+    },
+    "Pet.cs:UpdateServer": {
+      "span": 0
+    },
+    "Pet.cs:UpdateServer_IDLE": {
+      "span": 0
+    },
+    "Pet.cs:UserCode_CmdAttackTarget__NetworkIdentity": {
+      "span": 0
+    },
     "PetFriendly.cs:379-386": {
       "sha256": "902a3e48724038c4c0153f825948fbb9d3a7817b08083b9dd12598dffcdf768d",
       "span": 8
@@ -2791,6 +3036,10 @@
     "Player.cs:10556-10562": {
       "sha256": "1b9365ebecc524deb34117381d0de0dd31da159d8d0a16c65b05f6408948661f",
       "span": 7
+    },
+    "Player.cs:10560-10574": {
+      "sha256": "bb6445515be84d948a6863f67c308d22f140540d7c685256170673fa3b57cec0",
+      "span": 15
     },
     "Player.cs:10661-10680": {
       "sha256": "d51c3effed3b067cbd64a0e7550803b5c7c73ae8484f6ae6c14317142dfd3bb9",
@@ -2911,6 +3160,10 @@
     "Player.cs:12291-12293": {
       "sha256": "5fde844db61b3fd5e139e90ed09f5b9c735eda5e00ae51e0459015b101a6234b",
       "span": 3
+    },
+    "Player.cs:12298-12333": {
+      "sha256": "e29d01afbbf7c27baf19f3d7874c910f0393e5581cf6412fe1232f04aa4d572d",
+      "span": 36
     },
     "Player.cs:12592-12605": {
       "sha256": "2faafae183fb39ce0e8c60cc386852204cfd7075a8082fea34279972f4633ca7",
@@ -3304,7 +3557,19 @@
       "sha256": "701605f153875f5b9aabfaff3bab40d5b20e65595d5883bf6b08b60ee525ed19",
       "span": 15
     },
+    "Player.cs:CanAttack": {
+      "span": 0
+    },
+    "Player.cs:CmdBuyMercenary": {
+      "span": 0
+    },
+    "Player.cs:CmdPortalDestination": {
+      "span": 0
+    },
     "Player.cs:DestroyLivingMercenariesOnOwnerDeath": {
+      "span": 0
+    },
+    "Player.cs:EventRefractoryPeriod": {
       "span": 0
     },
     "Player.cs:GetMercenaryResurrectionPrice": {
@@ -3331,13 +3596,25 @@
     "Player.cs:IsBarberSessionValid": {
       "span": 0
     },
+    "Player.cs:LateUpdate": {
+      "span": 0
+    },
+    "Player.cs:LevelUpMercenaries": {
+      "span": 0
+    },
     "Player.cs:OnDeath": {
       "span": 0
     },
     "Player.cs:ProcessMercenariesOnPlayerRespawn": {
       "span": 0
     },
+    "Player.cs:RemoveRoot": {
+      "span": 0
+    },
     "Player.cs:ResurrectMercenaryNearOwner": {
+      "span": 0
+    },
+    "Player.cs:TargetRpcHouse": {
       "span": 0
     },
     "Player.cs:TryGetSelectedPickaxe": {
@@ -3355,7 +3632,13 @@
     "Player.cs:UserCode_CmdApplyBarberAppearance__String__String__String__String__String": {
       "span": 0
     },
+    "Player.cs:UserCode_CmdBindPlayer": {
+      "span": 0
+    },
     "Player.cs:UserCode_CmdBuyMercenary__Int32__Int64__String__Boolean": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String": {
       "span": 0
     },
     "Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32": {
@@ -3370,10 +3653,19 @@
     "Player.cs:UserCode_CmdMakePotion__Int32": {
       "span": 0
     },
+    "Player.cs:UserCode_CmdResetAttributes": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdResetDungeon__Int32__Int64": {
+      "span": 0
+    },
     "Player.cs:UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity": {
       "span": 0
     },
     "Player.cs:UserCode_CmdSetCurrentSpec__Int32__List_00601__List_00601": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdSpawnStruc__Int32__String__Vector3__Quaternion__Boolean": {
       "span": 0
     },
     "Player.cs:UserCode_CmdStartBarber__NetworkIdentity": {
@@ -3421,6 +3713,9 @@
     "PlayerChat.cs:540-546": {
       "sha256": "b32fa0e9679b3462f60deef635ac7bc26419128c5e1e26027983c052132ad4c6",
       "span": 7
+    },
+    "PlayerChat.cs:UserCode_CmdMsgLocal__String__String": {
+      "span": 0
     },
     "PlayerChest.cs:254-255": {
       "sha256": "00436be44997ee1c71c606b6cafe9efbecbaa7c94291bf58dd4128c04272f2e3",
@@ -3485,6 +3780,9 @@
     "PlayerDead.cs:82-95": {
       "sha256": "223132b6cf3ae20d11a608398e22357fe6ab16bbbd34356e4f56d47a469a2e7c",
       "span": 14
+    },
+    "PlayerDead.cs:Start": {
+      "span": 0
     },
     "PlayerEquipment.cs:107-114": {
       "sha256": "c58fdafe87bbd35e65563497476f9eb280b736b753293a88a12344454e8ea559",
@@ -3621,6 +3919,9 @@
     "PlayerEquipment.cs:OnEquipmentChanged": {
       "span": 0
     },
+    "PlayerEquipment.cs:OnStartServer": {
+      "span": 0
+    },
     "PlayerInventory.cs:108-113": {
       "sha256": "c6ec9058fd955aebbc51268250e6f364a875866c5688929d856ab48c5e6880b6",
       "span": 6
@@ -3704,6 +4005,12 @@
     "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
       "span": 0
     },
+    "PlayerInventory.cs:OnDragAndClear_InventorySlot": {
+      "span": 0
+    },
+    "PlayerInventory.cs:OnDragAndDrop_InventorySlot_InventorySlot": {
+      "span": 0
+    },
     "PlayerInventory.cs:StartScrollCast": {
       "span": 0
     },
@@ -3781,6 +4088,18 @@
       "sha256": "d14660354d27c5096eefa5b2c8ba0addf3c6b201b7d29b6860a6acb590aeef27",
       "span": 9
     },
+    "PlayerNpcTrading.cs:CalculateRepairItemPrice": {
+      "span": 0
+    },
+    "PlayerNpcTrading.cs:CalculateSellItemPrice": {
+      "span": 0
+    },
+    "PlayerNpcTrading.cs:UserCode_CmdRepairItem__Int32__Int64__Boolean": {
+      "span": 0
+    },
+    "PlayerNpcTrading.cs:UserCode_CmdSellItem__String__Int32__Int32__Int64": {
+      "span": 0
+    },
     "PlayerParty.cs:219-253": {
       "sha256": "5af6b8e06f28261a9e11a80d0e0486388e5fbb4ccadef2bb8c95ce0e66a4ac3e",
       "span": 35
@@ -3800,6 +4119,12 @@
     "PlayerParty.cs:91-140": {
       "sha256": "e7565308f96f644979f7803bb87d6e43d580fc3a146111995bba2e02f38701eb",
       "span": 50
+    },
+    "PlayerParty.cs:GetMembersInProximity": {
+      "span": 0
+    },
+    "PlayerParty.cs:UserCode_CmdInvite__String": {
+      "span": 0
     },
     "PlayerQuests.cs:100-108": {
       "sha256": "d99cfdb6be2beff29e5ab5714fed88af6b996068d7fd69fdaa7210dc7f10d41b",
@@ -4105,10 +4430,22 @@
       "sha256": "765f32516300e49ca0397a5b2f0b09946c4a766dbd4a0b8581e40a712abdb717",
       "span": 4
     },
+    "PlayerSkills.cs:BeginBardSong": {
+      "span": 0
+    },
     "PlayerSkills.cs:CanContinueBardSong": {
       "span": 0
     },
+    "PlayerSkills.cs:CanLearnTierSkill": {
+      "span": 0
+    },
     "PlayerSkills.cs:CanUpgradeVeteran": {
+      "span": 0
+    },
+    "PlayerSkills.cs:CmdUpgrade": {
+      "span": 0
+    },
+    "PlayerSkills.cs:CmdUse": {
       "span": 0
     },
     "PlayerSkills.cs:CompleteBardSongCast": {
@@ -4120,6 +4457,12 @@
     "PlayerSkills.cs:GetMaximumActiveBardSongs": {
       "span": 0
     },
+    "PlayerSkills.cs:GetTotalVeteranPoints": {
+      "span": 0
+    },
+    "PlayerSkills.cs:RefreshBardSongAura": {
+      "span": 0
+    },
     "PlayerSkills.cs:StartCast": {
       "span": 0
     },
@@ -4129,12 +4472,21 @@
     "PlayerSkills.cs:StopBardCharm": {
       "span": 0
     },
+    "PlayerSkills.cs:TryUse": {
+      "span": 0
+    },
+    "PlayerSkills.cs:UserCode_CmdStopBardSong__Int32": {
+      "span": 0
+    },
     "PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32": {
       "span": 0
     },
     "PlayerTrading.cs:438-441": {
       "sha256": "be450637926f8ff2140b05be22829b8c188758a3efbaa7a51cd6e106d4ac9fb0",
       "span": 4
+    },
+    "PlayerTrading.cs:UserCode_CmdOfferItem__Int32__Int32": {
+      "span": 0
     },
     "Portal.cs:25-32": {
       "sha256": "ec4278855c70e4f270116a083488c0c30023b530e9902c8ad3e5ae1819de9e3c",
@@ -4159,6 +4511,9 @@
     "Portal.cs:49": {
       "sha256": "4f103f02cec1f25483ad56ff0766abf8f67ccbdf054fb955b8417d3ea35d6859",
       "span": 1
+    },
+    "Portal.cs:OnTriggerEnter2D": {
+      "span": 0
     },
     "PotionItem.cs:119-144": {
       "sha256": "02d6a2cca901f039c9b9a72563133691ec4019cf8aeabe63f51fbc046112dd78",
@@ -4199,6 +4554,9 @@
     "PotionItem.cs:Use": {
       "span": 0
     },
+    "ProjectileSkillEffect.cs:FixedUpdate": {
+      "span": 0
+    },
     "RandomItem.cs:6": {
       "sha256": "3e13b7703edced5f3016e98239a2d0b353d8a643e0e3de51f08fcf462931d42f",
       "span": 1
@@ -4223,6 +4581,9 @@
       "sha256": "f48ee9e88980571d042d5e447e16044c5f1cf9a079facc83e0e41427ae0977a2",
       "span": 5
     },
+    "RelicItem.cs:Use": {
+      "span": 0
+    },
     "ScriptableItem.cs:23-31": {
       "sha256": "8129691a9f700a521aa7c2b0fc9d0fe0fa7574fa9f98695f047ec43b50aa9704",
       "span": 9
@@ -4230,6 +4591,12 @@
     "ScriptableItem.cs:47": {
       "sha256": "062626187f5bf897164e783144c81703879d5861c3cc0941d205a0d2c13cf65c",
       "span": 1
+    },
+    "ScriptableItem.cs:SellPriceInGold": {
+      "span": 0
+    },
+    "ScriptableItem.cs:ToolTip": {
+      "span": 0
     },
     "ScriptableQuest.cs:111-113": {
       "sha256": "d38c54c055354e48b41906b022ef4f69bb50ed75f7bb9f6367da43c09342df50",
@@ -4358,6 +4725,12 @@
       "span": 0
     },
     "ScrollItem.cs:UseAfterCast": {
+      "span": 0
+    },
+    "Skill.cs:Skill": {
+      "span": 0
+    },
+    "Skill.cs:ToolTip": {
       "span": 0
     },
     "Skills.cs": {
@@ -4502,13 +4875,28 @@
     "Skills.cs:AddOrRefreshBuff": {
       "span": 0
     },
+    "Skills.cs:ApplyCriticalToOverTime": {
+      "span": 0
+    },
     "Skills.cs:ApplyDamageOverTimeBonuses": {
+      "span": 0
+    },
+    "Skills.cs:ApplyFinishedCast": {
       "span": 0
     },
     "Skills.cs:ApplyWardToDoTDamage": {
       "span": 0
     },
+    "Skills.cs:BreakMezz": {
+      "span": 0
+    },
     "Skills.cs:FinishCast": {
+      "span": 0
+    },
+    "Skills.cs:GetEnergyRecoveryBonus": {
+      "span": 0
+    },
+    "Skills.cs:GetFinalDamageDoT": {
       "span": 0
     },
     "Skills.cs:GetFinalHealOverTime": {
@@ -4521,6 +4909,9 @@
       "span": 0
     },
     "Skills.cs:ShowOverTimeDamagePopup": {
+      "span": 0
+    },
+    "Skills.cs:StartCast": {
       "span": 0
     },
     "Skills.cs:hasDoubleExp": {
@@ -4554,6 +4945,9 @@
       "sha256": "def771dd8465b4638d67e216973d534804aacc1207a98a4a554470c17241e14b",
       "span": 19
     },
+    "Strength.cs:GetDamageBonus": {
+      "span": 0
+    },
     "StrucItemUi.cs:27-46": {
       "sha256": "fff4631d58724969c9bba3209117c28b6de653545fa6f9a5c63ad316de5e9024",
       "span": 20
@@ -4581,6 +4975,12 @@
     "SummonMonster.cs:52-69": {
       "sha256": "3606e6d1db9218fe1c484f327b5256be58cb4a014bb50684941d0bfafaa176db",
       "span": 18
+    },
+    "SummonMonster.cs:IsSummonDead": {
+      "span": 0
+    },
+    "SummonMonster.cs:Update": {
+      "span": 0
     },
     "SummonSkill.cs:106-113": {
       "sha256": "d5b29038d3fdd63f22c389b4a870b79d3cdcea9599a12207704a4a7638792631",
@@ -4625,6 +5025,9 @@
       "span": 0
     },
     "SummonSkillMonsters.cs": {
+      "span": 0
+    },
+    "SummonSkillMonsters.cs:Apply": {
       "span": 0
     },
     "TableUI.cs:90": {
@@ -4684,6 +5087,15 @@
     "TargetBuffSkill.cs:477-482": {
       "sha256": "6fd2c36faff6263fba4e2db06caa0b430c6ca6d0524c3a623be5666fc25f9d18",
       "span": 6
+    },
+    "TargetBuffSkill.cs:Apply": {
+      "span": 0
+    },
+    "TargetBuffSkill.cs:CorrectedTarget": {
+      "span": 0
+    },
+    "TargetBuffSkill.cs:HasMatchingCleanseDebuff": {
+      "span": 0
     },
     "TargetDamageSkill.cs": {
       "span": 0
@@ -4811,6 +5223,9 @@
       "sha256": "4e42372e16f62bba67b022f28017aa15158621dd9f29f56a5581083ffc73cbc5",
       "span": 44
     },
+    "TargetDebuffSkill.cs:Apply": {
+      "span": 0
+    },
     "TargetHealSkill.cs:125-132": {
       "sha256": "2412c79962d78ab652285360f42f1e97b3ee11662c88056d7584816d5e8588f4",
       "span": 8
@@ -4859,7 +5274,16 @@
       "sha256": "356a69a56b30e6aedd1870229225f674ffbbe000035cc08ca54514ca28f8b318",
       "span": 53
     },
+    "TargetHealSkill.cs:Apply": {
+      "span": 0
+    },
+    "TargetHealSkill.cs:CheckDistance": {
+      "span": 0
+    },
     "TargetHealSkill.cs:CorrectedTarget": {
+      "span": 0
+    },
+    "TargetHealSkill.cs:GetHealingAmount": {
       "span": 0
     },
     "TargetProjectileSkill.cs": {
@@ -4945,6 +5369,9 @@
       "sha256": "734d8ab00a365fa7c7fad4e2caa1bc0b52524a6c2de3e0104f5e13bbbad84697",
       "span": 21
     },
+    "TargetProjectileSkill.cs:Apply": {
+      "span": 0
+    },
     "Trap.cs:142-146": {
       "sha256": "06944dd070636930ba8d8a50e7f83acbe03419af7a8a6f54dc925163efd1d052",
       "span": 5
@@ -4979,6 +5406,9 @@
     "TravelItem.cs:25-29": {
       "sha256": "f3f16a5b048d6936d4f0341e1021fffd8f19671322faa6b44d1eb2975c34d171",
       "span": 5
+    },
+    "TravelItem.cs:Use": {
+      "span": 0
     },
     "TreasureLocation.cs:117-129": {
       "sha256": "06de83cb00048bdc47b1247a1ef0e0558e2806de357e7b39be903efe59c0739a",
@@ -5035,6 +5465,9 @@
       "sha256": "b6183f97c63fe6fc5848fbb1e6ac2dd97941257723573a8e20fb6d4abf77beb8",
       "span": 12
     },
+    "UIBuffs.cs:Update": {
+      "span": 0
+    },
     "UICharacterEditor.cs:1142-1780": {
       "sha256": "0d420ed103a3fcaf631d66e820541790febfb52928d7c5291c230d106d4ef057",
       "span": 639
@@ -5059,6 +5492,9 @@
     "UICharacterInfo.cs:265-273": {
       "sha256": "83c0648703e0559f8812a6bcae7add9cd7685727953f69a106d9f9cf216cb054",
       "span": 9
+    },
+    "UICharacterInfo.cs:Update": {
+      "span": 0
     },
     "UICharacterSelection.cs:152-205": {
       "sha256": "1a6382749fd34736d83395c34d8f9d3e6625940ebc717c9e2b260e1cefe8cf05",
@@ -5110,6 +5546,9 @@
     "UICraftingStation.cs:Craft": {
       "span": 0
     },
+    "UIEquipment.cs:Update": {
+      "span": 0
+    },
     "UIEquipmentMercenary.cs:163-171": {
       "sha256": "3b795f59d75818ad0d14d9e1216c01307764b74a78aa08bbcd422378a90368b5",
       "span": 9
@@ -5117,6 +5556,9 @@
     "UIEquipmentMercenary.cs:174-188": {
       "sha256": "fa5e1ed0ea117341a2c33bd106b17e617c2ea806866ebbffa01c9ae7f3799aa6",
       "span": 15
+    },
+    "UIEquipmentMercenary.cs:Update": {
+      "span": 0
     },
     "UIFactions.cs:102-105": {
       "sha256": "c341f42c4ff03e38ce7bc5742752bae88f37f0c16a6047c814710082a38a6b8c",
@@ -5202,6 +5644,9 @@
       "sha256": "27c30ccaf6d6be0a538ca72bfccef587a396edfd6667dad95d6337fb01d35a69",
       "span": 5
     },
+    "UIFactions.cs:adaptTextFaction": {
+      "span": 0
+    },
     "UIGuildManagement.cs:168-185": {
       "sha256": "f887d1e606f49b1da8d59d0a5d7d09053c54c7fff7535f3835155620e0aa8589",
       "span": 18
@@ -5210,9 +5655,15 @@
       "sha256": "5bd8cdc3a733aae470a8c1ad96ef100a2cc9e99b27d169bff685ff0ca39cba7c",
       "span": 22
     },
+    "UIGuildManagement.cs:Refresh": {
+      "span": 0
+    },
     "UIHousing.cs:73": {
       "sha256": "5eb19937c8d697587ff245086bafec086636794d9bdbfbe178a37b32bba5fc8f",
       "span": 1
+    },
+    "UIHousing.cs:Start": {
+      "span": 0
     },
     "UIJournal.cs:268-301": {
       "sha256": "642e06c542f10e7ec68e5c723f62f6735c211e6c5aff25227ad2d689938bb635",
@@ -5314,6 +5765,9 @@
       "sha256": "ab6882f540c8f88c22302e8fe03133216b3af9ded31c5f317c8daa4297d36fd6",
       "span": 23
     },
+    "UIMercenaries.cs:ButtonSummonMercenary": {
+      "span": 0
+    },
     "UIMercenaries.cs:CalculatePriceMercenaryLevel": {
       "span": 0
     },
@@ -5381,6 +5835,12 @@
       "sha256": "8629f9be36e4c6973fe42c7885dfa32d8aad29fda4dd1b540cd127cd3876a26a",
       "span": 19
     },
+    "UINpcTrading.cs:CalculatePurchaseItemPrice": {
+      "span": 0
+    },
+    "UINpcTrading.cs:Update": {
+      "span": 0
+    },
     "UIQuests.cs:124-140": {
       "sha256": "00b303087db323083850306373c1b83c00ce3b808bf76a594d4e33ef6d40ac04",
       "span": 17
@@ -5443,6 +5903,9 @@
       "sha256": "5abb686461e6e67964da66a5c56418ee9b4662da8795266b72619142ccc69410",
       "span": 1
     },
+    "UsableItem.cs:Use": {
+      "span": 0
+    },
     "Utils.cs:423-451": {
       "sha256": "cdfe7bd930e2b0fcc479824501b17bdbcebe4ae8545c8b706991fdaa2c15fcba",
       "span": 29
@@ -5484,6 +5947,9 @@
       "span": 2
     },
     "Utils.cs:GetDailyAdventurerQuest": {
+      "span": 0
+    },
+    "Utils.cs:GetFactionRankName": {
       "span": 0
     },
     "Utils.cs:GetRandomChar": {
@@ -5553,9 +6019,15 @@
       "sha256": "69d31059f832296183e467c1903e5b9794edb2fbb397e8a6c1226dba7e6dd44e",
       "span": 9
     },
+    "Wisdom.cs:GetHealBonus": {
+      "span": 0
+    },
     "ZoneInfo.cs:185-201": {
       "sha256": "a603e5bc17255aa41bc285081328b92a1d3ad779d2a96a00e2bf86d5896f3fca",
       "span": 17
+    },
+    "ZoneInfo.cs:GetEvacuateIdZone": {
+      "span": 0
     },
     "ZoneTrigger.cs": {
       "span": 0
@@ -5579,6 +6051,9 @@
     "ZoneTrigger.cs:NewZoneDiscovered": {
       "span": 0
     },
+    "ZoneTrigger.cs:OnTriggerEnter2D": {
+      "span": 0
+    },
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:17-20": {
       "sha256": "2fad3cfa84fd4ec7390a42a05541fe2c4c7481d21e32a329f09577579a7c2159",
       "span": 4
@@ -5594,6 +6069,12 @@
     "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:9-40": {
       "sha256": "64d2854e52d7e09be0d8d0487ef3d4e9128a7651453bd957e3f62261d22314d4",
       "span": 32
+    },
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier": {
+      "span": 0
+    },
+    "uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetDiscountPurchaseBonus": {
+      "span": 0
     },
     "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48": {
       "sha256": "7c6b83cd92a51305c5555c1a2e39f5b071d6cb21e2d51b7846c44499397bdaa5",
