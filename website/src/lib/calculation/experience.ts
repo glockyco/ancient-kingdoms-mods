@@ -117,6 +117,8 @@ export function evaluateKillExperience(
 // Source: server-scripts/Experience.cs:BalanceExperienceReward,CalculateExperienceShare; server-scripts/Monster.cs:OnDeath — nearby party players share XP using their highest level, with the 20-level cutoff before the dungeon bonus.
 export function killExperience(): Calculation {
   return {
+    // Mirror.dll in the server build of Steam build 25863605 (SHA-256 2b5fb2bfa840b6ba…, NetworkServer.RebuildObserversCustom) adds a player's own connection to its observers, so GetMembersInProximity counts the credited player.
+    note: "Count the player with kill credit among the nearby party players.",
     steps: [
       {
         name: "Base share",

@@ -116,10 +116,14 @@
         >
       </p>
       <!-- Source: server-scripts/PlayerParty.cs:74-88 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
+      <!-- Mirror.dll in the server build of Steam build 25863605 (SHA-256 2b5fb2bfa840b6ba…, NetworkServer.RebuildObserversCustom) adds a player's own connection to its observers, so the credited player always shares. -->
       <p>
-        Sharing requires party members to be closer than 40 yd to the credited
-        player and to have that player loaded in their game. This is not a
-        stealth check.
+        <span class="block">The credited player always shares.</span>
+        <span class="block"
+          >Other party members share when they are closer than 40 yd to the
+          credited player and have that player loaded in their game. This is not
+          a stealth check.</span
+        >
       </p>
       <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>

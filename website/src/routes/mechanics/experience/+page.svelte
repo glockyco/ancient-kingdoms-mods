@@ -870,14 +870,16 @@
           rules apply, but the Forgotten Altar bonus does not.
         </p>
         <!-- Source: server-scripts/PlayerParty.cs:GetMembersInProximity — party players observing the credited player and within 40 yd share rewards. -->
+        <!-- Mirror.dll in the server build of Steam build 25863605 (SHA-256 2b5fb2bfa840b6ba…, NetworkServer.RebuildObserversCustom) adds a player's own connection to its observers, so the credited player always counts. -->
         <p class="text-sm text-muted-foreground">
           <a
             href="/mechanics/party#shared-rewards"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Nearby party players</a
           >
-          are party players who can see the player with kill credit and are less than
-          40 yd away. Use your own level and one player when alone.
+          are the player with kill credit and every party player who is less than
+          40 yd from that player and has that player loaded. Use your own level and
+          one player when alone.
         </p>
       </div>
       <Calculation calculation={killExperience()} />
