@@ -3,6 +3,7 @@ import {
   deathExperience,
   evaluateKillExperience,
   levelExperience,
+  killExperience,
   veteranExperience,
 } from "./experience";
 
@@ -38,8 +39,22 @@ describe("experience calculations", () => {
   });
   it("adds the dungeon percentage before rounding and honors the cutoff", () => {
     expect(evaluateKillExperience(100, 30, 20, 1, true).total).toBe(40);
-    expect(evaluateKillExperience(100, 41, 20, 1, true).total).toBe(0);
+    expect(evaluateKillExperience(100, 41, 20, 1, true)).toMatchObject({
+      multiplier: 0,
+      roundedShare: 0,
+      balanced: 0,
+      total: 0,
+    });
     expect(evaluateKillExperience(100, 10, 30, 1, false).total).toBe(150);
+  });
+  it("uses the numeric values of labelled dungeon choices", () => {
+    const calculation = killExperience();
+    const input = calculation.inputs!.find(({ key }) => key === "dungeon")!;
+    expect(input.choices!.map(({ value }) => value)).toEqual([0, 1]);
+    const totals = input.choices!.map(
+      ({ value }) => evaluateKillExperience(100, 20, 20, 1, value === 1).total,
+    );
+    expect(totals).toEqual([100, 110]);
   });
   it("rounds death losses to even before capping by current progress", () => {
     expect(

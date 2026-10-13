@@ -5,6 +5,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { getQualityTextColorClass } from "$lib/utils/format";
+  import { getQualityName } from "$lib/constants/quality";
   import Calculation from "$lib/components/Calculation.svelte";
   import {
     levelExperience,
@@ -31,6 +32,7 @@
     { id: "scribing-xp", label: "Scribing XP" },
     { id: "cooking-xp", label: "Cooking XP" },
     { id: "crafting-xp", label: "Crafting XP" },
+    { id: "augment-xp", label: "Augment XP" },
     { id: "quest-xp", label: "Quest XP" },
     { id: "zone-discovery-xp", label: "Zone Discovery XP" },
   ];
@@ -187,19 +189,36 @@
     },
   ];
 
-  // Source: server-scripts/Experience.cs:current — tutorial messages fired on these levels.
+  // Source: server-scripts/Npc.cs:OnInteract; server-scripts/Experience.cs:current; server-scripts/UISkills.cs:DualSpecButton2; server-scripts/Utils.cs:GetDailyAdventurerQuest — recruitment, daily quests, and specialization unlocks.
   const MILESTONES = [
-    { level: 10, unlock: "Hire your first mercenary at any tavern." },
-    { level: 20, unlock: "A second mercenary can be active." },
-    { level: 30, unlock: "A third mercenary can be active." },
+    {
+      level: 10,
+      unlock: "Hire your first mercenary from a recruiter.",
+      href: "/mercenaries#recruiters",
+    },
+    {
+      level: 20,
+      unlock: "A second mercenary can be active.",
+      href: "/mercenaries",
+    },
+    {
+      level: 30,
+      unlock: "A third mercenary can be active.",
+      href: "/mercenaries",
+    },
     {
       level: 40,
-      unlock:
-        "A fourth mercenary can be active. The Adventurer's Guild opens its quests and augment merchant.",
+      unlock: "A fourth mercenary can be active.",
+      href: "/mercenaries",
+      extra: "The Adventurer's Guild offers its daily quests.",
+      extraHref: "/professions/adventuring",
     },
     {
       level: LEVEL_CAP,
       unlock: "At maximum level, further experience earns Veteran Points.",
+      href: "#veteran-points",
+      extra: "Unlock a second specialization for 10,000 gold.",
+      extraHref: "/mechanics/character#skills-and-specializations",
     },
   ];
 
@@ -212,7 +231,7 @@
   /** Experience for the point that takes the total from `points` to `points + 1`. */
   const veteranStepCost = (points: number) =>
     VETERAN_BASE_COST + VETERAN_COST_PER_POINT * points;
-  /** Experience converted into points when every point stays unspent. */
+  /** Total XP to this Veteran Level, excluding the two-point-rank counting defect. */
   const veteranSpent = (points: number) =>
     points * VETERAN_BASE_COST +
     (VETERAN_COST_PER_POINT * points * (points - 1)) / 2;
@@ -279,12 +298,12 @@
     const diff = index - 10;
     const label =
       diff === -10
-        ? "10+ below"
+        ? "10+ higher"
         : diff === 21
-          ? "21+ above"
+          ? "21+ lower"
           : diff === 0
             ? "same"
-            : `${Math.abs(diff)} ${diff < 0 ? "below" : "above"}`;
+            : `${Math.abs(diff)} ${diff < 0 ? "higher" : "lower"}`;
     return { diff, label, multiplier: levelDiffMultiplier(diff) };
   });
 
@@ -309,7 +328,7 @@
 
 <Seo
   title="Experience Mechanics - Ancient Kingdoms"
-  description="Level requirements to 50, what each level grants, veteran points past the cap, and every experience source — kills, death, scrolls, professions, quests, and zone discovery."
+  description="Level requirements to 50, what each level grants, veteran points past the cap, and every experience source: kills, death, scrolls, professions, quests, and zone discovery."
   path="/mechanics/experience"
 />
 
@@ -445,7 +464,9 @@
             <dd class="font-mono text-foreground">{fmt(xpToNext)}</dd>
           </div>
           <div>
-            <dt class="text-xs text-muted-foreground">Earned so far</dt>
+            <dt class="text-xs text-muted-foreground">
+              Total XP to reach level {pickedLevel}
+            </dt>
             <dd class="font-mono text-foreground">{fmt(xpBehind)}</dd>
           </div>
           <div>
@@ -453,7 +474,9 @@
             <dd class="font-mono text-foreground">{fmt(xpAhead)}</dd>
           </div>
           <div>
-            <dt class="text-xs text-muted-foreground">Of the way there</dt>
+            <dt class="text-xs text-muted-foreground">
+              Progress from level 1 to 50
+            </dt>
             <dd class="font-mono text-foreground">
               {journeyDone < 1
                 ? journeyDone.toFixed(2)
@@ -474,7 +497,9 @@
               <tr class="border-b">
                 <th class="text-left p-2 font-medium">Level</th>
                 <th class="text-right p-2 font-medium">XP to next level</th>
-                <th class="text-right p-2 font-medium">Total XP earned</th>
+                <th class="text-right p-2 font-medium"
+                  >Total XP at next level</th
+                >
               </tr>
             </thead>
             <tbody>
@@ -508,13 +533,13 @@
             >If your character is alive, leveling also refills health and mana.</span
           >
         </p>
+        <!-- Source: server-scripts/Experience.cs:current — each class-growth column applies independently when the level is divisible by its number. -->
         <p class="text-sm text-muted-foreground">
-          <span class="block"
-            >Your class raises attributes at the levels shown below.</span
-          >
-          <span class="block"
-            >At every sixth level, it raises two attributes.</span
-          >
+          Your class raises attributes at the levels shown below. The Every 6th
+          column raises both listed attributes. A level divisible by several
+          column numbers raises all of them: at level 12, a Warrior gains
+          Constitution, Strength, Dexterity, Wisdom, and Charisma. Levels such
+          as 7, 11, and 13 raise none.
         </p>
       </div>
 
@@ -557,7 +582,20 @@
               {#each MILESTONES as row (row.level)}
                 <tr class="border-b hover:bg-muted/30">
                   <td class="p-2 font-mono">{row.level}</td>
-                  <td class="p-2">{row.unlock}</td>
+                  <td class="p-2">
+                    <a
+                      href={row.href}
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{row.unlock}</a
+                    >
+                    {#if row.extra}
+                      <a
+                        href={row.extraHref}
+                        class="text-blue-600 dark:text-blue-400 hover:underline"
+                        >{row.extra}</a
+                      >
+                    {/if}
+                  </td>
                 </tr>
               {/each}
             </tbody>
@@ -580,26 +618,32 @@
             >At level {LEVEL_CAP}, filling the experience bar grants one Veteran
             Point and one attribute point instead of another level.</span
           >
-          <span class="block"
-            >It also refills health and mana and refreshes your mercenaries'
-            veteran bonuses.</span
-          >
+          <!-- Source: server-scripts/Experience.cs:current; server-scripts/Player.cs:LevelUpMercenaries — living players refill Health and Mana; summoned mercenaries gain their veteran bonuses and heal. -->
+          <span class="block">
+            If you are alive, it also refills your Health and Mana. Your
+            summoned mercenaries gain their <a
+              href="/mercenaries#how-it-works"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >veteran bonuses</a
+            >. Living summoned mercenaries are healed.
+          </span>
         </p>
         <Calculation calculation={veteranExperience()} />
       </div>
 
       <div class="space-y-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
-          <h3 class="font-semibold">Experience needed with points unspent</h3>
+          <h3 class="font-semibold">Total XP to reach each Veteran Level</h3>
           <span class="text-xs text-muted-foreground"
-            >Dashed line marks all {LEVEL_CAP} levels for scale</span
+            >Dashed line: total XP from level 1 to {LEVEL_CAP}</span
           >
         </div>
+        <!-- Source: server-scripts/Experience.cs:max; server-scripts/PlayerSkills.cs:GetTotalVeteranPoints — the chart sums successive point costs without ranks that cost 2 points. -->
         <svg
           class="level-chart"
           viewBox="0 0 {VET_CHART.w} {VET_CHART.h}"
           role="img"
-          aria-label="Experience needed to reach each total of veteran points while keeping points unspent"
+          aria-label="Total XP to reach each Veteran Level without learning ranks that cost 2 Veteran Points"
         >
           {#each VET_Y_TICKS as tick (tick)}
             <line
@@ -691,26 +735,28 @@
           <div>
             <dt class="text-xs text-muted-foreground">Next point costs</dt>
             <dd class="font-mono text-foreground">
-              {pickedVeteran < MAX_VETERAN_POINTS ? fmt(veteranNext) : "—"}
+              {pickedVeteran < MAX_VETERAN_POINTS ? fmt(veteranNext) : "At cap"}
             </dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              XP with points unspent
+              Total XP to reach this Veteran Level
             </dt>
             <dd class="font-mono text-foreground">{fmt(veteranBehind)}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Runs from 1 to {LEVEL_CAP}
+              Equivalent level 1–{LEVEL_CAP} climbs
             </dt>
             <dd class="font-mono text-foreground">
               {veteranRuns.toFixed(1)}&times;
             </dd>
           </div>
         </dl>
+        <!-- Source: server-scripts/Experience.cs:max; server-scripts/PlayerSkills.cs:GetTotalVeteranPoints — these totals sum each point's XP cost without ranks that cost 2 points. -->
         <p class="text-sm text-muted-foreground">
-          Reaching {MAX_VETERAN_POINTS} total veteran points with points unspent takes
+          Without learning ranks that cost 2 points, reaching {MAX_VETERAN_POINTS}
+          total veteran points takes
           {fmt(VETERAN_TOTAL)} XP, roughly {(
             VETERAN_TOTAL / TOTAL_TO_CAP
           ).toFixed(0)}
@@ -723,10 +769,27 @@
         <p class="text-sm text-muted-foreground">
           Veteran Points buy ranks in veteran skills.
         </p>
+        <!-- Source: server-scripts/PlayerSkills.cs:GetTotalVeteranPoints,ResetVeteranSkillPoints; server-scripts/Experience.cs:max — two-point ranks count and refund only one point. -->
+        <!-- Observed: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md — two-point ranks lower VT and XP cost; paid resets lose the second point. -->
+        <p class="text-sm text-muted-foreground">
+          A game defect counts a veteran skill rank that costs 2 points as only
+          1 point. Each such rank lowers your Veteran Level by 1 and the next
+          point's XP cost by 20,000 XP. A veteran skill reset refunds only 1 of
+          its 2 points. The total-XP chart assumes you learn no ranks that cost
+          2 points.
+        </p>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Player.cs:10964-10999; server-scripts/Npc.cs:1822-1840; server-scripts/PlayerSkills.cs:1826-1853 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
-          A veteran master resets your learned veteran skill ranks for 10,000 gold
-          and a
+          {#if data.veteranMaster}
+            <a
+              href="/npcs/{data.veteranMaster.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{data.veteranMaster.name}</a
+            >, the Veteran Master,
+          {:else}
+            The Veteran Master
+          {/if}
+          resets your learned veteran skill ranks for 10,000 gold and a
           {#if data.redemptionToken}
             <ItemLink
               itemId={data.redemptionToken.id}
@@ -763,6 +826,10 @@
             {/if}
             instead.</span
           >
+          <!-- Source: server-scripts/Experience.cs:current — the filled bar is spent before inventory capacity is checked for the reward. -->
+          <span class="block"
+            >If your inventory is full, the bar is used up without a scroll.</span
+          >
         </p>
       </div>
     </Card.Content>
@@ -773,14 +840,20 @@
     <Card.Header>
       <Card.Title>Kill XP</Card.Title>
       <Card.Description>
-        Experience earned by killing monsters.
+        Experience earned by killing monsters or hostile NPCs.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-6">
       <div class="space-y-2">
         <h3 class="font-semibold">Base XP</h3>
         <p class="text-sm text-muted-foreground">
-          <span class="block">Each monster's page shows its base XP.</span>
+          <span class="block"
+            >Each <a
+              href="/monsters"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >monster's page</a
+            > shows its base XP.</span
+          >
           <span class="block"
             >When you fight alone outside a dungeon, a same-level monster grants
             its base XP.</span
@@ -788,6 +861,23 @@
           <span class="block"
             >Level difference and the modifiers below then change the award.</span
           >
+        </p>
+        <!-- Source: server-scripts/Npc.cs:CalculateRewardExp,OnDeath — NPC base XP is rounded before halving and rounding again; sharing, level, dungeon, and Double XP rules follow. -->
+        <p class="text-sm text-muted-foreground">
+          To find a hostile NPC's base XP, start with 15 XP and increase it by
+          12% for each level after level 1. Round the result, halve it, then
+          round again. The same level-difference, dungeon, party, and Double XP
+          rules apply, but the Forgotten Altar bonus does not.
+        </p>
+        <!-- Source: server-scripts/PlayerParty.cs:GetMembersInProximity — party players observing the credited player and within 40 yd share rewards. -->
+        <p class="text-sm text-muted-foreground">
+          <a
+            href="/mechanics/party#shared-rewards"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Nearby party players</a
+          >
+          are party players who can see the player with kill credit and are less than
+          40 yd away. Use your own level and one player when alone.
         </p>
       </div>
       <Calculation calculation={killExperience()} />
@@ -880,7 +970,7 @@
               <thead>
                 <tr class="border-b">
                   <th class="text-left p-2 font-medium"
-                    >Your level vs monster</th
+                    >Monster level compared with yours</th
                   >
                   <th class="text-right p-2 font-medium">XP multiplier</th>
                 </tr>
@@ -911,8 +1001,7 @@
           the level-scaled XP award:
         </p>
         <!-- Source: server-scripts/Experience.cs:573-577 — dungeon +10% bonus -->
-        <!-- Source: server-scripts/Monster.cs:OnDeath — double XP skill (solo kill) -->
-        <!-- Source: server-scripts/Monster.cs:3179 — Forgotten Altar ×1.4 (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:OnDeath — Double XP applies once to solo and party kills, before the Forgotten Altar multiplier of 1.4 is rounded. -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
@@ -929,47 +1018,45 @@
                 >
               </tr>
               <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">Forgotten Altar event</td>
+                <td class="p-2"
+                  >Monsters from a <a
+                    href="/altars"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Forgotten Altar event</a
+                  ></td
+                >
                 <td class="p-2 text-right">40% more XP, rounded</td>
               </tr>
-              {#if data.doubleExpSkills.length > 0}
-                {#each data.doubleExpSkills as skill, i (skill.id)}
-                  <tr
-                    class="{i < data.doubleExpSkills.length - 1
-                      ? 'border-b'
-                      : ''} hover:bg-muted/30"
-                  >
-                    <td class="p-2">
-                      <a
-                        href="/skills/{skill.id}"
-                        class="text-blue-600 dark:text-blue-400 hover:underline"
-                        >{skill.name}</a
-                      >
-                      <span class="text-muted-foreground text-xs">(buff)</span>
-                    </td>
-                    <td class="p-2 text-right">100% more XP</td>
-                  </tr>
-                {/each}
-              {:else}
-                <tr class="hover:bg-muted/30">
-                  <td class="p-2">Double XP buff</td>
-                  <td class="p-2 text-right">100% more XP</td>
-                </tr>
-              {/if}
+              <tr class="hover:bg-muted/30">
+                <td class="p-2"
+                  >Double XP buff: drink an <a
+                    href="/items/elixir_of_enlightened_learning"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Elixir of Enlightened Learning</a
+                  ></td
+                >
+                <td class="p-2 text-right">100% more XP</td>
+              </tr>
             </tbody>
           </table>
         </div>
+        <!-- Source: server-scripts/Skills.cs:hasDoubleExp; server-scripts/Monster.cs:OnDeath — any Double XP buff doubles the award once, then the Forgotten Altar multiplier applies. -->
+        <p class="text-sm text-muted-foreground">
+          Multiple Double XP buffs do not stack. For monsters from a Forgotten
+          Altar, Double XP applies first, then the 40% bonus is rounded.
+        </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,825 — double XP applies to gathering -->
         <!-- Source: server-scripts/Player.cs:13459-13472 — double XP applies to alchemy -->
         <!-- Source: server-scripts/Player.cs:13467-13472 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
+        <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           <span class="block"
             >Double XP buffs apply to kills, gathering, alchemy, scribing,
-            cooking, and crafting.</span
+            cooking, crafting, and attaching augments.</span
           >
           <span class="block"
             >They do not apply to XP scrolls, quests, or zone discovery.</span
@@ -1148,12 +1235,15 @@
     <Card.Header>
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
-        Experience earned by gathering herbs, minerals, radiant sparks, other
-        resources, and fish at fishing spots.
+        <!-- Source: server-scripts/GatherItem.cs:630-644,817-828 — qualifying resources and successful catch rolls award XP, other objects do not. -->
+        Experience for each successful gather of an herb, mineral, or radiant spark,
+        and each successful catch at a fishing spot. Herbs, minerals, and sparks that
+        award items usable only for quests give no XP. Other gatherable objects also
+        give no XP.
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/GatherItem.cs:632-639 — gathering XP by tier (plants/minerals/sparks/other). -->
+      <!-- Source: server-scripts/GatherItem.cs:630-639 — gathering XP by tier for non-quest plants, minerals, and sparks. -->
       <!-- Source: server-scripts/GatherItem.cs:817-828 — levelItem selects 15 / 150 / 750 / 4000 / 10000 XP. -->
       <table class="w-full text-sm border-collapse">
         <thead>
@@ -1185,6 +1275,13 @@
           </tr>
         </tbody>
       </table>
+      <p class="mt-3 text-sm text-muted-foreground">
+        Each resource's tier is on its <a
+          href="/gather-items"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Gathering Resources page</a
+        >.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -1193,7 +1290,8 @@
     <Card.Header>
       <Card.Title>Alchemy XP</Card.Title>
       <Card.Description>
-        Experience earned by brewing potions at an alchemy table.
+        <!-- Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — successful brews award XP by recipe level. -->
+        Experience for each successful brew at an alchemy table.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1206,24 +1304,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier I</td>
-            <td class="p-2 text-right font-mono">300</td>
-          </tr>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier II</td>
-            <td class="p-2 text-right font-mono">2,000</td>
-          </tr>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier III</td>
-            <td class="p-2 text-right font-mono">5,000</td>
-          </tr>
-          <tr class="hover:bg-muted/30">
-            <td class="p-2">Tier IV</td>
-            <td class="p-2 text-right font-mono">12,000</td>
-          </tr>
+          {#each [20, 300, 2000, 5000, 12000] as xp, index (index)}
+            <tr class="border-b last:border-0 hover:bg-muted/30">
+              <td class="p-2">Tier {["I", "II", "III", "IV", "V"][index]}</td>
+              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+            </tr>
+          {/each}
         </tbody>
       </table>
+      <p class="mt-3 text-sm text-muted-foreground">
+        Each <a
+          href="/recipes"
+          class="text-blue-600 dark:text-blue-400 hover:underline">recipe</a
+        > shows its tier and XP.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -1241,6 +1335,18 @@
         Each successful craft awards 100 XP per character level before Double XP
         buffs. At level 40, you receive 4,000 XP before those buffs.
       </p>
+      <p class="text-sm text-muted-foreground">
+        Find scroll recipes in <a
+          href="/recipes"
+          class="text-blue-600 dark:text-blue-400 hover:underline">Recipes</a
+        >
+        and their mastery requirements in
+        <a
+          href="/professions/scroll_mastery"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Scroll Mastery</a
+        >.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -1249,7 +1355,8 @@
     <Card.Header>
       <Card.Title>Cooking XP</Card.Title>
       <Card.Description>
-        Experience earned by cooking food at a cooking oven.
+        <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — food awards XP only after a successful cook. -->
+        Experience for each successful cook at a cooking oven.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1263,24 +1370,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier I</td>
-            <td class="p-2 text-right font-mono">150</td>
-          </tr>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier II</td>
-            <td class="p-2 text-right font-mono">750</td>
-          </tr>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier III</td>
-            <td class="p-2 text-right font-mono">3,500</td>
-          </tr>
-          <tr class="hover:bg-muted/30">
-            <td class="p-2">Tier IV</td>
-            <td class="p-2 text-right font-mono">10,000</td>
-          </tr>
+          {#each [15, 150, 750, 3500, 10000] as xp, index (index)}
+            <tr class="border-b last:border-0 hover:bg-muted/30">
+              <td class="p-2">Tier {["I", "II", "III", "IV", "V"][index]}</td>
+              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+            </tr>
+          {/each}
         </tbody>
       </table>
+      <p class="mt-3 text-sm text-muted-foreground">
+        Each <a
+          href="/recipes"
+          class="text-blue-600 dark:text-blue-400 hover:underline">recipe</a
+        > shows its tier and XP.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -1289,7 +1392,11 @@
     <Card.Header>
       <Card.Title>Crafting XP</Card.Title>
       <Card.Description>
-        Experience earned by crafting items at a forge.
+        Experience earned by crafting items at a <a
+          href="/mechanics/crafting#crafting"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Craft Station</a
+        >.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1302,24 +1409,59 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier I</td>
-            <td class="p-2 text-right font-mono">150</td>
-          </tr>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier II</td>
-            <td class="p-2 text-right font-mono">750</td>
-          </tr>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Tier III</td>
-            <td class="p-2 text-right font-mono">3,500</td>
-          </tr>
-          <tr class="hover:bg-muted/30">
-            <td class="p-2">Tier IV</td>
-            <td class="p-2 text-right font-mono">10,000</td>
-          </tr>
+          {#each [15, 150, 750, 3500, 10000] as xp, index (index)}
+            <tr class="border-b last:border-0 hover:bg-muted/30">
+              <td class="p-2">Tier {["I", "II", "III", "IV", "V"][index]}</td>
+              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+            </tr>
+          {/each}
         </tbody>
       </table>
+      <p class="mt-3 text-sm text-muted-foreground">
+        Each <a
+          href="/recipes"
+          class="text-blue-600 dark:text-blue-400 hover:underline">recipe</a
+        > shows its tier and XP.
+      </p>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root id="augment-xp" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Augment XP</Card.Title>
+      <Card.Description>
+        Experience earned by <a
+          href="/mechanics/crafting#augments"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >attaching an augment</a
+        > at a Craft Station.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content>
+      <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — augment quality 0–3 gives 15/150/750/3500 XP; Double XP applies. -->
+      <table class="w-full text-sm border-collapse">
+        <thead
+          ><tr class="border-b"
+            ><th class="text-left p-2 font-medium">Augment quality</th><th
+              class="text-right p-2 font-medium">XP</th
+            ></tr
+          ></thead
+        >
+        <tbody>
+          {#each [15, 150, 750, 3500] as xp, index (index)}
+            <tr class="border-b last:border-0 hover:bg-muted/30">
+              <td class="p-2">{getQualityName(index)}</td>
+              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+      <p class="mt-3 text-sm text-muted-foreground">
+        Each augment's quality is shown on its <a
+          href="/items"
+          class="text-blue-600 dark:text-blue-400 hover:underline">item page</a
+        >.
+      </p>
     </Card.Content>
   </Card.Root>
 
@@ -1367,7 +1509,15 @@
             <td class="p-2 text-right font-mono">150</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">City / Village</td>
+            <td class="p-2">
+              {#each data.discoveryCities as zone, index (zone.id)}
+                {index > 0 ? ", " : ""}<a
+                  href="/zones/{zone.id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >{zone.name}</a
+                >
+              {/each}
+            </td>
             <td class="p-2 text-right font-mono">10</td>
           </tr>
           <tr class="hover:bg-muted/30">
@@ -1377,7 +1527,10 @@
         </tbody>
       </table>
       <p class="text-sm text-muted-foreground">
-        Zone discovery XP has no multipliers.
+        Zone discovery XP has no multipliers. See <a
+          href="/zones"
+          class="text-blue-600 dark:text-blue-400 hover:underline">Zones</a
+        > for each zone's discovery XP.
       </p>
     </Card.Content>
   </Card.Root>

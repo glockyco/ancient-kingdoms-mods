@@ -3,6 +3,9 @@
   import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 
   const SECTIONS = [
     { id: "membership", label: "Guild Membership" },
@@ -40,8 +43,12 @@
       <!-- Source: server-scripts/Player.cs:UserCode_CmdCreateGuild__String; Database.cs:CreateGuild; Database.cs:TryNormalizeGuildName — registrar creation costs 10,000 gold, needs a guildless character and account without an owned guild; names have 3–20 permitted characters. -->
       <p>
         <span class="block"
-          >At a Guild Registrar, a guildless character can create a guild for
-          10,000 gold if their account leads no other guild.</span
+          >At a <a
+            href="/npcs?npcs.role_keys=is_guild_management"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Guild Registrar</a
+          >, a guildless character can create a guild for 10,000 gold if their
+          account leads no other guild.</span
         >
         <span class="block">Names must have 3–20 characters.</span>
         <span class="block"
@@ -98,10 +105,6 @@
         <span class="block"
           >Online guildmates on the same server receive membership updates.</span
         >
-        <span class="block"
-          >When the leader is present, the leader's member list determines who
-          stays in the guild.</span
-        >
       </p>
     </Card.Content>
   </Card.Root>
@@ -115,6 +118,11 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <!-- Source: server-scripts/GuildSystem.cs:AwardBossKillGuildPoints; server-scripts/UIGuildManagement.cs:Refresh; server-scripts/Database.cs:GetGuildManagementText — boss kills grant character-specific points, displayed for the player and as GP beside each member. -->
+      <p>
+        Guild points record a character's boss-kill contribution. The guild
+        window shows your total and lists each member's guild points as GP.
+      </p>
       <!-- Source: server-scripts/Monster.cs:2916-2932,2945-2957 and server-scripts/GuildSystem.cs:266-279 — credited highest-threat player receives points only when the monster is a boss and the player belongs to a guild; pets resolve to owner. -->
       <p>
         <span class="block">Only a boss kill grants guild points.</span>
@@ -136,23 +144,29 @@
         >
         <span class="block">A non-boss elite grants no guild points.</span>
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:27-29 — examples of ceil(max(1, level) / 5). -->
+      <!-- Source: server-scripts/GuildSystem.cs:GetBossGuildPointReward; website/data/compendium.db:monsters — examples use the displayed levels of real bosses. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
-              <th class="py-2 pr-6 text-left font-medium">Boss level</th>
+              <th class="py-2 pr-6 text-left font-medium">Boss (level)</th>
               <th class="py-2 text-left font-medium">Guild points</th>
             </tr>
           </thead>
           <tbody>
-            <tr class="border-b border-border/50"
-              ><td class="py-2 pr-6">1</td><td class="py-2">1</td></tr
-            >
-            <tr class="border-b border-border/50"
-              ><td class="py-2 pr-6">6</td><td class="py-2">2</td></tr
-            >
-            <tr><td class="py-2 pr-6">50</td><td class="py-2">10</td></tr>
+            {#each data.bossExamples as boss (boss.id)}
+              <tr class="border-b border-border/50">
+                <td class="py-2 pr-6"
+                  ><a
+                    href="/monsters/{boss.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{boss.name}</a
+                  >
+                  ({boss.level})</td
+                >
+                <td class="py-2">{Math.max(1, Math.ceil(boss.level / 5))}</td>
+              </tr>
+            {/each}
           </tbody>
         </table>
       </div>

@@ -667,17 +667,40 @@ function addMechanicsHashes(db, hashes) {
   for (const slug of staticSectionPages("mechanics")) {
     let rows;
     switch (slug) {
+      case "character":
+        rows = {
+          npcs: all(
+            db,
+            "SELECT * FROM npcs WHERE json_extract(roles, '$.is_skill_master') = 1 OR json_extract(roles, '$.is_veteran_master') = 1 OR json_extract(roles, '$.is_reset_attributes') = 1 ORDER BY id",
+          ),
+          items: rowsByIds(db, "items", ["token_of_redemption"]),
+        };
+        break;
       case "experience":
         rows = {
-          skills: all(
-            db,
-            "SELECT * FROM skills WHERE is_double_exp_spell = 1 ORDER BY id",
-          ),
           items: rowsByIds(db, "items", [
             "token_of_redemption",
             "scroll_of_knowledge_v",
           ]),
+          npcs: all(
+            db,
+            "SELECT * FROM npcs WHERE json_extract(roles, '$.is_veteran_master') = 1 ORDER BY id",
+          ),
+          zones: rowsByIds(db, "zones", [
+            "alaenanore_village",
+            "thogh_maldur",
+            "milldenn",
+            "bonebreach",
+            "felarii_village",
+          ]),
         };
+        break;
+      case "guilds":
+        rows = rowsByIds(db, "monsters", [
+          "the_archon",
+          "captain_kragek",
+          "valaark",
+        ]);
         break;
       case "inventory":
         rows = {
@@ -701,6 +724,15 @@ function addMechanicsHashes(db, hashes) {
               table,
               all(db, `SELECT * FROM ${table} ORDER BY rowid`),
             ]),
+          ),
+          factions: all(db, "SELECT * FROM factions ORDER BY id"),
+          reputationTiers: all(
+            db,
+            "SELECT * FROM reputation_tiers ORDER BY id",
+          ),
+          armorBreakingSkills: all(
+            db,
+            "SELECT * FROM skills WHERE break_armor_prob > 0 ORDER BY id",
           ),
         };
         break;
@@ -729,7 +761,14 @@ function addMechanicsHashes(db, hashes) {
         };
         break;
       case "reputation":
-        rows = all(db, "SELECT * FROM reputation_tiers ORDER BY id");
+        rows = {
+          tiers: all(db, "SELECT * FROM reputation_tiers ORDER BY id"),
+          factions: all(db, "SELECT * FROM factions ORDER BY id"),
+          notableNpcs: all(
+            db,
+            "SELECT * FROM npcs WHERE is_notable = 1 ORDER BY id",
+          ),
+        };
         break;
       default:
         if (existsSync(join("src/routes/mechanics", slug, "+page.server.ts"))) {

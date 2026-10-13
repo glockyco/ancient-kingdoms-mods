@@ -8,11 +8,18 @@
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { mysticSparkMana } from "$lib/calculation/character";
   import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
+  import ItemLink from "$lib/components/ItemLink.svelte";
+  import { getQualityTextColorClass } from "$lib/utils/format";
+
+  let { data } = $props();
 
   const SECTIONS = [
     { id: "attributes", label: "The Six Attributes" },
     { id: "resources", label: "Health, Mana, Rage, and Songs" },
-    { id: "skills-and-specializations", label: "Skills and Specializations" },
+    {
+      id: "skills-and-specializations",
+      label: "Skills, Veteran Points, and Specializations",
+    },
   ];
 </script>
 
@@ -47,17 +54,17 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Source: server-scripts/Strength.cs:7-17,80-98 — STR adds physical damage, rage capacity, and selected debuff strength. -->
+            <!-- Source: server-scripts/Strength.cs:GetDamageBonus,GetEnergyBonus; server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetDamageOverTimeAttributeBonus; server-scripts/Buff.cs:defenseBonus — Strength adds Damage and Rage capacity; melee damage-over-time and Defense reductions gain 50% of Strength, rounded. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Strength</th>
               <td class="p-2">
                 <span class="block"
-                  >+1 physical damage and +10 maximum rage per point.</span
+                  >Each point adds 1 Damage and 10 maximum Rage.</span
                 >
                 <span class="block"
-                  >Physical damage-over-time effects and Defense reductions from
-                  melee debuffs gain 50% of Strength, rounded. With 100
-                  Strength, they gain 50.</span
+                  >Melee damage-over-time effects and Defense reductions gain
+                  50% of Strength, rounded. With 100 Strength, they deal 50 more
+                  damage per tick or reduce Defense by 50 more.</span
                 >
               </td>
             </tr>
@@ -66,13 +73,13 @@
               <th class="p-2 font-medium text-foreground">Constitution</th>
               <td class="p-2">
                 <span class="block"
-                  >+25 maximum Health and +0.03 percentage points of block
-                  chance per Constitution point. Poison Resist gains 25% of
-                  Constitution, rounded. With 100 Constitution, you receive 25
-                  Poison Resist.</span
+                  >Each Constitution point adds 25 maximum Health and 0.03
+                  percentage points of Block Chance. You receive Poison Resist
+                  equal to 25% of Constitution, rounded. With 100 Constitution,
+                  you receive 25 Poison Resist.</span
                 >
                 <span class="block"
-                  >It does not add armor or health recovery.</span
+                  >It adds no Defense and no health recovery.</span
                 >
               </td>
             </tr>
@@ -81,8 +88,8 @@
               <th class="p-2 font-medium text-foreground">Dexterity</th>
               <td class="p-2">
                 <span class="block"
-                  >+0.05 percentage points of accuracy and critical resistance,
-                  and +0.03 percentage points of critical chance per point.</span
+                  >Each point adds 0.05 percentage points of Accuracy and
+                  Critical Resist and 0.03 percentage points of Critical Chance.</span
                 >
                 <span class="block"
                   >Bow damage gains 150% of Dexterity, rounded. With 100
@@ -124,24 +131,34 @@
                   >Fire, cold, magic, and Intelligence-scaled poison and disease
                   damage-over-time effects gain the skill's percentage of
                   Intelligence per tick, rounded. Usually this is 125%, giving
-                  125 damage per tick with 100 Intelligence. Ensnare uses 115%,
-                  giving 115 instead. Charisma-scaled effects receive no
-                  attribute damage bonus.</span
+                  125 damage per tick with 100 Intelligence. <a
+                    href="/skills/ensnare"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Ensnare</a
+                  >
+                  uses 115%, giving 115 instead. Bard song damage-over-time gains
+                  no Intelligence bonus. Charisma raises its power instead (see
+                  <a
+                    href="/mechanics/combat#buffs"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Bard Song Scaling</a
+                  >).</span
                 >
               </td>
             </tr>
-            <!-- Source: server-scripts/Wisdom.cs:27-35,102-113; Buff.cs:47-60,113-150; BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:434-445; AreaBuffSkill.cs:33-45 — protective buffs select Intelligence when scalesWithIntelligence, otherwise Wisdom; TargetBuffSkill triples the selected attribute for Rangers. -->
+            <!-- Source: server-scripts/Wisdom.cs:GetHealBonus — direct heals gain 0.4% per Wisdom point, tripled for Rangers and capped at 500%. -->
+            <!-- Source: server-scripts/Buff.cs:healthMaxBonus,defenseBonus,magicResistBonus; server-scripts/BuffSkill.cs:GetBuffPowerAttribute; server-scripts/TargetBuffSkill.cs:434-445; server-scripts/AreaBuffSkill.cs:33-45 — protective buffs select Intelligence or Wisdom, with targeted Ranger buffs tripling that attribute. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Wisdom</th>
               <td class="p-2">
                 <span class="block"
-                  >Direct heals gain up to +0.4% per point, or +1.2% for
-                  Rangers, with a +500% cap.</span
+                  >Direct heals gain 0.4% per Wisdom point (1.2% for Rangers),
+                  up to a 500% bonus.</span
                 >
                 <span class="block"
                   >Protective buffs use Wisdom, or Intelligence when the skill
-                  scales with Intelligence. Each selected attribute point adds
-                  +2 maximum health to maximum-health buffs and +2 ward
+                  scales with Intelligence. Each selected attribute point adds 2
+                  maximum Health to maximum-health buffs and 2 points of ward
                   capacity.</span
                 >
                 <span class="block"
@@ -152,16 +169,30 @@
                 >
                 <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
                 <span class="block"
-                  >Bard songs and Final Cadence use Charisma instead of Wisdom.</span
+                  >Bard songs and <a
+                    href="/skills/final_cadence"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Final Cadence</a
+                  > use Charisma instead of Wisdom.</span
                 >
-                <!-- Source: server-scripts/TargetHealSkill.cs:137-143; NecromancerDeathBloomSkill.cs:19-25,47-50 — scroll healing skips Wisdom and Death Bloom uses Intelligence. -->
+                <!-- Source: server-scripts/TargetHealSkill.cs:GetHealingAmount; server-scripts/TargetBuffSkill.cs:Apply; server-scripts/NecromancerDeathBloomSkill.cs:Apply — scroll healing and buffs skip attribute bonuses; Death Bloom uses Intelligence. -->
                 <span class="block">
                   <a
                     href="/skills/death_bloom"
-                    class="underline hover:text-foreground">Death Bloom</a
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Death Bloom</a
                   >
-                  uses Intelligence. Healing scrolls, including Major Restoration,
-                  receive no Wisdom bonus.
+                  uses Intelligence. Scrolls, such as the
+                  <a
+                    href="/items/runed_scroll_of_restoration"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Runed Scroll of Restoration</a
+                  >
+                  (<a
+                    href="/skills/major_restoration"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Major Restoration</a
+                  >), gain no attribute bonus to healing or buffs.
                 </span>
                 <span class="block"
                   ><MechanicsLink section="combat#buffs"
@@ -169,23 +200,34 @@
                   > for other resistances and effects.</span
                 >
                 <span class="block"
-                  >Wisdom adds neither maximum mana nor mana recovery.</span
+                  >Wisdom adds neither maximum Mana nor mana recovery.</span
                 >
               </td>
             </tr>
-            <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:9-40 — CHA affects buy/sell modifiers and Bard power, capped at triple base Bard power. -->
+            <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetDiscountPurchaseBonus,GetIncreaseSellBonus,GetBardPowerMultiplier; server-scripts/UINpcTrading.cs:CalculatePurchaseItemPrice,CalculateSellItemPrice; server-scripts/PlayerNpcTrading.cs:CalculateRepairItemPrice — Charisma scales merchant discounts, sales, repairs, and Bard power with separate caps. -->
             <tr>
               <th class="p-2 font-medium text-foreground">Charisma</th>
               <td class="p-2">
-                <span class="block">Improves purchase and sale prices.</span>
                 <span class="block"
-                  >Bard songs and Final Cadence gain +0.1% power per point, up
-                  to +200% power.</span
+                  >Each point lowers merchant prices and raises sale prices by
+                  0.2%, up to 25%, and lowers repair costs by 0.2%, up to 50%.
+                  See <a
+                    href="/mechanics/inventory#merchants"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Merchants, Buyback, and Repairs</a
+                  >.</span
+                >
+                <span class="block"
+                  >Bard songs and <a
+                    href="/skills/final_cadence"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Final Cadence</a
+                  > gain 0.1% power per point, up to a 200% bonus.</span
                 >
                 <span class="block"
                   ><MechanicsLink section="combat#buffs"
                     >See Bard Song Scaling</MechanicsLink
-                  > for the effects it does not change.</span
+                  > for which song effects Charisma scales.</span
                 >
               </td>
             </tr>
@@ -196,8 +238,8 @@
       <!-- Source: server-scripts/Experience.cs:114-352 — levels award one allocatable attribute point and class-dependent automatic attribute growth. -->
       <p>
         <span class="block"
-          >Each level grants one attribute point to allocate and automatic
-          attribute growth based on your class.</span
+          >Each level grants one attribute point to allocate. Your class also
+          raises attributes on levels that are multiples of 2, 3, 4, 5, or 6.</span
         >
         <span class="block"
           ><MechanicsLink section="experience#level-rewards"
@@ -211,6 +253,13 @@
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
+        <!-- Source: server-scripts/Player.cs:12298-12333 — reading attribute books permanently raises their listed attributes. -->
+        Reading certain
+        <a
+          href="/professions/lore_keeping"
+          class="text-blue-600 dark:text-blue-400 hover:underline">books</a
+        >
+        permanently raises attributes.
       </p>
     </Card.Content>
   </Card.Root>
@@ -224,15 +273,20 @@
       <!-- Source: server-scripts/EnergyResource.cs:84-95 — resources recover only while the entity is alive. -->
       <p>
         <span class="block">Every class has health.</span>
-        <span class="block">Constitution adds 25 maximum health per point.</span
-        >
         <span class="block"
           >Equipment, augments, passive skills, and buffs can also raise maximum
-          health.</span
+          Health.</span
         >
         <span class="block"
           >Equipment, augments, passive skills, and healing-over-time buffs
           increase health recovery.</span
+        >
+        <span class="block"
+          >See <a
+            href="#attributes"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >The Six Attributes</a
+          > for attribute bonuses to maximum Health, Mana, and Rage.</span
         >
       </p>
       <div class="overflow-x-auto">
@@ -253,10 +307,7 @@
               <td class="p-2">Cleric, Druid, Necromancer, Ranger, Wizard</td>
               <td class="p-2">
                 <span class="block"
-                  >Intelligence adds +20 maximum mana per point.</span
-                >
-                <span class="block"
-                  >Wisdom adds neither maximum mana nor mana recovery.</span
+                  >Intelligence raises maximum Mana, not mana recovery.</span
                 >
                 <span class="block"
                   >Equipment, augments, passive skills, and buffs can increase
@@ -270,9 +321,7 @@
               <th class="p-2 font-medium text-foreground">Rage</th>
               <td class="p-2">Warrior, Rogue</td>
               <td class="p-2">
-                <span class="block"
-                  >Strength adds +10 maximum rage per point.</span
-                >
+                <span class="block">Strength raises maximum Rage.</span>
                 <span class="block">Rage has no baseline recovery.</span>
                 <span class="block"
                   >You build Rage by dealing auto-attack damage or taking
@@ -309,10 +358,20 @@
       <!-- Source: server-scripts/Combat.cs:1284-1314 — Mana Shield spends one mana per point of damage absorbed. -->
       <p>
         <span class="block"
-          >Wizard's Mystic Spark restores Mana before shields absorb its hit.</span
+          ><a
+            href="/skills/mystic_spark"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Mystic Spark</a
+          > restores Mana equal to 35% of damage before shield absorption, counting
+          at most the target's Health before the hit, rounded down. Against a target
+          without shields, use the hit's damage number.</span
         >
         <span class="block"
-          >Mana Shield spends one mana for each damage point it prevents.</span
+          ><a
+            href="/skills/mana_shield"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Mana Shield</a
+          > spends one Mana for each damage point it prevents.</span
         >
         <span class="block"
           ><MechanicsLink section="combat#damage-pipeline"
@@ -374,14 +433,15 @@
         <h3 class="font-semibold text-foreground">Veteran skills</h3>
         <!-- Source: server-scripts/Experience.cs:38-38,45-53,366-408 — at the level cap filled XP bars grant Veteran Points with a separate maximum. -->
         <!-- Source: server-scripts/PlayerSkills.cs:59-64,1918-1929,2464-2481 — veteran upgrades spend Veteran Points, not class skill points. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill; website/data/compendium.db skills.tier — all veteran skills have tier 0, which allows every choice. -->
         <p>
           <span class="block"
             >At level 50, further XP grants Veteran Points while your total is
             below 200.</span
           >
           <span class="block"
-            >Veteran skill upgrades spend unspent Veteran Points and follow
-            rank, prerequisite, and tier limits.</span
+            >Veteran skill upgrades spend unspent Veteran Points and follow rank
+            and prerequisite limits. Veteran skills have no tier limit.</span
           >
           <span class="block"
             ><MechanicsLink section="experience#veteran-points"
@@ -428,6 +488,14 @@
           points.
         </p>
         <p>{TOTAL_VETERAN_POINTS_NOTE}</p>
+        <!-- Source: server-scripts/PlayerSkills.cs:GetTotalVeteranPoints,ResetVeteranSkillPoints — ranks that cost 2 points count and refund only 1 point. -->
+        <p>
+          <a
+            href="/mechanics/experience#veteran-points"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Veteran Point counting and reset losses</a
+          > explains how the game miscounts ranks that cost 2 Veteran Points.
+        </p>
         <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:15118-15121 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           If the game cannot determine a saved character's attribute allocation,
@@ -443,16 +511,61 @@
             30, and 3,000 at level 40.</span
           >
         </p>
+        <!-- Source: server-scripts/Npc.cs:OnInteract; server-scripts/Player.cs:UserCode_CmdResetAttributes — attribute and class-skill resets use the same price; active debuffs prevent an attribute reset. -->
+        <p>
+          {#if data.skillMaster}
+            <a
+              href="/npcs/{data.skillMaster.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{data.skillMaster.name}</a
+            >
+          {:else}The Skill Master{/if}
+          resets your class skills.
+          {#if data.attributeMaster}
+            <a
+              href="/npcs/{data.attributeMaster.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{data.attributeMaster.name}</a
+            >
+          {:else}The Attribute Master{/if}
+          resets your assigned attribute points for the same price, but not while
+          a debuff is on you.
+        </p>
         <!-- Source: server-scripts/Player.cs:10932-10938,10964-10998 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
         <!-- Source: server-scripts/PlayerSkills.cs:1775-1868 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"
             >Resetting class skills refunds class skill points but leaves
-            veteran skills unchanged.</span
+            veteran skills unchanged. It also removes your pet and stops Bard
+            songs.</span
           >
-          <span class="block"
-            >A veteran reset costs 10,000 gold and one Token of Redemption.</span
-          >
+          <span class="block">
+            {#if data.veteranMaster}
+              <a
+                href="/npcs/{data.veteranMaster.id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >{data.veteranMaster.name}</a
+              >, the Veteran Master,
+            {:else}The Veteran Master{/if}
+            resets veteran skills for 10,000 gold and one
+            {#if data.redemptionToken}
+              <ItemLink
+                itemId={data.redemptionToken.id}
+                itemName={data.redemptionToken.name}
+                colorClass={getQualityTextColorClass(
+                  data.redemptionToken.quality,
+                )}
+                tooltipHtml={data.redemptionToken.tooltip_html}
+                imageAvailable={data.redemptionToken.visual_public_path}
+              />
+            {:else}
+              <a
+                href="/items/token_of_redemption"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Token of Redemption</a
+              >
+            {/if}.
+          </span>
         </p>
       </div>
     </Card.Content>

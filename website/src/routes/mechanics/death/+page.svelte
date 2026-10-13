@@ -1,13 +1,10 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
-  import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
   import { deathRecovery } from "$lib/calculation/death";
-
-  const SECTIONS = [{ id: "death", label: "Death and Remains" }];
 </script>
 
 <Seo
@@ -25,14 +22,15 @@
     ]}
   />
   <h1 class="text-4xl font-bold">Death and Remains</h1>
-  <PageSections sections={SECTIONS} />
 
   <Card.Root id="death" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Death and Remains</Card.Title>
+      <!-- Source: server-scripts/Player.cs:OnDeath,UserCode_CmdGetExpFromRemains,UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity; server-scripts/PlayerDead.cs:Start — death costs XP and durability, remains and Resurrection return XP, and remains use the player's name followed by "'s corpse". -->
       <Card.Description
         >Death costs XP and durability. Remains or Resurrection can restore some
-        lost XP.</Card.Description
+        lost XP. Your remains use your character's name followed by “'s corpse”
+        in game.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
@@ -53,20 +51,35 @@
           >
         </p>
         <!-- Source: server-scripts/Player.cs:4081-4088 — death removes an active pet. -->
-        <!-- Source: server-scripts/Skills.cs:OnDeath — Bard songs stop and buffs without remainAfterDeath are removed. -->
+        <!-- Source: server-scripts/Player.cs:OnDeath — death dismounts the player. -->
+        <!-- Source: server-scripts/Skills.cs:OnDeath; website/data/compendium.db:skills.reaper_form.remain_after_death — Bard songs stop; buffs marked to survive death stay, but Reaper Form is removed. -->
         <p>
           <span class="block"
             >Your summoned pet disappears and your Bard songs stop.</span
           >
+          <span class="block">You dismount.</span>
           <span class="block"
-            >Buffs, including Reaper Form, end unless their effects survive
-            death.</span
+            >Most buffs end, including <a
+              href="/skills/reaper_form"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >Reaper Form</a
+            >.</span
           >
           <span class="block"
             ><MechanicsLink section="inventory#durability-and-repair"
               >Equipment durability and repair</MechanicsLink
             > covers repairs.</span
           >
+        </p>
+        <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ProcessMercenariesOnPlayerRespawn — living mercenaries leave; respawn may also return dead summoned mercenaries for a fee. -->
+        <p>
+          Your living mercenaries leave and return when you respawn or are
+          resurrected. Respawning also charges for dead summoned mercenaries. If
+          you cannot pay for all of them, none of the dead ones return. See <a
+            href="/mercenaries#how-it-works"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >mercenary recovery after your death</a
+          >.
         </p>
       </div>
 
@@ -76,14 +89,26 @@
         <!-- Source: server-scripts/Entity.cs:346-357 — Revive rounds the specified fraction of maximum health. -->
         <p>
           Respawning leaves your remains where you died and returns you to your
-          bind point.
+          <a
+            href="/mechanics/world#binding-and-travel"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >bind point</a
+          >. You respawn with 50% of maximum Health, rounded.
+        </p>
+        <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD; server-scripts/BuffSkill.cs:ignoreSeeInvisibility; website/data/compendium.db skills.resurrection_effects — respawn applies 10 seconds of invisibility that defeats see-invisibility. -->
+        <p>
+          For 10 seconds after respawning, monsters ignore you (<a
+            href="/skills/resurrection_effects"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Resurrection Effects</a
+          >).
         </p>
         <!-- Source: server-scripts/PlayerDead.cs:8-8,82-95,132-137 — remains expire 900 seconds after creation or after use. -->
         <!-- Source: server-scripts/Player.cs:4054-4057 — a new death destroys the prior remains. -->
         <p>
           <span class="block"
-            >Your remains last 15 minutes or until your next death, whichever
-            comes first.</span
+            >Your remains last 15 minutes after you respawn, or until you die
+            again.</span
           >
           <span class="block">You can use the remains only once.</span>
         </p>
@@ -98,9 +123,7 @@
                 <th class="p-2 font-medium text-foreground">Method</th>
                 <th class="p-2 font-medium text-foreground">Lost XP returned</th
                 >
-                <th class="p-2 font-medium text-foreground"
-                  >Where and with what resources</th
-                >
+                <th class="p-2 font-medium text-foreground">How it works</th>
               </tr>
             </thead>
             <tbody>
@@ -120,8 +143,8 @@
                 </td>
               </tr>
               <!-- Source: server-scripts/TargetHealSkill.cs:239-253 — Resurrection targets unused player remains after their owner respawns and passes the remains' coordinates to the player. -->
-              <!-- Source: server-scripts/Player.cs:13139-13149,13163-13193 — accepting resurrection moves the player to the remains, restores 60% max health and mana equal to 20% max health, and returns 75% of lost XP. -->
-              <!-- Source: server-scripts/EnergyResource.cs:21-35 — mana is capped by its own maximum when restored. -->
+              <!-- Source: server-scripts/Player.cs:UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity — accepting moves the player to remains, sets Health to 60% max Health and Mana to 20% max Health, leaves Rage unchanged, and returns 75% lost XP. -->
+              <!-- Source: server-scripts/EnergyResource.cs:current — Mana is capped by maximum Mana. -->
               <tr>
                 <th class="p-2 font-medium text-foreground"
                   >Accept Resurrection</th
@@ -131,7 +154,10 @@
                   <span class="block"
                     >Resurrection returns you to your remains after you respawn.</span
                   >
-                  <span class="block">It restores Health and Mana.</span>
+                  <span class="block"
+                    >Accepting replaces your current Health and Mana with the
+                    calculated amounts below.</span
+                  >
                 </td>
               </tr>
             </tbody>
@@ -141,8 +167,10 @@
         <!-- Source: server-scripts/Player.cs:13182-13183; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
-          Because of a game defect, Resurrection restores Mana based on maximum
-          Health, up to maximum Mana.
+          Accepting Resurrection sets Health to 60% of maximum Health and Mana
+          to 20% of maximum Health (at most maximum Mana), even if you had more.
+          Rage is unchanged. The Mana amount uses maximum Health because of a
+          game defect.
         </p>
         <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget — Resurrection can target player remains or dead mercenaries. -->
         <p>
@@ -162,6 +190,15 @@
             > for their recovery rules.</span
           >
         </p>
+        <!-- Source: server-scripts/TargetHealSkill.cs:Apply; website/data/compendium.db skills.resurrection.player_classes and items.scroll_of_resurrection — Clerics learn Resurrection; the scroll requires level 30. -->
+        <p>
+          Clerics cast Resurrection. Anyone level 30 or higher can use a
+          <a
+            href="/items/scroll_of_resurrection"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Scroll of Resurrection</a
+          >.
+        </p>
         <!-- Source: server-scripts/Player.cs:13163-13193 — resurrection restores resources and XP without changing equipment durability. -->
         <p>Equipment keeps its current durability after Resurrection.</p>
       </div>
@@ -171,7 +208,13 @@
         class="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-foreground"
       >
         <span class="block"
-          ><strong>Hardcore:</strong> Death permanently deletes your character.</span
+          ><strong
+            ><a
+              href="/mechanics/world#game-modes"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >Hardcore</a
+            >:</strong
+          > Death permanently deletes your character.</span
         >
         <span class="block"
           >A Hardcore character cannot respawn or recover through remains or

@@ -7,10 +7,12 @@ export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
   const eligible = Math.min(hit, targetHealth);
   const mana = floorToInt(multiplyF32(eligible, 0.35));
   return {
+    // Source: server-scripts/Combat.cs:1225-1314 — Mana gain precedes shield absorption, so the visible hit is usable for an unshielded target.
+    note: "Use a hit on a target without shields. Shield absorption can hide damage that Mystic Spark counts for Mana.",
     steps: [
       {
         name: "Eligible hit damage",
-        expression: "Hit damage before wards and Mana Shield",
+        expression: "The hit's damage number",
         limit: "at most the target's Health before the hit",
       },
       {
@@ -22,7 +24,7 @@ export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
     ],
     example: () => ({
       given: [
-        `${formatNumber(hit)} hit damage before shields`,
+        `${formatNumber(hit)} hit damage`,
         `${formatNumber(targetHealth)} target Health before the hit`,
         "Enough missing Mana for the full gain",
       ],

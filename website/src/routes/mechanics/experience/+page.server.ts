@@ -4,11 +4,6 @@ import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
 export const prerender = true;
 
-interface SkillRef {
-  id: string;
-  name: string;
-}
-
 export interface ItemRef {
   id: string;
   name: string;
@@ -17,10 +12,16 @@ export interface ItemRef {
   visual_public_path: string | null;
 }
 
+interface NamedRef {
+  id: string;
+  name: string;
+}
+
 interface ExperiencePageData {
-  doubleExpSkills: SkillRef[];
   redemptionToken: ItemRef | null;
   maxLevelReward: ItemRef | null;
+  veteranMaster: NamedRef | null;
+  discoveryCities: NamedRef[];
 }
 
 // Source: exported-data/game_config.json special_items — the game resolves these two
@@ -49,21 +50,26 @@ function getItem(db: Database.Database, id: string): ItemRef | null {
 export const load: PageServerLoad = (): ExperiencePageData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
-  const doubleExpSkills = db
-    .prepare(
-      `
-      SELECT id, name
-      FROM skills
-      WHERE is_double_exp_spell = 1
-      ORDER BY name
-    `,
-    )
-    .all() as SkillRef[];
-
   const redemptionToken = getItem(db, REDEMPTION_TOKEN_ID);
   const maxLevelReward = getItem(db, MAX_LEVEL_REWARD_ID);
+  const veteranMaster = db
+    .prepare(
+      "SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_veteran_master') = 1 ORDER BY name LIMIT 1",
+    )
+    .get() as NamedRef | undefined;
+  // Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — these five settlements receive 10 discovery XP.
+  const discoveryCities = db
+    .prepare(
+      "SELECT id, name FROM zones WHERE id IN ('alaenanore_village', 'thogh_maldur', 'milldenn', 'bonebreach', 'felarii_village') ORDER BY name",
+    )
+    .all() as NamedRef[];
 
   db.close();
 
-  return { doubleExpSkills, redemptionToken, maxLevelReward };
+  return {
+    redemptionToken,
+    maxLevelReward,
+    veteranMaster: veteranMaster ?? null,
+    discoveryCities,
+  };
 };

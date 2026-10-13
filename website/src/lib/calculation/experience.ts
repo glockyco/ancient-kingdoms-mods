@@ -20,14 +20,13 @@ export function levelExperience(costs: readonly number[]): Calculation {
     steps: [
       {
         name: "Through level 40",
-        expression:
-          "78 XP × 125.8% raised to the number of levels after level 1",
+        expression: "78 XP × 125.8% to the power of (your level − 1)",
         rounding: "nearest",
       },
       {
         name: "After level 40",
         expression:
-          "Level 40 requirement × 118% raised to the number of levels after level 40",
+          "602,060 XP (the level 40 requirement) × 118% to the power of (your level − 40)",
         rounding: "nearest",
       },
     ],
@@ -97,7 +96,8 @@ export function evaluateKillExperience(
         ? addF32(1, multiplyF32(Math.min(-gap, 10), 0.05))
         : f32(LOWER_LEVEL_REWARDS[gap]);
   const share = ceilToInt(divideF32(base, members));
-  const adjustedMultiplier = dungeon ? addF32(multiplier, 0.1) : multiplier;
+  const adjustedMultiplier =
+    gap > 20 ? 0 : dungeon ? addF32(multiplier, 0.1) : multiplier;
   const roundedShare = iround(multiplyF32(share, adjustedMultiplier));
   const balanced = gap > 20 ? 0 : Math.max(1, roundedShare);
   const bonus =
@@ -114,6 +114,7 @@ export function evaluateKillExperience(
   };
 }
 
+// Source: server-scripts/Experience.cs:BalanceExperienceReward,CalculateExperienceShare; server-scripts/Monster.cs:OnDeath — nearby party players share XP using their highest level, with the 20-level cutoff before the dungeon bonus.
 export function killExperience(): Calculation {
   return {
     steps: [
@@ -126,7 +127,7 @@ export function killExperience(): Calculation {
       {
         name: "Level adjustment",
         expression:
-          "Use the level-difference percentage below, comparing the monster with the highest-level nearby player. A dungeon adds 10 percentage points to that percentage",
+          "Level-difference percentage for the highest level among nearby party players, plus 10 percentage points in a dungeon unless the monster is more than 20 levels lower",
       },
       {
         name: "Adjusted share",
@@ -150,7 +151,7 @@ export function killExperience(): Calculation {
       {
         ...situational(
           "level",
-          "Your level or highest nearby player level",
+          "Highest level among nearby party players (your level when alone)",
           20,
         ),
         min: 1,
@@ -158,7 +159,14 @@ export function killExperience(): Calculation {
       },
       { ...situational("monsterLevel", "Monster level", 20), min: 1, max: 100 },
       { ...situational("members", "Nearby party players", 3), min: 1, max: 5 },
-      { ...situational("dungeon", "Dungeon (0 = no, 1 = yes)", 0), max: 1 },
+      {
+        ...situational("dungeon", "Inside a dungeon", 0),
+        max: 1,
+        choices: [
+          { value: 0, label: "No" },
+          { value: 1, label: "Yes" },
+        ],
+      },
     ],
     example: ({ baseXp, level, monsterLevel, members, dungeon }) => {
       const result = evaluateKillExperience(
@@ -171,14 +179,16 @@ export function killExperience(): Calculation {
       return {
         given: [
           `${formatNumber(baseXp)} base XP`,
-          `Player level ${level}, monster level ${monsterLevel}`,
-          `${members} nearby players`,
+          `Highest nearby party level ${level}, monster level ${monsterLevel}`,
+          `${members} nearby party players`,
           dungeon ? "Dungeon" : "Outside a dungeon",
         ],
         result: `${formatNumber(result.total)} XP per living player before XP buffs and events`,
         working: [
           `Base share: ${formatNumber(baseXp)} ÷ ${members} = ${formatNumber(result.share)} XP, rounded up`,
-          `Level adjustment: percentage for level ${level} against monster level ${monsterLevel}${dungeon ? " + 10 percentage points for a dungeon" : ""} = ${formatPercent(result.multiplier)}`,
+          level - monsterLevel > 20
+            ? "Level adjustment: monster more than 20 levels lower = 0%, no XP"
+            : `Level adjustment: percentage for level ${level} against monster level ${monsterLevel}${dungeon ? " + 10 percentage points for a dungeon" : ""} = ${formatPercent(result.multiplier)}`,
           `Adjusted share: ${formatNumber(result.share)} × ${formatPercent(result.multiplier)} = ${formatNumber(result.roundedShare)} XP, rounded${result.balanced !== result.roundedShare ? (level - monsterLevel > 20 ? ", limited to 0 XP by the 20-level cutoff" : ", limited to 1 XP") : ""}`,
           `Party bonus: ${formatNumber(result.balanced)} × 125% × ${members - 1} = ${formatNumber(result.bonus)} XP, rounded`,
           `XP per living player: ${formatNumber(result.balanced)} + ${formatNumber(result.bonus)} = ${formatNumber(result.total)} XP`,
