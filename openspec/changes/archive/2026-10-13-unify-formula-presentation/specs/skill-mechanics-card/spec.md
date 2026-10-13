@@ -13,7 +13,7 @@ a suffix, because concatenation can produce a plausible name for a stat that doe
 #### Scenario: Physical damage mitigation
 
 - **WHEN** a skill's damage type is physical
-- **THEN** the card names Defense as the stat that reduces the hit
+- **THEN** the card names Armor Class as the stat that reduces the hit
 - **AND** it does not name a physical resist, which the game does not implement
 
 #### Scenario: Elemental damage mitigation
@@ -29,12 +29,12 @@ a suffix, because concatenation can produce a plausible name for a stat that doe
 
 ### Requirement: The damage type selects the avoidance formula
 
-The card SHALL name the avoidance mechanic the game applies to that damage type and link to the combat page section that states its formula. Physical damage is avoided by a block-and-miss roll that reads the target's block chance and Defense. Elemental damage is avoided by a resist roll that reads the matching resist stat.
+The card SHALL name the avoidance mechanic the game applies to that damage type and link to the combat page section that states its formula. Physical damage is avoided by a block-and-miss roll that reads the target's block chance and Armor Class. Elemental damage is avoided by a resist roll that reads the matching resist stat.
 
 #### Scenario: Physical skill
 
 - **WHEN** a skill's damage type is physical
-- **THEN** the card names block and miss and the target's Defense
+- **THEN** the card names block and miss and the target's Armor Class
 - **AND** it links to the combat page section on avoidance
 
 #### Scenario: Elemental skill

@@ -41,6 +41,16 @@ Multipliers and per-point coefficients SHALL be stated as percentages, such as "
 - **WHEN** the game checks that a character is within 2 world units
 - **THEN** the page states 2 yd
 
+### Requirement: Stats use the game's names
+
+A page SHALL call a character stat by the name the game's character window shows: Attack Power, Spell Power, Armor Class, Spell Casting Haste and Critical Strike. An item stat list MAY use the item tooltip's own names, such as AC and Critical Chance.
+
+#### Scenario: A skill adds the caster's magic damage stat
+
+- **WHEN** a skill's damage adds the caster's magic damage stat
+- **THEN** the page names Spell Power
+- **AND** it tells the reader to read Spell Power in the character window
+
 ### Requirement: Rounding is stated where it happens
 
 Each step or sentence that produces a whole number SHALL say how it rounds, as "rounded", "rounded down", or "rounded up". A page that rounds to the nearest whole number SHALL state once, at the first such use, that exact halves round to the even number.
@@ -62,7 +72,7 @@ A calculation whose outcome depends on numbers SHALL show a worked example. The 
 
 ### Requirement: Readers can rerun an example with their own numbers
 
-A calculation whose result depends on the reader's character or choices SHALL offer editable inputs that rerun the same computation as the reader types. Each input SHALL be a value the reader can read in the game, such as the Damage the character window shows. Inputs that describe the reader's character SHALL persist in the browser across pages and update every calculation on the page until the reader resets them. Without scripts, the static example SHALL remain. A calculator SHALL cover the reader's side only and SHALL NOT model a target's defenses.
+A calculation whose result depends on the reader's character or choices SHALL offer editable inputs that rerun the same computation as the reader types. Each input SHALL be a value the reader can read in the game, such as the Attack Power the character window shows. Inputs that describe the reader's character SHALL persist in the browser across pages and update every calculation on the page until the reader resets them. Without scripts, the static example SHALL remain. A calculator SHALL cover the reader's side only and SHALL NOT model a target's defenses.
 
 #### Scenario: A reader enters their maximum Health
 

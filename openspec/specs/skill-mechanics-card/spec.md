@@ -17,13 +17,13 @@ a suffix, because concatenation can produce a plausible name for a stat that doe
 #### Scenario: Physical damage mitigation
 
 - **WHEN** a skill's damage type is physical
-- **THEN** the mitigation formula names `defense`
-- **AND** it does not name `physicalResist`, which the game does not implement
+- **THEN** the card names Armor Class as the stat that reduces the hit
+- **AND** it does not name a physical resist, which the game does not implement
 
 #### Scenario: Elemental damage mitigation
 
 - **WHEN** a skill's damage type is magic, fire, cold, poison, or disease
-- **THEN** the mitigation formula names that type's resist stat, matching the game
+- **THEN** the card names that type's resist stat, matching the game
 
 #### Scenario: A damage type is renamed upstream
 
@@ -33,22 +33,19 @@ a suffix, because concatenation can produce a plausible name for a stat that doe
 
 ### Requirement: The damage type selects the avoidance formula
 
-The card SHALL present the avoidance mechanic the game applies to that damage type. Physical
-damage is avoided by a block-and-miss roll that reads the target's block chance. Elemental damage
-is avoided by a resist roll that reads the matching resist stat. The card SHALL label and formulate
-each accordingly.
+The card SHALL name the avoidance mechanic the game applies to that damage type and link to the combat page section that states its formula. Physical damage is avoided by a block-and-miss roll that reads the target's block chance and Armor Class. Elemental damage is avoided by a resist roll that reads the matching resist stat.
 
 #### Scenario: Physical skill
 
 - **WHEN** a skill's damage type is physical
-- **THEN** the card shows a block-and-miss heading
-- **AND** the formula reads the target's block chance, not a resist stat
+- **THEN** the card names block and miss and the target's Armor Class
+- **AND** it links to the combat page section on avoidance
 
 #### Scenario: Elemental skill
 
 - **WHEN** a skill's damage type is elemental
-- **THEN** the card shows a resist-chance heading
-- **AND** the formula reads that type's resist stat
+- **THEN** the card names the resist roll and that type's resist stat
+- **AND** it links to the combat page section on resistance
 
 ### Requirement: Mechanics changes are proven against committed snapshots
 
@@ -72,7 +69,7 @@ recorded a stat that does not exist as the expected result.
 
 ### Requirement: Bard mechanics follow the current game formulas
 
-The skill mechanics card SHALL describe Bard songs as timed auras. Leadership SHALL show the additive attribute contribution as `round((WIS + CON + CHA) / 2)`.
+The skill mechanics card SHALL describe Bard songs as timed auras. Leadership SHALL state the additive attribute contribution as half of Wisdom, Constitution, and Charisma added together, rounded.
 
 #### Scenario: A Bard song page is displayed
 
@@ -82,5 +79,5 @@ The skill mechanics card SHALL describe Bard songs as timed auras. Leadership SH
 #### Scenario: Leadership is displayed
 
 - **WHEN** the Leadership skill page displays its attribute scaling
-- **THEN** it shows `round((WIS + CON + CHA) / 2)`
+- **THEN** it states half of Wisdom, Constitution, and Charisma added together, rounded
 - **AND** it includes that contribution in the displayed physical and magical damage bonuses
