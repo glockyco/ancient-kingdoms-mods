@@ -14,7 +14,7 @@ import {
 } from "$lib/calculation/format";
 import { mitigate } from "$lib/calculation/combat";
 
-// Source: server-scripts/Combat.cs:119-178; Strength.cs:15-18; Intelligence.cs:36-39 — percentage damage applies to the entire flat stat, before handler-specific weapon subtraction.
+// Source: server-scripts/Combat.cs:damage,magicDamage; Strength.cs:GetDamageBonus; Intelligence.cs:GetMagicDamageBonus — percentage damage applies to the full flat stat; only the Intelligence addition and percentage addition round, not the flat-stat sum.
 export function characterDamage(flat: number, bonus: number) {
   return Math.max(0, flat + iround(multiplyF32(flat, bonus)));
 }
@@ -29,7 +29,6 @@ export const characterDamageCalculation: Calculation = {
       name: "Flat Magic Damage",
       expression:
         "Level-based base Magic Damage + 150% of non-negative Intelligence, rounded, + flat magic damage from working equipment, learned skills, and buffs",
-      rounding: "nearest",
     },
     {
       name: "Percentage bonus",
@@ -61,7 +60,7 @@ export const characterDamageCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/Combat.cs:673-875,883-1007,1171-1398 — avoidance precedes variance, on-hit effects and resource gains precede shields, and lifetap precedes health damage.
+// Source: server-scripts/Combat.cs:DealDamageAt; Database.cs:CalculateSlayerLevelForAccount — level adjustment limits its percentage before rounding damage up. Slayer reduction starts at 10% mastery and reaches 10% at 100% mastery. Rampage scales non-spell hits below 10% Health. On-hit effects act on the attacker before shields spend Ward and Mana.
 export function hitPipelineExample() {
   const moving = 201 + floorToInt(multiplyF32(201, 0.1));
   const variance = iround(multiplyF32(moving, 1.05));
@@ -111,8 +110,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Level adjustment",
       expression:
-        "Damage × 2% per level the attacker is above the target, negative when below",
-      limit: "between −20% and +20% before rounding",
+        "Damage × 2% per level above the target, or −2% per level below it. Limit the percentage to −20% through +20% before multiplying",
       rounding: "up",
     },
     {
@@ -122,13 +120,13 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Slayer reduction",
       expression:
-        "For a boss or elite monster hitting a player or pet, subtract damage × 10% per Slayer level of the player or pet's owner",
+        "At 10% Slayer mastery or more, reduce a boss or elite monster's damage to a player or pet by 1% per 10 percentage points of mastery, up to 10%. Use the owner's mastery for a pet",
       rounding: "up",
     },
     {
-      name: "Enrage damage",
+      name: "Rampage damage",
       expression:
-        "A monster or NPC with the Enrage passive below 10% Health adds damage × a random 50% to 75% on a non-spell hit",
+        "A monster or NPC with the Rampage passive below 10% Health adds damage × a random 50% to 75% on a non-spell hit",
       rounding: "up",
     },
     {
@@ -154,7 +152,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "On-hit effects",
       expression:
-        "Resolve eligible Heal on Hit effects, then Damage Shield effects",
+        "The target's Heal on Hit heals the melee attacker, then its damage shields hurt the attacker. Neither changes this hit's damage",
     },
     {
       name: "Resource gains",
@@ -187,8 +185,8 @@ export const pipelineCalculation: Calculation = {
         "attacker 2 levels higher",
         "100 target Defense",
         "a critical hit with 20% Critical Resist",
-        "20 Ward and 10 Mana Shield",
-        "no Slayer reduction, Enrage, on-hit effects, or Parry",
+        "20 Ward left and Mana Shield active with 10 Mana",
+        "no Slayer reduction, Rampage, on-hit effects, or Parry",
       ],
       result: `${number(result.healthDamage)} Health damage`,
       working: [
@@ -264,7 +262,7 @@ export const advantageCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/Skills.cs:1866-1876,ApplyDamageOverTimeBonuses — layer scaling rounds up, then Reaper Form and execute each round to nearest.
+// Source: server-scripts/Skills.cs:GetFinalDamageDoT,ApplyDamageOverTimeBonuses — layers round up, then online player-caster Reaper Form and Deathly Focus each round; target maximum-Health damage is added after critical scaling, before Ward.
 export function damageOverTimeBonuses(
   damage: number,
   counters: number,
@@ -312,9 +310,9 @@ export const damageOverTimeCalculation: Calculation = {
       rounding: "nearest",
     },
     {
-      name: "Execute tick",
+      name: "Deathly Focus tick",
       expression:
-        "Reaper Form tick × (100% + summed learned execute bonuses), only below 30% target Health",
+        "Reaper Form tick × (100% + caster's Deathly Focus bonus), only below 30% target Health",
       rounding: "nearest",
     },
     {
@@ -326,8 +324,7 @@ export const damageOverTimeCalculation: Calculation = {
     {
       name: "Final tick",
       expression:
-        "Add percentage-of-maximum-Health damage, rounded, then let Ward absorb damage before Health is lost",
-      rounding: "nearest",
+        "Add the debuff's percentage of the target's maximum Health, rounded, then Ward absorbs damage before Health is lost",
     },
   ],
   example: () => {
@@ -337,14 +334,14 @@ export const damageOverTimeCalculation: Calculation = {
         "101 damage after mitigation",
         "2 remaining layers",
         "50% active Reaper Form bonus",
-        "10% execute bonus and target below 30% Health",
+        "10% Deathly Focus bonus and target below 30% Health",
         "a non-critical tick with no percentage-health damage or Ward",
       ],
-      result: `${number(result.total)} damage per tick`,
+      result: `${number(result.total)} damage each second`,
       working: [
         `Tick after Cleanse: 101 × 85% = ${number(result.layered)}, rounded up`,
         `Reaper Form tick: ${number(result.layered)} × 150% = ${number(result.transformed)}, rounded`,
-        `Execute tick: ${number(result.transformed)} × 110% = ${number(result.total)}, rounded`,
+        `Deathly Focus tick: ${number(result.transformed)} × 110% = ${number(result.total)}, rounded`,
       ],
     };
   },
@@ -437,7 +434,7 @@ export const cleanseCalculation: Calculation = {
     {
       name: "Layers removed",
       expression:
-        "Below 100% Cleanse Resist: one guaranteed layer + two independent extra-layer rolls. At 0% all three layers are removed. At 100% no layers are removed",
+        "Below 100% Cleanse Resist, one layer is always removed and two separate rolls at the extra-layer chance can each remove one more. At 0%, all three layers are removed. At 100%, no layers are removed",
     },
   ],
   example: () => {
@@ -452,18 +449,18 @@ export const cleanseCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/TargetDebuffSkill.cs:238-249; AreaDebuffSkill.cs:244-280 — each eligible monster buff gets a separate removal roll.
+// Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — monster buffs roll removal against probIgnoreCleanse, shown as Cleanse Resist on this site's skill pages.
 export const dispelCalculation: Calculation = {
   steps: [
     {
-      name: "Buff resistance reduction",
+      name: "Cleanse Resist reduction",
       expression:
         "50% of caster Accuracy for a single-target spell, 1 percentage point per scroll rank for a single-target scroll, or 0 for an area dispel",
     },
     {
       name: "Buff removal chance",
       expression:
-        "100% − monster buff's Dispel Resist + buff resistance reduction",
+        "100% − the monster buff's Cleanse Resist + Cleanse Resist reduction",
       limit: "between 0% and 100%",
     },
   ],
@@ -474,23 +471,24 @@ export const dispelCalculation: Calculation = {
       given: [
         "a single-target dispel spell",
         "20% caster Accuracy",
-        "50% monster buff Dispel Resist",
+        "50% Cleanse Resist on the monster buff",
       ],
       result: `${percent(chance)} chance to remove that buff after the spell lands`,
       working: [
-        `Buff resistance reduction: 20% × 50% = ${percent(reduction)}`,
+        `Cleanse Resist reduction: 20% × 50% = ${percent(reduction)}`,
         `Buff removal chance: 100% − 50% + ${percent(reduction)} = ${percent(chance)}`,
       ],
     };
   },
 };
 
-// Source: server-scripts/Combat.cs:1395-1398 — dealt-hit Rage uses pre-shield damage capped at current victim Health.
+// Source: server-scripts/Combat.cs:DealDamageAt — dealt-hit Rage counts auto-attack damage after mitigation and critical hits, before Ward and Mana Shield, capped at current target Health.
 export const dealtRageCalculation: Calculation = {
   steps: [
     {
       name: "Damage counted",
-      expression: "Auto attack damage before Ward and Mana Shield",
+      expression:
+        "Auto attack damage after the target's mitigation and critical hits, before Ward and Mana Shield",
       limit: "at most the target's current Health",
     },
     {

@@ -8,7 +8,6 @@ import {
   avoidanceCalculation,
   songCalculation,
   lifetapCalculation,
-  wildStrikeCalculation,
   receivedHitCalculation,
   healingCalculation,
   wisdomHeal,
@@ -21,6 +20,7 @@ import {
   spellInterval,
   wildStrikeDamage,
   buffCalculation,
+  buffAttribute,
   timingCalculation,
 } from "./combat";
 import {
@@ -48,12 +48,10 @@ describe("combat calculations", () => {
   });
 
   it("keeps the reader's actual defensive stat key", () => {
-    expect(mitigationCalculation().inputs?.[1]).toBe(DEFENSE);
-    expect(mitigationCalculation(FIRE_RESIST).inputs?.[1]).toBe(FIRE_RESIST);
+    expect(mitigationCalculation().inputs).toEqual([DEFENSE]);
+    expect(mitigationCalculation(FIRE_RESIST).inputs).toEqual([FIRE_RESIST]);
     const calculation = mitigationCalculation(FIRE_RESIST);
-    expect(
-      calculation.example?.({ incomingDamage: 10, fireResist: 100 }),
-    ).toBeDefined();
+    expect(calculation.example?.({ fireResist: 100 })).toBeDefined();
   });
 
   it("caps the level contribution separately from elemental avoidance", () => {
@@ -97,11 +95,40 @@ describe("combat calculations", () => {
     expect(attributeBuff(1, 30, 0.15)).toEqual({ bonus: 4, total: 5 });
     expect(attributeBuff(1, 2, 0.75)).toEqual({ bonus: 2, total: 3 });
     expect(attributeBuff(1, 5, 0.3)).toEqual({ bonus: 2, total: 3 });
-    expect(buffCalculation().inputs?.map((input) => input.key)).toEqual([
-      "baseValue",
-      "buffAttribute",
-    ]);
-    expect(buffCalculation().inputs?.[1].remember).not.toBe(true);
+    expect(
+      buffCalculation()
+        .inputs?.filter((input) => input.remember)
+        .map((input) => input.key),
+    ).toEqual(["wisdom", "intelligence", "constitution", "charisma"]);
+  });
+
+  it("derives buff attributes from readable stats with Ranger and mercenary rules", () => {
+    expect(buffAttribute(101, 203, 100, 100, 0, false)).toBe(101);
+    expect(buffAttribute(101, 203, 100, 100, 0, true)).toBe(203);
+    expect(buffAttribute(101, 203, 100, 100, 1, false)).toBe(303);
+    expect(buffAttribute(101, 203, 100, 100, 1, true)).toBe(609);
+    expect(buffAttribute(101, 203, 100, 100, 2, true)).toBe(100);
+    expect(buffAttribute(103, 203, 100, 100, 2, false)).toBe(102);
+    expect(buffAttribute(101, 203, 100, 100, 3, false)).toBe(150);
+    expect(buffAttribute(103, 203, 100, 100, 3, true)).toBe(152);
+    const leadership = buffCalculation("leadership");
+    expect(
+      leadership.inputs?.find((input) => input.key === "caster")?.value,
+    ).toBe(3);
+    expect(
+      leadership.inputs
+        ?.find((input) => input.key === "caster")
+        ?.choices?.map((choice) => choice.value),
+    ).toEqual([3]);
+    expect(
+      buffCalculation()
+        .inputs?.find((input) => input.key === "caster")
+        ?.choices?.map((choice) => choice.value),
+    ).toEqual([0, 1, 2]);
+    expect(leadership.steps[1].rounding).toBeUndefined();
+    expect(
+      attributeBuff(30, buffAttribute(100, 100, 100, 100, 3, false), 1),
+    ).toEqual({ bonus: 150, total: 180 });
   });
 
   it("uses bounded Haste and subtracts the rounded float product before division", () => {
@@ -244,18 +271,16 @@ describe("combat calculations", () => {
       healingCalculation(),
       healingCalculation(true),
       songCalculation(),
-      songCalculation(true),
       buffCalculation(),
       buffCalculation("capacity"),
       buffCalculation("shield"),
       buffCalculation("shortHeal"),
       buffCalculation("longHeal"),
+      buffCalculation("leadership"),
       timingCalculation(),
       timingCalculation(true),
       lifetapCalculation(),
-      wildStrikeCalculation(),
       receivedHitCalculation(),
-      receivedHitCalculation(true),
       characterDamageCalculation,
       pipelineCalculation,
       advantageCalculation,

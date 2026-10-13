@@ -11,11 +11,12 @@ import {
 } from "$lib/planner/engine-math";
 import {
   WISDOM,
+  INTELLIGENCE,
+  CONSTITUTION,
   CHARISMA,
   HASTE,
   SPELL_HASTE,
   DEFENSE,
-  rankInput,
   situational,
 } from "$lib/calculation/inputs";
 import {
@@ -24,12 +25,7 @@ import {
   formatSeconds as seconds,
 } from "$lib/calculation/format";
 
-const base = situational("baseValue", "Base value", 100);
-const hit = situational(
-  "incomingDamage",
-  "Incoming damage before mitigation",
-  201,
-);
+const listedValue = (label: string) => situational("baseValue", label, 100);
 const percentage = (
   key: string,
   label: string,
@@ -40,7 +36,7 @@ const percentage = (
   max: 10,
 });
 
-// Source: server-scripts/Combat.cs:842-860 — the stat percentage is clamped before the prevented damage rounds up.
+// Source: server-scripts/Combat.cs:DealDamageAt — stat reduction is clamped to 0–90% before prevented damage rounds up.
 export function mitigate(damage: number, stat: number) {
   const share = clamp(multiplyF32(stat, 0.0005), 0, f32(0.9));
   const prevented = ceilToInt(multiplyF32(damage, share));
@@ -66,17 +62,17 @@ export function mitigationCalculation(
         expression: "Incoming damage − damage prevented",
       },
     ],
-    inputs: [hit, stat],
+    inputs: [stat],
     example: (values) => {
-      const incomingDamage = values.incomingDamage;
+      const incomingDamage = 201;
       const statValue = values[stat.key];
       const result = mitigate(incomingDamage, statValue);
       return {
         given: [
-          `${number(incomingDamage)} incoming damage`,
+          `${number(incomingDamage)} incoming damage (fixed example)`,
           `${number(statValue)} ${stat.label}`,
         ],
-        result: `You take ${number(result.taken)} damage`,
+        result: `You prevent ${percent(result.share)} of incoming damage, with the amount prevented rounded up`,
         working: [
           `Reduction: ${number(statValue)} × 0.05% = ${percent(result.share)}`,
           `Damage prevented: ${number(incomingDamage)} × ${percent(result.share)} = ${number(result.prevented)}, rounded up`,
@@ -87,7 +83,7 @@ export function mitigationCalculation(
   };
 }
 
-// Source: server-scripts/Combat.cs:307-317,1539-1580 — chance has a capped level term and final bounds.
+// Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage,GetProbResistMagic; UICharacterInfo.cs:Update — the window displays the capped Block Chance used by the hit roll, before level and Accuracy adjustments.
 export function avoidanceChance(
   stat: number,
   levelDifference: number,
@@ -112,9 +108,8 @@ export function avoidanceCalculation(physical = false): Calculation {
       {
         name: physical ? "Block chance" : "Stat contribution",
         expression: physical
-          ? "Base block chance + 1 percentage point per 100 Defense + equipment and skill block bonuses"
+          ? "Your character window's Block Chance, including Defense, equipment and skill bonuses, capped at 80%"
           : "5 percentage points per 100 matching resist",
-        ...(physical ? { limit: "between 0% and 80%" } : {}),
       },
       {
         name: "Level contribution",
@@ -132,18 +127,13 @@ export function avoidanceCalculation(physical = false): Calculation {
       const result = avoidanceChance(100, 4, 0.03, physical, 0.05, 0.02);
       return {
         given: [
-          physical ? "100 Defense" : "100 matching resist",
+          physical ? "8% Block Chance" : "100 matching resist",
           "target 4 levels higher",
           "3% attacker Accuracy",
-          ...(physical
-            ? ["5% base block chance", "2 percentage points of block bonuses"]
-            : []),
         ],
         result: `${percent(result)} chance to ${physical ? "block or miss" : "resist"}`,
         working: [
-          physical
-            ? "Block chance: 5% + 1% + 2% = 8%"
-            : "Stat contribution: 100 × 0.05% = 5%",
+          physical ? "Block chance: 8%" : "Stat contribution: 100 × 0.05% = 5%",
           "Level contribution: 4 × 0.5 percentage points = 2 percentage points",
           `${physical ? "Block or miss chance" : "Resist chance"}: ${physical ? "8%" : "5%"} + 2% − 3% = ${percent(result)}`,
         ],
@@ -152,7 +142,7 @@ export function avoidanceCalculation(physical = false): Calculation {
   };
 }
 
-// Source: server-scripts/Wisdom.cs:107-127; TargetHealSkill.cs:137-142; AreaHealSkill.cs:101-105 — player Ranger healing uses triple Wisdom, mercenary healing does not.
+// Source: server-scripts/Wisdom.cs:GetHealBonus; TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply; HealSkill.cs:ToolTip — player Ranger healing triples Wisdom. The tooltip shows listed healing before a separate attribute bonus.
 export function wisdomHeal(baseHeal: number, wisdom: number, ranger = false) {
   const rawShare = multiplyF32(Math.max(0, wisdom * (ranger ? 3 : 1)), 0.004);
   const share = Math.min(rawShare, 5);
@@ -174,7 +164,10 @@ export function healingCalculation(ranger = false): Calculation {
       },
       { name: "Healing", expression: "Base healing + extra healing" },
     ],
-    inputs: [base, WISDOM],
+    inputs: [
+      listedValue("Listed healing before the tooltip's attribute bonus"),
+      WISDOM,
+    ],
     example: ({ baseValue, wisdom }) => {
       const result = wisdomHeal(baseValue, wisdom, ranger);
       return {
@@ -212,7 +205,7 @@ export function songValue(baseValue: number, charisma: number, melody = 0) {
     total: iround(multiplyF32(scaled, addF32(1, melody))),
   };
 }
-export function songCalculation(cadence = false): Calculation {
+export function songCalculation(): Calculation {
   return {
     steps: [
       {
@@ -225,79 +218,36 @@ export function songCalculation(cadence = false): Calculation {
         expression: "Base value × song power",
         rounding: "nearest",
       },
-      ...(cadence
-        ? [
-            {
-              name: "Final Cadence",
-              expression: "Whole-number effect × (100% + Melody bonus)",
-              rounding: "nearest" as const,
-            },
-          ]
-        : [
-            {
-              name: "Percentage effect",
-              expression:
-                "Base percentage × song power, without whole-number rounding",
-            },
-          ]),
+      {
+        name: "Percentage effect",
+        expression:
+          "Base percentage × song power, without whole-number rounding",
+      },
     ],
     inputs: [
-      base,
+      listedValue("Song effect's listed value before the tooltip bonus"),
       CHARISMA,
-      ...(cadence
-        ? [
-            {
-              ...situational(
-                "distinctSongs",
-                `Distinct manually completed songs in the last ${seconds(40)}`,
-                4,
-              ),
-              max: 20,
-            },
-          ]
-        : [percentage("basePercentage", "Base percentage effect", 0.05)]),
+      percentage(
+        "basePercentage",
+        "Song's listed percentage (before the tooltip bonus)",
+        0.05,
+      ),
     ],
-    example: ({
-      baseValue,
-      charisma,
-      distinctSongs = 0,
-      basePercentage = 0.05,
-    }) => {
-      // Source: server-scripts/PlayerSkills.cs:1576-1602 — count of recent distinct manual songs determines Melody, and the cast consumes the count.
-      const melody =
-        distinctSongs >= 6
-          ? 0.3
-          : distinctSongs === 5
-            ? 0.25
-            : distinctSongs === 4
-              ? 0.15
-              : 0;
-      const result = songValue(baseValue, charisma, cadence ? melody : 0);
+    example: ({ baseValue, charisma, basePercentage }) => {
+      const result = songValue(baseValue, charisma);
       const rawPower = addF32(1, bardBonus(charisma).raw);
       const percentageEffect = multiplyF32(basePercentage, result.power);
       return {
         given: [
           `${number(baseValue)} base whole-number value`,
           `${number(charisma)} Charisma`,
-          ...(cadence
-            ? [
-                `${number(distinctSongs)} distinct recent songs (${percent(melody)} Melody bonus)`,
-              ]
-            : [`${percent(basePercentage)} base percentage effect`]),
+          `${percent(basePercentage)} base percentage effect`,
         ],
-        result: cadence
-          ? `${number(result.total)} damage or healing before other combat rules`
-          : `${number(result.scaled)} whole-number effect or ${percent(percentageEffect)} percentage effect`,
+        result: `${number(result.scaled)} whole-number effect or ${percent(percentageEffect)} percentage effect`,
         working: [
           `Song power: 100% + ${number(charisma)} × 0.1% = ${percent(rawPower)}${rawPower !== result.power ? `, limited to ${percent(result.power)}` : ""}`,
           `Whole-number effect: ${number(baseValue)} × ${percent(result.power)} = ${number(result.scaled)}, rounded`,
-          ...(cadence
-            ? [
-                `Final Cadence: ${number(result.scaled)} × ${percent(addF32(1, melody))} = ${number(result.total)}, rounded`,
-              ]
-            : [
-                `Percentage effect: ${percent(basePercentage)} × ${percent(result.power)} = ${percent(percentageEffect)}`,
-              ]),
+          `Percentage effect: ${percent(basePercentage)} × ${percent(result.power)} = ${percent(percentageEffect)}`,
         ],
       };
     },
@@ -316,29 +266,58 @@ export function attributeBuff(
     : iround(multiplyF32(attribute, factor));
   return { bonus, total: baseValue + bonus };
 }
+// Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity.
 export const BUFF_EFFECTS = {
   defense: "Defense or matching resist",
-  capacity: "Maximum Health or Ward capacity",
+  capacity: "Maximum Health bonus or Ward capacity",
   shield: "Damage Shield",
-  shortHeal: `Healing per tick, base duration below ${seconds(60)}`,
-  longHeal: `Healing per tick, base duration at least ${seconds(60)}`,
+  shortHeal: `Healing each second, base duration below ${seconds(60)}`,
+  longHeal: `Healing each second, base duration at least ${seconds(60)}`,
+  leadership: "Damage or Magic Damage (Leadership)",
 };
 export type BuffEffect = keyof typeof BUFF_EFFECTS;
 
+// Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply,GetLeadershipAttributeBonus — Ranger targeted buffs triple the chosen attribute. Player mercenary-area buffs halve the sum of Wisdom and Constitution, adding Charisma before halving for Leadership.
+export function buffAttribute(
+  wisdom: number,
+  intelligence: number,
+  constitution: number,
+  charisma: number,
+  caster: number,
+  usesIntelligence: boolean,
+) {
+  if (caster === 2 || caster === 3) {
+    return iround(
+      divideF32(wisdom + constitution + (caster === 3 ? charisma : 0), 2),
+    );
+  }
+  return (usesIntelligence ? intelligence : wisdom) * (caster === 1 ? 3 : 1);
+}
+
+// Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus; Skill.cs:ToolTip — Leadership adds its full attribute to positive damage bonuses. Its in-game tooltip includes that addition rather than showing a separate base value.
 export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
   const shortHeal = effect === "shortHeal";
   const coefficient =
-    effect === "capacity"
-      ? 2
-      : effect === "shield"
-        ? 0.75
-        : effect === "longHeal"
-          ? 0.3
-          : 0.15;
+    effect === "leadership"
+      ? 1
+      : effect === "capacity"
+        ? 2
+        : effect === "shield"
+          ? 0.75
+          : effect === "longHeal"
+            ? 0.3
+            : 0.15;
   const label = BUFF_EFFECTS[effect];
-  const rounded = effect !== "capacity";
+  const rounded = effect !== "capacity" && effect !== "leadership";
   return {
     steps: [
+      {
+        name: "Buff attribute",
+        expression:
+          effect === "leadership"
+            ? "(Your Wisdom + Constitution + Charisma) ÷ 2, rounded"
+            : "Wisdom, or Intelligence for buffs that scale with it. Triple that stat for a player Ranger's targeted buff. Your area buffs for mercenaries use (Wisdom + Constitution) ÷ 2, rounded",
+      },
       ...(shortHeal
         ? [
             {
@@ -360,28 +339,82 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
         expression: "Base value + attribute addition",
       },
     ],
-    inputs: [base, situational("buffAttribute", "Buff attribute", 100)],
-    example: ({ baseValue, buffAttribute }) => {
-      const healing = wisdomHeal(baseValue, buffAttribute);
+    inputs: [
+      listedValue("Buff's value before attribute bonuses (see its skill page)"),
+      WISDOM,
+      INTELLIGENCE,
+      CONSTITUTION,
+      CHARISMA,
+      {
+        ...situational(
+          "caster",
+          "Buff source",
+          effect === "leadership" ? 3 : 0,
+        ),
+        choices:
+          effect === "leadership"
+            ? [{ value: 3, label: "Leadership" }]
+            : [
+                { value: 0, label: "Player's ordinary non-song buff" },
+                { value: 1, label: "Player Ranger's targeted buff" },
+                { value: 2, label: "Your area buff for mercenaries" },
+              ],
+      },
+      {
+        ...situational("usesIntelligence", "Scaling attribute", 0),
+        choices: [
+          { value: 0, label: "Wisdom" },
+          { value: 1, label: "Intelligence" },
+        ],
+      },
+    ],
+    example: ({
+      baseValue,
+      wisdom,
+      intelligence,
+      constitution,
+      charisma,
+      caster,
+      usesIntelligence,
+    }) => {
+      const attribute = buffAttribute(
+        wisdom,
+        intelligence,
+        constitution,
+        charisma,
+        caster,
+        usesIntelligence === 1,
+      );
+      const healing = wisdomHeal(baseValue, attribute);
       const result = attributeBuff(
         baseValue,
-        buffAttribute,
+        attribute,
         coefficient,
         shortHeal,
       );
       return {
         given: [
           `${number(baseValue)} base value`,
-          `${number(buffAttribute)} buff attribute`,
+          ...(caster === 2 || caster === 3
+            ? [
+                `${number(wisdom)} Wisdom`,
+                `${number(constitution)} Constitution`,
+                ...(caster === 3 ? [`${number(charisma)} Charisma`] : []),
+              ]
+            : [
+                `${number(usesIntelligence === 1 ? intelligence : wisdom)} ${usesIntelligence === 1 ? "Intelligence" : "Wisdom"}`,
+                ...(caster === 1 ? ["player Ranger's targeted buff"] : []),
+              ]),
         ],
         result: `You receive ${number(result.total)} ${label}`,
         working: [
+          `Buff attribute: ${caster === 2 || caster === 3 ? `(${number(wisdom)} + ${number(constitution)}${caster === 3 ? ` + ${number(charisma)}` : ""}) ÷ 2 = ${number(attribute)}, rounded` : caster === 1 ? `${number(usesIntelligence === 1 ? intelligence : wisdom)} × 3 = ${number(attribute)}` : number(attribute)}`,
           ...(shortHeal
             ? [
-                `Healing bonus: ${number(buffAttribute)} × 0.4% = ${percent(healing.rawShare)}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share)}` : ""}`,
+                `Healing bonus: ${number(attribute)} × 0.4% = ${percent(healing.rawShare)}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share)}` : ""}`,
               ]
             : []),
-          `Attribute addition: ${shortHeal ? `${number(baseValue)} × ${percent(healing.share)}` : `${number(buffAttribute)} × ${percent(coefficient)}`} = ${number(result.bonus)}${rounded ? ", rounded" : ""}`,
+          `Attribute addition: ${shortHeal ? `${number(baseValue)} × ${percent(healing.share)}` : `${number(attribute)} × ${percent(coefficient)}`} = ${number(result.bonus)}${rounded ? ", rounded" : ""}`,
           `Buff received: ${number(baseValue)} + ${number(result.bonus)} = ${number(result.total)}`,
         ],
       };
@@ -396,6 +429,7 @@ export function attackInterval(castTime: number, delay: number, haste: number) {
   const wait = clamp(rawWait, 0.25, 2);
   return { effective, rawWait, wait, total: f32(castTime) + wait };
 }
+// Source: server-scripts/Player.cs:EventRefractoryPeriod,GetSkillRefractoryPeriod; Skills.cs:StartCast — spell haste shortens casting, followed by a fixed 0.75-second delay for the next auto attack only.
 export function spellInterval(castTime: number, haste: number) {
   const casting = addF32(castTime, -multiplyF32(haste, castTime));
   return { casting, total: casting + 0.75 };
@@ -413,7 +447,10 @@ export function timingCalculation(spell = false): Calculation {
             expression:
               "Base cast time − base cast time × your full Spell Haste bonus",
           },
-          { name: "Interval", expression: `Cast time + ${seconds(0.75)}` },
+          {
+            name: "Auto-attack interval",
+            expression: `Cast time + ${seconds(0.75)}`,
+          },
         ]
       : [
           {
@@ -440,10 +477,10 @@ export function timingCalculation(spell = false): Calculation {
             `${seconds(values.castTime)} base cast time`,
             `${percent(values.spellHaste)} full Spell Haste`,
           ],
-          result: `${seconds(result.total)} calculated spell interval`,
+          result: `${seconds(result.total)} spell auto-attack interval`,
           working: [
             `Cast time: ${seconds(values.castTime)} − ${seconds(values.castTime)} × ${percent(values.spellHaste)} = ${seconds(result.casting)}`,
-            `Interval: ${seconds(result.casting)} + ${seconds(0.75)} = ${seconds(result.total)}`,
+            `Auto-attack interval: ${seconds(result.casting)} + ${seconds(0.75)} = ${seconds(result.total)}`,
           ],
         };
       }
@@ -468,7 +505,7 @@ export function timingCalculation(spell = false): Calculation {
   };
 }
 
-// Source: server-scripts/Combat.cs:1315-1333 — lifetap multiplies remaining damage by the lifetap percentage first, then by the summed buff multiplier.
+// Source: server-scripts/Combat.cs:DealDamageAt; BuffSkill.cs:ToolTip — lifetap uses post-shield damage shown on the target, multiplied by its listed share and Lich Shroud's healing bonus.
 export function lifetapHeal(damage: number, share: number, bonus: number) {
   return floorToInt(multiplyF32(multiplyF32(share, damage), addF32(1, bonus)));
 }
@@ -488,9 +525,17 @@ export function lifetapCalculation(): Calculation {
       },
     ],
     inputs: [
-      situational("remainingDamage", "Damage remaining after shields", 201),
+      situational(
+        "remainingDamage",
+        "Damage the hit dealt (number shown on the target)",
+        201,
+      ),
       percentage("lifetap", "Lifetap percentage", 0.2),
-      percentage("lifetapBonus", "Lifetap healing bonus", 0.25),
+      percentage(
+        "lifetapBonus",
+        "Lich Shroud's lifetap healing bonus (0% without it)",
+        0.25,
+      ),
     ],
     example: ({ remainingDamage, lifetap, lifetapBonus }) => {
       const result = lifetapHeal(remainingDamage, lifetap, lifetapBonus);
@@ -510,38 +555,9 @@ export function lifetapCalculation(): Calculation {
   };
 }
 
-// Source: server-scripts/DamageSkill.cs:49-65 — Wild Strike rounds the follow-up's complete damage, including the flat buff damage already in Damage.
+// Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the follow-up's complete damage is multiplied by 100% + 10% per buff rank, rounded; the buff adds no flat Damage.
 export function wildStrikeDamage(damage: number, rank: number) {
   return iround(multiplyF32(damage, addF32(1, multiplyF32(rank, 0.1))));
-}
-export function wildStrikeCalculation(): Calculation {
-  return {
-    steps: [
-      { name: "Empowerment", expression: "100% + 10% per Wild Strike rank" },
-      {
-        name: "Magic hit",
-        expression:
-          "Your auto attack's damage, already including Wild Strike's flat damage bonus, × empowerment",
-        rounding: "nearest",
-      },
-    ],
-    inputs: [
-      situational("autoDamage", "Auto attack damage including the buff", 201),
-      rankInput(5),
-    ],
-    example: ({ autoDamage, rank }) => {
-      const share = addF32(1, multiplyF32(rank, 0.1));
-      const result = wildStrikeDamage(autoDamage, rank);
-      return {
-        given: [`${number(autoDamage)} auto attack damage`, `rank ${rank}`],
-        result: `${number(result)} magic damage before the hit pipeline`,
-        working: [
-          `Empowerment: 100% + ${rank} × 10% = ${percent(share)}`,
-          `Magic hit: ${number(autoDamage)} × ${percent(share)} = ${number(result)}, rounded`,
-        ],
-      };
-    },
-  };
 }
 
 // Source: server-scripts/Combat.cs:1344-1360,1594-1600 — parry requires remaining positive health damage, rage on being hit returns zero for non-positive damage.
@@ -553,54 +569,31 @@ export function receivedRage(damage: number) {
     ? floorToInt(clamp(multiplyF32(f32(Math.sqrt(f32(damage))), 0.35), 1, 25))
     : 0;
 }
-export function receivedHitCalculation(parry = false): Calculation {
+// Source: server-scripts/Combat.cs:DealDamageAt,GenerateRageOnHit — targeted physical melee hits grant received-hit Rage after mitigation and critical hits, before shields.
+export function receivedHitCalculation(): Calculation {
   return {
-    steps: parry
-      ? [
-          {
-            name: "Counterattack",
-            expression:
-              "50% of the health damage left after mitigation, Ward, and Mana Shield",
-            rounding: "nearest",
-            limit: "between 1 and 5,000 damage, only when some damage remains",
-          },
-        ]
-      : [
-          {
-            name: "Rage gained",
-            expression:
-              "35% of the square root of the received physical hit damage",
-            limit: "between 1 and 25 for a positive hit, otherwise 0",
-            rounding: "down",
-          },
-        ],
-    inputs: [
-      situational(
-        "receivedDamage",
-        parry
-          ? "Health damage remaining after shields"
-          : "Physical hit damage before shields",
-        101,
-      ),
+    steps: [
+      {
+        name: "Rage gained",
+        expression:
+          "35% of the square root of targeted physical melee hit damage after mitigation and critical hits, before Ward and Mana Shield",
+        limit: "between 1 and 25 for a positive hit, otherwise 0",
+        rounding: "down",
+      },
     ],
-    example: ({ receivedDamage }) => {
-      const result = parry
-        ? parryDamage(receivedDamage)
-        : receivedRage(receivedDamage);
+    example: () => {
+      const receivedDamage = 101;
+      const root = f32(Math.sqrt(f32(receivedDamage)));
+      const scaled = multiplyF32(root, 0.35);
+      const result = receivedRage(receivedDamage);
       return {
         given: [
-          `${number(receivedDamage)} ${parry ? "health damage left after mitigation, Ward, and Mana Shield" : "physical hit damage before shields"}`,
+          "101 damage from a targeted physical melee hit, after mitigation and critical hits but before Ward and Mana Shield (fixed example)",
         ],
-        result: parry
-          ? `${number(result)} counterattack damage`
-          : `${number(result)} Rage gained`,
-        working: parry
-          ? [
-              `Counterattack: ${number(receivedDamage)} × 50% = ${number(result)}, rounded`,
-            ]
-          : [
-              `Rage gained: 35% of the square root of ${number(receivedDamage)} = ${number(result)}, rounded down`,
-            ],
+        result: `${number(result)} Rage gained`,
+        working: [
+          `Rage gained: √101 = ${number(root)}, × 35% = ${number(scaled)} = ${number(result)}, rounded down`,
+        ],
       };
     },
   };
