@@ -2380,6 +2380,9 @@
     "Npc.cs:UserCode_CmdLootMonster": {
       "span": 0
     },
+    "Npc.cs:deathTime": {
+      "span": 0
+    },
     "Npc.cs:speed": {
       "span": 0
     },

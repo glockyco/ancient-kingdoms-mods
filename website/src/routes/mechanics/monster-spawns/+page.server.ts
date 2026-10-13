@@ -47,9 +47,9 @@ export interface SummonTrigger {
   zone_id: string | null;
   zone_name: string | null;
   guards: { id: string; name: string; count: number }[];
-  respawn_time: number | null;
-  death_time: number | null;
-  spawn_chance: number | null;
+  respawn_time: number;
+  death_time: number;
+  spawn_chance: number;
 }
 
 export interface RenewalSage {
@@ -131,9 +131,8 @@ export const load: PageServerLoad = (): RespawnMechanicsPageData => {
       return { ...monster, zones: JSON.parse(monster.zones) as SpawnZone[] };
     });
 
-  // Source: server-scripts/SummonMonster.cs:IsSummonDead — a summon trigger only counts a summonable NPC as dead.
-  // NpcExporter reads the NPC template, which marks Astral Projection as not summonable, so the
-  // template's timer and chance are unverified for the scene's summon and stay unknown here.
+  // The summon trigger references the placed Monster or Npc, and the export reads that object's own values.
+  // Source: server-scripts/Npc.cs:deathTime — an NPC's corpse time is a fixed 60 seconds.
   const summonTriggers = db
     .prepare(
       `
@@ -151,20 +150,26 @@ export const load: PageServerLoad = (): RespawnMechanicsPageData => {
             ORDER BY mo.name
           )
         ) AS guards,
-        summoned.respawn_time AS respawn_time,
-        summoned.death_time AS death_time,
-        summoned.respawn_probability AS spawn_chance
+        st.summoned_is_summonable AS is_summonable,
+        st.summoned_respawn_time AS respawn_time,
+        COALESCE(st.summoned_death_time, 60) AS death_time,
+        st.summoned_respawn_probability AS spawn_chance
       FROM summon_triggers st
       LEFT JOIN zones z ON z.id = st.zone_id
-      LEFT JOIN monsters summoned
-        ON summoned.id = st.summoned_entity_id
-        AND st.summoned_entity_type = 'Monster'
       ORDER BY st.summoned_entity_name
     `,
     )
     .all()
     .map((row) => {
-      const trigger = row as Omit<SummonTrigger, "guards"> & { guards: string };
+      const { is_summonable, ...trigger } = row as Omit<
+        SummonTrigger,
+        "guards"
+      > & { guards: string; is_summonable: number };
+      // Source: server-scripts/SummonMonster.cs:IsSummonDead — a trigger only counts a summonable entity as dead, so it could never summon this one.
+      if (!is_summonable)
+        throw new Error(
+          `Summon trigger for ${trigger.summoned_entity_id} references an entity that is not summonable`,
+        );
       return {
         ...trigger,
         guards: JSON.parse(trigger.guards) as SummonTrigger["guards"],

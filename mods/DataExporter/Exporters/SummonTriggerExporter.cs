@@ -45,7 +45,9 @@ public class SummonTriggerExporter : BaseExporter
                 )
             };
 
-            // Determine summoned entity type and ID
+            // Determine summoned entity type and ID. summonEntity references the placed scene object, so its
+            // own fields are authoritative even where the template the entity exporters read differs.
+            // Source: server-scripts/SummonMonster.cs:IsSummonDead — the trigger only counts a summonable entity as dead.
             var asMonster = summonMonster.summonEntity.TryCast<Il2Cpp.Monster>();
             if (asMonster != null)
             {
@@ -53,6 +55,10 @@ public class SummonTriggerExporter : BaseExporter
                 triggerData.summoned_entity_name = asMonster.name;
                 triggerData.summoned_entity_id = SanitizeId(asMonster.name);
                 triggerData.summon_message = asMonster.summonMessage ?? "";
+                triggerData.summoned_is_summonable = asMonster.isSummonable;
+                triggerData.summoned_respawn_time = asMonster.respawnTime;
+                triggerData.summoned_respawn_probability = asMonster.probabilityRespawn;
+                triggerData.summoned_death_time = asMonster.deathTime;
             }
             else
             {
@@ -63,6 +69,10 @@ public class SummonTriggerExporter : BaseExporter
                     triggerData.summoned_entity_name = asNpc.name;
                     triggerData.summoned_entity_id = SanitizeId(asNpc.name);
                     triggerData.summon_message = "";
+                    triggerData.summoned_is_summonable = asNpc.isSummonable;
+                    triggerData.summoned_respawn_time = asNpc.respawnTime;
+                    triggerData.summoned_respawn_probability = asNpc.probabilityRespawn;
+                    triggerData.summoned_death_time = null;
                 }
                 else
                 {

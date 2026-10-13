@@ -875,7 +875,12 @@ CREATE TABLE summon_triggers (
     spawn_position_x REAL,
     spawn_position_y REAL,
     spawn_position_z REAL,
-    zone_id TEXT REFERENCES zones(id)
+    zone_id TEXT REFERENCES zones(id),
+    -- The placed summon's own values; a trigger only counts a summonable entity as dead.
+    summoned_is_summonable BOOLEAN NOT NULL,
+    summoned_respawn_time REAL NOT NULL,
+    summoned_respawn_probability REAL NOT NULL,
+    summoned_death_time REAL  -- NULL for an Npc, whose corpse time is a code constant
 );
 
 CREATE INDEX idx_summon_triggers_zone ON summon_triggers(zone_id);

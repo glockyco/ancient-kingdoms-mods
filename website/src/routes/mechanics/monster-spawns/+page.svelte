@@ -1324,18 +1324,14 @@
                     {guard.count === 1 ? "guard" : "guards"}
                   {/each}
                 </td>
-                <!-- Source: server-scripts/Monster.cs:OnDeath — earliest return is corpse time plus respawn timer, subject to guards and chance. -->
+                <!-- Source: server-scripts/Monster.cs:OnDeath; Npc.cs:OnDeath — earliest return is corpse time plus respawn timer, subject to guards and chance. -->
                 <td class="py-2 pr-4">
-                  {#if trigger.respawn_time !== null && trigger.death_time !== null}
-                    {formatDuration(trigger.respawn_time)} plus {formatDuration(
-                      trigger.death_time,
-                    )} corpse time
-                  {:else}Unknown{/if}
+                  {formatDuration(trigger.respawn_time)} plus {formatDuration(
+                    trigger.death_time,
+                  )} corpse time
                 </td>
                 <td class="py-2 text-right font-mono">
-                  {trigger.spawn_chance === null
-                    ? "Unknown"
-                    : formatChance(trigger.spawn_chance)}
+                  {formatChance(trigger.spawn_chance)}
                 </td>
               </tr>
             {/each}

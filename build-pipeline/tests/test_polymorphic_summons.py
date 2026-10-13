@@ -41,7 +41,9 @@ class PolymorphicSummonTests(unittest.TestCase):
         self.conn.execute(
             "INSERT INTO summon_triggers "
             "(id, summoned_entity_type, summoned_entity_id, "
-            "summoned_entity_name, zone_id) VALUES (?, ?, ?, ?, ?)",
+            "summoned_entity_name, zone_id, summoned_is_summonable, "
+            "summoned_respawn_time, summoned_respawn_probability) "
+            "VALUES (?, ?, ?, ?, ?, 1, 60, 1)",
             (trigger_id, kind, entity_id, "Summoned", zone_id),
         )
         self.conn.commit()

@@ -1355,6 +1355,12 @@ class SummonTriggerData(BaseModel):
     spawn_position: Position | None = None
     zone_id: str | None = None
     placeholder_monster_ids: list[str] = []
+    # The placed summon's own values; a trigger only counts a summonable entity as dead.
+    summoned_is_summonable: bool
+    summoned_respawn_time: float
+    summoned_respawn_probability: float
+    # Monster.deathTime; None for an Npc, whose corpse time is a code constant.
+    summoned_death_time: float | None
 
 
 class LuckTokenData(BaseModel):
