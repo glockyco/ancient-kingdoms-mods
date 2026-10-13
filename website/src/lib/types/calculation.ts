@@ -25,6 +25,8 @@ export interface CalculationInput {
   owner?: string;
   /** A fixed set of values, such as a skill's ranks, chosen from a list instead of typed. */
   options?: readonly number[];
+  /** Labelled numeric choices, such as No (0) and Yes (1). */
+  choices?: readonly { value: number; label: string }[];
   /** The example's value. Percentages are fractions: 0.2 means 20%. */
   value: number;
   min: number;

@@ -159,7 +159,7 @@
               <span class="block text-muted-foreground"
                 >{input.label}{input.unit ? ` (${input.unit})` : ""}</span
               >
-              {#if input.options}
+              {#if input.options || input.choices}
                 <select
                   class="border-input dark:bg-input/30 h-9 w-full rounded-md border bg-transparent px-2 text-sm"
                   value={values[input.key]}
@@ -169,9 +169,15 @@
                       clamp(input, Number(event.currentTarget.value)),
                     )}
                 >
-                  {#each input.options as option (option)}
-                    <option value={option}>{option}</option>
-                  {/each}
+                  {#if input.choices}
+                    {#each input.choices as choice (choice.value)}
+                      <option value={choice.value}>{choice.label}</option>
+                    {/each}
+                  {:else}
+                    {#each input.options ?? [] as option (option)}
+                      <option value={option}>{option}</option>
+                    {/each}
+                  {/if}
                 </select>
               {:else}
                 <Input
