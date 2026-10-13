@@ -637,6 +637,9 @@ export function effectScalingCalculation(
   };
 }
 
+/** The hit the threat example adds, standing in for the skill's damage before defenses. */
+const EXAMPLE_HIT_DAMAGE = 200;
+
 // Source: server-scripts/Combat.cs:DealDamageAt; TargetDamageSkill.cs:ApplyDamage — positive explicit threat adds the caster's maximum Health, hit damage and separately rounded control terms, capped at target current Health.
 // Source: server-scripts/AreaDamageSkill.cs:Apply — projectile delivery omits the Health contribution.
 export function aggroCalculation(
@@ -677,9 +680,8 @@ export function aggroCalculation(
             },
           ]
         : []),
-      ...(dealsDamage
-        ? [situational("hitDamage", "Damage before defenses", 200)]
-        : []),
+      // The hit's damage before defenses is the Skill Damage result, so the example states one
+      // fixed hit instead of asking for a number the reader cannot see.
       ...(direct ? [MAX_HEALTH] : []),
     ],
     caster === "mercenary",
@@ -736,6 +738,11 @@ export function aggroCalculation(
               "Use the rank from Mercenary Skill Rank on this page. The examples use the same owner level and veteran points.",
             ]
           : []),
+        ...(dealsDamage && caster !== "other"
+          ? [
+              `Damage before defenses is the result of Skill Damage above. The example uses a ${number(EXAMPLE_HIT_DAMAGE)}-damage hit.`,
+            ]
+          : []),
         ...(skill.skill_type === "area_damage" && skill.area_projectile
           ? [
               "This skill's hits travel as projectiles, which add no Health contribution.",
@@ -747,7 +754,6 @@ export function aggroCalculation(
       if (caster === "other")
         values = {
           rank: skill.max_level,
-          hitDamage: 200,
           maxHealth: MAX_HEALTH.value,
         };
       const rank = values.rank ?? 1;
@@ -757,7 +763,7 @@ export function aggroCalculation(
       const fearChance = atRank(skill.fear_chance ?? zero, rank);
       const fearTime = atRank(skill.fear_time ?? zero, rank);
       const health = direct && aggro > 0 ? values.maxHealth : 0;
-      const damage = dealsDamage ? values.hitDamage : 0;
+      const damage = dealsDamage ? EXAMPLE_HIT_DAMAGE : 0;
       const threat = hitThreat(
         aggro,
         health,
@@ -787,9 +793,14 @@ export function aggroCalculation(
                   ? [`the caster's ${number(values.maxHealth)} maximum Health`]
                   : []),
               ]
-            : inputs.map((input) =>
-                describeInput(input, values[input.key] ?? rank),
-              ),
+            : [
+                ...inputs.map((input) =>
+                  describeInput(input, values[input.key] ?? rank),
+                ),
+                ...(dealsDamage
+                  ? [`a ${number(damage)}-damage hit before defenses`]
+                  : []),
+              ],
         result: `${number(threat.total)} threat before the target's current-Health cap`,
         working: [
           ...rankWorkingLines("Skill threat", skill.aggro!, rank, number),

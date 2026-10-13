@@ -391,7 +391,7 @@ describe("healing and effect calculations", () => {
       )[0],
     ).toBe(5);
   });
-  test("aggro rounds crowd-control terms and only direct handlers add maximum Health", () => {
+  test("aggro rounds crowd-control terms, adds a stated example hit, and only direct handlers add maximum Health", () => {
     const aggro = skill({
       aggro: { base_value: 5, bonus_per_level: 0 },
       stun_chance: { base_value: 0.25, bonus_per_level: 0 },
@@ -399,18 +399,16 @@ describe("healing and effect calculations", () => {
       fear_chance: { base_value: 0.35, bonus_per_level: 0 },
       fear_time: { base_value: 1, bonus_per_level: 0 },
     });
-    expect(
-      resultNumbers(aggroCalculation(aggro), {
-        maxHealth: 100,
-        hitDamage: 10,
-      })[0],
-    ).toBe(121);
+    const calculation = aggroCalculation(aggro);
+    expect(calculation.inputs?.map((input) => input.key)).not.toContain(
+      "hitDamage",
+    );
+    expect(resultNumbers(calculation, { maxHealth: 100 })[0]).toBe(311);
     expect(
       resultNumbers(
         aggroCalculation({ ...aggro, skill_type: "target_projectile" }),
-        { hitDamage: 10 },
       )[0],
-    ).toBe(21);
+    ).toBe(211);
   });
   test("all-zero damage fields do not create a hit-damage input or threat term", () => {
     const calculation = aggroCalculation(
@@ -425,9 +423,7 @@ describe("healing and effect calculations", () => {
       "rank",
       "maxHealth",
     ]);
-    expect(
-      resultNumbers(calculation, { maxHealth: 1000, hitDamage: 999 }),
-    ).toEqual([4000]);
+    expect(resultNumbers(calculation, { maxHealth: 1000 })).toEqual([4000]);
   });
   test("player pet-restoration scrolls retain Wisdom, ordinary scrolls and mercenary casts do not", () => {
     const restore = skill({
@@ -574,12 +570,8 @@ test("Charisma-scaled song damage uses the positive damage magnitude after round
 test("a non-positive listed aggro amount adds zero maximum Health", () => {
   const aggro = skill({ aggro: { base_value: 1, bonus_per_level: -1 } });
   expect(
-    resultNumbers(aggroCalculation(aggro), {
-      rank: 2,
-      maxHealth: 2000,
-      hitDamage: 10,
-    })[0],
-  ).toBe(10);
+    resultNumbers(aggroCalculation(aggro), { rank: 2, maxHealth: 2000 })[0],
+  ).toBe(200);
 });
 
 test("NPC magic weapon skills combine the NPC's own physical and magical stats without an editor", () => {
