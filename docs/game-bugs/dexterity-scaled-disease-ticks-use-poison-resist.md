@@ -53,6 +53,6 @@ The mods read state and drive the game's own `Player.CmdSetTarget`, `PlayerSkill
 
 ## Notes
 
-- Instrumentation: the scratch character was built to level 50 with 60 veteran points, its veteran ranks and a Silver Dagger through the CombatVerification fixture builder, which uses the game's own progression, skill and equipment commands. Mana was restored before each cast, the character was kept beside the Cyclops and made invincible so the Cyclops could not interrupt the measurement. None of these change a tick's damage or the Cyclops's resistances.
+- Instrumentation: the CombatVerification fixture builder raised the scratch character to level 50 with 60 veteran points through the game's experience setter, bought the veteran ranks with the game's upgrade commands, and added a Silver Dagger to the inventory and equipped it with the game's equip command. Mana was restored before each cast, the character was kept beside the Cyclops and made invincible so the Cyclops could not interrupt the measurement. None of these change a tick's damage or the Cyclops's resistances.
 - The character died once between the sessions, after invincibility was released, and was respawned through the game's command before session 2.
 - The session was redirected with `game.useScratchDatabase` before opening the world. It returned `isScratch=true`. The player save SHA-256 was `daddc764f792ea75be91ee4f8d335053ec41de7678bd641a6192225248631b00` before launch and after `game.quit`.
