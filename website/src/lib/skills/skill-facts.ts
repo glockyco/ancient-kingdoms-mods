@@ -114,59 +114,68 @@ export function skillFacts(
     usedByPets.length === 0 &&
     !usedByMonster &&
     grantedByItems.every((item) => item.type === "scroll");
-  const hasStatBonuses = [
-    skill.health_max_bonus,
-    skill.health_max_percent_bonus,
-    skill.mana_max_bonus,
-    skill.mana_max_percent_bonus,
-    skill.energy_max_bonus,
-    skill.defense_bonus,
-    skill.ward_bonus,
-    skill.magic_resist_bonus,
-    skill.damage_bonus,
-    skill.damage_percent_bonus,
-    skill.magic_damage_bonus,
-    skill.magic_damage_percent_bonus,
-    skill.haste_bonus,
-    skill.spell_haste_bonus,
-    skill.speed_bonus,
-    skill.critical_chance_bonus,
-    skill.critical_resist_bonus,
-    skill.accuracy_bonus,
-    skill.block_chance_bonus,
-    skill.fear_resist_chance_bonus,
-    skill.damage_shield,
-    skill.cooldown_reduction_percent,
-    skill.heal_on_hit_percent,
-  ].some(hasLinearValue);
+  // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs and never applies its own buff fields.
+  const appliesBuffFields = !skill.is_cleanse;
+  const hasStatBonuses =
+    appliesBuffFields &&
+    [
+      skill.health_max_bonus,
+      skill.health_max_percent_bonus,
+      skill.mana_max_bonus,
+      skill.mana_max_percent_bonus,
+      skill.energy_max_bonus,
+      skill.defense_bonus,
+      skill.ward_bonus,
+      skill.magic_resist_bonus,
+      skill.damage_bonus,
+      skill.damage_percent_bonus,
+      skill.magic_damage_bonus,
+      skill.magic_damage_percent_bonus,
+      skill.haste_bonus,
+      skill.spell_haste_bonus,
+      skill.speed_bonus,
+      skill.critical_chance_bonus,
+      skill.critical_resist_bonus,
+      skill.accuracy_bonus,
+      skill.block_chance_bonus,
+      skill.fear_resist_chance_bonus,
+      skill.damage_shield,
+      skill.cooldown_reduction_percent,
+      skill.heal_on_hit_percent,
+    ].some(hasLinearValue);
 
-  const hasRegenBonuses = [
-    skill.healing_per_second_bonus,
-    skill.health_percent_per_second_bonus,
-    skill.mana_per_second_bonus,
-    skill.mana_percent_per_second_bonus,
-    skill.energy_per_second_bonus,
-    skill.energy_percent_per_second_bonus,
-  ].some(hasLinearValue);
+  const hasRegenBonuses =
+    appliesBuffFields &&
+    [
+      skill.healing_per_second_bonus,
+      skill.health_percent_per_second_bonus,
+      skill.mana_per_second_bonus,
+      skill.mana_percent_per_second_bonus,
+      skill.energy_per_second_bonus,
+      skill.energy_percent_per_second_bonus,
+    ].some(hasLinearValue);
 
-  const hasResistBonuses = [
-    skill.poison_resist_bonus,
-    skill.fire_resist_bonus,
-    skill.cold_resist_bonus,
-    skill.disease_resist_bonus,
-  ].some(hasLinearValue);
+  const hasResistBonuses =
+    appliesBuffFields &&
+    [
+      skill.poison_resist_bonus,
+      skill.fire_resist_bonus,
+      skill.cold_resist_bonus,
+      skill.disease_resist_bonus,
+    ].some(hasLinearValue);
 
-  const hasAttributeBonuses = [
-    skill.strength_bonus,
-    skill.intelligence_bonus,
-    skill.dexterity_bonus,
-    skill.constitution_bonus,
-    skill.wisdom_bonus,
-    skill.charisma_bonus,
-  ].some(hasLinearValue);
+  const hasAttributeBonuses =
+    appliesBuffFields &&
+    [
+      skill.strength_bonus,
+      skill.intelligence_bonus,
+      skill.dexterity_bonus,
+      skill.constitution_bonus,
+      skill.wisdom_bonus,
+      skill.charisma_bonus,
+    ].some(hasLinearValue);
 
-  // is_cleanse is excluded: cleanse description is in the effect summary,
-  // and the card adds nothing unless the skill also has stat bonuses or other effects.
+  // A cleanse's description lives in the effect summary, and its buff fields never apply.
   // duration_base alone is not sufficient: some skills (e.g. master_poisoner,
   // detect_traps) have a duration but no displayable stat rows — their effect is
   // hardcoded by name in server scripts and described in the effect summary instead.
@@ -191,24 +200,25 @@ export function skillFacts(
   // Fields that use the generic Buff bonus attribute. Bard songs instead scale
   // every eligible effect through their Charisma multiplier.
   const hasAttributeScaledBonuses =
-    mechanicsSpec.buffContexts.some(
+    appliesBuffFields &&
+    (mechanicsSpec.buffContexts.some(
       (ctx) =>
         ctx.bonusAttrSource === "player_cha" ||
         ctx.bonusAttrSource === "merc_cha",
     ) ||
-    hasNonZeroField(skill.health_max_bonus) ||
-    hasNonZeroField(skill.defense_bonus) ||
-    hasNonZeroField(skill.magic_resist_bonus) ||
-    hasNonZeroField(skill.poison_resist_bonus) ||
-    hasNonZeroField(skill.fire_resist_bonus) ||
-    hasNonZeroField(skill.cold_resist_bonus) ||
-    hasNonZeroField(skill.disease_resist_bonus) ||
-    hasNonZeroField(skill.healing_per_second_bonus) ||
-    hasNonZeroField(skill.damage_shield) ||
-    hasNonZeroField(skill.ward_bonus) ||
-    (skill.id === "leadership" &&
-      (hasNonZeroField(skill.damage_bonus) ||
-        hasNonZeroField(skill.magic_damage_bonus)));
+      hasNonZeroField(skill.health_max_bonus) ||
+      hasNonZeroField(skill.defense_bonus) ||
+      hasNonZeroField(skill.magic_resist_bonus) ||
+      hasNonZeroField(skill.poison_resist_bonus) ||
+      hasNonZeroField(skill.fire_resist_bonus) ||
+      hasNonZeroField(skill.cold_resist_bonus) ||
+      hasNonZeroField(skill.disease_resist_bonus) ||
+      hasNonZeroField(skill.healing_per_second_bonus) ||
+      hasNonZeroField(skill.damage_shield) ||
+      hasNonZeroField(skill.ward_bonus) ||
+      (skill.id === "leadership" &&
+        (hasNonZeroField(skill.damage_bonus) ||
+          hasNonZeroField(skill.magic_damage_bonus))));
 
   const hasCrowdControl =
     hasLinearValue(skill.stun_chance) ||

@@ -1621,14 +1621,16 @@ function engineAction(
         followupDefaultAttack,
       )
     : null;
-  const effect = EFFECT_SKILL_CLASSES.has(skillType)
-    ? effectSpecFromSkill(skill, level, catalog)
-    : null;
+  // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs and never applies its own buff fields.
   const isCleanse = requiredBoolean(
     skill,
     "is_cleanse",
     `skill ${id}.is_cleanse`,
   );
+  const effect =
+    EFFECT_SKILL_CLASSES.has(skillType) && !isCleanse
+      ? effectSpecFromSkill(skill, level, catalog)
+      : null;
   return {
     id,
     name: requiredString(skill, "name", `skill ${id}.name`),

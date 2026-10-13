@@ -31,9 +31,12 @@ public static class SkillClassification
         var buffSkill = skill.TryCast<BuffSkill>();
         if (buffSkill != null)
         {
-            var isDebuff = buffSkill.isPoisonDebuff || buffSkill.isFireDebuff ||
-                           buffSkill.isColdDebuff || buffSkill.isDiseaseDebuff ||
-                           buffSkill.isMeleeDebuff || buffSkill.isMagicDebuff;
+            // Source: server-scripts/TargetBuffSkill.cs:HasMatchingCleanseDebuff — a cleanse spell sets the debuff
+            // flags of the types it removes, so the flags name its targets rather than make it a debuff.
+            var isDebuff = !buffSkill.isCleanseSpell &&
+                           (buffSkill.isPoisonDebuff || buffSkill.isFireDebuff ||
+                            buffSkill.isColdDebuff || buffSkill.isDiseaseDebuff ||
+                            buffSkill.isMeleeDebuff || buffSkill.isMagicDebuff);
 
             if (skill.TryCast<AreaBuffSkill>() != null) return isDebuff ? "area_debuff" : "area_buff";
             if (skill.TryCast<AreaDebuffSkill>() != null) return "area_debuff";

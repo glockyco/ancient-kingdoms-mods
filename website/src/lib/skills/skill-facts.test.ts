@@ -128,6 +128,32 @@ describe("skill page facts", () => {
       true,
     );
   });
+  test("a cleanse spell shows none of its authored buff fields, which the game never applies", () => {
+    const resist = { base_value: 100, bonus_per_level: 50 };
+    const flags = {
+      is_invisibility: false,
+      is_mana_shield: false,
+      is_blindness: false,
+      is_enrage: false,
+      is_permanent: false,
+      is_only_for_magic_classes: false,
+    };
+    const remedy = facts({
+      ...flags,
+      skill_type: "target_buff",
+      is_cleanse: true,
+      magic_resist_bonus: resist,
+      poison_resist_bonus: resist,
+      mana_percent_per_second_bonus: { base_value: 0.05, bonus_per_level: 0 },
+    });
+    expect(remedy.hasAnyBonuses).toBe(false);
+    expect(remedy.hasBuffEffects).toBe(false);
+    expect(remedy.hasAttributeScaledBonuses).toBe(false);
+    expect(
+      facts({ skill_type: "target_buff", magic_resist_bonus: resist })
+        .hasBuffEffects,
+    ).toBe(true);
+  });
   test("scroll-only skills exclude every learned, pet, monster, or non-scroll path", () => {
     const scroll = { item_id: "scroll", item_name: "Scroll", type: "scroll" };
     expect(facts({}, [], [], false, [scroll]).scrollOnly).toBe(true);

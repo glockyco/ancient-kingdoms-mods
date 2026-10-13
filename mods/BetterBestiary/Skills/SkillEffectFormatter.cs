@@ -86,7 +86,7 @@ internal static class SkillEffectFormatter
         if (skill.is_manaburn_skill)
             parts.Add("burns mana/rage for dmg");
 
-        if (skill.duration_base > 0 && parts.Count > 0 && !skill.is_permanent)
+        if (skill.duration_base > 0 && parts.Count > 0 && !skill.is_permanent && !skill.is_cleanse)
         {
             var hasBuffStats = skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff";
             if (hasBuffStats)
@@ -290,6 +290,8 @@ internal static class SkillEffectFormatter
                 if (skill.is_magic_debuff) types.Add("magic");
                 parts.Add($"cleanses {string.Join(" & ", types)} debuffs");
             }
+            // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs instead of applying its own buff fields.
+            return;
         }
         if (skill.is_blindness)
             parts.Add("blinds");

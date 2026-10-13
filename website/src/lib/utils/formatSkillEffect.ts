@@ -568,6 +568,8 @@ function formatBuffDebuffStats(
       if (skill.is_magic_debuff) types.push("magic");
       parts.push(`cleanses ${types.join(" & ")} debuffs`);
     }
+    // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs instead of applying its own buff fields.
+    return parts;
   }
   if (skill.is_blindness) parts.push("blinds");
   if (skill.is_invisibility) parts.push("grants invis");
@@ -1057,8 +1059,13 @@ export function formatSkillEffect(
     parts.push("burns mana/rage for dmg");
   }
 
-  // Add duration if present and we have stat effects
-  if (skill.duration_base > 0 && parts.length > 0 && !skill.is_permanent) {
+  // Add duration if present and we have stat effects. A cleanse applies no lasting effect.
+  if (
+    skill.duration_base > 0 &&
+    parts.length > 0 &&
+    !skill.is_permanent &&
+    !skill.is_cleanse
+  ) {
     // Check if this is a buff/debuff (not damage/heal/summon)
     const hasBuffStats =
       skill.skill_type === "area_buff" ||
