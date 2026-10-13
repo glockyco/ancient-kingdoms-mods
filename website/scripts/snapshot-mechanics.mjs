@@ -35,6 +35,62 @@ const UPDATE = process.argv.includes("--update");
 // ---------------------------------------------------------------------------
 
 /**
+ * Elements a browser lays out as blocks. Text on either side of one reads as separate words even
+ * where the markup has no whitespace between them, so the snapshot keeps them apart too and does
+ * not change when whitespace between blocks does.
+ */
+const BLOCK_ELEMENTS = new Set([
+  "address",
+  "article",
+  "aside",
+  "blockquote",
+  "br",
+  "dd",
+  "details",
+  "div",
+  "dl",
+  "dt",
+  "figcaption",
+  "figure",
+  "footer",
+  "form",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "header",
+  "hr",
+  "li",
+  "main",
+  "nav",
+  "ol",
+  "p",
+  "pre",
+  "section",
+  "summary",
+  "table",
+  "tbody",
+  "td",
+  "tfoot",
+  "th",
+  "thead",
+  "tr",
+  "ul",
+]);
+
+/** Raw text of a node, with a space around each block-level element. */
+function blockText(node) {
+  if (node.nodeType === 3) return node.rawText;
+  if (node.nodeType !== 1) return "";
+  const inner = node.childNodes.map(blockText).join("");
+  return BLOCK_ELEMENTS.has(node.rawTagName.toLowerCase())
+    ? ` ${inner} `
+    : inner;
+}
+
+/**
  * Parse an HTML string, find the element with id="mechanics",
  * and return its flattened text content with whitespace normalised.
  */
@@ -44,7 +100,7 @@ function extractMechanicsText(html) {
   if (!card) return null;
 
   // Get raw text, collapsing whitespace runs to single spaces
-  const raw = card.innerText
+  const raw = blockText(card)
     .replace(/&times;/gi, "×")
     .replace(/&minus;/gi, "−")
     .replace(/&divide;/gi, "÷")
