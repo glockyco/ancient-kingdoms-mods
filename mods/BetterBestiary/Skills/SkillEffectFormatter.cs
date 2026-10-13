@@ -518,12 +518,12 @@ internal static class SkillEffectFormatter
         return $"{formatValue(constant)} {operation} {perLevel} × rank";
     }
 
-    /// <summary>Mirror of formatSkillEffect's local <c>formatPercent</c>: value*100, one
-    /// decimal place, dropping the decimal when the result is whole. No grouping.</summary>
+    /// <summary>Mirror of formatSkillEffect's local <c>formatPercent</c>: value*100, two
+    /// decimal places, dropping trailing zeros and the decimal when the result is whole. No grouping.</summary>
     private static string FormatPercent(double value)
     {
         var pct = value * 100.0;
-        var rounded = System.Math.Round(pct, 1, System.MidpointRounding.AwayFromZero);
+        var rounded = System.Math.Round(pct, 2, System.MidpointRounding.AwayFromZero);
         if (rounded == System.Math.Round(rounded))
             return ((long)rounded).ToString(Inv) + "%";
         return rounded.ToString("0.0###", Inv) + "%";

@@ -272,7 +272,7 @@ export function formatDamageType(type: DamageType | null | undefined): string {
 
 function formatPercent(value: number): string {
   const pct = value * 100;
-  const rounded = parseFloat(pct.toFixed(1));
+  const rounded = parseFloat(pct.toFixed(2));
   return rounded === Math.round(rounded)
     ? `${Math.round(rounded)}%`
     : `${rounded}%`;
