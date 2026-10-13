@@ -16,6 +16,9 @@
       When applied to yourself, the same buff also reaches your living companion
       within {formatLinear(skill.cast_range, " yd")}. Familiars and mercenaries
       cannot receive this copy.
+    {:else if skill.skill_type === "target_buff" && skill.is_pet_skill}
+      <!-- Source: server-scripts/TargetBuffSkill.cs:CorrectedTarget,CheckDistance — isPetSkill selects the active pet; self-only buffs skip the range check. -->
+      Targets your active pet at any distance, including a familiar.
     {:else}
       Targets your living companion within {formatLinear(
         skill.cast_range,

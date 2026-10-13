@@ -1,1 +1,1 @@
-Mechanics Cleanse Resistance A matching cleanse removes this debuff completely in a single cast.
+Mechanics Resist Chance This debuff has no resistance-stat roll. Monsters marked Immune to Debuffs ignore this skill.

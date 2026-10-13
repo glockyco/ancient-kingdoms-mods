@@ -424,3 +424,97 @@ test("monster healing follows the same critical gate without receiving a Wisdom 
     { casters: [{ kind: "monster" }], bonusKind: "none", canCrit: true },
   ]);
 });
+
+describe("effect caster dispatch", () => {
+  test("cleanses have no debuff scaling even when exported with debuff flags and bonuses", () => {
+    expect(
+      computeMechanicsSpec(
+        bardSkill({
+          skill_type: "target_debuff",
+          is_cleanse: true,
+          magic_resist_bonus: { base_value: 50, bonus_per_level: 50 },
+        }),
+        [],
+        false,
+      ).debuffContexts,
+    ).toEqual([]);
+  });
+
+  test("only area relics use character level; target relics use each class's buff attribute", () => {
+    const relic = bardSkill({
+      is_bard_song: false,
+      scales_with_charisma: false,
+      is_relic: true,
+      player_classes: [],
+    });
+    expect(
+      computeMechanicsSpec(relic, [], false).buffContexts[0].bonusAttrSource,
+    ).toBe("player_level");
+    const targeted = computeMechanicsSpec(
+      { ...relic, skill_type: "target_buff" },
+      [],
+      false,
+    );
+    expect(
+      targeted.buffContexts.map((context) => context.bonusAttrSource),
+    ).toEqual(["player_wis", "player_ranger_wis"]);
+    expect(
+      targeted.buffContexts.flatMap((context) => context.casters),
+    ).toContainEqual(player("ranger"));
+  });
+
+  test("scroll heals include every player class, including the Ranger bonus", () => {
+    const spec = computeMechanicsSpec(
+      bardSkill({
+        skill_type: "target_heal",
+        is_scroll: true,
+        is_mercenary_skill: true,
+        player_classes: [],
+        can_heal_others: true,
+      }),
+      [],
+      false,
+    );
+    expect(spec.healContexts.map((context) => context.bonusKind)).toEqual([
+      "player_other",
+      "player_ranger",
+    ]);
+    expect(spec.healContexts.every((context) => context.canCrit)).toBe(true);
+  });
+
+  test("unscaled debuff casters only appear beside a player or mercenary comparison", () => {
+    const debuff = bardSkill({
+      skill_type: "target_debuff",
+      is_bard_song: false,
+      scales_with_charisma: false,
+      player_classes: [],
+      defense_bonus: { base_value: -50, bonus_per_level: 0 },
+    });
+    expect(computeMechanicsSpec(debuff, [], true).debuffContexts).toEqual([]);
+    expect(
+      computeMechanicsSpec(debuff, [bardMercenary], true).debuffContexts,
+    ).toEqual([
+      { casters: [mercenary("Bard")], bonusAttrKind: "int" },
+      { casters: [{ kind: "monster" }], bonusAttrKind: "none" },
+    ]);
+  });
+
+  test("scroll-only damage skills have a player context and procs respect equipment class restrictions", () => {
+    const attack = bardSkill({
+      skill_type: "target_projectile",
+      is_bard_song: false,
+      player_classes: [],
+      damage_type: "Fire",
+    });
+    expect(
+      computeMechanicsSpec({ ...attack, is_scroll: true }, [], false)
+        .damageContexts,
+    ).toEqual([{ casters: [{ kind: "any_player" }], formula: "magic_spell" }]);
+    expect(
+      computeMechanicsSpec(attack, [], false, true, ["ranger"]).damageContexts,
+    ).toEqual([{ casters: [player("ranger")], formula: "magic_spell" }]);
+    expect(
+      computeMechanicsSpec(attack, [], false, true, []).damageContexts,
+    ).toEqual([]);
+  });
+});

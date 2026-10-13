@@ -57,7 +57,13 @@ export function healingCalculation(
   kind: HealBonusKind,
 ): Calculation {
   const health = !!skill.heals_health;
-  const wisdom = health && kind !== "none" && !skill.is_scroll;
+  // Source: server-scripts/TargetHealSkill.cs:Apply,GetHealingAmount; AreaHealSkill.cs:Apply — only player-cast target pet/mercenary restoration bypasses the scroll Wisdom exclusion.
+  const petRestoration =
+    skill.skill_type === "target_heal" &&
+    (skill.is_pet_skill || skill.is_mercenary_skill) &&
+    (kind === "player_other" || kind === "player_ranger");
+  const wisdom =
+    health && kind !== "none" && (!skill.is_scroll || petRestoration);
   const resource = health ? skill.heals_mana : null;
   const criticalResource =
     skill.skill_type === "target_heal" &&
@@ -138,7 +144,7 @@ export function healingCalculation(
           `rank ${rank}`,
           ...(wisdom ? [`${number(values.wisdom)} Wisdom`] : []),
         ],
-        result: `${number(scaled.total)} ${health ? "Health restored before critical healing and missing-Health limits" : "Mana or Rage restored before the missing-resource limit"}${resource ? `, and ${number(atRank(resource, rank))} base Mana or Rage before ${criticalResource ? "critical pet restoration and " : ""}missing-resource limits` : ""}`,
+        result: `${number(scaled.total)} ${health ? "Health before critical heals and the missing-Health cap" : "Mana (Rage for Warrior and Rogue mercenaries), capped at what is missing"}${resource ? `, and ${number(atRank(resource, rank))} Mana (Rage for Warrior and Rogue mercenaries)${criticalResource ? " before critical pet restoration" : ""}, capped at what is missing` : ""}`,
         working: [
           ...rankWorkingLines(
             wisdom
@@ -221,14 +227,21 @@ const songEffects: Effect[] = [
       "block_chance_bonus",
       "fear_resist_chance_bonus",
       "critical_chance_bonus",
+      // Source: server-scripts/Combat.cs:accuracy,GetProbResistMagic — Accuracy is an additive percentage-point modifier.
+      "accuracy_bonus",
     ].includes(key),
   })),
 ];
 
 function effectFormat(effect: Effect, value: number): string {
-  if (effect.chance)
-    return `${Number((value * 100).toFixed(2))} percentage points`;
-  return effect.percentage ? percent(value) : number(value);
+  if (effect.chance) {
+    const points = Number((value * 100).toFixed(2));
+    return `${String(points).replace(/^-/, "−")} percentage ${Math.abs(points) === 1 ? "point" : "points"}`;
+  }
+  return (effect.percentage ? percent(value) : number(value)).replace(
+    /^-/,
+    "−",
+  );
 }
 
 function attributeInputs(
@@ -315,16 +328,23 @@ export function effectScalingCalculation(
     !!skill.ward_bonus &&
     (skill.ward_bonus.base_value !== 0 ||
       skill.ward_bonus.bonus_per_level !== 0);
-  const inputs = casterInputs(
-    [rankInput(skill.max_level), ...attributeInputs(source)],
-    mercenary,
-  );
   const derivedAttribute =
     average || source === "player_level" || source.startsWith("player_ranger");
-  const attributeName = derivedAttribute
-    ? "Attribute contribution"
-    : (attributeInputs(source)[0]?.label ?? "Attribute contribution");
+  const attributeName = source.startsWith("player_ranger")
+    ? `Tripled ${attributeInputs(source)[0].label}`
+    : source === "player_level"
+      ? "Level contribution"
+      : derivedAttribute
+        ? "Attribute contribution"
+        : (attributeInputs(source)[0]?.label ?? "Attribute contribution");
   const contributionName = ward ? "Ward" : attributeName;
+  const sourceName = ward
+    ? "Ward"
+    : source === "player_level"
+      ? "Level"
+      : attributeInputs(source)
+          .map((input) => input.label)
+          .join(" / ") || attributeName;
   const descriptions = fields.map((effect) => {
     const field = linear(skill, effect.key);
     let mode: "song" | "flat" | "healing" | "dot" | "ward" = song
@@ -359,10 +379,11 @@ export function effectScalingCalculation(
     }
     const name =
       effect.key === "healing_per_second_bonus" && field.base_value < 0
-        ? "Damage per second"
-        : `${effect.name}${debuff && field.base_value < 0 && !effect.percentage ? " reduction" : ""}`;
-    const magnitude =
-      mode === "dot" || (debuff && field.base_value < 0 && !effect.percentage);
+        ? debuff
+          ? "Damage per second"
+          : "Health lost per second"
+        : `${effect.name}${debuff && field.base_value < 0 ? " reduction" : ""}`;
+    const magnitude = mode === "dot" || (debuff && field.base_value < 0);
     const displayField =
       magnitude && field.base_value < 0
         ? {
@@ -378,27 +399,40 @@ export function effectScalingCalculation(
           : fields.length === 1
             ? "Skill amount"
             : `Skill ${name}`;
-    const bonusName =
-      mode === "dot"
-        ? "Extra damage"
-        : mode === "healing"
-          ? "Extra healing"
-          : `Extra ${name}`;
+    const bonusName = `${song ? "Charisma" : sourceName} ${
+      mode === "dot" ? "damage" : mode === "healing" ? "healing" : name
+    }`;
     return { effect, displayField, mode, factor, name, baseName, bonusName };
   });
+  // Source: server-scripts/BuffSkill.cs:ScaleHealingPerSecondBonus; Skills.cs:GetFinalDamageDoT — flat buff drains use no attribute, and additive Charisma DoT uses no song multiplier.
+  const usesAttribute = descriptions.some(
+    ({ mode, factor }) => song || mode !== "dot" || factor !== 0,
+  );
+  const usesSongMultiplier =
+    song &&
+    descriptions.some(
+      ({ mode, factor }) =>
+        mode === "song" || mode === "ward" || (mode === "dot" && factor === 0),
+    );
+  const inputs = casterInputs(
+    [
+      rankInput(skill.max_level),
+      ...(usesAttribute ? attributeInputs(source) : []),
+    ],
+    mercenary,
+  );
+  const healingPercentageName = `${sourceName} percentage`;
   const steps: CalculationStep[] = [
-    ...(derivedAttribute
+    ...(derivedAttribute && usesAttribute
       ? [
           {
             name: attributeName,
-            expression: source.startsWith("player_ranger")
-              ? `Three times your ${attributeInputs(source)[0].label}`
-              : attributeExpression(source),
+            expression: attributeExpression(source),
             ...(average ? { rounding: "nearest" as const } : {}),
           },
         ]
       : []),
-    ...(song
+    ...(usesSongMultiplier
       ? [
           {
             name: "Charisma bonus",
@@ -459,13 +493,13 @@ export function effectScalingCalculation(
       });
     } else if (mode === "healing" && skill.duration_base < 60) {
       steps.push({
-        name: "Healing percentage",
+        name: healingPercentageName,
         expression: `0.4% per point of ${contributionName} above 0`,
         limit: "at most 500%",
       });
       steps.push({
         name: bonusName,
-        expression: `${baseName} × Healing percentage`,
+        expression: `${baseName} × ${healingPercentageName}`,
         rounding: "nearest",
       });
       steps.push({ name, expression: `${baseName} + ${bonusName}` });
@@ -477,7 +511,12 @@ export function effectScalingCalculation(
     } else {
       steps.push({
         name: bonusName,
-        expression: `${song ? "Charisma above 0" : mode === "healing" ? `${contributionName} above 0` : contributionName} × ${percent(factor)}`,
+        expression:
+          song && mode === "dot"
+            ? `${percent(factor)} of Charisma above 0`
+            : mode === "healing"
+              ? `${percent(factor)} of ${contributionName} above 0`
+              : `${contributionName} × ${percent(factor)}`,
         rounding: "nearest",
       });
       steps.push({ name, expression: `${baseName} + ${bonusName}` });
@@ -487,9 +526,9 @@ export function effectScalingCalculation(
     steps,
     inputs,
     example(values) {
-      let attribute = attributeValue(source, values);
+      let attribute = usesAttribute ? attributeValue(source, values) : 0;
       const working: string[] = [];
-      if (derivedAttribute) {
+      if (derivedAttribute && usesAttribute) {
         const rawInput = attributeInputs(source)[0];
         const arithmetic = average
           ? `(${number(values.wisdom)} + ${number(values.constitution)}${source === "player_wis_con_cha_half" ? ` + ${number(values.charisma)}` : ""}) ÷ 2`
@@ -501,7 +540,7 @@ export function effectScalingCalculation(
         );
       }
       const power = song ? bardPower(attribute) : 1;
-      if (song) {
+      if (usesSongMultiplier) {
         const bonus = bardBonus(attribute);
         working.push(
           `Charisma bonus: ${number(Math.max(0, attribute))} × 0.1% = ${percent(bonus.raw)}${bonus.raw !== bonus.limited ? `, limited to ${percent(bonus.limited)}` : ""}`,
@@ -568,7 +607,7 @@ export function effectScalingCalculation(
             result = scaled.total;
             if (healing) {
               working.push(
-                `Healing percentage: ${number(effectiveAttribute)} × 0.4% = ${percent(healing.rawShare)}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share)}` : ""}`,
+                `${healingPercentageName}: ${number(effectiveAttribute)} × 0.4% = ${percent(healing.rawShare)}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share)}` : ""}`,
               );
               working.push(
                 `${bonusName}: ${number(base)} × ${percent(healing.share)} = ${number(scaled.bonus)}, rounded`,
@@ -586,7 +625,7 @@ export function effectScalingCalculation(
               `${name}: ${number(base)} + ${addition} = ${number(result)}`,
             );
           }
-          return `${effectFormat(effect, result)} ${name}`;
+          return `${effectFormat(effect, result)} ${mode === "dot" && debuff ? "Damage per second before the target's resistance" : name}`;
         },
       );
       return {
@@ -598,8 +637,8 @@ export function effectScalingCalculation(
   };
 }
 
-// Source: server-scripts/Combat.cs:605,637; TargetDamageSkill.cs:249,291 — explicit aggro adds maximum Health, damage and individually rounded crowd-control terms, capped at current target Health.
-// Source: server-scripts/AreaDamageSkill.cs:124-149 — an area skill with a projectile passes its listed aggro without the Health contribution.
+// Source: server-scripts/Combat.cs:DealDamageAt; TargetDamageSkill.cs:ApplyDamage — positive explicit threat adds the caster's maximum Health, hit damage and separately rounded control terms, capped at target current Health.
+// Source: server-scripts/AreaDamageSkill.cs:Apply — projectile delivery omits the Health contribution; this delivery flag is not exported.
 export function aggroCalculation(
   skill: SkillDetailView,
   caster: "player" | "mercenary" | "other" = skill.player_classes.length > 0
@@ -610,8 +649,8 @@ export function aggroCalculation(
     skill.skill_type === "target_damage" ||
     (skill.skill_type === "area_damage" && !skill.is_bard_final_cadence);
   const dealsDamage = !!(
-    skill.damage ||
-    skill.damage_percent ||
+    hasNonZeroField(skill.damage) ||
+    hasNonZeroField(skill.damage_percent) ||
     skill.is_manaburn_skill ||
     skill.is_assassination_skill
   );
@@ -625,7 +664,17 @@ export function aggroCalculation(
         : "The caster's";
   const inputs = casterInputs(
     [
-      rankInput(skill.max_level),
+      // Source: server-scripts/PetSkills.cs:RefreshSkillLevels — level 50 and 20 veteran points give rank 12; the skill page's Mercenary Ranks section exposes the full rule.
+      ...(skill.max_level > 1
+        ? [
+            {
+              ...rankInput(skill.max_level),
+              ...(caster === "mercenary"
+                ? { value: Math.min(skill.max_level, 12) }
+                : {}),
+            },
+          ]
+        : []),
       ...(dealsDamage
         ? [situational("hitDamage", "Damage before defenses", 200)]
         : []),
@@ -634,22 +683,22 @@ export function aggroCalculation(
     caster === "mercenary",
   );
   const terms = [
-    "Skill aggro",
+    "Skill threat",
     ...(direct ? ["Health contribution"] : []),
     ...(dealsDamage ? ["damage before defenses"] : []),
-    ...(stuns ? ["Stun aggro"] : []),
-    ...(fears ? ["Fear aggro"] : []),
+    ...(stuns ? ["Stun threat"] : []),
+    ...(fears ? ["Fear threat"] : []),
   ];
   return {
     steps: [
       {
-        name: "Skill aggro",
+        name: "Skill threat",
         expression: describeRankScaling(skill.aggro!, skill.max_level, number),
       },
       ...(stuns
         ? [
             {
-              name: "Stun aggro",
+              name: "Stun threat",
               expression: "Stun chance × stun duration in seconds × 10",
               rounding: "nearest" as const,
             },
@@ -658,7 +707,7 @@ export function aggroCalculation(
       ...(fears
         ? [
             {
-              name: "Fear aggro",
+              name: "Fear threat",
               expression: "Fear chance × fear duration in seconds × 10",
               rounding: "nearest" as const,
             },
@@ -668,21 +717,29 @@ export function aggroCalculation(
         ? [
             {
               name: "Health contribution",
-              expression: `${owner} maximum Health while Skill aggro is above 0`,
+              expression: `${owner} maximum Health`,
             },
           ]
         : []),
       {
-        name: "Aggro added",
+        name: "Threat added",
         expression: terms.join(" + "),
         limit: "at most the target's current Health",
       },
     ],
-    ...(skill.skill_type === "area_damage" && direct
-      ? {
-          note: "An area skill that delivers its hits as projectiles adds no Health contribution.",
-        }
-      : {}),
+    note:
+      [
+        ...(caster === "mercenary" && skill.max_level > 1
+          ? [
+              "Use the rank from Mercenary Skill Rank on this page. The examples use the same owner level and veteran points.",
+            ]
+          : []),
+        ...(skill.skill_type === "area_damage" && direct
+          ? [
+              "An area skill that delivers its hits as projectiles adds no Health contribution.",
+            ]
+          : []),
+      ].join(" ") || undefined,
     ...(caster !== "other" ? { inputs } : {}),
     example(values) {
       if (caster === "other")
@@ -691,11 +748,12 @@ export function aggroCalculation(
           hitDamage: 200,
           maxHealth: MAX_HEALTH.value,
         };
-      const aggro = atRank(skill.aggro!, values.rank);
-      const stunChance = atRank(skill.stun_chance ?? zero, values.rank);
-      const stunTime = atRank(skill.stun_time ?? zero, values.rank);
-      const fearChance = atRank(skill.fear_chance ?? zero, values.rank);
-      const fearTime = atRank(skill.fear_time ?? zero, values.rank);
+      const rank = values.rank ?? 1;
+      const aggro = atRank(skill.aggro!, rank);
+      const stunChance = atRank(skill.stun_chance ?? zero, rank);
+      const stunTime = atRank(skill.stun_time ?? zero, rank);
+      const fearChance = atRank(skill.fear_chance ?? zero, rank);
+      const fearTime = atRank(skill.fear_time ?? zero, rank);
       const health = direct && aggro > 0 ? values.maxHealth : 0;
       const damage = dealsDamage ? values.hitDamage : 0;
       const threat = hitThreat(
@@ -716,28 +774,37 @@ export function aggroCalculation(
         ...(fears ? [threat.fear] : []),
       ];
       return {
-        given: [
-          `rank ${values.rank}`,
-          ...(dealsDamage ? [`${number(damage)} damage before defenses`] : []),
-          ...(direct ? [`${number(values.maxHealth)} maximum Health`] : []),
-        ],
-        result: `${number(threat.total)} aggro before the target's current-Health limit`,
+        given:
+          caster === "other"
+            ? [
+                ...(skill.max_level > 1 ? [`rank ${rank}`] : []),
+                ...(dealsDamage
+                  ? [`a ${number(damage)}-damage hit before defenses`]
+                  : []),
+                ...(direct
+                  ? [`the caster's ${number(values.maxHealth)} maximum Health`]
+                  : []),
+              ]
+            : inputs.map((input) =>
+                describeInput(input, values[input.key] ?? rank),
+              ),
+        result: `${number(threat.total)} threat before the target's current-Health cap`,
         working: [
-          ...rankWorkingLines("Skill aggro", skill.aggro!, values.rank, number),
+          ...rankWorkingLines("Skill threat", skill.aggro!, rank, number),
           ...(stuns
             ? [
-                `Stun aggro: ${percent(stunChance)} × ${seconds(stunTime)} × 10 = ${number(threat.stun)}, rounded`,
+                `Stun threat: ${percent(stunChance)} × ${seconds(stunTime)} × 10 = ${number(threat.stun)}, rounded`,
               ]
             : []),
           ...(fears
             ? [
-                `Fear aggro: ${percent(fearChance)} × ${seconds(fearTime)} × 10 = ${number(threat.fear)}, rounded`,
+                `Fear threat: ${percent(fearChance)} × ${seconds(fearTime)} × 10 = ${number(threat.fear)}, rounded`,
               ]
             : []),
           ...(direct && health === 0
-            ? [`Health contribution: 0, because Skill aggro is not above 0`]
+            ? [`Health contribution: 0, because Skill threat is not above 0`]
             : []),
-          `Aggro added: ${amounts.map(number).join(" + ")} = ${number(threat.total)}`,
+          `Threat added: ${amounts.map(number).join(" + ")} = ${number(threat.total)}`,
         ],
       };
     },

@@ -168,7 +168,7 @@ function scalingLabels(row: RawScrollEffect): string[] {
   }
 
   if (row.skill_is_dispel) {
-    labels.push("Dispel Resist Reduction");
+    labels.push("Cleanse Resist Reduction");
   }
 
   return labels;

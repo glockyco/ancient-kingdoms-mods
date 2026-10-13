@@ -20,15 +20,23 @@
     points to its chance to resist. Each point of your Charisma above 0 removes
     0.02 percentage points. The final chance is between 0% and 95%.
   </p>
+  <!-- Source: server-scripts/BardCharmSongSkill.cs:IsValidCharmTarget,GetCharmTarget,Apply — debuff immunity blocks charm, and recasts roll resistance against the active charm. -->
   <p class="text-muted-foreground">
     <span class="block"
-      >Only living monsters that are not bosses, elites, training dummies, or
-      returning home can be charmed.</span
+      >Only living monsters that are not bosses, elites, training dummies,
+      returning home, or immune to debuffs can be charmed.</span
     >
     <span class="block">A Bard can control one charmed monster at a time.</span>
     <span class="block"
-      >Casting the song again refreshes that monster before considering the
-      Bard's selected target.</span
+      >While you control a charmed monster, casting the song again targets that
+      monster instead of your selected target and rolls its resist again. A
+      resisted recast leaves the existing charm running.</span
     >
+  </p>
+  <p class="text-muted-foreground">
+    See <a
+      href="/mechanics/bard#charm"
+      class="text-blue-600 dark:text-blue-400 hover:underline">Bard charm</a
+    >.
   </p>
 </div>

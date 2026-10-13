@@ -24,8 +24,8 @@
         bonus,
         skill.max_level,
         fmt.formatPercent,
-      )} Lifetap damage is unchanged. Bonuses from unexpired and permanent buffs add
-      together. See
+      )} Lifetap damage is unchanged. Bonuses from your active buffs, permanent ones
+      included, add together. See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#lifetap">lifetap</a

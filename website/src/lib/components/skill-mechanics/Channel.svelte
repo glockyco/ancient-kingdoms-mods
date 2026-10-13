@@ -13,10 +13,14 @@
     Channel: {skill.channel_pulses} Pulses
   </h3>
   <Calculation calculation={channelCalculation(skill)} />
+  <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — each pulse reads the caster's current Damage or Magic Damage and calls DealDamageAt separately. -->
   <p class="text-muted-foreground">
-    Full skill damage is recalculated before mitigation for each pulse. No pulse
-    occurs at the start. Mana and energy are paid at the start and are not
-    refunded on interruption.
+    Each pulse recalculates the skill's damage from your current stats and
+    splits it as Skill Damage above shows. Each pulse is a separate hit, so the
+    target's defenses, resist roll and critical hits apply to each pulse.
+  </p>
+  <p class="text-muted-foreground">
+    Mana and energy are paid at the start and are not refunded on interruption.
   </p>
   <!-- Source: server-scripts/Player.cs:UpdateServer_CASTING — fear and stun cancel ChanneledTargetDamageSkill; stun skips halving the channel cooldown. -->
   <p class="text-muted-foreground">

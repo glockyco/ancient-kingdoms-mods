@@ -15,29 +15,35 @@
   <h3 class="font-semibold">Reaper Form</h3>
   <p class="text-muted-foreground">The form has no time limit.</p>
   <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active NecromancerReaperFormSkill buff multiplies the caster's debuff ticks on others by 1 + its magicDamagePercentBonus. -->
+  <!-- Source: server-scripts/Combat.cs:DealDamageAt — lifetap healing is a share of direct damage dealt. -->
   <p class="text-muted-foreground">
     While the form is active, your magic damage gains {formatLinearPercent(
       skill.magic_damage_percent_bonus,
     )}, and your damage-over-time ticks on other targets gain the same
-    {formatLinearPercent(skill.magic_damage_percent_bonus)}. Lifetap healing
-    grows with the damage it is based on.
+    {formatLinearPercent(skill.magic_damage_percent_bonus)}. Lifetap skills heal
+    a share of the damage they deal, so magic lifetaps heal more while the form
+    is active.
   </p>
   {#if skill.health_percent_per_second_bonus}
     {@const drain = drainMagnitude(skill.health_percent_per_second_bonus)}
-    <!-- Source: server-scripts/Skills.cs:1617-1623 — NecromancerReaperFormSkill drains RoundToInt(max(0, -healthPercentPerSecondBonus) × health.max) before ordinary DoT mitigation. -->
+    <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; server-scripts/UICharacterInfo.cs:Update — Reaper Form drains maximum Health alongside recovery, and the character window displays net recovery. -->
     <p class="text-muted-foreground">
       Each second, the form drains {fmt.formatPercent(
         fmt.atRank(drain, skill.max_level),
       )} of your maximum Health{fmt.scalesWithRank(drain, skill.max_level)
         ? ` at rank ${skill.max_level}`
         : ""}, rounded. With {fmt.formatNumber(MAX_HEALTH.value)} maximum Health,
-      you lose {fmt.formatNumber(
+      the form drains {fmt.formatNumber(
         reaperDrain(skill.health_percent_per_second_bonus, skill.max_level),
       )} Health each second. {fmt.describeRankGrowth(
         drain,
         skill.max_level,
         fmt.formatPercent,
       )}
+    </p>
+    <p class="text-muted-foreground">
+      Your Health recovery still applies. The character window's Health
+      regeneration shows the net change.
     </p>
     <RoundingDefinition />
   {/if}
@@ -51,11 +57,11 @@
   <!-- Source: server-scripts/MountItem.cs:58-63 — removes reaperForm.formSkill before mounting. -->
   <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->
   <!-- Source: server-scripts/UIBuffs.cs:292-303; server-scripts/Player.cs:10310-10328 — Reaper Form can be removed through the buff bar. -->
+  <!-- Source: server-scripts/PlayerSkills.cs:TryUse — an active form can be dismissed before fear and stun checks. -->
   <p class="text-muted-foreground">
-    It ends when you toggle it off, remove it from your buff bar or mount.
-    {skill.remain_after_death
-      ? "The form survives death."
-      : "Death removes the form."}
+    It ends when you use the skill again (even while feared or stunned), remove
+    it from your buff bar, mount{skill.remain_after_death ? "." : ", or die."}
+    {#if skill.remain_after_death}The form survives death.{/if}
   </p>
   <!-- Source: server-scripts/NetworkManagerMMO.cs:674-684 — restores NecromancerReaperFormSkill when saved remaining time is positive. -->
   <p class="text-muted-foreground">
@@ -65,10 +71,5 @@
   <!-- Source: server-scripts/Player.cs:9310-9313 — HasActiveAppearanceIllusion blocks the barber. -->
   <p class="text-muted-foreground">
     The barber cannot change your appearance while the form is active.
-  </p>
-  <!-- Source: server-scripts/PlayerSkills.cs:636-646 — active NecromancerReaperFormSkill removal precedes FEAR and STUNNED checks. -->
-  <p class="text-muted-foreground">
-    Using the skill again dismisses it immediately, even while feared or
-    stunned.
   </p>
 </div>

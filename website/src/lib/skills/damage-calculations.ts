@@ -167,6 +167,21 @@ export function damageStatInputs(
   return [magic ? MAGIC_DAMAGE : DAMAGE, ...(weaponMagic ? [DAMAGE] : [])];
 }
 
+// Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the Mercenary Skill Rank example uses owner level 50 and 20 total veteran points, giving rank 12 before the cap.
+function damageRankInputs(
+  skill: SkillDetailView,
+  mercenary = false,
+): CalculationInput[] {
+  if (skill.max_level <= 1) return [];
+  const input = rankInput(skill.max_level);
+  return [
+    {
+      ...input,
+      value: mercenary ? Math.min(skill.max_level, 12) : input.value,
+    },
+  ];
+}
+
 // Source: server-scripts/BardFinalCadenceSkill.cs:67-70 — round Charisma scaling, then round Melody scaling independently.
 export function cadenceCalculation(
   skill: SkillDetailView,
@@ -188,15 +203,18 @@ export function cadenceCalculation(
   ];
   const inputs = casterInputs(
     [
-      rankInput(skill.max_level),
+      ...damageRankInputs(skill, mercenary),
       CHARISMA,
       ...(!mercenary
         ? [
-            situational(
-              "songs",
-              "Distinct manual songs in the last 40 seconds",
-              4,
-            ),
+            {
+              ...situational(
+                "songs",
+                "Distinct songs cast by hand in the last 40 seconds",
+                4,
+              ),
+              phrase: "distinct songs cast by hand in the last 40 seconds",
+            },
           ]
         : []),
     ],
@@ -209,13 +227,13 @@ export function cadenceCalculation(
         expression: describeRankScaling(amount.field, skill.max_level, number),
       })),
       {
-        name: "Charisma bonus",
-        expression: "0.1% per point of Charisma above 0",
-        limit: "at most 200%",
+        name: "Song power",
+        expression: "100% + 0.1% per point of Charisma above 0",
+        limit: "at most 300%",
       },
       ...amounts.map((amount) => ({
         name: amount.scaledName,
-        expression: `${amount.baseName} × (100% + Charisma bonus)`,
+        expression: `${amount.baseName} × Song power`,
         rounding: "nearest" as const,
       })),
       ...(!mercenary
@@ -235,23 +253,20 @@ export function cadenceCalculation(
     ],
     inputs,
     example(values) {
+      const rank = values.rank ?? 1;
       const melody = mercenary ? 0 : melodyBonus(values.songs);
       const evaluated = amounts.map((amount) => ({
         ...amount,
-        base: atRank(amount.field, values.rank),
-        value: songValue(
-          atRank(amount.field, values.rank),
-          values.charisma,
-          melody,
-        ),
+        base: atRank(amount.field, rank),
+        value: songValue(atRank(amount.field, rank), values.charisma, melody),
       }));
       const power = evaluated[0].value.power;
       const bonus = bardBonus(values.charisma);
       const working = evaluated.flatMap((amount) =>
-        rankWorkingLines(amount.baseName, amount.field, values.rank, number),
+        rankWorkingLines(amount.baseName, amount.field, rank, number),
       );
       working.push(
-        `Charisma bonus: ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(bonus.raw)}${bonus.raw !== bonus.limited ? `, limited to ${percent(bonus.limited)}` : ""}`,
+        `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw))}${bonus.raw !== bonus.limited ? `, limited to ${percent(power)}` : ""}`,
       );
       for (const amount of evaluated)
         working.push(
@@ -268,7 +283,7 @@ export function cadenceCalculation(
       }
       return {
         given: inputs.map((input) => describeInput(input, values[input.key])),
-        result: `${number(evaluated[0].value.total)} damage before the target's defenses and ${number(evaluated[1].value.total)} Health restored before critical healing and missing-Health limits`,
+        result: `${number(evaluated[0].value.total)} damage before the target's defenses and ${number(evaluated[1].value.total)} Health restored before critical heals and the missing-Health cap`,
         working,
       };
     },
@@ -335,9 +350,17 @@ export function damageCalculation(
     multiplied &&
     (atRank(skill.damage_percent!, 1) <= 0 ||
       atRank(skill.damage_percent!, skill.max_level) <= 0);
+  // Source: server-scripts/PlayerSkills.cs:StartCast,UpdateChannel; TargetDamageSkill.cs:245-248 — only a player channels; each pulse deals the full damage divided by the pulse count, and the first (damage mod pulses) pulses deal 1 more.
+  const pulses = casters.every(
+    (caster) => caster.kind === "player" || caster.kind === "any_player",
+  )
+    ? skill.channel_pulses
+    : 0;
+  const channeled = pulses > 1;
+  const totalName = channeled ? "Total damage" : "Damage before defenses";
   const inputs = casterInputs(
     [
-      rankInput(skill.max_level),
+      ...damageRankInputs(skill, mercenary),
       ...(!scroll
         ? [
             ...statInputs,
@@ -345,8 +368,8 @@ export function damageCalculation(
             ...(subtractBow
               ? [
                   {
-                    ...situational("bowDamage", "Bow weapon damage", 30),
-                    phrase: "bow weapon damage",
+                    ...situational("bowDamage", "Bow's Base Damage", 30),
+                    phrase: "bow Base Damage",
                   },
                 ]
               : []),
@@ -355,10 +378,10 @@ export function damageCalculation(
                   {
                     ...situational(
                       "offhandDamage",
-                      "Off-hand weapon damage",
+                      "Off-hand weapon's Base Damage",
                       31,
                     ),
-                    phrase: "off-hand weapon damage",
+                    phrase: "off-hand weapon Base Damage",
                   },
                 ]
               : []),
@@ -367,10 +390,10 @@ export function damageCalculation(
                   {
                     ...situational(
                       "meleeDamage",
-                      "Equipped melee weapon damage",
+                      "Main-hand weapon's Base Damage",
                       30,
                     ),
-                    phrase: "equipped melee weapon damage",
+                    phrase: "main-hand weapon Base Damage",
                   },
                 ]
               : []),
@@ -390,7 +413,7 @@ export function damageCalculation(
     ...(skill.damage ? ["Skill damage"] : []),
   ];
   const deductions = !scroll
-    ? `${subtractBow ? " − bow weapon damage" : ""}${subtractOffhand ? " − Off-hand deduction" : ""}${subtractMelee ? " − equipped melee weapon damage" : ""}`
+    ? `${subtractBow ? " − bow Base Damage" : ""}${subtractOffhand ? " − Off-hand deduction" : ""}${subtractMelee ? " − main-hand weapon Base Damage" : ""}`
     : "";
   const arithmetic = `${terms.join(" + ") || "0"}${deductions}`;
   const operationCount =
@@ -400,7 +423,7 @@ export function damageCalculation(
     (!scroll && subtractMelee ? 1 : 0);
   const combinedStep = multiplied && operationCount > 1;
   const flatOnly = !multiplied && scroll && !!skill.damage;
-  const baseName = flatOnly ? "Damage before defenses" : "Skill damage";
+  const baseName = flatOnly ? totalName : "Skill damage";
   const steps: CalculationStep[] = [
     ...(!scroll && dexterity
       ? [
@@ -415,7 +438,7 @@ export function damageCalculation(
       ? [
           {
             name: "Off-hand deduction",
-            expression: "Off-hand weapon damage × 50%",
+            expression: "Off-hand weapon's Base Damage × 50%",
             rounding: "up" as const,
           },
         ]
@@ -438,19 +461,27 @@ export function damageCalculation(
     ...(multiplied
       ? [
           {
-            name: "Rank multiplier",
-            expression: `${describeRankScaling(skill.damage_percent!, skill.max_level, percent)}${multiplierCanLapse ? ". A multiplier of 0 or less is not applied" : ""}`,
+            name: "Damage %",
+            expression: `${describeRankScaling(skill.damage_percent!, skill.max_level, percent)}${multiplierCanLapse ? ". A Damage % of 0 or less is not applied" : ""}`,
           },
         ]
       : []),
     ...(!flatOnly
       ? [
           {
-            name: "Damage before defenses",
+            name: totalName,
             expression: multiplied
-              ? `${combinedStep ? "Combined damage" : arithmetic} × Rank multiplier${multiplierCanLapse ? ` when it is above 0. Otherwise use ${combinedStep ? "Combined damage" : arithmetic}` : ""}`
+              ? `${combinedStep ? "Combined damage" : arithmetic} × Damage %${multiplierCanLapse ? ` when it is above 0. Otherwise use ${combinedStep ? "Combined damage" : arithmetic}` : ""}`
               : arithmetic,
             ...(multiplied ? { rounding: "nearest" as const } : {}),
+          },
+        ]
+      : []),
+    ...(channeled
+      ? [
+          {
+            name: "Damage per pulse",
+            expression: `${totalName} ÷ ${pulses}, rounded down, plus 1 on each of the first pulses until the ${pulses} pulses add up to ${totalName}`,
           },
         ]
       : []),
@@ -459,7 +490,8 @@ export function damageCalculation(
     steps,
     ...(!other ? { inputs } : {}),
     example(values) {
-      const rank = other ? skill.max_level : values.rank;
+      // Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:Skill — monster and NPC skills start at rank 1 when learnDefault, otherwise rank 0.
+      const rank = other ? (skill.learn_default ? 1 : 0) : (values.rank ?? 1);
       const base = atRank(
         skill.damage ?? { base_value: 0, bonus_per_level: 0 },
         rank,
@@ -491,6 +523,12 @@ export function damageCalculation(
       const combined = main + physical + dex + base - offhand - bow - melee;
       const result =
         multiplier > 0 ? iround(multiplyF32(combined, multiplier)) : combined;
+      const share = channeled ? Math.trunc(result / pulses) : result;
+      const extra = channeled ? result % pulses : 0;
+      const pulseDamage = Array.from(
+        { length: channeled ? pulses : 0 },
+        (_, index) => number(share + (index < extra ? 1 : 0)),
+      );
       const numberTerms = [
         ...(!scroll
           ? [
@@ -520,31 +558,36 @@ export function damageCalculation(
           ? [`Combined damage: ${numberArithmetic} = ${number(combined)}`]
           : []),
         ...(multiplied
-          ? rankWorkingLines(
-              "Rank multiplier",
-              skill.damage_percent!,
-              rank,
-              percent,
-            )
+          ? rankWorkingLines("Damage %", skill.damage_percent!, rank, percent)
           : []),
         ...(multiplier > 0
           ? [
-              `Damage before defenses: ${number(combined)} × ${percent(multiplier)} = ${number(result)}, rounded`,
+              `${totalName}: ${number(combined)} × ${percent(multiplier)} = ${number(result)}, rounded`,
             ]
           : !flatOnly && operationCount > 1
-            ? [
-                `Damage before defenses: ${numberArithmetic} = ${number(result)}`,
-              ]
+            ? [`${totalName}: ${numberArithmetic} = ${number(result)}`]
             : []),
+        ...(channeled
+          ? [
+              extra > 0
+                ? `Damage per pulse: ${number(result)} ÷ ${pulses} = ${number(share)}, rounded down, plus 1 on the first ${extra === 1 ? "pulse" : `${extra} pulses`} = ${pulseDamage.join(", ")}`
+                : `Damage per pulse: ${number(result)} ÷ ${pulses} = ${number(share)}`,
+            ]
+          : []),
       ];
       return {
         given: other
           ? [
-              `example caster with 200 ${magic ? "Magic Damage" : "Damage"}${weaponMagic ? " and 200 Damage" : ""} at its level`,
-              `skill rank ${skill.max_level}`,
+              `the caster's 200 ${magic ? "Magic Damage" : "Damage"}${weaponMagic ? " and 200 Damage" : ""}`,
+              ...((skill.damage?.bonus_per_level ?? 0) !== 0 ||
+              (multiplied && skill.damage_percent!.bonus_per_level !== 0)
+                ? [`rank ${rank}`]
+                : []),
             ]
           : inputs.map((input) => describeInput(input, values[input.key])),
-        result: `${number(result)} damage before the target's defenses`,
+        result: channeled
+          ? `Pulses deal ${pulseDamage.slice(0, -1).join(", ")} and ${pulseDamage.at(-1)} damage before the target's defenses`
+          : `${number(result)} damage before the target's defenses`,
         working,
       };
     },
@@ -556,7 +599,7 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
   return {
     steps: [
       {
-        name: "Skill damage percentage",
+        name: "Base damage share",
         expression: describeRankScaling(
           skill.charmed_damage_percent!,
           skill.max_level,
@@ -564,34 +607,38 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
         ),
       },
       {
-        name: "Charisma bonus",
-        expression: "0.1% per point of Charisma above 0",
-        limit: "at most 200%",
+        name: "Song power",
+        expression: "100% + 0.1% per point of Charisma above 0",
+        limit: "at most 300%",
       },
       {
         name: "Charmed monster's damage",
-        expression: "Skill damage percentage × (100% + Charisma bonus)",
+        expression: "Base damage share × Song power",
         limit: "at most 100% of its ordinary damage",
       },
     ],
-    inputs: [rankInput(skill.max_level), CHARISMA],
+    inputs: [...damageRankInputs(skill), CHARISMA],
     example(values) {
-      const base = atRank(skill.charmed_damage_percent!, values.rank);
+      const rank = values.rank ?? 1;
+      const base = atRank(skill.charmed_damage_percent!, rank);
       const power = bardPower(values.charisma);
       const bonus = bardBonus(values.charisma);
       const raw = multiplyF32(base, power);
       const result = clamp(raw, 0, 1);
       return {
-        given: [`rank ${values.rank}`, `${number(values.charisma)} Charisma`],
+        given: [
+          ...(skill.max_level > 1 ? [`rank ${rank}`] : []),
+          `${number(values.charisma)} Charisma`,
+        ],
         result: `The charmed monster deals ${percent(result)} of its ordinary damage`,
         working: [
           ...rankWorkingLines(
-            "Skill damage percentage",
+            "Base damage share",
             skill.charmed_damage_percent!,
-            values.rank,
+            rank,
             percent,
           ),
-          `Charisma bonus: ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(bonus.raw)}${bonus.raw !== bonus.limited ? `, limited to ${percent(bonus.limited)}` : ""}`,
+          `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw))}${bonus.raw !== bonus.limited ? `, limited to ${percent(power)}` : ""}`,
           `Charmed monster's damage: ${percent(base)} × ${percent(power)} = ${percent(raw)}${raw !== result ? `, limited to ${percent(result)}` : ""}`,
         ],
       };

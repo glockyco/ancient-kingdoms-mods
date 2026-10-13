@@ -59,12 +59,19 @@
     data.visualAsset ? `${base}/${data.visualAsset.public_path}` : null,
   );
   const facts = $derived(
-    skillFacts(skill, data.usedByPets, data.mechanicsSpec, data.grantedByItems),
+    skillFacts(
+      skill,
+      data.usedByPets,
+      data.mechanicsSpec,
+      data.grantedByItems,
+      data.usedByMonsters.length > 0,
+    ),
   );
   const {
     losesVeteranPoints,
     hasScrollMasteryScaling,
     hasScrollDispelScaling,
+    scrollOnly,
     hasBuffEffects,
     hasAnyBonuses,
     hasCrowdControl,
@@ -75,12 +82,23 @@
     timingModels,
     hasteCooldownCasters,
   } = $derived(facts);
-  const scalingColumns = $derived(getScalingColumns(skill));
+  const scalingColumns = $derived(getScalingColumns(skill, scrollOnly));
   const showLevelScaling = $derived(
     getShowLevelScaling(skill, scalingColumns, hasScrollMasteryScaling),
   );
   const mechanicsSectionIds = $derived(
     mechanicsSections({ skill, spec: data.mechanicsSpec, facts }),
+  );
+  const showCostTiming = $derived(
+    Boolean(
+      scrollOnly ||
+      skill.is_bard_song ||
+      skill.mana_cost ||
+      skill.energy_cost ||
+      skill.cooldown ||
+      skill.cast_time ||
+      skill.cast_range,
+    ),
   );
 
   // Jump list entries, in document order. Each predicate mirrors the {#if}
@@ -102,13 +120,7 @@
       {
         id: "cost-timing",
         label: "Cost & Timing",
-        show: Boolean(
-          skill.mana_cost ||
-          skill.energy_cost ||
-          skill.cooldown ||
-          skill.cast_time ||
-          skill.cast_range,
-        ),
+        show: showCostTiming,
       },
       { id: "damage", label: "Damage", show: hasDamage },
       {
@@ -243,13 +255,7 @@
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
       {#if skill.player_classes.length > 0 && !skill.is_veteran}
         <span>
-          {#if skill.base_skill}
-            Base
-          {:else if skill.tier === 0}
-            Core
-          {:else}
-            Tier {skill.tier}
-          {/if}
+          {data.skillCategories.join(" / ")}
         </span>
       {/if}
       <span>Max Rank {skill.max_level}</span>
@@ -383,6 +389,21 @@
       </Card.Header>
       <Card.Content>
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+          {#if skill.player_classes.length > 0 && skill.tier >= 1 && skill.tier <= 4}
+            <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill — tiers 1 and 3 allow two distinct skills; tiers 2 and 4 allow one. -->
+            <div>
+              <dt class="text-muted-foreground">Tier Limit</dt>
+              <dd class="font-medium">
+                <a
+                  href="/mechanics/character#skills-and-specializations"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {skill.tier === 1 || skill.tier === 3 ? 2 : 1} Tier {skill.tier}
+                  {skill.tier === 1 || skill.tier === 3 ? "skills" : "skill"}
+                </a>
+              </dd>
+            </div>
+          {/if}
           {#if skill.level_required > 1}
             <div>
               <dt class="text-muted-foreground">Level Required</dt>
@@ -391,16 +412,20 @@
           {/if}
           {#if skill.required_skill_points > 1}
             <div>
-              <dt class="text-muted-foreground">Skill Points</dt>
-              <dd class="font-medium">{skill.required_skill_points}</dd>
+              <!-- Source: server-scripts/PlayerSkills.cs:CmdUpgrade,CmdUpgradeVeteran — each rank pays the skill's required points from the corresponding pool. -->
+              <dt class="text-muted-foreground">Cost per Rank</dt>
+              <dd class="font-medium">
+                {skill.required_skill_points}
+                {skill.is_veteran ? "veteran points" : "skill points"}
+              </dd>
             </div>
           {/if}
           {#if skill.required_spent_points > 0}
             <div>
               <dt class="text-muted-foreground">
                 {skill.is_veteran
-                  ? "Veteran Points Spent"
-                  : "Skill Points Spent"}
+                  ? "Veteran Points Already Spent"
+                  : "Class Skill Points Already Spent"}
               </dt>
               <dd class="font-medium">{skill.required_spent_points}</dd>
             </div>
@@ -469,7 +494,7 @@
   {/if}
 
   <!-- Cost & Timing -->
-  {#if skill.is_bard_song || skill.mana_cost || skill.energy_cost || skill.cooldown || skill.cast_time || skill.cast_range}
+  {#if showCostTiming}
     <Card.Root id="cost-timing" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
@@ -479,31 +504,49 @@
       </Card.Header>
       <Card.Content>
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-          {#if skill.is_bard_song}
+          {#if scrollOnly}
+            <!-- Source: server-scripts/PlayerInventory.cs:StartScrollCast; server-scripts/ScrollItem.cs:UseAfterCast; server-scripts/UsableItem.cs:Use — fixed 1-second cast, no Mana payment, cooldown comes from the scroll item. -->
             <div>
-              <dt class="text-muted-foreground">Song Slot Cost</dt>
-              <dd class="font-medium">1</dd>
+              <dt class="text-muted-foreground">Mana Cost</dt>
+              <dd class="font-medium">None</dd>
             </div>
+            <div>
+              <dt class="text-muted-foreground">Cast Time</dt>
+              <dd class="font-medium">1s</dd>
+            </div>
+            {#each data.scrollItems as item (item.id)}
+              <div>
+                <dt class="text-muted-foreground">Scroll Cooldown</dt>
+                <dd class="font-medium">
+                  {fmt.formatSeconds(item.cooldown)}
+                  <a
+                    href="/items/{item.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{item.name}</a
+                  >
+                </dd>
+              </div>
+            {/each}
           {/if}
-          {#if skill.mana_cost && !skill.is_bard_song}
+          {#if !scrollOnly && skill.mana_cost && !skill.is_bard_song}
             <div>
               <dt class="text-muted-foreground">Mana Cost</dt>
               <dd class="font-medium">{formatLinear(skill.mana_cost)}</dd>
             </div>
           {/if}
-          {#if skill.energy_cost}
+          {#if !scrollOnly && skill.energy_cost}
             <div>
               <dt class="text-muted-foreground">Rage Cost</dt>
               <dd class="font-medium">{formatLinear(skill.energy_cost)}</dd>
             </div>
           {/if}
-          {#if skill.cast_time}
+          {#if !scrollOnly && skill.cast_time}
             <div>
               <dt class="text-muted-foreground">Cast Time</dt>
               <dd class="font-medium">{formatLinear(skill.cast_time, "s")}</dd>
             </div>
           {/if}
-          {#if skill.cooldown}
+          {#if !scrollOnly && skill.cooldown}
             <div>
               <dt class="text-muted-foreground">Cooldown</dt>
               <dd class="font-medium">{formatLinear(skill.cooldown, "s")}</dd>
@@ -522,10 +565,16 @@
           <!-- Source: server-scripts/Skills.cs:924-933,1141-1169; Player.cs:3394-3431 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
+              <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast — mercenary casts use its own equipment and buff spell haste. -->
               <p>
+                {#if skill.player_classes.length === 0 && facts.usedByMercenary}The
+                  mercenary's{/if}
                 <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
-                  href="/mechanics/combat#timing">Spell haste</a
+                  href="/mechanics/combat#timing"
+                  >{skill.player_classes.length === 0 && facts.usedByMercenary
+                    ? "spell haste"
+                    : "Spell haste"}</a
                 >
                 shortens the cast by its percentage, so 20% spell haste turns the
                 {fmt.formatSeconds(
@@ -634,8 +683,10 @@
         {#if skill.is_assassination_skill || skill.is_manaburn_skill}
           <div class="mt-3 space-y-1 text-sm">
             {#if skill.is_assassination_skill}
+              <!-- Source: server-scripts/PlayerSkills.cs:TryUse — cast is permitted at or below RoundToInt(target maximum Health / 4). -->
               <p class="text-amber-600 dark:text-amber-400">
-                Assassination requires the target to have less than 25% health.
+                Assassination requires the target's Health to be at most 25% of
+                its maximum Health, rounded to the nearest whole point.
               </p>
             {/if}
             {#if skill.is_manaburn_skill}
@@ -772,9 +823,11 @@
       </Card.Header>
       <Card.Content>
         {#if skill.skill_type === "summon_monsters" && skill.summon_count_per_cast === 0}
+          <!-- Source: server-scripts/SummonSkillMonsters.cs:Apply — only players or pets, strictly farther than 3 yd and closer than cast range, are pulled and stunned. -->
           <p class="text-sm font-medium">
-            Teleports the target to the character using this skill and stuns the
-            target for 2 seconds.
+            Pulls the monster's target to the monster and stuns it for 2
+            seconds. The target must be a player or pet more than 3 yd away and
+            closer than {formatLinear(skill.cast_range, " yd")}.
           </p>
         {:else if skill.skill_type === "summon_monsters" && skill.summoned_monster_id}
           <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
@@ -799,7 +852,9 @@
               <dt class="text-muted-foreground">Count per Cast</dt>
               <dd class="font-medium">
                 {#if skill.summon_count_per_cast === -1}
-                  1 per player/mercenary
+                  <!-- Source: server-scripts/SummonSkillMonsters.cs:Apply — count players and mercenaries on the summoner's aggro list, limited by remaining active slots. -->
+                  1 per player or mercenary the monster considers an enemy, limited
+                  by Max Active
                 {:else}
                   {skill.summon_count_per_cast}
                 {/if}
@@ -836,12 +891,36 @@
               </div>
             {/if}
           </dl>
-          {#if skill.player_classes.includes("necromancer") && !skill.is_familiar}
-            <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,56,106-113 — a different Necromancer combat-pet summon replaces the active pet; matching the active pet gives the attack command. -->
+          {#if skill.is_familiar}
+            <!-- Source: server-scripts/SummonSkill.cs:Apply; server-scripts/PetSkills.cs:RefreshSkillLevels — familiar level and skill ranks follow the summoning skill, capped per skill. -->
             <p class="mt-3 text-muted-foreground">
-              Summoning a different companion replaces your current pet. Using
-              this summon while its pet is active commands that pet to attack
-              your target instead.
+              This skill's rank sets the familiar's level. Its skills use the
+              same rank, up to their own maximums:
+              {#each data.familiarSkills as familiarSkill, index (familiarSkill.id)}
+                {index > 0 ? ", " : ""}
+                <a
+                  href="/skills/{familiarSkill.id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >{familiarSkill.name}</a
+                >
+                (maximum rank {familiarSkill.max_level}){index ===
+                data.familiarSkills.length - 1
+                  ? "."
+                  : ""}
+              {/each}
+            </p>
+          {:else}
+            <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,Apply; server-scripts/GameManager.cs:ExtraSkillbarKeyPressed — non-familiar summons command an active companion; Necromancers replace a different companion, and commands require a target within 15 yd of it. -->
+            <p class="mt-3 text-muted-foreground">
+              {#if skill.player_classes.includes("necromancer")}
+                Summoning a different companion replaces your current companion.
+                Using this skill while its companion is active commands that
+                companion to attack your target instead.
+              {:else}
+                Using this skill while your companion is active commands it to
+                attack your target instead of summoning.
+              {/if}
+              The target must be within 15 yd of the companion.
             </p>
           {/if}
         {/if}
@@ -875,7 +954,9 @@
             {/if}
             {#if skill.buff_category}
               <div>
-                <dt class="text-muted-foreground">Overwrite Group</dt>
+                <dt class="text-muted-foreground">
+                  {skill.is_bard_song ? "Song Category" : "Overwrite Group"}
+                </dt>
                 <dd class="font-medium">{skill.buff_category}</dd>
               </div>
             {/if}
@@ -1287,7 +1368,7 @@
                 {#if hasScrollDispelScaling}
                   <th
                     class="py-2 px-3 font-medium text-muted-foreground text-right"
-                    >Dispel Resist Reduction</th
+                    >Cleanse Resist Reduction</th
                   >
                 {/if}
               </tr>
@@ -1308,7 +1389,7 @@
                   {/each}
                   {#if hasScrollDispelScaling}
                     <td class="py-1.5 px-3 text-right"
-                      >{level} percentage points</td
+                      >{level} percentage point{level === 1 ? "" : "s"}</td
                     >
                   {/if}
                 </tr>

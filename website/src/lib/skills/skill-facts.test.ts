@@ -3,9 +3,10 @@ import type {
   SkillDetailView,
   SkillMechanicsSpec,
   SkillPet,
+  SkillItemSource,
   TimingModel,
 } from "$lib/types/skills";
-import { skillFacts } from "./skill-facts";
+import { skillFacts, weaponProcClasses } from "./skill-facts";
 
 function skill(overrides: Partial<SkillDetailView> = {}): SkillDetailView {
   return {
@@ -21,6 +22,8 @@ function facts(
   overrides: Partial<SkillDetailView> = {},
   pets: SkillPet[] = [],
   models: TimingModel[] = [],
+  usedByMonster = false,
+  items: SkillItemSource[] = [],
 ) {
   const spec: SkillMechanicsSpec = {
     damageContexts: [],
@@ -29,7 +32,7 @@ function facts(
     debuffContexts: [],
     timingContexts: models.map((model) => ({ model, casters: [] })),
   };
-  return skillFacts(skill(overrides), pets, spec, []);
+  return skillFacts(skill(overrides), pets, spec, items, usedByMonster);
 }
 function pet(overrides: Partial<SkillPet> = {}): SkillPet {
   return {
@@ -43,6 +46,139 @@ function pet(overrides: Partial<SkillPet> = {}): SkillPet {
 }
 
 describe("skill page facts", () => {
+  test("zero-valued exported damage is not actual damage, while nonzero threat retains its card", () => {
+    const zero = { base_value: 0, bonus_per_level: 0 };
+    const result = facts({ damage: zero, damage_percent: zero, aggro: zero });
+    expect(result.hasDamage).toBe(false);
+    expect(result.hasActualDamage).toBe(false);
+    const threat = facts({
+      damage: zero,
+      damage_percent: zero,
+      aggro: { base_value: 100, bonus_per_level: 0 },
+    });
+    expect(threat.hasDamage).toBe(true);
+    expect(threat.hasActualDamage).toBe(false);
+    expect(
+      facts({ damage: { base_value: 0, bonus_per_level: 1 } }).hasActualDamage,
+    ).toBe(true);
+  });
+  test("all zero-valued exported bonus groups stay absent and nonzero values remain visible", () => {
+    const fields = [
+      "health_max_bonus",
+      "health_max_percent_bonus",
+      "mana_max_bonus",
+      "mana_max_percent_bonus",
+      "energy_max_bonus",
+      "defense_bonus",
+      "ward_bonus",
+      "magic_resist_bonus",
+      "damage_bonus",
+      "damage_percent_bonus",
+      "magic_damage_bonus",
+      "magic_damage_percent_bonus",
+      "haste_bonus",
+      "spell_haste_bonus",
+      "speed_bonus",
+      "critical_chance_bonus",
+      "critical_resist_bonus",
+      "accuracy_bonus",
+      "block_chance_bonus",
+      "fear_resist_chance_bonus",
+      "damage_shield",
+      "cooldown_reduction_percent",
+      "heal_on_hit_percent",
+      "healing_per_second_bonus",
+      "health_percent_per_second_bonus",
+      "mana_per_second_bonus",
+      "mana_percent_per_second_bonus",
+      "energy_per_second_bonus",
+      "energy_percent_per_second_bonus",
+      "poison_resist_bonus",
+      "fire_resist_bonus",
+      "cold_resist_bonus",
+      "disease_resist_bonus",
+      "strength_bonus",
+      "intelligence_bonus",
+      "dexterity_bonus",
+      "constitution_bonus",
+      "wisdom_bonus",
+      "charisma_bonus",
+    ];
+    const zero = { base_value: 0, bonus_per_level: 0 };
+    const bonuses = {
+      ...Object.fromEntries(fields.map((field) => [field, zero])),
+      is_invisibility: false,
+      is_mana_shield: false,
+      is_blindness: false,
+      is_enrage: false,
+      is_permanent: false,
+      is_only_for_magic_classes: false,
+    } as Partial<SkillDetailView>;
+    expect(facts(bonuses).hasAnyBonuses).toBe(false);
+    expect(facts(bonuses).hasBuffEffects).toBe(false);
+    for (const field of fields) {
+      const result = facts({
+        ...bonuses,
+        [field]: { base_value: 0, bonus_per_level: -1 },
+      });
+      expect(result.hasAnyBonuses, field).toBe(true);
+      expect(result.hasBuffEffects, field).toBe(true);
+    }
+    expect(facts({ ...bonuses, is_mana_shield: true }).hasBuffEffects).toBe(
+      true,
+    );
+  });
+  test("scroll-only skills exclude every learned, pet, monster, or non-scroll path", () => {
+    const scroll = { item_id: "scroll", item_name: "Scroll", type: "scroll" };
+    expect(facts({}, [], [], false, [scroll]).scrollOnly).toBe(true);
+    expect(
+      facts({ player_classes: ["cleric"] }, [], [], false, [scroll]).scrollOnly,
+    ).toBe(false);
+    expect(facts({}, [pet()], [], false, [scroll]).scrollOnly).toBe(false);
+    expect(facts({}, [], [], true, [scroll]).scrollOnly).toBe(false);
+    expect(
+      facts({}, [], [], false, [scroll, { ...scroll, type: "weapon_proc" }])
+        .scrollOnly,
+    ).toBe(false);
+    expect(facts().scrollOnly).toBe(false);
+  });
+  test("tiered player skills show requirements even without another restriction", () => {
+    expect(facts({ player_classes: ["bard"], tier: 1 }).hasRequirements).toBe(
+      true,
+    );
+    expect(facts({ tier: 1 }).hasRequirements).toBe(false);
+    expect(facts({ player_classes: ["bard"], tier: 0 }).hasRequirements).toBe(
+      false,
+    );
+  });
+  test("weapon procs use the union of equippable classes, with bows restricted to Rangers", () => {
+    expect(
+      weaponProcClasses([
+        { classes: ["warrior", "cleric"], weaponCategory: "WeaponSword2H" },
+      ]),
+    ).toEqual(["warrior", "cleric"]);
+    expect(
+      weaponProcClasses([{ classes: null, weaponCategory: "Bow" }]),
+    ).toEqual(["ranger"]);
+    expect(
+      weaponProcClasses([
+        { classes: ["warrior", "ranger"], weaponCategory: "WeaponSword" },
+        { classes: ["ranger", "bard"], weaponCategory: "WeaponDagger" },
+      ]),
+    ).toEqual(["warrior", "ranger", "bard"]);
+    expect(weaponProcClasses([])).toEqual([]);
+    expect(
+      weaponProcClasses([{ classes: ["all"], weaponCategory: "Bow" }]),
+    ).toEqual(["ranger"]);
+    expect(weaponProcClasses([{ classes: [], weaponCategory: "Bow" }])).toEqual(
+      ["ranger"],
+    );
+  });
+  test("monster usage is independent of pet and timing contexts", () => {
+    expect(facts().usedByMonster).toBe(false);
+    expect(facts({}, [], [], true).usedByMonster).toBe(true);
+    expect(facts({}, [pet()]).usedByMonster).toBe(false);
+  });
   test("melee resistance takes precedence over all elemental flags", () => {
     expect(
       facts({

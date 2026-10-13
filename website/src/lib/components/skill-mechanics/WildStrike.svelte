@@ -11,14 +11,16 @@
 <!-- Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike) -->
 <!-- Source: server-scripts/TargetDamageSkill.cs:244,291 (ApplyDamage) -->
 <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 (Apply) -->
-<!-- Source: server-scripts/Combat.cs:521,776,842-849,1191-1204 (DealDamageAt) -->
+<!-- Source: server-scripts/Combat.cs:DealDamageAt — Magic Resist reduces the converted hit by 5% per 100 points, at most 90%. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Wild Strike</h3>
   <p class="text-muted-foreground">
-    The next sword or bow auto attack consumes the buff. After its ordinary
-    damage calculation, the hit deals 10% more per Wild Strike rank, rounded,
-    and becomes Magic damage, which Magic Resist reduces. At rank {skill.max_level},
-    a {fmt.formatNumber(EXAMPLE_HIT)}-damage auto attack deals {fmt.formatNumber(
+    Your next auto attack, Swift Slash with any melee weapon or Archer Shot,
+    consumes the buff. After its ordinary damage calculation, the hit deals 10%
+    more per Wild Strike rank, rounded, and becomes Magic damage. Magic Resist
+    reduces it by 5% per 100 points, at most 90%. At rank {skill.max_level}, a {fmt.formatNumber(
+      EXAMPLE_HIT,
+    )}-damage auto attack deals {fmt.formatNumber(
       wildStrikeHit(skill.max_level),
     )}. See
     <a
@@ -36,7 +38,7 @@
     >.
   </p>
   <RoundingDefinition />
-  <!-- Source: server-scripts/Skills.cs:460-475; Combat.cs:119-146 — the active buff's flat Damage bonus is already included in the character-window Damage used by the auto-attack calculators. -->
+  <!-- Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the buff multiplies the completed auto-attack calculation. -->
   <p class="text-muted-foreground">
     Use the <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -46,8 +48,7 @@
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/skills/archer_shot#mechanics">Archer Shot</a
-    > calculator while Wild Strike is active to find the auto attack's damage before
-    the target's defenses. Your character-window Damage already includes this buff's
-    flat Damage bonus.
+    > calculator for the auto attack's damage, then multiply it by 100% + 10% per
+    Wild Strike rank, rounded, before the target's defenses.
   </p>
 </div>

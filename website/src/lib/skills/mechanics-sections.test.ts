@@ -41,6 +41,7 @@ function sections(
   overrides: Partial<SkillDetailView>,
   spec: Partial<SkillMechanicsSpec> = {},
   pets: SkillPet[] = [],
+  hasMonsters = false,
 ) {
   const fullSpec: SkillMechanicsSpec = {
     damageContexts: [],
@@ -54,7 +55,7 @@ function sections(
   return mechanicsSections({
     skill: subject,
     spec: fullSpec,
-    facts: skillFacts(subject, pets, fullSpec, []),
+    facts: skillFacts(subject, pets, fullSpec, [], hasMonsters),
   });
 }
 
@@ -90,6 +91,29 @@ describe("mechanics sections", () => {
     expect(
       sections({ id: "parry", skill_type: "target_buff" }, playerDamage),
     ).toEqual(["parry"]);
+  });
+
+  test("a channel shows after the damage it splits, and only when a player casts it", () => {
+    expect(
+      sections(
+        {
+          player_classes: ["necromancer"],
+          channel_pulses: 3,
+          damage: flat(20),
+        },
+        playerDamage,
+      ),
+    ).toEqual(["damage", "channel"]);
+    expect(
+      sections(
+        { channel_pulses: 3, damage: flat(20) },
+        {
+          damageContexts: [
+            { casters: [{ kind: "monster" }], formula: "monster_magic" },
+          ],
+        },
+      ),
+    ).toEqual(["damage"]);
   });
 
   test("a song a Bard mercenary uses gets the mercenary section instead of the player one", () => {
@@ -175,4 +199,78 @@ describe("mechanics sections", () => {
       }),
     ).not.toContain("debuff-resistance");
   });
+});
+
+test("cleanses show neither debuff scaling nor resist chance even with exported debuff bonuses", () => {
+  expect(
+    sections(
+      {
+        skill_type: "target_debuff",
+        is_cleanse: true,
+        is_magic_debuff: true,
+      },
+      {
+        debuffContexts: [
+          {
+            casters: [{ kind: "player", classId: "druid" }],
+            bonusAttrKind: "dex",
+          },
+        ],
+      },
+    ),
+  ).toEqual(["cleanse"]);
+});
+
+test("cleanse resistance applies only to monster-cast debuffs; untyped debuffs still show landing rules", () => {
+  const debuff = { skill_type: "target_debuff", prob_ignore_cleanse: 0.25 };
+  expect(sections(debuff)).toEqual(["debuff-resistance"]);
+  expect(sections(debuff, {}, [], true)).toEqual([
+    "debuff-resistance",
+    "cleanse-resistance",
+  ]);
+});
+
+test("a flat Health drain does not show Buff Scaling, but a drain with a scaled Defense bonus does", () => {
+  const buff = {
+    skill_type: "target_buff",
+    healing_per_second_bonus: flat(-5),
+  };
+  const spec: Partial<SkillMechanicsSpec> = {
+    buffContexts: [
+      {
+        casters: [{ kind: "player", classId: "wizard" }],
+        bonusAttrSource: "player_wis",
+        isAreaBuff: false,
+      },
+    ],
+  };
+  expect(sections(buff, spec)).not.toContain("buff-scaling");
+  expect(sections({ ...buff, defense_bonus: flat(5) }, spec)).toContain(
+    "buff-scaling",
+  );
+});
+
+test("direct pet buffs explain their target and negative threat gets mechanics", () => {
+  expect(sections({ skill_type: "target_buff", is_pet_skill: true })).toContain(
+    "companion-buff",
+  );
+  expect(sections({ player_classes: ["rogue"], aggro: flat(-5000) })).toContain(
+    "aggro",
+  );
+});
+
+test("resistance-decrease rules follow the resist chance before cleanse resistance", () => {
+  expect(
+    sections(
+      {
+        skill_type: "target_debuff",
+        is_magic_debuff: true,
+        is_decrease_resists_skill: true,
+        prob_ignore_cleanse: 0.25,
+      },
+      {},
+      [],
+      true,
+    ),
+  ).toEqual(["debuff-resistance", "decrease-resists", "cleanse-resistance"]);
 });

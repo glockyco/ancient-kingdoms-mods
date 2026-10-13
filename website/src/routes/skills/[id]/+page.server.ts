@@ -15,6 +15,8 @@ import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
 import { parseLinear } from "$lib/utils/parseLinear";
 import { computeMechanicsSpec } from "$lib/utils/skillMechanics";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
+import { getSkillCategoryKey } from "$lib/utils/skill-category";
+import { weaponProcClasses } from "$lib/skills/skill-facts";
 
 export const prerender = true;
 
@@ -29,6 +31,14 @@ export interface SkillDetailPageData {
   gameTooltip: string;
   effectSummary: string;
   grantedByItems: SkillItemSource[];
+  scrollItems: {
+    id: string;
+    name: string;
+    cooldown: number;
+    cooldown_category: string;
+  }[];
+  skillCategories: string[];
+  familiarSkills: { id: string; name: string; max_level: number }[];
   usedByMonsters: SkillMonster[];
   usedByPets: SkillPet[];
   appliedByTraps: SkillTrapUsage[];
@@ -239,14 +249,35 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     : [];
 
   let grantedByItems: SkillItemSource[] = [];
+  let procClasses: string[] = [];
   if (grantedByItemsRaw.length > 0) {
     const itemIds = grantedByItemsRaw.map((i) => i.item_id);
     const placeholders = itemIds.map(() => "?").join(",");
-    const itemInfo = query<{ id: string; name: string }>(
-      `SELECT id, name FROM items WHERE id IN (${placeholders})`,
+    const itemInfo = query<{
+      id: string;
+      name: string;
+      class_required: string | null;
+      weapon_category: string | null;
+    }>(
+      `SELECT id, name, class_required, weapon_category FROM items WHERE id IN (${placeholders})`,
       itemIds,
     );
     const nameMap = new Map(itemInfo.map((i) => [i.id, i.name]));
+    procClasses = weaponProcClasses(
+      itemInfo
+        .filter((item) =>
+          grantedByItemsRaw.some(
+            (source) =>
+              source.item_id === item.id && source.type === "weapon_proc",
+          ),
+        )
+        .map((item) => ({
+          classes: item.class_required
+            ? (JSON.parse(item.class_required) as string[])
+            : null,
+          weaponCategory: item.weapon_category,
+        })),
+    );
 
     grantedByItems = grantedByItemsRaw.map((item) => ({
       item_id: item.item_id,
@@ -255,6 +286,52 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
       probability: item.probability,
     }));
   }
+  // Source: server-scripts/UsableItem.cs:Use — scroll casts use the granting item's cooldown and category, not the skill cooldown.
+  const scrollItemIds = grantedByItems
+    .filter((item) => item.type === "scroll")
+    .map((item) => item.item_id);
+  const scrollItems =
+    scrollItemIds.length === 0
+      ? []
+      : query<SkillDetailPageData["scrollItems"][number]>(
+          `SELECT id, name, cooldown, cooldown_category FROM items WHERE id IN (${scrollItemIds.map(() => "?").join(",")}) ORDER BY name`,
+          scrollItemIds,
+        );
+  const skillCategories = [
+    ...new Set(
+      playerClasses.map((classId) => {
+        const classSkills = query<{
+          id: string;
+          base_skill: number;
+          is_veteran: number;
+          tier: number;
+          class_skill_position: number;
+        }>(
+          `SELECT id, base_skill, is_veteran, tier,
+        json_extract(class_skill_positions, '$.' || ?) AS class_skill_position
+       FROM skills WHERE EXISTS (SELECT 1 FROM json_each(player_classes) WHERE value = ?)`,
+          [classId, classId],
+        );
+        const subject = classSkills.find((entry) => entry.id === params.id)!;
+        const lastTierPosition = Math.max(
+          ...classSkills
+            .filter((entry) => entry.tier > 0 && !entry.is_veteran)
+            .map((entry) => entry.class_skill_position),
+        );
+        return getSkillCategoryKey(subject, lastTierPosition);
+      }),
+    ),
+  ];
+  // Source: server-scripts/SummonSkill.cs:Apply; server-scripts/PetSkills.cs:RefreshSkillLevels — summon rank sets familiar level and each skill rank, capped by that skill's maximum.
+  const familiarSkills = skillRaw.is_familiar
+    ? query<SkillDetailPageData["familiarSkills"][number]>(
+        `SELECT s.id, s.name, s.max_level FROM skills s
+     JOIN pet_skills ps ON ps.skill_id = s.id
+     JOIN pets p ON p.id = ps.pet_id
+     WHERE p.is_familiar = 1 AND lower(p.name) = lower(?) ORDER BY s.name`,
+        [skillRaw.pet_prefab_name as string],
+      )
+    : [];
 
   const skill: SkillDetailView = {
     id: skillRaw.id as string,
@@ -582,6 +659,9 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     gameTooltip: _fillSkillTooltip(skill),
     effectSummary,
     grantedByItems,
+    scrollItems,
+    skillCategories,
+    familiarSkills,
     usedByMonsters,
     usedByPets,
     appliedByTraps,
@@ -592,6 +672,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
       usedByPets,
       usedByMonsters.length > 0,
       grantedByItems.some((i) => i.type === "weapon_proc"),
+      procClasses,
     ),
   };
 };

@@ -1,1 +1,1 @@
-Mechanics Ward absorbs damage first. Mana Shield then absorbs the rest, spending 1 Mana for each point of damage. If your Mana runs out, the shield ends and the remaining damage reduces your Health.
+Mechanics Mana Shield Mana Shield absorbs direct hits after Ward, spending 1 Mana per point of damage. When a hit deals more damage than your current Mana, the shield ends and the remainder reduces your Health. A hit that spends exactly your remaining Mana leaves the shield active. Damage-over-time ticks and Damage Shield damage bypass Mana Shield. See Ward and Mana Shield.

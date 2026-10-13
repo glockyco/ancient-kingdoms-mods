@@ -29,7 +29,7 @@ const SCALING_FIELDS: Array<{
   },
   {
     key: "healing_percent",
-    label: "Health-cost healing %",
+    label: "Skill heal %",
     isPercent: true,
     suffix: "",
   },
@@ -342,7 +342,10 @@ const SCALING_FIELDS: Array<{
   },
 ];
 
-export function scalingColumns(skill: SkillDetailView): ScalingColumn[] {
+export function scalingColumns(
+  skill: SkillDetailView,
+  scrollOnly = false,
+): ScalingColumn[] {
   const cols: ScalingColumn[] = [];
 
   // Duration has its own format (not a LinearValue)
@@ -359,6 +362,19 @@ export function scalingColumns(skill: SkillDetailView): ScalingColumn[] {
   }
 
   for (const def of SCALING_FIELDS) {
+    // Source: server-scripts/ScrollItem.cs:UseAfterCast; server-scripts/PlayerInventory.cs:StartScrollCast — scrolls apply directly, without skill costs or timers.
+    if (
+      scrollOnly &&
+      ["mana_cost", "energy_cost", "cast_time", "cooldown"].includes(def.key)
+    )
+      continue;
+    const sharedConversion =
+      skill.is_necromancer_blood_pact &&
+      skill.health_cost_percent?.base_value ===
+        skill.mana_restored_percent?.base_value &&
+      skill.health_cost_percent?.bonus_per_level ===
+        skill.mana_restored_percent?.bonus_per_level;
+    if (sharedConversion && def.key === "mana_restored_percent") continue;
     const val = skill[def.key] as LinearValue | null;
     if (val && val.bonus_per_level !== 0) {
       const isNegativeRegen =
@@ -379,7 +395,9 @@ export function scalingColumns(skill: SkillDetailView): ScalingColumn[] {
             ? skill.is_necromancer_reaper_form
               ? "Self Health drain %/sec"
               : "Damage %/sec"
-            : def.label;
+            : sharedConversion && def.key === "health_cost_percent"
+              ? "Conversion %"
+              : def.label;
 
       cols.push({
         label,
@@ -398,7 +416,7 @@ export function computeScalingValue(col: ScalingColumn, level: number): string {
   if (col.isPercent) {
     return formatPercent(raw);
   }
-  return `${formatNumber(raw)}${col.suffix}`;
+  return `${formatNumber(col.suffix === "s" ? Math.max(0, raw) : raw)}${col.suffix}`;
 }
 
 export function showLevelScaling(

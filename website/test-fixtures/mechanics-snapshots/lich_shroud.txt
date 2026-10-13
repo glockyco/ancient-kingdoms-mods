@@ -1,1 +1,1 @@
-Mechanics Lifetap Healing Bonus Your lifetap healing is 40% higher, so a lifetap that would heal 200 heals 280 at rank 5. Rank 1 gives 20%, and each rank adds 5%. Lifetap damage is unchanged. Bonuses from unexpired and permanent buffs add together. See lifetap.
+Mechanics Lifetap Healing Bonus Your lifetap healing is 40% higher, so a lifetap that would heal 200 heals 280 at rank 5. Rank 1 gives 20%, and each rank adds 5%. Lifetap damage is unchanged. Bonuses from your active buffs, permanent ones included, add together. See lifetap.

@@ -7,6 +7,7 @@ import type {
 } from "$lib/types/skills";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import { hasLinearValue } from "./skill-format";
+import { ALL_CLASS_IDS } from "$lib/utils/classes";
 
 /**
  * How each damage type is mitigated and avoided, mirroring the game one row per type.
@@ -44,6 +45,7 @@ export interface SkillFacts {
   losesVeteranPoints: boolean;
   hasScrollMasteryScaling: boolean;
   hasScrollDispelScaling: boolean;
+  scrollOnly: boolean;
   hasBuffEffects: boolean;
   hasAnyBonuses: boolean;
   hasAttributeScaledBonuses: boolean;
@@ -53,6 +55,7 @@ export interface SkillFacts {
   meaningfulWeapon: boolean;
   hasRequirements: boolean;
   usedByMercenary: boolean;
+  usedByMonster: boolean;
   usedByBardMercenary: boolean;
   usedByCompanion: boolean;
   usedByFamiliar: boolean;
@@ -69,11 +72,33 @@ export interface SkillFacts {
   damageMechanics: DamageMechanics | null;
 }
 
+// Source: server-scripts/EquipmentItem.cs:CanClassUse; server-scripts/ProjectileSkillEffect.cs:FixedUpdate — equipped weapons respect class restrictions, and bow procs fire only for Rangers.
+export function weaponProcClasses(
+  items: {
+    classes: string[] | null;
+    weaponCategory: string | null;
+  }[],
+): string[] {
+  const eligible = new Set<string>();
+  for (const item of items) {
+    const classes =
+      !item.classes?.length || item.classes.includes("all")
+        ? ALL_CLASS_IDS
+        : item.classes;
+    for (const classId of classes) {
+      if (item.weaponCategory !== "Bow" || classId === "ranger")
+        eligible.add(classId);
+    }
+  }
+  return [...eligible];
+}
+
 export function skillFacts(
   skill: SkillDetailView,
   usedByPets: SkillPet[],
   mechanicsSpec: SkillMechanicsSpec,
   grantedByItems: SkillItemSource[],
+  usedByMonster = false,
 ): SkillFacts {
   const isWildStrike = skill.id === "wild_strike";
   const losesVeteranPoints =
@@ -83,56 +108,62 @@ export function skillFacts(
   );
   const hasScrollMasteryScaling = isScrollTriggered && skill.max_level > 1;
   const hasScrollDispelScaling = hasScrollMasteryScaling && skill.is_dispel;
-  const hasStatBonuses = !!(
-    skill.health_max_bonus ||
-    skill.health_max_percent_bonus ||
-    skill.mana_max_bonus ||
-    skill.mana_max_percent_bonus ||
-    skill.energy_max_bonus ||
-    skill.defense_bonus ||
-    skill.ward_bonus ||
-    skill.magic_resist_bonus ||
-    skill.damage_bonus ||
-    skill.damage_percent_bonus ||
-    skill.magic_damage_bonus ||
-    skill.magic_damage_percent_bonus ||
-    skill.haste_bonus ||
-    skill.spell_haste_bonus ||
-    skill.speed_bonus ||
-    skill.critical_chance_bonus ||
-    skill.critical_resist_bonus ||
-    skill.accuracy_bonus ||
-    skill.block_chance_bonus ||
-    skill.fear_resist_chance_bonus ||
-    skill.damage_shield ||
-    skill.cooldown_reduction_percent ||
-    skill.heal_on_hit_percent
-  );
+  const scrollOnly =
+    isScrollTriggered &&
+    skill.player_classes.length === 0 &&
+    usedByPets.length === 0 &&
+    !usedByMonster &&
+    grantedByItems.every((item) => item.type === "scroll");
+  const hasStatBonuses = [
+    skill.health_max_bonus,
+    skill.health_max_percent_bonus,
+    skill.mana_max_bonus,
+    skill.mana_max_percent_bonus,
+    skill.energy_max_bonus,
+    skill.defense_bonus,
+    skill.ward_bonus,
+    skill.magic_resist_bonus,
+    skill.damage_bonus,
+    skill.damage_percent_bonus,
+    skill.magic_damage_bonus,
+    skill.magic_damage_percent_bonus,
+    skill.haste_bonus,
+    skill.spell_haste_bonus,
+    skill.speed_bonus,
+    skill.critical_chance_bonus,
+    skill.critical_resist_bonus,
+    skill.accuracy_bonus,
+    skill.block_chance_bonus,
+    skill.fear_resist_chance_bonus,
+    skill.damage_shield,
+    skill.cooldown_reduction_percent,
+    skill.heal_on_hit_percent,
+  ].some(hasLinearValue);
 
-  const hasRegenBonuses = !!(
-    skill.healing_per_second_bonus ||
-    skill.health_percent_per_second_bonus ||
-    skill.mana_per_second_bonus ||
-    skill.mana_percent_per_second_bonus ||
-    skill.energy_per_second_bonus ||
-    skill.energy_percent_per_second_bonus
-  );
+  const hasRegenBonuses = [
+    skill.healing_per_second_bonus,
+    skill.health_percent_per_second_bonus,
+    skill.mana_per_second_bonus,
+    skill.mana_percent_per_second_bonus,
+    skill.energy_per_second_bonus,
+    skill.energy_percent_per_second_bonus,
+  ].some(hasLinearValue);
 
-  const hasResistBonuses = !!(
-    skill.poison_resist_bonus ||
-    skill.fire_resist_bonus ||
-    skill.cold_resist_bonus ||
-    skill.disease_resist_bonus
-  );
+  const hasResistBonuses = [
+    skill.poison_resist_bonus,
+    skill.fire_resist_bonus,
+    skill.cold_resist_bonus,
+    skill.disease_resist_bonus,
+  ].some(hasLinearValue);
 
-  const hasAttributeBonuses = !!(
-    skill.strength_bonus ||
-    skill.intelligence_bonus ||
-    skill.dexterity_bonus ||
-    skill.constitution_bonus ||
-    skill.wisdom_bonus ||
-    skill.charisma_bonus
-  );
+  const hasAttributeBonuses = [
+    skill.strength_bonus,
+    skill.intelligence_bonus,
+    skill.dexterity_bonus,
+    skill.constitution_bonus,
+    skill.wisdom_bonus,
+    skill.charisma_bonus,
+  ].some(hasLinearValue);
 
   // is_cleanse is excluded: cleanse description is in the effect summary,
   // and the card adds nothing unless the skill also has stat bonuses or other effects.
@@ -185,20 +216,20 @@ export function skillFacts(
     hasLinearValue(skill.knockback_chance);
 
   const hasDamage = !!(
-    skill.damage ||
-    skill.damage_percent ||
-    skill.aggro ||
+    hasLinearValue(skill.damage) ||
+    hasLinearValue(skill.damage_percent) ||
+    hasLinearValue(skill.aggro) ||
     hasLinearValue(skill.lifetap_percent) ||
     skill.break_armor_prob > 0 ||
     skill.is_assassination_skill ||
     skill.is_manaburn_skill
   );
 
-  // Source: server-scripts/AreaDamageSkill.cs:93, TargetDamageSkill.cs — num2 only set when damage > 0
+  // Source: server-scripts/AreaDamageSkill.cs:Apply; server-scripts/TargetDamageSkill.cs:ApplyDamage — damage is applied only when the calculated amount is positive.
   // Aggro-only skills call DealDamageAt with amountDamage=0, so no damage formula applies
   const hasActualDamage = !!(
-    skill.damage ||
-    skill.damage_percent ||
+    hasLinearValue(skill.damage) ||
+    hasLinearValue(skill.damage_percent) ||
     skill.is_manaburn_skill ||
     skill.is_assassination_skill
   );
@@ -210,6 +241,7 @@ export function skillFacts(
     skill.required_weapon_category !== "Weapon";
 
   const hasRequirements =
+    (skill.player_classes.length > 0 && skill.tier >= 1 && skill.tier <= 4) ||
     skill.level_required > 1 ||
     skill.required_skill_points > 1 ||
     skill.required_spent_points > 0 ||
@@ -302,6 +334,7 @@ export function skillFacts(
     losesVeteranPoints,
     hasScrollMasteryScaling,
     hasScrollDispelScaling,
+    scrollOnly,
     hasBuffEffects,
     hasAnyBonuses,
     hasAttributeScaledBonuses,
@@ -311,6 +344,7 @@ export function skillFacts(
     meaningfulWeapon,
     hasRequirements,
     usedByMercenary,
+    usedByMonster,
     usedByBardMercenary,
     usedByCompanion,
     usedByFamiliar,

@@ -16,9 +16,10 @@
     <p class="text-muted-foreground">
       The affected target heals anyone who hits it in melee for {fmt.formatPercent(
         fmt.atRank(share, skill.max_level),
-      )} of each hit's damage after defenses and critical hits, rounded, up to the
-      attacker's missing Health. A {fmt.formatNumber(EXAMPLE_HIT)}-damage hit
-      heals {fmt.formatNumber(
+      )} of each hit's damage after defenses and critical hits, before the target's
+      Ward absorbs any of it, rounded, up to the attacker's missing Health. A {fmt.formatNumber(
+        EXAMPLE_HIT,
+      )}-damage hit heals {fmt.formatNumber(
         healOnHit(share, skill.max_level),
       )}{fmt.scalesWithRank(share, skill.max_level)
         ? ` at rank ${skill.max_level}`

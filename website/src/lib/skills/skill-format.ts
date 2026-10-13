@@ -1,3 +1,4 @@
+import { formatPercent as formatCalculationPercent } from "$lib/calculation/format";
 import type { LinearValue } from "$lib/types/skills";
 import {
   formatLinearDuration as formatSkillLinearDuration,
@@ -5,10 +6,10 @@ import {
   formatLinearValueWithUnit,
 } from "$lib/utils/formatSkillEffect";
 
-// Source: server-scripts/ScrollItem.cs:125 — exact half-ranks round to even, so odd ranks require mastery above the half-rank threshold.
+// Source: server-scripts/ScrollItem.cs:UseAfterCast — exact half-ranks round to even, so odd ranks require mastery above the half-rank threshold.
 export function formatMasteryNeeded(rank: number): string {
   const percentage = rank <= 1 ? 0 : rank * 5 - 2.5;
-  return `${rank > 1 && rank % 2 !== 0 ? "above " : ""}${percentage.toFixed(1)}%`;
+  return `${rank > 1 && rank % 2 !== 0 ? "above " : "at least "}${percentage.toFixed(1)}%`;
 }
 
 export function formatLinear(
@@ -51,8 +52,7 @@ export function formatNumber(n: number): string {
 }
 
 export function formatPercent(n: number): string {
-  const pct = n * 100;
-  return `${parseFloat(pct.toFixed(1))}%`;
+  return formatCalculationPercent(n);
 }
 
 export function formatDuration(base: number, perLevel: number): string {

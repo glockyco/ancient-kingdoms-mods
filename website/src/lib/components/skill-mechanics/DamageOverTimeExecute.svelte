@@ -33,8 +33,9 @@
     </p>
     <RoundingDefinition />
     <p class="text-muted-foreground">
-      You must remain in the game as the player who applied the debuff to
-      another character. Ticks from pets and monsters receive no bonus.
+      Only damage-over-time effects you apply to another character get the
+      bonus, and only while you are still in the game. Ticks from companions,
+      mercenaries and monsters get none.
     </p>
   </div>
 {/if}

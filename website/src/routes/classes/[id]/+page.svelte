@@ -42,6 +42,7 @@
     formatSkillEffect,
   } from "$lib/utils/formatSkillEffect";
   import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
+  import { getSkillCategoryKey } from "$lib/utils/skill-category";
   import { getItemTooltips } from "$lib/queries/items";
   import type {
     ClassSkill,
@@ -195,27 +196,11 @@
     })(),
   );
 
-  function isMasterySkill(skill: ClassSkill): boolean {
-    return (
-      !skill.base_skill &&
-      !skill.is_veteran &&
-      skill.tier === 0 &&
-      skill.class_skill_position > skillProgressionBounds.lastTierPosition &&
-      skill.class_skill_position < 18
-    );
-  }
-
-  function getSkillCategoryKey(skill: ClassSkill): string {
-    if (skill.base_skill) return "Base";
-    if (skill.is_veteran) return "Veteran";
-    if (isMasterySkill(skill)) return "Mastery";
-    if (skill.class_skill_position >= 18) return "Utility";
-    if (skill.tier === 0) return "Core";
-    return `Tier ${skill.tier}`;
-  }
-
   function getSkillCategoryDisplay(skill: ClassSkill): string {
-    const key = getSkillCategoryKey(skill);
+    const key = getSkillCategoryKey(
+      skill,
+      skillProgressionBounds.lastTierPosition,
+    );
     if (skill.tier > 0 && !skill.base_skill && !skill.is_veteran) {
       const maxPicks = TIER_MAX_PICKS[skill.tier];
       const available = tierSkillCounts[skill.tier] ?? 0;
@@ -234,7 +219,11 @@
   // Unique categories for filter (in logical order, using keys without annotations)
   const uniqueSkillCategories = $derived(
     (() => {
-      const cats = new Set(data.skills.map(getSkillCategoryKey));
+      const cats = new Set(
+        data.skills.map((skill) =>
+          getSkillCategoryKey(skill, skillProgressionBounds.lastTierPosition),
+        ),
+      );
       const order = [
         "Base",
         "Core",
@@ -255,7 +244,8 @@
     {
       id: "category",
       header: "Category",
-      accessorFn: (row) => getSkillCategoryKey(row),
+      accessorFn: (row) =>
+        getSkillCategoryKey(row, skillProgressionBounds.lastTierPosition),
       sortingFn: (rowA, rowB) => {
         const categoryOrder = [
           "Base",
@@ -269,8 +259,18 @@
           "Veteran",
         ];
         const categoryDifference =
-          categoryOrder.indexOf(getSkillCategoryKey(rowA.original)) -
-          categoryOrder.indexOf(getSkillCategoryKey(rowB.original));
+          categoryOrder.indexOf(
+            getSkillCategoryKey(
+              rowA.original,
+              skillProgressionBounds.lastTierPosition,
+            ),
+          ) -
+          categoryOrder.indexOf(
+            getSkillCategoryKey(
+              rowB.original,
+              skillProgressionBounds.lastTierPosition,
+            ),
+          );
         return (
           categoryDifference ||
           rowA.original.class_skill_position -
@@ -279,7 +279,12 @@
       },
       filterFn: (row, _columnId, filterValue: string[]) => {
         if (!filterValue || filterValue.length === 0) return true;
-        return filterValue.includes(getSkillCategoryKey(row.original));
+        return filterValue.includes(
+          getSkillCategoryKey(
+            row.original,
+            skillProgressionBounds.lastTierPosition,
+          ),
+        );
       },
     },
     {

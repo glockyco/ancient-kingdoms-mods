@@ -1,6 +1,5 @@
 <script lang="ts">
   import Calculation from "$lib/components/Calculation.svelte";
-  import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
   import {
     calculationCasters,
     calculationCasterLabel,
@@ -39,15 +38,20 @@
           {#if skill.scales_with_charisma}
             <!-- Source: server-scripts/BardSongSkill.cs:Apply; Skills.cs:307-318 — Charisma-scaled song heals skip the Wisdom healing bonus. -->
             <p class="text-muted-foreground">
-              Wisdom does not change this song.
+              {#if (skill.healing_per_second_bonus?.base_value ?? 0) > 0}
+                Wisdom does not change this song's healing.
+              {:else}
+                Songs scale with Charisma, not Wisdom or Intelligence.
+              {/if}
             </p>
-            {#if hasNonZeroField(skill.healing_per_second_bonus)}
-              <!-- Source: server-scripts/Skills.cs:323-359 — ApplyCriticalToOverTime multiplies an eligible recovery tick by 1.5 on a critical roll. -->
-              <p class="text-muted-foreground">
-                Each healing tick can critically heal for 150% at the caster's
-                critical chance.
-              </p>
-            {/if}
+          {/if}
+          {#if (skill.healing_per_second_bonus?.base_value ?? 0) > 0 && skill.duration_base < 30}
+            <!-- Source: server-scripts/Skills.cs:ApplyCriticalToOverTime; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — healing ticks above 3 with base duration below 30 use the caster's stored Critical Chance and a rounded ×1.5. -->
+            <p class="text-muted-foreground">
+              A tick that heals more than 3 Health can be critical and heal
+              150%, rounded. The chance is the caster's Critical Chance when the
+              buff started.
+            </p>
           {/if}
         {/if}
       </div>

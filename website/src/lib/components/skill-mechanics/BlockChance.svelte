@@ -1,10 +1,26 @@
-<!-- Source: server-scripts/Combat.cs:315-325 (blockChance property) -->
-<!-- Source: server-scripts/Skills.cs:557-572 (GetBlockChanceBonus) -->
+<script lang="ts">
+  import * as fmt from "$lib/calculation/format";
+  import { getMechanicsContext } from "./context";
+
+  const mechanics = getMechanicsContext();
+  const { skill } = $derived(mechanics);
+  const amount = $derived(
+    fmt.atRank(skill.block_chance_bonus!, skill.max_level),
+  );
+</script>
+
+<!-- Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage — signed Block Chance bonuses affect only physical hits, with a 0–80% stat cap and a 0–90% final avoidance roll. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Block Chance</h3>
   <p class="text-muted-foreground">
     <span class="block"
-      >This skill adds its Block Chance bonus to the target's chance to block.</span
+      >{amount < 0 ? "Lowers" : "Raises"} the affected character's Block Chance by
+      {fmt.formatNumber(Math.abs(amount) * 100)} percentage points at rank
+      {skill.max_level}{skill.scales_with_charisma
+        ? ", before Charisma scaling"
+        : ""},
+      {amount < 0 ? "to at least 0%" : "to at most 80%"}. Block Chance applies
+      only to physical hits.</span
     >
     <span class="block"
       >Block Chance is capped at 80% before Accuracy and level difference are

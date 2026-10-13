@@ -10,8 +10,7 @@
   const { skill } = $derived(mechanics);
 </script>
 
-<!-- Source: PassiveSkill.cs:15-27 and PlayerSkills.cs:1169-1180 -->
-<!-- Source: server-scripts/PlayerSkills.cs:1271,1618-1628 — learned song-duration bonuses add, then multiply the base duration. -->
+<!-- Source: server-scripts/PlayerSkills.cs:BeginBardSong,GetBardSongDurationMultiplier — learned passive bonuses multiply each renewal's duration. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Song Duration Bonus</h3>
   <p class="text-muted-foreground">
@@ -23,6 +22,6 @@
         skill.bard_song_duration_bonus_per_level,
         skill.max_level,
       ),
-    )}. Learned song-duration bonuses add together.
+    )}.
   </p>
 </div>

@@ -10,7 +10,7 @@
   {@const bonus = skill.health_max_percent_bonus}
   <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — owner's learned isPetSkill PassiveSkill.healthMaxPercentBonus goes to non-mercenary, non-familiar pets, not the owner. -->
   <div class="space-y-2">
-    <h3 class="font-semibold">Pet Maximum Health</h3>
+    <h3 class="font-semibold">Companion Maximum Health</h3>
     <p class="text-muted-foreground">
       Your companion receives {fmt.formatPercent(
         fmt.atRank(bonus, skill.max_level),

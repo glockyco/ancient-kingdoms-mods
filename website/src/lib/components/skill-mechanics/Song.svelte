@@ -19,28 +19,50 @@
   );
 </script>
 
-<!-- Source: PlayerSkills.cs:911-917,1169-1180 -->
-<!-- Source: server-scripts/PlayerSkills.cs:1271,1618-1628 — learned song-duration bonuses add, then multiply the base duration. -->
+<!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast,BeginBardSong,GetBardSongDurationMultiplier — the selected song repeats, renewing its duration on each completed cast. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Song Aura</h3>
   <p class="text-muted-foreground">
-    The song lasts {fmt.formatSeconds(songSeconds)}{skill.duration_per_level &&
+    The song you select keeps recasting itself. Each cast takes
+    {fmt.formatSeconds(fmt.atRank(skill.cast_time!, skill.max_level))},
+    shortened by spell haste. Each completed cast renews the song for
+    {fmt.formatSeconds(songSeconds)}{skill.duration_per_level &&
     skill.max_level > 1
       ? ` at rank ${skill.max_level}`
-      : ""}. Learned song-duration bonuses lengthen it by their total
-    percentage, so with a {fmt.formatPercent(EXAMPLE_SONG_BONUS)} bonus it lasts {fmt.formatSeconds(
-      songDuration(songSeconds, EXAMPLE_SONG_BONUS),
-    )}.
+      : ""}. After you select another song, this one lasts the rest of its
+    duration.
+    <a
+      href="/skills/lingering_melody"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+      >Lingering Melody</a
+    >
+    lengthens it by 10% per rank, so at rank 2 it lasts
+    {fmt.formatSeconds(songDuration(songSeconds, EXAMPLE_SONG_BONUS))}.
   </p>
 </div>
-<!-- Source: PlayerSkills.cs:937-950,1156-1167. Current exported Polyphony data sets additional_active_bard_songs to 1. -->
+<!-- Source: server-scripts/PlayerSkills.cs:GetMaximumActiveBardSongs,BeginBardSong; server-scripts/UICharacterInfo.cs:Update — default limit is two; renewals move songs to the end of the active list. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Active Song Limit</h3>
   <p class="text-muted-foreground">
-    <span class="block">A Bard can sustain two songs by default.</span>
-    <span class="block">Learning Polyphony raises the limit to three.</span>
     <span class="block"
-      >Starting another song at the limit ends the oldest active song.</span
+      >A Bard sustains two songs by default (the Active Songs value in your
+      character window).</span
     >
+    <span class="block"
+      >Learning
+      <a
+        href="/skills/polyphony"
+        class="text-blue-600 dark:text-blue-400 hover:underline">Polyphony</a
+      >
+      raises the limit to three.</span
+    >
+    <span class="block"
+      >Starting another song at the limit ends the song you renewed longest ago.</span
+    >
+    See
+    <a
+      href="/mechanics/bard#songs"
+      class="text-blue-600 dark:text-blue-400 hover:underline">Bard Songs</a
+    >.
   </p>
 </div>

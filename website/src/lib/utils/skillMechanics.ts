@@ -209,6 +209,7 @@ export function computeMechanicsSpec(
   usedByPets: SkillPet[],
   hasMonsters: boolean,
   isWeaponProc: boolean = false,
+  weaponProcClasses: readonly string[] = ALL_CLASS_IDS,
 ): SkillMechanicsSpec {
   const playerClasses = skill.player_classes; // e.g. ["ranger", "rogue"]
   const mercPets = usedByPets.filter((p) => p.is_mercenary);
@@ -260,18 +261,21 @@ export function computeMechanicsSpec(
     for (const caster of otherCasters) {
       damagePairs.push({ caster, formula: otherDamageFormula(skill) });
     }
-    // Source: TargetDamageSkill.cs — weapon procs fire through the full player damage
-    // pipeline at level 1 via weaponItem.procEffect.Apply(player, 1). Enumerate every
-    // player class so class-specific formulas (e.g. Poison+Rogue) are handled correctly.
-    // Guarded on isWeaponProc only; weapon procs always have player_classes=[] so
-    // damagePairs is always empty at this point when isWeaponProc is true.
+    // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; ProjectileSkillEffect.cs:FixedUpdate — equipped weapons trigger procs; only classes allowed by the granting equipment can use them.
     if (isWeaponProc) {
-      for (const cls of ALL_CLASS_IDS) {
+      for (const cls of weaponProcClasses) {
         damagePairs.push({
           caster: { kind: "player", classId: cls },
           formula: playerDamageFormula(skill, cls),
         });
       }
+    }
+    // Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetProjectileSkill.cs:Apply; AreaDamageSkill.cs:Apply — scrolls cast as players, with their character contribution excluded by the damage handler.
+    if (skill.is_scroll && playerClasses.length === 0) {
+      damagePairs.push({
+        caster: { kind: "any_player" },
+        formula: playerDamageFormula(skill, "wizard"),
+      });
     }
   }
 
@@ -286,7 +290,9 @@ export function computeMechanicsSpec(
     // Source: server-scripts/TargetHealSkill.cs:273-276; AreaHealSkill.cs:109-111 — target healing requires canHealOthers, area healing always rolls for critical healing.
     const canCrit = skill.skill_type === "area_heal" || skill.can_heal_others;
 
-    for (const cls of playerClasses) {
+    // Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetHealSkill.cs:Apply — scrolls call Apply as a player; pet/mercenary restoration keeps the player's Wisdom bonus.
+    const healClasses = skill.is_scroll ? ALL_CLASS_IDS : playerClasses;
+    for (const cls of healClasses) {
       const bonusKind: HealBonusKind =
         cls === "ranger"
           ? "player_ranger" // Source: Wisdom.cs — GetHealBonus(isRanger:true) → WIS×3×0.004
@@ -327,7 +333,7 @@ export function computeMechanicsSpec(
   if (isBuffSkill && (!skill.is_bard_song || hasBardScaling)) {
     const isAreaBuff = skill.skill_type === "area_buff";
 
-    if (skill.is_relic) {
+    if (skill.is_relic && isAreaBuff) {
       // Source: AreaBuffSkill.cs:38-41 — isRelic → caster.level.current * 10.
       // Relic items can be used by any player class regardless of skill.player_classes;
       // a single "Player" context covers all of them. No merc/pet path: relics are
@@ -338,7 +344,8 @@ export function computeMechanicsSpec(
         isAreaBuff,
       });
     } else {
-      for (const cls of playerClasses) {
+      // Source: server-scripts/RelicItem.cs:Use; TargetBuffSkill.cs:Apply — target relics use the ordinary player attribute, tripled for Rangers.
+      for (const cls of skill.is_relic ? ALL_CLASS_IDS : playerClasses) {
         let src: BuffBonusAttrSource;
         if (hasBardScaling) {
           // Source: BardSongSkill.cs — Bard songs use the caster's Charisma.
@@ -462,6 +469,7 @@ export function computeMechanicsSpec(
   // Use hasNonZeroField to avoid false positives from all-zero JSON objects in DB.
   const hasDebuffScaling =
     isDebuffSkill &&
+    !skill.is_cleanse &&
     ((skill.scales_with_charisma && hasCharismaScaledEffect(skill)) ||
       hasNonZeroField(skill.healing_per_second_bonus) ||
       hasNonZeroField(skill.defense_bonus) ||
@@ -511,8 +519,11 @@ export function computeMechanicsSpec(
         bonusAttrKind: playerMercKind,
       });
     }
-    for (const caster of otherCasters) {
-      debuffPairs.push({ caster, bonusAttrKind: "none" });
+    // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — other casters receive no attribute bonus; only show that comparison beside a scaled caster.
+    if (debuffPairs.length > 0) {
+      for (const caster of otherCasters) {
+        debuffPairs.push({ caster, bonusAttrKind: "none" });
+      }
     }
   }
 

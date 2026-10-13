@@ -13,9 +13,13 @@
   <div class="space-y-1">
     <h3 class="font-semibold">Lifetap</h3>
     <p class="text-muted-foreground">
-      Heals you for {fmt.formatPercent(fmt.atRank(share, skill.max_level))} of each
-      hit's damage after the target's defenses, Ward and Mana Shield, rounded down,
-      so a {fmt.formatNumber(EXAMPLE_HIT)}-damage hit heals {fmt.formatNumber(
+      Heals the attacker for {fmt.formatPercent(
+        fmt.atRank(share, skill.max_level),
+      )} of each hit's damage after the target's defenses, Ward and
+      <a
+        href="/skills/mana_shield"
+        class="text-blue-600 dark:text-blue-400 hover:underline">Mana Shield</a
+      >, rounded down, so a {fmt.formatNumber(EXAMPLE_HIT)}-damage hit heals {fmt.formatNumber(
         lifetapFromHit(share, skill.max_level),
       )}{fmt.scalesWithRank(share, skill.max_level)
         ? ` at rank ${skill.max_level}`
@@ -23,8 +27,12 @@
         share,
         skill.max_level,
         fmt.formatPercent,
-      )} Damage beyond the target's remaining Health still counts. Lifetap Healing
-      bonuses multiply the healing. See
+      )} Damage beyond the target's remaining Health still counts. Lifetap healing
+      bonuses, such as
+      <a
+        href="/skills/lich_shroud"
+        class="text-blue-600 dark:text-blue-400 hover:underline">Lich Shroud</a
+      >'s, multiply the healing. See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#lifetap">lifetap</a

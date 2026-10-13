@@ -13,38 +13,55 @@
   <h3 class="font-semibold">Final Cadence</h3>
   <p>
     {#if usedByBardMercenary}
-      The mercenary casts it only from level 50, while it sustains its full
-      combat song limit.
+      <!-- Source: server-scripts/BardMercenarySkills.cs:CanUseFinalCadence,MaximumCombatSongs — the level-50 cadence needs all three combat songs. -->
+      The mercenary casts it only from level 50, while it sustains all three of its
+      combat songs.
     {:else}
       You can cast it only while you sustain your full active song limit.
     {/if}
   </p>
   <Calculation calculation={cadenceCalculation(skill, usedByBardMercenary)} />
-  <p>Critical heals restore double Health, or triple Health in 10% of cases.</p>
-  {#if !usedByBardMercenary}
-    <!-- Source: server-scripts/PlayerSkills.cs:1157,1576-1603 — distinct completed manual songs in the preceding 40 seconds are consumed for the Melody bonus. -->
+  {#if usedByBardMercenary && skill.max_level > 1}
+    <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the owner determines the mercenary's skill rank. -->
     <p class="text-muted-foreground">
-      Songs completed less than 40s ago count. Automatic renewal contributes 0
-      songs. Casting Final Cadence clears the Melody bonus.
+      Use the rank from Mercenary Skill Rank on this page. The examples use the
+      same owner level and veteran points.
     </p>
   {/if}
-  <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply and BardFinalCadenceSkill.cs:HealNearbyAllies — a Bard mercenary uses its own Charisma and critical chance. -->
+  <p>Critical heals restore double Health, or triple Health in 10% of cases.</p>
+  {#if !usedByBardMercenary}
+    <!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast,ConsumeFinalCadenceRepertoireBonus — distinct completed manual songs in the preceding 40 seconds are consumed for the Melody bonus. -->
+    <p class="text-muted-foreground">
+      Each distinct song counts once when you finish casting it yourself, less
+      than 40 seconds before Final Cadence. Automatic repeats do not count.
+      Casting Final Cadence clears the Melody bonus.
+    </p>
+  {/if}
+  <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,FindEnemies,IsEngagedWithParty — one roll covers all allied healing; sleeping monsters are excluded and Pet targets map to their owner. -->
   <p class="text-muted-foreground">
     <span class="block"
-      >The {usedByBardMercenary ? "mercenary's" : "Bard's"} critical chance determines
-      one roll shared by every recipient.</span
+      >One critical roll, at the {usedByBardMercenary
+        ? "mercenary's"
+        : "Bard's"}
+      critical chance, applies to the healing of every ally.</span
     >
     <span class="block"
       >Its damage hits living, visible, attackable monsters within range in the
-      same zone that have a nonempty aggro list and speed above −50.</span
+      same zone that are already in combat and are not asleep.</span
     >
     <span class="block">Final Cadence does not heal familiars.</span>
     {#if usedByBardMercenary}
       <span class="block"
-        >The mercenary damages only enemies that target its owner, a party
-        member, or one of their pets.</span
+        >The mercenary damages only enemies that target its owner, any party
+        member, or one of their companions or mercenaries.</span
       >
     {/if}
+  </p>
+  <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,AddHealingAggro — actual healing divided by six rounds up and adds threat to nearby monsters fighting the healed ally. -->
+  <p class="text-muted-foreground">
+    For each ally healed, healing adds threat equal to a sixth of the Health
+    restored, rounded up, on monsters within {2 * skill.cast_range!.base_value} yd
+    of the caster that are fighting that ally.
   </p>
   <!-- Source: server-scripts/Combat.cs:654-661,844-861,1539-1580 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">
@@ -62,6 +79,13 @@
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#combat-advantage">combat advantage</a
+    >.
+  </p>
+  <p class="text-muted-foreground">
+    See <a
+      href="/mechanics/bard#cadence"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+      >Final Cadence and Melody</a
     >.
   </p>
 </div>

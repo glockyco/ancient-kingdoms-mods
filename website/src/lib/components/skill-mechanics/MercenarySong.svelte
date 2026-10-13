@@ -7,30 +7,64 @@
 </script>
 
 <!-- Source: server-scripts/BardMercenarySkills.cs:OnStartServer,LateUpdate,RefreshAura,MaximumCombatSongs -->
+<!-- Source: server-scripts/UIEquipmentMercenary.cs:Update — the mercenary window shows active songs and its combat-song limit. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Mercenary Song Aura</h3>
   <p>
-    The song lasts {formatDuration(
+    The mercenary keeps the song running automatically, renewing its aura every
+    2.5 seconds. Each renewal lasts {formatDuration(
       skill.duration_base,
       skill.duration_per_level,
-    )}. The mercenary refreshes its aura every 2.5 seconds while the song stays
-    active.
+    )}. A recipient loses the effect when it leaves range. When combat starts or
+    ends, the previous set stops renewing and lasts its remaining duration.
   </p>
   <p class="text-muted-foreground">
-    <span class="block">The Bard mercenary sings automatically.</span>
     <span class="block"
-      >Out of combat, it keeps only Wayfarer's Rhythm active.</span
+      >The
+      <a
+        href="/mercenaries/bard_mercenary"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        >Bard mercenary</a
+      >
+      sings automatically.</span
     >
     <span class="block"
-      >In combat, it keeps Grand Symphony and March of Celerity active.</span
+      >Out of combat, it keeps only
+      <a
+        href="/skills/mercenary_wayfarers_rhythm"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        >Mercenary Wayfarer's Rhythm</a
+      >
+      active.</span
     >
     <span class="block"
-      >From level 40, it also keeps Anthem of Focus active.</span
+      >In combat, it keeps
+      <a
+        href="/skills/mercenary_grand_symphony"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        >Mercenary Grand Symphony</a
+      >
+      and
+      <a
+        href="/skills/mercenary_march_of_celerity"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        >Mercenary March of Celerity</a
+      >
+      active.</span
+    >
+    <span class="block"
+      >From level 40, it also keeps
+      <a
+        href="/skills/mercenary_anthem_of_focus"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        >Mercenary Anthem of Focus</a
+      >
+      active.</span
     >
     <span class="block">It starts one song at a time.</span>
     <span class="block"
-      >The songs stop when the mercenary or its owner dies, or when the
-      mercenary is hidden, stunned, feared, or asleep.</span
+      >All song effects end immediately when the mercenary or its owner dies, or
+      when the mercenary is stunned, feared, or asleep.</span
     >
   </p>
 </div>
@@ -38,9 +72,17 @@
   <h3 class="font-semibold">Active Song Limit</h3>
   <p>
     The mercenary sustains two combat songs below level 40 and three from level
-    40 onward.
+    40 onward (the Active Songs value in the mercenary equipment window).
   </p>
   <p class="text-muted-foreground">
-    Polyphony and learned song-duration bonuses do not apply to the mercenary.
+    <a
+      href="/skills/polyphony"
+      class="text-blue-600 dark:text-blue-400 hover:underline">Polyphony</a
+    >
+    and learned song-duration bonuses do not apply to the mercenary. See
+    <a
+      href="/mechanics/bard#songs"
+      class="text-blue-600 dark:text-blue-400 hover:underline">Bard Songs</a
+    >.
   </p>
 </div>

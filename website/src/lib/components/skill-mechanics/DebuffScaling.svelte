@@ -35,10 +35,21 @@
               isMercenaryGroup(casters),
             )}
           />
+          {#if (skill.healing_per_second_bonus?.base_value ?? 0) < 0}
+            <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT — resistance, cleanse layers and tick bonuses apply after the skill's attribute scaling. -->
+            <p class="text-muted-foreground">
+              The target's resistance and other tick modifiers change the damage
+              that lands. See <a
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                href="/mechanics/combat#debuffs"
+                >damage-over-time calculations</a
+              >.
+            </p>
+          {/if}
           {#if skill.scales_with_charisma}
             <!-- Source: server-scripts/BuffSkill.cs:473-478 — Charisma scaling precedes all other attribute branches. -->
             <p class="text-muted-foreground">
-              Intelligence does not change this song.
+              Songs scale with Charisma, not Wisdom or Intelligence.
             </p>
           {/if}
         {/if}

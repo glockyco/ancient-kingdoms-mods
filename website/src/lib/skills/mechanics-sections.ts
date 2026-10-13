@@ -25,9 +25,11 @@ const MECHANICS_SECTIONS = [
   {
     id: "companion-buff",
     shows: ({ skill }) =>
-      skill.is_necromancer_pet_buff || skill.also_buff_active_pet,
+      // Source: server-scripts/TargetBuffSkill.cs:CorrectedTarget — isPetSkill targets the caster's active pet.
+      skill.is_necromancer_pet_buff ||
+      skill.also_buff_active_pet ||
+      (skill.skill_type === "target_buff" && skill.is_pet_skill),
   },
-  { id: "channel", shows: ({ skill }) => skill.channel_pulses > 0 },
   {
     id: "damage-over-time-execute",
     shows: ({ skill }) => hasLinearValue(skill.damage_over_time_execute_bonus),
@@ -98,10 +100,22 @@ const MECHANICS_SECTIONS = [
     id: "aggro",
     shows: ({ skill, facts }) =>
       facts.isDamageType &&
-      (skill.aggro?.base_value ?? 0) > 0 &&
+      // Source: server-scripts/Combat.cs:DealDamageAt — negative listed threat reduces existing monster threat instead of adding damage threat.
+      hasLinearValue(skill.aggro) &&
       (skill.player_classes.length > 0 ||
         facts.usedByMercenary ||
         facts.usedByCompanion),
+  },
+  // Source: server-scripts/PlayerSkills.cs:StartCast — only a player channels; other casters deal the damage in one hit.
+  {
+    id: "channel",
+    shows: ({ skill, spec }) =>
+      skill.channel_pulses > 0 &&
+      spec.damageContexts.some((context) =>
+        context.casters.some(
+          (caster) => caster.kind === "player" || caster.kind === "any_player",
+        ),
+      ),
   },
   // Balance Health sets every target's Health instead of healing, so it replaces the healing
   // section.
@@ -120,21 +134,39 @@ const MECHANICS_SECTIONS = [
     shows: ({ skill, spec, facts }) =>
       facts.isBuffType &&
       facts.hasAttributeScaledBonuses &&
+      // Source: server-scripts/Skills.cs:GetFinalDamageDoT — a non-debuff Health drain gets no attribute bonus.
+      (skill.scales_with_charisma ||
+        (skill.healing_per_second_bonus?.base_value ?? 0) >= 0 ||
+        [
+          skill.health_max_bonus,
+          skill.defense_bonus,
+          skill.ward_bonus,
+          skill.magic_resist_bonus,
+          skill.poison_resist_bonus,
+          skill.fire_resist_bonus,
+          skill.cold_resist_bonus,
+          skill.disease_resist_bonus,
+          skill.damage_shield,
+          ...(skill.id === "leadership"
+            ? [skill.damage_bonus, skill.magic_damage_bonus]
+            : []),
+        ].some(hasLinearValue)) &&
       skill.skill_type !== "passive" &&
       spec.buffContexts.length > 0,
   },
   {
     id: "debuff-scaling",
-    shows: ({ spec, facts }) =>
-      facts.isDebuffType && spec.debuffContexts.length > 0,
+    shows: ({ skill, spec, facts }) =>
+      !skill.is_cleanse && facts.isDebuffType && spec.debuffContexts.length > 0,
   },
   {
     id: "debuff-resistance",
     shows: ({ skill, facts }) =>
-      facts.isDebuffType &&
-      !skill.is_cleanse &&
-      !skill.is_bard_charm &&
-      facts.debuffResistance !== null,
+      facts.isDebuffType && !skill.is_cleanse && !skill.is_bard_charm,
+  },
+  {
+    id: "decrease-resists",
+    shows: ({ skill }) => skill.is_decrease_resists_skill,
   },
   {
     id: "cleanse-resistance",
@@ -142,6 +174,8 @@ const MECHANICS_SECTIONS = [
       facts.isDebuffType &&
       !skill.is_cleanse &&
       !skill.is_dispel &&
+      // Source: server-scripts/Player.cs:CanAttack — player and pet debuffs target monsters/NPCs, which have no cleanse skills in the current data.
+      facts.usedByMonster &&
       skill.prob_ignore_cleanse != null,
   },
   { id: "cleanse", shows: ({ skill }) => skill.is_cleanse },
@@ -149,10 +183,6 @@ const MECHANICS_SECTIONS = [
   { id: "wild-strike", shows: ({ facts }) => facts.isWildStrike },
   { id: "parry", shows: ({ skill }) => skill.id === "parry" },
   { id: "assassination", shows: ({ skill }) => skill.is_assassination_skill },
-  {
-    id: "decrease-resists",
-    shows: ({ skill }) => skill.is_decrease_resists_skill,
-  },
   { id: "mana-shield", shows: ({ skill }) => skill.is_mana_shield },
   { id: "fear", shows: ({ skill }) => hasLinearValue(skill.fear_chance) },
   {

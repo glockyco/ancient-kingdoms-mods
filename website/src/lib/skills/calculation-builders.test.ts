@@ -211,6 +211,78 @@ describe("skill damage calculations", () => {
       )[0],
     ).toBe(100);
   });
+  test("a player's channeled skill splits its damage over the pulses, giving the leftover to the first pulses", () => {
+    const channel = damage("normal", player("necromancer"), {
+      channel_pulses: 3,
+    });
+    // 201 × 150% = 302 rounded, split as 100 per pulse with 2 left over.
+    expect(resultNumbers(channel, { damage: 201 })).toEqual([101, 101, 100]);
+    expect(resultNumbers(channel, { damage: 200 })).toEqual([100, 100, 100]);
+    // Monsters cast the same skill as one hit.
+    expect(
+      resultNumbers(damage("monster_melee", monster, { channel_pulses: 3 })),
+    ).toEqual([300]);
+  });
+  test("monster skill amounts use their runtime rank, including rank zero", () => {
+    const fields = {
+      damage: { base_value: 20, bonus_per_level: 5 },
+      damage_percent: { base_value: 1.4, bonus_per_level: 0.25 },
+      max_level: 10,
+    };
+    expect(
+      resultNumbers(
+        damage("monster_magic", monster, {
+          ...fields,
+          learn_default: false,
+        }),
+      )[0],
+    ).toBe(247);
+    expect(
+      resultNumbers(
+        damage("monster_magic", monster, {
+          ...fields,
+          learn_default: true,
+        }),
+      )[0],
+    ).toBe(308);
+  });
+  test("single-rank damage, cadence and charm omit rank controls and evaluate rank one", () => {
+    const single = skill({
+      max_level: 1,
+      damage: { base_value: 4, bonus_per_level: 2 },
+      heals_health: { base_value: 12, bonus_per_level: 3 },
+      charmed_damage_percent: { base_value: 0.45, bonus_per_level: 0.05 },
+    });
+    const hit = damage("normal", player("warrior"), single);
+    const cadence = cadenceCalculation(single, false);
+    const charm = charmDamageCalculation(single);
+    for (const calculation of [hit, cadence, charm])
+      expect(calculation.inputs?.some((input) => input.key === "rank")).toBe(
+        false,
+      );
+    expect(resultNumbers(hit, { damage: 200 })).toEqual([306]);
+    expect(resultNumbers(cadence, { charisma: 0, songs: 0 })).toEqual([4, 12]);
+    expect(resultNumbers(charm, { charisma: 0 })).toEqual([45]);
+  });
+  test("mercenary damage and cadence default to the Mercenary Skill Rank example", () => {
+    const hit = damage("normal", mercenary("Warrior"), { max_level: 30 });
+    const cadence = cadenceCalculation(
+      skill({
+        max_level: 30,
+        heals_health: { base_value: 12, bonus_per_level: 3 },
+      }),
+      true,
+    );
+    for (const calculation of [hit, cadence])
+      expect(
+        calculation.inputs?.find((input) => input.key === "rank")?.value,
+      ).toBe(12);
+    expect(
+      damage("normal", mercenary("Warrior"), { max_level: 5 }).inputs?.find(
+        (input) => input.key === "rank",
+      )?.value,
+    ).toBe(5);
+  });
 });
 
 describe("healing and effect calculations", () => {
@@ -339,6 +411,117 @@ describe("healing and effect calculations", () => {
         { hitDamage: 10 },
       )[0],
     ).toBe(21);
+  });
+  test("all-zero damage fields do not create a hit-damage input or threat term", () => {
+    const calculation = aggroCalculation(
+      skill({
+        damage: { base_value: 0, bonus_per_level: 0 },
+        damage_percent: { base_value: 0, bonus_per_level: 0 },
+        aggro: { base_value: 3000, bonus_per_level: 0 },
+      }),
+      "mercenary",
+    );
+    expect(calculation.inputs?.map((input) => input.key)).toEqual([
+      "rank",
+      "maxHealth",
+    ]);
+    expect(
+      resultNumbers(calculation, { maxHealth: 1000, hitDamage: 999 }),
+    ).toEqual([4000]);
+  });
+  test("player pet-restoration scrolls retain Wisdom, ordinary scrolls and mercenary casts do not", () => {
+    const restore = skill({
+      skill_type: "target_heal",
+      is_scroll: true,
+      is_mercenary_skill: true,
+      heals_health: { base_value: 1000, bonus_per_level: 1000 },
+    });
+    expect(
+      resultNumbers(healingCalculation(restore, "player_other"), {
+        rank: 1,
+        wisdom: 125,
+      }),
+    ).toEqual([1500]);
+    expect(
+      resultNumbers(healingCalculation(restore, "player_ranger"), {
+        rank: 1,
+        wisdom: 125,
+      }),
+    ).toEqual([2500]);
+    expect(
+      resultNumbers(healingCalculation(restore, "merc"), {
+        rank: 1,
+        wisdom: 125,
+      }),
+    ).toEqual([1000]);
+    expect(
+      resultNumbers(
+        healingCalculation(
+          { ...restore, skill_type: "area_heal" },
+          "player_other",
+        ),
+        { rank: 1, wisdom: 125 },
+      ),
+    ).toEqual([1000]);
+  });
+
+  test("a flat buff drain does not request or use an attribute", () => {
+    const drain = effectScalingCalculation(
+      skill({
+        healing_per_second_bonus: { base_value: -5, bonus_per_level: 0 },
+      }),
+      "player_ranger_wis",
+    );
+    expect(drain.inputs?.map((input) => input.key)).toEqual(["rank"]);
+    expect(resultNumbers(drain, { wisdom: 500 })).toEqual([5]);
+    expect(resultNumbers(drain, { wisdom: 0 })).toEqual([5]);
+  });
+
+  test("additive Charisma damage has one attribute input and retains its uncapped per-point contribution", () => {
+    const calculation = effectScalingCalculation(
+      skill({
+        scales_with_charisma: true,
+        healing_per_second_bonus: { base_value: -20, bonus_per_level: 0 },
+        damage_over_time_bonus_per_charisma_point: 0.75,
+      }),
+      "cha",
+      true,
+    );
+    expect(calculation.inputs?.map((input) => input.key)).toEqual([
+      "rank",
+      "charisma",
+    ]);
+    expect(resultNumbers(calculation, { charisma: 3000 })).toEqual([2270]);
+  });
+
+  test("song percentage debuffs report reduction magnitudes without changing their Charisma scaling", () => {
+    const calculation = effectScalingCalculation(
+      skill({
+        scales_with_charisma: true,
+        accuracy_bonus: { base_value: -0.03, bonus_per_level: 0 },
+        critical_chance_bonus: { base_value: -0.01, bonus_per_level: 0 },
+      }),
+      "cha",
+      true,
+    );
+    expect(resultNumbers(calculation, { charisma: 100 })).toEqual([3.3, 1.1]);
+  });
+
+  test("threat rank inputs omit fixed ranks and align mercenary defaults with the rank example", () => {
+    const threat = skill({
+      max_level: 30,
+      damage: null,
+      damage_percent: null,
+      aggro: { base_value: 10, bonus_per_level: 1 },
+    });
+    expect(
+      aggroCalculation(threat, "mercenary").inputs?.find(
+        (input) => input.key === "rank",
+      )?.value,
+    ).toBe(12);
+    const fixed = aggroCalculation({ ...threat, max_level: 1 }, "player");
+    expect(fixed.inputs?.map((input) => input.key)).toEqual(["maxHealth"]);
+    expect(resultNumbers(fixed, { maxHealth: 100 })).toEqual([110]);
   });
 });
 

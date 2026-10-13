@@ -1,1 +1,1 @@
-Mechanics Companion Buff Targets your living companion within 8 yd. Familiars and mercenaries cannot receive this buff.
+Mechanics Companion Buff Targets your active pet at any distance, including a familiar.
