@@ -1078,6 +1078,7 @@
       </p>
       {#if data.dungeonRefusedPotions.length > 0}
         <!-- Source: server-scripts/PotionItem.cs:Use; UsableItem.cs:Use — the refusal comes after the item cooldown starts and invisibility ends, and before the potion is used up. -->
+        <!-- Runtime verification: docs/game-bugs/refused-dungeon-potion-ends-invisibility.md -->
         <p>
           {#each data.dungeonRefusedPotions as potion, index (potion.id)}{index >
             0
