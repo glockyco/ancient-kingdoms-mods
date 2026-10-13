@@ -524,11 +524,11 @@
         <span>{monsterDetails.health.toLocaleString()}</span>
       </div>
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Damage</span>
+        <span class="text-muted-foreground">Attack Power</span>
         <span>{monsterDetails.damage.toLocaleString()}</span>
       </div>
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Magic Damage</span>
+        <span class="text-muted-foreground">Spell Power</span>
         <span>{monsterDetails.magicDamage.toLocaleString()}</span>
       </div>
     {/if}

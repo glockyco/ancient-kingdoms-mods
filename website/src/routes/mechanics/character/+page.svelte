@@ -59,12 +59,12 @@
               <th class="p-2 font-medium text-foreground">Strength</th>
               <td class="p-2">
                 <span class="block"
-                  >Each point adds 1 Damage and 10 maximum Rage.</span
+                  >Each point adds 1 Attack Power and 10 maximum Rage.</span
                 >
                 <span class="block"
-                  >Melee damage-over-time effects and Defense reductions gain
-                  50% of Strength, rounded. With 100 Strength, they deal 50 more
-                  damage per tick or reduce Defense by 50 more.</span
+                  >Melee damage-over-time effects and Armor Class reductions
+                  gain 50% of Strength, rounded. With 100 Strength, they deal 50
+                  more damage per tick or reduce Armor Class by 50 more.</span
                 >
               </td>
             </tr>
@@ -79,7 +79,7 @@
                   you receive 25 Poison Resist.</span
                 >
                 <span class="block"
-                  >It adds no Defense and no health recovery.</span
+                  >It adds no Armor Class and no health recovery.</span
                 >
               </td>
             </tr>
@@ -89,7 +89,7 @@
               <td class="p-2">
                 <span class="block"
                   >Each point adds 0.05 percentage points of Accuracy and
-                  Critical Resist and 0.03 percentage points of Critical Chance.</span
+                  Critical Resist and 0.03 percentage points of Critical Strike.</span
                 >
                 <span class="block"
                   >Bow damage gains 150% of Dexterity, rounded. With 100
@@ -112,18 +112,17 @@
               <th class="p-2 font-medium text-foreground">Intelligence</th>
               <td class="p-2">
                 <span class="block"
-                  >+20 maximum Mana per Intelligence point. Magic damage gains
-                  150% of Intelligence, rounded. With 100 Intelligence, it gains
-                  150.</span
+                  >Each point adds 20 maximum Mana. Spell Power gains 150% of
+                  Intelligence, rounded. With 100 Intelligence, it gains 150.</span
                 >
                 <span class="block"
-                  >Defense, Magic Resist, and elemental resistance reductions
-                  from magical debuffs gain 40% of Intelligence, rounded. With
-                  100 Intelligence, the reduction grows by 40.</span
+                  >Armor Class, Magic Resist, and elemental resistance
+                  reductions from magical debuffs gain 40% of Intelligence,
+                  rounded. With 100 Intelligence, the reduction grows by 40.</span
                 >
                 <span class="block"
-                  >Physical and magic damage reductions from debuffs gain 50% of
-                  Intelligence, rounded. With 100 Intelligence, the reduction
+                  >Attack Power and Spell Power reductions from debuffs gain 50%
+                  of Intelligence, rounded. With 100 Intelligence, the reduction
                   grows by 50.</span
                 >
                 <!-- Source: server-scripts/BuffSkill.cs:473-515 — fire, cold, magic and Intelligence-scaled poison/disease use the skill's Intelligence coefficient, except Charisma-scaled effects. -->
@@ -162,10 +161,11 @@
                   capacity.</span
                 >
                 <span class="block"
-                  >Defense and Magic Resist buffs each gain 15% of the selected
-                  attribute, rounded. With 100 selected attribute points, you
-                  receive 15 extra Defense or Magic Resist. Ranger targeted
-                  buffs triple the selected attribute before scaling.</span
+                  >Armor Class and Magic Resist buffs each gain 15% of the
+                  selected attribute, rounded. With 100 selected attribute
+                  points, you receive 15 extra Armor Class or Magic Resist.
+                  Ranger targeted buffs triple the selected attribute before
+                  scaling.</span
                 >
                 <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
                 <span class="block"

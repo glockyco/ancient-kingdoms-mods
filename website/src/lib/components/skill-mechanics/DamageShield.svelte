@@ -30,14 +30,14 @@
     {#if skill.damage_shield_type && skill.damage_shield_type !== "Unknown"}
       <span class="block">
         The attacker's {skill.damage_shield_type === "Physical"
-          ? "Defense"
+          ? "Armor Class"
           : `${skill.damage_shield_type} Resist`}
         reduces this shield's damage by 5% per 100 points, at most 90%, with the reduction
         rounded up.
       </span>
     {:else}
       <span class="block"
-        >Defense and resist stats do not reduce this shield's damage.</span
+        >Armor Class and resist stats do not reduce this shield's damage.</span
       >
     {/if}
     <span class="block">

@@ -405,8 +405,8 @@ export function damageCalculation(
   const terms = [
     ...(!scroll
       ? [
-          magic ? "Magic Damage" : "Damage",
-          ...(weaponMagic ? ["Damage"] : []),
+          magic ? "Spell Power" : "Attack Power",
+          ...(weaponMagic ? ["Attack Power"] : []),
           ...(dexterity ? ["Dexterity contribution"] : []),
         ]
       : []),
@@ -578,7 +578,7 @@ export function damageCalculation(
       return {
         given: other
           ? [
-              `the caster's 200 ${magic ? "Magic Damage" : "Damage"}${weaponMagic ? " and 200 Damage" : ""}`,
+              `the caster's 200 ${magic ? "Spell Power" : "Attack Power"}${weaponMagic ? " and 200 Attack Power" : ""}`,
               ...((skill.damage?.bonus_per_level ?? 0) !== 0 ||
               (multiplied && skill.damage_percent!.bonus_per_level !== 0)
                 ? [`rank ${rank}`]

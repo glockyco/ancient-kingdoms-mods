@@ -1,1 +1,1 @@
-Mechanics Resist Chance The target's Defense gives it 5 percentage points of chance per 100 points to resist this debuff, at most 90%. See resistance and avoidance for Accuracy and level differences. Monsters marked Immune to Debuffs ignore this skill.
+Mechanics Resist Chance The target's Armor Class gives it 5 percentage points of chance per 100 points to resist this debuff, at most 90%. See resistance and avoidance for Accuracy and level differences. Monsters marked Immune to Debuffs ignore this skill.

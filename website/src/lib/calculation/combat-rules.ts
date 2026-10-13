@@ -21,14 +21,14 @@ export function characterDamage(flat: number, bonus: number) {
 export const characterDamageCalculation: Calculation = {
   steps: [
     {
-      name: "Flat Damage",
+      name: "Flat Attack Power",
       expression:
-        "Level-based base Damage + non-negative Strength + flat physical damage from working equipment, learned skills, and buffs",
+        "Level-based base Attack Power + non-negative Strength + flat Attack Power from working equipment, learned skills, and buffs",
     },
     {
-      name: "Flat Magic Damage",
+      name: "Flat Spell Power",
       expression:
-        "Level-based base Magic Damage + 150% of non-negative Intelligence, rounded, + flat magic damage from working equipment, learned skills, and buffs",
+        "Level-based base Spell Power + 150% of non-negative Intelligence, rounded, + flat Spell Power from working equipment, learned skills, and buffs",
     },
     {
       name: "Percentage bonus",
@@ -36,13 +36,15 @@ export const characterDamageCalculation: Calculation = {
         "Sum of active learned passive bonuses and buff bonuses. A resource-dependent physical passive scales with current Rage ÷ maximum Rage. A resource-dependent magic passive scales with current Mana ÷ maximum Mana",
     },
     {
-      name: "Extra damage",
-      expression: "Corresponding flat damage × percentage bonus",
+      name: "Extra amount",
+      expression:
+        "Corresponding flat Attack Power or Spell Power × percentage bonus",
       rounding: "nearest",
     },
     {
       name: "Character window stat",
-      expression: "Corresponding flat damage + extra damage",
+      expression:
+        "Corresponding flat Attack Power or Spell Power + extra amount",
       limit: "at least 0",
     },
   ],
@@ -50,10 +52,10 @@ export const characterDamageCalculation: Calculation = {
     const extra = iround(multiplyF32(201, 0.5));
     const result = characterDamage(201, 0.5);
     return {
-      given: ["201 flat Damage", "50% total physical damage bonus"],
-      result: `${number(result)} Damage in the character window`,
+      given: ["201 flat Attack Power", "50% total Attack Power bonus"],
+      result: `${number(result)} Attack Power in the character window`,
       working: [
-        `Extra damage: 201 × 50% = ${number(extra)}, rounded`,
+        `Extra amount: 201 × 50% = ${number(extra)}, rounded`,
         `Character window stat: 201 + ${number(extra)} = ${number(result)}`,
       ],
     };
@@ -183,7 +185,7 @@ export const pipelineCalculation: Calculation = {
         "a moving player hit from behind",
         "a successful hit and a 105% variance roll",
         "attacker 2 levels higher",
-        "100 target Defense",
+        "100 target Armor Class",
         "a critical hit with 20% Critical Resist",
         "20 Ward left and Mana Shield active with 10 Mana",
         "no Slayer reduction, Rampage, on-hit effects, or Parry",
@@ -306,7 +308,7 @@ export const damageOverTimeCalculation: Calculation = {
     {
       name: "Reaper Form tick",
       expression:
-        "Tick after Cleanse × (100% + caster's active Reaper Form magic damage bonus)",
+        "Tick after Cleanse × (100% + caster's active Reaper Form Spell Power bonus)",
       rounding: "nearest",
     },
     {

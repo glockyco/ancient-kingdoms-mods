@@ -571,12 +571,10 @@
                   mercenary's{/if}
                 <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
-                  href="/mechanics/combat#timing"
-                  >{skill.player_classes.length === 0 && facts.usedByMercenary
-                    ? "spell haste"
-                    : "Spell haste"}</a
+                  href="/mechanics/combat#timing">Spell Casting Haste</a
                 >
-                shortens the cast by its percentage, so 20% spell haste turns the
+                shortens the cast by its percentage, so 20% Spell Casting Haste turns
+                the
                 {fmt.formatSeconds(
                   fmt.atRank(skill.cast_time, skill.max_level),
                 )} cast{fmt.scalesWithRank(skill.cast_time, skill.max_level)
@@ -1013,13 +1011,13 @@
             <!-- 3. Offense -->
             {#if skill.damage_bonus}
               <div>
-                <dt class="text-muted-foreground">Damage</dt>
+                <dt class="text-muted-foreground">Attack Power</dt>
                 <dd class="font-medium">{formatLinear(skill.damage_bonus)}</dd>
               </div>
             {/if}
             {#if skill.damage_percent_bonus}
               <div>
-                <dt class="text-muted-foreground">Physical Damage %</dt>
+                <dt class="text-muted-foreground">Attack Power %</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.damage_percent_bonus)}
                 </dd>
@@ -1027,7 +1025,7 @@
             {/if}
             {#if skill.magic_damage_bonus}
               <div>
-                <dt class="text-muted-foreground">Magic Damage</dt>
+                <dt class="text-muted-foreground">Spell Power</dt>
                 <dd class="font-medium">
                   {formatLinear(skill.magic_damage_bonus)}
                 </dd>
@@ -1035,7 +1033,7 @@
             {/if}
             {#if skill.magic_damage_percent_bonus}
               <div>
-                <dt class="text-muted-foreground">Magic Damage %</dt>
+                <dt class="text-muted-foreground">Spell Power %</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.magic_damage_percent_bonus)}
                 </dd>
@@ -1044,7 +1042,7 @@
             <!-- 4. Defense (mitigation grouped together) -->
             {#if skill.defense_bonus}
               <div>
-                <dt class="text-muted-foreground">Defense</dt>
+                <dt class="text-muted-foreground">Armor Class</dt>
                 <dd class="font-medium">{formatLinear(skill.defense_bonus)}</dd>
               </div>
             {/if}
@@ -1105,7 +1103,7 @@
             {/if}
             {#if skill.spell_haste_bonus}
               <div>
-                <dt class="text-muted-foreground">Spell Haste</dt>
+                <dt class="text-muted-foreground">Spell Casting Haste</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.spell_haste_bonus)}
                 </dd>
@@ -1114,7 +1112,7 @@
             <!-- 6. Hit/chance modifiers -->
             {#if skill.critical_chance_bonus}
               <div>
-                <dt class="text-muted-foreground">Critical Chance</dt>
+                <dt class="text-muted-foreground">Critical Strike</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.critical_chance_bonus)}
                 </dd>

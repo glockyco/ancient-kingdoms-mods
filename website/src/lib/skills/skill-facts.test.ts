@@ -186,7 +186,7 @@ describe("skill page facts", () => {
         is_poison_debuff: true,
         is_fire_debuff: true,
       }).debuffResistance,
-    ).toBe("Defense");
+    ).toBe("Armor Class");
     expect(
       facts({ is_poison_debuff: true, is_fire_debuff: true }).debuffResistance,
     ).toBe("Poison Resist");
@@ -252,7 +252,7 @@ describe("skill page facts", () => {
   test("damage type omission means physical, but unknown types and non-damage skills have no mapping", () => {
     expect(
       facts({ skill_type: "target_damage", damage_type: null }).damageMechanics,
-    ).toEqual({ stat: "Defense", avoidance: "block" });
+    ).toEqual({ stat: "Armor Class", avoidance: "block" });
     expect(
       facts({ skill_type: "target_damage", damage_type: "Unknown" })
         .damageMechanics,

@@ -27,16 +27,16 @@ import {
 
 const PET_STATS: { id: PetStatId; name: string; isPercent?: boolean }[] = [
   { id: "health", name: "Health" },
-  { id: "damage", name: "Physical damage" },
-  { id: "magic_damage", name: "Magic damage" },
-  { id: "defense", name: "Defense" },
+  { id: "damage", name: "Attack Power" },
+  { id: "magic_damage", name: "Spell Power" },
+  { id: "defense", name: "Armor Class" },
   { id: "magic_resist", name: "Magic resistance" },
   { id: "poison_resist", name: "Poison resistance" },
   { id: "fire_resist", name: "Fire resistance" },
   { id: "cold_resist", name: "Cold resistance" },
   { id: "disease_resist", name: "Disease resistance" },
   { id: "block_chance", name: "Block chance", isPercent: true },
-  { id: "critical_chance", name: "Critical chance", isPercent: true },
+  { id: "critical_chance", name: "Critical Strike", isPercent: true },
 ];
 const PET_STAT_COLUMNS = PET_STATS.flatMap(({ id }) => [
   `${id}_base`,

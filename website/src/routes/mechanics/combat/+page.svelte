@@ -68,57 +68,57 @@
 
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; AreaDamageSkill.cs:Apply; AreaObjectSpawnSkill.cs:AreaObjectSpawner.ApplyDamageToEntities; EquipmentItem.cs:ToolTip — handlers choose stats by class, handler and element; ground marks use listed damage only; weapon tooltip damage is Base Damage.
   const DAMAGE_FORMULAS = [
-    ["Physical", "Other physical attacks", "Damage"],
+    ["Physical", "Other physical attacks", "Attack Power"],
     [
       "Physical",
       "Ranger targeted and frontal melee",
-      "Damage − the bow's Base Damage",
+      "Attack Power − the bow's Base Damage",
     ],
     [
       "Physical",
       "Rogue targeted melee",
-      "Damage − 50% of the off-hand weapon's Base Damage, with the subtraction rounded up",
+      "Attack Power − 50% of the off-hand weapon's Base Damage, with the subtraction rounded up",
     ],
     [
       "Physical",
       "Rogue mercenary melee",
-      "Damage, including full damage from both weapons",
+      "Attack Power, including full damage from both weapons",
     ],
     [
       "Ranged",
       "Player targeted bow attacks",
-      "Damage + 150% of Dexterity, rounded, − the main-hand weapon's Base Damage",
+      "Attack Power + 150% of Dexterity, rounded, − the main-hand weapon's Base Damage",
     ],
     [
       "Ranged",
       "Ranger frontal projectile attacks of any damage type, such as Forest Guardians Aid",
-      "Damage + 150% of Dexterity, rounded, including melee weapon damage",
+      "Attack Power + 150% of Dexterity, rounded, including melee weapon damage",
     ],
     [
       "Ranged",
       "Mercenary bow attacks",
-      "Damage + 150% of Dexterity, rounded, including melee weapon damage",
+      "Attack Power + 150% of Dexterity, rounded, including melee weapon damage",
     ],
     [
       "Poison",
       "Rogue targeted poison attacks",
-      "Damage + 250% of Dexterity, rounded, − 50% of the off-hand weapon's Base Damage, with the subtraction rounded up. Mercenaries retain full off-hand damage",
+      "Attack Power + 250% of Dexterity, rounded, − 50% of the off-hand weapon's Base Damage, with the subtraction rounded up. Mercenaries retain full off-hand damage",
     ],
     [
       "Poison",
       "Player Rogue projectile and frontal poison attacks",
-      "Damage + 250% of Dexterity, rounded",
+      "Attack Power + 250% of Dexterity, rounded",
     ],
     [
       "Poison",
       "Other classes' targeted, projectile and frontal-projectile poison attacks, such as Poison Spray",
-      "Magic Damage, except Ranger frontal projectiles",
+      "Spell Power, except Ranger frontal projectiles",
     ],
-    ["Poison", "Area poison attacks", "Damage"],
+    ["Poison", "Area poison attacks", "Attack Power"],
     [
       "Magic",
       "Magic, fire, cold, and disease spells, except Ranger frontal projectiles",
-      "Magic Damage. Ranger targeted and frontal damage skills still subtract the bow's Base Damage, and Rogue targeted damage skills still subtract half the off-hand weapon's Base Damage, rounded up",
+      "Spell Power. Ranger targeted and frontal damage skills still subtract the bow's Base Damage, and Rogue targeted damage skills still subtract half the off-hand weapon's Base Damage, rounded up",
     ],
     [
       "Magic",
@@ -128,17 +128,17 @@
     [
       "Magic",
       "Magic weapon attacks",
-      "Magic Damage + Damage. The combined hit meets Magic Resist once",
+      "Spell Power + Attack Power. The combined hit meets Magic Resist once",
     ],
     [
       "Magic",
       "Rogue targeted magic weapon attacks",
-      "Magic Damage + Damage − 50% of the off-hand weapon's Base Damage, with the subtraction rounded up. The combined hit meets Magic Resist once",
+      "Spell Power + Attack Power − 50% of the off-hand weapon's Base Damage, with the subtraction rounded up. The combined hit meets Magic Resist once",
     ],
     [
       "Magic",
       "Ranger magic weapon attacks",
-      "Magic Damage + Damage − the bow's Base Damage. Wild Strike uses its empowered auto-attack rule below",
+      "Spell Power + Attack Power − the bow's Base Damage. Wild Strike uses its empowered auto-attack rule below",
     ],
     [
       "Special",
@@ -148,14 +148,14 @@
     [
       "Monster",
       "Monster physical and magic attacks",
-      "The corresponding Damage or Magic Damage stat, including level-based base damage and applicable bonuses. Targeted and projectile poison attacks use Magic Damage. Skills that mark the ground before hitting use their listed damage only",
+      "The corresponding Attack Power or Spell Power stat, including level-based base damage and applicable bonuses. Targeted and projectile poison attacks use Spell Power. Skills that mark the ground before hitting use their listed damage only",
     ],
   ];
 </script>
 
 <Seo
   title="Combat Mechanics - Ancient Kingdoms"
-  description="How damage, armor and resistance, healing, haste, and buff and debuff scaling work in Ancient Kingdoms combat."
+  description="How damage, Armor Class and resistance, healing, Haste and Spell Casting Haste, and buff and debuff scaling work in Ancient Kingdoms combat."
   path="/mechanics/combat"
 />
 
@@ -291,7 +291,7 @@
       <!-- Source: server-scripts/Combat.cs:criticalChance,DealDamageAt; Player.cs:isRadiantAetherActivated,TryConsumeRadiantAether — Critical Chance caps at 70%, interrupted gathering actions add 75 percentage points, and non-auto critical hits roll 15% to consume Radiant Aether from the first 24 inventory slots. -->
       <p class="text-muted-foreground">
         Critical checks require more than 3 damage after mitigation. The chance
-        is the attacker's Critical Chance, at most 70%, plus 75 percentage
+        is the attacker's Critical Strike, at most 70%, plus 75 percentage
         points when the hit interrupts a player who is fishing, gathering,
         mining, digging or opening something. Monster area damage skills skip
         this check. If you carry <a
@@ -355,7 +355,9 @@
       <Card.Title>Damage Formulas</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-6">
-      <h3 class="font-semibold">Character Window Damage and Magic Damage</h3>
+      <h3 class="font-semibold">
+        Character Window Attack Power and Spell Power
+      </h3>
       <Calculation calculation={characterDamageCalculation} />
       <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply — attacks add flat skill damage, then round after a positive skill multiplier. Scrolls use only skill damage. -->
       <p class="text-sm text-muted-foreground">
@@ -447,8 +449,8 @@
     <Card.Header>
       <Card.Title>Resistance &amp; Mitigation</Card.Title>
       <Card.Description
-        >Defense and matching resist stats decide avoidance and how much damage
-        you take.</Card.Description
+        >Armor Class and matching resist stats decide avoidance and how much
+        damage you take.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-5 text-sm">
@@ -459,7 +461,7 @@
         Magic, fire, cold, poison, and disease hits use the matching resist
         stat. A successful resist prevents the hit's damage, stun, fear and
         knockback. Debuffs and dispels use the same landing roll. Physical
-        debuffs use Defense at the same rate as an elemental resist.
+        debuffs use Armor Class at the same rate as an elemental resist.
       </p>
       <!-- Source: server-scripts/Combat.cs:307-317,1539-1548 — physical hits use capped block chance rather than the physical debuff formula. -->
       <h3 class="font-semibold">Physical Block and Miss</h3>
@@ -497,7 +499,7 @@
           ></thead
         >
         <tbody>
-          {#each [["Physical", "Defense"], ["Magic", "Magic Resist"], ["Fire", "Fire Resist"], ["Cold", "Cold Resist"], ["Poison", "Poison Resist"], ["Disease", "Disease Resist"]] as [type, stat] (type)}
+          {#each [["Physical", "Armor Class"], ["Magic", "Magic Resist"], ["Fire", "Fire Resist"], ["Cold", "Cold Resist"], ["Poison", "Poison Resist"], ["Disease", "Disease Resist"]] as [type, stat] (type)}
             <tr
               ><td class="py-2 pr-4">{type}</td><td
                 class="py-2 text-muted-foreground">{stat}</td
@@ -570,7 +572,7 @@
       <p>
         A hit on a player who is fishing, gathering, mining, digging or opening
         something cancels that action, adds the from-behind damage bonus and
-        adds 75 percentage points of critical chance. Avoidance still follows
+        adds 75 percentage points of Critical Strike. Avoidance still follows
         the attack's position and the target's movement.
       </p>
       <!-- Source: server-scripts/Combat.cs:567-571 — returning-home monsters evade incoming hits. -->
@@ -679,7 +681,7 @@
             it.</span
           >
           <span class="block"
-            >Final Cadence uses one roll based on the Bard's Critical Chance for
+            >Final Cadence uses one roll based on the Bard's Critical Strike for
             all recipients.</span
           >
           <span class="block"
@@ -687,7 +689,7 @@
             rounded.</span
           >
           <span class="block"
-            >Their chance uses the caster's Critical Chance when the buff
+            >Their chance uses the caster's Critical Strike when the buff
             starts.</span
           >
           <!-- Source: server-scripts/Skills.cs:ApplyCriticalToOverTime; NetworkManagerMMO.cs:OnStartServer — critical healing requires more than 3 healing and base duration below 30 seconds; recovery runs each second. -->
@@ -726,12 +728,13 @@
             singing them.</span
           >
           <span class="block"
-            >Whole-number values include Ward, Defense, flat damage and
-            resistance, and flat resource recovery.</span
+            >Whole-number values include Ward, Armor Class, flat Attack Power
+            and Spell Power, resistance, and flat resource recovery.</span
           >
           <span class="block"
-            >Percentage values include damage, Accuracy, Critical Chance, Haste,
-            Spell Haste, and percentage resource recovery.</span
+            >Percentage values include Attack Power, Spell Power, Accuracy,
+            Critical Strike, Haste, Spell Casting Haste, and percentage resource
+            recovery.</span
           >
           <span class="block"
             >Fear Resist from <a
@@ -775,11 +778,11 @@
             </thead>
             <tbody>
               <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
-              {#each [["Maximum Health", "Base bonus + 200% of buff attribute"], ["Defense and each resist", "Base bonus + 15% of buff attribute, with the attribute addition rounded"], ["Damage and Magic Damage (Leadership only)", "Base bonus + 100% of buff attribute"], ["Ward", "Base capacity + 200% of buff attribute"], ["Damage Shield", "Base damage + 75% of buff attribute, with the attribute addition rounded"], [`Healing over time, base duration below ${seconds(60)}`, "Base healing + base healing × 0.4% per buff attribute point above 0, limited to a 500% bonus, with the extra healing rounded"], [`Healing over time, base duration at least ${seconds(60)}`, "Base healing + 30% of buff attribute above 0, with the attribute addition rounded"]] as [effect, formula] (effect)}
+              {#each [["Maximum Health", "Base bonus + 200% of buff attribute"], ["Armor Class and each resist", "Base bonus + 15% of buff attribute, with the attribute addition rounded"], ["Attack Power and Spell Power (Leadership only)", "Base bonus + 100% of buff attribute"], ["Ward", "Base capacity + 200% of buff attribute"], ["Damage Shield", "Base damage + 75% of buff attribute, with the attribute addition rounded"], [`Healing over time, base duration below ${seconds(60)}`, "Base healing + base healing × 0.4% per buff attribute point above 0, limited to a 500% bonus, with the extra healing rounded"], [`Healing over time, base duration at least ${seconds(60)}`, "Base healing + 30% of buff attribute above 0, with the attribute addition rounded"]] as [effect, formula] (effect)}
                 <tr
                   ><td class="py-2 pr-4">
-                    {#if effect === "Damage and Magic Damage (Leadership only)"}
-                      Damage and Magic Damage (<a
+                    {#if effect === "Attack Power and Spell Power (Leadership only)"}
+                      Attack Power and Spell Power (<a
                         href="/skills/leadership"
                         class="text-blue-600 dark:text-blue-400 hover:underline"
                         >Leadership</a
@@ -1051,7 +1054,7 @@
             </thead>
             <tbody>
               <!-- Source: server-scripts/Buff.cs:69-228; BuffSkill.cs:473-515; Skills.cs:1644-1755,1822-1842 — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
-              {#each [["Defense reduction", "Base reduction + 50% of selected debuff attribute for melee debuffs, or 40% for other debuffs, with the attribute addition rounded"], ["Each resist reduction", "Base reduction + 40% of selected debuff attribute, with the attribute addition rounded"], ["Damage and Magic Damage reduction", "Base reduction + 50% of selected debuff attribute, with the attribute addition rounded"], ["Dexterity-scaled poison and disease ticks", "Base tick + 150% of Dexterity, with the attribute addition rounded. Poison meets Poison Resist. See the disease defect below"], ["Intelligence-scaled poison and disease ticks", "Base tick + the skill's percentage of Intelligence, with the attribute addition rounded. Poison meets Poison Resist and disease meets Disease Resist"], ["Physical damage-over-time ticks", "Base tick + 50% of Strength, with the attribute addition rounded. Meets Defense"], ["Fire, cold, and magic ticks", "Base tick + the skill's percentage of Intelligence, with the attribute addition rounded. Meets the matching resist"]] as [effect, formula] (effect)}
+              {#each [["Armor Class reduction", "Base reduction + 50% of selected debuff attribute for melee debuffs, or 40% for other debuffs, with the attribute addition rounded"], ["Each resist reduction", "Base reduction + 40% of selected debuff attribute, with the attribute addition rounded"], ["Attack Power and Spell Power reduction", "Base reduction + 50% of selected debuff attribute, with the attribute addition rounded"], ["Dexterity-scaled poison and disease ticks", "Base tick + 150% of Dexterity, with the attribute addition rounded. Poison meets Poison Resist. See the disease defect below"], ["Intelligence-scaled poison and disease ticks", "Base tick + the skill's percentage of Intelligence, with the attribute addition rounded. Poison meets Poison Resist and disease meets Disease Resist"], ["Physical damage-over-time ticks", "Base tick + 50% of Strength, with the attribute addition rounded. Meets Armor Class"], ["Fire, cold, and magic ticks", "Base tick + the skill's percentage of Intelligence, with the attribute addition rounded. Meets the matching resist"]] as [effect, formula] (effect)}
                 <tr
                   ><td class="py-2 pr-4">{effect}</td><td
                     class="py-2 text-muted-foreground">{formula}</td
@@ -1098,9 +1101,10 @@
             >Deathly Focus</a
           >
           bonuses use the caster's stats and require that player to be online. Pet
-          debuffs receive neither bonus. Critical chance uses the caster's Critical
-          Chance when the debuff starts. Damage based on a percentage of the target's
-          maximum Health receives neither bonus and cannot be critical. See
+          debuffs receive neither bonus. The chance of a critical tick uses the caster's
+          Critical Strike when the debuff starts. Damage based on a percentage of
+          the target's maximum Health receives neither bonus and cannot be critical.
+          See
           <a
             href="#resistance"
             class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1111,7 +1115,7 @@
             href="#damage-pipeline"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Damage Pipeline</a
-          > for the shared defense and critical rules.
+          > for the shared mitigation and critical rules.
         </p>
         <!-- Source: server-scripts/Skills.cs:ApplyCriticalToOverTime,GetFinalDamageDoT — the critical threshold uses damage after mitigation, layers and bonuses. -->
         <p class="text-sm text-muted-foreground mt-2">
@@ -1150,8 +1154,8 @@
           right away. A spell repeats after its cooldown.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
-          The character window shows spell haste between −50% and 50%. Because
-          of a game defect, casts use the full total, so enter your full
+          The character window shows Spell Casting Haste between −50% and 50%.
+          Because of a game defect, casts use the full total, so enter your full
           equipment and skill total for this example.
         </p>
         <h3 class="font-semibold mt-4 mb-2">Other Attack Intervals</h3>
@@ -1164,7 +1168,7 @@
             ></thead
           >
           <tbody>
-            {#each [["Companion's first non-spell skill", "Cast time + cooldown × (100% − Haste)"], ["Other companion and familiar skills", "Cast time + cooldown"], ["Mercenary auto attack", "Cast time + cooldown × (100% − Haste)"], ["Mercenary spell", "Cast time − cast time × full Spell Haste + cooldown"], ["Monster and NPC non-spell attacks", "Cast time + cooldown × (100% − Haste)"], ["Monster and NPC spells", "Cast time + cooldown"]] as [attack, formula] (attack)}
+            {#each [["Companion's first non-spell skill", "Cast time + cooldown × (100% − Haste)"], ["Other companion and familiar skills", "Cast time + cooldown"], ["Mercenary auto attack", "Cast time + cooldown × (100% − Haste)"], ["Mercenary spell", "Cast time − cast time × full Spell Casting Haste + cooldown"], ["Monster and NPC non-spell attacks", "Cast time + cooldown × (100% − Haste)"], ["Monster and NPC spells", "Cast time + cooldown"]] as [attack, formula] (attack)}
               <tr
                 ><td class="py-2 pr-4">{attack}</td><td
                   class="py-2 text-muted-foreground">{formula}</td
@@ -1184,7 +1188,7 @@
               <tr class="border-b border-border">
                 <th class="text-left py-1 pr-4 font-medium">Attack</th>
                 <th class="text-left py-1 pr-4 font-medium">Regular haste</th>
-                <th class="text-left py-1 font-medium">Spell haste</th>
+                <th class="text-left py-1 font-medium">Spell Casting Haste</th>
               </tr>
             </thead>
             <tbody>
@@ -1311,7 +1315,7 @@
           <span class="block"
             >It increases the auto attack's damage by 10% per Wild Strike rank,
             giving 150% of normal damage at rank 5. The result rounds after the
-            auto attack's own calculation. It adds no flat Damage bonus.</span
+            auto attack's own calculation. It adds no flat Attack Power bonus.</span
           >
           <span class="block"
             >The whole hit deals magic damage, which Magic Resist can block or
@@ -1555,7 +1559,7 @@
             href="/skills/enrage"
             class="text-blue-600 dark:text-blue-400 hover:underline">Enrage</a
           >
-          changes damage and maximum Health as shown on its skill page.
+          changes Attack Power and maximum Health as shown on its skill page.
         </p>
       </div>
 

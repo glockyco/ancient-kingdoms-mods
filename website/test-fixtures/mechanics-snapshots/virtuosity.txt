@@ -1,1 +1,1 @@
-Mechanics Virtuosity Virtuosity's damage bonus applies while your active songs equal your Active Songs limit. See Bard Songs.
+Mechanics Virtuosity Virtuosity's Attack Power and Spell Power bonuses apply while your active songs equal your Active Songs limit. See Bard Songs.

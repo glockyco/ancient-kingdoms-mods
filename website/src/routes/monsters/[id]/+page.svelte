@@ -1168,13 +1168,13 @@
 
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
-          <div class="text-sm text-muted-foreground">Physical Damage</div>
+          <div class="text-sm text-muted-foreground">Attack Power</div>
           <div class="font-medium">
             {displayDamage.toLocaleString()}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Magic Damage</div>
+          <div class="text-sm text-muted-foreground">Spell Power</div>
           <div class="font-medium">
             {displayMagicDamage.toLocaleString()}
           </div>
@@ -1186,7 +1186,7 @@
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Critical Chance</div>
+          <div class="text-sm text-muted-foreground">Critical Strike</div>
           <div class="font-medium">
             {formatPercent(displayCriticalChance)}
           </div>
@@ -1204,7 +1204,7 @@
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Defense</div>
+          <div class="text-sm text-muted-foreground">Armor Class</div>
           <div class="font-medium">
             {displayDefense.toLocaleString()}
           </div>

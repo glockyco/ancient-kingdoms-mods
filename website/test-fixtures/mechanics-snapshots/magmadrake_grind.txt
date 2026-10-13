@@ -1,1 +1,1 @@
-Mechanics Critical Chance Raises the affected character's Critical Chance by 1 percentage points at rank 10, to at most 70%. See the damage pipeline for critical-hit scaling.
+Mechanics Critical Strike Raises the affected character's Critical Strike by 1 percentage points at rank 10, to at most 70%. See the damage pipeline for critical-hit scaling.

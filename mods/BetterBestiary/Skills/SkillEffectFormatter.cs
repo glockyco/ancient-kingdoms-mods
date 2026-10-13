@@ -326,10 +326,10 @@ internal static class SkillEffectFormatter
         AddSignedValue(parts, ParseLinearValue(skill.energy_max_bonus), "max rage", false);
 
         // 4. Offense
-        AddSignedValue(parts, ParseLinearValue(skill.damage_bonus), "dmg", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.damage_percent_bonus), "phys dmg", true);
-        AddSignedValue(parts, ParseLinearValue(skill.magic_damage_bonus), "magic dmg", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.magic_damage_percent_bonus), "magic dmg", true);
+        AddSignedValue(parts, ParseLinearValue(skill.damage_bonus), "attack power", true);
+        AddSignedPercent(parts, ParseLinearValue(skill.damage_percent_bonus), "attack power", true);
+        AddSignedValue(parts, ParseLinearValue(skill.magic_damage_bonus), "spell power", true);
+        AddSignedPercent(parts, ParseLinearValue(skill.magic_damage_percent_bonus), "spell power", true);
         var lifetapHealing = ParseLinearValue(skill.lifetap_healing_percent_bonus);
         if (lifetapHealing != null)
             parts.Add($"+{FormatLinearPercent(lifetapHealing)} lifetap healing");
@@ -338,7 +338,7 @@ internal static class SkillEffectFormatter
             parts.Add($"+{FormatLinearPercent(dotExecute)} DoT dmg vs targets below 30% hp");
 
         // 4. Defense
-        AddSignedValue(parts, ParseLinearValue(skill.defense_bonus), "def", true);
+        AddSignedValue(parts, ParseLinearValue(skill.defense_bonus), "AC", true);
         AddSignedValue(parts, ParseLinearValue(skill.ward_bonus), "ward", true);
         AddSignedValue(parts, ParseLinearValue(skill.magic_resist_bonus), "magic res", true);
         AddSignedValue(parts, ParseLinearValue(skill.poison_resist_bonus), "poison res", true);
@@ -348,7 +348,7 @@ internal static class SkillEffectFormatter
 
         // 5. Attack speed
         AddSignedPercent(parts, ParseLinearValue(skill.haste_bonus), "haste", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.spell_haste_bonus), "spell haste", true);
+        AddSignedPercent(parts, ParseLinearValue(skill.spell_haste_bonus), "spell casting haste", true);
 
         // 7. Hit/chance modifiers
         AddSignedPercent(parts, ParseLinearValue(skill.critical_chance_bonus), "crit", true);
@@ -587,7 +587,7 @@ internal static class SkillEffectFormatter
         ["halloween_event"] = "2× XP from kills, event duration",
         ["winter_festival"] = "2× XP from kills, event duration",
         ["elixir_of_enlightened_learning"] = "2× XP from kills, 1740s + 60s × rank",
-        ["master_poisoner"] = "weapon strikes deal poison dmg (Attack Damage + DEX×2.5), resisted by Poison Resist, 10s",
+        ["master_poisoner"] = "weapon strikes deal poison dmg (Attack Power + DEX×2.5), resisted by Poison Resist, 10s",
         ["call_of_the_heroes"] = "teleport all active mercenaries to you, remove their fear",
         ["charge"] = "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
         ["teleport"] = "",

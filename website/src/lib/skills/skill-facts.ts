@@ -31,7 +31,7 @@ export interface DamageMechanics {
 }
 
 const DAMAGE_MECHANICS: Record<string, DamageMechanics> = {
-  Physical: { stat: "Defense", avoidance: "block" },
+  Physical: { stat: "Armor Class", avoidance: "block" },
   Magic: { stat: "Magic Resist", avoidance: "resist" },
   Fire: { stat: "Fire Resist", avoidance: "resist" },
   Cold: { stat: "Cold Resist", avoidance: "resist" },
@@ -308,7 +308,7 @@ export function skillFacts(
 
   // Source: server-scripts/Combat.cs:1534-1578 — melee debuffs resist with Defense, the others with their matching resistance.
   const debuffResistance = skill.is_melee_debuff
-    ? "Defense"
+    ? "Armor Class"
     : skill.is_poison_debuff
       ? "Poison Resist"
       : skill.is_fire_debuff

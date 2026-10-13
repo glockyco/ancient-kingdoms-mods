@@ -425,7 +425,7 @@
     <p>
       These companions track your regular level, up to {undeadCaps}. Each of
       your veteran points adds 0.25% of base Health to maximum Health and 0.25%
-      of base physical damage, magic damage, defense, and each resistance,
+      of base Attack Power, Spell Power, Armor Class, and each resistance,
       rounded. The bonus caps at +50% with 200 points. Their stats and skill
       ranks refresh when you level up or gain a veteran point.
     </p>

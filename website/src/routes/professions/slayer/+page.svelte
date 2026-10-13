@@ -437,8 +437,8 @@
     <h2 class="text-xl font-semibold">Damage reduction</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       Below 10% Slayer, boss and elite hits deal full damage. At 10% Slayer, a
-      100-damage hit loses 1 damage. At 100%, it loses 10. Armor and elemental
-      resistance reduce the remaining damage.
+      100-damage hit loses 1 damage. At 100%, it loses 10. Armor Class and
+      elemental resistance reduce the remaining damage.
     </p>
 
     <div class="space-y-5 rounded-lg border p-4 md:p-5">

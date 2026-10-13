@@ -40,10 +40,10 @@
   <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,FindEnemies,IsEngagedWithParty — one roll covers all allied healing; sleeping monsters are excluded and Pet targets map to their owner. -->
   <p class="text-muted-foreground">
     <span class="block"
-      >One critical roll, at the {usedByBardMercenary
+      >One critical roll, with a chance equal to the {usedByBardMercenary
         ? "mercenary's"
         : "Bard's"}
-      critical chance, applies to the healing of every ally.</span
+      Critical Strike, applies to the healing of every ally.</span
     >
     <span class="block"
       >Its damage hits living, visible, attackable monsters within range in the

@@ -73,8 +73,8 @@
       {#if skill.is_scroll}
         <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; AreaDamageSkill.cs:Apply — scroll casts zero the character contribution. -->
         <p class="text-muted-foreground">
-          Scroll casts use the skill's damage without your Damage or Magic
-          Damage.
+          Scroll casts use the skill's damage without your Attack Power or Spell
+          Power.
         </p>
       {/if}
       {#if block.kind === "monster_magic" || block.kind === "monster_melee"}
@@ -91,7 +91,7 @@
   {#if skill.is_manaburn_skill}
     <!-- Source: server-scripts/Combat.cs:700-703,836-875 — Mana Burn and Rageblow skip avoidance and mitigation, not variance, combat advantage, level adjustment or critical scaling. -->
     <p class="text-muted-foreground">
-      This skill skips avoidance and damage reduction from Defense or
+      This skill skips avoidance and damage reduction from Armor Class or
       resistance. Variance, combat advantage, level adjustment and eligible
       critical hits still apply. See the <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -102,10 +102,10 @@
     <!-- Source: server-scripts/Combat.cs:307-319,844-861,1539-1580 — the matching stat reduces damage by 0.0005 per point, at most 0.9, rounded up; Defense adds 0.0001 per point to blockChance, at most 0.8; a resist stat adds 0.0005 per point to the resist chance. -->
     <p class="text-muted-foreground">
       {#if damageMechanics.avoidance === "block"}
-        The target's Defense reduces this damage by 5% per 100 points, at most
-        90%, with the reduction rounded up. The hit can also be blocked or
+        The target's Armor Class reduces this damage by 5% per 100 points, at
+        most 90%, with the reduction rounded up. The hit can also be blocked or
         missed, at the target's base block chance plus 1 percentage point per
-        100 Defense and any block bonuses, at most 80%.
+        100 Armor Class and any block bonuses, at most 80%.
       {:else}
         The target's {damageMechanics.stat} reduces this damage by 5% per 100 points,
         at most 90%, with the reduction rounded up, and gives 5 percentage points

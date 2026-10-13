@@ -21,11 +21,11 @@ export const STAT_DISPLAY_NAMES: Record<string, string> = {
 
   // Combat stats
   defense: "AC",
-  damage: "Damage",
+  damage: "Attack Power",
   magic_damage: "Spell Power",
   accuracy: "Accuracy",
   haste: "Haste",
-  spell_haste: "Spell Haste",
+  spell_haste: "Spell Casting Haste",
   speed_bonus: "Movement Speed",
   critical_chance: "Critical Chance",
   critical_resist: "Critical Resist",

@@ -25,7 +25,7 @@
   <p class="text-muted-foreground">
     The song you select keeps recasting itself. Each cast takes
     {fmt.formatSeconds(fmt.atRank(skill.cast_time!, skill.max_level))},
-    shortened by spell haste. Each completed cast renews the song for
+    shortened by Spell Casting Haste. Each completed cast renews the song for
     {fmt.formatSeconds(songSeconds)}{skill.duration_per_level &&
     skill.max_level > 1
       ? ` at rank ${skill.max_level}`

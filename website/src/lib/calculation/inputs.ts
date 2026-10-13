@@ -31,9 +31,9 @@ export const INTELLIGENCE = characterStat("intelligence", "Intelligence", 100);
 export const WISDOM = characterStat("wisdom", "Wisdom", 100);
 export const CHARISMA = characterStat("charisma", "Charisma", 100);
 /** The Damage the character window shows (`Combat.damage`). */
-export const DAMAGE = characterStat("damage", "Damage", 200);
+export const DAMAGE = characterStat("damage", "Attack Power", 200);
 /** The Magic Damage the character window shows (`Combat.magicDamage`). */
-export const MAGIC_DAMAGE = characterStat("magicDamage", "Magic Damage", 200);
+export const MAGIC_DAMAGE = characterStat("magicDamage", "Spell Power", 200);
 
 /**
  * The summed spell haste of every source. Casts use the full sum, while the
@@ -41,7 +41,7 @@ export const MAGIC_DAMAGE = characterStat("magicDamage", "Magic Damage", 200);
  */
 export const SPELL_HASTE: CalculationInput = {
   key: "spellHaste",
-  label: "Spell haste, all sources",
+  label: "Spell Casting Haste, all sources",
   value: 0.2,
   min: -10,
   max: 10,
@@ -87,7 +87,7 @@ export function situational(
 
 export const CONSTITUTION = characterStat("constitution", "Constitution", 100);
 
-export const DEFENSE = characterStat("defense", "Defense", 100);
+export const DEFENSE = characterStat("defense", "Armor Class", 100);
 export const MAGIC_RESIST = characterStat("magicResist", "Magic Resist", 100);
 export const FIRE_RESIST = characterStat("fireResist", "Fire Resist", 100);
 export const COLD_RESIST = characterStat("coldResist", "Cold Resist", 100);

@@ -68,7 +68,7 @@ describe("formatSkillEffect Bard summaries", () => {
         magic_damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
       } as Skill),
     ).toBe(
-      "+20% phys dmg, +20% magic dmg, while performing the maximum number of songs you can sustain",
+      "+20% attack power, +20% spell power, while performing the maximum number of songs you can sustain",
     );
   });
 

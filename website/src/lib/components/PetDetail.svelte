@@ -214,7 +214,7 @@
         {/each}
       {/if}
       {#if pet.classLink.class_id === "druid"}
-        Symbiosis adds your copied attributes, defense, and resistances.
+        Symbiosis adds your copied attributes, Armor Class, and resistances.
       {/if}
     </p>
   </section>
@@ -267,10 +267,10 @@
                 <dd class="space-y-1">
                   <p>
                     Each of your veteran points adds 0.25% of base Health to
-                    maximum Health and 0.25% of base physical damage, magic
-                    damage, defense, and each resistance, rounded. The bonus
-                    caps at +50% with 200 points and refreshes whenever you gain
-                    a veteran point.
+                    maximum Health and 0.25% of base Attack Power, Spell Power,
+                    Armor Class, and each resistance, rounded. The bonus caps at
+                    +50% with 200 points and refreshes whenever you gain a
+                    veteran point.
                   </p>
                   <RoundingDefinition />
                 </dd>
@@ -292,8 +292,8 @@
                     href="/skills/symbiosis"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Symbiosis</a
-                  > gives this companion 10% of your attributes, defense, and each
-                  resistance when summoned.
+                  > gives this companion 10% of your attributes, Armor Class, and
+                  each resistance when summoned.
                 </dd>
               </div>
             {/if}

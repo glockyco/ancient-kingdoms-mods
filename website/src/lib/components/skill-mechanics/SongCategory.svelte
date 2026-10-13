@@ -22,9 +22,9 @@
   {:else}
     <p>
       Songs in one category compare strength: the sum of their movement speed,
-      physical damage, magic damage, Haste, spell haste and Accuracy bonuses.
-      Each bonus except movement speed counts after the singer's Charisma
-      scaling.
+      Attack Power, Spell Power, Haste, Spell Casting Haste and Accuracy
+      bonuses. Each bonus except movement speed counts after the singer's
+      Charisma scaling.
     </p>
     <p class="text-muted-foreground">
       A target keeps one song of each category, including songs from other Bards

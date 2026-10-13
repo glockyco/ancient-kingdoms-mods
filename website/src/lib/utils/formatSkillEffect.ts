@@ -639,28 +639,32 @@ function formatBuffDebuffStats(
   const damageBonus = parseLinearValue(skill.damage_bonus);
   if (damageBonus && damageBonus.base_value !== 0) {
     const sign = damageBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(damageBonus, options)} dmg`);
+    parts.push(
+      `${sign}${formatLinearValue(damageBonus, options)} attack power`,
+    );
   }
 
   const damagePctBonus = parseLinearValue(skill.damage_percent_bonus);
   if (damagePctBonus && damagePctBonus.base_value !== 0) {
     const sign = damagePctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(damagePctBonus, options)} phys dmg`,
+      `${sign}${formatLinearPercent(damagePctBonus, options)} attack power`,
     );
   }
 
   const magicDmgBonus = parseLinearValue(skill.magic_damage_bonus);
   if (magicDmgBonus && magicDmgBonus.base_value !== 0) {
     const sign = magicDmgBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(magicDmgBonus, options)} magic dmg`);
+    parts.push(
+      `${sign}${formatLinearValue(magicDmgBonus, options)} spell power`,
+    );
   }
 
   const magicDmgPctBonus = parseLinearValue(skill.magic_damage_percent_bonus);
   if (magicDmgPctBonus && magicDmgPctBonus.base_value !== 0) {
     const sign = magicDmgPctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(magicDmgPctBonus, options)} magic dmg`,
+      `${sign}${formatLinearPercent(magicDmgPctBonus, options)} spell power`,
     );
   }
 
@@ -682,7 +686,7 @@ function formatBuffDebuffStats(
   const defenseBonus = parseLinearValue(skill.defense_bonus);
   if (defenseBonus && defenseBonus.base_value !== 0) {
     const sign = defenseBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(defenseBonus, options)} def`);
+    parts.push(`${sign}${formatLinearValue(defenseBonus, options)} AC`);
   }
 
   const wardBonus = parseLinearValue(skill.ward_bonus);
@@ -718,7 +722,7 @@ function formatBuffDebuffStats(
   if (spellHasteBonus && spellHasteBonus.base_value !== 0) {
     const sign = spellHasteBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(spellHasteBonus, options)} spell haste`,
+      `${sign}${formatLinearPercent(spellHasteBonus, options)} spell casting haste`,
     );
   }
 
@@ -927,7 +931,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // +DEX*2.5 bonus on top of normal combat.damage. Resisted by Poison Resist
   // instead of Defense. Duration stored in duration_base (10s).
   master_poisoner:
-    "weapon strikes deal poison dmg (Attack Damage + DEX×2.5), resisted by Poison Resist, 10s",
+    "weapon strikes deal poison dmg (Attack Power + DEX×2.5), resisted by Poison Resist, 10s",
   // Source: server-scripts/TargetBuffSkill.cs — isCallHeroes teleports all
   // active mercenaries to player position and clears their fear; returns before
   // applying any buff. mana_percent_per_second_bonus in game data is unused.

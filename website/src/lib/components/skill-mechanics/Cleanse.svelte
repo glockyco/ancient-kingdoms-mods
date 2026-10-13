@@ -31,7 +31,7 @@
     <span class="block"
       >A cleanse removes only debuffs of the types it lists: poison, disease,
       cold, fire or magic. A debuff with none of those types, such as one that
-      Defense resists, cannot be cleansed.</span
+      Armor Class resists, cannot be cleansed.</span
     >
     <span class="block">The target cannot resist the cleanse.</span>
     <span class="block"

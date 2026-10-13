@@ -143,7 +143,7 @@ const SCALING_FIELDS: Array<{
   },
   {
     key: "defense_bonus",
-    label: "Defense",
+    label: "Armor Class",
     isPercent: false,
     suffix: "",
   },
@@ -156,25 +156,25 @@ const SCALING_FIELDS: Array<{
   },
   {
     key: "damage_bonus",
-    label: "Damage",
+    label: "Attack Power",
     isPercent: false,
     suffix: "",
   },
   {
     key: "damage_percent_bonus",
-    label: "Physical Damage %",
+    label: "Attack Power %",
     isPercent: true,
     suffix: "",
   },
   {
     key: "magic_damage_bonus",
-    label: "Magic Damage",
+    label: "Spell Power",
     isPercent: false,
     suffix: "",
   },
   {
     key: "magic_damage_percent_bonus",
-    label: "Magic Damage %",
+    label: "Spell Power %",
     isPercent: true,
     suffix: "",
   },
@@ -186,7 +186,7 @@ const SCALING_FIELDS: Array<{
   },
   {
     key: "spell_haste_bonus",
-    label: "Spell Haste",
+    label: "Spell Casting Haste",
     isPercent: true,
     suffix: "",
   },
@@ -198,7 +198,7 @@ const SCALING_FIELDS: Array<{
   },
   {
     key: "critical_chance_bonus",
-    label: "Critical Chance",
+    label: "Critical Strike",
     isPercent: true,
     suffix: "",
   },

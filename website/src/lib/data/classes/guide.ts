@@ -5,7 +5,7 @@ import type { ClassGuide } from "$lib/types/classes";
 export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   warrior: {
     attributes: {
-      text: "Strength raises physical damage and maximum rage. Each Constitution point adds 25 maximum health and 0.03 percentage points of block chance. Constitution adds no health recovery.",
+      text: "Strength raises Attack Power and maximum rage. Each Constitution point adds 25 maximum health and 0.03 percentage points of block chance. Constitution adds no health recovery.",
       source:
         "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-25,73-76; server-scripts/Health.cs:28-44 — Constitution adds maximum health, not recovery",
     },
@@ -31,7 +31,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   cleric: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -59,7 +59,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   druid: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Defense and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -85,7 +85,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   ranger: {
     attributes: {
-      text: "Dexterity adds bow damage, accuracy, and critical chance. Strength raises physical damage. Wisdom counts three times for your healing, before the healing cap applies.",
+      text: "Dexterity adds bow damage, accuracy, and Critical Strike. Strength raises Attack Power. Wisdom counts three times for your healing, before the healing cap applies.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:107-114 — attribute effects and Ranger multiplier",
     },
@@ -125,7 +125,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   rogue: {
     attributes: {
-      text: "Dexterity raises accuracy, critical chance, and poison damage. Strength raises physical damage and maximum rage.",
+      text: "Dexterity raises accuracy, Critical Strike, and poison damage. Strength raises Attack Power and maximum rage.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-96; server-scripts/Strength.cs:15-18,80-83 — attribute effects",
     },
@@ -158,7 +158,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   wizard: {
     attributes: {
-      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded. Dexterity raises accuracy and critical chance.",
+      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded. Dexterity raises accuracy and Critical Strike.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — Intelligence increases maximum mana and magic damage",
     },
@@ -213,7 +213,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   necromancer: {
     attributes: {
-      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as magic damage, rounded. It also strengthens Bone Aegis's ward, Mend Undead's health recovery, Ossuary Bulwark's Defense, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum health per point but no health recovery.",
+      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's ward, Mend Undead's health recovery, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum health per point but no health recovery.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:452-515; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
@@ -232,7 +232,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       },
       {
         // Source: server-scripts/NecromancerPetStats.cs:36; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in exported-data/pets.json.
-        text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 0.25% of its base maximum health, physical and magic damage, defense, and magic, poison, fire, cold, and disease resistance, rounded to whole points. The bonus reaches +50% at 200 veteran points.",
+        text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 0.25% of its base maximum health, Attack Power, Spell Power, Armor Class, and magic, poison, fire, cold, and disease resistance, rounded to whole points. The bonus reaches +50% at 200 veteran points.",
         source:
           "Source: server-scripts/NecromancerPetStats.cs:28-99 — RefreshFromOwner caps pet level at Level.max and veteran points at 200; GetVeteranBonus and GetHealthBonus use 0.0025 and RoundToInt for base stats",
         href: "/summons?summons.class=necromancer",

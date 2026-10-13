@@ -97,7 +97,7 @@ describe("monster ability effects", () => {
     expect(enrage).toBeDefined();
     expect(JSON.parse(enrage?.player_classes ?? "[]")).toContain("warrior");
     expect(formatSkillEffect(skillRowToEffectInput(enrage))).toBe(
-      "-50% max hp, +33% phys dmg, 30s",
+      "-50% max hp, +33% attack power, 30s",
     );
   });
 

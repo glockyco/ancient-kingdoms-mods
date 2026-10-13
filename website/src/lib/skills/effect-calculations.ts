@@ -180,7 +180,7 @@ type Effect = {
   factor?: number;
 };
 const resistEffects: Effect[] = [
-  { key: "defense_bonus", name: "Defense", factor: 0.15 },
+  { key: "defense_bonus", name: "Armor Class", factor: 0.15 },
   { key: "magic_resist_bonus", name: "Magic Resist", factor: 0.15 },
   { key: "poison_resist_bonus", name: "Poison Resist", factor: 0.15 },
   { key: "fire_resist_bonus", name: "Fire Resist", factor: 0.15 },
@@ -193,8 +193,8 @@ const ordinaryEffects: Effect[] = [
   { key: "ward_bonus", name: "Ward", factor: 2 },
   { key: "damage_shield", name: "Damage Shield", factor: 0.75 },
   { key: "healing_per_second_bonus", name: "Health per second" },
-  { key: "damage_bonus", name: "Damage", factor: 1 },
-  { key: "magic_damage_bonus", name: "Magic Damage", factor: 1 },
+  { key: "damage_bonus", name: "Attack Power", factor: 1 },
+  { key: "magic_damage_bonus", name: "Spell Power", factor: 1 },
 ];
 const songEffects: Effect[] = [
   ...ordinaryEffects.filter((effect) => effect.key !== "damage_shield"),
@@ -205,15 +205,15 @@ const songEffects: Effect[] = [
   ...(
     [
       ["health_max_percent_bonus", "Maximum Health percentage"],
-      ["damage_percent_bonus", "Damage percentage"],
-      ["magic_damage_percent_bonus", "Magic Damage percentage"],
+      ["damage_percent_bonus", "Attack Power percentage"],
+      ["magic_damage_percent_bonus", "Spell Power percentage"],
       ["block_chance_bonus", "Block Chance"],
       ["fear_resist_chance_bonus", "Fear Resist"],
       ["critical_resist_bonus", "Critical Resist"],
       ["accuracy_bonus", "Accuracy"],
-      ["critical_chance_bonus", "Critical Chance"],
+      ["critical_chance_bonus", "Critical Strike"],
       ["haste_bonus", "Haste"],
-      ["spell_haste_bonus", "Spell haste"],
+      ["spell_haste_bonus", "Spell Casting Haste"],
       ["health_percent_per_second_bonus", "Health percentage per second"],
       ["mana_percent_per_second_bonus", "Mana percentage per second"],
       ["energy_percent_per_second_bonus", "Rage percentage per second"],

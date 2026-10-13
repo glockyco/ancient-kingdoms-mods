@@ -152,7 +152,7 @@
       <div class="order-3 min-w-0 space-y-2 text-sm md:order-none">
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
-          title="Physical Damage"
+          title="Attack Power"
         >
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-red-800 text-red-50 shadow-sm"
@@ -160,12 +160,12 @@
           >
             <Sword class="h-5 w-5" />
           </span>
-          <span class="sr-only">Physical Damage: </span>
+          <span class="sr-only">Attack Power: </span>
           <span class="text-lg font-semibold">{damage.toLocaleString()}</span>
         </div>
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
-          title="Magic Damage"
+          title="Spell Power"
         >
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-violet-700 text-violet-50 shadow-sm"
@@ -173,14 +173,14 @@
           >
             <Sparkles class="h-5 w-5" />
           </span>
-          <span class="sr-only">Magic Damage: </span>
+          <span class="sr-only">Spell Power: </span>
           <span class="min-w-0 text-lg font-semibold break-words"
             >{magicDamage.toLocaleString()}</span
           >
         </div>
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
-          title="Defense"
+          title="Armor Class"
         >
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-700 text-slate-100 shadow-sm"
@@ -188,7 +188,7 @@
           >
             <Shield class="h-5 w-5" />
           </span>
-          <span class="sr-only">Defense: </span>
+          <span class="sr-only">Armor Class: </span>
           <span class="text-lg font-semibold">{defense.toLocaleString()}</span>
         </div>
         {@render metadata?.()}

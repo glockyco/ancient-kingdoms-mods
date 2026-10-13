@@ -659,17 +659,17 @@
             </div>
           {/if}
           <div>
-            <div class="text-sm text-muted-foreground">Physical Damage</div>
+            <div class="text-sm text-muted-foreground">Attack Power</div>
             <div class="font-medium">{data.npc.damage}</div>
           </div>
           {#if data.npc.magic_damage > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Magic Damage</div>
+              <div class="text-sm text-muted-foreground">Spell Power</div>
               <div class="font-medium">{data.npc.magic_damage}</div>
             </div>
           {/if}
           <div>
-            <div class="text-sm text-muted-foreground">Defense</div>
+            <div class="text-sm text-muted-foreground">Armor Class</div>
             <div class="font-medium">{data.npc.defense}</div>
           </div>
           {#if data.npc.block_chance > 0}
@@ -682,7 +682,7 @@
           {/if}
           {#if data.npc.critical_chance > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Critical Chance</div>
+              <div class="text-sm text-muted-foreground">Critical Strike</div>
               <div class="font-medium">
                 {formatPercent(data.npc.critical_chance)}
               </div>

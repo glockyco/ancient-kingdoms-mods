@@ -17,7 +17,7 @@
   <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active NecromancerReaperFormSkill buff multiplies the caster's debuff ticks on others by 1 + its magicDamagePercentBonus. -->
   <!-- Source: server-scripts/Combat.cs:DealDamageAt — lifetap healing is a share of direct damage dealt. -->
   <p class="text-muted-foreground">
-    While the form is active, your magic damage gains {formatLinearPercent(
+    While the form is active, your Spell Power gains {formatLinearPercent(
       skill.magic_damage_percent_bonus,
     )}, and your damage-over-time ticks on other targets gain the same
     {formatLinearPercent(skill.magic_damage_percent_bonus)}. Lifetap skills heal

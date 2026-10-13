@@ -108,7 +108,7 @@ export function avoidanceCalculation(physical = false): Calculation {
       {
         name: physical ? "Block chance" : "Stat contribution",
         expression: physical
-          ? "Your character window's Block Chance, including Defense, equipment and skill bonuses, capped at 80%"
+          ? "Your character window's Block Chance, including Armor Class, equipment and skill bonuses, capped at 80%"
           : "5 percentage points per 100 matching resist",
       },
       {
@@ -268,12 +268,12 @@ export function attributeBuff(
 }
 // Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity.
 export const BUFF_EFFECTS = {
-  defense: "Defense or matching resist",
+  defense: "Armor Class or matching resist",
   capacity: "Maximum Health bonus or Ward capacity",
   shield: "Damage Shield",
   shortHeal: `Healing each second, base duration below ${seconds(60)}`,
   longHeal: `Healing each second, base duration at least ${seconds(60)}`,
-  leadership: "Damage or Magic Damage (Leadership)",
+  leadership: "Attack Power or Spell Power (Leadership)",
 };
 export type BuffEffect = keyof typeof BUFF_EFFECTS;
 
@@ -445,7 +445,7 @@ export function timingCalculation(spell = false): Calculation {
           {
             name: "Cast time",
             expression:
-              "Base cast time − base cast time × your full Spell Haste bonus",
+              "Base cast time − base cast time × your full Spell Casting Haste bonus",
           },
           {
             name: "Auto-attack interval",
@@ -475,7 +475,7 @@ export function timingCalculation(spell = false): Calculation {
         return {
           given: [
             `${seconds(values.castTime)} base cast time`,
-            `${percent(values.spellHaste)} full Spell Haste`,
+            `${percent(values.spellHaste)} full Spell Casting Haste`,
           ],
           result: `${seconds(result.total)} spell auto-attack interval`,
           working: [

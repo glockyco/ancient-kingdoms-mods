@@ -459,14 +459,14 @@
               <Info />
               <div>
                 <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
-                <p class="font-medium">Veteran damage</p>
+                <p class="font-medium">Veteran Attack Power and Spell Power</p>
                 <p>
-                  Each total veteran point adds +1 base physical damage and +1
-                  base magic damage.
+                  Each total veteran point adds 1 base Attack Power and 1 base
+                  Spell Power.
                 </p>
                 <p>
                   Every resummon or reload restores the saved hire roll plus
-                  your total veteran points to both damage values.
+                  your total veteran points to both stats.
                 </p>
               </div>
             </Alert>

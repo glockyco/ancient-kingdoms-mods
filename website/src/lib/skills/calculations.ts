@@ -216,7 +216,7 @@ export function channelCalculation(skill: SkillDetailView): Calculation {
       {
         name: "Channel time",
         expression: skill.is_spell
-          ? "Base cast time × (100% − spell haste)"
+          ? "Base cast time × (100% − Spell Casting Haste)"
           : "Base cast time",
         limit: `at least ${seconds(0.05)}`,
       },
@@ -239,7 +239,9 @@ export function channelCalculation(skill: SkillDetailView): Calculation {
         given: [
           ...(castScales ? [`rank ${rank}`] : []),
           `${seconds(baseCast)} cast time`,
-          ...(skill.is_spell ? [`${percent(spellHaste)} spell haste`] : []),
+          ...(skill.is_spell
+            ? [`${percent(spellHaste)} Spell Casting Haste`]
+            : []),
         ],
         result:
           pulses > 1

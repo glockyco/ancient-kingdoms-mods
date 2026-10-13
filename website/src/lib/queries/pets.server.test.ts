@@ -50,11 +50,11 @@ const stat = (
 
 test("linear stats scale through the supplied cap", () => {
   const values = curves({ damage_base: 7, damage_per_level: 3 });
-  expect(stat(values, 4, "Physical damage")).toMatchObject({
+  expect(stat(values, 4, "Attack Power")).toMatchObject({
     level1: 7,
     atCap: 16,
   });
-  expect(stat(values, 9, "Physical damage").atCap).toBe(31);
+  expect(stat(values, 9, "Attack Power").atCap).toBe(31);
 });
 
 test("zero-growth stats stay fixed at every level, including float chances", () => {
@@ -75,9 +75,9 @@ test("200-point veteran bonuses round half values to even and exclude chances", 
     block_chance_base: 0.2,
     critical_chance_base: 0.1,
   });
-  expect(stat(values, 1, "Physical damage", true).withVeteran).toBe(1);
-  expect(stat(values, 1, "Magic damage", true).withVeteran).toBe(5);
-  for (const name of ["Block chance", "Critical chance"]) {
+  expect(stat(values, 1, "Attack Power", true).withVeteran).toBe(1);
+  expect(stat(values, 1, "Spell Power", true).withVeteran).toBe(5);
+  for (const name of ["Block chance", "Critical Strike"]) {
     const chance = stat(values, 1, name, true);
     expect(chance.withVeteran).toBe(chance.atCap);
   }

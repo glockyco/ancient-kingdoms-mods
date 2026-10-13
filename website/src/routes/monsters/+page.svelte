@@ -123,17 +123,17 @@
     },
     {
       accessorKey: "damage",
-      header: "Physical Damage",
+      header: "Attack Power",
       size: 150,
     },
     {
       accessorKey: "magic_damage",
-      header: "Magic Dmg",
+      header: "Spell Power",
       size: 180,
     },
     {
       accessorKey: "defense",
-      header: "Defense",
+      header: "Armor Class",
       size: 150,
     },
     {
@@ -199,9 +199,9 @@
     name: "Name",
     level_min: "Level",
     health: "Health",
-    damage: "Physical Damage",
-    magic_damage: "Magic Damage",
-    defense: "Defense",
+    damage: "Attack Power",
+    magic_damage: "Spell Power",
+    defense: "Armor Class",
     magic_resist: "Magic Resist",
     poison_resist: "Poison Resist",
     fire_resist: "Fire Resist",
