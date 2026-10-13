@@ -846,8 +846,14 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Box class="h-5 w-5 text-sky-500" />
-        Reputation lost by looting chests ({data.faction.chests.length})
+        Reputation {data.faction.id === "the_forsaken" ? "gained" : "lost"} by opening
+        chests ({data.faction.chests.length})
       </h2>
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — faction changes happen on opening, even if the reward roll fails. -->
+      <p class="mb-4 text-sm text-muted-foreground">
+        Each opening {data.faction.id === "the_forsaken" ? "gives" : "costs"} 200
+        reputation with this faction, even when the chest gives no reward.
+      </p>
       <DataTable
         data={data.faction.chests}
         columns={chestColumns}

@@ -1,6 +1,6 @@
 import type { Calculation } from "$lib/types/calculation";
 import { divideF32, iround, multiplyF32 } from "$lib/planner/engine-math";
-import { formatNumber, formatPercent } from "./format";
+import { formatNumber } from "./format";
 
 // Source: server-scripts/Monster.cs:574-598 — only the Health contribution rounds, and normal monster reputation loss keeps its fraction.
 export function reputationExample(
@@ -13,7 +13,8 @@ export function reputationExample(
   const base = level + healthContribution;
   const factor = boss ? 20 : elite ? 10 : 1;
   const gain = multiplyF32(base, factor);
-  const loss = multiplyF32(level, boss ? 2 : elite ? 1 : 0.75);
+  const lossFactor = boss ? 2 : elite ? 1 : 0.75;
+  const loss = multiplyF32(level, lossFactor);
   return {
     steps: [
       {
@@ -29,7 +30,7 @@ export function reputationExample(
       {
         name: "Reputation lost",
         expression:
-          "Monster level × monster rank's loss percentage from the table",
+          "Monster level × monster rank's loss multiplier from the table",
       },
     ],
     example: () => ({
@@ -41,8 +42,8 @@ export function reputationExample(
       working: [
         `Health contribution: ${formatNumber(health)} ÷ 2,000 = ${formatNumber(healthContribution)}, rounded`,
         `Base gain: ${level} + ${formatNumber(healthContribution)} = ${formatNumber(base)}`,
-        `Reputation gained: ${formatNumber(base)} × ${factor > 10 ? factor : formatPercent(factor)} = ${formatNumber(gain)}`,
-        `Reputation lost: ${level} × ${boss ? "200%" : elite ? "100%" : "75%"} = ${formatNumber(loss)}`,
+        `Reputation gained: ${formatNumber(base)} × ${factor} = ${formatNumber(gain)}`,
+        `Reputation lost: ${level} × ${lossFactor} = ${formatNumber(loss)}`,
       ],
     }),
   };

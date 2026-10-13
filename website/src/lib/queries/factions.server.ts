@@ -271,6 +271,7 @@ export function getFactionDetail(id: string): FactionDetail | null {
     [name],
   );
 
+  // Source: server-scripts/GatherItem.cs:OnInteractServer — faction-chest openings raise The Forsaken by 200 and lower the chest's faction by 200, before the reward roll.
   const chests = query<FactionChestRow>(
     `SELECT c.id, c.name, va.public_path AS visual_public_path,
             c.zone_id, z.name AS zone_name
@@ -278,9 +279,12 @@ export function getFactionDetail(id: string): FactionDetail | null {
      LEFT JOIN visual_assets va
        ON va.domain = 'chest' AND va.entity_id = c.id AND va.kind = 'primary'
      LEFT JOIN zones z ON z.id = c.zone_id
-     WHERE c.decrease_faction = ?
+     WHERE c.chest_reward_probability > 0
+       AND (c.item_reward_id IS NOT NULL OR (c.gold_min > 0 AND c.gold_max > 0))
+       AND (c.decrease_faction = ?
+         OR (? = 'The Forsaken' AND c.decrease_faction <> ''))
      ORDER BY z.name, c.name`,
-    [name],
+    [name, name],
   );
 
   const questGrants = query<Omit<FactionQuestGrantRow, "gain">>(

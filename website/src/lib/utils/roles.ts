@@ -158,9 +158,12 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_merchant_adventurer: {
     description: "This NPC sells adventurer items and rewards.",
   },
+  // Source: server-scripts/Npc.cs:InteractNpc; UIFactions.cs:adaptTextFaction — the 15,000 raw requirement appears as Friendly 14,000 / 20,000.
   is_faction_vendor: {
     description: "This NPC sells items exclusive to its faction.",
-    details: ["You need at least 15,000 reputation with this faction."],
+    details: [
+      "You need at least 15,000 reputation with this faction (Friendly 14,000 / 20,000 in the faction panel).",
+    ],
   },
   is_essence_trader: {
     description:

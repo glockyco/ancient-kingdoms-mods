@@ -16,6 +16,12 @@ describe("reputation calculations", () => {
     );
     expect(reputationExample().example!({}).result).toContain("+31,400");
   });
+  it("applies boss and elite rank multipliers independently to gains and losses", () => {
+    const boss = reputationExample(56, 800_000).example!({});
+    expect(boss.result.match(/\d[\d,]*/g)).toEqual(["9,120", "112"]);
+    const elite = reputationExample(56, 800_000, false, true).example!({});
+    expect(elite.result.match(/\d[\d,]*/g)).toEqual(["4,560", "56"]);
+  });
 });
 
 it("uses the Notable multiplier only for positive NPC reputation", () => {

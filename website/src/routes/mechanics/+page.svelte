@@ -41,7 +41,7 @@
 
 <Seo
   title="Game Mechanics - Ancient Kingdoms"
-  description="Character builds, combat formulas, death and remains, inventory, crafting, parties and loot rolls, guilds, travel, monster spawns, and reputation in Ancient Kingdoms."
+  description="Character builds, combat, experience, death and remains, bard songs, mercenaries and their stats, inventory, crafting, housing and appearance, parties and loot, guilds, world travel, monster spawns, and reputation in Ancient Kingdoms."
   path="/mechanics"
 />
 

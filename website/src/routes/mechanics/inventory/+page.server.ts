@@ -3,6 +3,7 @@ import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import type { ItemSourceType } from "$lib/constants/source-types";
 import { HOUSE_CHEST_SLOT_RANGES } from "$lib/inventory/house-chests";
+import type { ReputationTier } from "$lib/utils/reputation";
 import {
   getItemSourceSummaries,
   getMinimumSourceLevel,
@@ -35,6 +36,7 @@ export interface HouseStorageLocation {
   name: string;
   base_price: number;
   faction_id: string | null;
+  faction_name: string | null;
   faction_required: number;
   zone_id: string | null;
   zone_name: string | null;
@@ -63,6 +65,8 @@ export interface InventoryMechanicsPageData {
   houses: HouseStorageLocation[];
   houseChests: HouseChestStructure[];
   itemIconPaths: Record<string, string | null>;
+  reputationTiers: ReputationTier[];
+  armorBreakingSkills: { id: string; name: string; break_armor_prob: number }[];
 }
 
 function getBackpackRows(db: Database.Database): BackpackRow[] {
@@ -90,12 +94,14 @@ function getHouseLocations(db: Database.Database): HouseStorageLocation[] {
         h.id,
         h.name,
         h.base_price,
-        h.faction_id,
+        f.id AS faction_id,
+        f.name AS faction_name,
         h.faction_required,
         h.zone_id,
         COALESCE(h.zone_name, z.name) as zone_name
       FROM houses h
       LEFT JOIN zones z ON z.id = h.zone_id
+      LEFT JOIN factions f ON f.name = h.faction_id
       ORDER BY h.base_price ASC, h.name ASC
       `,
     )
@@ -178,6 +184,15 @@ export const load: PageServerLoad = (): InventoryMechanicsPageData => {
       houses: getHouseLocations(db),
       houseChests,
       itemIconPaths,
+      reputationTiers: db
+        .prepare("SELECT * FROM reputation_tiers ORDER BY id")
+        .all() as ReputationTier[],
+      // Source: server-scripts/Combat.cs:DealDamageAt — DamageSkill.breakArmorProb gates the random equipment-slot durability loss.
+      armorBreakingSkills: db
+        .prepare(
+          "SELECT id, name, break_armor_prob FROM skills WHERE break_armor_prob > 0 ORDER BY name",
+        )
+        .all() as InventoryMechanicsPageData["armorBreakingSkills"],
     };
   } finally {
     db.close();

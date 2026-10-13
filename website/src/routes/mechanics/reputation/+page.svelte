@@ -70,13 +70,14 @@
 
   // What actually changes inside each tier. The thresholds are raw numbers, so
   // most of these sit inside a tier rather than on its boundary.
+  // Source: server-scripts/UIFactions.cs:adaptTextFaction; server-scripts/Npc.cs:InteractNpc; server-scripts/UINpcTrading.cs:Update — faction-panel progress, NPC service thresholds and each item's reputation requirement.
+  // Source: website/data/compendium.db:items.faction_required_to_buy — recipes, costumes and pets require 221,000, while mounts require 721,000.
   const TIER_UNLOCKS: Record<number, string> = {
-    0: "NPCs refuse interaction",
-    1: "NPCs refuse below −500",
-    4: "Faction vendors, at 15,000",
-    5: "Houses and gated quests, at 21,000",
-    6: "Recipes, costumes, and pets, at 221,000",
-    7: "Mounts, at 721,000",
+    0: "NPCs of this faction refuse services",
+    1: "NPCs of this faction refuse services",
+    4: "Faction vendors, at 15,000 (panel: Friendly 14,000 / 20,000)",
+    6: "Recipes, costumes, and pets, at 221,000 (panel: Ally 0 / 500,000)",
+    7: "Mounts, at 721,000 (panel: Revered 0 / 1,279,000)",
   };
 
   /**
@@ -85,7 +86,7 @@
    * every boundary and leave the column nothing to align on.
    */
   function tierStart(min: number | null): string {
-    return min === null ? "—" : min.toLocaleString();
+    return min === null ? "—" : min.toLocaleString().replace("-", "−");
   }
 
   /** How much reputation a tier covers, which is what it costs to cross it. */
@@ -154,9 +155,10 @@
           </div>
         {/each}
       </div>
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer; server-scripts/Npc.cs:OnDeath; server-scripts/Database.cs:CharacterCreate — faction chests raise The Forsaken, NPC kills use their listed factions, and no race starts with a Forsaken bonus. -->
       <p>
-        Killing NPCs can increase your standing with The Forsaken, but no race
-        starts with bonus reputation for that faction.
+        Opening faction chests raises your standing with The Forsaken. Killing
+        NPCs can also raise it. No race starts with bonus reputation for it.
       </p>
     </Card.Content>
   </Card.Root>
@@ -215,7 +217,21 @@
                   >{tierSpan(tier.min_value, tier.max_value)}</td
                 >
                 <td class="py-2">
-                  {#if TIER_UNLOCKS[tier.id]}
+                  <!-- Source: server-scripts/UIHousing.cs:Start; server-scripts/PlayerQuests.cs:131-143; server-scripts/UIFactions.cs:adaptTextFaction — house and quest requirements use total points, while the panel shows tier progress. Source: website/data/compendium.db:houses.faction_required, quests.faction_requirements — houses require 21,000 and Trial of the Ancients requires 21,000 with Elven Kingdom. -->
+                  {#if tier.id === 5}
+                    <a
+                      href="/mechanics/housing"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >Houses</a
+                    >
+                    at 21,000.
+                    <a
+                      href="/quests/29_trial_of_the_ancients"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >Trial of the Ancients</a
+                    >
+                    requires 21,000 with Elven Kingdom (panel: Honored 0 / 200,000).
+                  {:else if TIER_UNLOCKS[tier.id]}
                     {TIER_UNLOCKS[tier.id]}
                   {:else}
                     <span class="text-muted-foreground/50">—</span>
@@ -232,6 +248,12 @@
           >Friendly starts at 1,000 points, so 999 points is Neutral.</span
         >
       </p>
+      <!-- Source: server-scripts/UIFactions.cs:adaptTextFaction — Neutral through Revered display whole points above the tier start, out of the tier's span. -->
+      <p>
+        From Neutral through Revered, the faction panel shows your progress
+        toward the next tier, not your total reputation. It rounds down to whole
+        points. A total of 15,000 reads Friendly 14,000 / 20,000.
+      </p>
       <!-- Source: server-scripts/UIFactions.cs:124-153 — Unfriendly is −500 through below 0, Hostile is −3,000 through below −500, and Hated is below −3,000. -->
       <p>
         <span class="block">Below zero, Unfriendly covers −500 to below 0.</span
@@ -246,7 +268,8 @@
           falls below −500.</span
         >
         <span class="block"
-          >A quest's reputation requirement applies to its named faction.</span
+          >A quest can require reputation with any faction, not only its quest
+          giver's.</span
         >
       </p>
     </Card.Content>
@@ -286,13 +309,13 @@
             >
               <td class="py-2 pr-4">Boss</td>
               <td class="py-2 pr-4">Base gain × 20</td>
-              <td class="py-2">200% of monster level</td>
+              <td class="py-2">Monster level × 2</td>
             </tr>
             <tr
               class="border-b border-border/50 odd:bg-muted/30 hover:bg-muted/50"
             >
               <td class="py-2 pr-4">Elite</td>
-              <td class="py-2 pr-4">1000% of base gain</td>
+              <td class="py-2 pr-4">Base gain × 10</td>
               <td class="py-2">Monster level</td>
             </tr>
             <tr
@@ -300,24 +323,32 @@
             >
               <td class="py-2 pr-4">Normal</td>
               <td class="py-2 pr-4">Base gain</td>
-              <td class="py-2">75% of monster level, without rounding</td>
+              <td class="py-2">Monster level × 0.75, without rounding</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Monster.cs:3186-3198 — the solo kill applies both lists. -->
+      <!-- Source: server-scripts/Monster.cs:OnDeath; website/data/compendium.db monsters.avatar_of_water — its kill applies both faction lists. -->
       <p>
         <span class="block"
           ><a
-            href="/monsters/valaark"
-            class="text-blue-600 hover:underline dark:text-blue-400">Valaark</a
-          > is a level 70 boss with 3,000,000 health.</span
+            href="/monsters/avatar_of_water"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Avatar of Water</a
+          > is a level 56 boss with 800,000 maximum Health. Its kill raises Elven
+          Kingdom, Children of Illithor, and Army of Order, and lowers Ancient Gods.</span
         >
-        <span class="block">The worked example below uses Valaark.</span>
+        <span class="block">The worked example below uses Avatar of Water.</span
+        >
       </p>
-      <Calculation calculation={reputationExample()} />
+      <Calculation calculation={reputationExample(56, 800_000)} />
+      <!-- Source: server-scripts/Monster.cs:OnDeath — each nearby party player receives the full faction change. -->
       <p>
-        Every nearby party member receives the full monster-kill reputation.
+        Each <a
+          href="/mechanics/party#shared-rewards"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >nearby party member</a
+        > receives the full monster-kill reputation.
       </p>
     </Card.Content>
   </Card.Root>
@@ -332,23 +363,40 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Npc.cs:1582-1614 and 1629-1661 — party and solo faction changes on an NPC death. -->
-      <p>
-        In the current data,
-        <a
-          href="/npcs/king_darin"
-          class="text-blue-600 hover:underline dark:text-blue-400">King Darin</a
-        >
-        is the only Notable NPC. Killing him improves
-        <a
-          href="/factions/the_forsaken"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >The Forsaken</a
-        > reputation and lowers Children of Illithor reputation.
-      </p>
+      <!-- Source: server-scripts/Npc.cs:OnDeath; website/data/compendium.db npcs.is_notable — Notable NPC kill changes use each NPC's faction lists. -->
+      <ul class="list-disc space-y-2 pl-5">
+        {#each data.notableNpcs as npc (npc.id)}
+          <li>
+            Killing <a
+              href="/npcs/{npc.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{npc.name}</a
+            >, a Notable NPC, raises {#each npc.improveFactions as faction, i (faction.id)}{i >
+              0
+                ? ", "
+                : ""}<a
+                href="/factions/{faction.id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >{faction.name}</a
+              >{/each}{#if npc.decreaseFactions.length > 0}
+              and lowers {#each npc.decreaseFactions as faction, i (faction.id)}{i >
+                0
+                  ? ", "
+                  : ""}<a
+                  href="/factions/{faction.id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >{faction.name}</a
+                >{/each}{/if}.
+          </li>
+        {/each}
+      </ul>
       <Calculation calculation={npcReputation()} />
       <p>
-        Every nearby party member receives the full reputation change from an
-        NPC kill.
+        Each <a
+          href="/mechanics/party#shared-rewards"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >nearby party member</a
+        > receives the full reputation change from an NPC kill.
       </p>
     </Card.Content>
   </Card.Root>
@@ -369,28 +417,31 @@
         >
         <span class="block">A level 40 quest gives 800.</span>
       </p>
-      <p>Adventurer quests give no reputation.</p>
+      <p>
+        <a
+          href="/professions/adventuring"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Adventurer quests</a
+        > give no reputation.
+      </p>
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="chests" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Looting Faction Chests</Card.Title>
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — faction changes happen before the chest's reward roll. -->
       <Card.Description>
-        A faction chest takes 200 reputation points with its faction if you
-        receive a reward.
+        Opening a faction chest costs 200 reputation with its faction and gives
+        200 with The Forsaken.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/GatherItem.cs:387-395 — opening a rewarding chest lowers its faction. -->
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — both reputation changes precede the reward roll. Source: website/data/compendium.db:chests — all 54 faction chests have a 75% gold reward chance and require no key. -->
       <p>
-        Opening a faction chest costs
-        <span class="font-mono text-red-600 dark:text-red-400">200</span>
-        reputation points with its faction, regardless of level or contents.
-      </p>
-      <p>
-        You only pay it when the chest actually gives you something. If the
-        reward roll comes up empty, you lose nothing.
+        Both reputation changes apply every time you open a faction chest,
+        including openings that give no reward. Each opening has a 75% chance to
+        give gold.
       </p>
     </Card.Content>
   </Card.Root>
@@ -429,9 +480,13 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <ul class="list-disc space-y-2 pl-5">
         <li>
-          <!-- Source: server-scripts/Npc.cs:InteractNpc — faction vendors require 15,000 standing. -->
-          <strong class="text-foreground">Faction vendors</strong> will not open their
-          shop below 15,000 reputation.
+          <!-- Source: server-scripts/Npc.cs:InteractNpc; server-scripts/UIFactions.cs:adaptTextFaction — faction vendors require 15,000 total points, shown as Friendly 14,000 / 20,000. -->
+          <a
+            href="/npcs"
+            class="font-bold text-blue-600 dark:text-blue-400 hover:underline"
+            >Faction vendors</a
+          >
+          require 15,000 reputation (Friendly 14,000 / 20,000 in the faction panel).
         </li>
         <li>
           <!-- Source: server-scripts/UINpcTrading.cs:394-398 — per-item faction requirement against the vendor's faction. -->
@@ -439,9 +494,13 @@
           with the selling NPC's faction, even when the NPC opens their shop.
         </li>
         <li>
-          <!-- Source: server-scripts/UIHousing.cs:73 — house purchase checks the house's faction requirement. -->
-          <strong class="text-foreground">Houses</strong> have their own faction and
-          requirement. Every purchasable house currently needs 21,000, which is Honored.
+          <!-- Source: server-scripts/UIHousing.cs:Start; server-scripts/UIFactions.cs:adaptTextFaction — house purchase checks faction reputation, and Honored begins at 21,000. Source: website/data/compendium.db:houses.faction_required — all nine houses require 21,000. -->
+          <a
+            href="/mechanics/housing"
+            class="font-bold text-blue-600 dark:text-blue-400 hover:underline"
+            >Houses</a
+          > have their own faction and requirement. Every purchasable house needs
+          21,000 reputation (panel: Honored 0 / 200,000).
         </li>
         <li>
           <!-- Source: server-scripts/PlayerQuests.cs:131-143 — every quest faction requirement must be met. -->
@@ -457,7 +516,13 @@
       </ul>
       <p>
         <span class="block">Reputation does not change prices.</span>
-        <span class="block">NPC prices include a Charisma discount.</span>
+        <span class="block"
+          >NPC prices include a <a
+            href="/mechanics/character#attributes"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Charisma discount</a
+          >.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>
@@ -491,8 +556,8 @@
           as your points keep increasing.</span
         >
         <span class="block"
-          >At Hated, it shows 0 out of 10,000 after you fall below −13,000, even
-          as your points keep decreasing.</span
+          >At Hated, it shows 0 out of 10,000 at −13,000 or lower, even as your
+          points keep decreasing.</span
         >
       </p>
     </Card.Content>
