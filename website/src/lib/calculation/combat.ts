@@ -165,7 +165,7 @@ export function healingCalculation(ranger = false): Calculation {
       { name: "Healing", expression: "Base healing + extra healing" },
     ],
     inputs: [
-      listedValue("Listed healing before the tooltip's attribute bonus"),
+      listedValue("Healing in the skill tooltip, without its (+bonus)"),
       WISDOM,
     ],
     example: ({ baseValue, wisdom }) => {

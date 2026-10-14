@@ -137,11 +137,15 @@
         A resisted or removed aura is tried again at the song's next cast,
         including an automatic repeat.
       </p>
-      <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff; website/data/compendium.db skills.buff_category — same-category songs compare strength across Bards and mercenary versions. -->
+      <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff,GetStackingStrength; website/data/compendium.db skills.buff_category — same-category songs compare speed, damage, haste and accuracy bonuses across Bards and mercenary versions, and an existing song of at least equal strength stays. Aegis Aria (category Ward) has none of those bonuses, so one already present always stays. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; Skills.cs:AddOrRefreshBuff — an uncategorized song skips another Bard's copy between casts, and a fresh cast re-adds it by name, replacing that copy; songs with different names are added separately. -->
       <p>
         Two Bards' March of Celerity, Anthem of Focus, Grand Symphony or
         Wayfarer's Rhythm (including a Bard mercenary's version) do not stack.
-        The stronger wins, and an equal effect already present stays.
+        The stronger wins, and an equal effect already present stays.<br />
+        A second Bard's Aegis Aria never replaces one already present.<br />
+        Any other song on an ally replaces another Bard's copy of it at each cast,
+        including an automatic repeat. Different songs stack.
       </p>
       <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:133-240 — Bard songs use Charisma scaling for eligible effect values. -->
       <!-- Source: server-scripts/Skills.cs:GetFinalHealOverTime and BuffSkill.cs:GetDebuffPowerAttribute — songs skip the Wisdom healing bonus and use Charisma before the Intelligence branch. -->

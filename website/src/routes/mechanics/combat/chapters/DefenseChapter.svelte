@@ -113,6 +113,11 @@
     {#key hitType}
       <Formula calculation={avoidanceCalculation(hitType === "physical")} />
     {/key}
+    <!-- Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage,GetProbResistMagic — the roll reads the target's Block Chance or matching resist, so a player's own hits face the monster's values. -->
+    <p>
+      Your own hits face the target's Block Chance and resists, which each
+      monster's page lists.
+    </p>
     <!-- Source: server-scripts/Combat.cs:673-692 — the from-behind and moving-player adjustments apply after the 0–90% bounds. -->
     <p>
       <a href="#combat-advantage">Combat Advantage</a> then lowers the chance for
@@ -142,6 +147,14 @@
     {#key defenseStatKey}
       <Formula calculation={mitigationCalculation(defenseStat)} />
     {/key}
+    <SeeAlso
+      links={[
+        {
+          href: "#avoidance",
+          label: "Block, Miss and Resist, for the chance to avoid the hit",
+        },
+      ]}
+    />
   </Topic>
 
   <Topic id="ward-and-mana-shield">
@@ -173,9 +186,10 @@
   <Topic id="damage-shields">
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — non-spell TargetDamageSkill with base cast range below 1.5 triggers damage shields, except weapon procs and scrolls; each shield mitigates separately, then the summed whole-number damage varies within a rounded-up 10% limit. -->
     <p>
-      When a single-target attack that is not a spell hits you from within 1.5
-      yd, each of your damage shields deals its own amount to the attacker.
-      Weapon on-hit effects and scrolls do not set them off.
+      When an attacker hits you with a single-target skill that is not a spell
+      and has a base range below 1.5 yd, each of your damage shields deals its
+      own amount to the attacker. Weapon on-hit effects and scrolls do not set
+      them off.
     </p>
     <ul>
       <li>

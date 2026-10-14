@@ -57,8 +57,8 @@
       <!-- Source: server-scripts/Combat.cs:783-790; Database.cs:CalculateSlayerLevelForAccount — at 10% mastery or more, Slayer reduces boss or elite damage to players and pets, using the owner's mastery for pets. -->
       <li>
         Apply <a href="/professions/slayer">Slayer</a> reduction to boss or elite
-        hits on players, mercenaries, companions and familiars: 1% per 10 percentage
-        points of mastery from 10% mastery onward, up to 10%, rounded up. Mercenaries,
+        hits on players, mercenaries, companions and familiars: 0.1% per percentage
+        point of mastery from 10% mastery onward, up to 10%, rounded up. Mercenaries,
         companions and familiars use their owner's mastery.
       </li>
       <!-- Source: server-scripts/Combat.cs:DealDamageAt — Rampage adds 50–75% damage to monster/NPC non-spell hits below 10% Health. -->
@@ -249,6 +249,7 @@
 
     <h4>Weapon deductions</h4>
     <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; EquipmentItem.cs:ToolTip — player Ranger targeted and frontal damage subtract bow Base Damage, player Rogue targeted damage subtracts half off-hand Base Damage rounded up, player bow attacks subtract main-hand Base Damage, and mercenaries and Ranger frontal projectiles retain weapon damage. -->
+    <!-- Source: website/data/compendium.db skills.skill_type — Swift Slash is a Ranger target_damage skill and Forest Guardians Aid a Ranger frontal_projectiles skill. -->
     <RefTable caption="Weapon damage deducted from starting damage">
       <thead>
         <tr>
@@ -259,7 +260,8 @@
       <tbody>
         <tr>
           <th scope="row">
-            Player Ranger targeted and frontal damage skills of any damage type
+            Player Ranger targeted and frontal damage skills, such as
+            <a href="/skills/swift_slash">Swift Slash</a>
           </th>
           <td>Bow's Base Damage</td>
         </tr>
@@ -274,9 +276,11 @@
           <td>Main-hand weapon's Base Damage</td>
         </tr>
         <tr>
-          <th scope="row"
-            >Ranger frontal projectiles and every mercenary attack</th
-          >
+          <th scope="row">
+            Ranger frontal projectiles, such as
+            <a href="/skills/forest_guardians_aid">Forest Guardians Aid</a>, and
+            every mercenary attack
+          </th>
           <td>
             None. Weapon damage stays in Attack Power, including a Rogue
             mercenary's full off-hand damage
@@ -284,6 +288,11 @@
         </tr>
       </tbody>
     </RefTable>
+    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — the deduction comes off the selected stat before the skill's listed damage is added and its damage percentage applies. -->
+    <p>
+      Each deduction comes off the starting stat before the skill's listed
+      damage is added.
+    </p>
     <!-- Source: server-scripts/TargetProjectileSkill.cs:189-200; Equipment.cs:515-525 — with no main-hand weapon, a bow attack subtracts the bow's own damage. -->
     <GameBug>
       With only a bow equipped, a Ranger's bow attack loses the bow's Base
@@ -322,6 +331,8 @@
       to consume one. That hit adds 200% extra damage instead of 50%, before Critical
       Resist reduces the bonus.
     </p>
+    <!-- Source: server-scripts/Combat.cs:970-981,1334-1343 — a killing hit or damage shield on a player first rolls the same 15% Radiant Aether chance and restores full Health on success. -->
+    <p>Radiant Aether in those slots can also save you from a killing blow.</p>
   </Topic>
 
   <Topic id="combat-advantage">

@@ -36,7 +36,7 @@
         </tr>
         <tr>
           <th scope="row"><a href="#knockback">Knockback</a></th>
-          <td>A hit's knockback chance when it neither stuns nor fears</td>
+          <td>A hit's knockback chance, when its stun and fear rolls fail</td>
           <td>Pushed back, then stunned for 0.25 seconds</td>
           <td>At once</td>
           <td>Targets 15 or more levels above the attacker</td>
@@ -60,7 +60,7 @@
   </Panel>
 
   <Topic id="stun">
-    <!-- Source: server-scripts/Combat.cs:DealDamageAt — stun keeps the later end time, Bear mounts resist 90%, and applied stun dismounts a player. -->
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt — stun keeps the later end time; the Bear mount's 90% resist sits inside the successful stun branch, so the fear and knockback else-if branches are skipped; applied stun dismounts a player. -->
     <ul>
       <li>A hit stuns when the skill's stun chance roll succeeds.</li>
       <li>A feared target cannot be stunned.</li>
@@ -68,19 +68,18 @@
         A new stun ends at whichever end time is later. Durations do not add up.
       </li>
       <li>
-        <a href="/items/bear_mount">Bear Mount</a> resists 90% of stuns, and a stun
-        dismounts a player.
+        <a href="/items/bear_mount">Bear Mount</a> resists 90% of stuns. The hit still
+        cannot fear or knock back. A stun dismounts a player.
       </li>
     </ul>
   </Topic>
 
   <Topic id="fear">
-    <!-- Source: server-scripts/Combat.cs:fearResistChance,DealDamageAt; EquipmentItem.cs:ToolTip — Fear Resist caps at 100%; fear is an else-if after stun, and applying fear dismounts the player. -->
+    <!-- Source: server-scripts/Combat.cs:fearResistChance,DealDamageAt; EquipmentItem.cs:ToolTip — Fear Resist caps at 100%; fear sits in the else-if branch after the stun roll, so only a failed stun roll reaches it, and applying fear dismounts the player. -->
     <ul>
       <li>
-        Fear applies when the skill's fear chance succeeds and the target then
-        fails a Fear Resist roll. A hit that tries to stun cannot also fear,
-        even when a Bear Mount stops the stun.
+        Fear is tried only when the hit's stun roll fails. It applies when the
+        fear chance succeeds and the target then fails a Fear Resist roll.
       </li>
       <li>
         Fear lasts a random time between half and all of the skill's listed fear
@@ -107,8 +106,8 @@
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — knockback fails when target level − attacker level is at least 15 unless a boss monster casts it; obstacle damage is 1.25%, rounded up, at least 1. -->
     <ul>
       <li>
-        Knockback applies only when the same hit neither stuns nor fears and the
-        target is not already stunned.
+        Knockback is tried only when the hit's stun and fear rolls both fail,
+        and not on a target that is already stunned.
       </li>
       <li>
         It pushes the target the distance listed on the skill and stuns it for

@@ -95,16 +95,23 @@
   </Topic>
 
   <Topic id="attack-speed">
+    <!-- Source: server-scripts/Player.cs:3355-3365 — a finished cast calls StartSkillRefractoryPeriod. -->
+    <!-- Source: server-scripts/Player.cs:GetSkillRefractoryPeriod — the wait is 0.75 seconds for a spell or a skill without a weapon requirement, otherwise the weapon wait. -->
+    <p>
+      Every skill you finish starts a wait before your next auto attack: 0.75
+      seconds after a spell or a skill that needs no weapon, or the weapon wait
+      below after a weapon skill.
+    </p>
     <!-- Source: server-scripts/Combat.cs:335-346; Player.cs:3394-3431 — player Haste is bounded to −80%–80% before changing the weapon wait. -->
     <p>
-      Haste shortens the wait after a weapon auto attack. It is limited to −80%
-      to 80% before it changes weapon delay.
+      Haste shortens the weapon wait. It is limited to −80% to 80% before it
+      changes weapon delay.
     </p>
     <!-- Source: server-scripts/Player.cs:3394-3431 — the wait is weapon delay minus its Haste share, divided by 25 and bounded to 0.25–2 seconds, then added to cast time. -->
     <Formula calculation={timingCalculation()} />
     <!-- Source: server-scripts/Player.cs:EventRefractoryPeriod,GetSkillRefractoryPeriod; Skills.cs:FinishCast — the recovery wait gates auto attacks only, and other player skill cooldowns use their listed duration. -->
     <p>
-      The wait delays only the next auto attack. Other ready spells can be cast
+      The wait delays only the next auto attack. Other ready skills can be used
       right away.
     </p>
   </Topic>

@@ -65,11 +65,12 @@
       while targeting the attacker. During the cast, Parry blocks a
       single-target physical melee hit from that attacker.
     </p>
-    <!-- Source: server-scripts/Combat.cs:DealDamageAt — Parry returns half the post-shield damage, rounded and bounded to 1–5,000. RoundToInt rounds the 50.5 result of a 101-damage hit to 50. -->
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt — Ward and Mana Shield absorb before the Parry check; Parry returns half the remaining damage, rounded and bounded to 1–5,000. RoundToInt rounds the 50.5 result of a 101-damage hit to 50. -->
     <p>
-      Parry returns half the hit's damage remaining after Ward and Mana Shield
-      to the attacker, rounded to the nearest whole point, with a minimum of 1
-      and a maximum of 5,000. If 101 damage remains, Parry deals 50.
+      Your Ward and Mana Shield still absorb the hit first. Parry blocks the
+      rest and returns half of it to the attacker, rounded, at least 1 and at
+      most 5,000. An exact half rounds to the even number, so 101 remaining
+      damage returns 50.
     </p>
   </Topic>
 

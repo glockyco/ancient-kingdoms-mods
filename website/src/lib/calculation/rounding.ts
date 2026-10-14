@@ -1,11 +1,11 @@
 import { getContext, setContext } from "svelte";
 
 /*
- * A page defines "rounded" once, at its first use. The root layout starts a
- * scope for each page, and every calculation or sentence that rounds to the
- * nearest whole number asks whether it is the first. Pages render in document
- * order on the server and in the browser, so the same use prints the
- * definition in both.
+ * A page defines "rounded" once, at its first use or in its introduction. The
+ * root layout starts a scope for each page, and every calculation or sentence
+ * that rounds to the nearest whole number asks whether it is the first. Pages
+ * render in document order on the server and in the browser, so the same use
+ * prints the definition in both.
  */
 
 const KEY = Symbol("rounding definition");

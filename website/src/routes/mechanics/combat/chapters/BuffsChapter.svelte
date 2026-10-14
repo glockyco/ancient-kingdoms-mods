@@ -58,12 +58,10 @@
         Each damage-over-time skill keeps its own layers when several affect the
         same target.
       </li>
-      <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff — an existing same-group song of at least equal strength rejects another song/source. -->
+      <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff; PlayerSkills.cs:RefreshBardSongAura — categorized songs compare strength, while other songs replace another Bard's copy by name at each cast. -->
       <li>
-        A song from another Bard replaces an existing song of the same group
-        only if it is stronger. See <a href="/mechanics/bard#songs"
-          >Bard Songs</a
-        >.
+        When two Bards sing the same song, which one applies depends on the
+        song. See <a href="/mechanics/bard#songs">Bard Songs</a>.
       </li>
     </ul>
   </Topic>
@@ -394,16 +392,19 @@
       <a href="#damage-over-time">damage over time</a>: 85% with two layers
       left, 70% with one.
     </p>
+    <!-- Source: website/data/compendium.db skills.player_classes — Cleanse is Cleric, Purify and Remedy are Druid, Purifying Winds is Ranger and Nullify Magic is Wizard. -->
     <ul>
       <li>
-        <a href="/skills/cleanse">Cleanse</a>,
-        <a href="/skills/purify">Purify</a>,
-        <a href="/skills/purifying_winds">Purifying Winds</a> and
-        <a href="/skills/nullify_magic">Nullify Magic</a> affect you and every visible
-        player, mercenary, companion and familiar within 10 yd, in your party or not.
+        <a href="/skills/cleanse">Cleanse</a> (Cleric),
+        <a href="/skills/purify">Purify</a> (Druid),
+        <a href="/skills/purifying_winds">Purifying Winds</a> (Ranger) and
+        <a href="/skills/nullify_magic">Nullify Magic</a> (Wizard) affect you and
+        every visible player, mercenary, companion and familiar within 10 yd, in your
+        party or not.
       </li>
       <li>
-        <a href="/skills/remedy">Remedy</a> is cast on yourself or an ally.
+        The Druid's <a href="/skills/remedy">Remedy</a> is cast on yourself or an
+        ally.
       </li>
       <li>
         A limited-use cleanse item works only on a target with a matching debuff
@@ -411,6 +412,10 @@
       </li>
     </ul>
     <Formula calculation={cleanseCalculation} />
+    <p>
+      A debuff's skill page shows its Cleanse Resist and whether one cast
+      removes it.
+    </p>
   </Topic>
 
   <Topic id="dispel">

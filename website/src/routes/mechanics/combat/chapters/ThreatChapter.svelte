@@ -11,6 +11,11 @@
     A hit adds threat from the skill's threat, damage, stun and fear, up to the
     victim's current Health.
   </p>
+  <!-- Source: server-scripts/Combat.cs:598-612,700-706 — the monster's threat list is updated before the avoidance roll. -->
+  <p>
+    Threat is added before the avoidance roll, so a blocked, missed or resisted
+    hit adds the same threat as one that lands.
+  </p>
   <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; AreaDamageSkill.cs:Apply; Combat.cs:DealDamageAt — eligible targeted and direct area hits add maximum Health to positive listed threat before the hit's damage and control threat. -->
   <Formula calculation={threatCalculation} />
   <!-- Source: server-scripts/DamageSkill.cs:ToolTip; TargetDamageSkill.cs:ApplyDamage; AreaDamageSkill.cs:Apply — threat tooltips show one third of maximum Health where eligible hits add it all. -->

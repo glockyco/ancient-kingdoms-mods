@@ -16,14 +16,15 @@
   <Topic id="heal-bonus">
     <!-- Source: server-scripts/TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply — player and mercenary casters add Wisdom healing, and only player Rangers triple Wisdom. -->
     <p>
-      Players and mercenaries add a Wisdom bonus to listed healing. Player
-      Rangers use triple Wisdom, while Ranger mercenaries use the ordinary
-      bonus.
+      Players and mercenaries add a Wisdom bonus to a heal's listed healing.
+      Player Rangers use triple Wisdom, while Ranger mercenaries use the
+      ordinary bonus. Healing over time from buffs scales differently, as shown
+      in <a href="#buffs">Buff Strength</a>.
     </p>
     <VariantPicker
       label="Healer"
       options={[
-        { value: "ordinary", label: "Other players and mercenaries" },
+        { value: "ordinary", label: "Mercenaries and other players" },
         { value: "ranger", label: "Player Ranger" },
       ]}
       bind:value={healer}
@@ -63,6 +64,8 @@
   </Topic>
 
   <Topic id="critical-heals">
+    <!-- Source: server-scripts/TargetHealSkill.cs:Apply; AreaHealSkill.cs:Apply — a heal rolls the caster's critical chance. -->
+    <p>A heal's critical chance is the caster's Critical Strike.</p>
     <ul>
       <!-- Source: server-scripts/TargetHealSkill.cs:Apply — targeted heals require canHealOthers for a critical heal, including self-targeted casts. -->
       <li>

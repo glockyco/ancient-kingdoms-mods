@@ -122,7 +122,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Slayer reduction",
       expression:
-        "At 10% Slayer mastery or more, reduce a boss or elite monster's damage to a player, mercenary, companion or familiar by 1% per 10 percentage points of mastery, up to 10%. Mercenaries, companions and familiars use their owner's mastery",
+        "At 10% Slayer mastery or more, reduce a boss or elite monster's damage to a player, mercenary, companion or familiar by 0.1% per percentage point of mastery, up to 10%. Mercenaries, companions and familiars use their owner's mastery",
       rounding: "up",
     },
     {

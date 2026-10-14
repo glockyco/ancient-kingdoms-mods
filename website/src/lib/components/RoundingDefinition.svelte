@@ -1,6 +1,7 @@
 <!--
-  Defines "rounded" for the reader at its first use on a page. Place it after
-  any calculation or sentence that rounds to the nearest whole number. Later
+  Defines "rounded" for the reader once per page. Place it after any
+  calculation or sentence that rounds to the nearest whole number, or in the
+  introduction of a reference page whose readers arrive at any topic. Later
   uses on the same page render nothing.
 -->
 <script lang="ts">
