@@ -1,1 +1,1 @@
-Mechanics Active Song Limit A Bard sustains two songs by default (the Active Songs value in your character window). Learning this passive adds 1 to your Active Songs limit. See Bard Songs.
+Mechanics Active Song Limit A Bard sustains two songs by default (the Active Songs value in your character window). Learning this passive removes the limit, and Active Songs shows ∞. Each song still lasts only its own duration, and starting a song no longer ends an older one. See Bard Songs.

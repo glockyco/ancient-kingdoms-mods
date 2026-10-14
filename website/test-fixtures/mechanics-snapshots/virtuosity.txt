@@ -1,1 +1,1 @@
-Mechanics Virtuosity Virtuosity's Attack Power and Spell Power bonuses apply while your active songs equal your Active Songs limit. See Bard Songs.
+Mechanics Virtuosity Virtuosity's Attack Power and Spell Power bonuses apply while at least three of your songs are active. Each active song beyond three adds another 5% to both, so five active songs add 10% more. See Bard Songs.
