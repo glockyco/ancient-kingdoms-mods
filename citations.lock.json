@@ -1162,6 +1162,9 @@
       "sha256": "771419fd2a3b5863479be1c7896d02fb7fd670bc1b8e9b1cc1ab95bba320b4b6",
       "span": 17
     },
+    "Entity.cs:checkAggro": {
+      "span": 0
+    },
     "EnviromentSystem.cs:142-147": {
       "sha256": "6bb6b32396282cff86b00dde3f050a2e7e8a2603eacc641b636c700d598b15ab",
       "span": 6
@@ -2630,6 +2633,9 @@
       "sha256": "b1808623e9c39626cfcb4165c8ef8366bad1d676891e061613546c778373057b",
       "span": 9
     },
+    "Pet.cs:CanAttack": {
+      "span": 0
+    },
     "Pet.cs:IsValidCombatReacquireTarget": {
       "span": 0
     },
@@ -3299,6 +3305,9 @@
       "span": 0
     },
     "Player.cs:IsBarberSessionValid": {
+      "span": 0
+    },
+    "Player.cs:IsProtectedFriendlyNpc": {
       "span": 0
     },
     "Player.cs:LateUpdate": {
@@ -4046,6 +4055,10 @@
     },
     "PlayerSkills.cs:638-642": {
       "sha256": "e3952f63be531054eede3a16334ff039fa0c28ca1197b1aff65ab1a39cc5da80",
+      "span": 5
+    },
+    "PlayerSkills.cs:648-652": {
+      "sha256": "547912e3dbfd6dfa87431585ba6ee7e42e19545a07fdfe83258a2976428a2376",
       "span": 5
     },
     "PlayerSkills.cs:670-716": {
@@ -5383,6 +5396,9 @@
     "UIRollForItem.cs:69-102": {
       "sha256": "c8a2982f58dddfbf993a673c4d25b2d61e84b448af3908d09c453b6a5d534534",
       "span": 34
+    },
+    "UISettings.cs:ProtectFriendlyNpcs": {
+      "span": 0
     },
     "UISkills.cs:295-326": {
       "sha256": "0e3af4d4c89827c6baaa34f4097302c55ca53ee1cdb6f6861e7a4fd2bdaca771",
