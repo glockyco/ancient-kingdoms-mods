@@ -59,16 +59,17 @@ describe("formatSkillEffect Bard summaries", () => {
     },
   );
 
-  it("places the Virtuosity condition after its damage bonuses", () => {
+  it("places the Virtuosity condition and per-song bonus after its damage bonuses", () => {
     expect(
       formatSkillEffect({
         skill_type: "passive",
         is_bard_virtuosity: true,
+        additional_damage_percent_per_song: 0.05,
         damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
         magic_damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
       } as Skill),
     ).toBe(
-      "+20% attack power, +20% spell power, while performing the maximum number of songs you can sustain",
+      "+20% attack power, +20% spell power, with at least 3 active songs, +5% attack and spell power per active song beyond 3",
     );
   });
 

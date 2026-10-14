@@ -63,16 +63,29 @@
         Bard songs require an equipped instrument.<br />
         Losing it stops the repeating cast.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1265-1309,1591-1606,1621-1633,1650-1662 — the default limit is two, passive bonuses add slots, and a new song displaces the oldest refreshed entry. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1265-1309,1591-1606,1621-1633,1650-1662 — the default limit is two, an unlimited passive removes it, and at a limit a new song displaces the oldest refreshed entry. -->
       <p>
         Two songs can remain active by default.<br />
+        A new song at the limit removes the least recently refreshed song and its
+        effects.<br />
         <a
           href="/skills/polyphony"
           class="text-blue-600 dark:text-blue-400 hover:underline">Polyphony</a
         >
-        adds one slot, for three active songs.<br />
-        A new song at the limit removes the least recently refreshed song and its
-        effects.
+        removes the limit. Each song still ends when its duration runs out.
+      </p>
+      <!-- Source: server-scripts/BardVirtuositySkill.cs:IsDamageBonusActive; BardFinalCadenceSkill.cs:HasRequiredSongsActive — both check for at least three active songs. -->
+      <p>
+        <a
+          href="/skills/virtuosity"
+          class="text-blue-600 dark:text-blue-400 hover:underline">Virtuosity</a
+        >
+        and
+        <a
+          href="#cadence"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Final Cadence</a
+        > need at least three active songs.
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:1265-1309,1527-1538,1549-1568,1650-1662 — changing the selected song does not remove earlier effects, but expiry or explicit removal does. -->
       <p>
@@ -102,9 +115,10 @@
                 Familiars do not receive these auras.
               </td>
             </tr>
-            <!-- Source: server-scripts/BardAreaSongSkill.cs:CollectAuraCandidates — CollectAuraCandidates removes Monsters with aggroList.Count == 0. -->
+            <!-- Source: server-scripts/BardAreaSongSkill.cs:CollectAuraCandidates — Cacophony removes Monsters with speed at most -50, other songs remove Monsters with aggroList.Count == 0. -->
             <!-- Source: server-scripts/PlayerSkills.cs:1036-1044 — RefreshBardSongAura runs every 0.5 seconds. -->
             <!-- Source: server-scripts/PlayerSkills.cs:1312-1327 — fresh casts call RefreshBardSongAura with freshCast true. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; AreaDebuffSkill.cs:ApplyToCandidates — a newly reached monster gets the Bard's threat and targets the Bard if it had no target. -->
             <tr class="border-b border-border/50">
               <th class="py-3 pr-5 text-left font-medium text-foreground"
                 >Harmful</th
@@ -112,7 +126,19 @@
               <td class="py-3">
                 Enemy monsters within the song's range that are already fighting
                 anyone, not only the Bard's party. Checked on each cast and
-                every 0.5-second aura update.
+                every 0.5-second aura update.<br />
+                <a
+                  href="/skills/cacophony"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >Cacophony</a
+                >
+                also hits monsters that are not fighting yet, unless they are
+                <a
+                  href="/mechanics/combat#sleep"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >asleep</a
+                >. Reaching one gives the Bard threat on it, so Cacophony can
+                start a fight.
               </td>
             </tr>
           </tbody>
@@ -291,7 +317,7 @@
       <p>
         Charm uses one active-song slot.<br />
         At the song limit, a successful charm can displace the least recently refreshed
-        song.
+        song. With Polyphony there is no limit, so it displaces nothing.
       </p>
       <!-- Source: server-scripts/BardCharmSongSkill.cs:33-59, PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:2260-2292 — repeated casts keep the original charm target and require range and visibility to renew it. -->
       <p>

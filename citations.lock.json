@@ -71,6 +71,9 @@
     "AreaDebuffSkill.cs:Apply": {
       "span": 0
     },
+    "AreaDebuffSkill.cs:ApplyToCandidates": {
+      "span": 0
+    },
     "AreaHealSkill.cs:101-117": {
       "sha256": "4bb50f41c278111d8ac47da611950e32d72b51f91e809ee2b2931ee8ed547dd6",
       "span": 17

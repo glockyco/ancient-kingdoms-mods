@@ -15,7 +15,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "classes.bard": {
     href: "/classes/bard#class-guide",
     reviewedBodySha256:
-      "b512c4ff408bb36b0196664c8707d82195fd8aed35647f90db14442e8eb9e27e",
+      "8d3f21bf442df2c496f4e88fe15fc89d09a1a88d2f8a2054fb0cc6eb7055b49b",
   },
   "classes.cleric": {
     href: "/classes/cleric#class-guide",
@@ -65,7 +65,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "combat.bard-songs": {
     href: "/mechanics/bard#songs",
     reviewedBodySha256:
-      "e6ab329906cce4d85e6711e29e721966d39028a1dbfc7ec07ee0840637d27ee4",
+      "adf76dbee41d52c5360c363b571cc07aa1d35f94f2fcabd6fa86d8309c228543",
   },
   "combat.buffs-wards-cleanse": {
     href: "/mechanics/combat#buffs-and-debuffs",
@@ -310,7 +310,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
   "world.game-modes": {
     href: "/mechanics/world#game-modes",
     reviewedBodySha256:
-      "57f3266f5b324f8c8dbc8efb0964464ad8b622c67e7d3104d050933e6753196a",
+      "9db9793eb71b326427fa45e6716a78482cd78761546809cde79e60a0f6b6aef0",
   },
   "world.journal-and-slayer": {
     href: "/professions/slayer#how-it-works",

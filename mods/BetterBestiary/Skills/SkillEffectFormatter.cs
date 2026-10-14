@@ -63,6 +63,8 @@ internal static class SkillEffectFormatter
         }
         if (skill.additional_active_bard_songs != 0)
             parts.Add($"+{skill.additional_active_bard_songs} active Bard song");
+        if (skill.unlimited_active_bard_songs)
+            parts.Add("no active Bard song limit");
         if (skill.bard_song_duration_bonus_per_level != 0)
             parts.Add($"+{FormatPercent(skill.bard_song_duration_bonus_per_level)} song duration per rank");
         if (skill.extra_gather_item_chance != 0)
@@ -79,7 +81,11 @@ internal static class SkillEffectFormatter
             FormatBuffDebuffStats(skill, parts);
 
         if (skill.is_bard_virtuosity)
-            parts.Add("while performing the maximum number of songs you can sustain");
+        {
+            parts.Add("with at least 3 active songs");
+            if (skill.additional_damage_percent_per_song != 0)
+                parts.Add($"+{FormatPercent(skill.additional_damage_percent_per_song)} attack and spell power per active song beyond 3");
+        }
 
         if (skill.is_assassination_skill)
             parts.Add("execute <25% hp");

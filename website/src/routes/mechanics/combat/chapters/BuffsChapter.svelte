@@ -32,11 +32,12 @@
       A buff or debuff lasts its listed duration unless something removes it.
       Reapplying the same effect replaces it and restarts its duration.
     </p>
-    <!-- Source: server-scripts/FoodItem.cs:Use; BuffSkill.cs:GetBuffDurationMultiplier; PlayerSkills.cs:GetBardSongDurationMultiplier; PassiveSkill.cs:GetBardSongDurationBonus,GetFoodAndDrinkBuffDurationBonus — food and drink buffs and a player's Bard songs last longer by the summed passive bonus per rank. -->
+    <!-- Source: server-scripts/FoodItem.cs:Use; BuffSkill.cs:GetBuffDurationMultiplier; PlayerSkills.cs:GetBardSongDurationMultiplier; PassiveSkill.cs:GetBardSongDurationBonus,GetFoodAndDrinkBuffDurationBonus; website/data/compendium.db skills.bard_song_duration_bonus_per_level,food_and_drink_buff_duration_bonus_per_level — food and drink buffs and a player's Bard songs last longer by the summed passive bonus per rank. -->
     <p>
-      The Bard passives <a href="/skills/lingering_melody">Lingering Melody</a>
-      and <a href="/skills/tavern_spirit">Tavern Spirit</a> lengthen your Bard songs
-      and your food and drink buffs by 10% per rank.
+      The Bard passive <a href="/skills/lingering_melody">Lingering Melody</a>
+      lengthens your Bard songs by 4% per rank, and
+      <a href="/skills/tavern_spirit">Tavern Spirit</a> lengthens your food and drink
+      buffs by 10% per rank.
     </p>
     <!-- Source: server-scripts/Skills.cs:AddOrRefreshBuff -->
     <p>

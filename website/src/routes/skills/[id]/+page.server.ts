@@ -530,6 +530,9 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_bard_charm: Boolean(skillRaw.is_bard_charm),
     is_bard_final_cadence: Boolean(skillRaw.is_bard_final_cadence),
     is_bard_virtuosity: Boolean(skillRaw.is_bard_virtuosity),
+    additional_damage_percent_per_song: Number(
+      skillRaw.additional_damage_percent_per_song ?? 0,
+    ),
     is_permanent: Boolean(skillRaw.is_permanent),
     is_only_for_magic_classes: Boolean(skillRaw.is_only_for_magic_classes),
     remain_after_death: Boolean(skillRaw.remain_after_death),
@@ -554,6 +557,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     additional_active_bard_songs: Number(
       skillRaw.additional_active_bard_songs ?? 0,
     ),
+    unlimited_active_bard_songs: Boolean(skillRaw.unlimited_active_bard_songs),
     bard_song_duration_bonus_per_level: Number(
       skillRaw.bard_song_duration_bonus_per_level ?? 0,
     ),

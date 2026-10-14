@@ -209,6 +209,8 @@ export interface SkillDetailView {
   is_bard_charm: boolean;
   is_bard_final_cadence: boolean;
   is_bard_virtuosity: boolean;
+  /** Virtuosity's attack and spell power bonus per active song beyond three. */
+  additional_damage_percent_per_song: number;
   is_permanent: boolean;
   is_only_for_magic_classes: boolean;
   remain_after_death: boolean;
@@ -227,6 +229,7 @@ export interface SkillDetailView {
 
   // Passive mechanics
   additional_active_bard_songs: number;
+  unlimited_active_bard_songs: boolean;
   bard_song_duration_bonus_per_level: number;
   extra_gather_item_chance: number;
   food_and_drink_buff_duration_bonus_per_level: number;

@@ -109,7 +109,9 @@ export function skillRowToEffectInput(
     is_bard_charm: Boolean(r.is_bard_charm),
     is_bard_final_cadence: Boolean(r.is_bard_final_cadence),
     is_bard_virtuosity: Boolean(r.is_bard_virtuosity),
+    additional_damage_percent_per_song: r.additional_damage_percent_per_song,
     additional_active_bard_songs: r.additional_active_bard_songs,
+    unlimited_active_bard_songs: Boolean(r.unlimited_active_bard_songs),
     bard_song_duration_bonus_per_level: r.bard_song_duration_bonus_per_level,
     extra_gather_item_chance: r.extra_gather_item_chance,
     food_and_drink_buff_duration_bonus_per_level:

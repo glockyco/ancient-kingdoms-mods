@@ -121,7 +121,9 @@ export interface Skill {
   is_bard_charm?: boolean;
   is_bard_final_cadence?: boolean;
   is_bard_virtuosity?: boolean;
+  additional_damage_percent_per_song?: number;
   additional_active_bard_songs?: number;
+  unlimited_active_bard_songs?: boolean;
   bard_song_duration_bonus_per_level?: number;
   extra_gather_item_chance?: number;
   food_and_drink_buff_duration_bonus_per_level?: number;
@@ -1012,6 +1014,9 @@ export function formatSkillEffect(
   if (skill.additional_active_bard_songs) {
     parts.push(`+${skill.additional_active_bard_songs} active Bard song`);
   }
+  if (skill.unlimited_active_bard_songs) {
+    parts.push("no active Bard song limit");
+  }
   if (skill.bard_song_duration_bonus_per_level) {
     parts.push(
       `+${formatPercent(skill.bard_song_duration_bonus_per_level)} song duration per rank`,
@@ -1048,8 +1053,14 @@ export function formatSkillEffect(
     const buffStats = formatBuffDebuffStats(skill, options);
     parts.push(...buffStats);
   }
+  // Source: server-scripts/BardVirtuositySkill.cs:IsDamageBonusActive,GetAdditionalDamagePercentBonus — the bonus needs three active songs and grows with each song beyond three.
   if (skill.is_bard_virtuosity) {
-    parts.push("while performing the maximum number of songs you can sustain");
+    parts.push("with at least 3 active songs");
+    if (skill.additional_damage_percent_per_song) {
+      parts.push(
+        `+${formatPercent(skill.additional_damage_percent_per_song)} attack and spell power per active song beyond 3`,
+      );
+    }
   }
 
   // Special mechanics

@@ -30,17 +30,17 @@
     skill.max_level > 1
       ? ` at rank ${skill.max_level}`
       : ""}. After you select another song, this one lasts the rest of its
-    duration.
+    duration. A learned song-duration bonus such as
     <a
       href="/skills/lingering_melody"
       class="text-blue-600 dark:text-blue-400 hover:underline"
       >Lingering Melody</a
     >
-    lengthens it by 10% per rank, so at rank 2 it lasts
+    lengthens it, so with a {fmt.formatPercent(EXAMPLE_SONG_BONUS)} bonus it lasts
     {fmt.formatSeconds(songDuration(songSeconds, EXAMPLE_SONG_BONUS))}.
   </p>
 </div>
-<!-- Source: server-scripts/PlayerSkills.cs:GetMaximumActiveBardSongs,BeginBardSong; server-scripts/UICharacterInfo.cs:Update — default limit is two; renewals move songs to the end of the active list. -->
+<!-- Source: server-scripts/PlayerSkills.cs:GetMaximumActiveBardSongs,BeginBardSong; server-scripts/UICharacterInfo.cs:Update — default limit is two, Polyphony removes it, and renewals move songs to the end of the active list. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Active Song Limit</h3>
   <p class="text-muted-foreground">
@@ -49,15 +49,15 @@
       character window).</span
     >
     <span class="block"
+      >Starting another song at the limit ends the song you renewed longest ago.</span
+    >
+    <span class="block"
       >Learning
       <a
         href="/skills/polyphony"
         class="text-blue-600 dark:text-blue-400 hover:underline">Polyphony</a
       >
-      raises the limit to three.</span
-    >
-    <span class="block"
-      >Starting another song at the limit ends the song you renewed longest ago.</span
+      removes the limit.</span
     >
     See
     <a

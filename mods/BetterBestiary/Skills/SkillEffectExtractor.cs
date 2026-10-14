@@ -184,6 +184,7 @@ internal static class SkillEffectExtractor
         {
             input.is_enrage = passiveSkill.isEnrage;
             input.additional_active_bard_songs = passiveSkill.additionalActiveBardSongs;
+            input.unlimited_active_bard_songs = passiveSkill.unlimitedActiveBardSongs;
             input.bard_song_duration_bonus_per_level = passiveSkill.bardSongDurationBonusPerLevel;
             input.extra_gather_item_chance = passiveSkill.extraGatherItemChance;
             input.food_and_drink_buff_duration_bonus_per_level = passiveSkill.foodAndDrinkBuffDurationBonusPerLevel;
@@ -215,7 +216,12 @@ internal static class SkillEffectExtractor
                 finalCadence.healsHealth.bonusPerLevel);
         }
 
-        input.is_bard_virtuosity = skill.TryCast<BardVirtuositySkill>() != null;
+        var virtuosity = skill.TryCast<BardVirtuositySkill>();
+        if (virtuosity != null)
+        {
+            input.is_bard_virtuosity = true;
+            input.additional_damage_percent_per_song = virtuosity.additionalDamagePercentPerSong;
+        }
     }
 
     private static void PopulateNecromancer(ScriptableSkill skill, SkillEffectInput input)

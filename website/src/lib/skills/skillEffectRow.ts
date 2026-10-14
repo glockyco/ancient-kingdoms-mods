@@ -114,7 +114,9 @@ export interface SkillEffectRow {
   is_bard_charm: number;
   is_bard_final_cadence: number;
   is_bard_virtuosity: number;
+  additional_damage_percent_per_song: number;
   additional_active_bard_songs: number;
+  unlimited_active_bard_songs: number;
   bard_song_duration_bonus_per_level: number;
   extra_gather_item_chance: number;
   food_and_drink_buff_duration_bonus_per_level: number;

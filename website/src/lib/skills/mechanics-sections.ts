@@ -60,7 +60,9 @@ const MECHANICS_SECTIONS = [
   { id: "scroll-mastery", shows: ({ facts }) => facts.hasScrollMasteryScaling },
   {
     id: "song-capacity",
-    shows: ({ skill }) => skill.additional_active_bard_songs > 0,
+    shows: ({ skill }) =>
+      skill.additional_active_bard_songs > 0 ||
+      skill.unlimited_active_bard_songs,
   },
   {
     id: "song-duration-bonus",

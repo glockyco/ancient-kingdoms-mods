@@ -198,16 +198,23 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     },
     rules: [
       {
-        text: "You can keep two songs active at once. Polyphony raises this to three.",
+        text: "You can keep two songs active at once. Polyphony removes this limit, though each song still ends when its duration runs out.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1591-1606 — base two-song limit plus passive slots",
+          "Source: server-scripts/PlayerSkills.cs:1591-1606 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
         linkText: "Song rules",
       },
       {
-        text: "When all song slots are full, a new song replaces the oldest one.",
+        text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1274-1308 — active songs refresh or displace the oldest",
+          "Source: server-scripts/PlayerSkills.cs:1274-1308 — active songs refresh or displace the oldest while a limit applies",
+      },
+      {
+        text: "Virtuosity and Final Cadence need at least three active songs, so they require Polyphony.",
+        source:
+          "Source: server-scripts/BardVirtuositySkill.cs:IsDamageBonusActive; server-scripts/BardFinalCadenceSkill.cs:HasRequiredSongsActive — both check for three active songs",
+        href: "/mechanics/bard#cadence",
+        linkText: "Final Cadence",
       },
     ],
   },
