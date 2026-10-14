@@ -59,7 +59,8 @@
   {#if (skill.player_classes.length > 0 || mechanics.facts.usedByMercenary || mechanics.facts.usedByCompanion || skill.is_scroll) && !skill.is_decrease_resists_skill && (skill.healing_per_second_bonus?.base_value ?? 0) <= 0}
     <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — immunity blocks debuffs except resistance-decrease skills and positive Health-per-second effects. -->
     <p class="text-muted-foreground">
-      Monsters marked Immune to Debuffs ignore this skill.
+      This {skill.is_dispel ? "skill" : "debuff"} has no effect on monsters whose
+      pages list Immune to Debuffs.
     </p>
   {/if}
 </div>
