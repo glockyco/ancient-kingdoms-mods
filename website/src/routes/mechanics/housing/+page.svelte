@@ -69,6 +69,7 @@
         </li>
       </ul>
       <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:57-68 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13485-13502,13787-13828 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
+      <!-- Source: server-scripts/HousingManager.cs:strucItems — the 0.9.35.5 house catalog, read in the running game, offers a Craft Station, Cooking Oven, Alchemy Workbench and Scribing Table. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           Home workstations include a <a
@@ -80,11 +81,16 @@
             href="/items/cooking_oven"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Cooking Oven</a
-          >, and
+          >,
           <a
             href="/items/alchemy_workbench"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Alchemy Workbench</a
+          >, and
+          <a
+            href="/items/scribing_table"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Scribing Table</a
           >.
         </li>
         <li>
@@ -94,6 +100,7 @@
         <li>An Alchemy Workbench still requires learned potion recipes.</li>
       </ul>
       <!-- Source: server-scripts/Bookcase.cs:IsInRange,OnInteractServer; UIBooks.cs:ShowLibrary — a placed bookcase opens within 2 yd for the owning account and lists the character's learned books by name, without the learn button. -->
+      <!-- Source: server-scripts/HousingManager.cs:strucItems — in the running 0.9.35.5 game, the Bookshelf is the only catalog structure whose prefab carries a Bookcase component. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           A placed <a

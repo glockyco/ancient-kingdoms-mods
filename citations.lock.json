@@ -1789,6 +1789,9 @@
       "sha256": "a4d308ba8f7191c0a0b7d96ad53a3548d0ccaf79bda570087325a8d592f6d466",
       "span": 12
     },
+    "HousingManager.cs:strucItems": {
+      "span": 0
+    },
     "Intelligence.cs:101-124": {
       "sha256": "30097905fb025b94c1c2f999f20f05b05fdfeec1bbd255270adbfcb3567011a3",
       "span": 24
