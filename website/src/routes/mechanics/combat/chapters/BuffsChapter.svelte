@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
   import RefTable from "$lib/components/reference/RefTable.svelte";
@@ -94,11 +95,11 @@
             A player's area buffs for mercenaries, such as
             <a href="/skills/blessing_of_the_zealot">Blessing of the Zealot</a>
           </th>
-          <td>(Wisdom + Constitution) ÷ 2, rounded</td>
+          <td>(Wisdom + Constitution) ÷ 2, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row"><a href="/skills/leadership">Leadership</a></th>
-          <td>(Wisdom + Constitution + Charisma) ÷ 2, rounded</td>
+          <td>(Wisdom + Constitution + Charisma) ÷ 2, <RoundedTerm /></td>
         </tr>
         <!-- Source: server-scripts/AreaBuffSkill.cs:Apply — relic area buffs use caster level × 10 as their stored attribute. -->
         <tr>
@@ -135,11 +136,11 @@
         </tr>
         <tr>
           <th scope="row">Armor Class and each resist</th>
-          <td>Listed bonus + 15% of buff attribute, rounded</td>
+          <td>Listed bonus + 15% of buff attribute, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">Damage Shield</th>
-          <td>Listed damage + 75% of buff attribute, rounded</td>
+          <td>Listed damage + 75% of buff attribute, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">
@@ -154,14 +155,16 @@
           </th>
           <td>
             Listed healing + listed healing × 0.4% per buff attribute point
-            above 0, at most +500%, with the extra healing rounded
+            above 0, at most +500%, with the extra healing <RoundedTerm />
           </td>
         </tr>
         <tr>
           <th scope="row">
             Healing each second, base duration at least {seconds(60)}
           </th>
-          <td>Listed healing + 30% of buff attribute above 0, rounded</td>
+          <td
+            >Listed healing + 30% of buff attribute above 0, <RoundedTerm /></td
+          >
         </tr>
       </tbody>
     </RefTable>
@@ -194,7 +197,7 @@
       </thead>
       <tbody>
         <tr>
-          <th scope="row">Whole numbers, rounded</th>
+          <th scope="row">Whole numbers, <RoundedTerm /></th>
           <td>
             Ward, Armor Class, resists, flat Attack Power and Spell Power, flat
             Mana and Rage recovery
@@ -223,8 +226,8 @@
       </li>
       <!-- Source: server-scripts/BuffSkill.cs:ScaleHealingPerSecondBonus — Cacophony's stored Charisma coefficient adds damage after rounding and treats negative Charisma as zero. -->
       <li>
-        <a href="/skills/cacophony">Cacophony</a> deals its listed damage each second
-        plus 75% of Charisma above 0, rounded.
+        <a href="/skills/cacophony">Cacophony</a> deals its listed damage each
+        second plus 75% of Charisma above 0, <RoundedTerm />.
       </li>
     </ul>
   </Topic>
@@ -316,32 +319,32 @@
           <th scope="row">Armor Class</th>
           <td>
             Listed reduction + 50% of debuff attribute for physical debuffs, or
-            40% for others, rounded
+            40% for others, <RoundedTerm />
           </td>
         </tr>
         <tr>
           <th scope="row">Each resist</th>
-          <td>Listed reduction + 40% of debuff attribute, rounded</td>
+          <td>Listed reduction + 40% of debuff attribute, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">Attack Power and Spell Power</th>
-          <td>Listed reduction + 50% of debuff attribute, rounded</td>
+          <td>Listed reduction + 50% of debuff attribute, <RoundedTerm /></td>
         </tr>
       </tbody>
       <tbody>
         <tr><th colspan="2" scope="rowgroup">Damage each second</th></tr>
         <tr>
           <th scope="row">Physical</th>
-          <td>Listed damage + 50% of Strength, rounded</td>
+          <td>Listed damage + 50% of Strength, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">Poison and disease that scale with Dexterity</th>
-          <td>Listed damage + 150% of Dexterity, rounded</td>
+          <td>Listed damage + 150% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">Every other type</th>
           <td>
-            Listed damage + 125% of Intelligence, rounded.
+            Listed damage + 125% of Intelligence, <RoundedTerm />.
             <a href="/skills/ensnare">Ensnare</a> adds 115%
           </td>
         </tr>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
   import SeeAlso from "$lib/components/reference/SeeAlso.svelte";
@@ -87,8 +88,8 @@
       <!-- Source: server-scripts/BuffSkill.cs:GetCasterCriticalChance; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — buffs store the caster's Critical Strike when applied. -->
       <li>
         A critical healing-over-time tick heals 150% of the normal tick,
-        rounded. The chance is the caster's Critical Strike when the buff
-        starts.
+        <RoundedTerm />. The chance is the caster's Critical Strike when the
+        buff starts.
       </li>
       <!-- Source: server-scripts/Skills.cs:ApplyCriticalToOverTime; NetworkManagerMMO.cs:OnStartServer — critical healing requires more than 3 healing and base duration below 30 seconds, with recovery each second. -->
       <li>

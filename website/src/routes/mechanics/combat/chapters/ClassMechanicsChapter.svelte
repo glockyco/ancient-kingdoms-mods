@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
   import SeeAlso from "$lib/components/reference/SeeAlso.svelte";
@@ -68,9 +69,9 @@
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — Ward and Mana Shield absorb before the Parry check; Parry returns half the remaining damage, rounded and bounded to 1–5,000. RoundToInt rounds the 50.5 result of a 101-damage hit to 50. -->
     <p>
       Your Ward and Mana Shield still absorb the hit first. Parry blocks the
-      rest and returns half of it to the attacker, rounded, at least 1 and at
-      most 5,000. An exact half rounds to the even number, so 101 remaining
-      damage returns 50.
+      rest and returns half of it to the attacker, <RoundedTerm />, at least 1
+      and at most 5,000. An exact half rounds to the even number, so 101
+      remaining damage returns 50.
     </p>
   </Topic>
 
@@ -86,8 +87,8 @@
   <Topic id="reaper-form">
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; NetworkManagerMMO.cs:OnStartServer — Reaper Form loses its rounded maximum-Health percentage each second, bypassing normal DoT rules and BreakMezz. -->
     <p>
-      <a href="/skills/reaper_form">Reaper Form</a> drains its listed percentage of
-      your maximum Health each second, rounded.
+      <a href="/skills/reaper_form">Reaper Form</a> drains its listed percentage
+      of your maximum Health each second, <RoundedTerm />.
     </p>
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; NetworkManagerMMO.cs:OnStartServer — Reaper Form drain bypasses resistance, wards, critical ticks and Deathly Focus bonuses. -->
     <p>

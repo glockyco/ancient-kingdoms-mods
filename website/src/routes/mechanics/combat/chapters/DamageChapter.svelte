@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
   import GameBug from "$lib/components/reference/GameBug.svelte";
@@ -44,7 +45,7 @@
     <h4>Damage modifiers</h4>
     <ol start="4">
       <!-- Source: server-scripts/Combat.cs:776 — variance multiplies damage by a random factor from 0.9 to 1.1 and applies RoundToInt. -->
-      <li>Multiply damage by a random 90% to 110%, rounded.</li>
+      <li>Multiply damage by a random 90% to 110%, <RoundedTerm />.</li>
       <!-- Source: server-scripts/Combat.cs:776-781 — the from-behind damage bonus follows variance. -->
       <li>
         Apply the <a href="#combat-advantage">from-behind damage bonus</a>.
@@ -86,7 +87,7 @@
       <li>
         A non-spell melee hit on a target affected by
         <a href="/skills/root">Root</a> heals the attacker for Root's Heal on
-        Hit percentage of the damage, rounded. Then the target's
+        Hit percentage of the damage, <RoundedTerm />. Then the target's
         <a href="#damage-shields">damage shields</a> hurt the attacker. Neither changes
         this hit's damage.
       </li>
@@ -130,9 +131,8 @@
       Each attack starts from the stat in the table below, usually Attack Power
       or Spell Power from your character window. The skill's listed damage is
       added, then the total is multiplied by the skill's damage percentage and
-      rounded if that percentage is above zero. Scrolls use only their own
-      listed damage. Each skill page has a calculator for its damage before
-      defenses.
+      <RoundedTerm /> if that percentage is above zero. Scrolls use only their own
+      listed damage. Each skill page has a calculator for its damage before defenses.
     </p>
     <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; AreaDamageSkill.cs:Apply; AreaObjectSpawnSkill.cs:AreaObjectSpawner.ApplyDamageToEntities; EquipmentItem.cs:ToolTip — handlers choose stats by class, handler and element; ground marks use listed damage only; weapon tooltip damage is Base Damage. -->
     <RefTable caption="Starting damage by damage type">
@@ -150,22 +150,22 @@
         </tr>
         <tr>
           <th scope="row">Player targeted bow attacks</th>
-          <td>Attack Power + 150% of Dexterity, rounded</td>
+          <td>Attack Power + 150% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">Mercenary bow attacks</th>
-          <td>Attack Power + 150% of Dexterity, rounded</td>
+          <td>Attack Power + 150% of Dexterity, <RoundedTerm /></td>
         </tr>
       </tbody>
       <tbody>
         <tr><th colspan="2" scope="rowgroup">Poison</th></tr>
         <tr>
           <th scope="row">Rogue targeted attacks, including mercenaries</th>
-          <td>Attack Power + 250% of Dexterity, rounded</td>
+          <td>Attack Power + 250% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">Player Rogue projectile and frontal attacks</th>
-          <td>Attack Power + 250% of Dexterity, rounded</td>
+          <td>Attack Power + 250% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row">
@@ -201,15 +201,16 @@
             >Player <a href="/skills/final_cadence">Final Cadence</a></th
           >
           <td
-            >Listed damage × song power, rounded, then × (100% + Melody bonus),
-            rounded</td
+            >Listed damage × song power, <RoundedTerm />, then × (100% + Melody
+            bonus),
+            <RoundedTerm /></td
           >
         </tr>
         <tr>
           <th scope="row"
             >Mercenary <a href="/skills/final_cadence">Final Cadence</a></th
           >
-          <td>Listed damage × song power, rounded</td>
+          <td>Listed damage × song power, <RoundedTerm /></td>
         </tr>
       </tbody>
       <tbody>
@@ -219,7 +220,7 @@
             Ranger frontal projectiles, such as
             <a href="/skills/forest_guardians_aid">Forest Guardians Aid</a>
           </th>
-          <td>Attack Power + 150% of Dexterity, rounded</td>
+          <td>Attack Power + 150% of Dexterity, <RoundedTerm /></td>
         </tr>
         <tr>
           <th scope="row"
@@ -314,7 +315,7 @@
     <p>
       A critical hit adds 50% damage after damage reduction. The target's
       Critical Resist, between 0% and 100%, reduces that extra damage: damage ×
-      (100% + 50% × (100% − Critical Resist)), rounded.
+      (100% + 50% × (100% − Critical Resist)), <RoundedTerm />.
     </p>
     <!-- Source: server-scripts/Combat.cs:criticalChance,DealDamageAt — critical rolls require more than 3 mitigated damage, use Critical Strike capped at 70%, and skip monster AreaDamageSkill hits. -->
     <ul>
@@ -387,8 +388,8 @@
     <!-- Source: server-scripts/AreaObjectSpawnSkill.cs:AreaObjectSpawner.ApplyDamageToEntities — damage is halved and rounded for any Pet target, while players receive the listed damage. -->
     <p>
       Skills that mark a danger zone before dealing damage hit mercenaries,
-      companions and familiars for half their listed damage, rounded. Players
-      take the listed damage.
+      companions and familiars for half their listed damage, <RoundedTerm />.
+      Players take the listed damage.
     </p>
   </Topic>
 </Chapter>

@@ -9,6 +9,7 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import ListTree from "@lucide/svelte/icons/list-tree";
   import ReferenceToc from "./ReferenceToc.svelte";
+  import { provideRoundingTerms } from "$lib/calculation/rounding";
   import {
     outlineIds,
     setReferenceOutline,
@@ -27,6 +28,7 @@
   // The outline is static page data, so reading it once during setup is intended.
   // svelte-ignore state_referenced_locally
   setReferenceOutline(outline);
+  provideRoundingTerms();
 
   let activeId = $state<string | null>(null);
   let menuOpen = $state(false);

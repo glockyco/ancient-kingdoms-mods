@@ -14,6 +14,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
+  import RoundedText from "$lib/components/RoundedText.svelte";
   import {
     forget,
     loadRemembered,
@@ -122,12 +123,14 @@
     >
       {#each calculation.steps as step (step.name)}
         <dt class="font-medium text-foreground">{step.name}</dt>
-        <dd class="mb-2 last:mb-0 sm:mb-0">{describe(step)}</dd>
+        <dd class="mb-2 last:mb-0 sm:mb-0">
+          <RoundedText text={describe(step)} />
+        </dd>
       {/each}
     </dl>
   {/if}
   {#if calculation.note}
-    <p class="text-muted-foreground">{calculation.note}</p>
+    <p class="text-muted-foreground"><RoundedText text={calculation.note} /></p>
   {/if}
   {#if example}
     <div
@@ -210,10 +213,10 @@
         </div>
       {/if}
       <p class="font-semibold text-foreground" aria-live="polite">
-        {example.result}
+        <RoundedText text={example.result} />
       </p>
       {#each example.working as line (line)}
-        <p class="text-muted-foreground">{line}</p>
+        <p class="text-muted-foreground"><RoundedText text={line} /></p>
       {/each}
     </div>
   {/if}
