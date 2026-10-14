@@ -136,6 +136,26 @@ describe("target debuff landing", () => {
     ).toBe(0);
   });
 
+  it("lets a boss take a slowing debuff that only deals damage over time", () => {
+    const boss = { ...target, bossOrElite: true, boss: true };
+    const slowingDamageOverTime = {
+      casterLevel: 55,
+      casterAccuracy: 1,
+      school: "poison" as const,
+      speedBonus: -11,
+      ignoresImmunity: true,
+    };
+    expect(
+      debuffLandingProbability({ ...slowingDamageOverTime, target: boss }),
+    ).toBe(1);
+    expect(
+      debuffLandingProbability({
+        ...slowingDamageOverTime,
+        target: { ...boss, boss: false },
+      }),
+    ).toBe(0);
+  });
+
   it("keeps at least ten percent landing probability", () => {
     expect(
       debuffLandingProbability({

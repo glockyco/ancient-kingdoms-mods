@@ -8,6 +8,87 @@ import type {
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import { hasLinearValue } from "./skill-format";
 import { ALL_CLASS_IDS } from "$lib/utils/classes";
+import { atRank } from "$lib/calculation/format";
+import type { LinearValue } from "$lib/types/skills";
+
+/** Bonuses a debuff may not carry and still bypass a boss's debuff immunity. */
+const BOSS_DOT_ZERO_FIELDS = [
+  "health_max_bonus",
+  "health_max_percent_bonus",
+  "mana_max_bonus",
+  "mana_max_percent_bonus",
+  "energy_max_bonus",
+  "damage_bonus",
+  "damage_percent_bonus",
+  "magic_damage_bonus",
+  "magic_damage_percent_bonus",
+  "defense_bonus",
+  "ward_bonus",
+  "damage_shield",
+  "magic_resist_bonus",
+  "poison_resist_bonus",
+  "fire_resist_bonus",
+  "cold_resist_bonus",
+  "disease_resist_bonus",
+  "block_chance_bonus",
+  "fear_resist_chance_bonus",
+  "critical_resist_bonus",
+  "accuracy_bonus",
+  "critical_chance_bonus",
+  "haste_bonus",
+  "spell_haste_bonus",
+  "mana_percent_per_second_bonus",
+  "mana_per_second_bonus",
+  "energy_percent_per_second_bonus",
+  "energy_per_second_bonus",
+  "cooldown_reduction_percent",
+  "heal_on_hit_percent",
+  "lifetap_healing_percent_bonus",
+  "strength_bonus",
+  "intelligence_bonus",
+  "dexterity_bonus",
+  "charisma_bonus",
+  "wisdom_bonus",
+  "constitution_bonus",
+] as const satisfies readonly (keyof SkillDetailView)[];
+
+/** Whether a debuff still affects monsters listing Immune to Debuffs, by kind of monster. */
+export interface ImmuneDebuffBypass {
+  boss: boolean;
+  otherMonster: boolean;
+}
+
+/**
+ * A boss lets through only damage over time, optionally with a slow, that changes nothing else.
+ * Other monsters let through resistance-decrease skills and positive Health per second. Debuffs
+ * never carry the undead illusion or Avatar of War flags the boss check also refuses.
+ * Source: server-scripts/BuffSkill.cs:IgnoreImmuneDebuff; TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply
+ */
+export function immuneDebuffBypass(
+  skill: SkillDetailView,
+  rank: number,
+): ImmuneDebuffBypass {
+  const value = (field: LinearValue | null) =>
+    field ? atRank(field, rank) : 0;
+  const healing = value(skill.healing_per_second_bonus);
+  const healthPercent = value(skill.health_percent_per_second_bonus);
+  const refusedByBoss =
+    skill.is_dispel ||
+    skill.is_cleanse ||
+    skill.is_blindness ||
+    skill.is_invisibility ||
+    (skill.illusion_race ?? "").trim() !== "" ||
+    healing > 0 ||
+    healthPercent > 0 ||
+    (healing >= 0 && healthPercent >= 0);
+  return {
+    boss:
+      !refusedByBoss &&
+      value(skill.speed_bonus) <= 0 &&
+      BOSS_DOT_ZERO_FIELDS.every((field) => value(skill[field]) === 0),
+    otherMonster: skill.is_decrease_resists_skill || healing > 0,
+  };
+}
 
 /**
  * How each damage type is mitigated and avoided, mirroring the game one row per type.

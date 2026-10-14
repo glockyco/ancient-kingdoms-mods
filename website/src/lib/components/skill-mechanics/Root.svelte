@@ -13,7 +13,7 @@
 </script>
 
 <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE; Pet.cs:UpdateServer_IDLE — monsters roll every 2 seconds using Magic Resist; NPCs and pets roll every second at 10%. -->
-<!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — bosses/elites automatically resist speedBonus.baseValue below −10, not exactly −10. -->
+<!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — bosses/elites automatically resist speedBonus.baseValue below −10, not exactly −10. A boss skips that resist for a debuff that only deals damage over time, which no rooting skill does. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Root</h3>
   <p class="text-muted-foreground">

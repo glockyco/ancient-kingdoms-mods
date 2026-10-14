@@ -11,6 +11,8 @@ export interface TargetCombatStats {
   diseaseResist: number;
   blockChance: number;
   bossOrElite?: boolean;
+  /** A boss, as distinct from an elite. Only a boss lets pure damage over time past its rules. */
+  boss?: boolean;
   immuneDebuffs?: boolean;
   invincible?: boolean;
 }
@@ -65,7 +67,12 @@ export function hitAvoidanceProbability(args: {
   return probability;
 }
 
-/** Source: server-scripts/TargetDebuffSkill.cs:101-177. */
+/**
+ * `ignoresImmunity` is BuffSkill.IgnoreImmuneDebuff evaluated against this target. On a boss it is
+ * true only for damage over time that changes nothing else besides Movement Speed, and then the
+ * boss also skips its automatic resist of slows below −10.
+ * Source: server-scripts/TargetDebuffSkill.cs:101-177; BuffSkill.cs:IgnoreImmuneDebuff.
+ */
 export function debuffLandingProbability(args: {
   target: TargetCombatStats;
   casterLevel: number;
@@ -76,7 +83,13 @@ export function debuffLandingProbability(args: {
   speedBonus?: number;
 }): number {
   if (args.target.immuneDebuffs && !args.ignoresImmunity) return 0;
-  if (args.target.bossOrElite && (args.speedBonus ?? 0) < -10) return 0;
+  const bossDamageOverTime = args.target.boss && args.ignoresImmunity;
+  if (
+    args.target.bossOrElite &&
+    !bossDamageOverTime &&
+    (args.speedBonus ?? 0) < -10
+  )
+    return 0;
   const resistanceStat =
     args.school === "melee"
       ? args.target.defense

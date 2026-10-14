@@ -8,7 +8,7 @@
 <Chapter id="crowd-control">
   <Panel>
     <!-- Source: server-scripts/Monster.cs:UpdateServer_STUNNED,UpdateServer_FEAR,UpdateServer_IDLE — a stunned monster waits, a feared monster runs to random points, a rooted monster still uses skills in range, and a sleeping monster does nothing. -->
-    <!-- Source: server-scripts/Combat.cs:DealDamageAt; TargetDebuffSkill.cs:Apply — stun skips feared targets and most Bear Mount riders, fear skips bosses and fear-immune targets, knockback skips targets 15 or more levels above a non-boss attacker, and bosses and elites resist listed Movement Speed below −10. -->
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt; TargetDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — stun skips feared targets and most Bear Mount riders, fear skips bosses and fear-immune targets, knockback skips targets 15 or more levels above a non-boss attacker, and bosses and elites resist listed Movement Speed below −10 except a boss facing pure damage over time. -->
     <RefTable caption="Crowd control effects compared" minWidth="44rem">
       <thead>
         <tr>
@@ -125,7 +125,7 @@
   </Topic>
 
   <Topic id="root">
-    <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE,speed,RemoveRoot; Pet.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE; TargetDebuffSkill.cs:Apply — Movement Speed at most −10 roots; monsters roll every 2 seconds, NPCs and pets every second; boss/elite monsters resist listed speed bonuses below −10. -->
+    <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE,speed,RemoveRoot; Pet.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE; TargetDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — Movement Speed at most −10 roots; monsters roll every 2 seconds, NPCs and pets every second; boss/elite monsters resist listed speed bonuses below −10 unless a boss faces a debuff that only deals damage over time, and Monster.speed ignores a boss's slows. -->
     <p>
       A debuff that brings Movement Speed to −10 or lower roots the target, such
       as <a href="/skills/root">Root</a> and
@@ -158,7 +158,8 @@
     </RefTable>
     <p>
       Bosses and elite monsters resist every debuff that lists a Movement Speed
-      bonus below −10.
+      bonus below −10. A boss still takes such a debuff if it only deals damage
+      over time, but a boss ignores every slow.
     </p>
   </Topic>
 

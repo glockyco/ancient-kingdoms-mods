@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { immuneDebuffBypass } from "$lib/skills/skill-facts";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -24,6 +25,7 @@
       skill.is_disease_debuff &&
       !skill.poison_disease_scales_with_intelligence,
   );
+  const bypass = $derived(immuneDebuffBypass(skill, skill.max_level || 1));
 </script>
 
 <!-- Source: server-scripts/Combat.cs:GetProbResistMeleeDebuff,GetProbResistMagic,GetProbResistPoison,GetProbResistFire,GetProbResistCold,GetProbResistDisease; TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — typed debuffs add 0.0005 per matching resistance point; untyped debuffs skip this roll. -->
@@ -56,11 +58,22 @@
       >.
     </p>
   {/if}
-  {#if (skill.player_classes.length > 0 || mechanics.facts.usedByMercenary || mechanics.facts.usedByCompanion || skill.is_scroll) && !skill.is_decrease_resists_skill && (skill.healing_per_second_bonus?.base_value ?? 0) <= 0}
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — immunity blocks debuffs except resistance-decrease skills and positive Health-per-second effects. -->
+  {#if skill.player_classes.length > 0 || mechanics.facts.usedByMercenary || mechanics.facts.usedByCompanion || skill.is_scroll}
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — immunity lets through pure damage over time on bosses, and resistance-decrease skills and positive Health per second on other monsters. -->
     <p class="text-muted-foreground">
-      This {skill.is_dispel ? "skill" : "debuff"} has no effect on monsters whose
-      pages list Immune to Debuffs.
+      {#if bypass.boss && bypass.otherMonster}
+        Immune to Debuffs does not stop this debuff.
+      {:else if bypass.boss}
+        Monsters whose pages list Immune to Debuffs are unaffected, except
+        bosses. A boss's immunity lets through debuffs that only deal damage
+        over time.
+      {:else if bypass.otherMonster}
+        Monsters whose pages list Immune to Debuffs are still affected, except
+        bosses.
+      {:else}
+        This {skill.is_dispel ? "skill" : "debuff"} has no effect on monsters whose
+        pages list Immune to Debuffs.
+      {/if}
     </p>
   {/if}
 </div>

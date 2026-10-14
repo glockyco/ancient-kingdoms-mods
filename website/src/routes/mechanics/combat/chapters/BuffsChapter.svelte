@@ -251,10 +251,14 @@
       chance to resist them by 30 percentage points, to at least 0%. Other debuffs
       that lower resists get no such bonus.
     </p>
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — immunity blocks debuffs except resistance-decrease skills. -->
+    <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — on a boss, immunity lets through only debuffs that deal damage over time and change nothing else besides Movement Speed; on other monsters it lets through resistance-decrease skills. -->
     <p>
-      Debuffs have no effect on monsters whose pages list Immune to Debuffs.
-      Those five skills are the exception.
+      Debuffs have no effect on monsters whose pages list Immune to Debuffs,
+      with two exceptions. Those five skills still affect such a monster unless
+      it is a boss. A boss lets through debuffs that only deal damage over time,
+      such as <a href="/skills/immolate">Immolate</a> and
+      <a href="/skills/venom_of_the_grave">Venom of the Grave</a>. A slow on
+      such a debuff does not make a boss resist it.
     </p>
     <SeeAlso
       links={[{ href: "#root", label: "Root, for bosses and slowing debuffs" }]}
