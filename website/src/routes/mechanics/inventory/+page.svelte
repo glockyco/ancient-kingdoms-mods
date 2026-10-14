@@ -1077,7 +1077,7 @@
         replaces the potion buff for that same attribute or resistance.
       </p>
       {#if data.dungeonRefusedPotions.length > 0}
-        <!-- Source: server-scripts/PotionItem.cs:Use; UsableItem.cs:Use — the refusal comes after the item cooldown starts and invisibility ends, and before the potion is used up. -->
+        <!-- Source: server-scripts/PotionItem.cs:Use; UsableItem.cs:Use — the refusal comes after invisibility ends. -->
         <!-- Runtime verification: docs/game-bugs/refused-dungeon-potion-ends-invisibility.md -->
         <p>
           {#each data.dungeonRefusedPotions as potion, index (potion.id)}{index >
@@ -1089,10 +1089,9 @@
               >{potion.name}</a
             >{/each}
           {data.dungeonRefusedPotions.length === 1 ? "does" : "do"} not work inside
-          dungeons. Trying to drink {data.dungeonRefusedPotions.length === 1
+          dungeons, and trying to drink {data.dungeonRefusedPotions.length === 1
             ? "it"
-            : "one"} there starts its recharge time and ends invisibility, but does
-          not use it up.
+            : "one"} there ends invisibility.
         </p>
       {/if}
       <!-- Source: server-scripts/ScriptableItem.cs:ToolTip; PlayerNpcTrading.cs:UserCode_CmdSellItem__String__Int32__Int32__Int64; PlayerTrading.cs:UserCode_CmdOfferItem__Int32__Int32; PlayerInventory.cs:OnDragAndClear_InventorySlot — No-Trade, Cannot sell and No-Destroy expose separate permissions. -->

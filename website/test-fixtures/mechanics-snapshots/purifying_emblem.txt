@@ -1,1 +1,1 @@
-Mechanics Cleanse Mechanics Removes fire and cold debuffs from you or an ally. Other debuffs stay, including physical debuffs, which Armor Class resists. The target cannot resist the cleanse. See cleanse calculations for layer removal and damage-over-time scaling.
+Mechanics Cleanse Mechanics Removes fire and cold debuffs from you or an ally. See cleanse calculations for layer removal and damage-over-time scaling.

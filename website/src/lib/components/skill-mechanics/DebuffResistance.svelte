@@ -46,10 +46,9 @@
     <!-- Runtime verification: docs/game-bugs/dexterity-scaled-disease-ticks-use-poison-resist.md -->
     <p class="text-muted-foreground">
       Once it lands, the target's {tickStat} reduces each tick by 5% per 100 points,
-      at most 90%, with the reduction rounded up.{diseaseTickDefect
-        ? " Because of a game defect, Poison Resist reduces this disease damage instead of Disease Resist."
-        : ""} Cleanse layers and other tick modifiers also change the damage that
-      lands. See
+      at most 90%.{diseaseTickDefect
+        ? " A game defect makes Poison Resist apply here instead of Disease Resist."
+        : ""} See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#debuffs">damage-over-time calculations</a

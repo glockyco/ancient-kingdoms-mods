@@ -25,18 +25,12 @@
   <p class="text-muted-foreground">
     {#if skill.skill_type === "area_buff"}
       <span class="block"
-        >Removes {typeList} debuffs from you and every other living, visible player
-        and pet within {formatLinear(skill.cast_range, " yd")}, in your party or
-        not.</span
+        >Removes {typeList} debuffs from you and every other visible player and pet
+        within {formatLinear(skill.cast_range, " yd")}, in your party or not.</span
       >
     {:else}
       <span class="block">Removes {typeList} debuffs from you or an ally.</span>
     {/if}
-    <span class="block"
-      >Other debuffs stay, including physical debuffs, which Armor Class
-      resists.</span
-    >
-    <span class="block">The target cannot resist the cleanse.</span>
     <span class="block"
       >See <a
         class="text-blue-600 dark:text-blue-400 hover:underline"

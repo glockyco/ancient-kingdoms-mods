@@ -113,12 +113,8 @@
           owner.</span
         >
         <span class="block"
-          >That player and every party member closer than 40 yd to them share
-          the kill, even while invisible.</span
-        >
-        <span class="block"
-          >Everyone who shares the kill gets loot access and a share of the kill
-          XP.</span
+          >That player and every party member closer than 40 yd to them get loot
+          access and a share of the kill XP.</span
         >
       </p>
       <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
