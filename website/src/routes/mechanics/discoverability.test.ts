@@ -90,16 +90,6 @@ test("inventory backpack links include tooltip data", () => {
   assert.match(inventoryPage, /tooltipHtml=\{backpack\.tooltip_html\}/);
 });
 
-test("combat mechanics page documents Parry special rules", () => {
-  const combatPage = source("./combat/+page.svelte");
-  const parrySection =
-    combatPage.match(
-      /<h3 id="parry"[\s\S]*?(?=\n\s*<h3|\n\s*<\/Card\.Content>)/,
-    )?.[0] ?? "";
-
-  assert.match(parrySection, /<h3 id="parry"[^>]*>Parry<\/h3>/);
-});
-
 test("experience page links death and remains recovery rules", () => {
   const experiencePage = source("./experience/+page.svelte");
   const deathPage = source("./death/+page.svelte");

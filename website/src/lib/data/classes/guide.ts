@@ -52,7 +52,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         text: "Cleanse removes only poison and disease effects. An effect with high resistance can need more than one cast.",
         source:
           "Source: server-scripts/TargetBuffSkill.cs:137-161,321-340 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
-        href: "/mechanics/combat#effects-and-control",
+        href: "/mechanics/combat#cleanse",
         linkText: "Cleanse rules",
       },
     ],

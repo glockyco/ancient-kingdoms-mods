@@ -26,7 +26,13 @@
     CalculationStep,
   } from "$lib/types/calculation";
 
-  let { calculation }: { calculation: Calculation } = $props();
+  interface Props {
+    calculation: Calculation;
+    /** False when the page already lists the steps, so only the worked example shows. */
+    showSteps?: boolean;
+  }
+
+  let { calculation, showSteps = true }: Props = $props();
 
   const ROUNDING_TEXT = {
     nearest: "rounded",
@@ -110,19 +116,26 @@
 </script>
 
 <div class="space-y-3 rounded-md border border-border/60 bg-background/40 p-4">
-  <dl
-    class="grid gap-x-6 gap-y-1 sm:grid-cols-[max-content_minmax(0,1fr)] sm:gap-y-2"
-  >
-    {#each calculation.steps as step (step.name)}
-      <dt class="font-medium text-foreground">{step.name}</dt>
-      <dd class="mb-2 last:mb-0 sm:mb-0">{describe(step)}</dd>
-    {/each}
-  </dl>
+  {#if showSteps}
+    <dl
+      class="grid gap-x-6 gap-y-1 sm:grid-cols-[max-content_minmax(0,1fr)] sm:gap-y-2"
+    >
+      {#each calculation.steps as step (step.name)}
+        <dt class="font-medium text-foreground">{step.name}</dt>
+        <dd class="mb-2 last:mb-0 sm:mb-0">{describe(step)}</dd>
+      {/each}
+    </dl>
+  {/if}
   {#if calculation.note}
     <p class="text-muted-foreground">{calculation.note}</p>
   {/if}
   {#if example}
-    <div class="space-y-2 border-t border-border/60 pt-3">
+    <div
+      class={[
+        "space-y-2",
+        (showSteps || calculation.note) && "border-t border-border/60 pt-3",
+      ]}
+    >
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
         <p class="text-muted-foreground">
           <span class="font-medium text-foreground"

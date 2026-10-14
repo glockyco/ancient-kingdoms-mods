@@ -571,7 +571,7 @@
                   mercenary's{/if}
                 <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
-                  href="/mechanics/combat#timing">Spell Casting Haste</a
+                  href="/mechanics/combat#cast-speed">Spell Casting Haste</a
                 >
                 shortens the cast by its percentage, so 20% Spell Casting Haste turns
                 the
@@ -591,7 +591,7 @@
               <p>
                 <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
-                  href="/mechanics/combat#timing">Haste</a
+                  href="/mechanics/combat#attack-speed">Haste</a
                 > shortens the wait between your auto attacks.
               </p>
             {/if}
@@ -599,7 +599,7 @@
               <p>
                 <a
                   class="text-blue-600 dark:text-blue-400 hover:underline"
-                  href="/mechanics/combat#timing">Haste</a
+                  href="/mechanics/combat#haste">Haste</a
                 >
                 shortens this skill's cooldown for {hasteCooldownCasters}.
               </p>

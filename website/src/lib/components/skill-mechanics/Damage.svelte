@@ -114,7 +114,7 @@
       Level differences and Accuracy change these chances: see
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#resistance">resistance and avoidance</a
+        href="/mechanics/combat#avoidance">resistance and avoidance</a
       >. See also the
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"

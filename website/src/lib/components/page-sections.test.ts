@@ -1,23 +1,25 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
 import assert from "node:assert/strict";
 import { describe, test } from "vitest";
+
+const here = new URL(".", import.meta.url).pathname;
+const routes = join(here, "../../routes");
 
 /**
  * Every page that renders a PageSections jump list. The ids in each page's
  * section array are decoupled from the markup they scroll to, so a renamed
  * Card.Root id would silently produce a dead link.
  */
-const PAGES = [
-  "../../routes/mechanics/combat/+page.svelte",
-  "../../routes/mechanics/experience/+page.svelte",
-  "../../routes/mechanics/inventory/+page.svelte",
-  "../../routes/mechanics/monster-spawns/+page.svelte",
-  "../../routes/mechanics/reputation/+page.svelte",
-  "../../routes/skills/[id]/+page.svelte",
-];
+const PAGES = (readdirSync(routes, { recursive: true }) as string[])
+  .filter((path) => path.endsWith("+page.svelte"))
+  .map((path) => join(routes, path))
+  .filter((path) => readFileSync(path, "utf8").includes("<PageSections"))
+  .map((path) => relative(here, path))
+  .sort();
 
 function source(path: string): string {
-  return readFileSync(new URL(path, import.meta.url), "utf8");
+  return readFileSync(join(here, path), "utf8");
 }
 
 /**

@@ -98,7 +98,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Avoidance",
       expression:
-        "Roll the chance from Resistance and Mitigation, adjusted by Combat Advantage. A successful block, miss, or resist ends the hit",
+        "Roll the block, miss or resist chance, adjusted by Combat Advantage. A successful block, miss, or resist ends the hit",
     },
     {
       name: "Variance",
@@ -122,7 +122,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Slayer reduction",
       expression:
-        "At 10% Slayer mastery or more, reduce a boss or elite monster's damage to a player or pet by 1% per 10 percentage points of mastery, up to 10%. Use the owner's mastery for a pet",
+        "At 10% Slayer mastery or more, reduce a boss or elite monster's damage to a player, mercenary, companion or familiar by 1% per 10 percentage points of mastery, up to 10%. Mercenaries, companions and familiars use their owner's mastery",
       rounding: "up",
     },
     {
@@ -134,7 +134,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Mitigated damage",
       expression:
-        "Subtract damage prevented by the matching stat, using Resistance and Mitigation",
+        "Subtract damage prevented by the matching stat, as in Damage Reduction",
     },
     {
       name: "Critical Resist",
@@ -292,12 +292,12 @@ export const damageOverTimeCalculation: Calculation = {
     {
       name: "Flat tick",
       expression:
-        "Base tick + the rounded attribute addition from the effect table",
+        "Base tick + the rounded attribute addition from Debuff Strength",
     },
     {
       name: "Mitigated tick",
       expression:
-        "Flat tick − damage prevented by the matching stat, using Resistance and Mitigation",
+        "Flat tick − damage prevented by the matching stat, as in Damage Reduction",
     },
     {
       name: "Tick after Cleanse",

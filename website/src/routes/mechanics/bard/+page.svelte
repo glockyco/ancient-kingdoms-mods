@@ -151,8 +151,8 @@
           class="text-blue-600 dark:text-blue-400 hover:underline">Charisma</a
         >
         alone. Wisdom and Intelligence leave them unchanged.<br />
-        <MechanicsLink section="combat#buffs">Buff Scaling</MechanicsLink> shows the
-        calculation and the effects it changes.<br />
+        <MechanicsLink section="combat#songs">Song Strength</MechanicsLink> shows
+        the calculation and the effects it changes.<br />
         See the <EntityLink href="/classes/bard" name="Bard class page" /> for skills
         and ranks.
       </p>
@@ -223,7 +223,7 @@
         Your Final Cadence hits living, visible, attackable monsters within
         range in the same zone that are fighting anyone and are not
         <a
-          href="/mechanics/combat#special"
+          href="/mechanics/combat#sleep"
           class="text-blue-600 dark:text-blue-400 hover:underline">asleep</a
         >. A Bard mercenary's cast hits only monsters targeting you, your party,
         or their companions or mercenaries.

@@ -138,9 +138,9 @@
                   uses 115%, giving 115 instead. Bard song damage-over-time gains
                   no Intelligence bonus. Charisma raises its power instead (see
                   <a
-                    href="/mechanics/combat#buffs"
+                    href="/mechanics/combat#songs"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >Bard Song Scaling</a
+                    >Song Strength</a
                   >).</span
                 >
               </td>
@@ -225,8 +225,8 @@
                   > gain 0.1% power per point, up to a 200% bonus.</span
                 >
                 <span class="block"
-                  ><MechanicsLink section="combat#buffs"
-                    >See Bard Song Scaling</MechanicsLink
+                  ><MechanicsLink section="combat#songs"
+                    >See Song Strength</MechanicsLink
                   > for which song effects Charisma scales.</span
                 >
               </td>
@@ -374,7 +374,7 @@
           > spends one Mana for each damage point it prevents.</span
         >
         <span class="block"
-          ><MechanicsLink section="combat#damage-pipeline"
+          ><MechanicsLink section="combat#ward-and-mana-shield"
             >See when wards and Mana Shield absorb damage</MechanicsLink
           >.</span
         >

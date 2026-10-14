@@ -22,10 +22,10 @@
       {amount < 0 ? "to at least 0%" : "to at most 70%"}.</span
     >
     <span class="block"
-      >See the <a
+      >See <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#damage-pipeline">damage pipeline</a
-      > for critical-hit scaling.</span
+        href="/mechanics/combat#critical-hits">critical hits</a
+      > for the extra damage.</span
     >
   </p>
 </div>

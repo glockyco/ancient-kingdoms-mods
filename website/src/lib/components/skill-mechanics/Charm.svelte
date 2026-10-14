@@ -15,7 +15,7 @@
   <p class="text-muted-foreground">
     Charm uses the target's <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
-      href="/mechanics/combat#resistance">Magic Resist roll</a
+      href="/mechanics/combat#avoidance">Magic Resist roll</a
     >, without Accuracy. Each level the target is above you adds 2.5 percentage
     points to its chance to resist. Each point of your Charisma above 0 removes
     0.02 percentage points. The final chance is between 0% and 95%.

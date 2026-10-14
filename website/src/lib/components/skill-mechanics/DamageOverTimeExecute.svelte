@@ -28,7 +28,7 @@
       )} Learned execute bonuses add together. See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#debuffs">damage over time</a
+        href="/mechanics/combat#damage-over-time">damage over time</a
       > for the full tick.
     </p>
     <RoundingDefinition />

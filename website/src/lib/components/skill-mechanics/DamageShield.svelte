@@ -44,9 +44,9 @@
       Several shields add together after their individual reductions. The total
       then varies at random by up to 10% in either direction, with the 10%
       rounded up, so a 95-damage total ranges from 85 to 105. See <a
-        href="/mechanics/combat#resistance"
+        href="/mechanics/combat#damage-shields"
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        >resistance and mitigation</a
+        >damage shields</a
       >.
     </span>
   </p>

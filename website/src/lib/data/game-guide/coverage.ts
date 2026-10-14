@@ -68,7 +68,7 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
       "e6ab329906cce4d85e6711e29e721966d39028a1dbfc7ec07ee0840637d27ee4",
   },
   "combat.buffs-wards-cleanse": {
-    href: "/mechanics/combat#effects-and-control",
+    href: "/mechanics/combat#buffs-and-debuffs",
     reviewedBodySha256:
       "656e34e985dbecab8d739580072289a4715f8935e42fc2a0bb3b3a6fb2a47484",
   },

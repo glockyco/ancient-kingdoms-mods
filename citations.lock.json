@@ -261,10 +261,6 @@
       "sha256": "4d2746bd4c3c8c6308e4c3bb3ffbb3a57e590968fc7b92f989bca0ec12c6499b",
       "span": 1
     },
-    "Buff.cs:276-291": {
-      "sha256": "8ad3bd33a04d52d934e458ab80e2c67247b6fa9adf343bb72806477af48de1bf",
-      "span": 16
-    },
     "Buff.cs:347-355": {
       "sha256": "4bcda78bd7e5fdf45c77dd4beba004b49835b8c4973abd30e6f28f664683c946",
       "span": 9
@@ -338,10 +334,6 @@
     "BuffSkill.cs:518-540": {
       "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
       "span": 23
-    },
-    "BuffSkill.cs:56-67": {
-      "sha256": "876c0a77c50c819f70950305c74883b5685df6145e67c76be83b8b62c19bdf59",
-      "span": 12
     },
     "BuffSkill.cs:7-12": {
       "sha256": "a81cd66dd210393e8c6b716d753b564a77d542dc6125726368901f5a547a561c",
@@ -496,6 +488,10 @@
       "sha256": "08601674c540819596aea05c8aacfdb1f6312a000030a3277cde598931985cde",
       "span": 18
     },
+    "Combat.cs:1171-1224": {
+      "sha256": "19b124174b39ae31dc80c264e1702db5d1fe522fb95c5b071083cad4c680646c",
+      "span": 54
+    },
     "Combat.cs:1171-1398": {
       "sha256": "7a8eac0719181080ad3eb95e8689aeb7df5455b311fb49728acac680b083e840",
       "span": 228
@@ -520,6 +516,10 @@
       "sha256": "2a23ac132d1049cba208449d456c9eedad7bf060da4b23aa5572ab8701925d6d",
       "span": 50
     },
+    "Combat.cs:1234-1314": {
+      "sha256": "203961c7b6015e8ff8097fa8209a647321c88c6c17745df225ea6319f8b8949c",
+      "span": 81
+    },
     "Combat.cs:1236-1314": {
       "sha256": "aa2b291c8dba93b85d12200493b1b539fee84e48c5fb1af7addcf02f2964094b",
       "span": 79
@@ -535,6 +535,10 @@
     "Combat.cs:1315-1333": {
       "sha256": "2854274d001fbbb28f576ba8dfb1065ee5e4a07d25a86990b017f42acf821b97",
       "span": 19
+    },
+    "Combat.cs:1315-1398": {
+      "sha256": "1ed27a8d3ab86472feb0c36f8e4b1eac3228131ffc6d09ff2f448ba5d41ef174",
+      "span": 84
     },
     "Combat.cs:1318-1328": {
       "sha256": "ddc81096d631d4808f9448371a245742737377545f1d8186991f7b36da2c981e",
@@ -552,6 +556,10 @@
       "sha256": "aff69007a40327740e54a68f6b4aec37fd108a12070ec923e953ab86bfbc3b5a",
       "span": 12
     },
+    "Combat.cs:1375-1398": {
+      "sha256": "cf6213db466d3069184516c17d7e8f9e18031cd5531d78c8c6c70f685513ba10",
+      "span": 24
+    },
     "Combat.cs:1375-1399": {
       "sha256": "b47a22152c63f9354dbc37087942c4beba36c5e664eaa584bc2b5a6927ca8720",
       "span": 25
@@ -559,10 +567,6 @@
     "Combat.cs:1534-1578": {
       "sha256": "36bb32a9a6138a90844b90e87a3f79c9068a7ef6e778a84c324a2c6405fd9c5f",
       "span": 45
-    },
-    "Combat.cs:1539-1548": {
-      "sha256": "377d0df54540f065d7f5cac75863ad8f8ae4dc789bec003db07a350defe67c37",
-      "span": 10
     },
     "Combat.cs:1539-1578": {
       "sha256": "2a7bc5839fb9100f63383d3f60dd8f65fcc45b7f1e819b85f0245cabff2e7bcc",
@@ -588,10 +592,6 @@
       "sha256": "950d764ea1fc53b88ad01dfc2fc1a4fe83897b1a9670c0d129130761dca73b64",
       "span": 13
     },
-    "Combat.cs:307-317": {
-      "sha256": "b8faf01e94d7c405e6b7a37d08633c31fd65e7a1b1e72ef5408e3975563f7dd9",
-      "span": 11
-    },
     "Combat.cs:307-319": {
       "sha256": "d33f51c716c69013c5217e70978df7b99cd432b85f3467941dec4f8c16c8bda8",
       "span": 13
@@ -607,6 +607,10 @@
     "Combat.cs:339-345": {
       "sha256": "e20d76332d231bca84b25ea7d8b19fe105f686bad67275527182552b398a73e0",
       "span": 7
+    },
+    "Combat.cs:349-359": {
+      "sha256": "96055aa74d5045fae2c6430ff46f7c06a70e38fa01b62f25b305852b5612994f",
+      "span": 11
     },
     "Combat.cs:514-519": {
       "sha256": "2c28c16b76b5b3c955840d7b3dfbea25b08b875097a41a95219cecc5aec37541",
@@ -648,6 +652,10 @@
       "sha256": "a1cc609c34dd279595e219aeb7947a2a26cf4a16fe59e106e799d386ef978fec",
       "span": 26
     },
+    "Combat.cs:673-734": {
+      "sha256": "888eac3ab5d8075d0f7dbc73a83aa868222c10c3b0365499432f89f4caf7fce6",
+      "span": 62
+    },
     "Combat.cs:673-875": {
       "sha256": "6f9a33671abce751e2f5e8a1d022cac1e7840dd6966f025dfc60cc8ebb87c384",
       "span": 203
@@ -655,6 +663,10 @@
     "Combat.cs:674": {
       "sha256": "151287ab9218a23c60b64969299988ddebd3116c0c03da5babd6edd3ca76b42b",
       "span": 1
+    },
+    "Combat.cs:689-692": {
+      "sha256": "753f5ca091128dcdc02aa40e47ac3a584a56ab454b76a42a8c5422545579f8fb",
+      "span": 4
     },
     "Combat.cs:693-697": {
       "sha256": "6d078d77b1d10c9f362dc516e9a19439e9a90fa5e3ad7f50bfde7426e556f50b",
@@ -676,6 +688,10 @@
       "sha256": "c8043431a140936cc2e4d514414f227e93c2dba8eb4cef447b5c80edf812df79",
       "span": 34
     },
+    "Combat.cs:776": {
+      "sha256": "1f003cfd7baac216e54a0e7f9cd3b45dd2d9abe1ab31a018b6c22cd646020854",
+      "span": 1
+    },
     "Combat.cs:776-781": {
       "sha256": "102613cfbd8fddc709a7a51dac684f08fa4bbc74d446b9dacfac9a45bf5b64dc",
       "span": 6
@@ -683,6 +699,14 @@
     "Combat.cs:776-862": {
       "sha256": "5b227352fd43852807c2a575515bab7504e76f42ff6a1f4e389d808590c35f0d",
       "span": 87
+    },
+    "Combat.cs:782": {
+      "sha256": "f68301c3725ef49b70bd130f1158c4cbdadc9998018efd1214f861a5a7b62cd8",
+      "span": 1
+    },
+    "Combat.cs:783-790": {
+      "sha256": "37e5b049b126a94618e4bd4e1adb4803426b6f6ff5932beb027b58bdbbd5268a",
+      "span": 8
     },
     "Combat.cs:836-862": {
       "sha256": "df1e5b06049c7b545a6c9f09dc93f75774b35f9774949111583625308ced664a",
@@ -696,6 +720,10 @@
       "sha256": "33bc369656e46d2aeba5721b5b019e4897c27fe36aa4cb1bc23ad41d7528706e",
       "span": 8
     },
+    "Combat.cs:842-862": {
+      "sha256": "174d7b3a92c7b637c28f44b0e6e96bde3f382fe9f56e3af792babebe14246e36",
+      "span": 21
+    },
     "Combat.cs:844-861": {
       "sha256": "27346174649e7bdde412da23759b741d997bb760c098ff679ad875a1dd5daf85",
       "span": 18
@@ -703,6 +731,10 @@
     "Combat.cs:854-869": {
       "sha256": "1ad404b5a61084946fb0534fd3af80d4f80230403a78b1668a83def9536cd745",
       "span": 16
+    },
+    "Combat.cs:864-881": {
+      "sha256": "215a6fd310c32b95816baa3b2e5b49d29b6b33d191a8c405f2e14d86a015c6e8",
+      "span": 18
     },
     "Combat.cs:866-882": {
       "sha256": "7dc0231284fe6f33656bc6a249f6d775affc9eef0fc05db57f39372c6b6f96a2",
@@ -719,6 +751,10 @@
     "Combat.cs:883-897": {
       "sha256": "21429fc58b159076f3f02e9606a5ce05d6af667d9892a5600900b3fb9c664ad3",
       "span": 15
+    },
+    "Combat.cs:883-912": {
+      "sha256": "d6fab8babed67a09d253212933daa4e7d37b65923fa96111a9cb39515e277adf",
+      "span": 30
     },
     "Combat.cs:90": {
       "sha256": "12b4a5cb8c3083e2e92b100b71e85fef716a11e7f5c567831d46b99eff89bac5",
@@ -739,6 +775,9 @@
     "Combat.cs:996-1007": {
       "sha256": "9e942324f272668382883943e67993fb648eff3206b1c4733652b67d3e1619bf",
       "span": 12
+    },
+    "Combat.cs:ApplyCriticalResistToMultiplier": {
+      "span": 0
     },
     "Combat.cs:DealDamageAt": {
       "span": 0
@@ -2009,6 +2048,10 @@
       "sha256": "7b5d7ffd9818178b0c99c7f5ee2f1c4dc514486c3da7c27176505363bd3f0d9c",
       "span": 13
     },
+    "Monster.cs:3380": {
+      "sha256": "2b60aee24def2a704ca0494b5716ad3d6b885d5898497f2b1d45342c656da065",
+      "span": 1
+    },
     "Monster.cs:4106-4112": {
       "sha256": "f40feddd3a37f8ea373e94158f9fffb6102ad463e07f6623638d3cb255cf5cac",
       "span": 7
@@ -2098,6 +2141,9 @@
       "span": 0
     },
     "Monster.cs:UpdateServer_IDLE": {
+      "span": 0
+    },
+    "Monster.cs:UpdateServer_STUNNED": {
       "span": 0
     },
     "Monster.cs:UserCode_CmdLootMonster": {
@@ -2271,6 +2317,10 @@
     "Npc.cs": {
       "span": 0
     },
+    "Npc.cs:1300-1308": {
+      "sha256": "8d525553bd57468b4c6fe80cd1d79ed62b3c851e246ceab15e188fe3a4bf4af0",
+      "span": 9
+    },
     "Npc.cs:1302-1308": {
       "sha256": "874f8a60e9b0ceee65469bdfed373b591a09254ceb7ae5d6a8b07aec61887956",
       "span": 7
@@ -2355,6 +2405,10 @@
       "sha256": "079db2f85f6f63bc33ee488b6690f65e1c2978837172e5b5b9e13adaad85ce76",
       "span": 3
     },
+    "Npc.cs:666": {
+      "sha256": "2b60aee24def2a704ca0494b5716ad3d6b885d5898497f2b1d45342c656da065",
+      "span": 1
+    },
     "Npc.cs:790-797": {
       "sha256": "9b8640a25c024a996066862e340399c2561e5fac194cb7eaed9861ef9de95a24",
       "span": 8
@@ -2426,6 +2480,9 @@
     "PassiveSkill.cs:57-82": {
       "sha256": "b57c06aaa180e723bfdc131cdf23c2042ac8bd28d508fb47374b7172ebd8f2e8",
       "span": 26
+    },
+    "PassiveSkill.cs:GetBardSongDurationBonus": {
+      "span": 0
     },
     "Pet.cs": {
       "span": 0
@@ -2565,9 +2622,6 @@
       "span": 0
     },
     "Pet.cs:OnDeath": {
-      "span": 0
-    },
-    "Pet.cs:Pet": {
       "span": 0
     },
     "Pet.cs:TryQueueHealSkill": {
@@ -3044,6 +3098,10 @@
     "Player.cs:2873": {
       "sha256": "9e8bfdf5f7f6d88d35d1737caa88fdecd7e93d33c286b874c814247f3b75bc59",
       "span": 1
+    },
+    "Player.cs:2873-2874": {
+      "sha256": "806efb3fadd05377f61241583b69b83ff05fa242e67bb9e9a4c22e0b5affd384",
+      "span": 2
     },
     "Player.cs:3138-3196": {
       "sha256": "18c8fc991c4ffb10d6ee716c0cf27a8a6c65874b4196602cb7545ba2ecddc0ea",
@@ -4036,6 +4094,9 @@
     "PlayerSkills.cs:ConsumeFinalCadenceRepertoireBonus": {
       "span": 0
     },
+    "PlayerSkills.cs:GetBardSongDurationMultiplier": {
+      "span": 0
+    },
     "PlayerSkills.cs:GetMaximumActiveBardSongs": {
       "span": 0
     },
@@ -4366,6 +4427,10 @@
       "sha256": "6f3a10a81090d46306f5ae1d003f270acbf6c7e9d7851097bb3e446166ad2d93",
       "span": 21
     },
+    "Skills.cs:1867-1870": {
+      "sha256": "f46671d5800bbc4b9b4f3aa887ddcc76270c96a9cdfdbc0bc77bd9acc51e2ac6",
+      "span": 4
+    },
     "Skills.cs:1903-1938": {
       "sha256": "53550eb751ccb6289e043967f31b87c11f9d64c9c15fe4122f480962106560e9",
       "span": 36
@@ -4425,6 +4490,9 @@
       "span": 0
     },
     "Skills.cs:FinishCast": {
+      "span": 0
+    },
+    "Skills.cs:FinishCastMeleeAttackMonster": {
       "span": 0
     },
     "Skills.cs:GetEnergyRecoveryBonus": {

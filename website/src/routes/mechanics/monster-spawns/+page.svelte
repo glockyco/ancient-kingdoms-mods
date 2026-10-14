@@ -1361,7 +1361,7 @@
           <span class="block"
             >If its target exceeds that limit, the monster switches to the
             reachable, attackable target inside the limit with the highest
-            <MechanicsLink section="combat#special">threat</MechanicsLink>. If
+            <MechanicsLink section="combat#threat">threat</MechanicsLink>. If
             none is available, it drops its target, loses harmful effects, and
             returns home with 3.5 additional movement speed.</span
           >

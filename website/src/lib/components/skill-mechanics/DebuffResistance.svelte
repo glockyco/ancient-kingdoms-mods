@@ -36,7 +36,7 @@
       See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#resistance">resistance and avoidance</a
+        href="/mechanics/combat#avoidance">resistance and avoidance</a
       > for Accuracy and level differences.
     {:else}
       This debuff has no resistance-stat roll.
@@ -51,7 +51,8 @@
         : ""} See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#debuffs">damage-over-time calculations</a
+        href="/mechanics/combat#damage-over-time"
+        >damage-over-time calculations</a
       >.
     </p>
   {/if}

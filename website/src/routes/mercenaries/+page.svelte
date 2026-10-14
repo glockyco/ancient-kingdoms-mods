@@ -557,7 +557,7 @@
                     ><span class="block"
                       >The order interrupts its current action.</span
                     ><span class="block"
-                      >It ends <a href="/mechanics/combat#special" class={link}
+                      >It ends <a href="/mechanics/combat#sleep" class={link}
                         >Sleep</a
                       > on the target.</span
                     ><span class="block"

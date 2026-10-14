@@ -8,7 +8,7 @@
     <span class="block"
       >See <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#damage-pipeline">critical damage reduction</a
+        href="/mechanics/combat#critical-hits">critical damage reduction</a
       > for how the stat reduces the extra damage.</span
     >
     <span class="block"

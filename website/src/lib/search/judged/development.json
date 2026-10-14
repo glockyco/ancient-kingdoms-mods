@@ -704,7 +704,7 @@
   {
     "q": "cleanse",
     "intent": "concept",
-    "expect": ["/mechanics/combat#effects-and-control"],
+    "expect": ["/mechanics/combat#buffs-and-debuffs"],
     "k": 3
   },
   {
