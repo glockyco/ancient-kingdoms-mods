@@ -241,6 +241,9 @@
     "BookItem.cs": {
       "span": 0
     },
+    "Bookcase.cs:IsInRange": {
+      "span": 0
+    },
     "Buff.cs": {
       "span": 0
     },
@@ -5004,6 +5007,9 @@
       "span": 5
     },
     "UIBigBackpack.cs": {
+      "span": 0
+    },
+    "UIBooks.cs:ShowLibrary": {
       "span": 0
     },
     "UIBuffs.cs:292-303": {

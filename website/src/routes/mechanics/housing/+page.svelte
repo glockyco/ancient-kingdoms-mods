@@ -93,6 +93,20 @@
         </li>
         <li>An Alchemy Workbench still requires learned potion recipes.</li>
       </ul>
+      <!-- Source: server-scripts/Bookcase.cs:IsInRange,OnInteractServer; UIBooks.cs:ShowLibrary — a placed bookcase opens within 2 yd for the owning account and lists the character's learned books by name, without the learn button. -->
+      <ul class="list-disc space-y-1 pl-5">
+        <li>
+          A placed <a
+            href="/items/bookshelf"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Bookshelf</a
+          > lets you reread every book your character has learned, listed by name.
+        </li>
+        <li>
+          Only characters on the house owner's account can open it, from within
+          2 yd.
+        </li>
+      </ul>
       <p>
         See <MechanicsLink section="crafting#crafting"
           >Crafting at a Station</MechanicsLink
