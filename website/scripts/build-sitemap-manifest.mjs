@@ -673,12 +673,38 @@ function staticSectionPages(section) {
   ];
 }
 
+// Files beside a page that render as part of it, such as chapter components.
+// Subfolders with their own +page.svelte are separate routes and are skipped.
+function pageParts(directory, prefix = "") {
+  return readdirSync(directory, { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .flatMap((entry) => {
+      const path = join(directory, entry.name);
+      const name = prefix + entry.name;
+      if (entry.isDirectory()) {
+        return existsSync(join(path, "+page.svelte"))
+          ? []
+          : pageParts(path, `${name}/`);
+      }
+      if (
+        !/\.(svelte|ts)$/.test(entry.name) ||
+        entry.name.endsWith(".test.ts") ||
+        (prefix === "" && entry.name.startsWith("+page"))
+      ) {
+        return [];
+      }
+      return [[name, fileHash(path)]];
+    });
+}
+
 function pageSources(section, slug) {
   const directory = join("src/routes", section, slug);
   const server = join(directory, "+page.server.ts");
+  const parts = pageParts(directory);
   return {
     source: fileHash(join(directory, "+page.svelte")),
     ...(existsSync(server) ? { server: fileHash(server) } : {}),
+    ...(parts.length > 0 ? { parts: Object.fromEntries(parts) } : {}),
   };
 }
 
