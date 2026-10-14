@@ -178,6 +178,8 @@ public class SkillData
     public bool is_bard_charm { get; set; }
     public bool is_bard_final_cadence { get; set; }
     public bool is_bard_virtuosity { get; set; }
+    /// <summary>Virtuosity's damage bonus per active song beyond the three it requires.</summary>
+    public float additional_damage_percent_per_song { get; set; }
     public LinearStatBonusFloat charmed_damage_percent { get; set; }
 
     // Buff/Passive stat bonuses (BonusSkill = BuffSkill + PassiveSkill)
@@ -222,6 +224,7 @@ public class SkillData
     // === PassiveSkill fields (when skill_type = passive) ===
     public bool is_enrage { get; set; }
     public int additional_active_bard_songs { get; set; }
+    public bool unlimited_active_bard_songs { get; set; }
     public float bard_song_duration_bonus_per_level { get; set; }
     public float extra_gather_item_chance { get; set; }
     public float food_and_drink_buff_duration_bonus_per_level { get; set; }

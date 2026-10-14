@@ -370,6 +370,7 @@ public class SkillExporter : BaseExporter
         {
             skillData.is_enrage = passiveSkill.isEnrage;
             skillData.additional_active_bard_songs = passiveSkill.additionalActiveBardSongs;
+            skillData.unlimited_active_bard_songs = passiveSkill.unlimitedActiveBardSongs;
             skillData.bard_song_duration_bonus_per_level = passiveSkill.bardSongDurationBonusPerLevel;
             skillData.extra_gather_item_chance = passiveSkill.extraGatherItemChance;
             skillData.food_and_drink_buff_duration_bonus_per_level = passiveSkill.foodAndDrinkBuffDurationBonusPerLevel;
@@ -433,7 +434,12 @@ public class SkillExporter : BaseExporter
             };
         }
 
-        skillData.is_bard_virtuosity = skill.TryCast<Il2Cpp.BardVirtuositySkill>() != null;
+        var virtuosity = skill.TryCast<Il2Cpp.BardVirtuositySkill>();
+        if (virtuosity != null)
+        {
+            skillData.is_bard_virtuosity = true;
+            skillData.additional_damage_percent_per_song = virtuosity.additionalDamagePercentPerSong;
+        }
     }
 
     private void PopulateNecromancerSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)

@@ -753,8 +753,10 @@ class SkillData(BaseModel):
     is_bard_charm: bool = False
     is_bard_final_cadence: bool = False
     is_bard_virtuosity: bool = False
+    additional_damage_percent_per_song: float = 0.0
     charmed_damage_percent: SkillBonus | None = None
     additional_active_bard_songs: int = 0
+    unlimited_active_bard_songs: bool = False
     bard_song_duration_bonus_per_level: float = 0.0
     extra_gather_item_chance: float = 0.0
     food_and_drink_buff_duration_bonus_per_level: float = 0.0
