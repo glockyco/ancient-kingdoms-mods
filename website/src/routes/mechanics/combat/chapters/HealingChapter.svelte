@@ -51,7 +51,7 @@
         mercenary using your Wisdom bonus, tripled for a player Ranger, and can
         be critical. Ordinary scroll heals omit Wisdom.
       </li>
-      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:ConsumeFinalCadenceRepertoireBonus — Final Cadence uses Charisma and Melody rather than Wisdom. -->
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:GetFinalCadenceSongBonus — Final Cadence uses Charisma and Melody rather than Wisdom. -->
       <li><a href="/skills/final_cadence">Final Cadence</a> ignores Wisdom.</li>
     </ul>
     <SeeAlso
@@ -100,14 +100,14 @@
   </Topic>
 
   <Topic id="lifetap">
-    <!-- Source: server-scripts/Combat.cs:1315-1333 — lifetap heals without reducing damage, and damage is not capped by the victim's remaining Health. -->
+    <!-- Source: server-scripts/Combat.cs:1317-1335 — lifetap heals without reducing damage, and damage is not capped by the victim's remaining Health. -->
     <p>
       Lifetap restores Health without reducing the hit's damage. Overkill damage
       counts toward the healing.
     </p>
-    <!-- Source: server-scripts/Combat.cs:1315-1333 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
+    <!-- Source: server-scripts/Combat.cs:1317-1335 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
     <Formula calculation={lifetapCalculation()} />
-    <!-- Source: server-scripts/Combat.cs:1315-1333; BuffSkill.cs:ToolTip — active and permanent buffs add their listed lifetap healing bonus. -->
+    <!-- Source: server-scripts/Combat.cs:1317-1335; BuffSkill.cs:ToolTip — active and permanent buffs add their listed lifetap healing bonus. -->
     <p>
       <a href="/skills/lich_shroud">Lich Shroud</a> supplies the lifetap healing bonus.
     </p>

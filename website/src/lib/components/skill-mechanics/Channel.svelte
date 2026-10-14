@@ -28,7 +28,7 @@
     range or sight, stun or fear cancels the channel. Cancellation starts the
     full cooldown immediately, including when a pulse kills the target.
   </p>
-  <!-- Source: server-scripts/PlayerSkills.cs:437-454,464-514,2145-2149,2237-2244 — a valid replacement skill cancels the channel with full cooldown and then starts or applies. -->
+  <!-- Source: server-scripts/PlayerSkills.cs:433-450,460-510,2135-2139,2227-2234 — a valid replacement skill cancels the channel with full cooldown and then starts or applies. -->
   <p class="text-muted-foreground">
     Using another skill cancels the channel, starts its full cooldown
     immediately and starts the new skill. You must be free of stun and fear. The

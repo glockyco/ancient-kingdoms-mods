@@ -37,7 +37,7 @@ export const MAGIC_DAMAGE = characterStat("magicDamage", "Spell Power", 200);
 
 /**
  * The summed spell haste of every source. Casts use the full sum, while the
- * character window shows it capped at 50% (Player.cs:2873, Combat.spellHaste).
+ * character window shows it capped at 50% (Player.cs:2901, Combat.spellHaste).
  */
 export const SPELL_HASTE: CalculationInput = {
   key: "spellHaste",
@@ -50,7 +50,7 @@ export const SPELL_HASTE: CalculationInput = {
   remember: true,
 };
 
-// Source: server-scripts/Combat.cs:335-346 — haste is the summed bonus clamped between -80% and 80%.
+// Source: server-scripts/Combat.cs:337-348 — haste is the summed bonus clamped between -80% and 80%.
 export const HASTE: CalculationInput = {
   key: "haste",
   label: "Haste",

@@ -2,12 +2,12 @@ import type { Calculation } from "$lib/types/calculation";
 import { floorToInt, multiplyF32 } from "$lib/planner/engine-math";
 import { formatNumber } from "./format";
 
-// Source: server-scripts/Combat.cs:1225-1233,1236-1314 — Mystic Spark calculates Mana from the pre-shield hit, capped by pre-hit Health, before wards and Mana Shield absorb damage.
+// Source: server-scripts/Combat.cs:1227-1235,1238-1316 — Mystic Spark calculates Mana from the pre-shield hit, capped by pre-hit Health, before wards and Mana Shield absorb damage.
 export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
   const eligible = Math.min(hit, targetHealth);
   const mana = floorToInt(multiplyF32(eligible, 0.35));
   return {
-    // Source: server-scripts/Combat.cs:1225-1314 — Mana gain precedes shield absorption, so the visible hit is usable for an unshielded target.
+    // Source: server-scripts/Combat.cs:1227-1316 — Mana gain precedes shield absorption, so the visible hit is usable for an unshielded target.
     note: "Use a hit on a target without shields. Shield absorption can hide damage that Mystic Spark counts for Mana.",
     steps: [
       {

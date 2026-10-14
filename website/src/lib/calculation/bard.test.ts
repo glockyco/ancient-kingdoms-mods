@@ -10,7 +10,7 @@ describe("Final Cadence Melody", () => {
       finalCadenceMelody().example!({ scaledAmount: 14, songs: 5 }).result,
     ).toMatch(/^18 /);
   });
-  it("caps the bonus at six distinct songs", () => {
+  it("caps the bonus at six active songs", () => {
     expect(
       finalCadenceMelody().example!({ scaledAmount: 100, songs: 30 }).result,
     ).toMatch(/^130 /);

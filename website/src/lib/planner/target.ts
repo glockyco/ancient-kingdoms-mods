@@ -26,7 +26,7 @@ const SCHOOL_STAT: Record<DamageKind, keyof TargetCombatStats> = {
   disease: "diseaseResist",
 };
 
-/** Source: server-scripts/Combat.cs:659-672. */
+/** Source: server-scripts/Combat.cs:661-674. */
 export function isInvulnerable(target: TargetCombatStats): boolean {
   return (
     target.invincible === true ||
@@ -34,7 +34,7 @@ export function isInvulnerable(target: TargetCombatStats): boolean {
   );
 }
 
-/** Source: server-scripts/Combat.cs:668-701,1539-1578. */
+/** Source: server-scripts/Combat.cs:670-703,1541-1580. */
 export function hitAvoidanceProbability(args: {
   target: TargetCombatStats;
   casterLevel: number;
@@ -65,7 +65,7 @@ export function hitAvoidanceProbability(args: {
   return probability;
 }
 
-/** Source: server-scripts/TargetDebuffSkill.cs:101-171. */
+/** Source: server-scripts/TargetDebuffSkill.cs:101-177. */
 export function debuffLandingProbability(args: {
   target: TargetCombatStats;
   casterLevel: number;
@@ -98,7 +98,7 @@ export function debuffLandingProbability(args: {
   return 1 - resistance;
 }
 
-/** Source: server-scripts/Combat.cs:836-862. */
+/** Source: server-scripts/Combat.cs:838-864. */
 export function mitigationFraction(
   target: TargetCombatStats,
   damageType: DamageKind,

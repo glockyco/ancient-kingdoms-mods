@@ -38,7 +38,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/CustomStrucUI.cs:58-69,123-156 and server-scripts/StrucItemUi.cs:27-46 — the house catalog lists furniture and prices and opens only in a zone belonging to the player's account. -->
+      <!-- Source: server-scripts/CustomStrucUI.cs:57-68,122-155 and server-scripts/StrucItemUi.cs:27-46 — the house catalog lists furniture and prices and opens only in a zone belonging to the player's account. -->
       <p>
         The house panel lists furniture and its gold price while you are at a
         house owned by your account.
@@ -50,7 +50,7 @@
           class="text-blue-600 dark:text-blue-400 hover:underline">Inventory</a
         > page.
       </p>
-      <!-- Source: server-scripts/CustomStrucUI.cs:165-256 and server-scripts/Player.cs:13225-13242 — placement requires a footprint inside the owned buildable zone without a structure overlap; gold is deducted when the structure is created. -->
+      <!-- Source: server-scripts/CustomStrucUI.cs:164-258 and server-scripts/Player.cs:13340-13357 — placement requires a footprint inside the owned buildable zone without a structure overlap; gold is deducted when the structure is created. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           A new piece must fit inside your house's buildable area without
@@ -60,7 +60,7 @@
           Placement costs the catalog price when the structure is created.
         </li>
       </ul>
-      <!-- Source: server-scripts/CustomStrucUI.cs:72-85,219-225,259-311 and server-scripts/Player.cs:13257-13294 — movement repositions an owned structure without charging gold; confirmed removal deletes it without a refund. -->
+      <!-- Source: server-scripts/CustomStrucUI.cs:71-84,220-226,261-313 and server-scripts/Player.cs:13372-13409 — movement repositions an owned structure without charging gold; confirmed removal deletes it without a refund. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Move mode repositions owned furniture without buying it again.</li>
         <li>
@@ -68,7 +68,7 @@
           refunding its price.
         </li>
       </ul>
-      <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:58-69 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13370-13387,13672-13713 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
+      <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:57-68 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13485-13502,13787-13828 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           Home workstations include a <a
@@ -142,7 +142,7 @@
         </li>
         <li>Combat, death, or moving away can cancel the session.</li>
       </ul>
-      <!-- Source: server-scripts/BarberAppearanceOptions.cs:8-78 and server-scripts/Player.cs:9387-9410 — race and gender determine available hair, secondary styles, and colors; only hair, beard, and eye appearance fields change. -->
+      <!-- Source: server-scripts/BarberAppearanceOptions.cs:8-78 and server-scripts/Player.cs:9465-9488 — race and gender determine available hair, secondary styles, and colors; only hair, beard, and eye appearance fields change. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Style choices depend on your current race and gender.</li>
         <li>
@@ -153,18 +153,18 @@
           Every race except Felarii and Drassar can change hair and eye colors.
         </li>
       </ul>
-      <!-- Source: server-scripts/UIBarber.cs:499-515,526-558 and server-scripts/Player.cs:6567-6609 — the preview changes the local appearance, hair color updates beard color, and Cancel restores the prior appearance without payment. -->
+      <!-- Source: server-scripts/UIBarber.cs:499-515,526-558 and server-scripts/Player.cs:6643-6685 — the preview changes the local appearance, hair color updates beard color, and Cancel restores the prior appearance without payment. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Hair color changes beard color at the same time.</li>
         <li>Preview shows the result before payment.</li>
         <li>Cancel restores your previous appearance without a charge.</li>
       </ul>
-      <!-- Source: server-scripts/EquipmentItem.cs:297-309, server-scripts/Player.cs:14458-14469 and server-scripts/Database.cs:2112-2128 — using costume equipment consumes the item and stores its appearance for that character. -->
+      <!-- Source: server-scripts/EquipmentItem.cs:297-309, server-scripts/Player.cs:14573-14584 and server-scripts/Database.cs:2112-2128 — using costume equipment consumes the item and stores its appearance for that character. -->
       <p>
         Using a costume item consumes it and saves its appearance to your
         character's wardrobe.
       </p>
-      <!-- Source: server-scripts/Structure.cs:154-161 and server-scripts/UIWardrobe.cs:38-57,97-118,146-180 and server-scripts/Player.cs:14527-14545 — wardrobe furniture opens the saved appearances, with independent head, chest, and leg skin slots that can be cleared. -->
+      <!-- Source: server-scripts/Structure.cs:154-161 and server-scripts/UIWardrobe.cs:38-57,97-118,146-180 and server-scripts/Player.cs:14642-14660 — wardrobe furniture opens the saved appearances, with independent head, chest, and leg skin slots that can be cleared. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           <a

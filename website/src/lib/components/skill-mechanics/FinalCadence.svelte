@@ -8,7 +8,7 @@
   const { usedByBardMercenary } = $derived(mechanics.facts);
 </script>
 
-<!-- Source: server-scripts/BardFinalCadenceSkill.cs:HasMaximumSongsActive,Apply,FindEnemies,HealNearbyAllies; PlayerSkills.cs:ConsumeFinalCadenceRepertoireBonus -->
+<!-- Source: server-scripts/BardFinalCadenceSkill.cs:HasRequiredSongsActive,Apply,FindEnemies,HealNearbyAllies; PlayerSkills.cs:GetFinalCadenceSongBonus -->
 <div class="space-y-1">
   <h3 class="font-semibold">Final Cadence</h3>
   <p>
@@ -17,7 +17,8 @@
       The mercenary casts it only from level 50, while it sustains all three of its
       combat songs.
     {:else}
-      You can cast it only while you sustain your full active song limit.
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HasRequiredSongsActive — a player Bard needs at least three active songs. -->
+      You can cast it only while at least three of your songs are active.
     {/if}
   </p>
   <Calculation calculation={cadenceCalculation(skill, usedByBardMercenary)} />
@@ -30,11 +31,9 @@
   {/if}
   <p>Critical heals restore double Health, or triple Health in 10% of cases.</p>
   {#if !usedByBardMercenary}
-    <!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast,ConsumeFinalCadenceRepertoireBonus — distinct completed manual songs in the preceding 40 seconds are consumed for the Melody bonus. -->
+    <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:GetFinalCadenceSongBonus — Apply reads the active song count when the cast finishes. -->
     <p class="text-muted-foreground">
-      Each distinct song counts once when you finish casting it yourself, less
-      than 40 seconds before Final Cadence. Automatic repeats do not count.
-      Casting Final Cadence clears the Melody bonus.
+      Melody counts your active songs when the cast finishes.
     </p>
   {/if}
   <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,FindEnemies,IsEngagedWithParty — one roll covers all allied healing; sleeping monsters are excluded and Pet targets map to their owner. -->
@@ -63,7 +62,7 @@
     restored, rounded up, on monsters within {2 * skill.cast_range!.base_value} yd
     of the caster that are fighting that ally.
   </p>
-  <!-- Source: server-scripts/Combat.cs:654-661,844-861,1539-1580 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
+  <!-- Source: server-scripts/Combat.cs:656-663,846-863,1541-1582 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">
     The target's Magic Resist reduces the damage by 5% per 100 points, at most
     90%, and gives 5 percentage points of chance per 100 points to resist it

@@ -334,8 +334,8 @@ export type DamageFormulaKind =
   | "magic_weapon" // Magic Damage plus Damage, both already percentage-scaled.
   | "magic_weapon_ranger" // Magic Damage plus Damage, then the bow deduction.
   // Special
-  | "bard_final_cadence" // player: second rounding after consumed repertoire multiplier
-  | "bard_final_cadence_merc" // Charisma only; no repertoire multiplier
+  | "bard_final_cadence" // player: second rounding after the active-song Melody multiplier
+  | "bard_final_cadence_merc" // Charisma only; no Melody multiplier
   | "manaburn" // Warrior/Rogue single-target melee burns Rage for double damage. Wizard projectile burns Mana for triple damage.
   // Monster / NPC
   | "monster_melee" // The caster's own Damage at its level.
@@ -386,7 +386,7 @@ export type TimingModel =
   // Warrior and Rogue generate Rage; all other classes use Mana.
   | "player_auto" // e.g. crush_strike
   // interval = cast_time × (1 − spellHaste) + 0.75s refractory; the spell haste sum is unclamped.
-  // Source: server-scripts/Skills.cs:924-933, server-scripts/Player.cs:2873, server-scripts/Player.cs:refractoryPeriodSkill
+  // Source: server-scripts/Skills.cs:924-933, server-scripts/Player.cs:2901, server-scripts/Player.cs:refractoryPeriodSkill
   | "player_spell" // e.g. fire_blast, wind_shock, smite, mystic_spark
   | "companion" // flat cooldown: familiars, spells, and combat-pet skills other than index 0
   | "companion_auto" // non-familiar combat pet non-spell skill index 0: haste-reduced cooldown

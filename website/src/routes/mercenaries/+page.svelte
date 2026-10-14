@@ -306,7 +306,7 @@
             >.
           </div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Npc.cs:1898-1909, UIMercenaries.cs:CalculatePriceMercenaryLevel, Charisma.cs:17-20, UINpcTrading.cs:837-844, Utils.cs:GetRandomChar -->
+            <!-- Source: server-scripts/Npc.cs:1898-1909, UIMercenaries.cs:CalculatePriceMercenaryLevel, Charisma.cs:17-20, UINpcTrading.cs:870-877, Utils.cs:GetRandomChar -->
             <p>
               <span class="block"
                 >Recruiters serve you from level {MERC_MIN_LEVEL}.</span
@@ -348,7 +348,7 @@
         <div>
           <div>Summon it into your party.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/UIMercenaries.cs:297-299,380, Player.cs:10520-10525,10697-10712 -->
+            <!-- Source: server-scripts/UIMercenaries.cs:297-299,380, Player.cs:10615-10620,10792-10807 -->
             <p>
               <span class="block">
                 You can keep up to {MAX_HIRED} hired mercenaries.
@@ -380,7 +380,7 @@
           </div>
         </div>
       </div>
-      <!-- Source: server-scripts/UITarget.cs:443-474; UIMercenaries.cs:530-582,588-615,646-700; Player.cs:10896-10918 — combat prevents target-panel dismissal, recall rejects dead mercenaries, and deletion checks equipped gear. -->
+      <!-- Source: server-scripts/UITarget.cs:465-496; UIMercenaries.cs:530-582,588-615,646-700; Player.cs:10991-11013 — combat prevents target-panel dismissal, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
@@ -412,7 +412,7 @@
         <div>
           <div>It levels up with you.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,4679-4704,10759-10774; PetSkills.cs:RefreshSkillLevels; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,4746-4771,10854-10869; PetSkills.cs:RefreshSkillLevels; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
             <p>
               <span class="block">A mercenary always has your level.</span>
               <span class="block">
@@ -458,7 +458,7 @@
             <Alert variant="info">
               <Info />
               <div>
-                <!-- Source: server-scripts/Player.cs:10556-10562,10754-10761 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+                <!-- Source: server-scripts/Player.cs:10651-10657,10849-10856 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
                 <p class="font-medium">Veteran Attack Power and Spell Power</p>
                 <p>
                   Each total veteran point adds 1 base Attack Power and 1 base
@@ -481,7 +481,7 @@
         <div class="text-sm text-muted-foreground">5</div>
         <div class="space-y-3">
           <div>Give it orders.</div>
-          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9208-9234 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
+          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9286-9312 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
           <p class="text-sm leading-6 text-muted-foreground">
             These orders apply to your mercenaries and combat companion. In this
             table, "companion" includes both.
@@ -494,7 +494,7 @@
             skills.
           </p>
           <!-- Source: server-scripts/Pet.cs:1491-1494,2204-2215,6031-6041; PetSkills.cs:253-283 — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
-          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2348-2409,OnMercenaryStanceKeyPressed; Player.cs:9208-9234; Pet.cs:5399-5439,5969-6017 — group toggles, Warrior-first attack order, and movement commands. -->
+          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2383-2444,OnMercenaryStanceKeyPressed; Player.cs:9286-9312; Pet.cs:5399-5439,5969-6017 — group toggles, Warrior-first attack order, and movement commands. -->
           <div class="overflow-x-auto">
             <table class="w-full min-w-[36rem] text-left text-sm leading-6">
               <thead class="border-b text-foreground">
@@ -610,7 +610,7 @@
         <div>
           <div>If it dies, resurrect it.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD, Combat.cs:1038-1053,1361-1372 -->
+            <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD, Combat.cs:1040-1055,1363-1374 -->
             <p>
               <span class="block">The corpse stays for 5 minutes.</span>
               {#if deathSaveClasses.length > 0}
@@ -625,7 +625,7 @@
                 </span>
               {/if}
             </p>
-            <!-- Source: server-scripts/TargetHealSkill.cs:240-261, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,10826 -->
+            <!-- Source: server-scripts/TargetHealSkill.cs:240-261, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,10921 -->
             <div class="overflow-x-auto">
               <table class="text-sm">
                 <thead>
@@ -675,7 +675,7 @@
                 >Resurrecting all requires enough gold for the complete group.</span
               >
             </p>
-            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:741-757 -->
+            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:743-759 -->
             <p>
               <span class="block">
                 The base fee is {fmt(resurrectionPrice(MERC_MIN_LEVEL, 0))} gold at
@@ -713,7 +713,7 @@
         <div class="text-sm text-muted-foreground">7</div>
         <div>
           <div>If you die, your mercenaries leave.</div>
-          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,13182-13186, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,10661-10680 -->
+          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,13297-13301, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,10756-10775 -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               Living mercenaries return when you respawn or when someone
@@ -741,7 +741,7 @@
 
   <section id="equipment" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Equipping a mercenary</h2>
-    <!-- Source: server-scripts/UITarget.cs:443-447; EquipmentItem.cs:157-212; MercenaryEquipment.cs:21-86 — the target-panel helmet icon opens equipment, with owner-level, class, slot, and two-handed checks. -->
+    <!-- Source: server-scripts/UITarget.cs:465-469; EquipmentItem.cs:157-212; MercenaryEquipment.cs:21-86 — the target-panel helmet icon opens equipment, with owner-level, class, slot, and two-handed checks. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Open the selected mercenary's equipment with the helmet icon.</span

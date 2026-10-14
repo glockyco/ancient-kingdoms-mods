@@ -12,14 +12,14 @@ import { ALL_CLASS_IDS } from "$lib/utils/classes";
 /**
  * How each damage type is mitigated and avoided, mirroring the game one row per type.
  *
- * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:844-861 — the
+ * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:846-863 — the
  * per-damage-type switch, each read multiplied by 0.0005.
- * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:654-661 —
+ * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:656-663 —
  * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
  *
  * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
  * per point, and it also feeds the block roll at 0.0001 per point, because blockChance is
- * derived from it. Source: server-scripts/Combat.cs:307-319. Both physical formulas refer
+ * derived from it. Source: server-scripts/Combat.cs:309-321. Both physical formulas refer
  * to Defense.
  *
  * Stat names are looked up here and never assembled from a fragment. Appending "Resist" to a
@@ -316,7 +316,7 @@ export function skillFacts(
   const isDebuffType =
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff";
 
-  // Source: server-scripts/Combat.cs:1534-1578 — melee debuffs resist with Defense, the others with their matching resistance.
+  // Source: server-scripts/Combat.cs:1536-1580 — melee debuffs resist with Defense, the others with their matching resistance.
   const debuffResistance = skill.is_melee_debuff
     ? "Armor Class"
     : skill.is_poison_debuff

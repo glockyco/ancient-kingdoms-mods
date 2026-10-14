@@ -10,7 +10,7 @@
 
 {#if skill.heal_on_hit_percent}
   {@const share = skill.heal_on_hit_percent}
-  <!-- Source: server-scripts/Combat.cs:883-897 — positive effects on the victim heal the attacker for each qualifying damage-skill hit before Ward, capped at missing Health. -->
+  <!-- Source: server-scripts/Combat.cs:885-899 — positive effects on the victim heal the attacker for each qualifying damage-skill hit before Ward, capped at missing Health. -->
   <div class="space-y-2">
     <h3 class="font-semibold">Heal on Hit</h3>
     <p class="text-muted-foreground">

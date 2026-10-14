@@ -1714,7 +1714,7 @@ const DEBUFF_SCHOOL_FLAGS: ReadonlyArray<[string, DebuffSchool]> = [
 ];
 
 /**
- * Source: server-scripts/TargetDebuffSkill.cs:101-171 selects the resist school from the first set
+ * Source: server-scripts/TargetDebuffSkill.cs:101-177 selects the resist school from the first set
  * school flag in this order; a debuff with no flag is not resisted.
  */
 function effectSpecFromSkill(

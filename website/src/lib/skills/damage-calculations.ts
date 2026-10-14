@@ -32,7 +32,7 @@ import type {
   DamageFormulaKind,
   SkillDetailView,
 } from "$lib/types/skills";
-import { melodyBonus } from "$lib/calculation/bard";
+import { ACTIVE_SONGS, melodyBonus } from "$lib/calculation/bard";
 import { bardBonus, bardPower, songValue } from "$lib/calculation/combat";
 import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
@@ -205,18 +205,7 @@ export function cadenceCalculation(
     [
       ...damageRankInputs(skill, mercenary),
       CHARISMA,
-      ...(!mercenary
-        ? [
-            {
-              ...situational(
-                "songs",
-                "Distinct songs cast by hand in the last 40 seconds",
-                4,
-              ),
-              phrase: "distinct songs cast by hand in the last 40 seconds",
-            },
-          ]
-        : []),
+      ...(!mercenary ? [ACTIVE_SONGS] : []),
     ],
     mercenary,
   );
@@ -241,7 +230,7 @@ export function cadenceCalculation(
             {
               name: "Melody bonus",
               expression:
-                "0–3 distinct manual songs give 0%, 4 give 15%, 5 give 25%, and 6 or more give 30%",
+                "3 active songs give 0%, 4 give 15%, 5 give 25%, and 6 or more give 30%",
             },
             ...amounts.map((amount) => ({
               name: amount.finalName,
@@ -274,7 +263,7 @@ export function cadenceCalculation(
         );
       if (!mercenary) {
         working.push(
-          `Melody bonus: ${number(values.songs)} distinct manual songs = ${percent(melody)}`,
+          `Melody bonus: ${number(values.songs)} active songs = ${percent(melody)}`,
         );
         for (const amount of evaluated)
           working.push(

@@ -1,4 +1,4 @@
-<!-- Source: server-scripts/Combat.cs:293-305 (criticalResist, clamped 0-1), 514-519 (ApplyCriticalResistToMultiplier), 854-869 (crit damage), Dexterity.cs:34-37 -->
+<!-- Source: server-scripts/Combat.cs:295-307 (criticalResist, clamped 0-1), 516-521 (ApplyCriticalResistToMultiplier), 856-871 (crit damage), Dexterity.cs:34-37 -->
 <div class="space-y-1">
   <h3 class="font-semibold">Critical Resist</h3>
   <p class="text-muted-foreground">

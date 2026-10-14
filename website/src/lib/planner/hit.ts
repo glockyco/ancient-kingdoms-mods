@@ -91,7 +91,7 @@ export type PreparedHit =
       landed: (varianceRoll: number) => number;
       /** Landed non-critical damage at the extreme variance rolls. */
       supportBand: [number, number];
-      /** Critical damage for a landed amount. Source: server-scripts/Combat.cs:866-882. */
+      /** Critical damage for a landed amount. Source: server-scripts/Combat.cs:868-884. */
       critical: (landedDamage: number) => number;
     };
 
@@ -246,7 +246,7 @@ export function weaponGateRefusal(
 }
 
 /**
- * Sources: server-scripts/PlayerSkills.cs:669-715 and
+ * Sources: server-scripts/PlayerSkills.cs:670-716 and
  * server-scripts/TargetProjectileSkill.cs:44-64.
  */
 export function hitRefusal(
@@ -442,7 +442,7 @@ function baseCombatStat(
   return stat;
 }
 
-/** Source: server-scripts/Combat.cs:776-862. */
+/** Source: server-scripts/Combat.cs:778-864. */
 function landedNonCriticalDamage(
   intent: number,
   variance: number,

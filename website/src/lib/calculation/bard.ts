@@ -1,19 +1,28 @@
-import type { Calculation } from "$lib/types/calculation";
+import type { Calculation, CalculationInput } from "$lib/types/calculation";
 import { addF32, f32, iround, multiplyF32 } from "$lib/planner/engine-math";
 import { formatNumber, formatPercent } from "./format";
 import { CHARISMA, situational } from "./inputs";
 
-// Source: server-scripts/BardFinalCadenceSkill.cs:67-70; server-scripts/PlayerSkills.cs:1576-1602 — Melody multiplies each already rounded Charisma-scaled amount and rounds again.
+// Source: server-scripts/BardFinalCadenceSkill.cs:67-70; server-scripts/PlayerSkills.cs:1571-1588 — Melody multiplies each already rounded Charisma-scaled amount and rounds again.
 export function melodyBonus(songs: number): number {
   return songs >= 6 ? 0.3 : songs === 5 ? 0.25 : songs === 4 ? 0.15 : 0;
 }
+
+// Source: server-scripts/BardFinalCadenceSkill.cs:HasRequiredSongsActive — Final Cadence needs at least three active songs.
+export const ACTIVE_SONGS: CalculationInput = {
+  ...situational("songs", "Active songs", 4),
+  phrase: "active songs",
+  min: 3,
+  max: 30,
+};
+
 // Source: server-scripts/BardFinalCadenceSkill.cs:Apply,FormatScaledValue — the tooltip separates the rounded Charisma bonus from the base amount, and Melody multiplies their sum.
 export function finalCadenceMelody(): Calculation {
   return {
     steps: [
       {
         name: "Melody multiplier",
-        expression: "100% + the bonus for distinct songs from the table",
+        expression: "100% + the bonus for active songs from the table",
       },
       {
         name: "Damage or healing",
@@ -28,7 +37,7 @@ export function finalCadenceMelody(): Calculation {
         "Tooltip damage or healing, including the Charisma bonus",
         100,
       ),
-      { ...situational("songs", "Distinct songs cast by hand", 4), max: 30 },
+      ACTIVE_SONGS,
     ],
     example: ({ scaledAmount, songs }) => {
       const multiplier = addF32(1, melodyBonus(songs));
@@ -36,7 +45,7 @@ export function finalCadenceMelody(): Calculation {
       return {
         given: [
           `${formatNumber(scaledAmount)} tooltip damage or healing, including the bonus`,
-          `${songs} distinct songs cast by hand`,
+          `${songs} active songs`,
         ],
         // Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies; Combat.cs:DealDamageAt — defenses modify damage and heals can crit before being capped by missing Health.
         result: `${formatNumber(total)} damage before defenses, or healing before critical heals and the missing-Health cap`,

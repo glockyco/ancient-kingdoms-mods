@@ -49,7 +49,7 @@ export interface EffectApplication {
 /**
  * Adds an effect to one recipient's list. An effect with the same skill refreshes in place. Otherwise
  * every effect in the incoming effect's non-empty category expires, whatever its source or magnitude.
- * Source: server-scripts/Skills.cs:1207-1245 and server-scripts/TargetDebuffSkill.cs:288-331.
+ * Source: server-scripts/Skills.cs:1207-1245 and server-scripts/TargetDebuffSkill.cs:294-337.
  */
 export function applyEffect(
   effects: readonly TimedEffect[],

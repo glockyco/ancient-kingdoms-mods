@@ -326,7 +326,7 @@ class EventQueue {
 /**
  * Runs one replicate. Casts, completions, projectile arrivals, incoming damage, and effect expiry are
  * exact-timestamp events. Resource recovery runs on the one-second tick.
- * Source: server-scripts/NetworkManagerMMO.cs:105-117.
+ * Source: server-scripts/NetworkManagerMMO.cs:109-121.
  */
 export function runReplicate(
   input: EngineInput,

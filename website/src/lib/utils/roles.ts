@@ -193,7 +193,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
     ],
   },
-  // Source: server-scripts/Player.cs:5066-5081,11049-11067 — reset clears the current specialization allocation and refuses curses or debuffs.
+  // Source: server-scripts/Player.cs:5133-5148,11144-11162 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
     description:
       "This NPC resets your current specialization's assigned attribute points.",
@@ -231,7 +231,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       'This NPC converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
     details: ["Bring Cursed Runes in your inventory."],
   },
-  // Source: server-scripts/UINpcTrading.cs:227-232,292-297 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
+  // Source: server-scripts/UINpcTrading.cs:260-265,325-330 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
   is_augmenter: {
     description: "This NPC removes augments from equipment.",
     details: [

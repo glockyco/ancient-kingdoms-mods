@@ -118,12 +118,12 @@
       Your own hits face the target's Block Chance and resists, which each
       monster's page lists.
     </p>
-    <!-- Source: server-scripts/Combat.cs:673-692 — the from-behind and moving-player adjustments apply after the 0–90% bounds. -->
+    <!-- Source: server-scripts/Combat.cs:675-694 — the from-behind and moving-player adjustments apply after the 0–90% bounds. -->
     <p>
       <a href="#combat-advantage">Combat Advantage</a> then lowers the chance for
       attacks from behind and for hits on a moving player.
     </p>
-    <!-- Source: server-scripts/Combat.cs:567-571 — returning-home monsters evade incoming hits. -->
+    <!-- Source: server-scripts/Combat.cs:569-573 — returning-home monsters evade incoming hits. -->
     <p>
       A monster returning home after a chase avoids every hit. See
       <a href="/mechanics/monster-spawns#leashing">Chase Limits and Resets</a>.

@@ -89,7 +89,7 @@
           > requires a learned recipe and rolls for success.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:13672-13681,13747-13763 — equipment receives its maximum durability; pack recipes add the final item in the pack's final quantity. -->
+      <!-- Source: server-scripts/Player.cs:13787-13796,13862-13878 — equipment receives its maximum durability; pack recipes add the final item in the pack's final quantity. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Crafted equipment starts at its maximum durability.</li>
         <li>
@@ -97,7 +97,7 @@
           directly, not a pack to open.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:12592-12605 and server-scripts/UIJournal.cs:78-85,268-301 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
+      <!-- Source: server-scripts/Player.cs:12707-12720 and server-scripts/UIJournal.cs:78-85,268-301 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Successful crafts enter the Crafting journal.</li>
         <li>
@@ -105,7 +105,7 @@
           successful crafts.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:12707-12713 — after each result, Craft All crafts again while the station panel stays open. -->
+      <!-- Source: server-scripts/Player.cs:12822-12828 — after each result, Craft All crafts again while the station panel stays open. -->
       <!-- Source: server-scripts/UICraftingStation.cs:400-450 — a craft stops when no recipe matches the materials or the result does not fit in the inventory. -->
       <p>
         <span class="block"
@@ -127,7 +127,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UICraftingStation.cs:53-69,142-159,288-315 and server-scripts/Player.cs:13590-13632 — two station materials trigger attachment, equipment and augment must be in inventory, and the client checks defensive category compatibility. -->
+      <!-- Source: server-scripts/UICraftingStation.cs:53-69,142-159,288-315 and server-scripts/Player.cs:13705-13747 — two station materials trigger attachment, equipment and augment must be in inventory, and the client checks defensive category compatibility. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           Put an augment and an equipment piece from your inventory into a
@@ -145,7 +145,7 @@
           >
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:13605-13632 and server-scripts/Inventory.cs:67-92 — attaching requires an unaugmented copy, consumes the loose augment, and returns the equipment with maximum durability. -->
+      <!-- Source: server-scripts/Player.cs:13720-13747 and server-scripts/Inventory.cs:67-92 — attaching requires an unaugmented copy, consumes the loose augment, and returns the equipment with maximum durability. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           Attaching an augment consumes the loose augment and returns the
@@ -161,7 +161,7 @@
         Augment bonuses apply while the equipment is worn and has durability
         above zero.
       </p>
-      <!-- Source: server-scripts/UINpcTrading.cs:216-233,281-298 and server-scripts/PlayerNpcTrading.cs:377-398 — the removal service lists carried and equipped items; its price depends on augment quality, and it needs space for the returned augment. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:249-266,314-331 and server-scripts/PlayerNpcTrading.cs:377-398 — the removal service lists carried and equipped items; its price depends on augment quality, and it needs space for the returned augment. -->
       <div class="space-y-2">
         <p>
           An <a
@@ -204,7 +204,7 @@
         </p>
         <p>You need room for the returned augment before removal succeeds.</p>
       </div>
-      <!-- Source: server-scripts/UINpcTrading.cs:110-126 — selling augmented equipment displays an attached-augment warning. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:143-159 — selling augmented equipment displays an attached-augment warning. -->
       <p>Sale confirmation warns when equipment has an augment attached.</p>
       <p>Remove an augment before selling if you want to keep it.</p>
       <p>

@@ -206,7 +206,7 @@ export const pipelineCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/Combat.cs:673-698,776-781 — moving avoidance adjusts after from-behind avoidance, moving damage adjusts before variance.
+// Source: server-scripts/Combat.cs:675-700,778-783 — moving avoidance adjusts after from-behind avoidance, moving damage adjusts before variance.
 export const advantageCalculation: Calculation = {
   steps: [
     {
@@ -349,7 +349,7 @@ export const damageOverTimeCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/TargetDamageSkill.cs:249,291; AreaDamageSkill.cs:135,149-154; Combat.cs:602-613 — targeted and direct area hits add maximum Health to positive listed threat, while threat uses pre-pipeline damage and is capped by current victim Health.
+// Source: server-scripts/TargetDamageSkill.cs:249,291; AreaDamageSkill.cs:135,149-154; Combat.cs:604-615 — targeted and direct area hits add maximum Health to positive listed threat, while threat uses pre-pipeline damage and is capped by current victim Health.
 export function hitThreat(
   aggro: number,
   maximumHealth: number,
@@ -422,7 +422,7 @@ export const threatCalculation: Calculation = {
   },
 };
 
-// Source: server-scripts/BuffSkill.cs:518-540; TargetBuffSkill.cs:321-334 — a debuff whose probIgnoreCleanse is 1 (100% Cleanse Resist) is skipped, so no layers are removed.
+// Source: server-scripts/BuffSkill.cs:530-552; TargetBuffSkill.cs:321-334 — a debuff whose probIgnoreCleanse is 1 (100% Cleanse Resist) is skipped, so no layers are removed.
 export function extraCleanseChance(resist: number, accuracy: number) {
   return clamp(multiplyF32(addF32(1, -resist), addF32(1, accuracy)), 0, 1);
 }

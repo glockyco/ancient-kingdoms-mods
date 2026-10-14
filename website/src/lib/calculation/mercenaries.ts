@@ -13,7 +13,7 @@ import {
   TOTAL_VETERAN_POINTS_NOTE,
 } from "./inputs";
 
-// Source: server-scripts/UIMercenaries.cs:434-440; server-scripts/Player.cs:8471-8478; server-scripts/UINpcTrading.cs:837-844 — prices use double-precision level curves, nearest-even base rounding, and an upward-rounded float32 discount.
+// Source: server-scripts/UIMercenaries.cs:434-440; server-scripts/Player.cs:8547-8554; server-scripts/UINpcTrading.cs:870-877 — prices use double-precision level curves, nearest-even base rounding, and an upward-rounded float32 discount.
 export function mercenaryPrice(resurrection = false): Calculation {
   return {
     steps: [

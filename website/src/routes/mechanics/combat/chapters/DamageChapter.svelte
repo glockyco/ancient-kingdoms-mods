@@ -14,7 +14,7 @@
 
 <Chapter id="damage">
   <Topic id="damage-pipeline">
-    <!-- Source: server-scripts/Combat.cs:673-875,883-1007,1171-1398 — ordered direct-hit pipeline, including avoidance, moving damage, on-hit effects, resource gains, shields, lifetap, and critical scaling. -->
+    <!-- Source: server-scripts/Combat.cs:675-877,885-1009,1173-1400 — ordered direct-hit pipeline, including avoidance, moving damage, on-hit effects, resource gains, shields, lifetap, and critical scaling. -->
     <p>
       Direct hits use these steps in order. Each step uses the damage left by
       the previous step.
@@ -26,7 +26,7 @@
       <li>
         Calculate the skill's <a href="#damage-formulas">starting damage</a>.
       </li>
-      <!-- Source: server-scripts/Combat.cs:689-692 — moving-player damage increases before the avoidance roll. -->
+      <!-- Source: server-scripts/Combat.cs:691-694 — moving-player damage increases before the avoidance roll. -->
       <li>
         Apply the <a href="#combat-advantage">moving-player damage bonus</a>.
       </li>
@@ -34,7 +34,7 @@
 
     <h4>Avoidance</h4>
     <ol start="3">
-      <!-- Source: server-scripts/Combat.cs:673-734 — positional and moving-player adjustments precede the block, miss or resist roll, which ends an avoided hit. -->
+      <!-- Source: server-scripts/Combat.cs:675-736 — positional and moving-player adjustments precede the block, miss or resist roll, which ends an avoided hit. -->
       <li>
         Roll <a href="#avoidance">Block, Miss or Resist</a>, adjusted by
         <a href="#combat-advantage">Combat Advantage</a>. Avoiding the hit ends
@@ -44,18 +44,18 @@
 
     <h4>Damage modifiers</h4>
     <ol start="4">
-      <!-- Source: server-scripts/Combat.cs:776 — variance multiplies damage by a random factor from 0.9 to 1.1 and applies RoundToInt. -->
+      <!-- Source: server-scripts/Combat.cs:778 — variance multiplies damage by a random factor from 0.9 to 1.1 and applies RoundToInt. -->
       <li>Multiply damage by a random 90% to 110%, <RoundedTerm />.</li>
-      <!-- Source: server-scripts/Combat.cs:776-781 — the from-behind damage bonus follows variance. -->
+      <!-- Source: server-scripts/Combat.cs:778-783 — the from-behind damage bonus follows variance. -->
       <li>
         Apply the <a href="#combat-advantage">from-behind damage bonus</a>.
       </li>
-      <!-- Source: server-scripts/Combat.cs:782 — the level adjustment is bounded to −20–20% before its damage rounds up and is added. -->
+      <!-- Source: server-scripts/Combat.cs:784 — the level adjustment is bounded to −20–20% before its damage rounds up and is added. -->
       <li>
         Add 2% damage per level above the target, or subtract 2% per level below
         it, limiting the adjustment to −20% through +20% and rounding it up.
       </li>
-      <!-- Source: server-scripts/Combat.cs:783-790; Database.cs:CalculateSlayerLevelForAccount — at 10% mastery or more, Slayer reduces boss or elite damage to players and pets, using the owner's mastery for pets. -->
+      <!-- Source: server-scripts/Combat.cs:785-792; Database.cs:CalculateSlayerLevelForAccount — at 10% mastery or more, Slayer reduces boss or elite damage to players and pets, using the owner's mastery for pets. -->
       <li>
         Apply <a href="/professions/slayer">Slayer</a> reduction to boss or elite
         hits on players, mercenaries, companions and familiars: 0.1% per percentage
@@ -71,11 +71,11 @@
 
     <h4>Reduction and critical</h4>
     <ol start="9">
-      <!-- Source: server-scripts/Combat.cs:842-862 — the matching defense reduces hit damage. -->
+      <!-- Source: server-scripts/Combat.cs:844-864 — the matching defense reduces hit damage. -->
       <li>
         Subtract damage prevented by <a href="#mitigation">damage reduction</a>.
       </li>
-      <!-- Source: server-scripts/Combat.cs:864-881 — eligible critical hits scale mitigated damage and round. -->
+      <!-- Source: server-scripts/Combat.cs:866-883 — eligible critical hits scale mitigated damage and round. -->
       <li>
         Roll for a <a href="#critical-hits">critical hit</a> and apply its bonus.
       </li>
@@ -83,7 +83,7 @@
 
     <h4>On-hit effects and Health</h4>
     <ol start="11">
-      <!-- Source: server-scripts/Combat.cs:883-912 — a non-spell melee DamageSkill hit heals the attacker by each of the target's buffs' healOnHitPercent of the damage, rounded, before damage shields. -->
+      <!-- Source: server-scripts/Combat.cs:885-914 — a non-spell melee DamageSkill hit heals the attacker by each of the target's buffs' healOnHitPercent of the damage, rounded, before damage shields. -->
       <li>
         A non-spell melee hit on a target affected by
         <a href="/skills/root">Root</a> heals the attacker for Root's Heal on
@@ -91,29 +91,29 @@
         <a href="#damage-shields">damage shields</a> hurt the attacker. Neither changes
         this hit's damage.
       </li>
-      <!-- Source: server-scripts/Combat.cs:996-1007,1171-1224,1375-1398 — eligible dealt and received-hit Rage is granted before Ward and Mana Shield. -->
-      <!-- Source: server-scripts/Combat.cs:1225-1233 — a Wizard's Mystic Spark restores 35% of the damage, counting at most the victim's current Health, rounded down. -->
+      <!-- Source: server-scripts/Combat.cs:998-1009,1173-1226,1377-1400 — eligible dealt and received-hit Rage is granted before Ward and Mana Shield. -->
+      <!-- Source: server-scripts/Combat.cs:1227-1235 — a Wizard's Mystic Spark restores 35% of the damage, counting at most the victim's current Health, rounded down. -->
       <li>
         Grant eligible <a href="#rage-generation">Rage from hits</a>. A Wizard's
         <a href="/skills/mystic_spark">Mystic Spark</a> restores Mana equal to 35%
         of its damage, counting at most the target's current Health, rounded down.
       </li>
-      <!-- Source: server-scripts/Combat.cs:1234-1314 — Ward absorbs damage before Mana Shield. -->
+      <!-- Source: server-scripts/Combat.cs:1236-1316 — Ward absorbs damage before Mana Shield. -->
       <li>
         Subtract <a href="#ward-and-mana-shield">Ward, then Mana Shield</a> absorption.
       </li>
-      <!-- Source: server-scripts/Combat.cs:1315-1333 — lifetap uses remaining positive damage after shields. -->
+      <!-- Source: server-scripts/Combat.cs:1317-1335 — lifetap uses remaining positive damage after shields. -->
       <li>
         Calculate <a href="#lifetap">lifetap</a> from the remaining positive damage.
       </li>
-      <!-- Source: server-scripts/Combat.cs:1315-1398 — damage after shields reaches Health unless an eligible active Parry blocks and counterattacks. -->
+      <!-- Source: server-scripts/Combat.cs:1317-1400 — damage after shields reaches Health unless an eligible active Parry blocks and counterattacks. -->
       <li>
         Reduce Health by the remaining damage, or let an eligible active
         <a href="#parry">Parry</a> block it and counterattack.
       </li>
     </ol>
 
-    <!-- Source: server-scripts/Combat.cs:673-875,883-1007,1171-1398 — ordered direct-hit pipeline, including avoidance, moving damage, on-hit effects, resource gains, shields, lifetap, and critical scaling. -->
+    <!-- Source: server-scripts/Combat.cs:675-877,885-1009,1173-1400 — ordered direct-hit pipeline, including avoidance, moving damage, on-hit effects, resource gains, shields, lifetap, and critical scaling. -->
     <Formula calculation={pipelineCalculation} showSteps={false} />
 
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — Rageblow and Mana Burn bypass avoidance and mitigation but still receive random damage variation, Combat Advantage, level adjustment, critical checks, Ward and Mana Shield. -->
@@ -332,7 +332,7 @@
       to consume one. That hit adds 200% extra damage instead of 50%, before Critical
       Resist reduces the bonus.
     </p>
-    <!-- Source: server-scripts/Combat.cs:970-981,1334-1343 — a killing hit or damage shield on a player first rolls the same 15% Radiant Aether chance and restores full Health on success. -->
+    <!-- Source: server-scripts/Combat.cs:972-983,1336-1345 — a killing hit or damage shield on a player first rolls the same 15% Radiant Aether chance and restores full Health on success. -->
     <p>Radiant Aether in those slots can also save you from a killing blow.</p>
   </Topic>
 
@@ -343,14 +343,14 @@
       auto attacks, gain from-behind advantage when attacker and target face the
       same direction. Hits on a moving player also gain an advantage.
     </p>
-    <!-- Source: server-scripts/Combat.cs:673-692,776-781 — targeted damage and projectile skills gain advantage when both look directions match; resist chance is multiplied by 0.8, and damage gains 10% rounded up plus 1. -->
+    <!-- Source: server-scripts/Combat.cs:675-694,778-783 — targeted damage and projectile skills gain advantage when both look directions match; resist chance is multiplied by 0.8, and damage gains 10% rounded up plus 1. -->
     <Formula calculation={advantageCalculation} />
-    <!-- Source: server-scripts/Combat.cs:776-781 — Improved Backstab and Rogue mercenaries use 25% instead of the normal 10% from-behind extra damage. -->
+    <!-- Source: server-scripts/Combat.cs:778-783 — Improved Backstab and Rogue mercenaries use 25% instead of the normal 10% from-behind extra damage. -->
     <p>
       <a href="/skills/improved_backstab">Improved Backstab</a> and Rogue mercenaries
       raise the from-behind extra damage from 10% to 25%.
     </p>
-    <!-- Source: server-scripts/Combat.cs:693-697 — against a moving player, stunChance gains Clamp(0.1 − 0.01 × level difference, 0.01, 0.1), capped at 1, and stunTime is at least 0.5 seconds. -->
+    <!-- Source: server-scripts/Combat.cs:695-699 — against a moving player, stunChance gains Clamp(0.1 − 0.01 × level difference, 0.01, 0.1), capped at 1, and stunTime is at least 0.5 seconds. -->
     <p>
       Against a moving player, physical hits from attackers above level 5 add 10
       percentage points of stun chance minus 1 percentage point per target level

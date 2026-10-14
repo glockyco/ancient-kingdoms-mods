@@ -38,7 +38,7 @@
       <Card.Title>Game Modes and Hardcore</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UICharacterSelection.cs:152-205,275-322 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
+      <!-- Source: server-scripts/UICharacterSelection.cs:160-211,284-331 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -75,16 +75,17 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/UICharacterEditor.cs:524-526 and server-scripts/Database.cs:GetMaxLevelChar — Hardcore starts unchecked and unlocks only when the highest saved character level is 50. -->
+      <!-- Source: server-scripts/UICharacterEditor.cs:542-544 and server-scripts/Database.cs:CanCreateHardcoreCharacter — Hardcore starts unchecked and unlocks when a saved character is level 50 or Hardcore. -->
       <p>
         <span class="block"
-          >Hardcore becomes selectable when a saved character reaches level 50.</span
+          >Hardcore becomes selectable once a saved character reaches level 50
+          or another Hardcore character exists.</span
         >
         <span class="block"
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4094-4101,9781-9784 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4122-4129,9859-9862 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -230,7 +231,7 @@
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: exported-data/items.json — scroll_of_binding has level_required 30. -->
       <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:741-745 — a bind spell is refused in a dungeon. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:742-746 — a bind spell is refused in a dungeon. -->
       <p>
         <span class="block"
           ><a
@@ -259,7 +260,7 @@
           other dungeons.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14098-14110 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14213-14225 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A <a
@@ -339,7 +340,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Player.cs:11143-11157,3570-3572, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:11238-11252,3598-3600, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >A successful portal transition removes invisibility, including

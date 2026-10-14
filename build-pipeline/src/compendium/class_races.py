@@ -5,7 +5,7 @@ creation takes both as independent strings and cross-checks neither, and no runt
 structure lists the races a class allows. The rule exists only in the character
 creator, which enables or disables one class button per race.
 
-- Source: server-scripts/UICharacterEditor.cs:1142-1780 - changeRace* methods
+- Source: server-scripts/UICharacterEditor.cs:1173-1811 - changeRace* methods
 - Source: server-scripts/UICharacterEditor.cs:RaceAllowsNecromancer - a switch on the selected race
 - Source: server-scripts/UICharacterEditor.cs:changeClassNecromancer - one changeClass method per class
 

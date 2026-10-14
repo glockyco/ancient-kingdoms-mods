@@ -115,7 +115,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Buff.cs:47-228; Wisdom.cs:116-127; Combat.cs:910-923 — positive non-song effects add the selected attribute, with per-effect rounding. -->
+    <!-- Source: server-scripts/Buff.cs:47-228; Wisdom.cs:116-127; Combat.cs:912-925 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
     <RefTable caption="What the buff attribute adds to each effect">
@@ -304,8 +304,8 @@
       Players and mercenaries use their own attributes. Debuffs from monsters,
       NPCs, companions and familiars add nothing.
     </p>
-    <!-- Source: server-scripts/Buff.cs:69-228; BuffSkill.cs:473-515; Skills.cs:1644-1755,1822-1842 — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
-    <!-- Source: server-scripts/BuffSkill.cs:14-31,508-515 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
+    <!-- Source: server-scripts/Buff.cs:69-228; BuffSkill.cs:485-527; Skills.cs:1644-1755,1822-1842 — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
+    <!-- Source: server-scripts/BuffSkill.cs:14-31,520-527 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
     <RefTable caption="What the debuff attribute adds to each effect">
       <thead>
         <tr>

@@ -173,7 +173,7 @@
         <span class="block">The roll resolves sooner if everyone answers.</span>
         <span class="block">No answer by the deadline counts as Pass.</span>
       </p>
-      <!-- Source: server-scripts/Player.cs:13851-13857 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
+      <!-- Source: server-scripts/Player.cs:13966-13972 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -294,7 +294,7 @@
         <span class="block">Party and guild chat require membership.</span>
         <span class="block">Whispers do not reach offline characters.</span>
       </p>
-      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:3885-3905,3968-3989 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
+      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:3913-3933,3996-4017 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
       <p>
         <span class="block"
           >Select a living player in your zone and enter <code>/follow</code
@@ -307,7 +307,7 @@
           they move.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:3908-3931,3935-3967 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
+      <!-- Source: server-scripts/Player.cs:3936-3959,3963-3995 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
         <span class="block"
           >Moving manually or using a skill cancels follow.</span

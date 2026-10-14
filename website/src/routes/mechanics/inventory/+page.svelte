@@ -303,7 +303,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:405 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13506-13531 and 13541-13569 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:13621-13646 and 13656-13684 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -340,7 +340,7 @@
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:13462-13475 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:UserCode_CmdSetNumberBankTabsUnlocked__Int32 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -401,7 +401,7 @@
         <h3 class="font-semibold text-foreground">Buying and placing chests</h3>
         <p>
           <!-- Source: server-scripts/Housing.cs:33-38 — owned house trigger shows the H-key house panel prompt. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:123-135 — H opens the structure panel only inside an owned house buildable zone. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:122-134 — H opens the structure panel only inside an owned house buildable zone. -->
           While inside a house you own, press
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -409,15 +409,15 @@
           > to open the house panel.
         </p>
         <p>
-          <!-- Source: server-scripts/CustomStrucUI.cs:58-69 — panel lists structure items and prices from HousingManager.strucItems. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:57-68 — panel lists structure items and prices from HousingManager.strucItems. -->
           <!-- Source: server-scripts/StrucItemUi.cs:29-39 — selecting a chest checks gold, shows the shared-storage warning, and enters placement mode. -->
           Choose a chest from that panel, confirm the purchase warning, then place
           it inside the buildable house area.
         </p>
         <p>
           <span class="block"
-            ><!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:13257-13269 — move mode hides the structure, then repositions the same one without charging gold. -->
+            ><!-- Source: server-scripts/CustomStrucUI.cs:204-227 — left click or F places the selected structure, or drops a moved one at the new spot. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 330-349 and Player.cs:13372-13384 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -432,8 +432,8 @@
           >
         </p>
         <p>
-          <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:10390-10423 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 261-279 — remove mode destroys a selected structure. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10485-10518 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -633,7 +633,7 @@
       </p>
       <Calculation calculation={merchantPrice(false)} />
       <Calculation calculation={merchantPrice(true)} />
-      <!-- Source: server-scripts/UINpcTrading.cs:110-126 and server-scripts/PlayerNpcTrading.cs:377-397 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
+      <!-- Source: server-scripts/UINpcTrading.cs:143-159 and server-scripts/PlayerNpcTrading.cs:377-397 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
       <p>
         <span class="block">Selling augmented gear triggers a warning.</span>
         <span class="block"
@@ -764,7 +764,7 @@
           Switching applies saved choices to all 16 equipment slots.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3183-3185 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3205-3207 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
           Template 1 starts out holding the gear your character was created with.
         </li>
         <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1640-1655 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
@@ -800,7 +800,7 @@
           gear cannot fit in inventory.
         </li>
         <li>
-          <!-- Source: server-scripts/Database.cs:425-435,803-804,2689-2713 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
+          <!-- Source: server-scripts/Database.cs:425-435,803-804,2711-2735 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
           Templates belong to one character and do not carry across your other characters.
         </li>
       </ul>
@@ -893,7 +893,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4514-4517 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4581-4584 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
@@ -1012,7 +1012,7 @@
         <!-- Source: server-scripts/PlayerInventory.cs:108-113 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
         Starting a scroll cast cancels your current skill cast and clears queued skills.
       </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3138-3196 — scroll casts cancel on an active skill, movement, target change or disappearance, changed or empty slot, death, stun, fear, cancel action or trade. -->
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3166-3224 — scroll casts cancel on an active skill, movement, target change or disappearance, changed or empty slot, death, stun, fear, cancel action or trade. -->
       <p>
         Moving, changing or losing your target, starting a skill, changing or
         removing the casting item, stun, fear, death, trading, or cancelling the

@@ -5,7 +5,7 @@
   const { facts } = $derived(mechanics);
 </script>
 
-<!-- Source: server-scripts/Combat.cs:1066-1103 — DealDamageAt stun branch: one roll per hit, skipped while the victim is feared; the stun ends at the later of the new and the current end; a Bear mount resists 90%; a stunned player dismounts. -->
+<!-- Source: server-scripts/Combat.cs:1068-1105 — DealDamageAt stun branch: one roll per hit, skipped while the victim is feared; the stun ends at the later of the new and the current end; a Bear mount resists 90%; a stunned player dismounts. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Stun</h3>
   <p class="text-muted-foreground">

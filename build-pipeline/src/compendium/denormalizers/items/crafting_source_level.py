@@ -24,7 +24,7 @@ from rich.console import Console
 console = Console()
 
 
-# Source: server-scripts/UINpcTrading.cs:367-378 — vendor purchases have no player-level gate unless the item adds faction or adventuring requirements.
+# Source: server-scripts/UINpcTrading.cs:400-411 — vendor purchases have no player-level gate unless the item adds faction or adventuring requirements.
 # Source: server-scripts/Npc.cs:52-54 — adventurer merchants are a distinct NPC role.
 # Source: server-scripts/Npc.cs:1980-1982 — adventurer NPC interactions treat player level 40 as the low-level cutoff.
 REGULAR_VENDOR_SOURCE_LEVEL = 1
@@ -133,7 +133,7 @@ def _get_primal_essence_min_level(
     temp_cache: dict[str, int | None] = {}
 
     # Source: server-scripts/Npc.cs:1952-1960 — essence traders accept eligible gear from player inventory.
-    # Source: server-scripts/UINpcTrading.cs:523-531,534-541,558-571 — essence trader offers every eligible carried item as a repeatable trade.
+    # Source: server-scripts/UINpcTrading.cs:556-564,567-574,591-604 — essence trader offers every eligible carried item as a repeatable trade.
     # Source: server-scripts/Utils.cs:520-526 — eligible primal essence trades require magic-or-better equipment with sell price.
     for item_id in eligible_item_ids:
         level = _resolve_material_level(

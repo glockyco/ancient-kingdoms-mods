@@ -295,7 +295,7 @@ function attributeValue(
     : 0;
 }
 
-// Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:218-235,452-515; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:434-445 — signed stat getters, separate rounded attribute bonuses, and ward contribution transformation.
+// Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:230-247,464-527; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:434-445 — signed stat getters, separate rounded attribute bonuses, and ward contribution transformation.
 export function effectScalingCalculation(
   skill: SkillDetailView,
   source: BuffBonusAttrSource | DebuffBonusAttrKind,

@@ -185,7 +185,7 @@
         <div>
           <div>Craft scrolls.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:13408-13428,13467-13472; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
+            <!-- Source: server-scripts/Player.cs:13523-13543,13582-13587; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
             All current scroll recipes have 100% crafting success chance. Crafting
             grants
             <MechanicsLink section="experience#scribing-xp"

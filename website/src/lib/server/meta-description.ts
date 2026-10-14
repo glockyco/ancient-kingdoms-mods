@@ -328,7 +328,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:5198-5233 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:5265-5300 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -347,7 +347,7 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(): string {
-  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:115-123,585-589 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
+  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:115-123,588-592 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
   return `Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
 }
 
@@ -467,7 +467,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12833-12837,11799-11814
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12948-12952,11894-11909
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -1463,7 +1463,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32 — subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:7322-7332 and ScriptableSkill.cs:237-239
+  // Source: server-scripts/Player.cs:7398-7408 and ScriptableSkill.cs:237-239
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1494,7 +1494,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:99; Player.cs:10545-10559,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:99; Player.cs:10640-10654,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1544,7 +1544,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Level matches the summoner, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:10545-10559; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:10640-10654; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }
@@ -1611,7 +1611,7 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // =============================================================================
 //
 // Role labels come from curated class metadata.
-// Source: server-scripts/Player.cs:1460-1486 — classes display Mana, Rage or Active Songs.
+// Source: server-scripts/Player.cs:1477-1503 — classes display Mana, Rage or Active Songs.
 
 interface ClassDescriptionInput {
   name: string;
