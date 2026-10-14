@@ -75,7 +75,7 @@ for (int i = 0; i < slots.Count; i++)
 
 Slot 12 is the weapon slot and slot 13 is the Ranger's bow slot, so an empty weapon slot makes this
 return 13. The bow attack then subtracts whatever that call resolved to
-(`server-scripts/TargetProjectileSkill.cs:196-201`):
+(`server-scripts/TargetProjectileSkill.cs:195-200`):
 
 ```csharp
 num = combat.damage + player2.dexterity.GetRangedAttackBonusPerPoint();
