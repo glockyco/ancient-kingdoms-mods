@@ -104,25 +104,21 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:2916-2932,2945-2957 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
-      <p>
-        <span class="block"
-          >The monster's highest-threat opponent gets kill credit.</span
-        >
-        <span class="block"
-          >A mercenary, companion, or charmed monster credits its owner.</span
-        >
-        <span class="block"
-          >Nearby party members gain loot access when the monster dies.</span
-        >
-      </p>
       <!-- Source: server-scripts/PlayerParty.cs:74-88 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
-      <!-- Mirror.dll in the server build of Steam build 25863605 (SHA-256 2b5fb2bfa840b6ba…, NetworkServer.RebuildObserversCustom) adds a player's own connection to its observers, so the credited player always shares. -->
+      <!-- Mirror.dll and Mirror.Components.dll in the server build of Steam build 25863605: NetworkServer.RebuildObserversCustom adds a player's own connection to its observers, so the credited player always shares. SpatialHashingInterestManagement (visRange 96 at runtime, 48-unit cells, 3×3 neighbourhood) makes every player closer than 40 yd an observer, rebuilt once per second, and ignores invisibility. -->
       <p>
-        <span class="block">The credited player always shares.</span>
         <span class="block"
-          >Other party members share when they are closer than 40 yd to the
-          credited player and have that player loaded in their game. This is not
-          a stealth check.</span
+          >The player with the most threat on the monster gets the kill credit.
+          Threat from a mercenary, companion, or charmed monster counts for its
+          owner.</span
+        >
+        <span class="block"
+          >That player and every party member closer than 40 yd to them share
+          the kill, even while invisible.</span
+        >
+        <span class="block"
+          >Everyone who shares the kill gets loot access and a share of the kill
+          XP.</span
         >
       </p>
       <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
