@@ -21,18 +21,17 @@
 >
   <Panel>
     {#snippet heading()}
-      <h3
-        id="{id}-title"
-        class="mb-3 flex items-baseline gap-2 text-lg font-semibold tracking-tight"
-      >
-        {topic.title}
+      <div class="mb-3 flex items-baseline gap-2">
+        <h3 id="{id}-title" class="text-lg font-semibold tracking-tight">
+          {topic.title}
+        </h3>
         <a
           href="#{id}"
           aria-label="Link to {topic.title}"
-          class="font-normal text-muted-foreground opacity-0 transition-opacity group-hover/topic:opacity-100 hover:text-foreground focus-visible:opacity-100"
+          class="text-lg text-muted-foreground opacity-0 transition-opacity group-hover/topic:opacity-100 hover:text-foreground focus-visible:opacity-100"
           >#</a
         >
-      </h3>
+      </div>
     {/snippet}
     {@render children()}
   </Panel>

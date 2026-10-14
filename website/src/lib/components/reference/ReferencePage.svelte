@@ -115,6 +115,7 @@
   onkeydown={(event) => {
     if (event.key === "Escape") closeMenu();
   }}
+  onhashchange={closeMenu}
 />
 
 <div
@@ -133,7 +134,7 @@
     {@render header()}
 
     <div
-      class="sticky top-0 z-20 -mx-4 mt-6 border-y border-border bg-background/95 px-4 backdrop-blur sm:-mx-8 sm:px-8 lg:hidden"
+      class="sticky top-0 z-20 -mx-4 mt-6 border-y border-border bg-background px-4 sm:-mx-8 sm:px-8 lg:hidden"
     >
       <button
         type="button"
