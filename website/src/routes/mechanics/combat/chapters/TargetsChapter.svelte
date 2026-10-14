@@ -14,14 +14,15 @@
       non-hidden, attackable monster within 10 yd if one exists.
     </p>
     <!-- Source: server-scripts/Player.cs:CanAttack; Pet.cs:CanAttack; PlayerSkills.cs:648-652; UISettings.cs:ProtectFriendlyNpcs — the setting defaults on and blocks player, companion and mercenary attacks and targeted damage or debuff casts on protected NPCs. -->
+    <!-- Source: server-scripts/UISettings.cs:InitializeFriendlyNpcToggle — the toggle's protect_friendly_npcs label reads "Protect NPCs" in the English localization table, read in the running game. -->
     <!-- Source: server-scripts/Player.cs:IsProtectedFriendlyNpc; Entity.cs:checkAggro — a faction NPC is protected while reputation exceeds the factionNeeded that also stops its aggro, other NPCs always, and an NPC targeting the player, a party member or their pets is exempt. -->
     <p>
-      A setting, on by default, stops you, your companions and your mercenaries
-      from attacking friendly NPCs. An NPC without a faction always counts as
-      friendly. A faction's NPC counts as friendly while your reputation is high
-      enough that it would not attack you on sight. An NPC that is attacking
-      you, a party member, or a companion or mercenary of either can always be
-      fought.
+      The Protect NPCs setting, on by default, stops you, your companions and
+      your mercenaries from attacking friendly NPCs. An NPC without a faction
+      always counts as friendly. A faction's NPC counts as friendly while your
+      reputation is high enough that it would not attack you on sight. An NPC
+      that is attacking you, a party member, or a companion or mercenary of
+      either can always be fought.
     </p>
     <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,83-135; PlayerSkills.cs:748-771 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
     <ul>

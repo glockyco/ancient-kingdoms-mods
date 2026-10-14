@@ -5403,6 +5403,9 @@
       "sha256": "c8a2982f58dddfbf993a673c4d25b2d61e84b448af3908d09c453b6a5d534534",
       "span": 34
     },
+    "UISettings.cs:InitializeFriendlyNpcToggle": {
+      "span": 0
+    },
     "UISettings.cs:ProtectFriendlyNpcs": {
       "span": 0
     },
