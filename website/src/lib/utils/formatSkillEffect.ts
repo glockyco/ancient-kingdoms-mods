@@ -551,23 +551,13 @@ function formatBuffDebuffStats(
   if (skill.is_dispel) parts.push("dispels buffs");
   // Source: server-scripts/TargetBuffSkill.cs:137-161 (HasMatchingCleanseDebuff) — cleanse matches on the skill's own debuff type flags
   if (skill.is_cleanse) {
-    const all =
-      skill.is_poison_debuff &&
-      skill.is_disease_debuff &&
-      skill.is_fire_debuff &&
-      skill.is_cold_debuff &&
-      skill.is_magic_debuff;
-    if (all) {
-      parts.push("cleanses all debuffs");
-    } else {
-      const types: string[] = [];
-      if (skill.is_poison_debuff) types.push("poison");
-      if (skill.is_disease_debuff) types.push("disease");
-      if (skill.is_fire_debuff) types.push("fire");
-      if (skill.is_cold_debuff) types.push("cold");
-      if (skill.is_magic_debuff) types.push("magic");
-      parts.push(`cleanses ${types.join(" & ")} debuffs`);
-    }
+    // Physical and untyped debuffs never match, so even a cleanse with every type flag is not "all".
+    const types = cleanseTypes(skill);
+    const list =
+      types.length > 1
+        ? `${types.slice(0, -1).join(", ")} & ${types[types.length - 1]}`
+        : types.join("");
+    parts.push(`cleanses ${list} debuffs`);
     // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs instead of applying its own buff fields.
     return parts;
   }
@@ -955,6 +945,17 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
   divine_intervention: "grants invulnerability to nearby allies, 3s",
 };
+
+/** The debuff types a cleanse spell removes, in display order. */
+export function cleanseTypes(skill: Skill): string[] {
+  const types: string[] = [];
+  if (skill.is_poison_debuff) types.push("poison");
+  if (skill.is_disease_debuff) types.push("disease");
+  if (skill.is_fire_debuff) types.push("fire");
+  if (skill.is_cold_debuff) types.push("cold");
+  if (skill.is_magic_debuff) types.push("magic");
+  return types;
+}
 
 export function formatSkillEffect(
   skill: Skill,

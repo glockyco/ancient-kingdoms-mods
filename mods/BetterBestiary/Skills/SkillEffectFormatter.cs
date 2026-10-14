@@ -274,22 +274,17 @@ internal static class SkillEffectFormatter
             parts.Add("dispels buffs");
         if (skill.is_cleanse)
         {
-            var all = skill.is_poison_debuff && skill.is_disease_debuff && skill.is_fire_debuff
-                      && skill.is_cold_debuff && skill.is_magic_debuff;
-            if (all)
-            {
-                parts.Add("cleanses all debuffs");
-            }
-            else
-            {
-                var types = new List<string>();
-                if (skill.is_poison_debuff) types.Add("poison");
-                if (skill.is_disease_debuff) types.Add("disease");
-                if (skill.is_fire_debuff) types.Add("fire");
-                if (skill.is_cold_debuff) types.Add("cold");
-                if (skill.is_magic_debuff) types.Add("magic");
-                parts.Add($"cleanses {string.Join(" & ", types)} debuffs");
-            }
+            // Physical and untyped debuffs never match, so even a cleanse with every type flag is not "all".
+            var types = new List<string>();
+            if (skill.is_poison_debuff) types.Add("poison");
+            if (skill.is_disease_debuff) types.Add("disease");
+            if (skill.is_fire_debuff) types.Add("fire");
+            if (skill.is_cold_debuff) types.Add("cold");
+            if (skill.is_magic_debuff) types.Add("magic");
+            var list = types.Count > 1
+                ? $"{string.Join(", ", types.GetRange(0, types.Count - 1))} & {types[types.Count - 1]}"
+                : string.Join("", types);
+            parts.Add($"cleanses {list} debuffs");
             // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs instead of applying its own buff fields.
             return;
         }
