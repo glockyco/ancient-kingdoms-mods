@@ -573,6 +573,19 @@ class NpcData(BaseModel):
     # Skills (for guards and hostile NPCs)
     skill_ids: list[str] = []
 
+    @field_validator("items_sold")
+    @classmethod
+    def one_row_per_offer(cls, sales: list[NpcItemSale]) -> list[NpcItemSale]:
+        """Drop repeated identical offers.
+
+        Some shops list the same item at the same price in several slots of
+        NpcTrading.saleItems, which is still one offer.
+        """
+        offers: dict[tuple[str, int, str | None], NpcItemSale] = {}
+        for sale in sales:
+            offers.setdefault((sale.item_id, sale.price, sale.currency_item_id), sale)
+        return list(offers.values())
+
 
 # =============================================================================
 # Quest Models
