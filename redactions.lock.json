@@ -4405,6 +4405,10 @@
         "monsters:fabled_zulkaz"
       ]
     },
+    "skills:new_skill_placeholder": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "skills:ooze_grasp": {
       "mechanism": "cascade",
       "pass": 3,
@@ -4591,7 +4595,7 @@
     }
   },
   "snapshot": {
-    "game_version": "0.9.35.0",
+    "game_version": "0.9.35.5",
     "keys": "placement"
   },
   "suppressed_positions": {

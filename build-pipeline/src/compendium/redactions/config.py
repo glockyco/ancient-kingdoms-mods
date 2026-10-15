@@ -25,8 +25,8 @@ class RedactionConfig:
     - ``exclude_zone_ids`` removes the zone and everything related to it, for a
       zone that has not shipped.
 
-    ``exclude_entity_ids`` names unreleased content that holds no reference edge
-    at all, which no rule over the data can select.
+    ``exclude_entity_ids`` names content that must not be published but that no
+    rule over the data can select, because it holds no distinguishing reference.
 
     ``allowances`` records a match that the verification must not report, with
     the reason for it. Each entry names one table, one column, and one

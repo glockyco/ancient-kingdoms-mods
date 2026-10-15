@@ -83,6 +83,11 @@ zone_ids = ["old_valorath"]
 # Only the pieces are named. Each set bonus is an item that names the pieces it
 # is composed of, and the closure removes an aggregate whose every member is
 # gone, so naming a bonus would record a fact the members already decide.
+#
+# new_skill_placeholder: a passive every class learns by default into skill
+# slot 18, with no effect and an empty tooltip. The skill window shows slots 0
+# to 17 (UISkills.cs), professions start at slot 19, and veteran skills at slot
+# 30, so no player ever sees it. Its rows look like any other default passive.
 [entities.exclude]
 ids = [
     "old_valorath_token",
@@ -91,6 +96,7 @@ ids = [
     "zharvok",
     "the_royal_key_of_valorath",
     "valorath_royal_key",
+    "new_skill_placeholder",
 
     "ashen_magus_cowl",
     "ashen_magus_gloves",

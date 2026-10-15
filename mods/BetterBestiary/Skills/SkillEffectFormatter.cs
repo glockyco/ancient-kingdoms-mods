@@ -854,7 +854,6 @@ internal static class SkillEffectFormatter
         ["call_of_the_heroes"] = "teleport all active mercenaries to you, remove their fear",
         ["charge"] = "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
         ["teleport"] = "use travel items (out of combat)",
-        ["new_skill_placeholder"] = "",
         ["razor_of_wrath"] = "+1% × rank attack power, scaled by current rage (full rage = full bonus)",
         ["arcane_edge"] = "+1% × rank spell power, scaled by current mana (full mana = full bonus)",
         ["divine_intervention"] = "grants invulnerability to nearby allies, 3s",

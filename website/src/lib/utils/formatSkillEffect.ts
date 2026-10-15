@@ -1138,7 +1138,6 @@ const HARDCODED_EFFECTS: Record<string, string> = {
     "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
   // Source: server-scripts/PlayerInventory.cs; Player.cs — the cast before a travel item takes effect, refused in combat.
   teleport: "use travel items (out of combat)",
-  new_skill_placeholder: "",
   // Source: server-scripts/Combat.cs:138 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:
     "+1% × rank attack power, scaled by current rage (full rage = full bonus)",

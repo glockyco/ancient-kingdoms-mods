@@ -132,7 +132,6 @@ export function getClassSkills(classId: string): ClassSkill[] {
     LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
     WHERE (? IN (SELECT value FROM json_each(s.player_classes))
        OR 'all' IN (SELECT value FROM json_each(s.player_classes)))
-      AND s.id != 'new_skill_placeholder'
     ORDER BY class_skill_position`,
     [classId, classId],
   );
