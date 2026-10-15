@@ -1489,6 +1489,9 @@
       "sha256": "c9c3a14131184f4302211992badd2aa2cee796fed5ed3ced8e436b0d44d27602",
       "span": 1
     },
+    "GatherInventoryQuest.cs:IsFulfilled": {
+      "span": 0
+    },
     "GatherInventoryQuest.cs:OnCompleted": {
       "span": 0
     },
@@ -1566,6 +1569,10 @@
     "GatherItem.cs:547-563": {
       "sha256": "7a9be68a766ca334cf505384f739aa80ffa90c9c055dc7ffb5581ccd834620b2",
       "span": 17
+    },
+    "GatherItem.cs:549-552": {
+      "sha256": "7033286101d2dc245623f546b6de70b5e240038ad56f8dbc119cb1dfbdc9d34f",
+      "span": 4
     },
     "GatherItem.cs:567-575": {
       "sha256": "c70560ccbb95596e87213408cb7981d66b42bfdea48747180942ef083fcbfa18",
@@ -1926,6 +1933,9 @@
     "LocationQuest.cs:13-26": {
       "sha256": "fd1031866193f57a490dd20d219984ce4602d8f78f304aa2d5ea257841cdfaf9",
       "span": 14
+    },
+    "LocationQuest.cs:OnLocation": {
+      "span": 0
     },
     "Mana.cs:25-39": {
       "sha256": "39c02a781f536c8092c5eb1c0a20e35a589272ff02f9891051ab8cbda9cbe4ce",

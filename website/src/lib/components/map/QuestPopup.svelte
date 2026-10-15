@@ -17,6 +17,8 @@
     onSelectNpc: (npcId: string) => void;
     onSelectMonster: (monsterId: string) => void;
     onSelectItem: (itemId: string) => void;
+    onDiscoveryLocationChange: (position: [number, number] | null) => void;
+    onSelectDiscovery: () => void;
     onHoverNpc?: (npcId: string | null) => void;
     onHoverMonster?: (monsterId: string | null) => void;
     mode?: "card" | "drawer";
@@ -29,6 +31,8 @@
     onSelectNpc,
     onSelectMonster,
     onSelectItem,
+    onDiscoveryLocationChange,
+    onSelectDiscovery,
     onHoverNpc,
     onHoverMonster,
     mode = "card",
@@ -40,6 +44,8 @@
   let itemIconPaths = $state<Record<string, string | null> | null>(null);
 
   $effect(() => {
+    let cancelled = false;
+    onDiscoveryLocationChange(null);
     isLoading = true;
     error = null;
     details = null;
@@ -62,16 +68,26 @@
               ]
             : [],
         );
+        if (cancelled) return;
         itemIconPaths = paths;
         details = d;
+        onDiscoveryLocationChange(
+          d?.objectives.find((objective) => objective.type === "discover")
+            ?.position ?? null,
+        );
         if (!d) error = "Quest not found";
       })
       .catch((e) => {
+        if (cancelled) return;
         error = e instanceof Error ? e.message : "Failed to load quest";
       })
       .finally(() => {
-        isLoading = false;
+        if (!cancelled) isLoading = false;
       });
+    return () => {
+      cancelled = true;
+      onDiscoveryLocationChange(null);
+    };
   });
 
   // For adventurer quests, all NPCs are givers+turn-ins (show as list)
@@ -231,7 +247,7 @@
                 />
               {:else if obj.type === "deliver" && obj.targetId}
                 <span class="text-muted-foreground">Deliver</span>
-                <span>{obj.amount}×</span>
+                {#if obj.amount > 0}<span>{obj.amount}×</span>{/if}
                 <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
@@ -269,7 +285,25 @@
                 {/if}
               {:else if obj.type === "discover"}
                 <span class="text-muted-foreground">Discover</span>
-                <span class="truncate">{obj.targetName}</span>
+                {#if obj.position}
+                  <button
+                    type="button"
+                    class="text-left text-blue-400 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    onclick={onSelectDiscovery}
+                  >
+                    {obj.targetName}{obj.zoneName ? ` in ${obj.zoneName}` : ""}
+                    <span class="block text-sm text-muted-foreground">
+                      ({obj.position[0].toFixed(0)}, {(-obj
+                        .position[1]).toFixed(0)})
+                    </span>
+                  </button>
+                {:else}
+                  <span
+                    >{obj.targetName}{obj.zoneName
+                      ? ` in ${obj.zoneName}`
+                      : ""}</span
+                  >
+                {/if}
               {:else}
                 <span class="text-muted-foreground">{obj.type}</span>
                 {#if obj.amount > 1}<span>{obj.amount}×</span>{/if}

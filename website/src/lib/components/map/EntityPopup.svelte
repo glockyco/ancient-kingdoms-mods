@@ -453,6 +453,12 @@
       <span>{displayZoneName}</span>
     {/if}
   </div>
+  {#if entity.type === "npc" && npcDetails?.subZones.length}
+    <div class="flex justify-between gap-2">
+      <span class="text-muted-foreground">Area</span>
+      <span class="text-right">{npcDetails.subZones.join(", ")}</span>
+    </div>
+  {/if}
 
   <!-- House Section -->
   {#if entity.type === "house"}
@@ -1388,6 +1394,11 @@
                 onSelect={onSelectItem}
               />
               <span class="shrink-0 text-muted-foreground">
+                {#if drop.amountMin !== undefined && drop.amountMax !== undefined}
+                  <span class="mr-1">
+                    ×{drop.amountMin}{#if drop.amountMax !== drop.amountMin}–{drop.amountMax}{/if}
+                  </span>
+                {/if}
                 {#if drop.dropRateMax !== undefined}
                   {formatPercent(drop.dropRate)} – {formatPercent(
                     drop.dropRateMax,

@@ -285,6 +285,7 @@ export interface LayerContext {
   callbacks: {
     onHover: (info: LayerInteractionInfo) => void;
     onClick: (info: LayerInteractionInfo) => void;
+    onDiscoveryClick?: () => void;
   };
   levelFilter: LevelFilter;
   selectedPortalId: string | null;
@@ -298,6 +299,7 @@ export interface LayerContext {
   hoverSelectionData?: AnyMapEntity[];
   hoverZone?: ParentZoneBoundary | null;
   iconAtlas?: IconAtlasData;
+  discoveryPosition?: [number, number] | null;
 }
 
 // deck.gl layer constructors are supplied dynamically by the browser bundle.
@@ -320,6 +322,7 @@ export function createLayers(context: LayerContext): any[] {
     hoverSelectionData = EMPTY_SELECTION,
     hoverZone = null,
     iconAtlas,
+    discoveryPosition = null,
   } = context;
   const {
     ScatterplotLayer,
@@ -1147,6 +1150,19 @@ export function createLayers(context: LayerContext): any[] {
     filled: true,
     pickable: false,
   });
+  const discoveryLocationLayer = new ScatterplotLayer({
+    id: "quest-discovery-location",
+    data: discoveryPosition ? [discoveryPosition] : [],
+    getPosition: (position: [number, number]) => position,
+    getFillColor: [99, 102, 241, 220],
+    getLineColor: [255, 255, 255, 255],
+    getRadius: 10,
+    radiusUnits: "pixels",
+    stroked: true,
+    lineWidthMinPixels: 3,
+    pickable: true,
+    onClick: callbacks.onDiscoveryClick,
+  });
 
   // Later in array = rendered on top (higher priority)
   // Order: background (fallback) → tiles → zones → paths/arcs → movement → entities → highlights
@@ -1180,5 +1196,6 @@ export function createLayers(context: LayerContext): any[] {
     hoverHighlightOutlineLayer,
     hoverHighlightLayer,
     zoneHoverHighlightLayer,
+    discoveryLocationLayer,
   ];
 }

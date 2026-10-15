@@ -137,6 +137,7 @@
 
   // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
+  let discoveryPosition = $state<[number, number] | null>(null);
 
   // Selected zone (for zone popup display)
   let selectedZone = $state<ParentZoneBoundary | null>(null);
@@ -194,6 +195,7 @@
     selectedEntityId = null;
     selectedEntityType = null;
     highlightOverrideGroups = null;
+    discoveryPosition = null;
     // Clear hover state (link was clicked, no longer hovering)
     hoverEntityId = null;
     hoverEntityCategory = null;
@@ -447,6 +449,7 @@
       callbacks: {
         onHover: handleHover,
         onClick: handleClick,
+        onDiscoveryClick: handleFocusDiscovery,
       },
       levelFilter,
       selectedPortalId,
@@ -460,6 +463,7 @@
       hoverSelectionData,
       hoverZone,
       iconAtlas: iconAtlas ?? undefined,
+      discoveryPosition,
     });
 
     deckInstance.setProps({ layers });
@@ -507,6 +511,17 @@
     );
     if (resolved.popup?.type === "entity") resolved.popup.entity = entity;
     applySelection(resolved);
+  }
+
+  function handleDiscoveryLocationChange(position: [number, number] | null) {
+    discoveryPosition = position;
+  }
+
+  function handleFocusDiscovery() {
+    if (!deckInstance || !discoveryPosition) return;
+    const bounds = boundsFromPositions([discoveryPosition]);
+    if (bounds)
+      flyToBounds(deckInstance, bounds, { rightPadding: flyToRightPadding });
   }
 
   /**
@@ -1329,6 +1344,8 @@
           onSelectItem={handleSelectItem}
           onHoverNpc={handleHoverNpc}
           onHoverMonster={handleHoverMonster}
+          onDiscoveryLocationChange={handleDiscoveryLocationChange}
+          onSelectDiscovery={handleFocusDiscovery}
         />
       {/if}
     {:else}
@@ -1413,6 +1430,8 @@
                 onSelectNpc={handleSelectNpc}
                 onSelectMonster={handleSelectMonster}
                 onSelectItem={handleSelectItem}
+                onDiscoveryLocationChange={handleDiscoveryLocationChange}
+                onSelectDiscovery={handleFocusDiscovery}
                 mode="drawer"
               />
             {/if}

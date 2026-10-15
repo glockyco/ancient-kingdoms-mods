@@ -56,3 +56,17 @@ The map canvas MUST show a clear focus indicator when it accepts keyboard input.
 - **WHEN** a visitor tabs to a monster level or resource tier thumb
 - **THEN** assistive technology identifies the filter and whether it controls the minimum or maximum
 - **AND** resource tiers expose readable numeric tier values
+
+### Requirement: Map popups retain location and objective details
+
+Quest popups MUST display every required inventory item and identify discovery objectives by their place rather than their notification message. A discovery objective with exported coordinates MUST have a selectable map marker and a control that focuses it. NPC popups MUST display known sub-zones. Resource drop rows MUST display exported yield ranges beside their chances.
+
+#### Scenario: Delivery quest requires an additional item
+
+- **WHEN** a quest has both gather items and secondary required items
+- **THEN** its map popup displays both sets
+
+#### Scenario: Discovery has a known location
+
+- **WHEN** a selected quest has an exported discovery location
+- **THEN** its popup names the place and provides a control to focus its map marker

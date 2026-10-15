@@ -48,6 +48,8 @@ export interface PopupDropItem {
   quality: number;
   dropRate: number;
   dropRateMax?: number;
+  amountMin?: number;
+  amountMax?: number;
   tooltipHtml: string | null;
   isBestiary?: boolean;
   isRandomItem?: boolean;
@@ -139,6 +141,7 @@ export interface NpcPopupDetails {
   quests: PopupQuestInfo[];
   itemsSold: PopupItemSoldInfo[];
   worldBosses: PopupWorldBoss[];
+  subZones: string[];
   visualAsset: MonsterPopupVisualAsset | null;
 }
 
@@ -391,7 +394,13 @@ export async function loadNpcPopupDetails(
   );
 
   if (!npc) {
-    return { quests: [], itemsSold: [], worldBosses: [], visualAsset: null };
+    return {
+      quests: [],
+      itemsSold: [],
+      worldBosses: [],
+      subZones: [],
+      visualAsset: null,
+    };
   }
 
   let quests: PopupQuestInfo[] = [];
@@ -458,10 +467,20 @@ export async function loadNpcPopupDetails(
     worldBosses = bosses;
   }
 
+  const subZones = await query<{ name: string }>(
+    `SELECT DISTINCT zt.name
+     FROM npc_spawns ns
+     JOIN zone_triggers zt ON zt.id = ns.sub_zone_id
+     WHERE ns.npc_id = ?
+     ORDER BY zt.name`,
+    [npcId],
+  );
+
   return {
     quests,
     itemsSold,
     worldBosses,
+    subZones: subZones.map((zone) => zone.name),
     visualAsset: npc.visual_public_path
       ? {
           publicPath: npc.visual_public_path,
@@ -521,6 +540,8 @@ interface GatheringDropRow {
   quality: number;
   drop_rate: number;
   drop_rate_max: number | null;
+  amount_min: number;
+  amount_max: number;
   tooltip_html: string | null;
 }
 
@@ -546,6 +567,9 @@ export async function loadGatheringPopupDetails(
       i.quality,
       CASE WHEN gr.is_radiant_spark = 1 THEN 0.05 ELSE 1.0 END as drop_rate,
       CASE WHEN gr.is_radiant_spark = 1 THEN 0.25 ELSE NULL END as drop_rate_max,
+      -- Source: server-scripts/GatherItem.cs:446-451
+      1 as amount_min,
+      CASE WHEN gr.is_radiant_spark = 1 THEN 1 ELSE gr.item_reward_amount END as amount_max,
       i.tooltip_html
     FROM gathering_resources gr
     JOIN items i ON i.id = gr.item_reward_id
@@ -560,6 +584,9 @@ export async function loadGatheringPopupDetails(
       i.quality,
       COALESCE(isg.actual_drop_chance, isg.drop_rate) as drop_rate,
       NULL as drop_rate_max,
+      -- Source: server-scripts/GatherItem.cs:549-552
+      1 as amount_min,
+      1 as amount_max,
       i.tooltip_html
     FROM item_sources_gather isg
     JOIN items i ON i.id = isg.item_id
@@ -678,6 +705,8 @@ export async function loadGatheringPopupDetails(
       quality: r.quality,
       dropRate: r.drop_rate,
       dropRateMax: r.drop_rate_max ?? undefined,
+      amountMin: r.amount_min,
+      amountMax: r.amount_max,
       tooltipHtml: r.tooltip_html,
     })),
   };
@@ -1621,6 +1650,8 @@ export interface QuestObjective {
   amount: number;
   quality?: number;
   tooltipHtml?: string | null;
+  position?: [number, number];
+  zoneName?: string | null;
 }
 
 export interface QuestPopupDetails {
@@ -1671,6 +1702,7 @@ interface QuestPopupRow {
   gather_item_3_tooltip: string | null;
   gather_amount_3: number;
   gather_items: string | null;
+  required_items: string | null;
   objectives: string | null;
   equip_items: string | null;
   remove_items_on_complete: number;
@@ -1680,6 +1712,8 @@ interface QuestPopupRow {
   end_npc_name: string | null;
   discovered_location: string | null;
   discovered_location_zone_name: string | null;
+  discovered_location_sub_zone_name: string | null;
+  discovered_location_position: string | null;
 }
 
 /**
@@ -1701,10 +1735,11 @@ export async function loadQuestPopupDetails(
       q.gather_item_1_id, i1.name as gather_item_1_name, i1.quality as gather_item_1_quality, i1.tooltip_html as gather_item_1_tooltip, q.gather_amount_1,
       q.gather_item_2_id, i2.name as gather_item_2_name, i2.quality as gather_item_2_quality, i2.tooltip_html as gather_item_2_tooltip, q.gather_amount_2,
       q.gather_item_3_id, i3.name as gather_item_3_name, i3.quality as gather_item_3_quality, i3.tooltip_html as gather_item_3_tooltip, q.gather_amount_3,
-      q.gather_items, q.objectives, q.equip_items, q.remove_items_on_complete,
+      q.gather_items, q.required_items, q.objectives, q.equip_items, q.remove_items_on_complete,
       q.start_npc_id, q.end_npc_id,
       q.is_find_npc_quest, end_npc.name as end_npc_name,
-      q.discovered_location, dlz.name as discovered_location_zone_name
+      q.discovered_location, dlz.name as discovered_location_zone_name,
+      dlsz.name as discovered_location_sub_zone_name, q.discovered_location_position
     FROM quests q
     LEFT JOIN monsters m1 ON m1.id = q.kill_target_1_id
     LEFT JOIN monsters m2 ON m2.id = q.kill_target_2_id
@@ -1713,6 +1748,7 @@ export async function loadQuestPopupDetails(
     LEFT JOIN items i3 ON i3.id = q.gather_item_3_id
     LEFT JOIN npcs end_npc ON end_npc.id = q.end_npc_id
     LEFT JOIN zones dlz ON dlz.id = q.discovered_location_zone_id
+    LEFT JOIN zone_triggers dlsz ON dlsz.id = q.discovered_location_sub_zone_id
     WHERE q.id = ?
     `,
     [questId],
@@ -1817,13 +1853,14 @@ export async function loadQuestPopupDetails(
     });
   }
 
-  // Gather inventory items from JSON column (Have/Deliver based on remove_items_on_complete)
-  if (quest.gather_items) {
+  // Source: server-scripts/GatherInventoryQuest.cs:IsFulfilled
+  // Both gatherItems and requiredItems contribute inventory objectives.
+  if (quest.gather_items || quest.required_items) {
     try {
-      const gatherItems = JSON.parse(quest.gather_items) as Array<{
-        item_id: string;
-        amount: number;
-      }>;
+      const gatherItems = [
+        ...JSON.parse(quest.gather_items ?? "[]"),
+        ...JSON.parse(quest.required_items ?? "[]"),
+      ] as Array<{ item_id: string; amount: number }>;
       if (gatherItems.length > 0) {
         // Fetch item details
         const itemIds = gatherItems.map((g) => g.item_id);
@@ -1886,14 +1923,26 @@ export async function loadQuestPopupDetails(
     });
   }
 
-  // Discover location objective
+  // Source: server-scripts/LocationQuest.cs:OnLocation
+  // Discovery completes at the quest location, not at its notification text.
   if (quest.discovered_location) {
+    const position = quest.discovered_location_position
+      ? (JSON.parse(quest.discovered_location_position) as {
+          x: number;
+          y: number;
+        })
+      : null;
     objectives.push({
       type: "discover",
       targetId: null,
-      targetName: quest.discovered_location_zone_name
-        ? `${quest.discovered_location} in ${quest.discovered_location_zone_name}`
-        : quest.discovered_location,
+      targetName:
+        quest.discovered_location_sub_zone_name ??
+        quest.discovered_location_zone_name ??
+        quest.discovered_location,
+      zoneName: quest.discovered_location_sub_zone_name
+        ? quest.discovered_location_zone_name
+        : null,
+      position: position ? [position.x, -position.y] : undefined,
       amount: 1,
     });
   }

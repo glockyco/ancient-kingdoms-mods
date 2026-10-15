@@ -14,7 +14,13 @@ import type { ZoneFocusedData } from "./zone-filter";
 class StubLayer {
   readonly id: string;
 
-  constructor(props: { id: string }) {
+  constructor(
+    readonly props: {
+      id: string;
+      data?: unknown;
+      onClick?: () => void;
+    },
+  ) {
     this.id = props.id;
   }
 }
@@ -142,7 +148,34 @@ describe("map golden invariants", () => {
       "hover-highlight-outline",
       "hover-highlight",
       "zone-hover-highlight",
+      "quest-discovery-location",
     ]);
+  });
+
+  test("discovery locations render as selectable point overlays", () => {
+    let focused = false;
+    const position: [number, number] = [10, -20];
+    const layers = createLayers({
+      filtered: emptyFilteredData,
+      visibility: getDefaultLayerVisibility(),
+      modules: deckModules,
+      callbacks: {
+        ...emptyCallbacks,
+        onDiscoveryClick: () => {
+          focused = true;
+        },
+      },
+      levelFilter: emptyLevelFilter,
+      selectedPortalId: null,
+      focusedZoneId: null,
+      discoveryPosition: position,
+    });
+    const discovery = layers.find(
+      (layer) => layer.id === "quest-discovery-location",
+    ) as StubLayer;
+    expect(discovery.props.data).toEqual([position]);
+    discovery.props.onClick?.();
+    expect(focused).toBe(true);
   });
 
   test("partitions each NPC spawn into one marker layer", () => {
