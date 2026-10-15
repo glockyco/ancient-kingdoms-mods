@@ -86,6 +86,12 @@
   const showLevelScaling = $derived(
     getShowLevelScaling(skill, scalingColumns, hasScrollMasteryScaling),
   );
+  // Source: server-scripts/AreaBuffSkill.cs:Apply — a pet-cast area buff skips a target that already has a different buff of its category.
+  const groupHasMercenaryAreaBuff = $derived(
+    (skill.skill_type === "area_buff" &&
+      data.usedByPets.some((pet) => pet.is_mercenary)) ||
+      data.categorySkills.some((other) => other.mercenaryAreaBuff),
+  );
   const mechanicsSectionIds = $derived(
     mechanicsSections({ skill, spec: data.mechanicsSpec, facts }),
   );
@@ -945,6 +951,34 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-4">
+        {#if data.categorySkills.length > 0}
+          <!-- Source: server-scripts/Skills.cs:AddOrRefreshBuff — a new buff expires existing buffs with the same category. -->
+          <p class="text-sm">
+            {#if data.categorySkills.length <= 6}
+              Shares an overwrite group with
+              {#each data.categorySkills as other, index (other.id)}{#if index > 0}{index ===
+                  data.categorySkills.length - 1
+                    ? " and "
+                    : ", "}{/if}<a
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  href="{base}/skills/{other.id}">{other.name}</a
+                >{/each}.
+            {:else}
+              Shares the {skill.buff_category} overwrite group with {data
+                .categorySkills.length} other effects.
+            {/if}
+            A new effect of the group replaces the others on that character.
+            {#if groupHasMercenaryAreaBuff}
+              A mercenary's area buff is the exception. It skips characters who
+              already have another effect of the group.
+            {/if}
+            <a
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              href="{base}/mechanics/combat#duration-and-stacking"
+              >How effects stack</a
+            >
+          </p>
+        {/if}
         {#if hasAnyBonuses}
           <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
             <!-- 1. Duration -->
@@ -957,14 +991,6 @@
                     skill.duration_per_level,
                   )}
                 </dd>
-              </div>
-            {/if}
-            {#if skill.buff_category}
-              <div>
-                <dt class="text-muted-foreground">
-                  {skill.is_bard_song ? "Song Category" : "Overwrite Group"}
-                </dt>
-                <dd class="font-medium">{skill.buff_category}</dd>
               </div>
             {/if}
             <!-- 2. Resource pools -->

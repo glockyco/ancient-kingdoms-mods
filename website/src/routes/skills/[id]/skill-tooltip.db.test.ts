@@ -13,6 +13,22 @@ async function loadSkill(id: string): Promise<SkillDetailPageData> {
   } as Parameters<typeof load>[0])) as SkillDetailPageData;
 }
 
+describe("skill effect categories", () => {
+  it("loads every other skill sharing a category without including itself", async () => {
+    const data = await loadSkill("ossuary_bulwark");
+    expect(data.categorySkills.map((skill) => skill.id)).toEqual([
+      "frenzy_of_the_dead",
+      "undead_frenzy",
+    ]);
+    expect((await loadSkill("archer_shot")).categorySkills).toEqual([]);
+    const food = await loadSkill("bread");
+    expect(food.categorySkills.length).toBeGreaterThan(20);
+    expect(food.categorySkills.some((skill) => skill.id === "bread")).toBe(
+      false,
+    );
+  });
+});
+
 describe("skill game tooltips", () => {
   it("fills every exported skill template without exposing tokens", async () => {
     const ids = query<{ id: string }>(

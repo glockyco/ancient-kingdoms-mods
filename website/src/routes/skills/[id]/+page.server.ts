@@ -42,6 +42,8 @@ export interface SkillDetailPageData {
     cooldown_category: string;
   }[];
   skillCategories: string[];
+  /** Other skills whose effects share this skill's overwrite group. */
+  categorySkills: { id: string; name: string; mercenaryAreaBuff: boolean }[];
   familiarSkills: { id: string; name: string; max_level: number }[];
   usedByMonsters: SkillMonster[];
   usedByPets: SkillPet[];
@@ -414,6 +416,25 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
 
   return {
     skill,
+    // Source: server-scripts/Skills.cs:AddOrRefreshBuff — applying a categorized buff expires existing buffs of the same category.
+    // Source: server-scripts/AreaBuffSkill.cs:Apply — a pet-cast area buff skips a target that already has a different buff of its category.
+    categorySkills: skill.buff_category
+      ? query<{ id: string; name: string; mercenary_area_buff: number }>(
+          `SELECT s.id, s.name,
+             (s.skill_type = 'area_buff' AND EXISTS (
+               SELECT 1 FROM pet_skills ps JOIN pets p ON p.id = ps.pet_id
+               WHERE ps.skill_id = s.id AND p.is_mercenary = 1
+             )) AS mercenary_area_buff
+           FROM skills s
+           WHERE s.buff_category = ? AND s.id != ?
+           ORDER BY s.name`,
+          [skill.buff_category, skill.id],
+        ).map(({ id, name, mercenary_area_buff }) => ({
+          id,
+          name,
+          mercenaryAreaBuff: mercenary_area_buff === 1,
+        }))
+      : [],
     gameTooltip: _fillSkillTooltip(skill),
     effectSummary,
     grantedByItems,
