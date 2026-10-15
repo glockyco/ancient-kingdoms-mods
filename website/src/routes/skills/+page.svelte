@@ -50,7 +50,10 @@
       skill_categories: [
         s.is_spell ? "spell" : null,
         s.is_veteran ? "veteran" : null,
-        s.is_mercenary_skill ? "targets_mercenaries" : null,
+        // Source: server-scripts/AreaBuffSkill.cs:Apply, server-scripts/AreaHealSkill.cs:Apply, server-scripts/TargetHealSkill.cs:Apply — mercenary targeting requires a player caster, not a mercenary's own skill.
+        s.is_mercenary_skill && !s.used_by_mercenaries
+          ? "targets_mercenaries"
+          : null,
         s.is_pet_skill ? "targets_pet" : null,
         s.used_by_mercenaries ? "used_by_mercenaries" : null,
         s.used_by_pets ? "used_by_pets" : null,

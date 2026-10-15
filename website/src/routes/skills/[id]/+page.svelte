@@ -220,7 +220,8 @@
           Targets Pets
         </span>
       {/if}
-      {#if skill.is_mercenary_skill}
+      <!-- Source: server-scripts/AreaBuffSkill.cs:Apply, server-scripts/AreaHealSkill.cs:Apply, server-scripts/TargetHealSkill.cs:Apply — mercenary targeting branches require a player caster. -->
+      {#if skill.is_mercenary_skill && !data.usedByPets.some((pet) => pet.is_mercenary)}
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
         >
