@@ -260,6 +260,12 @@
         </span>
       {/if}
       <span>Max Rank {skill.max_level}</span>
+      <a
+        class="underline underline-offset-4 hover:text-foreground"
+        href="{base}/mechanics/character#skills-and-specializations"
+      >
+        How ranks are learned
+      </a>
     </div>
   </div>
 
