@@ -538,10 +538,10 @@ function formatHealing(
     return parts;
   }
 
-  // Source: server-scripts/AreaHealSkill.cs:Apply — a mercenary area heal reaches only the caster's active mercenaries and restores Rage instead of Mana to Warrior and Rogue mercenaries.
+  // Source: server-scripts/AreaHealSkill.cs:Apply,CheckDistance — a mercenary area heal reaches every active mercenary of the caster at any distance and restores Rage instead of Mana to Warrior and Rogue mercenaries.
   const mercenaryHeal =
     skill.skill_type === "area_heal" && skill.is_mercenary_skill;
-  if (mercenaryHeal) parts.push("heals your mercenaries");
+  if (mercenaryHeal) parts.push("heals your mercenaries at any distance");
 
   // Source: server-scripts/AreaHealSkill.cs:Apply — balancing sets everyone in range to their average share of maximum Health and heals nothing.
   if (skill.is_balance_health) {
@@ -1324,13 +1324,13 @@ export function formatSkillEffect(
         : `buffs your companion or familiar within ${formatNumber(skill.cast_range ?? 0)} yd`,
     );
   }
-  // Source: server-scripts/AreaBuffSkill.cs:Apply — a mercenary area buff reaches only the caster's active mercenaries.
+  // Source: server-scripts/AreaBuffSkill.cs:Apply,CheckDistance — a mercenary area buff reaches every active mercenary of the caster at any distance.
   if (
     skill.skill_type === "area_buff" &&
     skill.is_mercenary_skill &&
     !skill.is_bard_song
   ) {
-    parts.push("buffs your mercenaries");
+    parts.push("buffs your mercenaries at any distance");
   }
   // Source: server-scripts/TargetBuffSkill.cs:477-482 — alsoBuffActivePet when entity == caster, living owned non-familiar/non-mercenary activePet within castRange.Get(skillLevel).
   if (skill.also_buff_active_pet) {

@@ -114,8 +114,9 @@ internal static class SkillEffectFormatter
             parts.Add(skill.can_buff_self && !skill.can_buff_others
                 ? "buffs your companion or familiar"
                 : $"buffs your companion or familiar within {FormatNumber(skill.cast_range)} yd");
+        // Source: server-scripts/AreaBuffSkill.cs:Apply,CheckDistance — a mercenary area buff reaches every active mercenary of the caster at any distance.
         if (skill.skill_type == "area_buff" && skill.is_mercenary_skill && !skill.is_bard_song)
-            parts.Add("buffs your mercenaries");
+            parts.Add("buffs your mercenaries at any distance");
         if (skill.also_buff_active_pet)
             parts.Add($"{(skill.can_buff_others ? "when self-cast, " : "")}also buffs your companion within {FormatNumber(skill.cast_range)} yd");
         if (skill.is_bard_virtuosity)
@@ -259,10 +260,10 @@ internal static class SkillEffectFormatter
             return;
         }
 
-        // Source: server-scripts/AreaHealSkill.cs:Apply — a mercenary area heal reaches only the caster's active mercenaries and restores Rage instead of Mana to Warrior and Rogue mercenaries.
+        // Source: server-scripts/AreaHealSkill.cs:Apply,CheckDistance — a mercenary area heal reaches every active mercenary of the caster at any distance and restores Rage instead of Mana to Warrior and Rogue mercenaries.
         var mercenaryHeal = skill.skill_type == "area_heal" && skill.is_mercenary_skill;
         if (mercenaryHeal)
-            parts.Add("heals your mercenaries");
+            parts.Add("heals your mercenaries at any distance");
 
         // Source: server-scripts/AreaHealSkill.cs:Apply — balancing sets everyone in range to their average share of maximum Health and heals nothing.
         if (skill.is_balance_health)
