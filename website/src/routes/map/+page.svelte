@@ -46,6 +46,7 @@
     createInitialViewState,
   } from "$lib/map/initial-view";
   import { MAP_EVENT_RECOGNIZER_OPTIONS } from "$lib/map/interaction";
+  import { markersInViewport } from "$lib/map/viewport-markers";
   import {
     parseUrlState,
     urlStateToLayerVisibility,
@@ -278,6 +279,24 @@
     y: INITIAL_VIEW_STATE.target[1],
     zoom: INITIAL_VIEW_STATE.zoom,
   });
+  let mapWidth = $state(0);
+  let mapHeight = $state(0);
+  let markerListOpen = $state(false);
+  let viewportMarkers = $derived(
+    markerListOpen
+      ? markersInViewport(
+          filteredData,
+          layerVisibility,
+          levelFilter,
+          focusedZoneId,
+          {
+            ...currentViewState,
+            width: mapWidth,
+            height: mapHeight,
+          },
+        )
+      : { markers: [], total: 0 },
+  );
 
   // Batch view state updates using requestAnimationFrame to reduce reactivity overhead
   let pendingViewState: { x: number; y: number; zoom: number } | null = null;
@@ -474,18 +493,20 @@
     }
 
     if (info.object) {
-      const entity = info.object as AnyMapEntity;
-      const id = getSelectionId(entity);
-      const resolved = resolvePhysicalSelection(entity.type, id, entityData);
-      // Override popup with the clicked entity (for primary highlight)
-      if (resolved.popup?.type === "entity") {
-        resolved.popup.entity = entity;
-      }
-      applySelection(resolved);
+      selectMapMarker(info.object as AnyMapEntity);
     } else {
       // Click on empty space clears selection
       applySelection({ popup: null, highlight: null });
     }
+  }
+  function selectMapMarker(entity: AnyMapEntity) {
+    const resolved = resolvePhysicalSelection(
+      entity.type,
+      getSelectionId(entity),
+      entityData,
+    );
+    if (resolved.popup?.type === "entity") resolved.popup.entity = entity;
+    applySelection(resolved);
   }
 
   /**
@@ -652,7 +673,12 @@
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault();
       searchOpen = true;
-    } else if (e.key === "Escape") {
+    } else if (
+      e.key === "Escape" &&
+      !e.defaultPrevented &&
+      !searchOpen &&
+      !(e.target instanceof Element && e.target.closest('[role="dialog"]'))
+    ) {
       if (selectedEntity || selectedEntityId || selectedZone) {
         applySelection({ popup: null, highlight: null });
       }
@@ -938,6 +964,8 @@
           }
 
           loadingFinished = true;
+          canvas.setAttribute("aria-label", "Interactive world map");
+          canvas.setAttribute("aria-describedby", "map-keyboard-help");
           isLoading = false;
           urlManager.exitPassiveMode();
         }
@@ -1129,9 +1157,15 @@
 
 <div class="dark relative h-screen w-full bg-background text-foreground">
   <h1 class="sr-only">Ancient Kingdoms Interactive Map</h1>
+  <p id="map-keyboard-help" class="sr-only">
+    Use arrow keys to pan and plus or minus to zoom. Open Markers in view to
+    browse and select visible markers with the keyboard.
+  </p>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     use:initDeckMap
+    bind:clientWidth={mapWidth}
+    bind:clientHeight={mapHeight}
     class="absolute inset-0 map-container"
     class:invisible={isLoading}
     style="--sidebar-width: {sidebarWidth}px"
@@ -1177,6 +1211,48 @@
       onZoneFocusChange={handleZoneFocusChange}
       bind:isCollapsed={sidebarCollapsed}
     />
+    <details
+      bind:open={markerListOpen}
+      class="absolute bottom-4 left-4 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg md:left-[calc(var(--sidebar-width)+1rem)]"
+      style="--sidebar-width: {sidebarWidth}px"
+    >
+      <summary
+        class="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2"
+      >
+        Markers in view
+      </summary>
+      <div class="border-t p-2">
+        <p class="px-1 pb-2 text-sm text-muted-foreground">
+          {#if viewportMarkers.total > 0}
+            {viewportMarkers.markers.length} of {viewportMarkers.total} markers. Nearest
+            to the view centre first.
+          {:else}
+            No markers in view for the enabled layers.
+          {/if}
+        </p>
+        <ul
+          aria-label="Markers in view"
+          class="max-h-60 space-y-1 overflow-y-auto"
+        >
+          {#each viewportMarkers.markers as marker (marker.key)}
+            <li>
+              <button
+                type="button"
+                class="w-full rounded px-2 py-2 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+                onclick={() => selectMapMarker(marker.entity)}
+              >
+                <span class="block">{marker.label}</span>
+                <span class="block text-muted-foreground">
+                  {marker.entity.zoneName}
+                  ({marker.entity.position![0].toFixed(0)}, {(-marker.entity
+                    .position![1]).toFixed(0)})
+                </span>
+              </button>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    </details>
 
     {#if hoveredEntity && isDesktop}
       <MapTooltip
@@ -1372,3 +1448,10 @@
     <MapSearch bind:open={searchOpen} onselect={handleSearchSelect} />
   {/if}
 </div>
+
+<style>
+  .map-container :global(canvas:focus-visible) {
+    outline: 3px solid #facc15 !important;
+    outline-offset: -5px;
+  }
+</style>

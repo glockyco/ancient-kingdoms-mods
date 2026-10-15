@@ -4,6 +4,7 @@
 
   interface Props {
     label: string;
+    subject: string;
     min: number;
     max: number;
     value: [number, number];
@@ -13,6 +14,7 @@
 
   let {
     label,
+    subject,
     min,
     max,
     value,
@@ -32,7 +34,7 @@
 </script>
 
 <div class="space-y-1 mb-2">
-  <div class="flex items-center justify-between text-xs">
+  <div class="flex items-center justify-between text-sm">
     <span class="text-muted-foreground">{label}</span>
     <span class="font-mono text-muted-foreground">
       {formatValue(value[0])} – {formatValue(value[1])}
@@ -47,6 +49,11 @@
       value={[...value]}
       onValueChange={handleChange}
       class="w-full"
+      thumbLabel={(index) =>
+        `${index === 0 ? "Minimum" : "Maximum"} ${subject}`}
+      thumbValueText={useRomanNumerals
+        ? (tier) => `Tier ${tier + 1}`
+        : undefined}
     />
   {/key}
 </div>

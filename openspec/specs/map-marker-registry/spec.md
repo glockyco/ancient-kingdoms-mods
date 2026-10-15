@@ -47,3 +47,16 @@ Marker toggles MUST retain the group's render rows and hide or reveal its layer 
 - **WHEN** a visitor excludes a gathering tier
 - **THEN** applicable gathering markers in that tier disappear
 - **AND** radiant spark markers remain subject only to their own visibility control
+
+### Requirement: Visible markers are available without canvas picking
+
+The map MUST provide a keyboard-accessible list of positioned markers in the current viewport for enabled layers. The list MUST respect zone, monster level, resource tier, and NPC role filters, order markers by distance from the view centre, and cap the displayed entries. Each entry MUST select the same physical marker as a pointer click.
+
+#### Scenario: Keyboard user selects a visible marker
+- **WHEN** a visitor opens Markers in view and activates an entry with the keyboard
+- **THEN** the map opens that marker's popup and updates its selection deep link
+- **AND** the list exposes marker names and positions to assistive technology
+
+#### Scenario: Viewport or filters change
+- **WHEN** the map moves or the visitor changes an enabled layer or filter
+- **THEN** the open list reflects the markers inside the new view and current filters

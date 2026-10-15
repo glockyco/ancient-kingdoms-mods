@@ -41,3 +41,12 @@ Selecting a map result MUST show the corresponding map popup or virtual item or 
 #### Scenario: Search selects a quest
 - **WHEN** a visitor selects a quest result with NPC source positions
 - **THEN** the map opens the quest popup and focuses the available source bounds
+
+### Requirement: Search dismissal preserves the underlying map selection
+
+Escape MUST dismiss only the topmost open search layer. Closing map search MUST preserve the selected marker, its popup, and its deep link.
+
+#### Scenario: Escape closes search over a selected marker
+- **WHEN** a visitor opens map search over a selected marker and presses Escape once
+- **THEN** search closes
+- **AND** the marker popup and selection URL remain unchanged

@@ -41,3 +41,18 @@ The interactive map MUST stop pan motion when the reader releases a mouse or tou
 
 - **WHEN** the reader drags the map with the mouse and releases the button
 - **THEN** the camera stops at the release position
+
+### Requirement: Map keyboard controls expose focus and names
+
+The map canvas MUST show a clear focus indicator when it accepts keyboard input. Each range-filter thumb MUST expose its own minimum or maximum purpose and a readable value to assistive technology.
+
+#### Scenario: Keyboard focus enters the map
+
+- **WHEN** a visitor tabs to the map canvas
+- **THEN** the focused canvas has a visible focus indicator
+
+#### Scenario: Keyboard focus enters a range filter
+
+- **WHEN** a visitor tabs to a monster level or resource tier thumb
+- **THEN** assistive technology identifies the filter and whether it controls the minimum or maximum
+- **AND** resource tiers expose readable numeric tier values

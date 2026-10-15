@@ -337,6 +337,15 @@ interface SimpleMarkerOptions<TRow extends MarkerRow> {
   layer: MarkerLayerOptions;
   match: (row: TRow) => boolean;
   selection?: SelectionStrategy<TRow>;
+  displayName?: (row: TRow) => string;
+}
+
+/** A trap's game object is named "Trap", so its effect identifies it. */
+export function trapDisplayName(trap: TrapMapEntity): string {
+  return (
+    trap.effectSkillName ??
+    (trap.teleportZoneName ? `Teleport to ${trap.teleportZoneName}` : "Trap")
+  );
 }
 
 const simpleMarker = <TRow extends MarkerRow>({
@@ -360,6 +369,7 @@ const simpleMarker = <TRow extends MarkerRow>({
     field: (row: TRow) => row.id,
   },
   entity,
+  displayName,
 }: SimpleMarkerOptions<TRow>): MarkerDef<TRow> => ({
   id,
   entity,
@@ -379,6 +389,7 @@ const simpleMarker = <TRow extends MarkerRow>({
   z,
   filteredDataKey,
   layer,
+  displayName,
 });
 
 type AnyMarkerDef =
@@ -625,6 +636,7 @@ export const markerRegistry = {
       sidebarSection: "interactables",
     },
     match: (row) => row.type === "trap",
+    displayName: trapDisplayName,
   }),
   houses: simpleMarker<HouseMapEntity>({
     id: "houses",

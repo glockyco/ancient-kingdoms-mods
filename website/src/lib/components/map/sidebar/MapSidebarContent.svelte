@@ -234,6 +234,7 @@
   >
     <LevelFilter
       label="Level"
+      subject="monster level"
       min={levelRanges.monsterMin}
       max={levelRanges.monsterMax}
       value={[levelFilter.monsterMin, levelFilter.monsterMax]}
@@ -306,6 +307,7 @@
   >
     <LevelFilter
       label="Tier"
+      subject="resource tier"
       min={levelRanges.gatheringMin}
       max={levelRanges.gatheringMax}
       value={[levelFilter.gatheringMin, levelFilter.gatheringMax]}

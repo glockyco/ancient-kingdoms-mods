@@ -16,7 +16,11 @@
     getNpcRoles,
     hasNpcRole,
   } from "$lib/utils/tooltip";
-  import { markerRegistry, resolveMarker } from "$lib/map/marker-registry";
+  import {
+    markerRegistry,
+    resolveMarker,
+    trapDisplayName,
+  } from "$lib/map/marker-registry";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
 
   interface Props {
@@ -60,13 +64,7 @@
       return crafting.isCookingOven ? "Cooking Oven" : "Forge";
     }
     if (entity.type === "trap") {
-      const trap = entity as TrapMapEntity;
-      return (
-        trap.effectSkillName ??
-        (trap.teleportZoneName
-          ? `Teleport to ${trap.teleportZoneName}`
-          : "Trap")
-      );
+      return trapDisplayName(entity as TrapMapEntity);
     }
     return entity.name;
   }
