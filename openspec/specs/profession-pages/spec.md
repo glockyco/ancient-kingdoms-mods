@@ -36,7 +36,7 @@ Migrated pages with a numeric mastery payoff SHALL show a labeled curve at the r
 
 ### Requirement: Mining presents its action and inventory
 
-The Mining page SHALL describe the pickaxe, ore-success rule, skill-gain rule, node inventory, locations, extra gem rolls, and ore uses. It SHALL link available resource locations to the map.
+The Mining page SHALL describe the pickaxe, ore-success rule, skill-gain rule, node inventory, locations, extra gem rolls, and ore uses. It SHALL link available resource locations to the map. Ore respawn times SHALL show the random range from half to the full configured wait.
 
 #### Scenario: Player inspects ore
 

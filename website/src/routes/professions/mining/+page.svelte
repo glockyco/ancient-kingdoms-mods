@@ -8,7 +8,7 @@
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import { formatDuration } from "$lib/utils/format";
+  import { formatGatheringRespawn } from "$lib/utils/format";
   import {
     DWARF_STARTING_MINING_PERCENT,
     MINING_SUCCESS_FLOOR,
@@ -370,9 +370,10 @@
               <td class="p-3 text-right tabular-nums"
                 >{ore.gathering_exp.toLocaleString()}</td
               >
-              <td class="p-3 text-right tabular-nums text-muted-foreground"
-                >{formatDuration(ore.respawn_time)}</td
-              >
+              <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — depleted minerals respawn between half and the full wait. -->
+              <td class="p-3 text-right tabular-nums text-muted-foreground">
+                {formatGatheringRespawn("Mineral", ore.respawn_time)}
+              </td>
               <td class="p-3 text-right tabular-nums">{ore.node_count}</td>
             </tr>
           {/each}
