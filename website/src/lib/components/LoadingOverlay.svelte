@@ -4,22 +4,18 @@
   // Delay showing the spinner to avoid flash on fast navigations
   const DELAY_MS = 150;
   let showSpinner = $state(false);
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
+  // Each navigation change cancels the pending timer, so a timer started by a
+  // navigation that a second one replaced cannot show the spinner afterwards.
   $effect(() => {
-    if ($navigating) {
-      // Start timer to show spinner after delay
-      timeoutId = setTimeout(() => {
-        showSpinner = true;
-      }, DELAY_MS);
-    } else {
-      // Navigation complete, hide spinner and clear timer
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
+    if (!$navigating) {
       showSpinner = false;
+      return;
     }
+    const timeoutId = setTimeout(() => {
+      showSpinner = true;
+    }, DELAY_MS);
+    return () => clearTimeout(timeoutId);
   });
 </script>
 
