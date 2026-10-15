@@ -622,6 +622,13 @@
     </div>
   {/if}
 
+  {#if isHydrated && allRowModel.rows.length < data.length}
+    <p role="status" class="pb-3 text-sm text-muted-foreground">
+      {allRowModel.rows.length.toLocaleString()} of {data.length.toLocaleString()}
+      results
+    </p>
+  {/if}
+
   <div
     bind:this={tableContainer}
     class="data-table-container rounded-md border {persistentScrollbar
