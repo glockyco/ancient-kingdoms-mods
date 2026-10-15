@@ -1379,28 +1379,30 @@
       </Card.Header>
       <Card.Content>
         <div class="overflow-x-auto">
-          <table class="w-full text-sm table-fixed">
+          <table
+            class="w-full text-sm whitespace-nowrap [&_th]:whitespace-normal max-md:[&_th]:min-w-28"
+          >
             <thead>
               <tr class="border-b">
                 <th
-                  class="py-2 pr-4 text-left font-medium text-muted-foreground"
+                  class="rank-cell sticky left-0 z-10 min-w-16 py-2 px-2.5 text-left font-medium text-muted-foreground"
                   >Rank</th
                 >
                 {#if hasScrollMasteryScaling}
                   <th
-                    class="py-2 px-3 font-medium text-muted-foreground text-right"
+                    class="py-2 px-2.5 font-medium text-muted-foreground text-right"
                     >Scroll Mastery Needed</th
                   >
                 {/if}
                 {#each scalingColumns as col (col.label)}
                   <th
-                    class="py-2 px-3 font-medium text-muted-foreground text-right"
+                    class="py-2 px-2.5 font-medium text-muted-foreground text-right"
                     >{col.label}</th
                   >
                 {/each}
                 {#if hasScrollDispelScaling}
                   <th
-                    class="py-2 px-3 font-medium text-muted-foreground text-right"
+                    class="py-2 px-2.5 font-medium text-muted-foreground text-right"
                     >Cleanse Resist Reduction</th
                   >
                 {/if}
@@ -1409,19 +1411,22 @@
             <tbody>
               {#each Array.from({ length: skill.max_level }, (_, i) => i + 1) as level (level)}
                 <tr class="border-b border-border/50 even:bg-muted/40">
-                  <td class="py-1.5 pr-4 font-medium">{level}</td>
+                  <td
+                    class="rank-cell sticky left-0 z-10 py-1.5 px-2.5 font-medium"
+                    >{level}</td
+                  >
                   {#if hasScrollMasteryScaling}
-                    <td class="py-1.5 px-3 text-right text-muted-foreground"
+                    <td class="py-1.5 px-2.5 text-right text-muted-foreground"
                       >{formatMasteryNeeded(level)}</td
                     >
                   {/if}
                   {#each scalingColumns as col (col.label)}
-                    <td class="py-1.5 px-3 text-right"
+                    <td class="py-1.5 px-2.5 text-right"
                       >{computeScalingValue(col, level)}</td
                     >
                   {/each}
                   {#if hasScrollDispelScaling}
-                    <td class="py-1.5 px-3 text-right"
+                    <td class="py-1.5 px-2.5 text-right"
                       >{level} percentage point{level === 1 ? "" : "s"}</td
                     >
                   {/if}
@@ -1602,3 +1607,20 @@
     </Card.Root>
   {/if}
 </div>
+
+<style>
+  /* The sticky rank column covers scrolled cells, so it repaints the page,
+     the card's muted tint and the even-row stripe as opaque layers. */
+  .rank-cell {
+    --card-tint: color-mix(in oklab, var(--muted) 30%, transparent);
+    background-color: var(--background);
+    background-image: linear-gradient(var(--card-tint), var(--card-tint));
+  }
+
+  tr:nth-child(even) > .rank-cell {
+    --row-tint: color-mix(in oklab, var(--muted) 40%, transparent);
+    background-image:
+      linear-gradient(var(--row-tint), var(--row-tint)),
+      linear-gradient(var(--card-tint), var(--card-tint));
+  }
+</style>
