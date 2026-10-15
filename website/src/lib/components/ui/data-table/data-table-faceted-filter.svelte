@@ -77,7 +77,10 @@
     </Popover.Trigger>
     <Popover.Content class="w-[250px] p-0" align="start">
       <Command.Root>
-        <Command.Input placeholder={title} />
+        <Command.Input
+          placeholder="Search {title.toLowerCase()} options"
+          aria-label="{title} filter"
+        />
         <Command.List>
           <Command.Empty>No results found.</Command.Empty>
           <Command.Group>
