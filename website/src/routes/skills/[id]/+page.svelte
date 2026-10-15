@@ -276,7 +276,7 @@
   {#if data.visualAsset}
     <Card.Root id="appearance" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <ImageIcon class="h-5 w-5 text-purple-500" />
           Appearance
         </Card.Title>
@@ -301,7 +301,7 @@
   {#if data.effectSummary || skill.tooltip_template}
     <Card.Root id="description" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <ScrollText class="h-5 w-5 text-sky-500" />
           Description
         </Card.Title>
@@ -389,7 +389,7 @@
   {#if hasRequirements}
     <Card.Root id="requirements" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Target class="h-5 w-5 text-orange-500" />
           Requirements
         </Card.Title>
@@ -504,7 +504,7 @@
   {#if showCostTiming}
     <Card.Root id="cost-timing" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Clock class="h-5 w-5 text-blue-500" />
           Cost & Timing
         </Card.Title>
@@ -621,7 +621,7 @@
   {#if hasDamage}
     <Card.Root id="damage" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Swords class="h-5 w-5 text-red-500" />
           Damage
         </Card.Title>
@@ -712,7 +712,7 @@
   {#if (hasLinearValue(skill.heals_health) || hasLinearValue(skill.heals_mana) || skill.is_balance_health) && !skill.is_resurrect_skill}
     <Card.Root id="healing" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Heart class="h-5 w-5 text-green-500" />
           Healing
         </Card.Title>
@@ -767,7 +767,7 @@
   {#if hasCrowdControl}
     <Card.Root id="crowd-control" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Zap class="h-5 w-5 text-yellow-500" />
           Crowd Control
         </Card.Title>
@@ -823,7 +823,7 @@
   {#if skill.skill_type === "summon" || skill.skill_type === "summon_monsters"}
     <Card.Root id="summon-info" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Ghost class="h-5 w-5 text-violet-500" />
           Summon Info
         </Card.Title>
@@ -939,7 +939,7 @@
   {#if hasBuffEffects}
     <Card.Root id="buff-debuff" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Sparkles class="h-5 w-5 text-purple-500" />
           Buff/Debuff Effects
         </Card.Title>
@@ -1346,7 +1346,7 @@
   {#if showLevelScaling}
     <Card.Root id="level-scaling" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <TrendingUp class="h-5 w-5 text-emerald-500" />
           Rank Scaling
         </Card.Title>
@@ -1423,7 +1423,7 @@
   {#if data.grantedByItems.length > 0}
     <Card.Root id="granted-by-items" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Gem class="h-5 w-5 text-amber-500" />
           Granted by Items
         </Card.Title>
@@ -1455,7 +1455,7 @@
   {#if skill.player_classes.length > 0}
     <Card.Root id="learned-by-classes" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Star class="h-5 w-5 text-indigo-500" />
           Learned by Classes
         </Card.Title>
@@ -1481,7 +1481,7 @@
   {#if data.appliedByTraps.length > 0}
     <Card.Root id="applied-by-traps" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <TriangleAlert class="h-5 w-5 text-rose-600" />
           Applied by Traps ({data.appliedByTraps.reduce(
             (total, usage) => total + usage.trap_count,
@@ -1518,7 +1518,7 @@
   {#if data.usedByPets.length > 0}
     <Card.Root id="used-by-pets" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Cat class="h-5 w-5 text-teal-500" />
           Used by Pets
         </Card.Title>
@@ -1544,7 +1544,7 @@
   {#if data.usedByMonsters.length > 0}
     <Card.Root id="used-by-monsters" class="bg-muted/30">
       <Card.Header>
-        <Card.Title class="flex items-center gap-2">
+        <Card.Title level={2} class="flex items-center gap-2">
           <Skull class="h-5 w-5 text-red-500" />
           Used by Monsters ({data.usedByMonsters.length})
         </Card.Title>

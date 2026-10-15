@@ -141,7 +141,7 @@
 
 <Card.Root {id} class="bg-muted/30">
   <Card.Header>
-    <Card.Title class="flex items-center gap-2">
+    <Card.Title level={2} class="flex items-center gap-2">
       <FlaskConical class="h-5 w-5 text-cyan-500" />
       Mechanics
     </Card.Title>
