@@ -112,6 +112,19 @@
   let globalFilter = $state("");
   let isHydrated = $state(false);
   let tableContainer: HTMLDivElement;
+  let hasHorizontalOverflow = $state(false);
+
+  function observeOverflow(node: HTMLDivElement) {
+    const updateOverflow = () => {
+      hasHorizontalOverflow = node.scrollWidth > node.clientWidth;
+    };
+    updateOverflow();
+    const observer = new ResizeObserver(updateOverflow);
+    observer.observe(node);
+    const tableElement = node.querySelector("table");
+    if (tableElement) observer.observe(tableElement);
+    return { destroy: () => observer.disconnect() };
+  }
 
   async function changePage(page: number) {
     table.setPageIndex(page - 1);
@@ -434,6 +447,12 @@
   const allRowModel = $derived(table.getPrePaginationRowModel());
   const pageCount = $derived(table.getPageCount());
   const allColumns = $derived(table.getAllColumns());
+  const identifierColumnId = $derived(
+    table
+      .getVisibleLeafColumns()
+      .find((column) => column.id === "name" || column.id.endsWith("_name"))
+      ?.id ?? table.getVisibleLeafColumns()[0]?.id,
+  );
 
   const toggleableColumns = $derived(
     allColumns.filter((col) => col.getCanHide()),
@@ -556,9 +575,25 @@
       })
       .join(" "),
   );
+
+  const mobileGridTemplateColumns = $derived(
+    columns
+      .filter((col) => {
+        const id = "accessorKey" in col ? col.accessorKey : col.id;
+        return visibleColumnIds.has(id as string);
+      })
+      .map((col) => {
+        const id = "accessorKey" in col ? col.accessorKey : col.id;
+        if (id === identifierColumnId) return "min(16rem, 55vw)";
+        if (col.size) return `${col.size}px`;
+        if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
+        return "auto";
+      })
+      .join(" "),
+  );
 </script>
 
-<div>
+<div class:zebra-stripe={zebraStripe}>
   {#if !isHydrated}
     <div
       class="loading-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
@@ -629,22 +664,32 @@
     </p>
   {/if}
 
+  {#if hasHorizontalOverflow}
+    <p class="pb-2 text-sm text-muted-foreground">
+      Scroll horizontally for more columns.
+    </p>
+  {/if}
+
   <div
     bind:this={tableContainer}
+    use:observeOverflow
     class="data-table-container rounded-md border {persistentScrollbar
       ? 'overflow-x-scroll'
       : 'overflow-x-auto'} {className}"
   >
     <Table.Root
-      class="min-w-full w-max grid"
-      style="grid-template-columns: {gridTemplateColumns}"
+      class="data-table-grid min-w-full w-max grid"
+      style="grid-template-columns: {gridTemplateColumns}; --mobile-grid-template-columns: {mobileGridTemplateColumns}"
     >
       <Table.Header class="contents">
         {#each headerGroups as headerGroup (headerGroup.id)}
           <Table.Row class="contents">
             {#each headerGroup.headers as header (header.id)}
               <Table.Head
-                class="whitespace-nowrap"
+                class="whitespace-nowrap {header.column.id ===
+                identifierColumnId
+                  ? 'identifier-cell'
+                  : ''}"
                 aria-sort={sorting[0]?.id === header.column.id
                   ? sorting[0].desc
                     ? "descending"
@@ -703,7 +748,12 @@
                 : ''}"
             >
               {#each row.getVisibleCells() as cell (cell.id)}
-                <Table.Cell class="whitespace-nowrap">
+                <Table.Cell
+                  class="whitespace-nowrap {cell.column.id ===
+                  identifierColumnId
+                    ? 'identifier-cell'
+                    : ''}"
+                >
                   {#if renderCell}
                     {@render renderCell({ cell, row })}
                   {:else}
@@ -789,5 +839,35 @@
 <style>
   .data-table-container {
     scroll-margin-top: 6rem;
+  }
+
+  @media (max-width: 639px) {
+    .data-table-container :global(.data-table-grid) {
+      grid-template-columns: var(--mobile-grid-template-columns) !important;
+    }
+
+    .data-table-container :global(.identifier-cell) {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      background-color: var(--background);
+      box-shadow: 1px 0 var(--border);
+    }
+
+    .data-table-container :global(.identifier-cell .whitespace-nowrap) {
+      white-space: normal;
+    }
+
+    .zebra-stripe
+      .data-table-container
+      :global(tr:nth-child(even) > .identifier-cell) {
+      background-image: linear-gradient(
+        color-mix(in oklab, var(--muted) 30%, transparent),
+        color-mix(in oklab, var(--muted) 30%, transparent)
+      );
+    }
   }
 </style>
