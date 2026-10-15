@@ -90,13 +90,33 @@
 <ModeWatcher />
 <LoadingOverlay />
 <SearchPalette />
+<a href="#main-content" class="skip-link">Skip to content</a>
 {#if !isMap}
   <SiteHeader search={!isHome} homeLayout={isHome} />
 {/if}
-<main>
+<main id="main-content" tabindex="-1">
   {#key page.url.pathname}
     <RoundingScope>
       {@render children()}
     </RoundingScope>
   {/key}
 </main>
+
+<style>
+  .skip-link {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+    transform: translateY(calc(-100% - 1rem));
+    border-radius: var(--radius);
+    background: var(--background);
+    padding: 0.75rem 1rem;
+    color: var(--foreground);
+  }
+
+  .skip-link:focus {
+    transform: none;
+    outline: 2px solid var(--ring);
+  }
+</style>

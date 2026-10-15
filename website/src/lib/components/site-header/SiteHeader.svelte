@@ -142,8 +142,10 @@
                 aria-labelledby={`nav-${group.id}`}
               >
                 <h2 id={`nav-${group.id}`}>
+                  <span class="desktop-heading">{group.label}</span>
                   <button
                     type="button"
+                    class="mobile-heading"
                     aria-expanded={expanded === group.id}
                     onclick={() =>
                       (expanded = expanded === group.id ? null : group.id)}
@@ -404,7 +406,7 @@
   }
   .group h2 button {
     all: unset;
-    display: block;
+    display: none;
     width: 100%;
     cursor: default;
   }
@@ -615,7 +617,11 @@
       padding: 0;
       border: 0;
     }
+    .desktop-heading {
+      display: none;
+    }
     .group h2 button {
+      display: block;
       padding: 0.75rem var(--entry-pad) 0.4rem;
     }
     .accordion .group h2 button {
