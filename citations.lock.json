@@ -2288,14 +2288,6 @@
     "NecromancerDeathBloomSkill.cs:healthCostPercent": {
       "span": 0
     },
-    "NecromancerPetBuffSkill.cs:24-28": {
-      "sha256": "88d63510f3a0bcb6140601c34200c4107e904e99f2836b26c85cad44bc622665",
-      "span": 5
-    },
-    "NecromancerPetBuffSkill.cs:6-28": {
-      "sha256": "779f2df425d68c3a847d48f5dc9643f14d396df085ebe3ad88a5f85fdf5eaeb9",
-      "span": 23
-    },
     "NecromancerPetBuffSkill.cs:HasLivingCombatPet": {
       "span": 0
     },
@@ -4724,10 +4716,6 @@
     "TargetBuffSkill.cs:434-445": {
       "sha256": "f0d7421497c5fba571a354805bd1f4dff57b1f2454eb86f234ce4e9fb6884a13",
       "span": 12
-    },
-    "TargetBuffSkill.cs:477-480": {
-      "sha256": "936fcf8e83f371ced2d4bec215ca50aa1771427a311c87be10167d586d8f2c31",
-      "span": 4
     },
     "TargetBuffSkill.cs:477-482": {
       "sha256": "6fd2c36faff6263fba4e2db06caa0b430c6ca6d0524c3a623be5666fc25f9d18",
