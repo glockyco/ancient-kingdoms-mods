@@ -341,6 +341,21 @@ function pageDocs(): IndexedDoc[] {
   docs.push(
     page("Map", "/map", "interactive world map locations"),
     page("Game Mechanics", "/mechanics", "rules reference"),
+    page(
+      "Healing Mechanics",
+      "/mechanics/combat#healing",
+      "healing rules wisdom heal bonus critical heals lifetap",
+    ),
+    page(
+      "Wisdom Heal Bonus",
+      "/mechanics/combat#heal-bonus",
+      "healing mechanics combat",
+    ),
+    page(
+      "Character Build Attributes",
+      "/mechanics/character#attributes",
+      "six attributes strength dexterity constitution intelligence wisdom charisma healing heal bonus rules",
+    ),
   );
   return docs;
 }

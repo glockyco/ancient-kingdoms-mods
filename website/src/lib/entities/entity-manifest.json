@@ -300,8 +300,8 @@
   },
   {
     "id": "guide_topic",
-    "label": "Guide Topic",
-    "pluralLabel": "Guide Topics",
+    "label": "Topic",
+    "pluralLabel": "Topics",
     "order": 240,
     "overviewHref": "/mechanics",
     "detailPrefix": null,

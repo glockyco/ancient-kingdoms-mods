@@ -80,6 +80,17 @@ Sub-zone names SHALL match their parent zone. Chests, traps, portals, workstatio
 - **WHEN** a visitor searches for "experience"
 - **THEN** a result opens the Experience mechanics page
 
+#### Scenario: A visitor searches for healing
+
+- **WHEN** a visitor searches for "healing"
+- **THEN** the Healing skill ranks first
+- **AND** a result opens the Combat healing section
+
+#### Scenario: A visitor searches for the Wisdom heal bonus
+
+- **WHEN** a visitor searches for "wisdom heal bonus"
+- **THEN** results open the Combat Wisdom Heal Bonus section and the Character Build attribute rules
+
 ### Requirement: Ranking follows one ordered contract
 
 The ranking SHALL apply these rules:
@@ -125,7 +136,7 @@ The index SHALL NOT contain item comments or other developer notes that the site
 
 ### Requirement: Guide articles keep their titles and sections
 
-Each Adventurer's Guide article SHALL be a result with its own title, and SHALL open its mapped section. A result for the page that contains the section SHALL NOT replace the article result.
+Each Adventurer's Guide article SHALL be a result with its own title, and SHALL open its mapped section. A result for the page that contains the section SHALL NOT replace the article result. These results SHALL use the type label "Topic" because their destinations include mechanics and class pages.
 
 #### Scenario: A visitor searches for a guide title
 

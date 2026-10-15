@@ -173,6 +173,20 @@ describe("ranking contract", () => {
     });
   });
 
+  test("healing sections are discoverable without displacing the skill", () => {
+    const results = search("healing", "palette", 20);
+    expect(results[0]).toMatchObject({ kind: "skill", name: "Healing" });
+    expect(results.map((doc) => doc.href)).toContain(
+      "/mechanics/combat#healing",
+    );
+    expect(search("wisdom heal bonus").map((doc) => doc.href)).toEqual(
+      expect.arrayContaining([
+        "/mechanics/combat#heal-bonus",
+        "/mechanics/character#attributes",
+      ]),
+    );
+  });
+
   test("an area name finds its zone", () => {
     expect(search("Milldenn").map((doc) => doc.href)).toContain(
       "/zones/crescent_coast",
