@@ -67,8 +67,9 @@
       label: `${ROMAN[ore.tier]} ${ore.name}`,
       chanceAt: (skillPercent: number) =>
         rawMiningSuccessChance(ore.tier, pickaxeQuality, skillPercent),
+      // Source: server-scripts/GatherItem.cs:588-596 — no tier grants skill at the cap.
       isEffortlessAt: (skillPercent: number) =>
-        isMiningEffortless(ore.tier, skillPercent),
+        skillPercent >= 100 || isMiningEffortless(ore.tier, skillPercent),
     })),
   );
 

@@ -285,16 +285,21 @@
             Gain amount per increase
           </div>
           <div class="text-sm leading-6">
-            <div>
-              Craft: {CRAFT_MASTERY_GAIN_MIN.toFixed(
-                2,
-              )}%–{CRAFT_MASTERY_GAIN_MAX.toFixed(2)}%
-            </div>
-            <div>
-              Use: {USE_MASTERY_GAIN_MIN.toFixed(
-                2,
-              )}%–{USE_MASTERY_GAIN_MAX.toFixed(2)}%
-            </div>
+            <!-- Source: server-scripts/Player.cs:13546; server-scripts/ScrollItem.cs:108 — crafting and use stop granting Scroll Mastery at the cap. -->
+            {#if skillLevel >= 100}
+              <div>No further skill gain</div>
+            {:else}
+              <div>
+                Craft: {CRAFT_MASTERY_GAIN_MIN.toFixed(
+                  2,
+                )}%–{CRAFT_MASTERY_GAIN_MAX.toFixed(2)}%
+              </div>
+              <div>
+                Use: {USE_MASTERY_GAIN_MIN.toFixed(
+                  2,
+                )}%–{USE_MASTERY_GAIN_MAX.toFixed(2)}%
+              </div>
+            {/if}
           </div>
         </div>
       </div>

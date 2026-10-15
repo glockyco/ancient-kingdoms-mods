@@ -77,6 +77,8 @@ export function alchemySkillGainRange(
   level: number,
   skillPercent: number,
 ): { min: number; max: number } | null {
+  // Source: server-scripts/Player.cs:13557 — Alchemy cannot increase at the cap.
+  if (skillPercent >= mechanics.capPercent) return null;
   if (!isAlchemyCraftable(level, skillPercent)) return null;
   if (isAlchemyEffortless(level, skillPercent)) return null;
   const raw = rawAlchemySuccessChance(level, skillPercent);

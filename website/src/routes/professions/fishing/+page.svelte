@@ -651,9 +651,15 @@
             Fishing gain per increase
           </div>
           <div class="text-2xl font-semibold">
-            {masteryGainRange.min.toFixed(2)}% – {masteryGainRange.max.toFixed(
-              2,
-            )}%
+            {#if masteryGainChance > 0}
+              {masteryGainRange.min.toFixed(2)}% – {masteryGainRange.max.toFixed(
+                2,
+              )}%
+            {:else if skillLevel >= 100}
+              <span class="text-base">No further skill gain</span>
+            {:else}
+              <span class="text-base">No skill gain at this spot</span>
+            {/if}
           </div>
         </div>
         <div class="rounded-lg border p-4">

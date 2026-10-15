@@ -8,6 +8,8 @@
   import {
     PROFESSION_MECHANICS,
     rawTierSuccessChance,
+    isEffortlessAtTier,
+    skillGainChance,
   } from "$lib/data/professions/mechanics";
 
   let { data } = $props();
@@ -46,19 +48,21 @@
     return "text-red-500";
   }
 
-  // Skill gain chance: 90% at 0 skill, down to 40% at 100% skill (updated v0.9.3.6)
+  // Source: server-scripts/GatherItem.cs:567-576 — capped skill uses the shared quadratic gain rule.
   function getSkillGainChance(): number {
-    const skill = skillLevel / 100;
-    return Math.max(0, (0.9 - skill / 2) * 100);
+    return (
+      skillGainChance(PROFESSION_MECHANICS.herbalism.skillGain, skillLevel) *
+      100
+    );
   }
 
-  // Skill gain amount: Random(1-3) / (successChance * 1000)
-  // Returns [min, max] as percentages
+  // Source: server-scripts/GatherItem.cs:567-576 — no gain at the cap, otherwise 1-3 divided by success and 1000.
   function getSkillGainAmount(successChance: number): [number, number] {
-    if (successChance <= 0) return [0, 0];
+    if (successChance <= 0 || skillLevel >= 100) return [0, 0];
     const successFraction = successChance / 100;
-    const min = (1 / (successFraction * 1000)) * 100;
-    const max = (3 / (successFraction * 1000)) * 100;
+    const { range, divisor } = PROFESSION_MECHANICS.herbalism.skillGain;
+    const min = (range[0] / (successFraction * divisor)) * 100;
+    const max = (range[1] / (successFraction * divisor)) * 100;
     return [min, max];
   }
 
@@ -66,17 +70,14 @@
   // A successful gather grants no mastery once skill is strictly above 25% for tier I,
   // 50% for tier II, or 75% for tier III.
   function isEffortless(resourceLevel: number): boolean {
-    const skill = skillLevel / 100;
-    switch (resourceLevel) {
-      case 0:
-        return skill > 0.25;
-      case 1:
-        return skill > 0.5;
-      case 2:
-        return skill > 0.75;
-      default:
-        return false;
-    }
+    return (
+      skillLevel >= 100 ||
+      isEffortlessAtTier(
+        PROFESSION_MECHANICS.herbalism.effortless,
+        resourceLevel,
+        skillLevel,
+      )
+    );
   }
 </script>
 

@@ -74,7 +74,7 @@ describe("profession mechanics record", () => {
   test("herbalism gain uses a quadratic chance and strict effortless tiers", () => {
     const mechanics = PROFESSION_MECHANICS.herbalism;
     expect(skillGainChance(mechanics.skillGain, 50)).toBeCloseTo(0.8);
-    expect(skillGainChance(mechanics.skillGain, 100)).toBeCloseTo(0.35);
+    expect(skillGainChance(mechanics.skillGain, 100)).toBe(0);
     expect(isEffortlessAtTier(mechanics.effortless, 1, 50)).toBe(false);
     expect(isEffortlessAtTier(mechanics.effortless, 1, 51)).toBe(true);
     expect(isEffortlessAtTier(mechanics.effortless, 3, 100)).toBe(false);
@@ -115,4 +115,15 @@ describe("profession mechanics record", () => {
       linearProcChance(PROFESSION_MECHANICS.radiant_seeker.procChance, 100),
     ).toBeCloseTo(0.25);
   });
+
+  test.each(["alchemy", "cooking", "herbalism", "mining"] as const)(
+    "%s gain follows the quadratic curve until the cap",
+    (profession) => {
+      const rule = PROFESSION_MECHANICS[profession].skillGain;
+      expect(skillGainChance(rule, 0)).toBeCloseTo(0.95);
+      expect(skillGainChance(rule, 50)).toBeCloseTo(0.8);
+      expect(skillGainChance(rule, 99)).toBeCloseTo(0.36194);
+      expect(skillGainChance(rule, 100)).toBe(0);
+    },
+  );
 });

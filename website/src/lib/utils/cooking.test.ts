@@ -98,9 +98,9 @@ describe("isCookingEffortless (strict > thresholds)", () => {
 });
 
 describe("cookingSkillGainChancePercent", () => {
-  test("follows the 95%-to-35% quadratic curve", () => {
+  test("follows the quadratic curve below the cap and stops at mastery", () => {
     expect(cookingSkillGainChancePercent(0)).toBeCloseTo(95, 5);
-    expect(cookingSkillGainChancePercent(100)).toBeCloseTo(35, 5);
+    expect(cookingSkillGainChancePercent(100)).toBe(0);
     expect(cookingSkillGainChancePercent(50)).toBeCloseTo(80, 5);
   });
 });
@@ -119,9 +119,15 @@ describe("cookingSkillGainRange", () => {
   });
 
   test("food gain range is Random(1-3) / (rawSuccess * 3000)", () => {
-    const range = cookingSkillGainRange(4, 100, true);
+    const range = cookingSkillGainRange(3, 99, true);
     expect(range).not.toBeNull();
     expect(range!.min).toBeCloseTo((1 / 3000) * 100, 5);
     expect(range!.max).toBeCloseTo((3 / 3000) * 100, 5);
+  });
+
+  test("every food tier stops granting skill at the cap", () => {
+    for (let tier = 0; tier <= 4; tier++) {
+      expect(cookingSkillGainRange(tier, 100, true)).toBeNull();
+    }
   });
 });

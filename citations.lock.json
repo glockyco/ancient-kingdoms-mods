@@ -1578,9 +1578,17 @@
       "sha256": "c70560ccbb95596e87213408cb7981d66b42bfdea48747180942ef083fcbfa18",
       "span": 9
     },
+    "GatherItem.cs:567-576": {
+      "sha256": "cf8c4d58fa0b9a8c373efc080536edd7ace9cb3ba0f05b5312a4f6d768f51600",
+      "span": 10
+    },
     "GatherItem.cs:573-575": {
       "sha256": "2c03fda1321a01b7f9fb6eb11ca2aa140be7f1fecc0bd10d7d774ec461e03ca1",
       "span": 3
+    },
+    "GatherItem.cs:588": {
+      "sha256": "e7ddc5498891fbb10c0ce72c9b84969935cea39d93987ffb69a1e6c9b788a0e0",
+      "span": 1
     },
     "GatherItem.cs:588-596": {
       "sha256": "ad554aa54296f678448ef8947c3f525e0694ec2af3e1e88773ea9167ccfc6275",
@@ -2078,6 +2086,10 @@
     "Monster.cs:2967-2981": {
       "sha256": "22abae262c6a97646dc4bdb5ecafc66107d62a3ef8b116fe7a2a9601684afbab",
       "span": 15
+    },
+    "Monster.cs:2970-2974": {
+      "sha256": "593008ae38e95271c6707983abae6295c61ea36d2aa66850cf3e8d7bda005307",
+      "span": 5
     },
     "Monster.cs:2997-2998": {
       "sha256": "07e44a3e82c077cc7cb26e9ffbc93110185e00c320b97ef83e0c4abe17adb2c5",
@@ -2997,6 +3009,14 @@
       "sha256": "32997cd4147ffefc95e56abd259bff225ffb93d0d1621f5fe684df6d1f8cd36f",
       "span": 4
     },
+    "Player.cs:13546": {
+      "sha256": "fc7d15a4ac62598138fcf9cc2f50687d1df21b72d8b9924f1f45946839084b86",
+      "span": 1
+    },
+    "Player.cs:13557": {
+      "sha256": "7f75ad40d7768d47fe1420fd9bc612a6ba7478776d07d506a7d74cd6fffda251",
+      "span": 1
+    },
     "Player.cs:13559-13562": {
       "sha256": "b7603d66c9166f07e60ca45e76b41ce4a26d1dee24ee7adce994359cb1964c21",
       "span": 4
@@ -3064,6 +3084,10 @@
     "Player.cs:13829-13861": {
       "sha256": "6c99d5fc365391b4e630072721f1b38ef1adfce2e0c536c195a1756a9df736ae",
       "span": 33
+    },
+    "Player.cs:13837": {
+      "sha256": "21c547f691ea1dc2913bc23b37f7de8a67b828d84c677405bf07d136e81a41f6",
+      "span": 1
     },
     "Player.cs:13838-13841": {
       "sha256": "47803aeb7c3720d361bf0104efdd5e7fe94535adae102f8152f2188b40605f88",
@@ -4375,6 +4399,10 @@
     },
     "ScriptableSkill.cs:TryActivateRadiantAetherForArea": {
       "span": 0
+    },
+    "ScrollItem.cs:108": {
+      "sha256": "a1b7b60c769aeb26a25befd5e2935080cb9aad74405a71f4316a2a8eb46a081c",
+      "span": 1
     },
     "ScrollItem.cs:108-124": {
       "sha256": "44c75192671f0e15b365b1b07b462a76e0fbc23581340a1804435252f24f0397",

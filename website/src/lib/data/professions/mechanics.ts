@@ -220,6 +220,10 @@ export function skillGainChance(
   rule: SkillGainRule,
   skillPercent: number,
 ): number {
+  // Source: server-scripts/GatherItem.cs:OnInteractServer,OnInteractFishServer
+  // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32,UserCode_CmdCraftItem__NetworkIdentity__Int32
+  // Profession skill increases stop at the mastery cap.
+  if (skillPercent >= 100) return 0;
   const skill = skillFraction(skillPercent);
   return Math.max(
     0,

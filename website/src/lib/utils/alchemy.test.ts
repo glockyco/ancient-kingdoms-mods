@@ -92,9 +92,9 @@ describe("isAlchemyEffortless (strict > thresholds)", () => {
 });
 
 describe("alchemySkillGainChancePercent", () => {
-  test("follows the 95%-to-35% quadratic curve", () => {
+  test("follows the quadratic curve below the cap and stops at mastery", () => {
     expect(alchemySkillGainChancePercent(0)).toBeCloseTo(95, 5);
-    expect(alchemySkillGainChancePercent(100)).toBeCloseTo(35, 5);
+    expect(alchemySkillGainChancePercent(100)).toBe(0);
     expect(alchemySkillGainChancePercent(50)).toBeCloseTo(80, 5);
   });
 });
@@ -108,10 +108,16 @@ describe("alchemySkillGainRange", () => {
     expect(alchemySkillGainRange(0, 30)).toBeNull();
   });
 
-  test("gain range is Random(1-3) / (rawSuccess * 1000) — 3x cooking's", () => {
-    const range = alchemySkillGainRange(4, 100);
+  test("gain range is Random(1-3) / (rawSuccess * 1000)", () => {
+    const range = alchemySkillGainRange(3, 99);
     expect(range).not.toBeNull();
     expect(range!.min).toBeCloseTo((1 / 1000) * 100, 5);
     expect(range!.max).toBeCloseTo((3 / 1000) * 100, 5);
+  });
+
+  test("every tier stops granting skill at the cap", () => {
+    for (let tier = 0; tier <= 4; tier++) {
+      expect(alchemySkillGainRange(tier, 100)).toBeNull();
+    }
   });
 });

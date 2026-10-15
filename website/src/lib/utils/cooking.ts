@@ -78,6 +78,8 @@ export function cookingSkillGainRange(
   cookingPercent: number,
   isFoodItem: boolean,
 ): { min: number; max: number } | null {
+  // Source: server-scripts/Player.cs:13837 — Cooking cannot increase at the cap.
+  if (cookingPercent >= mechanics.capPercent) return null;
   if (!isFoodItem) return null;
   if (!isCookable(quality, cookingPercent)) return null;
   if (isCookingEffortless(quality, cookingPercent)) return null;

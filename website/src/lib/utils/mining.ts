@@ -84,6 +84,8 @@ export function miningSkillGainRange(
   pickaxeQuality: number,
   skillPercent: number,
 ): { min: number; max: number } | null {
+  // Source: server-scripts/GatherItem.cs:588 — Mining cannot increase at the cap.
+  if (skillPercent >= mechanics.capPercent) return null;
   if (!isMineable(tier, pickaxeQuality, skillPercent)) return null;
   if (isMiningEffortless(tier, skillPercent)) return null;
   const success = rawMiningSuccessChance(tier, pickaxeQuality, skillPercent);

@@ -37,6 +37,20 @@ The Herbalism calculator SHALL compute success as 100% for tier I, `0.3 + 2 × s
 - **WHEN** Herbalism skill is 60% and the plant is tier IV
 - **THEN** the calculator shows a 63% success chance
 
+#### Scenario: Herbalism skill gain at low and mid skill
+
+- **WHEN** the player selects 0% or 50% Herbalism
+- **THEN** the gain chance per eligible successful harvest is 95% or 80% respectively
+
+### Requirement: Profession skill gain stops at mastery
+
+Profession calculators SHALL show no further skill gain at the profession's mastery cap, including gain chance and gain amount.
+
+#### Scenario: Player reaches full mastery
+
+- **WHEN** a player sets Alchemy, Cooking, Herbalism, Mining, Fishing, Hunting, or Scroll Mastery to 100%
+- **THEN** the calculator shows no further skill gain while preserving any crafting, gathering, or item payoff
+
 ### Requirement: No unverified combat simulator is published
 
 The site SHALL NOT publish a combat damage simulator whose results are not backed by the verified combat engine. `/tools/combat-simulator` SHALL NOT be published, and no page, search result, or sitemap entry SHALL link to it.

@@ -13,15 +13,16 @@
   // Monster level for calculator (1-60)
   let monsterLevel = $state(1);
 
-  // Skill gain chance: 70% at 0 skill, down to 20% at 100% skill
+  // Source: server-scripts/Monster.cs:2970-2974 — Hunting gains stop at 100%.
   function getSkillGainChance(): number {
+    if (skillLevel >= 100) return 0;
     const skill = skillLevel / 100;
     return Math.max(0, (0.7 - skill / 2) * 100);
   }
 
-  // Skill gain amount: Random(1-2) / 10000 + level / 100000
-  // Returns [min, max] as percentages
+  // Source: server-scripts/Monster.cs:2970-2974 — Random(1-2) / 10000 + level / 100000, below the cap only.
   function getSkillGainAmount(level: number): [number, number] {
+    if (skillLevel >= 100) return [0, 0];
     const baseMin = 1 / 10000;
     const baseMax = 2 / 10000;
     const levelBonus = level / 100000;
@@ -147,11 +148,15 @@
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain:</span>
-        <span class="font-mono text-foreground"
-          >{getSkillGainAmount(monsterLevel)[0].toFixed(3)}% – {getSkillGainAmount(
-            monsterLevel,
-          )[1].toFixed(3)}%</span
-        >
+        <span class="font-mono text-foreground">
+          {#if getSkillGainChance() > 0}
+            {getSkillGainAmount(monsterLevel)[0].toFixed(3)}% – {getSkillGainAmount(
+              monsterLevel,
+            )[1].toFixed(3)}%
+          {:else}
+            —
+          {/if}
+        </span>
       </div>
     </div>
   </section>
@@ -191,7 +196,11 @@
               <td class="p-3 text-right">{monster.level_max}</td>
               <td class="p-3 text-right">
                 <span class="font-mono">
-                  {minGain.toFixed(3)}% – {maxGain.toFixed(3)}%
+                  {#if maxGain > 0}
+                    {minGain.toFixed(3)}% – {maxGain.toFixed(3)}%
+                  {:else}
+                    —
+                  {/if}
                 </span>
               </td>
             </tr>

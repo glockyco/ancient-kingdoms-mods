@@ -30,9 +30,12 @@ describe("mining server rules", () => {
     expect(isMiningEffortless(2, 75.01)).toBe(true);
     expect(miningSkillGainChancePercent(0)).toBe(95);
     expect(miningSkillGainChancePercent(50)).toBe(80);
-    expect(miningSkillGainChancePercent(100)).toBe(35);
+    expect(miningSkillGainChancePercent(100)).toBe(0);
     expect(miningSkillGainRange(1, 1, 0)).toEqual({ min: 0.2, max: 0.6 });
     expect(miningSkillGainRange(4, 3, 0)).toBeNull();
     expect(miningSkillGainRange(0, 0, 26)).toBeNull();
+    for (let tier = 0; tier <= 4; tier++) {
+      expect(miningSkillGainRange(tier, 4, 100)).toBeNull();
+    }
   });
 });
