@@ -661,7 +661,12 @@
             </div>
           {:else}
             <div>
-              <div class="text-sm text-muted-foreground">Success Chance</div>
+              <!-- Source: server-scripts/GatherItem.cs:OnInteractFishServer — the initial roll is a bite, not a guaranteed fish. -->
+              <div class="text-sm text-muted-foreground">
+                {resource.is_fishing_spot
+                  ? "Bite chance per cast"
+                  : "Success Chance"}
+              </div>
               <div
                 class="font-mono font-medium {getSuccessChanceColor(
                   successChance,
