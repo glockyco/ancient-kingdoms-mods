@@ -21,7 +21,11 @@
     type Header,
     type Table as TanstackTable,
   } from "@tanstack/table-core";
-  import { createSvelteTable } from "./create-table.js";
+  import {
+    createSvelteTable,
+    nextSortDescending,
+    toggleSingleColumnSorting,
+  } from "./create-table.js";
   import FlexRender from "./flex-render.svelte";
   import * as Table from "$lib/components/ui/table";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
@@ -82,10 +86,14 @@
   function getColumnLabel(columnId: string): string {
     if (columnLabels[columnId]) return columnLabels[columnId];
     const col = columns.find(
-      (c) => "accessorKey" in c && c.accessorKey === columnId,
+      (c) =>
+        c.id === columnId || ("accessorKey" in c && c.accessorKey === columnId),
     );
-    if (col && typeof col.header === "string") return col.header;
-    return columnId;
+    if (col && typeof col.header === "string" && col.header.trim()) {
+      return col.header;
+    }
+    const label = columnId.replaceAll("_", " ");
+    return label.charAt(0).toUpperCase() + label.slice(1);
   }
 
   // Capture initial prop values (won't react to prop changes after mount)
@@ -618,13 +626,26 @@
         {#each headerGroups as headerGroup (headerGroup.id)}
           <Table.Row class="contents">
             {#each headerGroup.headers as header (header.id)}
-              <Table.Head class="whitespace-nowrap">
+              <Table.Head
+                class="whitespace-nowrap"
+                aria-sort={sorting[0]?.id === header.column.id
+                  ? sorting[0].desc
+                    ? "descending"
+                    : "ascending"
+                  : undefined}
+              >
                 {#if !header.isPlaceholder}
                   {#if header.column.getCanSort()}
                     <button
                       type="button"
                       class="flex w-full items-center gap-1 hover:text-foreground"
-                      onclick={() => header.column.toggleSorting()}
+                      aria-label="Sort by {getColumnLabel(
+                        header.column.id,
+                      )}, {nextSortDescending(table, header.column.id)
+                        ? 'descending'
+                        : 'ascending'}"
+                      onclick={() =>
+                        toggleSingleColumnSorting(table, header.column.id)}
                     >
                       {#if renderHeader}
                         {@render renderHeader({ header })}

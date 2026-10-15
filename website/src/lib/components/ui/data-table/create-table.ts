@@ -4,6 +4,7 @@ import {
   type TableOptions,
   type TableOptionsResolved,
   type Table,
+  type SortingState,
 } from "@tanstack/table-core";
 
 /**
@@ -36,4 +37,30 @@ export function createSvelteTable<TData extends RowData>(
   }));
 
   return table;
+}
+
+/**
+ * Whether a header click sorts the column descending. Clicking the primary
+ * sort column reverses it. Any other column starts in its natural direction:
+ * text ascending, numbers descending.
+ */
+export function nextSortDescending<TData extends RowData>(
+  table: Table<TData>,
+  columnId: string,
+): boolean {
+  const primary = table.getState().sorting[0];
+  if (primary?.id === columnId) return !primary.desc;
+  return table.getColumn(columnId)?.getFirstSortDir() === "desc";
+}
+
+/** Sort by this column alone, as a header click does. */
+export function toggleSingleColumnSorting<TData extends RowData>(
+  table: Table<TData>,
+  columnId: string,
+): void {
+  if (!table.getColumn(columnId)?.getCanSort()) return;
+  const sorting: SortingState = [
+    { id: columnId, desc: nextSortDescending(table, columnId) },
+  ];
+  table.setSorting(sorting);
 }
