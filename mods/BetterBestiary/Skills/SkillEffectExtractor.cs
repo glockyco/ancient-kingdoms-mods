@@ -12,9 +12,11 @@ namespace BetterBestiary.Skills;
 /// NO data export (unreleased/dev game versions): every value comes straight off the
 /// in-memory game object.
 ///
-/// Field selection mirrors the website's <c>skillRowToEffectInput</c>. Every field
-/// read by <c>formatSkillEffect</c> is populated so the live panel and website use
-/// the same effect contract.
+/// Field selection mirrors the website's <c>skillEffectInput</c> for a monster
+/// caster, the only caster the panel describes: damage adds the monster's stats,
+/// an area heal reaches monsters, and no notes about a reader's attributes apply.
+/// Every field read by <c>formatSkillEffect</c> is populated so the live panel and
+/// website use the same effect contract.
 /// </summary>
 internal static class SkillEffectExtractor
 {
@@ -76,9 +78,9 @@ internal static class SkillEffectExtractor
             input.area_projectile = areaDamageSkill.projectile != null;
         }
 
-        // The panel only describes monster casts, so both stat lists use the monster rule.
-        input.monster_damage_stats = MonsterDamageStats(skill, input.skill_type, input.damage_type);
-        input.damage_stats = input.monster_damage_stats;
+        // The panel only describes monster casts, so both term lists use the monster rule.
+        input.monster_damage_terms = MonsterDamageTerms(skill, input.skill_type, input.damage_type);
+        input.damage_terms = input.monster_damage_terms;
 
         var areaObjectSpawnSkill = skill.TryCast<AreaObjectSpawnSkill>();
         if (areaObjectSpawnSkill != null)
@@ -91,7 +93,7 @@ internal static class SkillEffectExtractor
     /// <summary>Mirror of the website's <c>monsterDamageStats</c>: the stats a monster's damage
     /// handler adds to the skill's listed damage.</summary>
     // Source: server-scripts/TargetDamageSkill.cs:180-236; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:94-114 — monsters add Spell Power for elemental hits, plus Attack Power for magic weapon attacks, and Attack Power otherwise.
-    private static List<string> MonsterDamageStats(ScriptableSkill skill, string skillType, string damageType)
+    private static List<string> MonsterDamageTerms(ScriptableSkill skill, string skillType, string damageType)
     {
         var stats = new List<string>();
         if (skill.isScroll || skillType is not ("target_damage" or "area_damage" or "frontal_damage" or "target_projectile" or "frontal_projectiles"))
@@ -124,6 +126,9 @@ internal static class SkillEffectExtractor
         input.heals_health = new LinearValue(healSkill.healsHealth.baseValue, healSkill.healsHealth.bonusPerLevel);
         input.heals_mana = new LinearValue(healSkill.healsMana.baseValue, healSkill.healsMana.bonusPerLevel);
         input.is_balance_health = healSkill.isBalanceHealth;
+        // Source: server-scripts/AreaHealSkill.cs:Apply — an unflagged area heal reaches the caster's own kind, and the panel describes monster casters.
+        if (input.skill_type == "area_heal" && !skill.isMercenarySkill && !skill.isPetSkill)
+            input.area_heal_caster = "monster";
 
         var targetHealSkill = skill.TryCast<TargetHealSkill>();
         if (targetHealSkill != null)
@@ -139,6 +144,7 @@ internal static class SkillEffectExtractor
         input.is_mana_shield = targetBuffSkill.isManaShield;
         input.is_double_exp_spell = targetBuffSkill.isDoubleExpSpell;
         input.also_buff_active_pet = targetBuffSkill.alsoBuffActivePet;
+        input.can_buff_self = targetBuffSkill.canBuffSelf;
         input.can_buff_others = targetBuffSkill.canBuffOthers;
     }
 
@@ -213,8 +219,7 @@ internal static class SkillEffectExtractor
             input.fear_resist_chance_bonus_cap = buffSkill.fearResistChanceBonusCap;
             input.is_blindness = buffSkill.isBlindness;
             input.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
-            input.scales_with_charisma = buffSkill.scalesWithCharisma;
-            input.scales_with_intelligence = buffSkill.scalesWithIntelligence;
+            input.is_only_for_magic_classes = buffSkill.isOnlyForMagicClasses;
             input.lifetap_healing_percent_bonus = new LinearValue(buffSkill.lifetapHealingPercentBonus.baseValue, buffSkill.lifetapHealingPercentBonus.bonusPerLevel);
 
             var areaBuffSkill = skill.TryCast<AreaBuffSkill>();

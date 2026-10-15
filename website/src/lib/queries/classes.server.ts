@@ -1,10 +1,11 @@
 import { getDb, query, queryOne } from "$lib/db.server";
 import type { Class } from "$lib/types/classes";
-import type { SkillEffectRow } from "$lib/skills/skillEffectRow";
+import type { SkillListRow } from "$lib/skills/skillListRow";
 import {
-  SKILL_EFFECT_COLUMNS,
-  SKILL_EFFECT_JOINS,
+  SKILL_LIST_COLUMNS,
+  SKILL_LIST_JOINS,
 } from "$lib/skills/skillsListQuery";
+import { skillEffectSummaries } from "$lib/skills/skillEffects.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import {
   getItemSourceSummaries,
@@ -70,9 +71,10 @@ export function getClassById(id: string): Class | null {
 }
 
 /**
- * Skill effect row plus class-detail table metadata.
+ * Skill list row plus class-detail table metadata and the effect summary.
  */
-export interface ClassSkill extends SkillEffectRow {
+export interface ClassSkill extends SkillListRow {
+  effect: string;
   visual_width: number | null;
   visual_height: number | null;
   visual_source_field: string | null;
@@ -89,6 +91,8 @@ export interface ClassSkill extends SkillEffectRow {
   energy_cost: string | null;
   cooldown: string | null;
   cast_time: string | null;
+  duration_base: number;
+  duration_per_level: number;
   base_skill: boolean;
   required_spent_points: number;
   class_skill_position: number;
@@ -99,9 +103,9 @@ export interface ClassSkill extends SkillEffectRow {
  * Uses universal class-filtered query pattern
  */
 export function getClassSkills(classId: string): ClassSkill[] {
-  return query<ClassSkill>(
+  const rows = query<Omit<ClassSkill, "effect">>(
     `SELECT
-      ${SKILL_EFFECT_COLUMNS},
+      ${SKILL_LIST_COLUMNS},
       va.width AS visual_width,
       va.height AS visual_height,
       va.source_field AS visual_source_field,
@@ -112,15 +116,18 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.prerequisite2_skill_id,
       ps2.name AS prerequisite2_skill_name,
       s.prerequisite2_level,
+      s.required_weapon_category,
       s.mana_cost,
       s.energy_cost,
       s.cooldown,
       s.cast_time,
+      s.duration_base,
+      s.duration_per_level,
       s.base_skill,
       s.required_spent_points,
       json_extract(s.class_skill_positions, '$.' || ?) AS class_skill_position
     FROM skills s
-    ${SKILL_EFFECT_JOINS}
+    ${SKILL_LIST_JOINS}
     LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
     LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
     WHERE (? IN (SELECT value FROM json_each(s.player_classes))
@@ -129,6 +136,8 @@ export function getClassSkills(classId: string): ClassSkill[] {
     ORDER BY class_skill_position`,
     [classId, classId],
   );
+  const effects = skillEffectSummaries(rows.map((row) => row.id));
+  return rows.map((row, index) => ({ ...row, effect: effects[index] }));
 }
 
 /**

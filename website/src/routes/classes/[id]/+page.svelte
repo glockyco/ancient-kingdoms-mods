@@ -39,9 +39,7 @@
   import {
     formatLinearDuration,
     formatLinearValue,
-    formatSkillEffect,
   } from "$lib/utils/formatSkillEffect";
-  import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
   import { getSkillCategoryKey } from "$lib/utils/skill-category";
   import { getItemTooltips } from "$lib/queries/items";
   import type {
@@ -315,10 +313,9 @@
       header: "Max Rank",
     },
     {
-      id: "effect",
+      accessorKey: "effect",
       header: "Effect",
       enableSorting: false,
-      accessorFn: (row) => formatSkillEffect(skillRowToEffectInput(row)),
     },
     ...(!showSkillCost
       ? []

@@ -23,6 +23,7 @@ import type {
 import { monsterDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
+import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { statAtLevel } from "$lib/utils/monster-stats";
 
 export const prerender = true;
@@ -794,9 +795,16 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   }
 
   // Get monster skills/abilities
-  const skills = db
+  const abilityRows = db
     .prepare(MONSTER_ABILITIES_QUERY)
-    .all(params.id) as MonsterSkill[];
+    .all(params.id) as Omit<MonsterSkill, "effect_input">[];
+  const effectInputs = skillEffectInputs(
+    abilityRows.map((row) => ({ id: row.id, runtimeLevel: row.runtime_level })),
+  );
+  const skills: MonsterSkill[] = abilityRows.map((row, index) => ({
+    ...row,
+    effect_input: effectInputs[index],
+  }));
 
   const visualAsset =
     (db

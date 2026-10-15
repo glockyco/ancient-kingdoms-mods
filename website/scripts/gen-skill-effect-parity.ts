@@ -1,16 +1,17 @@
 /**
  * Bakes the BetterBestiary skill-effect parity corpus.
  *
- * Reuses the EXACT building blocks of the website `/skills` overview —
- * `SKILLS_LIST_QUERY`, `skillRowToEffectInput`, and `formatSkillEffect` (no
- * monsterContext) — to emit, per skill, the formatter `input` and its `expected`
- * output. The mod computes summaries at runtime via a C# port of
- * `formatSkillEffect`; this corpus is the golden oracle its parity test asserts
- * against, so the port can never silently diverge from the TypeScript source.
+ * Reuses the building blocks of the website `/skills` overview,
+ * `SKILLS_LIST_QUERY`, `skillEffectInputs` and `formatSkillEffect` without a
+ * monster context, to emit, per skill, the formatter `input` and its
+ * `expected` output. The mod computes summaries at runtime via a C# port of
+ * `formatSkillEffect`, and this corpus is the golden oracle its parity test
+ * asserts against, so the port cannot silently diverge from the TypeScript
+ * source.
  *
  * `input` is compacted to only the fields that affect the output (see
  * `compactInput`) and each case is written on its own line, so the committed
- * file stays small and its diff reads as "one line per skill".
+ * file stays small and its diff reads as one line per skill.
  *
  * Output: `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json`
  * (a stable, sorted `SkillEffectParityCase[]`).
@@ -23,52 +24,50 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { query } from "$lib/db.server";
 import { formatSkillEffect, type Skill } from "$lib/utils/formatSkillEffect";
-import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
+import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { SKILLS_LIST_QUERY } from "$lib/skills/skillsListQuery";
 import type { SkillEffectParityCase } from "$lib/skills/skillEffectParity";
 
+/** Numeric fields whose 0 the formatter reads differently from an absent value. */
+const MEANINGFUL_ZEROS = new Set<string>([
+  "summon_count_per_cast",
+  "summoned_monster_level",
+  "max_active_summons",
+]);
+
 /**
- * Drop fields the formatter treats as "no value": null/undefined, `false` flags,
- * and zero LinearValue columns (a JSON string whose base and bonus are both 0,
- * which `parseLinearValue` collapses to null). Numbers (including 0) and strings
- * are kept verbatim because 0 is meaningful for some (e.g. `summon_count_per_cast`).
- * Omitting these never changes `formatSkillEffect`'s output but shrinks the corpus
- * from ~90 fields per skill to only the handful that matter.
+ * Drop fields the formatter treats as "no value": null/undefined, `false`
+ * flags, empty strings, zeros it reads as absent, empty term lists and empty
+ * note maps. Omitting these never changes `formatSkillEffect`'s output but
+ * shrinks the corpus to the handful of fields that matter.
  */
 function compactInput(input: Skill): Partial<Skill> {
-  const compact: Partial<Skill> = {};
-  for (const [key, value] of Object.entries(input)) {
-    if (value === null || value === undefined || value === false) continue;
-    if (typeof value === "string" && value.startsWith("{")) {
-      try {
-        const linear = JSON.parse(value) as {
-          base_value?: number;
-          bonus_per_level?: number;
-        };
-        if (
-          (linear.base_value ?? 0) === 0 &&
-          (linear.bonus_per_level ?? 0) === 0
-        )
-          continue;
-      } catch {
-        // Not a LinearValue JSON string; keep it.
-      }
-    }
-    (compact as Record<string, unknown>)[key] = value;
-  }
-  return compact;
+  return Object.fromEntries(
+    Object.entries(input).filter(
+      ([key, value]) =>
+        value !== null &&
+        value !== undefined &&
+        value !== false &&
+        value !== "" &&
+        !(value === 0 && !MEANINGFUL_ZEROS.has(key)) &&
+        !(Array.isArray(value) && value.length === 0) &&
+        !(
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          Object.keys(value).length === 0
+        ),
+    ),
+  );
 }
 
-const rows = query<Record<string, unknown>>(SKILLS_LIST_QUERY);
+const ids = query<{ id: string }>(SKILLS_LIST_QUERY).map((row) => row.id);
+const inputs = skillEffectInputs(ids.map((id) => ({ id })));
 
-const cases: SkillEffectParityCase[] = rows.map((row) => {
-  const input = skillRowToEffectInput(row);
-  return {
-    skill_id: String(row.id),
-    input: compactInput(input),
-    expected: formatSkillEffect(input),
-  };
-});
+const cases: SkillEffectParityCase[] = ids.map((id, index) => ({
+  skill_id: id,
+  input: compactInput(inputs[index]),
+  expected: formatSkillEffect(inputs[index]),
+}));
 
 // Stable, sorted output so the drift guard diffs cleanly.
 cases.sort((a, b) =>

@@ -1,10 +1,9 @@
 import { query } from "$lib/db.server";
 import type { PageServerLoad } from "./$types";
 import type { SkillListView } from "$lib/types/skills";
-import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
-import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
+import { skillEffectSummaries } from "$lib/skills/skillEffects.server";
 import { SKILLS_LIST_QUERY } from "$lib/skills/skillsListQuery";
-import type { SkillEffectRow } from "$lib/skills/skillEffectRow";
+import type { SkillListRow } from "$lib/skills/skillListRow";
 
 export const prerender = true;
 
@@ -18,7 +17,8 @@ export interface SkillsPageData {
 }
 
 export const load: PageServerLoad = (): SkillsPageData => {
-  const rows = query<SkillEffectRow>(SKILLS_LIST_QUERY);
+  const rows = query<SkillListRow>(SKILLS_LIST_QUERY);
+  const effects = skillEffectSummaries(rows.map((row) => row.id));
 
   // Separate query for pet/mercenary relationships — plain object lookup, not Map
   // (Map is not serializable through SvelteKit's data passing)
@@ -46,12 +46,10 @@ export const load: PageServerLoad = (): SkillsPageData => {
     ),
   );
 
-  const skills: SkillListView[] = rows.map((row) => {
+  const skills: SkillListView[] = rows.map((row, index) => {
     const playerClasses: string[] = row.player_classes
       ? JSON.parse(row.player_classes)
       : [];
-
-    const skillForEffect = skillRowToEffectInput(row);
 
     return {
       id: row.id,
@@ -66,7 +64,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
       is_veteran: Boolean(row.is_veteran),
       is_pet_skill: Boolean(row.is_pet_skill),
       is_mercenary_skill: Boolean(row.is_mercenary_skill),
-      effect: formatSkillEffect(skillForEffect),
+      effect: effects[index],
       used_by_mercenaries: usedByMercenaries.has(row.id),
       used_by_pets: usedByPets.has(row.id),
       pet_id: row.pet_id,

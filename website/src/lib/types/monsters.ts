@@ -1,4 +1,5 @@
-import type { SkillEffectRow } from "$lib/skills/skillEffectRow";
+import type { SkillListRow } from "$lib/skills/skillListRow";
+import type { Skill as SkillEffectInput } from "$lib/utils/formatSkillEffect";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { RespawnInfo } from "./respawn";
 
@@ -289,14 +290,16 @@ export interface SummonsInfo {
 /**
  * A skill/ability used by a monster.
  *
- * The effect columns come from the shared projection. The runtime level records
- * the level that MonsterSkills assigns when it constructs the live Skill.
+ * The runtime level records the level that MonsterSkills assigns when it
+ * constructs the live Skill. The effect input is resolved at that level, so the
+ * page can summarize it with the monster's stats.
  */
-export interface MonsterSkill extends SkillEffectRow {
+export interface MonsterSkill extends SkillListRow {
   skill_index: number;
   runtime_level: number;
   cooldown: string | null;
   cast_time: string | null;
+  effect_input: SkillEffectInput;
 }
 
 /**

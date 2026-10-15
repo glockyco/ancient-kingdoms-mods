@@ -6,12 +6,13 @@ namespace BetterBestiary.Skills;
 
 /// <summary>
 /// C# port of the website's <c>formatSkillEffect</c>. The default call keeps
-/// website parity with the skill-intrinsic no-monsterContext branch. The
+/// website parity with the formula branch the skills list uses. The
 /// BetterBestiary skills panel passes <c>monsterContext</c> for monster-owned
-/// skills: damage then names the monster's stats, and threat, which only a
-/// player's cast can raise, is left out.
+/// skills: damage then names the monster's stats, notes about the reader's
+/// attributes are dropped, and threat, which only a player's cast can raise, is
+/// left out.
 ///
-/// This is the SECOND home of formatter logic — the TypeScript
+/// This is the second home of formatter logic. The TypeScript
 /// <c>website/src/lib/utils/formatSkillEffect.ts</c> stays the source of truth.
 /// The two are held string-identical by the golden parity test
 /// (<c>tests/BetterBestiary.Tests/SkillEffectFormatterTests.cs</c>), which runs
@@ -21,13 +22,15 @@ namespace BetterBestiary.Skills;
 ///
 /// Why a port, not the game's own tooltip or a precomputed asset? The native
 /// ScriptableSkill.ToolTip injects the local player's weapon/wisdom bonuses, so it
-/// is neither monster-correct nor skill-intrinsic; and a baked asset can only hold
+/// is neither monster-correct nor skill-intrinsic, and a baked asset can only hold
 /// skills present in a data export, so it cannot describe monsters on unreleased/dev
-/// builds — the case this feature exists for.
+/// builds, the case this feature exists for.
 /// </summary>
 internal static class SkillEffectFormatter
 {
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+
+    private static readonly Dictionary<string, string> NoNotes = new();
 
     public static string Format(SkillEffectInput skill, bool monsterContext = false)
     {
@@ -37,7 +40,7 @@ internal static class SkillEffectFormatter
         // Source: server-scripts/AreaBuffSkill.cs:Apply — Evacuate sends the caster and every
         // living, visible player within its cast range to the city assigned to the caster's zone.
         if (skill.is_teleport)
-            return $"teleports you & every player within {JsNum(skill.cast_range)} yd to this zone's city, stun (1s)";
+            return $"teleports you & every player within {FormatNumber(skill.cast_range)} yd to this zone's city, stun (1s)";
 
         // Source: server-scripts/TargetBuffSkill.cs:Apply — a cooldown-reduction spell shortens
         // each remaining cooldown by its share, at most 30s, and applies no buff.
@@ -45,14 +48,31 @@ internal static class SkillEffectFormatter
         if (skill.skill_type == "target_buff" && cooldownCut != null)
             return $"cuts your remaining cooldowns by {FormatLinearPercent(cooldownCut)} (max 30s each)";
 
+        // A monster's cast owes nothing to the reader's attributes.
+        var notes = monsterContext ? NoNotes : skill.notes ?? NoNotes;
         var castByMonsters = monsterContext || skill.npc_caster_only;
         var parts = new List<string>();
 
-        if (!skill.is_manaburn_skill)
-            FormatDamage(skill, monsterContext, parts);
-        if (skill.channel_pulses > 0)
-            parts.Add($"channeled over {skill.channel_pulses} pulses");
-        FormatHealing(skill, parts);
+        // Source: server-scripts/BardFinalCadenceSkill.cs:HasRequiredSongsActive; BardMercenarySkills.cs:CanUseFinalCadence,MaximumCombatSongs — a player Bard needs three active songs, a Bard mercenary level 50 and all three of its combat songs.
+        if (skill.is_bard_final_cadence)
+            parts.Add(skill.is_mercenary_skill ? "needs level 50 & 3 active songs" : "needs 3+ active songs");
+
+        if (skill.is_bard_final_cadence)
+        {
+            // Source: server-scripts/BardFinalCadenceSkill.cs:Apply — one multiplier scales both the damage and the healing, so one note covers both.
+            var amounts = new List<string>();
+            FormatDamage(skill, monsterContext, NoNotes, amounts);
+            FormatHealing(skill, NoNotes, amounts);
+            parts.Add(Qualify(string.Join(" & ", amounts), Note(notes, "damage")));
+        }
+        else
+        {
+            if (!skill.is_manaburn_skill)
+                FormatDamage(skill, monsterContext, notes, parts);
+            if (skill.channel_pulses > 0)
+                parts.Add($"channeled over {skill.channel_pulses} pulses");
+            FormatHealing(skill, notes, parts);
+        }
         FormatCrowdControl(skill, castByMonsters, parts);
         FormatSummons(skill, parts);
 
@@ -63,12 +83,14 @@ internal static class SkillEffectFormatter
         if (skill.skill_type == "passive" && skill.is_enrage)
             parts.Add("+50-75% non-spell dmg below 10% hp");
         if (skill.is_bard_song)
-            parts.Add("Bard song");
+            parts.Add(Qualify("Bard song", Note(notes, "is_bard_song")));
         if (skill.is_bard_charm)
         {
             var charmedDamage = ParseLinearValue(skill.charmed_damage_percent);
             parts.Add(charmedDamage != null
-                ? $"charms a non-boss, non-elite monster at {FormatLinearPercent(charmedDamage)} of its dmg"
+                ? Qualify(
+                    $"charms a non-boss, non-elite monster at {FormatLinearPercent(charmedDamage)} of its dmg",
+                    Note(notes, "charmed_damage_percent"))
                 : "charms a non-boss, non-elite monster");
         }
         if (skill.additional_active_bard_songs != 0)
@@ -79,24 +101,32 @@ internal static class SkillEffectFormatter
             parts.Add($"+{FormatPercent(skill.bard_song_duration_bonus_per_level)} song duration per rank");
         if (skill.extra_gather_item_chance != 0)
             parts.Add($"{FormatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item");
+        // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2084-2095 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
         if (skill.food_and_drink_buff_duration_bonus_per_level != 0)
-            parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} food and drink duration per rank");
+            parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food");
         if (skill.is_necromancer_reaper_form)
             parts.Add("toggle form");
+        // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet,CheckDistance — only the Necromancer's own living companion within cast range, never a familiar or mercenary.
         if (skill.is_necromancer_pet_buff)
-            parts.Add("buffs your companion");
+            parts.Add($"buffs your companion within {FormatNumber(skill.cast_range)} yd");
+        // Source: server-scripts/TargetBuffSkill.cs:CorrectedTarget,CheckDistance — a pet skill buff targets the active pet, companion or familiar, at any distance when it cannot buff others.
         else if (skill.skill_type == "target_buff" && skill.is_pet_skill)
-            parts.Add("buffs your companion");
+            parts.Add(skill.can_buff_self && !skill.can_buff_others
+                ? "buffs your companion or familiar"
+                : $"buffs your companion or familiar within {FormatNumber(skill.cast_range)} yd");
         if (skill.skill_type == "area_buff" && skill.is_mercenary_skill && !skill.is_bard_song)
             parts.Add("buffs your mercenaries");
         if (skill.also_buff_active_pet)
-            parts.Add($"{(skill.can_buff_others ? "when self-cast, " : "")}also buffs your companion within {JsNum(skill.cast_range)} yd");
+            parts.Add($"{(skill.can_buff_others ? "when self-cast, " : "")}also buffs your companion within {FormatNumber(skill.cast_range)} yd");
         if (skill.is_bard_virtuosity)
             parts.Add("with 3+ active songs");
         if (skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff" or "passive")
-            FormatBuffDebuffStats(skill, castByMonsters, parts);
+            FormatBuffDebuffStats(skill, castByMonsters, notes, parts);
         if (skill.is_bard_virtuosity && skill.additional_damage_percent_per_song != 0)
             parts.Add($"+{FormatPercent(skill.additional_damage_percent_per_song)} attack and spell power per active song beyond 3");
+        // Source: server-scripts/AreaBuffSkill.cs:Apply — isOnlyForMagicClasses skips Warrior and Rogue players and mercenaries.
+        if (skill.skill_type == "area_buff" && skill.is_only_for_magic_classes)
+            parts.Add("not Warriors or Rogues");
 
         if (skill.is_assassination_skill)
             parts.Add("usable at or below 25% target hp");
@@ -119,18 +149,24 @@ internal static class SkillEffectFormatter
 
     // --- Category formatters (mirror the TS helpers) ---
 
-    private static string DamageStatLabel(string stat) => stat switch
+    private static string DamageTermLabel(string term) => term switch
     {
         "spell_power" => "spell power",
         "attack_power" => "attack power",
-        "ranged_dexterity" => "150% of dexterity",
-        "poison_dexterity" => "250% of dexterity",
-        _ => throw new System.InvalidOperationException($"Unknown damage stat {stat}"),
+        "ranged_dexterity" => "150% of DEX",
+        "poison_dexterity" => "250% of DEX",
+        "bow" => "bow base dmg",
+        "off_hand_half" => "50% of off-hand base dmg",
+        "main_hand" => "main-hand base dmg",
+        _ => throw new System.InvalidOperationException($"Unknown damage term {term}"),
     };
+
+    /// <summary>Damage terms the formula subtracts.</summary>
+    private static bool IsDeduction(string term) => term is "bow" or "off_hand_half" or "main_hand";
 
     /// <summary>Append a formatted linear value to a sum, folding its leading sign into the operator.</summary>
     private static string AddTerm(string sum, string term) =>
-        term.StartsWith("-") || term.StartsWith("−")
+        term.StartsWith("−")
             ? $"{sum} − {term.Substring(1)}"
             : $"{sum} + {term}";
 
@@ -138,29 +174,56 @@ internal static class SkillEffectFormatter
     private static string Group(string expression) =>
         expression.Contains(" + ") || expression.Contains(" − ") ? $"({expression})" : expression;
 
-    private static void FormatDamage(SkillEffectInput skill, bool monsterContext, List<string> parts)
+    // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; AreaDamageSkill.cs:Apply; AreaObjectSpawnSkill.cs:AreaObjectSpawner.ApplyDamageToEntities — handlers add listed damage to their stats, then multiply the sum by a damage percentage above 0 and round.
+    // Source: server-scripts/FrontalProjectilesSkill.cs:Apply — frontal projectiles add listed damage without a percentage.
+    private static void FormatDamage(
+        SkillEffectInput skill,
+        bool monsterContext,
+        Dictionary<string, string> notes,
+        List<string> parts)
     {
         var skillDmg = ParseLinearValue(skill.damage);
         var damagePercent = ParseLinearValue(skill.damage_percent);
         if (skillDmg == null && damagePercent == null)
             return;
 
-        var multiplier = damagePercent != null && damagePercent.base_value > 0 ? damagePercent : null;
-        var formattedType = skill.damage_type != null ? FormatDamageType(skill.damage_type) : "";
+        var multiplier = skill.skill_type == "frontal_projectiles" ? null : damagePercent;
+        // The panel resolves a monster's skill at its rank, where a percentage of 0 or less multiplies nothing.
+        if (monsterContext && multiplier != null && multiplier.base_value <= 0)
+            multiplier = null;
+        var formattedType = FormatDamageType(skill.damage_type);
         var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
 
-        var stats = (monsterContext ? skill.monster_damage_stats : skill.damage_stats) ?? new List<string>();
-        var terms = stats.ConvertAll(DamageStatLabel);
+        var terms = (monsterContext ? skill.monster_damage_terms : skill.damage_terms) ?? new List<string>();
+        var added = new List<string>();
+        var subtracted = new List<string>();
+        foreach (var term in terms)
+            (IsDeduction(term) ? subtracted : added).Add(DamageTermLabel(term));
+        if (added.Count == 0 && subtracted.Count > 0)
+            throw new System.InvalidOperationException(
+                $"Skill {skill.id}: a damage formula subtracts Base Damage without adding a stat");
+
         var listed = skillDmg != null ? FormatLinearValue(skillDmg) : null;
-        var combined = terms.Count == 0
+        var statParts = new List<string> { string.Join(" + ", added) };
+        statParts.AddRange(subtracted);
+        var stats = added.Count == 0 ? "" : string.Join(" − ", statParts);
+        var combined = stats.Length == 0
             ? listed ?? "0"
             : listed == null
-                ? string.Join(" + ", terms)
-                : AddTerm(string.Join(" + ", terms), listed);
-        var amount = multiplier != null
-            ? $"{Group(combined)} × {Group(FormatLinearPercent(multiplier))}"
-            : combined;
-        parts.Add($"{amount}{typeLabel} dmg");
+                ? stats
+                : AddTerm(stats, listed);
+        if (multiplier == null)
+        {
+            parts.Add(Qualify($"{combined}{typeLabel} dmg", Note(notes, "damage")));
+            return;
+        }
+        var maxLevel = skill.max_level ?? 1;
+        var lapses = multiplier.base_value <= 0
+            || multiplier.base_value + multiplier.bonus_per_level * (maxLevel - 1) <= 0;
+        parts.Add(Qualify(
+            $"{Group(combined)} × {Group(FormatLinearPercent(multiplier))}{typeLabel} dmg",
+            Note(notes, "damage"),
+            lapses ? "multiplied only above 0%" : null));
     }
 
     private static string FormatDamageType(string type)
@@ -173,12 +236,11 @@ internal static class SkillEffectFormatter
             "Fire" => "fire",
             "Cold" => "cold",
             "Disease" => "disease",
-            "Unknown" => "",
             _ => "",
         };
     }
 
-    private static void FormatHealing(SkillEffectInput skill, List<string> parts)
+    private static void FormatHealing(SkillEffectInput skill, Dictionary<string, string> notes, List<string> parts)
     {
         var cost = ParseLinearValue(skill.health_cost_percent);
         var restored = ParseLinearValue(skill.mana_restored_percent);
@@ -197,13 +259,23 @@ internal static class SkillEffectFormatter
             return;
         }
 
+        // Source: server-scripts/AreaHealSkill.cs:Apply — a mercenary area heal reaches only the caster's active mercenaries and restores Rage instead of Mana to Warrior and Rogue mercenaries.
         var mercenaryHeal = skill.skill_type == "area_heal" && skill.is_mercenary_skill;
         if (mercenaryHeal)
             parts.Add("heals your mercenaries");
 
+        // Source: server-scripts/AreaHealSkill.cs:Apply — balancing sets everyone in range to their average share of maximum Health and heals nothing.
+        if (skill.is_balance_health)
+        {
+            parts.Add($"balances the hp % of {AreaHealRecipients(skill)}");
+            return;
+        }
+        if (skill.skill_type == "area_heal" && !skill.is_mercenary_skill)
+            parts.Add($"heals {AreaHealRecipients(skill)}");
+
         var heal = ParseLinearValue(skill.heals_health);
         if (heal != null)
-            parts.Add($"{FormatLinearValue(heal)} hp");
+            parts.Add(Qualify($"{FormatLinearValue(heal)} hp", Note(notes, "heals_health")));
 
         var healMana = ParseLinearValue(skill.heals_mana);
         if (healMana != null)
@@ -211,9 +283,20 @@ internal static class SkillEffectFormatter
 
         if (skill.is_resurrect_skill)
             parts.Add("resurrect player (60% max hp, mana = 20% max hp, +75% lost XP) or mercenary (10% max hp)");
+    }
 
-        if (skill.is_balance_health)
-            parts.Add("balance hp");
+    // Source: server-scripts/AreaHealSkill.cs:Apply — an area heal without the pet or mercenary flag reaches its caster and every living, visible entity in range of the caster's own type, plus, for a player caster, every player's companions and mercenaries.
+    private static string AreaHealRecipients(SkillEffectInput skill)
+    {
+        var range = $"within {FormatNumber(skill.cast_range)} yd";
+        return skill.area_heal_caster switch
+        {
+            "player" => $"you & every player, companion & mercenary {range}",
+            "pet" => $"itself & every companion & mercenary {range}, not players",
+            "monster" => $"itself & every monster {range}",
+            _ => throw new System.InvalidOperationException(
+                $"Skill {skill.id}: an area heal summary needs the kind of its caster"),
+        };
     }
 
     private static void FormatCrowdControl(SkillEffectInput skill, bool castByMonsters, List<string> parts)
@@ -283,9 +366,9 @@ internal static class SkillEffectFormatter
         // Summon Player is the only summon_count_per_cast 0 skill and has its own text.
         if (!string.IsNullOrEmpty(skill.summoned_monster_id) || !string.IsNullOrEmpty(skill.pet_name))
         {
-            var name = !string.IsNullOrEmpty(skill.summoned_monster_name) ? skill.summoned_monster_name!
-                : !string.IsNullOrEmpty(skill.pet_name) ? skill.pet_name!
-                : !string.IsNullOrEmpty(skill.summoned_monster_id) ? skill.summoned_monster_id!
+            var name = !string.IsNullOrEmpty(skill.summoned_monster_name) ? skill.summoned_monster_name
+                : !string.IsNullOrEmpty(skill.pet_name) ? skill.pet_name
+                : !string.IsNullOrEmpty(skill.summoned_monster_id) ? skill.summoned_monster_id
                 : "pet";
 
             var details = new List<string>();
@@ -305,7 +388,31 @@ internal static class SkillEffectFormatter
         }
     }
 
-    private static void FormatBuffDebuffStats(SkillEffectInput skill, bool castByMonsters, List<string> parts)
+    /// <summary>The five resistances, in display order.</summary>
+    private static readonly (string Key, string Name)[] Resists =
+    {
+        ("magic_resist_bonus", "magic"),
+        ("poison_resist_bonus", "poison"),
+        ("fire_resist_bonus", "fire"),
+        ("cold_resist_bonus", "cold"),
+        ("disease_resist_bonus", "disease"),
+    };
+
+    private static LinearValue ResistValue(SkillEffectInput skill, string key) => key switch
+    {
+        "magic_resist_bonus" => skill.magic_resist_bonus,
+        "poison_resist_bonus" => skill.poison_resist_bonus,
+        "fire_resist_bonus" => skill.fire_resist_bonus,
+        "cold_resist_bonus" => skill.cold_resist_bonus,
+        "disease_resist_bonus" => skill.disease_resist_bonus,
+        _ => throw new System.InvalidOperationException($"Unknown resist {key}"),
+    };
+
+    private static void FormatBuffDebuffStats(
+        SkillEffectInput skill,
+        bool castByMonsters,
+        Dictionary<string, string> notes,
+        List<string> parts)
     {
         var initialPartCount = parts.Count;
         var debuff = skill.skill_type is "area_debuff" or "target_debuff";
@@ -324,10 +431,7 @@ internal static class SkillEffectFormatter
             if (skill.is_fire_debuff) types.Add("fire");
             if (skill.is_cold_debuff) types.Add("cold");
             if (skill.is_magic_debuff) types.Add("magic");
-            var list = types.Count > 1
-                ? $"{string.Join(", ", types.GetRange(0, types.Count - 1))} & {types[types.Count - 1]}"
-                : string.Join("", types);
-            parts.Add($"cleanses {list} debuffs");
+            parts.Add($"cleanses {JoinAnd(types)} debuffs");
             // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs instead of applying its own buff fields.
             return;
         }
@@ -354,28 +458,32 @@ internal static class SkillEffectFormatter
             else if (speedBonus.base_value <= -10)
                 parts.Add("root");
             else if (speedBonus.base_value != 0)
-                parts.Add($"{(speedBonus.base_value > 0 ? "+" : "")}{FormatLinearValue(speedBonus)} speed");
+                parts.Add(SignedValue(speedBonus, "speed"));
         }
 
         // 3. Resource pools
-        AddSignedValue(parts, ParseLinearValue(skill.health_max_bonus), "max hp", false);
+        AddValue(parts, skill.health_max_bonus, "max hp", false, Note(notes, "health_max_bonus"));
         var healthPercentTarget = skill.skill_type == "passive" && skill.is_pet_skill
             ? "companion max hp"
             : "max hp";
-        AddSignedPercent(parts, ParseLinearValue(skill.health_max_percent_bonus), healthPercentTarget, false);
-        AddSignedValue(parts, ParseLinearValue(skill.mana_max_bonus), "max mana", false);
-        AddSignedPercent(parts, ParseLinearValue(skill.mana_max_percent_bonus), "max mana", false);
-        AddSignedValue(parts, ParseLinearValue(skill.energy_max_bonus), "max rage", false);
+        AddPercent(parts, skill.health_max_percent_bonus, healthPercentTarget, false, Note(notes, "health_max_percent_bonus"));
+        AddValue(parts, skill.mana_max_bonus, "max mana", false, Note(notes, "mana_max_bonus"));
+        var manaMaxPercent = ParseLinearValue(skill.mana_max_percent_bonus);
+        if (manaMaxPercent != null)
+            parts.Add(SignedPercent(manaMaxPercent, "max mana"));
+        AddValue(parts, skill.energy_max_bonus, "max rage", false, Note(notes, "energy_max_bonus"));
 
         // 4. Offense
-        AddSignedValue(parts, ParseLinearValue(skill.damage_bonus), "attack power", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.damage_percent_bonus), "attack power", true);
-        AddSignedValue(parts, ParseLinearValue(skill.magic_damage_bonus), "spell power", true);
-        AddSignedPercent(
+        AddValue(parts, skill.damage_bonus, "attack power", true, Note(notes, "damage_bonus"));
+        AddPercent(parts, skill.damage_percent_bonus, "attack power", true, Note(notes, "damage_percent_bonus"));
+        AddValue(parts, skill.magic_damage_bonus, "spell power", true, Note(notes, "magic_damage_bonus"));
+        // Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active Reaper Form also multiplies the caster's DoT ticks on others by its spell power bonus.
+        AddPercent(
             parts,
-            ParseLinearValue(skill.magic_damage_percent_bonus),
+            skill.magic_damage_percent_bonus,
             skill.is_necromancer_reaper_form ? "spell power & DoT dmg" : "spell power",
-            true);
+            true,
+            Note(notes, "magic_damage_percent_bonus"));
         var lifetapHealing = ParseLinearValue(skill.lifetap_healing_percent_bonus);
         if (lifetapHealing != null)
             parts.Add($"+{FormatLinearPercent(lifetapHealing)} lifetap healing");
@@ -386,39 +494,54 @@ internal static class SkillEffectFormatter
         // 4. Defense
         var defenseBonus = ParseLinearValue(skill.defense_bonus);
         var magicResistBonus = ParseLinearValue(skill.magic_resist_bonus);
+        // Source: server-scripts/Combat.cs:DealDamageAt — 10,000 AC and Magic Resist block every direct hit.
         var invulnerable = (defenseBonus?.base_value ?? 0) >= 10000 && (magicResistBonus?.base_value ?? 0) >= 10000;
         if (invulnerable)
             parts.Add(castByMonsters ? "immune to direct dmg" : "invulnerable");
         else
-            AddSignedValue(parts, defenseBonus, "AC", true);
-        AddSignedValue(parts, ParseLinearValue(skill.ward_bonus), "ward", true);
+            AddValue(parts, skill.defense_bonus, "AC", true, Note(notes, "defense_bonus"));
+        AddValue(parts, skill.ward_bonus, "ward", true, Note(notes, "ward_bonus"));
         if (!invulnerable)
         {
-            AddSignedValue(parts, magicResistBonus, "magic res", true);
-            AddSignedValue(parts, ParseLinearValue(skill.poison_resist_bonus), "poison res", true);
-            AddSignedValue(parts, ParseLinearValue(skill.fire_resist_bonus), "fire res", true);
-            AddSignedValue(parts, ParseLinearValue(skill.cold_resist_bonus), "cold res", true);
-            AddSignedValue(parts, ParseLinearValue(skill.disease_resist_bonus), "disease res", true);
+            // Resists with the same amount and note read as one fragment, such as "+10 poison & disease res".
+            var groups = new List<(List<string> Names, string Key, LinearValue Value)>();
+            foreach (var (key, name) in Resists)
+            {
+                var value = ParseLinearValue(ResistValue(skill, key));
+                if (value == null || value.base_value == 0)
+                    continue;
+                var index = groups.FindIndex(group =>
+                    group.Value.base_value == value.base_value
+                    && group.Value.bonus_per_level == value.bonus_per_level
+                    && Note(notes, group.Key) == Note(notes, key));
+                if (index >= 0)
+                    groups[index].Names.Add(name);
+                else
+                    groups.Add((new List<string> { name }, key, value));
+            }
+            foreach (var (names, key, value) in groups)
+            {
+                var label = names.Count == Resists.Length ? "all" : JoinAnd(names);
+                parts.Add(Qualify(SignedValue(value, $"{label} res"), Note(notes, key)));
+            }
         }
 
         // 5. Attack speed
-        AddSignedPercent(parts, ParseLinearValue(skill.haste_bonus), "haste", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.spell_haste_bonus), "spell casting haste", true);
+        AddPercent(parts, skill.haste_bonus, "haste", true, Note(notes, "haste_bonus"));
+        AddPercent(parts, skill.spell_haste_bonus, "spell casting haste", true, Note(notes, "spell_haste_bonus"));
 
         // 7. Hit/chance modifiers
-        AddSignedPercent(parts, ParseLinearValue(skill.critical_chance_bonus), "crit", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.critical_resist_bonus), "critical resist", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.accuracy_bonus), "accuracy", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.block_chance_bonus), "block", true);
-        var fearResist = ParseLinearValue(skill.fear_resist_chance_bonus);
-        if (fearResist != null && fearResist.base_value != 0)
-        {
-            var sign = fearResist.base_value > 0 ? "+" : "";
-            var capSuffix = skill.fear_resist_chance_bonus_cap > 0
-                ? $" (max {FormatPercent(skill.fear_resist_chance_bonus_cap)})"
-                : "";
-            parts.Add($"{sign}{FormatLinearPercent(fearResist)} fear resist{capSuffix}");
-        }
+        AddPercent(parts, skill.critical_chance_bonus, "crit", true, Note(notes, "critical_chance_bonus"));
+        AddPercent(parts, skill.critical_resist_bonus, "critical resist", true, Note(notes, "critical_resist_bonus"));
+        AddPercent(parts, skill.accuracy_bonus, "accuracy", true, Note(notes, "accuracy_bonus"));
+        AddPercent(parts, skill.block_chance_bonus, "block", true, Note(notes, "block_chance_bonus"));
+        AddPercent(
+            parts,
+            skill.fear_resist_chance_bonus,
+            "fear resist",
+            true,
+            Note(notes, "fear_resist_chance_bonus"),
+            skill.fear_resist_chance_bonus_cap > 0 ? $"max {FormatPercent(skill.fear_resist_chance_bonus_cap)}" : null);
 
         // Cooldown reduction is an instant cast effect, formatted by Format.
 
@@ -426,13 +549,18 @@ internal static class SkillEffectFormatter
         var dmgShield = ParseLinearValue(skill.damage_shield);
         if (dmgShield != null && dmgShield.base_value > 0)
         {
-            var formattedType = skill.damage_shield_type != null
-                ? FormatDamageType(skill.damage_shield_type)
-                : "";
+            var formattedType = FormatDamageType(skill.damage_shield_type);
             var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
-            parts.Add($"{FormatLinearValue(dmgShield)}{typeLabel} dmg shield");
+            // Source: server-scripts/TargetDebuffSkill.cs:CorrectedTarget,Apply; Combat.cs:DealDamageAt — a debuff lands on the caster's target, so its shield hurts whoever strikes that target in melee.
+            if (skill.skill_type == "area_debuff")
+                throw new System.InvalidOperationException(
+                    $"Skill {skill.id}: an area debuff damage shield has no summary text");
+            parts.Add(Qualify(
+                $"{FormatLinearValue(dmgShield)}{typeLabel} dmg shield{(debuff ? " on its target" : "")}",
+                Note(notes, "damage_shield")));
         }
 
+        // Source: server-scripts/Combat.cs:DealDamageAt — the victim's healOnHitPercent heals the attacker of a non-spell melee DamageSkill hit.
         var healOnHit = ParseLinearValue(skill.heal_on_hit_percent);
         if (healOnHit != null && healOnHit.base_value > 0)
             parts.Add($"melee hits on the target heal the attacker {FormatLinearPercent(healOnHit)} of dmg");
@@ -442,50 +570,53 @@ internal static class SkillEffectFormatter
         if (hps != null && hps.base_value != 0)
         {
             if (hps.base_value > 0)
-                parts.Add($"{FormatLinearValue(hps)} hp/s");
+                parts.Add(Qualify($"{FormatLinearValue(hps)} hp/s", Note(notes, "healing_per_second_bonus")));
             else
             {
-                var formattedType = skill.damage_over_time_type != null
-                    ? FormatDamageType(skill.damage_over_time_type)
-                    : "";
+                var formattedType = FormatDamageType(skill.damage_over_time_type);
                 var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
-                // Attribute scaling is documented in skill details, not effect summaries.
-                parts.Add($"{(debuff ? "" : "wearer takes ")}{FormatLinearValue(Abs(hps))}{typeLabel} dmg/s");
+                parts.Add(Qualify(
+                    $"{(debuff ? "" : "wearer takes ")}{FormatLinearValue(Negated(hps))}{typeLabel} dmg/s",
+                    Note(notes, "healing_per_second_bonus")));
             }
         }
 
+        // Source: server-scripts/Skills.cs:1617-1623,1754-1755 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second.
         var hpPct = ParseLinearValue(skill.health_percent_per_second_bonus);
         if (hpPct != null && hpPct.base_value != 0)
         {
             if (hpPct.base_value > 0)
-                parts.Add($"+{FormatLinearPercent(hpPct)} hp/s");
+                parts.Add(Qualify($"+{FormatLinearPercent(hpPct)} hp/s", Note(notes, "health_percent_per_second_bonus")));
             else
             {
-                var share = FormatLinearPercent(new LinearValue(-hpPct.base_value, -hpPct.bonus_per_level));
-                parts.Add(debuff ? $"{share} max hp dmg/s" : $"{share} max hp drain/s");
+                var share = FormatLinearPercent(Negated(hpPct));
+                parts.Add(Qualify(
+                    debuff ? $"{share} max hp dmg/s" : $"{share} max hp drain/s",
+                    Note(notes, "health_percent_per_second_bonus")));
             }
         }
 
         var mps = ParseLinearValue(skill.mana_per_second_bonus);
         if (mps != null && mps.base_value != 0)
         {
-            if (mps.base_value > 0)
-                parts.Add($"{FormatLinearValue(mps)} mana/s");
-            else
-                parts.Add($"{FormatLinearValue(Abs(mps))} mana drain/s");
+            parts.Add(Qualify(
+                mps.base_value > 0
+                    ? $"{FormatLinearValue(mps)} mana/s"
+                    : $"{FormatLinearValue(Negated(mps))} mana drain/s",
+                Note(notes, "mana_per_second_bonus")));
         }
 
-        AddSignedPercent(parts, ParseLinearValue(skill.mana_percent_per_second_bonus), "mana/s", true);
-        AddSignedValue(parts, ParseLinearValue(skill.energy_per_second_bonus), "rage/s", true);
-        AddSignedPercent(parts, ParseLinearValue(skill.energy_percent_per_second_bonus), "rage/s", true);
+        AddPercent(parts, skill.mana_percent_per_second_bonus, "mana/s", true, Note(notes, "mana_percent_per_second_bonus"));
+        AddValue(parts, skill.energy_per_second_bonus, "rage/s", true, Note(notes, "energy_per_second_bonus"));
+        AddPercent(parts, skill.energy_percent_per_second_bonus, "rage/s", true, Note(notes, "energy_percent_per_second_bonus"));
 
         // 11. Primary stats
-        AddSignedValue(parts, ParseLinearValue(skill.strength_bonus), "str", true);
-        AddSignedValue(parts, ParseLinearValue(skill.intelligence_bonus), "int", true);
-        AddSignedValue(parts, ParseLinearValue(skill.dexterity_bonus), "dex", true);
-        AddSignedValue(parts, ParseLinearValue(skill.constitution_bonus), "con", true);
-        AddSignedValue(parts, ParseLinearValue(skill.wisdom_bonus), "wis", true);
-        AddSignedValue(parts, ParseLinearValue(skill.charisma_bonus), "cha", true);
+        AddValue(parts, skill.strength_bonus, "STR", true);
+        AddValue(parts, skill.intelligence_bonus, "INT", true);
+        AddValue(parts, skill.dexterity_bonus, "DEX", true);
+        AddValue(parts, skill.constitution_bonus, "CON", true);
+        AddValue(parts, skill.wisdom_bonus, "WIS", true);
+        AddValue(parts, skill.charisma_bonus, "CHA", true);
 
         // Debuff type tags (only if nothing else and it's a debuff). A charm's type only matters to cleanses.
         if (parts.Count == initialPartCount && debuff && !skill.is_bard_charm)
@@ -531,24 +662,62 @@ internal static class SkillEffectFormatter
         return FormatLinearDuration(skill.duration_base, perLevel);
     }
 
-    /// <summary>Resource/offense/defense/stat bonuses: <c>{sign}{value} {label}</c>.
-    /// When <paramref name="requireNonZeroBase"/> the TS guard is <c>val &amp;&amp; base !== 0</c>;
-    /// otherwise it is just <c>val</c> (non-null after the zero-collapse).</summary>
-    private static void AddSignedValue(List<string> parts, LinearValue value, string label, bool requireNonZeroBase)
+    /// <summary>A signed amount with its qualifiers, when it is set (and nonzero at rank 1 when
+    /// <paramref name="requireNonZeroBase"/>).</summary>
+    private static void AddValue(
+        List<string> parts,
+        LinearValue raw,
+        string label,
+        bool requireNonZeroBase,
+        params string[] qualifiers)
     {
+        var value = ParseLinearValue(raw);
         if (value == null || (requireNonZeroBase && value.base_value == 0))
             return;
-        var sign = value.base_value > 0 ? "+" : "";
-        parts.Add($"{sign}{FormatLinearValue(value)} {label}");
+        parts.Add(Qualify(SignedValue(value, label), qualifiers));
     }
 
-    private static void AddSignedPercent(List<string> parts, LinearValue value, string label, bool requireNonZeroBase)
+    private static void AddPercent(
+        List<string> parts,
+        LinearValue raw,
+        string label,
+        bool requireNonZeroBase,
+        params string[] qualifiers)
     {
+        var value = ParseLinearValue(raw);
         if (value == null || (requireNonZeroBase && value.base_value == 0))
             return;
-        var sign = value.base_value > 0 ? "+" : "";
-        parts.Add($"{sign}{FormatLinearPercent(value)} {label}");
+        parts.Add(Qualify(SignedPercent(value, label), qualifiers));
     }
+
+    private static string SignedValue(LinearValue value, string label) =>
+        $"{(value.base_value > 0 ? "+" : "")}{FormatLinearValue(value)} {label}";
+
+    private static string SignedPercent(LinearValue value, string label) =>
+        $"{(value.base_value > 0 ? "+" : "")}{FormatLinearPercent(value)} {label}";
+
+    // --- Text helpers (mirror qualify/joinAnd) ---
+
+    private static string Note(Dictionary<string, string> notes, string key) =>
+        notes.TryGetValue(key, out var note) ? note : null;
+
+    /// <summary>A fragment followed by its present qualifiers in parentheses.</summary>
+    private static string Qualify(string fragment, params string[] qualifiers)
+    {
+        var present = new List<string>();
+        foreach (var qualifier in qualifiers)
+        {
+            if (!string.IsNullOrEmpty(qualifier))
+                present.Add(qualifier);
+        }
+        return present.Count == 0 ? fragment : $"{fragment} ({string.Join(", ", present)})";
+    }
+
+    /// <summary>"a", "a &amp; b" or "a, b &amp; c".</summary>
+    private static string JoinAnd(List<string> items) =>
+        items.Count > 1
+            ? $"{string.Join(", ", items.GetRange(0, items.Count - 1))} & {items[items.Count - 1]}"
+            : string.Join("", items);
 
     // --- Value helpers (mirror parseLinearValue/formatLinearValue/formatPercent) ---
 
@@ -563,15 +732,15 @@ internal static class SkillEffectFormatter
         return lv;
     }
 
-    private static LinearValue Abs(LinearValue lv) =>
-        new(System.Math.Abs(lv.base_value), System.Math.Abs(lv.bonus_per_level));
+    /// <summary>The value with its sign flipped at every rank.</summary>
+    private static LinearValue Negated(LinearValue lv) =>
+        new(-lv.base_value, -lv.bonus_per_level);
 
-    /// <summary>Exact player-context formula as a function of skill level.</summary>
     private static string FormatLinearValue(LinearValue lv)
     {
         if (lv.bonus_per_level == 0)
-            return Loc(lv.base_value);
-        return FormatSkillLevelFormula(lv, Loc);
+            return FormatNumber(lv.base_value);
+        return FormatSkillLevelFormula(lv, FormatNumber);
     }
 
     private static string FormatLinearPercent(LinearValue lv)
@@ -586,43 +755,45 @@ internal static class SkillEffectFormatter
     {
         if (bonusPerLevel == 0)
             return FormatDuration(baseValue);
-        return FormatSkillLevelFormula(new LinearValue(baseValue, bonusPerLevel), value => $"{Loc(value)}s");
+        return FormatSkillLevelFormula(new LinearValue(baseValue, bonusPerLevel), value => $"{FormatNumber(value)}s");
     }
 
+    // Source: server-scripts/LinearFloat.cs:10-13 — a rank's value is baseValue + bonusPerLevel × (rank − 1).
+    /// <summary>A value that changes with rank, written so its first number is the value at
+    /// rank 1, as in "1 + 4 × (rank − 1)". A value whose rank-1 value equals its step reads
+    /// "20 × rank".</summary>
     private static string FormatSkillLevelFormula(
         LinearValue value,
         System.Func<double, string> formatValue)
     {
-        var constant = value.base_value - value.bonus_per_level;
+        if (value.base_value == value.bonus_per_level)
+            return $"{formatValue(value.bonus_per_level)} × rank";
         var operation = value.bonus_per_level > 0 ? "+" : "−";
-        var perLevel = formatValue(System.Math.Abs(value.bonus_per_level));
-
-        if (constant == 0)
-        {
-            var sign = value.bonus_per_level < 0 ? "−" : "";
-            return $"{sign}{perLevel} × rank";
-        }
-
-        return $"{formatValue(constant)} {operation} {perLevel} × rank";
+        return $"{formatValue(value.base_value)} {operation} {formatValue(System.Math.Abs(value.bonus_per_level))} × (rank − 1)";
     }
 
     /// <summary>Mirror of formatSkillEffect's local <c>formatPercent</c>: value*100, two
-    /// decimal places, dropping trailing zeros and the decimal when the result is whole. No grouping.</summary>
+    /// decimal places, dropping trailing zeros and the decimal when the result is whole, with a
+    /// true minus sign. No grouping.</summary>
     private static string FormatPercent(double value)
     {
         var pct = value * 100.0;
         var rounded = System.Math.Round(pct, 2, System.MidpointRounding.AwayFromZero);
-        if (rounded == System.Math.Round(rounded))
-            return ((long)rounded).ToString(Inv) + "%";
-        return rounded.ToString("0.0###", Inv) + "%";
+        var text = rounded == System.Math.Round(rounded)
+            ? ((long)rounded).ToString(Inv)
+            : rounded.ToString("0.0###", Inv);
+        return TrueMinus(text) + "%";
     }
 
-    /// <summary>Mirror of JS <c>Number.toLocaleString()</c> (en-US): thousands grouping,
-    /// up to three fraction digits.</summary>
-    private static string Loc(double value) => value.ToString("#,##0.###", Inv);
+    /// <summary>Mirror of formatSkillEffect's <c>formatNumber</c>, JS <c>Number.toLocaleString()</c>
+    /// (en-US) with a true minus sign: thousands grouping, up to three fraction digits.</summary>
+    private static string FormatNumber(double value) => TrueMinus(value.ToString("#,##0.###", Inv));
+
+    private static string TrueMinus(string text) =>
+        text.StartsWith("-") ? "−" + text.Substring(1) : text;
 
     /// <summary>Mirror of plain JS <c>`${number}`</c> interpolation: no grouping, no
-    /// trailing zeros (used for durations, stun/fear seconds, AoE sizes).</summary>
+    /// trailing zeros (used for stun/fear seconds, knockback and AoE sizes).</summary>
     private static string JsNum(double value)
     {
         if (value == System.Math.Floor(value) && !double.IsInfinity(value))
@@ -646,14 +817,14 @@ internal static class SkillEffectFormatter
         return $"{minutes}m";
     }
 
-    /// <summary>Verbatim port of <c>HARDCODED_EFFECTS</c> — skills whose summary is a
+    /// <summary>Verbatim port of <c>HARDCODED_EFFECTS</c>: skills whose summary is a
     /// fixed string keyed by skill id (game-changers the generic formatter can't model).</summary>
     private static readonly Dictionary<string, string> HardcodedEffects = new()
     {
         ["improved_backstab"] = "from-behind bonus dmg 25% instead of 10%",
         ["bind_affinity"] = "set bind point (respawn & Gate Scroll destination)",
         ["binding"] = "set bind point (respawn & Gate Scroll destination)",
-        ["elixir_endurance"] = "potion buff duration +60s × rank",
+        ["elixir_endurance"] = "potion buff duration +60s × rank (not bandages)",
         ["veteran_awareness"] = "reveals nearby monsters on minimap (not in Temple of Valaark)",
         ["parry"] = "while casting, blocks your target's physical melee hits & counters 50% (max 5,000)",
         ["symbiosis"] = "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",
@@ -678,14 +849,14 @@ internal static class SkillEffectFormatter
         ["sharp_senses"] = "reveal and disarm traps",
         ["halloween_event"] = "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
         ["winter_festival"] = "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
-        ["master_poisoner"] = "Stab deals poison dmg (attack power + 250% of dexterity), resisted by poison res, 10s",
+        ["master_poisoner"] = "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
         ["wild_strike"] = "next auto attack deals +10% × rank dmg as magic dmg, 5s",
         ["call_of_the_heroes"] = "teleport all active mercenaries to you, remove their fear",
         ["charge"] = "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
         ["teleport"] = "use travel items (out of combat)",
         ["new_skill_placeholder"] = "",
-        ["razor_of_wrath"] = "attack power +1% × rank, scales with current rage (full rage = full bonus)",
-        ["arcane_edge"] = "spell power +1% × rank, scales with current mana (full mana = full bonus)",
+        ["razor_of_wrath"] = "+1% × rank attack power, scaled by current rage (full rage = full bonus)",
+        ["arcane_edge"] = "+1% × rank spell power, scaled by current mana (full mana = full bonus)",
         ["divine_intervention"] = "grants invulnerability to nearby allies, 3s",
     };
 }

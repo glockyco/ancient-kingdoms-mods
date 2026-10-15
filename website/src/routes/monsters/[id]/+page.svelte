@@ -32,7 +32,6 @@
     formatSkillType,
   } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
-  import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
   import { monsterKillReputation } from "$lib/utils/killReputation";
   import Sword from "@lucide/svelte/icons/sword";
@@ -263,15 +262,12 @@
   const displayedSkills: DisplayMonsterSkill[] = $derived(
     data.skills.map((skill) => ({
       ...skill,
-      effect: formatSkillEffect(
-        skillRowToEffectInput(skill, skill.runtime_level),
-        {
-          monster: {
-            damage: displayDamage,
-            magicDamage: displayMagicDamage,
-          },
+      effect: formatSkillEffect(skill.effect_input, {
+        monster: {
+          damage: displayDamage,
+          magicDamage: displayMagicDamage,
         },
-      ),
+      }),
     })),
   );
 

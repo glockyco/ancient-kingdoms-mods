@@ -142,10 +142,20 @@ export function avoidanceCalculation(physical = false): Calculation {
   };
 }
 
+/** The share of a heal each point of the healer's Wisdom adds. */
+export const WISDOM_HEAL_SHARE = 0.004;
+/** The highest share the Wisdom bonus adds to a heal. */
+export const WISDOM_HEAL_CAP = 5;
+/** A player Ranger's Wisdom and Intelligence count three times for heals and targeted buffs. */
+export const RANGER_ATTRIBUTE_MULTIPLIER = 3;
+
 // Source: server-scripts/Wisdom.cs:GetHealBonus; TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply; HealSkill.cs:ToolTip — player Ranger healing triples Wisdom. The tooltip shows listed healing before a separate attribute bonus.
 export function wisdomHeal(baseHeal: number, wisdom: number, ranger = false) {
-  const rawShare = multiplyF32(Math.max(0, wisdom * (ranger ? 3 : 1)), 0.004);
-  const share = Math.min(rawShare, 5);
+  const rawShare = multiplyF32(
+    Math.max(0, wisdom * (ranger ? RANGER_ATTRIBUTE_MULTIPLIER : 1)),
+    WISDOM_HEAL_SHARE,
+  );
+  const share = Math.min(rawShare, WISDOM_HEAL_CAP);
   const bonus = iround(multiplyF32(baseHeal, share));
   return { rawShare, share, bonus, total: baseHeal + bonus };
 }
@@ -186,10 +196,15 @@ export function healingCalculation(ranger = false): Calculation {
   };
 }
 
+/** The song power each point of the Bard's Charisma adds. */
+export const SONG_POWER_PER_CHARISMA = 0.001;
+/** The highest bonus song power adds on top of 100%. */
+export const SONG_POWER_BONUS_CAP = 2;
+
 // Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; BardFinalCadenceSkill.cs:67-70 — whole-number song effects round before Melody.
 export function bardBonus(charisma: number): { raw: number; limited: number } {
-  const raw = multiplyF32(Math.max(0, charisma), 0.001);
-  return { raw, limited: Math.min(raw, 2) };
+  const raw = multiplyF32(Math.max(0, charisma), SONG_POWER_PER_CHARISMA);
+  return { raw, limited: Math.min(raw, SONG_POWER_BONUS_CAP) };
 }
 
 export function bardPower(charisma: number): number {

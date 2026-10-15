@@ -3,9 +3,10 @@ import type { ClassSkill } from "./classes.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { iround, multiplyF32 } from "$lib/planner/engine-math";
 import {
-  SKILL_EFFECT_COLUMNS,
-  SKILL_EFFECT_JOINS,
+  SKILL_LIST_COLUMNS,
+  SKILL_LIST_JOINS,
 } from "$lib/skills/skillsListQuery";
+import { skillEffectSummaries } from "$lib/skills/skillEffects.server";
 import type {
   MercenaryDetailView,
   MercenaryProfile,
@@ -472,9 +473,9 @@ export function getSummonIds(): string[] {
  * Get skills for a single pet, ordered by skill_index.
  */
 function getPetSkills(petId: string): ClassSkill[] {
-  return query<ClassSkill>(
+  const rows = query<Omit<ClassSkill, "effect">>(
     `SELECT
-      ${SKILL_EFFECT_COLUMNS},
+      ${SKILL_LIST_COLUMNS},
       va.width as visual_width,
       va.height as visual_height,
       va.source_field as visual_source_field,
@@ -483,14 +484,18 @@ function getPetSkills(petId: string): ClassSkill[] {
       s.energy_cost,
       s.cooldown,
       s.cast_time,
+      s.duration_base,
+      s.duration_per_level,
       s.base_skill,
       s.required_spent_points,
       ps.is_innate
     FROM pet_skills ps
     JOIN skills s ON s.id = ps.skill_id
-    ${SKILL_EFFECT_JOINS}
+    ${SKILL_LIST_JOINS}
     WHERE ps.pet_id = ?
     ORDER BY ps.is_innate ASC, ps.skill_index`,
     [petId],
   );
+  const effects = skillEffectSummaries(rows.map((row) => row.id));
+  return rows.map((row, index) => ({ ...row, effect: effects[index] }));
 }

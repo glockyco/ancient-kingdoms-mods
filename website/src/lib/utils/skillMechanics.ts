@@ -1,6 +1,5 @@
 import type {
   SkillDetailView,
-  SkillPet,
   Caster,
   DamageFormulaKind,
   DamageStat,
@@ -10,6 +9,8 @@ import type {
   DebuffBonusAttrKind,
   SkillMechanicsSpec,
 } from "$lib/types/skills";
+import type { SkillCasterPet, SkillCasters } from "$lib/skills/skillDetail";
+import { weaponProcClasses } from "$lib/skills/skill-facts";
 import { ALL_CLASS_IDS } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 
@@ -248,50 +249,24 @@ export function damageFormulaStats(
   }
 }
 
-function unanimousStats(
-  skill: DamageDispatchSkill,
-  kinds: DamageFormulaKind[],
-): DamageStat[] {
-  const [first, ...rest] = kinds.map((kind) => damageFormulaStats(skill, kind));
-  const key = first.join("+");
-  if (rest.some((stats) => stats.join("+") !== key)) {
-    throw new Error(
-      `Skill ${skill.id}: casters of one kind add different stats to its damage, so its effect summary cannot name one formula`,
-    );
-  }
-  return first;
-}
-
-/**
- * The stats an effect summary adds to listed damage. Player classes take
- * precedence over mercenaries, and both over monsters, companions, familiars
- * and weapon procs, whose handlers all resolve like a monster's.
- */
-export function summaryDamageStats(
-  skill: DamageDispatchSkill,
-  playerClasses: readonly string[],
-  mercenaryTypes: readonly string[],
-): DamageStat[] {
-  if (!DAMAGE_SKILL_TYPES.has(skill.skill_type)) return [];
-  if (playerClasses.length > 0) {
-    return unanimousStats(
-      skill,
-      playerClasses.map((cls) => playerDamageFormula(skill, cls)),
-    );
-  }
-  if (mercenaryTypes.length > 0) {
-    return unanimousStats(
-      skill,
-      mercenaryTypes.map((type) => mercDamageFormula(skill, type)),
-    );
-  }
-  return monsterDamageStats(skill);
-}
-
-/** The stats a monster, companion or familiar adds to the skill's listed damage. */
+/** The stats a monster, NPC, companion or familiar adds to the skill's listed damage. */
 export function monsterDamageStats(skill: DamageDispatchSkill): DamageStat[] {
   if (!DAMAGE_SKILL_TYPES.has(skill.skill_type)) return [];
   return damageFormulaStats(skill, otherDamageFormula(skill));
+}
+
+/** The mechanics contexts of a skill for everyone who casts it. Monsters and NPCs share one caster kind. */
+export function skillMechanicsSpec(
+  skill: SkillDetailView,
+  casters: SkillCasters,
+): SkillMechanicsSpec {
+  return computeMechanicsSpec(
+    skill,
+    casters.pets,
+    casters.monsterCount + casters.npcCount > 0,
+    casters.weaponProcs.length > 0,
+    weaponProcClasses(casters.weaponProcs),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -315,7 +290,7 @@ export function monsterDamageStats(skill: DamageDispatchSkill): DamageStat[] {
  */
 export function computeMechanicsSpec(
   skill: SkillDetailView,
-  usedByPets: SkillPet[],
+  usedByPets: SkillCasterPet[],
   hasMonsters: boolean,
   isWeaponProc: boolean = false,
   weaponProcClasses: readonly string[] = ALL_CLASS_IDS,

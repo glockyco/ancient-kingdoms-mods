@@ -11,10 +11,8 @@
   import {
     formatLinearDuration,
     formatLinearValue,
-    formatSkillEffect,
   } from "$lib/utils/formatSkillEffect";
   import type { ClassSkill } from "$lib/queries/classes.server";
-  import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
 
   let { skills, urlKey }: { skills: ClassSkill[]; urlKey: string } = $props();
 
@@ -49,10 +47,9 @@
     { accessorKey: "skill_type", header: "Type" },
     { accessorKey: "max_level", header: "Max Rank" },
     {
-      id: "effect",
+      accessorKey: "effect",
       header: "Effect",
       enableSorting: false,
-      accessorFn: (row) => formatSkillEffect(skillRowToEffectInput(row)),
     },
     {
       id: "cost",

@@ -8,9 +8,6 @@
       "sha256": "180b374927f184d7fce2a8a212347b2263d6ee99f5e8bcd6c80a3b94aa032e39",
       "span": 4
     },
-    "AreaBuffSkill.cs": {
-      "span": 0
-    },
     "AreaBuffSkill.cs:16-18": {
       "sha256": "07d3ca4f05e26d24f69bc4fbcd86457001866bd1411bc4259e31276b463df39a",
       "span": 3
@@ -156,6 +153,9 @@
       "sha256": "1610df67e5a41a58fcd1ae0db9edf390e0be2a92ae1a3a34ce6427b2ea503836",
       "span": 44
     },
+    "BardCharmSongSkill.cs:Apply": {
+      "span": 0
+    },
     "BardCharmSongSkill.cs:GetCharmResistChance": {
       "span": 0
     },
@@ -217,6 +217,10 @@
       "sha256": "f81ab64fc7d1fe86fa3e8ee33fa4f263dc04cb12080d13757849e62f38042a26",
       "span": 6
     },
+    "BardSongSkill.cs:28": {
+      "sha256": "1009a6e3a904a91407745e62cd643094244e0915a7b43495d0cfb9fce85e9ec5",
+      "span": 1
+    },
     "BardSongSkill.cs:78-117": {
       "sha256": "63bb65436f29cbf1b10d093a74d078b31d44eee8338b21b3e5e81c6eda02d275",
       "span": 40
@@ -274,6 +278,10 @@
     "Buff.cs:47-258": {
       "sha256": "6f54fdd9b91cc03246498839e16f9bc80413ac00b06210c261ca117d9db5dd8b",
       "span": 212
+    },
+    "Buff.cs:47-292": {
+      "sha256": "4e6d9d706ff011c4592cf83afdf1494f00786ae2fa52e230d1688cfb4675ce2d",
+      "span": 246
     },
     "Buff.cs:47-60": {
       "sha256": "5e195bbf0a640b3c41d738a379c5cc56b54e6936a9ab317ad3634e597a463d71",
@@ -442,9 +450,6 @@
       "sha256": "b450020d973a263232ceb9e0884c962a4786653a341c0d4d21be3e4beab12705",
       "span": 18
     },
-    "Combat.cs": {
-      "span": 0
-    },
     "Combat.cs:1040": {
       "sha256": "836343cc06d725cfb6b43929fda17812814bc3bd8fe461146c5a3d75ed8a8891",
       "span": 1
@@ -569,6 +574,10 @@
       "sha256": "b47a22152c63f9354dbc37087942c4beba36c5e664eaa584bc2b5a6927ca8720",
       "span": 25
     },
+    "Combat.cs:138": {
+      "sha256": "60341a68106a604ccb947cdba580ed4145e19e1f0817a94c94387b748c100b18",
+      "span": 1
+    },
     "Combat.cs:1536-1580": {
       "sha256": "36bb32a9a6138a90844b90e87a3f79c9068a7ef6e778a84c324a2c6405fd9c5f",
       "span": 45
@@ -592,6 +601,10 @@
     "Combat.cs:1596-1603": {
       "sha256": "240a38eb27d311639b4e4d58e8ef72fc266231b4eb9c9dcd808061c6c28b4715",
       "span": 8
+    },
+    "Combat.cs:170": {
+      "sha256": "6deaa39cf5b8ab2e0d403e0ebb6f82bb5a5f3a6b887db6ad553c68d0ebdae218",
+      "span": 1
     },
     "Combat.cs:295-307": {
       "sha256": "950d764ea1fc53b88ad01dfc2fc1a4fe83897b1a9670c0d129130761dca73b64",
@@ -2534,6 +2547,10 @@
     "Pet.cs:2079-2168": {
       "sha256": "fe4833545f3d7ba8eebf5b255dfbc7f60e4563ec956dc4694c9b4eb35f2220a3",
       "span": 90
+    },
+    "Pet.cs:2084-2095": {
+      "sha256": "d076a83557801368fd16bebfd2ab5caaf8c65f557c4313c067b2bb06e8c5bdbe",
+      "span": 12
     },
     "Pet.cs:2102-2126": {
       "sha256": "5d7f4388a25f8041b961ec6e90d3275a0caf723aec076d9b31cf866c52e6a526",
@@ -4748,10 +4765,6 @@
       "sha256": "6e9bbddd7c71b831ee57fa80b27330111d01e820eafac9b00830afa5a4363ed9",
       "span": 78
     },
-    "TargetDamageSkill.cs:167-176": {
-      "sha256": "600f11caa0fe2f8236adeed4385872c1208f2689cfd5ed9d24a1bbf634f511c0",
-      "span": 10
-    },
     "TargetDamageSkill.cs:167-195": {
       "sha256": "e40279197df7b8ad3faa0f54e07419cdb96a88432d77d8c5c7fd0003d50eb4f9",
       "span": 29
@@ -4767,10 +4780,6 @@
     "TargetDamageSkill.cs:188-203": {
       "sha256": "21e8a8d8f03dd674bfc9fcb60124fb24d24f686fcd209de376100e963be67489",
       "span": 16
-    },
-    "TargetDamageSkill.cs:188-205": {
-      "sha256": "6ba276e6272400a6d91dca7a6982028941c482c16ba16f22d7aec2e9ad4a0e8b",
-      "span": 18
     },
     "TargetDamageSkill.cs:223-227": {
       "sha256": "d65c216a065fddccd8c2627b76c33a4509004724ff8b0c985fc20d9399f98506",
@@ -4836,6 +4845,9 @@
       "span": 44
     },
     "TargetDebuffSkill.cs:Apply": {
+      "span": 0
+    },
+    "TargetDebuffSkill.cs:CorrectedTarget": {
       "span": 0
     },
     "TargetHealSkill.cs:137-144": {
@@ -4920,6 +4932,10 @@
     "TargetProjectileSkill.cs:191": {
       "sha256": "4be55244c5073b13d56993e81b986de0d987a22a93353ad2e67dda0192351c87",
       "span": 1
+    },
+    "TargetProjectileSkill.cs:193-204": {
+      "sha256": "b7d9b347190ff2e072f0a82f786e81769d97246fc9e74fb2ddb076426193ba35",
+      "span": 12
     },
     "TargetProjectileSkill.cs:196-201": {
       "sha256": "0ca5ff965dc228c3633c4cde94fb59371dbfa6bc5319a6d3ded0251ea15aacfe",

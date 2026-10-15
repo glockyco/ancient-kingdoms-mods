@@ -1,53 +1,14 @@
 /**
- * Shared SQL for every projection that feeds `formatSkillEffect`.
- *
- * `SKILL_EFFECT_COLUMNS` and `SKILL_EFFECT_JOINS` are the single definition of
- * the columns and joins the effect formatter reads. Class, pet, monster, and
- * skills-list projections compose them so each renders identical effect data.
- * The skill-detail query selects the complete skill row plus
- * `SKILL_EFFECT_DERIVED_COLUMNS`.
+ * Shared SQL for the skill tables on the skills list, class, pet and monster
+ * pages. `SKILL_LIST_COLUMNS` holds what those tables display. Their effect
+ * summaries come from `skillEffectInputs`, which reads the full skill row.
  *
  * `SKILLS_LIST_QUERY` is used by the `/skills` page loader
  * (`routes/skills/+page.server.ts`) and the BetterBestiary parity-corpus bake
- * (`scripts/gen-skill-effect-parity.ts`) so both read identical rows. Keeping one
- * query string is what lets the mod's runtime port stay matched to the website
- * overview; the lefthook drift guard then enforces it.
+ * (`scripts/gen-skill-effect-parity.ts`), so the corpus covers the same skills
+ * as the overview.
  */
-/**
- * Columns derived from a skill's users. `mercenary_types` lists the class
- * archetypes of the mercenaries that cast it. `npc_caster_only` marks a skill
- * that only monsters and NPCs cast, at their fixed rank. `potion_buff_levels`
- * lists the buff levels of the potions whose Elixir Endurance bonus extends it.
- */
-// Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:Skill; Npc.cs — monsters and NPCs cast at rank 1 when learnDefault, otherwise rank 0.
-// Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — every potion except Bandages applies its buff at 1 + Elixir Endurance rank once that skill is learned.
-export const SKILL_EFFECT_DERIVED_COLUMNS = `(
-        SELECT json_group_array(DISTINCT p.type_monster)
-        FROM pet_skills ps
-        JOIN pets p ON p.id = ps.pet_id
-        WHERE ps.skill_id = s.id AND p.is_mercenary = 1
-      ) AS mercenary_types,
-      (
-        coalesce(s.player_classes, '[]') = '[]'
-        AND coalesce(s.granted_by_items, '[]') = '[]'
-        AND NOT EXISTS (SELECT 1 FROM pet_skills ps WHERE ps.skill_id = s.id)
-        AND NOT EXISTS (SELECT 1 FROM traps t WHERE t.effect_skill_id = s.id)
-        AND (
-          EXISTS (SELECT 1 FROM monster_skills ms WHERE ms.skill_id = s.id)
-          OR EXISTS (
-            SELECT 1 FROM npcs n, json_each(n.skill_ids) npc_skill
-            WHERE npc_skill.value = s.id
-          )
-        )
-      ) AS npc_caster_only,
-      (
-        SELECT json_group_array(DISTINCT i.potion_buff_level)
-        FROM items i
-        WHERE i.potion_buff_id = s.id
-          AND coalesce(i.cooldown_category, '') != 'Bandages'
-      ) AS potion_buff_levels`;
-
-export const SKILL_EFFECT_COLUMNS = `
+export const SKILL_LIST_COLUMNS = `
       s.id,
       s.name,
       va.public_path as visual_public_path,
@@ -57,135 +18,18 @@ export const SKILL_EFFECT_COLUMNS = `
       s.level_required,
       s.player_classes,
       s.is_spell,
-      s.is_scroll,
-      s.learn_default,
-      s.required_weapon_category,
-      s.cast_range,
-      s.can_buff_others,
-      s.area_projectile,
-      s.is_undead_illusion,
-      ${SKILL_EFFECT_DERIVED_COLUMNS},
       s.is_veteran,
       s.is_pet_skill,
       s.is_mercenary_skill,
-      s.damage_type,
-      s.damage_over_time_type,
-      s.damage_shield_type,
-      s.damage,
-      s.damage_percent,
-      s.lifetap_percent,
-      s.knockback_chance,
-      s.knockback_distance,
-      s.stun_chance,
-      s.stun_time,
-      s.fear_chance,
-      s.fear_time,
-      s.aggro,
-      s.is_assassination_skill,
-      s.is_manaburn_skill,
-      s.break_armor_prob,
-      s.heals_health,
-      s.heals_mana,
-      s.charmed_damage_percent,
-      s.is_resurrect_skill,
-      s.is_balance_health,
-      s.health_cost_percent,
-      s.mana_restored_percent,
-      s.healing_percent,
-      s.healing_percent_per_intelligence,
-      s.channel_pulses,
-      s.also_buff_active_pet,
-      s.is_necromancer_blood_pact,
-      s.is_necromancer_death_bloom,
-      s.is_necromancer_pet_buff,
-      s.is_necromancer_reaper_form,
-      s.scales_with_intelligence,
-      s.lifetap_healing_percent_bonus,
-      s.damage_over_time_execute_bonus,
-      s.health_max_bonus,
-      s.health_max_percent_bonus,
-      s.mana_max_bonus,
-      s.mana_max_percent_bonus,
-      s.energy_max_bonus,
-      s.defense_bonus,
-      s.ward_bonus,
-      s.magic_resist_bonus,
-      s.poison_resist_bonus,
-      s.fire_resist_bonus,
-      s.cold_resist_bonus,
-      s.disease_resist_bonus,
-      s.damage_bonus,
-      s.damage_percent_bonus,
-      s.magic_damage_bonus,
-      s.magic_damage_percent_bonus,
-      s.haste_bonus,
-      s.spell_haste_bonus,
-      s.speed_bonus,
-      s.critical_chance_bonus,
-      s.critical_resist_bonus,
-      s.accuracy_bonus,
-      s.block_chance_bonus,
-      s.fear_resist_chance_bonus,
-      s.fear_resist_chance_bonus_cap,
-      s.damage_shield,
-      s.cooldown_reduction_percent,
-      s.heal_on_hit_percent,
-      s.healing_per_second_bonus,
-      s.health_percent_per_second_bonus,
-      s.mana_per_second_bonus,
-      s.mana_percent_per_second_bonus,
-      s.energy_per_second_bonus,
-      s.energy_percent_per_second_bonus,
-      s.strength_bonus,
-      s.intelligence_bonus,
-      s.dexterity_bonus,
-      s.constitution_bonus,
-      s.wisdom_bonus,
-      s.charisma_bonus,
-      s.duration_base,
-      s.duration_per_level,
-      s.is_permanent,
-      s.is_double_exp_spell,
-      s.is_invisibility,
-      s.ignores_see_invisibility,
-      s.illusion_race,
-      s.is_mana_shield,
-      s.is_cleanse,
-      s.is_dispel,
-      s.is_teleport,
-      s.is_blindness,
-      s.is_enrage,
-      s.scales_with_charisma,
-      s.is_bard_song,
-      s.is_bard_charm,
-      s.is_bard_final_cadence,
-      s.is_bard_virtuosity,
-      s.additional_damage_percent_per_song,
-      s.additional_active_bard_songs,
-      s.unlimited_active_bard_songs,
-      s.bard_song_duration_bonus_per_level,
-      s.extra_gather_item_chance,
-      s.food_and_drink_buff_duration_bonus_per_level,
-      s.is_poison_debuff,
-      s.is_disease_debuff,
-      s.is_fire_debuff,
-      s.is_cold_debuff,
-      s.is_magic_debuff,
-      s.is_melee_debuff,
-      s.prob_ignore_cleanse,
       s.summoned_monster_id,
       sm.name as summoned_monster_name,
       s.summoned_monster_level,
       s.summon_count_per_cast,
       s.max_active_summons,
       s.pet_prefab_name,
-      pet_lookup.id as pet_id,
-      s.is_familiar,
-      s.affects_random_target,
-      s.area_object_size,
-      s.area_objects_to_spawn`;
+      pet_lookup.id as pet_id`;
 
-export const SKILL_EFFECT_JOINS = `    LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
+export const SKILL_LIST_JOINS = `    LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
     LEFT JOIN pets pet_lookup ON lower(pet_lookup.name) = lower(s.pet_prefab_name)
     LEFT JOIN visual_assets va
       ON va.domain = 'skill'
@@ -193,7 +37,7 @@ export const SKILL_EFFECT_JOINS = `    LEFT JOIN monsters sm ON sm.id = s.summon
      AND va.kind = 'icon'`;
 
 export const SKILLS_LIST_QUERY = `SELECT
-    ${SKILL_EFFECT_COLUMNS}
+    ${SKILL_LIST_COLUMNS}
     FROM skills s
-    ${SKILL_EFFECT_JOINS}
+    ${SKILL_LIST_JOINS}
     ORDER BY s.tier ASC, s.name ASC`;

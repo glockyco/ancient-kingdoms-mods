@@ -11,6 +11,13 @@ export interface LinearValue {
   bonus_per_level: number;
 }
 
+/** The fields of a skill's detail view that hold a rank-scaled value. */
+export type LinearSkillField = {
+  [K in keyof SkillDetailView]-?: SkillDetailView[K] extends LinearValue | null
+    ? K
+    : never;
+}[keyof SkillDetailView];
+
 /**
  * Skill data for list view
  */
@@ -188,6 +195,8 @@ export interface SkillDetailView {
   is_balance_health: boolean;
   is_invisibility: boolean;
   ignores_see_invisibility: boolean;
+  /** The buff redraws a player as undead. */
+  is_undead_illusion: boolean;
   /** Player race the buff disguises the caster as, or null when it grants no illusion. */
   illusion_race: string | null;
   is_mana_shield: boolean;
@@ -350,6 +359,15 @@ export type DamageStat =
   | "attack_power"
   | "ranged_dexterity" // Rounded 150% of Dexterity.
   | "poison_dexterity"; // Rounded 250% of Dexterity.
+
+/** A weapon's Base Damage that a damage handler subtracts from a player's stats. */
+export type DamageDeduction =
+  | "bow" // The equipped bow's Base Damage.
+  | "off_hand_half" // Half the off-hand weapon's Base Damage, rounded up.
+  | "main_hand"; // The main-hand weapon's Base Damage.
+
+/** A term an effect summary adds to, or subtracts from, a skill's listed damage. */
+export type DamageTerm = DamageStat | DamageDeduction;
 
 export interface DamageContext {
   /** Every caster that shares this formula. */

@@ -29,6 +29,7 @@ import type {
 import type {
   Caster,
   DamageContext,
+  DamageDeduction,
   DamageFormulaKind,
   SkillDetailView,
 } from "$lib/types/skills";
@@ -261,6 +262,30 @@ export function cadenceCalculation(
   };
 }
 
+// Source: server-scripts/TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:60-93; TargetProjectileSkill.cs:193-204 — a Ranger's single-target and frontal melee lose the bow's Base Damage, a Rogue's single-target melee half the off-hand's (rounded up), and a player's bow shot the main-hand weapon's.
+/** The Base Damage deductions a damage formula applies for these casters. */
+export function damageDeductions(
+  skill: Pick<SkillDetailView, "skill_type" | "is_scroll">,
+  casters: Caster[],
+  kind: DamageFormulaKind,
+): DamageDeduction[] {
+  if (skill.is_scroll) return [];
+  const playerClass = (classId: string) =>
+    casters.some(
+      (caster) => caster.kind === "player" && caster.classId === classId,
+    );
+  return [
+    ...(playerClass("ranger") &&
+    ["target_damage", "frontal_damage"].includes(skill.skill_type)
+      ? (["bow"] as const)
+      : []),
+    ...(playerClass("rogue") && skill.skill_type === "target_damage"
+      ? (["off_hand_half"] as const)
+      : []),
+    ...(kind === "ranged_player" ? (["main_hand"] as const) : []),
+  ];
+}
+
 // Source: server-scripts/TargetDamageSkill.cs:156-242; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:94-114,156 — handler-specific character contribution and skill amount.
 export function damageCalculation(
   skill: SkillDetailView,
@@ -302,16 +327,10 @@ export function damageCalculation(
     "ranged_merc",
   ].includes(kind);
   const dexterityFactor = kind === "poison_rogue" ? 2.5 : 1.5;
-  const playerClass = (classId: string) =>
-    casters.some(
-      (caster) => caster.kind === "player" && caster.classId === classId,
-    );
-  const subtractBow =
-    playerClass("ranger") &&
-    ["target_damage", "frontal_damage"].includes(skill.skill_type);
-  const subtractOffhand =
-    playerClass("rogue") && skill.skill_type === "target_damage";
-  const subtractMelee = kind === "ranged_player";
+  const baseDamageDeductions = damageDeductions(skill, casters, kind);
+  const subtractBow = baseDamageDeductions.includes("bow");
+  const subtractOffhand = baseDamageDeductions.includes("off_hand_half");
+  const subtractMelee = baseDamageDeductions.includes("main_hand");
   const scroll = skill.is_scroll;
   const multiplied =
     skill.skill_type !== "frontal_projectiles" &&

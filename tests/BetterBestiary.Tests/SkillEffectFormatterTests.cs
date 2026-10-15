@@ -57,14 +57,12 @@ public class SkillEffectFormatterTests
                 + string.Join("\n", mismatches.Take(40)));
     }
 
-    [Theory]
-    [InlineData("rotting_touch")]
-    [InlineData("venom_of_the_grave")]
-    public void DotSummariesOmitAttributeTerms(string skillId)
+    [Fact]
+    public void MonsterContextDropsTheReadersAttributeNotes()
     {
-        var skill = LoadCases().Single(c => c.skill_id == skillId).input;
-        Assert.DoesNotContain("INT", SkillEffectFormatter.Format(skill));
-        Assert.DoesNotContain("INT", SkillEffectFormatter.Format(skill, monsterContext: true));
+        var skill = LoadCases().Single(c => c.skill_id == "venom_of_the_grave").input;
+        Assert.Contains("per INT", SkillEffectFormatter.Format(skill));
+        Assert.DoesNotContain("per INT", SkillEffectFormatter.Format(skill, monsterContext: true));
     }
 
     [Fact]

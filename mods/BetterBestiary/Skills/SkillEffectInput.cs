@@ -6,12 +6,12 @@ using System.Reflection;
 namespace BetterBestiary.Skills;
 
 /// <summary>
-/// Plain input for <see cref="SkillEffectFormatter"/> — the C# mirror of the
-/// website's <c>Skill</c> interface (the no-monsterContext fields used by
-/// <c>formatSkillEffect</c>). Field names match the website's <c>skillRowToEffectInput</c>
-/// output verbatim so the golden parity corpus deserializes straight onto it, and
-/// the runtime <see cref="SkillEffectExtractor"/> fills the same shape from a live
-/// <c>ScriptableSkill</c>. Omitted optional fields keep their default values.
+/// Plain input for <see cref="SkillEffectFormatter"/>, the C# mirror of the
+/// website's <c>Skill</c> interface. Field names match the website's
+/// <c>skillEffectInput</c> output verbatim so the golden parity corpus
+/// deserializes straight onto it, and the runtime <see cref="SkillEffectExtractor"/>
+/// fills the same shape from a live <c>ScriptableSkill</c>. An omitted field
+/// keeps its default, which the formatter reads as "no value".
 ///
 /// Nullable is disabled: this type is compiled into the mod against the stripped
 /// Il2Cpp mscorlib, which lacks the NullableContext attributes.
@@ -36,20 +36,26 @@ internal sealed class SkillEffectInput
     public string required_weapon_category { get; set; }
     /// <summary>Base cast range in yd.</summary>
     public double cast_range { get; set; }
+    public bool can_buff_self { get; set; }
     public bool can_buff_others { get; set; }
     public bool area_projectile { get; set; }
+    public bool is_only_for_magic_classes { get; set; }
     public bool is_undead_illusion { get; set; }
     public bool ignores_see_invisibility { get; set; }
     /// <summary>The buff level of the potions that apply the skill, or null when none does.</summary>
     public int? potion_buff_level { get; set; }
+    /// <summary>Whose kind an unflagged area heal reaches: "player", "pet" or "monster".</summary>
+    public string area_heal_caster { get; set; }
+    /// <summary>How the summary's casters' attributes change each listed value, keyed by field.</summary>
+    public Dictionary<string, string> notes { get; set; }
 
     // Damage
     public LinearValue damage { get; set; }
     public LinearValue damage_percent { get; set; }
-    /// <summary>Stats the summary's caster adds to listed damage. Empty means listed damage only.</summary>
-    public List<string> damage_stats { get; set; }
-    /// <summary>Stats a monster caster adds to listed damage.</summary>
-    public List<string> monster_damage_stats { get; set; }
+    /// <summary>Terms the summary's casters add to or subtract from listed damage. Empty means listed damage only.</summary>
+    public List<string> damage_terms { get; set; }
+    /// <summary>Terms a monster caster adds to listed damage.</summary>
+    public List<string> monster_damage_terms { get; set; }
     public LinearValue lifetap_percent { get; set; }
     public LinearValue knockback_chance { get; set; }
     public double? knockback_distance { get; set; }
@@ -130,7 +136,6 @@ internal sealed class SkillEffectInput
     public bool is_teleport { get; set; }
     public bool is_blindness { get; set; }
     public bool is_enrage { get; set; }
-    public bool scales_with_charisma { get; set; }
     public bool is_bard_song { get; set; }
     public bool is_bard_charm { get; set; }
     public bool is_bard_final_cadence { get; set; }
@@ -148,7 +153,6 @@ internal sealed class SkillEffectInput
     public bool is_necromancer_death_bloom { get; set; }
     public bool is_necromancer_pet_buff { get; set; }
     public bool is_necromancer_reaper_form { get; set; }
-    public bool scales_with_intelligence { get; set; }
     public LinearValue lifetap_healing_percent_bonus { get; set; }
     public LinearValue damage_over_time_execute_bonus { get; set; }
 

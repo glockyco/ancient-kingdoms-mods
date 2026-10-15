@@ -30,10 +30,14 @@ import type {
   BuffBonusAttrSource,
   DebuffBonusAttrKind,
   HealBonusKind,
+  LinearSkillField,
   LinearValue,
 } from "$lib/types/skills";
 import { casterInputs } from "./damage-calculations";
 import {
+  RANGER_ATTRIBUTE_MULTIPLIER,
+  WISDOM_HEAL_CAP,
+  WISDOM_HEAL_SHARE,
   attributeBuff,
   bardBonus,
   bardPower,
@@ -43,11 +47,26 @@ import {
 import { hitThreat } from "$lib/calculation/combat-rules";
 
 const zero = { base_value: 0, bonus_per_level: 0 };
-function linear(
+function linear(skill: SkillDetailView, key: LinearSkillField): LinearValue {
+  return skill[key] ?? zero;
+}
+
+/** The share of a heal each point of the caster's Wisdom adds, or null when Wisdom does not apply. */
+// Source: server-scripts/TargetHealSkill.cs:137-144,273-280; AreaHealSkill.cs:101-117; Wisdom.cs:107-114 — players add 0.4% per point of Wisdom, Rangers three times that, and mercenaries 0.4% of their own. Scroll heals skip it unless a player restores a pet.
+export function healWisdomShare(
   skill: SkillDetailView,
-  key: keyof SkillDetailView,
-): LinearValue {
-  return (skill[key] as LinearValue | null) ?? zero;
+  kind: HealBonusKind,
+): number | null {
+  if (!skill.heals_health || kind === "none") return null;
+  // Source: server-scripts/TargetHealSkill.cs:Apply,GetHealingAmount; AreaHealSkill.cs:Apply — only player-cast target pet/mercenary restoration bypasses the scroll Wisdom exclusion.
+  const petRestoration =
+    skill.skill_type === "target_heal" &&
+    (skill.is_pet_skill || skill.is_mercenary_skill) &&
+    (kind === "player_other" || kind === "player_ranger");
+  if (skill.is_scroll && !petRestoration) return null;
+  return kind === "player_ranger"
+    ? WISDOM_HEAL_SHARE * RANGER_ATTRIBUTE_MULTIPLIER
+    : WISDOM_HEAL_SHARE;
 }
 
 // Source: server-scripts/TargetHealSkill.cs:137-144,273-280; AreaHealSkill.cs:101-117; Wisdom.cs:107-114 — round the capped Wisdom bonus separately, then add the base.
@@ -57,13 +76,8 @@ export function healingCalculation(
   kind: HealBonusKind,
 ): Calculation {
   const health = !!skill.heals_health;
-  // Source: server-scripts/TargetHealSkill.cs:Apply,GetHealingAmount; AreaHealSkill.cs:Apply — only player-cast target pet/mercenary restoration bypasses the scroll Wisdom exclusion.
-  const petRestoration =
-    skill.skill_type === "target_heal" &&
-    (skill.is_pet_skill || skill.is_mercenary_skill) &&
-    (kind === "player_other" || kind === "player_ranger");
-  const wisdom =
-    health && kind !== "none" && (!skill.is_scroll || petRestoration);
+  const share = healWisdomShare(skill, kind);
+  const wisdom = share !== null;
   const resource = health ? skill.heals_mana : null;
   const criticalResource =
     skill.skill_type === "target_heal" &&
@@ -92,12 +106,12 @@ export function healingCalculation(
             }
           : {}),
       },
-      ...(wisdom
+      ...(share !== null
         ? [
             {
               name: "Wisdom percentage",
-              expression: `${ranger ? "1.2%" : "0.4%"} per point of Wisdom above 0`,
-              limit: "at most 500%",
+              expression: `${percent(share)} per point of Wisdom above 0`,
+              limit: `at most ${percent(WISDOM_HEAL_CAP)}`,
             },
             {
               name: "Wisdom healing",
@@ -156,9 +170,9 @@ export function healingCalculation(
             rank,
             number,
           ),
-          ...(wisdom
+          ...(share !== null
             ? [
-                `Wisdom percentage: ${number(Math.max(0, values.wisdom))} × ${ranger ? "1.2%" : "0.4%"} = ${percent(scaled.rawShare)}${scaled.rawShare !== scaled.share ? `, limited to ${percent(scaled.share)}` : ""}`,
+                `Wisdom percentage: ${number(Math.max(0, values.wisdom))} × ${percent(share)} = ${percent(scaled.rawShare)}${scaled.rawShare !== scaled.share ? `, limited to ${percent(scaled.share)}` : ""}`,
                 `Wisdom healing: ${number(base)} × ${percent(scaled.share)} = ${number(scaled.bonus)}, rounded`,
                 `Health restored: ${number(base)} + ${number(scaled.bonus)} = ${number(scaled.total)}`,
               ]
@@ -172,8 +186,9 @@ export function healingCalculation(
   };
 }
 
-type Effect = {
-  key: keyof SkillDetailView;
+/** A listed effect an attribute can scale. */
+export type Effect = {
+  key: LinearSkillField;
   name: string;
   percentage?: boolean;
   chance?: boolean;
@@ -218,7 +233,7 @@ const songEffects: Effect[] = [
       ["mana_percent_per_second_bonus", "Mana percentage per second"],
       ["energy_percent_per_second_bonus", "Rage percentage per second"],
       ["cooldown_reduction_percent", "Cooldown reduction"],
-    ] as [keyof SkillDetailView, string][]
+    ] satisfies [LinearSkillField, string][]
   ).map(([key, name]) => ({
     key,
     name,
@@ -295,6 +310,78 @@ function attributeValue(
     : 0;
 }
 
+/** How the caster's attribute changes one listed effect of a buff or debuff. */
+export interface EffectScaling {
+  effect: Effect;
+  /**
+   * `song` multiplies by song power, `flat` adds `factor` per attribute point,
+   * `healing` adds Wisdom healing (a share of the heal below 60s, `factor` per point
+   * from 60s), `dot` adds `factor` per point of damage over time, and `ward`
+   * adds 2 per point.
+   */
+  mode: "song" | "flat" | "healing" | "dot" | "ward";
+  factor: number;
+}
+
+// Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:230-247,464-527; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:434-445 — which listed effects an attribute scales, and how.
+/** The listed effects of a buff or debuff that its caster's attribute scales. */
+export function effectScalings(
+  skill: SkillDetailView,
+  debuff: boolean,
+): EffectScaling[] {
+  const song = skill.scales_with_charisma;
+  return (song ? songEffects : ordinaryEffects)
+    .filter((effect) => {
+      const field = linear(skill, effect.key);
+      if (field.base_value === 0 && field.bonus_per_level === 0) return false;
+      if (
+        !song &&
+        !debuff &&
+        ["damage_bonus", "magic_damage_bonus"].includes(effect.key)
+      )
+        return skill.id === "leadership";
+      if (
+        !song &&
+        debuff &&
+        ["health_max_bonus", "ward_bonus", "damage_shield"].includes(effect.key)
+      )
+        return false;
+      return true;
+    })
+    .map((effect) => {
+      const field = linear(skill, effect.key);
+      let mode: EffectScaling["mode"] = song ? "song" : "flat";
+      let factor = effect.factor ?? 0;
+      if (effect.key === "ward_bonus") mode = "ward";
+      else if (effect.key === "healing_per_second_bonus") {
+        if (field.base_value < 0) {
+          mode = "dot";
+          factor = song
+            ? skill.damage_over_time_bonus_per_charisma_point
+            : debuff
+              ? skill.is_melee_debuff
+                ? 0.5
+                : (skill.is_poison_debuff || skill.is_disease_debuff) &&
+                    !skill.poison_disease_scales_with_intelligence
+                  ? 1.5
+                  : skill.damage_over_time_bonus_per_intelligence_point
+              : 0;
+        } else if (!song) {
+          mode = "healing";
+          factor = skill.duration_base >= 60 ? 0.3 : WISDOM_HEAL_SHARE;
+        }
+      } else if (!song && debuff) {
+        factor =
+          effect.key === "damage_bonus" || effect.key === "magic_damage_bonus"
+            ? 0.5
+            : effect.key === "defense_bonus" && skill.is_melee_debuff
+              ? 0.5
+              : 0.4;
+      }
+      return { effect, mode, factor };
+    });
+}
+
 // Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:230-247,464-527; Wisdom.cs:116-128; AreaBuffSkill.cs:16-18,33-58; TargetBuffSkill.cs:434-445 — signed stat getters, separate rounded attribute bonuses, and ward contribution transformation.
 export function effectScalingCalculation(
   skill: SkillDetailView,
@@ -303,23 +390,8 @@ export function effectScalingCalculation(
   mercenary = false,
 ): Calculation {
   const song = skill.scales_with_charisma;
-  const fields = (song ? songEffects : ordinaryEffects).filter((effect) => {
-    const field = linear(skill, effect.key);
-    if (field.base_value === 0 && field.bonus_per_level === 0) return false;
-    if (
-      !song &&
-      !debuff &&
-      ["damage_bonus", "magic_damage_bonus"].includes(effect.key)
-    )
-      return skill.id === "leadership";
-    if (
-      !song &&
-      debuff &&
-      ["health_max_bonus", "ward_bonus", "damage_shield"].includes(effect.key)
-    )
-      return false;
-    return true;
-  });
+  const scalings = effectScalings(skill, debuff);
+  const fields = scalings.map(({ effect }) => effect);
   const average =
     source === "player_wis_con_avg" || source === "player_wis_con_cha_half";
   const ward =
@@ -345,38 +417,8 @@ export function effectScalingCalculation(
       : attributeInputs(source)
           .map((input) => input.label)
           .join(" / ") || attributeName;
-  const descriptions = fields.map((effect) => {
+  const descriptions = scalings.map(({ effect, mode, factor }) => {
     const field = linear(skill, effect.key);
-    let mode: "song" | "flat" | "healing" | "dot" | "ward" = song
-      ? "song"
-      : "flat";
-    let factor = effect.factor ?? 0;
-    if (effect.key === "ward_bonus") mode = "ward";
-    else if (effect.key === "healing_per_second_bonus") {
-      if (field.base_value < 0) {
-        mode = "dot";
-        factor = song
-          ? skill.damage_over_time_bonus_per_charisma_point
-          : debuff
-            ? skill.is_melee_debuff
-              ? 0.5
-              : (skill.is_poison_debuff || skill.is_disease_debuff) &&
-                  !skill.poison_disease_scales_with_intelligence
-                ? 1.5
-                : skill.damage_over_time_bonus_per_intelligence_point
-            : 0;
-      } else if (!song) {
-        mode = "healing";
-        factor = skill.duration_base >= 60 ? 0.3 : 0.004;
-      }
-    } else if (!song && debuff) {
-      factor =
-        effect.key === "damage_bonus" || effect.key === "magic_damage_bonus"
-          ? 0.5
-          : effect.key === "defense_bonus" && skill.is_melee_debuff
-            ? 0.5
-            : 0.4;
-    }
     const name =
       effect.key === "healing_per_second_bonus" && field.base_value < 0
         ? debuff

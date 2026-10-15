@@ -11,13 +11,16 @@ import type {
   SkillMechanicsSpec,
 } from "$lib/types/skills";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
-import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
-import { SKILL_EFFECT_DERIVED_COLUMNS } from "$lib/skills/skillsListQuery";
-import { parseLinear } from "$lib/utils/parseLinear";
-import { computeMechanicsSpec } from "$lib/utils/skillMechanics";
+import { skillEffectInput } from "$lib/skills/skillEffectInput";
+import {
+  SKILL_DETAIL_COLUMNS,
+  SKILL_DETAIL_JOINS,
+  skillCastersFromRow,
+  skillDetailFromRow,
+} from "$lib/skills/skillDetail";
+import { skillMechanicsSpec } from "$lib/utils/skillMechanics";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { getSkillCategoryKey } from "$lib/utils/skill-category";
-import { weaponProcClasses } from "$lib/skills/skill-facts";
 
 export const prerender = true;
 
@@ -208,20 +211,9 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
 
 export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   const skillRaw = queryOne<Record<string, unknown>>(
-    `SELECT
-      s.*,
-      ps.name as prerequisite_skill_name,
-      ps2.name as prerequisite2_skill_name,
-      sm.name as summoned_monster_name,
-      pet_lookup.id as pet_id,
-      pet_lookup.name as pet_name,
-      pet_lookup.is_mercenary as pet_is_mercenary,
-      ${SKILL_EFFECT_DERIVED_COLUMNS}
+    `SELECT ${SKILL_DETAIL_COLUMNS}
     FROM skills s
-    LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
-    LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
-    LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
-    LEFT JOIN pets pet_lookup ON lower(pet_lookup.name) = lower(s.pet_prefab_name)
+    ${SKILL_DETAIL_JOINS}
     WHERE s.id = ?`,
     [params.id],
   );
@@ -237,9 +229,8 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     [params.id],
   );
 
-  const playerClasses: string[] = skillRaw.player_classes
-    ? (JSON.parse(skillRaw.player_classes as string) as string[]).sort()
-    : [];
+  const casters = skillCastersFromRow(skillRaw);
+  const playerClasses = skillDetailFromRow(skillRaw).player_classes;
 
   // Parse granted_by_items and fetch item names
   const grantedByItemsRaw: Array<{
@@ -251,36 +242,15 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     : [];
 
   let grantedByItems: SkillItemSource[] = [];
-  let procClasses: string[] = [];
   if (grantedByItemsRaw.length > 0) {
     const itemIds = grantedByItemsRaw.map((i) => i.item_id);
     const placeholders = itemIds.map(() => "?").join(",");
-    const itemInfo = query<{
-      id: string;
-      name: string;
-      class_required: string | null;
-      weapon_category: string | null;
-    }>(
-      `SELECT id, name, class_required, weapon_category FROM items WHERE id IN (${placeholders})`,
-      itemIds,
+    const nameMap = new Map(
+      query<{ id: string; name: string }>(
+        `SELECT id, name FROM items WHERE id IN (${placeholders})`,
+        itemIds,
+      ).map((i) => [i.id, i.name]),
     );
-    const nameMap = new Map(itemInfo.map((i) => [i.id, i.name]));
-    procClasses = weaponProcClasses(
-      itemInfo
-        .filter((item) =>
-          grantedByItemsRaw.some(
-            (source) =>
-              source.item_id === item.id && source.type === "weapon_proc",
-          ),
-        )
-        .map((item) => ({
-          classes: item.class_required
-            ? (JSON.parse(item.class_required) as string[])
-            : null,
-          weaponCategory: item.weapon_category,
-        })),
-    );
-
     grantedByItems = grantedByItemsRaw.map((item) => ({
       item_id: item.item_id,
       item_name: nameMap.get(item.item_id) || item.item_id,
@@ -336,174 +306,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     : [];
 
   const skill: SkillDetailView = {
-    id: skillRaw.id as string,
-    name: skillRaw.name as string,
-    skill_type: skillRaw.skill_type as string,
-    tier: (skillRaw.tier as number) || 0,
-    max_level: (skillRaw.max_level as number) || 1,
-    level_required: (skillRaw.level_required as number) || 0,
-    required_skill_points: (skillRaw.required_skill_points as number) || 1,
-    required_spent_points: (skillRaw.required_spent_points as number) || 0,
-    player_classes: playerClasses,
-    tooltip_template: skillRaw.tooltip_template as string | null,
-
-    // Prerequisites
-    prerequisite_skill_id: skillRaw.prerequisite_skill_id as string | null,
-    prerequisite_skill_name: skillRaw.prerequisite_skill_name as string | null,
-    prerequisite_level: (skillRaw.prerequisite_level as number) || 0,
-    prerequisite2_skill_id: skillRaw.prerequisite2_skill_id as string | null,
-    prerequisite2_skill_name: skillRaw.prerequisite2_skill_name as
-      string | null,
-    prerequisite2_level: (skillRaw.prerequisite2_level as number) || 0,
-
-    // Weapon requirements
-    required_weapon_category: skillRaw.required_weapon_category as
-      string | null,
-    required_weapon_category2: skillRaw.required_weapon_category2 as
-      string | null,
-
-    // Flags
-    is_spell: Boolean(skillRaw.is_spell),
-    is_veteran: Boolean(skillRaw.is_veteran),
-    is_pet_skill: Boolean(skillRaw.is_pet_skill),
-    is_mercenary_skill: Boolean(skillRaw.is_mercenary_skill),
-    is_scroll: Boolean(skillRaw.is_scroll),
-    is_relic: Boolean(skillRaw.is_relic),
-    base_skill: Boolean(skillRaw.base_skill),
-    learn_default: Boolean(skillRaw.learn_default),
-    allow_dungeon: Boolean(skillRaw.allow_dungeon ?? true),
-    followup_default_attack: Boolean(skillRaw.followup_default_attack),
-
-    // Costs and timing
-    mana_cost: parseLinear(skillRaw.mana_cost),
-    energy_cost: parseLinear(skillRaw.energy_cost),
-    cooldown: parseLinear(skillRaw.cooldown),
-    cast_time: parseLinear(skillRaw.cast_time),
-    cast_range: parseLinear(skillRaw.cast_range),
-    channel_pulses: Number(skillRaw.channel_pulses ?? 0),
-    health_cost_percent: parseLinear(skillRaw.health_cost_percent),
-    mana_restored_percent: parseLinear(skillRaw.mana_restored_percent),
-    healing_percent: parseLinear(skillRaw.healing_percent),
-    healing_percent_per_intelligence: Number(
-      skillRaw.healing_percent_per_intelligence ?? 0,
-    ),
-    is_necromancer_blood_pact: Boolean(skillRaw.is_necromancer_blood_pact),
-    is_necromancer_death_bloom: Boolean(skillRaw.is_necromancer_death_bloom),
-    is_necromancer_pet_buff: Boolean(skillRaw.is_necromancer_pet_buff),
-    is_necromancer_reaper_form: Boolean(skillRaw.is_necromancer_reaper_form),
-
-    // Damage
-    damage: parseLinear(skillRaw.damage),
-    damage_percent: parseLinear(skillRaw.damage_percent),
-    damage_type: skillRaw.damage_type as SkillDetailView["damage_type"],
-    damage_over_time_type:
-      skillRaw.damage_over_time_type as SkillDetailView["damage_over_time_type"],
-    damage_shield_type:
-      skillRaw.damage_shield_type as SkillDetailView["damage_shield_type"],
-    lifetap_percent: parseLinear(skillRaw.lifetap_percent),
-    aggro: parseLinear(skillRaw.aggro),
-    break_armor_prob: (skillRaw.break_armor_prob as number) || 0,
-    is_assassination_skill: Boolean(skillRaw.is_assassination_skill),
-    is_manaburn_skill: Boolean(skillRaw.is_manaburn_skill),
-
-    // Healing
-    heals_health: parseLinear(skillRaw.heals_health),
-    heals_mana: parseLinear(skillRaw.heals_mana),
-    charmed_damage_percent: parseLinear(skillRaw.charmed_damage_percent),
-    can_heal_self: Boolean(skillRaw.can_heal_self),
-    can_heal_others: Boolean(skillRaw.can_heal_others),
-
-    // Crowd control (LinearValue — stored as JSON TEXT in DB)
-    stun_chance: parseLinear(skillRaw.stun_chance),
-    stun_time: parseLinear(skillRaw.stun_time),
-    fear_chance: parseLinear(skillRaw.fear_chance),
-    fear_time: parseLinear(skillRaw.fear_time),
-    knockback_chance: parseLinear(skillRaw.knockback_chance),
-    knockback_distance: Number(skillRaw.knockback_distance ?? 0),
-
-    // Buff duration
-    duration_base: (skillRaw.duration_base as number) || 0,
-    duration_per_level: (skillRaw.duration_per_level as number) || 0,
-
-    // Buff targeting
-    can_buff_self: Boolean(skillRaw.can_buff_self),
-    can_buff_others: Boolean(skillRaw.can_buff_others),
-    buff_category: skillRaw.buff_category as string | null,
-    also_buff_active_pet: Boolean(skillRaw.also_buff_active_pet),
-    scales_with_intelligence: Boolean(skillRaw.scales_with_intelligence),
-    lifetap_healing_percent_bonus: parseLinear(
-      skillRaw.lifetap_healing_percent_bonus,
-    ),
-
-    // Buff stat bonuses
-    health_max_bonus: parseLinear(skillRaw.health_max_bonus),
-    health_max_percent_bonus: parseLinear(skillRaw.health_max_percent_bonus),
-    mana_max_bonus: parseLinear(skillRaw.mana_max_bonus),
-    mana_max_percent_bonus: parseLinear(skillRaw.mana_max_percent_bonus),
-    energy_max_bonus: parseLinear(skillRaw.energy_max_bonus),
-    defense_bonus: parseLinear(skillRaw.defense_bonus),
-    ward_bonus: parseLinear(skillRaw.ward_bonus),
-    magic_resist_bonus: parseLinear(skillRaw.magic_resist_bonus),
-    damage_bonus: parseLinear(skillRaw.damage_bonus),
-    damage_percent_bonus: parseLinear(skillRaw.damage_percent_bonus),
-    magic_damage_bonus: parseLinear(skillRaw.magic_damage_bonus),
-    magic_damage_percent_bonus: parseLinear(
-      skillRaw.magic_damage_percent_bonus,
-    ),
-    haste_bonus: parseLinear(skillRaw.haste_bonus),
-    spell_haste_bonus: parseLinear(skillRaw.spell_haste_bonus),
-    speed_bonus: parseLinear(skillRaw.speed_bonus),
-    critical_chance_bonus: parseLinear(skillRaw.critical_chance_bonus),
-    critical_resist_bonus: parseLinear(skillRaw.critical_resist_bonus),
-    accuracy_bonus: parseLinear(skillRaw.accuracy_bonus),
-    block_chance_bonus: parseLinear(skillRaw.block_chance_bonus),
-    fear_resist_chance_bonus: parseLinear(skillRaw.fear_resist_chance_bonus),
-    fear_resist_chance_bonus_cap: Number(
-      skillRaw.fear_resist_chance_bonus_cap ?? 0,
-    ),
-    damage_shield: parseLinear(skillRaw.damage_shield),
-    cooldown_reduction_percent: parseLinear(
-      skillRaw.cooldown_reduction_percent,
-    ),
-    heal_on_hit_percent: parseLinear(skillRaw.heal_on_hit_percent),
-
-    // Regen bonuses
-    healing_per_second_bonus: parseLinear(skillRaw.healing_per_second_bonus),
-    health_percent_per_second_bonus: parseLinear(
-      skillRaw.health_percent_per_second_bonus,
-    ),
-    mana_per_second_bonus: parseLinear(skillRaw.mana_per_second_bonus),
-    mana_percent_per_second_bonus: parseLinear(
-      skillRaw.mana_percent_per_second_bonus,
-    ),
-    energy_per_second_bonus: parseLinear(skillRaw.energy_per_second_bonus),
-    energy_percent_per_second_bonus: parseLinear(
-      skillRaw.energy_percent_per_second_bonus,
-    ),
-
-    // Resist bonuses
-    poison_resist_bonus: parseLinear(skillRaw.poison_resist_bonus),
-    fire_resist_bonus: parseLinear(skillRaw.fire_resist_bonus),
-    cold_resist_bonus: parseLinear(skillRaw.cold_resist_bonus),
-    disease_resist_bonus: parseLinear(skillRaw.disease_resist_bonus),
-
-    // Attribute bonuses
-    strength_bonus: parseLinear(skillRaw.strength_bonus),
-    intelligence_bonus: parseLinear(skillRaw.intelligence_bonus),
-    dexterity_bonus: parseLinear(skillRaw.dexterity_bonus),
-    constitution_bonus: parseLinear(skillRaw.constitution_bonus),
-    wisdom_bonus: parseLinear(skillRaw.wisdom_bonus),
-    charisma_bonus: parseLinear(skillRaw.charisma_bonus),
-
-    // Special flags
-    is_resurrect_skill: Boolean(skillRaw.is_resurrect_skill),
-    is_balance_health: Boolean(skillRaw.is_balance_health),
-    is_invisibility: Boolean(skillRaw.is_invisibility),
-    ignores_see_invisibility: Boolean(skillRaw.ignores_see_invisibility),
-    illusion_race: (skillRaw.illusion_race as string | null) ?? null,
-    is_mana_shield: Boolean(skillRaw.is_mana_shield),
-    is_cleanse: Boolean(skillRaw.is_cleanse),
-    is_dispel: Boolean(skillRaw.is_dispel),
+    ...skillDetailFromRow(skillRaw),
     // Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — a dispel tests each TargetBuffSkill or AreaBuffSkill buff on a monster against its probIgnoreCleanse.
     ...(skillRaw.is_dispel
       ? {
@@ -520,74 +323,6 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
           ),
         }
       : {}),
-    is_teleport: Boolean(skillRaw.is_teleport),
-    is_blindness: Boolean(skillRaw.is_blindness),
-    is_enrage: Boolean(skillRaw.is_enrage),
-    is_double_exp_spell: Boolean(skillRaw.is_double_exp_spell),
-    scales_with_charisma: Boolean(skillRaw.scales_with_charisma),
-    damage_over_time_bonus_per_charisma_point: Number(
-      skillRaw.damage_over_time_bonus_per_charisma_point ?? 0,
-    ),
-    is_bard_song: Boolean(skillRaw.is_bard_song),
-    is_bard_charm: Boolean(skillRaw.is_bard_charm),
-    is_bard_final_cadence: Boolean(skillRaw.is_bard_final_cadence),
-    is_bard_virtuosity: Boolean(skillRaw.is_bard_virtuosity),
-    additional_damage_percent_per_song: Number(
-      skillRaw.additional_damage_percent_per_song ?? 0,
-    ),
-    is_permanent: Boolean(skillRaw.is_permanent),
-    is_only_for_magic_classes: Boolean(skillRaw.is_only_for_magic_classes),
-    remain_after_death: Boolean(skillRaw.remain_after_death),
-    is_decrease_resists_skill: Boolean(skillRaw.is_decrease_resists_skill),
-
-    // Debuff type flags
-    is_poison_debuff: Boolean(skillRaw.is_poison_debuff),
-    is_fire_debuff: Boolean(skillRaw.is_fire_debuff),
-    is_cold_debuff: Boolean(skillRaw.is_cold_debuff),
-    is_disease_debuff: Boolean(skillRaw.is_disease_debuff),
-    is_melee_debuff: Boolean(skillRaw.is_melee_debuff),
-    is_magic_debuff: Boolean(skillRaw.is_magic_debuff),
-    poison_disease_scales_with_intelligence: Boolean(
-      skillRaw.poison_disease_scales_with_intelligence,
-    ),
-    damage_over_time_bonus_per_intelligence_point: Number(
-      skillRaw.damage_over_time_bonus_per_intelligence_point ?? 0,
-    ),
-    prob_ignore_cleanse: (skillRaw.prob_ignore_cleanse as number) || 0,
-
-    // Passive mechanics
-    additional_active_bard_songs: Number(
-      skillRaw.additional_active_bard_songs ?? 0,
-    ),
-    unlimited_active_bard_songs: Boolean(skillRaw.unlimited_active_bard_songs),
-    bard_song_duration_bonus_per_level: Number(
-      skillRaw.bard_song_duration_bonus_per_level ?? 0,
-    ),
-    extra_gather_item_chance: Number(skillRaw.extra_gather_item_chance ?? 0),
-    food_and_drink_buff_duration_bonus_per_level: Number(
-      skillRaw.food_and_drink_buff_duration_bonus_per_level ?? 0,
-    ),
-    damage_over_time_execute_bonus: parseLinear(
-      skillRaw.damage_over_time_execute_bonus,
-    ),
-
-    // Summon fields
-    summoned_monster_id: skillRaw.summoned_monster_id as string | null,
-    summoned_monster_name: skillRaw.summoned_monster_name as string | null,
-    summoned_monster_level: skillRaw.summoned_monster_level as number | null,
-    summon_count_per_cast: skillRaw.summon_count_per_cast as number | null,
-    max_active_summons: skillRaw.max_active_summons as number | null,
-    pet_prefab_name: skillRaw.pet_prefab_name as string | null,
-    pet_id: skillRaw.pet_id as string | null,
-    pet_is_mercenary: Boolean(skillRaw.pet_is_mercenary),
-    pet_name: skillRaw.pet_name as string | null,
-    is_familiar: Boolean(skillRaw.is_familiar),
-
-    // AoE fields
-    affects_random_target: Boolean(skillRaw.affects_random_target),
-    area_projectile: Boolean(skillRaw.area_projectile),
-    area_object_size: (skillRaw.area_object_size as number) || 0,
-    area_objects_to_spawn: (skillRaw.area_objects_to_spawn as number) || 0,
   };
 
   // Get monsters that use this skill
@@ -630,7 +365,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     [params.id],
   );
 
-  const effectSummary = formatSkillEffect(skillRowToEffectInput(skillRaw));
+  const effectSummary = formatSkillEffect(skillEffectInput(skill, casters));
 
   // Mercenaries are pets with is_mercenary=1; familiars/companions are the
   // rest. We split because mercenary ownership is most actionable for the
@@ -690,12 +425,6 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     appliedByTraps,
     description,
     visualAsset,
-    mechanicsSpec: computeMechanicsSpec(
-      skill,
-      usedByPets,
-      usedByMonsters.length > 0,
-      grantedByItems.some((i) => i.type === "weapon_proc"),
-      procClasses,
-    ),
+    mechanicsSpec: skillMechanicsSpec(skill, casters),
   };
 };
