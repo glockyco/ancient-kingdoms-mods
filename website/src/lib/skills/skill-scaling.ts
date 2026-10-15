@@ -45,7 +45,7 @@ const SCALING_FIELDS: Array<{
     isPercent: true,
     suffix: "",
   },
-  { key: "damage", label: "Damage", isPercent: false, suffix: "" },
+  { key: "damage", label: "Skill damage", isPercent: false, suffix: "" },
   {
     key: "damage_percent",
     label: "Damage %",

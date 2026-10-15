@@ -624,7 +624,7 @@
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.damage}
             <div>
-              <dt class="text-muted-foreground">Damage</dt>
+              <dt class="text-muted-foreground">Skill damage</dt>
               <dd class="font-medium">
                 {formatLinear(skill.damage)}
               </dd>
