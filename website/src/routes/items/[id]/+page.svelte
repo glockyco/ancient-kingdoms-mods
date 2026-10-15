@@ -19,6 +19,7 @@
     itemListType,
   } from "$lib/utils/format";
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
+  import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import { isHouseChestItemId } from "$lib/inventory/house-chests";
   import { getItemSpecialMechanics } from "$lib/special-mechanics";
@@ -2033,6 +2034,11 @@
           <Card.Title>Gathered from</Card.Title>
         </Card.Header>
         <Card.Content>
+          {#if computed.gatheredFrom.some((gather) => gather.is_fishing_spot)}
+            <p class="mb-3 text-muted-foreground">
+              {FISHING_RANGE_ASSUMPTIONS}
+            </p>
+          {/if}
           <div class="space-y-2">
             {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${gather.spawn_id ?? index}`)}
               {#if gather.is_fishing_spot}

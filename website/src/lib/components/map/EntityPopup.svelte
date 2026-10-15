@@ -45,6 +45,7 @@
   } from "$lib/queries/popup";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
   import { markerRegistry, resolveMarker } from "$lib/map/marker-registry";
+  import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
   interface Props {
     entity: AnyMapEntity;
     onClose: () => void;
@@ -1378,6 +1379,7 @@
           {/each}
         </div>
       </div>
+      <p class="text-sm text-muted-foreground">{FISHING_RANGE_ASSUMPTIONS}</p>
     {:else if gatheringDetails && gatheringDetails.drops.length > 0}
       <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">Drops</div>

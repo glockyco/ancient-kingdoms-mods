@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { query, queryScalar } from "$lib/db";
 import {
   loadGatheringPopupDetails,
+  loadItemPopupDetails,
   loadNpcPopupDetails,
   loadQuestPopupDetails,
 } from "./popup";
@@ -116,5 +117,30 @@ describe("map popup detail parity", () => {
     )) {
       expect(drop).toMatchObject({ amountMin: 1, amountMax: 1 });
     }
+  });
+
+  test("uses the same per-cast fishing range as the item source", async () => {
+    const source = db
+      .prepare(
+        `
+      SELECT isg.item_id, isg.resource_id FROM item_sources_gather isg
+      JOIN gathering_resources gr ON gr.id = isg.resource_id
+      WHERE gr.is_fishing_spot = 1 AND isg.drop_rate != isg.actual_drop_chance
+      ORDER BY isg.resource_id, isg.item_id LIMIT 1
+    `,
+      )
+      .get() as { item_id: string; resource_id: string };
+    const spot = await loadGatheringPopupDetails(source.resource_id);
+    const item = await loadItemPopupDetails(source.item_id);
+    const outcome = spot.fishingOutcomes?.find(
+      (row) => row.itemId === source.item_id,
+    );
+    const gatherSource = item?.gatheringSources.find(
+      (row) => row.resourceId === source.resource_id,
+    );
+    expect(outcome).toBeDefined();
+    expect(gatherSource).toBeDefined();
+    expect(outcome?.dropRateMin).toBeCloseTo(gatherSource!.fishingChanceMin!);
+    expect(outcome?.dropRateMax).toBeCloseTo(gatherSource!.fishingChanceMax!);
   });
 });

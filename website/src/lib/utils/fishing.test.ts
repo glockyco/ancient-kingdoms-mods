@@ -239,7 +239,7 @@ describe("fishing chance ranges", () => {
     expect(lowestCatchableSkillPercent(0, 2)).toBeCloseTo(200 / 7);
   });
 
-  it("spans the per-cast drop chance from worst to best loadout", () => {
+  it("compares per-cast drop chances at the two reference loadouts", () => {
     // Crimson Octopus: 10% configured rate, 5 fish, Tier IV (level 3),
     // Rusty rod required (q0), Gilded Wyrmhook best (q4).
     // floor: success(q0,33.33%)=0.2 x (0.10+0.1667)/5 = 0.01067
@@ -327,6 +327,39 @@ describe("fishing chance ranges", () => {
     // single configured fish: floor 0.2x0.3667=0.0733; ceiling 1x0.76=0.76
     expect(primary.chancePerCastMin).toBeCloseTo(0.073333333333);
     expect(primary.chancePerCastMax).toBeCloseTo(0.76);
+  });
+
+  it("uses identical configured-fish chances for spot and item ranges", () => {
+    const shared = { spotTier: 0, requiredRodQuality: 0, bestRodQuality: 4 };
+    const spotDrops = [0.5, 0.25, 0.1].map((probability, index) => ({
+      probability,
+      itemId: `fish_${index}`,
+      itemName: `Fish ${index}`,
+      quality: 0,
+      tooltipHtml: null,
+    }));
+    const rows = fishOutcomeRangesForSpot({
+      ...shared,
+      spotDrops,
+      fishPoolsByQuality: {},
+    });
+    for (const drop of spotDrops) {
+      const row = rows.find(
+        (entry) => "itemId" in entry && entry.itemId === drop.itemId,
+      )!;
+      const source = fishingRangeForRole({
+        ...shared,
+        spotDrops,
+        role: "primary",
+        configuredDropRate: drop.probability,
+        trashCount: 1,
+        fallbackPoolSize: 0,
+      });
+      expect(row.chancePerCastMin).toBe(source.min);
+      expect(row.chancePerCastMax).toBe(source.max);
+    }
+    expect(rows[0].chancePerCastMin).toBeCloseTo((0.8 * 0.5) / 3);
+    expect(rows[0].chancePerCastMax).toBeCloseTo(1 / 3);
   });
 
   it("counts fallback fish strictly below the spot tier", () => {

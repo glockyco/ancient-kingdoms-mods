@@ -51,6 +51,15 @@ Profession calculators SHALL show no further skill gain at the profession's mast
 - **WHEN** a player sets Alchemy, Cooking, Herbalism, Mining, Fishing, Hunting, or Scroll Mastery to 100%
 - **THEN** the calculator shows no further skill gain while preserving any crafting, gathering, or item payoff
 
+### Requirement: Fishing source chances use the same rolls on each surface
+
+Item sources and fishing spot outcomes SHALL compute per-cast fish chances from the configured fish probability, uniform fish selection, bite chance, skill and costume bonuses, and applicable lower-tier fallback pools. They SHALL state that displayed bounds compare the required rod at minimum usable skill without costume bonuses with the best rod at 100% Fishing and three Fisherman costume pieces, assuming a timely click and inventory space. These bounds SHALL NOT be described as extrema over every possible loadout.
+
+#### Scenario: Player compares a fish source with its spot
+
+- **WHEN** the player views the same fish and fishing spot on an item page and the map
+- **THEN** the per-cast chances match and a bite is not described as a guaranteed fish
+
 ### Requirement: No unverified combat simulator is published
 
 The site SHALL NOT publish a combat damage simulator whose results are not backed by the verified combat engine. `/tools/combat-simulator` SHALL NOT be published, and no page, search result, or sitemap entry SHALL link to it.

@@ -343,7 +343,7 @@ export function lowestCatchableSkillPercent(
   return clamp01((FISHING_SUCCESS_FLOOR - base) / skillFactor) * 100;
 }
 
-// Worst realistic loadout that can still hook a fish: the spot's required rod at
+// Starting reference loadout: the spot's required rod at
 // the lowest skill clearing the success floor, no costume bonus. Falls back to
 // the best rod only if the required rod can never hook (not possible with the
 // shipped tiers, but kept correct under data changes).
@@ -384,7 +384,7 @@ export interface FishDropChanceRangeParams {
   bestRodQuality: number;
 }
 
-// Per-cast chance for one configured fish, spanning the worst-to-best loadout.
+// Per-cast chance for one configured fish, comparing the two reference loadouts.
 export function fishDropChanceRange({
   configuredDropRate,
   fishCountAtSpot,
@@ -428,7 +428,7 @@ export interface FishTrashChanceRangeParams {
 }
 
 // Per-cast chance of one specific trash item: total trash mass split across the
-// global trash pool, spanning the worst-to-best loadout.
+// global trash pool, comparing the two reference loadouts.
 export function fishTrashChanceRange({
   spotDrops,
   spotTier,
@@ -468,7 +468,7 @@ export interface FishFallbackChanceRangeParams {
 }
 
 // Per-cast chance of one specific lower-tier fallback fish: lower-tier mass split
-// across the fallback pool, spanning the worst-to-best loadout.
+// across the fallback pool, comparing the two reference loadouts.
 export function fishFallbackChanceRange({
   spotDrops,
   spotTier,
@@ -524,6 +524,10 @@ export interface FishingRoleRangeParams {
   fallbackPoolSize: number;
 }
 
+/** The loadouts behind every per-cast range from `fishingRangeForRole`, for display beside the range. */
+export const FISHING_RANGE_ASSUMPTIONS =
+  "Per-cast bounds compare the required rod at minimum usable skill without costume bonuses with the best rod at 100% Fishing and all three Fisherman costume pieces. Both assume you click in time and have inventory space.";
+
 // Single entry point that picks the right per-cast range helper for a fishing
 // source role, so consumers never re-decide the formula.
 export function fishingRangeForRole({
@@ -571,9 +575,9 @@ export interface FishingOutcomeRangesParams {
   bestRodQuality: number;
 }
 
-// Per-cast outcome distribution for a fishing spot across the worst-to-best
-// loadout, including a "No catch" remainder (1 − success) so the rows sum to
-// 100% per cast.
+// Compare the required rod at minimum usable skill without costume bonuses with
+// the best rod at 100% skill and three Fisherman pieces. These are two reference
+// loadouts, not extrema over every possible combination.
 export function fishOutcomeRangesForSpot({
   spotDrops,
   fishPoolsByQuality,
@@ -612,12 +616,41 @@ export function fishOutcomeRangesForSpot({
     spotTier,
   });
 
+  const fallbackPoolSize = fishFallbackPoolForSpotTier(
+    spotTier,
+    fishPoolsByQuality,
+  ).length;
   const rows: FishingOutcomeRangeRow[] = lowRows.map((low, index) => {
     const high = highRows[index] ?? low;
-    const bounds = chanceBounds(
-      low.chancePerBite * successLow,
-      high.chancePerBite * successHigh,
-    );
+    // Source: server-scripts/GatherItem.cs:OnInteractFishServer — use the same
+    // configured-fish and fallback rolls as item source ranges.
+    const role =
+      low.kind === "primary_fish"
+        ? "primary"
+        : low.kind === "fallback_fish"
+          ? "fallback"
+          : low.kind === "trash"
+            ? "trash"
+            : null;
+    const bounds = role
+      ? fishingRangeForRole({
+          role,
+          configuredDropRate:
+            "itemId" in low
+              ? (spotDrops.find((drop) => drop.itemId === low.itemId)
+                  ?.probability ?? 0)
+              : 0,
+          spotDrops,
+          spotTier,
+          requiredRodQuality,
+          bestRodQuality,
+          trashCount: 1,
+          fallbackPoolSize,
+        })
+      : chanceBounds(
+          low.chancePerBite * successLow,
+          high.chancePerBite * successHigh,
+        );
     if ("itemId" in low) {
       return {
         kind: low.kind,

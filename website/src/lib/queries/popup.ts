@@ -577,12 +577,13 @@ export async function loadGatheringPopupDetails(
 
     UNION ALL
 
-    -- Secondary random drops with actual drop chance (excluding primary item)
+    -- Secondary drops retain configured fishing probabilities for per-cast calculations.
     SELECT
       isg.item_id,
       i.name as item_name,
       i.quality,
-      COALESCE(isg.actual_drop_chance, isg.drop_rate) as drop_rate,
+      -- Source: server-scripts/GatherItem.cs:OnInteractFishServer
+      CASE WHEN gr.is_fishing_spot = 1 THEN isg.drop_rate ELSE COALESCE(isg.actual_drop_chance, isg.drop_rate) END as drop_rate,
       NULL as drop_rate_max,
       -- Source: server-scripts/GatherItem.cs:549-552
       1 as amount_min,
