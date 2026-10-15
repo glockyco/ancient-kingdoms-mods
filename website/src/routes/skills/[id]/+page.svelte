@@ -747,7 +747,9 @@
         {#if skill.is_balance_health}
           <div class="mt-3 space-y-1 text-sm">
             <p class="text-green-600 dark:text-green-400">
-              Sets each group member's health to the same percentage.
+              <!-- Source: server-scripts/AreaHealSkill.cs:Apply — isBalanceHealth averages the health percentages of the caster and living, visible players and pets in range without a party restriction. -->
+              Sets you and every living, visible player, companion and mercenary within
+              range to their average health percentage, whether in your party or not.
             </p>
           </div>
         {/if}
