@@ -4,7 +4,8 @@
  * `SKILL_EFFECT_COLUMNS` and `SKILL_EFFECT_JOINS` are the single definition of
  * the columns and joins the effect formatter reads. Class, pet, monster, and
  * skills-list projections compose them so each renders identical effect data.
- * The skill-detail query selects the complete skill row instead.
+ * The skill-detail query selects the complete skill row plus
+ * `SKILL_EFFECT_DERIVED_COLUMNS`.
  *
  * `SKILLS_LIST_QUERY` is used by the `/skills` page loader
  * (`routes/skills/+page.server.ts`) and the BetterBestiary parity-corpus bake
@@ -12,6 +13,40 @@
  * query string is what lets the mod's runtime port stay matched to the website
  * overview; the lefthook drift guard then enforces it.
  */
+/**
+ * Columns derived from a skill's users. `mercenary_types` lists the class
+ * archetypes of the mercenaries that cast it. `npc_caster_only` marks a skill
+ * that only monsters and NPCs cast, at their fixed rank. `potion_buff_levels`
+ * lists the buff levels of the potions whose Elixir Endurance bonus extends it.
+ */
+// Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:Skill; Npc.cs — monsters and NPCs cast at rank 1 when learnDefault, otherwise rank 0.
+// Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — every potion except Bandages applies its buff at 1 + Elixir Endurance rank once that skill is learned.
+export const SKILL_EFFECT_DERIVED_COLUMNS = `(
+        SELECT json_group_array(DISTINCT p.type_monster)
+        FROM pet_skills ps
+        JOIN pets p ON p.id = ps.pet_id
+        WHERE ps.skill_id = s.id AND p.is_mercenary = 1
+      ) AS mercenary_types,
+      (
+        coalesce(s.player_classes, '[]') = '[]'
+        AND coalesce(s.granted_by_items, '[]') = '[]'
+        AND NOT EXISTS (SELECT 1 FROM pet_skills ps WHERE ps.skill_id = s.id)
+        AND NOT EXISTS (SELECT 1 FROM traps t WHERE t.effect_skill_id = s.id)
+        AND (
+          EXISTS (SELECT 1 FROM monster_skills ms WHERE ms.skill_id = s.id)
+          OR EXISTS (
+            SELECT 1 FROM npcs n, json_each(n.skill_ids) npc_skill
+            WHERE npc_skill.value = s.id
+          )
+        )
+      ) AS npc_caster_only,
+      (
+        SELECT json_group_array(DISTINCT i.potion_buff_level)
+        FROM items i
+        WHERE i.potion_buff_id = s.id
+          AND coalesce(i.cooldown_category, '') != 'Bandages'
+      ) AS potion_buff_levels`;
+
 export const SKILL_EFFECT_COLUMNS = `
       s.id,
       s.name,
@@ -22,6 +57,14 @@ export const SKILL_EFFECT_COLUMNS = `
       s.level_required,
       s.player_classes,
       s.is_spell,
+      s.is_scroll,
+      s.learn_default,
+      s.required_weapon_category,
+      s.cast_range,
+      s.can_buff_others,
+      s.area_projectile,
+      s.is_undead_illusion,
+      ${SKILL_EFFECT_DERIVED_COLUMNS},
       s.is_veteran,
       s.is_pet_skill,
       s.is_mercenary_skill,

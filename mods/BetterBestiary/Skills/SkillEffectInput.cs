@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace BetterBestiary.Skills;
@@ -28,9 +29,27 @@ internal sealed class SkillEffectInput
     public string damage_shield_type { get; set; }
     public int? max_level { get; set; }
 
+    // Casters and delivery
+    /// <summary>Only monsters and NPCs cast the skill, at their fixed rank.</summary>
+    public bool npc_caster_only { get; set; }
+    public bool is_mercenary_skill { get; set; }
+    public string required_weapon_category { get; set; }
+    /// <summary>Base cast range in yd.</summary>
+    public double cast_range { get; set; }
+    public bool can_buff_others { get; set; }
+    public bool area_projectile { get; set; }
+    public bool is_undead_illusion { get; set; }
+    public bool ignores_see_invisibility { get; set; }
+    /// <summary>The buff level of the potions that apply the skill, or null when none does.</summary>
+    public int? potion_buff_level { get; set; }
+
     // Damage
     public LinearValue damage { get; set; }
     public LinearValue damage_percent { get; set; }
+    /// <summary>Stats the summary's caster adds to listed damage. Empty means listed damage only.</summary>
+    public List<string> damage_stats { get; set; }
+    /// <summary>Stats a monster caster adds to listed damage.</summary>
+    public List<string> monster_damage_stats { get; set; }
     public LinearValue lifetap_percent { get; set; }
     public LinearValue knockback_chance { get; set; }
     public double? knockback_distance { get; set; }

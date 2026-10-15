@@ -12,6 +12,7 @@ import type {
 } from "$lib/types/skills";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
+import { SKILL_EFFECT_DERIVED_COLUMNS } from "$lib/skills/skillsListQuery";
 import { parseLinear } from "$lib/utils/parseLinear";
 import { computeMechanicsSpec } from "$lib/utils/skillMechanics";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
@@ -214,7 +215,8 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
       sm.name as summoned_monster_name,
       pet_lookup.id as pet_id,
       pet_lookup.name as pet_name,
-      pet_lookup.is_mercenary as pet_is_mercenary
+      pet_lookup.is_mercenary as pet_is_mercenary,
+      ${SKILL_EFFECT_DERIVED_COLUMNS}
     FROM skills s
     LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
     LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id

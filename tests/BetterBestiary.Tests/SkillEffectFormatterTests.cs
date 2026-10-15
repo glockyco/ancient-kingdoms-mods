@@ -68,7 +68,7 @@ public class SkillEffectFormatterTests
     }
 
     [Fact]
-    public void MonsterContextFormatsEnrageWithMonsterThreshold()
+    public void MonsterContextDescribesEnrageLikeTheWebsite()
     {
         var skill = new SkillEffectInput
         {
@@ -77,7 +77,15 @@ public class SkillEffectFormatterTests
         };
 
         Assert.Equal(
-            "+50-75% damage below 10% HP",
+            SkillEffectFormatter.Format(skill),
             SkillEffectFormatter.Format(skill, monsterContext: true));
+    }
+
+    [Fact]
+    public void MonsterContextOmitsThreatThatOnlyPlayersRaise()
+    {
+        var skill = LoadCases().Single(c => c.skill_id == "taunt").input;
+        Assert.Contains("aggro", SkillEffectFormatter.Format(skill));
+        Assert.DoesNotContain("aggro", SkillEffectFormatter.Format(skill, monsterContext: true));
     }
 }

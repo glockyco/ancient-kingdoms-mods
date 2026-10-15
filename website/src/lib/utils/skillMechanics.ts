@@ -3,6 +3,7 @@ import type {
   SkillPet,
   Caster,
   DamageFormulaKind,
+  DamageStat,
   HealBonusKind,
   BuffBonusAttrSource,
   TimingModel,
@@ -79,13 +80,34 @@ function hasCharismaScaledEffect(skill: SkillDetailView): boolean {
 // Damage formula dispatch
 // ---------------------------------------------------------------------------
 
+/** The skill fields that choose a damage handler's starting stats. */
+export type DamageDispatchSkill = Pick<
+  SkillDetailView,
+  | "id"
+  | "skill_type"
+  | "damage_type"
+  | "is_spell"
+  | "is_scroll"
+  | "required_weapon_category"
+  | "is_manaburn_skill"
+  | "is_bard_final_cadence"
+>;
+
+const DAMAGE_SKILL_TYPES = new Set([
+  "target_damage",
+  "area_damage",
+  "frontal_damage",
+  "target_projectile",
+  "frontal_projectiles",
+]);
+
 /**
  * Resolve the damage formula for a player of a given class.
  * Source: server-scripts/TargetDamageSkill.cs, TargetProjectileSkill.cs,
  *         FrontalDamageSkill.cs, FrontalProjectilesSkill.cs, AreaDamageSkill.cs
  */
 function playerDamageFormula(
-  skill: SkillDetailView,
+  skill: DamageDispatchSkill,
   cls: string,
 ): DamageFormulaKind {
   if (skill.is_bard_final_cadence) return "bard_final_cadence";
@@ -140,7 +162,7 @@ function playerDamageFormula(
  * Resolve the mercenary's contribution from the actual damage handler.
  */
 function mercDamageFormula(
-  skill: SkillDetailView,
+  skill: DamageDispatchSkill,
   typeMonster: string,
 ): DamageFormulaKind {
   if (skill.is_bard_final_cadence) return "bard_final_cadence_merc";
@@ -173,7 +195,7 @@ function mercDamageFormula(
 }
 
 // Source: server-scripts/TargetDamageSkill.cs:180-215; TargetProjectileSkill.cs:184-191; AreaDamageSkill.cs:88-89; FrontalDamageSkill.cs:64-80; FrontalProjectilesSkill.cs:107-108 — each handler picks combat.magicDamage or combat.damage from damageType, and Poison lands on a different side per handler, independent of isSpell.
-function otherDamageFormula(skill: SkillDetailView): DamageFormulaKind {
+function otherDamageFormula(skill: DamageDispatchSkill): DamageFormulaKind {
   const dt = skill.damage_type;
   const elemental =
     dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease";
@@ -183,6 +205,93 @@ function otherDamageFormula(skill: SkillDetailView): DamageFormulaKind {
       skill.skill_type,
     );
   return elemental || poisonMagic ? "monster_magic" : "monster_melee";
+}
+
+// Source: server-scripts/TargetDamageSkill.cs:180-236; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:94-114; Dexterity.cs:GetRangedAttackBonusPerPoint,GetPoisonDamageBonusPerPoint — the stats each handler adds to listed damage; scrolls, Mana Burn and Final Cadence add none.
+/** The stats a formula adds to the skill's listed damage, before handler-specific weapon deductions. */
+export function damageFormulaStats(
+  skill: DamageDispatchSkill,
+  kind: DamageFormulaKind,
+): DamageStat[] {
+  if (skill.is_scroll) return [];
+  switch (kind) {
+    case "manaburn":
+    case "bard_final_cadence":
+    case "bard_final_cadence_merc":
+      return [];
+    case "magic_spell":
+      return ["spell_power"];
+    case "magic_weapon":
+    case "magic_weapon_ranger":
+      return ["spell_power", "attack_power"];
+    case "monster_magic":
+      return skill.damage_type === "Magic" &&
+        !skill.is_spell &&
+        !!skill.required_weapon_category?.startsWith("Weapon") &&
+        ["target_damage", "target_projectile", "frontal_damage"].includes(
+          skill.skill_type,
+        )
+        ? ["spell_power", "attack_power"]
+        : ["spell_power"];
+    case "ranged_player":
+    case "ranged_player_frontal":
+    case "ranged_merc":
+      return ["attack_power", "ranged_dexterity"];
+    case "poison_rogue":
+      return ["attack_power", "poison_dexterity"];
+    case "normal":
+    case "ranger_melee":
+    case "rogue_melee":
+    case "rogue_melee_merc":
+    case "monster_melee":
+      return ["attack_power"];
+  }
+}
+
+function unanimousStats(
+  skill: DamageDispatchSkill,
+  kinds: DamageFormulaKind[],
+): DamageStat[] {
+  const [first, ...rest] = kinds.map((kind) => damageFormulaStats(skill, kind));
+  const key = first.join("+");
+  if (rest.some((stats) => stats.join("+") !== key)) {
+    throw new Error(
+      `Skill ${skill.id}: casters of one kind add different stats to its damage, so its effect summary cannot name one formula`,
+    );
+  }
+  return first;
+}
+
+/**
+ * The stats an effect summary adds to listed damage. Player classes take
+ * precedence over mercenaries, and both over monsters, companions, familiars
+ * and weapon procs, whose handlers all resolve like a monster's.
+ */
+export function summaryDamageStats(
+  skill: DamageDispatchSkill,
+  playerClasses: readonly string[],
+  mercenaryTypes: readonly string[],
+): DamageStat[] {
+  if (!DAMAGE_SKILL_TYPES.has(skill.skill_type)) return [];
+  if (playerClasses.length > 0) {
+    return unanimousStats(
+      skill,
+      playerClasses.map((cls) => playerDamageFormula(skill, cls)),
+    );
+  }
+  if (mercenaryTypes.length > 0) {
+    return unanimousStats(
+      skill,
+      mercenaryTypes.map((type) => mercDamageFormula(skill, type)),
+    );
+  }
+  return monsterDamageStats(skill);
+}
+
+/** The stats a monster, companion or familiar adds to the skill's listed damage. */
+export function monsterDamageStats(skill: DamageDispatchSkill): DamageStat[] {
+  if (!DAMAGE_SKILL_TYPES.has(skill.skill_type)) return [];
+  return damageFormulaStats(skill, otherDamageFormula(skill));
 }
 
 // ---------------------------------------------------------------------------
@@ -226,12 +335,7 @@ export function computeMechanicsSpec(
     ...(hasFamiliar ? [{ kind: "familiar" } as const] : []),
   ];
 
-  const isDamageSkill =
-    skill.skill_type === "target_damage" ||
-    skill.skill_type === "area_damage" ||
-    skill.skill_type === "frontal_damage" ||
-    skill.skill_type === "target_projectile" ||
-    skill.skill_type === "frontal_projectiles";
+  const isDamageSkill = DAMAGE_SKILL_TYPES.has(skill.skill_type);
 
   const isHealSkill =
     skill.skill_type === "target_heal" || skill.skill_type === "area_heal";

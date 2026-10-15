@@ -89,7 +89,6 @@ export interface ClassSkill extends SkillEffectRow {
   energy_cost: string | null;
   cooldown: string | null;
   cast_time: string | null;
-  learn_default: boolean;
   base_skill: boolean;
   required_spent_points: number;
   class_skill_position: number;
@@ -113,12 +112,10 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.prerequisite2_skill_id,
       ps2.name AS prerequisite2_skill_name,
       s.prerequisite2_level,
-      s.required_weapon_category,
       s.mana_cost,
       s.energy_cost,
       s.cooldown,
       s.cast_time,
-      s.learn_default,
       s.base_skill,
       s.required_spent_points,
       json_extract(s.class_skill_positions, '$.' || ?) AS class_skill_position

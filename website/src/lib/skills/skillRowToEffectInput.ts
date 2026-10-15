@@ -1,4 +1,9 @@
 import type { Skill } from "$lib/utils/formatSkillEffect";
+import {
+  monsterDamageStats,
+  summaryDamageStats,
+  type DamageDispatchSkill,
+} from "$lib/utils/skillMechanics";
 
 /**
  * Build the `formatSkillEffect` input from a raw `skills` DB row.
@@ -6,12 +11,26 @@ import type { Skill } from "$lib/utils/formatSkillEffect";
  * Shared by skill, class, pet, and monster pages and the parity-corpus bake
  * (`website/scripts/gen-skill-effect-parity.ts`). Coerces SQLite boolean columns
  * and renames `pet_prefab_name` to `pet_name` for identical formatter inputs.
+ * Values resolve at `runtimeLevel` when given, and a skill only monsters cast
+ * resolves at their fixed rank, since it has no rank a reader can choose.
  */
 export function skillRowToEffectInput(
   row: unknown,
   runtimeLevel?: number,
 ): Skill {
   const r = row as Record<string, never>;
+  const npcCasterOnly =
+    requiredColumn(r.npc_caster_only, "npc_caster_only") === 1;
+  const dispatch: DamageDispatchSkill = {
+    id: r.id,
+    skill_type: r.skill_type,
+    damage_type: r.damage_type,
+    is_spell: Boolean(r.is_spell),
+    is_scroll: Boolean(r.is_scroll),
+    required_weapon_category: r.required_weapon_category,
+    is_manaburn_skill: Boolean(r.is_manaburn_skill),
+    is_bard_final_cadence: Boolean(r.is_bard_final_cadence),
+  };
   const skill: Skill = {
     id: r.id,
     skill_type: r.skill_type,
@@ -20,6 +39,26 @@ export function skillRowToEffectInput(
     damage_shield_type: r.damage_shield_type,
     max_level: r.max_level,
     damage: r.damage,
+    damage_stats: summaryDamageStats(
+      dispatch,
+      stringArray(
+        requiredColumn(r.player_classes, "player_classes"),
+        "player_classes",
+      ),
+      stringArray(
+        requiredColumn(r.mercenary_types, "mercenary_types"),
+        "mercenary_types",
+      ),
+    ),
+    monster_damage_stats: monsterDamageStats(dispatch),
+    npc_caster_only: npcCasterOnly,
+    is_mercenary_skill: Boolean(r.is_mercenary_skill),
+    required_weapon_category: r.required_weapon_category,
+    cast_range: parseLinearValue(r.cast_range)?.base_value ?? 0,
+    can_buff_others: Boolean(r.can_buff_others),
+    area_projectile: Boolean(r.area_projectile),
+    is_undead_illusion: Boolean(r.is_undead_illusion),
+    potion_buff_level: potionBuffLevel(r.id, r.potion_buff_levels),
     damage_percent: r.damage_percent,
     lifetap_percent: r.lifetap_percent,
     knockback_chance: r.knockback_chance,
@@ -135,8 +174,10 @@ export function skillRowToEffectInput(
     area_objects_to_spawn: r.area_objects_to_spawn,
   };
 
-  if (runtimeLevel === undefined) return skill;
-  const resolvedLevel = runtimeLevel;
+  // Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:Skill; Npc.cs — monsters and NPCs cast at rank 1 when learnDefault, otherwise rank 0.
+  const resolvedLevel =
+    runtimeLevel ?? (npcCasterOnly ? (r.learn_default ? 1 : 0) : undefined);
+  if (resolvedLevel === undefined) return skill;
 
   if (typeof skill.duration_per_level === "number") {
     skill.duration_base += skill.duration_per_level * (resolvedLevel - 1);
@@ -179,4 +220,46 @@ function parseLinearValue(
         bonus_per_level: candidate.bonus_per_level,
       }
     : null;
+}
+
+/** Read a derived column the effect projection must select. */
+function requiredColumn<T>(value: T | undefined, column: string): T {
+  if (value === undefined) {
+    throw new Error(`Skill effect row lacks the ${column} column`);
+  }
+  return value;
+}
+
+/** Parse a JSON array column. A null column is an empty list. */
+function jsonArray(raw: string | null, column: string): unknown[] {
+  if (raw === null) return [];
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) {
+    throw new Error(`Skill effect column ${column} is not a JSON array`);
+  }
+  return parsed;
+}
+
+function stringArray(raw: string | null, column: string): string[] {
+  const values = jsonArray(raw, column);
+  if (!values.every((value) => typeof value === "string")) {
+    throw new Error(`Skill effect column ${column} is not a string array`);
+  }
+  return values;
+}
+
+/** The one buff level every potion applying the skill uses, or null when no potion applies it. */
+function potionBuffLevel(id: string, raw: string | undefined): number | null {
+  const levels = jsonArray(
+    requiredColumn(raw, "potion_buff_levels"),
+    "potion_buff_levels",
+  );
+  if (levels.length === 0) return null;
+  const [level] = levels;
+  if (levels.length > 1 || typeof level !== "number") {
+    throw new Error(
+      `Skill ${id}: potions apply it at different buff levels, so its summary cannot state one duration`,
+    );
+  }
+  return level;
 }

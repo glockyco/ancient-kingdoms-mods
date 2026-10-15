@@ -36,6 +36,7 @@ import { ACTIVE_SONGS, melodyBonus } from "$lib/calculation/bard";
 import { bardBonus, bardPower, songValue } from "$lib/calculation/combat";
 import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
+import { damageFormulaStats } from "$lib/utils/skillMechanics";
 
 /** Attribute a calculation's quantities to a mercenary instead of the reader, so its values are labelled as the mercenary's and never remembered as the reader's. */
 export function casterInputs(
@@ -134,37 +135,18 @@ export function calculationCasterLabel(casters: Caster[]): string {
   return CLASS_LIST.format(classIds.map(formatClassName));
 }
 
-const MAGIC_KINDS: Partial<Record<DamageFormulaKind, true>> = {
-  magic_spell: true,
-  magic_weapon: true,
-  magic_weapon_ranger: true,
-  monster_magic: true,
-};
-
-/** The handler's character-window stats, before its skill-specific additions and deductions. */
+/** The handler's character-window stats, before its skill-specific additions and deductions. Dexterity shares are separate calculation steps. */
 export function damageStatInputs(
   skill: SkillDetailView,
   kind: DamageFormulaKind,
 ): CalculationInput[] {
-  if (
-    skill.is_scroll ||
-    kind === "manaburn" ||
-    kind === "bard_final_cadence" ||
-    kind === "bard_final_cadence_merc"
-  )
-    return [];
-  const magic = !!MAGIC_KINDS[kind];
-  const weaponMagic =
-    kind === "magic_weapon" ||
-    kind === "magic_weapon_ranger" ||
-    (kind === "monster_magic" &&
-      skill.damage_type === "Magic" &&
-      !skill.is_spell &&
-      !!skill.required_weapon_category?.startsWith("Weapon") &&
-      ["target_damage", "target_projectile", "frontal_damage"].includes(
-        skill.skill_type,
-      ));
-  return [magic ? MAGIC_DAMAGE : DAMAGE, ...(weaponMagic ? [DAMAGE] : [])];
+  return damageFormulaStats(skill, kind).flatMap((stat) =>
+    stat === "spell_power"
+      ? [MAGIC_DAMAGE]
+      : stat === "attack_power"
+        ? [DAMAGE]
+        : [],
+  );
 }
 
 // Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the Mercenary Skill Rank example uses owner level 50 and 20 total veteran points, giving rank 12 before the cap.

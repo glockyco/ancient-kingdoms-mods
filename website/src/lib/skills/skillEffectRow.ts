@@ -18,6 +18,19 @@ export interface SkillEffectRow {
   level_required: number;
   player_classes: string | null;
   is_spell: number;
+  is_scroll: number;
+  learn_default: number;
+  required_weapon_category: string | null;
+  cast_range: string | null;
+  can_buff_others: number;
+  area_projectile: number;
+  is_undead_illusion: number;
+  /** JSON array of the type_monster of each mercenary that casts the skill. */
+  mercenary_types: string;
+  /** 1 when only monsters and NPCs cast the skill. */
+  npc_caster_only: number;
+  /** JSON array of the buff levels of the potions that apply the skill. */
+  potion_buff_levels: string;
   is_veteran: number;
   is_pet_skill: number;
   is_mercenary_skill: number;

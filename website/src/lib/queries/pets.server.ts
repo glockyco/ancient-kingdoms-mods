@@ -483,7 +483,6 @@ function getPetSkills(petId: string): ClassSkill[] {
       s.energy_cost,
       s.cooldown,
       s.cast_time,
-      s.learn_default,
       s.base_skill,
       s.required_spent_points,
       ps.is_innate

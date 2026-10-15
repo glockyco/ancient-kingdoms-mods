@@ -344,6 +344,13 @@ export type DamageFormulaKind =
   | "monster_melee" // The caster's own Damage at its level.
   | "monster_magic"; // The caster's own Magic Damage at its level.
 
+/** A character-window stat, or Dexterity share, that a damage handler adds to a skill's listed damage. */
+export type DamageStat =
+  | "spell_power"
+  | "attack_power"
+  | "ranged_dexterity" // Rounded 150% of Dexterity.
+  | "poison_dexterity"; // Rounded 250% of Dexterity.
+
 export interface DamageContext {
   /** Every caster that shares this formula. */
   casters: Caster[];

@@ -11,10 +11,6 @@
     "AreaBuffSkill.cs": {
       "span": 0
     },
-    "AreaBuffSkill.cs:125-137": {
-      "sha256": "ff43beb2dad3b226e2d705c059c1b1117700cbc79a309129b16b011fafe3b846",
-      "span": 13
-    },
     "AreaBuffSkill.cs:16-18": {
       "sha256": "07d3ca4f05e26d24f69bc4fbcd86457001866bd1411bc4259e31276b463df39a",
       "span": 3
@@ -362,6 +358,9 @@
       "span": 0
     },
     "BuffSkill.cs:GetDebuffPowerAttribute": {
+      "span": 0
+    },
+    "BuffSkill.cs:HasAppearanceIllusion": {
       "span": 0
     },
     "BuffSkill.cs:IgnoreImmuneDebuff": {
@@ -1107,6 +1106,9 @@
       "sha256": "258fa5e9c7f4cdaac24658786357bbd4308c12b61b0df9cd26ae64fc92afdb74",
       "span": 8
     },
+    "Dexterity.cs:GetRangedAttackBonusPerPoint": {
+      "span": 0
+    },
     "Energy.cs:12-17": {
       "sha256": "76f5cbc59c75c20aded28096595df0233c055c864d15836e3f99078e687777f0",
       "span": 6
@@ -1477,6 +1479,9 @@
     "GatherInventoryQuest.cs:OnCompleted": {
       "span": 0
     },
+    "GatherItem.cs": {
+      "span": 0
+    },
     "GatherItem.cs:1098-1116": {
       "sha256": "8d3380110eb9950dd8533e070db89ff64030ef045cda6721d8fc707ff1542c02",
       "span": 19
@@ -1677,6 +1682,9 @@
       "span": 0
     },
     "GatherItem.cs:OnInteractServer": {
+      "span": 0
+    },
+    "GatherItem.cs:TryGatherItem": {
       "span": 0
     },
     "GatherItem.cs:Update": {
@@ -3280,6 +3288,12 @@
     "Player.cs:CmdBuyMercenary": {
       "span": 0
     },
+    "Player.cs:CmdFishing": {
+      "span": 0
+    },
+    "Player.cs:CmdOpenChest": {
+      "span": 0
+    },
     "Player.cs:CmdPortalDestination": {
       "span": 0
     },
@@ -3637,6 +3651,9 @@
       "span": 0
     },
     "PlayerEquipment.cs:OnStartServer": {
+      "span": 0
+    },
+    "PlayerInventory.cs": {
       "span": 0
     },
     "PlayerInventory.cs:108-113": {
@@ -4219,6 +4236,9 @@
       "sha256": "eb0ff0b508e63345f4fc1392c7c403dc8afc58711dc6e124752bfa954961089f",
       "span": 10
     },
+    "PotionItem.cs:GetBuffLevelWithElixirEndurance": {
+      "span": 0
+    },
     "PotionItem.cs:Use": {
       "span": 0
     },
@@ -4460,6 +4480,10 @@
       "sha256": "4d478065bb5ee05495dffb912a69f48be1c6d0c29fc055b9ab6a0c100f1fffcb",
       "span": 12
     },
+    "Skills.cs:1754-1755": {
+      "sha256": "d1a62df23c39377a9cd39ebe92b533ee006f9731a09a117b49a4565a9a523e43",
+      "span": 2
+    },
     "Skills.cs:1822-1842": {
       "sha256": "6f3a10a81090d46306f5ae1d003f270acbf6c7e9d7851097bb3e446166ad2d93",
       "span": 21
@@ -4532,6 +4556,9 @@
     "Skills.cs:FinishCastMeleeAttackMonster": {
       "span": 0
     },
+    "Skills.cs:GetCriticalChanceBonus": {
+      "span": 0
+    },
     "Skills.cs:GetEnergyRecoveryBonus": {
       "span": 0
     },
@@ -4542,6 +4569,9 @@
       "span": 0
     },
     "Skills.cs:GetHealthPercentBonus": {
+      "span": 0
+    },
+    "Skills.cs:HasInvisibilityIgnoringDetection": {
       "span": 0
     },
     "Skills.cs:OnDeath": {
@@ -4641,6 +4671,9 @@
     "SummonSkillMonsters.cs:Apply": {
       "span": 0
     },
+    "TableUI.cs": {
+      "span": 0
+    },
     "TableUI.cs:90": {
       "sha256": "ac6dad5acd6a507de3a53c258bd0d220dd91cd2a3729f2226ed7ada942e734cc",
       "span": 1
@@ -4726,6 +4759,10 @@
     "TargetDamageSkill.cs:180-215": {
       "sha256": "929c21caf199afd13b3e88d08cce47449397b660dc51b7773da4d32f96c55d52",
       "span": 36
+    },
+    "TargetDamageSkill.cs:180-236": {
+      "sha256": "8a8830ebd3ff7b8433f9898b81565c2dc40548ac7f3dc85be62fd57c7271abcc",
+      "span": 57
     },
     "TargetDamageSkill.cs:188-203": {
       "sha256": "21e8a8d8f03dd674bfc9fcb60124fb24d24f686fcd209de376100e963be67489",
@@ -4943,7 +4980,13 @@
       "sha256": "d0a2f94fe62d9aa925887eb604e03bd097865107183d2ce1d8db2fa086c268b9",
       "span": 38
     },
+    "Trap.cs:OnInteractServer": {
+      "span": 0
+    },
     "TrapDetection.cs:Update": {
+      "span": 0
+    },
+    "TravelItem.cs": {
       "span": 0
     },
     "TravelItem.cs:15-42": {

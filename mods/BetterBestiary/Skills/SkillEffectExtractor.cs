@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DataExporter;
 using DataExporter.Skills;
 using Il2Cpp;
@@ -25,6 +26,11 @@ internal static class SkillEffectExtractor
             skill_type = SkillClassification.DetermineSkillType(skill),
             damage_type = null,
             is_pet_skill = skill.isPetSkill,
+            is_mercenary_skill = skill.isMercenarySkill,
+            required_weapon_category = string.IsNullOrEmpty(skill.requiredWeaponCategory)
+                ? null
+                : skill.requiredWeaponCategory,
+            cast_range = skill.castRange.baseValue,
         };
 
         PopulateDamage(skill, input);
@@ -65,7 +71,14 @@ internal static class SkillEffectExtractor
 
         var areaDamageSkill = skill.TryCast<AreaDamageSkill>();
         if (areaDamageSkill != null)
+        {
             input.affects_random_target = areaDamageSkill.affectsRandomTarget;
+            input.area_projectile = areaDamageSkill.projectile != null;
+        }
+
+        // The panel only describes monster casts, so both stat lists use the monster rule.
+        input.monster_damage_stats = MonsterDamageStats(skill, input.skill_type, input.damage_type);
+        input.damage_stats = input.monster_damage_stats;
 
         var areaObjectSpawnSkill = skill.TryCast<AreaObjectSpawnSkill>();
         if (areaObjectSpawnSkill != null)
@@ -73,6 +86,33 @@ internal static class SkillEffectExtractor
             input.area_object_size = areaObjectSpawnSkill.sizeObject;
             input.area_objects_to_spawn = areaObjectSpawnSkill.objectsToSpawn;
         }
+    }
+
+    /// <summary>Mirror of the website's <c>monsterDamageStats</c>: the stats a monster's damage
+    /// handler adds to the skill's listed damage.</summary>
+    // Source: server-scripts/TargetDamageSkill.cs:180-236; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:94-114 — monsters add Spell Power for elemental hits, plus Attack Power for magic weapon attacks, and Attack Power otherwise.
+    private static List<string> MonsterDamageStats(ScriptableSkill skill, string skillType, string damageType)
+    {
+        var stats = new List<string>();
+        if (skill.isScroll || skillType is not ("target_damage" or "area_damage" or "frontal_damage" or "target_projectile" or "frontal_projectiles"))
+            return stats;
+        var elemental = damageType is "Magic" or "Fire" or "Cold" or "Disease";
+        var poisonMagic = damageType == "Poison"
+            && skillType is "target_damage" or "target_projectile" or "frontal_projectiles";
+        if (!elemental && !poisonMagic)
+        {
+            stats.Add("attack_power");
+            return stats;
+        }
+        stats.Add("spell_power");
+        var weaponMagic = damageType == "Magic"
+            && !skill.isSpell
+            && skill.requiredWeaponCategory != null
+            && skill.requiredWeaponCategory.StartsWith("Weapon")
+            && skillType is "target_damage" or "target_projectile" or "frontal_damage";
+        if (weaponMagic)
+            stats.Add("attack_power");
+        return stats;
     }
 
     private static void PopulateHeal(ScriptableSkill skill, SkillEffectInput input)
@@ -99,6 +139,7 @@ internal static class SkillEffectExtractor
         input.is_mana_shield = targetBuffSkill.isManaShield;
         input.is_double_exp_spell = targetBuffSkill.isDoubleExpSpell;
         input.also_buff_active_pet = targetBuffSkill.alsoBuffActivePet;
+        input.can_buff_others = targetBuffSkill.canBuffOthers;
     }
 
     private static void PopulateBonus(ScriptableSkill skill, SkillEffectInput input)
@@ -152,6 +193,8 @@ internal static class SkillEffectExtractor
             input.duration_per_level = buffSkill.buffTime.bonusPerLevel;
             input.is_permanent = buffSkill.isPermanent;
             input.is_invisibility = buffSkill.invisibility;
+            input.ignores_see_invisibility = buffSkill.ignoreSeeInvisibility;
+            input.is_undead_illusion = buffSkill.undeadIlussion;
             input.illusion_race = string.IsNullOrWhiteSpace(buffSkill.illusionRace)
                 ? null
                 : buffSkill.illusionRace;

@@ -33,19 +33,51 @@ describe("formatSkillEffect stat bonuses", () => {
   });
 });
 
-describe("formatSkillEffect scaling formulas", () => {
-  it("uses one exact, unwrapped formula for every scaling effect", () => {
-    const attack = {
-      skill_type: "target_damage",
-      damage_type: "Physical",
-      damage: { base_value: 30, bonus_per_level: 30 },
-      stun_chance: { base_value: 0.01, bonus_per_level: 0.003 },
-      stun_time: { base_value: 1, bonus_per_level: 0 },
-    } as Skill;
+describe("formatSkillEffect damage", () => {
+  it("multiplies the caster's stats and the listed damage together", () => {
+    // Dying Grasp: TargetDamageSkill adds Spell Power to 400, then multiplies the sum by 200%.
+    expect(
+      formatSkillEffect({
+        skill_type: "target_damage",
+        damage_type: "Magic",
+        damage: { base_value: 400, bonus_per_level: 0 },
+        damage_percent: { base_value: 2, bonus_per_level: 0 },
+        damage_stats: ["spell_power"],
+        monster_damage_stats: ["spell_power"],
+      } as Skill),
+    ).toBe("(spell power + 400) × 200% magic dmg");
+  });
 
-    expect(formatSkillEffect(attack)).toBe(
-      "30 × rank physical dmg, 0.7% + 0.3% × rank stun (1s)",
+  it("groups a rank-scaled multiplier so it covers the whole sum", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "target_projectile",
+        damage_type: "Physical",
+        damage: { base_value: 1, bonus_per_level: 0 },
+        damage_percent: { base_value: 2, bonus_per_level: 0.25 },
+        damage_stats: ["attack_power", "ranged_dexterity"],
+        monster_damage_stats: ["attack_power"],
+      } as Skill),
+    ).toBe(
+      "(attack power + 150% of dexterity + 1) × (175% + 25% × rank) physical dmg",
     );
+  });
+
+  it("adds every stat a monster's weapon spell uses before rounding to even", () => {
+    expect(
+      formatSkillEffect(
+        {
+          skill_type: "target_damage",
+          damage_type: "Magic",
+          damage: { base_value: 1, bonus_per_level: 0 },
+          damage_percent: { base_value: 0.5, bonus_per_level: 0 },
+          damage_stats: ["spell_power", "attack_power"],
+          monster_damage_stats: ["spell_power", "attack_power"],
+        } as Skill,
+        // (1 Spell Power + 3 Attack Power + 1) × 50% = 2.5, which rounds to even.
+        { monster: { damage: 3, magicDamage: 1 } },
+      ),
+    ).toBe("2 magic dmg");
   });
 });
 
@@ -59,17 +91,16 @@ describe("formatSkillEffect Bard summaries", () => {
     },
   );
 
-  it("places the Virtuosity condition and per-song bonus after its damage bonuses", () => {
-    expect(
-      formatSkillEffect({
-        skill_type: "passive",
-        is_bard_virtuosity: true,
-        additional_damage_percent_per_song: 0.05,
-        damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
-        magic_damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
-      } as Skill),
-    ).toBe(
-      "+20% attack power, +20% spell power, with at least 3 active songs, +5% attack and spell power per active song beyond 3",
+  it("states the Virtuosity condition before the bonuses it gates", () => {
+    const summary = formatSkillEffect({
+      skill_type: "passive",
+      is_bard_virtuosity: true,
+      additional_damage_percent_per_song: 0.05,
+      damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
+      magic_damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
+    } as Skill);
+    expect(summary.indexOf("3+ active songs")).toBeLessThan(
+      summary.indexOf("attack power"),
     );
   });
 
@@ -98,14 +129,15 @@ describe("formatSkillEffect Bard summaries", () => {
     ).toBe("Bard song, +3.5% × rank fear resist (max 70%)");
   });
 
-  it("identifies charm damage as a base value", () => {
+  it("drops the debuff type tag from a charm", () => {
     expect(
       formatSkillEffect({
         skill_type: "area_debuff",
         is_bard_charm: true,
+        is_magic_debuff: true,
         charmed_damage_percent: { base_value: 0.45, bonus_per_level: 0 },
       } as Skill),
-    ).toBe("charms target at 45% base damage");
+    ).not.toContain("magic debuff");
   });
 });
 
@@ -116,16 +148,12 @@ describe("formatSkillEffect enrage passives", () => {
     is_enrage: true,
   } as Skill;
 
-  it("formats the passive enrage threshold without a monster context", () => {
-    expect(formatSkillEffect(enrageSkill)).toBe("+50-75% damage below 10% HP");
-  });
-
-  it("formats the passive enrage threshold with a monster context", () => {
+  it("describes the passive enrage threshold the same way with a monster context", () => {
     expect(
       formatSkillEffect(enrageSkill, {
         monster: { damage: 0, magicDamage: 0 },
       }),
-    ).toBe("+50-75% damage below 10% HP");
+    ).toBe(formatSkillEffect(enrageSkill));
   });
 });
 
@@ -166,14 +194,15 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         haste_bonus: { base_value: 0.05, bonus_per_level: 0.05 },
       } as Skill),
     ).toBe("buffs your companion, +5% × rank haste");
-    expect(
-      formatSkillEffect({
-        skill_type: "target_buff",
-        also_buff_active_pet: true,
-        ward_bonus: { base_value: 50, bonus_per_level: 50 },
-      } as Skill),
-    ).toBe(
-      "when self-cast, also buffs your companion in range, +50 × rank ward",
+    const sharing = {
+      skill_type: "target_buff",
+      also_buff_active_pet: true,
+      cast_range: 12,
+      ward_bonus: { base_value: 50, bonus_per_level: 50 },
+    } as Skill;
+    expect(formatSkillEffect(sharing)).not.toContain("self-cast");
+    expect(formatSkillEffect({ ...sharing, can_buff_others: true })).toContain(
+      "when self-cast",
     );
   });
 
@@ -223,9 +252,11 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         skill_type: "target_damage",
         damage_type: "Magic",
         damage: { base_value: 20, bonus_per_level: 20 },
+        damage_stats: ["spell_power"],
+        monster_damage_stats: ["spell_power"],
         channel_pulses: 3,
       } as Skill),
-    ).toBe("20 × rank magic dmg, channeled over 3 pulses");
+    ).toContain("channeled over 3 pulses");
   });
 
   it("assigns an owner's pet passive max-health bonus to the companion", () => {

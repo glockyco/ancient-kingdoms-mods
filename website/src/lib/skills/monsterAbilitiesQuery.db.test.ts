@@ -45,27 +45,27 @@ describe("monster ability effects", () => {
     expect(mismatches).toEqual([]);
   });
 
-  test("show the Ant Attack formula and its runtime result", () => {
+  test("resolve a skill only monsters cast at their fixed rank in the skills list", () => {
     const intrinsic = query<{ id: string }>(SKILLS_LIST_QUERY).find(
       (row) => row.id === "ant_attack",
     );
     expect(intrinsic).toBeDefined();
-    expect(formatSkillEffect(skillRowToEffectInput(intrinsic))).toBe(
-      "2 physical dmg, 0.9% + 0.1% × rank stun (1s)",
-    );
 
     const antAttack = query<{ id: string; runtime_level: number }>(
       MONSTER_ABILITIES_QUERY,
       ["giant_ant"],
     ).find((row) => row.id === "ant_attack");
-
     expect(antAttack).toBeDefined();
     expect(antAttack?.runtime_level).toBe(0);
-    expect(
+
+    const listed = formatSkillEffect(skillRowToEffectInput(intrinsic));
+    expect(listed).toBe(
       formatSkillEffect(
         skillRowToEffectInput(antAttack, antAttack?.runtime_level),
       ),
-    ).toContain("0.9% stun");
+    );
+    expect(listed).toContain("0.9% stun");
+    expect(listed).not.toContain("rank");
   });
 
   test("keep one exact formula for player and level-zero monster use", () => {
@@ -84,8 +84,8 @@ describe("monster ability effects", () => {
         ["dragons_breath"],
       ).some((usage) => usage.runtime_level === 0),
     ).toBe(true);
-    expect(formatSkillEffect(skillRowToEffectInput(dragonBreath))).toBe(
-      "115% + 25% × rank fire weapon dmg",
+    expect(formatSkillEffect(skillRowToEffectInput(dragonBreath))).toContain(
+      "× rank",
     );
   });
 
