@@ -1,5 +1,5 @@
 <script lang="ts" generics="TData">
-  import { onMount, untrack } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import { afterNavigate } from "$app/navigation";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
   import { parseTableUrlState, serializeTableUrlState } from "./url-state";
@@ -111,6 +111,15 @@
   let columnPinning = $state<ColumnPinningState>({ left: [], right: [] });
   let globalFilter = $state("");
   let isHydrated = $state(false);
+  let tableContainer: HTMLDivElement;
+
+  async function changePage(page: number) {
+    table.setPageIndex(page - 1);
+    await tick();
+    if (tableContainer.getBoundingClientRect().top < 0) {
+      tableContainer.scrollIntoView({ block: "start" });
+    }
+  }
 
   // Track previous data reference to detect actual data changes
   let previousData: TData[] | null = null;
@@ -614,7 +623,8 @@
   {/if}
 
   <div
-    class="rounded-md border {persistentScrollbar
+    bind:this={tableContainer}
+    class="data-table-container rounded-md border {persistentScrollbar
       ? 'overflow-x-scroll'
       : 'overflow-x-auto'} {className}"
   >
@@ -737,16 +747,14 @@
         <Pagination.Root
           count={table.getFilteredRowModel().rows.length}
           perPage={pageSize}
-          bind:page={
-            () => pagination.pageIndex + 1, (p) => table.setPageIndex(p - 1)
-          }
+          bind:page={() => pagination.pageIndex + 1, changePage}
         >
           {#snippet children({ pages })}
             <Pagination.Content>
               <Pagination.Item>
                 <Pagination.PrevButton />
               </Pagination.Item>
-              {#each pages as page (`${page.key}-${pagination.pageIndex}`)}
+              {#each pages as page (page.key)}
                 {#if page.type === "ellipsis"}
                   <Pagination.Item>
                     <Pagination.Ellipsis />
@@ -770,3 +778,9 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .data-table-container {
+    scroll-margin-top: 6rem;
+  }
+</style>
