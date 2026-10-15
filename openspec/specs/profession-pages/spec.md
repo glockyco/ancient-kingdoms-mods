@@ -22,7 +22,7 @@ Mining, Radiant Seeker, and Slayer SHALL show a name, category, profession-speci
 
 ### Requirement: Migrated calculators show mastery as a curve
 
-Migrated pages with a numeric mastery payoff SHALL show a labeled curve at the reader's selected mastery. The curve SHALL distinguish outcomes below the usable floor and tiers that no longer grant skill when those rules apply. An initial curve and its numeric outcome SHALL render without JavaScript.
+Migrated pages with a numeric mastery payoff SHALL show a labeled curve at the reader's selected mastery. The curve SHALL distinguish outcomes below the usable floor and tiers that no longer grant skill when those rules apply. An initial curve and its numeric outcome SHALL render without JavaScript. Chart labels SHALL remain readable on phones, with horizontal exploration when the complete chart cannot fit without shrinking its text.
 
 #### Scenario: Mining has a low success chance
 
@@ -33,6 +33,11 @@ Migrated pages with a numeric mastery payoff SHALL show a labeled curve at the r
 
 - **WHEN** a player changes the Radiant Seeker skill slider
 - **THEN** the displayed Aether chance and curve marker change together
+
+#### Scenario: Player reads a mastery curve on a phone
+
+- **WHEN** a player opens Mining, Slayer, or Radiant Seeker on a phone
+- **THEN** axis labels and annotations remain at a readable size and the player can scroll to the full skill range without widening the page
 
 ### Requirement: Mining presents its action and inventory
 
