@@ -430,7 +430,7 @@
   <!-- Basic Info -->
   <Card.Root class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Basic Information</Card.Title>
+      <Card.Title level={2}>Basic Information</Card.Title>
     </Card.Header>
     <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div>
@@ -575,7 +575,7 @@
   {#if hasMechanicsNotes}
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title>Mechanics</Card.Title>
+        <Card.Title level={2}>Mechanics</Card.Title>
       </Card.Header>
       <Card.Content class="space-y-2 text-sm">
         {#if isBackpack}
@@ -655,7 +655,7 @@
       {#if data.item.tooltip_html}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Tooltip</Card.Title>
+            <Card.Title level={2}>Tooltip</Card.Title>
           </Card.Header>
           <Card.Content>
             <ItemTooltip
@@ -670,7 +670,7 @@
       {#if petSpriteSrc && data.petVisualAsset}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Pet</Card.Title>
+            <Card.Title level={2}>Pet</Card.Title>
           </Card.Header>
           <Card.Content class="flex-1">
             <div
@@ -691,7 +691,7 @@
       {#if specialMechanics[0]}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Special Use</Card.Title>
+            <Card.Title level={2}>Special Use</Card.Title>
           </Card.Header>
           <Card.Content>
             <div>
@@ -707,7 +707,7 @@
       {#if data.fishing_effect}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>{data.fishing_effect.title}</Card.Title>
+            <Card.Title level={2}>{data.fishing_effect.title}</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-3 text-sm">
             {#each data.fishing_effect.description_paragraphs as paragraph (paragraph)}
@@ -726,7 +726,7 @@
       {#if data.item.luck_token_bonus}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Fatecharm</Card.Title>
+            <Card.Title level={2}>Fatecharm</Card.Title>
           </Card.Header>
           <Card.Content class="flex flex-col gap-4">
             <div>
@@ -762,7 +762,7 @@
       {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Fatecharm Fragment</Card.Title>
+            <Card.Title level={2}>Fatecharm Fragment</Card.Title>
           </Card.Header>
           <Card.Content class="flex flex-col gap-4">
             <div>
@@ -792,7 +792,7 @@
       {#if data.packContents.length > 0}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Pack Contents</Card.Title>
+            <Card.Title level={2}>Pack Contents</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
@@ -813,7 +813,7 @@
       {#if hasStatsCard}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Stats</Card.Title>
+            <Card.Title level={2}>Stats</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="grid grid-cols-2 gap-3">
@@ -869,7 +869,7 @@
         {@const mergeTarget = data.usages.merges[0]}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Combine to Create</Card.Title>
+            <Card.Title level={2}>Combine to Create</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div>
@@ -895,7 +895,7 @@
         <!-- Created From (shown when no stats and not a merge item) -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Created from</Card.Title>
+            <Card.Title level={2}>Created from</Card.Title>
           </Card.Header>
           <Card.Content>
             <div>
@@ -916,7 +916,7 @@
       {#if data.item.item_type === "treasure_map" && data.treasureLocation}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Treasure Location</Card.Title>
+            <Card.Title level={2}>Treasure Location</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div>
@@ -959,7 +959,7 @@
       {#if computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Currency for</Card.Title>
+            <Card.Title level={2}>Currency for</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
@@ -983,7 +983,7 @@
         <!-- Primal Essence Acquisition -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>How to Acquire</Card.Title>
+            <Card.Title level={2}>How to Acquire</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1018,7 +1018,7 @@
         <!-- Token of Redemption Usage -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Usage</Card.Title>
+            <Card.Title level={2}>Usage</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1053,7 +1053,7 @@
         <!-- Source: server-scripts/ScriptableSkill.cs:TryActivateRadiantAetherForArea -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Passive Effects</Card.Title>
+            <Card.Title level={2}>Passive Effects</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-4">
@@ -1127,7 +1127,7 @@
         <!-- Cursed Rune Blessing -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Blessing</Card.Title>
+            <Card.Title level={2}>Blessing</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1162,7 +1162,7 @@
         <!-- Blessed Rune Origin -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Acquisition</Card.Title>
+            <Card.Title level={2}>Acquisition</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1197,7 +1197,7 @@
         <!-- Source: server-scripts/GatherItem.cs:368-376,407-428 — Lockpicking skill -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Lockpicking</Card.Title>
+            <Card.Title level={2}>Lockpicking</Card.Title>
           </Card.Header>
           <Card.Content>
             <p class="text-sm text-muted-foreground">
@@ -1212,7 +1212,7 @@
         <!-- Socketable Augment Usage -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>How to Use</Card.Title>
+            <Card.Title level={2}>How to Use</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1254,7 +1254,7 @@
         <!-- Found in Packs -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Found in Packs</Card.Title>
+            <Card.Title level={2}>Found in Packs</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
@@ -1273,7 +1273,7 @@
         <!-- Teaches Recipe -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Teaches Recipe</Card.Title>
+            <Card.Title level={2}>Teaches Recipe</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div class="grid grid-cols-3 gap-4">
@@ -1322,7 +1322,7 @@
         <!-- Crafted by -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title class="flex items-center gap-2">
+            <Card.Title level={2} class="flex items-center gap-2">
               Crafted by
               {#if computed.craftedFrom && computed.craftedFrom.length > 0}
                 <a
@@ -1385,7 +1385,7 @@
   {#if data.item.augment_armor_set_name}
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title>
+        <Card.Title level={2}>
           {data.item.augment_armor_set_name}
         </Card.Title>
       </Card.Header>
@@ -1457,7 +1457,7 @@
   {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.potion_buff_id || data.item.food_buff_id || data.item.relic_buff_id || data.item.scroll_skill_id}
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title>Use Effects</Card.Title>
+        <Card.Title level={2}>Use Effects</Card.Title>
       </Card.Header>
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.usage_health > 0}
@@ -1550,7 +1550,7 @@
   {#if data.item.book_strength_gain > 0 || data.item.book_dexterity_gain > 0 || data.item.book_constitution_gain > 0 || data.item.book_intelligence_gain > 0 || data.item.book_wisdom_gain > 0 || data.item.book_charisma_gain > 0}
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title>Permanent Stat Gains</Card.Title>
+        <Card.Title level={2}>Permanent Stat Gains</Card.Title>
         <Card.Description
           >Reading this book permanently increases the attributes listed below.</Card.Description
         >
@@ -1618,7 +1618,7 @@
     {#if !data.hasKnownSource}
       <Card.Root class="bg-muted/30 self-start">
         <Card.Header>
-          <Card.Title>Sources</Card.Title>
+          <Card.Title level={2}>Sources</Card.Title>
         </Card.Header>
         <Card.Content>
           <ItemSourceLinks
@@ -1633,7 +1633,7 @@
     {#if computed.droppedBy && computed.droppedBy.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Dropped by</Card.Title>
+          <Card.Title level={2}>Dropped by</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1670,7 +1670,7 @@
     {#if computed.soldBy && computed.soldBy.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Sold by</Card.Title>
+          <Card.Title level={2}>Sold by</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1716,7 +1716,7 @@
     {#if isPet}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Mechanics</Card.Title>
+          <Card.Title level={2}>Mechanics</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-3 text-sm text-muted-foreground">
           <!-- Source: server-scripts/Player.cs:4193-4223 — using the item summons the pet, or dismisses the one it already summoned. -->
@@ -1752,7 +1752,7 @@
       )}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Rewarded by Quests</Card.Title>
+          <Card.Title level={2}>Rewarded by Quests</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           {#if repeatableQuests.length > 0}
@@ -1816,7 +1816,7 @@
       )}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Provided by Quests</Card.Title>
+          <Card.Title level={2}>Provided by Quests</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           {#if repeatableQuests.length > 0}
@@ -1874,7 +1874,7 @@
     {#if computed.rewardedByAltars && computed.rewardedByAltars.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Dropped by Altar Boss</Card.Title>
+          <Card.Title level={2}>Dropped by Altar Boss</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1922,7 +1922,7 @@
     {#if computed.rewardedByTreasureMaps && computed.rewardedByTreasureMaps.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Rewarded by Treasure Maps</Card.Title>
+          <Card.Title level={2}>Rewarded by Treasure Maps</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1945,7 +1945,7 @@
     {#if computed.requiredForAltars && computed.requiredForAltars.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Required to Activate Altars</Card.Title>
+          <Card.Title level={2}>Required to Activate Altars</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1966,7 +1966,7 @@
     {#if computed.requiredForPortals && computed.requiredForPortals.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Required for Portals</Card.Title>
+          <Card.Title level={2}>Required for Portals</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1998,7 +1998,7 @@
     {#if computed.craftedFrom && computed.craftedFrom.length > 0 && !data.item.taught_by_recipe_id}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title class="flex items-center gap-2">
+          <Card.Title level={2} class="flex items-center gap-2">
             Crafted from Recipe
             <a
               href="/recipes/{computed.craftedFrom[0].recipe_id}"
@@ -2031,7 +2031,7 @@
     {#if computed.gatheredFrom && computed.gatheredFrom.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Gathered from</Card.Title>
+          <Card.Title level={2}>Gathered from</Card.Title>
         </Card.Header>
         <Card.Content>
           {#if computed.gatheredFrom.some((gather) => gather.is_fishing_spot)}
@@ -2115,7 +2115,7 @@
     {#if computed.opensChests && computed.opensChests.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Opens Chests</Card.Title>
+          <Card.Title level={2}>Opens Chests</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2137,7 +2137,7 @@
     {#if computed.foundInChests && computed.foundInChests.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Found in Chests</Card.Title>
+          <Card.Title level={2}>Found in Chests</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2180,7 +2180,7 @@
     {#if computed.foundInRandomLoot && computed.foundInRandomLoot.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Found in Random Loot</Card.Title>
+          <Card.Title level={2}>Found in Random Loot</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2206,7 +2206,7 @@
     {#if data.randomOutcomes && data.randomOutcomes.length > 0 && (!computed.chestRewards || computed.chestRewards.length === 0)}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Possible Items</Card.Title>
+          <Card.Title level={2}>Possible Items</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2229,7 +2229,7 @@
     {#if computed.chestRewards && computed.chestRewards.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Chest Rewards</Card.Title>
+          <Card.Title level={2}>Chest Rewards</Card.Title>
           <Card.Description>
             {#if hasFixedChestContents}
               Each opening gives {Math.min(
@@ -2265,7 +2265,7 @@
     {#if computed.usedInRecipes && computed.usedInRecipes.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Used in Recipes</Card.Title>
+          <Card.Title level={2}>Used in Recipes</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2304,7 +2304,7 @@
       )}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Required for Quests</Card.Title>
+          <Card.Title level={2}>Required for Quests</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           {#if repeatableQuests.length > 0}
