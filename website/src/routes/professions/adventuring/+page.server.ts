@@ -30,7 +30,7 @@ interface AdventurerQuest {
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
   is_repeatable: boolean;
-  objective: QuestObjective | null;
+  objectives: QuestObjective[];
   reward_items: QuestRewardItem[];
   reward_adventuring_skill: number;
 }
@@ -78,7 +78,7 @@ interface AdventuringPageData {
   vendorUnlocks: VendorUnlock[];
 }
 
-export const load: PageServerLoad = (): AdventuringPageData => {
+export const load = ((): AdventuringPageData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const profession = db
@@ -157,6 +157,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     kill_amount_1: number;
     gather_item_1_id: string | null;
     gather_amount_1: number;
+    gather_items: string | null;
     rewards: string | null;
   }
 
@@ -179,6 +180,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       kill_amount_1,
       gather_item_1_id,
       gather_amount_1,
+      gather_items,
       rewards
     FROM quests
     WHERE is_adventurer_quest = 1
@@ -218,33 +220,44 @@ export const load: PageServerLoad = (): AdventuringPageData => {
   );
 
   const quests: AdventurerQuest[] = rawQuests.map((raw) => {
-    // Build objective
-    let objective: QuestObjective | null = null;
+    const objectives: QuestObjective[] = [];
     if (raw.quest_type === "kill" && raw.kill_target_1_id) {
       const monster = getMonster.get(raw.kill_target_1_id) as {
         id: string;
         name: string;
       } | null;
       if (monster) {
-        objective = {
+        objectives.push({
           type: "kill",
           target_id: monster.id,
           target_name: monster.name,
           amount: raw.kill_amount_1,
-        };
+        });
       }
-    } else if (raw.quest_type === "gather" && raw.gather_item_1_id) {
-      const item = getItem.get(raw.gather_item_1_id) as {
-        id: string;
-        name: string;
-      } | null;
-      if (item) {
-        objective = {
-          type: "gather",
-          target_id: item.id,
-          target_name: item.name,
-          amount: raw.gather_amount_1,
-        };
+    } else {
+      const gatherItems = raw.gather_items
+        ? (JSON.parse(raw.gather_items) as {
+            item_id: string;
+            amount: number;
+          }[])
+        : raw.gather_item_1_id
+          ? [{ item_id: raw.gather_item_1_id, amount: raw.gather_amount_1 }]
+          : [];
+      for (const required of gatherItems) {
+        const item = getItem.get(required.item_id) as
+          | {
+              id: string;
+              name: string;
+            }
+          | undefined;
+        if (item) {
+          objectives.push({
+            type: "gather",
+            target_id: item.id,
+            target_name: item.name,
+            amount: required.amount,
+          });
+        }
       }
     }
 
@@ -290,7 +303,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       is_epic_quest: !!raw.is_epic_quest,
       is_adventurer_quest: !!raw.is_adventurer_quest,
       is_repeatable: !!raw.is_repeatable,
-      objective,
+      objectives,
       reward_items: rewardItems,
       reward_adventuring_skill: adventuringSkillIncrease,
     };
@@ -376,4 +389,4 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     questPoolOrder,
     vendorUnlocks,
   };
-};
+}) satisfies PageServerLoad;

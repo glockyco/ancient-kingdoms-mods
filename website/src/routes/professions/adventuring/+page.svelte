@@ -572,28 +572,22 @@
                   </a>
                 </td>
                 <td class="p-3">
-                  {#if quest.objective}
-                    {#if quest.objective.type === "kill"}
-                      <a
-                        href="/monsters/{quest.objective.target_id}"
-                        class="text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        {quest.objective.target_name}
-                      </a>
-                      <span class="text-muted-foreground">
-                        ×{quest.objective.amount}
-                      </span>
-                    {:else}
-                      <a
-                        href="/items/{quest.objective.target_id}"
-                        class="text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        {quest.objective.target_name}
-                      </a>
-                      <span class="text-muted-foreground">
-                        ×{quest.objective.amount}
-                      </span>
-                    {/if}
+                  {#if quest.objectives.length > 0}
+                    {#each quest.objectives as objective (objective.target_id)}
+                      <div>
+                        <a
+                          href="/{objective.type === 'kill'
+                            ? 'monsters'
+                            : 'items'}/{objective.target_id}"
+                          class="text-blue-600 hover:underline dark:text-blue-400"
+                        >
+                          {objective.target_name}
+                        </a>
+                        <span class="text-muted-foreground">
+                          ×{objective.amount}
+                        </span>
+                      </div>
+                    {/each}
                   {:else}
                     <span class="text-muted-foreground">—</span>
                   {/if}
