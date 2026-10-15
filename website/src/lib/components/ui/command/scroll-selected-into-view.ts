@@ -19,9 +19,16 @@ export function scrollSelectedIntoView(node: HTMLElement) {
       const target = mutation.target as HTMLElement;
       if (target.getAttribute("aria-selected") !== "true") continue;
 
-      const list = node.querySelector("[data-slot='command-list']");
-      if (list && !isFullyVisible(target, list as HTMLElement)) {
-        target.scrollIntoView({ block: "nearest" });
+      const list = node.querySelector<HTMLElement>(
+        "[data-slot='command-list']",
+      );
+      if (list && !isFullyVisible(target, list)) {
+        const itemRect = target.getBoundingClientRect();
+        const listRect = list.getBoundingClientRect();
+        list.scrollTop +=
+          itemRect.top < listRect.top
+            ? itemRect.top - listRect.top
+            : itemRect.bottom - listRect.bottom;
       }
     }
   });

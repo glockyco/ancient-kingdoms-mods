@@ -26,7 +26,7 @@ The site SHALL provide one search palette on every page. Cmd-K on macOS and Ctrl
 
 ### Requirement: The palette is operable with the keyboard and a screen reader
 
-The palette input SHALL expose combobox semantics with a list of options. Down and Up SHALL move the active result, Enter SHALL open the active result, and Escape SHALL close the palette and return focus to the element that opened it. A polite live region SHALL announce the number of results after each search.
+The palette input SHALL expose a meaningful accessible name and combobox semantics with a list of options. Down and Up SHALL move the active result, Enter SHALL open the active result, and Escape SHALL close the palette and return focus to the element that opened it. Keyboard navigation SHALL scroll only the result list and keep the query input visible. A polite live region SHALL announce the number of results after each search.
 
 #### Scenario: A visitor opens the second result with the keyboard
 

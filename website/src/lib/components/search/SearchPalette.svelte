@@ -110,8 +110,8 @@
     <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
       {announcement}
     </div>
-    <div use:scrollSelectedIntoView>
-      <Command.List>
+    <div class="min-h-0 overflow-hidden" use:scrollSelectedIntoView>
+      <Command.List class="max-h-[min(300px,calc(85dvh-6rem))]">
         {#if query.trim().length < 2}
           {#if recent.length > 0}
             <Command.Group heading="Recent searches">
@@ -188,13 +188,13 @@
 
 {#if isMobile}
   <Drawer.Root bind:open={searchPalette.open}>
-    <Drawer.Content class="max-h-[85vh]">
+    <Drawer.Content class="max-h-[85dvh] overflow-hidden">
       <Drawer.Header class="sr-only">
         <Drawer.Title>Search the compendium</Drawer.Title>
       </Drawer.Header>
       <Command.Root
         shouldFilter={false}
-        class="rounded-t-lg border-none bg-background"
+        class="min-h-0 rounded-t-lg border-none bg-background"
       >
         {@render searchContent()}
       </Command.Root>

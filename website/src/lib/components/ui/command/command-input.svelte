@@ -7,6 +7,7 @@
     ref = $bindable(null),
     class: className,
     value = $bindable(""),
+    placeholder,
     ...restProps
   }: CommandPrimitive.InputProps = $props();
 </script>
@@ -16,6 +17,8 @@
   data-slot="command-input-wrapper"
 >
   <SearchIcon class="size-4 shrink-0 opacity-50" />
+  <!-- bits-ui labels the input by an empty generated label, so name it from
+       aria-label or the placeholder instead. -->
   <CommandPrimitive.Input
     data-slot="command-input"
     class={cn(
@@ -23,7 +26,17 @@
       className,
     )}
     bind:ref
+    {placeholder}
     {...restProps}
     bind:value
-  />
+  >
+    {#snippet child({ props })}
+      <input
+        {...props}
+        aria-labelledby={undefined}
+        aria-label={restProps["aria-label"] ?? placeholder ?? "Search"}
+        bind:value
+      />
+    {/snippet}
+  </CommandPrimitive.Input>
 </div>
