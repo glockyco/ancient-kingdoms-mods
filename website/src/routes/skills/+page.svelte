@@ -159,7 +159,7 @@
   {:else if cell.column.id === "effect"}
     {@const s = row.original}
     <SkillEffect
-      class="text-sm whitespace-nowrap"
+      class="text-sm whitespace-normal min-w-48 max-w-xl"
       effect={s.effect}
       entityName={s.summoned_monster_name ?? s.pet_name}
       entityHref={s.summoned_monster_id
