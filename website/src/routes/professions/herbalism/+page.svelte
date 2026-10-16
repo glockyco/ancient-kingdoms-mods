@@ -56,9 +56,13 @@
     );
   }
 
+  // Source: server-scripts/GatherItem.cs:OnInteractServer — a harvest below the success floor is refused.
+  const successFloorPercent =
+    PROFESSION_MECHANICS.herbalism.success.floor * 100;
+
   // Source: server-scripts/GatherItem.cs:567-576 — no gain at the cap, otherwise 1-3 divided by success and 1000.
   function getSkillGainAmount(successChance: number): [number, number] {
-    if (successChance <= 0 || skillLevel >= 100) return [0, 0];
+    if (successChance < successFloorPercent || skillLevel >= 100) return [0, 0];
     const successFraction = successChance / 100;
     const { range, divisor } = PROFESSION_MECHANICS.herbalism.skillGain;
     const min = (range[0] / (successFraction * divisor)) * 100;
@@ -191,19 +195,21 @@
           {@const xp = xpByTierMap.get(tier)}
           <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
           <div class="p-3 border-t">
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
+            {#if successChance < successFloorPercent}
+              <span class="text-muted-foreground">cannot gather</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
           </div>
           <div class="p-3 border-t">
-            {#if effortless}
+            {#if effortless || successChance < successFloorPercent}
               <span class="text-muted-foreground">—</span>
-            {:else if successChance > 0}
+            {:else}
               <span class="font-mono"
                 >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
               >
-            {:else}
-              <span class="text-muted-foreground">—</span>
             {/if}
           </div>
           <div class="p-3 text-right border-t">
@@ -252,19 +258,21 @@
             </a>
           </div>
           <div class="p-3 border-t">
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
+            {#if successChance < successFloorPercent}
+              <span class="text-muted-foreground">cannot gather</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
           </div>
           <div class="p-3 border-t">
-            {#if effortless}
+            {#if effortless || successChance < successFloorPercent}
               <span class="text-muted-foreground">—</span>
-            {:else if successChance > 0}
+            {:else}
               <span class="font-mono">
                 {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
               </span>
-            {:else}
-              <span class="text-muted-foreground">—</span>
             {/if}
           </div>
         {/each}
