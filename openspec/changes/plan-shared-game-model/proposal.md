@@ -2,7 +2,7 @@
 
 The next features of the compendium all read the same game facts, relations, rules and character state: reference pages for stats, effects, armor sets, races and crafting stations, a level-aware zone view, a character planner with mercenaries, a trip-grouped acquisition list, save import and build sharing. Today each of those has several owners. Code reading found published facts that contradict the game because of it, such as altar reward tiers and primal essence values. Building each feature on its own copy would multiply the problem.
 
-The decisions taken with the owner on 2026-10-16 need a durable record before the work starts, so that later changes, and later sessions, build on them instead of rediscovering or contradicting them.
+The decisions taken on 2026-10-16 need a durable record before the work starts, so that later changes, and later sessions, build on them instead of rediscovering or contradicting them.
 
 ## What Changes
 

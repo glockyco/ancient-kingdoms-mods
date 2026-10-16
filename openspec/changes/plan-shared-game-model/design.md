@@ -1,12 +1,12 @@
 ## Context
 
-The compendium publishes what the installed build of Ancient Kingdoms contains. Its next features all read the same facts, relations, rules and character state. This design records the model they share, the decisions taken with the owner on 2026-10-16, and the order of the follow-up changes that implement it.
+The compendium publishes what the installed build of Ancient Kingdoms contains. Its next features all read the same facts, relations, rules and character state. This design records the model they share, the decisions taken on 2026-10-16, and the order of the follow-up changes that implement it.
 
 The evidence comes from reading the decompiled server code of game 0.9.36.1 (Steam build 25979028) and the published database, from a survey of other game wikis and tools, and from the sibling Afallon Compendium. The raw reports are local working material. Everything a later change needs is restated here.
 
 Each decision has a status:
 
-- Decided: the owner agreed.
+- Decided: agreed, and later changes build on it.
 - Open: not decided yet.
 
 ### Why one model
@@ -36,7 +36,7 @@ Every fact, rule and relation below has several owners today, and the copies dis
 
 **Non-Goals:**
 
-- Finding items or effects by their icon. The owner judged it too niche.
+- Finding items or effects by their icon, which is too niche.
 - Automated patch diff pages. They have the lowest priority, because the game still adds mechanics often enough that a diff would mostly show export changes.
 - A combat or damage simulator on the site. `openspec/specs/game-calculators/spec.md` forbids an unverified one, and simulation lives in the separate `ancient-kingdoms-sim` project.
 - A companion mod that exports saves (D12).
@@ -97,7 +97,7 @@ One versioned shape is shared by the planner, share links, export files, save im
 
 - One query layer with an injected executor serves the prerender (better-sqlite3) and the browser (sql.js). `getItemMapBounds` in `website/src/lib/queries/map-search.ts` already takes an executor. Map popups stop deriving sources on their own.
 - Shared components render relations, requirements and stats, so "Dropped by" on an item and "Drops" on a monster are the same rows through the same component. A relation table plans its columns from its rows and keeps every linked row in the prerendered HTML.
-- A detail page adopts the shared components only with the owner's approval for that page.
+- A detail page adopts the shared components only once its own change is approved.
 
 ### D8. One SQLite database for prerender and browser (Decided)
 
@@ -133,14 +133,14 @@ Alternative rejected: a separate effect kind, as Afallon has.
 - The key lives in code, obscured and assembled at runtime. It never appears in documentation, reports, issues or chat. The rule in the ancient-kingdoms-save-files skill against committing the key changes to match when the reader lands.
 - The update workflow compares the tables and columns the reader expects with the declarations in the decompiled `Database.cs` and fails on drift, as the citation check does.
 - Dates are .NET ticks of UTC time, because the game writes `DateTime.UtcNow` (`server-scripts/Database.cs:2458,2996`).
-- Saves reference items, skills and monsters by name, which the game keeps unique, so the reader joins on names. Every item name stored in the owner's save resolves to a published item.
-- Saves keep names from older game versions. The owner's save holds a boss killed under an earlier spelling of its name and two ores mined under an earlier capitalization. The reader shows such entries as not found and never guesses a match.
-- The game stores a quest by its authored `idQuest` field (`server-scripts/Quest.cs:33`), which the export lacks. All 120 values in the owner's save equal a quest asset name under the exporter's id rule (`mods/DataExporter/GameIds.cs`), but no code ties `idQuest` to the asset name, so the export adds it.
+- Saves reference items, skills and monsters by name, which the game keeps unique, so the reader joins on names. Every item name stored in the spike's sample save resolves to a published item.
+- Saves keep names from older game versions. The sample save holds a boss killed under an earlier spelling of its name and two ores mined under an earlier capitalization. The reader shows such entries as not found and never guesses a match.
+- The game stores a quest by its authored `idQuest` field (`server-scripts/Quest.cs:33`), which the export lacks. All 120 values in the sample save equal a quest asset name under the exporter's id rule (`mods/DataExporter/GameIds.cs`), but no code ties `idQuest` to the asset name, so the export adds it.
 - A mercenary row keeps the hire rolls drawn at hiring (`multiplierHealth`, `multiplierMana`, `baseCombat`), and the game adds the veteran bonus when it loads the mercenary (`server-scripts/Player.cs:10903,10922`). A save can flag more mercenaries as summoned than the level allows. The game loads the first ones up to the level's limit (`server-scripts/Player.cs:5068-5071`), and the reader derives the active set the same way.
 - PlayerPrefs data (skillbars, mercenary auto-consume toggles, helm visibility), fog of war and Steam achievements are outside `game.dat` and are not imported.
 - Content the compendium redacts can appear in a save. It shows as unknown and is never dropped.
 
-Reader (Decided): the browser derives the keys and decrypts the pages with WebCrypto, checks every page's HMAC, and opens the result with the sql.js build the site already ships. A wrong key or a changed cipher setting fails the check on the first page instead of producing wrong data. The update workflow opens a local save with the reader, so such a change fails the update before it reaches players. Both readers opened a copy of the owner's save in headless Chromium:
+Reader (Decided): the browser derives the keys and decrypts the pages with WebCrypto, checks every page's HMAC, and opens the result with the sql.js build the site already ships. A wrong key or a changed cipher setting fails the check on the first page instead of producing wrong data. The update workflow opens a local save with the reader, so such a change fails the update before it reaches players. Both readers opened a copy of the sample save in headless Chromium:
 
 | Reader | Added download | Open and integrity check | Limits |
 | --- | --- | --- | --- |
@@ -280,7 +280,7 @@ Each step ships something visible and depends only on the steps it names:
 - [Behavior checks wait on the sim] Configured values are read with HotRepl meanwhile, and no change publishes a behavior claim before its check.
 - [Browser storage eviction] D13 keeps backups in the user's hands.
 - [Short link abuse and cost] D14 bounds the worst case with validation, a global cap and cleanup.
-- [The save key is public in code] The owner accepted it. It stays out of documents and plain-text searches.
+- [The save key is public in code] Accepted, because the game ships it. It stays out of documents and plain-text searches.
 - [The save schema drifts with game updates] The update workflow check of D12 fails on drift.
 - [Ids change between game patches] Stored characters and links keep unresolved entries visible (D13) until a mapping exists.
 

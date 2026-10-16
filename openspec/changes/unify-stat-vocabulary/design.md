@@ -72,7 +72,7 @@ Each stat has two names: `name`, as the character window shows it, and `item_nam
 - `item_name` comes from `LocalizedStatLabel`.
 - `name` comes from the `Localization_String_Table` entry that the window binds to the stat's title, or that its code sets. The catalogue records that key, and the export fails when the table lacks it.
 - The window spells the attribute and pool titles in capitals. The catalogue takes the label code's capitalization for them, such as Strength and Mana.
-- The window's HP title is fixed text. Following the owner's decision, `health` takes the label code's Hit Points in both contexts.
+- The window's HP title is fixed text. As decided under "Wording", `health` takes the label code's Hit Points in both contexts.
 
 Weapons name their damage Base Damage (`server-scripts/EquipmentItem.cs:557`), so the catalogue carries that as the weapon name of the item `damage` field.
 
@@ -105,7 +105,7 @@ Each consumer listed under Context switches to the catalogue or the shared forma
 
 ## Wording
 
-The owner approved this section. A character context uses the window name and an item stat list uses the item name, as `formula-presentation` already requires. The last column lists the wordings that go away. Task 1.1 read these names in the running game.
+This section is approved. A character context uses the window name and an item stat list uses the item name, as `formula-presentation` already requires. The last column lists the wordings that go away. Task 1.1 read these names in the running game.
 
 The catalogue covers stat fields only. A skill's own effects keep their wording, such as the damage a scroll deals, its healing, cooldown or stun chance. The scroll mastery page's "Damage" and "Damage %" are such effects and do not change.
 
@@ -133,7 +133,7 @@ The catalogue covers stat fields only. A skill's own effects keep their wording,
 
 A modifier that is not a flat amount names its kind after the stat. A percent of the stat is "Attack Power %" or "Hit Points %". A percent of the maximum each second is "Health Regeneration, % of Hit Points". A page may still describe a negative Health Regeneration from a debuff as damage over time.
 
-The pools take the game's names: Hit Points, Mana and Rage. The window abbreviates Hit Points as HP, and the game's label code writes it in full. Prose follows the same names, so "maximum Health" becomes "maximum Hit Points". The owner chose this over "Maximum Health", "Maximum Mana" and "Maximum Rage", which would have been site overrides.
+The pools take the game's names: Hit Points, Mana and Rage. The window abbreviates Hit Points as HP, and the game's label code writes it in full. Prose follows the same names, so "maximum Health" becomes "maximum Hit Points". This was chosen over "Maximum Health", "Maximum Mana" and "Maximum Rage", which would have been site overrides.
 
 ## Risks / Trade-offs
 

@@ -99,7 +99,7 @@ The page's server load reads the level cap, the veteran point cap and the class 
 
 ## Pages that change
 
-The owner approved these changes. The primal essence and item level changes are confirmed in the game. The altar and chest changes still wait for their game checks.
+These changes are approved. The primal essence and item level changes are confirmed in the game. The altar and chest changes still wait for their game checks.
 
 | Page | Change |
 | --- | --- |

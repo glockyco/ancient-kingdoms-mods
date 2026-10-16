@@ -1,7 +1,7 @@
 ## 1. Read the names and settle the wording
 
 - [x] 1.1 With HotRepl in the English locale, record what `ScriptableItem.LocalizedStatLabel` returns for each of its inputs, and find how each character window title gets its text: from a localization table or from the window itself. Verify the result names a source for every title in the wording table, including Mana Regeneration. Every label returns its input unchanged. Every window title except HP is bound to a `Localization_String_Table` key or set by code from one. HP is fixed text.
-- [x] 1.2 Get the owner's approval of "Wording" in `design.md`, including the pool names. Record the decision in `design.md`. No page changes before this task is done.
+- [x] 1.2 Get approval of "Wording" in `design.md`, including the pool names. Record the decision in `design.md`. No page changes before this task is done.
 
 ## 2. Export the catalogue
 

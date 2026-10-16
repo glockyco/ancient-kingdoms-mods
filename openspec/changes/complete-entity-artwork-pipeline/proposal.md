@@ -9,7 +9,7 @@ The current database has 13 professions but no profession artwork rows. It also 
 - Check repeatability and the database/file invariants across two identical exports and builds. Measure published output and visually review the adopted surfaces.
 - Investigate the one named-but-missing item icon in the live icon collection. Fix a verified export gap; do not create a generic or guessed icon.
 
-The item-detail icon already appears in its tooltip. A second prominent icon was rejected by the owner and is not part of this change. Search-result artwork and class, chest, recipe-result, and applicable gathering artwork already have consumers.
+The item-detail icon already appears in its tooltip. A second prominent icon was rejected and is not part of this change. Search-result artwork and class, chest, recipe-result, and applicable gathering artwork already have consumers.
 
 ## Capabilities
 
