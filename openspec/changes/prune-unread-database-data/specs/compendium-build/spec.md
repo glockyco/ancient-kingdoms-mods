@@ -4,11 +4,17 @@
 
 The build SHALL retain all data used by the website, search, sitemap, redaction, and other database consumers. Removing an unused table or column SHALL NOT discard required export validation or change published page data. A source-name search alone SHALL NOT establish that a field is unused.
 
-#### Scenario: A progression table has no database reader
+#### Scenario: A table has no database reader
 
-- **WHEN** a progression table has no reader after all pipeline and website consumers are checked
+- **WHEN** a table has no reader after all pipeline and website consumers are checked
+- **AND** no open OpenSpec change names it as an input
 - **THEN** its data may be removed from SQLite
-- **AND** exported progression remains validated
+- **AND** the exported data it came from remains validated
+
+#### Scenario: A table is the input of a planned change
+
+- **WHEN** a table has no current reader but an open OpenSpec change names it as an input
+- **THEN** it stays in SQLite with its loader and validation
 
 #### Scenario: A column has an indirect reader
 

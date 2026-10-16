@@ -3,6 +3,7 @@
 - [ ] 1.1 Add hash-mode CSP directives to `website/svelte.config.js` for approved first-party resources and Cloudflare analytics. Verify the built prerendered item HTML contains a CSP meta element and a Worker-rendered home response contains a CSP header.
 - [ ] 1.2 Account for `website/src/app.html:16-46`, generated hydration scripts, and JSON-LD from `JsonLd.svelte` and `Breadcrumb.svelte`. Preserve immediate theme selection and structured data without arbitrary inline script permission. Verify actual emitted scripts execute or remain accessible under the policy in Chromium.
 - [ ] 1.3 Permit only the inline style forms needed by template CSS, tooltip HTML, Svelte components, and transitions. Verify colors, theme, and tooltip rendering on item and quest pages in Chromium.
+- [ ] 1.4 Add `'wasm-unsafe-eval'`, and never `'unsafe-eval'`, to every policy that governs a context compiling WebAssembly, including the database worker's script response if it receives a resource policy. Verify in Chromium that the map's search, popups and selection query the database under the built policy without CSP reports.
 
 ## 2. Header coverage
 

@@ -6,7 +6,7 @@ Protect compendium visitors from unintended code execution, framing, and unneces
 
 ### Requirement: Active content is limited to approved sources
 
-Every HTML response SHALL enforce a Content-Security-Policy that permits necessary first-party resources and the Cloudflare analytics beacon. It SHALL prohibit unapproved script origins, inline event handlers, plugins, and cross-origin form targets. The policy SHALL work on prerendered pages, Worker-rendered pages, and error documents.
+Every HTML response SHALL enforce a Content-Security-Policy that permits necessary first-party resources and the Cloudflare analytics beacon. It SHALL prohibit unapproved script origins, inline event handlers, plugins, and cross-origin form targets. The policy SHALL work on prerendered pages, Worker-rendered pages, and error documents. A policy that governs a page or worker that compiles WebAssembly SHALL permit it through `'wasm-unsafe-eval'` and SHALL NOT permit `'unsafe-eval'`.
 
 #### Scenario: Visitor opens a prerendered item page
 
@@ -23,6 +23,7 @@ Every HTML response SHALL enforce a Content-Security-Policy that permits necessa
 
 - **WHEN** the map loads its data, worker, images, and interactive layers
 - **THEN** the map remains functional under the policy
+- **AND** the database worker compiles its WebAssembly and answers queries without a policy that permits `eval`
 
 ### Requirement: Framing is restricted to verified embedders
 

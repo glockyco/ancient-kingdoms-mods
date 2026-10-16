@@ -1,3 +1,5 @@
+> **Superseded.** `plan-shared-game-model` moves this scope into its read-model change. That plan gives prerender and browser one query layer with an injected executor, so a server-only altar module would set up a second pattern to undo. Do not implement it on its own. The read-model change takes over the altar routes, and this change is deleted then.
+
 ## Why
 
 Server-only query modules exist for several domains, but altar routes still own SQL, JSON conversion, and page-data projection. Adding another altar surface can repeat those transformations and drift from existing pages.

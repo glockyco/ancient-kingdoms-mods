@@ -253,7 +253,7 @@ The follow-up changes add these to the export, each confirmed in the game per D1
 | `prune-unread-database-data` | Keep the sitemap hash bridge and the dead-column audit. Drop the deletion of the progression tables, which become the character model's data |
 | `show-pack-and-random-sources-in-map-popups` | Fold into the acquisition change. As written it extends the popups' separate copy of item sources |
 | `consolidate-server-read-models` | Fold into the read-model change |
-| `add-security-headers` | Allow WebAssembly. Its design never mentions it, and a content security policy without `'wasm-unsafe-eval'` would likely stop the sql.js worker |
+| `add-security-headers` | Allow WebAssembly through `'wasm-unsafe-eval'` in every policy that governs a context compiling it. A policy with `default-src` or `script-src` blocks WebAssembly without it, and a worker takes its policy from its own script response, not from the page |
 | `consolidate-website-design-system` | Land before new pages, so the shared components build on it |
 | `complete-profession-page-system` | Coordinate with the crafting station pages, because its station classification fix overlaps them |
 

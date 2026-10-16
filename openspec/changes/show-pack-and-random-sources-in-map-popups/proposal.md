@@ -1,3 +1,5 @@
+> **Superseded.** `plan-shared-game-model` moves this scope into its acquisition change. As written, this change extends the separate copy of item sources in `popup.ts`, which that plan replaces with one acquisition relation that popups and pages both read. Do not implement it on its own. The acquisition change takes over its requirements, and this change is deleted then.
+
 ## Why
 
 The map item popup omits pack and random-container sources that the item detail page already knows. An item with only these sources appears to have no way to obtain it in the popup.

@@ -10,10 +10,10 @@
 
 ## 3. In-flight changes
 
-- [ ] 3.1 Revise `prune-unread-database-data`: keep the sitemap hash bridge and the dead-column audit, and drop the deletion of the progression tables.
-- [ ] 3.2 Fold `show-pack-and-random-sources-in-map-popups` into the acquisition change, then remove it.
-- [ ] 3.3 Fold `consolidate-server-read-models` into the read-model change, then remove it.
-- [ ] 3.4 Add WebAssembly to the content security policy of `add-security-headers`, and check the sql.js worker under that policy.
+- [x] 3.1 Revise `prune-unread-database-data`: keep the sitemap hash bridge and the dead-column audit, and drop the deletion of the progression tables.
+- [ ] 3.2 Fold `show-pack-and-random-sources-in-map-popups` into the acquisition change, then remove it. Its proposal is marked superseded.
+- [ ] 3.3 Fold `consolidate-server-read-models` into the read-model change, then remove it. Its proposal is marked superseded.
+- [x] 3.4 Add WebAssembly to the content security policy of `add-security-headers`. That change's own tasks verify the database worker under the policy.
 - [ ] 3.5 Land `simplify-pipeline-loader-registration` and `harden-export-sessions` before the vocabulary and rules change, which adds a dataset and export fields.
 
 ## 4. Verification prerequisites
