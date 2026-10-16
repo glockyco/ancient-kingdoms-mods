@@ -259,7 +259,8 @@
           {@render questTypeIcon(node.display_type, typeColor)}
         </foreignObject>
         <!-- Clickable link overlay -->
-        <a href="/quests/{node.id}">
+        <a href="/quests/{node.id}" aria-label={node.name}>
+          <title>{node.name}</title>
           <rect
             x={node.x}
             y={node.y}
