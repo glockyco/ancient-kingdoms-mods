@@ -96,7 +96,7 @@ Exact values make every surface agree without a shared random seed. The previous
 
 The chest relation becomes a table, `chest_item_rewards`: chest item, reward item, roll order, roll chance, and whether the roll gains the Treasure Hunter bonus. The exporter reports that flag with the game's own test, a relic in the chest named "Buried Treasure Chest" (`server-scripts/ChestItem.cs:30`). The table replaces the chest rows in `item_sources_random`, whose `probability` would otherwise mix per-roll chances with final ones. The pipeline deletes `_estimate_chest_drop_chances` and stores no estimate.
 
-Item pages, chest item pages and map popups state the chance at Treasure Hunter 0. The Treasure Hunter page recomputes it for the reader's skill.
+Item pages and chest item pages state the chance at Treasure Hunter 0, and the Treasure Hunter page recomputes it for the reader's skill. Map popups show no chest item rewards, before or after this change.
 
 ### 5. The experience page reads the progression tables
 

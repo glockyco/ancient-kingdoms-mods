@@ -1,13 +1,4 @@
 import type { AltarThresholds } from "$lib/calculation/altar";
-import {
-  calculateChestRewards,
-  type CalculatedChestReward,
-} from "$lib/calculation/chest-rewards";
-import {
-  CHEST_REWARDS_QUERY,
-  assembleChests,
-  type ChestRewardRow,
-} from "$lib/queries/chest-rewards";
 import { query, queryScalar } from "$lib/db";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
@@ -1191,8 +1182,6 @@ export interface ItemPopupDetails {
   questRewards: ItemPopupQuestReward[];
   gatheringSources: ItemPopupGatherSource[];
   chestSources: ItemPopupChestSource[];
-  chestItemSources: CalculatedChestReward<ChestRewardRow>[];
-  chestItemRewards: CalculatedChestReward<ChestRewardRow>[];
   craftingSources: ItemPopupCraftSource[];
   mergeSources: ItemPopupMergeSource[];
   /** Treasure maps that lead to this item as a reward */
@@ -1500,21 +1489,6 @@ export async function loadItemPopupDetails(
     [itemId],
   );
 
-  const chestRows = await query<ChestRewardRow>(
-    `${CHEST_REWARDS_QUERY}
-    WHERE r.chest_item_id = ? OR r.chest_item_id IN (SELECT source_id FROM item_source_entries WHERE item_id = ? AND source_type = 'random')
-    ORDER BY r.chest_item_id, r.roll_order`,
-    [itemId, itemId],
-  );
-  const chestItems = assembleChests(chestRows);
-  const chestItemSources = chestItems.flatMap((chest) =>
-    calculateChestRewards(chest, 0).filter(
-      (reward) => reward.item_id === itemId,
-    ),
-  );
-  const ownChest = chestItems.find((chest) => chest.id === itemId);
-  const chestItemRewards = ownChest ? calculateChestRewards(ownChest, 0) : [];
-
   const craftingRows = await query<{
     recipeId: string;
     resultAmount: number;
@@ -1656,8 +1630,6 @@ export async function loadItemPopupDetails(
     questRewards,
     gatheringSources,
     chestSources,
-    chestItemSources,
-    chestItemRewards,
     craftingSources,
     mergeSources,
     treasureMapSources,
