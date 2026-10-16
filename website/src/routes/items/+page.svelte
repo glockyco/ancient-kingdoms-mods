@@ -196,7 +196,7 @@
     })),
   );
 
-  const columns: ColumnDef<ItemRow>[] = [
+  const columns = $derived<ColumnDef<ItemRow>[]>([
     {
       accessorKey: "quality",
       header: "Quality",
@@ -213,6 +213,8 @@
       enableHiding: false,
       minSize: 350,
     },
+    // Each stat chosen in the Stats filter shows its values beside the name.
+    ...statColumns,
     {
       accessorKey: "item_level",
       header: "iLvl",
@@ -316,7 +318,7 @@
         return zoneIds.some((z) => filterValue.includes(z));
       },
     },
-  ];
+  ]);
 
   const columnLabels = $derived<Record<string, string>>({
     quality: "Quality",
@@ -503,7 +505,7 @@
 
   <DataTable
     data={dataWithVirtual}
-    columns={[...columns, ...statColumns]}
+    {columns}
     onColumnFiltersChange={(filters) => {
       const value = filters.find((filter) => filter.id === "stats")?.value as
         { stats: string[] } | undefined;
