@@ -10,7 +10,7 @@ Three things the shell cannot provide:
 
 - **Ancient Kingdoms, installed by Steam in a CrossOver bottle on macOS.** The tools launch the game through CrossOver's `wine` and drive the bottle's Steam client.
 - **MelonLoader in the game**, launched once so that it generates `MelonLoader/Il2CppAssemblies/`. The mods compile against those assemblies. The repository is developed against MelonLoader 0.7.3.
-- **A [HotRepl](https://github.com/glockyco/HotRepl) checkout at `../HotRepl`.** `build-tool deploy-host` builds its MelonLoader host, installs it in the game, and produces the `HotRepl.Core` build that HotReplCommands, CombatVerification, CharacterCapture, and `tests/HotReplCommands.Tests` compile against.
+- **A [HotRepl](https://github.com/glockyco/HotRepl) checkout at `../HotRepl`.** `build-tool deploy-host` builds its MelonLoader host, installs it in the game, and produces the `HotRepl.Core` build that HotReplCommands and `tests/HotReplCommands.Tests` compile against.
 
 ## Setup
 
@@ -36,7 +36,7 @@ A first build runs every step, in this order. Later builds repeat only the steps
 2. `./scripts/update-server-scripts.sh <version>` decompiles the installed server code. `<version>` is the `game_version` in `exported-data/game_config.json`.
 3. Capture zone shots on first setup, when a zone is added, and when a focal point in `build-pipeline/zone_shot_focal_points.json` changes. The [HotRepl skill](.agent/skills/hotrepl-runtime-inspection/SKILL.md#capture-zone-shots) gives the procedure.
 4. `uv run compendium tiles` in `build-pipeline/` stitches the screenshots into the world image and the map tiles.
-5. `uv run compendium build` in `build-pipeline/` builds the database and the images. It needs the stitched world image, a zone shot for every published zone, and the snapshot of the exported version. It replaces its outputs only when every step succeeds.
+5. `uv run compendium build` in `build-pipeline/` builds the database and the images. It needs the stitched world image and a zone shot for every published zone. It replaces its outputs only when every step succeeds.
 
 ### Run and deploy the site
 
@@ -59,17 +59,7 @@ pnpm exec hotrepl info --json
 pnpm exec hotrepl run world.summary '{}' --json
 ```
 
-`launch --wait` returns once MelonLoader has loaded. HotReplCommands registers its commands a little later, so an early `run` can fail with `commandNotFound`. Never attach while an export or a verification run holds the connection. The [HotRepl skill](.agent/skills/hotrepl-runtime-inspection/SKILL.md) covers the typed commands and how to measure live behaviour.
-
-### Verify combat
-
-```sh
-dotnet run --project build-tool verify                                            # every fixture, or --fixture <name>
-pnpm --filter website test src/lib/planner/verification/verification.db.test.ts   # one verdict per fixture
-pnpm --filter website test:combat-verification                                    # the strict gate
-```
-
-`verify` runs each fixture in its own game session against a fresh scratch database and writes `verification/observations/<name>.json` for each fixture that succeeds. Close every Ancient Kingdoms instance first. The per-fixture comparison fails only on a `fail` verdict, so stale observations do not block a game update. The strict gate requires a current pass for every fixture. The [combat-verification spec](openspec/specs/combat-verification/spec.md) defines the verdicts and the coverage the gate requires.
+`launch --wait` returns once MelonLoader has loaded. HotReplCommands registers its commands a little later, so an early `run` can fail with `commandNotFound`. Never attach while an export holds the connection. The [HotRepl skill](.agent/skills/hotrepl-runtime-inspection/SKILL.md) covers the typed commands and how to measure live behaviour.
 
 ### Update to a new game version
 
@@ -109,6 +99,6 @@ nix build --no-link ".#checks.$(nix eval --raw --impure --expr builtins.currentS
 ## Troubleshooting
 
 - **A mod build cannot find the game's or HotRepl's assemblies.** Launch the game with MelonLoader once so that it generates its assemblies, check `ANCIENT_KINGDOMS_PATH` in `Local.props`, and run `deploy-host`, which builds `HotRepl.Core` in `../HotRepl`.
-- **`export` or `verify` reports `Timed out connecting to HotRepl` or `HotRepl command catalog not ready`.** The HotRepl host or the mods are missing from the game. Run `deploy-host`, `build`, and `deploy`.
+- **`export` reports `Timed out connecting to HotRepl` or `HotRepl command catalog not ready`.** The HotRepl host or the mods are missing from the game. Run `deploy-host`, `build`, and `deploy`.
 - **`compendium tiles` fails boss-position validation.** The screenshots are incomplete or blank around boss terrain. Fix the loaded mods or the game state, then export with `--screenshots` again.
 - **A mod change does nothing in the game.** A Harmony patch that no longer applies, an unregistered command, and a dead coroutine all fail without an error. Read `MelonLoader/Latest.log`, and confirm the change in the running game before reporting it as working.

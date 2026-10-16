@@ -23,7 +23,7 @@ def run(config) -> int:
     """Compare published `compatible_races` against the character creator.
 
     Edit `mods/DataExporter/Curated/classes.json`, then run DataExporter to update
-    the published copy. Both this check and the build require the local snapshot.
+    the published copy. This check requires the local decompiled snapshot.
     """
     repo_root = get_repo_root()
     snapshot_root = repo_root / SNAPSHOT_DIR

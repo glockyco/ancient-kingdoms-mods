@@ -12,7 +12,7 @@ description: Inspect or control the running Ancient Kingdoms game through HotRep
 3. Query the running game from another terminal with `pnpm exec hotrepl`.
 
 HotRepl accepts one WebSocket client. A new client disconnects the existing client, including one that only requests a handshake.
-Do not run `pnpm exec hotrepl info` or another client while `build-tool verify` or `build-tool export` owns the connection.
+Do not run `pnpm exec hotrepl info` or another client while `build-tool export` owns the connection.
 Use a TCP connection without a WebSocket handshake to check whether the endpoint is occupied.
 
 ```sh
@@ -72,9 +72,11 @@ pnpm exec hotrepl run capture.zoneShots '{}' --json
 pnpm exec hotrepl run game.quit '{}' --json
 ```
 
-The redirect needs `ancientkingdoms_Data/verification-scratch/` in the game folder, and only
-`build-tool verify` creates it. On a machine that has never run `verify`, create the empty directory
-first. `references/commands.md` gives the focal-point format and the capture's options.
+Before launching, create `ancientkingdoms_Data/verification-scratch/` in the game folder if it is
+missing. `game.useScratchDatabase` refuses a missing directory or a linked path. It opens
+`game.dat` inside that directory, which need not already exist. If a redirect is refused, quit,
+prepare the directory, then relaunch and redirect before the player database opens.
+`references/commands.md` gives the focal-point format and the capture's options.
 
 ## One endpoint for each instance
 

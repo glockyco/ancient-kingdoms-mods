@@ -13,9 +13,8 @@ The class list comes from the creator's `changeClass*` methods rather than from 
 module, so a class that a patch adds is checked instead of skipped.
 
 `compatible_races` is edited in `mods/DataExporter/Curated/classes.json` and copied
-to `exported-data/classes.json` by DataExporter. The build currently requires the
-decompiled snapshot for the planner payload. This independent check compares the
-published copy with the character creator whenever the game updates.
+to `exported-data/classes.json` by DataExporter. This check compares the published
+copy with the character creator whenever the game updates.
 """
 
 from __future__ import annotations

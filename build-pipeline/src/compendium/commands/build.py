@@ -6,11 +6,9 @@ This module orchestrates the build pipeline:
 3. Runs denormalizations to create derived fields
 """
 
-import json
 import shutil
 import sqlite3
 import tempfile
-import tomllib
 from contextlib import closing
 from pathlib import Path
 
@@ -57,12 +55,6 @@ from compendium.loaders import (
     load_zones,
     record_achievements,
     record_visual_assets,
-)
-from compendium.planner_inputs import verify_planner_inputs
-from compendium.planner_payload import (
-    COMPRESSED_PAYLOAD_NAME,
-    RAW_PAYLOAD_NAME,
-    write_planner_payload,
 )
 from compendium.redactions import verify
 from compendium.redactions.references import resolve
@@ -130,47 +122,12 @@ def load_all(
     load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
 
 
-def _verify_snapshot_identity(export_dir: Path, snapshot_path: Path) -> None:
-    if not snapshot_path.is_file():
-        raise FileNotFoundError(
-            f"Required snapshot is missing: {snapshot_path}. Generate the decompiled server-scripts snapshot before building."
-        )
-    with snapshot_path.open("rb") as handle:
-        snapshot = tomllib.load(handle)
-    for field in ("game_version", "steam_build_id", "assembly_sha256"):
-        if not isinstance(snapshot.get(field), str) or not snapshot[field]:
-            raise ValueError(
-                f"Required snapshot field {field!r} is missing in {snapshot_path}"
-            )
-
-    game_config_path = export_dir / "game_config.json"
-    if not game_config_path.is_file():
-        raise FileNotFoundError(
-            f"Required input is missing: {game_config_path}. Run the DataExporter mod in the game."
-        )
-    exported_version = json.loads(game_config_path.read_text(encoding="utf-8"))[
-        "game_version"
-    ]
-    if exported_version != snapshot["game_version"]:
-        raise ValueError(
-            f"Export game version {exported_version!r} does not match snapshot {snapshot['game_version']!r}"
-        )
-
-
 def _publish_staged_outputs(
     stage_root: Path,
     static_dir: Path,
-    data_dir: Path,
     db_path: Path,
 ) -> None:
-    outputs = (
-        (stage_root / "static" / "images", static_dir / "images"),
-        (stage_root / "data" / RAW_PAYLOAD_NAME, data_dir / RAW_PAYLOAD_NAME),
-        (
-            stage_root / "data" / COMPRESSED_PAYLOAD_NAME,
-            data_dir / COMPRESSED_PAYLOAD_NAME,
-        ),
-    )
+    outputs = ((stage_root / "static" / "images", static_dir / "images"),)
     backups: list[tuple[Path, Path]] = []
     installed: list[Path] = []
     try:
@@ -213,10 +170,6 @@ def run(config: dict) -> None:
     data_dir = website_dir / "data"
     schema_path = repo_root / "build-pipeline" / "schema.sql"
 
-    snapshot_path = repo_root / "server-scripts" / "SNAPSHOT.toml"
-    _verify_snapshot_identity(export_dir, snapshot_path)
-    verify_planner_inputs(export_dir)
-
     static_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
     db_path = data_dir / config["build_pipeline"]["db_name"]
@@ -229,8 +182,6 @@ def run(config: dict) -> None:
         stage_root = Path(temp_dir)
         temp_db_path = stage_root / db_path.name
         stage_static_dir = stage_root / "static"
-        stage_data_dir = stage_root / "data"
-        stage_data_dir.mkdir()
         conn = create_database(temp_db_path, schema_path)
         try:
             load_all(conn, export_dir, stage_static_dir)
@@ -248,14 +199,6 @@ def run(config: dict) -> None:
 
             # Verify after every step that removes published content.
             verify.check(conn, subject, resolve(conn), stage_static_dir / "images")
-            planner_payload = write_planner_payload(
-                conn, export_dir, stage_data_dir, snapshot_path, subject
-            )
-            console.print(
-                "  [green]OK[/green] Prepared planner payload "
-                f"({planner_payload.raw_size:,} raw bytes, "
-                f"{planner_payload.compressed_size:,} compressed bytes)"
-            )
             conn.commit()
         except Exception as e:
             console.print(f"\n[bold red]Error building database:[/bold red] {e}")
@@ -273,7 +216,7 @@ def run(config: dict) -> None:
             console.print("  [green]OK[/green] Analyzed query statistics")
 
         (stage_static_dir / "images").mkdir(parents=True, exist_ok=True)
-        _publish_staged_outputs(stage_root, static_dir, data_dir, db_path)
+        _publish_staged_outputs(stage_root, static_dir, db_path)
 
     console.print(
         f"\n[bold green]OK Database built successfully:[/bold green] {db_path}"

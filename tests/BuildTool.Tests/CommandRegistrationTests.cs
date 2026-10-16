@@ -24,7 +24,6 @@ public class CommandRegistrationTests
                 "publish-mods",
                 "setup",
                 "update",
-                "verify",
             },
             CommandCatalog.All.Select(e => e.Verb).OrderBy(v => v).ToArray());
 
@@ -60,7 +59,6 @@ public class CommandRegistrationTests
     }
 
     [Theory]
-    [InlineData("verify")]
     [InlineData("export")]
     public void AKnownVerbIsAcceptedByTheConfiguredApplication(string verb)
     {

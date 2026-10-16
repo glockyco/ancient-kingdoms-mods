@@ -54,7 +54,7 @@ See `build-pipeline/src/compendium/cli.py` for `tiles`, `build`, and `redactions
 
 Tile validation must pass before replacement. Investigate redaction drift. Run `uv run compendium redactions sync --game-version <version>` only after every new decision is explained. The ledger stamps that version, so it states which export the decisions were taken against.
 
-Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it and changes generated fixtures, so treat each one as its own concern.
+Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it, so treat each one as its own concern.
 
 Re-read each report in `docs/game-bugs/` against the server-script diff. Delete fixed reports with their index rows, re-anchor moved references, and re-count derived figures.
 
@@ -70,25 +70,11 @@ Set `COMPENDIUM_VERSION` in `website/src/lib/constants/version.ts` last. The liv
 
 The ledger version and `COMPENDIUM_VERSION` describe different things. The ledger names the snapshot the anchors describe, and `COMPENDIUM_VERSION` names the published data. The two differ from phase 2 until this step.
 
-Run focused tests as each concern lands. Before the release gate, reconcile citations and run the committed-observation comparison:
+Run focused tests as each concern lands. Before the release gate, reconcile citations:
 
 ```bash
 uv run compendium citations check
-cd website
-pnpm test --run src/lib/planner/verification/verification.db.test.ts
 ```
-
-Read the printed verdict for every fixture. An observation is stale when its assembly SHA-256 differs from the generated planner payload in `website/data/planner-data.json`, whose assembly identity comes from `server-scripts/SNAPSHOT.toml`. Stale observations are expected after a game update and do not fail the routine release gate.
-
-Do not refresh the complete combat fixture matrix only because the assembly changed. When the server-script diff changes behavior covered by one or more committed fixtures, run only those fixtures with repeated `--fixture <name>` options. Run the complete matrix when the verification framework or fixture corpus changes, or when the user explicitly requests it:
-
-```bash
-dotnet run --project build-tool verify
-cd website
-pnpm test:combat-verification
-```
-
-A complete refresh must preserve the player save, report the current game build, and write a current observation for every committed fixture. Each fixture runs in a fresh scratch database. Scratch reuse is not an option. The explicit combat-verification gate must credit every declared handler, damage school, supported class, and companion archetype, with no stale, missing, failed, or inconclusive fixture.
 
 Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 
@@ -97,7 +83,7 @@ Commit coherent concerns as they pass, in this order:
 1. citation reconciliation, with any mechanic it had to carry
 2. exporter contract
 3. each mechanic with its prose and snapshots
-4. the tests and generated fixtures the new data invalidated
+4. the tests the new data invalidated
 5. generated data
 6. redaction ledger
 7. map artifacts

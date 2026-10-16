@@ -14,36 +14,6 @@
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="CliWrap" Version="3.10.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\mods\CombatVerification\Builds\LogicalBuildData.cs"
-             Link="CombatVerification\LogicalBuildData.cs" />
-    <Compile Include="..\mods\CombatVerification\Builds\LogicalBuildAdapter.cs"
-             Link="CombatVerification\LogicalBuildAdapter.cs" />
-    <Compile Include="..\mods\CombatVerification\Capture\CaptureBuildRecord.cs"
-             Link="CombatVerification\CaptureBuildRecord.cs" />
-    <Compile Include="..\mods\CombatVerification\Capture\CaptureBuildAdapter.cs"
-             Link="CombatVerification\CaptureBuildAdapter.cs" />
-    <Compile Include="..\mods\CombatVerification\Fixtures\BuildEnvelope.cs"
-             Link="CombatVerification\BuildEnvelope.cs" />
-    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureDescriptor.cs"
-             Link="CombatVerification\FixtureDescriptor.cs" />
-    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureShapeValidator.cs"
-             Link="CombatVerification\FixtureShapeValidator.cs" />
-    <Compile Include="..\mods\DataExporter\GameIds.cs"
-             Link="CombatVerification\GameIds.cs" />
-    <Compile Include="..\mods\CombatVerification\Fixtures\IFixtureRules.cs"
-             Link="CombatVerification\IFixtureRules.cs" />
-    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureValidator.cs"
-             Link="CombatVerification\FixtureValidator.cs" />
-    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureMatrix.cs"
-             Link="CombatVerification\FixtureMatrix.cs" />
-    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureMatrixValidator.cs"
-             Link="CombatVerification\FixtureMatrixValidator.cs" />
-    <Compile Include="..\mods\CombatVerification\Dtos\ValidateFixtureResult.cs"
-             Link="CombatVerification\ValidateFixtureResult.cs" />
   </ItemGroup>
 
   <ItemGroup>

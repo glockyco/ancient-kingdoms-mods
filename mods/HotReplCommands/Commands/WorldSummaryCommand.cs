@@ -37,7 +37,6 @@ namespace HotReplCommands.Commands
 
             var result = new WorldSummaryResult
             {
-                VerificationSession = System.Environment.GetEnvironmentVariable("AK_VERIFICATION_SESSION"),
                 Scene = scene,
                 NetworkState = networkState,
                 CharacterCount = characterCount,

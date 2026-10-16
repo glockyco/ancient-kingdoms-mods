@@ -47,10 +47,7 @@ client through its `Cmd` handlers, and change server state from the host.
 client's message: level, attributes, skills, position, and appearance. The server does not load the
 character from its own database.
 
-Two consequences apply to every run:
-
-- The same roster joins any server, and the scratch redirect decides which roster that is.
-- A character built by the fixture harness reaches a public server as an ordinary character.
+The same roster joins any server, and the scratch redirect decides which roster that is.
 
 ## Run a host and a client together
 

@@ -31,8 +31,6 @@ Install MelonLoader, then put the downloaded DLLs in the game's `Mods` folder wi
 | [DataExporter](DataExporter/README.md) | Exports the game data and images. |
 | [MapScreenshotter](MapScreenshotter/README.md) | Captures the world map as tiles. |
 | [HotReplCommands](HotReplCommands/README.md) | Adds the HotRepl commands that drive the game. |
-| [CombatVerification](CombatVerification/README.md) | Builds fixture characters and measures combat. |
-| [CharacterCapture](CharacterCapture/README.md) | Records the character's build and combat meters. |
 | [HierarchyLogger](HierarchyLogger/README.md) | Writes the World scene's hierarchy to a file. |
 
 Building and deploying is in [CONTRIBUTING.md](../CONTRIBUTING.md).

@@ -12,7 +12,7 @@ internal static class GameProcesses
     private const string ExecutablePattern = @"(?:^|[ /\\])ancientkingdoms\.exe(?:\s|$)";
 
     internal static string SessionArgument(string token) =>
-        "--ak-verification-session=" + Uri.EscapeDataString(token);
+        "--ak-game-session=" + Uri.EscapeDataString(token);
 
     internal static bool HasRelevantProcess(string gamePath) =>
         Regex.IsMatch(ReadSnapshot(), ExecutablePattern,

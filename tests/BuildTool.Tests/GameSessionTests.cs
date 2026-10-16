@@ -58,137 +58,97 @@ public sealed class GameSessionTests : IDisposable
     }
 
     [Fact]
-    public async Task RefusesAnotherBuildToolSessionBeforeCallback()
+    public async Task RefusesAnotherBuildToolSessionBeforeLaunch()
     {
-        var firstRunner = new FakeProcessRunner();
+        var firstRunner = BlockingRunner(out var firstProcessCancelled);
         var firstReady = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var firstCancellation = new CancellationTokenSource();
+        using var firstCancellation = new CancellationTokenSource();
         var firstSession = Session(firstRunner, (_, _) => Task.FromResult(false));
-        var firstRequest = Request() with
-        {
-            BeforeLaunch = async token =>
+        var firstTask = firstSession.RunAsync(
+            Request(),
+            async token =>
             {
                 firstReady.SetResult(true);
                 await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                return "not reached";
             },
-            AfterShutdown = () => Task.CompletedTask,
-        };
-        var firstTask = firstSession.RunAsync(
-            firstRequest,
-            _ => Task.FromResult("not reached"),
             firstCancellation.Token);
 
         await firstReady.Task;
         var secondRunner = new FakeProcessRunner();
-        var secondCallbackCalled = false;
+        var secondWorkCalled = false;
         var secondSession = Session(secondRunner, (_, _) => Task.FromResult(false));
         var secondOutcome = await secondSession.RunAsync(
-            Request() with
+            Request(),
+            _ =>
             {
-                BeforeLaunch = _ =>
-                {
-                    secondCallbackCalled = true;
-                    return Task.CompletedTask;
-                },
+                secondWorkCalled = true;
+                return Task.FromResult("not reached");
             },
-            _ => Task.FromResult("not reached"),
             CancellationToken.None);
-
-        Assert.False(secondOutcome.Ok);
-        Assert.Equal(ExitCodes.ResourceConflict, secondOutcome.Failure?.ExitCode);
-        Assert.False(secondCallbackCalled);
-        Assert.Empty(secondRunner.Calls);
 
         firstCancellation.Cancel();
         var firstOutcome = await firstTask;
+
+        Assert.False(secondOutcome.Ok);
+        Assert.Equal(ExitCodes.ResourceConflict, secondOutcome.Failure?.ExitCode);
+        Assert.False(secondWorkCalled);
+        Assert.Empty(secondRunner.Calls);
         Assert.Equal(ExitCodes.Cancelled, firstOutcome.Failure?.ExitCode);
+        Assert.True(firstProcessCancelled());
     }
 
-    [Fact]
-    public async Task RefusesStaleEndpointBeforeCallback()
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task RefusesEndpointOccupiedAfterOwnershipOrPreflight(int occupiedProbe)
     {
         var runner = new FakeProcessRunner();
-        var callbackCalled = false;
-        var session = Session(runner, (_, _) => Task.FromResult(true));
+        var endpointCalls = 0;
+        var workCalled = false;
+        var session = Session(
+            runner, (_, _) => Task.FromResult(++endpointCalls == occupiedProbe));
 
         var outcome = await session.RunAsync(
-            Request() with
+            Request(),
+            _ =>
             {
-                BeforeLaunch = _ =>
-                {
-                    callbackCalled = true;
-                    return Task.CompletedTask;
-                },
+                workCalled = true;
+                return Task.FromResult("not reached");
             },
-            _ => Task.FromResult("not reached"),
             CancellationToken.None);
 
         Assert.False(outcome.Ok);
-        Assert.False(callbackCalled);
+        Assert.Equal(ExitCodes.CommandFailed, outcome.Failure?.ExitCode);
+        Assert.False(workCalled);
         Assert.Empty(runner.Calls);
     }
 
     [Fact]
-    public async Task CallsAfterShutdownWhenBeforeLaunchFails()
+    public async Task StopsTheOwnedProcessWhenWorkIsCancelled()
     {
-        var runner = new FakeProcessRunner();
-        var afterShutdownCalled = false;
-        var session = Session(runner, (_, _) => Task.FromResult(false));
-
-        var outcome = await session.RunAsync(
-            Request() with
-            {
-                BeforeLaunch = _ => Task.FromException(
-                    new InvalidOperationException("backup failed")),
-                AfterShutdown = () =>
-                {
-                    afterShutdownCalled = true;
-                    return Task.CompletedTask;
-                },
-            },
-            _ => Task.FromResult("not reached"),
-            CancellationToken.None);
-
-        Assert.False(outcome.Ok);
-        Assert.Contains("backup failed", outcome.Failure?.Message);
-        Assert.True(afterShutdownCalled);
-        Assert.Empty(runner.Calls);
-    }
-
-    [Fact]
-    public async Task CallsAfterShutdownWhenBeforeLaunchIsCancelled()
-    {
-        var runner = new FakeProcessRunner();
-        var callbackStarted = new TaskCompletionSource<bool>(
+        var runner = BlockingRunner(out var processCancelled);
+        var workStarted = new TaskCompletionSource<bool>(
             TaskCreationOptions.RunContinuationsAsynchronously);
-        var afterShutdownCalled = false;
         using var cancellation = new CancellationTokenSource();
         var session = Session(runner, (_, _) => Task.FromResult(false));
         var task = session.RunAsync(
-            Request() with
+            Request(),
+            async token =>
             {
-                BeforeLaunch = async token =>
-                {
-                    callbackStarted.SetResult(true);
-                    await Task.Delay(Timeout.InfiniteTimeSpan, token);
-                },
-                AfterShutdown = () =>
-                {
-                    afterShutdownCalled = true;
-                    return Task.CompletedTask;
-                },
+                workStarted.SetResult(true);
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                return "not reached";
             },
-            _ => Task.FromResult("not reached"),
             cancellation.Token);
 
-        await callbackStarted.Task;
+        await workStarted.Task;
         cancellation.Cancel();
         var outcome = await task;
 
         Assert.False(outcome.Ok);
         Assert.Equal(ExitCodes.Cancelled, outcome.Failure?.ExitCode);
-        Assert.True(afterShutdownCalled);
-        Assert.Empty(runner.Calls);
+        Assert.True(processCancelled());
     }
 
     [Fact]
@@ -217,34 +177,24 @@ public sealed class GameSessionTests : IDisposable
     [Fact]
     public async Task PreservesWorkFailureWhenEndpointReleaseFails()
     {
-        var runner = BlockingRunner(out _);
+        var runner = BlockingRunner(out var processCancelled);
         var endpointCalls = 0;
         var session = Session(
             runner,
-            (_, _) => Task.FromResult(++endpointCalls >= 5));
+            (_, _) => ++endpointCalls <= 3
+                ? Task.FromResult(false)
+                : Task.FromException<bool>(new IOException("endpoint probe failed")));
 
-        var scratch = Path.Combine(_root, "incomplete-scratch");
-        File.WriteAllText(scratch, "retained evidence");
         var outcome = await session.RunAsync<string>(
-            Request() with
-            {
-                BeforeLaunch = _ => Task.CompletedTask,
-                AfterShutdown = () =>
-                {
-                    File.Delete(scratch);
-                    return Task.CompletedTask;
-                },
-                AfterSession = () => Task.FromException(new IOException("player-save isolation failed")),
-            },
-            _ => Task.FromException<string>(new InvalidOperationException("probe failed")),
+            Request(),
+            _ => Task.FromException<string>(new InvalidOperationException("export failed")),
             CancellationToken.None);
 
         Assert.False(outcome.Ok);
         Assert.Equal(ExitCodes.Internal, outcome.Failure?.ExitCode);
-        Assert.Contains("probe failed", outcome.Failure?.Message);
-        Assert.Contains("endpoint", outcome.Failure?.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("player-save isolation failed", outcome.Failure?.Message);
-        Assert.Equal("retained evidence", File.ReadAllText(scratch));
+        Assert.Contains("export failed", outcome.Failure?.Message);
+        Assert.Contains("endpoint probe failed", outcome.Failure?.Message);
+        Assert.True(processCancelled());
     }
 
     [Fact]
@@ -277,6 +227,29 @@ public sealed class GameSessionTests : IDisposable
         Assert.Equal(ExitCodes.Internal, outcome.Failure?.ExitCode);
         Assert.Contains("probe failed", outcome.Failure?.Message);
         Assert.True(processCancelled());
+    }
+
+    [Fact]
+    public async Task GeneratesUniqueOwnedProcessTagsForEachLaunch()
+    {
+        var firstRunner = BlockingRunner(out _);
+        var secondRunner = BlockingRunner(out _);
+
+        var firstOutcome = await Session(firstRunner, (_, _) => Task.FromResult(false))
+            .RunAsync(Request(), _ => Task.FromResult("complete"), CancellationToken.None);
+        var secondOutcome = await Session(secondRunner, (_, _) => Task.FromResult(false))
+            .RunAsync(Request(), _ => Task.FromResult("complete"), CancellationToken.None);
+
+        Assert.True(firstOutcome.Ok, firstOutcome.Failure?.Message);
+        Assert.True(secondOutcome.Ok, secondOutcome.Failure?.Message);
+        var firstTag = Assert.Single(firstRunner.Calls).Arguments[^1];
+        var secondTag = Assert.Single(secondRunner.Calls).Arguments[^1];
+        const string prefix = "--ak-game-session=";
+        Assert.StartsWith(prefix, firstTag);
+        Assert.StartsWith(prefix, secondTag);
+        Assert.True(Guid.TryParseExact(firstTag[prefix.Length..], "N", out _));
+        Assert.True(Guid.TryParseExact(secondTag[prefix.Length..], "N", out _));
+        Assert.NotEqual(firstTag, secondTag);
     }
 
     private GameSession Session(

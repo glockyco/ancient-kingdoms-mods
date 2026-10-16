@@ -73,6 +73,4 @@ The measurements come from a modded, macOS CrossOver installation. A developer c
 A defect found is recorded, not relied on as an intended rule.
 
 A published page or exporter represents intended behaviour and names any defect that changes what the player sees.
-The combat engine instead reproduces the running game's behaviour for verification against live results.
-If a published figure from the combat engine depends on a defect, name that defect beside the figure.
 Do not present a defect-dependent figure as a stable rule: a game fix can change it.

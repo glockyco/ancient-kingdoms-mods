@@ -37,8 +37,6 @@ public static class CommandCatalog
         new("launch", "Launch Ancient Kingdoms.", Command<LaunchCommand>()),
         new("export", "Launch the game and drive compendium.export over HotRepl.",
             Command<ExportCommand>()),
-        new("verify", "Launch the game against a scratch database for combat verification.",
-            Command<VerifyCommand>()),
         new("update", "Ask the bottle's Steam client to bring the game current.",
             Command<UpdateCommand>()),
     };

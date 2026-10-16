@@ -16,7 +16,9 @@ Use this for any work on Ancient Kingdoms save data, especially `game.dat` in th
 
 ## Locate the save
 
-Resolve the save path and create verified backups through `build-tool/Game/PlayerSave.cs:DatabasePath` and `build-tool/Game/PlayerSave.cs:Create`. Load configuration keys through `build-tool/Configuration/LocalConfigLoader.cs:Load`.
+The save is `ancientkingdoms_Data/game.dat` in the game folder. Load the game folder through `build-tool/Configuration/LocalConfigLoader.cs:Load`. SQLite keeps `game.dat-wal` and `game.dat-shm` beside the database, and a write-ahead log can hold more than the database file, so a copy of `game.dat` alone can lose data.
+
+Back up before anything else. Copy `game.dat` and each sidecar that exists into a new timestamped directory beside the save, such as `ancientkingdoms_Data/game-dat-backup-<UTC yyyyMMdd-HHmmss>/`. Compare each copy's SHA-256 with its source. A backup with a mismatching copy is no backup.
 
 ## Find the SQLCipher key
 

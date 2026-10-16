@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -34,18 +33,6 @@ internal sealed record GameSessionRequest
 
     /// <summary>What the session is for, used in the banner it prints.</summary>
     public required string Purpose { get; init; }
-
-    /// <summary>Run owned-installation preparation before the log is changed or the game starts.</summary>
-    public Func<CancellationToken, Task>? BeforeLaunch { get; init; }
-
-    /// <summary>Read back or clear owned state after the game process stops.</summary>
-    public Func<Task>? AfterShutdown { get; init; }
-
-    /// <summary>Compare final session state after shutdown handling, without mutating scratch.</summary>
-    public Func<Task>? AfterSession { get; init; }
-
-    /// <summary>Identity the runtime uses to confirm that it serves this session.</summary>
-    public string? SessionToken { get; init; }
 }
 
 /// <summary>
@@ -106,9 +93,8 @@ internal sealed class GameSession
         Task<T>? workTask = null;
         GameSessionFailure? failure = null;
         T? result = default;
-        var beforeLaunchStarted = false;
         var gameLaunchAttempted = false;
-        var sessionToken = request.SessionToken ?? Guid.NewGuid().ToString("N");
+        var sessionToken = Guid.NewGuid().ToString("N");
 
         try
         {
@@ -166,23 +152,6 @@ internal sealed class GameSession
                 goto FinishSession;
             }
 
-            var callbackOwnershipFailure = await RefuseIfOccupiedAsync(
-                endpoint, cancellationToken, checkProcess: true);
-            if (callbackOwnershipFailure is not null)
-            {
-                failure = callbackOwnershipFailure;
-                goto FinishSession;
-            }
-
-            if (request.BeforeLaunch is not null)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                beforeLaunchStarted = true;
-                await request.BeforeLaunch(cancellationToken);
-            }
-
-            // Preparation callbacks can take time. Recheck immediately before the first
-            // launch mutation so a newly started host is never treated as ours.
             var preLaunchFailure = await RefuseIfOccupiedAsync(
                 endpoint, cancellationToken, checkProcess: true);
             if (preLaunchFailure is not null)
@@ -299,26 +268,11 @@ internal sealed class GameSession
             gameCts?.Cancel();
             failure = await ObserveCleanupTaskAsync(
                 logTask, "game log", failure, ignoreCancellation: true);
-            var gameStop = await ObserveGameTaskAsync(gameTask, gameLaunchAttempted, failure);
-            failure = gameStop.Failure;
+            failure = await ObserveGameTaskAsync(gameTask, gameLaunchAttempted, failure);
 
-            var endpointRelease = (Failure: failure, Confirmed: true);
             if (ownership is not null)
-                endpointRelease = await VerifyRuntimeReleaseAsync(
+                failure = await VerifyRuntimeReleaseAsync(
                     endpoint, failure, gameLaunchAttempted ? sessionToken : null);
-            failure = endpointRelease.Failure;
-
-            if (beforeLaunchStarted && request.AfterShutdown is not null)
-            {
-                if (gameStop.Confirmed && endpointRelease.Confirmed)
-                    failure = await RunCleanupCallbackAsync(request.AfterShutdown, "AfterShutdown", failure);
-                else
-                    failure = AddFailure(failure, ExitCodes.Internal,
-                        "AfterShutdown was skipped because owned process and endpoint release were not confirmed.");
-            }
-
-            if (beforeLaunchStarted && request.AfterSession is not null)
-                failure = await RunCleanupCallbackAsync(request.AfterSession, "AfterSession", failure);
 
             if (ownership is not null)
             {
@@ -440,12 +394,8 @@ internal sealed class GameSession
 
     private static ProcessRequest AddSessionToken(ProcessRequest launch, string sessionToken)
     {
-        var environment = launch.Environment is null
-            ? new Dictionary<string, string?>()
-            : new Dictionary<string, string?>(launch.Environment);
-        environment["AK_VERIFICATION_SESSION"] = sessionToken;
         string[] arguments = [.. launch.Arguments, GameProcesses.SessionArgument(sessionToken)];
-        return launch with { Environment = environment, Arguments = arguments };
+        return launch with { Arguments = arguments };
     }
 
     private static GameSessionOutcome<T> Failed<T>(int exitCode, string message)
@@ -462,7 +412,7 @@ internal sealed class GameSession
         return existing with { Message = $"{existing.Message} Cleanup: {detail}" };
     }
 
-    private async Task<(GameSessionFailure? Failure, bool Confirmed)> VerifyRuntimeReleaseAsync(
+    private async Task<GameSessionFailure?> VerifyRuntimeReleaseAsync(
         Uri endpoint,
         GameSessionFailure? failure,
         string? ownedSessionToken)
@@ -470,20 +420,20 @@ internal sealed class GameSession
         try
         {
             if (await WaitForRuntimeReleaseAsync(endpoint, TimeSpan.FromSeconds(30)))
-                return (failure, true);
+                return failure;
             if (ownedSessionToken is not null)
             {
                 GameProcesses.StopOwnedProcesses(ownedSessionToken);
                 if (await WaitForRuntimeReleaseAsync(endpoint, TimeSpan.FromSeconds(5)))
-                    return (failure, true);
+                    return failure;
             }
-            return (AddFailure(failure, ExitCodes.Internal,
-                $"The runtime endpoint or game process remained occupied after shutdown at {endpoint}."), false);
+            return AddFailure(failure, ExitCodes.Internal,
+                $"The runtime endpoint or game process remained occupied after shutdown at {endpoint}.");
         }
         catch (Exception exception)
         {
-            return (AddFailure(failure, ExitCodes.Internal,
-                $"Could not verify runtime release at {endpoint}: {exception.Message}"), false);
+            return AddFailure(failure, ExitCodes.Internal,
+                $"Could not verify runtime release at {endpoint}: {exception.Message}");
         }
     }
 
@@ -502,28 +452,6 @@ internal sealed class GameSession
         catch (OperationCanceledException) when (deadline.IsCancellationRequested)
         {
             return false;
-        }
-    }
-
-    private static async Task<GameSessionFailure?> RunCleanupCallbackAsync(
-        Func<Task> callback,
-        string name,
-        GameSessionFailure? failure)
-    {
-        try
-        {
-            await callback().WaitAsync(CleanupTimeout);
-            return failure;
-        }
-        catch (TimeoutException)
-        {
-            return AddFailure(failure, ExitCodes.Internal,
-                $"{name} did not complete before cleanup timed out.");
-        }
-        catch (Exception exception)
-        {
-            return AddFailure(failure, ExitCodes.Internal,
-                $"{name} failed: {exception.GetType().Name}: {exception.Message}");
         }
     }
 
@@ -558,43 +486,35 @@ internal sealed class GameSession
         }
     }
 
-    private static async Task<(GameSessionFailure? Failure, bool Confirmed)> ObserveGameTaskAsync(
+    private static async Task<GameSessionFailure?> ObserveGameTaskAsync(
         Task<ProcessResult>? gameTask,
         bool launchAttempted,
         GameSessionFailure? failure)
     {
         if (gameTask is null)
-        {
-            return (
-                launchAttempted
-                    ? AddFailure(failure, ExitCodes.Internal,
-                        "The owned game process task was not created after launch was attempted.")
-                    : failure,
-                !launchAttempted);
-        }
+            return launchAttempted
+                ? AddFailure(failure, ExitCodes.Internal,
+                    "The owned game process task was not created after launch was attempted.")
+                : failure;
 
         try
         {
             await gameTask.WaitAsync(CleanupTimeout);
-            return (failure, true);
+            return failure;
         }
         catch (OperationCanceledException)
         {
-            return (failure, true);
+            return failure;
         }
         catch (TimeoutException)
         {
-            return (
-                AddFailure(failure, ExitCodes.Internal,
-                    "The owned game process did not stop before cleanup timed out."),
-                false);
+            return AddFailure(failure, ExitCodes.Internal,
+                "The owned game process did not stop before cleanup timed out.");
         }
         catch (Exception exception)
         {
-            return (
-                AddFailure(failure, ExitCodes.Internal,
-                    $"The owned game process faulted during cleanup: {exception.GetType().Name}: {exception.Message}"),
-                false);
+            return AddFailure(failure, ExitCodes.Internal,
+                $"The owned game process faulted during cleanup: {exception.GetType().Name}: {exception.Message}");
         }
     }
 
