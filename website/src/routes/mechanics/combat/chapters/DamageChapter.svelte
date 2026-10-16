@@ -249,7 +249,7 @@
     </p>
 
     <h4>Weapon deductions</h4>
-    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; EquipmentItem.cs:ToolTip — player Ranger targeted and frontal damage subtract bow Base Damage, player Rogue targeted damage subtracts half off-hand Base Damage rounded up, player bow attacks subtract main-hand Base Damage, and mercenaries and Ranger frontal projectiles retain weapon damage. -->
+    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; EquipmentItem.cs:ToolTip — player Ranger targeted and frontal damage subtract bow Base Damage, player Rogue targeted damage subtracts half off-hand Base Damage rounded up, player bow attacks subtract the Base Damage of a main-hand weapon with durability left, and mercenaries and Ranger frontal projectiles retain weapon damage. -->
     <!-- Source: website/data/compendium.db skills.skill_type — Swift Slash is a Ranger target_damage skill and Forest Guardians Aid a Ranger frontal_projectiles skill. -->
     <RefTable caption="Weapon damage deducted from starting damage">
       <thead>
@@ -274,7 +274,7 @@
         </tr>
         <tr>
           <th scope="row">Player targeted bow attacks</th>
-          <td>Main-hand weapon's Base Damage</td>
+          <td>Main-hand weapon's Base Damage, unless it is broken</td>
         </tr>
         <tr>
           <th scope="row">
@@ -294,11 +294,6 @@
       Each deduction comes off the starting stat before the skill's listed
       damage is added.
     </p>
-    <!-- Source: server-scripts/TargetProjectileSkill.cs:189-200; Equipment.cs:515-525 — with no main-hand weapon, a bow attack subtracts the bow's own damage. -->
-    <GameBug>
-      With only a bow equipped, a Ranger's bow attack loses the bow's Base
-      Damage. Equip a melee weapon in the main hand to avoid this.
-    </GameBug>
     <!-- Source: server-scripts/Equipment.cs:230-247; TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:88-92 — broken slot 13 equipment adds no damage but is still subtracted from melee damage. -->
     <GameBug>
       A broken bow still subtracts its full Base Damage from Ranger melee

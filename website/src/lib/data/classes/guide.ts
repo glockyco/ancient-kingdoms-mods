@@ -108,13 +108,6 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         linkText: "Wild Strike damage",
       },
       {
-        text: "Game defect: With no main-hand weapon, a bow attack subtracts the bow's own damage. Equip a melee weapon to keep the bow's damage.",
-        source:
-          "Source: server-scripts/TargetProjectileSkill.cs:189-200; server-scripts/Equipment.cs:515-525 — bow-only equipment makes the bow subtract its own damage",
-        href: "/mechanics/combat#damage-formulas",
-        linkText: "Bow damage and defect note",
-      },
-      {
         text: "Game defect: A broken bow subtracts its damage from melee attacks despite giving none. Repair or unequip the bow before melee combat.",
         source:
           "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:223-227; server-scripts/FrontalDamageSkill.cs:88-92 — broken bows are still subtracted",

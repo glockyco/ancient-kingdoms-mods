@@ -5,6 +5,7 @@ import {
   sampleHit,
   weaponGateRefusal,
   type DamageSkillSpec,
+  type EquippedWeapon,
   type HitCaster,
   type HitTarget,
   type PreparedHit,
@@ -206,27 +207,34 @@ describe("slot-specific damage", () => {
     );
   });
 
-  it("lets a bow subtract itself when slot 12 is empty, as the game does", () => {
-    const ranger = caster({
-      classId: "ranger",
-      damage: 409,
-      dexterity: 0,
-      weapons: [
-        {
-          slot: 13,
-          amount: 1,
-          durability: 10,
-          category: "Bow",
-          damageBonus: 304,
-        },
-      ],
+  it("lets a bow shot subtract only a main-hand weapon with durability", () => {
+    const bow = {
+      slot: 13,
+      amount: 1,
+      durability: 10,
+      category: "Bow",
+      damageBonus: 304,
+    };
+    const sword = (durability: number) => ({
+      slot: 12,
+      amount: 1,
+      durability,
+      category: "1H Weapon",
+      damageBonus: 50,
     });
     const bowSkill = skill({
       skillClass: "target_projectile",
       requiredWeaponCategory: "Bow",
       declaredDamage: 1,
     });
-    expect(buildDamageIntent(ranger, bowSkill).amount).toBe(106);
+    const shot = (weapons: EquippedWeapon[]) =>
+      buildDamageIntent(
+        caster({ classId: "ranger", damage: 409, dexterity: 0, weapons }),
+        bowSkill,
+      ).amount;
+    expect(shot([bow])).toBe(410);
+    expect(shot([bow, sword(0)])).toBe(410);
+    expect(shot([bow, sword(1)])).toBe(360);
   });
 });
 

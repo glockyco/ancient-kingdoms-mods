@@ -371,8 +371,8 @@ function areaDamageStat(caster: HitCaster, skill: DamageSkillSpec): number {
 }
 
 /**
- * Source: server-scripts/TargetProjectileSkill.cs:196-201. A bow without a melee weapon subtracts its own
- * damage; see docs/game-bugs/a-bow-without-a-melee-weapon-cancels-its-own-damage.md.
+ * Source: server-scripts/TargetProjectileSkill.cs:Apply — a player's bow attack subtracts the main-hand
+ * weapon's damage only while that weapon has durability left.
  */
 function targetProjectileStat(
   caster: HitCaster,
@@ -386,8 +386,8 @@ function targetProjectileStat(
     skill.requiredWeaponCategory === "Bow"
   ) {
     stat = caster.damage + rangedDexterityBonus(caster);
-    const weaponToRemove = firstOccupiedWeapon(caster);
-    if (weaponToRemove) stat -= weaponToRemove.damageBonus;
+    const mainHand = occupiedWeapon(caster, 12);
+    if (mainHand && mainHand.durability > 0) stat -= mainHand.damageBonus;
   } else if (caster.kind === "companion" && caster.classId === "ranger") {
     stat = caster.damage + rangedDexterityBonus(caster);
   } else if (skill.damageType === "poison") {

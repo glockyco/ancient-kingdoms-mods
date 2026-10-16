@@ -58,16 +58,18 @@
           the same owner level and veteran points.
         </p>
       {/if}
-      {#if block.calculation.inputs?.some((input) => input.key === "bowDamage" || input.key === "offhandDamage" || input.key === "meleeDamage")}
-        <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; Equipment.cs:GetEquippedWeaponIndex — deductions use weapon Base Damage even when broken; a bow shot falls back to the bow when no main-hand weapon is equipped. -->
+      {#if block.calculation.inputs?.some((input) => input.key === "bowDamage" || input.key === "offhandDamage")}
+        <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — the bow and off-hand deductions use weapon Base Damage even when the weapon is broken. -->
         <p class="text-muted-foreground">
           Enter Base Damage from the weapon's tooltip, even if the weapon is
-          broken.
-          {#if block.calculation.inputs?.some((input) => input.key === "meleeDamage")}
-            With no main-hand weapon, enter the bow's Base Damage instead.
-          {:else}
-            Enter 0 if no weapon is equipped in the named slot.
-          {/if}
+          broken. Enter 0 if no weapon is equipped in the named slot.
+        </p>
+      {/if}
+      {#if block.calculation.inputs?.some((input) => input.key === "meleeDamage")}
+        <!-- Source: server-scripts/TargetProjectileSkill.cs:Apply — a bow shot deducts the main-hand weapon only while it has durability. -->
+        <p class="text-muted-foreground">
+          Enter your main-hand weapon's Base Damage from its tooltip. Enter 0 if
+          it is broken or your main hand is empty.
         </p>
       {/if}
       {#if skill.is_scroll}

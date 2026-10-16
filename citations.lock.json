@@ -1187,16 +1187,9 @@
       "sha256": "109e58a359a60963e30e02eaddf6ad926ce9ed4f998d35a6e2e330a4cf3e7454",
       "span": 18
     },
-    "Equipment.cs:515-525": {
-      "sha256": "c361885f6ef7e6887e58c2d164914e239797dac69fb4f1a0a1e38b1c0057b61b",
-      "span": 11
-    },
     "Equipment.cs:6-58": {
       "sha256": "e9b79de110336cb6a64e5b7cdc153f5e694dfec2a592170a7c6c8c062622961a",
       "span": 53
-    },
-    "Equipment.cs:GetEquippedWeaponIndex": {
-      "span": 0
     },
     "EquipmentItem.cs:107-120": {
       "sha256": "479e11474f0a94ada836d6e6aeeada401bfb4af5e16d858d8898bca1e8abbcc4",
@@ -4978,21 +4971,9 @@
       "sha256": "a65536a65d239c4bde3c19c88654ef0861d7826683b1f9ba7f0631ba8935b16e",
       "span": 3
     },
-    "TargetProjectileSkill.cs:189-200": {
-      "sha256": "b91d1aa53b2a0c996db7250ba33d755618496c843a933b397b174b45cc27c4de",
-      "span": 12
-    },
     "TargetProjectileSkill.cs:191": {
       "sha256": "4be55244c5073b13d56993e81b986de0d987a22a93353ad2e67dda0192351c87",
       "span": 1
-    },
-    "TargetProjectileSkill.cs:193-204": {
-      "sha256": "251d703ff1ab2778c3b6ec4f8f6b3be9219f693dbd3e8461530a4f5d1a09ec58",
-      "span": 12
-    },
-    "TargetProjectileSkill.cs:196-201": {
-      "sha256": "a8bb118f8da0009a0310a35c7f4f49ebaeb16118203accfa2a2db217e39be466",
-      "span": 6
     },
     "TargetProjectileSkill.cs:211-220": {
       "sha256": "73044a97e95406b56967c0906a6aeb707bc8e12335d0b1bdbfa2194786f3389c",
