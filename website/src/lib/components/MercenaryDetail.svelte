@@ -61,6 +61,9 @@
 
   const cls = $derived(pet.type_monster);
   const classDef = $derived(CLASSES[cls]);
+  const veteranRaisesMana = $derived(
+    classDef.role === "mana" && cls !== "Bard",
+  );
   const level = $derived(mercenaryOwner.level);
   const veteran = $derived(mercenaryOwner.veteran);
   const discount = $derived(charismaDiscount(mercenaryOwner.charisma));
@@ -460,13 +463,15 @@
             <!-- Source: server-scripts/Player.cs:10655-10669,10854-10869; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
               Each veteran point (VT) adds 0.25% of base Health to maximum
-              Health{#if classDef.role === "mana" && cls !== "Bard"}
-                and 0.25% of base Mana to maximum Mana{/if}, before rounding.
+              Health{veteranRaisesMana
+                ? " and 0.25% of base Mana to maximum Mana"
+                : ""}, before rounding.
             </p>
             <p class="mt-1 text-sm text-muted-foreground">
               Your {veteran} veteran points (VT) add {veteranBonus}% of base
-              Health to maximum Health{#if classDef.role === "mana" && cls !== "Bard"}
-                and {veteranBonus}% of base Mana to maximum Mana{/if}.
+              Health to maximum Health{veteranRaisesMana
+                ? ` and ${veteranBonus}% of base Mana to maximum Mana`
+                : ""}.
             </p>
             {#if classDef.role === "energy"}
               <p class="mt-1 text-sm text-muted-foreground">

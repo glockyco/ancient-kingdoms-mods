@@ -378,15 +378,14 @@
                 href="/factions/{faction.id}"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
                 >{faction.name}</a
-              >{/each}{#if npc.decreaseFactions.length > 0}
-              and lowers {#each npc.decreaseFactions as faction, i (faction.id)}{i >
-                0
-                  ? ", "
-                  : ""}<a
-                  href="/factions/{faction.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >{faction.name}</a
-                >{/each}{/if}.
+              >{/each}{#each npc.decreaseFactions as faction, i (faction.id)}{i >
+              0
+                ? ", "
+                : " and lowers "}<a
+                href="/factions/{faction.id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >{faction.name}</a
+              >{/each}.
           </li>
         {/each}
       </ul>
