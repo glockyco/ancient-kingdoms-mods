@@ -82,9 +82,15 @@ prepare the directory, then relaunch and redirect before the player database ope
 
 Two instances on one port do not both serve. The first keeps the endpoint, so every later command
 answers from the older process while the newer window is the one on screen. Give a second instance a
-different `HOTREPL_PORT`. `build-tool launch` passes it through via
-`build-tool/Game/WineEnvironment.cs:ReplPortVariable`. The default endpoint is documented in
+different `HOTREPL_PORT`. `build-tool launch` passes it to the game, and every `build-tool` command
+connects its own client to the same port (`build-tool/Configuration/LocalConfigLoader.cs:ResolveHotReplEndpoint`).
+For the CLI, set `HOTREPL_URL` to match. The default endpoint is documented in
 `node_modules/@hotrepl/cli/README.md`.
+
+Other programs on the machine may already serve HotRepl on that port, such as another project's game
+or a sim worker. Wine lets a second process bind the same port, so a client then reaches either one,
+and two clients displace each other. Check the port with `lsof -nP -iTCP:<port> -sTCP:LISTEN` before
+launching, and use a free one.
 
 Before relaunching, check for an orphaned `ancientkingdoms.exe` process.
 

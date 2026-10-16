@@ -48,4 +48,27 @@ public class LocalConfigLoaderTests
         Assert.Contains(missingKey, ex.Message, StringComparison.Ordinal);
         Assert.Contains(temp, ex.Message, StringComparison.Ordinal);
     }
+
+    [Theory]
+    [InlineData("ws://127.0.0.1:18590", "18599", "ws://127.0.0.1:18599")]
+    [InlineData("ws://host.lan:1234", "18599", "ws://host.lan:18599")]
+    [InlineData("ws://127.0.0.1:18590", null, "ws://127.0.0.1:18590")]
+    [InlineData("ws://127.0.0.1:18590", " ", "ws://127.0.0.1:18590")]
+    public void ResolveHotReplEndpoint_TakesTheLaunchPortAndKeepsTheHost(
+        string configured, string? port, string expected)
+    {
+        Assert.Equal(expected, LocalConfigLoader.ResolveHotReplEndpoint(configured, port));
+    }
+
+    [Theory]
+    [InlineData("eighteen")]
+    [InlineData("0")]
+    [InlineData("70000")]
+    public void ResolveHotReplEndpoint_RejectsAValueThatIsNotAPort(string port)
+    {
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => LocalConfigLoader.ResolveHotReplEndpoint("ws://127.0.0.1:18590", port));
+
+        Assert.Contains("HOTREPL_PORT", ex.Message, StringComparison.Ordinal);
+    }
 }
