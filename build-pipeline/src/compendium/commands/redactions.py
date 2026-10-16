@@ -33,7 +33,7 @@ def _removals(
     repo_root: Path, config: dict
 ) -> tuple[list[closure.Removal], dict[str, int], dict[str, int]]:
     """The removals the current export and configuration produce."""
-    from compendium.commands.build import load_all
+    from compendium.loaders import load_all
 
     export_dir = repo_root / config["paths"]["export_dir"]
     schema_path = repo_root / "build-pipeline" / "schema.sql"

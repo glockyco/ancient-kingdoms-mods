@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from compendium.commands import build as build_command
+from compendium.loaders import catalog
 
 
 class BuildFailureTests(unittest.TestCase):
@@ -43,7 +44,7 @@ class BuildFailureTests(unittest.TestCase):
 
     def test_missing_required_input_stops_build_and_names_file(self):
         with (
-            patch.object(build_command, "verify_export_locale"),
+            patch.object(catalog, "verify_export_locale"),
             self.assertRaisesRegex(
                 FileNotFoundError, "static_data.json.*hand-maintained"
             ),

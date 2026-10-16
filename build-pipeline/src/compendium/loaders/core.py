@@ -1,7 +1,7 @@
-"""Core data loaders for the compendium build pipeline.
+"""Custom loaders for the datasets in `catalog.py` that need more than one insert per element.
 
-Each loader reads a JSON export file, validates it with Pydantic models,
-and inserts the records into the database.
+Each reads its export files, validates them with Pydantic models, and fills its
+tables. Simple datasets have no loader here: `catalog.load_dataset` inserts them.
 """
 
 import json
@@ -15,37 +15,22 @@ from rich.console import Console
 from compendium.db import insert_model, serialize_value
 from compendium.models import (
     AchievementData,
-    AlchemyRecipeData,
     AlchemyTableData,
-    AltarData,
     ClassData,
-    CraftingRecipeData,
     CraftingStationData,
-    EquipmentSlotData,
-    FishData,
-    GameGuideArticleData,
     GatherItemData,
     HouseData,
     ItemData,
-    LuckTokenData,
     MonsterData,
-    MonsterSpawnData,
-    NpcData,
-    NpcSpawnData,
     PetData,
-    PortalData,
     ProfessionData,
     ProgressionExportData,
     QuestData,
-    ScribingRecipeData,
     ScribingTableData,
     SkillData,
     SummonTriggerData,
-    TrapData,
     TreasureLocationData,
     VisualAssetData,
-    ZoneData,
-    ZoneTriggerData,
 )
 from compendium.visual_assets import (
     Encoding,
@@ -265,44 +250,6 @@ def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(classes)} classes")
 
 
-def load_equipment_slots(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load accepted equipment categories for player and mercenary archetypes."""
-    console.print("Loading equipment slots...")
-
-    filepath = export_dir / "equipment_slots.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    slots = [EquipmentSlotData(**item) for item in data]
-    if not slots:
-        raise ValueError("equipment_slots.json contains no slots")
-
-    cursor = conn.cursor()
-    for slot in slots:
-        insert_model(cursor, "equipment_slots", slot)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(slots)} equipment slots")
-
-
-def load_game_guide(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load the Adventurer's Guide articles that the website maps to its sections."""
-    console.print("Loading Adventurer's Guide articles...")
-
-    filepath = export_dir / "game_guide.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        articles = [GameGuideArticleData(**item) for item in json.load(f)]
-    if not articles:
-        raise ValueError("game_guide.json contains no articles")
-
-    cursor = conn.cursor()
-    for article in articles:
-        insert_model(cursor, "game_guide_articles", article)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(articles)} guide articles")
-
-
 def load_progression(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load complete character progression curves and point budgets."""
     console.print("Loading character progression...")
@@ -406,24 +353,6 @@ def load_progression(conn: sqlite3.Connection, export_dir: Path) -> None:
         f"{len(progression.class_levels)} class levels, and "
         f"{len(progression.level_budgets)} point budgets"
     )
-
-
-def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load zones into database."""
-    console.print("Loading zones...")
-
-    filepath = export_dir / "zone_info.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    zones = [ZoneData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for zone in zones:
-        insert_model(cursor, "zones", zone)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(zones)} zones")
 
 
 def _load_achievements(
@@ -566,64 +495,6 @@ def load_professions(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(professions)} professions")
-
-
-def load_luck_tokens(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load luck tokens into database."""
-    console.print("Loading luck tokens...")
-
-    filepath = export_dir / "luck_tokens.json"
-    _require_export(filepath)
-
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    tokens = [LuckTokenData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for token in tokens:
-        insert_model(cursor, "luck_tokens", token)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(tokens)} luck token configurations")
-
-
-def load_altars(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load altars into database."""
-    console.print("Loading altars...")
-
-    filepath = export_dir / "altars.json"
-    _require_export(filepath)
-
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    altars = [AltarData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for altar in altars:
-        insert_model(cursor, "altars", altar)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(altars)} altars")
-
-
-def load_zone_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load zone triggers into database."""
-    console.print("Loading zone triggers...")
-
-    filepath = export_dir / "zone_triggers.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    triggers = [ZoneTriggerData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for trigger in triggers:
-        insert_model(cursor, "zone_triggers", trigger)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(triggers)} zone triggers")
 
 
 def load_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -775,42 +646,6 @@ def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     conn.commit()
 
 
-def load_monsters(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load monsters into database."""
-    console.print("Loading monsters...")
-
-    filepath = export_dir / "monsters.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    monsters = [MonsterData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for monster in monsters:
-        insert_model(cursor, "monsters", monster)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(monsters)} monsters")
-
-
-def load_monster_spawns(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load monster spawn points into database."""
-    console.print("Loading monster spawn points...")
-
-    filepath = export_dir / "monster_spawns.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    spawns = [MonsterSpawnData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for spawn in spawns:
-        insert_model(cursor, "monster_spawns", spawn)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(spawns)} monster spawn points")
-
-
 def load_monster_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Populate monster_skills junction table from monsters.json skill_ids."""
     console.print("Loading monster skills...")
@@ -929,42 +764,6 @@ def load_pet_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {count} pet-skill links")
 
 
-def load_npcs(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load NPCs into database."""
-    console.print("Loading NPCs...")
-
-    filepath = export_dir / "npcs.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    npcs = [NpcData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for npc in npcs:
-        insert_model(cursor, "npcs", npc)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(npcs)} NPCs")
-
-
-def load_npc_spawns(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load NPC spawn points into database."""
-    console.print("Loading NPC spawn points...")
-
-    filepath = export_dir / "npc_spawns.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    spawns = [NpcSpawnData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for spawn in spawns:
-        insert_model(cursor, "npc_spawns", spawn)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(spawns)} NPC spawn points")
-
-
 def load_quests(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load quests into database."""
     console.print("Loading quests...")
@@ -986,24 +785,6 @@ def load_quests(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(quests)} quests")
-
-
-def load_portals(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load portals into database."""
-    console.print("Loading portals...")
-
-    filepath = export_dir / "portals.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    portals = [PortalData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for portal in portals:
-        insert_model(cursor, "portals", portal)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(portals)} portals")
 
 
 def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -1045,26 +826,6 @@ def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(locations)} treasure locations")
-
-
-def load_traps(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load traps into database."""
-    console.print("Loading traps...")
-
-    filepath = export_dir / "traps.json"
-    _require_export(filepath)
-
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    traps = [TrapData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for trap in traps:
-        insert_model(cursor, "traps", trap)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(traps)} traps")
 
 
 def _gather_drop_pool(resource: GatherItemData) -> tuple[tuple[str, float], ...]:
@@ -1302,84 +1063,6 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         f"  [green]OK[/green] Loaded {len(resource_spawns)} gathering resource spawns"
     )
     console.print(f"  [green]OK[/green] Loaded {len(chests)} chests")
-
-
-def load_fish(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load fish journal and trash fish metadata."""
-    console.print("Loading fish...")
-
-    filepath = export_dir / "fish.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    fish_rows = [FishData(**item) for item in data]
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM fish")
-
-    for fish in fish_rows:
-        cursor.execute(
-            "INSERT INTO fish (item_id, is_trash) VALUES (?, ?)",
-            (fish.item_id, fish.is_trash),
-        )
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(fish_rows)} fish")
-
-
-def load_crafting_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load crafting recipes into database."""
-    console.print("Loading crafting recipes...")
-
-    filepath = export_dir / "crafting_recipes.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    recipes = [CraftingRecipeData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for recipe in recipes:
-        insert_model(cursor, "crafting_recipes", recipe)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(recipes)} crafting recipes")
-
-
-def load_alchemy_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load alchemy recipes into database."""
-    console.print("Loading alchemy recipes...")
-
-    filepath = export_dir / "alchemy_recipes.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    recipes = [AlchemyRecipeData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for recipe in recipes:
-        insert_model(cursor, "alchemy_recipes", recipe)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(recipes)} alchemy recipes")
-
-
-def load_scribing_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load scribing recipes into database."""
-    console.print("Loading scribing recipes...")
-
-    filepath = export_dir / "scribing_recipes.json"
-    _require_export(filepath)
-
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    recipes = [ScribingRecipeData(**item) for item in data]
-
-    cursor = conn.cursor()
-    for recipe in recipes:
-        insert_model(cursor, "scribing_recipes", recipe)
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(recipes)} scribing recipes")
 
 
 def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:

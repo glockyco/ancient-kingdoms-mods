@@ -15,7 +15,7 @@ game ──decompile──> server-scripts/ ──cited by──> hardcoded mech
 
 - `mods/`: MelonLoader mods (C#, `net6.0`), catalogued in [`mods/README.md`](mods/README.md). DataExporter and MapScreenshotter produce the exports. HotReplCommands registers typed HotRepl commands that `build-tool` and agents drive. The rest are player and gameplay mods.
 - `build-tool/`: a .NET CLI. `Commands/CommandCatalog.cs` lists its verbs. `Game/` finds the install in the CrossOver bottle, launches it through Wine, and owns the installation and endpoint session locks used by export. `HotRepl/` runs exports over the HotRepl connection.
-- `build-pipeline/`: the `compendium` CLI. `loaders/` read the exports into SQLite, `denormalizers/` derive the tables the site reads, `redactions/` removes withheld content, and `citations/` verifies `Source:` comments. `schema.sql` is the database schema, and `zone_shot_focal_points.json` frames the zone shots.
+- `build-pipeline/`: the `compendium` CLI. `loaders/` read the exports into SQLite in the order `loaders/catalog.py` declares, `denormalizers/` derive the tables the site reads, `redactions/` removes withheld content, and `citations/` verifies `Source:` comments. `schema.sql` is the database schema, and `zone_shot_focal_points.json` frames the zone shots.
 - `website/`: the SvelteKit site. Routes under `src/routes/` load their data at build time. `src/lib/entities/entity-manifest.json` declares each entity kind's routes, search kind, and sitemap membership. `src/lib/map/marker-registry.ts` declares every map marker layer.
 - `tests/`: C# tests for the mods and `build-tool`. They compile repository sources and need no game install.
 - `scripts/`: the server-script snapshot script and the clean-checkout check.

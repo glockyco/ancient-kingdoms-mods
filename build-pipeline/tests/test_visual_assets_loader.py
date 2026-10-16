@@ -6,7 +6,7 @@ from pathlib import Path
 from PIL import Image
 
 from compendium.db import create_database
-from compendium.loaders import load_visual_assets
+from compendium.loaders.core import load_visual_assets
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 

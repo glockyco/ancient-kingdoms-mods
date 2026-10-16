@@ -6,9 +6,10 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from compendium.db import create_database
-from compendium.loaders.core import load_equipment_slots
+from compendium.loaders import DATASETS, LoadContext, load_dataset
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
+EQUIPMENT_SLOTS = next(d for d in DATASETS if d.id == "equipment_slots")
 
 
 class EquipmentSlotsLoaderTests(unittest.TestCase):
@@ -39,7 +40,7 @@ class EquipmentSlotsLoaderTests(unittest.TestCase):
 
             conn = create_database(root / "test.db", SCHEMA_PATH)
             try:
-                load_equipment_slots(conn, export_dir)
+                load_dataset(LoadContext(conn, export_dir), EQUIPMENT_SLOTS)
                 rows = conn.execute(
                     "SELECT owner_type, owner_id, slot_index, accepted_category "
                     "FROM equipment_slots ORDER BY owner_type, owner_id"
@@ -77,7 +78,7 @@ class EquipmentSlotsLoaderTests(unittest.TestCase):
             conn = create_database(root / "test.db", SCHEMA_PATH)
             try:
                 with self.assertRaises(ValidationError):
-                    load_equipment_slots(conn, export_dir)
+                    load_dataset(LoadContext(conn, export_dir), EQUIPMENT_SLOTS)
             finally:
                 conn.close()
 

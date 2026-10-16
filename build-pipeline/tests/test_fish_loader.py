@@ -4,9 +4,10 @@ import unittest
 from pathlib import Path
 
 from compendium.db import create_database
-from compendium.loaders.core import load_fish
+from compendium.loaders import DATASETS, LoadContext, load_dataset
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
+FISH = next(d for d in DATASETS if d.id == "fish")
 
 
 class FishLoaderTests(unittest.TestCase):
@@ -33,7 +34,7 @@ class FishLoaderTests(unittest.TestCase):
                 "INSERT INTO items (id, name, travel_zone_id) VALUES ('old_boot', 'Old Boot', NULL)"
             )
             try:
-                load_fish(conn, export_dir)
+                load_dataset(LoadContext(conn, export_dir), FISH)
                 rows = conn.execute(
                     "SELECT item_id, is_trash FROM fish ORDER BY item_id"
                 ).fetchall()
