@@ -515,7 +515,9 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.zone.name}</h1>
-      <MapLink entityId={data.zone.id} entityType="zone" />
+      {#if data.zone.has_map_bounds}
+        <MapLink entityId={data.zone.id} entityType="zone" />
+      {/if}
       {#if data.zone.is_dungeon}
         <span
           class="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200"
@@ -556,6 +558,12 @@
       {/if}
     </div>
   </div>
+  {#if !data.zone.has_map_bounds}
+    <p class="rounded-md border bg-muted/30 p-4 text-muted-foreground">
+      The game withholds positions in {data.zone.name}, so nothing in this zone
+      has a map position.
+    </p>
+  {/if}
 
   <!-- Bosses Section -->
   {#if bosses.length > 0}

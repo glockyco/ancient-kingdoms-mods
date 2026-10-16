@@ -167,6 +167,8 @@ export interface ZoneDetailData {
     level_median: number | null;
     discovery_exp: number;
     description: string;
+    /** False where the game withholds positions, so nothing in the zone is mapped. */
+    has_map_bounds: boolean;
   };
   description: string;
   monsters: ZoneMonster[];

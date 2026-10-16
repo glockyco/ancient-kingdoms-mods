@@ -15,7 +15,7 @@
   import TrapMechanics from "$lib/components/TrapMechanics.svelte";
   import TrapEffect from "$lib/components/TrapEffect.svelte";
   import { TRAP_TYPE_LABELS, type TrapType } from "$lib/constants/traps";
-  import type { TrapListView } from "$lib/queries/traps.server";
+  import type { TrapListRow as TrapRow } from "$lib/queries/traps.server";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
@@ -44,7 +44,7 @@
     ).sort((a, b) => a[1]!.localeCompare(b[1]!)),
   );
 
-  const columns: ColumnDef<TrapListView>[] = [
+  const columns: ColumnDef<TrapRow>[] = [
     {
       id: "effect",
       header: "Effect",
@@ -107,7 +107,7 @@
   };
 </script>
 
-{#snippet renderToolbar({ table }: { table: TanstackTable<TrapListView> })}
+{#snippet renderToolbar({ table }: { table: TanstackTable<TrapRow> })}
   {@const typeCol = table.getColumn("type")}
   {@const zoneCol = table.getColumn("zone")}
   {@const effectCol = table.getColumn("effect")}
@@ -140,7 +140,7 @@
   {/if}
 {/snippet}
 
-{#snippet renderHeader({ header }: { header: Header<TrapListView, unknown> })}
+{#snippet renderHeader({ header }: { header: Header<TrapRow, unknown> })}
   {columnLabels[header.id] ?? header.id}
 {/snippet}
 
@@ -148,8 +148,8 @@
   cell,
   row,
 }: {
-  cell: Cell<TrapListView, unknown>;
-  row: Row<TrapListView>;
+  cell: Cell<TrapRow, unknown>;
+  row: Row<TrapRow>;
 })}
   {#if cell.column.id === "effect"}
     <TrapEffect
@@ -158,6 +158,9 @@
       teleportZoneId={row.original.teleport_zone_id}
       teleportZoneName={row.original.teleport_zone_name}
     />
+    {#if row.original.count > 1}
+      <span class="ml-2 text-muted-foreground">×{row.original.count}</span>
+    {/if}
   {:else if cell.column.id === "mechanics"}
     <TrapMechanics
       type={row.original.type}
@@ -175,7 +178,7 @@
     {#if row.original.position_x != null && row.original.position_y != null}
       <MapLink entityId={row.original.id} entityType="trap" compact />
     {:else}
-      <span class="text-muted-foreground">-</span>
+      <span class="text-muted-foreground">Withheld in game</span>
     {/if}
   {:else}
     {cell.getValue()}
@@ -195,6 +198,14 @@
     <TriangleAlert class="h-8 w-8 text-rose-600" />
     Traps
   </h1>
+
+  {#if data.withheldZones.length > 0}
+    <p class="text-muted-foreground">
+      The game withholds positions in {data.withheldZones.join(", ")}, so traps
+      there have no map position. Identical traps there share one row with a
+      count.
+    </p>
+  {/if}
 
   <DataTable
     data={data.traps}

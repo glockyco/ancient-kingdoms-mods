@@ -42,3 +42,34 @@ export function getTrapsList(): TrapListView[] {
     ORDER BY z.name, t.type, t.name`,
   );
 }
+
+/** A trap list row. Positionless placements of one trap share a row. */
+export interface TrapListRow extends TrapListView {
+  /** Placements the row stands for. */
+  count: number;
+}
+
+/**
+ * Merge identical trap placements that have no position. Without a position
+ * nothing tells them apart, so the list shows each once with a count.
+ */
+export function groupPositionlessTraps(traps: TrapListView[]): TrapListRow[] {
+  const rows = new Map<string, TrapListRow>();
+  for (const trap of traps) {
+    const key =
+      trap.position_x == null || trap.position_y == null
+        ? JSON.stringify([
+            trap.zone_id,
+            trap.type,
+            trap.name,
+            trap.effect_skill_id,
+            trap.teleport_zone_id,
+            trap.fire_interval,
+          ])
+        : trap.id;
+    const row = rows.get(key);
+    if (row) row.count++;
+    else rows.set(key, { ...trap, count: 1 });
+  }
+  return [...rows.values()];
+}
