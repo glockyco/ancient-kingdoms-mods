@@ -2543,6 +2543,9 @@
     "PassiveSkill.cs:GetBardSongDurationBonus": {
       "span": 0
     },
+    "PassiveSkill.cs:GetFoodAndDrinkBuffDurationBonus": {
+      "span": 0
+    },
     "Pet.cs": {
       "span": 0
     },

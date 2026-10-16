@@ -1498,6 +1498,9 @@
             <a href="/skills/{data.item.potion_buff_id}" class={styles.link}>
               {data.item.potion_buff_name}
             </a>
+            {#if data.consumableBuffEffect}
+              <div class="text-sm">{data.consumableBuffEffect}</div>
+            {/if}
           </div>
         {/if}
 
@@ -1507,6 +1510,9 @@
             <a href="/skills/{data.item.food_buff_id}" class={styles.link}>
               {data.item.food_buff_name}
             </a>
+            {#if data.consumableBuffEffect}
+              <div class="text-sm">{data.consumableBuffEffect}</div>
+            {/if}
           </div>
         {/if}
 
@@ -1541,6 +1547,22 @@
             <div class={styles.label}>Recharge Time</div>
             <div class={styles.value}>{data.item.cooldown}s</div>
           </div>
+        {/if}
+
+        <!-- Source: server-scripts/FoodItem.cs:Use; server-scripts/PassiveSkill.cs:GetFoodAndDrinkBuffDurationBonus — Tavern Spirit lengthens food and drink buffs. -->
+        {#if data.item.food_buff_id}
+          <p class="col-span-full text-sm text-muted-foreground">
+            <a href="/skills/tavern_spirit" class={styles.link}>Tavern Spirit</a
+            >
+            lengthens food and drink buffs.
+          </p>
+          <!-- Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — learned Elixir Endurance sets a potion buff's rank to 1 + its own rank, except for bandages. -->
+        {:else if data.item.potion_buff_id && data.item.cooldown_category !== "Bandages"}
+          <p class="col-span-full text-sm text-muted-foreground">
+            <a href="/skills/elixir_endurance" class={styles.link}
+              >Elixir Endurance</a
+            > raises this buff's rank to one more than its own rank.
+          </p>
         {/if}
       </Card.Content>
     </Card.Root>

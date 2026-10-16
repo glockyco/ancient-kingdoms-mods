@@ -12,6 +12,8 @@ import { getRecipeMaterials } from "$lib/server/obtainability";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { getItemMapBounds } from "$lib/queries/map-search";
 import { getItemSourceSummaries } from "$lib/server/item-source-summary";
+import { skillEffectInputs } from "$lib/skills/skillEffects.server";
+import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 
 const FISHERMAN_COSTUME_IDS = new Set([
   "fishermans_hat",
@@ -37,7 +39,12 @@ export const entries: EntryGenerator = () => {
 export const load: PageServerLoad = async ({
   params,
 }): Promise<
-  ItemDetailPageData & { hasMapLocation: boolean; hasKnownSource: boolean }
+  ItemDetailPageData & {
+    hasMapLocation: boolean;
+    hasKnownSource: boolean;
+    /** Effect summary of the potion or food buff at the rank the item applies. */
+    consumableBuffEffect: string | null;
+  }
 > => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
@@ -265,6 +272,19 @@ export const load: PageServerLoad = async ({
     buffDurationSeconds = row?.duration_base ?? null;
     relicIsCleanse = Boolean(item.relic_buff_id && row?.is_cleanse);
   }
+  const consumableBuffId = item.potion_buff_id || item.food_buff_id;
+  const consumableBuffEffect = consumableBuffId
+    ? formatSkillEffect(
+        skillEffectInputs([
+          {
+            id: consumableBuffId,
+            runtimeLevel: item.potion_buff_id
+              ? item.potion_buff_level
+              : item.food_buff_level,
+          },
+        ])[0],
+      )
+    : null;
 
   const visualAsset =
     (db
@@ -311,6 +331,7 @@ export const load: PageServerLoad = async ({
 
   return {
     item,
+    consumableBuffEffect,
     description,
     title,
     sources,
