@@ -4,8 +4,8 @@ The database stores progression tables not read by website pages. Many columns a
 
 ## What Changes
 
-- Audit database tables and candidate columns against queries, denormalizers, redaction, search, sitemap, planner payload generation, and consumers.
-- Remove only proven-unread database storage. Keep exported progression data and its validation for the planner.
+- Audit database tables and candidate columns against queries, denormalizers, redaction, search, sitemap, and consumers.
+- Remove only proven-unread database storage. Keep exported progression data and its validation.
 - Preserve all page data, sitemap URLs, and useful lastmod semantics. Account for one-time IndexNow impact before deployment.
 
 ## Capabilities

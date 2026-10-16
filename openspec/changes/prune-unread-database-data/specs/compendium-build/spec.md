@@ -8,7 +8,7 @@ The build SHALL retain all data used by the website, search, sitemap, redaction,
 
 - **WHEN** a progression table has no reader after all pipeline and website consumers are checked
 - **THEN** its data may be removed from SQLite
-- **AND** exported progression remains validated for verification payload generation
+- **AND** exported progression remains validated
 
 #### Scenario: A column has an indirect reader
 

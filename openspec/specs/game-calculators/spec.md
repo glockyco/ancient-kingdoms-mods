@@ -62,7 +62,7 @@ Item sources and fishing spot outcomes SHALL compute per-cast fish chances from 
 
 ### Requirement: No unverified combat simulator is published
 
-The site SHALL NOT publish a combat damage simulator whose results are not backed by the verified combat engine. `/tools/combat-simulator` SHALL NOT be published, and no page, search result, or sitemap entry SHALL link to it.
+The site SHALL NOT publish a combat damage simulator whose results are not verified against the running game. `/tools/combat-simulator` SHALL NOT be published, and no page, search result, or sitemap entry SHALL link to it.
 
 Rationale: the retired page estimated auto-attack damage without tests, a target model, or randomness, so its figures could disagree with the game without any check catching it.
 
