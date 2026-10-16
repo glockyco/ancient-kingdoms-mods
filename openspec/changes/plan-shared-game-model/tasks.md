@@ -32,15 +32,16 @@
 
 Each follow-up change cites this design by decision number and lists the facts it publishes with their confirmation per D15.
 
-- [ ] 6.1 Vocabulary and rules (D2, D5), with the altar tier, primal essence, item list and NPC caster count fixes.
-- [ ] 6.2 Acquisition, usage and requirements (D3, D4), with the export gaps and the remaining defects.
-- [ ] 6.3 Shared read models and relation components (D7).
-- [ ] 6.4 Character model, store and share links (D6, D13, D14).
-- [ ] 6.5 Reference kinds: stats, effects, armor sets, races and crafting stations (D9).
-- [ ] 6.6 Zones by level.
-- [ ] 6.7 Character planner with build, stat sheet and mercenaries (D10, D11).
-- [ ] 6.8 "Where to Get".
-- [ ] 6.9 Save import with progress views and stash search (D12).
+- [ ] 6.1 Stat vocabulary (D2): `unify-stat-vocabulary`, proposed, with the item list fix.
+- [ ] 6.2 Game rules (D5): `unify-game-rules`, proposed, with the altar tier, primal essence, item level and chest fixes.
+- [ ] 6.3 Acquisition, usage and requirements (D3, D4), with the export gaps, the NPC caster count and the remaining defects.
+- [ ] 6.4 Shared read models and relation components (D7).
+- [ ] 6.5 Character model, store and share links (D6, D13, D14).
+- [ ] 6.6 Reference kinds: stats, effects with the mechanic definitions, armor sets, races and crafting stations (D9).
+- [ ] 6.7 Zones by level.
+- [ ] 6.8 Character planner with build, stat sheet and mercenaries (D10, D11).
+- [ ] 6.9 "Where to Get".
+- [ ] 6.10 Save import with progress views and stash search (D12).
 
 ## 7. Close
 

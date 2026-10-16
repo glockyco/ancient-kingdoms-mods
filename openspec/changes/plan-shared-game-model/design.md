@@ -53,10 +53,10 @@ Alternative rejected: building each feature on its own copy, which is how the de
 
 ### D2. Vocabulary (Decided)
 
-- One stat registry covers the 28 summed stats and the effects the engine reads at hit time: ward, damage shield, heal on hit and cooldown reduction. Each entry holds an id, a label, a unit, a display precision, a clamp, and its key in every source vocabulary: item stats, skill bonus columns, class and pet curves, and calculator inputs.
+- One stat registry covers the 28 summed stats and the effects the engine reads at hit time: ward, damage shield, heal on hit and cooldown reduction. Each entry holds an id, the character window's name and the item tooltip's name, a unit, a display precision, a clamp, and its key in every source vocabulary: item stats, skill bonus columns, class and pet curves, and calculator inputs.
 - Labels come from the game's own label code where the game names a stat, and are exported rather than typed. Wording the site deliberately chooses differently, such as "light" one-handed weapons, is a recorded override.
-- Mechanics are defined once from code: stun, fear, knockback, root, sleep, snare, damage over time by type, healing over time, ward, mana shield, damage shield, invisibility, illusion, blindness, cleanse by type and dispel. Silence does not exist in the game code.
-- The registry replaces `website/src/lib/terminology.ts`, `website/src/lib/constants/stats.ts`, `STAT_DISPLAY_NAMES` in `build-pipeline/src/compendium/denormalizers/items/tooltips.py`, the per-page percentage lists, the two `SCALING_FIELDS` in `website/src/lib/skills/skill-scaling.ts` and `website/src/routes/professions/scroll_mastery/+page.server.ts`, and the local number and percent formatters.
+- Mechanics are defined once from code: stun, fear, knockback, root, sleep, snare, damage over time by type, healing over time, ward, mana shield, damage shield, invisibility, illusion, blindness, cleanse by type and dispel. Silence does not exist in the game code. The definitions land with the effect lookups, their first new consumer, because the three current copies disagree on no page today.
+- The registry replaces `website/src/lib/terminology.ts`, `website/src/lib/constants/stats.ts`, `STAT_DISPLAY_NAMES` in `build-pipeline/src/compendium/denormalizers/items/tooltips.py`, the per-page percentage lists, the two `SCALING_FIELDS` in `website/src/lib/skills/skill-scaling.ts` and `website/src/routes/professions/scroll_mastery/+page.server.ts`, and the local number and percent formatters. `unify-stat-vocabulary` implements it.
 
 ### D3. Relations (Decided)
 
@@ -81,7 +81,7 @@ One typed vocabulary of conditions is evaluated against a character: level, tota
 - All game formulas live in one TypeScript module that runs both at prerender and in the browser. `website/src/lib/utils/fishing-source-ranges.ts` already works this way, and it is the one source model without contradictions.
 - The database stores inputs and rule parameters, never results that depend on a character. Altar thresholds are data. Which tier a character gets is a rule.
 - A prerendered page shows a stated baseline, as the fishing ranges do. With an active character, the same function recomputes in the browser.
-- The pipeline keeps the derivations that need no character, such as item level, zone attribution and redaction closure. No formula exists in both Python and TypeScript.
+- The pipeline keeps the derivations that need no character, such as zone attribution and redaction closure. Where the game computes such a fact with a function of its own, the exporter calls that function instead, as `unify-game-rules` does for primal essence and item level. No formula exists in both Python and TypeScript.
 - Every formula keeps its `// Source:` citation and is confirmed in the game per D15.
 
 ### D6. Character (Decided)
@@ -214,10 +214,10 @@ Code reading found the defects below. Per D15, each is confirmed in the game bef
 
 | Defect | Evidence | Fixed by |
 | --- | --- | --- |
-| Altar reward tiers are stored for effective levels 0, 35, 45 and 55. The game picks the tier from level plus total veteran points with thresholds 40, 50 and 150. The drop notes and the item page repeat the wrong ranges. `website/src/lib/utils/format.ts` and the altar page match the game | `server-scripts/DefaultEvent.cs:231-237`, `build-pipeline/src/compendium/denormalizers/items/sources.py:274-312`, `build-pipeline/src/compendium/denormalizers/monsters/drops.py:166-171`, `website/src/routes/items/[id]/+page.svelte:1922-1932` | Vocabulary and rules |
-| Primal essence values use quality 1 and the `equipment` item type. The game requires quality 2, includes weapons and augments, and excludes pickaxes. 127 quality 1 items show a value | `server-scripts/Utils.cs:534-536`, `build-pipeline/src/compendium/denormalizers/items/calculations.py:197-204` | Vocabulary and rules |
-| The item list prints chance stats as raw fractions, so 5% shows as 0.05 | `website/src/routes/items/+page.svelte:193,400` | Vocabulary and rules |
-| The NPC caster count compares a JSON object with a skill id and is always 0. Comparing `json_extract(value, '$.id')` matches 235 rows | `website/src/lib/skills/skillDetail.ts:21-24` | Vocabulary and rules |
+| Altar reward tiers are stored for effective levels 0, 35, 45 and 55. The game picks the tier from level plus total veteran points with thresholds 40, 50 and 150. The drop notes and the item page repeat the wrong ranges. `website/src/lib/utils/format.ts` and the altar page match the game | `server-scripts/DefaultEvent.cs:231-237`, `build-pipeline/src/compendium/denormalizers/items/sources.py:274-312`, `build-pipeline/src/compendium/denormalizers/monsters/drops.py:166-171`, `website/src/routes/items/[id]/+page.svelte:1922-1932` | `unify-game-rules` |
+| Primal essence values use quality 1 and the `equipment` item type. The game requires quality 2, includes weapons and augments, and excludes pickaxes. 127 Uncommon items show a value, and 113 weapons and 24 augments that the game accepts show none | `server-scripts/Utils.cs:527-539`, `build-pipeline/src/compendium/denormalizers/items/calculations.py:187-217` | `unify-game-rules` |
+| The item list prints chance stats as raw fractions, so 5% shows as 0.05 | `website/src/routes/items/+page.svelte:400` | `unify-stat-vocabulary` |
+| The NPC caster count compares a JSON object with a skill id and is always 0. Comparing `json_extract(value, '$.id')` matches 235 rows, all target damage and target projectile skills. The count also feeds the mechanics cards' caster contexts (`website/src/lib/utils/skillMechanics.ts:266`) and a build guard against NPC area heals (`website/src/lib/skills/skillEffectInput.ts:310`) that has never been able to fire | `website/src/lib/skills/skillDetail.ts:21-24` | Acquisition, with the effect application relation that models NPC casters |
 | Fatecharm fragments are assigned to every non-boss monster in a luck-token zone. The game also requires a respawning monster with an experience multiplier of at least 1, and uses the spawn's own zone. 29 rows sit on monsters that cannot drop them | `server-scripts/Monster.cs:3112`, `build-pipeline/src/compendium/denormalizers/monsters/drops.py` | Acquisition |
 | The 17 fatecharms have no source, because no relation models combining fragments | `server-scripts/uMMORPG.Scripts.ScriptableItems/FragmentItem.cs`, `item_source_entries` | Acquisition |
 | The boss guaranteed-equipment roll is not modeled, so boss drops show only their per-roll chances | `server-scripts/Monster.cs:3037-3062` | Acquisition |
@@ -264,11 +264,11 @@ The other in-flight changes are independent of this plan.
 Each step ships something visible and depends only on the steps it names:
 
 1. Pipeline preparation: `simplify-pipeline-loader-registration` and `harden-export-sessions`.
-2. Vocabulary and rules (D2, D5), after step 1. Visible: consistent labels and percentages, corrected altar tiers and primal essence.
+2. Stat vocabulary (`unify-stat-vocabulary`) and game rules (`unify-game-rules`), after step 1. They are two changes because their consumers differ. Visible: consistent stat names and percentages, and corrected altar tiers, primal essence and chest chances.
 3. Acquisition, usage and requirements (D3, D4) with the export gaps, after step 2. Visible: correct sources on item pages, popups, class pages and the map, including fatecharms, fragments and per-station recipes.
 4. Shared read models (D7), after step 3. Visible: popups and pages agree.
 5. Character model, store and share links (D6, D13, D14), after step 2. Visible: one active character in the header that every calculator uses.
-6. Reference kinds: stats, effects, armor sets, races and crafting stations (D9), after steps 3 and 5.
+6. Reference kinds: stats, effects with the mechanic definitions of D2, armor sets, races and crafting stations (D9), after steps 3 and 5.
 7. Zones by level, after step 5.
 8. Character planner with build, stat sheet and mercenaries (D10, D11, D15), after steps 5 and 6.
 9. "Where to Get", after steps 4 and 8.
