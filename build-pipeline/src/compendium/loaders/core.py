@@ -150,7 +150,7 @@ def load_visual_assets(
     console.print(f"  [green]OK[/green] Loaded {count} visual assets")
 
 
-def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
+def load_static_data(conn: sqlite3.Connection, curated_dir: Path) -> None:
     """Load static data (factions, reputation tiers) into database.
 
     This data is manually maintained in static_data.json since it's hardcoded
@@ -158,10 +158,8 @@ def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
     """
     console.print("Loading static data...")
 
-    filepath = export_dir / "static_data.json"
-    _require_export(
-        filepath, "Restore the hand-maintained exported-data/static_data.json."
-    )
+    filepath = curated_dir / "static_data.json"
+    _require_export(filepath, "Restore the hand-maintained curated/static_data.json.")
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -191,7 +189,9 @@ def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
     conn.commit()
 
 
-def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
+def load_classes(
+    conn: sqlite3.Connection, session_dir: Path, curated_dir: Path
+) -> None:
     """Load player classes into database.
 
     Merges two sources:
@@ -200,27 +200,36 @@ def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
     """
     console.print("Loading classes...")
 
-    filepath = export_dir / "classes.json"
-    _require_export(
-        filepath,
-        "Edit mods/DataExporter/Curated/classes.json and run the DataExporter mod.",
-    )
+    filepath = curated_dir / "classes.json"
+    _require_export(filepath, "Restore the hand-maintained curated/classes.json.")
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    combat_filepath = export_dir / "classes_combat.json"
+    combat_filepath = session_dir / "classes_combat.json"
     _require_export(combat_filepath)
     with open(combat_filepath, "r", encoding="utf-8") as f:
         combat_data = json.load(f)
     combat_by_id = {entry["id"]: entry for entry in combat_data}
+    curated_ids = [entry["id"] for entry in data]
+    combat_ids = [entry["id"] for entry in combat_data]
+    if len(set(curated_ids)) != len(curated_ids):
+        raise ValueError(f"{filepath} contains duplicate class ids")
+    if len(combat_by_id) != len(combat_ids):
+        raise ValueError(f"{combat_filepath} contains duplicate class ids")
+    if set(curated_ids) != set(combat_ids):
+        raise ValueError(
+            f"{filepath} and {combat_filepath} class ids do not match: "
+            f"missing combat={sorted(set(curated_ids) - set(combat_ids))}, "
+            f"unexpected combat={sorted(set(combat_ids) - set(curated_ids))}"
+        )
     console.print(
         f"  Merging combat stats from classes_combat.json ({len(combat_by_id)} entries)"
     )
 
     # Merge combat fields into each class entry
     for item in data:
-        combat = combat_by_id.get(item["id"], {})
+        combat = combat_by_id[item["id"]]
         for key, value in combat.items():
             # Only merge combat stat fields, don't overwrite manual metadata
             if key.startswith("base_"):
@@ -230,6 +239,15 @@ def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
             item["resource_type"] = combat["resource_type"]
 
     classes = [ClassData(**item) for item in data]
+    for cls in classes:
+        if (
+            not cls.compatible_races
+            or any(not race.strip() for race in cls.compatible_races)
+            or len(set(cls.compatible_races)) != len(cls.compatible_races)
+        ):
+            raise ValueError(
+                f"{filepath}: class {cls.id!r} needs non-empty, unique compatible_races"
+            )
 
     # Guard band: reject suspiciously small exports, not an exact class census.
     if len(classes) < 6:

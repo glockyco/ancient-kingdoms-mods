@@ -2,44 +2,58 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
+using DataExporter.Sessions;
 using HotRepl.Control.Artifacts;
 
 namespace HotReplCommands.Artifacts
 {
     /// <summary>
-    /// Builds the top-level artifact map from known export output files.
-    /// Stable key rules from the Phase 3 spec:
-    ///   data.{stem}, visual-assets.manifest, visual-assets.image.{rel},
-    ///   screenshots.metadata, screenshots.{stem}.
+    /// Builds finalized artifacts from a verified runtime session and separate screenshots.
     /// </summary>
     public static class ArtifactCollector
     {
         public static Dictionary<string, ArtifactRef> Collect(
-            string exportDir,
+            string sessionPath,
             string screenshotDir,
             bool includeScreenshots)
         {
             var map = new Dictionary<string, ArtifactRef>(StringComparer.Ordinal);
 
-            if (Directory.Exists(exportDir))
+            var manifest = SessionIntegrity.Verify(sessionPath);
+            foreach (var file in manifest.Files)
             {
-                foreach (var file in Directory.GetFiles(exportDir, "*.json"))
+                var path = SessionIntegrity.ResolvePath(sessionPath, file.Path);
+                string key;
+                string contentType;
+                if (string.Equals(file.Path, "visual_assets.json", StringComparison.Ordinal))
                 {
-                    var rawStem = Path.GetFileNameWithoutExtension(file);
-                    // Skip visual_assets manifest — covered below with stable key
-                    if (string.Equals(rawStem, "visual_assets", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    var stem = rawStem.Replace('_', '-').ToLowerInvariant();
-                    var key = "data." + stem;
-                    map[key] = MakeRef(file, "application/json", key);
+                    key = "visual-assets.manifest";
+                    contentType = "application/json";
+                }
+                else if (string.Equals(Path.GetExtension(file.Path), ".json", StringComparison.Ordinal))
+                {
+                    key = "data." + Path.GetFileNameWithoutExtension(file.Path)
+                        .Replace('_', '-').ToLowerInvariant();
+                    contentType = "application/json";
+                }
+                else
+                {
+                    key = "visual-assets.image." + file.Path;
+                    contentType = Path.GetExtension(file.Path).ToLowerInvariant() switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        _ => throw new InvalidDataException($"Unsupported session image '{file.Path}'."),
+                    };
                 }
 
-                // Visual assets manifest with stable key
-                var manifestPath = Path.Combine(exportDir, "visual_assets.json");
-                if (File.Exists(manifestPath))
-                    map["visual-assets.manifest"] = MakeRef(manifestPath, "application/json", "visual-assets.manifest");
+                if (!map.TryAdd(key, MakeRef(path, contentType, key, file.Bytes, file.Sha256)))
+                    throw new InvalidDataException($"Session files produce duplicate artifact key '{key}'.");
             }
+
+            const string manifestKey = "session.manifest";
+            map.Add(manifestKey, MakeRef(
+                Path.Combine(sessionPath, "manifest.json"), "application/json", manifestKey));
 
             if (includeScreenshots && Directory.Exists(screenshotDir))
             {
@@ -59,16 +73,18 @@ namespace HotReplCommands.Artifacts
         }
 
         private static ArtifactRef MakeRef(string path, string contentType, string logicalName)
+            => MakeRef(path, contentType, logicalName, new FileInfo(path).Length, ComputeSha256(path));
+
+        private static ArtifactRef MakeRef(
+            string path, string contentType, string logicalName, long bytes, string sha)
         {
-            var info = new FileInfo(path);
-            var sha = ComputeSha256(path);
             var uri = new Uri(Path.GetFullPath(path)).AbsoluteUri;
             return new ArtifactRef(
                 LogicalName: logicalName,
                 Uri: uri,
                 Path: path,
                 ContentType: contentType,
-                ByteSize: info.Length,
+                ByteSize: bytes,
                 Sha256: sha,
                 Finalized: true);
         }

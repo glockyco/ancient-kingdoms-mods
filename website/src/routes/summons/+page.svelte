@@ -63,7 +63,7 @@
     levelCaps(data.summons.filter((summon) => summon.kind === "Companion")),
   );
   const undeadCaps = $derived(levelCaps(undeadSummons));
-  // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:91,240,254; exported-data/skills.json — each familiar's buff per rank and its maximum rank.
+  // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:91,240,254; the export's skills.json — each familiar's buff per rank and its maximum rank.
   const FAMILIAR_EFFECTS: Record<string, string> = {
     blue_fairy: "+2 Mana per second per rank, up to rank 8",
     red_fairy: "+1% accuracy per rank, up to rank 8",

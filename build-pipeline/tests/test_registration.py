@@ -112,32 +112,40 @@ class DatasetCatalogTests(unittest.TestCase):
 
     def test_the_shipped_catalog_is_valid(self):
         with tempfile.TemporaryDirectory() as tmp:
+            session_dir = Path(tmp) / "session"
+            curated_dir = Path(tmp) / "curated"
+            session_dir.mkdir()
+            curated_dir.mkdir()
             for dataset in DATASETS:
                 for name in dataset.inputs:
-                    (Path(tmp) / name).touch()
-            validate_catalog(DATASETS, Path(tmp))
+                    (session_dir / name).touch()
+                for name in dataset.curated_inputs:
+                    (curated_dir / name).touch()
+            validate_catalog(DATASETS, session_dir, curated_dir)
 
     def test_a_prerequisite_listed_after_its_dependent_fails(self):
         catalog = [_custom("monsters", after=("zones",)), _custom("zones")]
         with self.assertRaisesRegex(
             ValueError, "monsters needs zones, which is listed after it"
         ):
-            validate_catalog(catalog, Path("."))
+            validate_catalog(catalog, Path("."), Path("."))
 
     def test_an_undeclared_prerequisite_fails(self):
         with self.assertRaisesRegex(
             ValueError, "monsters needs zones, which is not declared"
         ):
-            validate_catalog([_custom("monsters", after=("zones",))], Path("."))
+            validate_catalog(
+                [_custom("monsters", after=("zones",))], Path("."), Path(".")
+            )
 
     def test_a_table_with_two_datasets_fails(self):
         catalog = [_custom("a", tables=("zones",)), _custom("b", tables=("zones",))]
         with self.assertRaisesRegex(ValueError, "zones is filled by both a and b"):
-            validate_catalog(catalog, Path("."))
+            validate_catalog(catalog, Path("."), Path("."))
 
     def test_a_dataset_declared_twice_fails(self):
         with self.assertRaisesRegex(ValueError, "zones is declared twice"):
-            validate_catalog([_custom("zones"), _custom("zones")], Path("."))
+            validate_catalog([_custom("zones"), _custom("zones")], Path("."), Path("."))
 
     def test_a_missing_input_fails_and_names_it(self):
         dataset = Dataset(
@@ -147,7 +155,35 @@ class DatasetCatalogTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as tmp,
             self.assertRaisesRegex(FileNotFoundError, r"zone_info\.json \(zones\)"),
         ):
-            validate_catalog([dataset], Path(tmp))
+            validate_catalog([dataset], Path(tmp), Path(tmp) / "curated")
+
+    def test_a_curated_input_cannot_come_from_the_session(self):
+        dataset = Dataset(
+            "classes",
+            ("classes_combat.json",),
+            ("classes",),
+            curated_inputs=("classes.json",),
+            handler=lambda ctx: None,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            session_dir = Path(tmp) / "session"
+            curated_dir = Path(tmp) / "curated"
+            session_dir.mkdir()
+            (session_dir / "classes_combat.json").touch()
+            (session_dir / "classes.json").touch()
+            with self.assertRaisesRegex(
+                FileNotFoundError, r"curated/classes\.json \(classes\)"
+            ):
+                validate_catalog([dataset], session_dir, curated_dir)
+
+    def test_a_session_input_cannot_come_from_curated_data(self):
+        dataset = Dataset("rows", ("rows.json",), ("rows",), model=_Row)
+        with tempfile.TemporaryDirectory() as tmp:
+            curated_dir = Path(tmp) / "curated"
+            curated_dir.mkdir()
+            (curated_dir / "rows.json").touch()
+            with self.assertRaisesRegex(FileNotFoundError, r"session/rows\.json"):
+                validate_catalog([dataset], Path(tmp) / "session", curated_dir)
 
 
 class _Row(BaseModel):
@@ -168,7 +204,9 @@ class SimpleDatasetTests(unittest.TestCase):
                     "CREATE TABLE rows (id TEXT PRIMARY KEY, weight INTEGER NOT NULL)"
                 )
                 dataset = Dataset("rows", ("rows.json",), ("rows",), model=_Row)
-                load_dataset(LoadContext(conn, export_dir), dataset)
+                load_dataset(
+                    LoadContext(conn, export_dir, export_dir / "curated"), dataset
+                )
                 return conn.execute(
                     "SELECT id, weight FROM rows ORDER BY id"
                 ).fetchall()

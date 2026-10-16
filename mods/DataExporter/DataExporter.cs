@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using DataExporter.Exporters;
 using DataExporter.Models;
+using DataExporter.Sessions;
 using MelonLoader;
 using UnityEngine.InputSystem;
 
@@ -12,7 +14,9 @@ namespace DataExporter
 {
     public class DataExporter : MelonMod
     {
-        private static readonly string ExportPath = ExportConfig.ExportPath;
+        private static readonly string ExportPath = OperatingSystem.IsWindows() && ExportConfig.ExportPath.StartsWith("/")
+            ? "Z:" + ExportConfig.ExportPath
+            : ExportConfig.ExportPath;
 
         public override void OnInitializeMelon()
         {
@@ -46,208 +50,63 @@ namespace DataExporter
             LoggerInstance.Msg("Starting data export...");
             LoggerInstance.Msg("========================================");
 
-            var startedAt = DateTime.UtcNow;
-            var visualAssets = new VisualAssetRegistry(LoggerInstance, ExportPath);
-            var result = new ExportRunResult
-            {
-                StartedAt = startedAt,
-            };
-
-            result.Exporters.Add(RunExporter("monsters", () =>
-            {
-                var exporter = new MonsterExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("npcs", () =>
-            {
-                var exporter = new NpcExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("items", () =>
-            {
-                var exporter = new ItemExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("fish", () =>
-            {
-                var exporter = new FishExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("quests", () =>
-            {
-                var exporter = new QuestExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("skills", () =>
-            {
-                var exporter = new SkillExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("portals", () =>
-            {
-                var exporter = new PortalExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("zoneInfo", () =>
-            {
-                var exporter = new ZoneInfoExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("zoneTriggers", () =>
-            {
-                var exporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("houses", () =>
-            {
-                var exporter = new HouseExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("gatherItems", () =>
-            {
-                var exporter = new GatherItemExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("craftingRecipes", () =>
-            {
-                var exporter = new CraftingRecipeExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("alchemyRecipes", () =>
-            {
-                var exporter = new AlchemyRecipeExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("scribingRecipes", () =>
-            {
-                var exporter = new ScribingRecipeExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("summonTriggers", () =>
-            {
-                var exporter = new SummonTriggerExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("luckTokens", () =>
-            {
-                var exporter = new LuckTokenExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("altars", () =>
-            {
-                var exporter = new AltarExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("treasureLocations", () =>
-            {
-                var exporter = new TreasureLocationExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("pets", () =>
-            {
-                var exporter = new PetExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("achievements", () =>
-            {
-                var exporter = new AchievementExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("professions", () =>
-            {
-                var exporter = new ProfessionExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("craftingStations", () =>
-            {
-                var exporter = new CraftingStationExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("alchemyTables", () =>
-            {
-                var exporter = new AlchemyTableExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("scribingTables", () =>
-            {
-                var exporter = new ScribingTableExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("traps", () =>
-            {
-                var exporter = new TrapExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("gameConfig", () =>
-            {
-                var exporter = new GameConfigExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-
-            result.Exporters.Add(RunExporter("classes", () =>
-            {
-                var exporter = new ClassExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("equipmentSlots", () =>
-            {
-                var exporter = new EquipmentSlotExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("progression", () =>
-            {
-                var exporter = new ProgressionExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("gameGuide", () =>
-            {
-                var exporter = new GameGuideExporter(LoggerInstance, ExportPath);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("worldMap", () =>
-            {
-                var exporter = new WorldMapExporter(LoggerInstance, ExportPath, visualAssets);
-                exporter.Export();
-            }));
-            result.Exporters.Add(RunExporter("visualAssets.manifest", visualAssets.WriteManifest));
-
-            result.Ok = result.Exporters.TrueForAll(exporter => exporter.Ok);
-            foreach (var exporter in result.Exporters)
-            {
-                if (!exporter.Ok && exporter.Error != null)
-                    result.Errors.Add($"{exporter.Name}: {exporter.Error.Message}");
-            }
-
-            var completedAt = DateTime.UtcNow;
-            result.CompletedAt = completedAt;
-            result.DurationMs = (long)(completedAt - startedAt).TotalMilliseconds;
+            var result = ExportSession.Run(ExportPath, Path.GetDirectoryName(UnityEngine.Application.dataPath)!,
+                staging =>
+                {
+                    var visualAssets = new VisualAssetRegistry(LoggerInstance, staging);
+                    return CreateCatalog(staging, visualAssets);
+                });
+            foreach (var error in result.Errors)
+                LoggerInstance.Error(error);
             LoggerInstance.Msg("========================================");
             LoggerInstance.Msg(result.Ok
                 ? $"✓ Export completed in {result.DurationMs / 1000.0:F2} seconds"
                 : $"✗ Export completed with failures in {result.DurationMs / 1000.0:F2} seconds");
-            LoggerInstance.Msg($"Output directory: {ExportPath}");
+            LoggerInstance.Msg($"Output directory: {result.SessionPath}");
             LoggerInstance.Msg("========================================");
 
             return result;
         }
 
-        private ExporterRunResult RunExporter(string name, Action body)
-        {
-            try
+        private IReadOnlyList<ExporterDescriptor> CreateCatalog(string path, VisualAssetRegistry visuals) =>
+            new ExporterDescriptor[]
             {
-                body();
-                return new ExporterRunResult { Name = name, Ok = true };
-            }
-            catch (Exception ex)
-            {
-                LoggerInstance.Error($"[{name}] export failed: {ex}");
-                return new ExporterRunResult
-                {
-                    Name = name,
-                    Ok = false,
-                    Error = new ExporterRunError { Kind = "exporter_failed", Message = ex.Message },
-                };
-            }
-        }
+                new("monsters", new[] { "monsters.json", "monster_spawns.json" }, () => new MonsterExporter(LoggerInstance, path, visuals).Export()),
+                new("npcs", new[] { "npcs.json", "npc_spawns.json" }, () => new NpcExporter(LoggerInstance, path, visuals).Export()),
+                new("items", new[] { "items.json" }, () => new ItemExporter(LoggerInstance, path, visuals).Export()),
+                new("fish", new[] { "fish.json" }, () => new FishExporter(LoggerInstance, path).Export()),
+                new("quests", new[] { "quests.json" }, () => new QuestExporter(LoggerInstance, path).Export()),
+                new("skills", new[] { "skills.json" }, () => new SkillExporter(LoggerInstance, path, visuals).Export()),
+                new("portals", new[] { "portals.json" }, () => new PortalExporter(LoggerInstance, path).Export()),
+                new("zoneInfo", new[] { "zone_info.json" }, () => new ZoneInfoExporter(LoggerInstance, path).Export()),
+                new("zoneTriggers", new[] { "zone_triggers.json" }, () => new ZoneTriggerExporter(LoggerInstance, path).Export()),
+                new("houses", new[] { "houses.json" }, () => new HouseExporter(LoggerInstance, path).Export()),
+                new("gatherItems", new[] { "gather_items.json" }, () => new GatherItemExporter(LoggerInstance, path, visuals).Export()),
+                new("craftingRecipes", new[] { "crafting_recipes.json" }, () => new CraftingRecipeExporter(LoggerInstance, path).Export()),
+                new("alchemyRecipes", new[] { "alchemy_recipes.json" }, () => new AlchemyRecipeExporter(LoggerInstance, path).Export()),
+                new("scribingRecipes", new[] { "scribing_recipes.json" }, () => new ScribingRecipeExporter(LoggerInstance, path).Export()),
+                new("summonTriggers", new[] { "summon_triggers.json" }, () => new SummonTriggerExporter(LoggerInstance, path).Export()),
+                new("luckTokens", new[] { "luck_tokens.json" }, () => new LuckTokenExporter(LoggerInstance, path).Export()),
+                new("altars", new[] { "altars.json" }, () => new AltarExporter(LoggerInstance, path).Export()),
+                new("treasureLocations", new[] { "treasure_locations.json" }, () => new TreasureLocationExporter(LoggerInstance, path).Export()),
+                new("pets", new[] { "pets.json" }, () => new PetExporter(LoggerInstance, path, visuals).Export()),
+                new("achievements", new[] { "achievements.json" }, () => new AchievementExporter(LoggerInstance, path).Export(), true,
+                    new ImageReferences("achievements.json", "achievements",
+                        json => ImageReferences.ReadFields(json, "unlocked_icon_path", "locked_icon_path"))),
+                new("professions", new[] { "professions.json" }, () => new ProfessionExporter(LoggerInstance, path, visuals).Export()),
+                new("craftingStations", new[] { "crafting_stations.json" }, () => new CraftingStationExporter(LoggerInstance, path).Export()),
+                new("alchemyTables", new[] { "alchemy_tables.json" }, () => new AlchemyTableExporter(LoggerInstance, path).Export()),
+                new("scribingTables", new[] { "scribing_tables.json" }, () => new ScribingTableExporter(LoggerInstance, path).Export()),
+                new("traps", new[] { "traps.json" }, () => new TrapExporter(LoggerInstance, path).Export()),
+                new("gameConfig", new[] { "game_config.json" }, () => new GameConfigExporter(LoggerInstance, path).Export()),
+                new("classes", new[] { "classes_combat.json" }, () => new ClassExporter(LoggerInstance, path, visuals).Export()),
+                new("equipmentSlots", new[] { "equipment_slots.json" }, () => new EquipmentSlotExporter(LoggerInstance, path).Export()),
+                new("progression", new[] { "progression.json" }, () => new ProgressionExporter(LoggerInstance, path).Export()),
+                new("gameGuide", new[] { "game_guide.json" }, () => new GameGuideExporter(LoggerInstance, path).Export()),
+                new("worldMap", Array.Empty<string>(), () => new WorldMapExporter(LoggerInstance, path, visuals).Export()),
+                new("visualAssets.manifest", new[] { "visual_assets.json" }, visuals.WriteManifest, true,
+                    new ImageReferences("visual_assets.json", "visualAssets",
+                        json => ImageReferences.ReadFields(json, "export_path"))),
+            };
     }
 }

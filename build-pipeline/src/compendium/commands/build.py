@@ -14,12 +14,13 @@ from pathlib import Path
 
 from rich.console import Console
 
-from compendium.config import get_repo_root
+from compendium.config import get_curated_dir, get_repo_root
 from compendium.db import create_database
 from compendium.denormalizers import run_all as denormalize_all
 from compendium.loaders import load_all
 from compendium.redactions import verify
 from compendium.redactions.references import resolve
+from compendium.session import resolve_export_session
 from compendium.visual_assets import reconcile
 from compendium.zone_artwork import publish_zone_thumbnails
 from compendium.zone_shots import publish_zone_shots
@@ -64,7 +65,9 @@ def run(config: dict) -> None:
         config: Configuration dictionary from config.toml
     """
     repo_root = get_repo_root()
-    export_dir = repo_root / config["paths"]["export_dir"]
+    export_root = repo_root / config["paths"]["export_dir"]
+    session_dir = resolve_export_session(export_root)
+    curated_dir = get_curated_dir(repo_root)
     website_dir = repo_root / config["paths"]["website_dir"]
     static_dir = website_dir / "static"
     # The database is a build input, not a published file. Keeping it out of
@@ -89,14 +92,14 @@ def run(config: dict) -> None:
         stage_static_dir = stage_root / "static"
         conn = create_database(temp_db_path, schema_path)
         try:
-            load_all(conn, export_dir, stage_static_dir)
+            load_all(conn, session_dir, curated_dir, stage_static_dir)
 
             console.print()
             subject = denormalize_all(conn)
-            publish_zone_thumbnails(conn, export_dir, stage_static_dir)
+            publish_zone_thumbnails(conn, session_dir, export_root, stage_static_dir)
             publish_zone_shots(
                 conn,
-                export_dir,
+                export_root,
                 stage_static_dir,
                 repo_root / "build-pipeline" / "zone_shot_focal_points.json",
             )

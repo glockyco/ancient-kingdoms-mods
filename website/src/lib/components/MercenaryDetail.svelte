@@ -394,7 +394,7 @@
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-6">
         <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel — per-class attribute intervals. -->
-        <!-- Source: exported-data/pets.json — each resistance grows linearly with level. -->
+        <!-- Source: the export's pets.json — each resistance grows linearly with level. -->
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b text-left text-muted-foreground">
@@ -428,7 +428,7 @@
             {/each}
           </tbody>
         </table>
-        <!-- Source: exported-data/pets.json — each resistance is base + per_level × (level − 1). -->
+        <!-- Source: the export's pets.json — each resistance is base + per_level × (level − 1). -->
         {#each resistanceRows as r (r.label)}
           <p class="text-sm">
             {r.label}: <span class="font-medium tabular-nums">{r.atLevel}</span>
@@ -729,7 +729,7 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4 text-sm">
-        <!-- Source: exported-data/equipment_slots.json — the mercenary prefab's MercenaryEquipment.slotInfo. -->
+        <!-- Source: the export's equipment_slots.json — the mercenary prefab's MercenaryEquipment.slotInfo. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
           {@render stat("Main hand", slotName(mainHand.accepted_category))}
           {#if slot13}{@render stat(

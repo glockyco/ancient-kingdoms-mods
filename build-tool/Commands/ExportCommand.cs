@@ -117,14 +117,49 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
 
         if (runnerResult.Ok)
         {
-            _resultStore.SetData(new { ok = true, message = runnerResult.Message });
-            Console.WriteLine("Export complete.");
+            var sessionPath = GetSessionPath(runnerResult);
+            if (sessionPath is null)
+            {
+                const string message = "Export session.manifest has no supported manifest path or file URI.";
+                Console.Error.WriteLine($"Error: {message}");
+                _resultStore.SetErrorDetails(new { ok = false, message });
+                return ExitCodes.CommandFailed;
+            }
+
+            _resultStore.SetData(new { ok = true, message = runnerResult.Message, sessionPath });
+            Console.WriteLine($"Export complete. Session: {sessionPath}");
             return ExitCodes.Success;
         }
 
         Console.Error.WriteLine($"Error: {runnerResult.Message}");
         _resultStore.SetErrorDetails(new { ok = false, message = runnerResult.Message });
         return runnerResult.ExitCode;
+    }
+
+    private string? GetSessionPath(ExportRunnerResult result)
+    {
+        if (result.Artifacts is null ||
+            !result.Artifacts.TryGetValue("session.manifest", out var manifest))
+            return null;
+
+        string? manifestPath = null;
+        if (manifest.TryGetProperty("path", out var path) &&
+            path.ValueKind == System.Text.Json.JsonValueKind.String)
+            manifestPath = WinePath.ToHost(path.GetString(), _config.WinePrefix);
+
+        if (manifestPath is null &&
+            manifest.TryGetProperty("uri", out var uriElement) &&
+            uriElement.ValueKind == System.Text.Json.JsonValueKind.String &&
+            Uri.TryCreate(uriElement.GetString(), UriKind.Absolute, out var uri) &&
+            uri.IsFile)
+        {
+            var reportedPath = uri.LocalPath;
+            if (reportedPath.Length > 3 && reportedPath[0] == '/' && reportedPath[2] == ':')
+                reportedPath = reportedPath[1..];
+            manifestPath = WinePath.ToHost(reportedPath, _config.WinePrefix);
+        }
+
+        return manifestPath is null ? null : Path.GetDirectoryName(manifestPath);
     }
 
     private static async Task<ExportRunnerResult> RunHotReplExportAsync(

@@ -32,8 +32,8 @@ Git ignores the local state: `Local.props` and `config.toml`, the exports in `ex
 
 A first build runs every step, in this order. Later builds repeat only the steps whose inputs changed.
 
-1. `dotnet run --project build-tool export` exports the game data. Add `--screenshots` on first setup and when the world map changes, and `--update` to update the game through Steam first. The command installs nothing, so the HotRepl host and the mods must already be deployed. It needs a character in the save and refuses to start while the game runs.
-2. `./scripts/update-server-scripts.sh <version>` decompiles the installed server code. `<version>` is the `game_version` in `exported-data/game_config.json`.
+1. `dotnet run --project build-tool export` exports the game data. Add `--screenshots` on first setup and when the world map changes, and `--update` to update the game through Steam first. The command installs nothing, so the HotRepl host and the mods must already be deployed. It needs a character in the save and refuses to start while the game runs. Each run becomes a new session under `exported-data/` only when every file checks out, as `exported-data/README.md` describes.
+2. `./scripts/update-server-scripts.sh <version>` decompiles the installed server code. `<version>` is the `game_version` in the active session's `manifest.json`.
 3. Capture zone shots on first setup, when a zone is added, and when a focal point in `build-pipeline/zone_shot_focal_points.json` changes. The [HotRepl skill](.agent/skills/hotrepl-runtime-inspection/SKILL.md#capture-zone-shots) gives the procedure.
 4. `uv run compendium tiles` in `build-pipeline/` stitches the screenshots into the world image and the map tiles.
 5. `uv run compendium build` in `build-pipeline/` builds the database and the images. It needs the stitched world image and a zone shot for every published zone. It replaces its outputs only when every step succeeds.

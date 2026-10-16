@@ -96,7 +96,7 @@ def _anchor(row: dict[str, Any], zone_id: str) -> tuple[dict[str, str], list[flo
 
 def publish_zone_shots(
     conn: sqlite3.Connection,
-    export_dir: Path,
+    export_root: Path,
     static_dir: Path,
     focal_path: Path,
 ) -> int:
@@ -107,7 +107,7 @@ def publish_zone_shots(
     evidence; triggers cover scenery beyond the entity-derived rectangle.
     """
     scale, focal = _focal_points(focal_path)
-    shots_dir = export_dir / "screenshots" / "zones"
+    shots_dir = export_root / "screenshots" / "zones"
     manifest_path = shots_dir / "manifest.json"
     with manifest_path.open(encoding="utf-8") as source:
         captures = _records(json.load(source), manifest_path)
@@ -213,7 +213,7 @@ def publish_zone_shots(
     cursor = conn.cursor()
     for zone_id in sorted(required):
         export_path = f"screenshots/zones/{zone_id}.png"
-        with Image.open(export_dir / export_path) as source:
+        with Image.open(export_root / export_path) as source:
             image = source.convert("RGB").resize(
                 PUBLISHED_SIZE, Image.Resampling.LANCZOS
             )

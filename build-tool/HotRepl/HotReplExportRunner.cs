@@ -204,6 +204,9 @@ internal sealed class HotReplExportRunner
         if (!hasData)
             return "Artifact map has no data.* keys.";
 
+        if (!artifacts.ContainsKey("session.manifest"))
+            return "Artifact map is missing session.manifest.";
+
         if (!artifacts.ContainsKey("visual-assets.manifest"))
             return "Artifact map is missing visual-assets.manifest.";
 

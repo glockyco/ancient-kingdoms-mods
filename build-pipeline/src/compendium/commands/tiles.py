@@ -28,6 +28,7 @@ from rich.progress import Progress
 
 from compendium.config import get_repo_root
 from compendium.redactions.config import load_redactions
+from compendium.session import resolve_export_session
 
 console = Console()
 
@@ -61,9 +62,9 @@ def load_excluded_zones(
     zone_info_path = export_dir / "zone_info.json"
     zone_triggers_path = export_dir / "zone_triggers.json"
 
-    if not zone_info_path.exists() or not zone_triggers_path.exists():
-        console.print("  [yellow]Warning:[/yellow] zone data not found")
-        return []
+    for path in (zone_info_path, zone_triggers_path):
+        if not path.is_file():
+            raise FileNotFoundError(f"Zone artwork requires {path}")
 
     with open(zone_info_path) as f:
         zone_info = json.load(f)
@@ -543,12 +544,13 @@ def run(config: dict) -> None:
 
     # Paths
     repo_root = get_repo_root()
-    export_dir = repo_root / config["paths"]["export_dir"]
+    export_root = repo_root / config["paths"]["export_dir"]
+    session_dir = resolve_export_session(export_root)
     website_dir = repo_root / config["paths"]["website_dir"]
     final_tiles_dir = website_dir / "static" / "tiles"
     temp_tiles_dir = website_dir / "static" / ".tiles-temp"
 
-    screenshots_dir = export_dir / "screenshots"
+    screenshots_dir = export_root / "screenshots"
     stitched_path = screenshots_dir / "stitched" / "world.png"
     metadata_path = screenshots_dir / "metadata.json"
 
@@ -579,7 +581,7 @@ def run(config: dict) -> None:
     console.print(f"Source image: {source.size[0]}x{source.size[1]} pixels")
     # Validate source coverage before blanking excluded zones or publishing tiles.
     try:
-        validate_boss_spawn_coverage(source, export_dir, world_bounds)
+        validate_boss_spawn_coverage(source, session_dir, world_bounds)
     except RuntimeError:
         raise typer.Exit(1) from None
 
@@ -590,7 +592,7 @@ def run(config: dict) -> None:
     # We flip each tile crop to match this expectation.
 
     # Blank out excluded zones
-    excluded_zones = load_excluded_zones(export_dir)
+    excluded_zones = load_excluded_zones(session_dir)
     if excluded_zones:
         blank_color = (0, 0, 0)  # black to match map background
         blanked = blank_excluded_zones(

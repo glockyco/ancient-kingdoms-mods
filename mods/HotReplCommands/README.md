@@ -17,7 +17,7 @@ Not published as a download. `build-tool deploy` installs it with the other mods
 | `capture.zoneShots` | Captures the zone images. |
 | `character.create` | Creates a character through the game's character creator. |
 
-Exports go to `DATA_EXPORT_PATH`, and map screenshots to its `screenshots` folder. Zone shots go to `screenshots/zones/<zone_id>.png` under the same folder, with a `manifest.json`. The scratch database is `verification-scratch/game.dat`, next to the game's own database.
+Exports go to a new session under `DATA_EXPORT_PATH`, as [`exported-data/README.md`](../../exported-data/README.md) describes, and map screenshots to its `screenshots` folder. Zone shots go to `screenshots/zones/<zone_id>.png` under the same folder, with a `manifest.json`. The scratch database is `verification-scratch/game.dat`, next to the game's own database.
 
 ## Settings
 

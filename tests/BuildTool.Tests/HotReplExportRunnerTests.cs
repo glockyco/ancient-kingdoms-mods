@@ -34,7 +34,8 @@ public class HotReplExportRunnerTests
 
     private const string ArtifactsBase =
         @"""data.monsters"":{""logicalName"":""data.monsters"",""uri"":""file:///a"",""path"":""/a/m.json"",""contentType"":""application/json"",""byteSize"":10,""sha256"":""abc"",""finalized"":true}," +
-        @"""visual-assets.manifest"":{""logicalName"":""visual-assets.manifest"",""uri"":""file:///b"",""path"":""/b/v.json"",""contentType"":""application/json"",""byteSize"":5,""sha256"":""def"",""finalized"":true}";
+        @"""visual-assets.manifest"":{""logicalName"":""visual-assets.manifest"",""uri"":""file:///b"",""path"":""/b/v.json"",""contentType"":""application/json"",""byteSize"":5,""sha256"":""def"",""finalized"":true}," +
+        @"""session.manifest"":{""logicalName"":""session.manifest"",""uri"":""file:///sessions/current/manifest.json"",""path"":""/sessions/current/manifest.json"",""contentType"":""application/json"",""byteSize"":100,""sha256"":""abc"",""finalized"":true}";
 
     private const string ArtifactsWithScreenshots =
         ArtifactsBase +
@@ -52,7 +53,8 @@ public class HotReplExportRunnerTests
         bool withScreenshots = false,
         string jobState = "done",
         string jobStatus = "ok",
-        bool emptyArtifacts = false)
+        bool emptyArtifacts = false,
+        bool missingSessionManifest = false)
     {
         var t = new FakeHotReplTransport();
         t.EnqueueServerMessage(Handshake);
@@ -63,6 +65,8 @@ public class HotReplExportRunnerTests
         t.EnqueueServerMessage(JobRunning);
         var arts = emptyArtifacts ? string.Empty :
             withScreenshots ? ArtifactsWithScreenshots : ArtifactsBase;
+        if (missingSessionManifest)
+            arts = arts[..arts.IndexOf(",\"session.manifest\"", StringComparison.Ordinal)];
         t.EnqueueServerMessage(JobResultMsg(jobState, jobStatus, arts));
         t.EnqueueServerMessage(QuitOk);
         return t;
@@ -231,6 +235,19 @@ public class HotReplExportRunnerTests
         var result = await BuildRunner(t).RunAsync(CancellationToken.None);
         Assert.False(result.Ok);
         Assert.Contains("artifact", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Runner_RejectsMissingSessionManifest()
+    {
+        var transport = BuildTransport(missingSessionManifest: true);
+
+        var result = await BuildRunner(transport).RunAsync(CancellationToken.None);
+
+        Assert.False(result.Ok);
+        Assert.Equal(ExitCodes.CommandFailed, result.ExitCode);
+        Assert.Contains("session.manifest", result.Message);
+        Assert.Contains(transport.SentMessages, message => message.Contains("game.quit"));
     }
 
     [Fact]

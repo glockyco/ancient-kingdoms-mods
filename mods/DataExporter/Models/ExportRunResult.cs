@@ -21,6 +21,12 @@ namespace DataExporter.Models
         [JsonProperty("durationMs")]
         public long DurationMs { get; set; }
 
+        [JsonProperty("sessionId")]
+        public string SessionId { get; set; } = "";
+
+        [JsonProperty("sessionPath")]
+        public string SessionPath { get; set; } = "";
+
         [JsonProperty("exporters")]
         public List<ExporterRunResult> Exporters { get; set; } = new();
 

@@ -1,3 +1,5 @@
+// This parser is linked into the mod, whose stripped assemblies lack nullable attributes.
+#nullable disable
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -9,8 +11,19 @@ namespace BuildTool.Game;
 /// (<c>appmanifest_&lt;app id&gt;.acf</c>), which is the record Steam maintains for one
 /// installed application.
 /// </summary>
-public sealed record SteamAppManifest(string InstallDir, string BuildId, int StateFlags)
+public sealed class SteamAppManifest
 {
+    public string InstallDir { get; }
+    public string BuildId { get; }
+    public int StateFlags { get; }
+
+    public SteamAppManifest(string installDir, string buildId, int stateFlags)
+    {
+        InstallDir = installDir;
+        BuildId = buildId;
+        StateFlags = stateFlags;
+    }
+
     /// <summary>
     /// Installed with nothing pending. Steam reports 6 when an update is required and 1030
     /// while one runs, so an update has settled only when the flags read exactly this.
@@ -31,13 +44,13 @@ public static class SteamAppManifests
     public static string FileName(string appId) => $"appmanifest_{appId}.acf";
 
     /// <summary>Reads the manifest, or returns null when it is absent or lacks a needed field.</summary>
-    public static SteamAppManifest? Read(string manifestPath)
+    public static SteamAppManifest Read(string manifestPath)
     {
         if (!File.Exists(manifestPath))
             return null;
 
-        string? installDir = null;
-        string? buildId = null;
+        string installDir = null;
+        string buildId = null;
         int? stateFlags = null;
 
         foreach (var line in File.ReadLines(manifestPath))

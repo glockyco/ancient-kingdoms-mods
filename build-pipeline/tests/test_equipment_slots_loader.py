@@ -40,7 +40,9 @@ class EquipmentSlotsLoaderTests(unittest.TestCase):
 
             conn = create_database(root / "test.db", SCHEMA_PATH)
             try:
-                load_dataset(LoadContext(conn, export_dir), EQUIPMENT_SLOTS)
+                load_dataset(
+                    LoadContext(conn, export_dir, root / "curated"), EQUIPMENT_SLOTS
+                )
                 rows = conn.execute(
                     "SELECT owner_type, owner_id, slot_index, accepted_category "
                     "FROM equipment_slots ORDER BY owner_type, owner_id"
@@ -78,7 +80,9 @@ class EquipmentSlotsLoaderTests(unittest.TestCase):
             conn = create_database(root / "test.db", SCHEMA_PATH)
             try:
                 with self.assertRaises(ValidationError):
-                    load_dataset(LoadContext(conn, export_dir), EQUIPMENT_SLOTS)
+                    load_dataset(
+                        LoadContext(conn, export_dir, root / "curated"), EQUIPMENT_SLOTS
+                    )
             finally:
                 conn.close()
 

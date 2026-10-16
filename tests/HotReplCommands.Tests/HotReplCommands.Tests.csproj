@@ -64,5 +64,7 @@
              Link="World\CreatorMethods.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Artifacts\ArtifactCollector.cs"
              Link="Artifacts\ArtifactCollector.cs" />
+    <Compile Include="..\..\mods\DataExporter\Sessions\ExportSessionManifest.cs"
+             Link="Sessions\ExportSessionManifest.cs" />
   </ItemGroup>
 </Project>

@@ -221,7 +221,7 @@
         > returns to your saved bind point without changing it.
       </p>
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
-      <!-- Source: exported-data/items.json — scroll_of_binding has level_required 30. -->
+      <!-- Source: the export's items.json — scroll_of_binding has level_required 30. -->
       <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
       <!-- Source: server-scripts/PlayerSkills.cs:809-813 — a bind spell is refused in a dungeon. -->
       <p>

@@ -34,7 +34,7 @@ class FishLoaderTests(unittest.TestCase):
                 "INSERT INTO items (id, name, travel_zone_id) VALUES ('old_boot', 'Old Boot', NULL)"
             )
             try:
-                load_dataset(LoadContext(conn, export_dir), FISH)
+                load_dataset(LoadContext(conn, export_dir, root / "curated"), FISH)
                 rows = conn.execute(
                     "SELECT item_id, is_trash FROM fish ORDER BY item_id"
                 ).fetchall()

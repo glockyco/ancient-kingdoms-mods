@@ -6,7 +6,7 @@ Not published as a download. `build-tool deploy` installs it with the other mods
 
 ## Use
 
-Press Shift+F9, or run the HotRepl command `compendium.export` from [HotReplCommands](../HotReplCommands/README.md). The JSON files and images go to `DATA_EXPORT_PATH`, which is set when the mod is built.
+Press Shift+F9, or run the HotRepl command `compendium.export` from [HotReplCommands](../HotReplCommands/README.md). Each run becomes a new session under `DATA_EXPORT_PATH`, which is set when the mod is built, once every file checks out. [`exported-data/README.md`](../../exported-data/README.md) describes the layout.
 
 ## Settings
 

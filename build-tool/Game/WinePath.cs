@@ -14,13 +14,18 @@ namespace BuildTool.Game;
 /// </remarks>
 public static class WinePath
 {
-    private const string DriveCPrefix = "C:";
     private const string DriveCDirectory = "drive_c";
+    private const string DriveDirectory = "dosdevices";
 
     /// <summary>
-    /// Host path for a path the game reported, or null when it names a drive this mapping
-    /// does not cover. Returns the input unchanged when it is already a host path.
+    /// Host path for a path the game reported, or null when it names a drive the prefix does
+    /// not map. Returns the input unchanged when it is already a host path.
     /// </summary>
+    /// <remarks>
+    /// Wine maps each drive letter through a link in the prefix's <c>dosdevices</c> directory,
+    /// such as <c>z:</c> to the host root. A prefix without that link still keeps drive C in
+    /// <c>drive_c</c>.
+    /// </remarks>
     public static string? ToHost(string? reportedPath, string winePrefix)
     {
         if (string.IsNullOrWhiteSpace(reportedPath))
@@ -33,14 +38,26 @@ public static class WinePath
         if (normalized.StartsWith('/'))
             return normalized;
 
-        if (!normalized.StartsWith(DriveCPrefix, StringComparison.OrdinalIgnoreCase))
+        if (normalized.Length < 2 || normalized[1] != ':' || !char.IsAsciiLetter(normalized[0]))
             return null;
 
         if (string.IsNullOrWhiteSpace(winePrefix))
             return null;
 
-        var relative = normalized[DriveCPrefix.Length..].TrimStart('/');
-        return Path.Combine(winePrefix, DriveCDirectory, relative);
+        var drive = char.ToLowerInvariant(normalized[0]);
+        var relative = normalized[2..].TrimStart('/');
+        var root = DriveRoot(winePrefix, drive);
+        return root is null ? null : Path.Combine(root, relative);
+    }
+
+    private static string? DriveRoot(string winePrefix, char drive)
+    {
+        var devices = Path.Combine(winePrefix, DriveDirectory);
+        var target = new DirectoryInfo(Path.Combine(devices, drive + ":")).LinkTarget;
+        if (target is not null)
+            return Path.GetFullPath(target, devices);
+
+        return drive == 'c' ? Path.Combine(winePrefix, DriveCDirectory) : null;
     }
 
     /// <summary>Whether a path the game reported names a file this host can see.</summary>

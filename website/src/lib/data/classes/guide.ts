@@ -231,7 +231,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         linkText: "Pet rules",
       },
       {
-        // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in exported-data/pets.json.
+        // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in the export's pets.json.
         text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 1% of its base Attack Power and Spell Power, and 0.25% of its base maximum health, Armor Class, and magic, poison, fire, cold, and disease resistance, rounded to whole points. At 200 veteran points, Attack Power and Spell Power reach +200% and the other stats +50%.",
         source:
           "Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — RefreshFromOwner caps pet level at Level.max and veteran points at 200; damage and magic damage use 0.01 and the other base stats 0.0025, each with RoundToInt",

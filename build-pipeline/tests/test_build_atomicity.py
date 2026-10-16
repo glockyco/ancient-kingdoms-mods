@@ -4,8 +4,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from session_fixtures import write_session
+
 from compendium.commands import build as build_command
-from compendium.loaders import catalog
+from compendium.session import WrongExportSession
 
 
 class BuildFailureTests(unittest.TestCase):
@@ -13,8 +15,7 @@ class BuildFailureTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        export_dir = self.root / "exported-data"
-        export_dir.mkdir()
+        self.session_dir = write_session(self.root / "exported-data")
         schema_dir = self.root / "build-pipeline"
         schema_dir.mkdir()
         (schema_dir / "schema.sql").write_text(
@@ -43,21 +44,36 @@ class BuildFailureTests(unittest.TestCase):
         return data_dir, db_path, image
 
     def test_missing_required_input_stops_build_and_names_file(self):
-        with (
-            patch.object(catalog, "verify_export_locale"),
-            self.assertRaisesRegex(
-                FileNotFoundError, "static_data.json.*hand-maintained"
-            ),
+        with self.assertRaisesRegex(
+            FileNotFoundError, "static_data.json.*hand-maintained"
         ):
             build_command.run(self.config)
 
         self.assertFalse((self.root / "website/data/compendium.db").exists())
 
+    def test_missing_curated_input_keeps_previous_outputs(self):
+        _, db_path, image = self._published_outputs()
+        original_bytes = db_path.read_bytes()
+        with self.assertRaisesRegex(FileNotFoundError, "curated/static_data.json"):
+            build_command.run(self.config)
+        self.assertEqual(db_path.read_bytes(), original_bytes)
+        self.assertEqual(image.read_bytes(), b"old-image")
+
+    def test_changed_session_keeps_previous_outputs(self):
+        _, db_path, image = self._published_outputs()
+        original_bytes = db_path.read_bytes()
+        session_dir = write_session(self.root / "exported-data", {"data.json": b"[]"})
+        (session_dir / "data.json").write_bytes(b"{}")
+        with self.assertRaisesRegex(WrongExportSession, "data.json.*sha256"):
+            build_command.run(self.config)
+        self.assertEqual(db_path.read_bytes(), original_bytes)
+        self.assertEqual(image.read_bytes(), b"old-image")
+
     def test_failed_load_keeps_previous_outputs_intact(self):
         data_dir, db_path, image = self._published_outputs()
         original_bytes = db_path.read_bytes()
 
-        def fail_after_commit(conn, export_dir, static_dir):
+        def fail_after_commit(conn, session_dir, curated_dir, static_dir):
             conn.execute("INSERT INTO markers VALUES ('incomplete')")
             conn.commit()
             new_image = static_dir / "images/items/new/icon.webp"
@@ -92,7 +108,7 @@ class BuildFailureTests(unittest.TestCase):
                 raise OSError("database rename failed")
             return original_replace(source, target)
 
-        def stage_image(conn, export_dir, static_dir):
+        def stage_image(conn, session_dir, curated_dir, static_dir):
             new_image = static_dir / "images/items/new/icon.webp"
             new_image.parent.mkdir(parents=True)
             new_image.write_bytes(b"new-image")
@@ -143,7 +159,7 @@ class BuildFailureTests(unittest.TestCase):
     def test_build_without_decompiled_snapshot_publishes_database_and_images(self):
         self.assertFalse((self.root / "server-scripts").exists())
 
-        def stage_outputs(conn, export_dir, static_dir):
+        def stage_outputs(conn, session_dir, curated_dir, static_dir):
             conn.execute("INSERT INTO markers VALUES ('new')")
             image = static_dir / "images/items/new/icon.webp"
             image.parent.mkdir(parents=True)

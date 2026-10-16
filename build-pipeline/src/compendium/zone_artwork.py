@@ -127,10 +127,13 @@ def _thumbnail(crop: Image.Image) -> Image.Image:
 
 
 def publish_zone_thumbnails(
-    conn: sqlite3.Connection, export_dir: Path, static_dir: Path
+    conn: sqlite3.Connection,
+    session_dir: Path,
+    export_root: Path,
+    static_dir: Path,
 ) -> int:
     """Publish one north-up thumbnail for each visible, bounded zone."""
-    screenshots_dir = export_dir / "screenshots"
+    screenshots_dir = export_root / "screenshots"
     metadata_path = screenshots_dir / "metadata.json"
     world_path = screenshots_dir / "stitched" / "world.png"
     if not metadata_path.is_file():
@@ -147,7 +150,7 @@ def publish_zone_thumbnails(
         source = source_file.convert("RGB")
 
     redacted = redacted_zone_ids()
-    excluded = load_excluded_zones(export_dir, redacted)
+    excluded = load_excluded_zones(session_dir, redacted)
     blank_excluded_zones(source, excluded, world_bounds, (0, 0, 0))
 
     cursor = conn.cursor()

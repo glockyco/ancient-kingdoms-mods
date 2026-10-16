@@ -35,8 +35,8 @@ uv run compendium classes check-races
 
 The pairing is typed by hand, and the game holds it in the character creator. This command compares
 the two and names each disagreement. A failure means the patch added a class or changed which classes
-a race allows. Correct `mods/DataExporter/Curated/classes.json` and regenerate the export. The exporter
-copies this file to `exported-data/classes.json`.
+a race allows. Correct `build-pipeline/curated/classes.json`. The build reads that file directly, so
+the correction needs no new export.
 
 Commit this phase before you change an exporter. A mechanic whose claim the tool refuses to anchor belongs in this commit, because the reconciliation cannot finish without it.
 
@@ -46,7 +46,7 @@ See `build-tool/Commands/CommandCatalog.cs` for the update, launch, build, deplo
 
 When an exporter reads a changed field, update its model, exporter, pipeline schema, and validation before generating new data. MelonLoader must regenerate IL2CPP assemblies after a Unity or metadata change.
 
-If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed: keep the previous export, then compare the world map image hash, `zone_info.json`, and `zone_triggers.json`. Deployment copies Release DLLs but does not prune stale DLLs.
+If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed. The export keeps the session it replaced, so compare the digests of the world map image, `zone_info.json`, and `zone_triggers.json` in the two sessions' manifests. Deployment copies Release DLLs but does not prune stale DLLs.
 
 ## 4. Regenerate consumers
 

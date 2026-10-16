@@ -11,26 +11,21 @@ from compendium.class_races import (
     compare,
     read_pairing_from,
 )
-from compendium.config import get_repo_root
+from compendium.config import get_curated_dir, get_repo_root
 
 console = Console()
 
 SNAPSHOT_DIR = "server-scripts"
-PUBLISHED_FILE = "exported-data/classes.json"
 
 
 def run(config) -> int:
-    """Compare published `compatible_races` against the character creator.
-
-    Edit `mods/DataExporter/Curated/classes.json`, then run DataExporter to update
-    the published copy. This check requires the local decompiled snapshot.
-    """
+    """Compare curated `compatible_races` against the decompiled character creator."""
     repo_root = get_repo_root()
     snapshot_root = repo_root / SNAPSHOT_DIR
-    curated_path = repo_root / PUBLISHED_FILE
+    curated_path = get_curated_dir(repo_root) / "classes.json"
 
     if not curated_path.is_file():
-        console.print(f"[red]ERROR[/red] {PUBLISHED_FILE} does not exist")
+        console.print(f"[red]ERROR[/red] {curated_path} does not exist")
         return 1
 
     try:
@@ -54,7 +49,7 @@ def run(config) -> int:
     if problems:
         console.print(
             f"[red]{len(problems)} class(es) disagree with the game[/red] "
-            f"({PUBLISHED_FILE})"
+            f"({curated_path})"
         )
         for problem in problems:
             console.print(f"  {problem}")

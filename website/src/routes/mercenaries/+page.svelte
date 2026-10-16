@@ -284,7 +284,7 @@
         </tbody>
       </table>
     </div>
-    <!-- Source: exported-data/pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
+    <!-- Source: the export's pets.json — every mercenary prefab has 1 + 1 per level in each resistance. -->
     <p class="text-sm text-muted-foreground">
       Every class also gains +1 to each resistance every level.
     </p>
@@ -693,7 +693,7 @@
             </p>
             <Calculation calculation={mercenaryPrice(true)} />
             <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
-            <!-- Source: exported-data/items.json — scroll_of_resurrection has level_required 30. -->
+            <!-- Source: the export's items.json — scroll_of_resurrection has level_required 30. -->
             <!-- Source: server-scripts/Pet.cs:5108-5124 — mercenary healing AI skips resurrection skills. -->
             <p>
               <span class="block"

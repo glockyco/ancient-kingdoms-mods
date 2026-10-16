@@ -72,7 +72,6 @@ from compendium.models import (
     ZoneData,
     ZoneTriggerData,
 )
-from compendium.session import verify_export_locale
 
 console = Console()
 
@@ -80,7 +79,8 @@ console = Console()
 @dataclass(frozen=True)
 class LoadContext:
     conn: sqlite3.Connection
-    export_dir: Path
+    session_dir: Path
+    curated_dir: Path
     # Without a static directory, artwork datasets record their rows and write
     # no image file. `redactions check` loads this way.
     static_dir: Path | None = None
@@ -94,6 +94,7 @@ class Dataset:
     id: str
     inputs: tuple[str, ...]
     tables: tuple[str, ...]
+    curated_inputs: tuple[str, ...] = ()
     after: tuple[str, ...] = ()
     model: type[BaseModel] | None = None
     handler: Handler | None = None
@@ -101,7 +102,9 @@ class Dataset:
     def __post_init__(self) -> None:
         if (self.model is None) == (self.handler is None):
             raise ValueError(f"Dataset {self.id} needs exactly one of model or handler")
-        if self.model is not None and (len(self.inputs) != 1 or len(self.tables) != 1):
+        if self.model is not None and (
+            len(self.inputs) + len(self.curated_inputs) != 1 or len(self.tables) != 1
+        ):
             raise ValueError(
                 f"Simple dataset {self.id} needs exactly one input and one table"
             )
@@ -109,37 +112,39 @@ class Dataset:
 
 def _plain(loader: Callable[[sqlite3.Connection, Path], None]) -> Handler:
     def handler(ctx: LoadContext) -> None:
-        loader(ctx.conn, ctx.export_dir)
+        loader(ctx.conn, ctx.session_dir)
 
     return handler
 
 
 def _visual_assets(ctx: LoadContext) -> None:
     if ctx.static_dir is None:
-        record_visual_assets(ctx.conn, ctx.export_dir)
+        record_visual_assets(ctx.conn, ctx.session_dir)
     else:
-        load_visual_assets(ctx.conn, ctx.export_dir, ctx.static_dir)
+        load_visual_assets(ctx.conn, ctx.session_dir, ctx.static_dir)
 
 
 def _achievements(ctx: LoadContext) -> None:
     if ctx.static_dir is None:
-        record_achievements(ctx.conn, ctx.export_dir)
+        record_achievements(ctx.conn, ctx.session_dir)
     else:
-        load_achievements(ctx.conn, ctx.export_dir, ctx.static_dir)
+        load_achievements(ctx.conn, ctx.session_dir, ctx.static_dir)
 
 
 DATASETS: tuple[Dataset, ...] = (
     Dataset(
         "static_data",
-        ("static_data.json",),
+        (),
         ("factions", "reputation_tiers"),
-        handler=_plain(load_static_data),
+        curated_inputs=("static_data.json",),
+        handler=lambda ctx: load_static_data(ctx.conn, ctx.curated_dir),
     ),
     Dataset(
         "classes",
-        ("classes.json", "classes_combat.json"),
+        ("classes_combat.json",),
         ("classes",),
-        handler=_plain(load_classes),
+        curated_inputs=("classes.json",),
+        handler=lambda ctx: load_classes(ctx.conn, ctx.session_dir, ctx.curated_dir),
     ),
     Dataset(
         "equipment_slots",
@@ -360,7 +365,9 @@ DATASETS: tuple[Dataset, ...] = (
 )
 
 
-def validate_catalog(datasets: Sequence[Dataset], export_dir: Path) -> None:
+def validate_catalog(
+    datasets: Sequence[Dataset], session_dir: Path, curated_dir: Path
+) -> None:
     """Reject a catalog that cannot load correctly, before anything loads."""
     declared = {dataset.id for dataset in datasets}
     loaded: set[str] = set()
@@ -387,15 +394,19 @@ def validate_catalog(datasets: Sequence[Dataset], export_dir: Path) -> None:
         loaded.add(dataset.id)
 
     missing = [
-        f"{name} ({dataset.id})"
+        f"{root / name} ({dataset.id})"
         for dataset in datasets
-        for name in dataset.inputs
-        if not (export_dir / name).is_file()
+        for root, names in (
+            (session_dir, dataset.inputs),
+            (curated_dir, dataset.curated_inputs),
+        )
+        for name in names
+        if not (root / name).is_file()
     ]
     if missing:
         raise FileNotFoundError(
-            f"Required inputs are missing from {export_dir}: {', '.join(missing)}. "
-            "Run the DataExporter mod in the game, or restore the hand-maintained file."
+            f"Required inputs are missing: {', '.join(missing)}. "
+            "Export runtime data or restore the hand-maintained curated input."
         )
 
 
@@ -406,10 +417,15 @@ def load_dataset(ctx: LoadContext, dataset: Dataset) -> None:
         return
 
     assert dataset.model is not None
-    (input_name,) = dataset.inputs
+    if dataset.inputs:
+        (input_name,) = dataset.inputs
+        input_dir = ctx.session_dir
+    else:
+        (input_name,) = dataset.curated_inputs
+        input_dir = ctx.curated_dir
     (table,) = dataset.tables
     console.print(f"Loading {dataset.id}...")
-    data = json.loads((ctx.export_dir / input_name).read_text(encoding="utf-8"))
+    data = json.loads((input_dir / input_name).read_text(encoding="utf-8"))
     if not isinstance(data, list) or not data:
         # An empty export means the exporter found nothing, which is never valid.
         raise ValueError(f"{input_name} must hold a non-empty JSON array")
@@ -423,7 +439,10 @@ def load_dataset(ctx: LoadContext, dataset: Dataset) -> None:
 
 
 def load_all(
-    conn: sqlite3.Connection, export_dir: Path, static_dir: Path | None = None
+    conn: sqlite3.Connection,
+    session_dir: Path,
+    curated_dir: Path,
+    static_dir: Path | None = None,
 ) -> None:
     """Load every dataset into the database, in catalog order.
 
@@ -434,8 +453,7 @@ def load_all(
         static_dir: Where to write image files. Without one, the artwork datasets
             record manifest rows but write no image files.
     """
-    verify_export_locale(export_dir)  # Before anything reads a localized string
-    validate_catalog(DATASETS, export_dir)
-    ctx = LoadContext(conn, export_dir, static_dir)
+    validate_catalog(DATASETS, session_dir, curated_dir)
+    ctx = LoadContext(conn, session_dir, curated_dir, static_dir)
     for dataset in DATASETS:
         load_dataset(ctx, dataset)

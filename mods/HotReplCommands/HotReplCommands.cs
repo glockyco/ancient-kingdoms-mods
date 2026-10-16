@@ -28,7 +28,7 @@ namespace HotReplCommands
             _preflight = registry.Register(new PreflightCommand(exportDir, screenshotDir));
             _worldSummary = registry.Register(new WorldSummaryCommand());
             _worldEnter = registry.Register(new WorldEnterCommand());
-            _export = registry.Register(new ExportJobCommand(exportDir, screenshotDir));
+            _export = registry.Register(new ExportJobCommand(screenshotDir));
             _quit = registry.Register(new GameQuitCommand());
             _useScratchDatabase = registry.Register(new UseScratchDatabaseCommand());
             _zoneShots = registry.Register(new CaptureZoneShotsCommand(exportDir));

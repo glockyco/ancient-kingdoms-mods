@@ -24,7 +24,7 @@ interface ExperiencePageData {
   discoveryCities: NamedRef[];
 }
 
-// Source: exported-data/game_config.json special_items — the game resolves these two
+// Source: the export's game_config.json special_items — the game resolves these two
 // items through GameManager.redemptionToken and GameManager.RewardMaxLevelItem
 // (mods/DataExporter/Exporters/GameConfigExporter.cs:82-83). The export is not loaded
 // into the database, so the ids are pinned here and the display data comes from items.

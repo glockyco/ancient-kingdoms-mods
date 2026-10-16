@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using DataExporter.Models;
 using MelonLoader;
 
@@ -14,7 +13,6 @@ public class ClassExporter : BaseExporter
 
     public override void Export()
     {
-        WriteCuratedClasses();
         Logger.Msg("Exporting class combat stats...");
 
         var networkManager = Il2CppMirror.NetworkManager.singleton;
@@ -121,17 +119,8 @@ public class ClassExporter : BaseExporter
             classList.Add(data);
         }
 
-        // Write to classes_combat.json (separate from manually curated classes.json)
+        // The pipeline merges these with the curated build-pipeline/curated/classes.json.
         WriteJson(classList, "classes_combat.json");
         Logger.Msg($"Exported {classList.Count} class combat stat sets");
-    }
-
-    private void WriteCuratedClasses()
-    {
-        const string resourceName = "DataExporter.Curated.classes.json";
-        using var source = typeof(ClassExporter).Assembly.GetManifestResourceStream(resourceName)
-            ?? throw new InvalidOperationException($"Embedded resource '{resourceName}' is unavailable.");
-        using var destination = File.Create(Path.Combine(ExportPath, "classes.json"));
-        source.CopyTo(destination);
     }
 }

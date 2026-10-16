@@ -193,6 +193,9 @@ class TileValidationTests(unittest.TestCase):
                     "website_dir": str(Path(tmp) / "website"),
                 },
             }
+            from session_fixtures import write_session
+
+            write_session(Path(tmp) / "export")
             with self.assertRaises(typer.Exit) as raised:
                 tiles_run(config)
         self.assertEqual(1, raised.exception.exit_code)

@@ -127,7 +127,7 @@
       </li>
     </ol>
     <!-- Source: server-scripts/ScriptableItem.cs:23-31 — sellPrice, sellable, and tradable are separate item fields. -->
-    <!-- Source: exported-data/items.json — radiant_aether has sell_price 15 and tradable false. -->
+    <!-- Source: the export's items.json — radiant_aether has sell_price 15 and tradable false. -->
     <p class="text-muted-foreground">
       Radiant Aether cannot be traded to another player, but it can be sold to a
       merchant.

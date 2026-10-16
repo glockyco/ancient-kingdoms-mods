@@ -12,7 +12,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 
-from compendium.config import get_repo_root
+from compendium.config import get_curated_dir, get_repo_root
 from compendium.db import create_database
 from compendium.denormalizers import run_before_closure
 from compendium.redactions import closure, verify
@@ -25,6 +25,7 @@ from compendium.redactions.ledger import (
     compare,
 )
 from compendium.redactions.placement import stem
+from compendium.session import resolve_export_session
 
 console = Console()
 
@@ -35,7 +36,9 @@ def _removals(
     """The removals the current export and configuration produce."""
     from compendium.loaders import load_all
 
-    export_dir = repo_root / config["paths"]["export_dir"]
+    export_root = repo_root / config["paths"]["export_dir"]
+    session_dir = resolve_export_session(export_root)
+    curated_dir = get_curated_dir(repo_root)
     schema_path = repo_root / "build-pipeline" / "schema.sql"
 
     with tempfile.TemporaryDirectory() as directory:
@@ -43,7 +46,7 @@ def _removals(
         try:
             # Without a static directory the loaders record their manifest rows
             # and write no file, so this reads the export without publishing.
-            load_all(conn, export_dir)
+            load_all(conn, session_dir, curated_dir)
             redactions, suppressed, hidden_crafting = run_before_closure(conn)
             removals, _ = closure.decide(conn, redactions)
         finally:

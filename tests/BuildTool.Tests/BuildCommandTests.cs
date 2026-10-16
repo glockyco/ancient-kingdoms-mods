@@ -7,6 +7,7 @@ using Xunit;
 
 namespace BuildTool.Tests;
 
+[Collection("ConsoleOutput")]
 public class BuildCommandTests
 {
     [Fact]
@@ -61,4 +62,9 @@ public class BuildCommandTests
 
         Assert.Contains(expected, output.ToString(), StringComparison.Ordinal);
     }
+}
+
+[CollectionDefinition("ConsoleOutput", DisableParallelization = true)]
+public sealed class ConsoleOutputCollection
+{
 }

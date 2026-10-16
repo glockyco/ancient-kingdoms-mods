@@ -44,8 +44,10 @@ class ZoneArtworkTests(unittest.TestCase):
             stitched_dir = export_dir / "screenshots" / "stitched"
             stitched_dir.mkdir(parents=True)
             static_dir.mkdir(parents=True)
-            (export_dir / "zone_info.json").write_text("[]", encoding="utf-8")
-            (export_dir / "zone_triggers.json").write_text("[]", encoding="utf-8")
+            session_dir = export_dir / "sessions" / "test"
+            session_dir.mkdir(parents=True)
+            (session_dir / "zone_info.json").write_text("[]", encoding="utf-8")
+            (session_dir / "zone_triggers.json").write_text("[]", encoding="utf-8")
             (export_dir / "screenshots" / "metadata.json").write_text(
                 json.dumps({"world_bounds": WORLD_BOUNDS}), encoding="utf-8"
             )
@@ -65,7 +67,9 @@ class ZoneArtworkTests(unittest.TestCase):
                     "INSERT INTO zones (id, zone_id, name) VALUES ('old_valorath', 25, 'Valorath')"
                 )
 
-                count = publish_zone_thumbnails(conn, export_dir, static_dir)
+                count = publish_zone_thumbnails(
+                    conn, session_dir, export_dir, static_dir
+                )
                 rows = conn.execute(
                     "SELECT domain, entity_id, kind, source_type, public_path, width, height FROM visual_assets ORDER BY entity_id"
                 ).fetchall()
@@ -101,8 +105,10 @@ class ZoneArtworkTests(unittest.TestCase):
             stitched_dir = export_dir / "screenshots" / "stitched"
             stitched_dir.mkdir(parents=True)
             static_dir.mkdir(parents=True)
-            (export_dir / "zone_info.json").write_text("[]", encoding="utf-8")
-            (export_dir / "zone_triggers.json").write_text("[]", encoding="utf-8")
+            session_dir = export_dir / "sessions" / "test"
+            session_dir.mkdir(parents=True)
+            (session_dir / "zone_info.json").write_text("[]", encoding="utf-8")
+            (session_dir / "zone_triggers.json").write_text("[]", encoding="utf-8")
             (export_dir / "screenshots" / "metadata.json").write_text(
                 json.dumps({"world_bounds": WORLD_BOUNDS}), encoding="utf-8"
             )
@@ -113,7 +119,7 @@ class ZoneArtworkTests(unittest.TestCase):
                 conn.execute(
                     "INSERT INTO zones (id, zone_id, name, bounds_min_x, bounds_min_y, bounds_max_x, bounds_max_y) VALUES ('visible', 1, 'Visible', 10, 10, 90, 90)"
                 )
-                publish_zone_thumbnails(conn, export_dir, static_dir)
+                publish_zone_thumbnails(conn, session_dir, export_dir, static_dir)
                 public_path = conn.execute(
                     "SELECT public_path FROM visual_assets WHERE domain = 'zone'"
                 ).fetchone()[0]
@@ -142,7 +148,9 @@ class ZoneArtworkTests(unittest.TestCase):
             conn = create_database(root / "test.db", SCHEMA_PATH)
             try:
                 with self.assertRaisesRegex(FileNotFoundError, "stitched world image"):
-                    publish_zone_thumbnails(conn, export_dir, static_dir)
+                    publish_zone_thumbnails(
+                        conn, export_dir / "sessions/test", export_dir, static_dir
+                    )
             finally:
                 conn.close()
 

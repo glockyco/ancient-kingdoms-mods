@@ -12,10 +12,7 @@ import type { Item } from "$lib/queries/items";
 
 const classMetadata = JSON.parse(
   readFileSync(
-    new URL(
-      "../../../../mods/DataExporter/Curated/classes.json",
-      import.meta.url,
-    ),
+    new URL("../../../../build-pipeline/curated/classes.json", import.meta.url),
     "utf8",
   ),
 );

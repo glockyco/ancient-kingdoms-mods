@@ -24,7 +24,7 @@ game ──decompile──> server-scripts/ ──cited by──> hardcoded mech
 
 ## Boundaries
 
-- **Game to pipeline.** Only `exported-data/` crosses: JSON, source images, `visual_assets.json`, and the screenshots. The pipeline never reads the game install.
+- **Game to pipeline.** Only `exported-data/` crosses: the export session that `active-session.json` selects, which every reader verifies against its manifest, and the screenshots. The pipeline never reads the game install. `exported-data/README.md` describes the layout.
 - **Evidence.** `server-scripts/` is decompiled from the dedicated server that ships with the game. It is evidence for hardcoded mechanics, never export input. The mods compile against `MelonLoader/Il2CppAssemblies/`, whose `Assembly-CSharp.dll` holds only interop wrappers, so game behavior is read in `server-scripts/`.
 - **Pipeline to site.** The site reads `website/data/compendium.db` and the files under `website/static/` that the pipeline writes. Pages are prerendered from the database with better-sqlite3, except the home page, which renders in the Cloudflare Worker to compare the published version with the live game.
 - **Build to browser.** In the browser, MiniSearch serves search and sql.js reads a compressed, content-hashed copy of the database. Only `website/src/lib/database-assets.ts` imports those archives.
@@ -37,7 +37,7 @@ game ──decompile──> server-scripts/ ──cited by──> hardcoded mech
 - A hardcoded mechanic cites the decompiled code it comes from, as `// Source: server-scripts/File.cs:Member — claim`, with `#` in Python and `<!-- -->` in Svelte markup. `compendium citations check` fails when the cited lines change. A pass proves only that they did not change.
 - Redaction rules live in `redactions.toml` with their reasons. `compendium build` removes everything a rule reaches, every published output applies the rules, and `redactions.lock.json` records each removal.
 - A session that creates or changes characters first redirects the game to the scratch database with `game.useScratchDatabase`. A refused redirect means quit and relaunch.
-- Generated output changes only through its producer. In `exported-data/`, only `static_data.json` is maintained by hand, and class metadata lives in `mods/DataExporter/Curated/classes.json`, which every export copies over `exported-data/classes.json`. Some generated files are tracked: `website/src/lib/generated/`, `website/static/og-default.png`, the mechanics snapshots, and the BetterBestiary parity corpus.
+- Generated output changes only through its producer. An export session is never modified after promotion, and nothing in `exported-data/` is maintained by hand. Class metadata and static faction data are the two hand-maintained inputs, in `build-pipeline/curated/`. Some generated files are tracked: `website/src/lib/generated/`, `website/static/og-default.png`, the mechanics snapshots, and the BetterBestiary parity corpus.
 - `citations.lock.json` and `redactions.lock.json` change only through `compendium citations fix`, `compendium citations sync`, and `compendium redactions sync`, because each entry records a check that ran.
 
 ## Cross-cutting concerns

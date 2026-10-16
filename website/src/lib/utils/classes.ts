@@ -100,7 +100,7 @@ export function getResourceDisplayName(resourceType: string): string {
 
 /**
  * Race name mapping (database ID -> display name)
- * IDs come from the curated mods/DataExporter/Curated/classes.json, which the export publishes.
+ * IDs come from the curated build-pipeline/curated/classes.json, which the build loads.
  * Canonical race names in the game: server-scripts/Database.cs:2999-3070 — CharacterCreate switch block.
  */
 const RACE_DISPLAY_NAMES: Record<string, string> = {

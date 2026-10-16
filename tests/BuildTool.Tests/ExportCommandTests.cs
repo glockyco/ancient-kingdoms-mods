@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
@@ -11,6 +13,7 @@ using Xunit;
 
 namespace BuildTool.Tests;
 
+[Collection("ConsoleOutput")]
 public class ExportCommandTests
 {
     private static int _nextEndpointPort = 50000;
@@ -98,6 +101,65 @@ public class ExportCommandTests
         Directory.Delete(tempRoot, recursive: true);
     }
 
+    [Theory]
+    [InlineData("host")]
+    [InlineData("wine")]
+    [InlineData("uri")]
+    [InlineData("wine-uri")]
+    public async Task Export_PrintsPromotedSessionPath(string pathKind)
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var originalOutput = Console.Out;
+        using var output = new StringWriter();
+        try
+        {
+            var sessionPath = pathKind is "wine" or "wine-uri"
+                ? Path.Combine(tempRoot, "prefix", "drive_c", "exports", "sessions", "completed")
+                : Path.Combine(tempRoot, "exported-data", "sessions", "completed");
+            Directory.CreateDirectory(sessionPath);
+            var manifestPath = Path.Combine(sessionPath, "manifest.json");
+            File.WriteAllText(manifestPath, """{"schema_version":1,"session_id":"completed","files":[]}""");
+            var winePath = @"C:\exports\sessions\completed\manifest.json";
+            var artifact = pathKind switch
+            {
+                "wine" => JsonSerializer.SerializeToElement(new { path = winePath }),
+                "uri" => JsonSerializer.SerializeToElement(new { uri = new Uri(manifestPath).AbsoluteUri }),
+                "wine-uri" => JsonSerializer.SerializeToElement(new { uri = "file:///C:/exports/sessions/completed/manifest.json" }),
+                _ => JsonSerializer.SerializeToElement(new { path = manifestPath }),
+            };
+            var expectedPath = sessionPath;
+            var artifacts = new Dictionary<string, JsonElement> { ["session.manifest"] = artifact };
+            var runner = new FakeProcessRunner();
+            runner.Enqueue(async (_, cancellationToken) =>
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return new ProcessResult(0, "", "", default);
+            });
+            var resultStore = new CommandResultStore();
+            var command = CreateCommand(
+                tempRoot,
+                runner: runner,
+                resultStore: resultStore,
+                exportRunner: (_, _) => Task.FromResult(
+                    new ExportRunnerResult(true, ExitCodes.Success, "Export completed.", artifacts)));
+            Console.SetOut(output);
+
+            var result = await command.RunAsync(new ExportCommand.Settings(), TestContext.Current.CancellationToken);
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains($"Export complete. Session: {expectedPath}", output.ToString());
+            var data = JsonSerializer.SerializeToElement(resultStore.Data);
+            Assert.True(data.GetProperty("ok").GetBoolean());
+            Assert.Equal("Export completed.", data.GetProperty("message").GetString());
+            Assert.Equal(expectedPath, data.GetProperty("sessionPath").GetString());
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+            Directory.Delete(tempRoot, recursive: true);
+        }
+    }
+
 
     // ----
 
@@ -118,7 +180,7 @@ public class ExportCommandTests
             GamePath: gamePath,
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
             WinePath: "/wine",
-            WinePrefix: "/prefix",
+            WinePrefix: Path.Combine(tempRoot, "prefix"),
             HotReplEndpoint: $"ws://127.0.0.1:{Interlocked.Increment(ref _nextEndpointPort)}");
 
         return new ExportCommand(

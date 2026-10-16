@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from compendium.class_races import (
@@ -10,6 +13,7 @@ from compendium.class_races import (
     race_identifier,
     read_pairing,
 )
+from compendium.commands import class_races as class_races_command
 
 CLASS_NAMES = ("Warrior", "Ranger", "Cleric", "Rogue", "Wizard", "Druid", "Bard")
 
@@ -218,3 +222,20 @@ def test_an_unknown_class_in_the_published_table_is_named():
     published["Paladin"] = ["human"]
     problems = compare(published, pairing)
     assert "Paladin: not a class the game defines" in problems
+
+
+@pytest.mark.parametrize("valid", [True, False])
+def test_explicit_check_uses_curated_classes_and_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, valid: bool
+):
+    curated_dir = tmp_path / "build-pipeline" / "curated"
+    curated_dir.mkdir(parents=True)
+    entries = [{"name": name, "compatible_races": ["human"]} for name in CLASS_NAMES]
+    if not valid:
+        entries[0]["compatible_races"] = ["dwarf"]
+    (curated_dir / "classes.json").write_text(json.dumps(entries))
+    snapshot = tmp_path / "server-scripts"
+    snapshot.mkdir()
+    (snapshot / "UICharacterEditor.cs").write_text(creator(("Human", ALL_ENABLED)))
+    monkeypatch.setattr(class_races_command, "get_repo_root", lambda: tmp_path)
+    assert class_races_command.run({}) == (0 if valid else 1)

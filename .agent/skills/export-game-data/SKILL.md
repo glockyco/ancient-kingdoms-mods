@@ -17,7 +17,7 @@ declared default only where the contract defines one. Any other missing value fa
 JSON writer omits a `null` property unless the model sets `NullValueHandling.Include`.
 
 Document a derived value, such as zone containment, at its exporter. JSON property names are
-snake_case, and manifest paths are relative to `exported-data/`.
+snake_case, and a path inside an output, such as an image path, is relative to the session directory.
 
 ## Runtime discovery
 
@@ -34,9 +34,9 @@ the same `startPosition` as their exported position and zone.
 
 ## The curated class exception
 
-`ClassExporter` reads `NetworkManagerMMO.playerClasses` prefabs and writes `classes_combat.json` for the
-pipeline to merge with curated metadata. Edit `mods/DataExporter/Curated/classes.json` by hand.
-The exporter embeds that source and overwrites `exported-data/classes.json` with a copy.
+`ClassExporter` reads `NetworkManagerMMO.playerClasses` prefabs and writes `classes_combat.json`. The
+pipeline merges it with the class metadata in `build-pipeline/curated/classes.json`, which is edited by
+hand. The exporter neither reads nor copies that file.
 
 Its race pairing restates a rule the character creator enforces, so `compendium classes check-races`
 compares the two. The check exists because a curated value that restates a game rule drifts silently.
@@ -85,14 +85,18 @@ or guess among decorative siblings: the live slots include backgrounds, borders 
 
 ## Registration and output
 
-Create the typed model and exporter under `mods/DataExporter/`, then register it in
-`DataExporter.ExportAllData()`. An unregistered exporter fails no build and produces no file.
-After the runtime export, verify that the result lists it and the file contains its data.
+Create the typed model and exporter under `mods/DataExporter/`, then add a descriptor to
+`CreateCatalog` in `DataExporter.cs` with its id and every output path it writes. When an output
+references images, give the descriptor a reader for those paths, as `achievements` and
+`visualAssets.manifest` do. A run refuses promotion when a declared output is missing or does not
+parse, a referenced image is missing, or the staging directory holds a file that no descriptor declares
+or references, so an undeclared output fails the export instead of going unnoticed. After the runtime
+export, read the new session's `manifest.json` for the file and its record count.
 
-`build-tool/Commands/CommandCatalog.cs` registers CLI verbs;
+`build-tool/Commands/CommandCatalog.cs` registers CLI verbs,
 `build-tool/HotRepl/HotReplExportRunner.cs` validates required export artifacts, and
-`mods/HotReplCommands/Artifacts/ArtifactCollector.cs` owns the artifact keys. Visual-only exporters
-share `visual-assets.manifest`; they do not need an invented entity JSON artifact.
+`mods/HotReplCommands/Artifacts/ArtifactCollector.cs` builds the artifact keys from the verified session
+manifest. Visual-only exporters share `visual-assets.manifest` and need no entity JSON artifact.
 
 ## Check
 

@@ -57,6 +57,39 @@ public sealed class WinePathTests : IDisposable
         => Assert.Null(WinePath.ToHost("C:/Steam/game.dat", ""));
 
     [Fact]
+    public void ResolvesADriveThroughItsDosdevicesLink()
+    {
+        var hostRoot = Directory.CreateTempSubdirectory("ak-host").FullName;
+        try
+        {
+            var devices = Path.Combine(_prefix, "dosdevices");
+            Directory.CreateDirectory(devices);
+            Directory.CreateSymbolicLink(Path.Combine(devices, "z:"), hostRoot);
+
+            Assert.Equal(
+                Path.Combine(hostRoot, "Users", "me", "manifest.json"),
+                WinePath.ToHost(@"Z:\Users\me\manifest.json", _prefix));
+        }
+        finally
+        {
+            Directory.Delete(hostRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ResolvesARelativeDosdevicesLinkAgainstThePrefix()
+    {
+        var devices = Path.Combine(_prefix, "dosdevices");
+        Directory.CreateDirectory(devices);
+        Directory.CreateDirectory(Path.Combine(_prefix, "drive_c"));
+        Directory.CreateSymbolicLink(Path.Combine(devices, "c:"), "../drive_c");
+
+        Assert.Equal(
+            Path.Combine(_prefix, "drive_c", "Steam", "game.dat"),
+            WinePath.ToHost("C:/Steam/game.dat", _prefix));
+    }
+
+    [Fact]
     public void FindsAFileThatExistsBehindAReportedPath()
     {
         var host = Path.Combine(_prefix, "drive_c", "Steam");

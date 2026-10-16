@@ -7,6 +7,11 @@ from typing import Any
 from compendium.utils import get_repo_root
 
 
+def get_curated_dir(repo_root: Path) -> Path:
+    """The pipeline-owned inputs, separate from runtime sessions."""
+    return repo_root / "build-pipeline" / "curated"
+
+
 def load_config(config_path: Path | None = None) -> dict[str, Any]:
     """Load configuration from TOML file.
 

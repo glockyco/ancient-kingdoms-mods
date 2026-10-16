@@ -17,12 +17,10 @@ namespace HotReplCommands.Commands
 {
     public sealed class ExportJobCommand : IControlCommandHandler<CompendiumExportArgs, CompendiumExportResult>
     {
-        private readonly string _exportDir;
         private readonly string _screenshotDir;
 
-        public ExportJobCommand(string exportDir, string screenshotDir)
+        public ExportJobCommand(string screenshotDir)
         {
-            _exportDir = exportDir;
             _screenshotDir = screenshotDir;
         }
 
@@ -176,7 +174,7 @@ namespace HotReplCommands.Commands
             }
 
             context.Progress.Report(Progress("collectingArtifacts", "Building artifact map."));
-            var artifacts = ArtifactCollector.Collect(_exportDir, _screenshotDir, args.Screenshots);
+            var artifacts = ArtifactCollector.Collect(exportResult.SessionPath, _screenshotDir, args.Screenshots);
 
             var output = new CompendiumExportResult
             {
