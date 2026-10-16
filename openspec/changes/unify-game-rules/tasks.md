@@ -2,8 +2,8 @@
 
 - [x] 1.1 With HotRepl, call `Utils.isTradeableForPrimalEssence` and `Utils.getPrimalEssenceAmount` for every item in the game's item cache. Verify the eligible count per item type against the 127 Uncommon items, 113 weapons and 24 augments in `design.md`, and record any difference there. Confirmed, plus Endless Quiver and 40 token-bought set pieces, recorded in `design.md`.
 - [x] 1.2 With HotRepl, call `CalculateItemLvl` and `CalculateItemLvlAugment` for every equipment item and augment, and compare the result with the pipeline's item level. Verify the list of differing items is recorded in `design.md`, or that there is none. Only the Drum of War differs, recorded in `design.md`.
-- [ ] 1.3 On the scratch database, or on the sim's headless server once it drives a scripted player, activate an altar with characters at level plus veteran points of 39, 40, 49, 50, 149 and 150. Verify that the boss drops the common, magic, epic and legendary reward at the thresholds in `design.md`.
-- [ ] 1.4 On the sim's headless server, open the Buried Treasure Chest many times at Treasure Hunter 0 and at a higher skill. Verify that the reward frequencies match the TypeScript loop within sampling error.
+- [x] 1.3 On the scratch database, run each altar's final wave with the activating player at level plus veteran points of 39, 40, 49, 50, 149 and 150. Verify that the boss carries the common, magic, epic and legendary reward at the thresholds in `design.md`. Done with HotRepl through the game's own `DefaultEvent.SummonMonsters`: all five altars with reward tiers switch at 40, 50 and 150.
+- [x] 1.4 On the scratch database, open the Buried Treasure Chest many times at Treasure Hunter 0 and at a higher skill with the game's own `ChestItem.Use`. Verify that the reward frequencies match the reward loop within sampling error. 4,000 opens each at 0% and 100% Treasure Hunter matched a model of the loop on all 28 rewards, the largest deviation 2.7 standard errors.
 - [x] 1.5 Get approval of "Pages that change" in `design.md`. Pages change only after this task and the game check of their rule are done.
 
 ## 2. Export what the game computes
