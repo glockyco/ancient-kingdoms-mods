@@ -159,7 +159,7 @@
       teleportZoneName={row.original.teleport_zone_name}
     />
     {#if row.original.count > 1}
-      <span class="ml-2 text-muted-foreground">×{row.original.count}</span>
+      <span class="text-muted-foreground">&nbsp;×{row.original.count}</span>
     {/if}
   {:else if cell.column.id === "mechanics"}
     <TrapMechanics

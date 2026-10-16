@@ -1523,16 +1523,15 @@
       <Card.Content>
         <div class="space-y-2">
           {#each data.appliedByTraps as usage (`${usage.zone_id}-${usage.type}`)}
-            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span>{TRAP_TYPE_LABELS[usage.type]}</span>
+            <p>
+              {TRAP_TYPE_LABELS[usage.type]}
               <span class="text-muted-foreground">×{usage.trap_count} in</span>
               <a
                 href="/zones/{usage.zone_id}"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
+                >{usage.zone_name}</a
               >
-                {usage.zone_name}
-              </a>
-            </div>
+            </p>
           {/each}
         </div>
         <a
