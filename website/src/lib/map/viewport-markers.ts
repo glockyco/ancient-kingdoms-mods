@@ -17,7 +17,9 @@ export interface MarkerViewport {
 export interface ViewportMarker {
   key: string;
   entity: AnyMapEntity;
-  label: string;
+  /** The registry marker that the map draws for this entity. */
+  marker: MarkerDef;
+  name: string;
   distanceSquared: number;
 }
 
@@ -83,7 +85,8 @@ export function markersInViewport(
       markers.push({
         key: `${marker.id}:${entity.id}:${position[0]}:${position[1]}`,
         entity,
-        label: `${marker.label}: ${marker.displayName?.(entity) ?? entity.name}`,
+        marker,
+        name: marker.displayName?.(entity) ?? entity.name,
         distanceSquared: dx * dx + dy * dy,
       });
     }

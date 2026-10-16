@@ -71,6 +71,18 @@ const ENTITY_ICONS: Record<
 
 export type EntityIconType = keyof typeof ENTITY_ICONS;
 
+/** The glyph the map draws inside a marker, and whether it is mirrored. */
+export interface MarkerGlyph {
+  icon: IconNode;
+  flipX: boolean;
+}
+
+/** The glyph of one marker icon type, as the map's icon atlas draws it. */
+export function markerGlyph(iconType: string): MarkerGlyph {
+  const { icon, flipX = false } = ENTITY_ICONS[iconType];
+  return { icon, flipX };
+}
+
 /**
  * Convert Lucide IconNode to SVG string.
  */

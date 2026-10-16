@@ -15,6 +15,7 @@
   import ItemPopup from "$lib/components/map/ItemPopup.svelte";
   import QuestPopup from "$lib/components/map/QuestPopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
+  import MapMarkerIcon from "$lib/components/map/MapMarkerIcon.svelte";
   import * as Drawer from "$lib/components/ui/drawer";
   import type { PageData } from "./$types";
   import {
@@ -1249,18 +1250,21 @@
           aria-label="Markers in view"
           class="max-h-60 space-y-1 overflow-y-auto"
         >
-          {#each viewportMarkers.markers as marker (marker.key)}
+          {#each viewportMarkers.markers as row (row.key)}
             <li>
               <button
                 type="button"
-                class="w-full rounded px-2 py-2 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
-                onclick={() => selectMapMarker(marker.entity)}
+                class="flex w-full items-center gap-2.5 rounded px-2 py-2 text-left text-sm hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+                onclick={() => selectMapMarker(row.entity)}
               >
-                <span class="block">{marker.label}</span>
-                <span class="block text-muted-foreground">
-                  {marker.entity.zoneName}
-                  ({marker.entity.position![0].toFixed(0)}, {(-marker.entity
-                    .position![1]).toFixed(0)})
+                <MapMarkerIcon marker={row.marker} />
+                <span class="min-w-0">
+                  <span class="block">{row.name}</span>
+                  <span class="block text-muted-foreground">
+                    {row.entity.zoneName}
+                    ({row.entity.position![0].toFixed(0)}, {(-row.entity
+                      .position![1]).toFixed(0)})
+                  </span>
                 </span>
               </button>
             </li>
