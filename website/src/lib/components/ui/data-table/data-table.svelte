@@ -27,6 +27,7 @@
     toggleSingleColumnSorting,
   } from "./create-table.js";
   import FlexRender from "./flex-render.svelte";
+  import { fadeHiddenOverflow } from "$lib/actions/fade-hidden-overflow";
   import * as Table from "$lib/components/ui/table";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as Pagination from "$lib/components/ui/pagination";
@@ -121,19 +122,6 @@
     }
   });
   let tableContainer: HTMLDivElement;
-  let hasHorizontalOverflow = $state(false);
-
-  function observeOverflow(node: HTMLDivElement) {
-    const updateOverflow = () => {
-      hasHorizontalOverflow = node.scrollWidth > node.clientWidth;
-    };
-    updateOverflow();
-    const observer = new ResizeObserver(updateOverflow);
-    observer.observe(node);
-    const tableElement = node.querySelector("table");
-    if (tableElement) observer.observe(tableElement);
-    return { destroy: () => observer.disconnect() };
-  }
 
   async function changePage(page: number) {
     table.setPageIndex(page - 1);
@@ -673,15 +661,9 @@
     </p>
   {/if}
 
-  {#if hasHorizontalOverflow}
-    <p class="pb-2 text-sm text-muted-foreground">
-      Scroll horizontally for more columns.
-    </p>
-  {/if}
-
   <div
     bind:this={tableContainer}
-    use:observeOverflow
+    use:fadeHiddenOverflow
     class="data-table-container rounded-md border {persistentScrollbar
       ? 'overflow-x-scroll'
       : 'overflow-x-auto'} {className}"

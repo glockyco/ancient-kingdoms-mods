@@ -26,6 +26,8 @@
 </script>
 
 <script lang="ts">
+  import { fadeHiddenOverflow } from "$lib/actions/fade-hidden-overflow";
+
   let {
     series,
     skillLevel,
@@ -82,12 +84,10 @@
   );
 </script>
 
-<p class="text-sm text-muted-foreground lg:hidden">
-  Scroll the chart horizontally to see the full skill range.
-</p>
 <!-- Below lg the chart keeps a readable size and scrolls, so keyboard users need focus to scroll it. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
+  use:fadeHiddenOverflow
   class="max-w-full overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
   role="region"
   aria-label={ariaLabel}
