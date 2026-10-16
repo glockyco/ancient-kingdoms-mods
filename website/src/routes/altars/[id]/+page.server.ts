@@ -89,12 +89,11 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
       // Get monster info including combat stats
       const monsterInfo = db
         .prepare(
-          "SELECT name, level, health, damage, magic_damage FROM monsters WHERE id = ?",
+          "SELECT name, health, damage, magic_damage FROM monsters WHERE id = ?",
         )
         .get(monsterId) as
         | {
             name: string;
-            level: number;
             health: number;
             damage: number;
             magic_damage: number;
@@ -152,7 +151,8 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
         bosses.push({
           monsterId,
           monsterName: monsterInfo.name,
-          level: monsterInfo.level,
+          level: finalWave.monsters.find((m) => m.monster_id === monsterId)!
+            .base_level,
           health: monsterInfo.health,
           damage: monsterInfo.damage,
           magicDamage: monsterInfo.magic_damage,
