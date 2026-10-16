@@ -28,22 +28,25 @@ public static class SkillClassification
             return "heal";
         }
 
-        var buffSkill = skill.TryCast<BuffSkill>();
-        if (buffSkill != null)
+        if (skill.TryCast<BuffSkill>() != null)
         {
-            // Source: server-scripts/TargetBuffSkill.cs:HasMatchingCleanseDebuff — a cleanse spell sets the debuff
-            // flags of the types it removes, so the flags name its targets rather than make it a debuff.
-            var isDebuff = !buffSkill.isCleanseSpell &&
-                           (buffSkill.isPoisonDebuff || buffSkill.isFireDebuff ||
-                            buffSkill.isColdDebuff || buffSkill.isDiseaseDebuff ||
-                            buffSkill.isMeleeDebuff || buffSkill.isMagicDebuff);
-
-            if (skill.TryCast<AreaBuffSkill>() != null) return isDebuff ? "area_debuff" : "area_buff";
-            if (skill.TryCast<AreaDebuffSkill>() != null) return "area_debuff";
-            if (skill.TryCast<TargetBuffSkill>() != null) return isDebuff ? "target_debuff" : "target_buff";
+            // Source: server-scripts/Skills.cs:BreaksPartyInvisibility — the game treats the two debuff classes, and a target buff that can buff enemies, as hostile.
+            // The damage-type flags on a buff only choose the school of its damage over time or damage shield, as the resolvers below read them.
             if (skill.TryCast<TargetDebuffSkill>() != null) return "target_debuff";
+            if (skill.TryCast<AreaDebuffSkill>() != null) return "area_debuff";
+            var targetBuffSkill = skill.TryCast<TargetBuffSkill>();
+            if (targetBuffSkill != null)
+            {
+                // Consumers read a buff type as the buff handler and a debuff type as the debuff handler. A target
+                // buff that can buff enemies is hostile but runs the buff handler, so neither type describes it.
+                if (targetBuffSkill.canBuffEnemies)
+                    throw new System.InvalidOperationException(
+                        $"Skill '{skill.name}' is a target buff that can buff enemies, which no skill type describes.");
+                return "target_buff";
+            }
+            if (skill.TryCast<AreaBuffSkill>() != null) return "area_buff";
             if (skill.TryCast<BardSongSkill>() != null) return "area_buff";
-            return isDebuff ? "debuff" : "buff";
+            return "buff";
         }
 
         if (skill.TryCast<PassiveSkill>() != null) return "passive";
