@@ -6,6 +6,7 @@
 
 - [x] 2.1 Confirm or revise the Proposed parts of D13: storage engine, cross-tab coordination, durability and backups. Update their status in `design.md`.
 - [x] 2.2 Confirm or revise the Proposed parts of D14: transports, short links on D1, and abuse controls. Update their status in `design.md`.
+- [ ] 2.3 Confirm or revise the Proposed save reader of D12: WebCrypto with the site's sql.js, or SQLite3 Multiple Ciphers.
 
 ## 3. In-flight changes
 
@@ -23,7 +24,7 @@
 
 ## 5. Spikes
 
-- [ ] 5.1 Save spike on a copy of the owner's save: cipher settings, date encoding, stored quest names, and opening it with the SQLite3 Multiple Ciphers WebAssembly build (D12).
+- [x] 5.1 Save spike on a copy of the owner's save: cipher settings, date encoding, stored quest ids, and opening it in a browser (D12).
 - [ ] 5.2 Measure encoded build sizes with 0, 4 and 10 geared mercenaries (D14).
 - [ ] 5.3 Keep the previous export at each game update and compare ids, to settle whether ids are stable.
 

@@ -7,6 +7,7 @@ The evidence comes from reading the decompiled server code of game 0.9.36.1 (Ste
 Each decision has a status:
 
 - Decided: the owner agreed.
+- Proposed: recommended, waiting for the owner's confirmation.
 - Open: not decided yet.
 
 ### Why one model
@@ -20,7 +21,7 @@ Every fact, rule and relation below has several owners today, and the copies dis
 | Stats | The game sums 28 stats through `ICombatBonus`, `IHealthBonus`, `IManaBonus` and `IEnergyBonus`. The repository names them with four or five key vocabularies and decides in about seven places whether a stat is a percentage | Labels conflict, such as AC and Armor Class, or Critical Chance and Critical Strike. The item list prints a 5% stat as 0.05 |
 | Effects | The game identifies an effect by its buff skill, and its appliers are spread over nine tables and columns. Mechanic predicates are defined in `mods/DataExporter/Skills/SkillClassification.cs`, `website/src/lib/skills/mechanics-sections.ts` and `website/src/lib/utils/formatSkillEffect.ts` | Zone hazards and game-state buffs such as Rest have no applier relation. The NPC caster count is always 0 |
 | Character state | Flat `calculation:<key>` numbers in `localStorage` (`website/src/lib/calculation/remembered.svelte.ts`) without identity. Readers clamp the level to different bounds | No page can mean "your character" |
-| Saves | An encrypted SQLCipher database that references items, skills and monsters by name, stores quests by an id the export lacks, and leaves some settings in Unity PlayerPrefs | A direct reader needs a WebAssembly SQLCipher build and one export addition |
+| Saves | An encrypted SQLCipher database that references items, skills and monsters by name, stores quests by an id the export lacks, and leaves some settings in Unity PlayerPrefs | A direct reader needs SQLCipher decryption in the browser and one export addition |
 
 ## Goals / Non-Goals
 
@@ -124,18 +125,28 @@ Alternative rejected: a separate effect kind, as Afallon has.
 - A player hires up to 10 mercenaries and has 1 to 4 active depending on level: 1 below level 20, 2 from 20, 3 from 30 and 4 from 40, within a party of at most 5. `website/src/lib/utils/merc-stats.ts` cites the game code for each limit.
 - Mercenary skills are fixed per class and never chosen. Each rank is the smaller of the skill's maximum and floor(level / 5) + floor(total veteran points / 10), and at least 1 for Bards and Necromancers. Ranks are derived, never stored.
 - The planner configures each mercenary's class, race, 16 equipment slots with augments, and four supply slots: food, utility potion, healing potion and resource potion.
-- Hire rolls stay ranges unless a save provides them.
+- Hire rolls stay ranges until a save import provides the values the save stores (D12).
 
 ### D12. Save import reads game.dat in the browser (Decided)
 
-- `game.dat` is a SQLCipher database (`server-scripts/Database.cs:7,780`). The reader uses the WebAssembly build that SQLite3 Multiple Ciphers publishes with every release, which has a SQLCipher cipher scheme with legacy modes. It loads only on the import page.
-- The key lives in code, obscured and assembled at runtime. It never appears in documentation, reports, issues or chat. The rule in the ancient-kingdoms-save-files skill against committing the key changes to match when the reader lands.
+- `game.dat` is a SQLCipher 4 database with that version's default settings: PBKDF2-HMAC-SHA512 with 256,000 iterations, 4,096-byte pages and an HMAC-SHA512 on every page (`server-scripts/Database.cs:7,780`). The game keeps it in WAL mode.
 - Players import after closing the game, because the game writes pending changes into `game.dat` when it closes the database (`server-scripts/Database.cs:836-857`).
+- The key lives in code, obscured and assembled at runtime. It never appears in documentation, reports, issues or chat. The rule in the ancient-kingdoms-save-files skill against committing the key changes to match when the reader lands.
 - The update workflow compares the tables and columns the reader expects with the declarations in the decompiled `Database.cs` and fails on drift, as the citation check does.
-- Saves reference items, skills and monsters by name, which the game keeps unique, so the reader joins on names. Quests are stored by `idQuest`, which the exporter must add.
+- Dates are .NET ticks of UTC time, because the game writes `DateTime.UtcNow` (`server-scripts/Database.cs:2458,2996`).
+- Saves reference items, skills and monsters by name, which the game keeps unique, so the reader joins on names. Every item name stored in the owner's save resolves to a published item.
+- Saves keep names from older game versions. The owner's save holds a boss killed under an earlier spelling of its name and two ores mined under an earlier capitalization. The reader shows such entries as not found and never guesses a match.
+- The game stores a quest by its authored `idQuest` field (`server-scripts/Quest.cs:33`), which the export lacks. All 120 values in the owner's save equal a quest asset name under the exporter's id rule (`mods/DataExporter/GameIds.cs`), but no code ties `idQuest` to the asset name, so the export adds it.
+- A mercenary row keeps the hire rolls drawn at hiring (`multiplierHealth`, `multiplierMana`, `baseCombat`), and the game adds the veteran bonus when it loads the mercenary (`server-scripts/Player.cs:10903,10922`). A save can flag more mercenaries as summoned than the level allows. The game loads the first ones up to the level's limit (`server-scripts/Player.cs:5068-5071`), and the reader derives the active set the same way.
 - PlayerPrefs data (skillbars, mercenary auto-consume toggles, helm visibility), fog of war and Steam achievements are outside `game.dat` and are not imported.
 - Content the compendium redacts can appear in a save. It shows as unknown and is never dropped.
-- The first step is a spike on a copy of the owner's save. It settles the cipher settings, how dates are stored, the stored quest names, and whether the WebAssembly build opens the file.
+
+Reader (Proposed): the browser derives the keys and decrypts the pages with WebCrypto, checks every page's HMAC, and opens the result with the sql.js build the site already ships. A wrong key or a changed cipher setting fails the check on the first page instead of producing wrong data. The update workflow opens a local save with the reader, so such a change fails the update before it reaches players. Both readers opened a copy of the owner's save in headless Chromium:
+
+| Reader | Added download | Open and integrity check | Limits |
+| --- | --- | --- | --- |
+| WebCrypto and the site's sql.js | About 1.5 KB compressed, 60 lines of site code | 89 ms | The site implements the SQLCipher 4 page format itself and tests it against a database encrypted with a test key |
+| SQLite3 Multiple Ciphers 2.6.1, WebAssembly build | 572 KB compressed | 240 to 270 ms | A second SQLite engine beside sql.js. It opens the save only with exclusive locking or as immutable, because its WebAssembly file system has no shared memory for WAL mode |
 
 Alternative rejected: a companion mod that writes a snapshot. It would break with game and mod loader updates, need its own releases and install support, and reach only players who install mods.
 
@@ -277,7 +288,7 @@ Each step ships something visible and depends only on the steps it names:
 
 - Are compendium ids stable across game patches? Exports are gitignored, so there is no history. Keep the previous export at each update and compare before links and stored characters depend on ids.
 - How large is a full build with 10 geared mercenaries once encoded, and which builds fit a link?
-- Which cipher settings, date encoding and quest name values does `game.dat` use? The spike of D12 settles them.
+- Does the game still count progress that a save stores under a name an update changed? A runtime check settles whether the import should match such entries.
 - Do the player and mercenary class growth methods in `Player.cs` agree for every class?
 - Can a Rogue with a two-handed main hand weapon equip an off-hand weapon (`server-scripts/EquipmentItem.cs:130-141`)? A runtime check settles it before the planner allows or blocks it.
 - Which retention period and daily cap suit short links, once real usage is known?
