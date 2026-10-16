@@ -185,8 +185,8 @@
               <Table.Head class="table-cell text-right">All levels</Table.Head>
             {/if}
             {#if pet.has_necromancer_pet_stats}
-              <Table.Head class="table-cell text-right whitespace-normal">
-                Level {pet.level_max}<br />+200 veteran points
+              <Table.Head class="table-cell text-right">
+                Level {pet.level_max} (VT 200)
               </Table.Head>
             {/if}
           </Table.Row>
@@ -359,11 +359,11 @@
                 </dt>
                 <dd class="space-y-1">
                   <p>
-                    Each of your veteran points adds 1% of base Attack Power and
-                    Spell Power, and 0.25% of base Health, Armor Class and each
-                    resistance, rounded. At 200 points, Attack Power and Spell
-                    Power reach +200% and the other stats +50%. The bonus
-                    refreshes whenever you gain a veteran point.
+                    Each of your veteran points (VT) adds 1% of base Attack
+                    Power and Spell Power, and 0.25% of base Health, Armor Class
+                    and each resistance, rounded. At 200 points, Attack Power
+                    and Spell Power reach +200% and the other stats +50%. The
+                    bonus refreshes whenever you gain a veteran point.
                   </p>
                   <RoundingDefinition />
                 </dd>
