@@ -67,8 +67,8 @@ The [update-game-version skill](.agent/skills/update-game-version/SKILL.md) give
 
 ## Making changes
 
-- Plan a behaviour change as an OpenSpec change under [`openspec/changes`](openspec/changes/). [`openspec/specs`](openspec/specs/) holds the current requirements.
-- Commit messages follow Conventional Commits, and commitlint checks them. A message explains the change on its own and names no OpenSpec task or decision numbers, because those are neither unique nor permanent.
+- Plan a behaviour change as an OpenSpec change under [`openspec/changes`](openspec/changes/). [`openspec/specs`](openspec/specs/) holds the current requirements. A change record states each decision and the evidence behind it, never who made, approved or rejected it.
+- Commit messages follow Conventional Commits, and commitlint checks them. A message explains the change on its own. It names no OpenSpec task or decision numbers, because those are neither unique nor permanent, and no person who asked for or approved the change, because that is not why the change exists.
 - Put each new fact in the document that owns it. The [project-documentation skill](.agent/skills/project-documentation/SKILL.md) says which one.
 - Keep the invariants in [ARCHITECTURE.md](ARCHITECTURE.md#invariants).
 
