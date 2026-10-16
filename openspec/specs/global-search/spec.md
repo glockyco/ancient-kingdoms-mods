@@ -53,9 +53,9 @@ The palette SHALL show results in one list, in the order that the ranking return
 - **THEN** the results include every Notable NPC
 - **AND** each of those rows identifies the Notable classification
 
-### Requirement: The index covers entities, pages, and filtered lists
+### Requirement: The index covers entities, pages, sections, and filtered lists
 
-The palette SHALL return every searchable entity family except the placement families named below, every mechanics page, every overview page, and each tool page. It SHALL contain one filtered-list result for each NPC service role, each item slot, each item type that is not a generic group, and each monster classification. Each filtered-list result SHALL open its list page with that filter applied and SHALL have a reviewed name.
+The palette SHALL return every searchable entity family except the placement families named below, every mechanics page, every overview page, and each tool page. It SHALL return each section that a mechanics page lists in its contents, labelled Topic like a guide article. When a guide article opens the same section, the article SHALL represent it, and the section's heading SHALL find the article. It SHALL contain one filtered-list result for each NPC service role, each item slot, each item type that is not a generic group, and each monster classification. Each filtered-list result SHALL open its list page with that filter applied and SHALL have a reviewed name.
 
 Sub-zone names SHALL match their parent zone. Chests, traps, portals, workstations, houses, and treasure locations SHALL NOT appear in the palette, because their names are internal labels or they have no page of their own. Map search SHALL continue to return them.
 
@@ -86,10 +86,10 @@ Sub-zone names SHALL match their parent zone. Chests, traps, portals, workstatio
 - **THEN** the Healing skill ranks first
 - **AND** a result opens the Combat healing section
 
-#### Scenario: A visitor searches for the Wisdom heal bonus
+#### Scenario: A visitor searches for a rule inside a mechanics page
 
 - **WHEN** a visitor searches for "wisdom heal bonus"
-- **THEN** results open the Combat Wisdom Heal Bonus section and the Character Build attribute rules
+- **THEN** the first result opens the Combat Wisdom Heal Bonus section
 
 ### Requirement: Ranking follows one ordered contract
 
@@ -104,6 +104,9 @@ The ranking SHALL apply these rules:
 7. A query word from the reviewed synonym list SHALL also match its listed terms.
 8. Normalization SHALL ignore letter case, diacritics, apostrophes, and punctuation, and SHALL treat a singular and a plural form as the same word.
 9. Results with an identical destination, including the section anchor, SHALL appear once.
+10. A section SHALL rank below another result with the same name.
+11. A section SHALL rank below its own page when the page matches the query too, unless the section's name equals the query.
+12. At most two sections of one page SHALL appear.
 
 #### Scenario: A visitor types a word from inside a name
 
@@ -118,7 +121,8 @@ The ranking SHALL apply these rules:
 #### Scenario: A visitor uses an abbreviation
 
 - **WHEN** a visitor searches for "xp"
-- **THEN** a result opens the Experience mechanics page
+- **THEN** the first result opens the Experience mechanics page
+- **AND** at most two Experience sections appear
 
 #### Scenario: A short query with a similar word
 

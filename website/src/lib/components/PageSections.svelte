@@ -1,14 +1,8 @@
-<script lang="ts" module>
-  export interface PageSection {
-    /** Element id of the section this entry jumps to. */
-    id: string;
-    label: string;
-  }
-</script>
-
 <script lang="ts">
+  import type { PageSection } from "./page-sections";
+
   interface Props {
-    sections: PageSection[];
+    sections: readonly PageSection[];
   }
 
   let { sections }: Props = $props();

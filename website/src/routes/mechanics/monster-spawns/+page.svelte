@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
@@ -17,21 +18,6 @@
   } from "./+page.server";
 
   let { data }: { data: RespawnMechanicsPageData } = $props();
-
-  // Every section on the page, in document order. Drives the jump list.
-  // The ids match each Card.Root below.
-  const SECTIONS = [
-    { id: "cycle", label: "The Respawn Cycle" },
-    { id: "empty-zones", label: "Empty Zones Are Switched Off" },
-    { id: "bosses", label: "Boss Respawn Timers" },
-    { id: "missing-boss", label: "Why a Boss Is Absent" },
-    { id: "rare-spawns", label: "Rare Spawns" },
-    { id: "renewal-sages", label: "Renewal Sages" },
-    { id: "spawn-windows", label: "Day and Night Spawns" },
-    { id: "summons", label: "Kill-Triggered Summons" },
-    { id: "leashing", label: "Chase Limits and Resets" },
-    { id: "other-spawns", label: "Other Ways Monsters Appear" },
-  ];
 
   const bossTiers = $derived.by(() => {
     const tiers: [number, BossRespawn[]][] = [];
@@ -142,7 +128,7 @@
 
   <h1 class="text-4xl font-bold">Monster Spawn Mechanics</h1>
 
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/monster-spawns"]} />
 
   <Card.Root id="cycle" class="bg-muted/30">
     <Card.Header>

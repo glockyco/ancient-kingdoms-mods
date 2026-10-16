@@ -3,6 +3,7 @@
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
@@ -10,12 +11,6 @@
     bardCharmResistance,
     finalCadenceMelody,
   } from "$lib/calculation/bard";
-
-  const SECTIONS = [
-    { id: "songs", label: "Bard Songs" },
-    { id: "cadence", label: "Final Cadence" },
-    { id: "charm", label: "Bard Charm" },
-  ];
 </script>
 
 <Seo
@@ -35,7 +30,7 @@
 
   <h1 class="text-4xl font-bold">Bard Songs and Charm</h1>
 
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/bard"]} />
 
   <Card.Root id="songs" class="bg-muted/30">
     <Card.Header>

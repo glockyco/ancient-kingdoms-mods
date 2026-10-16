@@ -2,17 +2,9 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
-
-  const SECTIONS = [
-    { id: "game-modes", label: "Game Modes and Hardcore" },
-    { id: "exploration", label: "Exploration and Maps" },
-    { id: "map-notes", label: "Personal Map Notes" },
-    { id: "binding-and-travel", label: "Binding and Travel" },
-    { id: "portals", label: "Portals and Entry Requirements" },
-    { id: "seasonal-events", label: "Seasonal Events" },
-  ];
 </script>
 
 <Seo
@@ -31,7 +23,7 @@
   />
 
   <h1 class="text-4xl font-bold">World and Travel</h1>
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/world"]} />
 
   <Card.Root id="game-modes" class="bg-muted/30">
     <Card.Header>

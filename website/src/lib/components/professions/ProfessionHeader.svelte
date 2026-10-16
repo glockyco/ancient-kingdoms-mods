@@ -1,6 +1,6 @@
 <script lang="ts" module>
   import type { Component, Snippet } from "svelte";
-  import type { PageSection } from "$lib/components/PageSections.svelte";
+  import type { PageSection } from "$lib/components/page-sections";
 
   export interface ProfessionHeaderData {
     name: string;
@@ -16,7 +16,7 @@
     iconBackgroundClass: string;
     /** Mastery value that unlocks the achievement. */
     capPercent?: number;
-    sections?: PageSection[];
+    sections?: readonly PageSection[];
     children: Snippet;
   }
 </script>

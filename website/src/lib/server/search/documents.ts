@@ -6,6 +6,7 @@ import {
   type SearchableEntityId,
 } from "$lib/entities/registry";
 import { MECHANICS_GROUPS } from "$lib/data/mechanics";
+import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
 import type { IndexedDoc } from "$lib/search/engine";
 import { FILTERED_LISTS, listHref, listTableLabel } from "$lib/search/lists";
 import { nameKey } from "$lib/search/normalize";
@@ -341,23 +342,54 @@ function pageDocs(): IndexedDoc[] {
   docs.push(
     page("Map", "/map", "interactive world map locations"),
     page("Game Mechanics", "/mechanics", "rules reference"),
-    page(
-      "Healing Mechanics",
-      "/mechanics/combat#healing",
-      "healing rules wisdom heal bonus critical heals lifetap",
-    ),
-    page(
-      "Wisdom Heal Bonus",
-      "/mechanics/combat#heal-bonus",
-      "healing mechanics combat",
-    ),
-    page(
-      "Character Build Attributes",
-      "/mechanics/character#attributes",
-      "six attributes strength dexterity constitution intelligence wisdom charisma healing heal bonus rules",
-    ),
   );
   return docs;
+}
+
+/**
+ * Adds every entry of a mechanics page's contents to `docs`. A guide article
+ * that opens the same section already represents it, so the heading becomes
+ * one of the article's aliases rather than a second result for one
+ * destination. Any other section is a result of its own: its page title is a
+ * keyword, so a query naming both, such as "combat healing", finds it, and it
+ * is labelled like a guide article, because both open a section of a page.
+ */
+function withSections(docs: readonly IndexedDoc[]): IndexedDoc[] {
+  const result = [...docs];
+  const articleAt = new Map(
+    result.flatMap((doc, at) =>
+      doc.kind === "guide_topic" ? [[doc.href, at] as const] : [],
+    ),
+  );
+  const pages = MECHANICS_GROUPS.flatMap((group) => [...group.pages]);
+  for (const mechanics of pages) {
+    const path = mechanics.href.split("#")[0];
+    for (const section of MECHANICS_SECTIONS[mechanics.href]) {
+      const href = `${path}#${section.id}`;
+      const at = articleAt.get(href);
+      if (at === undefined) {
+        result.push({
+          kind: "section",
+          id: href,
+          name: section.label,
+          href,
+          label: entityRegistry.guide_topic.label,
+          detail: null,
+          image: null,
+          aliases: "",
+          keywords: mechanics.title,
+          content: "",
+        });
+      } else {
+        const article = result[at];
+        result[at] = {
+          ...article,
+          aliases: `${article.aliases} ${section.label}`.trim(),
+        };
+      }
+    }
+  }
+  return result;
 }
 
 function listDocs(): IndexedDoc[] {
@@ -378,5 +410,5 @@ function listDocs(): IndexedDoc[] {
 /** Every document of the search index, in a stable order. */
 export function buildSearchDocuments(db: Database.Database): IndexedDoc[] {
   tableColumnsCache.clear();
-  return [...entityDocs(db), ...pageDocs(), ...listDocs()];
+  return [...withSections([...entityDocs(db), ...pageDocs()]), ...listDocs()];
 }

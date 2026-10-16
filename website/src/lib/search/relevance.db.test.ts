@@ -19,7 +19,7 @@ import {
   type JudgedCase,
 } from "./judged/cases";
 import { FILTERED_LISTS } from "./lists";
-import { tokenize } from "./normalize";
+import { nameKey, tokenize } from "./normalize";
 import { SYNONYMS } from "./synonyms";
 
 const db = new Database("data/compendium.db", { readonly: true });
@@ -30,6 +30,26 @@ const loaded = loadSearchIndex(JSON.parse(serialized) as SearchPayload);
 
 function search(text: string, scope: SearchScope = "palette", limit = 10) {
   return rankSearch(loaded, text, { scope, limit }).map(({ doc }) => doc);
+}
+
+/** Every word that names three or more section headings of one page. */
+function sectionWords(): string[] {
+  const counts = new Map<string, number>();
+  for (const doc of docs) {
+    if (doc.kind !== "section") continue;
+    const page = doc.href.split("#")[0];
+    for (const word of new Set(tokenize(doc.name))) {
+      const key = `${page} ${word}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  return [
+    ...new Set(
+      [...counts]
+        .filter(([, count]) => count > 2)
+        .map(([key]) => key.split(" ")[1]),
+    ),
+  ];
 }
 
 function passing(cases: readonly JudgedCase[]): JudgedCase[] {
@@ -44,7 +64,7 @@ function passing(cases: readonly JudgedCase[]): JudgedCase[] {
  * Passing counts recorded when the ranking settings were last changed. A lower
  * count is a regression; a higher count means these numbers need updating.
  */
-const RECORDED_PASSES = { tuning: 94, development: 142, heldOut: 127 };
+const RECORDED_PASSES = { tuning: 97, development: 144, heldOut: 127 };
 
 /** Sampled entities whose every query variant passes, out of all sampled. */
 const RECORDED_ENTITY_PASSES = {
@@ -173,18 +193,51 @@ describe("ranking contract", () => {
     });
   });
 
-  test("healing sections are discoverable without displacing the skill", () => {
-    const results = search("healing", "palette", 20);
-    expect(results[0]).toMatchObject({ kind: "skill", name: "Healing" });
-    expect(results.map((doc) => doc.href)).toContain(
-      "/mechanics/combat#healing",
-    );
-    expect(search("wisdom heal bonus").map((doc) => doc.href)).toEqual(
-      expect.arrayContaining([
-        "/mechanics/combat#heal-bonus",
-        "/mechanics/character#attributes",
-      ]),
-    );
+  test("an entity or guide article ranks above a section of the same name", () => {
+    const misplaced = docs
+      .filter((doc) => doc.kind === "section")
+      .filter((section) => {
+        const results = search(section.name, "palette", 20);
+        const sectionAt = results.findIndex((doc) => doc.href === section.href);
+        const twinAt = results.findIndex(
+          (doc) =>
+            doc.kind !== "section" &&
+            nameKey(doc.name) === nameKey(section.name),
+        );
+        return twinAt !== -1 && sectionAt !== -1 && sectionAt < twinAt;
+      })
+      .map((section) => section.name);
+    expect(misplaced).toEqual([]);
+  });
+
+  test("a word shared by headings of one page shows at most two of them", () => {
+    const flooded = sectionWords().filter((word) => {
+      const shown = new Map<string, number>();
+      for (const doc of search(word, "palette", 20)) {
+        if (doc.kind !== "section") continue;
+        const page = doc.href.split("#")[0];
+        shown.set(page, (shown.get(page) ?? 0) + 1);
+      }
+      return [...shown.values()].some((count) => count > 2);
+    });
+    expect(flooded).toEqual([]);
+  });
+
+  test("a section ranks below its own page when the page matches too", () => {
+    const misplaced = sectionWords().filter((word) => {
+      const results = search(word, "palette", 20);
+      return results.some((doc, at) => {
+        if (doc.kind !== "section" || nameKey(doc.name) === nameKey(word)) {
+          return false;
+        }
+        const pageAt = results.findIndex(
+          (other) =>
+            other.kind === "page" && other.href === doc.href.split("#")[0],
+        );
+        return pageAt > at;
+      });
+    });
+    expect(misplaced).toEqual([]);
   });
 
   test("an area name finds its zone", () => {

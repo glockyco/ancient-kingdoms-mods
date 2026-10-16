@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import * as Card from "$lib/components/ui/card";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -17,25 +18,6 @@
   let { data } = $props();
 
   const fmt = (value: number) => value.toLocaleString("en-US");
-
-  // Every section on the page, in document order. Drives the jump list.
-  // The ids match each Card.Root below.
-  const SECTIONS = [
-    { id: "levels", label: "Levels" },
-    { id: "level-rewards", label: "Level Rewards" },
-    { id: "veteran-points", label: "Veteran Points" },
-    { id: "kill-xp", label: "Kill XP" },
-    { id: "death-xp", label: "Death XP" },
-    { id: "scroll-xp", label: "Scroll XP" },
-    { id: "gathering-xp", label: "Gathering XP" },
-    { id: "alchemy-xp", label: "Alchemy XP" },
-    { id: "scribing-xp", label: "Scribing XP" },
-    { id: "cooking-xp", label: "Cooking XP" },
-    { id: "crafting-xp", label: "Crafting XP" },
-    { id: "augment-xp", label: "Augment XP" },
-    { id: "quest-xp", label: "Quest XP" },
-    { id: "zone-discovery-xp", label: "Zone Discovery XP" },
-  ];
 
   const LEVEL_CAP = 50;
   const LATE_GAME_START = 40;
@@ -343,7 +325,7 @@
 
   <h1 class="text-4xl font-bold">Experience Mechanics</h1>
 
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/experience"]} />
 
   <!-- Levels -->
   <Card.Root id="levels" class="bg-muted/30">

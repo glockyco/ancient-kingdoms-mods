@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
@@ -12,15 +13,6 @@
   import { getQualityTextColorClass } from "$lib/utils/format";
 
   let { data } = $props();
-
-  const SECTIONS = [
-    { id: "attributes", label: "The Six Attributes" },
-    { id: "resources", label: "Health, Mana, Rage, and Songs" },
-    {
-      id: "skills-and-specializations",
-      label: "Skills, Veteran Points, and Specializations",
-    },
-  ];
 </script>
 
 <Seo
@@ -38,7 +30,7 @@
     ]}
   />
   <h1 class="text-4xl font-bold">Character Build</h1>
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/character"]} />
 
   <Card.Root id="attributes" class="bg-muted/30">
     <Card.Header>

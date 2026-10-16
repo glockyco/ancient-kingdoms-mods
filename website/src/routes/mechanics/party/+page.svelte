@@ -2,17 +2,11 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
   import { partyGold } from "$lib/calculation/party";
-
-  const SECTIONS = [
-    { id: "party", label: "Party" },
-    { id: "shared-rewards", label: "Shared Rewards" },
-    { id: "loot-rolls", label: "Need, Greed, and Pass" },
-    { id: "chat-and-follow", label: "Chat and Follow" },
-  ];
 </script>
 
 <Seo
@@ -31,7 +25,7 @@
   />
 
   <h1 class="text-4xl font-bold">Party and Loot</h1>
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/party"]} />
 
   <Card.Root id="party" class="bg-muted/30">
     <Card.Header>

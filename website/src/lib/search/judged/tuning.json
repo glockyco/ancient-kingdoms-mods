@@ -656,6 +656,18 @@
     "k": 1
   },
   {
+    "q": "healing",
+    "intent": "concept",
+    "expect": ["/mechanics/combat#healing"],
+    "k": 3
+  },
+  {
+    "q": "wisdom heal bonus",
+    "intent": "concept",
+    "expect": ["/mechanics/combat#heal-bonus"],
+    "k": 1
+  },
+  {
     "q": "experience",
     "intent": "concept",
     "expect": ["/mechanics/experience"],

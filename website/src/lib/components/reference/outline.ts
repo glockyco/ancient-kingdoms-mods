@@ -6,15 +6,22 @@ export interface ReferenceTopic {
   readonly title: string;
 }
 
-/** A group of topics, shown as one entry of the page's contents. */
-export interface ReferenceChapter {
+/**
+ * The words of a chapter: what search and other pages can use without the
+ * page's components.
+ */
+export interface ReferenceChapterText {
   readonly id: string;
   readonly title: string;
   /** One line under the chapter heading saying what the chapter answers. */
   readonly description: string;
-  readonly icon: Component;
   /** Empty when the chapter is a single topic of its own. */
   readonly topics: readonly ReferenceTopic[];
+}
+
+/** A group of topics, shown as one entry of the page's contents. */
+export interface ReferenceChapter extends ReferenceChapterText {
+  readonly icon: Component;
 }
 
 export type ReferenceOutline = readonly ReferenceChapter[];

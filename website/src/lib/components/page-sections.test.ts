@@ -7,14 +7,18 @@ const here = new URL(".", import.meta.url).pathname;
 const routes = join(here, "../../routes");
 
 /**
- * Every page that renders a PageSections jump list. The ids in each page's
- * section array are decoupled from the markup they scroll to, so a renamed
- * Card.Root id would silently produce a dead link.
+ * Every page that declares its PageSections jump list inline. The ids in each
+ * page's section array are decoupled from the markup they scroll to, so a
+ * renamed Card.Root id would silently produce a dead link. Mechanics pages
+ * render their lists from MECHANICS_SECTIONS, which has its own test.
  */
 const PAGES = (readdirSync(routes, { recursive: true }) as string[])
   .filter((path) => path.endsWith("+page.svelte"))
   .map((path) => join(routes, path))
-  .filter((path) => readFileSync(path, "utf8").includes("<PageSections"))
+  .filter((path) => {
+    const src = readFileSync(path, "utf8");
+    return src.includes("<PageSections") && !src.includes("MECHANICS_SECTIONS");
+  })
   .map((path) => relative(here, path))
   .sort();
 

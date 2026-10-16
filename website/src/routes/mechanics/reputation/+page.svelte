@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
@@ -37,20 +38,6 @@
       races: ["Felarii", "Drassar"],
     },
     { id: "the_forsaken", name: "The Forsaken", races: [] },
-  ];
-
-  // Every section on the page, in document order. Drives the jump list; the
-  // ids match each Card.Root below.
-  const SECTIONS = [
-    { id: "factions", label: "The Six Factions" },
-    { id: "ladder", label: "The Nine Tiers" },
-    { id: "monsters", label: "Killing Monsters" },
-    { id: "npcs", label: "Killing NPCs" },
-    { id: "quests", label: "Completing Quests" },
-    { id: "chests", label: "Looting Faction Chests" },
-    { id: "pets", label: "Petting Animals" },
-    { id: "unlocks", label: "What Reputation Unlocks" },
-    { id: "decay", label: "Decay and Limits" },
   ];
 
   // Tint deepens toward each end of the ladder. The nine segments are equal
@@ -113,7 +100,7 @@
 
   <h1 class="text-4xl font-bold">Reputation Mechanics</h1>
 
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/reputation"]} />
 
   <Card.Root id="factions" class="bg-muted/30">
     <Card.Header>

@@ -9,7 +9,8 @@ import { SYNONYMS } from "./synonyms";
  * payload through `loadSearchIndex`.
  */
 
-export type SearchKind = EntityId | "page" | "list";
+/** A section is one entry of a mechanics page's contents, opened by its anchor. */
+export type SearchKind = EntityId | "page" | "section" | "list";
 
 /** Where a search runs: the site palette, or the map, which keeps placements. */
 export type SearchScope = "palette" | "map";
@@ -57,15 +58,27 @@ export const PLACEMENT_KINDS: ReadonlySet<SearchKind> = new Set<SearchKind>([
   "treasure",
 ]);
 
-/** Ranking weight per result kind; recipes repeat the names of their items. */
+/**
+ * Ranking weight per result kind; recipes repeat the names of their items. A
+ * section ranks below an entity or guide article of the same name, which is
+ * the canonical result for that name.
+ */
 const KIND_WEIGHT: Partial<Record<SearchKind, number>> = {
   zone: 1.3,
   class: 1.3,
   profession: 1.3,
   page: 1.3,
   list: 1.3,
+  section: 0.9,
   recipe: 0.6,
 };
+
+/**
+ * Sections of one page that a result list may show. A word shared by many
+ * headings of one page, such as "XP", would otherwise fill the list with that
+ * page; its contents list leads to the rest.
+ */
+const SECTIONS_PER_PAGE = 2;
 
 const FIELDS = ["name", "aliases", "keywords", "content"];
 
@@ -209,13 +222,36 @@ export function rankSearch(
   // The palette shows one row per destination. Map placements share the map
   // overview as their destination, so the map keeps one row per entity.
   const seen = new Set<string>();
+  const sectionsShown = new Map<string, number>();
   const results: RankedResult[] = [];
-  for (const hit of ordered) {
+  const add = (hit: { id: number; score: number }) => {
     const doc = docs[hit.id];
     const key = scope === "map" ? `${doc.kind}:${doc.id}` : doc.href;
-    if (seen.has(key)) continue;
+    if (results.length === limit || seen.has(key)) return;
+    if (doc.kind === "section") {
+      const page = doc.href.split("#")[0];
+      const shown = sectionsShown.get(page) ?? 0;
+      if (shown === SECTIONS_PER_PAGE) return;
+      sectionsShown.set(page, shown + 1);
+    }
     seen.add(key);
     results.push({ doc, score: hit.score });
+  };
+
+  // A section ranks below its own page when the page matches the query too,
+  // as a heading ranks below its page, unless the section's name is the query.
+  const pageHits = new Map(
+    hits
+      .filter((hit) => docs[hit.id].kind === "page")
+      .map((hit) => [docs[hit.id].href, hit]),
+  );
+  for (const hit of ordered) {
+    const doc = docs[hit.id];
+    if (doc.kind === "section" && keys[hit.id] !== queryKey) {
+      const pageHit = pageHits.get(doc.href.split("#")[0]);
+      if (pageHit) add(pageHit);
+    }
+    add(hit);
     if (results.length === limit) break;
   }
   return results;

@@ -1,16 +1,12 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
-
-  const SECTIONS = [
-    { id: "membership", label: "Guild Membership" },
-    { id: "guild-points", label: "Guild Points" },
-  ];
 </script>
 
 <Seo
@@ -29,7 +25,7 @@
   />
 
   <h1 class="text-4xl font-bold">Guilds</h1>
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/guilds"]} />
 
   <Card.Root id="membership" class="bg-muted/30">
     <Card.Header>

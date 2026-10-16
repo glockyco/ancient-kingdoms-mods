@@ -76,6 +76,8 @@
 
   const KIND_ICON: Partial<Record<SearchKind, IconNode>> = {
     page: FileText,
+    // Sections and guide articles both open a part of a page as a Topic.
+    section: entityRegistry.guide_topic.icon,
     list: ListFilter,
   };
 

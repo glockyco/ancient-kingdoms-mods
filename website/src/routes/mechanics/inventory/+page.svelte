@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -20,21 +21,6 @@
   } from "./+page.server";
 
   const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
-  // Every section on the page, in document order. Drives the jump list. The
-  // ids match each Card.Root below.
-  const SECTIONS = [
-    { id: "overview", label: "Storage at a Glance" },
-    { id: "backpacks", label: "Backpacks" },
-    { id: "bank", label: "Bank Tabs and Gold" },
-    { id: "house-chests", label: "House Chests and Shared Storage" },
-    { id: "item-movement", label: "Item Movement and Stacks" },
-    { id: "merchants", label: "Merchants, Buyback, and Repairs" },
-    { id: "loot", label: "Loot Pickup" },
-    { id: "equipment-templates", label: "Equipment Templates" },
-    { id: "durability-and-repair", label: "Equipment Durability and Repair" },
-    { id: "armor-sets", label: "Armor Sets" },
-    { id: "consumables", label: "Consumables and Item Types" },
-  ];
   const BANK_TAB_COSTS = [
     0, 200, 1000, 2000, 5000, 10000, 15000, 20000, 50000, 100000,
   ];
@@ -104,7 +90,7 @@
 
   <h1 class="text-4xl font-bold">Inventory Mechanics</h1>
 
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/inventory"]} />
 
   <Card.Root id="overview" class="bg-muted/30">
     <Card.Header>

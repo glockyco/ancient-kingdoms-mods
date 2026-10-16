@@ -2,13 +2,9 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
-
-  const SECTIONS = [
-    { id: "furniture", label: "Furniture and Home Workstations" },
-    { id: "appearance", label: "Barbers and Appearance" },
-  ];
 </script>
 
 <Seo
@@ -27,7 +23,7 @@
   />
 
   <h1 class="text-4xl font-bold">Housing and Appearance</h1>
-  <PageSections sections={SECTIONS} />
+  <PageSections sections={MECHANICS_SECTIONS["/mechanics/housing"]} />
 
   <Card.Root id="furniture" class="bg-muted/30">
     <Card.Header>
