@@ -11,7 +11,7 @@
 {#if skill.damage_over_time_execute_bonus}
   {@const execute = skill.damage_over_time_execute_bonus}
   <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — after the NecromancerReaperFormSkill multiplier, below 0.3 health.max, sums learned source-player PassiveSkill damageOverTimeExecuteBonus. -->
-  <!-- Source: server-scripts/Skills.cs:1903-1938 — a positive summed execute bonus multiplies the tick, which then rounds before critical ticks. -->
+  <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — a positive summed execute bonus multiplies the tick, which then rounds before critical ticks. -->
   <div class="space-y-2">
     <h3 class="font-semibold">Damage-over-Time Execute</h3>
     <p class="text-muted-foreground">

@@ -13,7 +13,7 @@ namespace CombatVerification.Materialization
     /// </summary>
     /// <remarks>
     /// The three values a hire rolls are written to the same fields the hire writes
-    /// (<c>server-scripts/Player.cs:9810-9822</c>). The engine draws them from ranges it holds as
+    /// (<c>server-scripts/Player.cs:9880-9892</c>). The engine draws them from ranges it holds as
     /// literals inside the hire, so nothing exposes the range and a value cannot be requested.
     /// <para>
     /// Which resource a companion uses follows its archetype rather than a field: a Warrior and a

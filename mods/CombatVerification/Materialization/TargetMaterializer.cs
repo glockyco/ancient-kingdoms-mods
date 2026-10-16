@@ -15,7 +15,7 @@ namespace CombatVerification.Materialization
     /// <remarks>
     /// The world keeps every zone's monsters as inactive objects until a player enters the zone, so
     /// a spawn can be located before travelling. Travel uses the same command a portal sends
-    /// (<c>server-scripts/Player.cs:10837-10913</c>), which activates the zone, clears the target,
+    /// (<c>server-scripts/Player.cs:10901-10977</c>), which activates the zone, clears the target,
     /// and warps the player. Facing is a placement: the player is put on the side of the target
     /// that its declared facing asks for, and the facing a hit actually achieved is recorded per hit
     /// because an aggroed monster turns.

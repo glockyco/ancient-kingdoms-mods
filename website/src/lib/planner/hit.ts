@@ -104,7 +104,7 @@ export interface HitOutcome {
 
 /**
  * Fixes every deterministic term of one hit from current caster and target state. Source order:
- * server-scripts/Combat.cs:702 (avoidance), :774 (variance), :865 (critical).
+ * server-scripts/Combat.cs:711 (avoidance), :783 (variance), :874 (critical).
  */
 export function prepareHit(
   caster: HitCaster,

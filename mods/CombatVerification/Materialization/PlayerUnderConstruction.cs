@@ -232,7 +232,7 @@ namespace CombatVerification.Materialization
 
         /// <summary>
         /// The archetype each hire index produces, as the hire's own switch decides
-        /// (<c>server-scripts/Player.cs:9772-9779</c>). Nothing exposes this mapping, so it is
+        /// (<c>server-scripts/Player.cs:9842-9849</c>). Nothing exposes this mapping, so it is
         /// stated once here and every hire checks the archetype it actually received.
         /// </summary>
         private static readonly string[] HireArchetypes =

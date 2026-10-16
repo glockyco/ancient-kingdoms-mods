@@ -534,7 +534,7 @@ test("questDescription: alchemy — single brew with destination", () => {
 // non-bandages can use Elixir Endurance, while bandages use their base level
 // (server-scripts/PotionItem.cs:24-39,143-145). Mercenary utility potions
 // pass their owner's Player, so the owner's veteran rank is used
-// (server-scripts/Pet.cs:2071-2095); SSR cannot predict that rank.
+// (server-scripts/Pet.cs:2089-2113); SSR cannot predict that rank.
 // =============================================================================
 
 /**

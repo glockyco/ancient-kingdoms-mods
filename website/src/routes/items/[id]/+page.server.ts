@@ -260,7 +260,7 @@ export const load: PageServerLoad = async ({
   // baseValue = duration_base. Potion buff level is resolved at use time by
   // GetBuffLevelWithElixirEndurance (server-scripts/PotionItem.cs:24-39,
   // 143-145); mercenary utility potions pass Networkowner
-  // (server-scripts/Pet.cs:2071-2095). Runtime veteran rank is unknown here.
+  // (server-scripts/Pet.cs:2089-2113). Runtime veteran rank is unknown here.
   const buffId =
     item.potion_buff_id || item.food_buff_id || item.relic_buff_id || null;
   let buffDurationSeconds: number | null = null;

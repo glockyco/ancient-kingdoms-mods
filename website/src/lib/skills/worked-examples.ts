@@ -37,7 +37,7 @@ export function reaperDrain(rate: LinearValue, rank: number): number {
   return iround(multiplyF32(MAX_HEALTH.value, share));
 }
 
-// Source: server-scripts/Skills.cs:1903-1938 — a positive execute bonus multiplies the tick, which then rounds.
+// Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — a positive execute bonus multiplies the tick, which then rounds.
 export function executeTick(bonus: LinearValue, rank: number): number {
   return damageOverTimeBonuses(EXAMPLE_HIT, 3, 0, atRank(bonus, rank)).total;
 }
