@@ -114,6 +114,14 @@ public class AltarExporter : BaseExporter
             altarData.reward_legendary_name = defaultEvent.legendaryReward.nameItem;
         }
 
+        if (defaultEvent.normalReward != null && defaultEvent.magicReward != null
+            && defaultEvent.epicReward != null && defaultEvent.legendaryReward != null)
+        {
+            // Source: server-scripts/DefaultEvent.cs:231-237 — Reward thresholds use level plus veteran points.
+            (altarData.magic_reward_threshold, altarData.epic_reward_threshold, altarData.legendary_reward_threshold)
+                = (40, 50, 150);
+        }
+
         // Export waves
         ExportWaves(defaultEvent.listWavesMonsters, altarData);
 

@@ -11,6 +11,7 @@
     type ItemPopupDetails,
   } from "$lib/queries/popup";
   import { getQualityTextColorClass, formatPercent } from "$lib/utils/format";
+  import { formatAltarRequirement } from "$lib/calculation/altar";
 
   interface Props {
     itemId: string;
@@ -102,6 +103,8 @@
           d
             ? [
                 ...d.treasureMapSources.map((source) => source.mapItemId),
+                ...d.chestItemRewards.map((reward) => reward.item_id),
+                ...d.chestItemSources.map((reward) => reward.chest_item_id),
                 ...(d.treasureDestination?.rewardItemId
                   ? [d.treasureDestination.rewardItemId]
                   : []),
@@ -297,14 +300,8 @@
                 <span class="truncate">{altar.altarName}</span>
               </MapEntityLink>
               <div class="text-xs text-muted-foreground">
-                {#if altar.tier === "common"}
-                  Lv 30-34
-                {:else if altar.tier === "magic"}
-                  Lv 35-44
-                {:else if altar.tier === "epic"}
-                  Lv 45-50, Vet 0-99
-                {:else}
-                  Lv 50, Vet 100+
+                {#if altar.tier}
+                  {formatAltarRequirement(altar.tier, altar, altar.maxLevel)}
                 {/if}
                 {#if altar.dropRate > 0}
                   · {formatPercent(altar.dropRate)}
@@ -313,6 +310,44 @@
             </div>
           {/each}
         </div>
+      </div>
+    {/if}
+
+    {#if details.chestItemRewards.length > 0 || details.chestItemSources.length > 0}
+      <div class="border-t pt-2 space-y-2">
+        <p class="text-xs text-muted-foreground">
+          Chances at Treasure Hunter 0.
+        </p>
+        {#if details.chestItemRewards.length > 0}
+          <div class="font-medium">Chest Rewards</div>
+          {#each details.chestItemRewards as reward (`${reward.item_id}_${reward.roll_order}`)}
+            <div class="flex justify-between gap-2">
+              <MapItemLink
+                itemId={reward.item_id}
+                itemName={reward.item_name}
+                tooltipHtml={itemIconPaths ? reward.tooltip_html : null}
+                imageAvailable={itemIconPaths?.[reward.item_id]}
+                onSelect={onSelectItem}
+              />
+              <span>{formatPercent(reward.open_chance)}</span>
+            </div>
+          {/each}
+        {/if}
+        {#if details.chestItemSources.length > 0}
+          <div class="font-medium">Found in Chest Items</div>
+          {#each details.chestItemSources as chest (`${chest.chest_item_id}_${chest.roll_order}`)}
+            <div class="flex justify-between gap-2">
+              <MapItemLink
+                itemId={chest.chest_item_id}
+                itemName={chest.chest_name}
+                tooltipHtml={null}
+                imageAvailable={itemIconPaths?.[chest.chest_item_id]}
+                onSelect={onSelectItem}
+              />
+              <span>{formatPercent(chest.open_chance)}</span>
+            </div>
+          {/each}
+        {/if}
       </div>
     {/if}
 

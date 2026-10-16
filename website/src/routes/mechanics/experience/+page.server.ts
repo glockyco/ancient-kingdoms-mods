@@ -22,6 +22,9 @@ interface ExperiencePageData {
   maxLevelReward: ItemRef | null;
   veteranMaster: NamedRef | null;
   discoveryCities: NamedRef[];
+  maxLevel: number;
+  maxVeteranPoints: number;
+  attributeGains: Array<{ className: string; gains: string[] }>;
 }
 
 // Source: the export's game_config.json special_items — the game resolves these two
@@ -64,6 +67,92 @@ export const load: PageServerLoad = (): ExperiencePageData => {
     )
     .all() as NamedRef[];
 
+  const rules = db
+    .prepare(
+      "SELECT max_level, max_veteran_points FROM progression_rules WHERE id = 1",
+    )
+    .get() as { max_level: number; max_veteran_points: number } | undefined;
+  if (!rules)
+    throw new Error(
+      "Missing progression_rules.max_level and max_veteran_points",
+    );
+  const attributes = [
+    "strength",
+    "constitution",
+    "dexterity",
+    "intelligence",
+    "wisdom",
+    "charisma",
+  ] as const;
+  type ProgressionRow = {
+    class_id: string;
+    class_name: string;
+    level: number;
+  } & Record<(typeof attributes)[number], number>;
+  const progression = db
+    .prepare(
+      `SELECT p.*, c.id AS class_id, c.name AS class_name FROM classes c LEFT JOIN class_level_progression p ON c.id = p.class_id ORDER BY c.rowid, p.level`,
+    )
+    .all() as ProgressionRow[];
+  const byClass = new Map<string, ProgressionRow[]>();
+  for (const row of progression) {
+    const rows = byClass.get(row.class_id);
+    if (rows) rows.push(row);
+    else byClass.set(row.class_id, [row]);
+  }
+  const attributeGains = [...byClass].map(([classId, rows]) => {
+    if (
+      rows.length !== rules.max_level ||
+      rows.some((row, index) => row.level !== index + 1)
+    ) {
+      throw new Error(
+        `Missing class_level_progression levels for ${classId}: ${rows.map((row) => row.level).join(", ")}`,
+      );
+    }
+    const byCadence = new Map<number, string[]>();
+    for (const attribute of attributes) {
+      const increases = rows.filter(
+        (row, index) =>
+          row[attribute] !== (index === 0 ? 0 : rows[index - 1][attribute]),
+      );
+      const cadence = increases[0]?.level;
+      if (
+        !cadence ||
+        increases.length !== Math.floor(rules.max_level / cadence) ||
+        increases.some(
+          (row, index) =>
+            row.level !== (index + 1) * cadence ||
+            row[attribute] -
+              (row.level === 1 ? 0 : rows[row.level - 2][attribute]) !==
+              1,
+        )
+      ) {
+        throw new Error(
+          `Invalid class_level_progression cadence for ${classId}.${attribute}: levels ${increases.map((row) => row.level).join(", ")}`,
+        );
+      }
+      const name = attribute[0].toUpperCase() + attribute.slice(1);
+      const names = byCadence.get(cadence);
+      if (names) names.push(name);
+      else byCadence.set(cadence, [name]);
+    }
+    const cadences = [...byCadence.keys()].sort((a, b) => a - b);
+    if (
+      cadences.length !== 5 ||
+      cadences.some((cadence, index) => cadence !== index + 2)
+    ) {
+      throw new Error(
+        `Unsupported class_level_progression cadence for ${classId}: ${cadences.join(", ")}`,
+      );
+    }
+    return {
+      className: rows[0].class_name,
+      gains: cadences.map((cadence) => byCadence.get(cadence)!.join(", ")),
+    };
+  });
+  if (attributeGains.length === 0)
+    throw new Error("Missing class_level_progression");
+
   db.close();
 
   return {
@@ -71,5 +160,8 @@ export const load: PageServerLoad = (): ExperiencePageData => {
     maxLevelReward,
     veteranMaster: veteranMaster ?? null,
     discoveryCities,
+    maxLevel: rules.max_level,
+    maxVeteranPoints: rules.max_veteran_points,
+    attributeGains,
   };
 };

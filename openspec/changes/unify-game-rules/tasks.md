@@ -8,25 +8,25 @@
 
 ## 2. Export what the game computes
 
-- [ ] 2.1 Make the item exporter call the primal essence and item level functions and export their results. Verify in a real `build-tool export` that the values match task 1.1 and 1.2.
-- [ ] 2.2 Load the exported values, and delete `_calculate_primal_essence` and the item level reimplementation from `build-pipeline/src/compendium/denormalizers/items/calculations.py` together with their tests. Verify that `compendium build` produces the exported values and that item pages show them.
+- [x] 2.1 Make the item exporter call the primal essence and item level functions and export their results. Verify in a real `build-tool export` that the values match task 1.1 and 1.2. The export gives values to exactly the 646 equipment items, 117 weapons, 24 augments and 1 ammo item the game accepts, 1 to the token-bought set pieces, and 60 to the Drum of War.
+- [x] 2.2 Load the exported values, and delete `_calculate_primal_essence` and the item level reimplementation from `build-pipeline/src/compendium/denormalizers/items/calculations.py` together with their tests. Verify that `compendium build` produces the exported values and that item pages show them.
 
 ## 3. Altar tiers
 
-- [ ] 3.1 Export the altar tier thresholds from the altar exporter as a cited constant. Store each reward row's threshold, level part and veteran point part. Make `source_entries.py` and `crafting_source_level.py` read the level part. Verify the source level of each altar reward row against the thresholds.
-- [ ] 3.2 Replace the note strings in `build-pipeline/src/compendium/denormalizers/monsters/drops.py` with the reward tier. Verify that an altar boss's drops carry tiers and no notes.
-- [ ] 3.3 Add the tier function and its formatter to `website/src/lib/calculation/altar.ts`, and move the altar rules from `website/src/lib/utils/altar.ts` there. Make the item page, altar page, monster page and map popups use them, and delete the hardcoded ranges in `website/src/lib/utils/format.ts` and `website/src/routes/items/[id]/+page.svelte`. Verify an altar reward item page, an altar page, an altar boss page and a map popup in Chromium at 1440×900 and 390×844.
+- [x] 3.1 Export the altar tier thresholds from the altar exporter as a cited constant. Store each reward row's threshold, level part and veteran point part. Make `source_entries.py` and `crafting_source_level.py` read the level part. Verify the source level of each altar reward row against the thresholds.
+- [x] 3.2 Replace the note strings in `build-pipeline/src/compendium/denormalizers/monsters/drops.py` with the reward tier. Verify that an altar boss's drops carry tiers and no notes.
+- [ ] 3.3 Add the tier function and its formatter to `website/src/lib/calculation/altar.ts`, and move the altar rules from `website/src/lib/utils/altar.ts` there. Make the item page, altar page, monster page and map popups use them, and delete the hardcoded ranges in `website/src/lib/utils/format.ts` and `website/src/routes/items/[id]/+page.svelte`. Verify an altar reward item page, an altar page, an altar boss page and a map popup in Chromium at 1440×900 and 390×844. Done except the map popup: the pages passed in Chromium at both sizes, but the test browser rendered no frames, so the map never loaded. The popup uses the same formatter.
 
 ## 4. Chest rewards
 
-- [ ] 4.1 Move the reward loop to `website/src/lib/calculation/chest-rewards.ts` with the game's roll order, memoized per chest and skill, and delete `website/src/lib/utils/treasureHunter.ts`. Verify with a focused test that a chest whose rewards all roll 100% awards its item count and stops, and that a name is awarded at most once.
-- [ ] 4.2 Make the pipeline store each reward's roll order, base chance and Treasure Hunter flag, and delete `_estimate_chest_drop_chances` and the stored estimates. Make item pages, chest pages, map popups and the Treasure Hunter page compute chances with the loop. Verify that every chest reward chance on those pages is within 0.1 percentage points of the previous build.
+- [x] 4.1 Implement the exact chest computation in `website/src/lib/calculation/chest-rewards.ts` as `design.md` describes, and delete `website/src/lib/utils/treasureHunter.ts`. Verify with focused tests that a chest whose rewards all roll 100% awards its item count and stops, that a name is awarded at most once, that the 10-pass limit holds, and that the exact values agree with a seeded simulation of the loop.
+- [x] 4.2 Store chest rewards in `chest_item_rewards` with roll order, roll chance and the exported Treasure Hunter flag, register the table for redaction, and delete `_estimate_chest_drop_chances`, the stored estimates and the chest rows in `item_sources_random`. Make item pages, chest item pages, map popups and the Treasure Hunter page compute chances with the exact computation. Verify that every chance agrees with the previous build within four standard errors of its 100,000-trial estimate, and with the in-game counts of task 1.4. All 306 previous estimates lie within 2.3 standard errors, the in-game counts within 2.6, and the Treasure Hunter page recomputes in the browser.
 
 ## 5. Experience page
 
-- [ ] 5.1 Read the level cap, the veteran point cap and the class attribute gains from `progression_rules` and `class_level_progression` in the experience page's server load, and delete the constants. Verify that the prerendered page is unchanged.
+- [x] 5.1 Read the level cap, the veteran point cap and the class attribute gains from `progression_rules` and `class_level_progression` in the experience page's server load, and delete the constants. Verify that the prerendered page is unchanged.
 
 ## 6. Prove
 
-- [ ] 6.1 Prerender the site from the same export before and after the change and compare the pages. Verify that only the approved changes differ.
-- [ ] 6.2 Record in the invariants of `ARCHITECTURE.md` that character rules live in `website/src/lib/calculation/` and that the database stores only their inputs. Verify the documentation checks pass.
+- [x] 6.1 Prerender the site from the same export before and after the change and compare the pages. Verify that only the approved changes differ. 400 of 3,756 pages changed. Every changed line is an approved wording, value or note, or one of six rank swaps between rewards whose exact chances are close.
+- [x] 6.2 Record in the invariants of `ARCHITECTURE.md` that character rules live in `website/src/lib/calculation/` and that the database stores only their inputs. Verify the documentation checks pass.

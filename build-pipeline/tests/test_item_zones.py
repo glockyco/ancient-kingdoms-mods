@@ -36,8 +36,9 @@ class ItemZoneTests(unittest.TestCase):
             INSERT INTO altars (id, name, type, zone_id)
                 VALUES ('altar', 'Altar', 'forgotten', 'coast');
             INSERT INTO item_sources_altar
-                (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
-                VALUES ('altar_reward', 'altar', 'common', 1, 1);
+                (item_id, altar_id, reward_tier, drop_rate,
+                 min_level_plus_veteran, min_level, min_veteran_points)
+                VALUES ('altar_reward', 'altar', 'common', 1, 0, 0, 0);
             INSERT INTO treasure_locations (id, zone_id, required_map_id, reward_id) VALUES
                 ('dig_one', 'coast', 'map_item', 'map_reward'),
                 ('dig_two', 'coast', 'map_item', 'map_reward');

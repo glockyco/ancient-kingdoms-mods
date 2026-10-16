@@ -5,6 +5,13 @@
  * All queries use better-sqlite3 prepared statements for type safety and performance.
  */
 
+import { calculateChestRewards } from "$lib/calculation/chest-rewards";
+import {
+  CHEST_REWARDS_QUERY,
+  assembleChests,
+  type ChestRewardRow,
+} from "$lib/queries/chest-rewards";
+
 import type Database from "better-sqlite3";
 import type {
   MonsterSource,
@@ -46,6 +53,7 @@ export function getItemSources(
     chests: getChestSources(db, itemId),
     packs: getPackSources(db, itemId),
     randoms: getRandomSources(db, itemId),
+    chestItems: getChestItemSources(db, itemId),
     merges: getMergeSources(db, itemId),
     treasureMaps: getTreasureMapSources(db, itemId),
   };
@@ -152,7 +160,12 @@ export function getAltarSources(
 			z.name as zone_name,
 			isa.reward_tier,
 			isa.drop_rate,
-			isa.min_effective_level,
+			isa.min_level_plus_veteran,
+			isa.min_level,
+			isa.min_veteran_points,
+      a.magic_reward_threshold,
+      a.epic_reward_threshold,
+      a.legendary_reward_threshold,
 			-- Extract boss from final wave in waves JSON
 			(SELECT json_extract(value, '$.monsters[0].monster_id')
 			 FROM json_each(a.waves)
@@ -589,4 +602,25 @@ export function getTreasureMapSources(
 	`);
 
   return stmt.all(itemId) as TreasureMapSource[];
+}
+
+export function getChestItemSources(db: Database.Database, itemId: string) {
+  const rows = db
+    .prepare(
+      `${CHEST_REWARDS_QUERY}
+    WHERE r.chest_item_id IN (SELECT source_id FROM item_source_entries WHERE item_id = ? AND source_type = 'random')
+    ORDER BY r.chest_item_id, r.roll_order`,
+    )
+    .all(itemId) as ChestRewardRow[];
+  return assembleChests(rows).flatMap((chest) => {
+    const scales = chest.rewards.some(
+      (reward) => reward.scales_with_treasure_hunter,
+    );
+    return calculateChestRewards(chest, 0)
+      .filter((reward) => reward.item_id === itemId)
+      .map((reward) => ({
+        ...reward,
+        chest_scales_with_treasure_hunter: scales,
+      }));
+  });
 }

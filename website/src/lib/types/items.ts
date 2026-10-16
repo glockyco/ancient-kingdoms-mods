@@ -1,3 +1,5 @@
+import type { CalculatedChestReward } from "$lib/calculation/chest-rewards";
+import type { ChestRewardRow } from "$lib/queries/chest-rewards";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { Item } from "$lib/queries/items";
 import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
@@ -57,6 +59,8 @@ export interface ItemsPageData {
  */
 export interface ItemDetailPageData {
   item: Item;
+  maxLevel: number;
+  chestRewards: CalculatedChestReward<ChestRewardRow>[];
   title: string;
   description: string;
   sources: ItemSources;

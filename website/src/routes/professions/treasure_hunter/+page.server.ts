@@ -2,6 +2,12 @@ import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
+import {
+  CHEST_REWARDS_QUERY,
+  assembleChests,
+  type ChestRewardRow,
+} from "$lib/queries/chest-rewards";
+import type { ChestDefinition } from "$lib/calculation/chest-rewards";
 
 export const prerender = true;
 
@@ -21,20 +27,6 @@ interface TreasureMapRow {
   reward_item_name: string;
   reward_item_type: string | null;
   reward_item_tooltip: string | null;
-}
-
-interface ChestRewardRow {
-  item_id: string;
-  item_name: string;
-  item_type: string | null;
-  quality: number;
-  tooltip_html: string | null;
-  roll_order: number;
-  base_roll_chance: number;
-  baseline_open_chance: number;
-  scales_with_treasure_hunter: boolean;
-  relic_buff_id: string | null;
-  relic_buff_name: string | null;
 }
 
 interface TreasureHunterStats {
@@ -64,6 +56,7 @@ interface TreasureHunterPageData {
   treasureMaps: TreasureMapRow[];
   buriedChestRewards: ChestRewardRow[];
   buriedChestRewardLimit: number;
+  buriedChest: ChestDefinition<ChestRewardRow>;
   keyItems: Record<"random_map" | "buried_treasure_chest" | "shovel", KeyItem>;
   itemIconPaths: Record<string, string | null>;
 }
@@ -84,14 +77,6 @@ interface RawTreasureMap {
   sub_zone_name: string | null;
   position_x: number;
   position_y: number;
-}
-
-interface ChestRewardJson {
-  item_id: string;
-  item_name: string;
-  probability: number;
-  actual_drop_chance: number;
-  roll_order: number;
 }
 
 export const load: PageServerLoad = (): TreasureHunterPageData => {
@@ -162,74 +147,17 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     reward_item_tooltip: map.reward_tooltip,
   }));
 
-  const buriedChestRow = db
-    .prepare(
-      `
-    SELECT chest_rewards, chest_num_items
-    FROM items
-    WHERE id = 'buried_treasure_chest'
-  `,
-    )
-    .get() as
-    | { chest_rewards: string | null; chest_num_items: number | null }
-    | undefined;
-
-  if (!buriedChestRow?.chest_rewards) {
-    throw new Error("Buried Treasure Chest reward data is missing");
-  }
-
-  // Source: server-scripts/ChestItem.cs:24,61 — `numItemsPerChest` controls the unique-reward slot count.
-  const buriedChestRewardLimit = buriedChestRow.chest_num_items ?? 0;
-  if (buriedChestRewardLimit <= 0) {
-    throw new Error("Buried Treasure Chest is missing chest_num_items");
-  }
-
-  const rewardItemLookup = db.prepare(
-    `SELECT id, name, item_type, quality, tooltip_html, relic_buff_id, relic_buff_name FROM items WHERE id = ?`,
+  const [buriedChest] = assembleChests(
+    db
+      .prepare(
+        `${CHEST_REWARDS_QUERY} WHERE r.chest_item_id = 'buried_treasure_chest' ORDER BY r.roll_order`,
+      )
+      .all() as ChestRewardRow[],
   );
-
-  const buriedChestRewards = (
-    JSON.parse(buriedChestRow.chest_rewards) as ChestRewardJson[]
-  )
-    .map((reward): ChestRewardRow => {
-      if (typeof reward.roll_order !== "number") {
-        throw new Error(
-          "Buried Treasure Chest reward is missing roll_order; rebuild compendium data",
-        );
-      }
-
-      const item = rewardItemLookup.get(reward.item_id) as {
-        id: string;
-        name: string;
-        item_type: string | null;
-        quality: number;
-        tooltip_html: string | null;
-        relic_buff_id: string | null;
-        relic_buff_name: string | null;
-      } | null;
-
-      if (!item) {
-        throw new Error(
-          `Buried Treasure Chest reward item is missing: ${reward.item_id}`,
-        );
-      }
-
-      return {
-        item_id: reward.item_id,
-        item_name: reward.item_name,
-        item_type: item.item_type,
-        quality: item.quality,
-        tooltip_html: item.tooltip_html,
-        roll_order: reward.roll_order,
-        base_roll_chance: reward.probability,
-        baseline_open_chance: reward.actual_drop_chance,
-        // Source: server-scripts/ChestItem.cs:30 — Treasure Hunter scales only relic rolls on Buried Treasure Chest (`item.data is RelicItem`).
-        scales_with_treasure_hunter: item.item_type === "relic",
-        relic_buff_id: item.relic_buff_id,
-        relic_buff_name: item.relic_buff_name,
-      };
-    })
-    .sort((a, b) => a.roll_order - b.roll_order);
+  if (!buriedChest)
+    throw new Error("Missing chest_item_rewards for buried_treasure_chest");
+  const buriedChestRewards = buriedChest.rewards;
+  const buriedChestRewardLimit = buriedChest.num_items;
 
   const stats: TreasureHunterStats = {
     map_count: treasureMaps.length,
@@ -286,6 +214,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     treasureMaps,
     buriedChestRewards,
     buriedChestRewardLimit,
+    buriedChest,
     keyItems,
     itemIconPaths,
   };

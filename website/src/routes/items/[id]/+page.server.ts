@@ -15,6 +15,13 @@ import { getItemSourceSummaries } from "$lib/server/item-source-summary";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 
+import { calculateChestRewards } from "$lib/calculation/chest-rewards";
+import {
+  CHEST_REWARDS_QUERY,
+  assembleChests,
+  type ChestRewardRow,
+} from "$lib/queries/chest-rewards";
+
 const FISHERMAN_COSTUME_IDS = new Set([
   "fishermans_hat",
   "fishermans_garb",
@@ -116,6 +123,18 @@ export const load: PageServerLoad = async ({
         fishing_page_href: "/professions/fishing#calculator",
       }
     : null;
+
+  const progression = db
+    .prepare("SELECT max_level FROM progression_rules WHERE id = 1")
+    .get() as { max_level: number } | undefined;
+  if (!progression) throw new Error("Missing progression_rules.max_level");
+  const chestRows = db
+    .prepare(
+      `${CHEST_REWARDS_QUERY} WHERE r.chest_item_id = ? ORDER BY r.roll_order`,
+    )
+    .all(params.id) as ChestRewardRow[];
+  const [chest] = assembleChests(chestRows);
+  const chestRewards = chest ? calculateChestRewards(chest, 0) : [];
 
   // Load item sources and usages from normalized junction tables
   const sources = getItemSources(db, params.id);
@@ -331,6 +350,8 @@ export const load: PageServerLoad = async ({
 
   return {
     item,
+    maxLevel: progression.max_level,
+    chestRewards,
     consumableBuffEffect,
     description,
     title,

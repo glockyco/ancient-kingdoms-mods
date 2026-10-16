@@ -96,6 +96,9 @@ public class ItemExporter : BaseExporter
             // The cast comes first because the required level is one of the tokens
             // the tooltip loses its player emphasis on.
             var usableItem = obj.TryCast<Il2Cpp.UsableItem>();
+            var equipmentItem = scriptableItem.TryCast<Il2Cpp.EquipmentItem>();
+            var augmentItem = scriptableItem.TryCast<Il2Cpp.AugmentItem>();
+            var item = new Il2Cpp.Item(scriptableItem);
 
             var itemData = new ItemData
             {
@@ -104,6 +107,9 @@ public class ItemExporter : BaseExporter
                 item_type = DetermineItemType(scriptableItem),
                 quality = scriptableItem.quality,
                 level_required = 0,
+                item_level = augmentItem != null
+                    ? augmentItem.CalculateItemLvlAugment()
+                    : equipmentItem != null ? equipmentItem.CalculateItemLvl(null) : 0,
                 faction_required_to_buy = scriptableItem.requiredFactionToBuy,
                 adventuring_level_needed = scriptableItem.adventuringLevelNeeded,
                 is_key = scriptableItem.isKey,
@@ -115,6 +121,9 @@ public class ItemExporter : BaseExporter
                 max_stack = scriptableItem.maxStack,
                 buy_price = scriptableItem.buyPrice,
                 sell_price = CalculateSellPriceInGold(scriptableItem),
+                primal_essence_value = Il2Cpp.Utils.isTradeableForPrimalEssence(item)
+                    ? Il2Cpp.Utils.getPrimalEssenceAmount(item.sellPrice)
+                    : null,
                 buy_token_id = scriptableItem.buyToken != null ? SanitizeId(scriptableItem.buyToken.name) : null,
                 sellable = scriptableItem.sellable,
                 tradable = scriptableItem.tradable,
@@ -434,7 +443,10 @@ public class ItemExporter : BaseExporter
                     itemData.chest_rewards.Add(new ItemDropChance
                     {
                         item_id = SanitizeId(reward.item.name),
-                        probability = reward.probability
+                        probability = reward.probability,
+                        // Source: server-scripts/ChestItem.cs:30 — Only buried-chest relic rolls gain Treasure Hunter.
+                        scales_with_treasure_hunter = chestItem.nameItem == "Buried Treasure Chest"
+                            && reward.item.TryCast<Il2Cpp.RelicItem>() != null
                     });
                 }
             }

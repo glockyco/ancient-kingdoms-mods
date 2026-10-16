@@ -564,6 +564,7 @@ def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     Also populates junction tables for item container relationships:
     - item_sources_pack (pack contents)
     - item_sources_random (random item pools)
+    - chest_item_rewards (ordered chest rolls)
     - item_sources_merge (merge recipe components)
     - item_sources_treasure_map (treasure map rewards)
     """
@@ -583,6 +584,7 @@ def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     cursor.execute("DELETE FROM item_sources_pack")
     cursor.execute("DELETE FROM item_sources_random")
     cursor.execute("DELETE FROM item_sources_merge")
+    cursor.execute("DELETE FROM chest_item_rewards")
 
     # Track items with treasure map rewards for later processing
     # (treasure_locations table doesn't exist yet at this point)
@@ -602,6 +604,23 @@ def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         item.class_required = [c.lower() for c in item.class_required]
         # Insert main item record (insert_model only inserts fields that match schema)
         insert_model(cursor, "items", item)
+
+        for roll_order, reward in enumerate(item.chest_rewards):
+            cursor.execute(
+                """
+                INSERT INTO chest_item_rewards (
+                    chest_item_id, item_id, roll_order, roll_chance,
+                    scales_with_treasure_hunter
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    item.id,
+                    reward.item_id,
+                    roll_order,
+                    reward.probability,
+                    reward.scales_with_treasure_hunter,
+                ),
+            )
 
         # Populate junction tables from forward relationships
         # These fields exist in ItemData model but not in items table schema

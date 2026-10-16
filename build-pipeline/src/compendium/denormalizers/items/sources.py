@@ -230,8 +230,14 @@ def _denormalize_altar_sources(conn: sqlite3.Connection) -> None:
     """Populate item_sources_altar from altars reward tiers."""
     console.print("  Processing altar rewards...")
     cursor = conn.cursor()
+    progression = cursor.execute("SELECT max_level FROM progression_rules").fetchone()
+    if progression is None:
+        raise ValueError("Missing progression_rules.max_level for altar reward sources")
+    max_level = progression[0]
     cursor.execute("""
-        SELECT a.id, a.reward_common_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id, a.waves
+        SELECT a.id, a.reward_common_id, a.reward_magic_id, a.reward_epic_id,
+               a.reward_legendary_id, a.waves, a.magic_reward_threshold,
+               a.epic_reward_threshold, a.legendary_reward_threshold
         FROM altars a
         WHERE a.reward_common_id IS NOT NULL OR a.reward_magic_id IS NOT NULL
            OR a.reward_epic_id IS NOT NULL OR a.reward_legendary_id IS NOT NULL
@@ -251,6 +257,9 @@ def _denormalize_altar_sources(conn: sqlite3.Connection) -> None:
         epic_id,
         legendary_id,
         waves_json,
+        magic_threshold,
+        epic_threshold,
+        legendary_threshold,
     ) in cursor.fetchall():
         # Extract final wave boss monster and drop rate
         drop_rate = 1.0  # Default to 100%
@@ -271,44 +280,42 @@ def _denormalize_altar_sources(conn: sqlite3.Connection) -> None:
                             drop_rate = drop.get("rate", 1.0)
                             break
 
-        # Common tier (effective level < 35)
-        if common_id:
-            cursor.execute(
-                """
-                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
-                VALUES (?, ?, 'common', ?, 0)
-            """,
-                (common_id, altar_id, drop_rate),
-            )
+        rewards = [("common", common_id, 0)]
+        thresholds = (magic_threshold, epic_threshold, legendary_threshold)
+        if any(threshold is not None for threshold in thresholds):
+            for tier, item_id, threshold in (
+                ("magic", magic_id, magic_threshold),
+                ("epic", epic_id, epic_threshold),
+                ("legendary", legendary_id, legendary_threshold),
+            ):
+                if threshold is None:
+                    raise ValueError(
+                        f"Missing altars.{tier}_reward_threshold for {altar_id}"
+                    )
+                rewards.append((tier, item_id, threshold))
 
-        # Magic tier (effective level 35-44)
-        if magic_id:
+        for tier, item_id, threshold in rewards:
+            if item_id is None:
+                continue
+            min_level = min(threshold, max_level)
+            # Source: server-scripts/Experience.cs:49-51 — Veteran points are earned only at the level cap.
+            min_veteran_points = threshold - min_level
             cursor.execute(
                 """
-                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
-                VALUES (?, ?, 'magic', ?, 35)
-            """,
-                (magic_id, altar_id, drop_rate),
-            )
-
-        # Epic tier (effective level 45-54)
-        if epic_id:
-            cursor.execute(
-                """
-                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
-                VALUES (?, ?, 'epic', ?, 45)
-            """,
-                (epic_id, altar_id, drop_rate),
-            )
-
-        # Legendary tier (effective level >= 55)
-        if legendary_id:
-            cursor.execute(
-                """
-                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
-                VALUES (?, ?, 'legendary', ?, 55)
-            """,
-                (legendary_id, altar_id, drop_rate),
+                INSERT INTO item_sources_altar (
+                    item_id, altar_id, reward_tier, drop_rate,
+                    min_level_plus_veteran, min_level, min_veteran_points
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    item_id,
+                    altar_id,
+                    tier,
+                    drop_rate,
+                    threshold,
+                    min_level,
+                    min_veteran_points,
+                ),
             )
 
 

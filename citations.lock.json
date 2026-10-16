@@ -420,10 +420,6 @@
       "sha256": "0b4d8b8452b97d5828471fb462afd5cf4785d9c0f760f101686b1d44b232087c",
       "span": 1
     },
-    "ChestItem.cs:30-31": {
-      "sha256": "747e60ca1d912da2a8cf14d8608127ab36b8db0b752c12888b3d25df63c7023c",
-      "span": 2
-    },
     "ChestItem.cs:61": {
       "sha256": "a67003eaff157b5f061ebd170f476eae4e1b753b9100ff6eebdeade5ee91da0c",
       "span": 1
@@ -1025,9 +1021,9 @@
       "sha256": "c3094b6a3d2d89aac1bd8764f0fff83e9c18e2de2018e2353be74b6b5969cc82",
       "span": 11
     },
-    "DefaultEvent.cs:231": {
-      "sha256": "0f48ba1d378ee94c1a97ea6c06dc241e959351ec47fa12bb1aa16df969af4d02",
-      "span": 1
+    "DefaultEvent.cs:231-237": {
+      "sha256": "8c45e15cd4f94d7a3b22f379abe73625295d00db43c84822da04af90e8b0c2a6",
+      "span": 7
     },
     "DefaultEvent.cs:SummonMonsters": {
       "span": 0
@@ -1176,10 +1172,6 @@
     "EventAltar.cs:UserCode_CmdStartEvent__NetworkIdentity": {
       "span": 0
     },
-    "Experience.cs:114-348": {
-      "sha256": "6d3c080f6e1b690efce5f11f9180dd318fb78bbbac2e271b4b57396a63dc57a1",
-      "span": 235
-    },
     "Experience.cs:114-352": {
       "sha256": "4e9dde9d03b99e1a8457a354fc251cddb3f99046be3a91eacfee3099093d620d",
       "span": 239
@@ -1243,6 +1235,10 @@
     "Experience.cs:466-472": {
       "sha256": "fa09bdb9c1cfdfe1f8672386b7407b2c987acb4ad2df59890479e489e4d31e47",
       "span": 7
+    },
+    "Experience.cs:49-51": {
+      "sha256": "706c4cc02633881f5c847ce9460c2385d4dbccd1f3939a833ff2cfba0add0983",
+      "span": 3
     },
     "Experience.cs:51-52": {
       "sha256": "ff39d764c706d0a00d3a260506d3a5a9f08f796a81ca419b853ad970f166e8ef",

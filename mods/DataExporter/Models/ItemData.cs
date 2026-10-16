@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace DataExporter.Models;
 
@@ -12,6 +13,7 @@ public class ItemData
     public string slot { get; set; }
     public byte quality { get; set; }
     public int level_required { get; set; }
+    public int item_level { get; set; }
     public List<string> class_required { get; set; } = new();
     public int faction_required_to_buy { get; set; }
     public float adventuring_level_needed { get; set; }
@@ -24,6 +26,8 @@ public class ItemData
     public int max_stack { get; set; }
     public long buy_price { get; set; }
     public long sell_price { get; set; }
+    [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+    public int? primal_essence_value { get; set; }
     public string buy_token_id { get; set; }
     public bool sellable { get; set; }
     public bool tradable { get; set; }
@@ -152,6 +156,7 @@ public class ItemDropChance
 {
     public string item_id { get; set; }
     public float probability { get; set; }
+    public bool scales_with_treasure_hunter { get; set; }
 }
 
 public class ItemStats

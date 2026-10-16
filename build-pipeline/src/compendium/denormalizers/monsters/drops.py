@@ -16,14 +16,16 @@ console = Console()
 
 
 class AltarRewardInfo(TypedDict):
+    altar_id: str
+    tiered: bool
     common_id: str
     common_name: str
-    magic_id: str
-    magic_name: str
-    epic_id: str
-    epic_name: str
-    legendary_id: str
-    legendary_name: str
+    magic_id: str | None
+    magic_name: str | None
+    epic_id: str | None
+    epic_name: str | None
+    legendary_id: str | None
+    legendary_name: str | None
 
 
 def _denormalize_drop_names(conn: sqlite3.Connection) -> int:
@@ -161,18 +163,7 @@ def _add_fragment_drops(conn: sqlite3.Connection) -> int:
 
 
 def _expand_altar_reward_variants(conn: sqlite3.Connection) -> int:
-    """Expand altar reward drops to include all tier variants.
-
-    When a monster drops an altar's common reward, add the magic/epic/legendary
-    variants with notes indicating the level requirements:
-    - Common: "Level 30-34"
-    - Magic: "Level 35-44"
-    - Epic: "Level 45-50, Veteran 0-99"
-    - Legendary: "Level 50, Veteran 100+"
-
-    Returns:
-        Count of monsters updated with expanded altar drops
-    """
+    """Attach altar identity and tiers to the final wave's reward drops."""
     console.print("  Expanding altar reward variants...")
     cursor = conn.cursor()
 
@@ -187,7 +178,8 @@ def _expand_altar_reward_variants(conn: sqlite3.Connection) -> int:
             reward_magic_id, reward_magic_name,
             reward_epic_id, reward_epic_name,
             reward_legendary_id, reward_legendary_name,
-            waves
+            waves, id, magic_reward_threshold, epic_reward_threshold,
+            legendary_reward_threshold
         FROM altars
         WHERE reward_common_id IS NOT NULL AND waves IS NOT NULL
     """)
@@ -197,6 +189,8 @@ def _expand_altar_reward_variants(conn: sqlite3.Connection) -> int:
 
     for row in cursor.fetchall():
         altar_info: AltarRewardInfo = {
+            "altar_id": row[9],
+            "tiered": all(threshold is not None for threshold in row[10:13]),
             "common_id": row[0],
             "common_name": row[1],
             "magic_id": row[2],
@@ -253,47 +247,32 @@ def _expand_altar_reward_variants(conn: sqlite3.Connection) -> int:
             if item_id == altar["common_id"]:
                 has_altar_drop = True
 
-                # Add all four variants with appropriate notes (legendary first for sorting)
-                new_drops.append(
-                    {
-                        "item_id": altar["legendary_id"],
-                        "item_name": altar["legendary_name"],
-                        "quality": item_quality.get(altar["legendary_id"], 0),
-                        "rate": rate,
-                        "note": "Level 50, Veteran 100+",
-                        "is_altar_reward": True,
-                    }
-                )
-                new_drops.append(
-                    {
-                        "item_id": altar["epic_id"],
-                        "item_name": altar["epic_name"],
-                        "quality": item_quality.get(altar["epic_id"], 0),
-                        "rate": rate,
-                        "note": "Level 45-50, Veteran 0-99",
-                        "is_altar_reward": True,
-                    }
-                )
-                new_drops.append(
-                    {
-                        "item_id": altar["magic_id"],
-                        "item_name": altar["magic_name"],
-                        "quality": item_quality.get(altar["magic_id"], 0),
-                        "rate": rate,
-                        "note": "Level 35-44",
-                        "is_altar_reward": True,
-                    }
-                )
-                new_drops.append(
-                    {
-                        "item_id": altar["common_id"],
-                        "item_name": altar["common_name"],
-                        "quality": item_quality.get(altar["common_id"], 0),
-                        "rate": rate,
-                        "note": "Level 30-34",
-                        "is_altar_reward": True,
-                    }
-                )
+                rewards: list[tuple[str, str | None, str | None]] = [
+                    ("common", altar["common_id"], altar["common_name"])
+                ]
+                if altar["tiered"]:
+                    rewards = [
+                        ("legendary", altar["legendary_id"], altar["legendary_name"]),
+                        ("epic", altar["epic_id"], altar["epic_name"]),
+                        ("magic", altar["magic_id"], altar["magic_name"]),
+                        *rewards,
+                    ]
+                for tier, reward_id, reward_name in rewards:
+                    if reward_id is None:
+                        raise ValueError(
+                            f"Missing altars.reward_{tier}_id for {altar['altar_id']}"
+                        )
+                    new_drops.append(
+                        {
+                            "item_id": reward_id,
+                            "item_name": reward_name,
+                            "quality": item_quality.get(reward_id, 0),
+                            "rate": rate,
+                            "altar_id": altar["altar_id"],
+                            "altar_reward_tier": tier,
+                            "is_altar_reward": True,
+                        }
+                    )
             else:
                 # Keep original drop as-is
                 new_drops.append(drop)
@@ -312,7 +291,7 @@ def run(conn: sqlite3.Connection) -> None:
     """Run all monster drop denormalizations.
 
     Adds item names to existing drops, adds fatecharmed fragment drops,
-    and expands altar reward variants with level requirement notes.
+    and expands altar rewards with altar identities and tier names.
     """
     console.print("Denormalizing monster drops...")
 

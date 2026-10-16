@@ -1,7 +1,7 @@
 """Special item type denormalizations.
 
 This module handles denormalizations for special item types:
-- Chest-type items (with Monte Carlo probability calculation)
+- Chest-type reward display names
 - Pack items
 - Random items (including random_items_with_names)
 - Merge items
@@ -10,168 +10,40 @@ This module handles denormalizations for special item types:
 """
 
 import json
-import random
 import sqlite3
 
 from rich.console import Console
 
-from compendium.types.denormalized import ChestSourceInfo
-
 console = Console()
 
 
-def _estimate_chest_drop_chances(
-    rewards: list[dict], num_items: int
-) -> dict[str, float]:
-    """Estimate the chance of each reward, by simulating the game's own rolls.
-
-    The chance of a reward depends on the order of the rolls and on how many
-    rewards the chest has already given, so a closed form is impractical. This
-    simulation reproduces the loop the game runs. With 100,000 trials the
-    estimate holds about three decimal digits.
-
-    The generator starts from a fixed seed inside this call, which makes the
-    result depend on the arguments alone. A generator shared between chests
-    would make each result depend on how many numbers the earlier chests drew.
-
-    Args:
-        rewards: List of reward dicts with item_id and probability
-        num_items: Number of items the chest drops
-
-    Returns:
-        Dict mapping item_id to the estimated chance of being selected
-    """
-    rng = random.Random(0)
-    num_simulations = 100000
-    max_passes = 10
-
-    # Track how many times each item was selected
-    item_counts = {r["item_id"]: 0 for r in rewards}
-
-    for _ in range(num_simulations):
-        selected_ids: set[str] = set()
-        num_passes = 0
-
-        while len(selected_ids) < num_items and num_passes < max_passes:
-            for reward in rewards:
-                # Skip if already selected
-                if reward["item_id"] in selected_ids:
-                    continue
-
-                # Roll for this item
-                if rng.random() < reward["probability"]:
-                    selected_ids.add(reward["item_id"])
-                    item_counts[reward["item_id"]] += 1
-
-                # Check if we have enough items
-                if len(selected_ids) >= num_items:
-                    break
-
-            num_passes += 1
-
-    # Convert counts to probabilities
-    item_probs = {}
-    for item_id, count in item_counts.items():
-        item_probs[item_id] = count / num_simulations
-
-    return item_probs
-
-
-def _denormalize_chest_rewards(
-    conn: sqlite3.Connection,
-) -> tuple[int, dict[str, list[ChestSourceInfo]]]:
-    """Denormalize chest reward item names and calculate exact drop chances.
-
-    Returns:
-        Tuple of (chest_rewards_updated, found_in_chests dict)
-    """
-    console.print(
-        "  Denormalizing chest reward item names and calculating drop chances..."
-    )
+def _denormalize_chest_rewards(conn: sqlite3.Connection) -> int:
+    """Attach item names to the exported chest roll inputs."""
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id, chest_rewards, chest_num_items
-        FROM items
-        WHERE chest_rewards IS NOT NULL AND chest_rewards != '[]'
-    """)
-
-    chest_rewards_updated = 0
-    found_in_chests: dict[str, list[ChestSourceInfo]] = {}
-
-    for chest_id, chest_rewards_json, num_items in cursor.fetchall():
-        chest_rewards = json.loads(chest_rewards_json)
-        updated_rewards = []
-
-        # First pass: add item names while preserving game roll order.
-        # The reward index is the rolling order ChestItem.cs iterates in
-        # (server-scripts/ChestItem.cs:27 `foreach (ItemDropChance itemDropChance in array)`),
-        # so the simulator must replay rewards in the same order the game does.
-        for roll_order, reward in enumerate(chest_rewards):
-            item_id = reward.get("item_id")
-            probability = reward.get("probability", 0.0)
-
-            if item_id:
-                item_name_cursor = conn.cursor()
-                item_result = item_name_cursor.execute(
-                    "SELECT name FROM items WHERE id = ?", (item_id,)
-                ).fetchone()
-                item_name = item_result[0] if item_result else "Unknown"
-
-                updated_rewards.append(
-                    {
-                        "item_id": item_id,
-                        "item_name": item_name,
-                        "probability": probability,
-                        "roll_order": roll_order,
-                    }
-                )
-
-        # Estimate the chance of each reward
-        if updated_rewards and num_items > 0:
-            drop_chances = _estimate_chest_drop_chances(updated_rewards, num_items)
-
-            for reward in updated_rewards:
-                reward["actual_drop_chance"] = drop_chances.get(reward["item_id"], 0.0)
-
-        # Build found_in_chests using actual drop chances
-        chest_name_cursor = conn.cursor()
-        chest_name_result = chest_name_cursor.execute(
-            "SELECT name FROM items WHERE id = ?", (chest_id,)
-        ).fetchone()
-        chest_name = chest_name_result[0] if chest_name_result else "Unknown"
-
-        for reward in updated_rewards:
-            item_id = reward["item_id"]
-            actual_chance = reward.get("actual_drop_chance", reward["probability"])
-
-            if item_id not in found_in_chests:
-                found_in_chests[item_id] = []
-
-            found_in_chests[item_id].append(
-                {
-                    "chest_id": chest_id,
-                    "chest_name": chest_name,
-                    "rate": actual_chance,
-                }
-            )
-
-        if updated_rewards:
-            rewards_sorted = sorted(
-                updated_rewards,
-                key=lambda x: (
-                    -x.get("actual_drop_chance", x["probability"]),
-                    x["item_name"],
-                ),
-            )
-            update_cursor = conn.cursor()
-            update_cursor.execute(
-                "UPDATE items SET chest_rewards = ? WHERE id = ?",
-                (json.dumps(rewards_sorted), chest_id),
-            )
-            if update_cursor.rowcount > 0:
-                chest_rewards_updated += 1
-
-    return chest_rewards_updated, found_in_chests
+    rows = cursor.execute("""
+        SELECT r.chest_item_id, r.item_id, i.name, r.roll_order,
+               r.roll_chance, r.scales_with_treasure_hunter
+        FROM chest_item_rewards r
+        JOIN items i ON i.id = r.item_id
+        ORDER BY r.chest_item_id, r.roll_order
+    """).fetchall()
+    rewards_by_chest: dict[str, list[dict]] = {}
+    for chest_id, item_id, name, order, chance, scales in rows:
+        rewards_by_chest.setdefault(chest_id, []).append(
+            {
+                "item_id": item_id,
+                "item_name": name,
+                "roll_order": order,
+                "probability": chance,
+                "scales_with_treasure_hunter": bool(scales),
+            }
+        )
+    for chest_id, rewards in rewards_by_chest.items():
+        cursor.execute(
+            "UPDATE items SET chest_rewards = ? WHERE id = ?",
+            (json.dumps(rewards), chest_id),
+        )
+    return len(rewards_by_chest)
 
 
 def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
@@ -265,31 +137,14 @@ def run(conn: sqlite3.Connection) -> None:
     """Run all special item type denormalizations.
 
     Updates items table with:
-    - Chest rewards with item names and Monte Carlo probabilities
+    - Chest reward inputs with item names
     - Luck token data
 
     Note: Pack/random/merge/treasure_map data now populated by loader into junction tables.
     """
     console.print("Denormalizing special item types...")
 
-    # Chest-type items (keep chest_rewards JSON - complex display data)
-    # Also populate item_sources_random for the reverse relationship
-    chest_rewards_updated, found_in_chests = _denormalize_chest_rewards(conn)
-
-    # Populate item_sources_random for items found in chest-type items
-    # (Chest-type items are random containers - they go in item_sources_random)
-    cursor = conn.cursor()
-    chest_source_count = 0
-    for item_id, chest_sources in found_in_chests.items():
-        for source in chest_sources:
-            cursor.execute(
-                """
-                INSERT INTO item_sources_random (item_id, random_item_id, probability)
-                VALUES (?, ?, ?)
-                """,
-                (item_id, source["chest_id"], source["rate"]),
-            )
-            chest_source_count += 1
+    chest_rewards_updated = _denormalize_chest_rewards(conn)
 
     # Luck tokens
     fragment_count, boss_token_count = _denormalize_luck_tokens(conn)
@@ -299,9 +154,6 @@ def run(conn: sqlite3.Connection) -> None:
     # Print summary
     console.print(
         f"  [green]OK[/green] Denormalized item names in {chest_rewards_updated} chest reward lists"
-    )
-    console.print(
-        f"  [green]OK[/green] Added {chest_source_count} item_sources_random entries from chest-type items"
     )
     console.print(
         f"  [green]OK[/green] Updated {fragment_count} fragment luck tokens, "

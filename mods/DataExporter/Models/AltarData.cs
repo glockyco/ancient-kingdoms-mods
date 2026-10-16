@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace DataExporter.Models;
 
@@ -52,6 +53,12 @@ public class AltarData
     public string reward_epic_name { get; set; }
     public string reward_legendary_id { get; set; }
     public string reward_legendary_name { get; set; }
+    [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+    public int? magic_reward_threshold { get; set; }
+    [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+    public int? epic_reward_threshold { get; set; }
+    [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+    public int? legendary_reward_threshold { get; set; }
 
     // Wave configuration
     public int total_waves { get; set; }

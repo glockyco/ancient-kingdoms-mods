@@ -3,10 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
-  import {
-    calculateAdjustedChestRewards,
-    sortChestRewardsForDisplay,
-  } from "$lib/utils/treasureHunter";
+  import { calculateChestRewards } from "$lib/calculation/chest-rewards";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapIcon from "@lucide/svelte/icons/map";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -21,27 +18,23 @@
   const relicRollBonus = $derived(skillFraction * 0.1);
   // Source: server-scripts/TreasureLocation.cs:87-90 — each successful dig below the 100% cap grants +0.5% Treasure Hunter, so capping takes (100 - current) / 0.5 successful digs.
   const successfulDigsToCap = $derived(Math.ceil((100 - skillLevel) / 0.5));
-  const adjustedChestRewards = $derived.by(() => {
-    const adjusted = calculateAdjustedChestRewards(
-      data.buriedChestRewards,
-      skillFraction,
-      { targetRewards: data.buriedChestRewardLimit },
-    );
-
-    if (skillLevel === 0) {
-      return adjusted.map((reward) => ({
+  const baselineChestRewards = $derived(
+    calculateChestRewards(data.buriedChest, 0),
+  );
+  const adjustedChestRewards = $derived(
+    calculateChestRewards(data.buriedChest, skillFraction).map(
+      (reward, index) => ({
         ...reward,
-        adjusted_open_chance: reward.baseline_open_chance,
-        change_from_baseline: 0,
-      }));
-    }
-
-    return adjusted;
-  });
+        baseline_chance: baselineChestRewards[index].open_chance,
+        change_from_baseline:
+          reward.open_chance - baselineChestRewards[index].open_chance,
+      }),
+    ),
+  );
   const displayedChestRewards = $derived(
     adjustedChestRewards
       .filter((reward) => reward.scales_with_treasure_hunter)
-      .sort(sortChestRewardsForDisplay),
+      .sort((a, b) => a.item_name.localeCompare(b.item_name)),
   );
 
   function formatPercent(value: number, digits = 1): string {
@@ -327,10 +320,10 @@
                   {/if}
                 </td>
                 <td class="p-3 text-right font-mono">
-                  {formatPercent(reward.baseline_open_chance)}
+                  {formatPercent(reward.baseline_chance)}
                 </td>
                 <td class="p-3 text-right font-mono">
-                  {formatPercent(reward.adjusted_open_chance)}
+                  {formatPercent(reward.open_chance)}
                 </td>
                 <td class="p-3 text-right font-mono">
                   {#if Math.abs(reward.change_from_baseline) < 0.0005}

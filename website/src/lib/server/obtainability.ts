@@ -16,6 +16,7 @@ import {
   getChestSources,
   getPackSources,
   getRandomSources,
+  getChestItemSources,
   getMergeSources,
   getTreasureMapSources,
 } from "./item-sources";
@@ -168,7 +169,22 @@ export function buildObtainabilityTree(
   }
 
   // Random sources
-  const randoms = getRandomSources(db, itemId);
+  const randoms = [
+    ...getRandomSources(db, itemId),
+    ...getChestItemSources(db, itemId).map((chest) => ({
+      random_item_id: chest.chest_item_id,
+      random_item_name: chest.chest_name,
+      probability: chest.open_chance,
+    })),
+  ].sort(
+    (a, b) =>
+      b.probability - a.probability ||
+      (a.random_item_name < b.random_item_name
+        ? -1
+        : a.random_item_name > b.random_item_name
+          ? 1
+          : 0),
+  );
   seen.clear();
   for (const r of randoms) {
     if (!seen.has(r.random_item_id)) {

@@ -1,3 +1,4 @@
+import type { AltarRewardTier } from "$lib/calculation/altar";
 import type { SkillListRow } from "$lib/skills/skillListRow";
 import type { Skill as SkillEffectInput } from "$lib/utils/formatSkillEffect";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
@@ -16,6 +17,8 @@ export interface MonsterDrop {
   rate: number;
   is_bestiary: boolean;
   note: string | null;
+  altar_id?: string;
+  altar_reward_tier?: AltarRewardTier;
 }
 
 /**

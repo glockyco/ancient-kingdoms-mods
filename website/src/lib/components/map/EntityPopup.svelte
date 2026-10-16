@@ -4,6 +4,7 @@
   import MapItemLink from "$lib/components/map/MapItemLink.svelte";
   import MapEntityLink from "$lib/components/map/MapEntityLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
+  import { formatAltarRequirement } from "$lib/calculation/altar";
   import {
     toRomanNumeral,
     formatDuration,
@@ -11,7 +12,6 @@
     formatSpawnTimeWindow,
     getQualityTextColorClass,
     formatGatheringRespawn,
-    formatAltarRewardTier,
   } from "$lib/utils/format";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
   import { formatTrapArea } from "$lib/utils/trapArea";
@@ -660,7 +660,11 @@
                     onSelect={onSelectItem}
                   />
                   <div class="text-xs text-muted-foreground">
-                    {formatAltarRewardTier(reward.tier)}
+                    {formatAltarRequirement(
+                      reward.tier,
+                      reward,
+                      reward.maxLevel,
+                    )}
                     {#if reward.dropRate !== null}
                       · {formatPercent(reward.dropRate)}
                     {/if}
@@ -1241,7 +1245,7 @@
                 onSelect={onSelectItem}
               />
               <div class="text-xs text-muted-foreground">
-                {formatAltarRewardTier(reward.tier)}
+                {formatAltarRequirement(reward.tier, reward, reward.maxLevel)}
                 {#if reward.dropRate !== null}
                   · {formatPercent(reward.dropRate)}
                 {/if}

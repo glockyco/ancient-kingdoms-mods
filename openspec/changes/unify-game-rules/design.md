@@ -76,22 +76,27 @@ Alternative considered: correcting the Python. The reimplementation would stay, 
 
 ### 3. Altar thresholds are exported data, tier choice is a rule
 
-The thresholds are code constants, so the altar exporter holds their single cited copy and exports them with each altar's rewards. `ProgressionRows.cs` already plays this role for progression.
+The thresholds are code constants, so the altar exporter holds their single cited copy. Each altar with tiered rewards exports them as `magic_reward_threshold`, `epic_reward_threshold` and `legendary_reward_threshold`, thresholds of level plus total veteran points. An altar without tiered rewards exports none. `ProgressionRows.cs` already plays this role for progression.
 
-For each reward row, the pipeline stores the threshold of level plus veteran points, its level part and its veteran point part:
+For each reward row, `item_sources_altar` stores `min_level_plus_veteran`, the threshold of level plus veteran points, with its level part `min_level` and its veteran point part `min_veteran_points`. They replace `min_effective_level`:
 
-- The level part is the threshold capped at the level cap.
+- The level part is the threshold capped at the level cap from `progression_rules`.
 - The veteran point part is the remainder, because veteran points are earned only at the level cap (`server-scripts/Experience.cs:49-51`).
+- The common reward has 0 for all three.
 
-So 150 becomes level 50 with 100 veteran points. The sorting consumers in `source_entries.py` and `crafting_source_level.py` read the level part. The drop entries in `monsters.drops` carry the tier instead of a note string.
+So 150 becomes level 50 with 100 veteran points. The sorting consumers in `source_entries.py` and `crafting_source_level.py` read the level part. The altar reward entries in `monsters.drops` carry `altar_id` and `altar_reward_tier` instead of a note string.
 
-The website has one tier function and one formatter in `lib/calculation/altar.ts`. The item page, altar page, monster page and map popups use them, and the hardcoded ranges in `format.ts`, the item page and `drops.py` are deleted.
+The website has one tier function and one requirement formatter in `lib/calculation/altar.ts`. The formatter takes a tier, the altar's thresholds and the level cap, and states the range of level and veteran points, such as "Level 40 to 49" or "Level 50, 100 or more veteran points". The item page, altar page, monster page and map popups use it, and the hardcoded ranges in `format.ts`, the item page and `drops.py` are deleted.
 
-### 4. One chest loop
+### 4. One chest computation
 
-`lib/calculation/chest-rewards.ts` is the only implementation of the reward loop, with the game's order: roll, then skip a name already awarded. The pipeline stores each reward's roll order and base chance, and whether its roll gains the Treasure Hunter bonus. It deletes `_estimate_chest_drop_chances` and the stored estimates.
+`lib/calculation/chest-rewards.ts` is the only implementation of the reward loop. It computes each reward's chance exactly rather than by simulation. Every roll is independent, so each name's first success falls on a step of the loop, a reward's position in one of the 10 passes, with a probability that follows from its chances. A reward is awarded when its name first succeeds on that reward's step and fewer names than the chest's item count succeeded earlier. Over the other names that count follows a Poisson binomial distribution, which a short dynamic program gives for each step. The work grows with the passes, the rewards, the names and the item count, a few hundred thousand operations for the largest chest, so it runs in milliseconds, also in the browser. A subset program over the names already awarded was tried first and took most of an hour to prerender, because the Large Bag of Gems draws 7 items from 28 rewards.
 
-Item pages, chest pages and map popups state the chance at Treasure Hunter 0. The Treasure Hunter page recomputes it for the reader's skill. Results are memoized per chest and skill, so prerendering simulates each chest once. The estimate is a Monte Carlo simulation with a fixed seed and 100,000 trials, which keeps it deterministic between builds.
+Exact values make every surface agree without a shared random seed. The previous 100,000-trial estimates carry about 0.15 percentage points of noise for a reward near 30%.
+
+The chest relation becomes a table, `chest_item_rewards`: chest item, reward item, roll order, roll chance, and whether the roll gains the Treasure Hunter bonus. The exporter reports that flag with the game's own test, a relic in the chest named "Buried Treasure Chest" (`server-scripts/ChestItem.cs:30`). The table replaces the chest rows in `item_sources_random`, whose `probability` would otherwise mix per-roll chances with final ones. The pipeline deletes `_estimate_chest_drop_chances` and stores no estimate.
+
+Item pages, chest item pages and map popups state the chance at Treasure Hunter 0. The Treasure Hunter page recomputes it for the reader's skill.
 
 ### 5. The experience page reads the progression tables
 
@@ -107,7 +112,7 @@ These changes are approved, and the game confirmed the rule behind each of them.
 | Monster pages of altar bosses | The same tier requirements, in place of the current notes |
 | Item pages and the item list | Primal essence values disappear from 127 Uncommon items, appear on 113 weapons, 24 augments and Endless Quiver, and drop to 1 on 40 armor set pieces bought with tokens, as the game computes them |
 | Item level, wherever it shows | The Drum of War changes from 56 to 60 |
-| Chest, item and Treasure Hunter pages | Chest chances can move by up to about 0.1 percentage points, because a different random sequence produces the estimate |
+| Chest, item and Treasure Hunter pages | Chest chances change to their exact values, within the sampling error of the previous estimates, at most a few tenths of a percentage point |
 
 ## Risks / Trade-offs
 

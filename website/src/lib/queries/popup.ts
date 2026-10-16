@@ -1,3 +1,13 @@
+import type { AltarThresholds } from "$lib/calculation/altar";
+import {
+  calculateChestRewards,
+  type CalculatedChestReward,
+} from "$lib/calculation/chest-rewards";
+import {
+  CHEST_REWARDS_QUERY,
+  assembleChests,
+  type ChestRewardRow,
+} from "$lib/queries/chest-rewards";
 import { query, queryScalar } from "$lib/db";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
@@ -82,9 +92,9 @@ export interface PopupItemSoldInfo {
 /**
  * Altar reward info for popup
  */
-export interface PopupAltarReward {
+export interface PopupAltarReward extends AltarThresholds {
   tier: "common" | "magic" | "epic" | "legendary";
-  minEffectiveLevel: number;
+  maxLevel: number;
   itemId: string;
   itemName: string;
   quality: number;
@@ -754,23 +764,26 @@ export async function loadAltarBasicInfo(
 export async function loadAltarPopupDetails(
   altarId: string,
 ): Promise<AltarPopupDetails> {
-  const [altar] = await query<{
-    reward_common_id: string | null;
-    reward_common_name: string | null;
-    reward_magic_id: string | null;
-    reward_magic_name: string | null;
-    reward_epic_id: string | null;
-    reward_epic_name: string | null;
-    reward_legendary_id: string | null;
-    reward_legendary_name: string | null;
-    waves: string | null;
-  }>(
+  const [altar] = await query<
+    AltarThresholds & {
+      reward_common_id: string | null;
+      reward_common_name: string | null;
+      reward_magic_id: string | null;
+      reward_magic_name: string | null;
+      reward_epic_id: string | null;
+      reward_epic_name: string | null;
+      reward_legendary_id: string | null;
+      reward_legendary_name: string | null;
+      waves: string | null;
+    }
+  >(
     `
     SELECT
       reward_common_id, reward_common_name,
       reward_magic_id, reward_magic_name,
       reward_epic_id, reward_epic_name,
       reward_legendary_id, reward_legendary_name,
+      magic_reward_threshold, epic_reward_threshold, legendary_reward_threshold,
       waves
     FROM altars
     WHERE id = ?
@@ -781,6 +794,12 @@ export async function loadAltarPopupDetails(
   if (!altar) {
     return { rewards: [], bossDrops: [] };
   }
+
+  const maxLevel = await queryScalar<number>(
+    "SELECT max_level FROM progression_rules WHERE id = 1",
+  );
+  if (typeof maxLevel !== "number")
+    throw new Error("Missing progression_rules.max_level");
 
   // Collect altar reward item IDs to exclude from boss drops
   const altarRewardIds = new Set<string>(
@@ -899,37 +918,32 @@ export async function loadAltarPopupDetails(
   // Add rewards in order with level thresholds
   const tiers: Array<{
     tier: "common" | "magic" | "epic" | "legendary";
-    minLevel: number;
     idKey: keyof typeof altar;
     nameKey: keyof typeof altar;
   }> = [
     {
       tier: "common",
-      minLevel: 0,
       idKey: "reward_common_id",
       nameKey: "reward_common_name",
     },
     {
       tier: "magic",
-      minLevel: 35,
       idKey: "reward_magic_id",
       nameKey: "reward_magic_name",
     },
     {
       tier: "epic",
-      minLevel: 45,
       idKey: "reward_epic_id",
       nameKey: "reward_epic_name",
     },
     {
       tier: "legendary",
-      minLevel: 55,
       idKey: "reward_legendary_id",
       nameKey: "reward_legendary_name",
     },
   ];
 
-  for (const { tier, minLevel, idKey, nameKey } of tiers) {
+  for (const { tier, idKey, nameKey } of tiers) {
     const itemId = altar[idKey];
     const itemName = altar[nameKey];
     if (itemId && itemName) {
@@ -942,7 +956,10 @@ export async function loadAltarPopupDetails(
       const dropRate = bossMonsterDrops.get(itemId as string) ?? null;
       rewards.push({
         tier,
-        minEffectiveLevel: minLevel,
+        magic_reward_threshold: altar.magic_reward_threshold,
+        epic_reward_threshold: altar.epic_reward_threshold,
+        legendary_reward_threshold: altar.legendary_reward_threshold,
+        maxLevel,
         itemId: itemId as string,
         itemName: itemName as string,
         quality: item?.quality ?? 0,
@@ -1062,13 +1079,14 @@ export interface ItemPopupDropper {
 /**
  * Altar that yields an item (via tier rewards or boss drops)
  */
-export interface ItemPopupAltarSource {
+export interface ItemPopupAltarSource extends AltarThresholds {
   altarId: string;
   altarName: string;
   altarType: string;
   /** Tier for tier rewards, null for boss bestiary drops */
   tier: "common" | "magic" | "epic" | "legendary" | null;
   dropRate: number;
+  maxLevel: number;
 }
 
 /**
@@ -1173,6 +1191,8 @@ export interface ItemPopupDetails {
   questRewards: ItemPopupQuestReward[];
   gatheringSources: ItemPopupGatherSource[];
   chestSources: ItemPopupChestSource[];
+  chestItemSources: CalculatedChestReward<ChestRewardRow>[];
+  chestItemRewards: CalculatedChestReward<ChestRewardRow>[];
   craftingSources: ItemPopupCraftSource[];
   mergeSources: ItemPopupMergeSource[];
   /** Treasure maps that lead to this item as a reward */
@@ -1295,7 +1315,7 @@ export async function loadItemPopupDetails(
   );
 
   // Get altars that yield this item (via tier rewards)
-  interface AltarSourceRow {
+  interface AltarSourceRow extends AltarThresholds {
     altar_id: string;
     altar_name: string;
     altar_type: string;
@@ -1308,6 +1328,7 @@ export async function loadItemPopupDetails(
       a.id as altar_id,
       a.name as altar_name,
       a.type as altar_type,
+      a.magic_reward_threshold, a.epic_reward_threshold, a.legendary_reward_threshold,
       CASE
         WHEN a.reward_common_id = ? THEN 'common'
         WHEN a.reward_magic_id = ? THEN 'magic'
@@ -1331,11 +1352,20 @@ export async function loadItemPopupDetails(
     `,
     [itemId, itemId, itemId, itemId, itemId, itemId, itemId, itemId, itemId],
   );
+  const maxLevel = await queryScalar<number>(
+    "SELECT max_level FROM progression_rules WHERE id = 1",
+  );
+  if (typeof maxLevel !== "number")
+    throw new Error("Missing progression_rules.max_level");
   const altarSources: ItemPopupAltarSource[] = altarSourceRows.map((r) => ({
     altarId: r.altar_id,
     altarName: r.altar_name,
     altarType: r.altar_type,
     tier: r.tier,
+    magic_reward_threshold: r.magic_reward_threshold,
+    epic_reward_threshold: r.epic_reward_threshold,
+    legendary_reward_threshold: r.legendary_reward_threshold,
+    maxLevel,
     dropRate: r.drop_rate ?? 0,
   }));
 
@@ -1469,6 +1499,21 @@ export async function loadItemPopupDetails(
   `,
     [itemId],
   );
+
+  const chestRows = await query<ChestRewardRow>(
+    `${CHEST_REWARDS_QUERY}
+    WHERE r.chest_item_id = ? OR r.chest_item_id IN (SELECT source_id FROM item_source_entries WHERE item_id = ? AND source_type = 'random')
+    ORDER BY r.chest_item_id, r.roll_order`,
+    [itemId, itemId],
+  );
+  const chestItems = assembleChests(chestRows);
+  const chestItemSources = chestItems.flatMap((chest) =>
+    calculateChestRewards(chest, 0).filter(
+      (reward) => reward.item_id === itemId,
+    ),
+  );
+  const ownChest = chestItems.find((chest) => chest.id === itemId);
+  const chestItemRewards = ownChest ? calculateChestRewards(ownChest, 0) : [];
 
   const craftingRows = await query<{
     recipeId: string;
@@ -1611,6 +1656,8 @@ export async function loadItemPopupDetails(
     questRewards,
     gatheringSources,
     chestSources,
+    chestItemSources,
+    chestItemRewards,
     craftingSources,
     mergeSources,
     treasureMapSources,

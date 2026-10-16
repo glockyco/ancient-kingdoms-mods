@@ -67,7 +67,7 @@ def _insert_direct_sources(cursor: sqlite3.Cursor) -> None:
             'altar',
             a.id,
             a.name,
-            MAX(isa.min_effective_level, a.min_level_required),
+            MAX(isa.min_level, a.min_level_required),
             a.name
         FROM item_sources_altar isa
         JOIN altars a ON a.id = isa.altar_id;
@@ -165,7 +165,11 @@ def _insert_container_sources(cursor: sqlite3.Cursor) -> None:
             i.name,
             container_levels.source_level,
             i.name
-        FROM item_sources_random isr
+        FROM (
+            SELECT item_id, random_item_id FROM item_sources_random
+            UNION
+            SELECT item_id, chest_item_id AS random_item_id FROM chest_item_rewards
+        ) isr
         JOIN items i ON i.id = isr.random_item_id
         LEFT JOIN (
             SELECT item_id, MIN(source_level) as source_level

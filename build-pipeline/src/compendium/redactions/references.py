@@ -87,6 +87,7 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("chests", "item_reward_id"),
         ("gathering_resources", "item_reward_id"),
         ("fish", "item_id"),
+        ("chest_item_rewards", "item_id"),
         ("treasure_locations", "reward_id"),
         ("quests", "given_item_on_start_id"),
         ("alchemy_recipes", "result_item_id"),
@@ -121,6 +122,7 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
     {
         ("altars", "required_activation_item_id"),
         ("chests", "key_required_id"),
+        ("chest_item_rewards", "chest_item_id"),
         ("class_level_progression", "class_id"),
         ("gathering_resources", "tool_required_id"),
         ("items", "buy_token_id"),

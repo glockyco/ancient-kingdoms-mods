@@ -1,3 +1,7 @@
+import type { AltarThresholds } from "$lib/calculation/altar";
+import type { ChestRewardRow } from "$lib/queries/chest-rewards";
+import type { CalculatedChestReward } from "$lib/calculation/chest-rewards";
+
 /**
  * Item source and usage type definitions
  *
@@ -104,7 +108,7 @@ export interface QuestSource {
 /**
  * Item rewarded by altar event
  */
-export interface AltarSource {
+export interface AltarSource extends AltarThresholds {
   item_id: string;
   altar_id: string;
   altar_name: string;
@@ -113,7 +117,9 @@ export interface AltarSource {
   zone_name: string;
   reward_tier: "common" | "magic" | "epic" | "legendary";
   drop_rate: number;
-  min_effective_level: number;
+  min_level_plus_veteran: number;
+  min_level: number;
+  min_veteran_points: number;
   final_wave_boss_id: string | null;
   final_wave_boss_name: string | null;
 }
@@ -191,6 +197,10 @@ export interface RandomSource {
   random_quality: number;
   probability: number;
 }
+
+export type ChestItemSource = CalculatedChestReward<ChestRewardRow> & {
+  chest_scales_with_treasure_hunter: boolean;
+};
 
 /**
  * Item created from merge recipe
@@ -329,6 +339,7 @@ export interface ItemSources {
   chests: ChestSource[];
   packs: PackSource[];
   randoms: RandomSource[];
+  chestItems: ChestItemSource[];
   merges: MergeSource[];
   treasureMaps: TreasureMapSource[];
 }

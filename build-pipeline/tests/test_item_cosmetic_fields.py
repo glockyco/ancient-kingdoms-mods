@@ -32,6 +32,8 @@ class ItemCosmeticFieldTests(unittest.TestCase):
                             "name": "Soul Ember",
                             "item_type": "general",
                             "quality": 2,
+                            "item_level": 0,
+                            "primal_essence_value": None,
                             "tooltip": "Glowing fragments from defeated bosses.",
                             "comments": "Used to buy skins in Skin Vendor",
                         }
@@ -66,6 +68,8 @@ class ItemCosmeticFieldTests(unittest.TestCase):
                             "name": "Ornamentation Token",
                             "item_type": "relic",
                             "quality": 2,
+                            "item_level": 0,
+                            "primal_essence_value": None,
                             "is_ornamentation_token": True,
                         },
                         {
@@ -73,6 +77,8 @@ class ItemCosmeticFieldTests(unittest.TestCase):
                             "name": "Chef Hat",
                             "item_type": "costume",
                             "quality": 0,
+                            "item_level": 0,
+                            "primal_essence_value": None,
                             "slot": "Head",
                             "is_costume": True,
                         },

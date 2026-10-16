@@ -161,11 +161,15 @@ class ItemSourceEntriesTests(unittest.TestCase):
             INSERT INTO monsters (id, name, level) VALUES ('dragon', 'Dragon', 50);
             INSERT INTO item_sources_monster (item_id, monster_id, drop_rate)
             VALUES ('outer_chest', 'dragon', 1), ('gem', 'dragon', 0.1);
-            INSERT INTO item_sources_random (item_id, random_item_id, probability)
-            VALUES ('inner_pack', 'outer_chest', 1),
-                   ('gem', 'unreachable_chest', 1);
             INSERT INTO item_sources_pack (item_id, pack_item_id, amount)
             VALUES ('gem', 'inner_pack', 1);
+        """)
+
+        self.conn.executescript("""
+            INSERT INTO chest_item_rewards (
+                chest_item_id, item_id, roll_order, roll_chance, scales_with_treasure_hunter
+            ) VALUES ('outer_chest', 'inner_pack', 0, 1, 0),
+                     ('unreachable_chest', 'gem', 0, 1, 0);
         """)
 
         source_entries.run(self.conn)

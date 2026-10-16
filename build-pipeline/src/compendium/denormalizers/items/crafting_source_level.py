@@ -165,7 +165,7 @@ def _get_primal_essence_min_level(
 
     cursor.execute(
         f"""
-        SELECT isa.item_id, MIN(MAX(isa.min_effective_level, a.min_level_required))
+        SELECT isa.item_id, MIN(MAX(isa.min_level, a.min_level_required))
         FROM item_sources_altar isa
         JOIN altars a ON isa.altar_id = a.id
         WHERE isa.item_id IN ({",".join("?" for _ in eligible_item_ids)})

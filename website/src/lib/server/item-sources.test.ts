@@ -4,6 +4,7 @@ import {
   getGatherSources,
   getPackSources,
   getRandomSources,
+  getChestItemSources,
 } from "./item-sources";
 
 function createDb() {
@@ -214,5 +215,35 @@ test("container source queries use canonical reachability without losing content
   expect(
     db.prepare("SELECT COUNT(*) count FROM item_sources_random").get(),
   ).toEqual({ count: 2 });
+  db.close();
+});
+
+test("chest item sources retain roll competition and omit unreachable containers", () => {
+  const db = new Database(":memory:");
+  db.exec(`
+    CREATE TABLE items (id TEXT PRIMARY KEY, name TEXT, quality INTEGER DEFAULT 0,
+      tooltip_html TEXT, item_type TEXT, relic_buff_id TEXT, relic_buff_name TEXT, chest_num_items INTEGER DEFAULT 0);
+    CREATE TABLE chest_item_rewards (chest_item_id TEXT, item_id TEXT, roll_order INTEGER,
+      roll_chance REAL, scales_with_treasure_hunter INTEGER);
+    CREATE TABLE item_source_entries (item_id TEXT, source_type TEXT, source_id TEXT);
+    INSERT INTO items (id, name, chest_num_items) VALUES
+      ('reachable', 'Reachable', 1), ('unreachable', 'Unreachable', 1),
+      ('gem', 'Gem', 0), ('other', 'Other', 0);
+    INSERT INTO chest_item_rewards VALUES
+      ('reachable', 'other', 0, 0.5, 1), ('reachable', 'gem', 1, 1, 0),
+      ('unreachable', 'gem', 0, 1, 0);
+    INSERT INTO item_source_entries VALUES ('gem', 'random', 'reachable');
+  `);
+  const sources = getChestItemSources(db, "gem");
+  expect(sources).toHaveLength(1);
+  expect(sources[0]).toMatchObject({
+    chest_item_id: "reachable",
+    item_id: "gem",
+    open_chance: 0.5,
+    chest_scales_with_treasure_hunter: true,
+  });
+  expect(
+    db.prepare("SELECT COUNT(*) count FROM chest_item_rewards").get(),
+  ).toEqual({ count: 3 });
   db.close();
 });

@@ -19,7 +19,7 @@
 
   const fmt = (value: number) => value.toLocaleString("en-US");
 
-  const LEVEL_CAP = 50;
+  const LEVEL_CAP = $derived(data.maxLevel);
   const LATE_GAME_START = 40;
   const XP_BASE_GROWTH = 1.258;
 
@@ -71,108 +71,21 @@
       )
       .join(" ");
   const EARLY_POINTS = pointsFor(1, LATE_GAME_START);
-  const LATE_POINTS = pointsFor(LATE_GAME_START, LEVEL_CAP - 1);
+  const LATE_POINTS = $derived(pointsFor(LATE_GAME_START, LEVEL_CAP - 1));
   // The same 1.258 growth carried past level 40, drawn for contrast with the eased curve.
-  const UNEASED_POINTS = Array.from(
-    { length: LEVEL_CAP - LATE_GAME_START },
-    (_, index) => {
+  const UNEASED_POINTS = $derived(
+    Array.from({ length: LEVEL_CAP - LATE_GAME_START }, (_, index) => {
       const level = LATE_GAME_START + index;
       const cost =
         XP_TO_NEXT_LEVEL[LATE_GAME_START - 1] * XP_BASE_GROWTH ** index;
       return `${chartX(level).toFixed(1)},${chartY(cost).toFixed(1)}`;
-    },
-  ).join(" ");
+    }).join(" "),
+  );
   const Y_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
   const X_TICKS = [1, 10, 20, 30, 40, 49];
 
-  // Source: server-scripts/Experience.cs:114-348 — every class raises one attribute on
-  // each of the level multiples below, and two on every sixth level.
-  const ATTRIBUTE_GAINS = [
-    {
-      className: "Warrior",
-      gains: [
-        "Constitution",
-        "Strength",
-        "Dexterity",
-        "Intelligence",
-        "Wisdom, Charisma",
-      ],
-    },
-    {
-      className: "Ranger",
-      gains: [
-        "Dexterity",
-        "Constitution",
-        "Strength",
-        "Wisdom",
-        "Intelligence, Charisma",
-      ],
-    },
-    {
-      className: "Cleric",
-      gains: [
-        "Wisdom",
-        "Intelligence",
-        "Constitution",
-        "Strength",
-        "Dexterity, Charisma",
-      ],
-    },
-    {
-      className: "Rogue",
-      gains: [
-        "Dexterity",
-        "Strength",
-        "Constitution",
-        "Intelligence",
-        "Wisdom, Charisma",
-      ],
-    },
-    {
-      className: "Wizard",
-      gains: [
-        "Intelligence",
-        "Dexterity",
-        "Wisdom",
-        "Constitution",
-        "Strength, Charisma",
-      ],
-    },
-    {
-      className: "Druid",
-      gains: [
-        "Wisdom",
-        "Intelligence",
-        "Dexterity",
-        "Constitution",
-        "Strength, Charisma",
-      ],
-    },
-    {
-      className: "Bard",
-      gains: [
-        "Charisma",
-        "Strength",
-        "Dexterity",
-        "Constitution",
-        "Intelligence, Wisdom",
-      ],
-    },
-    {
-      // Source: server-scripts/Experience.cs:232-260 — Necromancer gains Intelligence every 2 levels, Constitution every 3, Wisdom every 4, Dexterity every 5, and Strength plus Charisma every 6
-      className: "Necromancer",
-      gains: [
-        "Intelligence",
-        "Constitution",
-        "Wisdom",
-        "Dexterity",
-        "Strength, Charisma",
-      ],
-    },
-  ];
-
   // Source: server-scripts/Npc.cs:OnInteract; server-scripts/Experience.cs:current; server-scripts/UISkills.cs:DualSpecButton2; server-scripts/Utils.cs:GetDailyAdventurerQuest — recruitment, daily quests, and specialization unlocks.
-  const MILESTONES = [
+  const MILESTONES = $derived([
     {
       level: 10,
       unlock: "Hire your first mercenary from a recruiter.",
@@ -202,11 +115,10 @@
       extra: "Unlock a second specialization for 10,000 gold.",
       extraHref: "/mechanics/character#skills-and-specializations",
     },
-  ];
+  ]);
 
-  // Source: server-scripts/Experience.cs:38,51-52,372-407 — the veteran cap and the
-  // experience each Veteran Point costs.
-  const MAX_VETERAN_POINTS = 200;
+  // Source: server-scripts/Experience.cs:38,51-52,372-407 — experience cost per Veteran Point.
+  const MAX_VETERAN_POINTS = $derived(data.maxVeteranPoints);
   const VETERAN_BASE_COST = 1_000_000;
   const VETERAN_COST_PER_POINT = 20_000;
 
@@ -217,7 +129,7 @@
   const veteranSpent = (points: number) =>
     points * VETERAN_BASE_COST +
     (VETERAN_COST_PER_POINT * points * (points - 1)) / 2;
-  const VETERAN_TOTAL = veteranSpent(MAX_VETERAN_POINTS);
+  const VETERAN_TOTAL = $derived(veteranSpent(MAX_VETERAN_POINTS));
 
   let pickedVeteran = $state(50);
   const veteranNext = $derived(veteranStepCost(pickedVeteran));
@@ -238,12 +150,16 @@
   const vetY = (spent: number) =>
     VET_CHART.bottom -
     (spent / VETERAN_TOTAL) * (VET_CHART.bottom - VET_CHART.top);
-  const VET_POINTS = Array.from({ length: 41 }, (_, index) => {
-    const points = index * 5;
-    return `${vetX(points).toFixed(1)},${vetY(veteranSpent(points)).toFixed(1)}`;
-  }).join(" ");
+  const VET_POINTS = $derived(
+    Array.from({ length: 41 }, (_, index) => {
+      const points = (index * MAX_VETERAN_POINTS) / 40;
+      return `${vetX(points).toFixed(1)},${vetY(veteranSpent(points)).toFixed(1)}`;
+    }).join(" "),
+  );
   const VET_Y_TICKS = [0, 150_000_000, 300_000_000, 450_000_000, 600_000_000];
-  const VET_X_TICKS = [0, 50, 100, 150, 200];
+  const VET_X_TICKS = $derived(
+    Array.from({ length: 5 }, (_, index) => (index * MAX_VETERAN_POINTS) / 4),
+  );
   const millions = (value: number) => `${Math.round(value / 1_000_000)}M`;
 
   // Source: server-scripts/Experience.cs:BalanceExperienceReward — BalanceExperienceReward selects the level-gap multiplier.
@@ -310,7 +226,7 @@
 
 <Seo
   title="Experience Mechanics - Ancient Kingdoms"
-  description="Level requirements to 50, what each level grants, veteran points past the cap, and every experience source: kills, death, scrolls, professions, quests, and zone discovery."
+  description={`Level requirements to ${LEVEL_CAP}, what each level grants, veteran points past the cap, and every experience source: kills, death, scrolls, professions, quests, and zone discovery.`}
   path="/mechanics/experience"
 />
 
@@ -457,7 +373,7 @@
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Progress from level 1 to 50
+              Progress from level 1 to {LEVEL_CAP}
             </dt>
             <dd class="font-mono text-foreground">
               {journeyDone < 1
@@ -538,7 +454,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each ATTRIBUTE_GAINS as row (row.className)}
+            {#each data.attributeGains as row (row.className)}
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2 font-medium">{row.className}</td>
                 {#each row.gains as gain (gain)}

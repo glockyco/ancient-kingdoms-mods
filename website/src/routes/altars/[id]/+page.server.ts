@@ -185,8 +185,17 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
     }
   }
 
+  const progression = db
+    .prepare("SELECT max_level FROM progression_rules WHERE id = 1")
+    .get() as { max_level: number } | undefined;
+  if (!progression) throw new Error("Missing progression_rules.max_level");
+
   const altar: AltarInfo = {
     id: altarRaw.id as string,
+    magic_reward_threshold: altarRaw.magic_reward_threshold as number | null,
+    epic_reward_threshold: altarRaw.epic_reward_threshold as number | null,
+    legendary_reward_threshold: altarRaw.legendary_reward_threshold as
+      number | null,
     name: altarRaw.name as string,
     type: altarRaw.type as string,
     zoneId: altarRaw.zone_id as string,
@@ -235,6 +244,7 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
 
   return {
     altar,
+    maxLevel: progression.max_level,
     description,
     rewards,
     itemIconPaths,

@@ -208,7 +208,13 @@ DATASETS: tuple[Dataset, ...] = (
     Dataset(
         "items",
         ("items.json",),
-        ("items", "item_sources_pack", "item_sources_random", "item_sources_merge"),
+        (
+            "items",
+            "item_sources_pack",
+            "item_sources_random",
+            "item_sources_merge",
+            "chest_item_rewards",
+        ),
         after=("zones", "skills"),
         handler=_plain(load_items),
     ),

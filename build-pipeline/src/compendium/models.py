@@ -297,6 +297,7 @@ class ChestReward(BaseModel):
 
     item_id: str
     probability: float
+    scales_with_treasure_hunter: bool
 
 
 class ItemData(BaseModel):
@@ -307,6 +308,8 @@ class ItemData(BaseModel):
     item_type: str
     quality: int  # 0-5 (Common, Uncommon, Magic, Epic, Legendary, Mythic)
     level_required: int = 0
+    item_level: int
+    primal_essence_value: int | None
     class_required: list[str] = []
     faction_required_to_buy: int = 0
     adventuring_level_needed: float = 0.0
@@ -1441,6 +1444,9 @@ class AltarData(BaseModel):
     reward_epic_name: str | None = None
     reward_legendary_id: str | None = None
     reward_legendary_name: str | None = None
+    magic_reward_threshold: int | None
+    epic_reward_threshold: int | None
+    legendary_reward_threshold: int | None
     total_waves: int = 0
     estimated_duration_seconds: int = 0
     waves: list[AltarWave] = []

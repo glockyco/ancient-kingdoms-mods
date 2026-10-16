@@ -1,3 +1,7 @@
+import {
+  formatAltarRequirement,
+  type AltarThresholds,
+} from "$lib/calculation/altar";
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
@@ -82,6 +86,30 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   const drops: MonsterDrop[] = monsterRaw.drops
     ? JSON.parse(monsterRaw.drops as string)
     : [];
+  const progression = db
+    .prepare("SELECT max_level FROM progression_rules WHERE id = 1")
+    .get() as { max_level: number } | undefined;
+  if (!progression) throw new Error("Missing progression_rules.max_level");
+  for (const drop of drops) {
+    if (drop.altar_id) {
+      if (!drop.altar_reward_tier)
+        throw new Error(
+          `Missing monsters.drops.altar_reward_tier for ${params.id}`,
+        );
+      const altar = db
+        .prepare(
+          "SELECT magic_reward_threshold, epic_reward_threshold, legendary_reward_threshold FROM altars WHERE id = ?",
+        )
+        .get(drop.altar_id) as AltarThresholds | undefined;
+      if (!altar)
+        throw new Error(`Missing monsters.drops.altar_id: ${drop.altar_id}`);
+      drop.note = formatAltarRequirement(
+        drop.altar_reward_tier,
+        altar,
+        progression.max_level,
+      );
+    }
+  }
   const aggroMessages: string[] = monsterRaw.aggro_messages
     ? JSON.parse(monsterRaw.aggro_messages as string)
     : [];

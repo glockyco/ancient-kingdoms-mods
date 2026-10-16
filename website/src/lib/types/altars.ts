@@ -1,3 +1,5 @@
+import type { AltarThresholds } from "$lib/calculation/altar";
+
 // Wave monster info (parsed from waves JSON)
 export interface AltarWaveMonster {
   monster_id: string;
@@ -30,7 +32,7 @@ export interface AltarReward {
 }
 
 // Full altar info for detail page
-export interface AltarInfo {
+export interface AltarInfo extends AltarThresholds {
   id: string;
   name: string;
   type: string;
@@ -75,6 +77,7 @@ export interface AltarBoss {
 // Detail page data
 export interface AltarDetailPageData {
   altar: AltarInfo;
+  maxLevel: number;
   description: string;
   rewards: AltarReward[];
   itemIconPaths: Record<string, string | null>;

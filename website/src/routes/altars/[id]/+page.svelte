@@ -5,13 +5,12 @@
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
-  import {
-    formatDuration,
-    formatPercent,
-    formatAltarRewardTier,
-  } from "$lib/utils/format";
+  import { formatDuration, formatPercent } from "$lib/utils/format";
   import type { AltarWave } from "$lib/types/altars";
-  import { altarVeteranLevelBonus } from "$lib/utils/altar";
+  import {
+    altarVeteranLevelBonus,
+    formatAltarRequirement,
+  } from "$lib/calculation/altar";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Swords from "@lucide/svelte/icons/swords";
   import Gift from "@lucide/svelte/icons/gift";
@@ -302,7 +301,11 @@
                 <div class="flex items-center justify-between mb-2">
                   <span class="font-medium capitalize">{reward.tier}</span>
                   <span class="text-sm text-muted-foreground">
-                    {formatAltarRewardTier(reward.tier)}
+                    {formatAltarRequirement(
+                      reward.tier,
+                      data.altar,
+                      data.maxLevel,
+                    )}
                   </span>
                 </div>
                 {#if reward.itemId && reward.itemName}

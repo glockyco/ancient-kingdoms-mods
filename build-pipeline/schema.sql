@@ -259,6 +259,9 @@ CREATE TABLE altars (
     reward_epic_name TEXT,
     reward_legendary_id TEXT,
     reward_legendary_name TEXT,
+    magic_reward_threshold INTEGER,
+    epic_reward_threshold INTEGER,
+    legendary_reward_threshold INTEGER,
     total_waves INTEGER DEFAULT 0,
     estimated_duration_seconds INTEGER DEFAULT 0,
     waves TEXT,                             -- JSON: full wave data with monsters
@@ -323,7 +326,7 @@ CREATE TABLE items (
     max_stack INTEGER DEFAULT 1,
     buy_price INTEGER DEFAULT 0,
     sell_price INTEGER DEFAULT 0,
-    primal_essence_value INTEGER,        -- Primal essence obtained from trading this item (equipment quality >= 1, sellable, sell_price > 0): ceil(sell_price * 0.06)
+    primal_essence_value INTEGER,   -- Game-computed trade amount, NULL when the game refuses the item
     buy_token_id TEXT REFERENCES items(id),
     sellable BOOLEAN DEFAULT 1,
     tradable BOOLEAN DEFAULT 1,
@@ -343,7 +346,7 @@ CREATE TABLE items (
     weapon_category TEXT,
     stats TEXT,                     -- JSON object with equipment stats
     is_costume BOOLEAN DEFAULT 0,
-    item_level INTEGER DEFAULT 0,   -- Calculated from stats using game formula
+    item_level INTEGER DEFAULT 0,   -- Exported from the game's item-level function
 
     -- Consumable properties
     usage_health INTEGER DEFAULT 0,
@@ -381,7 +384,7 @@ CREATE TABLE items (
     travel_destination_z REAL,
     travel_destination_name TEXT,
 
-    -- Chest rewards (kept as JSON - complex display data with Monte Carlo calculations)
+    -- Chest reward inputs with display names
     chest_rewards TEXT,             -- JSON array
     chest_num_items INTEGER DEFAULT 0,
 
@@ -482,11 +485,23 @@ CREATE TABLE item_sources_altar (
     altar_id TEXT NOT NULL REFERENCES altars(id),
     reward_tier TEXT NOT NULL CHECK (reward_tier IN ('common', 'magic', 'epic', 'legendary')),
     drop_rate REAL NOT NULL,
-    min_effective_level INTEGER NOT NULL
+    min_level_plus_veteran INTEGER NOT NULL,
+    min_level INTEGER NOT NULL,
+    min_veteran_points INTEGER NOT NULL
 );
 CREATE INDEX idx_item_sources_altar_item ON item_sources_altar(item_id);
 CREATE INDEX idx_item_sources_altar_altar ON item_sources_altar(altar_id);
 CREATE INDEX idx_item_sources_altar_tier ON item_sources_altar(reward_tier);
+
+CREATE TABLE chest_item_rewards (
+    chest_item_id TEXT NOT NULL REFERENCES items(id),
+    item_id TEXT NOT NULL REFERENCES items(id),
+    roll_order INTEGER NOT NULL,
+    roll_chance REAL NOT NULL,
+    scales_with_treasure_hunter INTEGER NOT NULL
+);
+CREATE INDEX idx_chest_item_rewards_chest ON chest_item_rewards(chest_item_id);
+CREATE INDEX idx_chest_item_rewards_item ON chest_item_rewards(item_id);
 
 -- Items crafted from recipes
 CREATE TABLE item_sources_recipe (

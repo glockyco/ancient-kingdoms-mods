@@ -23,6 +23,7 @@
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import { isHouseChestItemId } from "$lib/inventory/house-chests";
   import { getItemSpecialMechanics } from "$lib/special-mechanics";
+  import { formatAltarRequirement } from "$lib/calculation/altar";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -282,7 +283,26 @@
           })),
         ) || [],
 
-      foundInRandomLoot: data.sources.randoms || [],
+      foundInRandomLoot: [
+        ...data.sources.randoms.map((source) => ({
+          ...source,
+          assumesTreasureHunterZero: false,
+        })),
+        ...data.sources.chestItems.map((chest) => ({
+          random_item_id: chest.chest_item_id,
+          random_item_name: chest.chest_name,
+          probability: chest.open_chance,
+          assumesTreasureHunterZero: chest.chest_scales_with_treasure_hunter,
+        })),
+      ].sort(
+        (a, b) =>
+          b.probability - a.probability ||
+          (a.random_item_name < b.random_item_name
+            ? -1
+            : a.random_item_name > b.random_item_name
+              ? 1
+              : 0),
+      ),
 
       rewardedByTreasureMaps:
         data.sources.treasureMaps?.map((t) => ({
@@ -341,14 +361,11 @@
       armorSetAttributeBonuses: parseJson<
         Array<{ attribute: string; bonus: number }>
       >(data.item.augment_attribute_bonuses),
-      chestRewards: parseJson<
-        Array<{
-          item_id: string;
-          item_name: string;
-          probability: number;
-          actual_drop_chance: number;
-        }>
-      >(data.item.chest_rewards),
+      chestRewards: [...data.chestRewards].sort(
+        (a, b) =>
+          b.open_chance - a.open_chance ||
+          (a.item_name < b.item_name ? -1 : a.item_name > b.item_name ? 1 : 0),
+      ),
     };
   });
 
@@ -356,7 +373,7 @@
   const hasFixedChestContents = $derived(
     Boolean(
       computed.chestRewards?.length &&
-      computed.chestRewards.every((reward) => reward.probability >= 1),
+      computed.chestRewards.every((reward) => reward.roll_chance >= 1),
     ),
   );
 
@@ -1920,17 +1937,13 @@
                       >
                     </div>
                   {/if}
-                  {#if altar.reward_tier === "common"}
-                    <div>Required Level: 30-34</div>
-                  {:else if altar.reward_tier === "magic"}
-                    <div>Required Level: 35-44</div>
-                  {:else if altar.reward_tier === "epic"}
-                    <div>Required Level: 45-50</div>
-                    <div>Required Veteran Level: 0-99</div>
-                  {:else}
-                    <div>Required Level: 50</div>
-                    <div>Required Veteran Level: 100+</div>
-                  {/if}
+                  <div>
+                    {formatAltarRequirement(
+                      altar.reward_tier,
+                      altar,
+                      data.maxLevel,
+                    )}
+                  </div>
                   <div>Drop Rate: {(altar.drop_rate * 100).toFixed(0)}%</div>
                 </div>
               </div>
@@ -2216,6 +2229,9 @@
                 </a>
                 <span class={styles.label}>
                   {(randomItem.probability * 100).toFixed(1)}%
+                  {#if randomItem.assumesTreasureHunterZero}
+                    at 0% Treasure Hunter
+                  {/if}
                 </span>
               </div>
             {/each}
@@ -2261,8 +2277,12 @@
             {:else}
               Each opening gives up to {data.item.chest_num_items}
               {data.item.chest_num_items === 1 ? "item" : "items"}. An item
-              cannot appear twice in one opening. The drop chances come from
-              100,000 simulated openings.
+              cannot appear twice in one opening.
+              {#if computed.chestRewards.some((reward) => reward.scales_with_treasure_hunter)}
+                The chances are exact, at 0% Treasure Hunter.
+              {:else}
+                The chances are exact.
+              {/if}
             {/if}
           </Card.Description>
         </Card.Header>
@@ -2274,7 +2294,7 @@
                   {reward.item_name}
                 </a>
                 <span class={styles.label}
-                  >{(reward.actual_drop_chance * 100).toFixed(1)}%</span
+                  >{(reward.open_chance * 100).toFixed(1)}%</span
                 >
               </div>
             {/each}

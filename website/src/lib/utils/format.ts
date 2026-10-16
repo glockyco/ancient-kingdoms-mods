@@ -1,5 +1,4 @@
-import { QUALITY_IDS, type AltarRewardTier } from "$lib/constants/quality";
-export type { AltarRewardTier };
+import { QUALITY_IDS } from "$lib/constants/quality";
 
 /**
  * Format a decimal value as a percentage string (e.g., 0.5 -> "50.0%")
@@ -223,22 +222,4 @@ export function toRomanNumeral(tier: number): string {
     return ROMAN_NUMERALS[tier];
   }
   return String(tier);
-}
-
-/**
- * Format altar reward tier as level + veteran requirement string.
- * Score = player level + total veteran points. Thresholds: <40 common, 40-49 magic, 50-149 epic, 150+ legendary.
- * Source: server-scripts/DefaultEvent.cs:231 — num4 = level.current + totalVeteranPoints
- */
-export function formatAltarRewardTier(tier: AltarRewardTier): string {
-  switch (tier) {
-    case "common":
-      return "Lv < 40";
-    case "magic":
-      return "Lv 40–49";
-    case "epic":
-      return "Lv 50, Vet 0–99";
-    case "legendary":
-      return "Lv 50, Vet 100+";
-  }
 }
