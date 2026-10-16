@@ -52,7 +52,7 @@
     </p>
     <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — a melee follow-up passes the magic damage override to DealDamageAt. -->
     <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 — Apply consumes the override for a bow follow-up and passes it to the projectile effect. -->
-    <!-- Source: server-scripts/Combat.cs:523,844-851,1191-1206 — DealDamageAt runs the common pipeline, mitigates Magic once, and instantiates the override effect. -->
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt — DealDamageAt runs the common pipeline, mitigates Magic once, and instantiates the override effect. -->
     <p>The whole hit deals magic damage.</p>
     <SeeAlso
       links={[{ href: "#resistance", label: "Defense by Damage Type" }]}

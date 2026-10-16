@@ -153,7 +153,7 @@
   <section aria-labelledby="pet-stats-title" class="space-y-4">
     <h2 id="pet-stats-title" class="text-xl font-semibold">Base stats</h2>
     <!-- Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13; SummonSkill.cs:99 — stats scale from their base values with level, companions stop at Level.max, and familiars use the summoning skill rank. -->
-    <!-- Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:48 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
+    <!-- Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:50 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
     <!-- Source: server-scripts/NecromancerPetStats.cs:36-48,61-108 — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances, not block or critical chance. -->
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <Table.Root class="text-base">
@@ -238,7 +238,7 @@
       <Card.Content>
         {#if pet.kind === "Companion"}
           <dl class="space-y-2">
-            <!-- Source: server-scripts/SummonSkill.cs:99; NecromancerPetStats.cs:36 — companion level is capped by Level.max, and undead companions refresh from their owner's level. -->
+            <!-- Source: server-scripts/SummonSkill.cs:99; NecromancerPetStats.cs:38 — companion level is capped by Level.max, and undead companions refresh from their owner's level. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>

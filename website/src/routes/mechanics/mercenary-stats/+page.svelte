@@ -56,13 +56,13 @@
     spell: "Spell Power",
   };
   const TITLES: Record<StatKey, string> = {
-    // Source: server-scripts/Player.cs:10655-10669; Health.cs:max; Constitution.cs:GetHealthBonus — maximum Health combines the saved hire multiplier, veteran bonus and Constitution.
+    // Source: server-scripts/Player.cs:10718-10732; Health.cs:max; Constitution.cs:GetHealthBonus — maximum Health combines the saved hire multiplier, veteran bonus and Constitution.
     hp: "Multiply base Health by the combined percentage from the saved Health hire roll and 0.25% per veteran point (VT), round, then add 25 Health per point of Constitution.",
-    // Source: server-scripts/Player.cs:10655-10669; Mana.cs:max; Intelligence.cs:GetManaBonus — maximum Mana combines the saved hire multiplier, veteran bonus and Intelligence.
+    // Source: server-scripts/Player.cs:10718-10732; Mana.cs:max; Intelligence.cs:GetManaBonus — maximum Mana combines the saved hire multiplier, veteran bonus and Intelligence.
     mana: "Multiply base Mana by the combined percentage from the saved Mana hire roll and 0.25% per veteran point (VT), round, then add 20 Mana per point of Intelligence.",
-    // Source: server-scripts/Player.cs:10651-10657; Strength.cs:GetDamageBonus — Attack Power adds Strength, the combat hire roll and veteran points.
+    // Source: server-scripts/Player.cs:10714-10720; Strength.cs:GetDamageBonus — Attack Power adds Strength, the combat hire roll and veteran points.
     atk: "Add Strength at this level, the saved combat hire roll and veteran points (VT).",
-    // Source: server-scripts/Player.cs:10651-10657; Intelligence.cs:GetMagicDamageBonus — Spell Power adds rounded Intelligence scaling, the combat hire roll and veteran points.
+    // Source: server-scripts/Player.cs:10714-10720; Intelligence.cs:GetMagicDamageBonus — Spell Power adds rounded Intelligence scaling, the combat hire roll and veteran points.
     spell:
       "Round 150% of Intelligence, then add the saved combat hire roll and veteran points (VT).",
   };
@@ -369,7 +369,7 @@
       >A recruiter guarantees its preferred race only if that race can take the
       chosen class.</span
     >
-    <!-- Source: server-scripts/Player.cs:10577-10614 — each hire generates independent Health and resource rolls and one combat roll. -->
+    <!-- Source: server-scripts/Player.cs:10640-10677 — each hire generates independent Health and resource rolls and one combat roll. -->
     <span class="block"
       >Each hire rolls its stat bonuses, so two otherwise identical mercenaries
       can have different stats.</span
@@ -388,7 +388,7 @@
         <span class="block"
           >Otherwise, the game draws a race from that class's pool.</span
         >
-        <!-- Source: server-scripts/Player.cs:10577-10622,10839-10869; Database.cs:1922-1943; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
+        <!-- Source: server-scripts/Player.cs:10640-10685,10903-10933; Database.cs:1922-1943; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
         <span class="block"
           >Hiring sets three hire rolls: a Health multiplier, a resource
           multiplier, and a combat hire roll shared by Attack Power and Spell
@@ -408,14 +408,14 @@
       </p>
       <ul>
         <li>
-          <!-- Source: server-scripts/Player.cs:10839-10869; Health.cs:max; Mana.cs:max — saved resource multipliers scale current base resources, before equipment bonuses. -->
+          <!-- Source: server-scripts/Player.cs:10903-10933; Health.cs:max; Mana.cs:max — saved resource multipliers scale current base resources, before equipment bonuses. -->
           <span class="block"
             >Without equipment, an existing mercenary's Health and Mana fall
             within the row at its current level.</span
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:10651-10657,10849-10856 — hiring and resummoning set base damage and base magic damage to the shared hire roll plus total veteran points, including a zero roll. -->
+          <!-- Source: server-scripts/Player.cs:10714-10720,10913-10920 — hiring and resummoning set base damage and base magic damage to the shared hire roll plus total veteran points, including a zero roll. -->
           <span class="block"
             >Resummoning or reloading restores the same combat hire roll and
             reapplies your full veteran Attack Power and Spell Power bonus.</span
@@ -574,7 +574,7 @@
   <section class="cost-sec" aria-label="Hiring cost and odds">
     <h2>Hiring odds &amp; cost</h2>
     <p class="sub">
-      <!-- Source: server-scripts/Player.cs:10577-10614 — each hire generates new random stat bonuses. -->
+      <!-- Source: server-scripts/Player.cs:10640-10677 — each hire generates new random stat bonuses. -->
       <span class="block">Each hire rolls new stat bonuses.</span>
       <span class="block"
         >Choose a recruiter that can provide your chosen race, then set the
@@ -716,7 +716,7 @@
               >Average gold needed to hire a mercenary meeting these stat
               thresholds, including the chance of getting the chosen race.</span
             >
-            <!-- Source: server-scripts/Player.cs:10577-10614 — stat rolls are independent. drawChart expresses their combined chance as equal per-roll chances and clamps the displayed range to 5–100%. -->
+            <!-- Source: server-scripts/Player.cs:10640-10677 — stat rolls are independent. drawChart expresses their combined chance as equal per-roll chances and clamps the displayed range to 5–100%. -->
             <span class="block"
               >Within the chart's range, the dot shows your thresholds' combined
               chance spread evenly across the stat rolls. A 25% position means

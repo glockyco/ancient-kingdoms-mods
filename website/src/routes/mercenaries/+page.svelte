@@ -135,7 +135,7 @@
       </div>
     </div>
 
-    <!-- Source: server-scripts/Npc.cs:1898-1909, UIMercenaries.cs:297-299,380 -->
+    <!-- Source: server-scripts/Npc.cs:1898-1909, UIMercenaries.cs:299-301,387 -->
     <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold tabular-nums">
@@ -202,7 +202,7 @@
               <td class="px-4 py-2.5 font-medium {resourceClass[row.resource]}"
                 >{row.resource}</td
               >
-              <!-- Source: server-scripts/Pet.cs:2190,2373,4568,4768 — hasHeals and hasBuffs switch on the pet AI heal and buff checks. -->
+              <!-- Source: server-scripts/Pet.cs:2208,2391,4593,4793 — hasHeals and hasBuffs switch on the pet AI heal and buff checks. -->
               <td class="px-4 py-2.5 text-center">
                 {@render mark(row.has_heals)}
               </td>
@@ -348,7 +348,7 @@
         <div>
           <div>Summon it into your party.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/UIMercenaries.cs:297-299,380, Player.cs:10615-10620,10792-10807 -->
+            <!-- Source: server-scripts/UIMercenaries.cs:299-301,387, Player.cs:10678-10683,10855-10870 -->
             <p>
               <span class="block">
                 You can keep up to {MAX_HIRED} hired mercenaries.
@@ -380,7 +380,7 @@
           </div>
         </div>
       </div>
-      <!-- Source: server-scripts/UITarget.cs:465-496; UIMercenaries.cs:530-582,588-615,646-700; Player.cs:10991-11013 — combat prevents target-panel dismissal, recall rejects dead mercenaries, and deletion checks equipped gear. -->
+      <!-- Source: server-scripts/UITarget.cs:465-496; UIMercenaries.cs:537-589,595-622,653-707; Player.cs:11055-11077 — combat prevents target-panel dismissal, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
@@ -412,7 +412,7 @@
         <div>
           <div>It levels up with you.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,4746-4771,10854-10869; PetSkills.cs:RefreshSkillLevels; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:UpdateMercStatsByLevel,4779-4804,10918-10933; PetSkills.cs:RefreshSkillLevels; Health.cs:28-41; Mana.cs:28-41; Energy.cs:27-39; BardMercenarySkills.cs:60-69 — veteran points increase maximum Health and usable Mana, but not maximum Rage or the Bard song limit. -->
             <p>
               <span class="block">A mercenary always has your level.</span>
               <span class="block">
@@ -458,7 +458,7 @@
             <Alert variant="info">
               <Info />
               <div>
-                <!-- Source: server-scripts/Player.cs:10651-10657,10849-10856 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+                <!-- Source: server-scripts/Player.cs:10714-10720,10913-10920 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
                 <p class="font-medium">Veteran Attack Power and Spell Power</p>
                 <p>
                   Each total veteran point adds 1 base Attack Power and 1 base
@@ -481,7 +481,7 @@
         <div class="text-sm text-muted-foreground">5</div>
         <div class="space-y-3">
           <div>Give it orders.</div>
-          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9286-9312 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
+          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9356-9382 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
           <p class="text-sm leading-6 text-muted-foreground">
             These orders apply to your mercenaries and combat companion. In this
             table, "companion" includes both.
@@ -493,8 +493,8 @@
             Every non-Warrior mercenary tries to move behind monsters with frontal-attack
             skills.
           </p>
-          <!-- Source: server-scripts/Pet.cs:1491-1494,2204-2215,6031-6041; PetSkills.cs:253-283 — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
-          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2383-2444,OnMercenaryStanceKeyPressed; Player.cs:9286-9312; Pet.cs:5399-5439,5969-6017 — group toggles, Warrior-first attack order, and movement commands. -->
+          <!-- Source: server-scripts/Pet.cs:1491-1494,2222-2233,6060-6070; PetSkills.cs:NextBuffSkill — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
+          <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2402-2463,OnMercenaryStanceKeyPressed; Player.cs:9356-9382; Pet.cs:ComeHereNow,5998-6046 — group toggles, Warrior-first attack order, and movement commands. -->
           <div class="overflow-x-auto">
             <table class="w-full min-w-[36rem] text-left text-sm leading-6">
               <thead class="border-b text-foreground">
@@ -610,7 +610,7 @@
         <div>
           <div>If it dies, resurrect it.</div>
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD, Combat.cs:1040-1055,1363-1374 -->
+            <!-- Source: server-scripts/Pet.cs:OnDeath,UpdateServer_DEAD, Combat.cs:1049-1064,1372-1383 -->
             <p>
               <span class="block">The corpse stays for 5 minutes.</span>
               {#if deathSaveClasses.length > 0}
@@ -625,7 +625,7 @@
                 </span>
               {/if}
             </p>
-            <!-- Source: server-scripts/TargetHealSkill.cs:240-261, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,10921 -->
+            <!-- Source: server-scripts/TargetHealSkill.cs:240-261, Player.cs:ResurrectMercenaryNearOwner,UserCode_CmdResurrectMerc__String__Int64,ProcessMercenariesOnPlayerRespawn,10985 -->
             <div class="overflow-x-auto">
               <table class="text-sm">
                 <thead>
@@ -665,7 +665,7 @@
                 </tbody>
               </table>
             </div>
-            <!-- Source: server-scripts/UIMercenaries.cs:618-644,817-839 — recruiter resurrection handles one dead mercenary or all dead roster members, charging the full combined fee. -->
+            <!-- Source: server-scripts/UIMercenaries.cs:625-651,826-848 — recruiter resurrection handles one dead mercenary or all dead roster members, charging the full combined fee. -->
             <p>
               <span class="block"
                 >A recruiter can resurrect one dead mercenary or all dead
@@ -675,7 +675,7 @@
                 >Resurrecting all requires enough gold for the complete group.</span
               >
             </p>
-            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:743-759 -->
+            <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:752-768 -->
             <p>
               <span class="block">
                 The base fee is {fmt(resurrectionPrice(MERC_MIN_LEVEL, 0))} gold at
@@ -694,7 +694,7 @@
             <Calculation calculation={mercenaryPrice(true)} />
             <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
             <!-- Source: exported-data/items.json — scroll_of_resurrection has level_required 30. -->
-            <!-- Source: server-scripts/Pet.cs:5083-5099 — mercenary healing AI skips resurrection skills. -->
+            <!-- Source: server-scripts/Pet.cs:5108-5124 — mercenary healing AI skips resurrection skills. -->
             <p>
               <span class="block"
                 >A <a href="/items/scroll_of_resurrection" class={link}
@@ -713,7 +713,7 @@
         <div class="text-sm text-muted-foreground">7</div>
         <div>
           <div>If you die, your mercenaries leave.</div>
-          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,13297-13301, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,10756-10775 -->
+          <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ReloadSummonedMercenaries,13361-13365, UIRespawn.cs:Respawn, Player.cs:ProcessMercenariesOnPlayerRespawn,10819-10838 -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
               Living mercenaries return when you respawn or when someone
@@ -791,7 +791,7 @@
 
   <section id="auto-consume" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Auto-Consume</h2>
-    <!-- Source: server-scripts/Pet.cs:290-304,2079-2168; UIEquipmentMercenary.cs:174-188; UIMercenaries.cs:576-583 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat. -->
+    <!-- Source: server-scripts/Pet.cs:290-304,2097-2186; UIEquipmentMercenary.cs:174-188; UIMercenaries.cs:583-590 — a per-mercenary saved toggle gates use of four dedicated supply slots while the owner is in combat. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Each mercenary has food, utility potion, healing potion, and resource
@@ -863,7 +863,7 @@
         </tbody>
       </table>
     </div>
-    <!-- Source: server-scripts/Pet.cs:2130-2168 — healing and resource potions each have a 15-second reuse timer. -->
+    <!-- Source: server-scripts/Pet.cs:2148-2186 — healing and resource potions each have a 15-second reuse timer. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Healing and resource potions each have a 15-second reuse delay.</span
@@ -873,7 +873,7 @@
 
   <section id="ai-behavior" class="space-y-4 rounded-lg border p-5">
     <h2 class="text-xl font-semibold">Healers, taunts, and area attacks</h2>
-    <!-- Source: server-scripts/Pet.cs:4446-4483,4526-4563,4688-4703,5157-5195,5197-5243; PetSkills.cs:143-191,245-252 — target score, healing thresholds, range, efficiency, and offensive mana reserve. -->
+    <!-- Source: server-scripts/Pet.cs:4471-4508,4551-4588,4713-4728,5182-5220,5222-5268; PetSkills.cs:173-221,275-282 — target score, healing thresholds, range, efficiency, and offensive mana reserve. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Cleric and Druid healers consider you, your companions, and nearby
@@ -891,7 +891,7 @@
         casting.</span
       >
     </p>
-    <!-- Source: server-scripts/Pet.cs:4446-4473,4612-4649,4688-4703,5157-5195 — candidate, heal-over-time, area, and direct-heal thresholds. -->
+    <!-- Source: server-scripts/Pet.cs:4471-4498,4637-4674,4713-4728,5182-5220 — candidate, heal-over-time, area, and direct-heal thresholds. -->
     <div class="overflow-x-auto">
       <table class="w-full min-w-[32rem] text-left text-sm leading-6">
         <thead class="border-b text-foreground">
@@ -941,7 +941,7 @@
         </tbody>
       </table>
     </div>
-    <!-- Source: server-scripts/Pet.cs:4476-4523,4566-4609,4922-4963 — cleansing takes priority and same-owner healers avoid duplicate noncritical direct heals. -->
+    <!-- Source: server-scripts/Pet.cs:4501-4548,4591-4634,4947-4988 — cleansing takes priority and same-owner healers avoid duplicate noncritical direct heals. -->
     <!-- Source: server-scripts/Pet.cs:TryQueueHealSkill; website/data/compendium.db pet_skills, skills.is_cleanse — healer cleansing takes priority, using each class's cleanse skill. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
@@ -956,7 +956,7 @@
         target is below 40% Health.</span
       >
     </p>
-    <!-- Source: server-scripts/PetSkills.cs:143-158,194-201; Pet.cs:1335-1448 — Warrior Challenge is chosen first; Battle Shout needs two nearby valid monsters already attacking party members. -->
+    <!-- Source: server-scripts/PetSkills.cs:173-188,224-231; Pet.cs:1341-1454 — Warrior Challenge is chosen first; Battle Shout needs two nearby valid monsters already attacking party members. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Warriors prioritize <a href="/skills/challenge" class={link}
@@ -970,7 +970,7 @@
         attack party members and are close enough to each other for the shout.</span
       >
     </p>
-    <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2708-2715,2820-2841 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
+    <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2727-2734,2839-2860 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
         >Companions and mercenaries can step out of a monster's area attack

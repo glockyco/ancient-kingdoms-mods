@@ -147,21 +147,21 @@
           >) or the skillbar button.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:546-552 — backpack slots reject non-backpack items. -->Backpack
+          <!-- Source: server-scripts/PlayerInventory.cs:559-565 — backpack slots reject non-backpack items. -->Backpack
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:591-605 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
+          <!-- Source: server-scripts/PlayerInventory.cs:604-618 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
           <span class="block">Unique backpacks can only be equipped once.</span>
           <span class="block"
             >Other backpacks can occupy multiple backpack slots.</span
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:576-592 — removal or downgrade is blocked if items would be locked away. -->Removing
+          <!-- Source: server-scripts/PlayerInventory.cs:589-605 — removal or downgrade is blocked if items would be locked away. -->Removing
           or downgrading a bag fails if its stored items would lose their slots.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:639-649,688-694,782-788 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:652-662,701-707,795-801 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
         <li>
           <span class="block"
             >You cannot move an equipped bag directly to the bank or a house
@@ -289,7 +289,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:405 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13621-13646 and 13656-13684 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:13685-13710 and 13720-13748 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -403,7 +403,7 @@
         <p>
           <span class="block"
             ><!-- Source: server-scripts/CustomStrucUI.cs:204-227 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 330-349 and Player.cs:13372-13384 — move mode hides the structure, then repositions the same one without charging gold. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 330-349 and Player.cs:13436-13448 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -419,7 +419,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 261-279 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10485-10518 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10547-10580 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -554,20 +554,20 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:226-252 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
+          <!-- Source: server-scripts/PlayerInventory.cs:239-265 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
           items try base inventory slots first, then unlocked backpack storage
           slots.
         </li>
         <li>
-          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1979-1993 — stack increases are clamped by target max stack. -->Matching
+          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1992-2006 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:608-613 and 657-670 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
+          <!-- Source: server-scripts/PlayerInventory.cs:621-626 and 670-683 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
           Shift while you drag a stack onto an empty slot. An amount picker
           opens and moves the chosen amount into that slot.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:688-744,782-840,1901-1963 and server-scripts/PlayerBank.cs:53-72 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:701-757,795-853,1914-1976 and server-scripts/PlayerBank.cs:53-72 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
         <li>
           <span class="block"
             >Splitting also works between inventory and bank or house chest
@@ -578,7 +578,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:672-675 — non-split, non-merge inventory drag swaps slots. -->Other
+          <!-- Source: server-scripts/PlayerInventory.cs:685-688 — non-split, non-merge inventory drag swaps slots. -->Other
           carried-item drags swap source and destination slots.
         </li>
         <li>
@@ -763,7 +763,7 @@
             the new template.</span
           >
         </li>
-        <!-- Source: server-scripts/PlayerEquipment.cs:526-565,596-605,679-685 and server-scripts/PlayerInventory.cs:226-252 — template selection searches equipped and carried slots, including unlocked backpack storage, for the saved item and augment pair. -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:526-565,596-605,679-685 and server-scripts/PlayerInventory.cs:239-265 — template selection searches equipped and carried slots, including unlocked backpack storage, for the saved item and augment pair. -->
         <li>
           <span class="block"
             >Switching uses equipped and carried gear, including unlocked
@@ -879,7 +879,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4581-4584 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4598-4601 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"

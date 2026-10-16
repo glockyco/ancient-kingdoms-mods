@@ -24,7 +24,7 @@ interface HireRange {
   combatFactor: number;
 }
 
-/** Source: server-scripts/Player.cs:10580-10612. */
+/** Source: server-scripts/Player.cs:10643-10675. */
 const HIRE_RANGES: Readonly<Record<CompanionRace, HireRange>> = {
   human: {
     healthMaximum: 1,

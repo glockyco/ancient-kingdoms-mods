@@ -805,7 +805,7 @@ function formatBuffDebuffStats(
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:illusionRace,86-96 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6842-6852 (ReSkinPlayer picks the illusion race)
+  // server-scripts/Player.cs:6883-6893 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
   // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Skills.cs — undeadIlussion redraws a player as undead.
@@ -857,7 +857,7 @@ function formatBuffDebuffStats(
   );
 
   const lifetapHealing = parseLinearValue(skill.lifetap_healing_percent_bonus);
-  // Source: server-scripts/Combat.cs:1320-1330 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
+  // Source: server-scripts/Combat.cs:1329-1339 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
   if (lifetapHealing) {
     parts.push(
       `+${formatLinearPercent(lifetapHealing, options)} lifetap healing`,
@@ -1112,7 +1112,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-194,199-209;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:8945-8962 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9015-9032 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event:
@@ -1268,7 +1268,7 @@ export function formatSkillEffect(
   // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
   // lists alone, and no NPC carries a skill, so a player passive with the flag
   // changes no damage.
-  // Source: server-scripts/Combat.cs:774-807 (enrage scan and damage bonus, non-spell hits only)
+  // Source: server-scripts/Combat.cs:783-816 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
     parts.push("+50-75% non-spell dmg below 10% hp");
   }
@@ -1301,7 +1301,7 @@ export function formatSkillEffect(
       `${formatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item`,
     );
   }
-  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2084-2095 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
+  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2102-2113 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
   if (skill.food_and_drink_buff_duration_bonus_per_level) {
     parts.push(
       `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food`,

@@ -36,7 +36,7 @@
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">On death</h3>
-        <!-- Source: server-scripts/Player.cs:4087-4119 — loss is limited to current XP and every equipped item loses one durability. -->
+        <!-- Source: server-scripts/Player.cs:4104-4136 — loss is limited to current XP and every equipped item loses one durability. -->
         <p>
           <span class="block"
             >Death removes XP from your current level's progress.</span
@@ -50,7 +50,7 @@
             > for the loss calculation.</span
           >
         </p>
-        <!-- Source: server-scripts/Player.cs:4109-4116 — death removes an active pet. -->
+        <!-- Source: server-scripts/Player.cs:4126-4133 — death removes an active pet. -->
         <!-- Source: server-scripts/Player.cs:OnDeath — death dismounts the player. -->
         <!-- Source: server-scripts/Skills.cs:OnDeath; website/data/compendium.db:skills.reaper_form.remain_after_death — Bard songs stop; buffs marked to survive death stay, but Reaper Form is removed. -->
         <p>
@@ -85,7 +85,7 @@
 
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Respawn and Remains</h3>
-        <!-- Source: server-scripts/Player.cs:3572-3599 — respawn creates remains at the death site, moves the player to the bind point, and revives at half health. -->
+        <!-- Source: server-scripts/Player.cs:3589-3616 — respawn creates remains at the death site, moves the player to the bind point, and revives at half health. -->
         <!-- Source: server-scripts/Entity.cs:346-357 — Revive rounds the specified fraction of maximum health. -->
         <p>
           Respawning leaves your remains where you died and returns you to your
@@ -104,7 +104,7 @@
           >).
         </p>
         <!-- Source: server-scripts/PlayerDead.cs:8-8,82-95,132-137 — remains expire 900 seconds after creation or after use. -->
-        <!-- Source: server-scripts/Player.cs:4082-4085 — a new death destroys the prior remains. -->
+        <!-- Source: server-scripts/Player.cs:4099-4102 — a new death destroys the prior remains. -->
         <p>
           <span class="block"
             >Your remains last 15 minutes after you respawn, or until you die
@@ -128,7 +128,7 @@
             </thead>
             <tbody>
               <!-- Source: server-scripts/PlayerDead.cs:103-119 — only the owner can collect unused remains. -->
-              <!-- Source: server-scripts/Player.cs:14460-14469 — collecting remains returns half the stored XP loss and destroys the remains. -->
+              <!-- Source: server-scripts/Player.cs:14524-14533 — collecting remains returns half the stored XP loss and destroys the remains. -->
               <tr class="border-b">
                 <th class="p-2 font-medium text-foreground"
                   >Collect your remains</th
@@ -164,7 +164,7 @@
           </table>
         </div>
         <Calculation calculation={deathRecovery()} />
-        <!-- Source: server-scripts/Player.cs:13297-13298; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
+        <!-- Source: server-scripts/Player.cs:13361-13362; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
           Accepting Resurrection sets Health to 60% of maximum Health and Mana
@@ -199,11 +199,11 @@
             >Scroll of Resurrection</a
           >.
         </p>
-        <!-- Source: server-scripts/Player.cs:13278-13308 — resurrection restores resources and XP without changing equipment durability. -->
+        <!-- Source: server-scripts/Player.cs:13342-13372 — resurrection restores resources and XP without changing equipment durability. -->
         <p>Equipment keeps its current durability after Resurrection.</p>
       </div>
 
-      <!-- Source: server-scripts/Player.cs:4122-4129,9859-9862 — Hardcore death deletes the character instead of saving the normal death state. -->
+      <!-- Source: server-scripts/Player.cs:4139-4146,9929-9932 — Hardcore death deletes the character instead of saving the normal death state. -->
       <p
         class="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-foreground"
       >

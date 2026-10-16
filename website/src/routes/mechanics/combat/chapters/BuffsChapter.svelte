@@ -116,7 +116,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Buff.cs:47-228; Wisdom.cs:116-127; Combat.cs:912-925 — positive non-song effects add the selected attribute, with per-effect rounding. -->
+    <!-- Source: server-scripts/Buff.cs:47-228; Wisdom.cs:116-127; Combat.cs:921-934 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
     <RefTable caption="What the buff attribute adds to each effect">

@@ -66,7 +66,7 @@
           room.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:11928-11963 and server-scripts/Database.cs:1315-1358 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
+      <!-- Source: server-scripts/Player.cs:11992-12027 and server-scripts/Database.cs:1315-1358 — guild leader invites a guildless online character by name through registrar and checks member capacity. -->
       <p>
         <span class="block"
           >The leader can invite an online guildless character by name at the
@@ -74,7 +74,7 @@
         >
         <span class="block">A full guild cannot invite another member.</span>
       </p>
-      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:11895-11913,11951-11962 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
+      <!-- Source: server-scripts/GuildSystem.cs:15-25,32-71,93-155 and server-scripts/Player.cs:11959-11977,12015-12026 — invitation lasts five minutes; declining blocks that account from that guild's invites for three hours in the server session. -->
       <p>
         <span class="block">An invitation expires after 5 minutes.</span>
         <span class="block"
@@ -82,7 +82,7 @@
           hours during the current server session.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:11979-11994 and server-scripts/Database.cs:1450-1483,1790-1804 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
+      <!-- Source: server-scripts/Player.cs:12043-12058 and server-scripts/Database.cs:1450-1483,1790-1804 — registrar departure removes that character, resets points, promotes earliest-joined member when owner character leaves, and deletes empty guild. -->
       <p>
         <span class="block"
           >Leaving at the registrar removes only that character and clears its

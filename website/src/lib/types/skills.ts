@@ -420,7 +420,7 @@ export type TimingModel =
   | "companion_auto" // non-familiar combat pet non-spell skill index 0: haste-reduced cooldown
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
   // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by the unclamped spell haste sum, cooldown not.
-  // Source: server-scripts/Skills.cs:924-933 (cast reduction), server-scripts/Skills.cs:1141-1169 (flat cooldown), server-scripts/Pet.cs:2221-2226 (unclamped sum)
+  // Source: server-scripts/Skills.cs:924-933 (cast reduction), server-scripts/Skills.cs:1141-1169 (flat cooldown), server-scripts/Pet.cs:2239-2244 (unclamped sum)
   | "merc_spell" // e.g. flame_blast, gale_burst, divine_smite
   | "monster_spell" // spell cast time + flat cooldown; StartCast(skill, 0f) ignores spell haste
   | "monster"; // non-spell: cast_time + cooldown×(1−haste)

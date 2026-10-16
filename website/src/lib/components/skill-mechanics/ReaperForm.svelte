@@ -10,7 +10,7 @@
   const { skill } = $derived(mechanics);
 </script>
 
-<!-- Source: server-scripts/NecromancerReaperFormSkill.cs:15-26; server-scripts/Buff.cs:347-355 — applying an active form removes it and its timer stays positive while active. -->
+<!-- Source: server-scripts/NecromancerReaperFormSkill.cs:31-42; server-scripts/Buff.cs:364-372 — applying an active form removes it and its timer stays positive while active. -->
 <div class="space-y-2">
   <h3 class="font-semibold">Reaper Form</h3>
   <p class="text-muted-foreground">The form has no time limit.</p>
@@ -56,7 +56,7 @@
   </p>
   <!-- Source: server-scripts/MountItem.cs:58-63 — removes reaperForm.formSkill before mounting. -->
   <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->
-  <!-- Source: server-scripts/UIBuffs.cs:292-303; server-scripts/Player.cs:10405-10423 — Reaper Form can be removed through the buff bar. -->
+  <!-- Source: server-scripts/UIBuffs.cs:294-305; server-scripts/Player.cs:10467-10485 — Reaper Form can be removed through the buff bar. -->
   <!-- Source: server-scripts/PlayerSkills.cs:TryUse — an active form can be dismissed before fear and stun checks. -->
   <p class="text-muted-foreground">
     It ends when you use the skill again (even while feared or stunned), remove
@@ -68,7 +68,7 @@
     The form persists when you log out and back in.
   </p>
   <!-- Source: server-scripts/Player.cs:HasActiveAppearanceIllusion — active NecromancerReaperFormSkill is an appearance illusion. -->
-  <!-- Source: server-scripts/Player.cs:9388-9391 — HasActiveAppearanceIllusion blocks the barber. -->
+  <!-- Source: server-scripts/Player.cs:9458-9461 — HasActiveAppearanceIllusion blocks the barber. -->
   <p class="text-muted-foreground">
     The barber cannot change your appearance while the form is active.
   </p>

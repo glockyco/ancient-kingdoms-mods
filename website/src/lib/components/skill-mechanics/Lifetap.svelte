@@ -9,7 +9,7 @@
 
 {#if skill.lifetap_percent}
   {@const share = skill.lifetap_percent}
-  <!-- Source: server-scripts/Combat.cs:1320-1335 — lifetap heals FloorToInt(share × damage after Ward and Mana Shield × (1 + summed bonuses)); overkill counts. -->
+  <!-- Source: server-scripts/Combat.cs:1329-1344 — lifetap heals FloorToInt(share × damage after Ward and Mana Shield × (1 + summed bonuses)); overkill counts. -->
   <div class="space-y-1">
     <h3 class="font-semibold">Lifetap</h3>
     <p class="text-muted-foreground">

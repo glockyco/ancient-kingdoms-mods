@@ -23,7 +23,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You gain rage when your auto attacks deal damage and when you take physical damage.",
         source:
-          "Source: server-scripts/Combat.cs:1377-1401 — rage gain from hits and follow-up attacks",
+          "Source: server-scripts/Combat.cs:1386-1410 — rage gain from hits and follow-up attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage formulas",
       },
@@ -72,7 +72,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Spirit of Wolf does not work inside dungeons.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:743-748,981-984 — skills without allowDungeon cannot be cast in dungeons",
+          "Source: server-scripts/PlayerSkills.cs:810-815,1048-1051 — skills without allowDungeon cannot be cast in dungeons",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -143,7 +143,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when you take physical damage. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1377-1401 — rage recovery comes only from passive skill and buff bonuses; combat rage gain",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1386-1410 — rage recovery comes only from passive skill and buff bonuses; combat rage gain",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },
@@ -171,17 +171,17 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Mystic Spark costs no mana and gives back 35% of its damage as mana, rounded down. Damage beyond the target's remaining health does not count.",
         source:
-          "Source: server-scripts/Combat.cs:1226-1235,1236-1285 — Mystic Spark caps mana return by target health and restores it before ward absorption",
+          "Source: server-scripts/Combat.cs:1235-1244,1245-1294 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
         text: "Mana Shield absorbs incoming damage by spending one mana per point. It ends when a hit needs more mana than you have. A hit that spends exactly your remaining mana leaves the shield active.",
         source:
-          "Source: server-scripts/Combat.cs:1286-1316 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
+          "Source: server-scripts/Combat.cs:1295-1325 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:764-767; server-scripts/Skills.cs:1592-1609 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:773-776; server-scripts/Skills.cs:1592-1609 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -200,14 +200,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You can keep two songs active at once. Polyphony removes this limit, though each song still ends when its duration runs out.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1591-1606 — base two-song limit plus passive slots, removed by an unlimited passive",
+          "Source: server-scripts/PlayerSkills.cs:1658-1673 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
         linkText: "Song rules",
       },
       {
         text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1274-1308 — active songs refresh or displace the oldest while a limit applies",
+          "Source: server-scripts/PlayerSkills.cs:1341-1375 — active songs refresh or displace the oldest while a limit applies",
       },
       {
         text: "Virtuosity and Final Cadence need at least three active songs, so they require Polyphony.",
@@ -238,7 +238,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         linkText: "Pet rules",
       },
       {
-        // Source: server-scripts/NecromancerPetStats.cs:36; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in exported-data/pets.json.
+        // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in exported-data/pets.json.
         text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 0.25% of its base maximum health, Attack Power, Spell Power, Armor Class, and magic, poison, fire, cold, and disease resistance, rounded to whole points. The bonus reaches +50% at 200 veteran points.",
         source:
           "Source: server-scripts/NecromancerPetStats.cs:28-99 — RefreshFromOwner caps pet level at Level.max and veteran points at 200; GetVeteranBonus and GetHealthBonus use 0.0025 and RoundToInt for base stats",

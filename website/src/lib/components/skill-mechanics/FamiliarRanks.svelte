@@ -6,7 +6,7 @@
   const { familiarSummonSkills } = $derived(mechanics.facts);
 </script>
 
-<!-- Source: server-scripts/SummonSkill.cs:99; PetSkills.cs:114-116 — familiar level is its summoning rank, and skill rank is capped at its maximum. -->
+<!-- Source: server-scripts/SummonSkill.cs:99; PetSkills.cs:128-130 — familiar level is its summoning rank, and skill rank is capped at its maximum. -->
 <p class="text-muted-foreground">
   This skill's rank equals the rank of the skill that summoned the familiar, up
   to rank {skill.max_level}.

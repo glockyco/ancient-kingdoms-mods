@@ -77,7 +77,7 @@
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4122-4129,9859-9862 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4139-4146,9929-9932 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -223,7 +223,7 @@
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: exported-data/items.json — scroll_of_binding has level_required 30. -->
       <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:742-746 — a bind spell is refused in a dungeon. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:809-813 — a bind spell is refused in a dungeon. -->
       <p>
         <span class="block"
           ><a
@@ -252,7 +252,7 @@
           other dungeons.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14213-14225 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14277-14289 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A <a
@@ -332,7 +332,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Player.cs:11238-11252,3598-3600, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:11302-11316,3615-3617, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >A successful portal transition removes invisibility, including

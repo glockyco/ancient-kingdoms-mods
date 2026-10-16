@@ -449,7 +449,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:13449-13453 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:13513-13517 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         <span class="block"
           >Click an animal within 3 yd to pet it for 1–4 reputation with its
@@ -532,7 +532,7 @@
         If you stop gaining or losing reputation with a faction, your points
         with that faction stay the same.
       </p>
-      <!-- Source: server-scripts/Player.cs:13449-13453, Monster.cs:3186-3198, Npc.cs:1636-1646, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:13513-13517, Monster.cs:3186-3198, Npc.cs:1636-1646, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         <span class="block">Reputation has no maximum or minimum.</span>

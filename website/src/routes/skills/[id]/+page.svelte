@@ -490,7 +490,7 @@
           {/if}
         </dl>
         {#if losesVeteranPoints}
-          <!-- Source: server-scripts/PlayerSkills.cs:1752-1762,1816-1856,2467-2470 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1819-1829,1883-1923,2534-2537 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
           <!-- Runtime verification: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md -->
           <p
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
@@ -575,7 +575,7 @@
           {/if}
         </dl>
         {#if shortensCast || timingModels.has("player_auto") || hasteCooldownCasters}
-          <!-- Source: server-scripts/Skills.cs:924-933,1141-1169; Player.cs:3422-3459 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
+          <!-- Source: server-scripts/Skills.cs:924-933,1141-1169; Player.cs:3439-3476 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
               <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast — mercenary casts use its own equipment and buff spell haste. -->

@@ -274,7 +274,7 @@
             <dt class="text-muted-foreground">Level</dt>
             <dd class="text-right">Your level, up to {companionCaps}</dd>
           </div>
-          <!-- Source: server-scripts/Pet.cs:3990-4001 — a dead combat pet or familiar is removed. -->
+          <!-- Source: server-scripts/Pet.cs:4015-4026 — a dead combat pet or familiar is removed. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">On death</dt>
             <dd class="text-right">Summon it again</dd>
@@ -363,7 +363,7 @@
           >
         </div>
         <dl class="divide-y">
-          <!-- Source: server-scripts/Player.cs:4192-4224 — up to three followers, keyed by whistle item, outside the summon slot. -->
+          <!-- Source: server-scripts/Player.cs:4209-4241 — up to three followers, keyed by whistle item, outside the summon slot. -->
           <div class="flex justify-between gap-4 px-4 py-2.5">
             <dt class="text-muted-foreground">Slot</dt>
             <dd class="text-right">Own pet slots</dd>
@@ -387,9 +387,9 @@
         >
           <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:34-55,84-96 — using the whistle of an active follower dismisses it, and the whistle has unlimited charges. -->
           <li>Use the whistle again to dismiss the pet.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454; server-scripts/Player.cs:4307-4343 — a follower without its inventory whistle is removed, and active followers return after portal travel. -->
+          <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454; server-scripts/Player.cs:4324-4360 — a follower without its inventory whistle is removed, and active followers return after portal travel. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13449-13453 — petting grants 1–4 faction standing every 30 seconds per animal. -->
+          <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13513-13517 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
             <a
               href="/mechanics/reputation#pets"

@@ -6,14 +6,14 @@
 
 <Chapter id="targeting">
   <Topic id="targets">
-    <!-- Source: server-scripts/Player.cs:4434-4444; PlayerSkills.cs:772-808 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
+    <!-- Source: server-scripts/Player.cs:4451-4461; PlayerSkills.cs:839-875 — players attack living monsters or NPCs, exclude charmed monsters, and choose the closest attackable monster within 10 units when a targeted attack lacks a valid target. -->
     <p>
       Players can attack living monsters and NPCs. Other players and
       <a href="/mechanics/bard#charm">Bard-charmed</a> monsters are protected from
       player attacks. A targeted attack without a valid target selects the nearest
       non-hidden, attackable monster within 10 yd if one exists.
     </p>
-    <!-- Source: server-scripts/Player.cs:CanAttack; Pet.cs:CanAttack; PlayerSkills.cs:648-652; UISettings.cs:ProtectFriendlyNpcs — the setting defaults on and blocks player, companion and mercenary attacks and targeted damage or debuff casts on protected NPCs. -->
+    <!-- Source: server-scripts/Player.cs:CanAttack; Pet.cs:CanAttack; PlayerSkills.cs:715-719; UISettings.cs:ProtectFriendlyNpcs — the setting defaults on and blocks player, companion and mercenary attacks and targeted damage or debuff casts on protected NPCs. -->
     <!-- Source: server-scripts/UISettings.cs:InitializeFriendlyNpcToggle — the toggle's protect_friendly_npcs label reads "Protect NPCs" in the English localization table, read in the running game. -->
     <!-- Source: server-scripts/Player.cs:IsProtectedFriendlyNpc; Entity.cs:checkAggro — a faction NPC is protected while reputation exceeds the factionNeeded that also stops its aggro, other NPCs always, and an NPC targeting the player, a party member or their pets is exempt. -->
     <p>
@@ -24,7 +24,7 @@
       that is attacking you, a party member, or a companion or mercenary of
       either can always be fought.
     </p>
-    <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,83-135; PlayerSkills.cs:748-771 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
+    <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,83-135; PlayerSkills.cs:815-838 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
     <ul>
       <li>
         A targeted heal can reach yourself, another player, or a mercenary,
@@ -40,24 +40,24 @@
   </Topic>
 
   <Topic id="casting">
-    <!-- Source: server-scripts/PlayerSkills.cs:638-642,733-739,809-891 — learned status, readiness, resources, equipment and ammunition are checked. -->
+    <!-- Source: server-scripts/PlayerSkills.cs:705-709,800-806,876-958 — learned status, readiness, resources, equipment and ammunition are checked. -->
     <p>
       Casting requires a learned, ready skill, enough Mana or Rage, suitable
       equipment, and ammunition for applicable projectiles.
     </p>
-    <!-- Source: server-scripts/PlayerSkills.cs:840-871 — out-of-range and obscured targets can start navigation and queue the cast. -->
+    <!-- Source: server-scripts/PlayerSkills.cs:907-938 — out-of-range and obscured targets can start navigation and queue the cast. -->
     <p>
       When the target is out of range or out of sight, your character moves
       closer and then casts.
     </p>
-    <!-- Source: server-scripts/PlayerSkills.cs:638-642 — fear and stun block normal skill use. -->
-    <!-- Source: server-scripts/PlayerSkills.cs:632-642 — active NecromancerReaperFormSkill and Fearless Stance are removed before the FEAR/STUNNED gate. -->
+    <!-- Source: server-scripts/PlayerSkills.cs:705-709 — fear and stun block normal skill use. -->
+    <!-- Source: server-scripts/PlayerSkills.cs:699-709 — active NecromancerReaperFormSkill and Fearless Stance are removed before the FEAR/STUNNED gate. -->
     <p>
       Fear and stun block skill use, except dismissing an active
       <a href="/skills/reaper_form">Reaper Form</a> or
       <a href="/skills/fearless_stance">Fearless Stance</a>.
     </p>
-    <!-- Source: server-scripts/PlayerSkills.cs:954-1013,1159-1188 — Bard song use and repetition continue while moving or casting ordinary skills. -->
+    <!-- Source: server-scripts/PlayerSkills.cs:1021-1080,1226-1255 — Bard song use and repetition continue while moving or casting ordinary skills. -->
     <p>Bard songs can continue while you move or use combat skills.</p>
     <SeeAlso links={[{ href: "/mechanics/bard#songs", label: "Bard Songs" }]} />
   </Topic>

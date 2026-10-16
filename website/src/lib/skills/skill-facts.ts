@@ -93,9 +93,9 @@ export function immuneDebuffBypass(
 /**
  * How each damage type is mitigated and avoided, mirroring the game one row per type.
  *
- * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:846-863 — the
+ * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:855-872 — the
  * per-damage-type switch, each read multiplied by 0.0005.
- * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:656-663 —
+ * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:665-672 —
  * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
  *
  * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
@@ -397,7 +397,7 @@ export function skillFacts(
   const isDebuffType =
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff";
 
-  // Source: server-scripts/Combat.cs:1536-1580 — melee debuffs resist with Defense, the others with their matching resistance.
+  // Source: server-scripts/Combat.cs:1545-1589 — melee debuffs resist with Defense, the others with their matching resistance.
   const debuffResistance = skill.is_melee_debuff
     ? "Armor Class"
     : skill.is_poison_debuff

@@ -376,7 +376,7 @@
             Only these {data.targets.length} targets give Slayer mastery. When you
             come near one, your Bestiary adds it with zero kills.
           </p>
-          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13928-13935; server-scripts/UIBestiaryDetail.cs:150-154 — approach discovery and loot discovery are separate records. -->
+          <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13992-13999; server-scripts/UIBestiaryDetail.cs:150-154 — approach discovery and loot discovery are separate records. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Finding a boss does not reveal its drops. You discover loot
             separately.

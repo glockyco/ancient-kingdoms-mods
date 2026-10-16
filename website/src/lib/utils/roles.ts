@@ -193,7 +193,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
     ],
   },
-  // Source: server-scripts/Player.cs:5133-5148,11144-11162 — reset clears the current specialization allocation and refuses curses or debuffs.
+  // Source: server-scripts/Player.cs:5174-5189,11208-11226 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
     description:
       "This NPC resets your current specialization's assigned attribute points.",
@@ -216,8 +216,8 @@ export const ROLE_DESCRIPTIONS: Partial<
     details: ["The change costs 100 gold."],
   },
   // Source: server-scripts/Npc.cs:InteractNpc — the mercenary recruiter opens at level 10.
-  // Source: server-scripts/UIMercenaries.cs:297-299,359-372,732-734 — active mercenary limits follow level thresholds 20, 30, and 40.
-  // Source: server-scripts/UIMercenaries.cs:43,380 — the roster holds ten mercenaries.
+  // Source: server-scripts/UIMercenaries.cs:299-301,366-379,739-741 — active mercenary limits follow level thresholds 20, 30, and 40.
+  // Source: server-scripts/UIMercenaries.cs:45,387 — the roster holds ten mercenaries.
   is_recruiter_mercenaries: {
     description: "You can hire and manage up to 10 mercenaries here.",
     details: [

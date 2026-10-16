@@ -35,13 +35,13 @@
   <Card.Root id="songs" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Bard Songs and Moving Auras</Card.Title>
-      <!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:1257-1309 — a selected song recasts and renews its active duration. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:1324-1376 — a selected song recasts and renews its active duration. -->
       <Card.Description>
         A selected song repeats its cast and renews its own duration.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-5 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerSkills.cs:1048-1057,1100-1188,2260-2292 — song casts repeat during movement or ordinary casting while the Bard can continue. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1115-1124,1167-1255,2327-2359 — song casts repeat during movement or ordinary casting while the Bard can continue. -->
       <p>
         Performing continues while moving or casting an ordinary skill.<br />
         Selecting another song changes which song repeats.
@@ -53,12 +53,12 @@
         Click a song's icon in your buff bar to stop it. This removes its effects
         and stops it repeating.
       </p>
-      <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2260-2292 — Instrument requirements are checked before starting and during continued performance. -->
+      <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2327-2359 — Instrument requirements are checked before starting and during continued performance. -->
       <p>
         Bard songs require an equipped instrument.<br />
         Losing it stops the repeating cast.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1265-1309,1591-1606,1621-1633,1650-1662 — the default limit is two, an unlimited passive removes it, and at a limit a new song displaces the oldest refreshed entry. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1332-1376,1658-1673,1688-1700,1717-1729 — the default limit is two, an unlimited passive removes it, and at a limit a new song displaces the oldest refreshed entry. -->
       <p>
         Two songs can remain active by default.<br />
         A new song at the limit removes the least recently refreshed song and its
@@ -82,7 +82,7 @@
           >Final Cadence</a
         > need at least three active songs.
       </p>
-      <!-- Source: server-scripts/PlayerSkills.cs:1265-1309,1527-1538,1549-1568,1650-1662 — changing the selected song does not remove earlier effects, but expiry or explicit removal does. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1332-1376,1594-1605,1616-1635,1717-1729 — changing the selected song does not remove earlier effects, but expiry or explicit removal does. -->
       <p>
         Earlier songs remain after a switch until they expire, are stopped, or
         are displaced.<br />
@@ -111,8 +111,8 @@
               </td>
             </tr>
             <!-- Source: server-scripts/BardAreaSongSkill.cs:CollectAuraCandidates — Cacophony removes Monsters with speed at most -50, other songs remove Monsters with aggroList.Count == 0. -->
-            <!-- Source: server-scripts/PlayerSkills.cs:1036-1044 — RefreshBardSongAura runs every 0.5 seconds. -->
-            <!-- Source: server-scripts/PlayerSkills.cs:1312-1327 — fresh casts call RefreshBardSongAura with freshCast true. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:1103-1111 — RefreshBardSongAura runs every 0.5 seconds. -->
+            <!-- Source: server-scripts/PlayerSkills.cs:1379-1394 — fresh casts call RefreshBardSongAura with freshCast true. -->
             <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; AreaDebuffSkill.cs:ApplyToCandidates — a newly reached monster gets the Bard's threat and targets the Bard if it had no target. -->
             <tr class="border-b border-border/50">
               <th class="py-3 pr-5 text-left font-medium text-foreground"
@@ -308,19 +308,19 @@
         To charm another monster, first stop the charm by clicking its song icon in
         your buff bar.
       </p>
-      <!-- Source: server-scripts/BardCharmSongSkill.cs:120-133, PlayerSkills.cs:1257-1309,1636-1643 — a successful charm is tracked as an active Bard song and occupies a slot. -->
+      <!-- Source: server-scripts/BardCharmSongSkill.cs:120-133, PlayerSkills.cs:1324-1376,1703-1710 — a successful charm is tracked as an active Bard song and occupies a slot. -->
       <p>
         Charm uses one active-song slot.<br />
         At the song limit, a successful charm can displace the least recently refreshed
         song. With Polyphony there is no limit, so it displaces nothing.
       </p>
-      <!-- Source: server-scripts/BardCharmSongSkill.cs:33-59, PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:2260-2292 — repeated casts keep the original charm target and require range and visibility to renew it. -->
+      <!-- Source: server-scripts/BardCharmSongSkill.cs:33-59, PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:2327-2359 — repeated casts keep the original charm target and require range and visibility to renew it. -->
       <p>
         Renewal keeps the existing creature as its target, even if the Bard
         selects another monster.<br />
         The creature must be within cast range and visible for renewal.
       </p>
-      <!-- Source: server-scripts/Monster.cs:2446-2464,2545-2561,2850-2853, PlayerSkills.cs:1549-1568,1621-1633,1734-1738; ZoneTrigger.cs:94-100 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
+      <!-- Source: server-scripts/Monster.cs:2446-2464,2545-2561,2850-2853, PlayerSkills.cs:1616-1635,1688-1700,1801-1805; ZoneTrigger.cs:94-100 — charm ends on removal or expiry, monster death, Bard death, zone separation, or leaving the server. -->
       <p>
         Charm ends if its effect expires or is removed, or if the creature dies.<br
         />

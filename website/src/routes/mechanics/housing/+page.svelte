@@ -46,7 +46,7 @@
           class="text-blue-600 dark:text-blue-400 hover:underline">Inventory</a
         > page.
       </p>
-      <!-- Source: server-scripts/CustomStrucUI.cs:164-258 and server-scripts/Player.cs:13340-13357 — placement requires a footprint inside the owned buildable zone without a structure overlap; gold is deducted when the structure is created. -->
+      <!-- Source: server-scripts/CustomStrucUI.cs:164-258 and server-scripts/Player.cs:13404-13421 — placement requires a footprint inside the owned buildable zone without a structure overlap; gold is deducted when the structure is created. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           A new piece must fit inside your house's buildable area without
@@ -56,7 +56,7 @@
           Placement costs the catalog price when the structure is created.
         </li>
       </ul>
-      <!-- Source: server-scripts/CustomStrucUI.cs:71-84,220-226,261-313 and server-scripts/Player.cs:13372-13409 — movement repositions an owned structure without charging gold; confirmed removal deletes it without a refund. -->
+      <!-- Source: server-scripts/CustomStrucUI.cs:71-84,220-226,261-313 and server-scripts/Player.cs:13436-13473 — movement repositions an owned structure without charging gold; confirmed removal deletes it without a refund. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Move mode repositions owned furniture without buying it again.</li>
         <li>
@@ -64,7 +64,7 @@
           refunding its price.
         </li>
       </ul>
-      <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:57-68 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13485-13502,13787-13828 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
+      <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:57-68 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13549-13566,13851-13892 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
       <!-- Source: server-scripts/HousingManager.cs:strucItems — the 0.9.35.5 house catalog, read in the running game, offers a Craft Station, Cooking Oven, Alchemy Workbench and Scribing Table. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
@@ -159,7 +159,7 @@
         </li>
         <li>Combat, death, or moving away can cancel the session.</li>
       </ul>
-      <!-- Source: server-scripts/BarberAppearanceOptions.cs:8-78 and server-scripts/Player.cs:9465-9488 — race and gender determine available hair, secondary styles, and colors; only hair, beard, and eye appearance fields change. -->
+      <!-- Source: server-scripts/BarberAppearanceOptions.cs:8-78 and server-scripts/Player.cs:9535-9558 — race and gender determine available hair, secondary styles, and colors; only hair, beard, and eye appearance fields change. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Style choices depend on your current race and gender.</li>
         <li>
@@ -170,18 +170,18 @@
           Every race except Felarii and Drassar can change hair and eye colors.
         </li>
       </ul>
-      <!-- Source: server-scripts/UIBarber.cs:499-515,526-558 and server-scripts/Player.cs:6643-6685 — the preview changes the local appearance, hair color updates beard color, and Cancel restores the prior appearance without payment. -->
+      <!-- Source: server-scripts/UIBarber.cs:499-515,526-558 and server-scripts/Player.cs:6684-6726 — the preview changes the local appearance, hair color updates beard color, and Cancel restores the prior appearance without payment. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Hair color changes beard color at the same time.</li>
         <li>Preview shows the result before payment.</li>
         <li>Cancel restores your previous appearance without a charge.</li>
       </ul>
-      <!-- Source: server-scripts/EquipmentItem.cs:297-309, server-scripts/Player.cs:14573-14584 and server-scripts/Database.cs:2112-2128 — using costume equipment consumes the item and stores its appearance for that character. -->
+      <!-- Source: server-scripts/EquipmentItem.cs:297-309, server-scripts/Player.cs:14637-14648 and server-scripts/Database.cs:2112-2128 — using costume equipment consumes the item and stores its appearance for that character. -->
       <p>
         Using a costume item consumes it and saves its appearance to your
         character's wardrobe.
       </p>
-      <!-- Source: server-scripts/Structure.cs:154-161 and server-scripts/UIWardrobe.cs:38-57,97-118,146-180 and server-scripts/Player.cs:14642-14660 — wardrobe furniture opens the saved appearances, with independent head, chest, and leg skin slots that can be cleared. -->
+      <!-- Source: server-scripts/Structure.cs:154-161 and server-scripts/UIWardrobe.cs:38-57,97-118,146-180 and server-scripts/Player.cs:14706-14724 — wardrobe furniture opens the saved appearances, with independent head, chest, and leg skin slots that can be cleared. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           <a

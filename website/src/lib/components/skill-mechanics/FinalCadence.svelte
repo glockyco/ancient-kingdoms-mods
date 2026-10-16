@@ -62,7 +62,7 @@
     restored, rounded up, on monsters within {2 * skill.cast_range!.base_value} yd
     of the caster that are fighting that ally.
   </p>
-  <!-- Source: server-scripts/Combat.cs:656-663,846-863,1541-1582 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
+  <!-- Source: server-scripts/Combat.cs:665-672,855-872,1550-1591 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">
     The target's Magic Resist reduces the damage by 5% per 100 points, at most
     90%, and gives 5 percentage points of chance per 100 points to resist it

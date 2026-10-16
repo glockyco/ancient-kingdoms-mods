@@ -61,7 +61,7 @@ export function getPetStatSnapshots(
       : level1 + growth * (maxLevel - 1);
     let veteranBase = atCap;
     if (id === "health") {
-      // Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:48 — Health rounds after its multiplier, while the veteran bonus uses the unrounded scaled base.
+      // Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:50 — Health rounds after its multiplier, while the veteran bonus uses the unrounded scaled base.
       level1 = iround(multiplyF32(level1, curves.health_multiplier));
       veteranBase = multiplyF32(atCap, curves.health_multiplier);
       atCap = iround(veteranBase);

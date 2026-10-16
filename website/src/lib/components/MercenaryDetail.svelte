@@ -150,7 +150,7 @@
     if (!deathSave) return null;
     const at = (totalVeteranPoints: number) => {
       const rank = deathSaveRank(totalVeteranPoints);
-      // Source: server-scripts/Combat.cs:1042-1048, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
+      // Source: server-scripts/Combat.cs:1051-1057, LinearInt.cs:Get, LinearFloat.cs:Get, BuffSkill.cs:buffTime — the Rage cost is energyCosts.Get(rank) and the buff lasts buffTime.Get(rank).
       return {
         rage: linearAt(
           requireLinearValue(
@@ -172,7 +172,7 @@
       now: at(veteran),
       low: at(0),
       high: at(MAX_VETERAN),
-      // Source: server-scripts/Combat.cs:1046 — the cooldown is cooldown.baseValue at every rank.
+      // Source: server-scripts/Combat.cs:1055 — the cooldown is cooldown.baseValue at every rank.
       cooldown: requireLinearValue(
         deathSave.cooldown,
         `${deathSave.id} cooldown`,
@@ -336,7 +336,7 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
-        <!-- Source: server-scripts/Player.cs:10839-10869, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
+        <!-- Source: server-scripts/Player.cs:10903-10933, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
           {#if stats.health}{@render stat("Health", range(stats.health))}{/if}
           {#if stats.mana}{@render stat("Mana", range(stats.mana))}{/if}
@@ -460,7 +460,7 @@
           </div>
           <div>
             <h3 class="text-sm font-semibold">Veteran points (VT)</h3>
-            <!-- Source: server-scripts/Player.cs:10655-10669,10854-10869; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
+            <!-- Source: server-scripts/Player.cs:10718-10732,10918-10933; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
               Each veteran point (VT) adds 0.25% of base Health to maximum
               Health{veteranRaisesMana
@@ -488,7 +488,7 @@
         <Alert variant="info">
           <Info />
           <div>
-            <!-- Source: server-scripts/Player.cs:10651-10657,10849-10856 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
+            <!-- Source: server-scripts/Player.cs:10714-10720,10913-10920 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
             <p class="font-medium">Veteran Attack Power and Spell Power</p>
             <p>
               Each total veteran point adds 1 base Attack Power and 1 base Spell
@@ -594,7 +594,7 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
-          <!-- Source: server-scripts/Combat.cs:1363-1374,1040-1061 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
+          <!-- Source: server-scripts/Combat.cs:1372-1383,1049-1070 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
           <p>
             From level {DEATH_SAVE_MIN_LEVEL}, a lethal hit triggers
             <a
@@ -683,7 +683,7 @@
                 : "a shield"} in the off-hand.
             </li>
           {/if}
-          <!-- Source: server-scripts/Pet.cs:OnDeath, Combat.cs:743-759 — hits lower gear durability; death does not. -->
+          <!-- Source: server-scripts/Pet.cs:OnDeath, Combat.cs:752-768 — hits lower gear durability; death does not. -->
           <li>
             Gear stays on the mercenary when it dies, and death does not lower
             durability.
