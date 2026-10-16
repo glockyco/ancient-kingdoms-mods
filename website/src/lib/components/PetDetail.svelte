@@ -168,7 +168,7 @@
     <h2 id="pet-stats-title" class="text-xl font-semibold">Base stats</h2>
     <!-- Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13; SummonSkill.cs:99 — stats scale from their base values with level, companions stop at Level.max, and familiars use the summoning skill rank. -->
     <!-- Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:50 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
-    <!-- Source: server-scripts/NecromancerPetStats.cs:36-48,61-108 — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances, not block or critical chance. -->
+    <!-- Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances, not block or critical chance. -->
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <Table.Root class="text-base">
         <Table.Header>
@@ -352,18 +352,18 @@
               </dd>
             </div>
             {#if pet.has_necromancer_pet_stats}
-              <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetHealthBonus,61-99; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.0025 per point to base Health, damage, magic damage, defense, and resistances. -->
+              <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.01 per point to base damage and magic damage and 0.0025 per point to base Health, defense, and resistances. -->
               <div class="flex gap-2">
                 <dt class="text-muted-foreground w-40 shrink-0">
                   Veteran bonus
                 </dt>
                 <dd class="space-y-1">
                   <p>
-                    Each of your veteran points adds 0.25% of base Health to
-                    maximum Health and 0.25% of base Attack Power, Spell Power,
-                    Armor Class, and each resistance, rounded. The bonus caps at
-                    +50% with 200 points and refreshes whenever you gain a
-                    veteran point.
+                    Each of your veteran points adds 1% of base Attack Power and
+                    Spell Power, and 0.25% of base Health, Armor Class and each
+                    resistance, rounded. At 200 points, Attack Power and Spell
+                    Power reach +200% and the other stats +50%. The bonus
+                    refreshes whenever you gain a veteran point.
                   </p>
                   <RoundingDefinition />
                 </dd>

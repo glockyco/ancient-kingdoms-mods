@@ -2328,14 +2328,6 @@
     "NecromancerPetBuffSkill.cs:HasLivingCombatPet": {
       "span": 0
     },
-    "NecromancerPetStats.cs:28-99": {
-      "sha256": "983580b1223f078834ba56e61964b234fae10af63d8c20bd0ab0749dbf97e9f6",
-      "span": 72
-    },
-    "NecromancerPetStats.cs:36-48": {
-      "sha256": "10e82440cd5cabf14f926b6956f30778764499787ef726f328ec3141d6f767b4",
-      "span": 13
-    },
     "NecromancerPetStats.cs:38": {
       "sha256": "6e20d0511fd6b04d67fd47462c0bfc7c20ea49295a23b8712e2845ab59b3d7ea",
       "span": 1
@@ -2344,13 +2336,8 @@
       "sha256": "78bd678c3b6aa628d0a9c9861c35e3dd5722c3a4458d3c5a032b9461e8dc075d",
       "span": 1
     },
-    "NecromancerPetStats.cs:61-108": {
-      "sha256": "8787c4cfa77120469ac6c44b2188ff96c43672ac724a50516fc739112b175743",
-      "span": 48
-    },
-    "NecromancerPetStats.cs:61-99": {
-      "sha256": "f83e61d8d5bfd77e2674742e138ad1a829cdf7aca1645593885d4e209ebd934a",
-      "span": 39
+    "NecromancerPetStats.cs:GetVeteranBonus": {
+      "span": 0
     },
     "NecromancerPetStats.cs:RefreshFromOwner": {
       "span": 0

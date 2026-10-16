@@ -71,12 +71,14 @@ test("zero-growth stats stay fixed at every level, including float chances", () 
 test("200-point veteran bonuses round half values to even and exclude chances", () => {
   const values = curves({
     damage_base: 1,
-    magic_damage_base: 3,
+    defense_base: 1,
+    magic_resist_base: 3,
     block_chance_base: 0.2,
     critical_chance_base: 0.1,
   });
-  expect(stat(values, 1, "Attack Power", true).withVeteran).toBe(1);
-  expect(stat(values, 1, "Spell Power", true).withVeteran).toBe(5);
+  expect(stat(values, 1, "Attack Power", true).withVeteran).toBe(3);
+  expect(stat(values, 1, "Armor Class", true).withVeteran).toBe(1);
+  expect(stat(values, 1, "Magic resistance", true).withVeteran).toBe(5);
   for (const name of ["Block chance", "Critical Strike"]) {
     const chance = stat(values, 1, name, true);
     expect(chance.withVeteran).toBe(chance.atCap);

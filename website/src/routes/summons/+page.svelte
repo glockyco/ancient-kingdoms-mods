@@ -444,13 +444,14 @@
         </li>
       {/each}
     </ul>
-    <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetHealthBonus,61-99; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.0025 per point to base Health, damage, magic damage, defense, and resistances. -->
+    <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.01 per point to base damage and magic damage and 0.0025 per point to base Health, defense, and resistances. -->
     <p>
       These companions track your regular level, up to {undeadCaps}. Each of
-      your veteran points adds 0.25% of base Health to maximum Health and 0.25%
-      of base Attack Power, Spell Power, Armor Class, and each resistance,
-      rounded. The bonus caps at +50% with 200 points. Their stats and skill
-      ranks refresh when you level up or gain a veteran point.
+      your veteran points adds 1% of base Attack Power and Spell Power, and
+      0.25% of base Health, Armor Class and each resistance, rounded. At 200
+      points, Attack Power and Spell Power reach +200% and the other stats +50%.
+      Their stats and skill ranks refresh when you level up or gain a veteran
+      point.
     </p>
     <RoundingDefinition />
     <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces NetworkactivePet with a different non-familiar summon; a matching pet uses the summon key as an attack command; other classes receive You already have an active pet. -->

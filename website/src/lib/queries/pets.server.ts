@@ -68,13 +68,14 @@ export function getPetStatSnapshots(
       veteranBase = multiplyF32(atCap, curves.health_multiplier);
       atCap = iround(veteranBase);
     }
-    // Source: server-scripts/NecromancerPetStats.cs:36-48,61-108 — 200 veteran points add a rounded 50% of base stats, not block or critical chance.
+    // Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — each veteran point adds 1% of base Attack Power and Spell Power and 0.25% of base Health, Armor Class and resistances, rounded. Block and critical chance gain nothing.
+    const rate = id === "damage" || id === "magic_damage" ? 0.01 : 0.0025;
     const bonus =
       hasVeteranBonus && !isPercent
         ? iround(
             multiplyF32(
               id === "health" ? multiplyF32(veteranBase, 200) : atCap * 200,
-              0.0025,
+              rate,
             ),
           )
         : 0;
