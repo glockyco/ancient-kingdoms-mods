@@ -23,7 +23,8 @@
     "check:redactions": "cd build-pipeline && uv run compendium redactions check",
     "check:clean": "./scripts/check-clean-checkout.sh",
     "check:docs": "cd build-pipeline && uv run compendium docs check",
-    "check:knip": "knip"
+    "check:knip": "knip",
+    "local:status": "./scripts/local-status.sh"
   },
   "packageManager": "pnpm@10.34.5",
   "engines": {

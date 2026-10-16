@@ -2,6 +2,10 @@
 Local.props
 config.toml
 
+# Working files: research, captures, scratch and save copies. CONTRIBUTING.md
+# describes the layout.
+.local/
+
 # Generated files
 *.g.cs
 

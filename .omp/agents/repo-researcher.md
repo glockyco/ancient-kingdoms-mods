@@ -1,7 +1,7 @@
 ---
 name: repo-researcher
-description: Investigates this repository, its decompiled game sources, or its harness documentation and returns a report written to a file. Use for read-only research whose result is a table, an inventory, or any report longer than a few sentences.
-tools: read, grep, glob, bash, web_search
+description: Investigates this repository, its decompiled game sources, or its harness documentation and returns a report written to a file under .local/. Use for read-only research whose result is a table, an inventory, or any report longer than a few sentences.
+tools: read, grep, glob, bash, web_search, write
 spawns: ""
 read-summarize: false
 output:
@@ -13,7 +13,7 @@ output:
   properties:
     reportPath:
       type: string
-      description: The local:// URI of the written report.
+      description: The repository path of the written report, under .local/.
     headline:
       type: string
       description: One sentence naming the single most consequential finding.
@@ -24,8 +24,10 @@ sentence.
 
 ## Write the report to a file, not into your answer
 
-Write the full report with `write` to `local://<short-topic-name>.md`, then return that URI as
-`reportPath`. The caller reads the file.
+Write the full report with `write` to the path the task names. Without one, write it to
+`.local/research/<yyyy-mm-dd>-<short-topic-name>/report.md`, and give a new folder a `README.md` that
+names the question and says the folder can be deleted once its conclusions are recorded. Return the
+report's path as `reportPath`. The caller reads the file.
 
 An answer returned as your own output passes through a structured channel that may keep only a summary
 and discard tables. That has happened: two research reports were delivered as a summary and a file
@@ -48,8 +50,8 @@ value, and read counts rather than a first page.
 
 ## Boundaries
 
-Read only. Edit no file except your own report. Run no build, test, linter or formatter. Do not
-commit.
+Read only. Edit no file except your own report and its folder's `README.md`. Run no build, test,
+linter or formatter. Do not commit.
 
 Prefer the repository's own record over reconstruction: commit bodies here carry causal explanations,
 and `docs/game-bugs/` and `openspec/` hold decisions with their reasons.

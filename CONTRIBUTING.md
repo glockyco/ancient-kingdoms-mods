@@ -72,6 +72,23 @@ The [update-game-version skill](.agent/skills/update-game-version/SKILL.md) give
 - Put each new fact in the document that owns it. The [project-documentation skill](.agent/skills/project-documentation/SKILL.md) says which one.
 - Keep the invariants in [ARCHITECTURE.md](ARCHITECTURE.md#invariants).
 
+## Working files
+
+Research notes, captures, mood boards, scratch scripts and save copies live in `.local/`, which Git ignores. This applies to agents too: their reports go here, not into `docs/` or an agent's session folder.
+
+```text
+.local/
+  changes/<change-id>/      material for one OpenSpec change
+  research/<date>-<topic>/  exploration not yet tied to a change
+  private/                  save copies and other sensitive files
+  tmp/                      scratch that can go at any time
+```
+
+- Each folder under `changes/` and `research/` starts with a `README.md` that names the question it answers and when it can be deleted.
+- Conclusions go into the change's design, a spec, or a commit message. Tracked files never link into `.local/`, because nobody else has it.
+- A change's folder is deleted once the change is archived. A research folder moves into a change's folder, or is deleted once its conclusions are recorded.
+- `pnpm local:status` lists the folders with their size and newest file. It flags folders without a `README.md` and change folders whose change is archived or missing. It deletes nothing.
+
 ## Checks
 
 The pre-commit hook runs the checks for the staged paths. The hooks need the full local setup: a website change runs the database suites, a mod change builds every mod against the game, and a redaction change loads the full export. CI repeats the checks that need no game data, and it builds neither the site nor the mods.
