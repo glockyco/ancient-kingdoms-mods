@@ -199,14 +199,6 @@
     Traps
   </h1>
 
-  {#if data.withheldZones.length > 0}
-    <p class="text-muted-foreground">
-      The game withholds positions in {data.withheldZones.join(", ")}, so traps
-      there have no map position. Identical traps there share one row with a
-      count.
-    </p>
-  {/if}
-
   <DataTable
     data={data.traps}
     {columns}
