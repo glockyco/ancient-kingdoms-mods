@@ -6,9 +6,9 @@
 
 - 28 summed stats. Each is a sum over components that implement `ICombatBonus`, `IHealthBonus`, `IManaBonus` or `IEnergyBonus` (`server-scripts/ICombatBonus.cs:1-32`): the six attributes, maximum Health, Mana and Rage, their three regeneration rates, Attack Power, Spell Power, Armor Class, five resists, Block Chance, Accuracy, Critical Chance, Critical Resist, Haste, Spell Casting Haste, Fear Resist and Movement Speed.
 - Four effects that are not summed. The engine reads them from individual buffs at hit or cast time: ward (`server-scripts/Combat.cs:1247-1293`), damage shield (`:921-1004`), heal on hit (`:895-916`) and cooldown reduction (`server-scripts/TargetBuffSkill.cs:281-303`).
-- Two sets of names:
-  - Item tooltips. `ScriptableItem.LocalizedStatLabel` maps 28 English labels to localization keys under `item.stat.` (`server-scripts/ScriptableItem.cs:269-302`). An item comparison calls a weapon's damage Base Damage and any other item's Attack Power (`server-scripts/EquipmentItem.cs:557`).
-  - The character window. A capture of the window shows HP, Rage, Armor Class, Critical Strike, Health Regeneration, Rage Regeneration and Movement Speed among its titles. The Mana and Rage titles and their regeneration titles are localized in code (`server-scripts/UICharacterInfo.cs:259-280`). The other titles are text in the window itself.
+- Two sets of names, read in the running game in the English locale:
+  - Item tooltips. `ScriptableItem.LocalizedStatLabel` maps 28 English labels to localization keys under `item.stat.` (`server-scripts/ScriptableItem.cs:269-302`), and each key's English text equals its input, such as Hit Points, AC, Health Regen and Critical Chance. An item comparison calls a weapon's damage Base Damage and any other item's Attack Power (`server-scripts/EquipmentItem.cs:557`).
+  - The character window. Its titles are bound to entries of `Localization_String_Table`, such as `defense` for Armor Class, `critical_strike` for Critical Strike, `hp_regen` for Health Regeneration and `movement_speed` for Movement Speed. The attribute titles are stored in capitals. The pool title and its regeneration title are set by code from `mana` or `rage` and from `mana_regen` or `rage_regen` (`server-scripts/UICharacterInfo.cs:259-280`). Only the HP title is fixed text in the window.
 - Formats. The window shows a fraction as the value times 100 with at most two decimals and a percent sign, and pools with thousands separators (`server-scripts/UICharacterInfo.cs:253,290-312`). Item tooltips format fractions the same way (`server-scripts/EquipmentItem.cs:461-467`).
 
 ### What the repository has
@@ -67,16 +67,16 @@ The character format and share links store these ids, so they stay fixed. A rena
 
 ### 3. Both game names, read from the game
 
-Each stat has two names: `name`, as the character window shows it, and `item_name`, as `LocalizedStatLabel` returns it. The exporter reads both in the English locale when it runs. Weapons name their damage Base Damage (`server-scripts/EquipmentItem.cs:557`), so the catalogue carries that as the weapon name of the item `damage` field.
+Each stat has two names: `name`, as the character window shows it, and `item_name`, as `LocalizedStatLabel` returns it. The exporter reads both in the English locale when it runs:
 
-The first task finds out how the window's static titles get their text:
+- `item_name` comes from `LocalizedStatLabel`.
+- `name` comes from the `Localization_String_Table` entry that the window binds to the stat's title, or that its code sets. The catalogue records that key, and the export fails when the table lacks it.
+- The window spells the attribute and pool titles in capitals. The catalogue takes the label code's capitalization for them, such as Strength and Mana.
+- The window's HP title is fixed text. Following the owner's decision, `health` takes the label code's Hit Points in both contexts.
 
-- If they come from a localization table, the exporter reads them from there.
-- If the text is part of the window itself, the exporter reads it from the window's labels at runtime.
+Weapons name their damage Base Damage (`server-scripts/EquipmentItem.cs:557`), so the catalogue carries that as the weapon name of the item `damage` field.
 
-A site override carries its reason in the catalogue.
-
-The four hit-time effects appear in neither window. Their names are site names, recorded as overrides with that reason.
+A site override carries its reason in the catalogue. The four hit-time effects appear in neither window. Their names are site names, recorded as overrides with that reason.
 
 ### 4. Format like the game
 
@@ -105,7 +105,7 @@ Each consumer listed under Context switches to the catalogue or the shared forma
 
 ## Wording
 
-The owner approved this section. A character context uses the window name and an item stat list uses the item name, as `formula-presentation` already requires. The last column lists the wordings that go away. The table shows the names that the label code's English inputs and the window capture give. Task 1.1 reads them in the running game, and the game's text wins wherever it differs.
+The owner approved this section. A character context uses the window name and an item stat list uses the item name, as `formula-presentation` already requires. The last column lists the wordings that go away. Task 1.1 read these names in the running game.
 
 The catalogue covers stat fields only. A skill's own effects keep their wording, such as the damage a scroll deals, its healing, cooldown or stun chance. The scroll mastery page's "Damage" and "Damage %" are such effects and do not change.
 
@@ -116,7 +116,7 @@ The catalogue covers stat fields only. A skill's own effects keep their wording,
 | `mana` | Mana | Mana | Max Mana. Becomes Mana |
 | `rage` | Rage | Rage | Rage Points, Max Rage, max rage. All become Rage |
 | `health_regen` | Health Regeneration | Health Regen | Health/sec, Health %/sec, hp/s |
-| `mana_regen` | Mana Regeneration, to confirm in game | Mana Regen | Mana/sec, Mana %/sec |
+| `mana_regen` | Mana Regeneration | Mana Regen | Mana/sec, Mana %/sec |
 | `rage_regen` | Rage Regeneration | None | Rage %/sec |
 | `attack_power` | Attack Power | Attack Power, Base Damage on weapons | Attack Power bonus |
 | `spell_power` | Spell Power | Spell Power | None |
@@ -138,7 +138,7 @@ The pools take the game's names: Hit Points, Mana and Rage. The window abbreviat
 ## Risks / Trade-offs
 
 - [Wording changes reach many pages] The table above is the full list, and no page changes before it is approved. A prerender comparison before and after shows that only approved wordings and formats differ.
-- [The window's static titles cannot be read at runtime] They are then recorded as overrides citing the window capture, and the first task records which titles that affects.
+- [The game renames a localization key] The export fails on the missing key, and the catalogue follows the window's new binding.
 - [The generated module goes stale] `prebuild` regenerates it, and the game update procedure commits it with the other generated modules.
 - [A field gains a second meaning in a game update] The completeness test fails when a new numeric export field has no catalogue entry.
 
@@ -154,4 +154,4 @@ Rollback is a revert. The change adds tables and a file, and alters no stored da
 
 ## Open Questions
 
-- None about wording. Task 1.1 settles whether the window localizes its static titles.
+- None.

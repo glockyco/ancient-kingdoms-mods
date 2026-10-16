@@ -26,9 +26,12 @@ The Python copy skips an already awarded reward by id. The game rolls first and 
 
 ### Primal essence and item level
 
-- The game accepts an item for primal essence when it is an `EquipmentItem` of quality 2 (Magic) or higher, sellable, with a sell price above 0, and not a pickaxe. The amount is `ceil(sellPrice × 0.06)` in single precision (`server-scripts/Utils.cs:527-539`).
-- The pipeline requires `item_type = 'equipment'` and quality 1 or higher (`build-pipeline/src/compendium/denormalizers/items/calculations.py:187-217`). Weapons and augments are `EquipmentItem` subclasses that it excludes. The published database therefore gives a value to 127 Uncommon items and none to 113 weapons and 24 augments that the game accepts.
-- `calculations.py:30-98` reimplements `EquipmentItem.CalculateItemLvl` and `AugmentItem.CalculateItemLvlAugment` (`server-scripts/EquipmentItem.cs:808`). It may differ from the game in two places: rounding of the sum, and the delay term for an instrument with no delay.
+- The game accepts an item for primal essence when it is an `EquipmentItem` of quality 2 (Magic) or higher, sellable, with a sell price above 0, and not a pickaxe. The amount is `ceil(sellPrice × 0.06)` in single precision (`server-scripts/Utils.cs:527-539`). The trade window passes the item's raw `sellPrice` (`server-scripts/UINpcTrading.cs:580`). For an item bought with a token, that is a price in tokens, while vendors pay `SellPriceInGold()`, the token price times the token's own sell price (`server-scripts/ScriptableItem.cs:398-405`).
+- The pipeline requires `item_type = 'equipment'` and quality 1 or higher, and uses the exported gold price (`build-pipeline/src/compendium/denormalizers/items/calculations.py:187-217`). Calling the game's own functions for all 1,813 items in the running game found 305 published items where the database differs from the game:
+  - 127 Uncommon items have a value that the game refuses.
+  - 113 weapons, 24 augments and one ammo item, Endless Quiver, have no value although the game accepts them. All three item types are `EquipmentItem` subclasses.
+  - 40 armor set pieces bought with tokens show 60 to 150, while the game gives 1, because it computes the amount from their token price.
+- `calculations.py:30-98` reimplements `EquipmentItem.CalculateItemLvl` and `AugmentItem.CalculateItemLvlAugment` (`server-scripts/EquipmentItem.cs:808`). The game's functions agree with it on every item except the Drum of War, where the game adds a delay term for an instrument and gives 60 instead of 56.
 
 ### Experience page
 
@@ -96,19 +99,19 @@ The page's server load reads the level cap, the veteran point cap and the class 
 
 ## Pages that change
 
-The owner approved these changes. Each still waits for the game check of its rule.
+The owner approved these changes. The primal essence and item level changes are confirmed in the game. The altar and chest changes still wait for their game checks.
 
 | Page | Change |
 | --- | --- |
 | Item pages of altar rewards | The required level and veteran points of each tier follow the game: below 40, 40 to 49, 50 with 0 to 99 veteran points, 50 with 100 or more |
 | Monster pages of altar bosses | The same tier requirements, in place of the current notes |
-| Item pages and the item list | Primal essence values disappear from 127 Uncommon items and appear on 113 weapons and 24 augments, subject to the game check in the tasks |
-| Item level, wherever it shows | Changes only where the game check finds the pipeline wrong. The tasks list those items |
+| Item pages and the item list | Primal essence values disappear from 127 Uncommon items, appear on 113 weapons, 24 augments and Endless Quiver, and drop to 1 on 40 armor set pieces bought with tokens, as the game computes them |
+| Item level, wherever it shows | The Drum of War changes from 56 to 60 |
 | Chest, item and Treasure Hunter pages | Chest chances can move by up to about 0.1 percentage points, because a different random sequence produces the estimate |
 
 ## Risks / Trade-offs
 
-- [The game functions cannot be called during export] Each depends only on the item's data. The first tasks call them through HotRepl before the exporter relies on them.
+- [The game functions need loaded items] The item cache is empty at the title screen, so the exporter calls them in the world, where `compendium.export` already runs.
 - [The altar thresholds change in a game update] The citation check fails when the cited lines change.
 - [The sitemap marks the changed pages as updated] Their content does change. Chest pages whose rounded chances stay the same can still change hash once, because the stored rows change. `prune-unread-database-data` handles the hash bridge for storage-only changes.
 - [Rules and their consumers move at the same time] Each task moves one rule with all of its consumers, and is checked in a browser before the next one starts.
@@ -126,4 +129,4 @@ Each step is a revert on its own.
 
 ## Open Questions
 
-- Does any item's level differ between the game and the pipeline? The game check answers it.
+- None.
