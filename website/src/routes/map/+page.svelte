@@ -1260,11 +1260,9 @@
                 <MapMarkerIcon marker={row.marker} />
                 <span class="min-w-0">
                   <span class="block">{row.name}</span>
-                  <span class="block text-muted-foreground">
-                    {row.entity.zoneName}
-                    ({row.entity.position![0].toFixed(0)}, {(-row.entity
-                      .position![1]).toFixed(0)})
-                  </span>
+                  <span class="block text-muted-foreground"
+                    >{row.entity.zoneName}</span
+                  >
                 </span>
               </button>
             </li>
