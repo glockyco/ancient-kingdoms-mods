@@ -22,4 +22,4 @@ None.
 
 ## Impact
 
-No code changes in this change. It sets the plan for every follow-up change listed in `tasks.md` and changes the scope of four in-flight changes. Decisions marked Proposed in `design.md` wait for the owner's confirmation before a follow-up change relies on them.
+No code changes in this change. It sets the plan for every follow-up change listed in `tasks.md` and changes the scope of four in-flight changes.

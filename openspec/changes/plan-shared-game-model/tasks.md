@@ -4,8 +4,8 @@
 
 ## 2. Owner confirmation
 
-- [ ] 2.1 Confirm or revise the Proposed parts of D13: storage engine, cross-tab coordination, durability and backups. Update their status in `design.md`.
-- [ ] 2.2 Confirm or revise the Proposed parts of D14: transports, short links on D1, and abuse controls. Update their status in `design.md`.
+- [x] 2.1 Confirm or revise the Proposed parts of D13: storage engine, cross-tab coordination, durability and backups. Update their status in `design.md`.
+- [x] 2.2 Confirm or revise the Proposed parts of D14: transports, short links on D1, and abuse controls. Update their status in `design.md`.
 
 ## 3. In-flight changes
 
@@ -13,7 +13,7 @@
 - [ ] 3.2 Fold `show-pack-and-random-sources-in-map-popups` into the acquisition change, then remove it.
 - [ ] 3.3 Fold `consolidate-server-read-models` into the read-model change, then remove it.
 - [ ] 3.4 Add WebAssembly to the content security policy of `add-security-headers`, and check the sql.js worker under that policy.
-- [ ] 3.5 Land `simplify-pipeline-loader-registration` and `harden-export-sessions` before the acquisition change.
+- [ ] 3.5 Land `simplify-pipeline-loader-registration` and `harden-export-sessions` before the vocabulary and rules change, which adds a dataset and export fields.
 
 ## 4. Verification prerequisites
 

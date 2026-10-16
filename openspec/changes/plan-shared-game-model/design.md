@@ -7,7 +7,6 @@ The evidence comes from reading the decompiled server code of game 0.9.36.1 (Ste
 Each decision has a status:
 
 - Decided: the owner agreed.
-- Proposed: recommended, waiting for the owner's confirmation.
 - Open: not decided yet.
 
 ### Why one model
@@ -140,20 +139,20 @@ Alternative rejected: a separate effect kind, as Afallon has.
 
 Alternative rejected: a companion mod that writes a snapshot. It would break with game and mod loader updates, need its own releases and install support, and reach only players who install mods.
 
-### D13. Characters persist in the browser with backups the user owns
+### D13. Characters persist in the browser with backups the user owns (Decided)
 
-- Characters, plans and imported progress persist across sessions (Decided). Losing a modified plan is not acceptable.
-- Storage engine (Proposed): IndexedDB for characters and imported progress, because it is asynchronous, reads one record at a time and leaves room for owned-item lists. `localStorage` stays for small interface settings. The Origin Private File System is built for large files and SQLite persistence, which nothing here needs. The Cache API holds HTTP responses.
-- Tabs coordinate through the Web Locks API, which serializes writes with revisions, and BroadcastChannel, which refreshes other tabs (Proposed).
-- The stored format is versioned. An upgrade never drops an entry that a game patch made unresolvable. The entry stays visible and is marked as no longer found (Decided).
-- Durability (Proposed): every engine above is origin storage with the same eviction. Safari deletes a site's script-written storage after seven days of Safari use without interaction with the site, unless the storage is persistent. WebKit grants persistence by heuristics such as whether the site runs as a Home Screen web app. Chrome grants `navigator.storage.persist()` based on engagement, and Firefox asks the user. The site requests persistence, and backups stay in the user's hands: an export file in every browser, and on Chromium an optional linked backup file that the site rewrites after each change through the File System Access API, whose permission can persist across visits since Chrome 122. Firefox and Safari ship only the Origin Private File System, which is evictable.
+- Characters, plans and imported progress persist across sessions. Losing a modified plan is not acceptable.
+- Storage engine: IndexedDB for characters and imported progress, because it is asynchronous, reads one record at a time and leaves room for owned-item lists. `localStorage` stays for small interface settings. The Origin Private File System is built for large files and SQLite persistence, which nothing here needs. The Cache API holds HTTP responses.
+- Tabs coordinate through the Web Locks API, which serializes writes with revisions, and BroadcastChannel, which refreshes other tabs.
+- The stored format is versioned. An upgrade never drops an entry that a game patch made unresolvable. The entry stays visible and is marked as no longer found.
+- Durability: every engine above is origin storage with the same eviction. Safari deletes a site's script-written storage after seven days of Safari use without interaction with the site, unless the storage is persistent. WebKit grants persistence by heuristics such as whether the site runs as a Home Screen web app. Chrome grants `navigator.storage.persist()` based on engagement, and Firefox asks the user. The site requests persistence, and backups stay in the user's hands: an export file in every browser, and on Chromium an optional linked backup file that the site rewrites after each change through the File System Access API, whose permission can persist across visits since Chrome 122. Firefox and Safari ship only the Origin Private File System, which is evictable.
 - Imported progress can be read again from the save. Authored plans cannot, so backups protect plans first.
 
-### D14. Sharing without accounts
+### D14. Sharing without accounts (Decided)
 
-- One format (D6) and three transports (Proposed): a link with the build encoded after `#` when it fits, a short link for larger builds, and an export file for backup and moving. Link sizes are measured before the format is fixed (Open).
-- Short links (Proposed): an endpoint on the existing Cloudflare Worker stores schema-valid builds in D1, keyed by a hash of the canonical build, and returns `/b/<id>`. Shared builds never change, so nobody needs ownership or edit rights. D1 is chosen over Workers KV and R2 because the controls below need exact counts and cleanup queries: KV is eventually consistent, and R2 lifecycle rules only delete by age. The D1 free tier allows 100,000 rows written per day and 5 GB of storage.
-- Abuse controls (Proposed), which bound the worst case by design:
+- One format (D6) and three transports: a link with the build encoded after `#` when it fits, a short link for larger builds, and an export file for backup and moving. Link sizes are measured before the format is fixed (Open).
+- Short links: an endpoint on the existing Cloudflare Worker stores schema-valid builds in D1, keyed by a hash of the canonical build, and returns `/b/<id>`. Shared builds never change, so nobody needs ownership or edit rights. D1 is chosen over Workers KV and R2 because the controls below need exact counts and cleanup queries: KV is eventually consistent, and R2 lifecycle rules only delete by age. The D1 free tier allows 100,000 rows written per day and 5 GB of storage.
+- Abuse controls, which bound the worst case by design:
   - The Worker decodes with the same code as the site, rejects unknown ids, out-of-range values and unknown fields, and caps the size. Free text is limited to a short character name. Only builds can be stored.
   - Identical builds map to the same row, so repeating a build costs nothing. Ids are long hashes and cannot be enumerated.
   - A per-client burst limit uses the Workers rate limiting binding, which counts per Cloudflare location over 10 or 60 seconds.
@@ -161,7 +160,7 @@ Alternative rejected: a companion mod that writes a snapshot. It would break wit
   - A scheduled job deletes builds nobody opened within 30 days, so a bot that only writes leaves nothing behind. Short links are for sharing, not for backups.
   - Share pages are marked `noindex` and cached as immutable, so crawlers only read.
   - Cloudflare Turnstile on Share is switched on if bots get through.
-- Syncing between devices waits (Decided: no accounts now). If it is ever needed, it can work without accounts: the browser encrypts the characters before uploading them and keeps the key after `#`, so the server holds only ciphertext, as Excalidraw does for shared drawings. Steam login only becomes worthwhile for identity features such as public profiles (Open).
+- Syncing between devices waits, and there are no accounts for now. If syncing is ever needed, it can work without accounts: the browser encrypts the characters before uploading them and keeps the key after `#`, so the server holds only ciphertext, as Excalidraw does for shared drawings. Steam login only becomes worthwhile for identity features such as public profiles (Open).
 
 ### D15. Every finding is confirmed in the game (Decided)
 
