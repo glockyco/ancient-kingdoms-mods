@@ -80,6 +80,23 @@
         >
           {data.chest.key_required_name}
         </a>
+        <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — without the key, learned Lockpicking and Lockpicks open the chest: each attempt removes one Lockpicks, fails when Random.value < 0.8, and the respawn timer starts before the attempt. -->
+        <p class="mt-3">
+          Without the key, a character who has learned
+          <a
+            href="/skills/lockpicking"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Lockpicking</a
+          >
+          can use
+          <a
+            href="/items/lockpicks"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Lockpicks</a
+          >
+          instead. Each attempt uses up one and succeeds 20% of the time. A failed
+          attempt still starts the chest's respawn timer.
+        </p>
       </div>
     </section>
 
