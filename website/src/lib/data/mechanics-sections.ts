@@ -18,6 +18,7 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
         id: "skills-and-specializations",
         label: "Skills, Veteran Points, and Specializations",
       },
+      { id: "macros", label: "Skillbar Macros" },
     ],
     "/mechanics/experience": [
       { id: "levels", label: "Levels" },

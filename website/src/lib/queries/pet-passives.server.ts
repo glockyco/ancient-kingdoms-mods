@@ -15,7 +15,7 @@ export function getPetHealthPassives(petId?: string): PetHealthPassive[] {
        AND passive.skill_type = 'passive'
      JOIN json_each(passive.player_classes) AS passive_class
        ON passive_class.value = summoning_class.value
-     JOIN pets ON lower(pets.name) = lower(summon.pet_prefab_name)
+     JOIN pets ON pets.id = summon.pet_id
      WHERE pets.is_mercenary = 0 AND pets.is_familiar = 0
        AND (? IS NULL OR pets.id = ?)
        AND (COALESCE(json_extract(passive.health_max_percent_bonus, '$.base_value'), 0) > 0

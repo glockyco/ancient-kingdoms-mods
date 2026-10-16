@@ -41,20 +41,35 @@ export interface SummonListView {
   has_necromancer_pet_stats: boolean;
   /** Primary artwork exported for summons; absent when unavailable. */
   visualAsset: EntityVisualAsset | null;
+  /** The player class whose skill summons it; null for a mercenary companion. */
   summoning_class_id: string | null;
   summoning_skill_id: string | null;
   summoning_skill_name: string | null;
   /** Whistle item that summons a pet; null for skill summons. */
   summoning_item: { id: string; name: string } | null;
+  /** The mercenary that summons a mercenary companion; null otherwise. */
+  summoning_mercenary: PetSummoningMercenary | null;
+}
+
+/**
+ * The mercenary that summons a mercenary companion. Its summon skill chooses
+ * the archer form below the reaper owner level and the reaper form from it.
+ */
+export interface PetSummoningMercenary {
+  id: string;
+  name: string;
+  form: "archer" | "reaper";
 }
 
 /**
  * Class link info for a pet (which class summons/recruits it and via which skill).
+ * A mercenary companion names its mercenary's class and summon skill.
  */
 export interface PetClassLink {
   class_id: string;
   skill_id: string | null;
   skill_name: string | null;
+  mercenary: PetSummoningMercenary | null;
 }
 
 /**
@@ -150,6 +165,17 @@ export interface MercenaryProfile {
   curves: Curves;
   resistances: MercenaryResistance[];
   equipmentSlots: MercenaryEquipmentSlot[];
+  /** Companions the mercenary summons, archer form first; empty for most classes. */
+  companions: MercenaryCompanion[];
+}
+
+/** A companion a mercenary summons with its summon skill. */
+export interface MercenaryCompanion {
+  id: string;
+  name: string;
+  form: PetSummoningMercenary["form"];
+  skill_id: string;
+  skill_name: string;
 }
 
 export interface MercenaryDetailView extends PetDetailView {

@@ -564,4 +564,166 @@
       </div>
     </Card.Content>
   </Card.Root>
+
+  <Card.Root id="macros" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Skillbar Macros</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-6 text-sm text-muted-foreground">
+      <div class="space-y-2">
+        <h3 class="font-semibold text-foreground">Create and save</h3>
+        <!-- Source: server-scripts/UISkillbar.cs:Awake,OpenMacroMenu; server-scripts/UISkillbarSlot.cs:OnPointerClick; server-scripts/UISkillbarMacros.cs:Open,OpenEditor,Save,Delete — right-click an empty slot to create a macro or an existing macro to edit or delete it. -->
+        <p>
+          Right-click an empty skillbar slot and choose Create Macro. Enter a
+          name and commands, then Save. Right-click an existing macro to open
+          its editor, where you can change it or choose Delete.
+        </p>
+        <!-- Source: server-scripts/SkillbarMacro.cs:Validate; server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbarMacros.cs:Build — names allow 1-24 characters, with up to 5 lines of 240 characters each and at least one nonblank command. -->
+        <p>
+          Use a name of 1 to 24 characters and up to 5 command lines, each up to
+          240 characters. Blank lines are ignored. At least one command is
+          required.
+        </p>
+        <!-- Source: server-scripts/UISkillbar.cs:HandleSlotClick,ApplySkillbarSlotDragState; server-scripts/GameManager.cs:SkillbarKeyPressed,ExtraSkillbarKeyPressed; server-scripts/PlayerSkillbar.cs:SaveMacro,Load,OnDragAndDrop_SkillbarSlot_SkillbarSlot — clicks and slot shortcuts run macros, unlocked slots allow moving them, and local skillbar preferences separate characters and specializations. -->
+        <p>
+          Click the macro or use its slot's shortcut to run it. Unlock the
+          skillbar to drag it between slots. Macros are saved locally with your
+          skillbar, separately for each character and specialization.
+        </p>
+        <!-- Source: server-scripts/UISkillbarMacros.cs:RefreshCompletions,Tick,AcceptCompletion; server-scripts/SkillbarMacroCompletion.cs:GetSuggestions — the editor suggests commands, learned active skills and carried usable items, and Tab accepts the first suggestion. -->
+        <p>
+          The editor suggests commands, learned active skills, and carried
+          usable items as you type. Click a suggestion to select it, or press
+          Tab to accept the first one.
+        </p>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="font-semibold text-foreground">Commands</h3>
+        <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse,Split; server-scripts/UISkillbar.cs:FindMacroSkill,FindMacroItem,MacroNameArgument — commands and full English or current-language names are case-insensitive, and skill or item names may have enclosing double quotes. -->
+        <p>
+          Use the full English skill or item name, or its name in your current
+          game language. Commands and names ignore letter case, and double
+          quotes around a skill or item name are optional.
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr class="border-b">
+                <th class="p-2 font-medium text-foreground">Command</th>
+                <th class="p-2 font-medium text-foreground">Action</th>
+              </tr>
+            </thead>
+            <tbody class="[&>tr:nth-child(even)]:bg-muted/30">
+              <!-- Source: server-scripts/UISkillbar.cs:ExecuteMacroCommand,UseEntry — cast requires a learned non-passive skill and uses the normal skillbar action. -->
+              <tr class="border-b">
+                <td class="p-2"><code>/cast skill name</code></td>
+                <td class="p-2">Use a learned active skill.</td>
+              </tr>
+              <!-- Source: server-scripts/UISkillbar.cs:ExecuteMacroCommand,FindMacroItem; server-scripts/PlayerInventory.cs:EnumeratePreferredSlotsOrdered — item lookup searches inventory slots, including backpack storage, and requires a usable item. -->
+              <tr class="border-b">
+                <td class="p-2"><code>/useitem item name</code></td>
+                <td class="p-2">Use an item in your inventory or backpacks.</td>
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbar.cs:ExecuteMacroCommand — say and s send local chat. -->
+              <tr class="border-b">
+                <td class="p-2"
+                  ><code>/say message</code> or <code>/s message</code></td
+                >
+                <td class="p-2">Speak nearby.</td>
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbar.cs:ExecuteMacroCommand — party and p submit party chat. -->
+              <tr class="border-b">
+                <td class="p-2"
+                  ><code>/party message</code> or <code>/p message</code></td
+                >
+                <td class="p-2">Send a party message.</td>
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbar.cs:ExecuteMacroCommand — guild and g submit guild chat. -->
+              <tr class="border-b">
+                <td class="p-2"
+                  ><code>/guild message</code> or <code>/g message</code></td
+                >
+                <td class="p-2">Send a guild message.</td>
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbar.cs:ExecuteMacroCommand — whisper and w submit the recipient and message to whisper chat. -->
+              <tr class="border-b">
+                <td class="p-2"
+                  ><code>/whisper player message</code> or
+                  <code>/w player message</code></td
+                >
+                <td class="p-2">Whisper to a player.</td>
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/Player.cs:TryFollowSelectedPlayer — follow takes no argument and requires another living player in the same zone. -->
+              <tr class="border-b">
+                <td class="p-2"><code>/follow</code></td>
+                <td class="p-2"
+                  >Follow your selected living player in the same zone, other
+                  than yourself. Takes no arguments.</td
+                >
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse — pause accepts integer tenths from 1 through 600. -->
+              <tr>
+                <td class="p-2"><code>/pause number</code></td>
+                <td class="p-2"
+                  >Wait 0.1 to 60 seconds. Use a whole number from 1 to 600, in
+                  tenths of a second.</td
+                >
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Source: server-scripts/UISkillbar.cs:ExecuteMacroCommand — chat replaces lowercase %t with the current target's entity name, or an empty string without a target. -->
+        <p>
+          In chat commands, <code>%t</code> becomes your current target's name
+          when that line runs. It becomes empty text if you have no target. For
+          example: <code>/p Attacking %t</code>.
+        </p>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="font-semibold text-foreground">Timing and limits</h3>
+        <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/SkillbarMacroSequence.cs:Tick — a pause-prefixed combined line executes one command before its delay. -->
+        <p>
+          <code>/pause 10</code> waits 1 second. To combine a command and a
+          pause on one line, use <code>/pause 50, /cast Grand Symphony</code>.
+          This attempts Grand Symphony first, then waits 5 seconds before the
+          next line. Only one command can follow the comma.
+        </p>
+        <!-- Source: server-scripts/SkillbarMacroSequence.cs:Start,Tick; server-scripts/UISkillbar.cs:ExecuteMacroCommand,UseEntry; server-scripts/PlayerSkills.cs:TryUse — commands run once in order without cast-aware waits or macro retries, while ordinary skill use retains its queue, movement, and requirement checks. -->
+        <p>
+          Commands run once, from top to bottom. The macro does not loop, wait
+          for casts or cooldowns, or retry failed actions. Add pauses for your
+          cast times. Normal target, range, resource, equipment, and cooldown
+          rules still apply. Normal skill use can still queue a skill behind a
+          current cast or move you into range.
+        </p>
+        <!-- Source: server-scripts/UISkillbar.cs:ExecuteMacroCommand; server-scripts/SkillbarMacroSequence.cs:Tick — unknown, unlearned or passive skills and missing usable items stop the sequence, but cooldown warnings and unsuccessful ordinary actions do not. -->
+        <p>
+          An unknown, unlearned, or passive skill, or a missing usable item,
+          stops the remaining commands. A cooldown warning does not stop the
+          sequence. Failed target, range, or resource checks and an invalid
+          follow target do not stop the remaining commands either.
+        </p>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="font-semibold text-foreground">Stopping a macro</h3>
+        <!-- Source: server-scripts/GameManager.cs:OnCancelActionKeyPressed; server-scripts/UISkillbar.cs:TryRunMacro; server-scripts/SkillbarMacroSequence.cs:Start,Stop — Cancel stops the sequence, the same macro toggles it off, and a different macro replaces it. -->
+        <p>
+          Use your Cancel action to stop the remaining commands. Activating the
+          same macro again stops it. Starting a different macro replaces the
+          current sequence.
+        </p>
+        <!-- Source: server-scripts/UISkillbar.cs:TickMacro; server-scripts/UISkillbarMacros.cs:Open; server-scripts/GameManager.cs:IsGameplayUIInputBlocked — sequences stop on death, inactive or changed characters, specialization or zone changes, stun, fear, barber use, blocking UI, confirmation or popup dialogs, and position jumps over 8 units between updates. -->
+        <p>
+          The sequence also stops on death, stun, fear, a character,
+          specialization, or zone change, or a position jump of more than 8 yd
+          between updates. Opening the macro editor, using the barber, opening
+          the Adventurer's Guide, rebinding controls, or a confirmation or popup
+          dialog also stops it.
+        </p>
+      </div>
+    </Card.Content>
+  </Card.Root>
 </div>

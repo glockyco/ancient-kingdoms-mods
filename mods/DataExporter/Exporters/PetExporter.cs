@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using DataExporter.Models;
 using Il2CppInterop.Runtime;
 using MelonLoader;
@@ -36,8 +35,57 @@ public class PetExporter : BaseExporter
             if (!isTemplate)
                 continue;
 
-            var sanitizedName = SanitizeId(pet.name);
+            var sanitizedName = PetId(pet);
             petsByName[sanitizedName] = pet;
+        }
+
+        // Seed the hireable prefabs directly, then follow their authored summon
+        // references. A Resources query alone does not establish this coverage.
+        var pendingPets = new Queue<Il2Cpp.Pet>(petsByName.Values);
+        foreach (var (mercenaryId, prefab) in EquipmentSlotExporter.GetMercenaryPrefabs())
+        {
+            var pet = prefab != null ? prefab.GetComponent<Il2Cpp.Pet>() : null;
+            AddReferencedPet(pet, $"UIMercenaries mercenary '{mercenaryId}'");
+        }
+
+        while (pendingPets.Count > 0)
+        {
+            var pet = pendingPets.Dequeue();
+            var summons = pet.GetComponent<Il2Cpp.NecromancerMercenarySummons>();
+            if (summons != null)
+            {
+                AddSummonPets(summons.summonSkill, $"{pet.name}.NecromancerMercenarySummons.summonSkill");
+            }
+
+            if (pet.skills?.skillTemplates == null)
+                continue;
+
+            foreach (var skillTemplate in pet.skills.skillTemplates)
+            {
+                var summonSkill = skillTemplate?.TryCast<Il2Cpp.MercenarySummonSkill>();
+                if (summonSkill != null)
+                    AddSummonPets(summonSkill, $"{pet.name}.Skills.skillTemplates");
+            }
+        }
+
+        void AddSummonPets(Il2Cpp.MercenarySummonSkill skill, string source)
+        {
+            if (skill == null)
+                throw new System.InvalidOperationException($"{source} is unavailable.");
+
+            // Source: server-scripts/MercenarySummonSkill.cs:GetPrefab — both authored forms are possible companions.
+            AddReferencedPet(skill.archerPrefab, $"{skill.name}.archerPrefab");
+            AddReferencedPet(skill.reaperPrefab, $"{skill.name}.reaperPrefab");
+        }
+
+        void AddReferencedPet(Il2Cpp.Pet pet, string source)
+        {
+            if (pet == null || string.IsNullOrEmpty(pet.name) || pet.gameObject == null || pet.gameObject.scene.IsValid())
+                throw new System.InvalidOperationException($"{source} does not reference a named pet prefab.");
+
+            var id = PetId(pet);
+            if (petsByName.TryAdd(id, pet))
+                pendingPets.Enqueue(pet);
         }
 
         Logger.Msg($"Found {petsByName.Count} template pets");
@@ -158,5 +206,12 @@ public class PetExporter : BaseExporter
 
         WriteJson(petList, "pets.json");
         Logger.Msg($"✓ Exported {petList.Count} pets");
+    }
+
+    internal static string PetId(Il2Cpp.Pet pet)
+    {
+        var id = SanitizeId(pet.name);
+        // Keep mercenary companions separate from player summons with the same prefab name.
+        return pet.TryCast<Il2Cpp.NecromancerMercenaryPet>() != null ? $"mercenary_{id}" : id;
     }
 }

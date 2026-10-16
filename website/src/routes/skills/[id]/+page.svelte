@@ -885,15 +885,13 @@
             <div>
               <dt class="text-muted-foreground">Summons</dt>
               <dd class="font-medium">
-                {#if skill.pet_id}
+                {#if skill.pet_id && skill.pet_name}
                   <a
                     href={petHref(skill.pet_id, skill.pet_is_mercenary)}
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    {skill.pet_name ?? skill.pet_prefab_name}
+                    {skill.pet_name}
                   </a>
-                {:else}
-                  {skill.pet_prefab_name}
                 {/if}
               </dd>
             </div>

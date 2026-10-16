@@ -82,6 +82,11 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
     reviewedBodySha256:
       "496e2fb4017e761edc7d5ccab77ff41807fa07f635b73d8c48a9621cd48394ae",
   },
+  "combat.macros": {
+    href: "/mechanics/character#macros",
+    reviewedBodySha256:
+      "d9f88773af26e04c1046b9cb0b1ca3319965d7f4ebe8736b001eb6127f0e6109",
+  },
   "combat.resources": {
     href: "/mechanics/character#resources",
     reviewedBodySha256:

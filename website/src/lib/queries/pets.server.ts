@@ -8,6 +8,7 @@ import {
 } from "$lib/skills/skillsListQuery";
 import { skillEffectSummaries } from "$lib/skills/skillEffects.server";
 import type {
+  MercenaryCompanion,
   MercenaryDetailView,
   MercenaryProfile,
   MercenarySummary,
@@ -16,6 +17,7 @@ import type {
   PetDetailView,
   PetKind,
   PetClassLink,
+  PetSummoningMercenary,
   PetRecruiter,
   PetStatId,
   PetStatCurves,
@@ -151,6 +153,42 @@ export function getMercenarySummaries(): MercenarySummary[] {
 }
 
 /**
+ * Each mercenary companion with the mercenary that summons it.
+ * Source: server-scripts/MercenarySummonSkill.cs:GetPrefab — the summon skill
+ * holds an archer and a reaper prefab and picks one by the owner's level.
+ */
+const MERCENARY_COMPANIONS = `mercenary_companions AS (
+  SELECT companion.id AS pet_id,
+         summon.id AS skill_id,
+         summon.name AS skill_name,
+         mercenary.id AS mercenary_id,
+         mercenary.name AS mercenary_name,
+         lower(mercenary.type_monster) AS mercenary_class_id,
+         CASE WHEN summon.reaper_pet_id = companion.id THEN 'reaper' ELSE 'archer' END AS form
+    FROM skills summon
+    JOIN pet_skills ps ON ps.skill_id = summon.id
+    JOIN pets mercenary ON mercenary.id = ps.pet_id AND mercenary.is_mercenary = 1
+    JOIN pets companion
+      ON companion.id IN (summon.archer_pet_id, summon.reaper_pet_id)
+   WHERE summon.skill_type = 'mercenary_summon'
+)`;
+
+interface MercenaryCompanionRow {
+  mercenary_id: string | null;
+  mercenary_name: string | null;
+  form: PetSummoningMercenary["form"] | null;
+}
+
+function summoningMercenary(
+  row: MercenaryCompanionRow,
+): PetSummoningMercenary | null {
+  if (row.mercenary_id === null) return null;
+  if (row.mercenary_name === null || row.form === null)
+    throw new Error(`Incomplete mercenary companion row ${row.mercenary_id}`);
+  return { id: row.mercenary_id, name: row.mercenary_name, form: row.form };
+}
+
+/**
  * Get all summons (companions and familiars) for the /summons overview.
  */
 export function getAllSummons(): SummonListView[] {
@@ -166,19 +204,25 @@ export function getAllSummons(): SummonListView[] {
       summoning_class_id: string | null;
       summoning_skill_id: string | null;
       summoning_skill_name: string | null;
-    } & PetVisualAssetColumns
+    } & MercenaryCompanionRow &
+      PetVisualAssetColumns
   >(
-    `SELECT p.id, p.name, p.is_familiar, p.has_necromancer_pet_stats, p.type_monster, p.level, p.level_max,
+    `WITH ${MERCENARY_COMPANIONS}
+     SELECT p.id, p.name, p.is_familiar, p.has_necromancer_pet_stats, p.type_monster, p.level, p.level_max,
             json_extract(s.player_classes, '$[0]') as summoning_class_id,
-            s.id as summoning_skill_id,
-            s.name as summoning_skill_name,
+            COALESCE(s.id, mc.skill_id) as summoning_skill_id,
+            COALESCE(s.name, mc.skill_name) as summoning_skill_name,
+            mc.mercenary_id,
+            mc.mercenary_name,
+            mc.form,
             va.public_path as visual_public_path,
             va.width as visual_width,
             va.height as visual_height,
             va.source_field as visual_source_field,
             va.source_type as visual_source_type
      FROM pets p
-     LEFT JOIN skills s ON lower(s.pet_prefab_name) = lower(p.name)
+     LEFT JOIN skills s ON s.pet_id = p.id
+     LEFT JOIN mercenary_companions mc ON mc.pet_id = p.id
      LEFT JOIN visual_assets va
        ON va.domain = 'pet'
       AND va.entity_id = p.id
@@ -200,6 +244,7 @@ export function getAllSummons(): SummonListView[] {
     summoning_skill_id: r.summoning_skill_id,
     summoning_skill_name: r.summoning_skill_name,
     summoning_item: null,
+    summoning_mercenary: summoningMercenary(r),
   }));
 }
 
@@ -252,6 +297,7 @@ export function getWhistlePets(): SummonListView[] {
       summoning_skill_id: null,
       summoning_skill_name: null,
       summoning_item: { id: r.id, name: r.name },
+      summoning_mercenary: null,
     };
   });
 }
@@ -307,19 +353,28 @@ export function getPetById(petId: string): PetDetailView | null {
       class_id: row.type_monster.toLowerCase(),
       skill_id: null,
       skill_name: null,
+      mercenary: null,
     };
   } else {
-    const summonSkill = queryOne<{
-      skill_id: string;
-      skill_name: string;
-      class_id: string;
-    }>(
-      `SELECT s.id as skill_id, s.name as skill_name,
-              json_extract(s.player_classes, '$[0]') as class_id
-       FROM skills s
-       WHERE lower(s.pet_prefab_name) = lower(?)
+    const summonSkill = queryOne<
+      {
+        skill_id: string;
+        skill_name: string;
+        class_id: string;
+      } & MercenaryCompanionRow
+    >(
+      `WITH ${MERCENARY_COMPANIONS}
+       SELECT s.id as skill_id, s.name as skill_name,
+              json_extract(s.player_classes, '$[0]') as class_id,
+              NULL as mercenary_id, NULL as mercenary_name, NULL as form
+         FROM skills s
+        WHERE s.pet_id = ?
+       UNION ALL
+       SELECT skill_id, skill_name, mercenary_class_id, mercenary_id, mercenary_name, form
+         FROM mercenary_companions
+        WHERE pet_id = ?
        LIMIT 1`,
-      [row.name],
+      [petId, petId],
     );
 
     if (!summonSkill) {
@@ -330,6 +385,7 @@ export function getPetById(petId: string): PetDetailView | null {
       class_id: summonSkill.class_id,
       skill_id: summonSkill.skill_id,
       skill_name: summonSkill.skill_name,
+      mercenary: summoningMercenary(summonSkill),
     };
   }
 
@@ -452,10 +508,21 @@ export function getMercenaryDetail(pet: PetDetailView): MercenaryDetailView {
   if (equipmentSlots.length === 0)
     throw new Error(`No equipment slots exported for mercenary ${pet.id}`);
 
+  const companions = query<MercenaryCompanion>(
+    `WITH ${MERCENARY_COMPANIONS}
+     SELECT mc.pet_id AS id, p.name, mc.form, mc.skill_id, mc.skill_name
+       FROM mercenary_companions mc
+       JOIN pets p ON p.id = mc.pet_id
+      WHERE mc.mercenary_id = ?
+      ORDER BY mc.form`,
+    [pet.id],
+  );
+
   const profile: MercenaryProfile = {
     curves: getMercenaryCurves(),
     resistances,
     equipmentSlots,
+    companions,
   };
   return { ...pet, kind: "Mercenary", profile };
 }

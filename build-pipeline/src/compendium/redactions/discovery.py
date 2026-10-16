@@ -10,11 +10,9 @@ A foreign key also gives the identifier space of a reference. ``chests.zone_id``
 targets ``zones.id`` and holds a string. ``items.travel_zone_id`` targets
 ``zones.zone_id`` and holds a number.
 
-Four references have no foreign key and are declared below. Two of them cannot
-become constraints, because ``quests.zone_id_final_npc`` and
-``quests.zone_id_quest_action`` use -1 for "no zone". The skill loader runs
-before the monster loader, so ``skills.summoned_monster_id`` cannot use an
-immediate foreign key.
+Some references cannot be immediate foreign keys. The quest zone fields below
+use -1 for "no zone". Skills load before monsters and pets, so their summon
+references are declared separately.
 """
 
 import json
@@ -37,6 +35,9 @@ UNDECLARED_ZONE_REFERENCES: tuple[tuple[str, str, str], ...] = (
 UNDECLARED_ENTITY_REFERENCES: tuple[tuple[str, str, str, str], ...] = (
     # table, column, target table, target column
     ("skills", "summoned_monster_id", "monsters", "id"),
+    ("skills", "pet_id", "pets", "id"),
+    ("skills", "archer_pet_id", "pets", "id"),
+    ("skills", "reaper_pet_id", "pets", "id"),
 )
 
 # A column whose target kind changes from row to row, so no constraint can

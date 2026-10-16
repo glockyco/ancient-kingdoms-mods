@@ -43,18 +43,7 @@ public sealed class EquipmentSlotExporter : BaseExporter
             rows.AddRange(EquipmentSlotRows.Create("player", playerId, ReadCategories(equipment.slotInfo, "player", playerId)));
         }
 
-        var ui = Il2Cpp.UIMercenaries.singleton
-            ?? throw new InvalidOperationException("UIMercenaries.singleton is unavailable; cannot export mercenary equipment slots.");
-        var mercenaryPrefabs = new (string Id, GameObject Prefab)[]
-        {
-            ("warrior", ui.warriorMercenary),
-            ("cleric", ui.clericMercenary),
-            ("rogue", ui.rogueMercenary),
-            ("wizard", ui.wizardMercenary),
-            ("druid", ui.druidMercenary),
-            ("ranger", ui.rangerMercenary),
-            ("bard", ui.bardMercenary),
-        };
+        var mercenaryPrefabs = GetMercenaryPrefabs();
 
         foreach (var (mercenaryId, prefab) in mercenaryPrefabs)
         {
@@ -74,6 +63,25 @@ public sealed class EquipmentSlotExporter : BaseExporter
 
         WriteJson(rows, "equipment_slots.json");
         Logger.Msg($"Exported {rows.Count} equipment slots for {playerIds.Count} player classes and {mercenaryPrefabs.Length} mercenary archetypes.");
+    }
+
+    // UIMercenaries owns the hireable prefab references. Pet and slot exports share
+    // this roster so a newly supported archetype is exported by both.
+    internal static (string Id, GameObject Prefab)[] GetMercenaryPrefabs()
+    {
+        var ui = Il2Cpp.UIMercenaries.singleton
+            ?? throw new InvalidOperationException("UIMercenaries.singleton is unavailable; cannot export mercenary prefabs.");
+        return new (string Id, GameObject Prefab)[]
+        {
+            ("warrior", ui.warriorMercenary),
+            ("cleric", ui.clericMercenary),
+            ("rogue", ui.rogueMercenary),
+            ("wizard", ui.wizardMercenary),
+            ("druid", ui.druidMercenary),
+            ("ranger", ui.rangerMercenary),
+            ("bard", ui.bardMercenary),
+            ("necromancer", ui.necromancerMercenary),
+        };
     }
 
     private static string PlayerClassId(string prefabName)

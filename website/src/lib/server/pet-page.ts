@@ -55,7 +55,9 @@ function loadPet(
       level_max: pet.level_max,
       effective_max_level: pet.effective_max_level,
       summoning_skill_name: pet.classLink.skill_name ?? null,
-      summoning_class_id: isMercenary ? null : (pet.classLink.class_id ?? null),
+      summoning_class_id:
+        isMercenary || pet.classLink.mercenary ? null : pet.classLink.class_id,
+      summoning_mercenary_name: pet.classLink.mercenary?.name ?? null,
     },
   };
 }

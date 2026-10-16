@@ -26,11 +26,11 @@ export const SKILL_LIST_COLUMNS = `
       s.summoned_monster_level,
       s.summon_count_per_cast,
       s.max_active_summons,
-      s.pet_prefab_name,
-      pet_lookup.id as pet_id`;
+      s.pet_id,
+      pet_lookup.name as pet_name`;
 
 export const SKILL_LIST_JOINS = `    LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
-    LEFT JOIN pets pet_lookup ON lower(pet_lookup.name) = lower(s.pet_prefab_name)
+    LEFT JOIN pets pet_lookup ON pet_lookup.id = s.pet_id
     LEFT JOIN visual_assets va
       ON va.domain = 'skill'
      AND va.entity_id = s.id

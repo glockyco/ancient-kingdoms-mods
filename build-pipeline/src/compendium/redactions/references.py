@@ -68,6 +68,9 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("summon_triggers", "summoned_entity_id"),
         ("monsters", "placeholder_monster_id"),
         ("skills", "summoned_monster_id"),
+        ("skills", "pet_id"),
+        ("skills", "archer_pet_id"),
+        ("skills", "reaper_pet_id"),
         # These references grant a skill.
         ("monster_skills", "skill_id"),
         ("pet_skills", "skill_id"),

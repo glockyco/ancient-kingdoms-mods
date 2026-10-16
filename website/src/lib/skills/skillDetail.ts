@@ -45,7 +45,6 @@ export const SKILL_DETAIL_COLUMNS = `s.*,
       ps.name AS prerequisite_skill_name,
       ps2.name AS prerequisite2_skill_name,
       sm.name AS summoned_monster_name,
-      pet_lookup.id AS pet_id,
       pet_lookup.name AS pet_name,
       pet_lookup.is_mercenary AS pet_is_mercenary,
       ${SKILL_CASTER_COLUMNS}`;
@@ -53,7 +52,7 @@ export const SKILL_DETAIL_COLUMNS = `s.*,
 export const SKILL_DETAIL_JOINS = `LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
     LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
     LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
-    LEFT JOIN pets pet_lookup ON lower(pet_lookup.name) = lower(s.pet_prefab_name)`;
+    LEFT JOIN pets pet_lookup ON pet_lookup.id = s.pet_id`;
 
 /** A pet that casts the skill, with the fields that choose its mechanics. */
 export type SkillCasterPet = Pick<
@@ -387,7 +386,6 @@ export function skillDetailFromRow(
     summoned_monster_level: skillRaw.summoned_monster_level as number | null,
     summon_count_per_cast: skillRaw.summon_count_per_cast as number | null,
     max_active_summons: skillRaw.max_active_summons as number | null,
-    pet_prefab_name: skillRaw.pet_prefab_name as string | null,
     pet_id: skillRaw.pet_id as string | null,
     pet_is_mercenary: Boolean(skillRaw.pet_is_mercenary),
     pet_name: skillRaw.pet_name as string | null,

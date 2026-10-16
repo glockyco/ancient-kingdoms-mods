@@ -4,12 +4,76 @@ import unittest
 from pathlib import Path
 
 from compendium.db import create_database
-from compendium.loaders.core import load_pets
+from compendium.loaders.core import load_pets, load_skills
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 
 
 class PetsLoaderTests(unittest.TestCase):
+    def test_summon_pet_references(self):
+        for missing in (None, "player", "archer", "reaper"):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                (root / "skills.json").write_text(
+                    json.dumps(
+                        [
+                            {
+                                "id": "raise_player_pet",
+                                "name": "Raise Player Pet",
+                                "skill_type": "summon",
+                                "area_projectile": False,
+                                "pet_id": "player",
+                            },
+                            {
+                                "id": "raise_companion",
+                                "name": "Raise Companion",
+                                "skill_type": "mercenary_summon",
+                                "area_projectile": False,
+                                "archer_pet_id": "archer",
+                                "reaper_pet_id": "reaper",
+                            },
+                        ]
+                    ),
+                    encoding="utf-8",
+                )
+                pets = [
+                    {
+                        "id": pet_id,
+                        "name": pet_id,
+                        "type_monster": "Creature",
+                        "level": 1,
+                        "level_max": 100,
+                        "health_multiplier": 1.0,
+                        "icon_path": "companion_icon",
+                    }
+                    for pet_id in ("player", "archer", "reaper")
+                    if pet_id != missing
+                ]
+                (root / "pets.json").write_text(json.dumps(pets), encoding="utf-8")
+                conn = create_database(root / "test.db", SCHEMA_PATH)
+                try:
+                    load_skills(conn, root)
+                    if missing is not None:
+                        with self.assertRaises(ValueError):
+                            load_pets(conn, root)
+                    else:
+                        load_pets(conn, root)
+                        self.assertEqual(
+                            ("mercenary_summon", "archer", "reaper"),
+                            conn.execute(
+                                "SELECT skill_type, archer_pet_id, reaper_pet_id "
+                                "FROM skills WHERE id = 'raise_companion'"
+                            ).fetchone(),
+                        )
+                        self.assertEqual(
+                            ("player",),
+                            conn.execute(
+                                "SELECT pet_id FROM skills WHERE id = 'raise_player_pet'"
+                            ).fetchone(),
+                        )
+                finally:
+                    conn.close()
+
     def test_load_pets_persists_mana_curve(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

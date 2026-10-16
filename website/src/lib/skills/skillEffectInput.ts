@@ -553,7 +553,7 @@ export function skillEffectInput(
     summoned_monster_level: skill.summoned_monster_level,
     summon_count_per_cast: skill.summon_count_per_cast,
     max_active_summons: skill.max_active_summons,
-    pet_name: skill.pet_prefab_name,
+    pet_name: skill.pet_name,
     is_familiar: skill.is_familiar,
     affects_random_target: skill.affects_random_target,
     area_object_size: skill.area_object_size,

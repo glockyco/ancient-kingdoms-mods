@@ -928,7 +928,9 @@ class SkillData(BaseModel):
 
     # Misc
     skill_aggro_message: str = ""
-    pet_prefab_name: str | None = None  # Prefab name for summoned pet (e.g., "Bear")
+    pet_id: str | None = None
+    archer_pet_id: str | None = None
+    reaper_pet_id: str | None = None
 
     # SummonSkillMonsters fields (skill_type = "summon_monsters", boss add-summoning)
     summoned_monster_id: str | None = None

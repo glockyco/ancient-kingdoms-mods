@@ -52,6 +52,7 @@ public static class SkillClassification
         if (skill.TryCast<PassiveSkill>() != null) return "passive";
         if (skill.TryCast<SummonSkill>() != null) return "summon";
         if (skill.TryCast<SummonSkillMonsters>() != null) return "summon_monsters";
+        if (skill.TryCast<MercenarySummonSkill>() != null) return "mercenary_summon";
         if (skill.TryCast<NecromancerBloodPactSkill>() != null) return "health_to_mana";
 
         // A skill class this switch does not know is new game content whose fields nothing exports.

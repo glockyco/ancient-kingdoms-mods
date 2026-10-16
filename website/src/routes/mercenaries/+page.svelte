@@ -432,7 +432,7 @@
                 A Bard's active-song limit follows character level.
               </span>
             </p>
-            <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard skill rank has a minimum of 1, and every skill has its own maximum rank. -->
+            <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard and Necromancer skill ranks have a minimum of 1, and every skill has its own maximum rank. -->
             <div id="skill-ranks">
               <Calculation calculation={rankCalculation} />
               <p class="mt-2 text-muted-foreground">
@@ -487,11 +487,11 @@
             table, "companion" includes both.
             <!-- Source: server-scripts/Pet.cs:IsValidCombatReacquireTarget,OnAggro — mercenaries reject Monster.isDummy when acquiring targets automatically. -->
             Mercenaries skip training dummies when choosing targets automatically.
-            <!-- Source: server-scripts/Pet.cs:2969-3031 — back-seeking enabled mercenaries reposition by class and frontal attacks, excluding Warriors. -->
+            <!-- Source: server-scripts/Pet.cs:UpdateServer_CASTING — back-seeking enabled mercenaries reposition by class and frontal attacks, excluding Warriors. -->
             Rogue and Bard mercenaries try to move behind their targets after attacks.
-            Ranger and Wizard mercenaries also do this against bosses and elites.
-            Every non-Warrior mercenary tries to move behind monsters with frontal-attack
-            skills.
+            Ranger, Wizard and Necromancer mercenaries also do this against bosses
+            and elites. Every non-Warrior mercenary tries to move behind monsters
+            with frontal-attack skills.
           </p>
           <!-- Source: server-scripts/Pet.cs:1491-1494,2222-2233,6060-6070; PetSkills.cs:NextBuffSkill — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2402-2463,OnMercenaryStanceKeyPressed; Player.cs:9356-9382; Pet.cs:ComeHereNow,5998-6046 — group toggles, Warrior-first attack order, and movement commands. -->

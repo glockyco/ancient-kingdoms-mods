@@ -11,6 +11,7 @@ const curves: Curves = {
   Wizard: { hp_base: 50, hp_per: 50, mana_base: 20, mana_per: 15 },
   Druid: { hp_base: 55, hp_per: 55, mana_base: 20, mana_per: 10 },
   Bard: { hp_base: 70, hp_per: 70, mana_base: 0, mana_per: 0 },
+  Necromancer: { hp_base: 50, hp_per: 50, mana_base: 20, mana_per: 15 },
 };
 
 function classAt(cls: string, level: number, veteran: number) {

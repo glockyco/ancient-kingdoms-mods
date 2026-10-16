@@ -20,6 +20,7 @@ const CURVES: Curves = {
   Druid: { hp_base: 55, hp_per: 55, mana_base: 20, mana_per: 10 },
   Ranger: { hp_base: 80, hp_per: 80, mana_base: 15, mana_per: 5 },
   Bard: { hp_base: 70, hp_per: 70, mana_base: 0, mana_per: 0 },
+  Necromancer: { hp_base: 50, hp_per: 50, mana_base: 20, mana_per: 15 },
 };
 
 function row(cls: string, race: string, level: number, veteran: number) {

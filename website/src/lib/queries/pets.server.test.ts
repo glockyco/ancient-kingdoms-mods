@@ -121,6 +121,9 @@ test.each([false, true])(
         skill_id: "test_summon",
         skill_name: "Test Summon",
         class_id: "wizard",
+        mercenary_id: null,
+        mercenary_name: null,
+        form: null,
       });
     if (is_familiar) vi.mocked(queryOne).mockReturnValueOnce({ max_level: 9 });
     const pet = getPetById("test_pet")!;
@@ -131,9 +134,14 @@ test.each([false, true])(
   },
 );
 
-test.each(["necromancer", "druid", null])(
-  "companion metadata uses its supplied cap for %s",
-  (summoning_class_id) => {
+test.each([
+  ["necromancer", null],
+  ["druid", null],
+  [null, null],
+  [null, "Necromancer Mercenary"],
+])(
+  "companion metadata uses its supplied cap for class %s, mercenary %s",
+  (summoning_class_id, summoning_mercenary_name) => {
     const input: PetDescriptionInput = {
       name: "Test Pet",
       kind: "Companion",
@@ -144,6 +152,7 @@ test.each(["necromancer", "druid", null])(
       effective_max_level: 9,
       summoning_skill_name: "Test Summon",
       summoning_class_id,
+      summoning_mercenary_name,
     };
     expect(petDescription(input)).toContain("up to level 37");
     expect(petDescription({ ...input, kind: "Familiar" })).toContain(

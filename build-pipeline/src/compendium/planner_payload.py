@@ -109,6 +109,11 @@ SKILL_TYPE_CLASSIFICATIONS.update(
             "excluded",
             "Healing is outside the release objective",
         ),
+        "mercenary_summon": EffectClassification(
+            "skill_type:mercenary_summon",
+            "excluded",
+            "Mercenary companion summoning is not modelled",
+        ),
     }
 )
 

@@ -267,6 +267,35 @@ class ReferenceKindTests(ReachabilityTestCase):
         self.assertFalse(self._present("skills", "private_summon"))
         self.assertFalse(self._present("monsters", "summoned"))
 
+    def test_summoned_pets_go_with_their_only_skill(self):
+        self._skill("private_summon")
+        self._monster("carrier", REDACTED)
+        for pet_id in ("player", "archer", "reaper"):
+            self.conn.execute(
+                "INSERT INTO pets "
+                "(id, name, type_monster, level, level_max, health_multiplier, icon_path) "
+                "VALUES (?, ?, 'Creature', 1, 50, 1.0, 'companion_icon')",
+                (pet_id, pet_id),
+            )
+        self.conn.execute(
+            "UPDATE skills SET pet_id = 'player', archer_pet_id = 'archer', "
+            "reaper_pet_id = 'reaper' "
+            "WHERE id = 'private_summon'"
+        )
+        self.conn.execute(
+            "INSERT INTO monster_skills "
+            "(monster_id, skill_id, skill_index, runtime_level) VALUES (?, ?, 0, 1)",
+            ("carrier", "private_summon"),
+        )
+        self.conn.commit()
+
+        self._run()
+
+        self.assertFalse(self._present("skills", "private_summon"))
+        self.assertFalse(self._present("pets", "player"))
+        self.assertFalse(self._present("pets", "archer"))
+        self.assertFalse(self._present("pets", "reaper"))
+
     def test_an_unreachable_weapon_does_not_keep_its_proc_alive(self):
         """The boundary the requirement turns on: the weapon must be live.
 

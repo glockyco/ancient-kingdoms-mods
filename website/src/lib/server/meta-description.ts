@@ -51,7 +51,7 @@ export interface ItemMetaContext {
    * the applied level at use time (server-scripts/PotionItem.cs:24-39,
    * 143-145). Non-bandage potions can use Elixir Endurance; bandages keep
    * their base buff level. Mercenary utility potions pass the owner's Player
-   * (server-scripts/Pet.cs:2102-2126), so that owner's veteran rank applies.
+   * (server-scripts/Pet.cs:2120-2144), so that owner's veteran rank applies.
    * We cannot predict that runtime rank at SSR time.
    */
   buffDurationSeconds?: number | null;
@@ -1511,6 +1511,8 @@ export interface PetDescriptionInput {
   summoning_skill_name: string | null;
   /** Class id of the summoning skill (lowercase, e.g. "druid"). */
   summoning_class_id: string | null;
+  /** The mercenary that summons a mercenary companion. */
+  summoning_mercenary_name: string | null;
 }
 
 // Source: server-scripts/BardMercenarySkills.cs:RefreshAura — Bard songs apply buffs even though the exported pet has_buffs flag is false.
@@ -1536,6 +1538,10 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       return ` Summoned by a class skill. Level follows the skill rank, up to rank ${input.effective_max_level}.`;
     case "Companion":
       // Source: server-scripts/SummonSkill.cs:99 — level = min(petMaxLevel, playerLevel)
+      // Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner — a mercenary companion takes its owner's level, up to Level.max.
+      if (input.summoning_mercenary_name) {
+        return ` Companion of the ${input.summoning_mercenary_name}, summoned by ${input.summoning_skill_name ?? "its summon skill"}. Level matches its owner, up to level ${input.level_max}.`;
+      }
       if (input.summoning_class_id === "necromancer") {
         return ` Undead companion summoned by ${input.summoning_skill_name ?? "a Necromancer skill"}. Level follows the summoner, up to level ${input.level_max}.`;
       }

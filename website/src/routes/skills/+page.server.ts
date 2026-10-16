@@ -69,7 +69,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
       used_by_pets: usedByPets.has(row.id),
       pet_id: row.pet_id,
       pet_is_mercenary: row.pet_id !== null && mercenaryIds.has(row.pet_id),
-      pet_name: row.pet_prefab_name,
+      pet_name: row.pet_name,
       summoned_monster_id: row.summoned_monster_id,
       summoned_monster_name: row.summoned_monster_name,
       summoned_monster_level: row.summoned_monster_level,

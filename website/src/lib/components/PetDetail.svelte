@@ -12,6 +12,10 @@
   import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { getClassConfig } from "$lib/utils/classes";
+  import {
+    MERCENARY_COMPANION_SPELL_POWER_SHARE,
+    MERCENARY_REAPER_OWNER_LEVEL,
+  } from "$lib/utils/merc-stats";
   import type { PetClassLink, PetDetailView } from "$lib/types/pets";
   import type { PetHealthPassive } from "$lib/queries/pet-passives.server";
   import { petHref } from "$lib/utils/pets";
@@ -39,10 +43,13 @@
     visualAsset ? `${base}/${visualAsset.public_path}` : null,
   );
 
-  const summonedByColumns: ColumnDef<PetClassLink>[] = [
-    { accessorKey: "class_id", header: "Class" },
+  const summonedByColumns = $derived<ColumnDef<PetClassLink>[]>([
+    {
+      accessorKey: "class_id",
+      header: pet.classLink.mercenary ? "Mercenary" : "Class",
+    },
     { accessorKey: "skill_id", header: "Via Skill" },
-  ];
+  ]);
 
   const statsScale = $derived(
     pet.stats.some((stat) => stat.level1 !== stat.atCap),
@@ -61,7 +68,14 @@
   cell: Cell<PetClassLink, unknown>;
   row: Row<PetClassLink>;
 })}
-  {#if cell.column.id === "class_id"}
+  {#if cell.column.id === "class_id" && row.original.mercenary}
+    <a
+      href={petHref(row.original.mercenary.id, true)}
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+    >
+      {row.original.mercenary.name}
+    </a>
+  {:else if cell.column.id === "class_id"}
     {@const config = getClassConfig(row.original.class_id)}
     <a
       href="/classes/{row.original.class_id}"
@@ -236,7 +250,86 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content>
-        {#if pet.kind === "Companion"}
+        {#if pet.classLink.mercenary}
+          {@const mercenary = pet.classLink.mercenary}
+          <dl class="space-y-2">
+            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner — the companion takes its owner's level, up to Level.max. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
+              <dd>Matches your regular level, up to level {pet.level_max}.</dd>
+            </div>
+            <!-- Source: server-scripts/MercenarySummonSkill.cs:UsesReaper,GetPrefab; NecromancerMercenarySummons.cs:NeedsCompanion — the summon skill picks the archer below owner level 50 and the reaper from it, and a form change replaces the active companion. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">Summoned</dt>
+              <dd>
+                {#if mercenary.form === "reaper"}
+                  The
+                  <a
+                    href={petHref(mercenary.id, true)}
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{mercenary.name}</a
+                  >
+                  summons it once you reach level {MERCENARY_REAPER_OWNER_LEVEL},
+                  replacing its earlier companion.
+                {:else}
+                  The
+                  <a
+                    href={petHref(mercenary.id, true)}
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{mercenary.name}</a
+                  >
+                  summons it while you are below level {MERCENARY_REAPER_OWNER_LEVEL}.
+                  At level {MERCENARY_REAPER_OWNER_LEVEL}, another companion
+                  replaces it.
+                {/if}
+              </dd>
+            </div>
+            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus — Attack Power and Spell Power each gain RoundToInt(10% of the mercenary's Spell Power), and no veteran bonus applies. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">
+                Attack and Spell Power
+              </dt>
+              <dd class="space-y-1">
+                <p>
+                  Each gains {Math.round(
+                    MERCENARY_COMPANION_SPELL_POWER_SHARE * 100,
+                  )}% of its mercenary's Spell Power, rounded. Veteran points
+                  add no stats.
+                </p>
+                <RoundingDefinition />
+              </dd>
+            </div>
+            <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — a NecromancerMercenaryPet ranks its skills like a mercenary, with a minimum of 1. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">Skill ranks</dt>
+              <dd>
+                Uses the
+                <a
+                  href="/mercenaries#skill-ranks"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >mercenary skill rank</a
+                >
+                for your level and veteran points, with a minimum of 1.
+              </dd>
+            </div>
+            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:CanAttack — the companion attacks only its living summoner's target while both are in aggressive stance. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">Targets</dt>
+              <dd>
+                Attacks only its mercenary's target, while both are in
+                aggressive stance.
+              </dd>
+            </div>
+            <!-- Source: server-scripts/NecromancerMercenarySummons.cs:LateUpdate,HasLivingSummoner — the companion is removed when its mercenary or owner dies, and its death restarts the summon cooldown. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">Lifetime</dt>
+              <dd>
+                It disappears when its mercenary or you die. When it dies, its
+                mercenary's summon cooldown starts again.
+              </dd>
+            </div>
+          </dl>
+        {:else if pet.kind === "Companion"}
           <dl class="space-y-2">
             <!-- Source: server-scripts/SummonSkill.cs:99; NecromancerPetStats.cs:38 — companion level is capped by Level.max, and undead companions refresh from their owner's level. -->
             <div class="flex gap-2">

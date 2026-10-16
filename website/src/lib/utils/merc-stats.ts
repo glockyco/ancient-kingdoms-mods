@@ -119,6 +119,12 @@ export const CLASSES: Record<string, ClassDef> = {
     pool: ["Human", "Elf", "Dark Elf", "Fire Goblin", "Felarii"],
     div: { STR: 3, CON: 5, DEX: 4, INT: 6, WIS: 6, CHA: 2 },
   },
+  Necromancer: {
+    type: "Necromancer",
+    role: "mana",
+    pool: ["Human", "Dark Elf", "Fire Goblin"],
+    div: { STR: 6, CON: 3, DEX: 5, INT: 2, WIS: 4, CHA: 6 },
+  },
 };
 
 export interface Curve {
@@ -271,10 +277,10 @@ export function classStatSpan(
  * Races a recruiter preference can produce although no class pool lists them,
  * with the classes that accept each one.
  * Source: server-scripts/Utils.cs:GetRandomChar — Drassar preference applies
- * only to class indices 1, 2, 3, 4, and 6. Bard (7) is excluded.
+ * only to class indices 1, 2, 3, 4, 6, and 8. Bard (7) is excluded.
  */
 export const PREFERRED_ONLY_RACES: Record<string, string[]> = {
-  Drassar: ["Warrior", "Cleric", "Rogue", "Wizard", "Ranger"],
+  Drassar: ["Warrior", "Cleric", "Rogue", "Wizard", "Ranger", "Necromancer"],
 };
 
 /** Whether a class can be this race at all, by roll or by recruiter preference. */
@@ -300,7 +306,7 @@ export function obtainableRaces(
 
 /**
  * P(get this race) when hiring a class from a recruiter that prefers `preferredRace`.
- * Source: server-scripts/Utils.cs:648-649 — a preference the class can be is forced,
+ * Source: server-scripts/Utils.cs:649-650 — a preference the class can be is forced,
  * otherwise the race is uniform over the class pool.
  */
 export function pRaceAtRecruiter(
@@ -361,9 +367,14 @@ export function activeMercenaryLimit(level: number): number {
   return 1;
 }
 
+/** Source: server-scripts/MercenarySummonSkill.cs:UsesReaper,GetPrefab — a mercenary summons its reaper companion once the owner reaches level 50, and its archer companion below that. */
+export const MERCENARY_REAPER_OWNER_LEVEL = 50;
+
+/** Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus — a mercenary companion adds RoundToInt of this share of its mercenary's Spell Power to both Attack Power and Spell Power. */
+export const MERCENARY_COMPANION_SPELL_POWER_SHARE = 0.1;
 /**
  * Rank of each mercenary skill for its owner's progression.
- * Source: server-scripts/PetSkills.cs:RefreshSkillLevels — min(max rank, floor(level ÷ 5) + floor(veteran ÷ 10)), with a minimum of 1 for Bard mercenaries.
+ * Source: server-scripts/PetSkills.cs:RefreshSkillLevels — min(max rank, floor(level ÷ 5) + floor(veteran ÷ 10)), with a minimum of 1 for Bard and Necromancer mercenaries.
  */
 export function mercenarySkillRank(
   cls: string,
@@ -372,7 +383,10 @@ export function mercenarySkillRank(
   maximum: number,
 ): number {
   const rank = floorToInt(level / 5) + floorToInt(veteran / 10);
-  return Math.min(maximum, cls === "Bard" ? Math.max(1, rank) : rank);
+  return Math.min(
+    maximum,
+    cls === "Bard" || cls === "Necromancer" ? Math.max(1, rank) : rank,
+  );
 }
 
 /** Source: server-scripts/Player.cs:8588-8595 — double-precision resurrection curve and veteran fee, then a float32 Charisma product rounded upward. */

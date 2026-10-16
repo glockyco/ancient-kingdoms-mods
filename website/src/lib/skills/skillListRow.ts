@@ -20,6 +20,6 @@ export interface SkillListRow {
   summoned_monster_level: number | null;
   summon_count_per_cast: number | null;
   max_active_summons: number | null;
-  pet_prefab_name: string | null;
   pet_id: string | null;
+  pet_name: string | null;
 }

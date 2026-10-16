@@ -138,6 +138,8 @@ export interface SkillFacts {
   usedByMercenary: boolean;
   usedByMonster: boolean;
   usedByBardMercenary: boolean;
+  /** A Bard or Necromancer mercenary uses the skill, whose rank never falls below 1. */
+  usedByRankOneMercenary: boolean;
   usedByCompanion: boolean;
   usedByFamiliar: boolean;
   /** The skills that summon the familiars using this skill, which set its rank. */
@@ -344,6 +346,12 @@ export function skillFacts(
   const usedByBardMercenary = usedByPets.some(
     (p) => p.is_mercenary && p.type_monster === "Bard",
   );
+  // Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard and Necromancer mercenaries keep every skill at rank 1 or higher.
+  const usedByRankOneMercenary = usedByPets.some(
+    (p) =>
+      p.is_mercenary &&
+      (p.type_monster === "Bard" || p.type_monster === "Necromancer"),
+  );
   const usedByCompanion = usedByPets.some(
     (p) => !p.is_mercenary && !p.is_familiar,
   );
@@ -437,6 +445,7 @@ export function skillFacts(
     usedByMercenary,
     usedByMonster,
     usedByBardMercenary,
+    usedByRankOneMercenary,
     usedByCompanion,
     usedByFamiliar,
     familiarSummonSkills,

@@ -389,7 +389,25 @@ public class SkillExporter : BaseExporter
         if (summonSkill != null)
         {
             skillData.is_familiar = summonSkill.isFamiliar;
-            skillData.pet_prefab_name = summonSkill.petPrefab != null ? summonSkill.petPrefab.name : null;
+            if (summonSkill.petPrefab != null)
+            {
+                var pet = summonSkill.petPrefab.GetComponent<Il2Cpp.Pet>()
+                    ?? throw new System.InvalidOperationException($"Summon skill '{skill.name}' has no Pet component on its prefab.");
+                skillData.pet_id = PetExporter.PetId(pet);
+            }
+            return;
+        }
+
+        // Source: server-scripts/MercenarySummonSkill.cs:GetPrefab — the mercenary summons its authored archer or reaper prefab according to the owner's level.
+        var mercenarySummonSkill = skill.TryCast<Il2Cpp.MercenarySummonSkill>();
+        if (mercenarySummonSkill != null)
+        {
+            skillData.archer_pet_id = mercenarySummonSkill.archerPrefab != null
+                ? PetExporter.PetId(mercenarySummonSkill.archerPrefab)
+                : null;
+            skillData.reaper_pet_id = mercenarySummonSkill.reaperPrefab != null
+                ? PetExporter.PetId(mercenarySummonSkill.reaperPrefab)
+                : null;
             return;
         }
 

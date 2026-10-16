@@ -232,7 +232,10 @@ public class SkillData
 
     // === SummonSkill fields (when skill_type = summon) ===
     public bool is_familiar { get; set; }
-    public string pet_prefab_name { get; set; }
+    public string pet_id { get; set; }
+
+    public string archer_pet_id { get; set; }
+    public string reaper_pet_id { get; set; }
 
     // === SummonSkillMonsters fields (when skill_type = summon_monsters, for boss monster-summoning) ===
     public string summoned_monster_id { get; set; }

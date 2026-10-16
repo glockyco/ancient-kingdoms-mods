@@ -1456,13 +1456,22 @@
     "GameManager.cs:ExtraSkillbarKeyPressed": {
       "span": 0
     },
+    "GameManager.cs:IsGameplayUIInputBlocked": {
+      "span": 0
+    },
     "GameManager.cs:OnBackpackKeyPressed": {
+      "span": 0
+    },
+    "GameManager.cs:OnCancelActionKeyPressed": {
       "span": 0
     },
     "GameManager.cs:OnMercenaryAttackKeyPressed": {
       "span": 0
     },
     "GameManager.cs:OnMercenaryHoldPositionKeyPressed": {
+      "span": 0
+    },
+    "GameManager.cs:SkillbarKeyPressed": {
       "span": 0
     },
     "GatherInventoryQuest.cs:15-96": {
@@ -1972,6 +1981,12 @@
       "sha256": "84000bd956ab3a2625aee81a0c049add5b25da11baf2f588710d5205a7cb2c6b",
       "span": 24
     },
+    "MercenarySummonSkill.cs:GetPrefab": {
+      "span": 0
+    },
+    "MercenarySummonSkill.cs:UsesReaper": {
+      "span": 0
+    },
     "Monster.cs": {
       "span": 0
     },
@@ -2298,6 +2313,18 @@
     "NecromancerDeathBloomSkill.cs:healthCostPercent": {
       "span": 0
     },
+    "NecromancerMercenaryPet.cs:CanAttack": {
+      "span": 0
+    },
+    "NecromancerMercenaryPet.cs:RefreshFromSummoner": {
+      "span": 0
+    },
+    "NecromancerMercenarySummons.cs:LateUpdate": {
+      "span": 0
+    },
+    "NecromancerMercenarySummons.cs:NeedsCompanion": {
+      "span": 0
+    },
     "NecromancerPetBuffSkill.cs:HasLivingCombatPet": {
       "span": 0
     },
@@ -2593,10 +2620,6 @@
       "sha256": "3a162395c815337ab0877df8589820a326fe46967b9a31e935eca0e70aeecb99",
       "span": 15
     },
-    "Pet.cs:2969-3031": {
-      "sha256": "fd44c468ffab6cdafb112b7d05e4110e987e2a5b900cd1b8f8b3f2ce30b22030",
-      "span": 63
-    },
     "Pet.cs:4015-4026": {
       "sha256": "6d037054d1db036a2b6cf3f9b4e79f060ddf814b511a9a9c4fa2e74dbe173fa3",
       "span": 12
@@ -2687,6 +2710,9 @@
       "span": 0
     },
     "Pet.cs:UpdateServer": {
+      "span": 0
+    },
+    "Pet.cs:UpdateServer_CASTING": {
       "span": 0
     },
     "Pet.cs:UpdateServer_IDLE": {
@@ -3382,6 +3408,9 @@
     "Player.cs:TargetRpcHouse": {
       "span": 0
     },
+    "Player.cs:TryFollowSelectedPlayer": {
+      "span": 0
+    },
     "Player.cs:TryGetSelectedPickaxe": {
       "span": 0
     },
@@ -3762,6 +3791,9 @@
     "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
       "span": 0
     },
+    "PlayerInventory.cs:EnumeratePreferredSlotsOrdered": {
+      "span": 0
+    },
     "PlayerInventory.cs:OnDragAndClear_InventorySlot": {
       "span": 0
     },
@@ -3930,6 +3962,9 @@
     "PlayerQuests.cs:50-51": {
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
+    },
+    "PlayerSkillbar.cs:SaveMacro": {
+      "span": 0
     },
     "PlayerSkills.cs:1021-1080": {
       "sha256": "eddd2d52b226c9196f08c40ee1c0008aed7e9e8f36c19a5fbebfa4b9f9449e55",
@@ -4453,6 +4488,21 @@
       "span": 0
     },
     "Skill.cs:ToolTip": {
+      "span": 0
+    },
+    "SkillbarMacro.cs:Validate": {
+      "span": 0
+    },
+    "SkillbarMacroCommand.cs:TryParse": {
+      "span": 0
+    },
+    "SkillbarMacroCompletion.cs:GetSuggestions": {
+      "span": 0
+    },
+    "SkillbarMacroSequence.cs:Start": {
+      "span": 0
+    },
+    "SkillbarMacroSequence.cs:Tick": {
       "span": 0
     },
     "Skills.cs": {
@@ -5490,6 +5540,36 @@
     "UISettings.cs:ProtectFriendlyNpcs": {
       "span": 0
     },
+    "UISkillbar.cs:Awake": {
+      "span": 0
+    },
+    "UISkillbar.cs:ExecuteMacroCommand": {
+      "span": 0
+    },
+    "UISkillbar.cs:FindMacroSkill": {
+      "span": 0
+    },
+    "UISkillbar.cs:HandleSlotClick": {
+      "span": 0
+    },
+    "UISkillbar.cs:TickMacro": {
+      "span": 0
+    },
+    "UISkillbar.cs:TryRunMacro": {
+      "span": 0
+    },
+    "UISkillbarMacros.cs:Build": {
+      "span": 0
+    },
+    "UISkillbarMacros.cs:Open": {
+      "span": 0
+    },
+    "UISkillbarMacros.cs:RefreshCompletions": {
+      "span": 0
+    },
+    "UISkillbarSlot.cs:OnPointerClick": {
+      "span": 0
+    },
     "UISkills.cs:295-326": {
       "sha256": "0e3af4d4c89827c6baaa34f4097302c55ca53ee1cdb6f6861e7a4fd2bdaca771",
       "span": 32
@@ -5572,8 +5652,8 @@
       "sha256": "6cd6ae938b9b3d53e19c74ab64ec911b03622bff6ecf51554735bfc91d1bec5e",
       "span": 17
     },
-    "Utils.cs:648-649": {
-      "sha256": "e3530792d3fd57852f7784261b394ec189e6e44a32b8bebecc259639a86a8426",
+    "Utils.cs:649-650": {
+      "sha256": "af784504f02de8783c4ecf3933818b413fe307f3d73bbc0b4bbde20c5a0fcd2a",
       "span": 2
     },
     "Utils.cs:GetDailyAdventurerQuest": {

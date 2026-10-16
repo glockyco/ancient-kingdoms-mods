@@ -91,8 +91,11 @@ export function mercenaryPrice(resurrection = false): Calculation {
   };
 }
 
-// Source: server-scripts/PetSkills.cs:RefreshSkillLevels — rank contributions truncate positive level and veteran divisions independently.
-export function mercenaryRank(maxRank?: number, bard = false): Calculation {
+// Source: server-scripts/PetSkills.cs:RefreshSkillLevels — rank contributions truncate positive level and veteran divisions independently, and Bard and Necromancer mercenaries keep rank 1 or higher.
+export function mercenaryRank(
+  maxRank?: number,
+  minimumRankOne = false,
+): Calculation {
   return {
     note: TOTAL_VETERAN_POINTS_NOTE,
     steps: [
@@ -139,7 +142,10 @@ export function mercenaryRank(maxRank?: number, bard = false): Calculation {
       const fromLevel = Math.floor(level / 5),
         fromVeteran = Math.floor(veteran / 10);
       const uncappedRank = fromLevel + fromVeteran;
-      const rank = Math.min(cap, Math.max(bard ? 1 : 0, uncappedRank));
+      const rank = Math.min(
+        cap,
+        Math.max(minimumRankOne ? 1 : 0, uncappedRank),
+      );
       return {
         given: [
           `Level ${level}`,

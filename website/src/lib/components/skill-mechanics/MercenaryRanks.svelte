@@ -5,7 +5,7 @@
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
-  const { usedByBardMercenary } = $derived(mechanics.facts);
+  const { usedByRankOneMercenary } = $derived(mechanics.facts);
 </script>
 
 <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — mercenary skill rank uses owner level and total veteran points. -->
@@ -21,6 +21,6 @@
     >.
   </p>
   <Calculation
-    calculation={mercenaryRank(skill.max_level, usedByBardMercenary)}
+    calculation={mercenaryRank(skill.max_level, usedByRankOneMercenary)}
   />
 </div>

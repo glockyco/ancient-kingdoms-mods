@@ -27,6 +27,8 @@
     mercenarySkillRank,
     obtainableRaces,
     resurrectionPrice,
+    MERCENARY_COMPANION_SPELL_POWER_SHARE,
+    MERCENARY_REAPER_OWNER_LEVEL,
   } from "$lib/utils/merc-stats";
   import {
     OWNER_LIMITS,
@@ -41,6 +43,7 @@
   import Info from "@lucide/svelte/icons/info";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Music from "@lucide/svelte/icons/music";
+  import PawPrint from "@lucide/svelte/icons/paw-print";
   import Shield from "@lucide/svelte/icons/shield";
   import ShieldPlus from "@lucide/svelte/icons/shield-plus";
   import TrendingUp from "@lucide/svelte/icons/trending-up";
@@ -443,7 +446,7 @@
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <h3 class="text-sm font-semibold">Skill rank</h3>
-            <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards. -->
+            <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards and Necromancers. -->
             <p class="mt-1 text-sm">
               <a
                 href="/mercenaries#skill-ranks"
@@ -452,9 +455,9 @@
               >
               for your level and veteran points (VT).
             </p>
-            {#if cls === "Bard"}
+            {#if cls === "Bard" || cls === "Necromancer"}
               <p class="mt-1 text-sm text-muted-foreground">
-                Bard skills have a minimum rank of 1.
+                {cls} skills have a minimum rank of 1.
               </p>
             {/if}
           </div>
@@ -504,6 +507,83 @@
     </Card.Root>
   </section>
 
+  {#if pet.profile.companions.length > 0}
+    {@const summon = pet.profile.companions[0]}
+    <section aria-labelledby="companion-title">
+      <h2
+        id="companion-title"
+        class="mb-4 text-xl font-semibold flex items-center gap-2"
+      >
+        <PawPrint class="h-5 w-5 text-violet-500" />
+        Companion
+      </h2>
+      <Card.Root class="bg-muted/30">
+        <Card.Content class="space-y-4 text-sm">
+          <!-- Source: server-scripts/NecromancerMercenarySummons.cs:NeedsCompanion,SummonCompanion; MercenarySummonSkill.cs:UsesReaper,GetPrefab — the mercenary keeps one companion, chosen by the owner's level. -->
+          <p>
+            The mercenary uses
+            <a
+              href="/skills/{summon.skill_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{summon.skill_name}</a
+            >
+            to keep one undead companion beside it. Your level decides which one.
+          </p>
+          <table class="w-full">
+            <thead>
+              <tr class="border-b text-left text-muted-foreground">
+                <th class="py-2 pr-4 font-medium">Companion</th>
+                <th class="py-2 font-medium">Your level</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each pet.profile.companions as companion (companion.id)}
+                {@const active =
+                  companion.form === "reaper"
+                    ? level >= MERCENARY_REAPER_OWNER_LEVEL
+                    : level < MERCENARY_REAPER_OWNER_LEVEL}
+                <tr
+                  class="border-b border-border/50 {active
+                    ? ''
+                    : 'text-muted-foreground'}"
+                >
+                  <td class="py-2 pr-4">
+                    <a
+                      href={petHref(companion.id, false)}
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >{companion.name}</a
+                    >
+                  </td>
+                  <td class="py-2 tabular-nums">
+                    {companion.form === "reaper"
+                      ? `${MERCENARY_REAPER_OWNER_LEVEL} or higher`
+                      : `Below ${MERCENARY_REAPER_OWNER_LEVEL}`}
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+          <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,CanAttack; NecromancerMercenarySummons.cs:LateUpdate — the companion takes the owner's level, gains 10% of the mercenary's Spell Power, attacks the mercenary's target, and leaves when either dies. -->
+          <ul class="list-disc space-y-1 pl-5">
+            <li>
+              Its level matches yours. It gains {Math.round(
+                MERCENARY_COMPANION_SPELL_POWER_SHARE * 100,
+              )}% of the mercenary's Spell Power as Attack Power and as Spell
+              Power, rounded.
+            </li>
+            <li>
+              It attacks only the mercenary's target, while both are in
+              aggressive stance.
+            </li>
+            <li>
+              It disappears when the mercenary or you die. When it dies, the
+              summon cooldown starts again.
+            </li>
+          </ul>
+        </Card.Content>
+      </Card.Root>
+    </section>
+  {/if}
   {#if cls === "Bard"}
     {@const cadence = skillById("mercenary_final_cadence")}
     {@const strike = skillById("mercenary_bardic_strike")}

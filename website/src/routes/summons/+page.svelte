@@ -14,6 +14,8 @@
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import { getClassConfig } from "$lib/utils/classes";
+  import { MERCENARY_REAPER_OWNER_LEVEL } from "$lib/utils/merc-stats";
+  import { petHref } from "$lib/utils/pets";
   import type { SummonListView } from "$lib/types/pets";
   import PawPrint from "@lucide/svelte/icons/paw-print";
   import Swords from "@lucide/svelte/icons/swords";
@@ -69,7 +71,10 @@
   };
 
   function effectText(summon: SummonListView): string {
-    if (summon.kind === "Companion") return "Fights beside you";
+    if (summon.kind === "Companion")
+      return summon.summoning_mercenary
+        ? "Fights beside its mercenary"
+        : "Fights beside you";
     if (summon.kind === "Pet") return "Follows you, no combat role";
     const effect = FAMILIAR_EFFECTS[summon.id];
     if (!effect) throw new Error(`No familiar effect for ${summon.id}`);
@@ -176,6 +181,24 @@
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >{row.original.summoning_skill_name}</a
         >
+      </span>
+    {:else if row.original.summoning_mercenary && row.original.summoning_skill_id}
+      {@const mercenary = row.original.summoning_mercenary}
+      <span>
+        <a
+          href={petHref(mercenary.id, true)}
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{mercenary.name}</a
+        >
+        skill
+        <a
+          href="/skills/{row.original.summoning_skill_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{row.original.summoning_skill_name}</a
+        >,
+        {mercenary.form === "reaper"
+          ? `from owner level ${MERCENARY_REAPER_OWNER_LEVEL}`
+          : `below owner level ${MERCENARY_REAPER_OWNER_LEVEL}`}
       </span>
     {:else}
       <span class="text-muted-foreground">—</span>
@@ -308,7 +331,7 @@
               Your own maximum Health is unchanged.
             </li>
           {/if}
-          <!-- Source: server-scripts/Pet.cs:2969-3031 — back-seeking companions flank for melee first skills, bosses, elites or frontal attacks, while close ranged companions step away. -->
+          <!-- Source: server-scripts/Pet.cs:UpdateServer_CASTING — back-seeking companions flank for melee first skills, bosses, elites or frontal attacks, while close ranged companions step away. -->
           <li>
             Companions that seek targets' backs try to move behind monsters
             after attacks when their first skill is melee, the target is a boss

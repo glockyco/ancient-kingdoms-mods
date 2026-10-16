@@ -1166,7 +1166,7 @@ CREATE TABLE skills (
     tooltip_template TEXT,
     icon_path TEXT,
     skill_aggro_message TEXT,
-    pet_prefab_name TEXT,
+    pet_id TEXT,                  -- References pets(id), loaded after skills
 
     -- Combat flags
     is_assassination_skill BOOLEAN DEFAULT 0,
@@ -1320,6 +1320,10 @@ CREATE TABLE skills (
     summoned_monster_level INTEGER,
     summon_count_per_cast INTEGER,        -- -1 = based on aggro count
     max_active_summons INTEGER,
+
+    -- MercenarySummonSkill companion references, loaded before pets
+    archer_pet_id TEXT,
+    reaper_pet_id TEXT,
 
     -- Denormalized: Items that grant/trigger this skill (as JSON array)
     granted_by_items TEXT           -- JSON: [{"item_id": "scroll_fireball", "type": "scroll"}, {"item_id": "staff_of_flames", "type": "weapon_proc", "probability": 0.15}]

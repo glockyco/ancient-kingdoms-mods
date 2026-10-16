@@ -862,6 +862,17 @@ def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
         data = json.load(f)
 
     pets = [PetData(**item) for item in data]
+    pet_ids = {pet.id for pet in pets}
+    for skill_id, summoned_pet_id, archer_id, reaper_id in conn.execute(
+        "SELECT id, pet_id, archer_pet_id, reaper_pet_id FROM skills "
+        "WHERE pet_id IS NOT NULL OR archer_pet_id IS NOT NULL OR reaper_pet_id IS NOT NULL"
+    ):
+        for pet_id in (summoned_pet_id, archer_id, reaper_id):
+            if pet_id is not None and pet_id not in pet_ids:
+                raise ValueError(
+                    f"Summon skill {skill_id} references pet {pet_id} "
+                    "missing from pets.json"
+                )
 
     cursor = conn.cursor()
     for pet in pets:

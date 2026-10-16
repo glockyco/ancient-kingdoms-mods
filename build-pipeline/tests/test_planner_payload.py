@@ -133,6 +133,30 @@ class PlannerPayloadTests(unittest.TestCase):
             subject or Subject(set(), set(), []),
         )
 
+    def test_mercenary_summon_preserves_companion_references_without_combat_support(
+        self,
+    ):
+        self._write_exports(
+            skill_type="mercenary_summon",
+            extra_skill={"archer_pet_id": "archer", "reaper_pet_id": "reaper"},
+        )
+        payload = json.loads(self._write().raw_path.read_bytes())
+        skill = next(row for row in payload["skills"] if row["id"] == "strike")
+        self.assertEqual("archer", skill["archer_pet_id"])
+        self.assertEqual("reaper", skill["reaper_pet_id"])
+        classification = next(
+            row
+            for row in payload["effectClassifications"]
+            if row["kind"] == "skill_type:mercenary_summon"
+        )
+        self.assertEqual("excluded", classification["status"])
+
+    def test_player_summon_preserves_pet_reference(self):
+        self._write_exports(skill_type="summon", extra_skill={"pet_id": "bear"})
+        payload = json.loads(self._write().raw_path.read_bytes())
+        skill = next(row for row in payload["skills"] if row["id"] == "strike")
+        self.assertEqual("bear", skill["pet_id"])
+
     def test_raw_gzip_and_hash_are_reproducible(self):
         first = self._write()
         first_raw = first.raw_path.read_bytes()
