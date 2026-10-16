@@ -1,5 +1,5 @@
 import type { Calculation } from "$lib/types/calculation";
-import { ceilToInt, divideF32 } from "$lib/planner/engine-math";
+import { ceilToInt, divideF32 } from "$lib/calculation/unity-math";
 import { formatNumber } from "./format";
 import { situational } from "./inputs";
 

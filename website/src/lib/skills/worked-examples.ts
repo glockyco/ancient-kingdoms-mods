@@ -2,7 +2,12 @@ import { atRank } from "$lib/calculation/format";
 import { MAX_HEALTH } from "$lib/calculation/inputs";
 import { lifetapHeal, wildStrikeDamage } from "$lib/calculation/combat";
 import { damageOverTimeBonuses } from "$lib/calculation/combat-rules";
-import { addF32, clamp, iround, multiplyF32 } from "$lib/planner/engine-math";
+import {
+  addF32,
+  clamp,
+  iround,
+  multiplyF32,
+} from "$lib/calculation/unity-math";
 import type { LinearValue } from "$lib/types/skills";
 
 /*

@@ -1,5 +1,5 @@
 import type { DamageTerm, DamageType, LinearValue } from "$lib/types/skills";
-import { iround, multiplyF32 } from "$lib/planner/engine-math";
+import { iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatDuration } from "./format";
 
 /** Returns true when a LinearValue field has at least one non-zero component.

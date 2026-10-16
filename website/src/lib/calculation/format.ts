@@ -1,4 +1,4 @@
-import { addF32, multiplyF32 } from "$lib/planner/engine-math";
+import { addF32, multiplyF32 } from "$lib/calculation/unity-math";
 import type { CalculationInput } from "$lib/types/calculation";
 import type { LinearValue } from "$lib/types/skills";
 

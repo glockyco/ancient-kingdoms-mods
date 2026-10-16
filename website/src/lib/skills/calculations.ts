@@ -20,7 +20,7 @@ import {
   floorToInt,
   iround,
   multiplyF32,
-} from "$lib/planner/engine-math";
+} from "$lib/calculation/unity-math";
 import type { Calculation } from "$lib/types/calculation";
 import type { LinearValue, SkillDetailView } from "$lib/types/skills";
 

@@ -1,7 +1,7 @@
 import { query, queryOne } from "$lib/db.server";
 import type { ClassSkill } from "./classes.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
-import { iround, multiplyF32 } from "$lib/planner/engine-math";
+import { iround, multiplyF32 } from "$lib/calculation/unity-math";
 import {
   SKILL_LIST_COLUMNS,
   SKILL_LIST_JOINS,

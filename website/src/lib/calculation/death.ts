@@ -1,5 +1,5 @@
 import type { Calculation } from "$lib/types/calculation";
-import { iround, multiplyF32 } from "$lib/planner/engine-math";
+import { iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber } from "./format";
 import { MAX_HEALTH, MAX_MANA, situational } from "./inputs";
 

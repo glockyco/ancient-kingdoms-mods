@@ -8,9 +8,9 @@ import {
   floorToInt,
   iround,
   multiplyF32,
-} from "./engine-math";
+} from "./unity-math";
 
-describe("engine numeric primitives", () => {
+describe("Unity numeric primitives", () => {
   it("narrows each float operand before multiplication", () => {
     const staged = multiplyF32(30, 1.05);
     const narrowedOnlyAfterMultiplication = f32(30 * 1.05);

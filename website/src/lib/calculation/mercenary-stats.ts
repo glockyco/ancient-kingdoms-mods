@@ -1,5 +1,5 @@
 import type { Calculation } from "$lib/types/calculation";
-import { f32, iround, multiplyF32 } from "$lib/planner/engine-math";
+import { f32, iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { CLASSES, RACES } from "$lib/utils/merc-stats";
 import type { ClassResult, Curves } from "$lib/utils/merc-stats";
 import { formatNumber, formatPercent } from "./format";

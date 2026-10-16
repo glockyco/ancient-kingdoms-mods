@@ -5,7 +5,7 @@ import {
   f32,
   iround,
   multiplyF32,
-} from "$lib/planner/engine-math";
+} from "$lib/calculation/unity-math";
 import { formatNumber, formatPercent } from "./format";
 import { CHARISMA, situational } from "./inputs";
 

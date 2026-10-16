@@ -1,5 +1,5 @@
 import type { Calculation, CalculationInput } from "$lib/types/calculation";
-import { addF32, f32, iround, multiplyF32 } from "$lib/planner/engine-math";
+import { addF32, f32, iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber, formatPercent } from "./format";
 import { CHARISMA, situational } from "./inputs";
 

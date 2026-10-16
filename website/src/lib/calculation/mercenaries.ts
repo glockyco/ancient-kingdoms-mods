@@ -1,5 +1,5 @@
 import type { Calculation } from "$lib/types/calculation";
-import { ceilToInt, iround, multiplyF32 } from "$lib/planner/engine-math";
+import { ceilToInt, iround, multiplyF32 } from "$lib/calculation/unity-math";
 import {
   charismaDiscount,
   hirePrice,

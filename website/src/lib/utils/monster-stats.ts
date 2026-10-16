@@ -1,4 +1,4 @@
-import { addF32, clamp, multiplyF32 } from "$lib/planner/engine-math";
+import { addF32, clamp, multiplyF32 } from "$lib/calculation/unity-math";
 
 // monster-stats.ts — Pure stat math for a monster or NPC spawn.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.

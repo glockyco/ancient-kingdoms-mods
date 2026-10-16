@@ -8,7 +8,7 @@
   import RecruiterTable from "$lib/components/RecruiterTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { formatPercent, formatSeconds } from "$lib/calculation/format";
-  import { iround, multiplyF32 } from "$lib/planner/engine-math";
+  import { iround, multiplyF32 } from "$lib/calculation/unity-math";
   import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import type { ClassSkill } from "$lib/queries/classes.server";
   import type { MercenaryDetailView, MercenaryLink } from "$lib/types/pets";

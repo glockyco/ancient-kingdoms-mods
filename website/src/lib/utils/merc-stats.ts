@@ -5,7 +5,7 @@ import {
   floorToInt,
   iround,
   multiplyF32,
-} from "$lib/planner/engine-math";
+} from "$lib/calculation/unity-math";
 
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.

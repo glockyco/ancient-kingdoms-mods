@@ -19,7 +19,7 @@ import {
   rankInput,
   situational,
 } from "$lib/calculation/inputs";
-import { multiplyF32, iround } from "$lib/planner/engine-math";
+import { multiplyF32, iround } from "$lib/calculation/unity-math";
 import type {
   Calculation,
   CalculationInput,
