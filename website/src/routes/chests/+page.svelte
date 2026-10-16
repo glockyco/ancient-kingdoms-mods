@@ -126,6 +126,12 @@
       accessorFn: (row) => row.item_reward_name || "",
     },
     {
+      id: "chance",
+      header: "Reward Chance",
+      size: 170,
+      accessorFn: (row) => chestRewardChance(row),
+    },
+    {
       id: "drops",
       header: "Random Drops",
       size: 170,
@@ -164,6 +170,7 @@
     gold: "Gold",
     item: "Item",
     drops: "Random Drops",
+    chance: "Reward Chance",
   };
 </script>
 
@@ -247,7 +254,6 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "gold"}
-    {@const chance = chestRewardChance(row.original.chest_reward_probability)}
     {#if row.original.gold_min > 0 || row.original.gold_max > 0}
       <span class="text-yellow-600 dark:text-yellow-400">
         {#if row.original.gold_min === row.original.gold_max}
@@ -258,16 +264,10 @@
           )}
         {/if}
       </span>
-      {#if chance !== null}
-        <span class="block text-muted-foreground"
-          >{formatPercent(chance)} chance</span
-        >
-      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "item"}
-    {@const chance = chestRewardChance(row.original.chest_reward_probability)}
     {#if row.original.item_reward_id && row.original.item_reward_name}
       <a
         href="/items/{row.original.item_reward_id}"
@@ -282,14 +282,11 @@
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
       {/if}
-      {#if chance !== null}
-        <span class="block text-muted-foreground"
-          >{formatPercent(chance)} chance</span
-        >
-      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
+  {:else if cell.column.id === "chance"}
+    {formatPercent(chestRewardChance(row.original))}
   {:else if cell.column.id === "drops"}
     {@const drops = row.original.drops}
     {#if drops.length > 0}

@@ -97,7 +97,7 @@ export interface Chest {
   item_reward_id: string | null;
   item_reward_name: string | null;
   item_reward_amount: number;
-  /** Chance that an opening gives the gold and item reward. */
+  /** The chest's reward probability. `chestRewardChance` says when it applies. */
   chest_reward_probability: number;
   respawn_time: number;
   visual_public_path: string | null;

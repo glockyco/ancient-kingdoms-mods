@@ -13,9 +13,7 @@
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
-  const rewardChance = $derived(
-    chestRewardChance(data.chest.chest_reward_probability),
-  );
+  const rewardChance = $derived(chestRewardChance(data.chest));
 
   // Format gold amounts with narrow space thousands separator
   function formatGold(amount: number): string {
@@ -130,10 +128,10 @@
       </h2>
       <div class="bg-muted/30 rounded-md border p-4 space-y-4">
         <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — a failed reward roll shows an empty chest, and the respawn timer starts before the roll. -->
-        {#if rewardChance !== null}
+        {#if rewardChance < 1}
           <p>
-            Each opening has a {formatPercent(rewardChance)} chance to give these
-            rewards. Otherwise the chest is empty until it respawns.
+            Each opening has a {formatPercent(rewardChance)} chance to give anything.
+            Otherwise the chest is empty until it respawns.
           </p>
         {/if}
         {#if data.chest.gold_min > 0 || data.chest.gold_max > 0}

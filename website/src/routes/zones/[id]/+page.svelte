@@ -176,6 +176,12 @@
       accessorFn: (row) => row.item_reward_name || "",
     },
     {
+      id: "chance",
+      header: "Reward Chance",
+      size: 170,
+      accessorFn: (row) => chestRewardChance(row),
+    },
+    {
       id: "drops",
       header: "Random Drops",
       size: 170,
@@ -423,7 +429,6 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "item"}
-    {@const chance = chestRewardChance(row.original.chest_reward_probability)}
     {#if row.original.item_reward_id && row.original.item_reward_name}
       <a
         href="/items/{row.original.item_reward_id}"
@@ -438,14 +443,11 @@
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
       {/if}
-      {#if chance !== null}
-        <span class="block text-muted-foreground"
-          >{formatPercent(chance)} chance</span
-        >
-      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
+  {:else if cell.column.id === "chance"}
+    {formatPercent(chestRewardChance(row.original))}
   {:else if cell.column.id === "drops"}
     {#if row.original.drop_count > 0}
       <span class="text-muted-foreground">{row.original.drop_count} items</span>
