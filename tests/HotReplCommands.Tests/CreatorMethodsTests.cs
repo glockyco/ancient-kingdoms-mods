@@ -1,8 +1,8 @@
 using System;
-using CombatVerification.Materialization;
+using HotReplCommands.World;
 using Xunit;
 
-namespace CombatVerification.Tests
+namespace HotReplCommands.Tests
 {
     /// <summary>
     /// Names of the creator methods a materialization step calls.

@@ -40,13 +40,13 @@ Confirm the reported path before continuing.
 
 The selection screen caps the roster in `server-scripts/UICharacterSelection.cs:SelectCharacterPreview`.
 
-`fixture.createCharacter` can remove the exact `replaceCharacterName` from an earlier fixture attempt.
+`character.create` can remove the exact `replaceCharacterName` from an earlier run.
 It returns `rosterSlotFreed` without creating the replacement because the selection screen keeps the list
 it already read. Quit, relaunch, redirect the database again, then retry the creation.
 
-A run that creates characters therefore has a budget. Give each fixture a name that says which run made
-it. Pass only one of those owned names as `replaceCharacterName`. Never let the command choose a player
-character to remove.
+A run that creates characters therefore has a budget. Give each created character a name that says
+which run made it. Pass only one of those owned names as `replaceCharacterName`. Never let the command
+choose a player character to remove.
 
 ## Refusals are the guard, not an obstacle
 
@@ -65,8 +65,8 @@ deployed and the game closed:
 ```sh
 dotnet run --project build-tool launch --wait
 pnpm exec hotrepl run game.useScratchDatabase '{}' --json   # must report isScratch=true
-# Only when the scratch roster has no fixture character:
-pnpm exec hotrepl run fixture.createCharacter '{"characterName":"HomeArt","class":"warrior","race":"human"}' --json
+# Only when the scratch roster lacks HomeArt:
+pnpm exec hotrepl run character.create '{"characterName":"HomeArt","class":"warrior","race":"human"}' --json
 pnpm exec hotrepl run world.enter '{"character":"HomeArt"}' --json
 pnpm exec hotrepl run capture.zoneShots '{}' --json
 pnpm exec hotrepl run game.quit '{}' --json

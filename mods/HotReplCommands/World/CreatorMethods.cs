@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace CombatVerification.Materialization
+namespace HotReplCommands.World
 {
     /// <summary>
     /// Names of the character creator's own race and class methods.
@@ -10,7 +10,7 @@ namespace CombatVerification.Materialization
     /// <remarks>
     /// The creator exposes one method for each race and one for each class, and their names
     /// carry the race or class in Pascal case. Deriving the name from the requested value
-    /// keeps the harness from holding a table that could silently omit a race. A derived name
+    /// keeps the caller from holding a table that could silently omit a race. A derived name
     /// that does not exist fails loudly and names the method it looked for, which a table
     /// would not.
     /// </remarks>

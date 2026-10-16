@@ -56,6 +56,12 @@
              Link="Dtos\GameQuitResult.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Dtos\ZoneShots.cs"
              Link="Dtos\ZoneShots.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\CreateCharacterArgs.cs"
+             Link="Dtos\CreateCharacterArgs.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\CreateCharacterResult.cs"
+             Link="Dtos\CreateCharacterResult.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\World\CreatorMethods.cs"
+             Link="World\CreatorMethods.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Artifacts\ArtifactCollector.cs"
              Link="Artifacts\ArtifactCollector.cs" />
   </ItemGroup>

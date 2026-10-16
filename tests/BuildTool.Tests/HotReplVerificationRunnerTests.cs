@@ -37,7 +37,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
     private const string FixtureCommandsListResult =
         @"{""type"":""commands_list_result"",""id"":""1"",""commands"":[" +
         @"{""name"":""game.useScratchDatabase""},{""name"":""world.summary""}," +
-        @"{""name"":""world.enter""},{""name"":""fixture.createCharacter""}," +
+        @"{""name"":""world.enter""},{""name"":""character.create""}," +
         @"{""name"":""fixture.validate""},{""name"":""fixture.buildCharacter""}," +
         @"{""name"":""fixture.observe""}," +
         @"{""name"":""game.quit""}]}";
@@ -207,7 +207,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         Assert.Equal(50, result.Achieved!.Value.GetProperty("level").GetInt32());
         Assert.Equal("A", result.Observation!.Value.GetProperty("tier").GetString());
         var sent = string.Join("\n", transport.SentMessages);
-        foreach (var command in new[] { "fixture.createCharacter", "world.enter", "fixture.validate", "fixture.buildCharacter", "fixture.observe", "game.quit" })
+        foreach (var command in new[] { "character.create", "world.enter", "fixture.validate", "fixture.buildCharacter", "fixture.observe", "game.quit" })
             Assert.Contains(command, sent);
         Assert.Contains("\"characterName\":\"Verifier\"", sent);
         Assert.Contains("\"class\":\"warrior\"", sent);
@@ -269,7 +269,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
 
         Assert.False(result.Ok);
         Assert.Equal("scratch", result.Stage);
-        Assert.DoesNotContain("fixture.createCharacter", string.Join("\n", transport.SentMessages));
+        Assert.DoesNotContain("character.create", string.Join("\n", transport.SentMessages));
     }
 
     [Fact]
@@ -360,7 +360,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
         Assert.False(result.Ok);
         var sent = string.Join("\n", transport.SentMessages);
         Assert.DoesNotContain("world.enter", sent);
-        Assert.DoesNotContain("fixture.createCharacter", sent);
+        Assert.DoesNotContain("character.create", sent);
         Assert.Contains("game.quit", sent);
     }
 }

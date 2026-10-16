@@ -11,7 +11,7 @@ HotRepl commands:
 | Command | Use |
 | --- | --- |
 | `fixture.validate`, `fixture.validateMatrix` | Check fixtures. |
-| `fixture.createCharacter`, `fixture.buildCharacter` | Create a character and set it up as a fixture describes. |
+| `fixture.buildCharacter` | Set up a character created with `character.create` as a fixture describes. |
 | `probe.statSheet`, `probe.perHitDamage`, `probe.targetState`, `probe.actionInterval` | Measure stats, damage per hit, the target's state, and the time between actions. |
 | `fixture.observe` | Record a fixture and write `observation.json` next to the scratch database. |
 

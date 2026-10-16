@@ -16,6 +16,7 @@ namespace HotReplCommands.Tests
                 new[]
                 {
                     "capture.zoneShots",
+                    "character.create",
                     "compendium.export",
                     "compendium.preflight",
                     "game.quit",
@@ -33,6 +34,7 @@ namespace HotReplCommands.Tests
         [InlineData("game.quit",            1, ControlCommandKind.Sync, true)]
         [InlineData("game.useScratchDatabase", 1, ControlCommandKind.Sync, true)]
         [InlineData("capture.zoneShots", 1, ControlCommandKind.Job, true)]
+        [InlineData("character.create", 1, ControlCommandKind.Job, true)]
         public void Catalog_EntryHasExpectedMetadata(
             string name, int version, ControlCommandKind kind, bool mutates)
         {

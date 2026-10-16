@@ -15,6 +15,7 @@ Not published as a download. `build-tool deploy` installs it with the other mods
 | `game.quit` | Quits the game. |
 | `game.useScratchDatabase` | Points the game at the scratch database before the save opens. |
 | `capture.zoneShots` | Captures the zone images. |
+| `character.create` | Creates a character through the game's character creator. |
 
 Exports go to `DATA_EXPORT_PATH`, and map screenshots to its `screenshots` folder. Zone shots go to `screenshots/zones/<zone_id>.png` under the same folder, with a `manifest.json`. The scratch database is `verification-scratch/game.dat`, next to the game's own database.
 
@@ -24,7 +25,7 @@ None.
 
 ## Limits
 
-`game.useScratchDatabase` refuses once the game has opened its database. World entry and capture change the game state.
+`game.useScratchDatabase` refuses once the game has opened its database. Character creation, world entry, and capture change the game state.
 
 ## Requirements
 

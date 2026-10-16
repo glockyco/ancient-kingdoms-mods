@@ -51,8 +51,6 @@
              Link="Fixtures\FixtureMatrixValidator.cs" />
     <Compile Include="..\..\mods\CombatVerification\Dtos\ValidateFixtureResult.cs"
              Link="Dtos\ValidateFixtureResult.cs" />
-    <Compile Include="..\..\mods\CombatVerification\Materialization\CreatorMethods.cs"
-             Link="Materialization\CreatorMethods.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\ICharacterUnderConstruction.cs"
              Link="Materialization\ICharacterUnderConstruction.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\IEquipmentSurface.cs"

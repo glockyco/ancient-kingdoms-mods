@@ -23,7 +23,6 @@ namespace CombatVerification
 
             _registered.Add(registry.Register(new ValidateFixtureCommand()));
             _registered.Add(registry.Register(new ValidateFixtureMatrixCommand()));
-            _registered.Add(registry.Register(new CreateCharacterCommand()));
             _registered.Add(registry.Register(new StatSheetCommand()));
             _registered.Add(registry.Register(new BuildCharacterCommand()));
             _registered.Add(registry.Register(new PerHitDamageCommand()));

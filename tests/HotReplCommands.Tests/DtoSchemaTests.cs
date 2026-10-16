@@ -46,6 +46,7 @@ namespace HotReplCommands.Tests
             reg.Register(new JobStub<WorldEnterArgs, WorldEnterResult>("world.enter"));
             reg.Register(new SyncStub<EmptyArgs, GameQuitResult>("game.quit"));
             reg.Register(new JobStub<ZoneShotsArgs, ZoneShotsResult>("capture.zoneShots"));
+            reg.Register(new JobStub<CreateCharacterArgs, CreateCharacterResult>("character.create"));
             return reg;
         }
 
@@ -53,7 +54,18 @@ namespace HotReplCommands.Tests
 
         [Fact]
         public void AllCommandsDescribed()
-            => Assert.Equal(6, BuildRegistry().Describe().Count);
+            => Assert.Equal(7, BuildRegistry().Describe().Count);
+
+        [Fact]
+        public void CreateCharacterArgs_RemovesNoCharacterUnlessNamed()
+        {
+            // Name, class and race describe the character. The replacement is optional so that a
+            // plain creation can never delete an existing character.
+            var descriptor = BuildRegistry().Describe()
+                .Single(d => d.Name == "character.create");
+            var required = descriptor.ArgsSchema["required"]?.Values<string>().OrderBy(n => n).ToArray();
+            Assert.Equal(new[] { "characterName", "class", "race" }, required);
+        }
 
         [Fact]
         public void WorldEnterArgs_CharacterIsOptional()

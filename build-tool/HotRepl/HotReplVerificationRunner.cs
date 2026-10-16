@@ -42,7 +42,7 @@ internal sealed class HotReplVerificationRunner
     private static readonly string[] FixtureCommands =
     {
         "game.useScratchDatabase", "world.summary", "world.enter",
-        "fixture.createCharacter", "fixture.validate", "fixture.buildCharacter",
+        "character.create", "fixture.validate", "fixture.buildCharacter",
         "fixture.observe", "game.quit",
     };
 
@@ -193,7 +193,7 @@ internal sealed class HotReplVerificationRunner
                 + "needs a fresh database.", resolvedPath, characters, Stage: "scratch");
         }
 
-        var create = await CallJobAsync("fixture.createCharacter", FixtureCharacterArgs(), ct);
+        var create = await CallJobAsync("character.create", FixtureCharacterArgs(), ct);
         if (create.Error != null)
         {
             return new(false, ExitCodes.CommandFailed,

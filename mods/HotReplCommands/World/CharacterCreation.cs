@@ -7,19 +7,19 @@ using Il2CppTMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace CombatVerification.Materialization
+namespace HotReplCommands.World
 {
     /// <summary>
-    /// Creates a fixture character by driving the game's character creator.
+    /// Creates a character by driving the game's character creator.
     /// </summary>
     /// <remarks>
-    /// The creator is the only authority for two things a fixture must not invent. It holds the
+    /// The creator is the only authority for two things a caller must not invent. It holds the
     /// pairing of a class with a race, as one enabled or disabled button for each class. It also
     /// chooses the basic skill a new character learns, the starting city, and the appearance,
     /// none of which is stored as data anywhere a tool can read.
     /// <para>
-    /// Calling <c>Database.CharacterCreate</c> directly would require the harness to supply all of
-    /// those, so a fixture would carry a copy of a decision the creator already makes. Driving the
+    /// Calling <c>Database.CharacterCreate</c> directly would require the caller to supply all of
+    /// those, so the caller would carry a copy of a decision the creator already makes. Driving the
     /// creator also leaves the tutorial disabled and the skillbar filled, exactly as it does for a
     /// player.
     /// </para>
@@ -107,13 +107,13 @@ namespace CombatVerification.Materialization
                     if (Database.CharacterExists(replaceCharacterName))
                     {
                         Fail("rosterCleanupFailed",
-                            $"Deleting the earlier fixture character '{replaceCharacterName}' "
+                            $"Deleting the earlier character '{replaceCharacterName}' "
                             + "did not take effect.");
                         yield break;
                     }
 
                     Fail("rosterSlotFreed",
-                        $"Deleted the earlier fixture character '{replaceCharacterName}'. "
+                        $"Deleted the earlier character '{replaceCharacterName}'. "
                         + "Restart the game before retrying because character selection caches "
                         + "the roster it loaded.");
                     yield break;
@@ -127,7 +127,7 @@ namespace CombatVerification.Materialization
 
                 var reason = heldCount < 8
                     ? "Restart the game because character selection is using a stale roster."
-                    : "Name one character from an earlier fixture attempt to remove.";
+                    : "Name one character from an earlier run to remove.";
                 Fail("rosterFull",
                     $"The selection screen is not offering character creation. It holds "
                     + $"{heldCount} characters. {reason}");

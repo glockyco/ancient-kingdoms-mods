@@ -4,17 +4,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using CombatVerification.Dtos;
-using CombatVerification.Materialization;
 using HotRepl.Control;
+using HotReplCommands.Dtos;
 using HotReplCommands.World;
 using Il2Cpp;
 using MelonLoader;
 
-namespace CombatVerification.Commands
+namespace HotReplCommands.Commands
 {
     /// <summary>
-    /// Creates one fixture character through the game's character creator.
+    /// Creates one character through the game's character creator.
     /// </summary>
     /// <remarks>
     /// The command reports what the save holds afterwards rather than what it asked for. No
@@ -24,7 +23,7 @@ namespace CombatVerification.Commands
     public sealed class CreateCharacterCommand
         : IControlCommandHandler<CreateCharacterArgs, CreateCharacterResult>
     {
-        public string Name => "fixture.createCharacter";
+        public string Name => "character.create";
         public int Version => 1;
         public ControlCommandKind Kind => ControlCommandKind.Job;
         public bool MutatesState => true;
