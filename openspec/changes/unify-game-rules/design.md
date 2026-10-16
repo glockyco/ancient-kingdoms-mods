@@ -94,7 +94,9 @@ Item pages, chest pages and map popups state the chance at Treasure Hunter 0. Th
 
 The page's server load reads the level cap, the veteran point cap and the class attribute gains from `progression_rules` and `class_level_progression`, and the constants are deleted. The page shows the same content.
 
-## Pages that change, for approval
+## Pages that change
+
+The owner approved these changes. Each still waits for the game check of its rule.
 
 | Page | Change |
 | --- | --- |

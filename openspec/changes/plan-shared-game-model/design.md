@@ -7,7 +7,6 @@ The evidence comes from reading the decompiled server code of game 0.9.36.1 (Ste
 Each decision has a status:
 
 - Decided: the owner agreed.
-- Proposed: recommended, waiting for the owner's confirmation.
 - Open: not decided yet.
 
 ### Why one model
@@ -141,7 +140,7 @@ Alternative rejected: a separate effect kind, as Afallon has.
 - PlayerPrefs data (skillbars, mercenary auto-consume toggles, helm visibility), fog of war and Steam achievements are outside `game.dat` and are not imported.
 - Content the compendium redacts can appear in a save. It shows as unknown and is never dropped.
 
-Reader (Proposed): the browser derives the keys and decrypts the pages with WebCrypto, checks every page's HMAC, and opens the result with the sql.js build the site already ships. A wrong key or a changed cipher setting fails the check on the first page instead of producing wrong data. The update workflow opens a local save with the reader, so such a change fails the update before it reaches players. Both readers opened a copy of the owner's save in headless Chromium:
+Reader (Decided): the browser derives the keys and decrypts the pages with WebCrypto, checks every page's HMAC, and opens the result with the sql.js build the site already ships. A wrong key or a changed cipher setting fails the check on the first page instead of producing wrong data. The update workflow opens a local save with the reader, so such a change fails the update before it reaches players. Both readers opened a copy of the owner's save in headless Chromium:
 
 | Reader | Added download | Open and integrity check | Limits |
 | --- | --- | --- | --- |

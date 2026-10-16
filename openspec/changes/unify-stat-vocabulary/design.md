@@ -74,7 +74,7 @@ The first task finds out how the window's static titles get their text:
 - If they come from a localization table, the exporter reads them from there.
 - If the text is part of the window itself, the exporter reads it from the window's labels at runtime.
 
-A site override carries its reason in the catalogue. The only proposed overrides are the pool names under "Wording for approval".
+A site override carries its reason in the catalogue.
 
 The four hit-time effects appear in neither window. Their names are site names, recorded as overrides with that reason.
 
@@ -103,18 +103,18 @@ Alternatives considered:
 
 Each consumer listed under Context switches to the catalogue or the shared formatters, and its copy is deleted in the same task. `inputs.ts` keeps its keys until the character change, and maps each input to a stat id for its label. When the change is done, no stat name or percent decision remains outside the catalogue, except in prose.
 
-## Wording for approval
+## Wording
 
-Pages change only after the owner approves this section. A character context uses the window name and an item stat list uses the item name, as `formula-presentation` already requires. The last column lists the wordings that go away.
+The owner approved this section. A character context uses the window name and an item stat list uses the item name, as `formula-presentation` already requires. The last column lists the wordings that go away. The table shows the names that the label code's English inputs and the window capture give. Task 1.1 reads them in the running game, and the game's text wins wherever it differs.
 
 The catalogue covers stat fields only. A skill's own effects keep their wording, such as the damage a scroll deals, its healing, cooldown or stun chance. The scroll mastery page's "Damage" and "Damage %" are such effects and do not change.
 
 | Stat | Character window | Item tooltip | Wordings that change |
 | --- | --- | --- | --- |
 | Six attributes | Strength and so on | Same | None |
-| `health` | HP | Hit Points | Health, Max Health, Maximum Health, max hp. All become the pool name chosen below |
-| `mana` | Mana | Mana | Max Mana. Becomes the pool name chosen below |
-| `rage` | Rage | Rage | Rage Points, Max Rage, max rage. All become the pool name chosen below |
+| `health` | HP, short for Hit Points | Hit Points | Health, Max Health, Maximum Health, max hp. All become Hit Points |
+| `mana` | Mana | Mana | Max Mana. Becomes Mana |
+| `rage` | Rage | Rage | Rage Points, Max Rage, max rage. All become Rage |
 | `health_regen` | Health Regeneration | Health Regen | Health/sec, Health %/sec, hp/s |
 | `mana_regen` | Mana Regeneration, to confirm in game | Mana Regen | Mana/sec, Mana %/sec |
 | `rage_regen` | Rage Regeneration | None | Rage %/sec |
@@ -131,14 +131,9 @@ The catalogue covers stat fields only. A skill's own effects keep their wording,
 | `fear_resist` | Not shown | Fear Resist | None |
 | `movement_speed` | Movement Speed | None | Movement speed |
 
-A modifier that is not a flat amount names its kind after the stat. A percent of the stat is "Attack Power %" or "Maximum Health %". A percent of the maximum each second is "Health Regeneration, % of Maximum Health". A page may still describe a negative Health Regeneration from a debuff as damage over time.
+A modifier that is not a flat amount names its kind after the stat. A percent of the stat is "Attack Power %" or "Hit Points %". A percent of the maximum each second is "Health Regeneration, % of Hit Points". A page may still describe a negative Health Regeneration from a debuff as damage over time.
 
-The question for the owner is what to call the three pools in character contexts:
-
-- Option A: follow the window literally. "Hit Points" spells out the window's HP and matches the item tooltip. "Mana" and "Rage" stay. Prose such as "maximum Health" changes to "maximum Hit Points".
-- Option B: "Maximum Health", "Maximum Mana" and "Maximum Rage", recorded as overrides. The window shows each pool as current over maximum, and a bonus raises the maximum. The game itself says Health in Health Regeneration. Item lists keep Hit Points, Mana and Rage.
-
-Option B is recommended. Every label then tells maximum Health apart from Health Regeneration, the site's prose already writes "maximum Health", and fewer pages change.
+The pools take the game's names: Hit Points, Mana and Rage. The window abbreviates Hit Points as HP, and the game's label code writes it in full. Prose follows the same names, so "maximum Health" becomes "maximum Hit Points". The owner chose this over "Maximum Health", "Maximum Mana" and "Maximum Rage", which would have been site overrides.
 
 ## Risks / Trade-offs
 
@@ -159,5 +154,4 @@ Rollback is a revert. The change adds tables and a file, and alters no stored da
 
 ## Open Questions
 
-- What to call the three pools in character contexts: option A or B above.
-- Does the window localize its static titles? The first task settles it.
+- None about wording. Task 1.1 settles whether the window localizes its static titles.

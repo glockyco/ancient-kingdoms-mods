@@ -35,4 +35,4 @@ The pipeline, the pages and the TypeScript calculators each implement game rules
 - `website/src/lib/calculation/`: gains the chest loop and the altar tier rule.
 - Pages: items, altars, chests, the Treasure Hunter and experience pages, and the map popups.
 
-Corrected altar tiers and primal essence values change what those pages show. The design lists the changes for approval. `simplify-pipeline-loader-registration` and `harden-export-sessions` land first.
+Corrected altar tiers and primal essence values change what those pages show. The design lists the changes, which the owner approved. `simplify-pipeline-loader-registration` and `harden-export-sessions` land first.

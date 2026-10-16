@@ -6,7 +6,7 @@
 
 - [x] 2.1 Confirm or revise the Proposed parts of D13: storage engine, cross-tab coordination, durability and backups. Update their status in `design.md`.
 - [x] 2.2 Confirm or revise the Proposed parts of D14: transports, short links on D1, and abuse controls. Update their status in `design.md`.
-- [ ] 2.3 Confirm or revise the Proposed save reader of D12: WebCrypto with the site's sql.js, or SQLite3 Multiple Ciphers.
+- [x] 2.3 Confirm or revise the Proposed save reader of D12: WebCrypto with the site's sql.js, or SQLite3 Multiple Ciphers.
 
 ## 3. In-flight changes
 
