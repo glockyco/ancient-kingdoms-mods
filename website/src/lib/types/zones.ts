@@ -130,6 +130,8 @@ export interface ZoneChest {
   item_reward_id: string | null;
   item_reward_name: string | null;
   item_reward_amount: number;
+  /** Chance that an opening gives the gold and item reward. */
+  chest_reward_probability: number;
   drop_count: number;
   position_x: number | null;
   position_y: number | null;

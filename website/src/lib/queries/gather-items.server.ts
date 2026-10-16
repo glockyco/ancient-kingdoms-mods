@@ -179,6 +179,8 @@ export interface ChestListView {
   item_reward_id: string | null;
   item_reward_name: string | null;
   item_reward_amount: number;
+  /** Chance that an opening gives the gold and item reward. */
+  chest_reward_probability: number;
   visual_public_path: string | null;
   visual_width: number | null;
   visual_height: number | null;
@@ -206,6 +208,7 @@ export function getChestsList(): ChestListView[] {
       c.item_reward_id,
       r.name as item_reward_name,
       c.item_reward_amount,
+      c.chest_reward_probability,
       ${visualAssetColumns(assetsEnabled)}
     FROM chests c
     JOIN zones z ON c.zone_id = z.id
@@ -539,6 +542,7 @@ export function getChestById(id: string): Chest | null {
       r.name as item_reward_name,
       c.item_reward_amount,
       c.respawn_time,
+      c.chest_reward_probability,
       ${visualAssetColumns(assetsEnabled)}
     FROM chests c
     JOIN zones z ON c.zone_id = z.id

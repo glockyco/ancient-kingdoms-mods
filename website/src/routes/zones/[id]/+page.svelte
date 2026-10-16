@@ -46,7 +46,8 @@
   import Box from "@lucide/svelte/icons/box";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import BookOpen from "@lucide/svelte/icons/book-open";
-  import { formatDuration } from "$lib/utils/format";
+  import { formatDuration, formatPercent } from "$lib/utils/format";
+  import { chestRewardChance } from "$lib/utils/chest-reward";
   import { base } from "$app/paths";
   import Seo from "$lib/components/Seo.svelte";
   import TrapMechanics from "$lib/components/TrapMechanics.svelte";
@@ -422,6 +423,7 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "item"}
+    {@const chance = chestRewardChance(row.original.chest_reward_probability)}
     {#if row.original.item_reward_id && row.original.item_reward_name}
       <a
         href="/items/{row.original.item_reward_id}"
@@ -435,6 +437,11 @@
         >
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
+      {/if}
+      {#if chance !== null}
+        <span class="block text-muted-foreground"
+          >{formatPercent(chance)} chance</span
+        >
       {/if}
     {:else}
       <span class="text-muted-foreground">-</span>

@@ -22,7 +22,8 @@
   import Box from "@lucide/svelte/icons/box";
   import Trees from "@lucide/svelte/icons/trees";
   import Castle from "@lucide/svelte/icons/castle";
-  import { formatDuration } from "$lib/utils/format";
+  import { formatDuration, formatPercent } from "$lib/utils/format";
+  import { chestRewardChance } from "$lib/utils/chest-reward";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { base } from "$app/paths";
 
@@ -246,6 +247,7 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "gold"}
+    {@const chance = chestRewardChance(row.original.chest_reward_probability)}
     {#if row.original.gold_min > 0 || row.original.gold_max > 0}
       <span class="text-yellow-600 dark:text-yellow-400">
         {#if row.original.gold_min === row.original.gold_max}
@@ -256,10 +258,16 @@
           )}
         {/if}
       </span>
+      {#if chance !== null}
+        <span class="block text-muted-foreground"
+          >{formatPercent(chance)} chance</span
+        >
+      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "item"}
+    {@const chance = chestRewardChance(row.original.chest_reward_probability)}
     {#if row.original.item_reward_id && row.original.item_reward_name}
       <a
         href="/items/{row.original.item_reward_id}"
@@ -273,6 +281,11 @@
         >
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
+      {/if}
+      {#if chance !== null}
+        <span class="block text-muted-foreground"
+          >{formatPercent(chance)} chance</span
+        >
       {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
