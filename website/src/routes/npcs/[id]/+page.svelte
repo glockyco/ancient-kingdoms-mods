@@ -48,6 +48,9 @@
   import Compass from "@lucide/svelte/icons/compass";
   import Snowflake from "@lucide/svelte/icons/snowflake";
   import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
+  import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
+  import { getNpcSpecialMechanics } from "$lib/special-mechanics";
+  import Cog from "@lucide/svelte/icons/cog";
 
   const categoryColors: Record<RoleCategory, string> = {
     quest: "text-orange-500",
@@ -67,6 +70,7 @@
 
   // Get active roles for this NPC
   const activeRoles = $derived(getActiveRoles(data.npc.roles));
+  const specialMechanics = $derived(getNpcSpecialMechanics(data.npc.id));
 
   // Source: server-scripts/Npc.cs:1738-1744; server-scripts/Player.cs:14521-14548 — renewal uses gold when priced and resets respawn timers for monsters in the target zone.
   // Source: server-scripts/UINpcTrading.cs:870-878 — Charisma can reduce the fee for ordinary dungeons by up to 25%.
@@ -523,7 +527,9 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.npc.name}</h1>
-      <MapLink entityId={data.npc.id} entityType="npc" />
+      {#if data.spawns.length > 0}
+        <MapLink entityId={data.npc.id} entityType="npc" />
+      {/if}
       {#if data.npc.is_notable}
         <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
           <Sparkles class="{ICON_BADGE.iconSize} text-amber-500" />
@@ -610,6 +616,32 @@
       {/if}
     {/snippet}
   </EntityCombatSummary>
+
+  {#if specialMechanics.length > 0}
+    <section>
+      <h2 class="mb-4 flex items-center gap-2 text-xl font-semibold">
+        <Cog class="h-5 w-5 text-slate-500" />
+        Mechanics
+      </h2>
+      <div class="space-y-4 rounded-md border bg-muted/30 p-4">
+        {#each specialMechanics as mechanic (mechanic.title)}
+          <div class="space-y-2">
+            <p>
+              <span class="font-medium">{mechanic.title}: </span>
+              <SpecialMechanicText parts={mechanic.summary} />
+            </p>
+            {#if mechanic.details.length > 0}
+              <ul class="ml-4 list-disc space-y-1">
+                {#each mechanic.details as detail, index (index)}
+                  <li><SpecialMechanicText parts={detail} /></li>
+                {/each}
+              </ul>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </section>
+  {/if}
 
   <!-- Spawns Section (at top, like monsters) -->
   {#if data.spawns.length > 0}

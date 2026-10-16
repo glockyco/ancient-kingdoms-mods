@@ -5077,6 +5077,9 @@
       "sha256": "2baaaadfb0215936825e23013da8b1a782c867a5e910339ef6146c02f8ba7c76",
       "span": 4
     },
+    "TrialAncientsEvent.cs:MainCoroutineEvent": {
+      "span": 0
+    },
     "UIBank.cs:294-307": {
       "sha256": "6f921bebfb7406304a55ae6d7abbc78197069fb0f2bd215f00534d3b9ef0a073",
       "span": 14

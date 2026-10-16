@@ -54,6 +54,22 @@ const DRAGONBAIT_STEW_USE: SpecialMechanic = {
   details: [],
 };
 
+const TRIAL_OF_THE_ANCIENTS_LINK: SpecialMechanicLink = {
+  href: "/zones/trial_of_the_ancients",
+  label: "Trial of the Ancients",
+};
+
+// Source: server-scripts/TrialAncientsEvent.cs:MainCoroutineEvent — defeating the final wave spawns Astral Projection Erasis inside the trial.
+const ERASIS_SPAWN: SpecialMechanic = {
+  title: "Spawn",
+  summary: [
+    "Appears in ",
+    TRIAL_OF_THE_ANCIENTS_LINK,
+    " once the trial's final wave is defeated.",
+  ],
+  details: [],
+};
+
 const MONSTER_SPECIAL_MECHANICS: Record<string, SpecialMechanic[]> = {
   valaark: [VALAARK_INVULNERABILITY],
 };
@@ -62,10 +78,18 @@ const ITEM_SPECIAL_MECHANICS: Record<string, SpecialMechanic[]> = {
   dragonbait_stew: [DRAGONBAIT_STEW_USE],
 };
 
+const NPC_SPECIAL_MECHANICS: Record<string, SpecialMechanic[]> = {
+  astral_projection_erasis: [ERASIS_SPAWN],
+};
+
 export function getMonsterSpecialMechanics(id: string): SpecialMechanic[] {
   return MONSTER_SPECIAL_MECHANICS[id] ?? [];
 }
 
 export function getItemSpecialMechanics(id: string): SpecialMechanic[] {
   return ITEM_SPECIAL_MECHANICS[id] ?? [];
+}
+
+export function getNpcSpecialMechanics(id: string): SpecialMechanic[] {
+  return NPC_SPECIAL_MECHANICS[id] ?? [];
 }
