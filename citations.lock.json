@@ -4181,6 +4181,9 @@
     "PlayerSkills.cs:CancelCast": {
       "span": 0
     },
+    "PlayerSkills.cs:CastTarget": {
+      "span": 0
+    },
     "PlayerSkills.cs:CmdUpgrade": {
       "span": 0
     },

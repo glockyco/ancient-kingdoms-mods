@@ -998,12 +998,13 @@
         <!-- Source: server-scripts/PlayerInventory.cs:108-113 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
         Starting a scroll cast cancels your current skill cast and clears queued skills.
       </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3166-3224 — scroll casts cancel on an active skill, movement, target change or disappearance, changed or empty slot, death, stun, fear, cancel action or trade. -->
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3166-3224 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
-        Moving, changing or losing your target, starting a skill, changing or
-        removing the casting item, stun, fear, death, trading, or cancelling the
-        action interrupts the cast. A skill scroll needs a valid target at both
-        the start and completion.
+        Moving, losing your target, starting a skill, changing or removing the
+        casting item, stun, fear, death, trading, or cancelling the action
+        interrupts the cast. Selecting another target does not: the scroll still
+        lands on the target you had when the cast began. A skill scroll needs a
+        valid target at both the start and completion.
         <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget; PlayerSkills.cs:TryUse — bind scrolls and bind spells are refused in dungeon zones. -->
         The
         <a

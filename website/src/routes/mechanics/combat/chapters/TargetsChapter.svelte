@@ -50,6 +50,11 @@
       When the target is out of range or out of sight, your character moves
       closer and then casts.
     </p>
+    <!-- Source: server-scripts/PlayerSkills.cs:CastTarget,FinishCast; Player.cs:UpdateServer_CASTING — a cast with a cast time keeps the target selected when it started, finishes on it, and is cancelled when that target disappears or dies, if the skill cancels on a dead target. -->
+    <p>
+      A skill with a cast time lands on the target you had when the cast began.
+      Selecting another target during the cast does not redirect it.
+    </p>
     <!-- Source: server-scripts/PlayerSkills.cs:705-709 — fear and stun block normal skill use. -->
     <!-- Source: server-scripts/PlayerSkills.cs:699-709 — active NecromancerReaperFormSkill and Fearless Stance are removed before the FEAR/STUNNED gate. -->
     <p>

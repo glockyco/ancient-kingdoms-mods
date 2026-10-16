@@ -210,7 +210,7 @@
             rank 1. Successful completion consumes one charge unless the scroll
             has infinite charges. Mastery gains also occur on completion.
           </p>
-          <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, target change or disappearance, another active skill, or an empty or changed slot. -->
+          <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, a lost start target, another active skill, or an empty or changed slot. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Interrupting the cast uses no charge and starts no item cooldown.
             See <MechanicsLink section="inventory#scroll-casting"
