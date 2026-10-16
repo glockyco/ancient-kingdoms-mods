@@ -59,6 +59,7 @@
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
     renderToolbar?: Snippet<[{ table: TanstackTable<TData> }]>;
     onVisibleRowsChange?: (rows: TData[], adjacentRows: TData[]) => void;
+    onColumnFiltersChange?: (filters: ColumnFiltersState) => void;
   };
 
   let {
@@ -81,6 +82,7 @@
     renderHeader,
     renderToolbar,
     onVisibleRowsChange,
+    onColumnFiltersChange,
   }: Props = $props();
 
   function getColumnLabel(columnId: string): string {
@@ -111,6 +113,13 @@
   let columnPinning = $state<ColumnPinningState>({ left: [], right: [] });
   let globalFilter = $state("");
   let isHydrated = $state(false);
+
+  $effect(() => {
+    if (isHydrated && onColumnFiltersChange) {
+      const filters = columnFilters;
+      untrack(() => onColumnFiltersChange(filters));
+    }
+  });
   let tableContainer: HTMLDivElement;
   let hasHorizontalOverflow = $state(false);
 

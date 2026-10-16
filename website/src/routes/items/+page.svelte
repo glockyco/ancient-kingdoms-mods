@@ -25,6 +25,7 @@
   import { formatClassName } from "$lib/utils/classes";
   import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
   import { getItemTooltips } from "$lib/queries/items";
+  import { formatStatName } from "$lib/terminology";
 
   let { data } = $props();
 
@@ -184,6 +185,16 @@
   );
 
   type ItemRow = (typeof dataWithVirtual)[number];
+  let selectedStats = $state<string[]>([]);
+  const statColumns = $derived<ColumnDef<ItemRow>[]>(
+    selectedStats.map((stat) => ({
+      id: `stat_${stat}`,
+      header: formatStatName(stat),
+      accessorFn: (row) => data.itemStatValues[row.id]?.[stat] ?? 0,
+      sortDescFirst: true,
+      size: 120,
+    })),
+  );
 
   const columns: ColumnDef<ItemRow>[] = [
     {
@@ -307,7 +318,7 @@
     },
   ];
 
-  const columnLabels: Record<string, string> = {
+  const columnLabels = $derived<Record<string, string>>({
     quality: "Quality",
     name: "Name",
     item_level: "Item Level",
@@ -318,7 +329,10 @@
     item_type: "Type",
     stats: "Stats",
     zone_ids: "Zone Filter",
-  };
+    ...Object.fromEntries(
+      selectedStats.map((stat) => [`stat_${stat}`, formatStatName(stat)]),
+    ),
+  });
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<ItemRow, unknown> })}
@@ -489,7 +503,13 @@
 
   <DataTable
     data={dataWithVirtual}
-    {columns}
+    columns={[...columns, ...statColumns]}
+    onColumnFiltersChange={(filters) => {
+      const value = filters.find((filter) => filter.id === "stats")?.value as
+        { stats: string[] } | undefined;
+      const next = value?.stats ?? [];
+      if (next.join(",") !== selectedStats.join(",")) selectedStats = next;
+    }}
     {columnLabels}
     {renderCell}
     {renderHeader}

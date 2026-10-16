@@ -10,9 +10,17 @@ export const load: PageServerLoad = () => {
 
   // Precompute parsed arrays at build time (avoids JSON.parse on client)
   const itemStatKeys: Record<string, string[]> = {};
+  const itemStatValues: Record<string, Record<string, number>> = {};
   const itemClassKeys: Record<string, string[]> = {};
   for (const item of rawItems) {
     itemStatKeys[item.id] = JSON.parse(item.stat_keys) as string[];
+    itemStatValues[item.id] = Object.fromEntries(
+      Object.entries(
+        JSON.parse(item.stats || "{}") as Record<string, unknown>,
+      ).filter(
+        (entry): entry is [string, number] => typeof entry[1] === "number",
+      ),
+    );
     try {
       const classes = JSON.parse(item.class_required);
       itemClassKeys[item.id] = Array.isArray(classes) ? classes : [];
@@ -40,5 +48,5 @@ export const load: PageServerLoad = () => {
     augment_armor_set_name: item.augment_armor_set_name,
   }));
 
-  return { items, itemStatKeys, itemClassKeys, itemZones };
+  return { items, itemStatKeys, itemStatValues, itemClassKeys, itemZones };
 };
