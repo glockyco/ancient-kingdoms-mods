@@ -175,14 +175,15 @@
                     >Final Cadence</a
                   > use Charisma instead of Wisdom.</span
                 >
-                <!-- Source: server-scripts/TargetHealSkill.cs:GetHealingAmount; server-scripts/TargetBuffSkill.cs:Apply; server-scripts/NecromancerDeathBloomSkill.cs:Apply — scroll healing and buffs skip attribute bonuses; Death Bloom uses Intelligence. -->
+                <!-- Source: server-scripts/TargetHealSkill.cs:GetHealingAmount,Apply; server-scripts/TargetBuffSkill.cs:Apply; server-scripts/NecromancerDeathBloomSkill.cs:Apply — ordinary scroll healing and buffs skip attributes, but pet and mercenary healing uses the player's Wisdom bonus. -->
                 <span class="block">
                   <a
                     href="/skills/death_bloom"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Death Bloom</a
                   >
-                  uses Intelligence. Scrolls, such as the
+                  uses Intelligence. Scroll healing and buffs normally gain no attribute
+                  bonus. The
                   <a
                     href="/items/runed_scroll_of_restoration"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -192,7 +193,8 @@
                     href="/skills/major_restoration"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Major Restoration</a
-                  >), gain no attribute bonus to healing or buffs.
+                  >) is an exception when healing a mercenary. It gains your
+                  Wisdom healing bonus, tripled for a Ranger.
                 </span>
                 <span class="block"
                   ><MechanicsLink section="combat#buffs"
