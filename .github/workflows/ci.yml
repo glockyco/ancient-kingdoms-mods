@@ -38,8 +38,8 @@ jobs:
   #
   # Prerendering requires website/data/compendium.db, which is generated from
   # untracked exported data. CI does not run `build`; `cf-deploy` builds before
-  # publishing and stops if the build or prerender link check fails. The
-  # database-backed `*.db.test.ts` suites run in the local pre-commit hook.
+  # publishing and stops if the build or prerender link check fails. Database-backed
+  # website suites remain required local verification before a coherent commit.
   # CI runs the other checks: the committed home-counts module lets svelte-check
   # and knip run in a clean checkout.
   website:

@@ -91,7 +91,7 @@ Research notes, captures, mood boards, scratch scripts and save copies live in `
 
 ## Checks
 
-The pre-commit hook runs the checks for the staged paths. The hooks need the full local setup: a website change runs the database suites, a mod change builds every mod against the game, and a redaction change loads the full export. CI repeats the checks that need no game data, and it builds neither the site nor the mods.
+The pre-commit hook runs staged formatting/lint and consistency guards. Run applicable type checks, tests and builds before committing a coherent change, rather than repeating full verification in each hook. CI has no exported database or game install, so database-backed website tests and native mod builds must run locally.
 
 Before a release or a change across subsystems, run everything:
 
