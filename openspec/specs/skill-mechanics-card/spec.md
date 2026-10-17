@@ -47,26 +47,6 @@ The card SHALL name the avoidance mechanic the game applies to that damage type 
 - **THEN** the card names the resist roll and that type's resist stat
 - **AND** it links to the combat page section on resistance
 
-### Requirement: Mechanics changes are proven against committed snapshots
-
-The rendered text of every mechanics card is covered by a committed snapshot. A change to the card
-SHALL be accompanied by a snapshot run, and any diff SHALL be justified before the baseline is
-updated. A snapshot baseline SHALL NOT be updated to accommodate output that contradicts the game.
-
-Rationale: the snapshots detected this defect on the day it shipped. Updating them would have
-recorded a stat that does not exist as the expected result.
-
-#### Scenario: Output diverges from the baseline
-
-- **WHEN** a change alters any mechanics card text
-- **THEN** the snapshot check reports the affected skills
-- **AND** the baseline is updated only after the new text is verified against the game source
-
-#### Scenario: A fix restores previous output
-
-- **WHEN** a change repairs a regression in the card
-- **THEN** the snapshot check returns to zero differences without editing any fixture
-
 ### Requirement: Bard mechanics follow the current game formulas
 
 The skill mechanics card SHALL describe Bard songs as timed auras. Leadership SHALL state the additive attribute contribution as half of Wisdom, Constitution, and Charisma added together, rounded.
@@ -81,3 +61,19 @@ The skill mechanics card SHALL describe Bard songs as timed auras. Leadership SH
 - **WHEN** the Leadership skill page displays its attribute scaling
 - **THEN** it states half of Wisdom, Constitution, and Charisma added together, rounded
 - **AND** it includes that contribution in the displayed physical and magical damage bonuses
+
+### Requirement: Mechanics changes have behavior evidence
+
+A change to a mechanics calculation or stated rule SHALL be verified against the implementing game code and exercised through a relevant scenario. Permanent regression tests SHALL cover consumer-visible quantities, boundaries, eligibility or state transitions rather than incidental wording. A change to rendered presentation SHALL be checked in the browser.
+
+#### Scenario: A companion example uses an invalid rank
+
+- **WHEN** an example incorrectly treats a companion skill as rank zero
+- **THEN** its regression verifies a permitted rank and the resulting damage
+- **AND** changing the explanation's wording does not require replacing a prose baseline
+
+#### Scenario: A description is clarified without changing arithmetic
+
+- **WHEN** copy changes while the calculation and its conditions stay the same
+- **THEN** behavior regressions continue to verify the same outcomes
+- **AND** browser inspection verifies that the quantities and conditions remain understandable

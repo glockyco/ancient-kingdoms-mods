@@ -40,4 +40,4 @@
 - [x] 6.1 Exercise changed queries, calculations and data paths with consumer-visible scenarios and appropriate regression tests.
 - [x] 6.2 Run integrated website and pipeline checks, citations and redactions, mod builds, formatter parity, a complete prerender and a meaningful rendered-text comparison.
 - [x] 6.3 Inspect representative pages, controls, search and map in the browser at desktop and phone widths.
-- [ ] 6.4 Commit coherent verified units, record evidence and dispositions, synchronize specifications and archive this change without pushing.
+- [x] 6.4 Commit coherent verified units, record evidence and dispositions, synchronize specifications and archive this change without pushing.
