@@ -43,6 +43,7 @@
 - [ ] 6.2 Migrate NPC, monster, gather/chest, quest, portal-use, class/profession relation and zone consumers listed in the page matrix. Verify each named family with representative runtime-backed rows, prerendered links and browser inspection. Do not redesign unrelated sections or silently expand seasonal presentation.
 - [ ] 6.3 Replace map-only source derivations and add inherited pack/random/portable-container inspection through the shared reader. Verify quantities, qualified chances, offered-asset inspection, ordinary/modifier navigation, bounded scrolling and keyboard access, real focus and virtual/suppressed-location cases in the live map at both widths.
 - [ ] 6.4 Remove replaced source/usage projections, virtual special-case definitions, relationship JSON readers and obsolete helper APIs after all scoped consumers migrate. Verify the reader inventory, type checks and real forward/reverse/location results rather than keeping legacy fallbacks. Unrelated domain/effect work remains with its own change.
+- [x] 6.5 Remove redundant mercenary stat-range introductions and the repeated veteran-point note. Verify the retained mechanics disclosure and live calculator controls at desktop and phone widths.
 
 ## 7. Prove the complete cutover and publish coherently
 

@@ -12,7 +12,6 @@
   import { formatPercent, formatNumber } from "$lib/utils/format";
   import { statName, formatStat } from "$lib/stats";
   import type { StatId } from "$lib/generated/stat-vocabulary";
-  import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import {
     OWNER_LIMITS,
     mercenaryOwner,
@@ -366,12 +365,6 @@
   </div>
 
   <h1>Mercenary stat ranges</h1>
-  <p class="lead">
-    Compare classes and races before hiring. Individual hires vary in strength,
-    and a recruiter's preferred race is guaranteed only for classes that allow
-    it.
-  </p>
-  <p class="text-sm text-muted-foreground">{TOTAL_VETERAN_POINTS_NOTE}</p>
 
   <details class="howto">
     <summary>How to read these ranges</summary>
@@ -717,12 +710,6 @@
     margin: 0 0 0.5rem;
     font-weight: 700;
     text-wrap: balance;
-  }
-  .lead {
-    color: var(--muted-foreground);
-    max-width: 65ch;
-    margin: 0 0 2rem;
-    text-wrap: pretty;
   }
 
   .controls {
