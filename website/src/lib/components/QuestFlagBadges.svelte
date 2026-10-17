@@ -38,9 +38,9 @@
 {#if activeFlags.length > 0}
   <div class="flex flex-wrap gap-1 {className}">
     {#each activeFlags as flag (flag.key)}
-      <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
+      <span class="{ICON_BADGE.base} {ICON_BADGE.static} flex-wrap">
         {@render flagIcon(flag.key, flag.iconColor)}
-        {flag.label}
+        <span class="whitespace-nowrap">{flag.label}</span>
       </span>
     {/each}
   </div>

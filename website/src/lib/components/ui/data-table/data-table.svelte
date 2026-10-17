@@ -574,21 +574,24 @@
       .join(" "),
   );
 
-  const mobileGridTemplateColumns = $derived(
-    columns
-      .filter((col) => {
-        const id = "accessorKey" in col ? col.accessorKey : col.id;
-        return visibleColumnIds.has(id as string);
-      })
-      .map((col) => {
-        const id = "accessorKey" in col ? col.accessorKey : col.id;
-        if (id === identifierColumnId) return "min(16rem, 55vw)";
-        if (col.size) return `${col.size}px`;
-        if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
-        return "auto";
-      })
-      .join(" "),
-  );
+  const mobileLayout = $derived.by(() => {
+    let tracks = "";
+    let totalWidth = "";
+    for (const column of columns) {
+      const id = "accessorKey" in column ? column.accessorKey : column.id;
+      if (!visibleColumnIds.has(id as string)) continue;
+      const identifier = id === identifierColumnId;
+      const width = identifier
+        ? "var(--mobile-identifier-width)"
+        : `min(${Math.max(96, column.size ?? column.minSize ?? 150)}px, calc(100cqw - var(--mobile-identifier-width)))`;
+      tracks += `${tracks ? " " : ""}${identifier ? `minmax(${width}, 1fr)` : width}`;
+      totalWidth += `${totalWidth ? " + " : ""}${width}`;
+    }
+    return {
+      tracks,
+      width: totalWidth ? `max(100cqw, calc(${totalWidth}))` : "100cqw",
+    };
+  });
 </script>
 
 <div class:zebra-stripe={zebraStripe}>
@@ -671,7 +674,7 @@
   >
     <Table.Root
       class="data-table-grid min-w-full w-max grid"
-      style="grid-template-columns: {gridTemplateColumns}; --mobile-grid-template-columns: {mobileGridTemplateColumns}"
+      style="grid-template-columns: {gridTemplateColumns}; --mobile-grid-template-columns: {mobileLayout.tracks}; --mobile-grid-width: {mobileLayout.width}"
     >
       <Table.Header class="contents">
         {#each headerGroups as headerGroup (headerGroup.id)}
@@ -741,10 +744,9 @@
             >
               {#each row.getVisibleCells() as cell (cell.id)}
                 <Table.Cell
-                  class="whitespace-nowrap {cell.column.id ===
-                  identifierColumnId
-                    ? 'identifier-cell'
-                    : ''}"
+                  class={cell.column.id === identifierColumnId
+                    ? "identifier-cell"
+                    : ""}
                 >
                   {#if renderCell}
                     {@render renderCell({ cell, row })}
@@ -791,7 +793,7 @@
   </div>
 
   {#if isHydrated && showPagination && data.length > pageSize}
-    <div class="h-10 pt-4">
+    <div class="min-h-10 pt-4">
       {#if pageCount > 1}
         <Pagination.Root
           count={table.getFilteredRowModel().rows.length}
@@ -799,7 +801,7 @@
           bind:page={() => pagination.pageIndex + 1, changePage}
         >
           {#snippet children({ pages })}
-            <Pagination.Content>
+            <Pagination.Content class="flex-wrap justify-center">
               <Pagination.Item>
                 <Pagination.PrevButton />
               </Pagination.Item>
@@ -831,35 +833,83 @@
 <style>
   .data-table-container {
     scroll-margin-top: 6rem;
+    container-type: inline-size;
+    --mobile-identifier-width: min(16rem, 54cqw);
+    --table-surface-tint: linear-gradient(
+      color-mix(in oklab, var(--muted) 30%, transparent) 0 0
+    );
+  }
+
+  .data-table-container :global(th) {
+    height: auto;
+    min-height: 2.5rem;
+    white-space: normal;
+  }
+
+  .data-table-container :global(td) {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .data-table-container :global(th > button) {
+    flex-wrap: wrap;
+  }
+
+  .data-table-container :global(th > button:has(> .ml-auto)) {
+    justify-content: flex-end;
+  }
+
+  .data-table-container :global(th > button > .ml-auto) {
+    order: 1;
+    max-width: 100%;
+    white-space: normal;
+    text-align: right;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .data-table-container :global(.identifier-cell) {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    background-color: var(--background);
+    /* Match the translucent container over an opaque base during scrolling. */
+    background-image: var(--table-surface-tint);
+    box-shadow: 1px 0 var(--border);
+  }
+
+  .data-table-container :global(.identifier-cell .whitespace-nowrap) {
+    white-space: normal;
+  }
+
+  .zebra-stripe
+    .data-table-container
+    :global(tr:nth-child(even) > .identifier-cell) {
+    background-image: var(--table-surface-tint), var(--table-surface-tint);
   }
 
   @media (max-width: 639px) {
     .data-table-container :global(.data-table-grid) {
+      width: var(--mobile-grid-width);
       grid-template-columns: var(--mobile-grid-template-columns) !important;
     }
 
+    .data-table-container :global(th:has(.ml-auto)) {
+      padding-inline-start: 0;
+      font-size: 0.875rem;
+    }
+
+    .data-table-container :global(th > button > .ml-auto) {
+      order: 0;
+      flex-basis: 100%;
+    }
+
     .data-table-container :global(.identifier-cell) {
-      position: sticky;
-      left: 0;
-      z-index: 1;
-      min-width: 0;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      background-color: var(--background);
-      box-shadow: 1px 0 var(--border);
-    }
-
-    .data-table-container :global(.identifier-cell .whitespace-nowrap) {
-      white-space: normal;
-    }
-
-    .zebra-stripe
-      .data-table-container
-      :global(tr:nth-child(even) > .identifier-cell) {
-      background-image: linear-gradient(
-        color-mix(in oklab, var(--muted) 30%, transparent),
-        color-mix(in oklab, var(--muted) 30%, transparent)
-      );
+      padding-inline: 0.5rem;
     }
   }
 </style>

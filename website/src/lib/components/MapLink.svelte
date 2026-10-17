@@ -26,7 +26,7 @@
 {#if compact}
   <a
     href={mapUrl}
-    class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs border bg-muted/50 transition-colors hover:bg-muted"
+    class="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-xs border bg-muted/50 transition-colors hover:bg-muted"
     title="View on map"
   >
     <MapPin class="h-3.5 w-3.5" />
@@ -35,7 +35,7 @@
 {:else}
   <a
     href={mapUrl}
-    class="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
+    class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
   >
     <MapPin class="h-3.5 w-3.5" />
     View on map
