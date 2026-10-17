@@ -23,14 +23,21 @@ The build SHALL retain all data used by the website, search, sitemap, redaction,
 
 ### Requirement: Sitemap dates reflect content changes rather than schema removal
 
-The sitemap SHALL preserve `lastmod` for pages whose published content has not changed. Schema-only storage removal SHALL NOT be treated as a public content change.
+The sitemap SHALL follow the canonical page-metadata contract. Against a trusted version-2 baseline, equal public semantic fingerprints SHALL retain `lastmod`. Schema-only storage removal SHALL NOT be treated as a public content change. The first historical conversion SHALL NOT promise preservation of a legacy date whose published hash and unchanged public semantics cannot both be reconciled.
 
 #### Scenario: A field removed from SQLite was not published
 
 - **WHEN** a removed field does not affect a page's public content
+- **AND** the page has an equal public fingerprint in a trusted version-2 baseline
 - **THEN** its URL retains its previous `lastmod`
 
 #### Scenario: A page's published content changes
 
 - **WHEN** a database change alters the page's public content
 - **THEN** its `lastmod` changes
+
+#### Scenario: A historical date cannot be proved
+
+- **WHEN** the first historical conversion cannot reconcile a page's published legacy hash or unchanged public semantics
+- **THEN** its hashed entry receives the supplied generation date
+- **AND** subsequent storage-only updates use the trusted version-2 baseline without repeating that conversion

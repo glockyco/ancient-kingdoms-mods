@@ -1,25 +1,19 @@
-## Context
+## Disposition
 
-`website/src/lib/queries/items.server.ts:9-74` and `classes.server.ts:14-45` already place SQL behind server-only functions. The achievements route is thin (`routes/achievements/+page.server.ts:1-6`) and delegates projection to its server module. The altar overview and detail routes still own SQL, JSON parsing, and conversion (`routes/altars/+page.server.ts:24-83`; `routes/altars/[id]/+page.server.ts:17-237`). Their page-data types already exist in `$lib/types/altars`.
+Superseded and not independently executable. [The parent D7 milestone](../plan-shared-game-model/design.md#order-of-work) owns the successor boundary. Its concrete change has not yet taken over the work below. Keep this record until that transfer is complete, then remove the standalone change. Do not mark it implemented or create the former server-only altar module.
 
-## Goals / Non-Goals
+## Current ownership
 
-**Goals:** Migrate one complete domain without changing URL, page data, or visible output; keep all SQL server-only.
+[Acquisition](../unify-acquisition-usage-requirements/design.md) supplies canonical activation, setup, final-wave reward and provider facts to the scoped consumers. Its own acceptance remains open. The altar overview still maps domain rows and waves locally, and the detail loader combines domain reads with canonical acquisition methods. Consolidating the rest of those projections is D7 work.
 
-**Non-Goals:** A generic entity page renderer, migration of every route, or a browser-importable database module.
+## Remaining work to transfer
 
-## Decisions
+1. Capture overview and detail page data for forgotten and avatar altars from the same fixed database. Preserve ordering, nulls, final-wave filtering, duplicate boss handling, reward-tier order and descriptions.
+2. Move remaining domain SQL, row decoding and page projection behind D7's environment-neutral injected executor. Consume existing acquisition methods for migrated facts rather than re-deriving them. Keep prerender entries, parameter handling and HTTP 404 behavior in thin route adapters.
+3. Preserve connection ownership in the host adapters, including failure cleanup. Keep browser import graphs free of server initialization, `.server.ts` dependencies and `better-sqlite3`.
+4. Check normal detail-route reachability against the website entity manifest and declared search/sitemap capabilities. Preserve existing map-only families and achievement-anchor categories. Keep link, search and marker registries at their own capability boundaries rather than creating a cross-runtime master manifest.
+5. Compare complete page data, generated URLs and rendered overview/detail surfaces at desktop and phone widths after the transfer. No new generic renderer, route family or visible redesign is implied.
 
-1. **Use an altar-specific read model.** Expose `listAltarEntries`, `getAltarsPageData`, and `getAltarDetailPageData` from `$lib/queries/altars.server.ts`. Implement SQL, JSON parsing, boolean conversion, reward and boss lookups, and description projection there. The route files keep only prerender, entry adaptation, page parameters, and the 404 HTTP boundary. Reuse the established `.server.ts` query convention rather than inventing an ORM.
-2. **Preserve projection exactly.** Keep existing final-wave filtering, duplicate boss elimination, reward tier order, null handling, ordering, and meta description. Detail currently uses many dependent item/monster queries (`routes/altars/[id]/+page.server.ts:55-185`). Batch only where a focused result comparison proves equivalent behavior; query speed is not the reason for this change.
-3. **Keep capability registries narrow.** `website/src/lib/entities/registry.ts:104-153` owns links and identity. Server read models own SQL and page projection. Search documents and map markers keep their own capabilities. A cross-runtime master manifest would mix different data-lifecycle boundaries and hide game-specific mapping.
-4. **Check reachable website capabilities without a master manifest.** Compare normal entity detail routes against the website entity manifest, and verify declared searchable and sitemap families have their required consumers. Keep map-only families and achievement anchors in their existing route categories. Assert that browser import graphs do not include `.server.ts` or `better-sqlite3`. These checks detect accidental dual ownership without coupling C#, Python, and TypeScript registries.
+## Transfer and acceptance boundary
 
-## Risks / Trade-offs
-
-- [A 404 becomes a null page] → Return an explicit absence from the read model and keep `error(404)` in the adapter.
-- [A database exception leaks an open connection] → Close connections in `finally`, and compare observable page data for multiple altar types.
-
-## Migration Plan
-
-Compare current overview and detail page-data output on fixed database fixtures. Switch both altar routes together, check the prerendered overview and two different altar details in browser at 1440×900 and 390×844. Recheck URL and page-data shape; remove obsolete route-local mapping afterward.
+The D7 successor must name and retain each remaining domain and architecture-boundary criterion before this change is removed. Acquisition's source/setup/reward cutover does not satisfy the remaining domain refactor, the route-registry checks or that successor's browser acceptance.

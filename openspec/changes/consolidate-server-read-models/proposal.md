@@ -1,20 +1,20 @@
-> **Superseded.** `plan-shared-game-model` moves this scope into its read-model change. That plan gives prerender and browser one query layer with an injected executor, so a server-only altar module would set up a second pattern to undo. Do not implement it on its own. The read-model change takes over the altar routes, and this change is deleted then.
+> Superseded. Do not implement this change independently. The later D7 change in [plan-shared-game-model](../plan-shared-game-model/design.md#order-of-work) must take over the remaining altar domain projections and website boundary checks before this standalone change is removed. That transfer is still open. [Acquisition](../unify-acquisition-usage-requirements/design.md) owns the migrated acquisition/setup/reward facts and scoped consumers, not the whole altar domain or route-registry audit.
 
 ## Why
 
-Server-only query modules exist for several domains, but altar routes still own SQL, JSON conversion, and page-data projection. Adding another altar surface can repeat those transformations and drift from existing pages.
+Altar routes still contain domain SQL and page-data mapping. Their remaining consolidation belongs behind D7's injected-executor boundary, not a new server-only interpretation of canonical acquisition facts.
 
 ## What Changes
 
-- Move the altar overview and detail reads into an altar-specific server-only read model.
-- Keep route modules as thin adapters for entry generation, parameter handling, and HTTP errors.
-- Preserve page-data shape, URLs, asset references, and existing renderings. Do not add a generic page renderer or browser-facing SQL module.
+- Transfer the remaining altar overview/detail domain projection, thin route adapters and architecture-boundary checks into the concrete D7 successor.
+- Preserve URLs, assets, page-data contracts, final-wave presentation and HTTP errors while consuming acquisition's canonical methods.
+- Do not introduce a standalone server-only altar authority or restore removed source readers. The design and tasks record the untransferred work, not permission to execute it here.
 
 ## Capabilities
 
 ### New Capabilities
 
-- None; this is a server-only refactor with no changed consumer contract.
+- None. This superseded change does not establish a separate consumer contract.
 
 ### Modified Capabilities
 
@@ -22,4 +22,4 @@ Server-only query modules exist for several domains, but altar routes still own 
 
 ## Impact
 
-`website/src/routes/altars/+page.server.ts`, `website/src/routes/altars/[id]/+page.server.ts`, an entity-specific module under `website/src/lib/queries/`, and focused tests. The change opts out of spec deltas because no user-facing requirement changes.
+The remaining work concerns the altar overview/detail routes, their domain projection and website route/import boundaries. Transfer and removal are tracked by `plan-shared-game-model` task 3.3. No implementation or acceptance is claimed here.

@@ -1,13 +1,13 @@
 ## Why
 
-Mining, Radiant Seeker, and Slayer have migrated, but Slayer hides 123 of 143 targets in static HTML. Fishing still uses dense card stacks, and the other nine routes use older layouts. The exported count and reward data also block trustworthy completion and inventory views.
+Slayer's static completeness, Fishing's dense framing and the remaining profession layouts still need their own review. The denominator repair is implemented. Profession pages now consume the acquisition cutover's relation data, whose acceptance remains separate from this presentation work.
 
 ## What Changes
 
 - Restore every Slayer target to static HTML while keeping the hydrated table compact.
 - Reduce Fishing's framing without losing its timing, probability, and recipe facts. Review it with Mining, Radiant Seeker, and Slayer before migrating the remaining nine routes.
 - Migrate Adventuring, Alchemy, Cooking, Exploring, Herbalism, Hunter, Lore Keeping, Scroll Mastery, and Treasure Hunter.
-- Repair profession denominators and remove the Exploring count override. Consume acquisition's canonical gathering rewards and exact station/recipe inputs rather than duplicating its exporter and relationship work.
+- Preserve the implemented denominator repair. Consume acquisition's canonical gathering rewards, complete recipe variants and exact world/home providers rather than duplicating exporter or relationship work.
 - Finish related-profession navigation, index payoffs, SEO, responsive behavior, no-JavaScript access, and cited mechanics checks.
 - Repair the dense Combat and Inventory mechanics pages only where their shared presentation needs the same patterns. Leave unrelated entity detail links to `link-entities-to-profession-pages`.
 
@@ -23,4 +23,4 @@ None.
 
 ## Impact
 
-The thirteen profession routes and index, `DataTable`, profession metadata/export and pipeline, map entity navigation, SEO, and the related mechanics pages. Validation includes page-data checks, generated HTML, and browser review at 1440×900 and 390×844.
+The thirteen profession routes and index, `DataTable`, profession metadata projections and any proven missing inventory counts, map entity navigation, SEO, and the related mechanics pages. Acquisition owns the migrated exporter and relation boundary. Validation includes page-data checks, generated HTML, and browser review at 1440x900 and 390x844.

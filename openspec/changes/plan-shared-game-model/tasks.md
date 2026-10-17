@@ -12,14 +12,14 @@
 
 - [x] 3.1 Revise `prune-unread-database-data`: retain the dead-column audit and progression tables. Publication continuity follows acquisition's private one-time date reconciliation.
 - [x] 3.2 Fold the pack/random popup requirements into `unify-acquisition-usage-requirements` and remove the superseded standalone proposal. The successor retains inspection, quantities/probabilities and nonspatial-source behavior.
-- [ ] 3.3 Fold `consolidate-server-read-models` into the read-model change, then remove it. Its proposal is marked superseded.
+- [ ] 3.3 Transfer `consolidate-server-read-models`' remaining altar overview/detail domain projections and route/search/sitemap/import-boundary checks into a concrete D7 successor, then remove the superseded change. Do not execute its former server-only design independently or count acquisition as that transfer.
 - [x] 3.4 Add WebAssembly to the content security policy of `add-security-headers`. That change's own tasks verify the database worker under the policy.
 - [x] 3.5 Land `simplify-pipeline-loader-registration` and `harden-export-sessions` before the vocabulary and rules change, which adds a dataset and export fields. Both are archived.
 
 ## 4. Verification prerequisites
 
-- [ ] 4.1 Coordinate the remaining boss-loot/fragment checks and the later D6 stat-sheet contract with `ancient-kingdoms-sim`. Reuse archived altar-threshold evidence instead of treating that completed check as a new blocker.
-- [ ] 4.2 Confirm new or changed published game-behavior claims through D15 and record the evidence in their follow-up change. Preserve valid earlier evidence for unchanged rules.
+- [ ] 4.1 Coordinate acquisition's remaining boss-loot/fragment acceptance with `ancient-kingdoms-sim` and the later D6 stat-sheet contract separately. Reuse source-bound acquisition and archived altar evidence where applicable. Acquisition acceptance does not complete D6 verification.
+- [ ] 4.2 Confirm new or changed published game-behavior claims through D15 and record evidence in their owning follow-up change. Use acquisition's implementation checkpoint for its completed observations and open acceptance gates. Preserve valid earlier evidence for unchanged rules without treating implementation as accepted completion.
 - [ ] 4.3 Triage the unconfirmed suspected game defects with the game-defect-reports skill.
 
 ## 5. Spikes
@@ -35,7 +35,7 @@ Each follow-up change cites this design by decision number and lists the facts i
 - [x] 6.1 Stat vocabulary (D2): `unify-stat-vocabulary`, with the item list fix. Archived as `2026-10-17-unify-stat-vocabulary`.
 - [x] 6.2 Game rules (D5): `unify-game-rules`, with the altar tier, primal essence, item level and chest fixes. Archived as `2026-10-17-unify-game-rules`.
 - [x] 6.3 Propose acquisition, usage and requirements (D3, D4) as `unify-acquisition-usage-requirements`, reconciling landed fixes, input gaps, NPC membership and inherited popup scope. Its approved implementation and verification are tracked in that change's `tasks.md`.
-- [ ] 6.4 Shared read models and relation components (D7).
+- [ ] 6.4 Propose and implement the remaining shared read models and relation components (D7) after acquisition acceptance. Consume its canonical relation boundary and transfer the uncompleted altar domain and architecture-boundary work from `consolidate-server-read-models`.
 - [ ] 6.5 Character model, store and share links (D6, D13, D14).
 - [ ] 6.6 Propose reference kinds: stats, effects with full applier/parameter coverage and mechanic definitions, armor sets, races and crafting stations (D2, D3, D9).
 - [ ] 6.7 Zones by level.

@@ -67,9 +67,9 @@ Each relation is stored once, with both endpoints and the facts about the pair, 
 - Effect application, with one applier kind per row: class, veteran, mercenary, pet, monster, aura, NPC, potion, food, relic, scroll, weapon proc, trap, dangerous ground, zone hazard and game state.
 - Stat grants: every source of every stat with its amount by rank or level. Sources are items, augments, armor set thresholds, passive skills, buffs, class curves, race, class growth, books, mercenary curves and hire rolls.
 - Armor set membership and spawns complete the relations.
-- The JSON columns such as `monsters.drops` become pipeline input only, and no site code reads them.
+- Raw exported relationship payloads are normalization input only. Migrated families use canonical typed relations, not public JSON columns or legacy source/usage tables.
 
-The proposed [acquisition design](../unify-acquisition-usage-requirements/design.md) uses a method anchor with typed details, grouped edges and provider memberships. The physical layout of remaining effect/stat relations stays with their later first-consumer changes.
+The [acquisition design](../unify-acquisition-usage-requirements/design.md) defines the method anchor, typed details, grouped edges and provider memberships implemented by the current cutover. Its acceptance remains open. The physical layout of remaining effect/stat relations stays with their later first-consumer changes.
 
 ### D4. Requirements (Decided)
 
@@ -211,17 +211,17 @@ Adopted as they are: relation tables that plan their columns from their rows, un
 
 The foundational altar, primal-essence, item-level and chest corrections are implemented in the [game-rules archive](../archive/2026-10-17-unify-game-rules/design.md). The vocabulary cutover is implemented in the [stat-vocabulary archive](../archive/2026-10-17-unify-stat-vocabulary/design.md). The [prose cleanup](../archive/2026-10-17-clarify-compendium-prose/design.md) also implemented theoretical boss per-kill odds, zero-amount quest filtering and several special-source displays.
 
-The [acquisition change](../unify-acquisition-usage-requirements/proposal.md) owns the remaining scoped findings and their current evidence. These are not instructions to repeat already-landed fixes. Repository projection defects can be demonstrated through readers and queries. New or changed game-behavior claims still require D15 verification.
+The [acquisition implementation checkpoint](../unify-acquisition-usage-requirements/design.md#implementation-checkpoint) owns the scoped findings, source-bound evidence and remaining acceptance gates. The following boundaries describe the implemented cutover, not accepted completion or instructions to repeat exporter repairs. New or changed game-behavior claims still require D15 verification.
 
-| Area | Remaining work |
+| Area | Acquisition ownership and remaining boundary |
 | --- | --- |
-| NPC casters | Normalize ordered skill membership and fix the object-to-ID count/context consumers. Full effect-applier migration remains later. |
-| Fragment loot | Preserve placed-monster loot context and event overrides instead of attaching fragment eligibility to every placement of a template. |
-| Fatecharm conversion and services | Normalize existing item references and working displays into shared grouped methods and costs. Do not request duplicate result/quantity exports. |
-| Boss loot | Preserve the implemented calculation while migrating original pools, eligible placements and assumptions. |
-| Recipes and stations | Export exact provider membership and retain whole definitions rather than attributing recipes to every table. |
-| Vendor access | Normalize already-exported item thresholds together with provider access and costs. |
-| Radiant Spark | Feed the existing skill-dependent rule from canonical inputs instead of exposing a guaranteed raw source row. |
+| NPC casters | Ordered skill membership and distinct count/context consumers use the canonical relation. Full effect-applier migration remains later. |
+| Fragment loot | Captured placement context and event overrides determine eligible sources. Final integrated acceptance belongs to acquisition. |
+| Fatecharm conversion and services | Shared grouped methods and costs replace virtual definitions. Do not add duplicate result/quantity exports. |
+| Boss loot | Existing mathematics consumes original pools, eligible placements and explicit assumptions. Acquisition retains process-preservation acceptance. |
+| Recipes and stations | Complete variants and exact world/home memberships supply current consumers. Profession layout work consumes this boundary. New station reference routes remain later. |
+| Vendor access | Canonical offers combine existing item thresholds, provider access and costs. Do not recreate raw sale-list readers. |
+| Radiant Spark | Canonical inputs feed the existing skill-dependent rule. Do not restore a guaranteed raw source row. |
 
 Suspected defects in the game itself, for the game-defect-reports skill:
 
@@ -232,7 +232,7 @@ Suspected defects in the game itself, for the game-defect-reports skill:
 
 ## Export gaps
 
-The [acquisition design's input section](../unify-acquisition-usage-requirements/design.md#7-export-only-missing-authoritative-inputs) owns the exact additions for this slice and identifies existing fields that must be reused. It separates placed loot context, station/home membership, base item restrictions and referenced gate targets from data already exported.
+The [acquisition design's input section](../unify-acquisition-usage-requirements/design.md#7-export-only-missing-authoritative-inputs) owns the implemented additions and their acceptance. It separates captured placement context, exact world/home membership, base item restrictions and referenced gate targets from fields that were already exported. Later changes consume these inputs rather than repeat their capture work.
 
 Later changes retain their own input work:
 
@@ -249,10 +249,10 @@ Later changes retain their own input work:
 | `harden-export-sessions` | Archived prerequisite. Added fields use complete immutable sessions. |
 | `prune-unread-database-data` | Retains the independent dead-column audit and progression data. Acquisition owns the semantic sitemap cutover and private one-time date reconciliation, without a shipped old-schema bridge. |
 | `unify-acquisition-usage-requirements` | Approved current D3/D4 implementation slice. Its reviewed page matrix and runtime/publication gates govern completion. |
-| `consolidate-server-read-models` | Fold into the read-model change |
+| `consolidate-server-read-models` | Superseded and not independently executable. Transfer its remaining altar domain projections and route/import-boundary checks into the later D7 change before removing it. Acquisition does not complete that transfer. |
 | `add-security-headers` | Allow WebAssembly through `'wasm-unsafe-eval'` in every policy that governs a context compiling it. A policy with `default-src` or `script-src` blocks WebAssembly without it, and a worker takes its policy from its own script response, not from the page |
-| `consolidate-website-design-system` | Land before new pages, so the shared components build on it |
-| `complete-profession-page-system` | Coordinate with the crafting station pages, because its station classification fix overlaps them |
+| `consolidate-website-design-system` | Independent readability, contrast, tokens and primitive work precedes new pages. It does not block the approved existing-route acquisition correction and must consume the new boundary. |
+| `complete-profession-page-system` | Consume acquisition's canonical yields, complete recipe variants and exact world/home providers. Denominator repair is implemented. Static completeness, layout, metadata and profession navigation remain independent. |
 
 The other in-flight changes are independent of this plan.
 

@@ -62,17 +62,18 @@ The migrated routes SHALL preserve their distinct game facts instead of forcing 
 
 ### Requirement: Profession metadata matches game completion and rewards
 
-Published completion totals SHALL agree with game calculations: Exploring uses 46 discoveries and Lore Keeping uses 17 books. Gathering rewards and recipe stations SHALL retain exported values instead of discarding supported fields or identifying every non-cooking station as unknown.
+Published completion totals SHALL agree with the game-backed profession metadata without a route-specific count override. Gathering/chest outcomes and recipe availability SHALL use the canonical acquisition projection, preserving quantities, named probability events, conditions, complete variants and exact world/home provider memberships. A home capability SHALL NOT acquire invented world coordinates.
 
 #### Scenario: Completion metadata is rebuilt
 
 - **WHEN** the data export and database build run
-- **THEN** Exploring and Lore Keeping show 46 and 17 respectively without a route-specific count override
+- **THEN** Exploring and Lore Keeping use their exported completion denominators without a route-specific count override
 
 #### Scenario: Resource and station data is rebuilt
 
-- **WHEN** a gathering resource or crafting station has an exported reward or station classification
-- **THEN** its database record preserves that information for profession pages
+- **WHEN** profession pages project a gathering/chest outcome or recipe availability
+- **THEN** they consume the canonical method's yields, conditions, event-labeled chances and exact providers
+- **AND** locatable world providers remain distinct from nonspatial home capabilities
 
 ### Requirement: Profession guides support reading before exhaustive browsing
 
