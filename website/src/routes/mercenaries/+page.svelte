@@ -466,12 +466,11 @@
                 <!-- Source: server-scripts/Player.cs:10714-10720,10913-10920 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
                 <p class="font-medium">Veteran Attack Power and Spell Power</p>
                 <p>
-                  Each total veteran point adds 1 base Attack Power and 1 base
-                  Spell Power.
-                </p>
-                <p>
-                  Every resummon or reload restores the saved hire roll plus
-                  your total veteran points to both stats.
+                  Each of your total veteran points adds 1 to the mercenary's
+                  base Attack Power and Spell Power. The bonus follows your
+                  current veteran points: whenever the mercenary is summoned or
+                  the game reloads, it gets its hire roll plus your veteran
+                  points at that moment.
                 </p>
               </div>
             </Alert>
