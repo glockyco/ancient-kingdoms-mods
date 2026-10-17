@@ -39,7 +39,7 @@ Detailed calculations SHALL preserve the game's rounding and state how displayed
 
 ### Requirement: Worked examples use the game's arithmetic
 
-A worked example SHALL state its inputs and computed outcome using published data and the game's arithmetic. Effect examples SHALL use a valid caster scenario through the existing fixed-caster and rank-input rules rather than a blanket highest-rank default. Learning requirements SHALL use the described or next base rank separately from effect examples.
+A worked example SHALL state its inputs and computed outcome using published data and the game's applicable precision and rounding, including single-precision intermediates where used. Numeric outcomes SHALL be computed rather than typed by hand. Effect examples SHALL use a valid caster scenario through the existing fixed-caster and rank-input rules rather than a blanket highest-rank default. Learning requirements SHALL use the described or next base rank separately from effect examples.
 
 #### Scenario: A companion effect example
 

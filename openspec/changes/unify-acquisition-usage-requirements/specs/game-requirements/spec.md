@@ -20,6 +20,12 @@ Requirements SHALL use explicit typed predicates and authored conjunctions or al
 - **THEN** each phase keeps its own requirements
 - **AND** an acceptance condition does not replace fulfillment or consumption
 
+#### Scenario: Completed one-time quest
+
+- **WHEN** known quest history shows a one-time quest is completed
+- **THEN** its acceptance requirement is unmet even when it is no longer active
+- **AND** repeatable and adventurer quests retain their own cycle and current-offer conditions instead of that permanent lockout
+
 ### Requirement: Predicates retain their subject and units
 
 A predicate SHALL identify the quantity, unit and subject the game reads. Player progression, wearer restrictions, selected item-instance state, permitted party facts and current world state SHALL remain distinct. Source-level ordering hints SHALL NOT become eligibility thresholds.
@@ -153,3 +159,11 @@ A requirement explanation SHALL preserve the quantities, scopes, alternatives an
 - **WHEN** a method's modeled requirements are met but success is probabilistic
 - **THEN** the qualification and success chance are presented separately
 - **AND** met requirements are not described as guaranteed output
+
+#### Scenario: Recipe knowledge differs by profession
+
+- **WHEN** an Alchemy recipe requires learning before it can be attempted
+- **THEN** the method retains that knowledge condition
+- **AND** Crafting, Cooking and Scribing do not inherit it
+- **AND** Scribing qualification and random success use Alchemy's raw success rule, not a Scroll Mastery threshold
+- **AND** a zero-tier recipe whose raw success is already certain does not acquire an unknown profession-skill gate

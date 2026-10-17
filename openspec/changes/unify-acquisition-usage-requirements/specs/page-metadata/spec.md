@@ -20,6 +20,12 @@ Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-
 - **THEN** that page receives the generation date
 - **AND** an unchanged page retains its earlier date
 
+#### Scenario: Recipe teaching items change
+
+- **WHEN** a recipe's displayed teaching-item membership, name, tooltip or icon changes
+- **THEN** its semantic fingerprint changes and it receives the generation date
+- **AND** the page and fingerprint consume the same teaching-item projection
+
 #### Scenario: Storage layout changes
 
 - **WHEN** normalized storage changes without changing a page's public facts
