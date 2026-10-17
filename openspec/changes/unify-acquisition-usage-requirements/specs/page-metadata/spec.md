@@ -25,6 +25,13 @@ Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-
 - **WHEN** normalized storage changes without changing a page's public facts
 - **THEN** its semantic fingerprint and reconciled date remain unchanged
 
+#### Scenario: Shared representation does not expand the hash workload
+
+- **WHEN** equivalent page-facing values use shared immutable subtrees or independent copies
+- **THEN** their fingerprints agree without expanding repeated subtrees into page-sized strings
+- **AND** object insertion order does not affect the result
+- **AND** changed scalar values, ordered array positions and duplicate multiplicity remain distinguishable
+
 #### Scenario: A page cannot have a meaningful content hash
 
 - **WHEN** a bare URL appears in the manifest
