@@ -41,13 +41,13 @@ Do not add seasonal text or rows to pages that currently exclude them. Model exi
 
 ### 1. A method is an execution opportunity, not an item/provider pair
 
-Use a common acquisition-method anchor with typed method details, input/cost groups, outputs, requirement roots and provider memberships. Typed detail tables retain real foreign keys. Existing recipe, pool and chest data may become those authoritative details instead of being copied into generic documents.
+Use a common acquisition-method anchor with typed method details, input/cost groups, outputs and provider memberships. Typed detail tables retain real foreign keys. Assemble requirement roots in the shared reader from these normalized domain facts after redaction. Do not persist a second expression graph.
 
 A method can have several providers with the same behavior, such as identical station offerings. Provider-specific gates and placement conditions remain membership overlays. Distinct ingredient sets, rules, yields or gates remain distinct variants even when their result item matches.
 
 Alternative rejected: union the current flat source pairs and call them canonical. They cannot represent bundles, conditional delivery or phased costs. A wide nullable table or arbitrary metadata JSON would weaken validation and duplicate decoding in every consumer.
 
-Method identities are deterministic and kind-qualified. Preserve authored definition references and ordered entry locators. When no authored definition ID exists, derive an internal key from the complete definition, not only its result. These internal build-scoped keys do not replace public entity IDs or become promises of cross-patch stability for saved characters. Conflicting definitions under one key fail rather than selecting the first row.
+Private ingestion identities are deterministic and kind-qualified. Preserve authored definition references and ordered entry locators. When no authored definition ID exists, derive a private key from the complete definition, not only its result. Before publication, replace new internal keys with process-local opaque sequential IDs ordered by surviving public semantics. Detail IDs retain equality with their parent IDs. Never publish a hash or encoding of a removed identity. Existing public entity and route IDs do not change. Conflicting definitions under one private key fail.
 
 ### 2. Outputs preserve event and delivery semantics
 
@@ -105,13 +105,15 @@ For deterministic output, requested quantity uses whole execution batches and th
 
 Use a closed typed expression tree with `all`, `any` and predicates. Add a predicate only when a migrated consumer needs it, and handle it exhaustively. Published unsupported kinds or missing rule parameters fail validation. Unknown evaluation is for unavailable facts, not an unimplemented predicate.
 
+The shared reader alone composes the tree from normalized typed facts. Empty all/any groups are invalid. Redaction preserves withheld operand positions and amounts before the tree is assembled, rather than silently dropping gates.
+
 Roots name their phase, such as offer, accept, fulfill, perform, learn or equip/use. Predicates bind their subject: player, wearer, selected item instance, permitted party members or current world instance. Acquisition eligibility is not equipment compatibility. A source-level sort hint is not a level requirement.
 
 | Fact family | Required distinction |
 | --- | --- |
 | Numeric progression | Character level, total veteran points, available points, already-spent points, faction standing, profession fraction and total equipped item level retain distinct units and subjects. |
 | Identity restrictions | Resolve explicit class/race identities through the existing identity mapping, with authored alternatives preserved. Do not guess unknown names. |
-| Item possession | Inventory, equipment, key ring, bank, house chest and mercenary storage are distinct scopes. Preserve the game's actual OR branches. |
+| Item possession | Inventory, native base-inventory slots, equipment, key ring, bank, house chest and mercenary storage are distinct scopes. Backpack items do not satisfy base-slot restrictions. Unslotted ownership cannot prove that subset. Preserve the game's actual OR branches. |
 | Objectives | Active incomplete quest need and event counters differ from historical quest completion and possession. |
 | Recipe/skill knowledge | Use the game's knowledge identity. Scribing does not inherit Alchemy's learned-recipe gate. Skill prerequisites use base ranks rather than armor-set bonuses. |
 | Tool/profession | Tool category, selected instance, quality/durability and the existing raw success function determine the attempt floor. A displayed zero chance is not a substitute input. |
@@ -164,6 +166,8 @@ Declare each reference's reachability direction and geometry behavior once in th
 
 Preserve valid alternatives while preventing blocked branches from becoming eligible. When a retained public entity has a withheld requirement target, keep a nonidentifying withheld-condition marker that evaluates unknown, not a dangling ID or an empty true condition. Remove unusable acquisition branches without removing unrelated provider entities. Preserve probability mass and process behavior without publishing removed identities. If that cannot be proved for an affected model, fail publication rather than renormalizing and claiming an exact chance.
 
+The removal set is monotonic across semantic anonymization and closure recomputation. Preserve anonymous ordered competitors, multiplicity, duplicate groups, caps, quality filters and scaling in finite loot processes. Preserve withheld required operands without their identities. Anonymizing the final reference cannot resurrect a removed entity.
+
 Hidden-crafting policy, manual exclusions, source reachability and geometry suppression continue to apply. Definitions can remain inspectable without becoming advertised sources.
 
 ### 9. Cut over the touched relation families completely
@@ -174,9 +178,9 @@ Unrelated effect-applier and domain queries remain their current implementation 
 
 ### 10. Preserve publication identity during schema changes
 
-The existing content-hashed database transport already invalidates changed database bytes. Sitemap dates are a separate issue: the current fingerprint script reads storage rows. The storage-independent projection/hash bridge retained in the pruning plan must land before this schema cutover, using the same-export old database and prior published manifest. This is a real dependency, not permission to mark the entire pruning change complete.
+The existing content-hashed database transport already invalidates changed database bytes. Sitemap dates use explicit page-facing projections rather than storage layout. Preserve the historical database, source, export and published manifest as private verification inputs. A disposable private conversion carries a published date only when its old hash reconciles and old/new public semantics match. Complete that conversion before the first new prebuild.
 
-The acquisition-aware fingerprint payload then uses the same page-facing methods, conditions and amounts as consumers. Storage-only normalization must not pretend every URL gained content. Intentional source, gate and yield corrections update the affected pages. Do not change entity URLs, invent historical dates or add permanent old-schema query aliases.
+Ship only manifest version 2 with `hash_scheme:"compendium-page-v2"` and one canonical projector. Production rejects old/mixed schemes instead of resetting dates or keeping an old reader. Remove IndexNow, its key/tests/deploy hooks and temporary-baseline ignore. Deployment becomes `pnpm build && wrangler deploy`. No bridge CLI, receipts, notification replacement or release orchestrator remains.
 
 ## Page changes for review
 
@@ -204,11 +208,11 @@ No new seasonal presentation is included. A renderer must not turn an internal d
 ## Migration Plan
 
 1. Confirm the page matrix and record field-by-field runtime evidence for new or changed published claims. Reuse valid prior evidence for unchanged rules. Coordinate the required simulator cases rather than substituting new theoretical output for game observation.
-2. Land the publication hash bridge dependency. Keep the old database, manifest, page-data samples and same immutable runtime input as read-only comparison evidence.
+2. Preserve the historical database, source, export, manifest and reproduced old hashes as private comparison evidence. Implement the strict semantic manifest projector with the reader cutover. Reconcile dates once outside production and seed the new manifest before its first prebuild.
 3. Extend only required exporter inputs, register them and perform fresh scratch-safe exports. Compare repeated configured output and explicit membership/placement records. Keep original and new sessions.
 4. Build canonical methods, conditions, objective and NPC membership rows, reference declarations and shared rule/query assembly. Rebuild the database from the verified session rather than altering a published database in place.
 5. Migrate all scoped readers and approved surfaces, including source-level sort hints, geometry, metadata, search and fingerprint callers. Remove obsolete code and storage in the same coherent cutover.
-6. Exercise contract boundaries in both SQLite hosts, compare complete method/usage results, build the full site, review intentional differences and inspect approved surfaces at desktop and phone widths. Review redaction and IndexNow differences before release.
+6. Exercise contract boundaries in both SQLite hosts, compare complete method/usage results, build the full site, review intentional differences and inspect approved surfaces at desktop and phone widths. Review redaction and sitemap dates before release. Verify deployment assets contain no retired notification key or client.
 
 Rollback restores the prior code, database/images, runtime-session selection and publication manifest together through existing atomic publication mechanisms. No compatibility schema is shipped. The current character store is not migrated because this change does not introduce one.
 
@@ -227,7 +231,7 @@ The final smoke runs the real shared reader and rule path. Browser checks cover 
 - Eligibility can be unknown while a baseline chance is known. Keep the two results and their assumptions separate, without new personal-status badges on static pages.
 - Scene identity and event scope are easy to confuse with template identity. Verify cross-placement and current-instance cases before claiming availability.
 - Redaction can weaken a condition or alter a roll pool if treated as row deletion alone. Preserve nonidentifying semantics and test public outcomes, or stop publication.
-- Storage changes can churn sitemap dates. The prior hash bridge is a prerequisite, and content corrections are reviewed independently of normalization.
+- Storage changes can churn sitemap dates. Reconcile dates privately using old-hash and semantic equality, then retain only one production format and projector.
 - This change overlaps profession data and later read models. Acquisition owns exact memberships and migrated relation readers. Unrelated layout and domain work remains with its own proposal.
 
 ## Planning evidence

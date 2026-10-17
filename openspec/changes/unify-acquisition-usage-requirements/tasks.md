@@ -1,8 +1,9 @@
 ## 1. Confirm scope and preserve comparison inputs
 
-- [ ] 1.1 Record review of the design's page-change matrix before editing project pages. Keep unreviewed layout, new routes, active-character UI and new seasonal presentation out of the implementation. Verify the accepted scope is recorded in this change.
-- [ ] 1.2 Land or verify the storage-independent sitemap projection and hash-bridge work reserved in `prune-unread-database-data` before replacing source storage. Preserve a same-export old database and prior published manifest. Verify storage-only changes preserve dates, real content changes update dates, and missing migration evidence fails rather than inventing dates.
+- [x] 1.1 Record review of the design's page-change matrix before editing project pages. Keep unreviewed layout, new routes, active-character UI and new seasonal presentation out of the implementation. Verify the accepted scope is recorded in this change.
+- [ ] 1.2 Preserve the historical database, source, export and published manifest with verified digests. Implement semantic sitemap fingerprints and a private one-time date reconciliation before the first new prebuild. Ship only the new manifest format and projector. Verify unchanged content retains reconciled dates and real content changes receive the generation date.
 - [ ] 1.3 Agree the required real-game/simulator observations for this change and record each published claim's evidence. Cover the new placement, provider, delivery, cost and condition semantics rather than repeating unchanged baseline experiments. Verify every code-only hypothesis is either confirmed before publication or remains outside published claims.
+- [ ] 1.4 Remove IndexNow scripts, tests, public verification key, deploy hooks and temporary-baseline ignore. Retain standard sitemap crawling and build/deploy failure behavior. Verify regenerated assets and an offline deploy-command smoke.
 
 ## 2. Complete authoritative export inputs
 
@@ -46,5 +47,5 @@
 ## 7. Prove the complete cutover and publish coherently
 
 - [ ] 7.1 Run integrated website and pipeline suites, formatting/lint/type/dead-code checks, citations, redactions, mod builds/tests and formatter parity after the coherent edits settle. Verify no missing runtime claim, dangling reference or changed probability assumption is hidden by a narrowed test or prose baseline.
-- [ ] 7.2 Build twice from identical configured input and compare canonical method facts, full prerender URL sets, relation data, search output, recorded redactions and sitemap/IndexNow changes. Review intentional data corrections separately from storage-only changes. Verify rollback restores code, data/images, session selection and publication manifest together.
+- [ ] 7.2 Build twice from identical configured input and one supplied generation instant. Compare canonical method facts, full prerender URL sets, relation data, search output, recorded redactions and sitemap bytes/dates. Review intentional data corrections separately from storage-only changes. Verify rollback restores code, data/images, session selection and publication manifest together without a parallel old implementation.
 - [ ] 7.3 Record the final page-matrix smoke evidence and accepted differences, update parent/overlapping plan dispositions, commit verified coherent units and synchronize/archive this change. Do not push or deploy without a release request.

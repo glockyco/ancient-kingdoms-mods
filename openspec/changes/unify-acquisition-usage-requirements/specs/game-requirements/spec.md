@@ -6,7 +6,7 @@ Define condition descriptions and evaluation that preserve the game's phases, al
 
 ### Requirement: Conditions preserve composition and phase
 
-Requirements SHALL use explicit typed predicates and authored conjunctions or alternatives. Each root SHALL identify the phase it governs. Acceptance, fulfillment, learning, equipment use and performing an acquisition method SHALL NOT be collapsed into one undifferentiated eligibility flag.
+Requirements SHALL use explicit typed predicates and authored conjunctions or alternatives. The shared reader SHALL assemble each tree from normalized typed domain facts after redaction, without a second persisted expression graph. Each root SHALL identify the phase it governs. Acceptance, fulfillment, learning, equipment use and performing an acquisition method SHALL NOT be collapsed into one undifferentiated eligibility flag. Empty conjunctions and alternatives SHALL fail validation.
 
 #### Scenario: Any predecessor is sufficient
 

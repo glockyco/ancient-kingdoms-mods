@@ -1,6 +1,6 @@
 ## Context
 
-The four progression tables remain required. `progression_rules` and `class_level_progression` already have website consumers, including the Experience page, and the shared character model needs the retained progression data. The remaining audit must establish other actual consumers rather than assume these tables are unread. Sitemap hashes still depend on storage rows, so acquisition's schema cutover also needs the content-based bridge in this change before removing those projections.
+The four progression tables remain required. `progression_rules` and `class_level_progression` already have website consumers, including the Experience page, and the shared character model needs the retained progression data. The remaining audit must establish other actual consumers rather than assume these tables are unread. Acquisition owns the semantic sitemap cutover and one-time private date reconciliation before removing its source projections.
 
 ## Goals / Non-Goals
 
@@ -12,7 +12,7 @@ The four progression tables remain required. `progression_rules` and `class_leve
 
 1. **Audit before removal.** Enumerate every table and column from `schema.sql` and SQLite `PRAGMA table_info`; inspect explicit and dynamic SQL in website pages, query helpers, scripts, FTS, denormalizers, redaction reference traversal, and statistics. `SELECT *`, SQL JSON operations, dynamic table names, and hash inputs count as reads. The roughly 79 no-word-match columns are candidates, not approved deletions. Record a per-field decision before any schema edit.
 2. **Keep the progression tables.** `progression_rules`, `race_progression`, `class_level_progression` and `level_budgets` stay in SQLite with their loader, validation and redaction reference rule. The audit records them as retained for the character model. Deleting them now would only mean restoring them when the rules change lands.
-3. **Migrate sitemap hashes by content, not storage layout.** Replace whole-row input for affected routes with explicit fields or stable page-facing projections. Bridge the existing hash algorithm to the new one: on an *old-schema* database with the same exported data, compute both legacy hashes and new projection hashes. Compare each old hash to the prior live manifest. Carry its previous `lastmod` only when the old hash matches the live manifest and the projected old/new page content matches; otherwise bump it. Fail the migration if the old reference database or live manifest is unavailable rather than silently preserving dates. After migration, normal hashes use the projected page content. Verify `indexnow-ping.mjs:11-28` selects only genuinely changed or removed URLs. A direct switch from `SELECT *` would mark every detail page changed despite identical rendering.
+3. **Migrate sitemap hashes by content, not storage layout.** Use acquisition's explicit page-facing projections. Preserve a published date only when the privately reproduced old hash matches the published manifest and old/new public semantics match. Ship only the new projector and manifest format. Keep no old-schema adapter, bridge CLI, receipt or notification dependency.
 4. **Preserve owner boundaries.** Drop no output used by a current consumer. SQLite remains an internal build input outside `website/static`; original exports remain the source for read-only verification and later game updates.
 
 ## Risks / Trade-offs
@@ -23,4 +23,4 @@ The four progression tables remain required. `progression_rules` and `class_leve
 
 ## Migration Plan
 
-Generate a table/column consumer inventory. Keep the prior database and live manifest as read-only comparison inputs. Create and test the hash bridge before either storage pruning or the acquisition schema cutover. This dependency does not require completing the whole unused-storage audit first. Prune only proven-unread storage with dependent loader and redaction updates. Compare database-backed page data, search, redaction closure and sitemap URLs for the same export. Roll back schema/database and manifest together if comparison fails.
+Generate a table/column consumer inventory. Reuse acquisition's private historical comparison inputs and verified semantic sitemap cutover without marking unrelated pruning work complete. Prune only proven-unread storage with dependent loader and redaction updates. Compare database-backed page data, search, redaction closure and sitemap URLs for the same export. Roll back schema/database and manifest together if comparison fails.

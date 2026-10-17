@@ -23,15 +23,14 @@ The build SHALL retain all data used by the website, search, sitemap, redaction,
 
 ### Requirement: Sitemap dates reflect content changes rather than schema removal
 
-The sitemap SHALL preserve `lastmod` for pages whose published content has not changed. Schema-only storage removal SHALL NOT trigger a full-site IndexNow submission.
+The sitemap SHALL preserve `lastmod` for pages whose published content has not changed. Schema-only storage removal SHALL NOT be treated as a public content change.
 
 #### Scenario: A field removed from SQLite was not published
 
 - **WHEN** a removed field does not affect a page's public content
 - **THEN** its URL retains its previous `lastmod`
-- **AND** the URL is not submitted to IndexNow solely because of that removal
 
 #### Scenario: A page's published content changes
 
 - **WHEN** a database change alters the page's public content
-- **THEN** its `lastmod` changes and the URL is eligible for IndexNow submission
+- **THEN** its `lastmod` changes

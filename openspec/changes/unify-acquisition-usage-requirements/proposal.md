@@ -12,6 +12,7 @@ Item sources, costs, uses and eligibility are still reconstructed differently by
 - Migrate acquisition and usage readers, summaries, source geometry and existing relation displays together. Map item popups gain the pack and random-source coverage from the superseded standalone proposal, without promising a location for a virtual source.
 - Normalize NPC skill membership and correct its existing caster-context consumers. The complete effect-applier catalogue remains part of the later effect-reference change.
 - BREAKING: remove replaced published source/usage projections, raw relationship JSON consumers and obsolete helper APIs after every affected caller is migrated. No compatibility aliases or parallel source-calculation path remain.
+- Remove IndexNow completely and retain ordinary sitemap crawling. Cut over semantic sitemap fingerprints and reconcile dates once outside production, with no shipped old-schema adapter, bridge CLI or notification replacement.
 
 ## Capabilities
 
@@ -26,6 +27,8 @@ Item sources, costs, uses and eligibility are still reconstructed differently by
 
 - `compendium-redaction`: preserve eligibility semantics and valid alternatives when relational data is redacted, without leaking removed identities or turning a required cost into a free action.
 - `skill-mechanics-card`: determine NPC caster contexts from explicit skill membership rather than an object-to-identifier comparison.
+- `page-metadata`: remove the IndexNow requirement while retaining ordinary crawling and honest sitemap dates.
+- `formula-presentation`: align formula detail and example defaults with the player-facing copy contract.
 
 ## Impact
 
