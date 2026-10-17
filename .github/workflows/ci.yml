@@ -84,7 +84,7 @@ jobs:
           repository: glockyco/HotRepl
           ref: 50b646dafd74742e71c9c27ffdca2882da5d0177
           path: HotRepl
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.x
       - name: Build HotRepl Core
