@@ -1,3 +1,5 @@
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -90,6 +92,23 @@ class CitationDiscoveryTests(unittest.TestCase):
         self.assertTrue(discovered)
         self.assertFalse([path for path in discovered if "tests" in path.parts])
         self.assertFalse([path for path in discovered if path.suffix == ".md"])
+
+    def test_discovery_includes_new_files_and_skips_ignored_ones(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            (root / ".gitignore").write_text("ignored/\n")
+            (root / "tracked.ts").write_text("// tracked\n")
+            subprocess.run(["git", "add", "tracked.ts"], cwd=root, check=True)
+            (root / "new.cs").write_text("// not yet staged\n")
+            (root / "ignored").mkdir()
+            (root / "ignored" / "scratch.ts").write_text("// ignored\n")
+
+            discovered = set(iter_citation_files(root))
+
+        self.assertIn(Path("tracked.ts"), discovered)
+        self.assertIn(Path("new.cs"), discovered)
+        self.assertNotIn(Path("ignored/scratch.ts"), discovered)
 
 
 if __name__ == "__main__":

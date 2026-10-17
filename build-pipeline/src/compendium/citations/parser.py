@@ -188,14 +188,17 @@ def parse_file(path: Path, text: str) -> list[Reference]:
 
 
 def iter_citation_files(repo_root: Path) -> list[Path]:
-    """Return tracked files whose extensions can contain citations.
+    """Return the files whose extensions can contain citations.
+
+    These are the tracked files and the untracked files that .gitignore does not
+    exclude, so a new file is checked and anchored before it is staged.
 
     Test files are excluded. A citation inside a test is a fixture exercising
     this parser, not a claim about game mechanics, so gating commits on it would
     make the checker's own test data drift-sensitive.
     """
     result = subprocess.run(
-        ["git", "ls-files", "-z"],
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
         cwd=repo_root,
         check=True,
         capture_output=True,
