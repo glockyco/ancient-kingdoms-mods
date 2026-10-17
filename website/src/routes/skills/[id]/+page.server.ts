@@ -1,4 +1,13 @@
 import { formatNumber } from "$lib/utils/format";
+import { STAT_FIELDS } from "$lib/generated/stat-vocabulary";
+import { formatStat, formatStatField } from "$lib/stats";
+
+const skillStatFields = new Map(
+  STAT_FIELDS.filter((field) => field.source === "skill").map((field) => [
+    field.field,
+    field,
+  ]),
+);
 import { query, queryOne } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import { skillDescription } from "$lib/server/meta-description";
@@ -100,22 +109,6 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
     "mana_restored_percent",
     "healing_percent",
     "charmed_damage_percent",
-    "health_max_percent_bonus",
-    "mana_max_percent_bonus",
-    "damage_percent_bonus",
-    "magic_damage_percent_bonus",
-    "haste_bonus",
-    "spell_haste_bonus",
-    "critical_chance_bonus",
-    "critical_resist_bonus",
-    "accuracy_bonus",
-    "block_chance_bonus",
-    "fear_resist_chance_bonus",
-    "health_percent_per_second_bonus",
-    "mana_percent_per_second_bonus",
-    "energy_percent_per_second_bonus",
-    "cooldown_reduction_percent",
-    "heal_on_hit_percent",
     "lifetap_healing_percent_bonus",
     "damage_over_time_execute_bonus",
   ]);
@@ -135,11 +128,7 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
           "knockback_chance",
           "stun_chance",
           "fear_chance",
-        ].includes(field) ||
-        (skill.skill_type === "passive" &&
-          ["damage_percent_bonus", "magic_damage_percent_bonus"].includes(
-            field,
-          ))
+        ].includes(field)
       ) {
         number = roundTooltipInteger(number);
       }
@@ -157,10 +146,13 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
       ) {
         number = Math.abs(number);
       }
-      values[field.replaceAll("_", "").toUpperCase()] = formatNumber(number, {
-        decimals: 2,
-        grouping: false,
-      });
+      const mapped = skillStatFields.get(field);
+      values[field.replaceAll("_", "").toUpperCase()] = mapped
+        ? formatStatField(mapped, number).replace("%", "")
+        : formatNumber(number, {
+            decimals: 2,
+            grouping: false,
+          });
     }
   }
   Object.assign(values, {
@@ -169,10 +161,10 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
     COOLDOWN: prettySeconds(skill.cooldown?.base_value ?? 0),
     BUFFTIME: prettySeconds(skill.duration_base),
     FEARRESISTBONUS: values.FEARRESISTCHANCEBONUS,
-    FEARRESISTBONUSCAP: formatNumber(skill.fear_resist_chance_bonus_cap * 100, {
-      decimals: 2,
-      grouping: false,
-    }),
+    FEARRESISTBONUSCAP: formatStat(
+      "fear_resist",
+      skill.fear_resist_chance_bonus_cap,
+    ).replace("%", ""),
     COOLDOWNREDUCTION: values.COOLDOWNREDUCTIONPERCENT,
     LIFETAPHEALINGBONUS: values.LIFETAPHEALINGPERCENTBONUS,
     DOTEXECUTEBONUS: values.DAMAGEOVERTIMEEXECUTEBONUS,

@@ -17,6 +17,7 @@ import {
 
 import { QUALITY_NAMES } from "$lib/constants/quality";
 import { ALL_CLASS_IDS, getResourceDisplayName } from "$lib/utils/classes";
+import { formatStat, statName } from "$lib/stats";
 
 // =============================================================================
 // Items
@@ -30,7 +31,6 @@ import { ALL_CLASS_IDS, getResourceDisplayName } from "$lib/utils/classes";
 
 import type { Item } from "$lib/queries/items";
 import type { ItemUsages } from "$lib/types/item-sources";
-import { formatResourceName } from "$lib/terminology";
 
 /** Optional pre-loaded data the description may incorporate. */
 export interface ItemMetaContext {
@@ -245,13 +245,20 @@ function potionDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/PotionItem.cs:8-17,41-124 — health, mana, energy,
   // pet-health, and experience usage values are applied on use.
   const restored: string[] = [];
-  if (item.usage_health > 0) restored.push(`${item.usage_health} Hit Points`);
+  if (item.usage_health > 0)
+    restored.push(
+      `${formatStat("health", item.usage_health)} ${statName("health")}`,
+    );
   if (item.usage_mana > 0)
-    restored.push(`${item.usage_mana} ${formatResourceName("mana")}`);
+    restored.push(`${formatStat("mana", item.usage_mana)} ${statName("mana")}`);
   if (item.usage_energy > 0)
-    restored.push(`${item.usage_energy} ${formatResourceName("energy")}`);
+    restored.push(
+      `${formatStat("rage", item.usage_energy)} ${statName("rage")}`,
+    );
   if (item.usage_pet_health > 0)
-    restored.push(`${item.usage_pet_health} pet HP`);
+    restored.push(
+      `${formatStat("health", item.usage_pet_health)} pet ${statName("health")}`,
+    );
   if (item.usage_experience > 0)
     restored.push(`${item.usage_experience} experience`);
   const restorePhrase =
@@ -333,16 +340,29 @@ function bookDescription(item: Item): string {
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
-    gains.push(`+${item.book_strength_gain} Strength`);
+    gains.push(
+      `${formatStat("strength", item.book_strength_gain, { signed: true })} ${statName("strength", "item")}`,
+    );
   if (item.book_dexterity_gain > 0)
-    gains.push(`+${item.book_dexterity_gain} Dexterity`);
+    gains.push(
+      `${formatStat("dexterity", item.book_dexterity_gain, { signed: true })} ${statName("dexterity", "item")}`,
+    );
   if (item.book_constitution_gain > 0)
-    gains.push(`+${item.book_constitution_gain} Constitution`);
+    gains.push(
+      `${formatStat("constitution", item.book_constitution_gain, { signed: true })} ${statName("constitution", "item")}`,
+    );
   if (item.book_intelligence_gain > 0)
-    gains.push(`+${item.book_intelligence_gain} Intelligence`);
-  if (item.book_wisdom_gain > 0) gains.push(`+${item.book_wisdom_gain} Wisdom`);
+    gains.push(
+      `${formatStat("intelligence", item.book_intelligence_gain, { signed: true })} ${statName("intelligence", "item")}`,
+    );
+  if (item.book_wisdom_gain > 0)
+    gains.push(
+      `${formatStat("wisdom", item.book_wisdom_gain, { signed: true })} ${statName("wisdom", "item")}`,
+    );
   if (item.book_charisma_gain > 0)
-    gains.push(`+${item.book_charisma_gain} Charisma`);
+    gains.push(
+      `${formatStat("charisma", item.book_charisma_gain, { signed: true })} ${statName("charisma", "item")}`,
+    );
   const phrase = gains.length > 0 ? ` Grants ${joinList(gains)}.` : "";
   return `One-time read that permanently increases your attributes.${phrase}`;
 }
@@ -1318,7 +1338,7 @@ const SKILL_TYPE_LABELS: Record<string, string> = {
   area_debuff: "Area-of-effect debuff",
   target_heal: "Single-target heal",
   area_heal: "Party-wide heal",
-  health_to_mana: "Health-to-Mana conversion",
+  health_to_mana: "Hit Points-to-Mana conversion",
   passive: "Passive ability",
   summon_monsters: "Summon spell",
   summon: "Summon spell",
@@ -1435,7 +1455,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — toggles the form buff.
   // Source: server-scripts/SummonSkill.cs:56 — Necromancer non-familiar summons can replace an active pet when MatchesPet is false.
   const typeLabel = skill.is_necromancer_death_bloom
-    ? "Health-sacrificing heal for another player or non-familiar pet"
+    ? "Hit Points-sacrificing heal for another player or non-familiar pet"
     : skill.is_necromancer_reaper_form
       ? "Toggleable Reaper Form"
       : skill.is_necromancer_pet_buff

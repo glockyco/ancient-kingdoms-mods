@@ -1,3 +1,4 @@
+import { statName } from "$lib/stats";
 import type { Calculation } from "$lib/types/calculation";
 import { f32, iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { CLASSES, RACES } from "$lib/utils/merc-stats";
@@ -26,80 +27,80 @@ export function mercenaryStats(
   return {
     steps: [
       {
-        name: "Constitution",
+        name: statName("constitution"),
         expression: `Current level ÷ ${CLASSES[cls].div.CON} for ${cls}`,
         rounding: "down",
       },
       {
-        name: "Intelligence",
+        name: statName("intelligence"),
         expression: `Current level ÷ ${CLASSES[cls].div.INT} for ${cls}`,
         rounding: "down",
       },
       {
-        name: "Strength",
+        name: statName("strength"),
         expression: `Current level ÷ ${CLASSES[cls].div.STR} for ${cls}`,
         rounding: "down",
       },
       {
-        name: "Base Health",
+        name: `Base ${statName("health")}`,
         expression:
-          "Class's level 1 Health + its per-level Health increase × (current level − 1)",
+          "Class's level 1 Hit Points + its per-level Hit Points increase × (current level − 1)",
       },
       ...(result.hasMana
         ? [
             {
-              name: "Base Mana",
+              name: `Base ${statName("mana")}`,
               expression:
                 "Class's level 1 Mana + its per-level Mana increase × (current level − 1)",
             },
           ]
         : []),
       {
-        name: "Health hire roll",
+        name: `${statName("health")} hire roll`,
         expression: `Random percentage between ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })} and ${formatPercent(bands.hp[1], { decimals: 2, preserveNonzero: true })}, saved when hired`,
       },
       ...(result.hasMana
         ? [
             {
-              name: "Mana hire roll",
+              name: `${statName("mana")} hire roll`,
               expression: `Random percentage between ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })} and ${formatPercent(bands.mana[1], { decimals: 2, preserveNonzero: true })}, saved when hired`,
             },
           ]
         : []),
       {
-        name: "Health multiplier",
-        expression: "Health hire roll + 0.25% × veteran points (VT)",
+        name: `${statName("health")} multiplier`,
+        expression: "Hit Points hire roll + 0.25% × veteran points (VT)",
       },
       ...(result.hasMana
         ? [
             {
-              name: "Mana multiplier",
+              name: `${statName("mana")} multiplier`,
               expression: "Mana hire roll + 0.25% × veteran points (VT)",
             },
           ]
         : []),
       {
-        name: "Scaled Health",
-        expression: "Base Health × Health multiplier",
+        name: `Scaled ${statName("health")}`,
+        expression: "Base Hit Points × Hit Points multiplier",
         rounding: "nearest",
       },
       ...(result.hasMana
         ? [
             {
-              name: "Scaled Mana",
+              name: `Scaled ${statName("mana")}`,
               expression: "Base Mana × Mana multiplier",
               rounding: "nearest" as const,
             },
           ]
         : []),
       {
-        name: "Maximum Health",
-        expression: "Scaled Health + 25 × Constitution",
+        name: statName("health"),
+        expression: "Scaled Hit Points + 25 × Constitution",
       },
       ...(result.hasMana
         ? [
             {
-              name: "Maximum Mana",
+              name: statName("mana"),
               expression: "Scaled Mana + 20 × Intelligence",
             },
           ]
@@ -114,16 +115,16 @@ export function mercenaryStats(
           "Random whole number from 0 through the highest combat hire roll, saved when hired",
       },
       {
-        name: "Attack Power",
+        name: statName("attack_power"),
         expression: "Saved combat hire roll + veteran points (VT) + Strength",
       },
       {
-        name: "Intelligence contribution",
+        name: `${statName("intelligence")} contribution`,
         expression: "150% of Intelligence",
         rounding: "nearest",
       },
       {
-        name: "Spell Power",
+        name: statName("spell_power"),
         expression:
           "Saved combat hire roll + veteran points (VT) + Intelligence contribution",
       },
@@ -131,49 +132,49 @@ export function mercenaryStats(
     example: () => ({
       given: [
         `${race} ${cls} (class and race from Hiring odds & cost), level ${level}, ${veteran} veteran points (VT)`,
-        `Lowest Health${result.hasMana ? " and Mana" : ""} hire rolls and a combat hire roll of 0`,
+        `Lowest Hit Points${result.hasMana ? " and Mana" : ""} hire rolls and a combat hire roll of 0`,
         "No equipment",
       ],
-      result: `${formatNumber(row.hp![0])} Health${row.mana ? `, ${formatNumber(row.mana[0])} Mana` : ""}, ${formatNumber(row.atk![0])} Attack Power and ${formatNumber(row.spell![0])} Spell Power`,
+      result: `${formatNumber(row.hp![0])} Hit Points${row.mana ? `, ${formatNumber(row.mana[0])} Mana` : ""}, ${formatNumber(row.atk![0])} Attack Power and ${formatNumber(row.spell![0])} Spell Power`,
       working: [
-        `Constitution: ${level} ÷ ${CLASSES[cls].div.CON} = ${result.attrs.CON}, rounded down`,
-        `Intelligence: ${level} ÷ ${CLASSES[cls].div.INT} = ${result.attrs.INT}, rounded down`,
-        `Strength: ${level} ÷ ${CLASSES[cls].div.STR} = ${result.attrs.STR}, rounded down`,
-        `Base Health: ${formatNumber(curve.hp_base)} + ${formatNumber(curve.hp_per)} × (${level} − 1) = ${formatNumber(result.hpCurve)}`,
+        `${statName("constitution")}: ${level} ÷ ${CLASSES[cls].div.CON} = ${result.attrs.CON}, rounded down`,
+        `${statName("intelligence")}: ${level} ÷ ${CLASSES[cls].div.INT} = ${result.attrs.INT}, rounded down`,
+        `${statName("strength")}: ${level} ÷ ${CLASSES[cls].div.STR} = ${result.attrs.STR}, rounded down`,
+        `Base ${statName("health")}: ${formatNumber(curve.hp_base)} + ${formatNumber(curve.hp_per)} × (${level} − 1) = ${formatNumber(result.hpCurve)}`,
         ...(result.hasMana
           ? [
-              `Base Mana: ${formatNumber(curve.mana_base)} + ${formatNumber(curve.mana_per)} × (${level} − 1) = ${formatNumber(result.manaCurve)}`,
+              `Base ${statName("mana")}: ${formatNumber(curve.mana_base)} + ${formatNumber(curve.mana_per)} × (${level} − 1) = ${formatNumber(result.manaCurve)}`,
             ]
           : []),
-        `Health hire roll: lowest allowed percentage = ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })}`,
+        `${statName("health")} hire roll: lowest allowed percentage = ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })}`,
         ...(result.hasMana
           ? [
-              `Mana hire roll: lowest allowed percentage = ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })}`,
+              `${statName("mana")} hire roll: lowest allowed percentage = ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })}`,
             ]
           : []),
-        `Health multiplier: ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })} + 0.25% × ${veteran} = ${formatPercent(healthMultiplier, { decimals: 2, preserveNonzero: true })}`,
+        `${statName("health")} multiplier: ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })} + 0.25% × ${veteran} = ${formatPercent(healthMultiplier, { decimals: 2, preserveNonzero: true })}`,
         ...(result.hasMana
           ? [
-              `Mana multiplier: ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })} + 0.25% × ${veteran} = ${formatPercent(manaMultiplier, { decimals: 2, preserveNonzero: true })}`,
+              `${statName("mana")} multiplier: ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })} + 0.25% × ${veteran} = ${formatPercent(manaMultiplier, { decimals: 2, preserveNonzero: true })}`,
             ]
           : []),
-        `Scaled Health: ${formatNumber(result.hpCurve)} × ${formatPercent(healthMultiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(scaledHealth)}, rounded`,
+        `Scaled ${statName("health")}: ${formatNumber(result.hpCurve)} × ${formatPercent(healthMultiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(scaledHealth)}, rounded`,
         ...(result.hasMana
           ? [
-              `Scaled Mana: ${formatNumber(result.manaCurve)} × ${formatPercent(manaMultiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(scaledMana)}, rounded`,
+              `Scaled ${statName("mana")}: ${formatNumber(result.manaCurve)} × ${formatPercent(manaMultiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(scaledMana)}, rounded`,
             ]
           : []),
-        `Maximum Health: ${formatNumber(scaledHealth)} + 25 × ${result.attrs.CON} = ${formatNumber(row.hp![0])}`,
+        `${statName("health")}: ${formatNumber(scaledHealth)} + 25 × ${result.attrs.CON} = ${formatNumber(row.hp![0])}`,
         ...(result.hasMana
           ? [
-              `Maximum Mana: ${formatNumber(scaledMana)} + 20 × ${result.attrs.INT} = ${formatNumber(row.mana![0])}`,
+              `${statName("mana")}: ${formatNumber(scaledMana)} + 20 × ${result.attrs.INT} = ${formatNumber(row.mana![0])}`,
             ]
           : []),
         `Highest combat hire roll: ${level} × ${formatPercent(bands.bc, { decimals: 2, preserveNonzero: true })}, rounded, − 1 = ${combatCeiling - 1}`,
         `Combat hire roll: chosen within 0 through ${combatCeiling - 1} = 0`,
-        `Attack Power: 0 + ${veteran} + ${result.attrs.STR} = ${formatNumber(row.atk![0])}`,
-        `Intelligence contribution: 150% × ${result.attrs.INT} = ${spellBonus}, rounded`,
-        `Spell Power: 0 + ${veteran} + ${spellBonus} = ${formatNumber(row.spell![0])}`,
+        `${statName("attack_power")}: 0 + ${veteran} + ${result.attrs.STR} = ${formatNumber(row.atk![0])}`,
+        `${statName("intelligence")} contribution: 150% × ${result.attrs.INT} = ${spellBonus}, rounded`,
+        `${statName("spell_power")}: 0 + ${veteran} + ${spellBonus} = ${formatNumber(row.spell![0])}`,
       ],
     }),
   };

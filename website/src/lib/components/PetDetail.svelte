@@ -17,6 +17,8 @@
     MERCENARY_REAPER_OWNER_LEVEL,
   } from "$lib/utils/merc-stats";
   import type { PetClassLink, PetDetailView } from "$lib/types/pets";
+  import { statName, formatStat } from "$lib/stats";
+  import { formatPercent } from "$lib/utils/format";
   import type { PetHealthPassive } from "$lib/queries/pet-passives.server";
   import { petHref } from "$lib/utils/pets";
   import { base } from "$app/paths";
@@ -55,10 +57,6 @@
     pet.stats.some((stat) => stat.level1 !== stat.atCap),
   );
   const statUnit = $derived(pet.kind === "Familiar" ? "Rank" : "Level");
-  const formatStat = (value: number, isPercent: boolean) =>
-    isPercent
-      ? `${(value * 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}%`
-      : value.toLocaleString("en-US");
 </script>
 
 {#snippet renderSummonedByCell({
@@ -192,21 +190,22 @@
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {#each pet.stats as stat, index (stat.name)}
+          {#each pet.stats as stat, index (stat.id)}
             <Table.Row class={index % 2 === 1 ? "[&>td]:bg-muted/50" : ""}>
-              <Table.Cell class="table-cell font-medium">{stat.name}</Table.Cell
+              <Table.Cell class="table-cell font-medium"
+                >{statName(stat.id)}</Table.Cell
               >
               <Table.Cell class="table-cell text-right tabular-nums">
-                {formatStat(stat.level1, stat.isPercent)}
+                {formatStat(stat.id, stat.level1)}
               </Table.Cell>
               {#if statsScale}
                 <Table.Cell class="table-cell text-right tabular-nums">
-                  {formatStat(stat.atCap, stat.isPercent)}
+                  {formatStat(stat.id, stat.atCap)}
                 </Table.Cell>
               {/if}
               {#if pet.has_necromancer_pet_stats}
                 <Table.Cell class="table-cell text-right tabular-nums">
-                  {formatStat(stat.withVeteran, stat.isPercent)}
+                  {formatStat(stat.id, stat.withVeteran)}
                 </Table.Cell>
               {/if}
             </Table.Row>
@@ -224,7 +223,7 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >{passive.name}</a
           >
-          adds to maximum Health when learned.
+          adds to maximum Hit Points when learned.
         {/each}
       {/if}
       {#if pet.classLink.class_id === "druid"}
@@ -287,14 +286,15 @@
             <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus — Attack Power and Spell Power each gain RoundToInt(10% of the mercenary's Spell Power), and no veteran bonus applies. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">
-                Attack and Spell Power
+                {statName("attack_power")} and {statName("spell_power")}
               </dt>
               <dd class="space-y-1">
                 <p>
-                  Each gains {Math.round(
-                    MERCENARY_COMPANION_SPELL_POWER_SHARE * 100,
-                  )}% of its mercenary's Spell Power, rounded. Veteran points
-                  add no stats.
+                  Each gains {formatPercent(
+                    MERCENARY_COMPANION_SPELL_POWER_SHARE,
+                    { decimals: 0 },
+                  )} of its mercenary's Spell Power, rounded. Veteran points add no
+                  stats.
                 </p>
                 <RoundingDefinition />
               </dd>
@@ -360,10 +360,10 @@
                 <dd class="space-y-1">
                   <p>
                     Each of your veteran points (VT) adds 1% of base Attack
-                    Power and Spell Power, and 0.25% of base Health, Armor Class
-                    and each resistance, rounded. At 200 points, Attack Power
-                    and Spell Power reach +200% and the other stats +50%. The
-                    bonus refreshes whenever you gain a veteran point.
+                    Power and Spell Power, and 0.25% of base Hit Points, Armor
+                    Class and each resistance, rounded. At 200 points, Attack
+                    Power and Spell Power reach +200% and the other stats +50%.
+                    The bonus refreshes whenever you gain a veteran point.
                   </p>
                   <RoundingDefinition />
                 </dd>
@@ -394,7 +394,7 @@
               <!-- Source: server-scripts/Skills.cs:174-185 — learned pet maximum-health passives apply to the companion and exclude the owner. -->
               <div class="flex gap-2">
                 <dt class="text-muted-foreground w-40 shrink-0">
-                  Maximum Health
+                  {statName("health")}
                 </dt>
                 <dd>
                   {#each pet.healthPassives as passive (passive.id)}
@@ -403,10 +403,10 @@
                       class="text-blue-600 dark:text-blue-400 hover:underline"
                       >{passive.name}</a
                     >
-                    increases this companion's maximum Health by its listed percentage
+                    increases this companion's maximum Hit Points by its listed percentage
                     when learned.
                   {/each}
-                  Your own maximum Health is unchanged.
+                  Your own maximum Hit Points is unchanged.
                 </dd>
               </div>
             {/if}

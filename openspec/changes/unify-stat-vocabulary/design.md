@@ -109,6 +109,8 @@ Alternatives considered:
 
 Each consumer listed under Context switches to the catalogue or the shared formatters, and its copy is deleted in the same task. `inputs.ts` keeps its keys until the character change, and maps each input to a stat id for its label. When the change is done, no stat name or percent decision remains outside the catalogue, except in prose.
 
+One copy stays on purpose. The BetterBestiary mod ports the skill effect summaries to C# so the game's bestiary shows them, and it runs without the website's module. Its names sit in one table in the port, and the parity corpus generated from the website fails its tests when the two differ.
+
 ## Wording
 
 This section is approved. A character context uses the window name and an item stat list uses the item name, as `formula-presentation` already requires. The last column lists the wordings that go away. Task 1.1 read these names in the running game.
@@ -137,7 +139,9 @@ The catalogue covers stat fields only. A skill's own effects keep their wording,
 | `fear_resist` | Not shown | Fear Resist | None |
 | `movement_speed` | Movement Speed | None | Movement speed |
 
-A modifier that is not a flat amount names its kind after the stat. A percent of the stat is "Attack Power %" or "Hit Points %". A percent of the maximum each second is "Health Regeneration, % of Hit Points". A page may still describe a negative Health Regeneration from a debuff as damage over time.
+A modifier that is not a flat amount names its kind after the stat. A percent of the stat is "Attack Power %" or "Hit Points %". A percent of the maximum each second is "Health Regeneration, % of Hit Points". These names label a value shown beside them. In a phrase that puts the value first, as skill summaries do, the value already carries its percent sign, so the phrase reads "+2% Attack Power" or "+2% of maximum Hit Points per second". A page may still describe a negative Health Regeneration from a debuff as damage over time.
+
+The migration found more wordings that used neither of the game's names, and they follow the same rule: the attribute abbreviations STR, CON, DEX, INT, WIS and CHA, the monster resist labels Magic, Poison, Fire, Cold and Disease, Health Recovery, Accuracy Bonus, Rage Points, HP and MP on potions, and lower-case stat names in skill summaries. A bonus to all five resists reads "all resists". The scroll mastery page's "Damage/sec" becomes Health Regeneration with its negative value. Compact amounts such as 14K show in full with thousands separators, as the game shows them, and a weapon's Base Damage stays unsigned, as its tooltip prints it.
 
 The pools take the game's names: Hit Points, Mana and Rage. The window abbreviates Hit Points as HP, and the game's label code writes it in full. Prose follows the same names, so "maximum Health" becomes "maximum Hit Points". This was chosen over "Maximum Health", "Maximum Mana" and "Maximum Rage", which would have been site overrides.
 

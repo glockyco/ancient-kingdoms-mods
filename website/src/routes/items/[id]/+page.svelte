@@ -12,7 +12,7 @@
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import FishIcon from "@lucide/svelte/icons/fish";
-  import { STATS_METADATA_FIELDS } from "$lib/constants/items";
+  import { ITEM_STAT_FIELDS } from "$lib/constants/items";
   import {
     formatEquipmentCategory,
     formatItemType,
@@ -22,11 +22,21 @@
   } from "$lib/utils/format";
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
-  import { formatStatName, formatResourceName } from "$lib/terminology";
+  import type { StatId } from "$lib/generated/stat-vocabulary";
+  import {
+    formatStat,
+    formatStatField,
+    statFieldName,
+    statName,
+  } from "$lib/stats";
   import { isHouseChestItemId } from "$lib/inventory/house-chests";
   import { getItemSpecialMechanics } from "$lib/special-mechanics";
   import { formatAltarRequirement } from "$lib/calculation/altar";
   import type { PageData } from "./$types";
+
+  const itemStatFields = Object.fromEntries(
+    ITEM_STAT_FIELDS.map((field) => [field.field, field]),
+  );
 
   let { data }: { data: PageData } = $props();
 
@@ -97,34 +107,6 @@
     return romanNumerals[tier] ?? String(tier);
   }
 
-  // Percentage stats that should be displayed as percentages (0.05 → 5%)
-  const percentageStats = new Set([
-    "block_chance",
-    "accuracy",
-    "critical_chance",
-    "critical_resist",
-    "haste",
-    "spell_haste",
-    "resist_fear_chance",
-  ]);
-
-  function formatStatValue(
-    stat: string,
-    value: number | boolean | string,
-  ): string {
-    if (typeof value === "boolean") return value ? "Yes" : "No";
-    if (typeof value === "string") return value;
-
-    // Format percentage stats with +/- prefix
-    if (percentageStats.has(stat)) {
-      const percentage = (value * 100).toFixed(1);
-      return `${value > 0 ? "+" : ""}${percentage}%`;
-    }
-
-    // Add +/- prefix for all numeric stats
-    return `${value > 0 ? "+" : ""}${value}`;
-  }
-
   const isAugment = $derived(data.item.item_type === "augment");
   const isArmorSetMetadata = $derived(
     isAugment && Boolean(data.item.augment_armor_set_name),
@@ -170,14 +152,12 @@
 
     // Filter stats for display: remove zeros and metadata fields
     const stats = allStats
-      ? Object.fromEntries(
-          Object.entries(allStats).filter(([key, value]) => {
-            if ((STATS_METADATA_FIELDS as readonly string[]).includes(key)) {
-              return false;
-            }
-            return value !== 0 && value !== 0.0 && value !== false;
-          }),
-        )
+      ? Object.entries(allStats).flatMap(([key, value]) => {
+          const field = itemStatFields[key];
+          return field && typeof value === "number" && value !== 0
+            ? [{ field, value }]
+            : [];
+        })
       : null;
 
     return {
@@ -379,7 +359,7 @@
 
   const hasStatsCard = $derived(
     !isAugment &&
-      ((computed.stats && Object.keys(computed.stats).length > 0) ||
+      ((computed.stats && computed.stats.length > 0) ||
         data.item.weapon_delay > 0 ||
         data.item.weapon_proc_effect_id),
   );
@@ -866,15 +846,22 @@
                 </div>
               {/if}
               {#if computed.stats}
-                {#each Object.entries(computed.stats) as [stat, value] (stat)}
+                {#each computed.stats as { field, value } (field.field)}
                   <div
                     class="flex justify-between items-center p-2 rounded bg-muted"
                   >
                     <span class="text-sm font-medium"
-                      >{formatStatName(stat)}</span
+                      >{statFieldName(field, "item", {
+                        weapon: data.item.item_type === "weapon",
+                      })}</span
                     >
+                    <!-- Source: server-scripts/EquipmentItem.cs:445 — the tooltip fills {DAMAGEBONUS} with the unsigned amount, and weapon tooltip templates print it as Base Damage without a plus sign. -->
                     <span class="text-sm font-bold"
-                      >{formatStatValue(stat, value)}</span
+                      >{formatStatField(field, value, {
+                        signed:
+                          data.item.item_type !== "weapon" ||
+                          field.stat !== "attack_power",
+                      })}</span
                     >
                   </div>
                 {/each}
@@ -1115,7 +1102,9 @@
                 <div>
                   <div class={styles.label}>When a Hit Would Kill You</div>
                   <div class={styles.value}>
-                    <span class={styles.valuePositive}>Restores all HP</span>
+                    <span class={styles.valuePositive}
+                      >Restores all Hit Points</span
+                    >
                     instead of dying
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
@@ -1442,8 +1431,12 @@
                 <div
                   class="flex items-center justify-between p-2 rounded bg-muted"
                 >
-                  <span>{formatStatName(bonus.stat_id)}</span>
-                  <span class={styles.valuePositive}>+{bonus.bonus}</span>
+                  <span>{statName(bonus.stat_id as StatId, "item")}</span>
+                  <span class={styles.valuePositive}
+                    >{formatStat(bonus.stat_id as StatId, bonus.bonus, {
+                      signed: true,
+                    })}</span
+                  >
                 </div>
               {/each}
             </div>
@@ -1486,19 +1479,23 @@
         {#if data.item.usage_health > 0}
           <div>
             <div class={styles.label}>
-              Restores {formatResourceName("health")}
+              Restores {statName("health", "item")}
             </div>
-            <div class={styles.valuePositive}>+{data.item.usage_health} HP</div>
+            <div class={styles.valuePositive}>
+              {formatStat("health", data.item.usage_health, { signed: true })}
+              {statName("health", "item")}
+            </div>
           </div>
         {/if}
 
         {#if data.item.usage_mana > 0}
           <div>
             <div class={styles.label}>
-              Restores {formatResourceName("mana")}
+              Restores {statName("mana", "item")}
             </div>
             <div class="text-blue-600 dark:text-blue-400">
-              +{data.item.usage_mana} MP
+              {formatStat("mana", data.item.usage_mana, { signed: true })}
+              {statName("mana", "item")}
             </div>
           </div>
         {/if}
@@ -1506,11 +1503,11 @@
         {#if data.item.usage_energy > 0}
           <div>
             <div class={styles.label}>
-              Restores {formatResourceName("energy")}
+              Restores {statName("rage", "item")}
             </div>
             <div class={styles.valueCurrency}>
-              +{data.item.usage_energy}
-              {formatResourceName("energy")}
+              {formatStat("rage", data.item.usage_energy, { signed: true })}
+              {statName("rage", "item")}
             </div>
           </div>
         {/if}
@@ -1603,54 +1600,66 @@
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.book_strength_gain > 0}
           <div>
-            <div class={styles.label}>Strength</div>
+            <div class={styles.label}>{statName("strength", "item")}</div>
             <div class={styles.valuePositive}>
-              +{data.item.book_strength_gain}
+              {formatStat("strength", data.item.book_strength_gain, {
+                signed: true,
+              })}
             </div>
           </div>
         {/if}
 
         {#if data.item.book_dexterity_gain > 0}
           <div>
-            <div class={styles.label}>Dexterity</div>
+            <div class={styles.label}>{statName("dexterity", "item")}</div>
             <div class={styles.valuePositive}>
-              +{data.item.book_dexterity_gain}
+              {formatStat("dexterity", data.item.book_dexterity_gain, {
+                signed: true,
+              })}
             </div>
           </div>
         {/if}
 
         {#if data.item.book_constitution_gain > 0}
           <div>
-            <div class={styles.label}>Constitution</div>
+            <div class={styles.label}>{statName("constitution", "item")}</div>
             <div class={styles.valuePositive}>
-              +{data.item.book_constitution_gain}
+              {formatStat("constitution", data.item.book_constitution_gain, {
+                signed: true,
+              })}
             </div>
           </div>
         {/if}
 
         {#if data.item.book_intelligence_gain > 0}
           <div>
-            <div class={styles.label}>Intelligence</div>
+            <div class={styles.label}>{statName("intelligence", "item")}</div>
             <div class={styles.valuePositive}>
-              +{data.item.book_intelligence_gain}
+              {formatStat("intelligence", data.item.book_intelligence_gain, {
+                signed: true,
+              })}
             </div>
           </div>
         {/if}
 
         {#if data.item.book_wisdom_gain > 0}
           <div>
-            <div class={styles.label}>Wisdom</div>
+            <div class={styles.label}>{statName("wisdom", "item")}</div>
             <div class={styles.valuePositive}>
-              +{data.item.book_wisdom_gain}
+              {formatStat("wisdom", data.item.book_wisdom_gain, {
+                signed: true,
+              })}
             </div>
           </div>
         {/if}
 
         {#if data.item.book_charisma_gain > 0}
           <div>
-            <div class={styles.label}>Charisma</div>
+            <div class={styles.label}>{statName("charisma", "item")}</div>
             <div class={styles.valuePositive}>
-              +{data.item.book_charisma_gain}
+              {formatStat("charisma", data.item.book_charisma_gain, {
+                signed: true,
+              })}
             </div>
           </div>
         {/if}

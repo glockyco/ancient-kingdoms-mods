@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -9,14 +9,14 @@
 
 <!-- Source: server-scripts/TargetBuffSkill.cs:Apply — cooldownReductionPercent shortens each caster skill's remaining cooldown by min(remaining × percentage, 30 seconds), then returns without a buff. -->
 <div class="space-y-1">
-  <h3 class="font-semibold">Cooldown Reduction</h3>
+  <h3 class="font-semibold">{statName("cooldown_reduction")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
       >Casting this instantly shortens each of your skills' remaining cooldowns
       by
-      {formatPercent(
+      {formatStat(
+        "cooldown_reduction",
         fmt.atRank(skill.cooldown_reduction_percent!, skill.max_level),
-        { decimals: 2, preserveNonzero: true },
       )}
       at rank {skill.max_level}, by at most 30 seconds per skill.</span
     >

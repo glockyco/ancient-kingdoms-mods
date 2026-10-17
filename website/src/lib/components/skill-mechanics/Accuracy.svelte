@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -10,11 +10,12 @@
 
 <!-- Source: server-scripts/Combat.cs:accuracy,GetProbResistMeleeDamage,GetProbResistMeleeDebuff,GetProbResistMagic — subtract the attacker's Accuracy from the victim's avoidance roll. -->
 <div class="space-y-1">
-  <h3 class="font-semibold">Accuracy</h3>
+  <h3 class="font-semibold">{statName("accuracy")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
       >{amount < 0 ? "Lowers" : "Raises"} the affected character's Accuracy by
-      {formatNumber(Math.abs(amount) * 100)} percentage points at rank
+      {formatStat("accuracy", Math.abs(amount)).replace("%", "")} percentage points
+      at rank
       {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
         : ""}. The chance that its attacks and debuffs are blocked or resisted {amount <

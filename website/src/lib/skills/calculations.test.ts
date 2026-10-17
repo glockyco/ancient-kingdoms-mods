@@ -11,7 +11,7 @@ function resultNumbers(result: string): number[] {
   );
 }
 
-describe("Health conversion calculations", () => {
+describe("Hit Points conversion calculations", () => {
   test("Blood Pact computes missing Mana from readable current and maximum values", () => {
     const calculation = bloodPactCalculation(
       skill({
@@ -38,7 +38,7 @@ describe("Health conversion calculations", () => {
       ),
     ).toEqual([21, 0]);
   });
-  test("Death Bloom derives its pre-critical heal from Health cost and Intelligence", () => {
+  test("Death Bloom derives its pre-critical heal from Hit Points cost and Intelligence", () => {
     const calculation = deathBloomCalculation(
       skill({
         health_cost_percent: { base_value: 0.5, bonus_per_level: 0 },

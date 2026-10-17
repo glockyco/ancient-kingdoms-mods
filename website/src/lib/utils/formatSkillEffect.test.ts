@@ -11,7 +11,7 @@ describe("formatSkillEffect movement debuffs", () => {
 
   it("treats -10 speed as root but -9 speed as a slow", () => {
     expect(debuff(-9)).not.toContain("root");
-    expect(debuff(-9)).toContain("speed");
+    expect(debuff(-9)).toContain("Movement Speed");
     expect(debuff(-10)).toContain("root");
   });
 
@@ -31,7 +31,7 @@ describe("formatSkillEffect damage", () => {
         damage_percent: { base_value: 2, bonus_per_level: 0 },
         damage_terms: ["spell_power"],
       }),
-    ).toBe("(spell power + 400) × 200% magic dmg");
+    ).toBe("(Spell Power + 400) × 200% magic dmg");
   });
 
   it("subtracts weapon Base Damage inside the sum the multiplier covers", () => {
@@ -44,7 +44,7 @@ describe("formatSkillEffect damage", () => {
         damage_terms: ["attack_power", "ranged_dexterity", "main_hand"],
       }),
     ).toBe(
-      "(attack power + 150% of DEX − main-hand base dmg + 1) × (200% + 25% × (rank − 1)) physical dmg",
+      "(Attack Power + 150% of Dexterity − main-hand Base Damage + 1) × (200% + 25% × (rank − 1)) physical dmg",
     );
   });
 
@@ -74,7 +74,7 @@ describe("formatSkillEffect caster notes", () => {
   };
 
   it("qualifies the value an attribute scales", () => {
-    expect(formatSkillEffect(heal)).toContain("hp (0.4% more per WIS)");
+    expect(formatSkillEffect(heal)).toContain("Hit Points (0.4% more per WIS)");
   });
 
   it("drops the reader's attribute notes from a monster's cast", () => {
@@ -95,8 +95,10 @@ describe("formatSkillEffect caster notes", () => {
         disease_resist_bonus: "+0.15 per WIS",
       },
     });
-    expect(summary).toContain("+10 poison & disease res (+0.15 per WIS)");
-    expect(summary).toContain("+10 fire res");
+    expect(summary).toContain(
+      "+10 Poison Resist & Disease Resist (+0.15 per WIS)",
+    );
+    expect(summary).toContain("+10 Fire Resist");
   });
 });
 
@@ -119,7 +121,7 @@ describe("formatSkillEffect Bard summaries", () => {
       magic_damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
     });
     expect(summary.indexOf("3+ active songs")).toBeLessThan(
-      summary.indexOf("attack power"),
+      summary.indexOf("Attack Power"),
     );
   });
 
@@ -158,7 +160,9 @@ describe("formatSkillEffect Bard summaries", () => {
       notes: { damage: "song note" },
     });
     expect(summary.match(/song note/g)).toHaveLength(1);
-    expect(summary.indexOf("hp")).toBeLessThan(summary.indexOf("song note"));
+    expect(summary.indexOf("Hit Points")).toBeLessThan(
+      summary.indexOf("song note"),
+    );
   });
 });
 
@@ -229,7 +233,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
       },
     });
     expect(summary).toContain("toggle form");
-    expect(summary).toContain("max hp drain/s");
+    expect(summary).toContain("maximum Hit Points drain/s");
     expect(summary).not.toContain("10s");
   });
 
@@ -276,7 +280,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
           bonus_per_level: 0.05,
         },
       }),
-    ).toContain("DoT dmg vs targets below 30% hp");
+    ).toContain("DoT dmg vs targets below 30% Hit Points");
     expect(
       formatSkillEffect({
         skill_type: "target_buff",
@@ -306,7 +310,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
       is_pet_skill: true,
       health_max_percent_bonus: { base_value: 0.02, bonus_per_level: 0.02 },
     };
-    expect(formatSkillEffect(skill)).toContain("companion max hp");
+    expect(formatSkillEffect(skill)).toContain("companion Hit Points");
     expect(formatSkillEffect({ ...skill, is_pet_skill: false })).not.toContain(
       "companion",
     );
@@ -321,6 +325,6 @@ describe("formatSkillEffect damage shields", () => {
         damage_shield_type: "Fire",
         damage_shield: { base_value: 120, bonus_per_level: 0 },
       }),
-    ).toContain("dmg shield on its target");
+    ).toContain("Damage Shield on its target");
   });
 });

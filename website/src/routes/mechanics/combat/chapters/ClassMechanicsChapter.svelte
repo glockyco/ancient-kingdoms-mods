@@ -79,8 +79,8 @@
     <!-- Source: server-scripts/PlayerSkills.cs:CmdUse — Assasination requires current target Health at most one quarter of maximum Health, rounded to the nearest whole point. -->
     <p>
       The Rogue's <a href="/skills/assasination">Assassination</a> requires the target's
-      current Health to be at most 25% of its maximum Health. That Health limit rounds
-      to the nearest whole point.
+      current Hit Points to be at most 25% of its maximum Hit Points. That Hit Points
+      limit rounds to the nearest whole point.
     </p>
   </Topic>
 
@@ -88,7 +88,7 @@
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; NetworkManagerMMO.cs:OnStartServer — Reaper Form loses its rounded maximum-Health percentage each second, bypassing normal DoT rules and BreakMezz. -->
     <p>
       <a href="/skills/reaper_form">Reaper Form</a> drains its listed percentage
-      of your maximum Health each second, <RoundedTerm />.
+      of your maximum Hit Points each second, <RoundedTerm />.
     </p>
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; NetworkManagerMMO.cs:OnStartServer — Reaper Form drain bypasses resistance, wards, critical ticks and Deathly Focus bonuses. -->
     <p>

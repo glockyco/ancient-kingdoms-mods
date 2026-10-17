@@ -18,18 +18,20 @@
     MAGIC_RESIST,
     POISON_RESIST,
   } from "$lib/calculation/inputs";
+  import { statName } from "$lib/stats";
 
   const DEFENSE_STATS = [
-    DEFENSE,
-    MAGIC_RESIST,
-    FIRE_RESIST,
-    COLD_RESIST,
-    POISON_RESIST,
-    DISEASE_RESIST,
-  ];
+    { input: DEFENSE, id: "armor_class" },
+    { input: MAGIC_RESIST, id: "magic_resist" },
+    { input: FIRE_RESIST, id: "fire_resist" },
+    { input: COLD_RESIST, id: "cold_resist" },
+    { input: POISON_RESIST, id: "poison_resist" },
+    { input: DISEASE_RESIST, id: "disease_resist" },
+  ] as const;
   let defenseStatKey = $state(DEFENSE.key);
   const defenseStat = $derived(
-    DEFENSE_STATS.find((stat) => stat.key === defenseStatKey) ?? DEFENSE,
+    DEFENSE_STATS.find((stat) => stat.input.key === defenseStatKey) ??
+      DEFENSE_STATS[0],
   );
   let hitType = $state<"physical" | "other">("physical");
 </script>
@@ -55,22 +57,22 @@
       <tbody>
         <tr>
           <th scope="row">Avoiding a hit</th>
-          <td>Block Chance</td>
+          <td>{statName("block_chance")}</td>
           <td>Matching resist</td>
         </tr>
         <tr>
           <th scope="row">Reducing a hit</th>
-          <td>Armor Class</td>
+          <td>{statName("armor_class")}</td>
           <td>Matching resist</td>
         </tr>
         <tr>
           <th scope="row">Resisting a debuff</th>
-          <td>Armor Class</td>
+          <td>{statName("armor_class")}</td>
           <td>Matching resist</td>
         </tr>
         <tr>
           <th scope="row">Reducing damage over time</th>
-          <td>Armor Class</td>
+          <td>{statName("armor_class")}</td>
           <td>Matching resist</td>
         </tr>
       </tbody>
@@ -139,13 +141,15 @@
     <VariantPicker
       label="Your stat"
       options={DEFENSE_STATS.map((stat) => ({
-        value: stat.key,
-        label: stat.label,
+        value: stat.input.key,
+        label: stat.input.label,
       }))}
       bind:value={defenseStatKey}
     />
     {#key defenseStatKey}
-      <Formula calculation={mitigationCalculation(defenseStat)} />
+      <Formula
+        calculation={mitigationCalculation(defenseStat.input, defenseStat.id)}
+      />
     {/key}
     <SeeAlso
       links={[
@@ -162,7 +166,7 @@
     <!-- Source: server-scripts/Skills.cs:ApplyWardToDoTDamage — ApplyWardToDoTDamage takes tick damage from the ward pool and passes the excess. -->
     <p>
       Damage that gets past avoidance and reduction is absorbed by a ward first,
-      then by Mana Shield. Only the rest reduces Health.
+      then by Mana Shield. Only the rest reduces Hit Points.
     </p>
     <ul>
       <li>
@@ -172,7 +176,7 @@
       <li>
         <a href="/skills/mana_shield">Mana Shield</a> spends 1 Mana per point of the
         remaining hit. When the hit is larger than your Mana, the shield ends and
-        the rest reaches your Health. Ticks pass through Mana Shield.
+        the rest reaches your Hit Points. Ticks pass through Mana Shield.
       </li>
     </ul>
     <SeeAlso

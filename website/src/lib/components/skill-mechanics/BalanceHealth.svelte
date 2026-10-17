@@ -1,5 +1,6 @@
 <script lang="ts">
   import { formatPercent, formatNumber } from "$lib/utils/format";
+  import { formatStat } from "$lib/stats";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import {
     EXAMPLE_SHARED_HEALTH,
@@ -19,15 +20,15 @@
   <p class="text-muted-foreground">
     Sets you and every living, visible player, companion and mercenary within
     {formatLinear(skill.cast_range, " yd")}, in your party or not, to their
-    average Health percentage, applied to each character's own maximum Health
-    and rounded. Characters above the average lose Health. For example, 100% and
-    25% average to
+    average Hit Points percentage, applied to each character's own maximum Hit
+    Points and rounded. Characters above the average lose Hit Points. For
+    example, 100% and 25% average to
     {formatPercent(EXAMPLE_SHARED_HEALTH, {
       decimals: 2,
       preserveNonzero: true,
     })}, so a character with
-    {formatNumber(MAX_HEALTH.value)} maximum Health ends at
-    {formatNumber(balancedHealth())} Health.
+    {formatStat("health", MAX_HEALTH.value)} maximum Hit Points ends at
+    {formatNumber(balancedHealth())} Hit Points.
   </p>
   <RoundingDefinition />
 </div>

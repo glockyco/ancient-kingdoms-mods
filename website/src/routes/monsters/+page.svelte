@@ -1,5 +1,7 @@
 <script lang="ts">
   import { formatNumber } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
+  import type { StatId } from "$lib/generated/stat-vocabulary";
   import Skull from "@lucide/svelte/icons/skull";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import { SvelteMap } from "svelte/reactivity";
@@ -84,6 +86,17 @@
   );
 
   type MonsterRow = (typeof dataWithVirtual)[number];
+  const columnStats: Record<string, StatId> = {
+    health: "health",
+    damage: "attack_power",
+    magic_damage: "spell_power",
+    defense: "armor_class",
+    magic_resist: "magic_resist",
+    poison_resist: "poison_resist",
+    fire_resist: "fire_resist",
+    cold_resist: "cold_resist",
+    disease_resist: "disease_resist",
+  };
 
   const columns: ColumnDef<MonsterRow>[] = [
     {
@@ -119,47 +132,47 @@
     },
     {
       accessorKey: "health",
-      header: "Health",
+      header: statName(columnStats.health),
       size: 150,
     },
     {
       accessorKey: "damage",
-      header: "Attack Power",
+      header: statName(columnStats.damage),
       size: 150,
     },
     {
       accessorKey: "magic_damage",
-      header: "Spell Power",
+      header: statName(columnStats.magic_damage),
       size: 180,
     },
     {
       accessorKey: "defense",
-      header: "Armor Class",
+      header: statName(columnStats.defense),
       size: 150,
     },
     {
       accessorKey: "magic_resist",
-      header: "Magic Res",
+      header: statName(columnStats.magic_resist),
       size: 150,
     },
     {
       accessorKey: "poison_resist",
-      header: "Poison Res",
+      header: statName(columnStats.poison_resist),
       size: 150,
     },
     {
       accessorKey: "fire_resist",
-      header: "Fire Res",
+      header: statName(columnStats.fire_resist),
       size: 150,
     },
     {
       accessorKey: "cold_resist",
-      header: "Cold Res",
+      header: statName(columnStats.cold_resist),
       size: 150,
     },
     {
       accessorKey: "disease_resist",
-      header: "Disease Res",
+      header: statName(columnStats.disease_resist),
       size: 150,
     },
     ...createRespawnColumns<MonsterRow>(),
@@ -199,15 +212,9 @@
     icon: "",
     name: "Name",
     level_min: "Level",
-    health: "Health",
-    damage: "Attack Power",
-    magic_damage: "Spell Power",
-    defense: "Armor Class",
-    magic_resist: "Magic Resist",
-    poison_resist: "Poison Resist",
-    fire_resist: "Fire Resist",
-    cold_resist: "Cold Resist",
-    disease_resist: "Disease Resist",
+    ...Object.fromEntries(
+      Object.entries(columnStats).map(([key, id]) => [key, statName(id)]),
+    ),
     respawn_time: "Respawn",
     respawn_chance: "Chance",
     special: "Special",
@@ -268,12 +275,17 @@
       row.original.health_base +
       row.original.health_per_level * (row.original.level_min - 1)}
     <span class="ml-auto"
-      >{formatNumber(minHealth)}<span class={hasVariance ? "" : "invisible"}
-        >+</span
+      >{formatStat("health", minHealth)}<span
+        class={hasVariance ? "" : "invisible"}>+</span
       ></span
     >
   {:else if cell.column.id === "damage" || cell.column.id === "magic_damage" || cell.column.id === "defense" || cell.column.id === "magic_resist" || cell.column.id === "poison_resist" || cell.column.id === "fire_resist" || cell.column.id === "cold_resist" || cell.column.id === "disease_resist"}
-    <span class="ml-auto">{formatNumber(cell.getValue() as number)}</span>
+    <span class="ml-auto"
+      >{formatStat(
+        columnStats[cell.column.id],
+        cell.getValue() as number,
+      )}</span
+    >
   {:else if isRespawnColumn(cell.column.id)}
     <RespawnCells columnId={cell.column.id} row={row.original} />
   {:else if cell.column.id === "zones"}

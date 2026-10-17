@@ -1,3 +1,4 @@
+import { statName } from "$lib/stats";
 import type { Calculation } from "$lib/types/calculation";
 import {
   addF32,
@@ -21,12 +22,12 @@ export function characterDamage(flat: number, bonus: number) {
 export const characterDamageCalculation: Calculation = {
   steps: [
     {
-      name: "Flat Attack Power",
+      name: `Flat ${statName("attack_power")}`,
       expression:
         "Level-based base Attack Power + non-negative Strength + flat Attack Power from working equipment, learned skills, and buffs",
     },
     {
-      name: "Flat Spell Power",
+      name: `Flat ${statName("spell_power")}`,
       expression:
         "Level-based base Spell Power + 150% of non-negative Intelligence, rounded, + flat Spell Power from working equipment, learned skills, and buffs",
     },
@@ -128,7 +129,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Rampage damage",
       expression:
-        "A monster or NPC with the Rampage passive below 10% Health adds damage × a random 50% to 75% on a non-spell hit",
+        "A monster or NPC with the Rampage passive below 10% Hit Points adds damage × a random 50% to 75% on a non-spell hit",
       rounding: "up",
     },
     {
@@ -137,7 +138,7 @@ export const pipelineCalculation: Calculation = {
         "Subtract damage prevented by the matching stat, as in Damage Reduction",
     },
     {
-      name: "Critical Resist",
+      name: statName("critical_resist"),
       expression: "Target Critical Resist",
       limit: "between 0% and 100%",
     },
@@ -172,9 +173,9 @@ export const pipelineCalculation: Calculation = {
         "Use remaining positive damage for the lifetap calculation in Healing",
     },
     {
-      name: "Health damage",
+      name: `${statName("health")} damage`,
       expression:
-        "Only the damage remaining after shields reduces Health. An active eligible Parry blocks it and counterattacks instead",
+        "Only the damage remaining after shields reduces Hit Points. An active eligible Parry blocks it and counterattacks instead",
     },
   ],
   example: () => {
@@ -190,7 +191,7 @@ export const pipelineCalculation: Calculation = {
         "20 Ward left and Mana Shield active with 10 Mana",
         "no Slayer reduction, Rampage, on-hit effects, or Parry",
       ],
-      result: `${number(result.healthDamage)} Health damage`,
+      result: `${number(result.healthDamage)} Hit Points damage`,
       working: [
         `Moving-player damage: 201 + 20 = ${number(result.moving)}`,
         `Variance: ${number(result.moving)} × 105% = ${number(result.variance)}, rounded`,
@@ -314,7 +315,7 @@ export const damageOverTimeCalculation: Calculation = {
     {
       name: "Deathly Focus tick",
       expression:
-        "Reaper Form tick × (100% + caster's Deathly Focus bonus), only below 30% target Health",
+        "Reaper Form tick × (100% + caster's Deathly Focus bonus), only below 30% target Hit Points",
       rounding: "nearest",
     },
     {
@@ -326,7 +327,7 @@ export const damageOverTimeCalculation: Calculation = {
     {
       name: "Final tick",
       expression:
-        "Add the debuff's percentage of the target's maximum Health, rounded, then Ward absorbs damage before Health is lost",
+        "Add the debuff's percentage of the target's maximum Hit Points, rounded, then Ward absorbs damage before Hit Points are lost",
     },
   ],
   example: () => {
@@ -336,8 +337,8 @@ export const damageOverTimeCalculation: Calculation = {
         "101 damage after mitigation",
         "2 remaining layers",
         "50% active Reaper Form bonus",
-        "10% Deathly Focus bonus and target below 30% Health",
-        "a non-critical tick with no percentage-health damage or Ward",
+        "10% Deathly Focus bonus and target below 30% Hit Points",
+        "a non-critical tick with no damage based on a percentage of Hit Points or Ward",
       ],
       result: `${number(result.total)} damage each second`,
       working: [
@@ -376,7 +377,7 @@ export const threatCalculation: Calculation = {
     {
       name: "Skill threat",
       expression:
-        "Listed skill threat + attacker maximum Health for a targeted damage skill or direct area damage without a spawned projectile, when listed threat is positive. Other damage handlers do not add this Health bonus",
+        "Listed skill threat + attacker maximum Hit Points for a targeted damage skill or direct area damage without a spawned projectile, when listed threat is positive. Other damage handlers do not add this Hit Points bonus",
     },
     {
       name: "Stun threat",
@@ -396,7 +397,7 @@ export const threatCalculation: Calculation = {
       name: "Threat gained",
       expression:
         "Skill threat + skill damage before avoidance and mitigation + control threat",
-      limit: "at most the victim's current Health",
+      limit: "at most the victim's current Hit Points",
     },
   ],
   example: () => {
@@ -404,11 +405,11 @@ export const threatCalculation: Calculation = {
     return {
       given: [
         "10 positive listed threat on a targeted damage skill",
-        "2,000 attacker maximum Health",
+        "2,000 attacker maximum Hit Points",
         "201 skill damage",
         `50% stun chance for ${seconds(3)}`,
         `10% fear chance for ${seconds(5)}`,
-        "5,000 victim current Health",
+        "5,000 victim current Hit Points",
       ],
       result: `${number(result.total)} threat gained`,
       working: [
@@ -491,10 +492,10 @@ export const dealtRageCalculation: Calculation = {
       name: "Damage counted",
       expression:
         "Auto attack damage after the target's mitigation and critical hits, before Ward and Mana Shield",
-      limit: "at most the target's current Health",
+      limit: "at most the target's current Hit Points",
     },
     {
-      name: "Rage gained",
+      name: `${statName("rage")} gained`,
       expression: "Damage counted × 25%",
       rounding: "down",
     },
@@ -505,7 +506,7 @@ export const dealtRageCalculation: Calculation = {
     return {
       given: [
         "201 auto attack damage before shields",
-        "150 target current Health",
+        "150 target current Hit Points",
       ],
       result: `${number(rage)} Rage gained`,
       working: [

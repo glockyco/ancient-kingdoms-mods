@@ -93,7 +93,7 @@
             href="/mechanics/world#binding-and-travel"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >bind point</a
-          >. You respawn with 50% of maximum Health, rounded.
+          >. You respawn with 50% of maximum Hit Points, rounded.
         </p>
         <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD; server-scripts/BuffSkill.cs:ignoreSeeInvisibility; website/data/compendium.db skills.resurrection_effects — respawn applies 10 seconds of invisibility that defeats see-invisibility. -->
         <p>
@@ -155,8 +155,8 @@
                     >Resurrection returns you to your remains after you respawn.</span
                   >
                   <span class="block"
-                    >Accepting replaces your current Health and Mana with the
-                    calculated amounts below.</span
+                    >Accepting replaces your current Hit Points and Mana with
+                    the calculated amounts below.</span
                   >
                 </td>
               </tr>
@@ -167,10 +167,10 @@
         <!-- Source: server-scripts/Player.cs:13361-13362; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
-          Accepting Resurrection sets Health to 60% of maximum Health and Mana
-          to 20% of maximum Health (at most maximum Mana), even if you had more.
-          Rage is unchanged. The Mana amount uses maximum Health because of a
-          game defect.
+          Accepting Resurrection sets Hit Points to 60% of maximum Hit Points
+          and Mana to 20% of maximum Hit Points (at most maximum Mana), even if
+          you had more. Rage is unchanged. The Mana amount uses maximum Hit
+          Points because of a game defect.
         </p>
         <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget — Resurrection can target player remains or dead mercenaries. -->
         <p>

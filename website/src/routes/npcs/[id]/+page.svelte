@@ -1,5 +1,7 @@
 <script lang="ts">
   import { formatPercent, formatNumber } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
+  import type { StatId } from "$lib/generated/stat-vocabulary";
   import {
     DataTable,
     type ColumnDef,
@@ -126,17 +128,17 @@
 
   // Build resistances array for display (only non-zero values)
   const resistances = $derived.by(() => {
-    const resists: { name: string; value: number }[] = [];
+    const resists: { id: StatId; value: number }[] = [];
     if (data.npc.magic_resist !== 0)
-      resists.push({ name: "Magic", value: data.npc.magic_resist });
+      resists.push({ id: "magic_resist", value: data.npc.magic_resist });
     if (data.npc.poison_resist !== 0)
-      resists.push({ name: "Poison", value: data.npc.poison_resist });
+      resists.push({ id: "poison_resist", value: data.npc.poison_resist });
     if (data.npc.fire_resist !== 0)
-      resists.push({ name: "Fire", value: data.npc.fire_resist });
+      resists.push({ id: "fire_resist", value: data.npc.fire_resist });
     if (data.npc.cold_resist !== 0)
-      resists.push({ name: "Cold", value: data.npc.cold_resist });
+      resists.push({ id: "cold_resist", value: data.npc.cold_resist });
     if (data.npc.disease_resist !== 0)
-      resists.push({ name: "Disease", value: data.npc.disease_resist });
+      resists.push({ id: "disease_resist", value: data.npc.disease_resist });
     return resists;
   });
 
@@ -688,59 +690,74 @@
             <div class="font-medium">{data.npc.level}</div>
           </div>
           <div>
-            <div class="text-sm text-muted-foreground">Health</div>
-            <div class="font-medium">{data.npc.health.toLocaleString()}</div>
+            <div class="text-sm text-muted-foreground">
+              {statName("health")}
+            </div>
+            <div class="font-medium">
+              {formatStat("health", data.npc.health)}
+            </div>
           </div>
           {#if data.npc.mana > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Mana</div>
-              <div class="font-medium">{data.npc.mana.toLocaleString()}</div>
+              <div class="text-sm text-muted-foreground">
+                {statName("mana")}
+              </div>
+              <div class="font-medium">{formatStat("mana", data.npc.mana)}</div>
             </div>
           {/if}
           <div>
-            <div class="text-sm text-muted-foreground">Attack Power</div>
-            <div class="font-medium">{data.npc.damage}</div>
+            <div class="text-sm text-muted-foreground">
+              {statName("attack_power")}
+            </div>
+            <div class="font-medium">
+              {formatStat("attack_power", data.npc.damage)}
+            </div>
           </div>
           {#if data.npc.magic_damage > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Spell Power</div>
-              <div class="font-medium">{data.npc.magic_damage}</div>
+              <div class="text-sm text-muted-foreground">
+                {statName("spell_power")}
+              </div>
+              <div class="font-medium">
+                {formatStat("spell_power", data.npc.magic_damage)}
+              </div>
             </div>
           {/if}
           <div>
-            <div class="text-sm text-muted-foreground">Armor Class</div>
-            <div class="font-medium">{data.npc.defense}</div>
+            <div class="text-sm text-muted-foreground">
+              {statName("armor_class")}
+            </div>
+            <div class="font-medium">
+              {formatStat("armor_class", data.npc.defense)}
+            </div>
           </div>
           {#if data.npc.block_chance > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Block Chance</div>
+              <div class="text-sm text-muted-foreground">
+                {statName("block_chance")}
+              </div>
               <div class="font-medium">
-                {formatPercent(data.npc.block_chance, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })}
+                {formatStat("block_chance", data.npc.block_chance)}
               </div>
             </div>
           {/if}
           {#if data.npc.critical_chance > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Critical Strike</div>
+              <div class="text-sm text-muted-foreground">
+                {statName("critical_chance")}
+              </div>
               <div class="font-medium">
-                {formatPercent(data.npc.critical_chance, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })}
+                {formatStat("critical_chance", data.npc.critical_chance)}
               </div>
             </div>
           {/if}
           {#if data.npc.accuracy > 0}
             <div>
-              <div class="text-sm text-muted-foreground">Accuracy</div>
+              <div class="text-sm text-muted-foreground">
+                {statName("accuracy")}
+              </div>
               <div class="font-medium">
-                {formatPercent(data.npc.accuracy, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })}
+                {formatStat("accuracy", data.npc.accuracy)}
               </div>
             </div>
           {/if}
@@ -754,14 +771,17 @@
                   Resistances
                 </div>
                 <div class="flex flex-wrap gap-2">
-                  {#each resistances as resist (resist.name)}
+                  {#each resistances as resist (resist.id)}
                     <span
                       class="inline-flex items-center rounded-md px-2 py-1 text-sm
                         {resist.value > 0
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
                     >
-                      {resist.name}: {resist.value}
+                      {statName(resist.id)}: {formatStat(
+                        resist.id,
+                        resist.value,
+                      )}
                     </span>
                   {/each}
                 </div>

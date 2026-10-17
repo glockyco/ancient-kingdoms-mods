@@ -7,6 +7,7 @@
   import Snowflake from "@lucide/svelte/icons/snowflake";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Sword from "@lucide/svelte/icons/sword";
+  import { statName, formatStat } from "$lib/stats";
 
   interface Props {
     titleId: string;
@@ -45,14 +46,6 @@
     diseaseResist,
     metadata,
   }: Props = $props();
-
-  function formatCompactNumber(value: number): string {
-    if (value >= 10000) {
-      return `${Math.round(value / 1000).toLocaleString()}K`;
-    }
-
-    return value.toLocaleString();
-  }
 </script>
 
 <section aria-labelledby={titleId}>
@@ -62,64 +55,64 @@
       class="grid grid-cols-2 items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,1.5fr)_minmax(0,1fr)] md:gap-6"
     >
       <div class="order-2 space-y-2 text-sm md:order-none">
-        <div class="flex items-center gap-3" title="Magic Resist">
+        <div class="flex items-center gap-3" title={statName("magic_resist")}>
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-teal-700 text-teal-50 shadow-sm"
             aria-hidden="true"
           >
             <Sparkles class="h-5 w-5" />
           </span>
-          <span class="sr-only">Magic Resist: </span>
+          <span class="sr-only">{statName("magic_resist")}: </span>
           <span class="text-lg font-semibold"
-            >{magicResist.toLocaleString()}</span
+            >{formatStat("magic_resist", magicResist)}</span
           >
         </div>
-        <div class="flex items-center gap-3" title="Poison Resist">
+        <div class="flex items-center gap-3" title={statName("poison_resist")}>
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-lime-700 text-lime-50 shadow-sm"
             aria-hidden="true"
           >
             <Skull class="h-5 w-5" />
           </span>
-          <span class="sr-only">Poison Resist: </span>
+          <span class="sr-only">{statName("poison_resist")}: </span>
           <span class="text-lg font-semibold"
-            >{poisonResist.toLocaleString()}</span
+            >{formatStat("poison_resist", poisonResist)}</span
           >
         </div>
-        <div class="flex items-center gap-3" title="Fire Resist">
+        <div class="flex items-center gap-3" title={statName("fire_resist")}>
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-red-700 text-red-50 shadow-sm"
             aria-hidden="true"
           >
             <Flame class="h-5 w-5" />
           </span>
-          <span class="sr-only">Fire Resist: </span>
+          <span class="sr-only">{statName("fire_resist")}: </span>
           <span class="text-lg font-semibold"
-            >{fireResist.toLocaleString()}</span
+            >{formatStat("fire_resist", fireResist)}</span
           >
         </div>
-        <div class="flex items-center gap-3" title="Cold Resist">
+        <div class="flex items-center gap-3" title={statName("cold_resist")}>
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sky-700 text-sky-50 shadow-sm"
             aria-hidden="true"
           >
             <Snowflake class="h-5 w-5" />
           </span>
-          <span class="sr-only">Cold Resist: </span>
+          <span class="sr-only">{statName("cold_resist")}: </span>
           <span class="text-lg font-semibold"
-            >{coldResist.toLocaleString()}</span
+            >{formatStat("cold_resist", coldResist)}</span
           >
         </div>
-        <div class="flex items-center gap-3" title="Disease Resist">
+        <div class="flex items-center gap-3" title={statName("disease_resist")}>
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-800 text-emerald-50 shadow-sm"
             aria-hidden="true"
           >
             <Skull class="h-5 w-5" />
           </span>
-          <span class="sr-only">Disease Resist: </span>
+          <span class="sr-only">{statName("disease_resist")}: </span>
           <span class="text-lg font-semibold"
-            >{diseaseResist.toLocaleString()}</span
+            >{formatStat("disease_resist", diseaseResist)}</span
           >
         </div>
       </div>
@@ -141,18 +134,18 @@
 
         <div
           class="inline-flex items-center gap-2 text-lg font-semibold text-green-600 dark:text-green-400"
-          title="Health"
+          title={statName("health")}
         >
           <Heart class="h-5 w-5 fill-current" aria-hidden="true" />
-          <span class="sr-only">Health: </span>
-          {formatCompactNumber(health)}
+          <span class="sr-only">{statName("health")}: </span>
+          {formatStat("health", health)}
         </div>
       </div>
 
       <div class="order-3 min-w-0 space-y-2 text-sm md:order-none">
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
-          title="Attack Power"
+          title={statName("attack_power")}
         >
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-red-800 text-red-50 shadow-sm"
@@ -160,12 +153,14 @@
           >
             <Sword class="h-5 w-5" />
           </span>
-          <span class="sr-only">Attack Power: </span>
-          <span class="text-lg font-semibold">{damage.toLocaleString()}</span>
+          <span class="sr-only">{statName("attack_power")}: </span>
+          <span class="text-lg font-semibold"
+            >{formatStat("attack_power", damage)}</span
+          >
         </div>
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
-          title="Spell Power"
+          title={statName("spell_power")}
         >
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-violet-700 text-violet-50 shadow-sm"
@@ -173,14 +168,14 @@
           >
             <Sparkles class="h-5 w-5" />
           </span>
-          <span class="sr-only">Spell Power: </span>
+          <span class="sr-only">{statName("spell_power")}: </span>
           <span class="min-w-0 text-lg font-semibold break-words"
-            >{magicDamage.toLocaleString()}</span
+            >{formatStat("spell_power", magicDamage)}</span
           >
         </div>
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
-          title="Armor Class"
+          title={statName("armor_class")}
         >
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-700 text-slate-100 shadow-sm"
@@ -188,8 +183,10 @@
           >
             <Shield class="h-5 w-5" />
           </span>
-          <span class="sr-only">Armor Class: </span>
-          <span class="text-lg font-semibold">{defense.toLocaleString()}</span>
+          <span class="sr-only">{statName("armor_class")}: </span>
+          <span class="text-lg font-semibold"
+            >{formatStat("armor_class", defense)}</span
+          >
         </div>
         {@render metadata?.()}
       </div>

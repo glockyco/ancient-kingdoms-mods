@@ -4,7 +4,7 @@
   <p class="text-muted-foreground">
     Mana Shield absorbs direct hits after Ward, spending 1 Mana per point of
     damage. When a hit deals more damage than your current Mana, the shield ends
-    and the remainder reduces your Health. A hit that spends exactly your
+    and the remainder reduces your Hit Points. A hit that spends exactly your
     remaining Mana leaves the shield active. Damage-over-time ticks and Damage
     Shield damage bypass Mana Shield. See <a
       href="/mechanics/combat#ward-and-mana-shield"

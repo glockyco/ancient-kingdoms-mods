@@ -14,6 +14,7 @@
     formatGatheringRespawn,
     formatNumber,
   } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
   import { formatTrapArea } from "$lib/utils/trapArea";
   import { scheduleDeferredTask } from "$lib/utils/defer";
@@ -532,16 +533,16 @@
 
     {#if monsterDetails}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Health</span>
-        <span>{monsterDetails.health.toLocaleString()}</span>
+        <span class="text-muted-foreground">{statName("health")}</span>
+        <span>{formatStat("health", monsterDetails.health)}</span>
       </div>
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Attack Power</span>
-        <span>{monsterDetails.damage.toLocaleString()}</span>
+        <span class="text-muted-foreground">{statName("attack_power")}</span>
+        <span>{formatStat("attack_power", monsterDetails.damage)}</span>
       </div>
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Spell Power</span>
-        <span>{monsterDetails.magicDamage.toLocaleString()}</span>
+        <span class="text-muted-foreground">{statName("spell_power")}</span>
+        <span>{formatStat("spell_power", monsterDetails.magicDamage)}</span>
       </div>
     {/if}
 

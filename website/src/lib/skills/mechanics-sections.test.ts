@@ -230,7 +230,7 @@ test("cleanse resistance applies only to monster-cast debuffs; untyped debuffs s
   ]);
 });
 
-test("a flat Health drain does not show Buff Scaling, but a drain with a scaled Defense bonus does", () => {
+test("a flat Hit Points drain does not show Buff Scaling, but a drain with a scaled Defense bonus does", () => {
   const buff = {
     skill_type: "target_buff",
     healing_per_second_bonus: flat(-5),

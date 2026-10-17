@@ -27,7 +27,7 @@
         ? ` at rank ${skill.max_level}`
         : ""}. {fmt.describeRankGrowth(share, skill.max_level, (value) =>
         formatPercent(value, { decimals: 2, preserveNonzero: true }),
-      )} Damage beyond the target's remaining Health still counts. Lifetap healing
+      )} Damage beyond the target's remaining Hit Points still counts. Lifetap healing
       bonuses, such as
       <a
         href="/skills/lich_shroud"

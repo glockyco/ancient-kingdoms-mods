@@ -326,10 +326,10 @@
                   class="text-blue-600 hover:underline dark:text-blue-400"
                   >{passive.name}</a
                 >
-                increases its class's companions' maximum Health by its listed percentage
-                when learned.
+                increases its class's companions' maximum Hit Points by its listed
+                percentage when learned.
               {/each}
-              Your own maximum Health is unchanged.
+              Your own maximum Hit Points are unchanged.
             </li>
           {/if}
           <!-- Source: server-scripts/Pet.cs:UpdateServer_CASTING — back-seeking companions flank for melee first skills, bosses, elites or frontal attacks, while close ranged companions step away. -->
@@ -449,7 +449,7 @@
     <p>
       These companions track your regular level, up to {undeadCaps}. Each of
       your veteran points adds 1% of base Attack Power and Spell Power, and
-      0.25% of base Health, Armor Class and each resistance, rounded. At 200
+      0.25% of base Hit Points, Armor Class and each resist, rounded. At 200
       points, Attack Power and Spell Power reach +200% and the other stats +50%.
       Their stats and skill ranks refresh when you level up or gain a veteran
       point.

@@ -48,9 +48,13 @@ describe("combat calculations", () => {
   });
 
   it("keeps the reader's actual defensive stat key", () => {
-    expect(mitigationCalculation().inputs).toEqual([DEFENSE]);
-    expect(mitigationCalculation(FIRE_RESIST).inputs).toEqual([FIRE_RESIST]);
-    const calculation = mitigationCalculation(FIRE_RESIST);
+    expect(mitigationCalculation(DEFENSE, "armor_class").inputs).toEqual([
+      DEFENSE,
+    ]);
+    expect(mitigationCalculation(FIRE_RESIST, "fire_resist").inputs).toEqual([
+      FIRE_RESIST,
+    ]);
+    const calculation = mitigationCalculation(FIRE_RESIST, "fire_resist");
     expect(calculation.example?.({ fireResist: 100 })).toBeDefined();
   });
 
@@ -241,7 +245,7 @@ describe("combat calculations", () => {
     });
   });
 
-  it("rounds control threat independently and caps the total at victim Health", () => {
+  it("rounds control threat independently and caps the total at victim Hit Points", () => {
     expect(hitThreat(10, 2000, 201, 0.5, 3, 0.1, 5, 5000)).toEqual({
       stun: 15,
       fear: 5,
@@ -265,7 +269,7 @@ describe("combat calculations", () => {
 
   it("keeps worked lines named and in declared step order", () => {
     const calculations = [
-      mitigationCalculation(),
+      mitigationCalculation(DEFENSE, "armor_class"),
       avoidanceCalculation(),
       avoidanceCalculation(true),
       healingCalculation(),

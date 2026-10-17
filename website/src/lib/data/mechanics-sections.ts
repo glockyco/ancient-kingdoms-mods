@@ -1,3 +1,4 @@
+import { statName } from "$lib/stats";
 import type { PageSection } from "$lib/components/page-sections";
 import { COMBAT_CHAPTERS } from "$lib/data/combat-outline";
 import type { MechanicsHref } from "$lib/data/mechanics";
@@ -13,7 +14,10 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
   {
     "/mechanics/character": [
       { id: "attributes", label: "The Six Attributes" },
-      { id: "resources", label: "Health, Mana, Rage, and Songs" },
+      {
+        id: "resources",
+        label: `${statName("health")}, ${statName("mana")}, ${statName("rage")}, and Songs`,
+      },
       {
         id: "skills-and-specializations",
         label: "Skills, Veteran Points, and Specializations",

@@ -1,3 +1,4 @@
+import { statName } from "$lib/stats";
 import type { Calculation } from "$lib/types/calculation";
 import { floorToInt, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber } from "$lib/utils/format";
@@ -13,10 +14,10 @@ export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
       {
         name: "Eligible hit damage",
         expression: "The hit's damage number",
-        limit: "at most the target's Health before the hit",
+        limit: "at most the target's Hit Points before the hit",
       },
       {
-        name: "Mana gained",
+        name: `${statName("mana")} gained`,
         expression: "35% of eligible hit damage",
         rounding: "down",
         limit: "at most your missing Mana",
@@ -25,7 +26,7 @@ export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
     example: () => ({
       given: [
         `${formatNumber(hit)} hit damage`,
-        `${formatNumber(targetHealth)} target Health before the hit`,
+        `${formatNumber(targetHealth)} target Hit Points before the hit`,
         "Enough missing Mana for the full gain",
       ],
       result: `${formatNumber(mana)} Mana restored`,

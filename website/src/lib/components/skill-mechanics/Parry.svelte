@@ -18,7 +18,7 @@
     <span class="block"
       >While you cast Parry ({formatLinear(skill.cast_time, "s")}), a
       single-target physical melee hit from your selected target deals you no
-      Health damage.</span
+      Hit Points damage.</span
     >
     <span class="block"
       >You counter for half the damage left after Armor Class, Ward and Mana

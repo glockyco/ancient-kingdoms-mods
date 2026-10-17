@@ -45,19 +45,19 @@ describe("skill effect summaries", () => {
 
   test("keep the maximum-health cost of a player buff", () => {
     expect(playerClasses("enrage")).toContain("warrior");
-    expect(summary("enrage")).toContain("−50% max hp");
+    expect(summary("enrage")).toContain("−50% Hit Points,");
   });
 
   test("state a rank formula from its rank-1 value and subtract the weapon Archer Shot loses", () => {
     const archerShot = summary("archer_shot");
     expect(archerShot).toContain("1 + 4 × (rank − 1)");
-    expect(archerShot).toContain("− main-hand base dmg");
+    expect(archerShot).toContain("− main-hand Base Damage");
   });
 
   test("note how the caster's attribute scales a heal, a buff and a damage over time", () => {
-    expect(summary("healing")).toContain("0.4% more per WIS");
-    expect(summary("fortitude")).toContain("+2 per WIS");
-    expect(summary("venom_of_the_grave")).toContain("per INT");
+    expect(summary("healing")).toContain("0.4% more per Wisdom");
+    expect(summary("fortitude")).toContain("+2 per Wisdom");
+    expect(summary("venom_of_the_grave")).toContain("per Intelligence");
   });
 
   test("note no attribute where the caster contributes none", () => {
@@ -67,7 +67,7 @@ describe("skill effect summaries", () => {
   });
 
   test("give a song one song power note", () => {
-    expect(summary("bulwark_chant").match(/per CHA/g)).toHaveLength(1);
+    expect(summary("bulwark_chant").match(/per Charisma/g)).toHaveLength(1);
   });
 
   test("keep a mercenary's area heal off players", () => {

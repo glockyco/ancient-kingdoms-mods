@@ -1,24 +1,27 @@
 <script lang="ts">
   import { immuneDebuffBypass } from "$lib/skills/skill-facts";
   import { getMechanicsContext } from "./context";
+  import { statName } from "$lib/stats";
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
   const { debuffResistance } = $derived(mechanics.facts);
   // Source: server-scripts/Skills.cs:GetFinalDamageDoT — melee, Intelligence-scaled poison or disease, other poison or disease, fire and cold ticks are checked in that order, and any other tick meets Magic Resist. The later disease branch is unreachable.
   const tickStat = $derived(
-    skill.is_melee_debuff
-      ? "Armor Class"
-      : skill.is_poison_debuff || skill.is_disease_debuff
-        ? skill.poison_disease_scales_with_intelligence &&
-          skill.is_disease_debuff
-          ? "Disease Resist"
-          : "Poison Resist"
-        : skill.is_fire_debuff
-          ? "Fire Resist"
-          : skill.is_cold_debuff
-            ? "Cold Resist"
-            : "Magic Resist",
+    statName(
+      skill.is_melee_debuff
+        ? "armor_class"
+        : skill.is_poison_debuff || skill.is_disease_debuff
+          ? skill.poison_disease_scales_with_intelligence &&
+            skill.is_disease_debuff
+            ? "disease_resist"
+            : "poison_resist"
+          : skill.is_fire_debuff
+            ? "fire_resist"
+            : skill.is_cold_debuff
+              ? "cold_resist"
+              : "magic_resist",
+    ),
   );
   const diseaseTickDefect = $derived(
     !skill.is_melee_debuff &&

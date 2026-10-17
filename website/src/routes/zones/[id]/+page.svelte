@@ -51,6 +51,7 @@
     formatPercent,
     formatNumber,
   } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
   import { chestRewardChance } from "$lib/utils/chest-reward";
   import { base } from "$app/paths";
   import Seo from "$lib/components/Seo.svelte";
@@ -97,7 +98,7 @@
     },
     {
       accessorKey: "health",
-      header: "Health",
+      header: statName("health"),
       size: 120,
     },
     {
@@ -286,7 +287,7 @@
       row.original.health_base +
       row.original.health_per_level * (row.original.level_min - 1)}
     <span class="ml-auto">
-      {minHealth.toLocaleString()}<span
+      {formatStat("health", minHealth)}<span
         class={anyMonsterHasVariance
           ? hasVariance
             ? ""

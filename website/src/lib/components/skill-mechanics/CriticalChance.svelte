@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -12,11 +12,12 @@
 
 <!-- Source: server-scripts/Combat.cs:criticalChance — sum the signed bonuses and clamp the total to 0–70%. -->
 <div class="space-y-1">
-  <h3 class="font-semibold">Critical Strike</h3>
+  <h3 class="font-semibold">{statName("critical_chance")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
       >{amount < 0 ? "Lowers" : "Raises"} the affected character's Critical Strike
-      by {formatNumber(Math.abs(amount) * 100)} percentage points at rank
+      by {formatStat("critical_chance", Math.abs(amount)).replace("%", "")} percentage
+      points at rank
       {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
         : ""},

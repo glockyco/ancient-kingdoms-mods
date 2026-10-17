@@ -1,3 +1,4 @@
+import { statName } from "$lib/stats";
 import type { Calculation } from "$lib/types/calculation";
 import { iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber } from "$lib/utils/format";
@@ -18,13 +19,13 @@ export function deathRecovery(): Calculation {
         rounding: "nearest",
       },
       {
-        name: "Health after Resurrection",
-        expression: "60% of maximum Health",
+        name: `${statName("health")} after Resurrection`,
+        expression: "60% of maximum Hit Points",
         rounding: "nearest",
       },
       {
-        name: "Mana after Resurrection",
-        expression: "20% of maximum Health",
+        name: `${statName("mana")} after Resurrection`,
+        expression: "20% of maximum Hit Points",
         rounding: "nearest",
         limit: "at most maximum Mana",
       },
@@ -43,15 +44,15 @@ export function deathRecovery(): Calculation {
       return {
         given: [
           `${formatNumber(lostXp)} XP lost`,
-          `${formatNumber(maxHealth)} maximum Health`,
+          `${formatNumber(maxHealth)} maximum Hit Points`,
           `${formatNumber(maxMana)} maximum Mana`,
         ],
-        result: `${formatNumber(remains)} XP from remains, or ${formatNumber(resurrection)} XP, ${formatNumber(health)} Health and ${formatNumber(mana)} Mana from Resurrection`,
+        result: `${formatNumber(remains)} XP from remains, or ${formatNumber(resurrection)} XP, ${formatNumber(health)} Hit Points and ${formatNumber(mana)} Mana from Resurrection`,
         working: [
           `Remains XP recovery: 50% × ${formatNumber(lostXp)} = ${formatNumber(remains)} XP, rounded`,
           `Resurrection XP recovery: 75% × ${formatNumber(lostXp)} = ${formatNumber(resurrection)} XP, rounded`,
-          `Health after Resurrection: 60% × ${formatNumber(maxHealth)} = ${formatNumber(health)} Health, rounded`,
-          `Mana after Resurrection: 20% × ${formatNumber(maxHealth)} = ${formatNumber(uncappedMana)} Mana, rounded${mana < uncappedMana ? `, limited to ${formatNumber(mana)} Mana` : ""}`,
+          `${statName("health")} after Resurrection: 60% × ${formatNumber(maxHealth)} = ${formatNumber(health)} Hit Points, rounded`,
+          `${statName("mana")} after Resurrection: 20% × ${formatNumber(maxHealth)} = ${formatNumber(uncappedMana)} Mana, rounded${mana < uncappedMana ? `, limited to ${formatNumber(mana)} Mana` : ""}`,
         ],
       };
     },

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { statName } from "$lib/stats";
   import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
@@ -64,8 +65,8 @@
       </li>
       <!-- Source: server-scripts/Combat.cs:DealDamageAt — Rampage adds 50–75% damage to monster/NPC non-spell hits below 10% Health. -->
       <li>
-        A monster or NPC with <a href="/skills/rampage">Rampage</a> below 10% Health
-        adds a random 50% to 75% damage to non-spell hits, rounded up.
+        A monster or NPC with <a href="/skills/rampage">Rampage</a> below 10% Hit
+        Points adds a random 50% to 75% damage to non-spell hits, rounded up.
       </li>
     </ol>
 
@@ -81,7 +82,7 @@
       </li>
     </ol>
 
-    <h4>On-hit effects and Health</h4>
+    <h4>On-hit effects and {statName("health")}</h4>
     <ol start="11">
       <!-- Source: server-scripts/Combat.cs:894-923 — a non-spell melee DamageSkill hit heals the attacker by each of the target's buffs' healOnHitPercent of the damage, rounded, before damage shields. -->
       <li>
@@ -96,7 +97,7 @@
       <li>
         Grant eligible <a href="#rage-generation">Rage from hits</a>. A Wizard's
         <a href="/skills/mystic_spark">Mystic Spark</a> restores Mana equal to 35%
-        of its damage, counting at most the target's current Health, rounded down.
+        of its damage, counting at most the target's current Hit Points, rounded down.
       </li>
       <!-- Source: server-scripts/Combat.cs:1245-1325 — Ward absorbs damage before Mana Shield. -->
       <li>
@@ -108,7 +109,7 @@
       </li>
       <!-- Source: server-scripts/Combat.cs:1326-1409 — damage after shields reaches Health unless an eligible active Parry blocks and counterattacks. -->
       <li>
-        Reduce Health by the remaining damage, or let an eligible active
+        Reduce Hit Points by the remaining damage, or let an eligible active
         <a href="#parry">Parry</a> block it and counterattack.
       </li>
     </ol>

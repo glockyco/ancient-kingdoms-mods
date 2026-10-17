@@ -8,8 +8,8 @@
       >Sleep stops movement and action, cancels a monster's cast and makes it
       drop its target. Direct damage, ordinary damage-over-time ticks and
       applying a damage-over-time debuff wake the target. Ordering your pet to
-      attack a sleeping monster or NPC also wakes it. Reaper Form Health drain
-      does not.</span
+      attack a sleeping monster or NPC also wakes it. Reaper Form Hit Points
+      drain does not.</span
     >
     <span class="block">Bosses and elite monsters always resist sleep.</span>
     <span class="block"

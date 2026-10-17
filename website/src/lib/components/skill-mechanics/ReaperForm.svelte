@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { formatPercent, formatNumber } from "$lib/utils/format";
+  import { formatNumber } from "$lib/utils/format";
+  import { formatStat, statField, formatStatField } from "$lib/stats";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
-  import { formatLinearPercent } from "$lib/skills/skill-format";
+  import { formatLinearStat } from "$lib/utils/formatSkillEffect";
   import { drainMagnitude, reaperDrain } from "$lib/skills/worked-examples";
   import { MAX_HEALTH } from "$lib/calculation/inputs";
   import * as fmt from "$lib/calculation/format";
@@ -18,34 +19,41 @@
   <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active NecromancerReaperFormSkill buff multiplies the caster's debuff ticks on others by 1 + its magicDamagePercentBonus. -->
   <!-- Source: server-scripts/Combat.cs:DealDamageAt — lifetap healing is a share of direct damage dealt. -->
   <p class="text-muted-foreground">
-    While the form is active, your Spell Power gains {formatLinearPercent(
+    While the form is active, your Spell Power gains {formatLinearStat(
+      "magic_damage_percent_bonus",
       skill.magic_damage_percent_bonus,
     )}, and your damage-over-time ticks on other targets gain the same
-    {formatLinearPercent(skill.magic_damage_percent_bonus)}. Lifetap skills heal
-    a share of the damage they deal, so magic lifetaps heal more while the form
-    is active.
+    {formatLinearStat(
+      "magic_damage_percent_bonus",
+      skill.magic_damage_percent_bonus,
+    )}. Lifetap skills heal a share of the damage they deal, so magic lifetaps
+    heal more while the form is active.
   </p>
   {#if skill.health_percent_per_second_bonus}
     {@const drain = drainMagnitude(skill.health_percent_per_second_bonus)}
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; server-scripts/UICharacterInfo.cs:Update — Reaper Form drains maximum Health alongside recovery, and the character window displays net recovery. -->
     <p class="text-muted-foreground">
-      Each second, the form drains {formatPercent(
+      Each second, the form drains {formatStatField(
+        statField("skill", "health_percent_per_second_bonus"),
         fmt.atRank(drain, skill.max_level),
-        { decimals: 2, preserveNonzero: true },
-      )} of your maximum Health{fmt.scalesWithRank(drain, skill.max_level)
+      )} of your maximum Hit Points{fmt.scalesWithRank(drain, skill.max_level)
         ? ` at rank ${skill.max_level}`
-        : ""}, rounded. With {formatNumber(MAX_HEALTH.value)} maximum Health, the
-      form drains {formatNumber(
+        : ""}, rounded. With {formatStat("health", MAX_HEALTH.value)} maximum Hit
+      Points, the form drains {formatNumber(
         reaperDrain(skill.health_percent_per_second_bonus, skill.max_level),
-      )} Health each second. {fmt.describeRankGrowth(
+      )} Hit Points each second. {fmt.describeRankGrowth(
         drain,
         skill.max_level,
-        (value) => formatPercent(value, { decimals: 2, preserveNonzero: true }),
+        (value) =>
+          formatStatField(
+            statField("skill", "health_percent_per_second_bonus"),
+            value,
+          ),
       )}
     </p>
     <p class="text-muted-foreground">
-      Your Health recovery still applies. The character window's Health
-      regeneration shows the net change.
+      Your Health Regeneration still applies. The character window's Health
+      Regeneration shows the net change.
     </p>
     <RoundingDefinition />
   {/if}

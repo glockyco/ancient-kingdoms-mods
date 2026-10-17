@@ -29,7 +29,10 @@
       same owner level and veteran points.
     </p>
   {/if}
-  <p>Critical heals restore double Health, or triple Health in 10% of cases.</p>
+  <p>
+    Critical heals restore double Hit Points, or triple Hit Points in 10% of
+    cases.
+  </p>
   {#if !usedByBardMercenary}
     <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:GetFinalCadenceSongBonus — Apply reads the active song count when the cast finishes. -->
     <p class="text-muted-foreground">
@@ -58,7 +61,7 @@
   </p>
   <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,AddHealingAggro — actual healing divided by six rounds up and adds threat to nearby monsters fighting the healed ally. -->
   <p class="text-muted-foreground">
-    For each ally healed, healing adds threat equal to a sixth of the Health
+    For each ally healed, healing adds threat equal to a sixth of the Hit Points
     restored, rounded up, on monsters within {2 * skill.cast_range!.base_value} yd
     of the caster that are fighting that ally.
   </p>

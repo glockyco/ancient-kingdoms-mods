@@ -391,7 +391,7 @@ describe("healing and effect calculations", () => {
       )[0],
     ).toBe(5);
   });
-  test("aggro rounds crowd-control terms, adds a stated example hit, and only direct handlers add maximum Health", () => {
+  test("aggro rounds crowd-control terms, adds a stated example hit, and only direct handlers add maximum Hit Points", () => {
     const aggro = skill({
       aggro: { base_value: 5, bonus_per_level: 0 },
       stun_chance: { base_value: 0.25, bonus_per_level: 0 },
@@ -544,7 +544,7 @@ test("shared player calculations stay separate from mercenary values and weapon 
   expect(results).toEqual([302, 256, 278, 302]);
 });
 
-test("combined restoration scales Health with Wisdom but keeps the resource amount separate", () => {
+test("combined restoration scales Hit Points with Wisdom but keeps the resource amount separate", () => {
   const restore = skill({
     heals_health: { base_value: 5, bonus_per_level: 0 },
     heals_mana: { base_value: 3, bonus_per_level: 0 },
@@ -567,7 +567,7 @@ test("Charisma-scaled song damage uses the positive damage magnitude after round
   ).toEqual([8]);
 });
 
-test("a non-positive listed aggro amount adds zero maximum Health", () => {
+test("a non-positive listed aggro amount adds zero maximum Hit Points", () => {
   const aggro = skill({ aggro: { base_value: 1, bonus_per_level: -1 } });
   expect(
     resultNumbers(aggroCalculation(aggro), { rank: 2, maxHealth: 2000 })[0],

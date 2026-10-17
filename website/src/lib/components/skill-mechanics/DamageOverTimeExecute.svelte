@@ -16,11 +16,14 @@
   <div class="space-y-2">
     <h3 class="font-semibold">Damage-over-Time Execute</h3>
     <p class="text-muted-foreground">
-      While the target is below 30% of its maximum Health, your damage-over-time
-      ticks deal {formatPercent(fmt.atRank(execute, skill.max_level), {
-        decimals: 2,
-        preserveNonzero: true,
-      })} more damage, rounded, so a {formatNumber(EXAMPLE_HIT)}-damage tick
+      While the target is below 30% of its maximum Hit Points, your
+      damage-over-time ticks deal {formatPercent(
+        fmt.atRank(execute, skill.max_level),
+        {
+          decimals: 2,
+          preserveNonzero: true,
+        },
+      )} more damage, rounded, so a {formatNumber(EXAMPLE_HIT)}-damage tick
       deals {formatNumber(
         executeTick(execute, skill.max_level),
       )}{fmt.scalesWithRank(execute, skill.max_level)

@@ -1,6 +1,7 @@
 import type { ClassSkill } from "$lib/queries/classes.server";
 import type { Curves } from "$lib/utils/merc-stats";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
+import type { StatId } from "$lib/generated/stat-vocabulary";
 
 export type PetKind = "Mercenary" | "Companion" | "Familiar";
 
@@ -90,27 +91,28 @@ export interface PetRecruiter {
   zone_name: string;
 }
 
-export type PetStatId =
+export type PetStatId = Extract<
+  StatId,
   | "health"
-  | "damage"
-  | "magic_damage"
-  | "defense"
+  | "attack_power"
+  | "spell_power"
+  | "armor_class"
   | "magic_resist"
   | "poison_resist"
   | "fire_resist"
   | "cold_resist"
   | "disease_resist"
   | "block_chance"
-  | "critical_chance";
+  | "critical_chance"
+>;
 
 export type PetStatCurves = Record<
-  `${PetStatId}_${"base" | "per_level"}`,
+  `${Exclude<PetStatId, "attack_power" | "spell_power" | "armor_class"> | "damage" | "magic_damage" | "defense"}_${"base" | "per_level"}`,
   number
 > & { health_multiplier: number };
 
 export interface PetStatSnapshot {
-  name: string;
-  isPercent: boolean;
+  id: PetStatId;
   level1: number;
   atCap: number;
   withVeteran: number;
@@ -142,7 +144,7 @@ export interface PetDetailView {
 
 /** A resistance that grows linearly with the mercenary level. */
 export interface MercenaryResistance {
-  name: string;
+  id: Extract<PetStatId, `${string}_resist`>;
   base: number;
   per_level: number;
 }

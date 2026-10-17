@@ -10,6 +10,8 @@
     mercenaryHiringOdds,
   } from "$lib/calculation/mercenary-stats";
   import { formatPercent, formatNumber } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
+  import type { StatId } from "$lib/generated/stat-vocabulary";
   import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import {
     OWNER_LIMITS,
@@ -42,22 +44,29 @@
   type TargetKey = "hp" | "mana" | "atk";
 
   const CLASS_NAMES = Object.keys(CLASSES);
-  const ATTRS = ["STR", "CON", "DEX", "INT", "WIS", "CHA"];
+  const ATTRS: Record<string, StatId> = {
+    STR: "strength",
+    CON: "constitution",
+    DEX: "dexterity",
+    INT: "intelligence",
+    WIS: "wisdom",
+    CHA: "charisma",
+  };
   const STAT_HUE: Record<StatKey, string> = {
     hp: "var(--stat-hp)",
     mana: "var(--stat-mana)",
     atk: "var(--stat-atk)",
     spell: "var(--stat-spell)",
   };
-  const LABELS: Record<StatKey, string> = {
-    hp: "Health",
-    mana: "Mana",
-    atk: "Attack Power",
-    spell: "Spell Power",
+  const STAT_IDS: Record<StatKey, StatId> = {
+    hp: "health",
+    mana: "mana",
+    atk: "attack_power",
+    spell: "spell_power",
   };
   const TITLES: Record<StatKey, string> = {
     // Source: server-scripts/Player.cs:10718-10732; Health.cs:max; Constitution.cs:GetHealthBonus — maximum Health combines the saved hire multiplier, veteran bonus and Constitution.
-    hp: "Multiply base Health by the combined percentage from the saved Health hire roll and 0.25% per veteran point (VT), round, then add 25 Health per point of Constitution.",
+    hp: "Multiply base Hit Points by the combined percentage from the saved Hit Points hire roll and 0.25% per veteran point (VT), round, then add 25 Hit Points per point of Constitution.",
     // Source: server-scripts/Player.cs:10718-10732; Mana.cs:max; Intelligence.cs:GetManaBonus — maximum Mana combines the saved hire multiplier, veteran bonus and Intelligence.
     mana: "Multiply base Mana by the combined percentage from the saved Mana hire roll and 0.25% per veteran point (VT), round, then add 20 Mana per point of Intelligence.",
     // Source: server-scripts/Player.cs:10714-10720; Strength.cs:GetDamageBonus — Attack Power adds Strength, the combat hire roll and veteran points.
@@ -67,9 +76,9 @@
       "Round 150% of Intelligence, then add the saved combat hire roll and veteran points (VT).",
   };
   const TARGET_LABELS: Record<TargetKey, string> = {
-    hp: "Health",
-    mana: "Mana",
-    atk: "Attack Power / Spell Power",
+    hp: statName(STAT_IDS.hp),
+    mana: statName(STAT_IDS.mana),
+    atk: `${statName(STAT_IDS.atk)} / ${statName(STAT_IDS.spell)}`,
   };
 
   const goldFmt = (n: number) =>
@@ -80,7 +89,7 @@
           grouping: false,
         }).replace(/\.0$/, "") + "M"
       : n >= 1e4
-        ? Math.round(n / 1e3) + "k"
+        ? formatNumber(n / 1e3, { decimals: 0, grouping: false }) + "k"
         : n >= 1e3
           ? formatNumber(n / 1e3, {
               decimals: 1,
@@ -347,7 +356,7 @@
 
 <Seo
   title="Mercenary Stat Ranges - Ancient Kingdoms"
-  description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, by character level and veteran points (VT), plus hiring odds and average costs."
+  description="Possible Hit Points, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, by character level and veteran points (VT), plus hiring odds and average costs."
   path="/mechanics/mercenary-stats"
 />
 
@@ -369,8 +378,8 @@
   <h1>Mercenary Stat Ranges</h1>
   <p class="lead">
     <span class="block"
-      >Compare possible mercenary Health, Mana, Attack Power, and Spell Power by
-      class, race, level, and veteran points (VT).</span
+      >Compare possible mercenary Hit Points, Mana, Attack Power, and Spell
+      Power by class, race, level, and veteran points (VT).</span
     >
     <span class="block"
       >A recruiter guarantees its preferred race only if that race can take the
@@ -397,7 +406,7 @@
         >
         <!-- Source: server-scripts/Player.cs:10640-10685,10903-10933; Database.cs:1922-1943; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
         <span class="block"
-          >Hiring sets three hire rolls: a Health multiplier, a resource
+          >Hiring sets three hire rolls: a Hit Points multiplier, a resource
           multiplier, and a combat hire roll shared by Attack Power and Spell
           Power.</span
         >
@@ -417,7 +426,7 @@
         <li>
           <!-- Source: server-scripts/Player.cs:10903-10933; Health.cs:max; Mana.cs:max — saved resource multipliers scale current base resources, before equipment bonuses. -->
           <span class="block"
-            >Without equipment, an existing mercenary's Health and Mana fall
+            >Without equipment, an existing mercenary's Hit Points and Mana fall
             within the row at its current level.</span
           >
         </li>
@@ -468,7 +477,7 @@
       <!-- Source: server-scripts/Player.cs:CmdBuyMercenary; UICharacterInfo.cs:Update — VT adds base-resource multipliers and both combat-power bonuses. -->
       <NumberField
         label="Veteran points (VT)"
-        hint="+0.25% of base Health & Mana, +1 Attack & Spell Power each"
+        hint={`+0.25% of base ${statName("health")} & ${statName("mana")}, +1 ${statName("attack_power")} & ${statName("spell_power")} each`}
         value={veteran}
         min={OWNER_LIMITS.veteran[0]}
         max={OWNER_LIMITS.veteran[1]}
@@ -509,16 +518,19 @@
           <div class="class-id">
             <span class="class-name">{c.cls}</span>
             <span class={`resource ${c.role === "energy" ? "rage" : "mana"}`}
-              >{c.resource}</span
+              >{c.resource === "Songs"
+                ? c.resource
+                : statName(c.resource)}</span
             >
           </div>
           <div class="class-meta">
             <span class="basehp"
-              >Base Health <b class="tnum">{formatNumber(c.hpCurve)}</b></span
+              >Base {statName("health")}
+              <b class="tnum">{formatStat("health", c.hpCurve)}</b></span
             >
             <span class="attrs">
-              {#each ATTRS as a (a)}<span class="attr"
-                  >{a}<b>{c.attrs[a]}</b></span
+              {#each Object.entries(ATTRS) as [key, id] (key)}<span class="attr"
+                  >{statName(id)}<b>{formatStat(id, c.attrs[key])}</b></span
                 >{/each}
             </span>
           </div>
@@ -531,7 +543,7 @@
                 {#each cols as k (k)}
                   <th title={TITLES[k]}
                     ><span class="colmark" style={`background:${STAT_HUE[k]}`}
-                    ></span>{LABELS[k]}</th
+                    ></span>{statName(STAT_IDS[k])}</th
                   >
                 {/each}
               </tr>
@@ -556,9 +568,12 @@
                       {@const cell = statRange(r, k)}
                       <td class="cell">
                         <div class="cell-val">
-                          <span class="lo">{formatNumber(cell[0])}</span><span
-                            class="dash">–</span
-                          >{formatNumber(cell[1])}
+                          <span class="lo"
+                            >{formatStat(STAT_IDS[k], cell[0])}</span
+                          ><span class="dash">–</span>{formatStat(
+                            STAT_IDS[k],
+                            cell[1],
+                          )}
                         </div>
                         <div class="bar">
                           <span style={barStyle(cell, dom[k], STAT_HUE[k])}
@@ -684,11 +699,13 @@
               />
               <div class="sub">
                 {#if k === "atk"}
-                  Attack Power ≥ <b>{formatNumber(read.value)}</b> · Spell Power
+                  {statName("attack_power")} ≥
+                  <b>{formatStat("attack_power", read.value)}</b>
+                  · {statName("spell_power")}
                   ≥
-                  <b>{formatNumber(read.spellValue ?? 0)}</b>
+                  <b>{formatStat("spell_power", read.spellValue ?? 0)}</b>
                 {:else}
-                  ≥ <b>{formatNumber(read.value)}</b>
+                  ≥ <b>{formatStat(STAT_IDS[k], read.value)}</b>
                 {/if}
               </div>
             </div>

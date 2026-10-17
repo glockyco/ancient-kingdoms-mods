@@ -5,7 +5,7 @@ import type { ClassGuide } from "$lib/types/classes";
 export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   warrior: {
     attributes: {
-      text: "Strength raises Attack Power and maximum rage. Each Constitution point adds 25 maximum health and 0.03 percentage points of block chance. Constitution adds no health recovery.",
+      text: "Strength raises Attack Power and maximum Rage. Each Constitution point adds 25 maximum Hit Points and 0.03 percentage points of Block Chance. Constitution adds no Health Regeneration.",
       source:
         "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-25,73-76; server-scripts/Health.cs:28-44 — Constitution adds maximum health, not recovery",
     },
@@ -31,7 +31,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   cleric: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum Hit Points to buffs that grant them. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -59,7 +59,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   druid: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum health to buffs that grant it. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded.",
+      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum Hit Points to buffs that grant them. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
@@ -85,7 +85,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   ranger: {
     attributes: {
-      text: "Dexterity adds bow damage, accuracy, and Critical Strike. Strength raises Attack Power. Wisdom counts three times for your healing, before the healing cap applies.",
+      text: "Dexterity adds bow damage, Accuracy, and Critical Strike. Strength raises Attack Power. Wisdom counts three times for your healing, before the healing cap applies.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:107-114 — attribute effects and Ranger multiplier",
     },
@@ -118,7 +118,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   rogue: {
     attributes: {
-      text: "Dexterity raises accuracy, Critical Strike, and poison damage. Strength raises Attack Power and maximum rage.",
+      text: "Dexterity raises Accuracy, Critical Strike, and poison damage. Strength raises Attack Power and maximum Rage.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-96; server-scripts/Strength.cs:15-18,80-83 — attribute effects",
     },
@@ -151,7 +151,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   wizard: {
     attributes: {
-      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded. Dexterity raises accuracy and Critical Strike.",
+      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. Dexterity raises Accuracy and Critical Strike.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — Intelligence increases maximum mana and magic damage",
     },
@@ -162,12 +162,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     },
     rules: [
       {
-        text: "Mystic Spark costs no mana and gives back 35% of its damage as mana, rounded down. Damage beyond the target's remaining health does not count.",
+        text: "Mystic Spark costs no Mana and gives back 35% of its damage as Mana, rounded down. Damage beyond the target's remaining Hit Points does not count.",
         source:
           "Source: server-scripts/Combat.cs:1235-1244,1245-1294 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
-        text: "Mana Shield absorbs incoming damage by spending one mana per point. It ends when a hit needs more mana than you have. A hit that spends exactly your remaining mana leaves the shield active.",
+        text: "Mana Shield absorbs incoming damage by spending one Mana per point. It ends when a hit needs more Mana than you have. A hit that spends exactly your remaining Mana leaves the shield active.",
         source:
           "Source: server-scripts/Combat.cs:1295-1325 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
       },
@@ -213,7 +213,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   necromancer: {
     attributes: {
-      text: "Intelligence adds 20 maximum mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's ward, Mend Undead's health recovery, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum health per point but no health recovery.",
+      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's Ward, Mend Undead's Health Regeneration, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum Hit Points per point but no Health Regeneration.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:464-527; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
@@ -232,7 +232,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       },
       {
         // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in the export's pets.json.
-        text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 1% of its base Attack Power and Spell Power, and 0.25% of its base maximum health, Armor Class, and magic, poison, fire, cold, and disease resistance, rounded to whole points. At 200 veteran points, Attack Power and Spell Power reach +200% and the other stats +50%.",
+        text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 1% of its base Attack Power and Spell Power, and 0.25% of its base maximum Hit Points, Armor Class, Magic Resist, Poison Resist, Fire Resist, Cold Resist, and Disease Resist, rounded to whole points. At 200 veteran points, Attack Power and Spell Power reach +200% and the other stats +50%.",
         source:
           "Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — RefreshFromOwner caps pet level at Level.max and veteran points at 200; damage and magic damage use 0.01 and the other base stats 0.0025, each with RoundToInt",
         href: "/summons?summons.class=necromancer",
@@ -240,14 +240,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       },
       {
         // Exported skills.blood_pact: max_level 5; health_cost_percent and mana_restored_percent each { base_value: 0.05, bonus_per_level: 0.05 }.
-        text: "Blood Pact trades 5% of maximum health for 5% of maximum mana at rank 1. Both percentages rise by 5 percentage points per rank, reaching 25% at rank 5. Health cost rounds up and mana restored rounds down. You must have more health than the cost, and the full cost is paid even when you need only a little mana.",
+        text: "Blood Pact trades 5% of maximum Hit Points for 5% of maximum Mana at rank 1. Both percentages rise by 5 percentage points per rank, reaching 25% at rank 5. The Hit Points cost rounds up and Mana restored rounds down. You must have more Hit Points than the cost, and the full cost is paid even when you need only a little Mana.",
         source:
           "Source: server-scripts/NecromancerBloodPactSkill.cs:13-31,53-62 — GetHealthCost uses CeilToInt of health.max; GetManaRestored uses FloorToInt of mana.max; CanConvert requires health.current > healthCost; Apply caps mana gain but pays full health cost",
         href: "/skills/blood_pact",
         linkText: "Blood Pact costs by rank",
       },
       {
-        text: "Death Bloom spends 50% of your maximum health, rounded up, to heal another living player or a non-familiar pet. You must have more health than the cost. It cannot heal you or a familiar.",
+        text: "Death Bloom spends 50% of your maximum Hit Points, rounded up, to heal another living player or a non-familiar pet. You must have more Hit Points than the cost. It cannot heal you or a familiar.",
         source:
           "Source: server-scripts/NecromancerDeathBloomSkill.cs:7-17,28-45,52-59 — healthCostPercent is 0.5; GetHealthCost rounds up; CheckSelf requires health above cost; CorrectedTarget excludes self and familiars",
         href: "/skills/death_bloom",

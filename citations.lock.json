@@ -1195,6 +1195,10 @@
       "sha256": "98c44ae7b668b883d08a239a0ed1376c50a4dcb34daad906cd21e1d3b977adff",
       "span": 13
     },
+    "EquipmentItem.cs:445": {
+      "sha256": "02e4b47bef54e38535208d35dfddd2e68b8201fdba6b7d25dc2188f43bffa755",
+      "span": 1
+    },
     "EquipmentItem.cs:485-527": {
       "sha256": "ddf7914bf56b5f03bfc98cb23d13c1b44e9b6855c1a1523d02c99f4c990b53d3",
       "span": 43

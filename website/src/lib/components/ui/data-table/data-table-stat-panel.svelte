@@ -5,7 +5,7 @@
   import { Button } from "$lib/components/ui/button";
   import { cn } from "$lib/utils.js";
   import { STAT_CATEGORIES, ALL_STAT_KEYS } from "$lib/constants/stats";
-  import { STAT_DISPLAY_NAMES } from "$lib/terminology";
+  import { statField, statFieldName } from "$lib/stats";
   import {
     getStatCounts,
     getMatchingItemIds,
@@ -116,10 +116,6 @@
   function clearFilter() {
     column?.setFilterValue(undefined);
   }
-
-  function getStatLabel(stat: string): string {
-    return STAT_DISPLAY_NAMES[stat] ?? stat;
-  }
 </script>
 
 {#if open}
@@ -185,7 +181,9 @@
                   isDisabled && "pointer-events-none opacity-40",
                 )}
               >
-                <span class="truncate">{getStatLabel(stat)}</span>
+                <span class="truncate"
+                  >{statFieldName(statField("item", stat), "item")}</span
+                >
                 <span
                   class={cn(
                     "ml-2 shrink-0 tabular-nums",

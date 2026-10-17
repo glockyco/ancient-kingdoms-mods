@@ -56,10 +56,11 @@
     <!-- Source: server-scripts/DamageSkill.cs:ToolTip; TargetDamageSkill.cs:ApplyDamage; AreaDamageSkill.cs:Apply — direct damage adds caster maximum Health; the tooltip uses the local player's maximum Health divided by three. -->
     <!-- Runtime verification: docs/game-bugs/threat-tooltip-understates-health-bonus.md -->
     <p class="text-muted-foreground">
-      Direct hits add the caster's full maximum Health to the skill's threat.
+      Direct hits add the caster's full maximum Hit Points to the skill's
+      threat.
       {#if skill.tooltip_template?.includes("{AGGRO}")}
-        The tooltip shows a third of your maximum Health instead, even when a
-        mercenary or companion casts the skill.
+        The tooltip shows a third of your maximum Hit Points instead, even when
+        a mercenary or companion casts the skill.
       {/if}
     </p>
   {/if}

@@ -40,6 +40,7 @@ import { bardBonus, bardPower, songValue } from "$lib/calculation/combat";
 import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import { damageFormulaStats } from "$lib/utils/skillMechanics";
+import { formatStat, statName } from "$lib/stats";
 
 /** Attribute a calculation's quantities to a mercenary instead of the reader, so its values are labelled as the mercenary's and never remembered as the reader's. */
 export function casterInputs(
@@ -257,7 +258,7 @@ export function cadenceCalculation(
       }
       return {
         given: inputs.map((input) => describeInput(input, values[input.key])),
-        result: `${number(evaluated[0].value.total)} damage before the target's defenses and ${number(evaluated[1].value.total)} Health restored before critical heals and the missing-Health cap`,
+        result: `${number(evaluated[0].value.total)} damage before the target's defenses and ${number(evaluated[1].value.total)} Hit Points restored before critical heals and the missing-Hit-Points cap`,
         working,
       };
     },
@@ -299,8 +300,10 @@ export function damageCalculation(
   if (kind === "bard_final_cadence" || kind === "bard_final_cadence_merc")
     return cadenceCalculation(skill, mercenary);
   if (kind === "manaburn") {
-    const resource = skill.skill_type === "target_projectile" ? "Mana" : "Rage";
-    const factor = resource === "Mana" ? 3 : 2;
+    const resourceStat =
+      skill.skill_type === "target_projectile" ? "mana" : "rage";
+    const resource = statName(resourceStat);
+    const factor = resourceStat === "mana" ? 3 : 2;
     return {
       steps: [
         {
@@ -310,10 +313,12 @@ export function damageCalculation(
       ],
       inputs: [situational("resource", `Current ${resource}`, 100)],
       example: (values) => ({
-        given: [`${number(values.resource)} current ${resource}`],
+        given: [
+          `${formatStat(resourceStat, values.resource)} current ${resource}`,
+        ],
         result: `${number(values.resource * factor)} damage before the target's defenses`,
         working: [
-          `Damage before defenses: ${number(values.resource)} × ${factor} = ${number(values.resource * factor)}`,
+          `Damage before defenses: ${formatStat(resourceStat, values.resource)} × ${factor} = ${number(values.resource * factor)}`,
         ],
       }),
     };
@@ -397,8 +402,8 @@ export function damageCalculation(
   const terms = [
     ...(!scroll
       ? [
-          magic ? "Spell Power" : "Attack Power",
-          ...(weaponMagic ? ["Attack Power"] : []),
+          magic ? statName("spell_power") : statName("attack_power"),
+          ...(weaponMagic ? [statName("attack_power")] : []),
           ...(dexterity ? ["Dexterity contribution"] : []),
         ]
       : []),
@@ -572,7 +577,7 @@ export function damageCalculation(
       return {
         given: other
           ? [
-              `the caster's 200 ${magic ? "Spell Power" : "Attack Power"}${weaponMagic ? " and 200 Attack Power" : ""}`,
+              `the caster's 200 ${magic ? statName("spell_power") : statName("attack_power")}${weaponMagic ? ` and 200 ${statName("attack_power")}` : ""}`,
               ...((skill.damage?.bonus_per_level ?? 0) !== 0 ||
               (multiplied && skill.damage_percent!.bonus_per_level !== 0)
                 ? [`rank ${rank}`]
@@ -622,7 +627,7 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
       return {
         given: [
           ...(skill.max_level > 1 ? [`rank ${rank}`] : []),
-          `${number(values.charisma)} Charisma`,
+          `${formatStat("charisma", values.charisma)} Charisma`,
         ],
         result: `The charmed monster deals ${percent(result, { decimals: 2, preserveNonzero: true })} of its ordinary damage`,
         working: [

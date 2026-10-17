@@ -9,6 +9,8 @@
   import Seo from "$lib/components/Seo.svelte";
   import { formatSeconds } from "$lib/calculation/format";
   import { formatPercent, formatNumber } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
+  import type { StatId } from "$lib/generated/stat-vocabulary";
   import { iround, multiplyF32 } from "$lib/calculation/unity-math";
   import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import type { ClassSkill } from "$lib/queries/classes.server";
@@ -72,23 +74,26 @@
   const veteran = $derived(mercenaryOwner.veteran);
   const discount = $derived(charismaDiscount(mercenaryOwner.charisma));
 
-  const range = ([lo, hi]: [number, number]) =>
-    lo === hi ? formatNumber(lo) : `${formatNumber(lo)}–${formatNumber(hi)}`;
+  const range = (id: StatId, [lo, hi]: [number, number]) =>
+    lo === hi
+      ? formatStat(id, lo)
+      : `${formatStat(id, lo)}–${formatStat(id, hi)}`;
 
-  const ATTRIBUTE_NAMES: Record<string, string> = {
-    STR: "Strength",
-    DEX: "Dexterity",
-    CON: "Constitution",
-    INT: "Intelligence",
-    WIS: "Wisdom",
-    CHA: "Charisma",
+  const ATTRIBUTES: Record<string, StatId> = {
+    STR: "strength",
+    DEX: "dexterity",
+    CON: "constitution",
+    INT: "intelligence",
+    WIS: "wisdom",
+    CHA: "charisma",
   };
 
   // Source: server-scripts/Player.cs:UpdateMercStatsByLevel — each attribute gains 1 at every multiple of its class interval.
   const growth = $derived(
     Object.entries(classDef.div)
       .map(([key, every]) => ({
-        name: ATTRIBUTE_NAMES[key],
+        id: ATTRIBUTES[key],
+        name: statName(ATTRIBUTES[key]),
         every,
         atLevel: Math.floor(level / every),
         atMax: Math.floor(50 / every),
@@ -100,7 +105,7 @@
   /** Resistances with the same curve share one row. */
   const resistanceRows = $derived.by(() => {
     const groups: {
-      names: string[];
+      ids: StatId[];
       base: number;
       per_level: number;
     }[] = [];
@@ -108,15 +113,15 @@
       const same = groups.find(
         (g) => g.base === r.base && g.per_level === r.per_level,
       );
-      if (same) same.names.push(r.name);
-      else
-        groups.push({ names: [r.name], base: r.base, per_level: r.per_level });
+      if (same) same.ids.push(r.id);
+      else groups.push({ ids: [r.id], base: r.base, per_level: r.per_level });
     }
     return groups.map((g) => ({
+      id: g.ids[0],
       label:
-        g.names.length === pet.profile.resistances.length
+        g.ids.length === pet.profile.resistances.length
           ? "Each base resistance"
-          : `${g.names.join(", ")} base resistance`,
+          : `${g.ids.map((id) => statName(id)).join(", ")} base resistance`,
       per_level: g.per_level,
       atLevel: g.base + g.per_level * (level - 1),
     }));
@@ -135,7 +140,10 @@
   const topRank = $derived(Math.max(...pet.skills.map((s) => s.max_level)));
   const skillRank = $derived(mercenarySkillRank(cls, level, veteran, topRank));
 
-  const resourceName = $derived(mercenaryResource(cls));
+  const resourceName = $derived.by(() => {
+    const resource = mercenaryResource(cls);
+    return resource === "Songs" ? resource : statName(resource);
+  });
   const resourceClass = $derived(
     cls === "Bard"
       ? "text-foreground"
@@ -144,7 +152,7 @@
         : "text-stat-mana",
   );
   const veteranBonus = $derived(
-    (Math.round(veteran * VET_MULT_PER_POINT * 10000) / 100).toString(),
+    formatPercent(veteran * VET_MULT_PER_POINT, { decimals: 2 }),
   );
 
   // Source: mods/DataExporter/Exporters/PetExporter.cs — the only innate mercenary skill is GameManager.invulWarriorSkill, which Combat applies on a lethal hit.
@@ -312,7 +320,7 @@
           onchange={(v) => setMercenaryOwner("veteran", v)}
         />
         <NumberField
-          label="Charisma"
+          label={statName("charisma")}
           hint={discount > 0
             ? `−${formatPercent(discount, { decimals: 2, preserveNonzero: true })} prices`
             : "no discount"}
@@ -341,15 +349,21 @@
       <Card.Content class="space-y-4">
         <!-- Source: server-scripts/Player.cs:10903-10933, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {#if stats.health}{@render stat("Health", range(stats.health))}{/if}
-          {#if stats.mana}{@render stat("Mana", range(stats.mana))}{/if}
+          {#if stats.health}{@render stat(
+              statName("health"),
+              range("health", stats.health),
+            )}{/if}
+          {#if stats.mana}{@render stat(
+              statName("mana"),
+              range("mana", stats.mana),
+            )}{/if}
           {#if stats.attack}{@render stat(
-              "Attack Power",
-              range(stats.attack),
+              statName("attack_power"),
+              range("attack_power", stats.attack),
             )}{/if}
           {#if stats.spell}{@render stat(
-              "Spell Power",
-              range(stats.spell),
+              statName("spell_power"),
+              range("spell_power", stats.spell),
             )}{/if}
           {@render stat(
             "Skill rank",
@@ -411,10 +425,10 @@
               <tr class="border-b border-border/50">
                 <td class="py-2 pr-4">{g.name}</td>
                 <td class="py-2 pr-4 text-muted-foreground"
-                  >+1 every {g.every} levels</td
+                  >{formatStat(g.id, 1, { signed: true })} every {g.every} levels</td
                 >
                 <td class="py-2 pr-4 text-right font-medium tabular-nums"
-                  >+{g.atLevel}</td
+                  >{formatStat(g.id, g.atLevel, { signed: true })}</td
                 >
                 <td class="hidden py-2 sm:table-cell">
                   <div class="h-1.5 rounded-full bg-muted">
@@ -431,14 +445,19 @@
         <!-- Source: the export's pets.json — each resistance is base + per_level × (level − 1). -->
         {#each resistanceRows as r (r.label)}
           <p class="text-sm">
-            {r.label}: <span class="font-medium tabular-nums">{r.atLevel}</span>
-            at level {level}, +{r.per_level} every level.
+            {r.label}:
+            <span class="font-medium tabular-nums"
+              >{formatStat(r.id, r.atLevel)}</span
+            >
+            at level {level}, {formatStat(r.id, r.per_level, { signed: true })} every
+            level.
           </p>
         {/each}
         <!-- Source: server-scripts/Constitution.cs:GetPoisonResistBonus — Constitution adds 0.25 Poison Resist per point, rounded to nearest even. -->
         <p class="text-sm">
-          Constitution adds {iround(
-            multiplyF32(Math.floor(level / classDef.div.CON), 0.25),
+          Constitution adds {formatStat(
+            "poison_resist",
+            iround(multiplyF32(Math.floor(level / classDef.div.CON), 0.25)),
           )}
           Poison Resist to the base value at level {level}, before equipment.
         </p>
@@ -465,20 +484,20 @@
             <h3 class="text-sm font-semibold">Veteran points (VT)</h3>
             <!-- Source: server-scripts/Player.cs:10718-10732,10918-10933; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
-              Each veteran point (VT) adds 0.25% of base Health to maximum
-              Health{veteranRaisesMana
+              Each veteran point (VT) adds 0.25% of base Hit Points to maximum
+              Hit Points{veteranRaisesMana
                 ? " and 0.25% of base Mana to maximum Mana"
                 : ""}, before rounding.
             </p>
             <p class="mt-1 text-sm text-muted-foreground">
-              Your {veteran} veteran points (VT) add {veteranBonus}% of base
-              Health to maximum Health{veteranRaisesMana
-                ? ` and ${veteranBonus}% of base Mana to maximum Mana`
+              Your {veteran} veteran points (VT) add {veteranBonus} of base Hit Points
+              to maximum Hit Points{veteranRaisesMana
+                ? ` and ${veteranBonus} of base Mana to maximum Mana`
                 : ""}.
             </p>
             {#if classDef.role === "energy"}
               <p class="mt-1 text-sm text-muted-foreground">
-                Maximum Rage stays the same as veteran points (VT) rise.
+                The maximum Rage stays the same as veteran points (VT) rise.
               </p>
             {:else if cls === "Bard"}
               <p class="mt-1 text-sm text-muted-foreground">
@@ -566,10 +585,11 @@
           <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,CanAttack; NecromancerMercenarySummons.cs:LateUpdate — the companion takes the owner's level, gains 10% of the mercenary's Spell Power, attacks the mercenary's target, and leaves when either dies. -->
           <ul class="list-disc space-y-1 pl-5">
             <li>
-              Its level matches yours. It gains {Math.round(
-                MERCENARY_COMPANION_SPELL_POWER_SHARE * 100,
-              )}% of the mercenary's Spell Power as Attack Power and as Spell
-              Power, rounded.
+              Its level matches yours. It gains {formatPercent(
+                MERCENARY_COMPANION_SPELL_POWER_SHARE,
+                { decimals: 0 },
+              )} of the mercenary's Spell Power as Attack Power and as Spell Power,
+              rounded.
             </li>
             <li>
               It attacks only the mercenary's target, while both are in
@@ -699,14 +719,18 @@
               "Invulnerable for",
               formatSeconds(deathSaveInfo.now.seconds),
             )}
-            {@render stat("Rage cost", formatNumber(deathSaveInfo.now.rage))}
+            {@render stat(
+              `${statName("rage")} cost`,
+              formatStat("rage", deathSaveInfo.now.rage),
+            )}
             {@render stat("Cooldown", formatSeconds(deathSaveInfo.cooldown))}
           </dl>
           <p class="text-muted-foreground">
             Duration and Rage cost rise with total veteran points, from {formatSeconds(
               deathSaveInfo.low.seconds,
-            )} for {formatNumber(deathSaveInfo.low.rage)} Rage with 0 total veteran
-            points to {formatSeconds(deathSaveInfo.high.seconds)} for {formatNumber(
+            )} for {formatStat("rage", deathSaveInfo.low.rage)} Rage with 0 total
+            veteran points to {formatSeconds(deathSaveInfo.high.seconds)} for {formatStat(
+              "rage",
               deathSaveInfo.high.rage,
             )} Rage with
             {MAX_VETERAN} total veteran points.

@@ -47,6 +47,15 @@ import {
   wisdomHeal,
 } from "$lib/calculation/combat";
 import { hitThreat } from "$lib/calculation/combat-rules";
+import {
+  formatStat,
+  statName,
+  statField,
+  statFieldName,
+  statFieldPhraseName,
+  formatStatField,
+} from "$lib/stats";
+import { STATS } from "$lib/generated/stat-vocabulary";
 
 const zero = { base_value: 0, bonus_per_level: 0 };
 function linear(skill: SkillDetailView, key: LinearSkillField): LinearValue {
@@ -95,8 +104,8 @@ export function healingCalculation(
         name: wisdom
           ? "Skill healing"
           : health
-            ? "Health restored"
-            : "Mana or Rage restored",
+            ? `${statName("health")} restored`
+            : `${statName("mana")} or ${statName("rage")} restored`,
         expression: describeRankScaling(
           (health ? skill.heals_health : skill.heals_mana) ?? zero,
           skill.max_level,
@@ -104,19 +113,19 @@ export function healingCalculation(
         ),
         ...(!wisdom
           ? {
-              limit: `at most the recipient's missing ${health ? "Health" : "Mana or Rage"}`,
+              limit: `at most the recipient's missing ${health ? "Hit Points" : "Mana or Rage"}`,
             }
           : {}),
       },
       ...(share !== null
         ? [
             {
-              name: "Wisdom percentage",
+              name: `${statName("wisdom")} percentage`,
               expression: `${percent(share, { decimals: 2, preserveNonzero: true })} per point of Wisdom above 0`,
               limit: `at most ${percent(WISDOM_HEAL_CAP, { decimals: 2, preserveNonzero: true })}`,
             },
             {
-              name: "Wisdom healing",
+              name: `${statName("wisdom")} healing`,
               expression: "Skill healing × Wisdom percentage",
               rounding: "nearest" as const,
             },
@@ -125,16 +134,16 @@ export function healingCalculation(
       ...(wisdom
         ? [
             {
-              name: "Health restored",
+              name: `${statName("health")} restored`,
               expression: "Skill healing + Wisdom healing",
-              limit: "at most the recipient's missing Health",
+              limit: "at most the recipient's missing Hit Points",
             },
           ]
         : []),
       ...(resource
         ? [
             {
-              name: "Mana or Rage restored",
+              name: `${statName("mana")} or ${statName("rage")} restored`,
               expression: describeRankScaling(
                 resource,
                 skill.max_level,
@@ -158,25 +167,25 @@ export function healingCalculation(
       return {
         given: [
           `rank ${rank}`,
-          ...(wisdom ? [`${number(values.wisdom)} Wisdom`] : []),
+          ...(wisdom ? [`${formatStat("wisdom", values.wisdom)} Wisdom`] : []),
         ],
-        result: `${number(scaled.total)} ${health ? "Health before critical heals and the missing-Health cap" : "Mana (Rage for Warrior and Rogue mercenaries), capped at what is missing"}${resource ? `, and ${number(atRank(resource, rank))} Mana (Rage for Warrior and Rogue mercenaries)${criticalResource ? " before critical pet restoration" : ""}, capped at what is missing` : ""}`,
+        result: `${number(scaled.total)} ${health ? "Hit Points before critical heals and the missing-Hit-Points cap" : "Mana (Rage for Warrior and Rogue mercenaries), capped at what is missing"}${resource ? `, and ${number(atRank(resource, rank))} Mana (Rage for Warrior and Rogue mercenaries)${criticalResource ? " before critical pet restoration" : ""}, capped at what is missing` : ""}`,
         working: [
           ...rankWorkingLines(
             wisdom
               ? "Skill healing"
               : health
-                ? "Health restored"
-                : "Mana or Rage restored",
+                ? `${statName("health")} restored`
+                : `${statName("mana")} or ${statName("rage")} restored`,
             (health ? skill.heals_health : skill.heals_mana) ?? zero,
             rank,
             number,
           ),
           ...(share !== null
             ? [
-                `Wisdom percentage: ${number(Math.max(0, values.wisdom))} × ${percent(share, { decimals: 2, preserveNonzero: true })} = ${percent(scaled.rawShare, { decimals: 2, preserveNonzero: true })}${scaled.rawShare !== scaled.share ? `, limited to ${percent(scaled.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
+                `Wisdom percentage: ${formatStat("wisdom", Math.max(0, values.wisdom))} × ${percent(share, { decimals: 2, preserveNonzero: true })} = ${percent(scaled.rawShare, { decimals: 2, preserveNonzero: true })}${scaled.rawShare !== scaled.share ? `, limited to ${percent(scaled.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
                 `Wisdom healing: ${number(base)} × ${percent(scaled.share, { decimals: 2, preserveNonzero: true })} = ${number(scaled.bonus)}, rounded`,
-                `Health restored: ${number(base)} + ${number(scaled.bonus)} = ${number(scaled.total)}`,
+                `Hit Points restored: ${number(base)} + ${number(scaled.bonus)} = ${number(scaled.total)}`,
               ]
             : []),
           ...(resource
@@ -192,54 +201,111 @@ export function healingCalculation(
 export type Effect = {
   key: LinearSkillField;
   name: string;
-  percentage?: boolean;
   chance?: boolean;
   factor?: number;
 };
 const resistEffects: Effect[] = [
-  { key: "defense_bonus", name: "Armor Class", factor: 0.15 },
-  { key: "magic_resist_bonus", name: "Magic Resist", factor: 0.15 },
-  { key: "poison_resist_bonus", name: "Poison Resist", factor: 0.15 },
-  { key: "fire_resist_bonus", name: "Fire Resist", factor: 0.15 },
-  { key: "cold_resist_bonus", name: "Cold Resist", factor: 0.15 },
-  { key: "disease_resist_bonus", name: "Disease Resist", factor: 0.15 },
+  {
+    key: "defense_bonus",
+    name: statFieldName(statField("skill", "defense_bonus")),
+    factor: 0.15,
+  },
+  {
+    key: "magic_resist_bonus",
+    name: statFieldName(statField("skill", "magic_resist_bonus")),
+    factor: 0.15,
+  },
+  {
+    key: "poison_resist_bonus",
+    name: statFieldName(statField("skill", "poison_resist_bonus")),
+    factor: 0.15,
+  },
+  {
+    key: "fire_resist_bonus",
+    name: statFieldName(statField("skill", "fire_resist_bonus")),
+    factor: 0.15,
+  },
+  {
+    key: "cold_resist_bonus",
+    name: statFieldName(statField("skill", "cold_resist_bonus")),
+    factor: 0.15,
+  },
+  {
+    key: "disease_resist_bonus",
+    name: statFieldName(statField("skill", "disease_resist_bonus")),
+    factor: 0.15,
+  },
 ];
 const ordinaryEffects: Effect[] = [
-  { key: "health_max_bonus", name: "Maximum Health", factor: 2 },
+  {
+    key: "health_max_bonus",
+    name: statFieldName(statField("skill", "health_max_bonus")),
+    factor: 2,
+  },
   ...resistEffects,
-  { key: "ward_bonus", name: "Ward", factor: 2 },
-  { key: "damage_shield", name: "Damage Shield", factor: 0.75 },
-  { key: "healing_per_second_bonus", name: "Health per second" },
-  { key: "damage_bonus", name: "Attack Power", factor: 1 },
-  { key: "magic_damage_bonus", name: "Spell Power", factor: 1 },
+  {
+    key: "ward_bonus",
+    name: statFieldName(statField("skill", "ward_bonus")),
+    factor: 2,
+  },
+  {
+    key: "damage_shield",
+    name: statFieldName(statField("skill", "damage_shield")),
+    factor: 0.75,
+  },
+  {
+    key: "healing_per_second_bonus",
+    name: statFieldName(statField("skill", "healing_per_second_bonus")),
+  },
+  {
+    key: "damage_bonus",
+    name: statFieldName(statField("skill", "damage_bonus")),
+    factor: 1,
+  },
+  {
+    key: "magic_damage_bonus",
+    name: statFieldName(statField("skill", "magic_damage_bonus")),
+    factor: 1,
+  },
 ];
 const songEffects: Effect[] = [
   ...ordinaryEffects.filter((effect) => effect.key !== "damage_shield"),
-  { key: "mana_max_bonus", name: "Maximum Mana" },
-  { key: "energy_max_bonus", name: "Maximum Rage" },
-  { key: "mana_per_second_bonus", name: "Mana per second" },
-  { key: "energy_per_second_bonus", name: "Rage per second" },
+  {
+    key: "mana_max_bonus",
+    name: statFieldName(statField("skill", "mana_max_bonus")),
+  },
+  {
+    key: "energy_max_bonus",
+    name: statFieldName(statField("skill", "energy_max_bonus")),
+  },
+  {
+    key: "mana_per_second_bonus",
+    name: statFieldName(statField("skill", "mana_per_second_bonus")),
+  },
+  {
+    key: "energy_per_second_bonus",
+    name: statFieldName(statField("skill", "energy_per_second_bonus")),
+  },
   ...(
     [
-      ["health_max_percent_bonus", "Maximum Health percentage"],
-      ["damage_percent_bonus", "Attack Power percentage"],
-      ["magic_damage_percent_bonus", "Spell Power percentage"],
-      ["block_chance_bonus", "Block Chance"],
-      ["fear_resist_chance_bonus", "Fear Resist"],
-      ["critical_resist_bonus", "Critical Resist"],
-      ["accuracy_bonus", "Accuracy"],
-      ["critical_chance_bonus", "Critical Strike"],
-      ["haste_bonus", "Haste"],
-      ["spell_haste_bonus", "Spell Casting Haste"],
-      ["health_percent_per_second_bonus", "Health percentage per second"],
-      ["mana_percent_per_second_bonus", "Mana percentage per second"],
-      ["energy_percent_per_second_bonus", "Rage percentage per second"],
-      ["cooldown_reduction_percent", "Cooldown reduction"],
-    ] satisfies [LinearSkillField, string][]
-  ).map(([key, name]) => ({
+      "health_max_percent_bonus",
+      "damage_percent_bonus",
+      "magic_damage_percent_bonus",
+      "block_chance_bonus",
+      "fear_resist_chance_bonus",
+      "critical_resist_bonus",
+      "accuracy_bonus",
+      "critical_chance_bonus",
+      "haste_bonus",
+      "spell_haste_bonus",
+      "health_percent_per_second_bonus",
+      "mana_percent_per_second_bonus",
+      "energy_percent_per_second_bonus",
+      "cooldown_reduction_percent",
+    ] satisfies LinearSkillField[]
+  ).map((key) => ({
     key,
-    name,
-    percentage: true,
+    name: statFieldName(statField("skill", key)),
     chance: [
       "block_chance_bonus",
       "fear_resist_chance_bonus",
@@ -252,14 +318,22 @@ const songEffects: Effect[] = [
 
 function effectFormat(effect: Effect, value: number): string {
   if (effect.chance) {
-    const points = Number((value * 100).toFixed(2));
-    return `${String(points).replace(/^-/, "−")} percentage ${Math.abs(points) === 1 ? "point" : "points"}`;
+    const points = formatStatField(
+      statField("skill", effect.key),
+      value,
+    ).replace("%", "");
+    return `${points} percentage ${Math.abs(Number(points.replace("−", "-"))) === 1 ? "point" : "points"}`;
   }
+  return formatStatField(statField("skill", effect.key), value);
+}
+
+function effectIsFraction(effect: Effect): boolean {
+  const field = statField("skill", effect.key);
   return (
-    effect.percentage
-      ? percent(value, { decimals: 2, preserveNonzero: true })
-      : number(value)
-  ).replace(/^-/, "−");
+    STATS[field.stat].format === "percent" ||
+    field.modifier === "percent" ||
+    field.modifier === "percent_of_max_per_second"
+  );
 }
 
 function attributeInputs(
@@ -412,9 +486,9 @@ export function effectScalingCalculation(
       : derivedAttribute
         ? "Attribute contribution"
         : (attributeInputs(source)[0]?.label ?? "Attribute contribution");
-  const contributionName = ward ? "Ward" : attributeName;
+  const contributionName = ward ? statName("ward") : attributeName;
   const sourceName = ward
-    ? "Ward"
+    ? statName("ward")
     : source === "player_level"
       ? "Level"
       : attributeInputs(source)
@@ -426,8 +500,13 @@ export function effectScalingCalculation(
       effect.key === "healing_per_second_bonus" && field.base_value < 0
         ? debuff
           ? "Damage per second"
-          : "Health lost per second"
+          : "Hit Points lost per second"
         : `${effect.name}${debuff && field.base_value < 0 ? " reduction" : ""}`;
+    // The result puts the value first, so it names the stat without repeating the percent sign.
+    const phrase =
+      effect.key === "healing_per_second_bonus" && field.base_value < 0
+        ? name
+        : `${statFieldPhraseName(statField("skill", effect.key))}${debuff && field.base_value < 0 ? " reduction" : ""}`;
     const magnitude = mode === "dot" || (debuff && field.base_value < 0);
     const displayField =
       magnitude && field.base_value < 0
@@ -447,7 +526,16 @@ export function effectScalingCalculation(
     const bonusName = `${song ? "Charisma" : sourceName} ${
       mode === "dot" ? "damage" : mode === "healing" ? "healing" : name
     }`;
-    return { effect, displayField, mode, factor, name, baseName, bonusName };
+    return {
+      effect,
+      displayField,
+      mode,
+      factor,
+      name,
+      phrase,
+      baseName,
+      bonusName,
+    };
   });
   // Source: server-scripts/BuffSkill.cs:ScaleHealingPerSecondBonus; Skills.cs:GetFinalDamageDoT — flat buff drains use no attribute, and additive Charisma DoT uses no song multiplier.
   const usesAttribute = descriptions.some(
@@ -480,7 +568,7 @@ export function effectScalingCalculation(
     ...(usesSongMultiplier
       ? [
           {
-            name: "Charisma bonus",
+            name: `${statName("charisma")} bonus`,
             expression: "0.1% per point of Charisma above 0",
             limit: "at most 200%",
           },
@@ -496,7 +584,10 @@ export function effectScalingCalculation(
               number,
             ),
           },
-          { name: "Ward", expression: `Skill Ward + ${attributeName} × 2` },
+          {
+            name: statName("ward"),
+            expression: `Skill Ward + ${attributeName} × 2`,
+          },
         ]
       : []),
   ];
@@ -528,7 +619,7 @@ export function effectScalingCalculation(
       steps.push({
         name,
         expression: `${baseName} × (100% + Charisma bonus)`,
-        ...(!effect.percentage ? { rounding: "nearest" as const } : {}),
+        ...(!effectIsFraction(effect) ? { rounding: "nearest" as const } : {}),
         ...(effect.key === "fear_resist_chance_bonus" &&
         skill.fear_resist_chance_bonus_cap > 0
           ? {
@@ -576,7 +667,7 @@ export function effectScalingCalculation(
       if (derivedAttribute && usesAttribute) {
         const rawInput = attributeInputs(source)[0];
         const arithmetic = average
-          ? `(${number(values.wisdom)} + ${number(values.constitution)}${source === "player_wis_con_cha_half" ? ` + ${number(values.charisma)}` : ""}) ÷ 2`
+          ? `(${formatStat("wisdom", values.wisdom)} + ${formatStat("constitution", values.constitution)}${source === "player_wis_con_cha_half" ? ` + ${formatStat("charisma", values.charisma)}` : ""}) ÷ 2`
           : source === "player_level"
             ? `${number(values.level)} × 10`
             : `${number(values[rawInput.key])} × 3`;
@@ -608,7 +699,16 @@ export function effectScalingCalculation(
         );
       }
       const results = descriptions.map(
-        ({ effect, displayField, mode, factor, name, baseName, bonusName }) => {
+        ({
+          effect,
+          displayField,
+          mode,
+          factor,
+          name,
+          phrase,
+          baseName,
+          bonusName,
+        }) => {
           const base = atRank(displayField, values.rank);
           if (!(mode === "ward" && ward))
             working.push(
@@ -625,7 +725,7 @@ export function effectScalingCalculation(
             (song && mode === "ward") ||
             (song && mode === "dot" && factor === 0)
           ) {
-            const raw = effect.percentage
+            const raw = effectIsFraction(effect)
               ? multiplyF32(base, power)
               : songValue(base, attribute).scaled;
             result =
@@ -634,7 +734,7 @@ export function effectScalingCalculation(
                 ? Math.min(raw, skill.fear_resist_chance_bonus_cap)
                 : raw;
             working.push(
-              `${name}: ${effectFormat(effect, base)} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${effectFormat(effect, raw)}${effect.percentage ? "" : ", rounded"}${raw !== result ? `, limited to ${effectFormat(effect, result)}` : ""}`,
+              `${name}: ${effectFormat(effect, base)} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${effectFormat(effect, raw)}${effectIsFraction(effect) ? "" : ", rounded"}${raw !== result ? `, limited to ${effectFormat(effect, result)}` : ""}`,
             );
           } else if (mode === "ward") {
             result = attribute;
@@ -670,7 +770,7 @@ export function effectScalingCalculation(
               `${name}: ${number(base)} + ${addition} = ${number(result)}`,
             );
           }
-          return `${effectFormat(effect, result)} ${mode === "dot" && debuff ? "Damage per second before the target's resistance" : name}`;
+          return `${effectFormat(effect, result)} ${mode === "dot" && debuff ? "Damage per second before the target's resistance" : phrase}`;
         },
       );
       return {
@@ -733,7 +833,7 @@ export function aggroCalculation(
   );
   const terms = [
     "Skill threat",
-    ...(direct ? ["Health contribution"] : []),
+    ...(direct ? ["Hit Points contribution"] : []),
     ...(dealsDamage ? ["damage before defenses"] : []),
     ...(stuns ? ["Stun threat"] : []),
     ...(fears ? ["Fear threat"] : []),
@@ -765,15 +865,15 @@ export function aggroCalculation(
       ...(direct
         ? [
             {
-              name: "Health contribution",
-              expression: `${owner} maximum Health`,
+              name: `${statName("health")} contribution`,
+              expression: `${owner} maximum Hit Points`,
             },
           ]
         : []),
       {
         name: "Threat added",
         expression: terms.join(" + "),
-        limit: "at most the target's current Health",
+        limit: "at most the target's current Hit Points",
       },
     ],
     note:
@@ -790,7 +890,7 @@ export function aggroCalculation(
           : []),
         ...(skill.skill_type === "area_damage" && skill.area_projectile
           ? [
-              "This skill's hits travel as projectiles, which add no Health contribution.",
+              "This skill's hits travel as projectiles, which add no Hit Points contribution.",
             ]
           : []),
       ].join(" ") || undefined,
@@ -835,7 +935,9 @@ export function aggroCalculation(
                   ? [`a ${number(damage)}-damage hit before defenses`]
                   : []),
                 ...(direct
-                  ? [`the caster's ${number(values.maxHealth)} maximum Health`]
+                  ? [
+                      `the caster's ${formatStat("health", values.maxHealth)} maximum Hit Points`,
+                    ]
                   : []),
               ]
             : [
@@ -846,7 +948,7 @@ export function aggroCalculation(
                   ? [`a ${number(damage)}-damage hit before defenses`]
                   : []),
               ],
-        result: `${number(threat.total)} threat before the target's current-Health cap`,
+        result: `${number(threat.total)} threat before the target's current-Hit-Points cap`,
         working: [
           ...rankWorkingLines("Skill threat", skill.aggro!, rank, number),
           ...(stuns
@@ -860,7 +962,9 @@ export function aggroCalculation(
               ]
             : []),
           ...(direct && health === 0
-            ? [`Health contribution: 0, because Skill threat is not above 0`]
+            ? [
+                `Hit Points contribution: 0, because Skill threat is not above 0`,
+              ]
             : []),
           `Threat added: ${amounts.map((value) => number(value)).join(" + ")} = ${number(threat.total)}`,
         ],

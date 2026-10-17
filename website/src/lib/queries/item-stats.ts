@@ -1,6 +1,7 @@
+import { ITEM_STAT_FIELDS } from "$lib/constants/items";
 import { query } from "$lib/db";
 
-const METADATA_FIELDS = `('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set', 'augment_bonus_set_id')`;
+const STAT_FIELDS_SQL = `(${ITEM_STAT_FIELDS.map((field) => `'${field.field}'`).join(", ")})`;
 
 /**
  * Get count of items for each stat key.
@@ -19,7 +20,7 @@ export async function getStatCounts(
       SELECT je.key as stat, COUNT(DISTINCT i.id) as count
       FROM items i, json_each(i.stats) je
       WHERE i.id IN (${placeholders})
-        AND je.key NOT IN ${METADATA_FIELDS}
+        AND je.key IN ${STAT_FIELDS_SQL}
         AND je.value != 0
         AND je.value != 0.0
         AND je.value != 'false'
@@ -30,7 +31,7 @@ export async function getStatCounts(
     sql = `
       SELECT je.key as stat, COUNT(DISTINCT i.id) as count
       FROM items i, json_each(i.stats) je
-      WHERE je.key NOT IN ${METADATA_FIELDS}
+      WHERE je.key IN ${STAT_FIELDS_SQL}
         AND je.value != 0
         AND je.value != 0.0
         AND je.value != 'false'
@@ -60,7 +61,7 @@ export async function getMatchingItemIds(
       SELECT DISTINCT i.id
       FROM items i, json_each(i.stats) je
       WHERE je.key IN (${placeholders})
-        AND je.key NOT IN ${METADATA_FIELDS}
+        AND je.key IN ${STAT_FIELDS_SQL}
         AND je.value != 0
         AND je.value != 0.0
         AND je.value != 'false'
@@ -71,7 +72,7 @@ export async function getMatchingItemIds(
       SELECT i.id
       FROM items i, json_each(i.stats) je
       WHERE je.key IN (${placeholders})
-        AND je.key NOT IN ${METADATA_FIELDS}
+        AND je.key IN ${STAT_FIELDS_SQL}
         AND je.value != 0
         AND je.value != 0.0
         AND je.value != 'false'

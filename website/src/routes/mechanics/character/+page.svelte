@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { statName } from "$lib/stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
@@ -65,7 +66,7 @@
               <th class="p-2 font-medium text-foreground">Constitution</th>
               <td class="p-2">
                 <span class="block"
-                  >Each Constitution point adds 25 maximum Health and 0.03
+                  >Each Constitution point adds 25 maximum Hit Points and 0.03
                   percentage points of Block Chance. You receive Poison Resist
                   equal to 25% of Constitution, rounded. With 100 Constitution,
                   you receive 25 Poison Resist.</span
@@ -149,8 +150,8 @@
                 <span class="block"
                   >Protective buffs use Wisdom, or Intelligence when the skill
                   scales with Intelligence. Each selected attribute point adds 2
-                  maximum Health to maximum-health buffs and 2 points of ward
-                  capacity.</span
+                  maximum Hit Points to buffs that raise maximum Hit Points and
+                  2 points of ward capacity.</span
                 >
                 <span class="block"
                   >Armor Class and Magic Resist buffs each gain 15% of the
@@ -260,16 +261,18 @@
 
   <Card.Root id="resources" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Health, Mana, Rage, and Songs</Card.Title>
+      <Card.Title
+        >{statName("health")}, {statName("mana")}, {statName("rage")}, and Songs</Card.Title
+      >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Health.cs:28-44,59-71 — Constitution, equipment, augments, passive skills, and buffs raise maximum health; equipment, augments, passive skills, and healing-over-time buffs raise recovery. -->
       <!-- Source: server-scripts/EnergyResource.cs:84-95 — resources recover only while the entity is alive. -->
       <p>
-        <span class="block">Every class has health.</span>
+        <span class="block">Every class has Hit Points.</span>
         <span class="block"
           >Equipment, augments, passive skills, and buffs can also raise maximum
-          Health.</span
+          Hit Points.</span
         >
         <span class="block"
           >Equipment, augments, passive skills, and healing-over-time buffs
@@ -280,7 +283,7 @@
             href="#attributes"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >The Six Attributes</a
-          > for attribute bonuses to maximum Health, Mana, and Rage.</span
+          > for attribute bonuses to maximum Hit Points, Mana, and Rage.</span
         >
       </p>
       <div class="overflow-x-auto">
@@ -357,8 +360,8 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Mystic Spark</a
           > restores Mana equal to 35% of damage before shield absorption, counting
-          at most the target's Health before the hit, rounded down. Against a target
-          without shields, use the hit's damage number.</span
+          at most the target's Hit Points before the hit, rounded down. Against a
+          target without shields, use the hit's damage number.</span
         >
         <span class="block"
           ><a

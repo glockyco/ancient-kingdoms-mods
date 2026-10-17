@@ -1,5 +1,6 @@
 <script lang="ts">
   import { formatNumber } from "$lib/utils/format";
+  import { statName } from "$lib/stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
@@ -54,12 +55,12 @@
   );
 
   const ATTRIBUTES = [
-    ["STR", "Strength"],
-    ["DEX", "Dexterity"],
-    ["CON", "Constitution"],
-    ["INT", "Intelligence"],
-    ["WIS", "Wisdom"],
-    ["CHA", "Charisma"],
+    ["STR", "strength"],
+    ["DEX", "dexterity"],
+    ["CON", "constitution"],
+    ["INT", "intelligence"],
+    ["WIS", "wisdom"],
+    ["CHA", "charisma"],
   ] as const;
 
   const rows = $derived(
@@ -68,7 +69,7 @@
       const def = CLASSES[cls];
       if (!def) throw new Error(`No growth data for mercenary class ${cls}`);
       const fastest = ATTRIBUTES.filter(([key]) => def.div[key] === 2).map(
-        ([, name]) => name,
+        ([, id]) => statName(id),
       );
       return {
         ...m,
@@ -81,8 +82,8 @@
   const deathSaveClasses = $derived(rows.filter((r) => r.hasDeathSave));
 
   const resourceClass: Record<string, string> = {
-    Rage: "text-stat-atk",
-    Mana: "text-stat-mana",
+    rage: "text-stat-atk",
+    mana: "text-stat-mana",
     Songs: "text-foreground",
   };
 
@@ -200,7 +201,9 @@
                 />
               </td>
               <td class="px-4 py-2.5 font-medium {resourceClass[row.resource]}"
-                >{row.resource}</td
+                >{row.resource === "Songs"
+                  ? row.resource
+                  : statName(row.resource)}</td
               >
               <!-- Source: server-scripts/Pet.cs:2208,2391,4593,4793 — hasHeals and hasBuffs switch on the pet AI heal and buff checks. -->
               <td class="px-4 py-2.5 text-center">
@@ -250,8 +253,8 @@
         <thead>
           <tr class="border-b text-muted-foreground">
             <th class="px-4 py-2.5 text-left font-medium">Class</th>
-            {#each ATTRIBUTES as [, name] (name)}
-              <th class="px-4 py-2.5 text-right font-medium">{name}</th>
+            {#each ATTRIBUTES as [, id] (id)}
+              <th class="px-4 py-2.5 text-right font-medium">{statName(id)}</th>
             {/each}
           </tr>
         </thead>
@@ -422,9 +425,9 @@
                 <a href="#growth" class={link}>growth table</a> shows.
               </span>
               <span class="block">
-                Each total veteran point adds 0.25% of base Health to maximum
-                Health and, for mana users other than Bards, 0.25% of base Mana
-                to maximum Mana, before rounding.
+                Each total veteran point adds 0.25% of base Hit Points to
+                maximum Hit Points and, for mana users other than Bards, 0.25%
+                of base Mana to maximum Mana, before rounding.
               </span>
               <span class="block">
                 Warriors and Rogues keep the same maximum Rage as total veteran
@@ -637,7 +640,9 @@
                     >
                     <th class="py-1.5 pr-6 font-medium text-foreground">When</th
                     >
-                    <th class="py-1.5 font-medium text-foreground">Health</th>
+                    <th class="py-1.5 font-medium text-foreground"
+                      >{statName("health")}</th
+                    >
                   </tr>
                 </thead>
                 <tbody>
@@ -842,10 +847,10 @@
               >Healing potion</th
             ><td class="py-2"
               ><span class="block"
-                >The mercenary uses a healing potion below 50% Health.</span
+                >The mercenary uses a healing potion below 50% Hit Points.</span
               ><span class="block"
-                >The mercenary must be missing at least 90% of the Health that
-                the potion restores.</span
+                >The mercenary must be missing at least 90% of the Hit Points
+                that the potion restores.</span
               ><span class="block">It checks every 1–2 seconds.</span></td
             ></tr
           >
@@ -886,8 +891,8 @@
         >Other party members must be within 12 yd of the healer.</span
       >
       <span class="block"
-        >Healers prioritize allies with less Health, allies under attack, and
-        Warriors.</span
+        >Healers prioritize allies with fewer Hit Points, allies under attack,
+        and Warriors.</span
       >
       <span class="block"
         >Offensive skills preserve at least 35% of a healer's maximum Mana after
@@ -909,15 +914,15 @@
             ><th class="py-2 pr-5 font-medium text-foreground"
               >Heal candidate</th
             ><td class="py-2"
-              >The healer considers allies below 90% Health, or below 40% when
-              urgent healing is needed.</td
+              >The healer considers allies below 90% Hit Points, or below 40%
+              when urgent healing is needed.</td
             ></tr
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
               >Heal-over-time buff</th
             ><td class="py-2"
-              >The healer considers an ally below 70% Health who does not
+              >The healer considers an ally below 70% Hit Points who does not
               already have that buff.</td
             ></tr
           >
@@ -925,7 +930,7 @@
             ><th class="py-2 pr-5 font-medium text-foreground">Area heal</th><td
               class="py-2"
               >The healer considers an area heal when at least 3 living allies
-              below 60% Health are in range and can receive it.</td
+              below 60% Hit Points are in range and can receive it.</td
             ></tr
           >
           <tr
@@ -933,8 +938,8 @@
               >Single-target heal</th
             ><td class="py-2"
               ><span class="block"
-                >The healer always considers a single-target heal at 75% Health
-                or lower, rising to 85% when the healer has full Mana.</span
+                >The healer always considers a single-target heal at 75% Hit
+                Points or lower, rising to 85% when the healer has full Mana.</span
               ><span class="block"
                 >Above that threshold, the ally must need at least half the
                 heal.</span
@@ -956,7 +961,7 @@
       >
       <span class="block"
         >Healers with the same owner avoid duplicate direct heals unless the
-        target is below 40% Health.</span
+        target is below 40% Hit Points.</span
       >
     </p>
     <!-- Source: server-scripts/PetSkills.cs:173-188,224-231; Pet.cs:1341-1454 — Warrior Challenge is chosen first; Battle Shout needs two nearby valid monsters already attacking party members. -->
@@ -1015,9 +1020,9 @@
           Stat ranges and hiring odds
         </div>
         <p class="mt-1 text-sm text-muted-foreground">
-          Compare Health, Mana, Attack Power, and Spell Power for every class
-          and race at any level. See how many hires it takes to roll a strong
-          mercenary.
+          Compare Hit Points, Mana, Attack Power, and Spell Power for every
+          class and race at any level. See how many hires it takes to roll a
+          strong mercenary.
         </p>
       </div>
       <ArrowRight class="h-5 w-5 shrink-0 text-muted-foreground" />

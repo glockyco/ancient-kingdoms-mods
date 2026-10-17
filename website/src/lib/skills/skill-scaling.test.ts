@@ -79,7 +79,7 @@ describe("skill rank scaling", () => {
       ),
     ).toEqual([]);
   });
-  test("negative regeneration uses magnitude for both base and growth", () => {
+  test("negative regeneration preserves its signed stat value", () => {
     const columns = scalingColumns(
       skill({
         healing_per_second_bonus: { base_value: -2, bonus_per_level: -3 },
@@ -90,8 +90,8 @@ describe("skill rank scaling", () => {
       }),
     );
     expect(columns.map((col) => computeScalingValue(col, 3))).toEqual([
-      "8",
-      "20%",
+      "−8",
+      "−20%",
     ]);
   });
   test("the table needs multiple ranks and either a scaling column or scroll mastery", () => {

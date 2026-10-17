@@ -1,3 +1,4 @@
+import { statName } from "$lib/stats";
 import type { ReferenceChapterText } from "$lib/components/reference/outline";
 
 /**
@@ -88,7 +89,7 @@ export const COMBAT_CHAPTERS = [
     topics: [
       { id: "haste", title: "What Haste Affects" },
       { id: "attack-speed", title: "Auto-Attack Speed" },
-      { id: "cast-speed", title: "Spell Casting Haste" },
+      { id: "cast-speed", title: statName("spell_haste") },
     ],
   },
   {

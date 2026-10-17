@@ -24,14 +24,14 @@
     <a href="/summons" class="text-blue-600 dark:text-blue-400 hover:underline"
       >companions</a
     >, within {formatLinear(skill.cast_range, " yd")}. It cannot target you,
-    familiars, monsters or NPCs. Your current Health must be above the Health
-    spent. You pay the full cost even if the target is already at maximum
-    Health.
+    familiars, monsters or NPCs. Your current Hit Points must be above the Hit
+    Points spent. You pay the full cost even if the target is already at maximum
+    Hit Points.
   </p>
   <!-- Source: server-scripts/TargetHealSkill.cs:Apply — critical healing multiplies by 3 in 10% of critical heals, otherwise by 2, and is capped by missing Health. -->
   <p class="text-muted-foreground">
     Your Critical Strike is the chance that this heal is critical. Critical
-    heals restore double Health, or triple Health in 10% of cases. Healing is
-    capped by the target's missing Health.
+    heals restore double Hit Points, or triple Hit Points in 10% of cases.
+    Healing is capped by the target's missing Hit Points.
   </p>
 </div>

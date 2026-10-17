@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { reputationExample, npcReputation } from "./reputation";
 
 describe("reputation calculations", () => {
-  it("rounds the Health contribution to even before adding level", () => {
+  it("rounds the Hit Points contribution to even before adding level", () => {
     expect(reputationExample(10, 5000, false).example!({}).result).toContain(
       "+12",
     );

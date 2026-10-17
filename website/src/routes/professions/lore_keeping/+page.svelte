@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { statName } from "$lib/stats";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -61,12 +62,17 @@
     stats: (typeof data.books)[0]["statGains"],
   ): string[] {
     const gains: string[] = [];
-    if (stats.strength > 0) gains.push(`+${stats.strength} STR`);
-    if (stats.dexterity > 0) gains.push(`+${stats.dexterity} DEX`);
-    if (stats.constitution > 0) gains.push(`+${stats.constitution} CON`);
-    if (stats.intelligence > 0) gains.push(`+${stats.intelligence} INT`);
-    if (stats.wisdom > 0) gains.push(`+${stats.wisdom} WIS`);
-    if (stats.charisma > 0) gains.push(`+${stats.charisma} CHA`);
+    if (stats.strength > 0)
+      gains.push(`+${stats.strength} ${statName("strength")}`);
+    if (stats.dexterity > 0)
+      gains.push(`+${stats.dexterity} ${statName("dexterity")}`);
+    if (stats.constitution > 0)
+      gains.push(`+${stats.constitution} ${statName("constitution")}`);
+    if (stats.intelligence > 0)
+      gains.push(`+${stats.intelligence} ${statName("intelligence")}`);
+    if (stats.wisdom > 0) gains.push(`+${stats.wisdom} ${statName("wisdom")}`);
+    if (stats.charisma > 0)
+      gains.push(`+${stats.charisma} ${statName("charisma")}`);
     return gains;
   }
 

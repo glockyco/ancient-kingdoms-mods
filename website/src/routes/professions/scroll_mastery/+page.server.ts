@@ -3,6 +3,7 @@ import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { statField, statFieldName } from "$lib/stats";
 
 export const prerender = true;
 
@@ -97,15 +98,19 @@ const SCALING_FIELDS: Array<{ key: keyof RawScrollEffect; label: string }> = [
   { key: "stun_time", label: "Stun duration" },
   { key: "fear_chance", label: "Fear chance" },
   { key: "fear_time", label: "Fear duration" },
-  { key: "defense_bonus", label: "Armor Class" },
-  { key: "ward_bonus", label: "Ward" },
-  { key: "magic_resist_bonus", label: "Magic resist" },
-  { key: "damage_bonus", label: "Attack Power bonus" },
-  { key: "magic_damage_bonus", label: "Spell Power" },
-  { key: "speed_bonus", label: "Movement speed" },
-  { key: "haste_bonus", label: "Attack speed" },
-  { key: "spell_haste_bonus", label: "Cast speed" },
-  { key: "healing_per_second_bonus", label: "Health/sec" },
+  ...(
+    [
+      "defense_bonus",
+      "ward_bonus",
+      "magic_resist_bonus",
+      "damage_bonus",
+      "magic_damage_bonus",
+      "speed_bonus",
+      "haste_bonus",
+      "spell_haste_bonus",
+      "healing_per_second_bonus",
+    ] satisfies (keyof RawScrollEffect)[]
+  ).map((key) => ({ key, label: statFieldName(statField("skill", key)) })),
 ];
 
 function parseLinear(json: string | null): {
@@ -131,29 +136,6 @@ function hasPerLevelScaling(json: string | null): boolean {
   );
 }
 
-function scalingLabel(
-  row: RawScrollEffect,
-  field: { key: keyof RawScrollEffect; label: string },
-): string {
-  if (field.key === "healing_per_second_bonus") {
-    const value = parseLinear(row.healing_per_second_bonus);
-    return typeof value?.base_value === "number" && value.base_value < 0
-      ? "Damage/sec"
-      : field.label;
-  }
-
-  if (field.key === "haste_bonus" || field.key === "spell_haste_bonus") {
-    const value = parseLinear(row[field.key] as string | null);
-    if (typeof value?.base_value === "number" && value.base_value < 0) {
-      return field.key === "haste_bonus"
-        ? "Attack speed reduction"
-        : "Cast speed reduction";
-    }
-  }
-
-  return field.label;
-}
-
 function scalingLabels(row: RawScrollEffect): string[] {
   const labels: string[] = [];
 
@@ -163,7 +145,7 @@ function scalingLabels(row: RawScrollEffect): string[] {
 
   for (const field of SCALING_FIELDS) {
     if (hasPerLevelScaling(row[field.key] as string | null)) {
-      labels.push(scalingLabel(row, field));
+      labels.push(field.label);
     }
   }
 

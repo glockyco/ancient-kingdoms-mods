@@ -8,6 +8,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import { effectiveBlockChance, statAtLevel } from "$lib/utils/monster-stats";
+  import { statName, formatStat } from "$lib/stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -338,12 +339,12 @@
 
   // Combat resistances always render so zero values remain visible.
   const resistances = $derived([
-    { name: "Magic", value: displayMagicResist },
-    { name: "Poison", value: displayPoisonResist },
-    { name: "Fire", value: displayFireResist },
-    { name: "Cold", value: displayColdResist },
-    { name: "Disease", value: displayDiseaseResist },
-  ]);
+    { id: "magic_resist", value: displayMagicResist },
+    { id: "poison_resist", value: displayPoisonResist },
+    { id: "fire_resist", value: displayFireResist },
+    { id: "cold_resist", value: displayColdResist },
+    { id: "disease_resist", value: displayDiseaseResist },
+  ] as const);
 
   // Check if any drop has a note
   const hasDropNotes = $derived(data.drops.some((d) => d.note));
@@ -1184,60 +1185,65 @@
 
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
-          <div class="text-sm text-muted-foreground">Attack Power</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("attack_power")}
+          </div>
           <div class="font-medium">
-            {displayDamage.toLocaleString()}
+            {formatStat("attack_power", displayDamage)}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Spell Power</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("spell_power")}
+          </div>
           <div class="font-medium">
-            {displayMagicDamage.toLocaleString()}
+            {formatStat("spell_power", displayMagicDamage)}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Accuracy Bonus</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("accuracy")}
+          </div>
           <div class="font-medium">
-            {formatPercent(displayAccuracy, {
-              decimals: 1,
-              trailingZeros: true,
-            })}
+            {formatStat("accuracy", displayAccuracy, { signed: true })}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Critical Strike</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("critical_chance")}
+          </div>
           <div class="font-medium">
-            {formatPercent(displayCriticalChance, {
-              decimals: 1,
-              trailingZeros: true,
-            })}
+            {formatStat("critical_chance", displayCriticalChance)}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Health</div>
+          <div class="text-sm text-muted-foreground">{statName("health")}</div>
           <div class="font-medium">
-            {displayHealth.toLocaleString()}
+            {formatStat("health", displayHealth)}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Health Recovery</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("health_regen")}
+          </div>
           <div class="font-medium">
-            {data.monster.health_regen_base.toLocaleString()} / sec
+            {formatStat("health_regen", data.monster.health_regen_base)} / sec
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Armor Class</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("armor_class")}
+          </div>
           <div class="font-medium">
-            {displayDefense.toLocaleString()}
+            {formatStat("armor_class", displayDefense)}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">Block Chance</div>
+          <div class="text-sm text-muted-foreground">
+            {statName("block_chance")}
+          </div>
           <div class="font-medium">
-            {formatPercent(displayBlockChance, {
-              decimals: 1,
-              trailingZeros: true,
-            })}
+            {formatStat("block_chance", displayBlockChance)}
           </div>
         </div>
         {#if data.monster.follow_distance > 0}
@@ -1264,13 +1270,13 @@
             <div class="md:w-[500px] shrink-0">
               <div class="text-sm text-muted-foreground mb-2">Resistances</div>
               <div class="flex flex-wrap gap-2">
-                {#each resistances as resist (resist.name)}
+                {#each resistances as resist (resist.id)}
                   <span
                     class="inline-flex items-center rounded-md px-2 py-1 text-sm {resistanceBadgeClass(
                       resist.value,
                     )}"
                   >
-                    {resist.name}: {resist.value}
+                    {statName(resist.id)}: {formatStat(resist.id, resist.value)}
                   </span>
                 {/each}
               </div>

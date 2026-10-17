@@ -1,3 +1,5 @@
+import { statName } from "$lib/stats";
+
 /**
  * Player class configuration for display throughout the site.
  */
@@ -85,8 +87,8 @@ export function formatClassName(classId: string): string {
  * Source: server-scripts/Player.cs:1493-1507 — Bard uses an "Active Songs" counter.
  */
 const RESOURCE_DISPLAY_NAMES: Record<string, string> = {
-  energy: "Rage",
-  mana: "Mana",
+  energy: statName("rage"),
+  mana: statName("mana"),
   songs: "Active Songs",
 };
 

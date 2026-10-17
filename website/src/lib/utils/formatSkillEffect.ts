@@ -1,6 +1,31 @@
 import type { DamageTerm, DamageType, LinearValue } from "$lib/types/skills";
 import { iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatDuration, formatNumber, formatPercent } from "./format";
+import {
+  statField,
+  statFieldName,
+  statFieldPhraseName,
+  statName,
+  formatStatField,
+} from "$lib/stats";
+
+/** A skill stat field, formatted at a monster's rank or as a signed rank formula. */
+export function formatLinearStat(
+  key: string,
+  value: LinearValue | null,
+  options?: SkillEffectFormatOptions,
+  signed = true,
+): string {
+  if (!value) return "-";
+  const field = statField("skill", key);
+  const format = (amount: number) => formatStatField(field, amount, { signed });
+  if (options?.monster) return format(value.base_value);
+  if (value.bonus_per_level === 0) return format(value.base_value);
+  if (value.base_value === value.bonus_per_level) {
+    return `${format(value.bonus_per_level)} × rank`;
+  }
+  return `${format(value.base_value)} ${value.bonus_per_level > 0 ? "+" : "−"} ${formatStatField(field, Math.abs(value.bonus_per_level))} × (rank − 1)`;
+}
 
 /** Returns true when a LinearValue field has at least one non-zero component.
  * The DB stores all LinearValue fields as JSON objects even when both components
@@ -368,24 +393,6 @@ function qualify(
     : `${fragment} (${present.join(", ")})`;
 }
 
-/** A signed rank-scaled amount followed by its label. */
-function signedValue(
-  value: LinearValue,
-  label: string,
-  options: SkillEffectFormatOptions | undefined,
-): string {
-  return `${value.base_value > 0 ? "+" : ""}${formatLinearValue(value, options)} ${label}`;
-}
-
-/** A signed rank-scaled percentage followed by its label. */
-function signedPercent(
-  value: LinearValue,
-  label: string,
-  options: SkillEffectFormatOptions | undefined,
-): string {
-  return `${value.base_value > 0 ? "+" : ""}${formatLinearPercent(value, options)} ${label}`;
-}
-
 /** The value with its sign flipped at every rank. */
 function negated(value: LinearValue): LinearValue {
   return {
@@ -395,13 +402,13 @@ function negated(value: LinearValue): LinearValue {
 }
 
 const DAMAGE_TERM_LABELS: Record<DamageTerm, string> = {
-  spell_power: "spell power",
-  attack_power: "attack power",
-  ranged_dexterity: "150% of DEX",
-  poison_dexterity: "250% of DEX",
-  bow: "bow base dmg",
-  off_hand_half: "50% of off-hand base dmg",
-  main_hand: "main-hand base dmg",
+  spell_power: statName("spell_power"),
+  attack_power: statName("attack_power"),
+  ranged_dexterity: `150% of ${statName("dexterity")}`,
+  poison_dexterity: `250% of ${statName("dexterity")}`,
+  bow: `bow ${statFieldName(statField("item", "damage"), "item", { weapon: true })}`,
+  off_hand_half: `50% of off-hand ${statFieldName(statField("item", "damage"), "item", { weapon: true })}`,
+  main_hand: `main-hand ${statFieldName(statField("item", "damage"), "item", { weapon: true })}`,
 };
 
 /** Damage terms the formula subtracts. */
@@ -514,7 +521,7 @@ function formatHealing(
   // Source: server-scripts/NecromancerBloodPactSkill.cs:Apply — Math.Min(GetManaRestored, mana.max - mana.current); subtracts GetHealthCost.
   if (skill.is_necromancer_blood_pact && cost && restored) {
     parts.push(
-      `spend ${formatLinearPercent(cost, options)} max hp (rounded up), restore ${formatLinearPercent(restored, options)} max mana (rounded down, at most missing mana)`,
+      `spend ${formatLinearPercent(cost, options)} maximum Hit Points (rounded up), restore ${formatLinearPercent(restored, options)} maximum Mana (rounded down, at most missing Mana)`,
     );
     return parts;
   }
@@ -525,10 +532,10 @@ function formatHealing(
   if (skill.is_necromancer_death_bloom && cost && healing) {
     const intelligence = skill.healing_percent_per_intelligence ?? 0;
     const bonus = intelligence
-      ? ` + ${formatPercent(intelligence, { decimals: 2 })} per INT`
+      ? ` + ${formatPercent(intelligence, { decimals: 2 })} per ${statName("intelligence")}`
       : "";
     parts.push(
-      `spend ${formatLinearPercent(cost, options)} max hp (rounded up), heal target for health spent × (${formatLinearPercent(healing, options)}${bonus}) (rounded)`,
+      `spend ${formatLinearPercent(cost, options)} maximum Hit Points (rounded up), heal target for Hit Points spent × (${formatLinearPercent(healing, options)}${bonus}) (rounded)`,
     );
     return parts;
   }
@@ -540,7 +547,7 @@ function formatHealing(
 
   // Source: server-scripts/AreaHealSkill.cs:Apply — balancing sets everyone in range to their average share of maximum Health and heals nothing.
   if (skill.is_balance_health) {
-    parts.push(`balances the hp % of ${areaHealRecipients(skill)}`);
+    parts.push(`balances the Hit Points % of ${areaHealRecipients(skill)}`);
     return parts;
   }
   if (skill.skill_type === "area_heal" && !skill.is_mercenary_skill) {
@@ -550,7 +557,10 @@ function formatHealing(
   const heal = parseLinearValue(skill.heals_health);
   if (heal) {
     parts.push(
-      qualify(`${formatLinearValue(heal, options)} hp`, notes.heals_health),
+      qualify(
+        `${formatLinearValue(heal, options)} Hit Points`,
+        notes.heals_health,
+      ),
     );
   }
 
@@ -565,7 +575,7 @@ function formatHealing(
   // Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,Apply — a dead mercenary target returns at 10% of its maximum Health.
   if (skill.is_resurrect_skill) {
     parts.push(
-      "resurrect player (60% max hp, mana = 20% max hp, +75% lost XP) or mercenary (10% max hp)",
+      "resurrect player (60% maximum Hit Points, mana = 20% maximum Hit Points, +75% lost XP) or mercenary (10% maximum Hit Points)",
     );
   }
 
@@ -678,7 +688,9 @@ function formatCrowdControl(
       skill.skill_type === "target_damage" ||
       (skill.skill_type === "area_damage" && !skill.area_projectile);
     const healthThreat =
-      aggro.base_value > 0 && directHit ? " plus caster max hp" : "";
+      aggro.base_value > 0 && directHit
+        ? " plus caster maximum Hit Points"
+        : "";
     parts.push(
       `${aggro.base_value > 0 ? "+" : ""}${formatLinearValue(aggro, options)} aggro${healthThreat}`,
     );
@@ -730,12 +742,12 @@ function formatSummons(skill: Skill): string[] {
 
 /** The five resistances, in display order. */
 const RESISTS = [
-  ["magic_resist_bonus", "magic"],
-  ["poison_resist_bonus", "poison"],
-  ["fire_resist_bonus", "fire"],
-  ["cold_resist_bonus", "cold"],
-  ["disease_resist_bonus", "disease"],
-] as const satisfies readonly (readonly [NotedField, string])[];
+  "magic_resist_bonus",
+  "poison_resist_bonus",
+  "fire_resist_bonus",
+  "cold_resist_bonus",
+  "disease_resist_bonus",
+] as const satisfies readonly NotedField[];
 
 /**
  * Format buff/debuff stat effects
@@ -749,28 +761,29 @@ function formatBuffDebuffStats(
   const debuff =
     skill.skill_type === "area_debuff" || skill.skill_type === "target_debuff";
   /** A signed amount with its caster note, when it is set (and nonzero at rank 1 when `nonzeroBase`). */
-  const pushValue = (
+  const pushStat = (
     key: NotedField,
-    label: string,
     nonzeroBase: boolean,
     ...qualifiers: (string | undefined)[]
   ) => {
     const value = parseLinearValue(skill[key]);
     if (!value || (nonzeroBase && value.base_value === 0)) return;
+    const name = statFieldPhraseName(statField("skill", key));
+    const label =
+      key === "health_max_percent_bonus" &&
+      skill.skill_type === "passive" &&
+      skill.is_pet_skill
+        ? `companion ${name}`
+        : key === "magic_damage_percent_bonus" &&
+            skill.is_necromancer_reaper_form
+          ? `${name} & DoT dmg`
+          : name;
     parts.push(
-      qualify(signedValue(value, label, options), notes[key], ...qualifiers),
-    );
-  };
-  const pushPercent = (
-    key: NotedField,
-    label: string,
-    nonzeroBase: boolean,
-    ...qualifiers: (string | undefined)[]
-  ) => {
-    const value = parseLinearValue(skill[key]);
-    if (!value || (nonzeroBase && value.base_value === 0)) return;
-    parts.push(
-      qualify(signedPercent(value, label, options), notes[key], ...qualifiers),
+      qualify(
+        `${formatLinearStat(key, value, options)} ${label}`,
+        notes[key],
+        ...qualifiers,
+      ),
     );
   };
 
@@ -819,37 +832,31 @@ function formatBuffDebuffStats(
     } else if (speedBonus.base_value <= -10) {
       parts.push("root");
     } else if (speedBonus.base_value !== 0) {
-      parts.push(signedValue(speedBonus, "speed", options));
+      parts.push(
+        `${formatLinearStat("speed_bonus", speedBonus, options)} ${statFieldPhraseName(statField("skill", "speed_bonus"))}`,
+      );
     }
   }
 
   // 3. Resource pools
-  pushValue("health_max_bonus", "max hp", false);
+  pushStat("health_max_bonus", false);
   // Source: server-scripts/Skills.cs:GetHealthPercentBonus — isPetSkill passive healthMaxPercentBonus goes to non-mercenary, non-familiar Pet, not the owner.
-  pushPercent(
-    "health_max_percent_bonus",
-    skill.skill_type === "passive" && skill.is_pet_skill
-      ? "companion max hp"
-      : "max hp",
-    false,
-  );
-  pushValue("mana_max_bonus", "max mana", false);
+  pushStat("health_max_percent_bonus", false);
+  pushStat("mana_max_bonus", false);
   const manaMaxPercent = parseLinearValue(skill.mana_max_percent_bonus);
   if (manaMaxPercent) {
-    parts.push(signedPercent(manaMaxPercent, "max mana", options));
+    parts.push(
+      `${formatLinearStat("mana_max_percent_bonus", manaMaxPercent, options)} ${statFieldPhraseName(statField("skill", "mana_max_percent_bonus"))}`,
+    );
   }
-  pushValue("energy_max_bonus", "max rage", false);
+  pushStat("energy_max_bonus", false);
 
   // 4. Offense
-  pushValue("damage_bonus", "attack power", true);
-  pushPercent("damage_percent_bonus", "attack power", true);
-  pushValue("magic_damage_bonus", "spell power", true);
+  pushStat("damage_bonus", true);
+  pushStat("damage_percent_bonus", true);
+  pushStat("magic_damage_bonus", true);
   // Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active Reaper Form also multiplies the caster's DoT ticks on others by its spell power bonus.
-  pushPercent(
-    "magic_damage_percent_bonus",
-    skill.is_necromancer_reaper_form ? "spell power & DoT dmg" : "spell power",
-    true,
-  );
+  pushStat("magic_damage_percent_bonus", true);
 
   const lifetapHealing = parseLinearValue(skill.lifetap_healing_percent_bonus);
   // Source: server-scripts/Combat.cs:1329-1339 — lifetapPercent healing multiplies by 1 + lifetapHealingPercentBonus.Get(buff.level).
@@ -862,7 +869,7 @@ function formatBuffDebuffStats(
   // Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — health.current below health.max * 0.3f sums PassiveSkill.damageOverTimeExecuteBonus.Get(skill.level).
   if (dotExecute) {
     parts.push(
-      `+${formatLinearPercent(dotExecute, options)} DoT dmg vs targets below 30% hp`,
+      `+${formatLinearPercent(dotExecute, options)} DoT dmg vs targets below 30% Hit Points`,
     );
   }
   // 4. Defense (mitigation stats grouped together)
@@ -877,18 +884,19 @@ function formatBuffDebuffStats(
       castByMonsters(skill, options) ? "immune to direct dmg" : "invulnerable",
     );
   } else {
-    pushValue("defense_bonus", "AC", true);
+    pushStat("defense_bonus", true);
   }
 
-  pushValue("ward_bonus", "ward", true);
+  pushStat("ward_bonus", true);
 
   if (!invulnerable) {
     // Resists with the same amount and note read as one fragment, such as "+10 poison & disease res".
     const groups: { names: string[]; key: NotedField; value: LinearValue }[] =
       [];
-    for (const [key, name] of RESISTS) {
+    for (const key of RESISTS) {
       const value = parseLinearValue(skill[key]);
       if (!value || value.base_value === 0) continue;
+      const name = statFieldPhraseName(statField("skill", key));
       const group = groups.find(
         (candidate) =>
           candidate.value.base_value === value.base_value &&
@@ -899,29 +907,33 @@ function formatBuffDebuffStats(
       else groups.push({ names: [name], key, value });
     }
     for (const { names, key, value } of groups) {
-      const label = names.length === RESISTS.length ? "all" : joinAnd(names);
+      // A bonus to every resist reads "all resists" instead of five names.
+      const label =
+        names.length === RESISTS.length ? "all resists" : joinAnd(names);
       parts.push(
-        qualify(signedValue(value, `${label} res`, options), notes[key]),
+        qualify(
+          `${formatLinearStat(key, value, options)} ${label}`,
+          notes[key],
+        ),
       );
     }
   }
 
   // 5. Attack speed
-  pushPercent("haste_bonus", "haste", true);
-  pushPercent("spell_haste_bonus", "spell casting haste", true);
+  pushStat("haste_bonus", true);
+  pushStat("spell_haste_bonus", true);
 
   // 7. Hit/chance modifiers
-  pushPercent("critical_chance_bonus", "crit", true);
-  pushPercent("critical_resist_bonus", "critical resist", true);
-  pushPercent("accuracy_bonus", "accuracy", true);
-  pushPercent("block_chance_bonus", "block", true);
+  pushStat("critical_chance_bonus", true);
+  pushStat("critical_resist_bonus", true);
+  pushStat("accuracy_bonus", true);
+  pushStat("block_chance_bonus", true);
   const fearResistCap = skill.fear_resist_chance_bonus_cap ?? 0;
-  pushPercent(
+  pushStat(
     "fear_resist_chance_bonus",
-    "fear resist",
     true,
     fearResistCap > 0
-      ? `max ${formatPercent(fearResistCap, { decimals: 2 })}`
+      ? `max ${formatStatField(statField("skill", "fear_resist_chance_bonus"), fearResistCap)}`
       : undefined,
   );
 
@@ -940,7 +952,7 @@ function formatBuffDebuffStats(
     }
     parts.push(
       qualify(
-        `${formatLinearValue(dmgShield, options)}${typeLabel} dmg shield${debuff ? " on its target" : ""}`,
+        `${formatLinearStat("damage_shield", dmgShield, options)}${typeLabel} ${statFieldPhraseName(statField("skill", "damage_shield"))}${debuff ? " on its target" : ""}`,
         notes.damage_shield,
       ),
     );
@@ -950,7 +962,7 @@ function formatBuffDebuffStats(
   const healOnHit = parseLinearValue(skill.heal_on_hit_percent);
   if (healOnHit && healOnHit.base_value > 0) {
     parts.push(
-      `melee hits on the target heal the attacker ${formatLinearPercent(healOnHit, options)} of dmg`,
+      `melee hits on the target heal the attacker ${formatLinearStat("heal_on_hit_percent", healOnHit, options)} of dmg`,
     );
   }
 
@@ -961,7 +973,7 @@ function formatBuffDebuffStats(
     if (hps.base_value > 0) {
       parts.push(
         qualify(
-          `${formatLinearValue(hps, options)} hp/s`,
+          `${formatLinearStat("healing_per_second_bonus", hps, options)} ${statFieldPhraseName(statField("skill", "healing_per_second_bonus"))}`,
           notes.healing_per_second_bonus,
         ),
       );
@@ -970,7 +982,7 @@ function formatBuffDebuffStats(
       const typeLabel = formattedType ? ` ${formattedType}` : "";
       parts.push(
         qualify(
-          `${debuff ? "" : "wearer takes "}${formatLinearValue(negated(hps), options)}${typeLabel} dmg/s`,
+          `${debuff ? "" : "wearer takes "}${formatLinearStat("healing_per_second_bonus", negated(hps), options, false)}${typeLabel} dmg/s`,
           notes.healing_per_second_bonus,
         ),
       );
@@ -983,15 +995,22 @@ function formatBuffDebuffStats(
     if (hpPct.base_value > 0) {
       parts.push(
         qualify(
-          `+${formatLinearPercent(hpPct, options)} hp/s`,
+          `${formatLinearStat("health_percent_per_second_bonus", hpPct, options)} ${statFieldPhraseName(statField("skill", "health_percent_per_second_bonus"))}`,
           notes.health_percent_per_second_bonus,
         ),
       );
     } else {
-      const share = formatLinearPercent(negated(hpPct), options);
+      const share = formatLinearStat(
+        "health_percent_per_second_bonus",
+        negated(hpPct),
+        options,
+        false,
+      );
       parts.push(
         qualify(
-          debuff ? `${share} max hp dmg/s` : `${share} max hp drain/s`,
+          debuff
+            ? `${share} maximum Hit Points dmg/s`
+            : `${share} maximum Hit Points drain/s`,
           notes.health_percent_per_second_bonus,
         ),
       );
@@ -1002,32 +1021,30 @@ function formatBuffDebuffStats(
   if (mps && mps.base_value !== 0) {
     parts.push(
       qualify(
-        mps.base_value > 0
-          ? `${formatLinearValue(mps, options)} mana/s`
-          : `${formatLinearValue(negated(mps), options)} mana drain/s`,
+        `${formatLinearStat("mana_per_second_bonus", mps, options)} ${statFieldPhraseName(statField("skill", "mana_per_second_bonus"))}`,
         notes.mana_per_second_bonus,
       ),
     );
   }
 
-  pushPercent("mana_percent_per_second_bonus", "mana/s", true);
-  pushValue("energy_per_second_bonus", "rage/s", true);
-  pushPercent("energy_percent_per_second_bonus", "rage/s", true);
+  pushStat("mana_percent_per_second_bonus", true);
+  pushStat("energy_per_second_bonus", true);
+  pushStat("energy_percent_per_second_bonus", true);
 
   // 11. Primary stats
-  const statFields: [LinearValue | null | undefined, string][] = [
-    [skill.strength_bonus, "STR"],
-    [skill.intelligence_bonus, "INT"],
-    [skill.dexterity_bonus, "DEX"],
-    [skill.constitution_bonus, "CON"],
-    [skill.wisdom_bonus, "WIS"],
-    [skill.charisma_bonus, "CHA"],
-  ];
-
-  for (const [field, label] of statFields) {
-    const val = parseLinearValue(field);
+  for (const key of [
+    "strength_bonus",
+    "intelligence_bonus",
+    "dexterity_bonus",
+    "constitution_bonus",
+    "wisdom_bonus",
+    "charisma_bonus",
+  ] as const) {
+    const val = parseLinearValue(skill[key]);
     if (val && val.base_value !== 0) {
-      parts.push(signedValue(val, label, options));
+      parts.push(
+        `${formatLinearStat(key, val, options)} ${statFieldPhraseName(statField("skill", key))}`,
+      );
     }
   }
 
@@ -1080,8 +1097,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   parry:
     "while casting, blocks your target's physical melee hits & counters 50% (max 5,000)",
   // Source: server-scripts/SummonSkill.cs:Apply — on summon, the pet takes rank × 10% of your attributes and adds rank × 10% of your AC and resists.
-  symbiosis:
-    "pet gets 10% × rank of your attributes, AC & resistances when summoned (max 50%)",
+  symbiosis: `pet gets 10% × rank of your attributes, ${statName("armor_class")} & resists when summoned (max 50%)`,
   // Source: server-scripts/SummonSkillMonsters.cs:Apply — a target more than 3 yd and less than the cast range away is warped to the caster and stunned for 2s.
   summon_player: "pulls a target 3-15 yd away to the caster, stun (2s)",
   // Source: server-scripts/Trap.cs:OnInteractServer; Player.cs:HasDetectTraps — disarming needs Detect Traps or Sharp Senses.
@@ -1121,8 +1137,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
   // bonus to Attack Power. Duration stored in duration_base (10s).
-  master_poisoner:
-    "Stab deals poison dmg & adds 250% of DEX, resisted by poison res, 10s",
+  master_poisoner: `Stab deals poison dmg & adds 250% of ${statName("dexterity")}, resisted by ${statName("poison_resist")}, 10s`,
   // Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the Ranger's next auto attack deals 10% more per buff rank as Magic damage and consumes the buff.
   wild_strike: "next auto attack deals +10% × rank dmg as magic dmg, 5s",
   // Source: server-scripts/TargetBuffSkill.cs — isCallHeroes teleports all
@@ -1133,16 +1148,13 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/TargetBuffSkill.cs — Charge navigates caster toward target
   // monster and queues an automatic follow-up attack (pendingSkill=1). Speed/rage-gen
   // stats are in the DB but the gap-closer behavior is hardcoded.
-  charge:
-    "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
+  charge: `charge toward target, removes roots, +3.5 ${statName("movement_speed")}, +100% ${statName("accuracy")}, +5% ${statFieldPhraseName(statField("skill", "energy_percent_per_second_bonus"))}, 2s`,
   // Source: server-scripts/PlayerInventory.cs; Player.cs — the cast before a travel item takes effect, refused in combat.
   teleport: "use travel items (out of combat)",
   // Source: server-scripts/Combat.cs:138 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
-  razor_of_wrath:
-    "+1% × rank attack power, scaled by current rage (full rage = full bonus)",
+  razor_of_wrath: `+1% × rank ${statName("attack_power")}, scaled by current ${statName("rage")} (full ${statName("rage")} = full bonus)`,
   // Source: server-scripts/Combat.cs:170 — isResourceDepending passive: magic_damage_percent_bonus × (mana.current / mana.max)
-  arcane_edge:
-    "+1% × rank spell power, scaled by current mana (full mana = full bonus)",
+  arcane_edge: `+1% × rank ${statName("spell_power")}, scaled by current ${statName("mana")} (full ${statName("mana")} = full bonus)`,
   // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
   divine_intervention: "grants invulnerability to nearby allies, 3s",
 };
@@ -1218,7 +1230,7 @@ export function formatSkillEffect(
   // Source: server-scripts/TargetBuffSkill.cs:Apply — a cooldown-reduction spell shortens each remaining cooldown by its share, at most 30s, and applies no buff.
   const cooldownCut = parseLinearValue(skill.cooldown_reduction_percent);
   if (skill.skill_type === "target_buff" && cooldownCut) {
-    return `cuts your remaining cooldowns by ${formatLinearPercent(cooldownCut, options)} (max 30s each)`;
+    return `cuts your remaining cooldowns by ${formatLinearStat("cooldown_reduction_percent", cooldownCut, options, false)} (max 30s each)`;
   }
 
   // A monster's cast owes nothing to the reader's attributes.
@@ -1269,7 +1281,7 @@ export function formatSkillEffect(
   // changes no damage.
   // Source: server-scripts/Combat.cs:783-816 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
-    parts.push("+50-75% non-spell dmg below 10% hp");
+    parts.push("+50-75% non-spell dmg below 10% Hit Points");
   }
   if (skill.is_bard_song) parts.push(qualify("Bard song", notes.is_bard_song));
   if (skill.is_bard_charm) {
@@ -1353,7 +1365,7 @@ export function formatSkillEffect(
   }
   if (skill.is_bard_virtuosity && skill.additional_damage_percent_per_song) {
     parts.push(
-      `+${formatPercent(skill.additional_damage_percent_per_song, { decimals: 2 })} attack and spell power per active song beyond 3`,
+      `+${formatPercent(skill.additional_damage_percent_per_song, { decimals: 2 })} ${statName("attack_power")} and ${statName("spell_power")} per active song beyond 3`,
     );
   }
   // Source: server-scripts/AreaBuffSkill.cs:Apply — isOnlyForMagicClasses skips Warrior and Rogue players and mercenaries.
@@ -1364,7 +1376,7 @@ export function formatSkillEffect(
   // Special mechanics
   // Source: server-scripts/PlayerSkills.cs:TryUse — the cast needs the target at or below RoundToInt(max Health / 4).
   if (skill.is_assassination_skill) {
-    parts.push("usable at or below 25% target hp");
+    parts.push("usable at or below 25% target Hit Points");
   }
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; Combat.cs:DealDamageAt — Warrior and Rogue melee spends all Rage for 2 damage each, a Wizard projectile all Mana for 3 each, and both skip avoidance and mitigation.
   if (skill.is_manaburn_skill) {

@@ -5,6 +5,7 @@ import {
   formatStatField,
   statField,
   statFieldName,
+  statFieldPhraseName,
   statName,
 } from "./stats";
 
@@ -84,6 +85,22 @@ describe("statFieldName", () => {
     expect(statFieldName(damage, "item")).toBe(
       statName("attack_power", "item"),
     );
+  });
+});
+
+describe("statFieldPhraseName", () => {
+  test("does not repeat the percent sign that a percent value already shows", () => {
+    expect(
+      statFieldPhraseName(statField("skill", "damage_percent_bonus")),
+    ).toBe(statName("attack_power"));
+  });
+
+  test("names a percent of the maximum per second without a comma", () => {
+    const name = statFieldPhraseName(
+      statField("skill", "mana_percent_per_second_bonus"),
+    );
+    expect(name).toBe(`of maximum ${statName("mana")} per second`);
+    expect(name).not.toContain(",");
   });
 });
 

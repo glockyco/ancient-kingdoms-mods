@@ -1,3 +1,17 @@
+import type { StatId } from "$lib/generated/stat-vocabulary";
+import { ITEM_STAT_FIELDS } from "$lib/constants/items";
+
+const ITEM_FIELDS_BY_STAT = Object.fromEntries(
+  ITEM_STAT_FIELDS.map((field) => [field.stat, field.field]),
+);
+
+function itemFields(stats: readonly StatId[]): string[] {
+  return stats.flatMap((stat) => {
+    const field = ITEM_FIELDS_BY_STAT[stat];
+    return field ? [field] : [];
+  });
+}
+
 /**
  * Stat categories for filtering items by stats.
  * Groups stats into logical categories for the filter UI.
@@ -5,50 +19,44 @@
 export const STAT_CATEGORIES = {
   attributes: {
     label: "Attributes",
-    stats: [
+    stats: itemFields([
       "strength",
       "dexterity",
       "constitution",
       "intelligence",
       "wisdom",
       "charisma",
-    ],
+    ]),
   },
   combat: {
     label: "Combat & Movement",
-    stats: [
-      "damage",
-      "magic_damage",
+    stats: itemFields([
+      "attack_power",
+      "spell_power",
       "critical_chance",
       "accuracy",
       "haste",
       "spell_haste",
-      "speed_bonus",
-      "defense",
+      "movement_speed",
+      "armor_class",
       "block_chance",
-    ],
+    ]),
   },
   resources: {
     label: "Resources",
-    stats: [
-      "health_bonus",
-      "energy_bonus",
-      "mana_bonus",
-      "hp_regen_bonus",
-      "mana_regen_bonus",
-    ],
+    stats: itemFields(["health", "rage", "mana", "health_regen", "mana_regen"]),
   },
   resistances: {
     label: "Resistances",
-    stats: [
+    stats: itemFields([
       "fire_resist",
       "cold_resist",
       "poison_resist",
       "disease_resist",
       "magic_resist",
-      "resist_fear_chance",
+      "fear_resist",
       "critical_resist",
-    ],
+    ]),
   },
 } as const;
 

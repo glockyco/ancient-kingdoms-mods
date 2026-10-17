@@ -37,10 +37,20 @@ export function statName(
   return context === "item" ? (stat.itemName ?? stat.name) : stat.name;
 }
 
+function poolName(field: StatField, context: StatContext): string {
+  const pool = STATS[field.stat].pool;
+  if (!pool) {
+    throw new Error(
+      `Stat "${field.stat}" has a percent of maximum field but no pool`,
+    );
+  }
+  return statName(pool, context);
+}
+
 /**
- * The name of an export field. A modifier that is not a flat amount names its kind after the
- * stat, such as "Attack Power %" or "Health Regeneration, % of Hit Points". A weapon's item
- * damage takes the game's weapon name.
+ * The name of an export field, as a label beside its value. A modifier that is not a flat amount
+ * names its kind after the stat, such as "Attack Power %" or "Health Regeneration, % of Hit
+ * Points". A weapon's item damage takes the game's weapon name.
  */
 export function statFieldName(
   field: StatField,
@@ -55,17 +65,25 @@ export function statFieldName(
   switch (field.modifier) {
     case "percent":
       return `${name} %`;
-    case "percent_of_max_per_second": {
-      if (!stat.pool) {
-        throw new Error(
-          `Stat "${stat.id}" has a percent of maximum field but no pool`,
-        );
-      }
-      return `${name}, % of ${statName(stat.pool, context)}`;
-    }
+    case "percent_of_max_per_second":
+      return `${name}, % of ${poolName(field, context)}`;
     default:
       return name;
   }
+}
+
+/**
+ * The name that follows a value in a value-first phrase, such as "+2% Attack Power" or "+2% of
+ * maximum Hit Points per second". The value already shows its percent sign, so the name does not
+ * repeat it.
+ */
+export function statFieldPhraseName(
+  field: StatField,
+  context: StatContext = "character",
+): string {
+  return field.modifier === "percent_of_max_per_second"
+    ? `of maximum ${poolName(field, context)} per second`
+    : statName(field.stat, context);
 }
 
 function signedText(value: number, text: string, signed: boolean): string {

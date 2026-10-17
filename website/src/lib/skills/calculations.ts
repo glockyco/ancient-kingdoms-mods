@@ -1,3 +1,4 @@
+import { formatStat, statName } from "$lib/stats";
 import {
   atRank,
   describeRankScaling,
@@ -56,14 +57,14 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
   return {
     steps: [
       {
-        name: "Health cost percentage",
+        name: `${statName("health")} cost percentage`,
         expression: describeRankScaling(cost, skill.max_level, (value) =>
           percent(value, { decimals: 2, preserveNonzero: true }),
         ),
       },
       {
-        name: "Health spent",
-        expression: "Maximum Health × Health cost percentage",
+        name: `${statName("health")} spent`,
+        expression: "Maximum Hit Points × Hit Points cost percentage",
         rounding: "up",
       },
       {
@@ -73,7 +74,7 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
         ),
       },
       {
-        name: "Intelligence heal percentage",
+        name: `${statName("intelligence")} heal percentage`,
         expression: `${percent(perIntelligence, { decimals: 2, preserveNonzero: true })} per point of Intelligence above 0`,
       },
       {
@@ -82,7 +83,7 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
       },
       {
         name: "Healing",
-        expression: "Health spent × Heal percentage",
+        expression: "Hit Points spent × Heal percentage",
         rounding: "nearest",
       },
     ],
@@ -99,19 +100,22 @@ export function deathBloomCalculation(skill: SkillDetailView): Calculation {
       return {
         given: [
           `rank ${rank}`,
-          `${number(maxHealth)} maximum Health`,
-          `${number(intelligence)} Intelligence`,
+          `${formatStat("health", maxHealth)} maximum Hit Points`,
+          `${formatStat("intelligence", intelligence)} Intelligence`,
         ],
-        result: `Heals ${number(healed)} Health before critical heals and the missing-Health cap`,
+        result: `Heals ${number(healed)} Hit Points before critical heals and the missing-Hit-Points cap`,
         working: [
-          ...rankWorkingLines("Health cost percentage", cost, rank, (value) =>
-            percent(value, { decimals: 2, preserveNonzero: true }),
+          ...rankWorkingLines(
+            "Hit Points cost percentage",
+            cost,
+            rank,
+            (value) => percent(value, { decimals: 2, preserveNonzero: true }),
           ),
-          `Health spent: ${number(maxHealth)} × ${percent(costShare, { decimals: 2, preserveNonzero: true })} = ${number(spent)}, rounded up`,
+          `${statName("health")} spent: ${formatStat("health", maxHealth)} × ${percent(costShare, { decimals: 2, preserveNonzero: true })} = ${number(spent)}, rounded up`,
           ...rankWorkingLines("Skill heal percentage", healing, rank, (value) =>
             percent(value, { decimals: 2, preserveNonzero: true }),
           ),
-          `Intelligence heal percentage: ${number(Math.max(0, intelligence))} × ${percent(perIntelligence, { decimals: 2, preserveNonzero: true })} = ${percent(intelligenceShare, { decimals: 2, preserveNonzero: true })}`,
+          `${statName("intelligence")} heal percentage: ${formatStat("intelligence", Math.max(0, intelligence))} × ${percent(perIntelligence, { decimals: 2, preserveNonzero: true })} = ${percent(intelligenceShare, { decimals: 2, preserveNonzero: true })}`,
           `Heal percentage: ${percent(atRank(healing, rank), { decimals: 2, preserveNonzero: true })} + ${percent(intelligenceShare, { decimals: 2, preserveNonzero: true })} = ${percent(healPercentage, { decimals: 2, preserveNonzero: true })}`,
           `Healing: ${number(spent)} × ${percent(healPercentage, { decimals: 2, preserveNonzero: true })} = ${number(healed)}, rounded`,
         ],
@@ -147,13 +151,13 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
       ]
     : [
         {
-          name: "Health percentage",
+          name: `${statName("health")} percentage`,
           expression: describeRankScaling(cost, skill.max_level, (value) =>
             percent(value, { decimals: 2, preserveNonzero: true }),
           ),
         },
         {
-          name: "Mana percentage",
+          name: `${statName("mana")} percentage`,
           expression: describeRankScaling(restore, skill.max_level, (value) =>
             percent(value, { decimals: 2, preserveNonzero: true }),
           ),
@@ -164,21 +168,21 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
     steps: [
       ...percentageSteps,
       {
-        name: "Health spent",
-        expression: `${shared ? "Conversion" : "Health"} percentage × your maximum Health`,
+        name: `${statName("health")} spent`,
+        expression: `${shared ? "Conversion" : "Hit Points"} percentage × your maximum Hit Points`,
         rounding: "up",
       },
       {
-        name: "Mana from conversion",
+        name: `${statName("mana")} from conversion`,
         expression: `${shared ? "Conversion" : "Mana"} percentage × your maximum Mana`,
         rounding: "down",
       },
       {
-        name: "Missing Mana",
-        expression: "Maximum Mana − current Mana",
+        name: `Missing ${statName("mana")}`,
+        expression: "Your maximum Mana − current Mana",
       },
       {
-        name: "Mana restored",
+        name: `${statName("mana")} restored`,
         expression: "Smaller of Mana from conversion and your missing Mana",
       },
     ],
@@ -191,28 +195,36 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
       return {
         given: [
           `rank ${rank}`,
-          `${number(maxHealth)} maximum Health`,
-          `${number(maxMana)} maximum Mana`,
-          `${number(currentMana)} current Mana`,
+          `${formatStat("health", maxHealth)} maximum Hit Points`,
+          `${formatStat("mana", maxMana)} maximum Mana`,
+          `${formatStat("mana", currentMana)} current Mana`,
         ],
-        result: `Spends ${number(spent)} Health and restores ${number(restored)} Mana`,
+        result: `Spends ${number(spent)} Hit Points and restores ${number(restored)} Mana`,
         working: [
           ...(shared
             ? rankWorkingLines("Conversion percentage", cost, rank, (value) =>
                 percent(value, { decimals: 2, preserveNonzero: true }),
               )
             : [
-                ...rankWorkingLines("Health percentage", cost, rank, (value) =>
-                  percent(value, { decimals: 2, preserveNonzero: true }),
+                ...rankWorkingLines(
+                  "Hit Points percentage",
+                  cost,
+                  rank,
+                  (value) =>
+                    percent(value, { decimals: 2, preserveNonzero: true }),
                 ),
-                ...rankWorkingLines("Mana percentage", restore, rank, (value) =>
-                  percent(value, { decimals: 2, preserveNonzero: true }),
+                ...rankWorkingLines(
+                  `${statName("mana")} percentage`,
+                  restore,
+                  rank,
+                  (value) =>
+                    percent(value, { decimals: 2, preserveNonzero: true }),
                 ),
               ]),
-          `Health spent: ${percent(atRank(cost, rank), { decimals: 2, preserveNonzero: true })} × ${number(maxHealth)} = ${number(spent)}, rounded up`,
-          `Mana from conversion: ${percent(atRank(restore, rank), { decimals: 2, preserveNonzero: true })} × ${number(maxMana)} = ${number(rolled)}, rounded down`,
-          `Missing Mana: ${number(maxMana)} − ${number(currentMana)} = ${number(missing)}`,
-          `Mana restored: smaller of ${number(rolled)} and ${number(missing)} = ${number(restored)}`,
+          `${statName("health")} spent: ${percent(atRank(cost, rank), { decimals: 2, preserveNonzero: true })} × ${formatStat("health", maxHealth)} = ${number(spent)}, rounded up`,
+          `${statName("mana")} from conversion: ${percent(atRank(restore, rank), { decimals: 2, preserveNonzero: true })} × ${formatStat("mana", maxMana)} = ${number(rolled)}, rounded down`,
+          `Missing ${statName("mana")}: ${formatStat("mana", maxMana)} − ${formatStat("mana", currentMana)} = ${number(missing)}`,
+          `${statName("mana")} restored: smaller of ${number(rolled)} and ${number(missing)} = ${number(restored)}`,
         ],
       };
     },

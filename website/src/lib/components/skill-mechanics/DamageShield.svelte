@@ -1,6 +1,17 @@
 <script lang="ts">
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
   import { getMechanicsContext } from "./context";
+  import { statName } from "$lib/stats";
+  import type { StatId } from "$lib/generated/stat-vocabulary";
+
+  const mitigationStats: Record<string, StatId> = {
+    Physical: "armor_class",
+    Magic: "magic_resist",
+    Poison: "poison_resist",
+    Fire: "fire_resist",
+    Cold: "cold_resist",
+    Disease: "disease_resist",
+  };
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
@@ -11,7 +22,7 @@
 
 <!-- Source: server-scripts/Combat.cs:DealDamageAt — shield damage is its own amount plus a rounded attribute bonus; each shield mitigates separately, then summed damage varies. -->
 <div class="space-y-1">
-  <h3 class="font-semibold">Damage Shield</h3>
+  <h3 class="font-semibold">{statName("damage_shield")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
       >When a non-spell, single-target attack with a base cast range below 1.5
@@ -29,9 +40,7 @@
     {/if}
     {#if skill.damage_shield_type && skill.damage_shield_type !== "Unknown"}
       <span class="block">
-        The attacker's {skill.damage_shield_type === "Physical"
-          ? "Armor Class"
-          : `${skill.damage_shield_type} Resist`}
+        The attacker's {statName(mitigationStats[skill.damage_shield_type])}
         reduces this shield's damage by 5% per 100 points, at most 90%, with the reduction
         rounded up.
       </span>

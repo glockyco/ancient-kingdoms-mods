@@ -143,7 +143,7 @@ const skillTypeDisplayNames: Record<string, string> = {
   frontal_projectiles: "Frontal projectiles",
   target_heal: "Single-target heal",
   area_heal: "Area heal",
-  health_to_mana: "Health to mana",
+  health_to_mana: "Hit Points to Mana",
   target_buff: "Single-target buff",
   area_buff: "Area buff",
   target_debuff: "Single-target debuff",

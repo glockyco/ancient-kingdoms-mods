@@ -275,7 +275,7 @@
       <!-- Source: server-scripts/Monster.cs:574-604 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
       <p>
         <span class="block"
-          >A monster's level, maximum health, and rank determine reputation
+          >A monster's level, maximum Hit Points, and rank determine reputation
           gained.</span
         >
         <span class="block"
@@ -323,7 +323,7 @@
             href="/monsters/avatar_of_water"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Avatar of Water</a
-          > is a level 56 boss with 800,000 maximum Health. Its kill raises Elven
+          > is a level 56 boss with 800,000 maximum Hit Points. Its kill raises Elven
           Kingdom, Children of Illithor, and Army of Order, and lowers Ancient Gods.</span
         >
         <span class="block">The worked example below uses Avatar of Water.</span

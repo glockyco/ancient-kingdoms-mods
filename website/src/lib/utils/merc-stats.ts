@@ -6,6 +6,7 @@ import {
   iround,
   multiplyF32,
 } from "$lib/calculation/unity-math";
+import type { StatId } from "$lib/generated/stat-vocabulary";
 
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
@@ -166,6 +167,7 @@ export interface MercRow {
   atk?: [number, number];
   spell?: [number, number];
 }
+export type MercenaryResource = Extract<StatId, "rage" | "mana"> | "Songs";
 
 export interface ClassResult {
   cls: string;
@@ -174,7 +176,7 @@ export interface ClassResult {
   attrs: Record<string, number>;
   hpCurve: number;
   manaCurve: number;
-  resource: string;
+  resource: MercenaryResource;
   rows: MercRow[];
 }
 
@@ -345,9 +347,9 @@ export function hirePrice(
  * shows its active songs. The other classes use Mana.
  * Source: server-scripts/Pet.cs:957-965, Player.cs:10904-10912
  */
-export function mercenaryResource(cls: string): "Rage" | "Mana" | "Songs" {
+export function mercenaryResource(cls: string): MercenaryResource {
   if (cls === "Bard") return "Songs";
-  return CLASSES[cls].role === "energy" ? "Rage" : "Mana";
+  return CLASSES[cls].role === "energy" ? "rage" : "mana";
 }
 
 /** Source: server-scripts/Npc.cs:1898-1909 — a recruiter serves only players at level 10 or higher. */

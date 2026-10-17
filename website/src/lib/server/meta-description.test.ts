@@ -9,6 +9,7 @@ import {
   classDescription,
 } from "./meta-description.ts";
 import type { Item } from "$lib/queries/items";
+import { statName } from "$lib/stats";
 
 const classMetadata = JSON.parse(
   readFileSync(
@@ -19,8 +20,8 @@ const classMetadata = JSON.parse(
 
 test("classDescription includes every class role and its displayed resource", () => {
   const resourceNames: Record<string, string> = {
-    energy: "Rage",
-    mana: "Mana",
+    energy: statName("rage"),
+    mana: statName("mana"),
     songs: "Active Songs",
   };
   for (const klass of classMetadata) {

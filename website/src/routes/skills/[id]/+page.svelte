@@ -8,15 +8,57 @@
   import {
     formatMasteryNeeded,
     formatLinear,
-    formatLinearAbs,
     formatLinearPercent,
-    formatLinearPercentAbs,
     formatDuration,
     hasLinearValue,
-    isNegativeLinear,
     convertTooltip,
   } from "$lib/skills/skill-format";
   import { formatPercent } from "$lib/utils/format";
+  import { statField, statFieldName, formatStatField } from "$lib/stats";
+  import { formatLinearStat } from "$lib/utils/formatSkillEffect";
+  import type { LinearSkillField } from "$lib/types/skills";
+
+  const statKeys = [
+    "health_max_bonus",
+    "health_max_percent_bonus",
+    "mana_max_bonus",
+    "mana_max_percent_bonus",
+    "energy_max_bonus",
+    "speed_bonus",
+    "damage_bonus",
+    "damage_percent_bonus",
+    "magic_damage_bonus",
+    "magic_damage_percent_bonus",
+    "defense_bonus",
+    "ward_bonus",
+    "magic_resist_bonus",
+    "poison_resist_bonus",
+    "fire_resist_bonus",
+    "cold_resist_bonus",
+    "disease_resist_bonus",
+    "haste_bonus",
+    "spell_haste_bonus",
+    "critical_chance_bonus",
+    "critical_resist_bonus",
+    "accuracy_bonus",
+    "block_chance_bonus",
+    "fear_resist_chance_bonus",
+    "cooldown_reduction_percent",
+    "damage_shield",
+    "heal_on_hit_percent",
+    "healing_per_second_bonus",
+    "health_percent_per_second_bonus",
+    "mana_per_second_bonus",
+    "mana_percent_per_second_bonus",
+    "energy_per_second_bonus",
+    "energy_percent_per_second_bonus",
+    "strength_bonus",
+    "intelligence_bonus",
+    "dexterity_bonus",
+    "constitution_bonus",
+    "wisdom_bonus",
+    "charisma_bonus",
+  ] satisfies LinearSkillField[];
   import { skillFacts } from "$lib/skills/skill-facts";
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
   import MechanicsCard from "$lib/components/skill-mechanics/MechanicsCard.svelte";
@@ -699,8 +741,8 @@
             {#if skill.is_assassination_skill}
               <!-- Source: server-scripts/PlayerSkills.cs:TryUse — cast is permitted at or below RoundToInt(target maximum Health / 4). -->
               <p class="text-amber-600 dark:text-amber-400">
-                Assassination requires the target's Health to be at most 25% of
-                its maximum Health, rounded to the nearest whole point.
+                Assassination requires the target's Hit Points to be at most 25%
+                of its maximum Hit Points, rounded to the nearest whole point.
               </p>
             {/if}
             {#if skill.is_manaburn_skill}
@@ -730,7 +772,7 @@
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.heals_health}
             <div>
-              <dt class="text-muted-foreground">Heals Health</dt>
+              <dt class="text-muted-foreground">Heals Hit Points</dt>
               <dd class="font-medium">
                 {formatLinear(skill.heals_health)}
               </dd>
@@ -994,337 +1036,24 @@
                 </dd>
               </div>
             {/if}
-            <!-- 2. Resource pools -->
-            {#if skill.health_max_bonus}
-              <div>
-                <dt class="text-muted-foreground">Max Health</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.health_max_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.health_max_percent_bonus}
-              <div>
-                <dt class="text-muted-foreground">Max Health %</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.health_max_percent_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.mana_max_bonus}
-              <div>
-                <dt class="text-muted-foreground">Max Mana</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.mana_max_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.mana_max_percent_bonus}
-              <div>
-                <dt class="text-muted-foreground">Max Mana %</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.mana_max_percent_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.energy_max_bonus}
-              <div>
-                <dt class="text-muted-foreground">Max Rage</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.energy_max_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 2. Movement -->
-            {#if skill.speed_bonus}
-              <div>
-                <dt class="text-muted-foreground">Movement Speed</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.speed_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 3. Offense -->
-            {#if skill.damage_bonus}
-              <div>
-                <dt class="text-muted-foreground">Attack Power</dt>
-                <dd class="font-medium">{formatLinear(skill.damage_bonus)}</dd>
-              </div>
-            {/if}
-            {#if skill.damage_percent_bonus}
-              <div>
-                <dt class="text-muted-foreground">Attack Power %</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.damage_percent_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.magic_damage_bonus}
-              <div>
-                <dt class="text-muted-foreground">Spell Power</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.magic_damage_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.magic_damage_percent_bonus}
-              <div>
-                <dt class="text-muted-foreground">Spell Power %</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.magic_damage_percent_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 4. Defense (mitigation grouped together) -->
-            {#if skill.defense_bonus}
-              <div>
-                <dt class="text-muted-foreground">Armor Class</dt>
-                <dd class="font-medium">{formatLinear(skill.defense_bonus)}</dd>
-              </div>
-            {/if}
-            {#if skill.ward_bonus}
-              <div>
-                <dt class="text-muted-foreground">Ward</dt>
-                <dd class="font-medium">{formatLinear(skill.ward_bonus)}</dd>
-              </div>
-            {/if}
-            {#if skill.magic_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Magic Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.magic_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.poison_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Poison Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.poison_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.fire_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Fire Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.fire_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.cold_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Cold Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.cold_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.disease_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Disease Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.disease_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 5. Attack speed -->
-            {#if skill.haste_bonus}
-              <div>
-                <dt class="text-muted-foreground">Haste</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.haste_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.spell_haste_bonus}
-              <div>
-                <dt class="text-muted-foreground">Spell Casting Haste</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.spell_haste_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 6. Hit/chance modifiers -->
-            {#if skill.critical_chance_bonus}
-              <div>
-                <dt class="text-muted-foreground">Critical Strike</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.critical_chance_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.critical_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Critical Resist</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.critical_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.accuracy_bonus}
-              <div>
-                <dt class="text-muted-foreground">Accuracy</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.accuracy_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.block_chance_bonus}
-              <div>
-                <dt class="text-muted-foreground">Block Chance</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.block_chance_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.fear_resist_chance_bonus}
-              <div>
-                <dt class="text-muted-foreground">Fear Resist</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.fear_resist_chance_bonus)}
-                  {#if skill.fear_resist_chance_bonus_cap > 0}
-                    (max {formatPercent(skill.fear_resist_chance_bonus_cap, {
-                      decimals: 2,
-                      preserveNonzero: true,
-                    })})
-                  {/if}
-                </dd>
-              </div>
-            {/if}
-            <!-- 8. Cooldown reduction -->
-            {#if skill.cooldown_reduction_percent}
-              <div>
-                <dt class="text-muted-foreground">Cooldown Reduction</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.cooldown_reduction_percent)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 9. On-hit proc effects -->
-            {#if skill.damage_shield}
-              <div>
-                <dt class="text-muted-foreground">Damage Shield</dt>
-                <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
-              </div>
-            {/if}
-            {#if skill.heal_on_hit_percent}
-              <div>
-                <dt class="text-muted-foreground">Heal on Hit</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.heal_on_hit_percent)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 10. Regen / DoT -->
-            {#if skill.healing_per_second_bonus}
-              <div>
-                <dt class="text-muted-foreground">
-                  {isNegativeLinear(skill.healing_per_second_bonus)
-                    ? "Damage/sec"
-                    : "Health/sec"}
-                </dt>
-                <dd class="font-medium">
-                  {formatLinearAbs(skill.healing_per_second_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.health_percent_per_second_bonus}
-              <div>
-                <!-- Source: server-scripts/Skills.cs:1617-1623 — Reaper Form drains the caster's maximum Health each second. -->
-                <dt class="text-muted-foreground">
-                  {skill.is_necromancer_reaper_form
-                    ? "Self Health drain %/sec"
-                    : isNegativeLinear(skill.health_percent_per_second_bonus)
-                      ? "Damage %/sec"
-                      : "Health %/sec"}
-                </dt>
-                <dd class="font-medium">
-                  {formatLinearPercentAbs(
-                    skill.health_percent_per_second_bonus,
-                  )}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.mana_per_second_bonus}
-              <div>
-                <dt class="text-muted-foreground">Mana/sec</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.mana_per_second_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.mana_percent_per_second_bonus}
-              <div>
-                <dt class="text-muted-foreground">Mana %/sec</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.mana_percent_per_second_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.energy_per_second_bonus}
-              <div>
-                <dt class="text-muted-foreground">Rage/sec</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.energy_per_second_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.energy_percent_per_second_bonus}
-              <div>
-                <dt class="text-muted-foreground">Rage %/sec</dt>
-                <dd class="font-medium">
-                  {formatLinearPercent(skill.energy_percent_per_second_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 11. Primary stats -->
-            {#if skill.strength_bonus}
-              <div>
-                <dt class="text-muted-foreground">Strength</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.strength_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.intelligence_bonus}
-              <div>
-                <dt class="text-muted-foreground">Intelligence</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.intelligence_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.dexterity_bonus}
-              <div>
-                <dt class="text-muted-foreground">Dexterity</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.dexterity_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.constitution_bonus}
-              <div>
-                <dt class="text-muted-foreground">Constitution</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.constitution_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.wisdom_bonus}
-              <div>
-                <dt class="text-muted-foreground">Wisdom</dt>
-                <dd class="font-medium">{formatLinear(skill.wisdom_bonus)}</dd>
-              </div>
-            {/if}
-            {#if skill.charisma_bonus}
-              <div>
-                <dt class="text-muted-foreground">Charisma</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.charisma_bonus)}
-                </dd>
-              </div>
-            {/if}
+            {#each statKeys as key (key)}
+              {@const value = skill[key]}
+              {@const field = statField("skill", key)}
+              {#if value}
+                <div>
+                  <dt class="text-muted-foreground">{statFieldName(field)}</dt>
+                  <dd class="font-medium">
+                    {formatLinearStat(key, value)}
+                    {#if key === "fear_resist_chance_bonus" && skill.fear_resist_chance_bonus_cap > 0}
+                      (max {formatStatField(
+                        field,
+                        skill.fear_resist_chance_bonus_cap,
+                      )})
+                    {/if}
+                  </dd>
+                </div>
+              {/if}
+            {/each}
           </dl>
         {/if}
 
@@ -1333,7 +1062,7 @@
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
-                Enraged monsters with less than 10% health deal 50–75% more
+                Enraged monsters with less than 10% Hit Points deal 50–75% more
                 damage with non-spell skills.
               </p>
             {/if}

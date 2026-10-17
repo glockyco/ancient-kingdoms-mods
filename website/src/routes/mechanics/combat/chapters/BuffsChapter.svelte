@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { statName } from "$lib/stats";
   import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
@@ -128,7 +129,7 @@
       </thead>
       <tbody>
         <tr>
-          <th scope="row">Maximum Health bonus</th>
+          <th scope="row">{statName("health")} bonus</th>
           <td>Listed bonus + 200% of buff attribute</td>
         </tr>
         <tr>
@@ -381,8 +382,8 @@
       </li>
       <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT — the maximum-Health percentage is added after the bonuses and the critical check. -->
       <li>
-        Damage based on a percentage of the target's maximum Health gets neither
-        bonus and is never critical.
+        Damage based on a percentage of the target's maximum Hit Points gets
+        neither bonus and is never critical.
       </li>
     </ul>
   </Topic>

@@ -2,6 +2,8 @@ import { query, queryOne } from "$lib/db.server";
 import type { ClassSkill } from "./classes.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { iround, multiplyF32 } from "$lib/calculation/unity-math";
+import { STATS } from "$lib/generated/stat-vocabulary";
+import { statField } from "$lib/stats";
 import {
   SKILL_LIST_COLUMNS,
   SKILL_LIST_JOINS,
@@ -28,22 +30,22 @@ import {
   getMercenaryLinks,
 } from "$lib/queries/mercenaries.server";
 
-const PET_STATS: { id: PetStatId; name: string; isPercent?: boolean }[] = [
-  { id: "health", name: "Health" },
-  { id: "damage", name: "Attack Power" },
-  { id: "magic_damage", name: "Spell Power" },
-  { id: "defense", name: "Armor Class" },
-  { id: "magic_resist", name: "Magic resistance" },
-  { id: "poison_resist", name: "Poison resistance" },
-  { id: "fire_resist", name: "Fire resistance" },
-  { id: "cold_resist", name: "Cold resistance" },
-  { id: "disease_resist", name: "Disease resistance" },
-  { id: "block_chance", name: "Block chance", isPercent: true },
-  { id: "critical_chance", name: "Critical Strike", isPercent: true },
-];
-const PET_STAT_COLUMNS = PET_STATS.flatMap(({ id }) => [
-  `${id}_base`,
-  `${id}_per_level`,
+const PET_STATS = [
+  "health",
+  "damage",
+  "magic_damage",
+  "defense",
+  "magic_resist",
+  "poison_resist",
+  "fire_resist",
+  "cold_resist",
+  "disease_resist",
+  "block_chance",
+  "critical_chance",
+] as const;
+const PET_STAT_COLUMNS = PET_STATS.flatMap((field) => [
+  `${field}_base`,
+  `${field}_per_level`,
 ]).join(", ");
 
 export function getPetStatSnapshots(
@@ -52,11 +54,13 @@ export function getPetStatSnapshots(
   hasVeteranBonus: boolean,
 ): PetStatSnapshot[] {
   // Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13 — base plus growth for each level after 1.
-  return PET_STATS.flatMap(({ id, name, isPercent = false }) => {
+  return PET_STATS.flatMap((field) => {
+    const id = statField("pet", `${field}_base`).stat as PetStatId;
+    const isPercent = STATS[id].format === "percent";
     let level1 = isPercent
-      ? Math.fround(curves[`${id}_base`])
-      : curves[`${id}_base`];
-    const growth = curves[`${id}_per_level`];
+      ? Math.fround(curves[`${field}_base`])
+      : curves[`${field}_base`];
+    const growth = curves[`${field}_per_level`];
     if (level1 === 0 && growth === 0) return [];
     let atCap = isPercent
       ? Math.fround(level1 + multiplyF32(growth, maxLevel - 1))
@@ -69,7 +73,7 @@ export function getPetStatSnapshots(
       atCap = iround(veteranBase);
     }
     // Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — each veteran point adds 1% of base Attack Power and Spell Power and 0.25% of base Health, Armor Class and resistances, rounded. Block and critical chance gain nothing.
-    const rate = id === "damage" || id === "magic_damage" ? 0.01 : 0.0025;
+    const rate = id === "attack_power" || id === "spell_power" ? 0.01 : 0.0025;
     const bonus =
       hasVeteranBonus && !isPercent
         ? iround(
@@ -79,7 +83,7 @@ export function getPetStatSnapshots(
             ),
           )
         : 0;
-    return [{ name, isPercent, level1, atCap, withVeteran: atCap + bonus }];
+    return [{ id, level1, atCap, withVeteran: atCap + bonus }];
   });
 }
 
@@ -467,11 +471,11 @@ export function getMercenaryIds(): string[] {
 }
 
 const RESISTANCES = [
-  ["Magic", "magic_resist"],
-  ["Poison", "poison_resist"],
-  ["Fire", "fire_resist"],
-  ["Cold", "cold_resist"],
-  ["Disease", "disease_resist"],
+  "magic_resist",
+  "poison_resist",
+  "fire_resist",
+  "cold_resist",
+  "disease_resist",
 ] as const;
 
 /**
@@ -483,17 +487,17 @@ export function getMercenaryDetail(pet: PetDetailView): MercenaryDetailView {
     throw new Error(`Pet ${pet.id} is not a mercenary`);
 
   const resistRow = queryOne<Record<string, number>>(
-    `SELECT ${RESISTANCES.map(
-      ([, col]) => `${col}_base, ${col}_per_level`,
-    ).join(", ")}
+    `SELECT ${RESISTANCES.map((col) => `${col}_base, ${col}_per_level`).join(
+      ", ",
+    )}
      FROM pets WHERE id = ?`,
     [pet.id],
   );
   if (!resistRow) throw new Error(`No resistance data for ${pet.id}`);
-  const resistances: MercenaryResistance[] = RESISTANCES.map(([name, col]) => ({
-    name,
-    base: resistRow[`${col}_base`],
-    per_level: resistRow[`${col}_per_level`],
+  const resistances: MercenaryResistance[] = RESISTANCES.map((id) => ({
+    id,
+    base: resistRow[`${id}_base`],
+    per_level: resistRow[`${id}_per_level`],
   }));
 
   const equipmentSlots = query<{

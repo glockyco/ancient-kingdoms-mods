@@ -27,8 +27,8 @@
         <!-- Source: server-scripts/TargetHealSkill.cs:Apply; AreaHealSkill.cs:Apply — the caster's Critical Chance gates one double/triple heal roll before the recipients are healed. -->
         <p class="text-muted-foreground">
           The caster's Critical Strike is the chance that a heal is critical. A
-          critical heal restores double Health, and 1 in 10 critical heals
-          restores triple, still capped by missing Health.
+          critical heal restores double Hit Points, and 1 in 10 critical heals
+          restores triple, still capped by missing Hit Points.
           {#if ctx.casters.some((caster) => caster.kind === "player" || caster.kind === "any_player")}
             <!-- Source: server-scripts/UICharacterInfo.cs:Update — the character window displays the player's combat.criticalChance. -->
             Your Critical Strike is shown in the character window.
@@ -41,8 +41,8 @@
           <!-- Source: server-scripts/TargetHealSkill.cs:155-158 — a critical pet heal rolls the resource multiplier independently of the Health multiplier. -->
           <p class="text-muted-foreground">
             A critical pet heal also restores double Mana or Rage, or triple in
-            10% of cases. Its triple-restoration roll is separate from the
-            Health roll.
+            10% of cases. Its triple-restoration roll is separate from the Hit
+            Points roll.
           </p>
         {/if}
       {/if}

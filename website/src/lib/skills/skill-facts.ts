@@ -10,6 +10,7 @@ import { hasLinearValue } from "./skill-format";
 import { ALL_CLASS_IDS } from "$lib/utils/classes";
 import { atRank } from "$lib/calculation/format";
 import type { LinearValue } from "$lib/types/skills";
+import { statName } from "$lib/stats";
 
 /** Bonuses a debuff may not carry and still bypass a boss's debuff immunity. */
 const BOSS_DOT_ZERO_FIELDS = [
@@ -60,7 +61,7 @@ export interface ImmuneDebuffBypass {
 
 /**
  * A boss lets through only damage over time, optionally with a slow, that changes nothing else.
- * Other monsters let through resistance-decrease skills and positive Health per second. Debuffs
+ * Other monsters let through resistance-decrease skills and positive Health Regeneration. Debuffs
  * never carry the undead illusion or Avatar of War flags the boss check also refuses.
  * Source: server-scripts/BuffSkill.cs:IgnoreImmuneDebuff; TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply
  */
@@ -112,12 +113,12 @@ export interface DamageMechanics {
 }
 
 const DAMAGE_MECHANICS: Record<string, DamageMechanics> = {
-  Physical: { stat: "Armor Class", avoidance: "block" },
-  Magic: { stat: "Magic Resist", avoidance: "resist" },
-  Fire: { stat: "Fire Resist", avoidance: "resist" },
-  Cold: { stat: "Cold Resist", avoidance: "resist" },
-  Poison: { stat: "Poison Resist", avoidance: "resist" },
-  Disease: { stat: "Disease Resist", avoidance: "resist" },
+  Physical: { stat: statName("armor_class"), avoidance: "block" },
+  Magic: { stat: statName("magic_resist"), avoidance: "resist" },
+  Fire: { stat: statName("fire_resist"), avoidance: "resist" },
+  Cold: { stat: statName("cold_resist"), avoidance: "resist" },
+  Poison: { stat: statName("poison_resist"), avoidance: "resist" },
+  Disease: { stat: statName("disease_resist"), avoidance: "resist" },
 };
 
 /** What the skill page derives from a skill and the pets that use it. */
@@ -407,17 +408,17 @@ export function skillFacts(
 
   // Source: server-scripts/Combat.cs:1545-1589 — melee debuffs resist with Defense, the others with their matching resistance.
   const debuffResistance = skill.is_melee_debuff
-    ? "Armor Class"
+    ? statName("armor_class")
     : skill.is_poison_debuff
-      ? "Poison Resist"
+      ? statName("poison_resist")
       : skill.is_fire_debuff
-        ? "Fire Resist"
+        ? statName("fire_resist")
         : skill.is_cold_debuff
-          ? "Cold Resist"
+          ? statName("cold_resist")
           : skill.is_disease_debuff
-            ? "Disease Resist"
+            ? statName("disease_resist")
             : skill.is_magic_debuff
-              ? "Magic Resist"
+              ? statName("magic_resist")
               : null;
   const damageMechanics = ((): DamageMechanics | null => {
     if (!isDamageType) return null;

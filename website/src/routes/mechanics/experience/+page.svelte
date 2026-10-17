@@ -525,7 +525,7 @@
           >
           <!-- Source: server-scripts/Experience.cs:current; server-scripts/Player.cs:LevelUpMercenaries — living players refill Health and Mana; summoned mercenaries gain their veteran bonuses and heal. -->
           <span class="block">
-            If you are alive, it also refills your Health and Mana. Your
+            If you are alive, it also refills your Hit Points and Mana. Your
             summoned mercenaries gain their <a
               href="/mercenaries#how-it-works"
               class="text-blue-600 dark:text-blue-400 hover:underline"

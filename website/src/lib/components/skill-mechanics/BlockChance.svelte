@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -12,11 +12,12 @@
 
 <!-- Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage — signed Block Chance bonuses affect only physical hits, with a 0–80% stat cap and a 0–90% final avoidance roll. -->
 <div class="space-y-1">
-  <h3 class="font-semibold">Block Chance</h3>
+  <h3 class="font-semibold">{statName("block_chance")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
       >{amount < 0 ? "Lowers" : "Raises"} the affected character's Block Chance by
-      {formatNumber(Math.abs(amount) * 100)} percentage points at rank
+      {formatStat("block_chance", Math.abs(amount)).replace("%", "")} percentage points
+      at rank
       {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
         : ""},

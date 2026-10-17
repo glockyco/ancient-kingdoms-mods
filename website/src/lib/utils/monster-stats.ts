@@ -1,12 +1,12 @@
 import { addF32, clamp, multiplyF32 } from "$lib/calculation/unity-math";
+import { STATS } from "$lib/generated/stat-vocabulary";
 
 // monster-stats.ts — Pure stat math for a monster or NPC spawn.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 
-// Source: server-scripts/Combat.cs:blockChance — block chance adds a hundredth of a
-// percent per point of defense on top of the base curve, then clamps to 0.8.
-const BLOCK_PER_DEFENSE = 0.0001;
-const BLOCK_MAX = 0.8;
+const blockPerArmorClass = STATS.block_chance.perPointOf.find(
+  (term) => term.stat === "armor_class",
+)!.amount;
 
 /**
  * A linear curve read at a level, which is how the engine stores a per-level stat.
@@ -43,9 +43,9 @@ export function effectiveBlockChance(args: {
     multiplyF32(args.perLevel, args.level - 1),
   );
   return clamp(
-    addF32(fromCurve, multiplyF32(args.defense, BLOCK_PER_DEFENSE)),
+    addF32(fromCurve, multiplyF32(args.defense, blockPerArmorClass)),
     0,
-    BLOCK_MAX,
+    STATS.block_chance.max!,
   );
 }
 

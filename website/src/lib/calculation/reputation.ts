@@ -1,3 +1,4 @@
+import { statName } from "$lib/stats";
 import type { Calculation } from "$lib/types/calculation";
 import { divideF32, iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber } from "$lib/utils/format";
@@ -18,11 +19,14 @@ export function reputationExample(
   return {
     steps: [
       {
-        name: "Health contribution",
-        expression: "Monster's maximum Health ÷ 2,000",
+        name: `${statName("health")} contribution`,
+        expression: "Monster's maximum Hit Points ÷ 2,000",
         rounding: "nearest",
       },
-      { name: "Base gain", expression: "Monster level + Health contribution" },
+      {
+        name: "Base gain",
+        expression: "Monster level + Hit Points contribution",
+      },
       {
         name: "Reputation gained",
         expression: "Base gain × monster rank's multiplier from the table",
@@ -36,11 +40,11 @@ export function reputationExample(
     example: () => ({
       given: [
         `Level ${level} ${boss ? "boss" : elite ? "elite" : "normal monster"}`,
-        `${formatNumber(health)} maximum Health`,
+        `${formatNumber(health)} maximum Hit Points`,
       ],
       result: `+${formatNumber(gain)} reputation for each improved faction, −${formatNumber(loss)} for each decreased faction`,
       working: [
-        `Health contribution: ${formatNumber(health)} ÷ 2,000 = ${formatNumber(healthContribution)}, rounded`,
+        `${statName("health")} contribution: ${formatNumber(health)} ÷ 2,000 = ${formatNumber(healthContribution)}, rounded`,
         `Base gain: ${level} + ${formatNumber(healthContribution)} = ${formatNumber(base)}`,
         `Reputation gained: ${formatNumber(base)} × ${factor} = ${formatNumber(gain)}`,
         `Reputation lost: ${level} × ${lossFactor} = ${formatNumber(loss)}`,

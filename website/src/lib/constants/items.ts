@@ -1,11 +1,5 @@
-/**
- * Stats fields that are metadata, not actual stats to display.
- * These are filtered out when showing item stats on the detail page.
- */
-export const STATS_METADATA_FIELDS = [
-  "max_durability",
-  "has_serenity",
-  "is_costume",
-  "augment_bonus_set",
-  "augment_bonus_set_id",
-] as const;
+import { STAT_FIELDS } from "$lib/generated/stat-vocabulary";
+
+export const ITEM_STAT_FIELDS = STAT_FIELDS.filter(
+  (field) => field.source === "item",
+);

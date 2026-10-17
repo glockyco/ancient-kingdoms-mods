@@ -20,31 +20,9 @@ export function formatLinear(
   return formatLinearValueWithUnit(value, suffix);
 }
 
-export function formatLinearAbs(
-  value: LinearValue | null,
-  suffix: string = "",
-): string {
-  if (!value) return "-";
-  return formatLinear(
-    {
-      base_value: Math.abs(value.base_value),
-      bonus_per_level: Math.abs(value.bonus_per_level),
-    },
-    suffix,
-  );
-}
-
 export function formatLinearPercent(value: LinearValue | null): string {
   if (!value) return "-";
   return formatSkillLinearPercent(value, undefined);
-}
-
-export function formatLinearPercentAbs(value: LinearValue | null): string {
-  if (!value) return "-";
-  return formatLinearPercent({
-    base_value: Math.abs(value.base_value),
-    bonus_per_level: Math.abs(value.bonus_per_level),
-  });
 }
 
 export function formatDuration(base: number, perLevel: number): string {
@@ -55,10 +33,6 @@ export function formatDuration(base: number, perLevel: number): string {
 export function hasLinearValue(value: LinearValue | null): boolean {
   if (!value) return false;
   return value.base_value !== 0 || value.bonus_per_level !== 0;
-}
-
-export function isNegativeLinear(value: LinearValue | null): boolean {
-  return !!value && value.base_value < 0;
 }
 
 export function convertTooltip(text: string | null): string {

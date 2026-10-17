@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/utils/format";
+  import { statName, formatStat } from "$lib/stats";
   import { atRank } from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -9,14 +9,14 @@
 
 <!-- Source: server-scripts/Combat.cs:fearResistChance,DealDamageAt — a successful fear roll is followed by the victim's separate Fear Resist roll; total Fear Resist is clamped 0–100%. -->
 <div class="space-y-1">
-  <h3 class="font-semibold">Fear Resist</h3>
+  <h3 class="font-semibold">{statName("fear_resist")}</h3>
   <p class="text-muted-foreground">
     <!-- Source: server-scripts/Combat.cs:fearResistChance; BuffSkill.cs:ScaleFearResistChanceBonus — signed buff bonuses add to total Fear Resist; songs scale this amount with Charisma. -->
     {#if skill.fear_resist_chance_bonus}
       <span class="block">
-        The affected character receives {formatPercent(
+        The affected character receives {formatStat(
+          "fear_resist",
           atRank(skill.fear_resist_chance_bonus, skill.max_level),
-          { decimals: 2, preserveNonzero: true },
         ).replace("%", "")} percentage points of Fear Resist at rank
         {skill.max_level}{skill.scales_with_charisma
           ? ", before Charisma scaling"
@@ -29,9 +29,9 @@
     >
     {#if skill.fear_resist_chance_bonus_cap > 0}
       <span class="block"
-        >This skill adds at most {formatPercent(
+        >This skill adds at most {formatStat(
+          "fear_resist",
           skill.fear_resist_chance_bonus_cap,
-          { decimals: 2, preserveNonzero: true },
         ).replace("%", "")} percentage points to that chance after Charisma scaling.</span
       >
     {/if}
