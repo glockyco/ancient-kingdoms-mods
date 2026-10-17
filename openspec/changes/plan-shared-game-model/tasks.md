@@ -11,16 +11,16 @@
 ## 3. In-flight changes
 
 - [x] 3.1 Revise `prune-unread-database-data`: keep the sitemap hash bridge and the dead-column audit, and drop the deletion of the progression tables.
-- [ ] 3.2 Fold `show-pack-and-random-sources-in-map-popups` into the acquisition change, then remove it. Its proposal is marked superseded.
+- [x] 3.2 Fold the pack/random popup requirements into `unify-acquisition-usage-requirements` and remove the superseded standalone proposal. The successor retains inspection, quantities/probabilities and nonspatial-source behavior.
 - [ ] 3.3 Fold `consolidate-server-read-models` into the read-model change, then remove it. Its proposal is marked superseded.
 - [x] 3.4 Add WebAssembly to the content security policy of `add-security-headers`. That change's own tasks verify the database worker under the policy.
 - [x] 3.5 Land `simplify-pipeline-loader-registration` and `harden-export-sessions` before the vocabulary and rules change, which adds a dataset and export fields. Both are archived.
 
 ## 4. Verification prerequisites
 
-- [ ] 4.1 Agree with `ancient-kingdoms-sim` on the checks this plan needs: the stat sheet of a character in the D6 format, altar tiers around their thresholds, boss loot over many kills, and fragment eligibility.
-- [ ] 4.2 Confirm each defect under "Defects found" in the game before the change that fixes it ships.
-- [ ] 4.3 Triage the three suspected game defects with the game-defect-reports skill.
+- [ ] 4.1 Coordinate the remaining boss-loot/fragment checks and the later D6 stat-sheet contract with `ancient-kingdoms-sim`. Reuse archived altar-threshold evidence instead of treating that completed check as a new blocker.
+- [ ] 4.2 Confirm new or changed published game-behavior claims through D15 and record the evidence in their follow-up change. Preserve valid earlier evidence for unchanged rules.
+- [ ] 4.3 Triage the unconfirmed suspected game defects with the game-defect-reports skill.
 
 ## 5. Spikes
 
@@ -34,10 +34,10 @@ Each follow-up change cites this design by decision number and lists the facts i
 
 - [x] 6.1 Stat vocabulary (D2): `unify-stat-vocabulary`, with the item list fix. Archived as `2026-10-17-unify-stat-vocabulary`.
 - [x] 6.2 Game rules (D5): `unify-game-rules`, with the altar tier, primal essence, item level and chest fixes. Archived as `2026-10-17-unify-game-rules`.
-- [ ] 6.3 Acquisition, usage and requirements (D3, D4), with the export gaps, the NPC caster count and the remaining defects.
+- [x] 6.3 Propose acquisition, usage and requirements (D3, D4) as `unify-acquisition-usage-requirements`, reconciling landed fixes, input gaps, NPC membership and inherited popup scope. Implementation remains pending its page review and verification gates.
 - [ ] 6.4 Shared read models and relation components (D7).
 - [ ] 6.5 Character model, store and share links (D6, D13, D14).
-- [ ] 6.6 Reference kinds: stats, effects with the mechanic definitions, armor sets, races and crafting stations (D9).
+- [ ] 6.6 Propose reference kinds: stats, effects with full applier/parameter coverage and mechanic definitions, armor sets, races and crafting stations (D2, D3, D9).
 - [ ] 6.7 Zones by level.
 - [ ] 6.8 Character planner with build, stat sheet and mercenaries (D10, D11).
 - [ ] 6.9 "Where to Get".

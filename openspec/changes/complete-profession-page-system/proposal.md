@@ -7,7 +7,7 @@ Mining, Radiant Seeker, and Slayer have migrated, but Slayer hides 123 of 143 ta
 - Restore every Slayer target to static HTML while keeping the hydrated table compact.
 - Reduce Fishing's framing without losing its timing, probability, and recipe facts. Review it with Mining, Radiant Seeker, and Slayer before migrating the remaining nine routes.
 - Migrate Adventuring, Alchemy, Cooking, Exploring, Herbalism, Hunter, Lore Keeping, Scroll Mastery, and Treasure Hunter.
-- Repair profession denominators, missing gathering rewards, and crafting-station classification at their sources. Remove the Exploring count override.
+- Repair profession denominators and remove the Exploring count override. Consume acquisition's canonical gathering rewards and exact station/recipe inputs rather than duplicating its exporter and relationship work.
 - Finish related-profession navigation, index payoffs, SEO, responsive behavior, no-JavaScript access, and cited mechanics checks.
 - Repair the dense Combat and Inventory mechanics pages only where their shared presentation needs the same patterns. Leave unrelated entity detail links to `link-entities-to-profession-pages`.
 

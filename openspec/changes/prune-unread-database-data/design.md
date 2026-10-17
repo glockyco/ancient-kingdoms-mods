@@ -1,6 +1,6 @@
 ## Context
 
-`schema.sql:184-220` holds four progression tables that `load_progression` validates and inserts (`loaders/core.py:308-410`). No website code reads them yet. `plan-shared-game-model` makes them inputs of the character rules, which replace the experience page's hardcoded copy of the same rules. The sitemap hashes whole rows through `SELECT *` (`website/scripts/build-sitemap-manifest.mjs:108-117,538-560`). `mergeManifests` bumps `lastmod` for every changed hash (`:71-91`), and IndexNow selects those URLs (`website/scripts/indexnow-ping.mjs:11-28`).
+The four progression tables remain required. `progression_rules` and `class_level_progression` already have website consumers, including the Experience page, and the shared character model needs the retained progression data. The remaining audit must establish other actual consumers rather than assume these tables are unread. Sitemap hashes still depend on storage rows, so acquisition's schema cutover also needs the content-based bridge in this change before removing those projections.
 
 ## Goals / Non-Goals
 
@@ -23,4 +23,4 @@
 
 ## Migration Plan
 
-Generate a table/column consumer inventory. Keep the prior database and live manifest as read-only comparison inputs. Create and test the hash bridge before schema removal. Prune proven-unread tables and columns with dependent loader and redaction updates. Compare database-backed page data and sitemap URL sets before and after; review the IndexNow URL list before deployment. Roll back to the previous schema/database and manifest together if comparison fails.
+Generate a table/column consumer inventory. Keep the prior database and live manifest as read-only comparison inputs. Create and test the hash bridge before either storage pruning or the acquisition schema cutover. This dependency does not require completing the whole unused-storage audit first. Prune only proven-unread storage with dependent loader and redaction updates. Compare database-backed page data, search, redaction closure and sitemap URLs for the same export. Roll back schema/database and manifest together if comparison fails.

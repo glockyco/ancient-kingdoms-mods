@@ -2,7 +2,7 @@
 
 The compendium publishes what the installed build of Ancient Kingdoms contains. Its next features all read the same facts, relations, rules and character state. This design records the model they share, the decisions taken on 2026-10-16, and the order of the follow-up changes that implement it.
 
-The evidence comes from reading the decompiled server code of game 0.9.36.1 (Steam build 25979028) and the published database, from a survey of other game wikis and tools, and from the sibling Afallon Compendium. The raw reports are local working material. Everything a later change needs is restated here.
+The original evidence came from the decompiled server code, the published database, a survey of other game wikis and tools, and Afallon Compendium. Follow-up changes own their current observations and implementation evidence. This design owns the shared direction and dependency boundaries.
 
 Each decision has a status:
 
@@ -11,16 +11,16 @@ Each decision has a status:
 
 ### Why one model
 
-Every fact, rule and relation below has several owners today, and the copies disagree.
+The current state separates landed foundations from remaining duplicated relationship logic.
 
-| Area | Today | Consequence |
-| --- | --- | --- |
-| Item sources | Eleven `item_sources_*` tables, `item_source_entries`, `item_zones_obtainable`, the JSON columns `monsters.drops`, `npcs.items_sold` and `items.chest_rewards`, which map popups read directly (`website/src/lib/queries/popup.ts`, 2,212 lines), and TypeScript special cases | Most of the defects listed under "Defects found" |
-| Game rules | Hand-copied in the exporter (`mods/DataExporter/Exporters/ProgressionRows.cs`), re-implemented in pipeline denormalizers, and again in `website/src/lib/calculation/`, `website/src/lib/utils/merc-stats.ts` and page constants | Chest rolls are simulated twice (`build-pipeline/src/compendium/denormalizers/items/special_types.py`, `website/src/lib/utils/treasureHunter.ts`). No website code reads `progression_rules`, `race_progression`, `class_level_progression` or `level_budgets`, while `website/src/routes/mechanics/experience/+page.svelte` hardcodes the same rules |
-| Stats | The game sums 28 stats through `ICombatBonus`, `IHealthBonus`, `IManaBonus` and `IEnergyBonus`. The repository names them with four or five key vocabularies and decides in about seven places whether a stat is a percentage | Labels conflict, such as AC and Armor Class, or Critical Chance and Critical Strike. The item list prints a 5% stat as 0.05 |
-| Effects | The game identifies an effect by its buff skill, and its appliers are spread over nine tables and columns. Mechanic predicates are defined in `mods/DataExporter/Skills/SkillClassification.cs`, `website/src/lib/skills/mechanics-sections.ts` and `website/src/lib/utils/formatSkillEffect.ts` | Zone hazards and game-state buffs such as Rest have no applier relation. The NPC caster count is always 0 |
-| Character state | Flat `calculation:<key>` numbers in `localStorage` (`website/src/lib/calculation/remembered.svelte.ts`) without identity. Readers clamp the level to different bounds | No page can mean "your character" |
-| Saves | An encrypted SQLCipher database that references items, skills and monsters by name, stores quests by an id the export lacks, and leaves some settings in Unity PlayerPrefs | A direct reader needs SQLCipher decryption in the browser and one export addition |
+| Area | Current boundary |
+| --- | --- |
+| Item sources | Method-specific tables, summary/zone projections, raw relationship JSON and virtual source helpers still give pages and map consumers different interpretations. The acquisition change replaces those scoped copies. |
+| Game rules | The shared rule boundary and the altar, primal-essence, item-level and chest corrections are implemented in the archived game-rules change. Acquisition must preserve them while replacing their input projections. |
+| Stats | The exported vocabulary and formatting cutover is implemented in the archived stat-vocabulary change. It is not a remaining prerequisite to rediscover. |
+| Effects | Effects retain skill identity. The NPC membership/count defect belongs to acquisition. Complete effect-applier and mechanic lookup work remains with the reference feature. |
+| Character state | Remembered calculator numbers still have no character identity. The character/store change remains separate from the acquisition requirement projection. |
+| Saves | The encrypted-save reader spike is complete. Production import, authored quest identity and progress/stash views remain later work. |
 
 ## Goals / Non-Goals
 
@@ -61,19 +61,19 @@ Alternative rejected: building each feature on its own copy, which is how the de
 
 Each relation is stored once, with both endpoints and the facts about the pair, and is read from either side.
 
-- Acquisition: item, method, provider, yield, cost, requirements (D4), repeatability, and a typed chance model. The chance model is one of deterministic, independent roll, uniform pick, boss guaranteed pick, or skill-dependent. A displayed chance always names the roll it describes.
-- Places come from the provider's spawns, so a monster in two zones yields two trips without duplicated rows.
+- Acquisition: item, method, providers, grouped yield/cost, requirements (D4), repeatability and a typed enclosing probability process. Preserve deterministic delivery, independent rolls, uniform picks, boss loot, ordered capped chest openings and skill-dependent processes. A displayed chance names its event and assumptions.
+- Places come from explicit eligible provider memberships, not a template-wide union of zones. A method is mapped only where that context produces its result.
 - Usage: recipe material, quest objective, currency, key, altar activation, merge or fragment component, and augment.
 - Effect application, with one applier kind per row: class, veteran, mercenary, pet, monster, aura, NPC, potion, food, relic, scroll, weapon proc, trap, dangerous ground, zone hazard and game state.
 - Stat grants: every source of every stat with its amount by rank or level. Sources are items, augments, armor set thresholds, passive skills, buffs, class curves, race, class growth, books, mercenary curves and hire rolls.
 - Armor set membership and spawns complete the relations.
 - The JSON columns such as `monsters.drops` become pipeline input only, and no site code reads them.
 
-The physical layout, one table per method behind one query surface or a single table, is left to the follow-up change.
+The proposed [acquisition design](../unify-acquisition-usage-requirements/design.md) uses a method anchor with typed details, grouped edges and provider memberships. The physical layout of remaining effect/stat relations stays with their later first-consumer changes.
 
 ### D4. Requirements (Decided)
 
-One typed vocabulary of conditions is evaluated against a character: level, total veteran points, class, race, faction standing, adventuring level, key owned, item consumed, quest completed, recipe learned, profession skill, boss dead and season. Vendors, quests, portals, chests, altars, equipment and skills each describe these in their own shape today. With one evaluator, every requirement shows met, unmet or unknown for the active character, and "Where to Get" separates reachable sources from blocked ones.
+One typed vocabulary covers progression, identity, possession, quest/recipe knowledge, profession qualification and world conditions. It preserves phase, subject, conjunctions and alternatives. Costs reference the same input facts instead of independently repeating consumption requirements. The [acquisition requirement contract](../unify-acquisition-usage-requirements/specs/game-requirements/spec.md) defines partial-knowledge evaluation for this slice. The active-character feature supplies its facts later.
 
 ### D5. Rules (Decided)
 
@@ -88,8 +88,8 @@ One typed vocabulary of conditions is evaluated against a character: level, tota
 One versioned shape is shared by the planner, share links, export files, save import, every calculator and the sim's inputs (D15). The shape and the link format are settled before the first feature ships, because changing them later breaks stored characters and published links.
 
 - Build: class, race, level, total veteran points, veteran skill ranks, two specializations each with an attribute allocation, class skill ranks and an optional purchase order, the 16 equipment slots as item instances (D10), the consumables in use, and the mercenaries (D11).
-- Progress: quests completed, zones discovered, books read, recipes learned, profession levels, faction standing, keys, boss and hunt kills, and owned items with their location: inventory, bank tab, house chest or mercenary.
-- Every value records where it came from: entered, imported, derived or unknown. Unknown is never shown or computed as 0.
+- Progress: quests completed, zones discovered, books read, recipes learned, profession levels, faction standing, keys, boss and hunt kills, and owned items with their location. Preserve inventory slot or container detail when a game gate depends on it rather than only a broad ownership label.
+- Every value records entered, imported, derived or unknown provenance. Collections record whether their scope is complete or partial. Unknown is never shown or computed as 0, and absence from a partial collection is not proof of failure.
 - Collected marks on planned items are progress, not build, so they stay out of share links.
 - The existing `calculation:<key>` values migrate once into a draft character. Calculators then read the active character and keep a manual override.
 
@@ -207,22 +207,21 @@ Afallon informs this design but is not a template.
 
 Adopted as they are: relation tables that plan their columns from their rows, unknown values never shown as zero, every chance naming its roll, several characters with isolated previews and serialized cross-tab writes, versioned compressed share links, and an export file whose import is previewed before it applies.
 
-## Defects found
+## Findings and current disposition
 
-Code reading found the defects below. Per D15, each is confirmed in the game before its fix ships. Each is fixed by the named follow-up change, never by patching one of its copies alone.
+The foundational altar, primal-essence, item-level and chest corrections are implemented in the [game-rules archive](../archive/2026-10-17-unify-game-rules/design.md). The vocabulary cutover is implemented in the [stat-vocabulary archive](../archive/2026-10-17-unify-stat-vocabulary/design.md). The [prose cleanup](../archive/2026-10-17-clarify-compendium-prose/design.md) also implemented theoretical boss per-kill odds, zero-amount quest filtering and several special-source displays.
 
-| Defect | Evidence | Fixed by |
-| --- | --- | --- |
-| Altar reward tiers are stored for effective levels 0, 35, 45 and 55. The game picks the tier from level plus total veteran points with thresholds 40, 50 and 150. The drop notes and the item page repeat the wrong ranges. `website/src/lib/utils/format.ts` and the altar page match the game | `server-scripts/DefaultEvent.cs:231-237`, `build-pipeline/src/compendium/denormalizers/items/sources.py:274-312`, `build-pipeline/src/compendium/denormalizers/monsters/drops.py:166-171`, `website/src/routes/items/[id]/+page.svelte:1922-1932` | `unify-game-rules` |
-| Primal essence values use quality 1, the `equipment` item type and the gold sell price. The game's own functions, called for every item in the running game, give 305 published items a different value: 127 Uncommon items it refuses, 113 weapons, 24 augments and one ammo item it accepts, and 40 token-bought armor set pieces it values at 1 | `server-scripts/Utils.cs:527-539`, `server-scripts/UINpcTrading.cs:580`, `build-pipeline/src/compendium/denormalizers/items/calculations.py:187-217` | `unify-game-rules` |
-| The item list prints chance stats as raw fractions, so 5% shows as 0.05 | `website/src/routes/items/+page.svelte:400` | `unify-stat-vocabulary` |
-| The NPC caster count compares a JSON object with a skill id and is always 0. Comparing `json_extract(value, '$.id')` matches 235 rows, all target damage and target projectile skills. The count also feeds the mechanics cards' caster contexts (`website/src/lib/utils/skillMechanics.ts:266`) and a build guard against NPC area heals (`website/src/lib/skills/skillEffectInput.ts:310`) that has never been able to fire | `website/src/lib/skills/skillDetail.ts:21-24` | Acquisition, with the effect application relation that models NPC casters |
-| Fatecharm fragments are assigned to every non-boss monster in a luck-token zone. The game also requires a respawning monster with an experience multiplier of at least 1, and uses the spawn's own zone. 29 rows sit on monsters that cannot drop them | `server-scripts/Monster.cs:3112`, `build-pipeline/src/compendium/denormalizers/monsters/drops.py` | Acquisition |
-| The 17 fatecharms have no source, because no relation models combining fragments | `server-scripts/uMMORPG.Scripts.ScriptableItems/FragmentItem.cs`, `item_source_entries` | Acquisition |
-| The boss guaranteed-equipment roll is not modeled, so boss drops show only their per-roll chances | `server-scripts/Monster.cs:3037-3062` | Acquisition |
-| Alchemy and scribing recipes are attributed to every table in every zone, because the exporter drops which station offers which recipe | `build-pipeline/src/compendium/denormalizers/items/zones.py`, `mods/DataExporter/Exporters/AlchemyRecipeExporter.cs`, `mods/DataExporter/Exporters/CraftingRecipeExporter.cs` | Acquisition |
-| The vendor reputation tier column is empty on all 487 vendor rows, and the adventuring level gates on 70 of them are not shown | `build-pipeline/src/compendium/denormalizers/items/sources.py:135`, `server-scripts/UINpcTrading.cs:506-512` | Acquisition |
-| The radiant spark chance is stored as 1.0, while popups hardcode 5% to 25% and the item page states it in prose | `build-pipeline/src/compendium/denormalizers/items/sources.py`, `website/src/lib/queries/popup.ts`, `website/src/routes/items/[id]/+page.svelte` | Acquisition |
+The [acquisition change](../unify-acquisition-usage-requirements/proposal.md) owns the remaining scoped findings and their current evidence. These are not instructions to repeat already-landed fixes. Repository projection defects can be demonstrated through readers and queries. New or changed game-behavior claims still require D15 verification.
+
+| Area | Remaining work |
+| --- | --- |
+| NPC casters | Normalize ordered skill membership and fix the object-to-ID count/context consumers. Full effect-applier migration remains later. |
+| Fragment loot | Preserve placed-monster loot context and event overrides instead of attaching fragment eligibility to every placement of a template. |
+| Fatecharm conversion and services | Normalize existing item references and working displays into shared grouped methods and costs. Do not request duplicate result/quantity exports. |
+| Boss loot | Preserve the implemented calculation while migrating original pools, eligible placements and assumptions. |
+| Recipes and stations | Export exact provider membership and retain whole definitions rather than attributing recipes to every table. |
+| Vendor access | Normalize already-exported item thresholds together with provider access and costs. |
+| Radiant Spark | Feed the existing skill-dependent rule from canonical inputs instead of exposing a guaranteed raw source row. |
 
 Suspected defects in the game itself, for the game-defect-reports skill:
 
@@ -233,25 +232,23 @@ Suspected defects in the game itself, for the game-defect-reports skill:
 
 ## Export gaps
 
-The follow-up changes add these to the export, each confirmed in the game per D15:
+The [acquisition design's input section](../unify-acquisition-usage-requirements/design.md#7-export-only-missing-authoritative-inputs) owns the exact additions for this slice and identifies existing fields that must be reused. It separates placed loot context, station/home membership, base item restrictions and referenced gate targets from data already exported.
 
-- Which station or table offers which recipe.
-- The boss guaranteed-equipment rules, and fragment eligibility per spawn.
-- Per-item vendor gates: faction standing and adventuring level.
-- Base Health regeneration, base movement speed, and mercenary prefab attributes. `base_mana_recovery_rate` is exported already but has no column.
-- Stat labels from the game's own label code.
-- Effect appliers the export misses: zone hazard thresholds, the reduced trap effect on pets, and game-state buffs such as Rest, Serenity, Flee and resurrection sickness.
-- `idQuest`, for save import.
-- Race starting attributes and class growth are hand-copied in `ProgressionRows.cs`. That file stays the single cited copy, and the experience page's copy goes. `merc-stats.ts` follows the mercenaries' own growth method in `Player.cs`, so it merges into the same rule only if both methods agree for every class.
+Later changes retain their own input work:
+
+- Character/stat-sheet work verifies remaining base-resource, movement and mercenary prefab inputs against the current export before adding fields.
+- Effect-reference work owns the remaining hazard, reduced-effect and game-state application parameters.
+- Save import owns the authored `idQuest` addition and the save-to-compendium mapping.
+- Progression facts are already consumed by the Experience page. Keep the cited progression producer rather than restoring a page-local copy. Compare player and mercenary growth methods before merging them.
 
 ## In-flight changes
 
 | Change | Decision |
 | --- | --- |
-| `simplify-pipeline-loader-registration` | Land first. New relations register through it |
-| `harden-export-sessions` | Land before new export fields |
-| `prune-unread-database-data` | Keep the sitemap hash bridge and the dead-column audit. Drop the deletion of the progression tables, which become the character model's data |
-| `show-pack-and-random-sources-in-map-popups` | Fold into the acquisition change. As written it extends the popups' separate copy of item sources |
+| `simplify-pipeline-loader-registration` | Archived prerequisite. New relation datasets use its catalog. |
+| `harden-export-sessions` | Archived prerequisite. Added fields use complete immutable sessions. |
+| `prune-unread-database-data` | Retains the dead-column audit and storage-independent sitemap hash bridge. Its bridge is required before the acquisition schema cutover. Progression tables remain retained. |
+| `unify-acquisition-usage-requirements` | Proposes the acquisition, usage and requirement cutover, including the inherited pack/random popup scope. Implementation remains subject to its page review and runtime gates. |
 | `consolidate-server-read-models` | Fold into the read-model change |
 | `add-security-headers` | Allow WebAssembly through `'wasm-unsafe-eval'` in every policy that governs a context compiling it. A policy with `default-src` or `script-src` blocks WebAssembly without it, and a worker takes its policy from its own script response, not from the page |
 | `consolidate-website-design-system` | Land before new pages, so the shared components build on it |
@@ -263,9 +260,9 @@ The other in-flight changes are independent of this plan.
 
 Each step ships something visible and depends only on the steps it names:
 
-1. Pipeline preparation: `simplify-pipeline-loader-registration` and `harden-export-sessions`.
-2. Stat vocabulary (`unify-stat-vocabulary`) and game rules (`unify-game-rules`), after step 1. They are two changes because their consumers differ. Visible: consistent stat names and percentages, and corrected altar tiers, primal essence and chest chances.
-3. Acquisition, usage and requirements (D3, D4) with the export gaps, after step 2. Visible: correct sources on item pages, popups, class pages and the map, including fatecharms, fragments and per-station recipes.
+1. Pipeline preparation is implemented and archived: loader registration and immutable export sessions.
+2. Stat vocabulary and game rules are implemented and archived. The prose audit is also complete. Preserve their behavior in later cutovers.
+3. [Acquisition, usage and requirements](../unify-acquisition-usage-requirements/proposal.md) proposes the next D3/D4 slice. It includes current input gaps, the NPC membership defect, eligible source locations and inherited popup requirements. Its implementation needs page approval and its publication hash-bridge prerequisite.
 4. Shared read models (D7), after step 3. Visible: popups and pages agree.
 5. Character model, store and share links (D6, D13, D14), after step 2. Visible: one active character in the header that every calculator uses.
 6. Reference kinds: stats, effects with the mechanic definitions of D2, armor sets, races and crafting stations (D9), after steps 3 and 5.
