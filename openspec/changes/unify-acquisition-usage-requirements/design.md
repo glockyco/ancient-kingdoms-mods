@@ -111,7 +111,8 @@ Roots name their phase, such as offer, accept, fulfill, perform, learn or equip/
 
 | Fact family | Required distinction |
 | --- | --- |
-| Numeric progression | Character level, total veteran points, available points, already-spent points, faction standing, profession fraction and total equipped item level retain distinct units and subjects. |
+| Numeric progression | Character level, total veteran points, available points, already-spent points, faction standing, profession fraction, Adventuring fraction and total equipped item level retain distinct units and subjects. Format stored fractions as percentages only at the presentation boundary. |
+| Altar tier | A finite `altar_tier` predicate compares the activating player's level plus total veteran points with the native inclusive score bounds. Keep both bounds, rather than composing lower-bound metrics that cannot exclude higher tiers. |
 | Identity restrictions | Resolve explicit class/race identities through the existing identity mapping, with authored alternatives preserved. Do not guess unknown names. |
 | Item possession | Inventory, native base-inventory slots, equipment, key ring, bank, house chest and mercenary storage are distinct scopes. Backpack items do not satisfy base-slot restrictions. Unslotted ownership cannot prove that subset. Preserve the game's actual OR branches. |
 | Objectives | Active incomplete quest need and event counters differ from historical quest completion and possession. |
@@ -148,11 +149,15 @@ Reuse content-hashed database delivery and the current worker. No second databas
 | Housing catalog | Capture the explicit catalog and referenced structure/workstation capabilities without private house placements or name-based capability inference. |
 | Base item class restriction | Preserve the base restriction for relevant non-equipment items rather than populating it only in the equipment branch. A fresh export determines configured affected items. |
 | Exact portal gate target | Retain the actual referenced scene placement/instance identity, not merely a monster template with the same name. |
+| Exact summon membership | Capture the trigger's referenced monster or NPC placement and each guard by object identity. A same-template placement is not equivalent. |
+| NPC quest offers | Capture the native ordered quest entries with separate acceptance and completion flags. These flags alone define providers. Quest start/end associations are not acceptance or completion checks and cannot invent a provider. |
 | Required special references | Add the authoritative lockpicks reference needed by the chest alternative. Reuse existing special item, fragment, price, threshold and extra-gather fields. |
 | Existing skill curves and NPC IDs | Retain rank curves during insertion and normalize ordered NPC membership. Neither needs another runtime discovery mechanism. |
 | Code-defined grants/rules | Keep one cited representation of creation grants and process constants. Resolve existing identities and verify in scratch state. Do not invoke character creation as part of ordinary export. |
 
 Use existing exporter descriptors, the dataset catalog and immutable-session verification. Missing required references stop the export/build. Do not evaluate the exporting character's eligibility to decide which configured offers exist. Known authoring/event overrides and transient observed world state are different data.
+
+Resolve configured zone boundaries from authored collider vertices, offsets and transforms before freezing placements. Early capture cannot rely on physics registration or a simulated frame. All exporters use the same immutable boundary table. Missing, degenerate or unsupported geometry fails capture. Verify containment and nearest-boundary attribution against native physics once it is ready. Repeated exports establish stability, not geographic correctness.
 
 The full effect-applier parameters, character base-stat gaps and authored save quest IDs remain with their planned first consumers. They are not silently bundled into this change. No unused NPC-loot implementation is added for today's empty NPC drop arrays.
 
@@ -160,7 +165,7 @@ NPC membership keeps its authored index. Caster counts count distinct NPC identi
 
 ### 8. Normalize before closure, then derive presentation
 
-The pipeline loads definitions, memberships, method inputs/outputs, requirement references and roll data before redaction. Redaction uses their declared meaning. Presentation summaries, eligible source zones and search/fingerprint projections follow from the surviving canonical graph.
+The pipeline loads definitions and enriches altar waves before normalizing memberships, method inputs/outputs, requirements and roll data. It then drops private staging before geometry and hidden-crafting policies run, so normalization cannot recreate a withheld fact. Semantic closure follows those policies. Derived roots, source hints, opaque rekeying and final semantic checks follow the surviving graph.
 
 Declare each reference's reachability direction and geometry behavior once in the existing system. Costs and prerequisites are not providers of the referenced items. Source-free cycles do not create roots. A removed required input cannot make the remaining method look cheaper or unconditional.
 
@@ -223,6 +228,20 @@ Runtime evidence precedes publication of changed game behavior. The implementati
 Permanent tests target wrong outcomes, not copied wiring or literal prose. Important cases include repeated Malachite input rows producing one outcome, branch-specific costs, a partial inventory that cannot prove absence, a three-item merge, prerequisite alternatives, a withheld portal destination, NPC-only skills, real skill curves, an ineligible placement of an otherwise eligible template, and source-free cycles. Synthetic alternatives/nonconstant curves are valid contract cases but not evidence that the current game configures them.
 
 The final smoke runs the real shared reader and rule path. Browser checks cover the page matrix, source inspection and map focus at 1440px and 390px. New primitives are introduced only when an actual consumer in this change uses them. Retire temporary probes after recording their conclusions.
+
+### Implementation checkpoint
+
+IndexNow removal is committed separately. Pipeline behavior coverage passes 591 tests and 98 subtests. Python, Svelte, dead-code, documentation and citation checks passed before the latest consumer integration edits. Native exporter tests pass all 108 cases, including authored boundary regressions.
+
+The latest full website run completed in 60.62 seconds with 97 of 99 test files passing. The authored monster popup exceeded its 5-second timeout and the fixed-route sitemap case exceeded its 30-second timeout. Learning and exhaustive tooltip coverage passed in this integrated run. Complete sitemap hashing now finishes, but popup and sitemap performance acceptance remain open without raising timeouts or reducing coverage. Both-host parity and end-to-end website acceptance remain open.
+
+Housing catalog verification completed through native purchase and placement of an ordinary table and an Alchemy Workbench. The placed workstation's complete offers match the referenced prefab. Both task-owned structures were removed and house ownership restored.
+
+The first two configured sessions are rejected as publication inputs because their early snapshots assigned every monster placement and portal endpoint to Vault of the Vanished. The authored-boundary correction produced a complete export whose 3,833 artifacts passed manifest size/hash validation. Its public database rebuild passed redaction validation. Independent native geometry comparison now agrees on exact published zone/subzone attribution for all 6,393 exported provider points and 329 boundary samples. The earlier failed internal raw-distance diagnostic is retained separately and is not asserted as passing. The second unchanged configured export, database parity, date reconciliation, integrated builds and browser acceptance remain pending.
+
+Native loot verification passed matching dungeon, Northern Wastes mummy and low-multiplier controls through actual monster initialization and generated corpses. Boss/elite classification and replayed event fields are recorded separately from loot-generation claims. Probe objects, registries, actor state and random state were restored. Normal portal interaction, cooking and current positive-secondary quest cases remain unverified. Failed probe setup is not evidence of a game defect.
+
+Runtime probes distinguish configured cases from modified-definition controls. Synthetic positive-five quest requirements exposed an equipment-consumption exception. They do not establish a player-reachable defect in a current configured quest. Unsuccessful probe setup and unverified outcomes do not count as passed acceptance.
 
 ## Risks / Trade-offs
 

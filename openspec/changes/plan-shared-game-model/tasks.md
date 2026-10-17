@@ -10,7 +10,7 @@
 
 ## 3. In-flight changes
 
-- [x] 3.1 Revise `prune-unread-database-data`: keep the sitemap hash bridge and the dead-column audit, and drop the deletion of the progression tables.
+- [x] 3.1 Revise `prune-unread-database-data`: retain the dead-column audit and progression tables. Publication continuity follows acquisition's private one-time date reconciliation.
 - [x] 3.2 Fold the pack/random popup requirements into `unify-acquisition-usage-requirements` and remove the superseded standalone proposal. The successor retains inspection, quantities/probabilities and nonspatial-source behavior.
 - [ ] 3.3 Fold `consolidate-server-read-models` into the read-model change, then remove it. Its proposal is marked superseded.
 - [x] 3.4 Add WebAssembly to the content security policy of `add-security-headers`. That change's own tasks verify the database worker under the policy.
@@ -34,7 +34,7 @@ Each follow-up change cites this design by decision number and lists the facts i
 
 - [x] 6.1 Stat vocabulary (D2): `unify-stat-vocabulary`, with the item list fix. Archived as `2026-10-17-unify-stat-vocabulary`.
 - [x] 6.2 Game rules (D5): `unify-game-rules`, with the altar tier, primal essence, item level and chest fixes. Archived as `2026-10-17-unify-game-rules`.
-- [x] 6.3 Propose acquisition, usage and requirements (D3, D4) as `unify-acquisition-usage-requirements`, reconciling landed fixes, input gaps, NPC membership and inherited popup scope. Implementation remains pending its page review and verification gates.
+- [x] 6.3 Propose acquisition, usage and requirements (D3, D4) as `unify-acquisition-usage-requirements`, reconciling landed fixes, input gaps, NPC membership and inherited popup scope. Its approved implementation and verification are tracked in that change's `tasks.md`.
 - [ ] 6.4 Shared read models and relation components (D7).
 - [ ] 6.5 Character model, store and share links (D6, D13, D14).
 - [ ] 6.6 Propose reference kinds: stats, effects with full applier/parameter coverage and mechanic definitions, armor sets, races and crafting stations (D2, D3, D9).

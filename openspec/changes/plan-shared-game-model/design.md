@@ -11,11 +11,11 @@ Each decision has a status:
 
 ### Why one model
 
-The current state separates landed foundations from remaining duplicated relationship logic.
+The following boundaries distinguish archived foundations from work tracked by their follow-up changes.
 
 | Area | Current boundary |
 | --- | --- |
-| Item sources | Method-specific tables, summary/zone projections, raw relationship JSON and virtual source helpers still give pages and map consumers different interpretations. The acquisition change replaces those scoped copies. |
+| Item sources | Acquisition owns the replacement of method-specific source projections, raw relationship JSON consumers and virtual source helpers with shared methods and queries. |
 | Game rules | The shared rule boundary and the altar, primal-essence, item-level and chest corrections are implemented in the archived game-rules change. Acquisition must preserve them while replacing their input projections. |
 | Stats | The exported vocabulary and formatting cutover is implemented in the archived stat-vocabulary change. It is not a remaining prerequisite to rediscover. |
 | Effects | Effects retain skill identity. The NPC membership/count defect belongs to acquisition. Complete effect-applier and mechanic lookup work remains with the reference feature. |
@@ -101,7 +101,7 @@ One versioned shape is shared by the planner, share links, export files, save im
 
 ### D8. One SQLite database for prerender and browser (Decided)
 
-The site keeps prerendering from `compendium.db` and shipping the same file to the browser through the sql.js worker. The planner, "Where to Get" and save import query it directly, without separate data bundles. The database keeps every fact an evaluator needs, including the per-rank skill requirement curves that `build-pipeline/src/compendium/db.py` drops today.
+The site keeps prerendering from `compendium.db` and shipping the same file to the browser through the sql.js worker. The planner, "Where to Get" and save import query it directly, without separate data bundles. The database retains evaluator facts, including per-rank skill requirement curves.
 
 Alternative rejected: typed JSON documents as Afallon publishes them. Afallon needs them because it has no browser database.
 
@@ -247,8 +247,8 @@ Later changes retain their own input work:
 | --- | --- |
 | `simplify-pipeline-loader-registration` | Archived prerequisite. New relation datasets use its catalog. |
 | `harden-export-sessions` | Archived prerequisite. Added fields use complete immutable sessions. |
-| `prune-unread-database-data` | Retains the dead-column audit and storage-independent sitemap hash bridge. Its bridge is required before the acquisition schema cutover. Progression tables remain retained. |
-| `unify-acquisition-usage-requirements` | Proposes the acquisition, usage and requirement cutover, including the inherited pack/random popup scope. Implementation remains subject to its page review and runtime gates. |
+| `prune-unread-database-data` | Retains the independent dead-column audit and progression data. Acquisition owns the semantic sitemap cutover and private one-time date reconciliation, without a shipped old-schema bridge. |
+| `unify-acquisition-usage-requirements` | Approved current D3/D4 implementation slice. Its reviewed page matrix and runtime/publication gates govern completion. |
 | `consolidate-server-read-models` | Fold into the read-model change |
 | `add-security-headers` | Allow WebAssembly through `'wasm-unsafe-eval'` in every policy that governs a context compiling it. A policy with `default-src` or `script-src` blocks WebAssembly without it, and a worker takes its policy from its own script response, not from the page |
 | `consolidate-website-design-system` | Land before new pages, so the shared components build on it |
@@ -262,7 +262,7 @@ Each step ships something visible and depends only on the steps it names:
 
 1. Pipeline preparation is implemented and archived: loader registration and immutable export sessions.
 2. Stat vocabulary and game rules are implemented and archived. The prose audit is also complete. Preserve their behavior in later cutovers.
-3. [Acquisition, usage and requirements](../unify-acquisition-usage-requirements/proposal.md) proposes the next D3/D4 slice. It includes current input gaps, the NPC membership defect, eligible source locations and inherited popup requirements. Its implementation needs page approval and its publication hash-bridge prerequisite.
+3. [Acquisition, usage and requirements](../unify-acquisition-usage-requirements/proposal.md) is the current approved D3/D4 implementation slice. Complete its reviewed consumers, runtime evidence and clean publication cutover before the next shared-read-model milestone.
 4. Shared read models (D7), after step 3. Visible: popups and pages agree.
 5. Character model, store and share links (D6, D13, D14), after step 2. Visible: one active character in the header that every calculator uses.
 6. Reference kinds: stats, effects with the mechanic definitions of D2, armor sets, races and crafting stations (D9), after steps 3 and 5.

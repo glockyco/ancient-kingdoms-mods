@@ -178,6 +178,12 @@ Configured methods SHALL be attributable to authoritative references or a cited 
 - **THEN** the offer and its conditions remain part of the configured method data
 - **AND** the export does not mistake a filtered UI list for the complete catalogue
 
+#### Scenario: Configured placement geometry is not ready
+
+- **WHEN** early scene capture cannot resolve a placement or portal endpoint against usable configured zone geometry
+- **THEN** the capture fails rather than assigning the first or an arbitrary nearest zone
+- **AND** repeated equality does not authorize publication of the invalid geography or its derived redactions
+
 #### Scenario: Required membership cannot be resolved
 
 - **WHEN** an offered recipe or provider reference required by the contract cannot be resolved
