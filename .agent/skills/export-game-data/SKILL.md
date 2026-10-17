@@ -44,6 +44,18 @@ compares the two. The check exists because a curated value that restates a game 
 Do not extend `ClassExporter` to cover the pairing. It exists only as button state in the creator, so an
 exporter would have to drive the interface one race at a time.
 
+## The stat catalogue
+
+`StatCatalog` maps every numeric property of `ItemStats`, `SkillData`, `ClassCombatData` and `PetData` to
+one stat, or declares it as not a stat with its reason. A new numeric property fails `DataExporter.Tests`
+until you classify it, and the pipeline refuses an exported field that the catalogue does not classify.
+
+`StatExporter` reads the names in English when the export runs. Item names come from
+`ScriptableItem.LocalizedStatLabel`. Character window names come from the `Localization_String_Table`
+keys that the window's prefab binds, which no decompiled line shows, so the export fails on a missing
+key instead of guessing. After a game update renames one, read the new key from the title's
+`LocalizeStringEvent` in `UICharacterInfo` with HotRepl.
+
 ## Visual assets
 
 | Domain/kind | Source |

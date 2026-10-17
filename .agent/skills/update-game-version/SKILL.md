@@ -56,6 +56,8 @@ Tile validation must pass before replacement. Investigate redaction drift. Run `
 
 Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it, so treat each one as its own concern.
 
+The website build regenerates `website/src/lib/generated/`, including the stat vocabulary from the export's `stats.json`. Read that module's diff: a renamed stat or a changed format reaches every page that names the stat, so check those pages before you commit it with the generated data.
+
 Re-read each report in `docs/game-bugs/` against the server-script diff. Delete fixed reports with their index rows, re-anchor moved references, and re-count derived figures.
 
 **When the patch adds a class:** review silent omissions in `website/src/lib/utils/classes.ts`, `website/src/lib/data/classes/guide.ts`, the class count in `website/src/routes/classes/+page.svelte`, the growth table in `website/src/routes/mechanics/experience/+page.svelte`, and any hard-coded class pickers. `classes check-races` and exporter skill classification fail loudly; passing them does not cover these consumers.
