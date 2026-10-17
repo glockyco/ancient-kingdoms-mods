@@ -28,4 +28,4 @@ Each task deletes the copies it replaces. Each is checked in Chromium at 1440×9
 
 - [x] 5.1 Search `website/src` and `build-pipeline/src` for stat names, percent decisions and number formatters outside the catalogue and the shared formatters. Verify none remain outside prose. The remaining `toFixed` calls round numbers, serialize coordinates or draw charts.
 - [x] 5.2 Prerender the site from the same export before and after the change and compare the pages. Verify that only the approved wordings and stat formats differ. 1,672 pages changed. Their 619 distinct text changes are approved wordings or the wordings recorded under "Wording", and every changed number shows the same quantity in a new format, sign or precision.
-- [ ] 5.3 Update the export data contract in the `export-game-data` skill and the game update procedure with the new export file and the generated module. Verify the documentation checks pass.
+- [x] 5.3 Update the export data contract in the `export-game-data` skill and the game update procedure with the new export file and the generated module. Verify the documentation checks pass.
