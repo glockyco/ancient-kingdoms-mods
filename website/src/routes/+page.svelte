@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import TitleScreenHero from "$lib/components/home/TitleScreenHero.svelte";
   import ClassicHome from "$lib/components/home/ClassicHome.svelte";
@@ -111,7 +112,7 @@
         "home-items",
         "Items",
         "/items",
-        `All ${HOME_COUNTS.items.toLocaleString()} items`,
+        `All ${formatNumber(HOME_COUNTS.items)} items`,
       )}
       <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
         {#each HOME_SHOWCASE.itemGroups as group (group.label)}
@@ -122,7 +123,7 @@
               group.icon.src,
               size,
               group.label,
-              `${group.count.toLocaleString()} items`,
+              `${formatNumber(group.count)} items`,
             )}
           </li>
         {/each}
@@ -134,7 +135,7 @@
         "home-bosses",
         "World Bosses",
         "/monsters",
-        `All ${HOME_COUNTS.monsters.toLocaleString()} monsters`,
+        `All ${formatNumber(HOME_COUNTS.monsters)} monsters`,
       )}
       <ul class="bosses" style={bossColumns}>
         {#each HOME_SHOWCASE.worldBosses as boss (boss.id)}
@@ -211,7 +212,7 @@
         "home-recipes",
         "Recipes",
         "/recipes",
-        `All ${HOME_COUNTS.recipes.toLocaleString()} recipes`,
+        `All ${formatNumber(HOME_COUNTS.recipes)} recipes`,
       )}
       <ul class="entries sm:grid-cols-2 lg:grid-cols-4">
         {#each HOME_SHOWCASE.crafting as recipeType (recipeType.type)}
@@ -222,7 +223,7 @@
               recipeType.icon.src,
               size,
               recipeType.type,
-              `${recipeType.count.toLocaleString()} recipes`,
+              `${formatNumber(recipeType.count)} recipes`,
             )}
           </li>
         {/each}
@@ -316,7 +317,7 @@
               >
               <span class="flex-1 font-medium">{def.pluralLabel}</span>
               <span class="text-sm text-muted-foreground tabular-nums"
-                >{item.count.toLocaleString()}</span
+                >{formatNumber(item.count)}</span
               >
             </a>
           </li>

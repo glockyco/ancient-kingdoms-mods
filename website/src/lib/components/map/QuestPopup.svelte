@@ -8,7 +8,7 @@
     loadMapItemIconPaths,
     type QuestPopupDetails,
   } from "$lib/queries/popup";
-  import { getQualityTextColorClass } from "$lib/utils/format";
+  import { getQualityTextColorClass, formatNumber } from "$lib/utils/format";
 
   interface Props {
     questId: string;
@@ -325,15 +325,13 @@
           {#if details.exp > 0}
             <div class="flex justify-between">
               <span class="text-muted-foreground">XP</span>
-              <span>{details.exp.toLocaleString()}</span>
+              <span>{formatNumber(details.exp)}</span>
             </div>
           {/if}
           {#if details.gold > 0}
             <div class="flex justify-between">
               <span class="text-muted-foreground">Gold</span>
-              <span class="text-yellow-500"
-                >{details.gold.toLocaleString()}</span
-              >
+              <span class="text-yellow-500">{formatNumber(details.gold)}</span>
             </div>
           {/if}
           {#each regularRewards as item, i (i)}

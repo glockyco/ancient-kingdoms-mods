@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -264,10 +265,6 @@
   function toggleCostume(itemId: string, checked: boolean) {
     if (checked) selectedCostumeIds.add(itemId);
     else selectedCostumeIds.delete(itemId);
-  }
-
-  function formatPercent(value: number, digits = 1): string {
-    return `${(value * 100).toFixed(digits)}%`;
   }
 
   function formatTier(tier: number): string {
@@ -627,7 +624,10 @@
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">Bite chance per cast</div>
           <div class="text-2xl font-semibold">
-            {formatPercent(selectedSpotSuccessChance)}
+            {formatPercent(selectedSpotSuccessChance, {
+              decimals: 1,
+              trailingZeros: true,
+            })}
           </div>
         </div>
         <div class="rounded-lg border p-4">
@@ -635,7 +635,7 @@
             XP per successful cast
           </div>
           <div class="text-2xl font-semibold">
-            {fishingExperienceForTier(selectedSpot.level).toLocaleString()}
+            {formatNumber(fishingExperienceForTier(selectedSpot.level))}
           </div>
         </div>
         <div class="rounded-lg border p-4">
@@ -643,7 +643,10 @@
             Fishing gain chance per cast
           </div>
           <div class="text-2xl font-semibold">
-            {formatPercent(selectedSpotSuccessChance * masteryGainChance)}
+            {formatPercent(selectedSpotSuccessChance * masteryGainChance, {
+              decimals: 1,
+              trailingZeros: true,
+            })}
           </div>
         </div>
         <div class="rounded-lg border p-4">
@@ -652,9 +655,13 @@
           </div>
           <div class="text-2xl font-semibold">
             {#if masteryGainChance > 0}
-              {masteryGainRange.min.toFixed(2)}% – {masteryGainRange.max.toFixed(
-                2,
-              )}%
+              {formatPercent(masteryGainRange.min / 100, {
+                decimals: 2,
+                trailingZeros: true,
+              })} – {formatPercent(masteryGainRange.max / 100, {
+                decimals: 2,
+                trailingZeros: true,
+              })}
             {:else if skillLevel >= 100}
               <span class="text-base">No further skill gain</span>
             {:else}
@@ -665,7 +672,11 @@
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">Click window</div>
           <div class="text-2xl font-semibold">
-            {fishingClickWindowSeconds(selectedSpot.level).toFixed(2)}s
+            {formatNumber(fishingClickWindowSeconds(selectedSpot.level), {
+              decimals: 2,
+              trailingZeros: true,
+              grouping: false,
+            })}s
           </div>
         </div>
         <div class="rounded-lg border p-4">
@@ -690,7 +701,10 @@
                 <tr class="border-t hover:bg-muted/25">
                   <td class="p-3">{row.label}</td>
                   <td class="p-3 text-right font-mono">
-                    {formatPercent(row.chance)}
+                    {formatPercent(row.chance, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}
                   </td>
                 </tr>
               {/each}
@@ -738,7 +752,10 @@
                       {row.note}
                     </td>
                     <td class="p-3 text-right font-mono">
-                      {formatPercent(row.chance)}
+                      {formatPercent(row.chance, {
+                        decimals: 1,
+                        trailingZeros: true,
+                      })}
                     </td>
                   </tr>
                 {/each}

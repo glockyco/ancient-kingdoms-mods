@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/skills/skill-format";
+  import { formatPercent } from "$lib/utils/format";
   import { atRank } from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -16,6 +16,7 @@
       <span class="block">
         The affected character receives {formatPercent(
           atRank(skill.fear_resist_chance_bonus, skill.max_level),
+          { decimals: 2, preserveNonzero: true },
         ).replace("%", "")} percentage points of Fear Resist at rank
         {skill.max_level}{skill.scales_with_charisma
           ? ", before Charisma scaling"
@@ -30,6 +31,7 @@
       <span class="block"
         >This skill adds at most {formatPercent(
           skill.fear_resist_chance_bonus_cap,
+          { decimals: 2, preserveNonzero: true },
         ).replace("%", "")} percentage points to that chance after Charisma scaling.</span
       >
     {/if}

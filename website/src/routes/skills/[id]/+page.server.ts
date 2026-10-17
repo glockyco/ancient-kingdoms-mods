@@ -1,3 +1,4 @@
+import { formatNumber } from "$lib/utils/format";
 import { query, queryOne } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
 import { skillDescription } from "$lib/server/meta-description";
@@ -89,7 +90,6 @@ function roundTooltipInteger(value: number): number {
 // Source: server-scripts/NecromancerBloodPactSkill.cs:64-66 — health and mana percentages take their percent sign from the template.
 // Source: server-scripts/NecromancerDeathBloomSkill.cs:61-82 — health and healing percentage tokens supply their own percent sign.
 export function _fillSkillTooltip(skill: SkillDetailView): string {
-  const format = (value: number) => String(Number(value.toFixed(2)));
   const percentFields = new Set([
     "damage_percent",
     "lifetap_percent",
@@ -157,7 +157,10 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
       ) {
         number = Math.abs(number);
       }
-      values[field.replaceAll("_", "").toUpperCase()] = format(number);
+      values[field.replaceAll("_", "").toUpperCase()] = formatNumber(number, {
+        decimals: 2,
+        grouping: false,
+      });
     }
   }
   Object.assign(values, {
@@ -166,15 +169,20 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
     COOLDOWN: prettySeconds(skill.cooldown?.base_value ?? 0),
     BUFFTIME: prettySeconds(skill.duration_base),
     FEARRESISTBONUS: values.FEARRESISTCHANCEBONUS,
-    FEARRESISTBONUSCAP: format(skill.fear_resist_chance_bonus_cap * 100),
+    FEARRESISTBONUSCAP: formatNumber(skill.fear_resist_chance_bonus_cap * 100, {
+      decimals: 2,
+      grouping: false,
+    }),
     COOLDOWNREDUCTION: values.COOLDOWNREDUCTIONPERCENT,
     LIFETAPHEALINGBONUS: values.LIFETAPHEALINGPERCENTBONUS,
     DOTEXECUTEBONUS: values.DAMAGEOVERTIMEEXECUTEBONUS,
-    BARDSONGDURATIONBONUS: format(
+    BARDSONGDURATIONBONUS: formatNumber(
       skill.bard_song_duration_bonus_per_level * 100,
+      { decimals: 2, grouping: false },
     ),
-    FOODANDDRINKBUFFDURATIONBONUS: format(
+    FOODANDDRINKBUFFDURATIONBONUS: formatNumber(
       skill.food_and_drink_buff_duration_bonus_per_level * 100,
+      { decimals: 2, grouping: false },
     ),
     CADENCEDAMAGE: values.DAMAGE,
     CADENCEHEAL: values.HEALSHEALTH,
@@ -182,10 +190,11 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
   // Source: server-scripts/ChanneledTargetDamageSkill.cs:24-47 — channel damage includes the damage multiplier before player bonuses.
   if (skill.damage) {
     const multiplier = skill.damage_percent?.base_value ?? 0;
-    values.CHANNELDAMAGE = format(
+    values.CHANNELDAMAGE = formatNumber(
       roundTooltipInteger(
         skill.damage.base_value * (multiplier > 0 ? multiplier : 1),
       ),
+      { decimals: 2, grouping: false },
     );
   }
   // Base attacks depend on the equipped weapon, so their damage line cannot be resolved here.

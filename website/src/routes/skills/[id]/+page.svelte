@@ -11,12 +11,12 @@
     formatLinearAbs,
     formatLinearPercent,
     formatLinearPercentAbs,
-    formatPercent,
     formatDuration,
     hasLinearValue,
     isNegativeLinear,
     convertTooltip,
   } from "$lib/skills/skill-format";
+  import { formatPercent } from "$lib/utils/format";
   import { skillFacts } from "$lib/skills/skill-facts";
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
   import MechanicsCard from "$lib/components/skill-mechanics/MechanicsCard.svelte";
@@ -686,7 +686,10 @@
             <div>
               <dt class="text-muted-foreground">Break Armor</dt>
               <dd class="font-medium">
-                {formatPercent(skill.break_armor_prob)}
+                {formatPercent(skill.break_armor_prob, {
+                  decimals: 2,
+                  preserveNonzero: true,
+                })}
               </dd>
             </div>
           {/if}
@@ -1181,7 +1184,10 @@
                 <dd class="font-medium">
                   {formatLinearPercent(skill.fear_resist_chance_bonus)}
                   {#if skill.fear_resist_chance_bonus_cap > 0}
-                    (max {formatPercent(skill.fear_resist_chance_bonus_cap)})
+                    (max {formatPercent(skill.fear_resist_chance_bonus_cap, {
+                      decimals: 2,
+                      preserveNonzero: true,
+                    })})
                   {/if}
                 </dd>
               </div>
@@ -1470,7 +1476,10 @@
               <span class="text-xs text-muted-foreground">({item.type})</span>
               {#if item.probability !== undefined && item.probability < 1}
                 <span class="text-xs text-muted-foreground">
-                  {formatPercent(item.probability)} chance
+                  {formatPercent(item.probability, {
+                    decimals: 2,
+                    preserveNonzero: true,
+                  })} chance
                 </span>
               {/if}
             </div>

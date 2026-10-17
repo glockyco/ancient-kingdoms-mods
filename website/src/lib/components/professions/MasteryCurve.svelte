@@ -26,6 +26,7 @@
 </script>
 
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import { fadeHiddenOverflow } from "$lib/actions/fade-hidden-overflow";
 
   let {
@@ -139,7 +140,7 @@
         y={yPosition(tick) + 3.5}
         text-anchor="end"
         class="fill-muted-foreground text-sm lg:text-[10px]"
-        >{Math.round(tick * 100)}%</text
+        >{formatPercent(tick, { decimals: 0 })}</text
       >
     {/each}
 

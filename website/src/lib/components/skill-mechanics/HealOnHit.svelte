@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { EXAMPLE_HIT, healOnHit } from "$lib/skills/worked-examples";
   import * as fmt from "$lib/calculation/format";
@@ -14,19 +15,18 @@
   <div class="space-y-2">
     <h3 class="font-semibold">Heal on Hit</h3>
     <p class="text-muted-foreground">
-      The affected target heals anyone who hits it in melee for {fmt.formatPercent(
+      The affected target heals anyone who hits it in melee for {formatPercent(
         fmt.atRank(share, skill.max_level),
+        { decimals: 2, preserveNonzero: true },
       )} of each hit's damage after defenses and critical hits, before the target's
-      Ward absorbs any of it, rounded, up to the attacker's missing Health. A {fmt.formatNumber(
+      Ward absorbs any of it, rounded, up to the attacker's missing Health. A {formatNumber(
         EXAMPLE_HIT,
-      )}-damage hit heals {fmt.formatNumber(
+      )}-damage hit heals {formatNumber(
         healOnHit(share, skill.max_level),
       )}{fmt.scalesWithRank(share, skill.max_level)
         ? ` at rank ${skill.max_level}`
-        : ""}. {fmt.describeRankGrowth(
-        share,
-        skill.max_level,
-        fmt.formatPercent,
+        : ""}. {fmt.describeRankGrowth(share, skill.max_level, (value) =>
+        formatPercent(value, { decimals: 2, preserveNonzero: true }),
       )}
     </p>
     <p class="text-muted-foreground">

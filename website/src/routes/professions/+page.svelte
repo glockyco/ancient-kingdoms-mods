@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
@@ -31,7 +32,7 @@
     buildCollectionPage({
       path: "/professions",
       name: "Professions — Ancient Kingdoms Compendium",
-      description: `Profession guides for ${data.professions.length.toLocaleString()} Ancient Kingdoms professions.`,
+      description: `Profession guides for ${formatNumber(data.professions.length)} Ancient Kingdoms professions.`,
       items: data.professions.map((profession) => ({
         name: profession.name,
         path: `/professions/${profession.id}`,

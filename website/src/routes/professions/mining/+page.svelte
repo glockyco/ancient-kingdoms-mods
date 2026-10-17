@@ -8,7 +8,11 @@
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import { formatGatheringRespawn } from "$lib/utils/format";
+  import {
+    formatGatheringRespawn,
+    formatNumber,
+    formatPercent,
+  } from "$lib/utils/format";
   import {
     DWARF_STARTING_MINING_PERCENT,
     MINING_SUCCESS_FLOOR,
@@ -200,7 +204,10 @@
               <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — on tier 4 the
                    chance is quality × 0.05 plus skill × 0.5. -->
               <td class="p-3 text-right tabular-nums"
-                >{miningSuccessPercent(4, pickaxe.quality, 100).toFixed(0)}%</td
+                >{formatPercent(
+                  miningSuccessPercent(4, pickaxe.quality, 100) / 100,
+                  { decimals: 0, trailingZeros: true },
+                )}</td
               >
               <td class="p-3">
                 <ItemSourceLinks
@@ -294,7 +301,10 @@
         {:else}
           {payingTiers.length}
           of them still {payingTiers.length === 1 ? "gives" : "give"} Mining skill,
-          at {gainChance.toFixed(0)}% for each success.
+          at {formatPercent(gainChance / 100, {
+            decimals: 0,
+            trailingZeros: true,
+          })} for each success.
         {/if}
         The dashed lines show what you cannot mine.
       </p>
@@ -302,12 +312,13 @@
       <!-- Source: server-scripts/GatherItem.cs:588-597 — successful mines can increase skill below the cap; gain chance is 0.95 − 0.6 × miningLevel², and the amount is Random.Range(1, 4) divided by success chance × 1000. -->
       <p class="text-pretty text-sm text-muted-foreground">
         Mining is a value from 0% to 100% and has no experience bar. When mining
-        can increase skill, the chance is {miningSkillGainChancePercent(
-          0,
-        ).toFixed(0)}% at 0% Mining and {miningSkillGainChancePercent(
-          50,
-        ).toFixed(0)}% at 50%. At 100%, Mining cannot increase further. Dwarves
-        start at
+        can increase skill, the chance is {formatPercent(
+          miningSkillGainChancePercent(0) / 100,
+          { decimals: 0, trailingZeros: true },
+        )} at 0% Mining and {formatPercent(
+          miningSkillGainChancePercent(50) / 100,
+          { decimals: 0, trailingZeros: true },
+        )} at 50%. At 100%, Mining cannot increase further. Dwarves start at
         {DWARF_STARTING_MINING_PERCENT}%. Every other race starts at 0%.
       </p>
     </div>
@@ -357,18 +368,28 @@
                       100}%">cannot mine</span
                   >
                 {:else}
-                  {success.toFixed(0)}%
+                  {formatPercent(success / 100, {
+                    decimals: 0,
+                    trailingZeros: true,
+                  })}
                 {/if}
               </td>
               <td class="p-3 text-right tabular-nums text-muted-foreground">
                 {#if gain}
-                  {gain.min.toFixed(2)}–{gain.max.toFixed(2)}%
+                  {formatNumber(gain.min, {
+                    decimals: 2,
+                    trailingZeros: true,
+                    grouping: false,
+                  })}–{formatPercent(gain.max / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })}
                 {:else}
                   —
                 {/if}
               </td>
               <td class="p-3 text-right tabular-nums"
-                >{ore.gathering_exp.toLocaleString()}</td
+                >{formatNumber(ore.gathering_exp)}</td
               >
               <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — depleted minerals respawn between half and the full wait. -->
               <td class="p-3 text-right tabular-nums text-muted-foreground">
@@ -449,7 +470,10 @@
                   imageAvailable={data.itemIconPaths[gem.item_id]}
                 />
                 <span class="tabular-nums text-muted-foreground"
-                  >{(gem.chance * 100).toFixed(1)}%</span
+                  >{formatPercent(gem.chance, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}</span
                 >
               </div>
             {/each}

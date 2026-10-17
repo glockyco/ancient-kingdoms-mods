@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -12,14 +13,13 @@
   <div class="space-y-2">
     <h3 class="font-semibold">Companion Maximum Health</h3>
     <p class="text-muted-foreground">
-      Your companion receives {fmt.formatPercent(
+      Your companion receives {formatPercent(
         fmt.atRank(bonus, skill.max_level),
+        { decimals: 2, preserveNonzero: true },
       )} more maximum Health{fmt.scalesWithRank(bonus, skill.max_level)
         ? ` at rank ${skill.max_level}`
-        : ""}. {fmt.describeRankGrowth(
-        bonus,
-        skill.max_level,
-        fmt.formatPercent,
+        : ""}. {fmt.describeRankGrowth(bonus, skill.max_level, (value) =>
+        formatPercent(value, { decimals: 2, preserveNonzero: true }),
       )} This passive does not increase your own maximum Health, and does not affect
       familiars or mercenaries.
     </p>

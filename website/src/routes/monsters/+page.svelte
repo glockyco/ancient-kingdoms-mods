@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Skull from "@lucide/svelte/icons/skull";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import { SvelteMap } from "svelte/reactivity";
@@ -33,7 +34,7 @@
     buildCollectionPage({
       path: "/monsters",
       name: "Monsters — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.monsters.length.toLocaleString()} monsters in Ancient Kingdoms.`,
+      description: `Searchable database of ${formatNumber(data.monsters.length)} monsters in Ancient Kingdoms.`,
       items: data.monsters.map((monster) => ({
         name: monster.name,
         path: `/monsters/${monster.id}`,
@@ -214,10 +215,6 @@
     classification: "Classification",
     zone_ids: "Zone Filter",
   };
-
-  function formatNumber(n: number): string {
-    return n.toLocaleString();
-  }
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<MonsterRow, unknown> })}
@@ -339,7 +336,7 @@
 
 <Seo
   title="Monsters - Ancient Kingdoms"
-  description={`${data.monsters.length.toLocaleString()} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
+  description={`${formatNumber(data.monsters.length)} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
   path="/monsters"
 />
 

@@ -1,11 +1,8 @@
 <script lang="ts">
   import Calculation from "$lib/components/Calculation.svelte";
   import { aggroCalculation } from "$lib/skills/effect-calculations";
-  import {
-    atRank,
-    describeRankScaling,
-    formatNumber,
-  } from "$lib/calculation/format";
+  import { atRank, describeRankScaling } from "$lib/calculation/format";
+  import { formatNumber } from "$lib/utils/format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();

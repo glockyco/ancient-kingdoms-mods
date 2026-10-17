@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/skills/skill-format";
+  import { formatPercent } from "$lib/utils/format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -20,8 +20,11 @@
   {:else}
     <p class="text-muted-foreground">
       <span class="block"
-        >This debuff has {formatPercent(skill.prob_ignore_cleanse)} Cleanse Resist
-        and three layers. Cleansing removes the debuff only after all three are gone.</span
+        >This debuff has {formatPercent(skill.prob_ignore_cleanse, {
+          decimals: 2,
+          preserveNonzero: true,
+        })} Cleanse Resist and three layers. Cleansing removes the debuff only after
+        all three are gone.</span
       >
       <span class="block">A matching cleanse always removes one layer.</span>
       <span class="block"
@@ -30,6 +33,7 @@
       <span class="block"
         >Each of those rolls succeeds at {formatPercent(
           1 - skill.prob_ignore_cleanse,
+          { decimals: 2, preserveNonzero: true },
         )} × (100% + the cleansing caster's Accuracy), limited to 0–100%. At 100%,
         one cast removes all three layers. See
         <a

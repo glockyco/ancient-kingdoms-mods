@@ -1,3 +1,4 @@
+import { formatPercent } from "$lib/utils/format";
 import type { RespawnInfo } from "$lib/types/respawn";
 import { formatDuration } from "./format";
 
@@ -24,7 +25,7 @@ export function formatRespawnTime(info: RespawnInfo): string {
 export function formatRespawnChance(info: RespawnInfo): string {
   if (info.no_respawn) return "-";
   if (info.respawn_probability === 1) return "-";
-  return `${Math.round(info.respawn_probability * 100)}%`;
+  return formatPercent(info.respawn_probability, { decimals: 0 });
 }
 
 /**

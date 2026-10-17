@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/calculation/format";
+  import { formatPercent } from "$lib/utils/format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -12,7 +12,10 @@
   <p class="text-muted-foreground">
     <span class="block"
       >Each hit that is not blocked, missed or resisted has a
-      {formatPercent(skill.break_armor_prob)} chance to trigger Break Armor.</span
+      {formatPercent(skill.break_armor_prob, {
+        decimals: 2,
+        preserveNonzero: true,
+      })} chance to trigger Break Armor.</span
     >
     <span class="block"
       >When it triggers, the game picks one random equipment slot on the target.</span

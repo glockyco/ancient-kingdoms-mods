@@ -1,6 +1,6 @@
 import type { Calculation, CalculationInput } from "$lib/types/calculation";
 import { addF32, f32, iround, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatNumber, formatPercent } from "./format";
+import { formatNumber, formatPercent } from "$lib/utils/format";
 import { CHARISMA, situational } from "./inputs";
 
 // Source: server-scripts/BardFinalCadenceSkill.cs:67-70; server-scripts/PlayerSkills.cs:1638-1655 — Melody multiplies each already rounded Charisma-scaled amount and rounds again.
@@ -50,8 +50,8 @@ export function finalCadenceMelody(): Calculation {
         // Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies; Combat.cs:DealDamageAt — defenses modify damage and heals can crit before being capped by missing Health.
         result: `${formatNumber(total)} damage before defenses, or healing before critical heals and the missing-Health cap`,
         working: [
-          `Melody multiplier: 100% + ${formatPercent(melodyBonus(songs))} = ${formatPercent(multiplier)}`,
-          `Damage or healing: ${formatNumber(scaledAmount)} × ${formatPercent(multiplier)} = ${formatNumber(total)}, rounded`,
+          `Melody multiplier: 100% + ${formatPercent(melodyBonus(songs), { decimals: 2, preserveNonzero: true })} = ${formatPercent(multiplier, { decimals: 2, preserveNonzero: true })}`,
+          `Damage or healing: ${formatNumber(scaledAmount)} × ${formatPercent(multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(total)}, rounded`,
         ],
       };
     },
@@ -145,11 +145,11 @@ export function bardCharmResistance(): Calculation {
           `Level ${level}, ${charisma} Charisma`,
           `Level ${monsterLevel} monster, ${magicResist} Magic Resist`,
         ],
-        result: `${formatPercent(chance)} chance to resist Charm`,
+        result: `${formatPercent(chance, { decimals: 2, preserveNonzero: true })} chance to resist Charm`,
         working: [
-          `Level adjustment: (${monsterLevel} − ${level}) × 0.5% = ${formatPercent(adjustment)}, limited to ±10%`,
-          `Base resist chance: ${magicResist} × 0.05% + ${formatPercent(adjustment)} = ${formatPercent(base)}, limited to 0–90%`,
-          `Charm resist chance: ${formatPercent(base)} + ${Math.max(0, difference)} × 2.5% − ${Math.max(0, charisma)} × 0.02% = ${formatPercent(chance)}, limited to 0–95%`,
+          `Level adjustment: (${monsterLevel} − ${level}) × 0.5% = ${formatPercent(adjustment, { decimals: 2, preserveNonzero: true })}, limited to ±10%`,
+          `Base resist chance: ${magicResist} × 0.05% + ${formatPercent(adjustment, { decimals: 2, preserveNonzero: true })} = ${formatPercent(base, { decimals: 2, preserveNonzero: true })}, limited to 0–90%`,
+          `Charm resist chance: ${formatPercent(base, { decimals: 2, preserveNonzero: true })} + ${Math.max(0, difference)} × 2.5% − ${Math.max(0, charisma)} × 0.02% = ${formatPercent(chance, { decimals: 2, preserveNonzero: true })}, limited to 0–95%`,
         ],
       };
     },

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -25,7 +26,7 @@
     buildCollectionPage({
       path: "/quests",
       name: "Quests — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.quests.length.toLocaleString()} quests in Ancient Kingdoms.`,
+      description: `Searchable database of ${formatNumber(data.quests.length)} quests in Ancient Kingdoms.`,
       items: data.quests.map((quest) => ({
         name: quest.name,
         path: `/quests/${quest.id}`,
@@ -291,7 +292,7 @@
 
 <Seo
   title="Quests - Ancient Kingdoms"
-  description={`${data.quests.length.toLocaleString()} quests — main story, epic, adventurer, and repeatable. Browse objectives, level gates, rewards, and prerequisite chains.`}
+  description={`${formatNumber(data.quests.length)} quests — main story, epic, adventurer, and repeatable. Browse objectives, level gates, rewards, and prerequisite chains.`}
   path="/quests"
 />
 

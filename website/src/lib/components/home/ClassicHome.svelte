@@ -4,6 +4,7 @@
   site header; see HomeLayoutToggle.
 -->
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import SteamIcon from "$lib/components/SteamIcon.svelte";
   import DiscordIcon from "$lib/components/DiscordIcon.svelte";
   import KofiIcon from "$lib/components/KofiIcon.svelte";
@@ -267,7 +268,7 @@
               class="mt-auto flex items-center gap-1.5 pt-1 text-sm text-muted-foreground"
             >
               <span class="font-semibold tabular-nums text-foreground">
-                {entry.count.toLocaleString()}
+                {formatNumber(entry.count)}
               </span>
               <span>{entry.unit}</span>
               <ArrowRight
@@ -297,7 +298,7 @@
               {entry.title}
             </span>
             <span class="ml-auto text-xs tabular-nums text-muted-foreground">
-              {entry.count.toLocaleString()}
+              {formatNumber(entry.count)}
             </span>
           </a>
         {/each}

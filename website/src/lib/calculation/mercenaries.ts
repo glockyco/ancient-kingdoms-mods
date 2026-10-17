@@ -5,7 +5,7 @@ import {
   hirePrice,
   resurrectionPrice,
 } from "$lib/utils/merc-stats";
-import { formatNumber, formatPercent } from "./format";
+import { formatNumber, formatPercent } from "$lib/utils/format";
 import {
   CHARISMA,
   situational,
@@ -78,12 +78,12 @@ export function mercenaryPrice(resurrection = false): Calculation {
         ],
         result: `${formatNumber(total)} gold ${resurrection ? "resurrection fee" : "hire price"}`,
         working: [
-          `Level progress: (${level} − ${resurrection ? 1 : 10}) ÷ ${resurrection ? 49 : 40} = ${formatPercent(progress)}`,
+          `Level progress: (${level} − ${resurrection ? 1 : 10}) ÷ ${resurrection ? 49 : 40} = ${formatPercent(progress, { decimals: 2, preserveNonzero: true })}`,
           resurrection
-            ? `Base price: 5 + 295 × ${formatPercent(progress)} raised to 2.8 + 10 × ${veteran} = ${formatNumber(base)} gold, rounded`
-            : `Base price: 20 + 400 × ${formatPercent(progress)} × ${formatPercent(progress)} + 15 × ${veteran} = ${formatNumber(base)} gold, rounded`,
-          `Purchase discount: 0.2% × ${Math.max(0, charisma)} = ${formatPercent(uncappedDiscount)}${discount < uncappedDiscount ? `, limited to ${formatPercent(discount)}` : ""}`,
-          `Gold saved: ${formatNumber(base)} × ${formatPercent(discount)} = ${formatNumber(saved)} gold, rounded up`,
+            ? `Base price: 5 + 295 × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} raised to 2.8 + 10 × ${veteran} = ${formatNumber(base)} gold, rounded`
+            : `Base price: 20 + 400 × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} × ${formatPercent(progress, { decimals: 2, preserveNonzero: true })} + 15 × ${veteran} = ${formatNumber(base)} gold, rounded`,
+          `Purchase discount: 0.2% × ${Math.max(0, charisma)} = ${formatPercent(uncappedDiscount, { decimals: 2, preserveNonzero: true })}${discount < uncappedDiscount ? `, limited to ${formatPercent(discount, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `Gold saved: ${formatNumber(base)} × ${formatPercent(discount, { decimals: 2, preserveNonzero: true })} = ${formatNumber(saved)} gold, rounded up`,
           `${resurrection ? "Resurrection fee" : "Hire price"}: ${formatNumber(base)} − ${formatNumber(saved)} = ${formatNumber(total)} gold`,
         ],
       };

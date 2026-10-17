@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import * as Card from "$lib/components/ui/card";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
@@ -25,7 +26,7 @@
   );
 
   function plural(count: number, singular: string, pluralForm: string): string {
-    return `${count.toLocaleString()} ${count === 1 ? singular : pluralForm}`;
+    return `${formatNumber(count)} ${count === 1 ? singular : pluralForm}`;
   }
 </script>
 
@@ -77,17 +78,15 @@
             <div>{plural(faction.member_count, "member", "members")}</div>
             <div>
               Monsters you can kill for reputation:
-              {faction.monster_source_count.toLocaleString()}
+              {formatNumber(faction.monster_source_count)}
             </div>
             <div>
               Quests that award reputation:
-              {faction.quest_source_count.toLocaleString()}
+              {formatNumber(faction.quest_source_count)}
             </div>
             <div>
               Houses and items requiring reputation:
-              {(
-                faction.house_count + faction.gated_item_count
-              ).toLocaleString()}
+              {formatNumber(faction.house_count + faction.gated_item_count)}
             </div>
           </Card.Content>
         </Card.Root>

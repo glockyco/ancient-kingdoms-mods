@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import Seo from "$lib/components/Seo.svelte";
@@ -126,7 +127,10 @@
     ...Array.from(
       new Set(
         data.vendorUnlocks.map((unlock) =>
-          formatPercent(unlock.adventuring_level_needed),
+          formatPercent(unlock.adventuring_level_needed, {
+            decimals: 0,
+            trailingZeros: true,
+          }),
         ),
       ),
     ).sort((a, b) => Number.parseFloat(a) - Number.parseFloat(b)),
@@ -184,8 +188,10 @@
       ? data.vendorUnlocks
       : data.vendorUnlocks.filter(
           (unlock) =>
-            formatPercent(unlock.adventuring_level_needed) ===
-            selectedUnlockRequirement,
+            formatPercent(unlock.adventuring_level_needed, {
+              decimals: 0,
+              trailingZeros: true,
+            }) === selectedUnlockRequirement,
         ),
   );
 
@@ -193,7 +199,10 @@
     const groups = new SvelteMap<string, typeof data.vendorUnlocks>();
 
     for (const unlock of filteredVendorUnlocks) {
-      const requirement = formatPercent(unlock.adventuring_level_needed);
+      const requirement = formatPercent(unlock.adventuring_level_needed, {
+        decimals: 0,
+        trailingZeros: true,
+      });
       groups.set(requirement, [...(groups.get(requirement) ?? []), unlock]);
     }
 
@@ -252,10 +261,6 @@
       minute: "2-digit",
       timeZoneName: "short",
     }).format(date);
-  }
-
-  function formatPercent(value: number): string {
-    return `${(value * 100).toFixed(0)}%`;
   }
 
   function sellerLabel(sellerCount: number): string | null {
@@ -623,7 +628,10 @@
                     <span
                       class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-600 dark:text-emerald-300"
                     >
-                      +{(quest.reward_adventuring_skill * 100).toFixed(2)}%
+                      +{formatPercent(quest.reward_adventuring_skill, {
+                        decimals: 2,
+                        trailingZeros: true,
+                      })}
                     </span>
                   {:else}
                     <span class="text-muted-foreground">—</span>

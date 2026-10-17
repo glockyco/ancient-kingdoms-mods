@@ -16,7 +16,7 @@
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import { getClassConfig } from "$lib/utils/classes";
   import { petHref } from "$lib/utils/pets";
-  import { formatSkillType } from "$lib/utils/format";
+  import { formatSkillType, formatNumber } from "$lib/utils/format";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
 
   let { data } = $props();
@@ -25,7 +25,7 @@
     buildCollectionPage({
       path: "/skills",
       name: "Skills — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.skills.length.toLocaleString()} skills in Ancient Kingdoms.`,
+      description: `Searchable database of ${formatNumber(data.skills.length)} skills in Ancient Kingdoms.`,
       items: data.skills.map((skill) => ({
         name: skill.name,
         path: `/skills/${skill.id}`,
@@ -217,7 +217,7 @@
 
 <Seo
   title="Skills - Ancient Kingdoms"
-  description={`${data.skills.length.toLocaleString()} skills covering every class, plus monster and pet abilities — damage spells, heals, buffs, debuffs, and summons, with mana costs and tiers.`}
+  description={`${formatNumber(data.skills.length)} skills covering every class, plus monster and pet abilities — damage spells, heals, buffs, debuffs, and summons, with mana costs and tiers.`}
   path="/skills"
 />
 

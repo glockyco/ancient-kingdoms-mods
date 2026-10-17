@@ -1,5 +1,5 @@
 import type { LinearValue, SkillDetailView } from "$lib/types/skills";
-import { formatNumber, formatPercent } from "./skill-format";
+import { formatNumber, formatPercent } from "$lib/utils/format";
 
 // Level scaling table: columns for fields with non-zero bonus_per_level
 export interface ScalingColumn {
@@ -414,7 +414,7 @@ export function scalingColumns(
 export function computeScalingValue(col: ScalingColumn, level: number): string {
   const raw = col.field.base_value + col.field.bonus_per_level * (level - 1);
   if (col.isPercent) {
-    return formatPercent(raw);
+    return formatPercent(raw, { decimals: 2, preserveNonzero: true });
   }
   return `${formatNumber(col.suffix === "s" ? Math.max(0, raw) : raw)}${col.suffix}`;
 }

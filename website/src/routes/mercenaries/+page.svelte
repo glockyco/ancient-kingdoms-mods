@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
@@ -32,7 +33,6 @@
   let { data } = $props();
 
   const link = "text-blue-600 hover:underline dark:text-blue-400";
-  const fmt = (n: number) => n.toLocaleString("en-US");
   const rankCalculation = mercenaryRank();
   // The roster section defines the total once for all calculations on this page.
   delete rankCalculation.note;
@@ -312,11 +312,13 @@
                 >Recruiters serve you from level {MERC_MIN_LEVEL}.</span
               >
               <span class="block">
-                The base price is {fmt(hirePrice(MERC_MIN_LEVEL, 0))} gold at level
+                The base price is {formatNumber(hirePrice(MERC_MIN_LEVEL, 0))} gold
+                at level
                 {MERC_MIN_LEVEL}.
               </span>
               <span class="block">
-                It rises to {fmt(hirePrice(50, MAX_VETERAN))} gold at level 50 with
+                It rises to {formatNumber(hirePrice(50, MAX_VETERAN))} gold at level
+                50 with
                 {MAX_VETERAN} veteran points (VT).
               </span>
               <span class="block">
@@ -678,13 +680,14 @@
             <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:752-768 -->
             <p>
               <span class="block">
-                The base fee is {fmt(resurrectionPrice(MERC_MIN_LEVEL, 0))} gold at
-                level
+                The base fee is {formatNumber(
+                  resurrectionPrice(MERC_MIN_LEVEL, 0),
+                )} gold at level
                 {MERC_MIN_LEVEL}.
               </span>
               <span class="block">
-                It rises to {fmt(resurrectionPrice(50, MAX_VETERAN))} gold at level
-                50 with {MAX_VETERAN} veteran points (VT).
+                It rises to {formatNumber(resurrectionPrice(50, MAX_VETERAN))} gold
+                at level 50 with {MAX_VETERAN} veteran points (VT).
               </span>
               <span class="block">
                 Gear stays on the mercenary at its current durability after

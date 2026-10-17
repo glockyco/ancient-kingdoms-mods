@@ -5,7 +5,11 @@
   import * as Card from "$lib/components/ui/card";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import { getQualityTextColorClass } from "$lib/utils/format";
+  import {
+    getQualityTextColorClass,
+    formatNumber,
+    formatPercent,
+  } from "$lib/utils/format";
   import { getQualityName } from "$lib/constants/quality";
   import Calculation from "$lib/components/Calculation.svelte";
   import {
@@ -16,8 +20,6 @@
   } from "$lib/calculation/experience";
 
   let { data } = $props();
-
-  const fmt = (value: number) => value.toLocaleString("en-US");
 
   const LEVEL_CAP = $derived(data.maxLevel);
   const LATE_GAME_START = 40;
@@ -286,7 +288,7 @@
               class="tick"
               x={CHART.left - 8}
               y={chartY(tick) + 3}
-              text-anchor="end">{fmt(tick)}</text
+              text-anchor="end">{formatNumber(tick)}</text
             >
           {/each}
           {#each X_TICKS as tick (tick)}
@@ -359,26 +361,27 @@
             <dt class="text-xs text-muted-foreground">
               To level {pickedLevel + 1}
             </dt>
-            <dd class="font-mono text-foreground">{fmt(xpToNext)}</dd>
+            <dd class="font-mono text-foreground">{formatNumber(xpToNext)}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
               Total XP to reach level {pickedLevel}
             </dt>
-            <dd class="font-mono text-foreground">{fmt(xpBehind)}</dd>
+            <dd class="font-mono text-foreground">{formatNumber(xpBehind)}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">Left to {LEVEL_CAP}</dt>
-            <dd class="font-mono text-foreground">{fmt(xpAhead)}</dd>
+            <dd class="font-mono text-foreground">{formatNumber(xpAhead)}</dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
               Progress from level 1 to {LEVEL_CAP}
             </dt>
             <dd class="font-mono text-foreground">
-              {journeyDone < 1
-                ? journeyDone.toFixed(2)
-                : journeyDone.toFixed(1)}%
+              {formatPercent(journeyDone / 100, {
+                decimals: journeyDone < 1 ? 2 : 1,
+                trailingZeros: true,
+              })}
             </dd>
           </div>
         </dl>
@@ -404,8 +407,12 @@
               {#each LEVEL_ROWS as row (row.level)}
                 <tr class="border-b hover:bg-muted/30">
                   <td class="p-2">{row.level} &rarr; {row.level + 1}</td>
-                  <td class="p-2 text-right font-mono">{fmt(row.cost)}</td>
-                  <td class="p-2 text-right font-mono">{fmt(row.total)}</td>
+                  <td class="p-2 text-right font-mono"
+                    >{formatNumber(row.cost)}</td
+                  >
+                  <td class="p-2 text-right font-mono"
+                    >{formatNumber(row.total)}</td
+                  >
                 </tr>
               {/each}
             </tbody>
@@ -633,21 +640,29 @@
           <div>
             <dt class="text-xs text-muted-foreground">Next point costs</dt>
             <dd class="font-mono text-foreground">
-              {pickedVeteran < MAX_VETERAN_POINTS ? fmt(veteranNext) : "At cap"}
+              {pickedVeteran < MAX_VETERAN_POINTS
+                ? formatNumber(veteranNext)
+                : "At cap"}
             </dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
               Total XP to reach this Veteran Level
             </dt>
-            <dd class="font-mono text-foreground">{fmt(veteranBehind)}</dd>
+            <dd class="font-mono text-foreground">
+              {formatNumber(veteranBehind)}
+            </dd>
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
               Equivalent level 1–{LEVEL_CAP} climbs
             </dt>
             <dd class="font-mono text-foreground">
-              {veteranRuns.toFixed(1)}&times;
+              {formatNumber(veteranRuns, {
+                decimals: 1,
+                trailingZeros: true,
+                grouping: false,
+              })}&times;
             </dd>
           </div>
         </dl>
@@ -655,9 +670,10 @@
         <p class="text-sm text-muted-foreground">
           Without learning ranks that cost 2 points, reaching {MAX_VETERAN_POINTS}
           total veteran points takes
-          {fmt(VETERAN_TOTAL)} XP, roughly {(
-            VETERAN_TOTAL / TOTAL_TO_CAP
-          ).toFixed(0)}
+          {formatNumber(VETERAN_TOTAL)} XP, roughly {formatNumber(
+            VETERAN_TOTAL / TOTAL_TO_CAP,
+            { decimals: 0, trailingZeros: true, grouping: false },
+          )}
           times the climb from level 1 to {LEVEL_CAP}.
         </p>
       </div>
@@ -810,7 +826,7 @@
               class="tick"
               x={DIFF_CHART.left - 8}
               y={diffY(tick) + 3}
-              text-anchor="end">{Math.round(tick * 100)}%</text
+              text-anchor="end">{formatPercent(tick, { decimals: 0 })}</text
             >
           {/each}
           {#each DIFF_ROWS as row, index (row.diff)}
@@ -825,7 +841,11 @@
               width={diffBarWidth}
               height={DIFF_CHART.bottom - diffY(row.multiplier)}
             >
-              <title>{row.label}: {Math.round(row.multiplier * 100)}%</title>
+              <title
+                >{row.label}: {formatPercent(row.multiplier, {
+                  decimals: 0,
+                })}</title
+              >
             </rect>
             {#if row.diff % 5 === 0}
               <text
@@ -883,7 +903,8 @@
                         ? 'text-green-600 dark:text-green-400'
                         : row.multiplier < 1
                           ? 'text-red-600 dark:text-red-400'
-                          : ''}">{Math.round(row.multiplier * 100)}%</td
+                          : ''}"
+                      >{formatPercent(row.multiplier, { decimals: 0 })}</td
                     >
                   </tr>
                 {/each}
@@ -1206,7 +1227,7 @@
           {#each [20, 300, 2000, 5000, 12000] as xp, index (index)}
             <tr class="border-b last:border-0 hover:bg-muted/30">
               <td class="p-2">Tier {["I", "II", "III", "IV", "V"][index]}</td>
-              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+              <td class="p-2 text-right font-mono">{formatNumber(xp)}</td>
             </tr>
           {/each}
         </tbody>
@@ -1272,7 +1293,7 @@
           {#each [15, 150, 750, 3500, 10000] as xp, index (index)}
             <tr class="border-b last:border-0 hover:bg-muted/30">
               <td class="p-2">Tier {["I", "II", "III", "IV", "V"][index]}</td>
-              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+              <td class="p-2 text-right font-mono">{formatNumber(xp)}</td>
             </tr>
           {/each}
         </tbody>
@@ -1311,7 +1332,7 @@
           {#each [15, 150, 750, 3500, 10000] as xp, index (index)}
             <tr class="border-b last:border-0 hover:bg-muted/30">
               <td class="p-2">Tier {["I", "II", "III", "IV", "V"][index]}</td>
-              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+              <td class="p-2 text-right font-mono">{formatNumber(xp)}</td>
             </tr>
           {/each}
         </tbody>
@@ -1350,7 +1371,7 @@
           {#each [15, 150, 750, 3500] as xp, index (index)}
             <tr class="border-b last:border-0 hover:bg-muted/30">
               <td class="p-2">{getQualityName(index)}</td>
-              <td class="p-2 text-right font-mono">{fmt(xp)}</td>
+              <td class="p-2 text-right font-mono">{formatNumber(xp)}</td>
             </tr>
           {/each}
         </tbody>

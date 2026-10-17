@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -106,7 +107,7 @@
       {#if data.recipe.xp > 0}
         <span
           >XP: <MechanicsLink section="experience"
-            >{data.recipe.xp.toLocaleString()}</MechanicsLink
+            >{formatNumber(data.recipe.xp)}</MechanicsLink
           ></span
         >
       {/if}

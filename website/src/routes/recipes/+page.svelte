@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -23,7 +24,7 @@
     buildCollectionPage({
       path: "/recipes",
       name: "Recipes — Ancient Kingdoms Compendium",
-      description: `Find ${data.recipes.length.toLocaleString()} recipes for crafting, alchemy, cooking, and scribing.`,
+      description: `Find ${formatNumber(data.recipes.length)} recipes for crafting, alchemy, cooking, and scribing.`,
       items: data.recipes.map((recipe) => ({
         name: recipe.result_item_name,
         path: `/recipes/${recipe.id}`,
@@ -280,7 +281,7 @@
 
 <Seo
   title="Recipes - Ancient Kingdoms"
-  description={`Find ${data.recipes.length.toLocaleString()} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
+  description={`Find ${formatNumber(data.recipes.length)} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
   path="/recipes"
 />
 

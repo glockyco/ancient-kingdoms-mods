@@ -318,7 +318,10 @@
                     />
                     {#if reward.dropRate !== null}
                       <span class="text-sm text-muted-foreground">
-                        {formatPercent(reward.dropRate)}
+                        {formatPercent(reward.dropRate, {
+                          decimals: 1,
+                          trailingZeros: true,
+                        })}
                       </span>
                     {/if}
                   </div>

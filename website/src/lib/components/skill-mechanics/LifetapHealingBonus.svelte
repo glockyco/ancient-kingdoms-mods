@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import { EXAMPLE_HIT, lifetapWithBonus } from "$lib/skills/worked-examples";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
@@ -13,17 +14,16 @@
   <div class="space-y-2">
     <h3 class="font-semibold">Lifetap Healing Bonus</h3>
     <p class="text-muted-foreground">
-      Your lifetap healing is {fmt.formatPercent(
+      Your lifetap healing is {formatPercent(
         fmt.atRank(bonus, skill.max_level),
-      )} higher, so a lifetap that would heal {fmt.formatNumber(EXAMPLE_HIT)} heals
-      {fmt.formatNumber(
+        { decimals: 2, preserveNonzero: true },
+      )} higher, so a lifetap that would heal {formatNumber(EXAMPLE_HIT)} heals
+      {formatNumber(
         lifetapWithBonus(bonus, skill.max_level),
       )}{fmt.scalesWithRank(bonus, skill.max_level)
         ? ` at rank ${skill.max_level}`
-        : ""}. {fmt.describeRankGrowth(
-        bonus,
-        skill.max_level,
-        fmt.formatPercent,
+        : ""}. {fmt.describeRankGrowth(bonus, skill.max_level, (value) =>
+        formatPercent(value, { decimals: 2, preserveNonzero: true }),
       )} Lifetap damage is unchanged. Bonuses from your active buffs, permanent ones
       included, add together. See
       <a

@@ -21,7 +21,11 @@
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import ClassPills from "$lib/components/ClassPills.svelte";
-  import { formatEquipmentCategory, formatItemType } from "$lib/utils/format";
+  import {
+    formatEquipmentCategory,
+    formatItemType,
+    formatNumber,
+  } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
   import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
   import { getItemTooltips } from "$lib/queries/items";
@@ -33,7 +37,7 @@
     buildCollectionPage({
       path: "/items",
       name: "Items — Ancient Kingdoms Compendium",
-      description: `Find ${data.items.length.toLocaleString()} items by quality, level, slot, class, and zone.`,
+      description: `Find ${formatNumber(data.items.length)} items by quality, level, slot, class, and zone.`,
       items: data.items.map((item) => ({
         name: item.name,
         path: `/items/${item.id}`,
@@ -492,7 +496,7 @@
 
 <Seo
   title="Items - Ancient Kingdoms"
-  description={`Browse ${data.items.length.toLocaleString()} weapons, armor, consumables, and quest items by quality and level. Check each item's drop sources, vendors, and recipes.`}
+  description={`Browse ${formatNumber(data.items.length)} weapons, armor, consumables, and quest items by quality and level. Check each item's drop sources, vendors, and recipes.`}
   path="/items"
 />
 

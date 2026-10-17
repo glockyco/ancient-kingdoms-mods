@@ -10,7 +10,11 @@
     loadMapItemIconPaths,
     type ItemPopupDetails,
   } from "$lib/queries/popup";
-  import { getQualityTextColorClass, formatPercent } from "$lib/utils/format";
+  import {
+    getQualityTextColorClass,
+    formatPercent,
+    formatNumber,
+  } from "$lib/utils/format";
   import { formatAltarRequirement } from "$lib/calculation/altar";
 
   interface Props {
@@ -74,9 +78,9 @@
   ): string | null {
     if (minChance == null || maxChance == null) return null;
     if (Math.abs(minChance - maxChance) < 0.000001) {
-      return `${formatPercent(minChance)} per cast`;
+      return `${formatPercent(minChance, { decimals: 1, trailingZeros: true })} per cast`;
     }
-    return `${formatPercent(minChance)}–${formatPercent(maxChance)} per cast`;
+    return `${formatPercent(minChance, { decimals: 1, trailingZeros: true })}–${formatPercent(maxChance, { decimals: 1, trailingZeros: true })} per cast`;
   }
 
   function formatFishingSourceLabel(
@@ -178,7 +182,12 @@
                 class="flex items-center gap-2 shrink-0 text-xs text-muted-foreground"
               >
                 <span>Lv {dropper.level}</span>
-                <span>{formatPercent(dropper.dropRate)}</span>
+                <span
+                  >{formatPercent(dropper.dropRate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}</span
+                >
               </div>
             </div>
           {/each}
@@ -205,9 +214,9 @@
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
                 {#if vendor.currencyItemId}
-                  {vendor.price.toLocaleString()}x {vendor.currencyItemName}
+                  {formatNumber(vendor.price)}x {vendor.currencyItemName}
                 {:else}
-                  {vendor.price.toLocaleString()}g
+                  {formatNumber(vendor.price)}g
                 {/if}
               </span>
             </div>
@@ -264,7 +273,10 @@
                     source.fishingChanceMax,
                   )}
                 {:else}
-                  {formatPercent(source.rate)}
+                  {formatPercent(source.rate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 {/if}
               </span>
             </div>
@@ -302,7 +314,10 @@
                   {formatAltarRequirement(altar.tier, altar, altar.maxLevel)}
                 {/if}
                 {#if altar.dropRate > 0}
-                  · {formatPercent(altar.dropRate)}
+                  · {formatPercent(altar.dropRate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 {/if}
               </div>
             </div>
@@ -336,7 +351,10 @@
                 {chest.chestName}
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
-                {formatPercent(chest.rate)}
+                {formatPercent(chest.rate, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })}
               </span>
             </div>
           {/each}

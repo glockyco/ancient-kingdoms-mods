@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -13,8 +14,9 @@
     <span class="block"
       >Casting this instantly shortens each of your skills' remaining cooldowns
       by
-      {fmt.formatPercent(
+      {formatPercent(
         fmt.atRank(skill.cooldown_reduction_percent!, skill.max_level),
+        { decimals: 2, preserveNonzero: true },
       )}
       at rank {skill.max_level}, by at most 30 seconds per skill.</span
     >

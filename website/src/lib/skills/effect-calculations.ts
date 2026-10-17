@@ -2,11 +2,13 @@ import {
   atRank,
   describeInput,
   describeRankScaling,
-  formatNumber as number,
-  formatPercent as percent,
   formatSeconds as seconds,
   rankWorkingLines,
 } from "$lib/calculation/format";
+import {
+  formatNumber as number,
+  formatPercent as percent,
+} from "$lib/utils/format";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import {
   WISDOM,
@@ -110,8 +112,8 @@ export function healingCalculation(
         ? [
             {
               name: "Wisdom percentage",
-              expression: `${percent(share)} per point of Wisdom above 0`,
-              limit: `at most ${percent(WISDOM_HEAL_CAP)}`,
+              expression: `${percent(share, { decimals: 2, preserveNonzero: true })} per point of Wisdom above 0`,
+              limit: `at most ${percent(WISDOM_HEAL_CAP, { decimals: 2, preserveNonzero: true })}`,
             },
             {
               name: "Wisdom healing",
@@ -172,8 +174,8 @@ export function healingCalculation(
           ),
           ...(share !== null
             ? [
-                `Wisdom percentage: ${number(Math.max(0, values.wisdom))} × ${percent(share)} = ${percent(scaled.rawShare)}${scaled.rawShare !== scaled.share ? `, limited to ${percent(scaled.share)}` : ""}`,
-                `Wisdom healing: ${number(base)} × ${percent(scaled.share)} = ${number(scaled.bonus)}, rounded`,
+                `Wisdom percentage: ${number(Math.max(0, values.wisdom))} × ${percent(share, { decimals: 2, preserveNonzero: true })} = ${percent(scaled.rawShare, { decimals: 2, preserveNonzero: true })}${scaled.rawShare !== scaled.share ? `, limited to ${percent(scaled.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
+                `Wisdom healing: ${number(base)} × ${percent(scaled.share, { decimals: 2, preserveNonzero: true })} = ${number(scaled.bonus)}, rounded`,
                 `Health restored: ${number(base)} + ${number(scaled.bonus)} = ${number(scaled.total)}`,
               ]
             : []),
@@ -253,10 +255,11 @@ function effectFormat(effect: Effect, value: number): string {
     const points = Number((value * 100).toFixed(2));
     return `${String(points).replace(/^-/, "−")} percentage ${Math.abs(points) === 1 ? "point" : "points"}`;
   }
-  return (effect.percentage ? percent(value) : number(value)).replace(
-    /^-/,
-    "−",
-  );
+  return (
+    effect.percentage
+      ? percent(value, { decimals: 2, preserveNonzero: true })
+      : number(value)
+  ).replace(/^-/, "−");
 }
 
 function attributeInputs(
@@ -555,10 +558,10 @@ export function effectScalingCalculation(
         name: bonusName,
         expression:
           song && mode === "dot"
-            ? `${percent(factor)} of Charisma above 0`
+            ? `${percent(factor, { decimals: 2, preserveNonzero: true })} of Charisma above 0`
             : mode === "healing"
-              ? `${percent(factor)} of ${contributionName} above 0`
-              : `${contributionName} × ${percent(factor)}`,
+              ? `${percent(factor, { decimals: 2, preserveNonzero: true })} of ${contributionName} above 0`
+              : `${contributionName} × ${percent(factor, { decimals: 2, preserveNonzero: true })}`,
         rounding: "nearest",
       });
       steps.push({ name, expression: `${baseName} + ${bonusName}` });
@@ -585,7 +588,7 @@ export function effectScalingCalculation(
       if (usesSongMultiplier) {
         const bonus = bardBonus(attribute);
         working.push(
-          `Charisma bonus: ${number(Math.max(0, attribute))} × 0.1% = ${percent(bonus.raw)}${bonus.raw !== bonus.limited ? `, limited to ${percent(bonus.limited)}` : ""}`,
+          `Charisma bonus: ${number(Math.max(0, attribute))} × 0.1% = ${percent(bonus.raw, { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(bonus.limited, { decimals: 2, preserveNonzero: true })}` : ""}`,
         );
       }
       if (ward) {
@@ -631,7 +634,7 @@ export function effectScalingCalculation(
                 ? Math.min(raw, skill.fear_resist_chance_bonus_cap)
                 : raw;
             working.push(
-              `${name}: ${effectFormat(effect, base)} × ${percent(power)} = ${effectFormat(effect, raw)}${effect.percentage ? "" : ", rounded"}${raw !== result ? `, limited to ${effectFormat(effect, result)}` : ""}`,
+              `${name}: ${effectFormat(effect, base)} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${effectFormat(effect, raw)}${effect.percentage ? "" : ", rounded"}${raw !== result ? `, limited to ${effectFormat(effect, result)}` : ""}`,
             );
           } else if (mode === "ward") {
             result = attribute;
@@ -649,14 +652,14 @@ export function effectScalingCalculation(
             result = scaled.total;
             if (healing) {
               working.push(
-                `${healingPercentageName}: ${number(effectiveAttribute)} × 0.4% = ${percent(healing.rawShare)}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share)}` : ""}`,
+                `${healingPercentageName}: ${number(effectiveAttribute)} × 0.4% = ${percent(healing.rawShare, { decimals: 2, preserveNonzero: true })}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
               );
               working.push(
-                `${bonusName}: ${number(base)} × ${percent(healing.share)} = ${number(scaled.bonus)}, rounded`,
+                `${bonusName}: ${number(base)} × ${percent(healing.share, { decimals: 2, preserveNonzero: true })} = ${number(scaled.bonus)}, rounded`,
               );
             } else if (factor !== 1 && factor !== 2) {
               working.push(
-                `${bonusName}: ${number(effectiveAttribute)} × ${percent(factor)} = ${number(scaled.bonus)}, rounded`,
+                `${bonusName}: ${number(effectiveAttribute)} × ${percent(factor, { decimals: 2, preserveNonzero: true })} = ${number(scaled.bonus)}, rounded`,
               );
             }
             const addition =
@@ -848,18 +851,18 @@ export function aggroCalculation(
           ...rankWorkingLines("Skill threat", skill.aggro!, rank, number),
           ...(stuns
             ? [
-                `Stun threat: ${percent(stunChance)} × ${seconds(stunTime)} × 10 = ${number(threat.stun)}, rounded`,
+                `Stun threat: ${percent(stunChance, { decimals: 2, preserveNonzero: true })} × ${seconds(stunTime)} × 10 = ${number(threat.stun)}, rounded`,
               ]
             : []),
           ...(fears
             ? [
-                `Fear threat: ${percent(fearChance)} × ${seconds(fearTime)} × 10 = ${number(threat.fear)}, rounded`,
+                `Fear threat: ${percent(fearChance, { decimals: 2, preserveNonzero: true })} × ${seconds(fearTime)} × 10 = ${number(threat.fear)}, rounded`,
               ]
             : []),
           ...(direct && health === 0
             ? [`Health contribution: 0, because Skill threat is not above 0`]
             : []),
-          `Threat added: ${amounts.map(number).join(" + ")} = ${number(threat.total)}`,
+          `Threat added: ${amounts.map((value) => number(value)).join(" + ")} = ${number(threat.total)}`,
         ],
       };
     },

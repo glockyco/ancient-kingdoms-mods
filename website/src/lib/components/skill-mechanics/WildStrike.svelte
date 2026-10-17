@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { EXAMPLE_HIT, wildStrikeHit } from "$lib/skills/worked-examples";
-  import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -18,11 +18,10 @@
     Your next auto attack, Swift Slash with any melee weapon or Archer Shot,
     consumes the buff. After its ordinary damage calculation, the hit deals 10%
     more per Wild Strike rank, rounded, and becomes Magic damage. Magic Resist
-    reduces it by 5% per 100 points, at most 90%. At rank {skill.max_level}, a {fmt.formatNumber(
+    reduces it by 5% per 100 points, at most 90%. At rank {skill.max_level}, a {formatNumber(
       EXAMPLE_HIT,
-    )}-damage auto attack deals {fmt.formatNumber(
-      wildStrikeHit(skill.max_level),
-    )}. See
+    )}-damage auto attack deals {formatNumber(wildStrikeHit(skill.max_level))}.
+    See
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#wild-strike">Wild Strike</a

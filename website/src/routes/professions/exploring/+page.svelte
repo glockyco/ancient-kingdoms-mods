@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -112,7 +113,7 @@
               <td class="p-3 text-right">
                 {#if area.discovery_exp}
                   <MechanicsLink section="experience"
-                    >{area.discovery_exp.toLocaleString()}</MechanicsLink
+                    >{formatNumber(area.discovery_exp)}</MechanicsLink
                   >
                 {:else}
                   <span class="text-muted-foreground">—</span>

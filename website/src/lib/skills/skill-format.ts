@@ -1,4 +1,4 @@
-import { formatPercent as formatCalculationPercent } from "$lib/calculation/format";
+import { formatPercent } from "$lib/utils/format";
 import type { LinearValue } from "$lib/types/skills";
 import {
   formatLinearDuration as formatSkillLinearDuration,
@@ -9,7 +9,7 @@ import {
 // Source: server-scripts/ScrollItem.cs:UseAfterCast — exact half-ranks round to even, so odd ranks require mastery above the half-rank threshold.
 export function formatMasteryNeeded(rank: number): string {
   const percentage = rank <= 1 ? 0 : rank * 5 - 2.5;
-  return `${rank > 1 && rank % 2 !== 0 ? "above " : "at least "}${percentage.toFixed(1)}%`;
+  return `${rank > 1 && rank % 2 !== 0 ? "above " : "at least "}${formatPercent(percentage / 100, { decimals: 1, trailingZeros: true })}`;
 }
 
 export function formatLinear(
@@ -45,14 +45,6 @@ export function formatLinearPercentAbs(value: LinearValue | null): string {
     base_value: Math.abs(value.base_value),
     bonus_per_level: Math.abs(value.bonus_per_level),
   });
-}
-
-export function formatNumber(n: number): string {
-  return n.toLocaleString();
-}
-
-export function formatPercent(n: number): string {
-  return formatCalculationPercent(n);
 }
 
 export function formatDuration(base: number, perLevel: number): string {

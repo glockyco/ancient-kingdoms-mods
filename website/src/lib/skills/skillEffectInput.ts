@@ -20,7 +20,7 @@ import {
 import {
   formatNumber as number,
   formatPercent as percent,
-} from "$lib/calculation/format";
+} from "$lib/utils/format";
 import { melodyBonus } from "$lib/calculation/bard";
 import {
   RANGER_ATTRIBUTE_MULTIPLIER,
@@ -102,7 +102,7 @@ function attributeSource(
 }
 
 /** The lead of a note that multiplies a song's value by song power. */
-const SONG_POWER_LEAD = `${percent(SONG_POWER_PER_CHARISMA)} stronger`;
+const SONG_POWER_LEAD = `${percent(SONG_POWER_PER_CHARISMA, { decimals: 2, preserveNonzero: true })} stronger`;
 
 // Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:230-247,464-527; Wisdom.cs:116-128 — song power multiplies a song's values, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
 /** How an attribute source changes one listed value, as a note lead, or null when it does not. */
@@ -125,7 +125,7 @@ function scalingLead(
       return `${value.base_value < 0 ? "−" : "+"}${number(factor * multiplier)}`;
     case "healing":
       return durationBase < 60
-        ? `${percent(WISDOM_HEAL_SHARE * multiplier)} more`
+        ? `${percent(WISDOM_HEAL_SHARE * multiplier, { decimals: 2, preserveNonzero: true })} more`
         : `+${number(factor * multiplier)}`;
     case "ward":
       return `+${number(factor * multiplier)}`;
@@ -250,9 +250,11 @@ function damageTerms(
 
 // Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:GetFinalCadenceSongBonus — song power scales the listed damage and healing, then a player's Melody adds 15%, 25% or 30% for 4, 5 or 6+ active songs.
 function cadenceNote(mercenary: boolean): string {
-  const songPower = `${percent(SONG_POWER_PER_CHARISMA)} more per`;
+  const songPower = `${percent(SONG_POWER_PER_CHARISMA, { decimals: 2, preserveNonzero: true })} more per`;
   if (mercenary) return `${songPower} mercenary CHA`;
-  const melody = [4, 5, 6].map((songs) => percent(melodyBonus(songs)));
+  const melody = [4, 5, 6].map((songs) =>
+    percent(melodyBonus(songs), { decimals: 2, preserveNonzero: true }),
+  );
   return `${songPower} CHA, then ${melody[0]}, ${melody[1]} or ${melody[2]} more with 4, 5 or 6+ songs`;
 }
 
@@ -327,7 +329,7 @@ function summaryNotes(
     if (share === null) continue;
     addNote(entries, "heals_health", {
       owner: contextOwner(context.casters, context.bonusKind),
-      lead: `${percent(share)} more`,
+      lead: `${percent(share, { decimals: 2, preserveNonzero: true })} more`,
       attribute: "WIS",
     });
   }

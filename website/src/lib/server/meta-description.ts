@@ -12,6 +12,7 @@ import {
   formatItemType,
   formatEquipmentCategory,
   formatDuration,
+  formatNumber,
 } from "$lib/utils/format";
 
 import { QUALITY_NAMES } from "$lib/constants/quality";
@@ -471,7 +472,7 @@ function structureDescription(item: Item): string {
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
-      ? `${item.structure_price.toLocaleString()} gold`
+      ? `${formatNumber(item.structure_price)} gold`
       : "a fixed gold cost";
   return `Furniture. Costs ${price} to place inside a house you own.`;
 }
@@ -1132,9 +1133,7 @@ export function recipeDescription(
   }
 
   const xpPhrase =
-    recipe.xp && recipe.xp > 0
-      ? ` Awards ${recipe.xp.toLocaleString()} XP.`
-      : "";
+    recipe.xp && recipe.xp > 0 ? ` Awards ${formatNumber(recipe.xp)} XP.` : "";
 
   return `${capitalizeFirst(family)} recipe${levelPhrase}.${stationPhrase}${materialsPhrase}${xpPhrase}`;
 }
@@ -1161,8 +1160,8 @@ export function chestDescription(chest: ChestDescriptionInput): string {
   if (chest.gold_max > 0) {
     goldPhrase =
       chest.gold_min === chest.gold_max
-        ? `${chest.gold_max.toLocaleString()} gold`
-        : `${chest.gold_min.toLocaleString()}-${chest.gold_max.toLocaleString()} gold`;
+        ? `${formatNumber(chest.gold_max)} gold`
+        : `${formatNumber(chest.gold_min)}-${formatNumber(chest.gold_max)} gold`;
   }
 
   const itemPhrase = chest.item_reward_name
@@ -1230,7 +1229,7 @@ export function gatheringResourceDescription(
 
   const xpPhrase =
     resource.gathering_exp && resource.gathering_exp > 0
-      ? ` Awards ${resource.gathering_exp.toLocaleString()} gathering XP.`
+      ? ` Awards ${formatNumber(resource.gathering_exp)} gathering XP.`
       : "";
 
   let locationPhrase = "";
@@ -1692,7 +1691,7 @@ export function factionDescription(faction: FactionDescriptionInput): string {
   if (faction.unlock_count > 0) {
     const gate =
       faction.top_requirement_tier && faction.top_requirement > 0
-        ? ` up to ${faction.top_requirement_tier} at ${faction.top_requirement.toLocaleString()}`
+        ? ` up to ${faction.top_requirement_tier} at ${formatNumber(faction.top_requirement)}`
         : "";
     clauses.push(
       `${plural(faction.unlock_count, "reward", "rewards")} ${

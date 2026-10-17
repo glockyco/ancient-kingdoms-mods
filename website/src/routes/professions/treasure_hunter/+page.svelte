@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -37,17 +38,13 @@
       .sort((a, b) => a.item_name.localeCompare(b.item_name)),
   );
 
-  function formatPercent(value: number, digits = 1): string {
-    return `${(value * 100).toFixed(digits)}%`;
-  }
-
   function formatPercentagePoints(value: number, digits = 1): string {
-    return `${(value * 100).toFixed(digits)} pp`;
+    return `${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} pp`;
   }
 
   function formatSignedPercentagePoints(value: number, digits = 1): string {
     const sign = value > 0 ? "+" : "";
-    return `${sign}${(value * 100).toFixed(digits)} pp`;
+    return `${sign}${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} pp`;
   }
 
   function sameDestination(zone: string, subZone: string): boolean {
@@ -107,7 +104,10 @@
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
-          +{data.stats.skill_gain_percent.toFixed(1)}%
+          +{formatPercent(data.stats.skill_gain_percent / 100, {
+            decimals: 1,
+            trailingZeros: true,
+          })}
         </div>
         <div class="text-sm text-muted-foreground">Skill per treasure</div>
       </div>
@@ -257,7 +257,12 @@
           bind:value={skillLevel}
           class="h-2 w-48 cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
         />
-        <span class="w-16 font-mono">{skillLevel.toFixed(1)}%</span>
+        <span class="w-16 font-mono"
+          >{formatPercent(skillLevel / 100, {
+            decimals: 1,
+            trailingZeros: true,
+          })}</span
+        >
       </div>
 
       <div class="mt-4 grid gap-3 sm:grid-cols-3">
@@ -320,10 +325,16 @@
                   {/if}
                 </td>
                 <td class="p-3 text-right font-mono">
-                  {formatPercent(reward.baseline_chance)}
+                  {formatPercent(reward.baseline_chance, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 </td>
                 <td class="p-3 text-right font-mono">
-                  {formatPercent(reward.open_chance)}
+                  {formatPercent(reward.open_chance, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 </td>
                 <td class="p-3 text-right font-mono">
                   {#if Math.abs(reward.change_from_baseline) < 0.0005}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import { base } from "$app/paths";
   import {
     DataTable,
@@ -231,13 +232,13 @@
 
 {#snippet reputationValue(value: number, positive: boolean)}
   <span class={positive ? GAIN_CLASS : LOSS_CLASS}>
-    {positive ? "+" : "−"}{Math.abs(value).toLocaleString()}
+    {positive ? "+" : "−"}{formatNumber(Math.abs(value))}
   </span>
 {/snippet}
 
 {#snippet requirementValue(value: number)}
   <span>{tierFor(value)}</span>
-  <span class="text-muted-foreground">&nbsp;({value.toLocaleString()})</span>
+  <span class="text-muted-foreground">&nbsp;({formatNumber(value)})</span>
 {/snippet}
 
 {#snippet monsterCell(
@@ -495,7 +496,7 @@
         tierFor(row.original.faction_required_to_buy)}</span
     >
     <span class="text-muted-foreground"
-      >&nbsp;({row.original.faction_required_to_buy.toLocaleString()})</span
+      >&nbsp;({formatNumber(row.original.faction_required_to_buy)})</span
     >
   {:else}
     {cell.getValue()}
@@ -522,7 +523,7 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "base_price"}
-    {row.original.base_price.toLocaleString()} gold
+    {formatNumber(row.original.base_price)} gold
   {:else if cell.column.id === "faction_required"}
     {@render requirementValue(row.original.faction_required)}
   {:else if cell.column.id === "location"}
@@ -586,9 +587,9 @@
     </div>
 
     <p class="mt-3 text-sm text-muted-foreground">
-      {data.faction.members.length.toLocaleString()} members ·
-      {data.faction.monstersImprove.length.toLocaleString()} monsters raise reputation
-      · {data.faction.questGrants.length.toLocaleString()} quests grant reputation
+      {formatNumber(data.faction.members.length)} members ·
+      {formatNumber(data.faction.monstersImprove.length)} monsters raise reputation
+      · {formatNumber(data.faction.questGrants.length)} quests grant reputation
     </p>
 
     <p class="mt-2 text-sm text-muted-foreground">

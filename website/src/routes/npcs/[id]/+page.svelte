@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     type ColumnDef,
@@ -80,14 +81,14 @@
 
       if (isWorldBoss) {
         return data.npc.gold_required_respawn_dungeon > 0
-          ? `Resets World Boss respawn timers for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> gold.`
+          ? `Resets World Boss respawn timers for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold.`
           : `Resets World Boss respawn timers.`;
       }
 
       const target = `<a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>`;
 
       return data.npc.gold_required_respawn_dungeon > 0
-        ? `Resets respawn timers for monsters in ${target}. The base fee is <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> gold before your Charisma discount (up to 25%).`
+        ? `Resets respawn timers for monsters in ${target}. The base fee is <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold before your Charisma discount (up to 25%).`
         : `Resets respawn timers for monsters in ${target}.`;
     }
 
@@ -101,7 +102,7 @@
           const from = `<a href="/zones/${route.fromZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.fromZoneName}</a>`;
           const to = `<a href="/zones/${route.toZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.toZoneName}</a>`;
           return route.price > 0
-            ? `Teleports players from ${from} to ${to} for <span class="text-yellow-600 dark:text-yellow-400">${route.price.toLocaleString()}</span> gold.`
+            ? `Teleports players from ${from} to ${to} for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(route.price)}</span> gold.`
             : `Teleports players from ${from} to ${to}.`;
         })
         .join("<br>");
@@ -316,10 +317,6 @@
     return cols;
   });
 
-  function formatPercent(value: number): string {
-    return `${(value * 100).toFixed(1)}%`;
-  }
-
   function formatTime(seconds: number): string {
     if (seconds < 60) return `${seconds}s`;
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
@@ -399,7 +396,7 @@
       fallback={Package}
     />
   {:else if cell.column.id === "price"}
-    <span class="ml-auto">{row.original.price.toLocaleString()}</span>
+    <span class="ml-auto">{formatNumber(row.original.price)}</span>
   {:else if cell.column.id === "currency"}
     {#if row.original.currency_item_id}
       <a
@@ -416,7 +413,7 @@
       <span class="text-purple-600 dark:text-purple-400">
         {row.original.faction_tier_name ?? "Required"}
         <span class="text-muted-foreground font-normal"
-          >({row.original.faction_required.toLocaleString()})</span
+          >({formatNumber(row.original.faction_required)})</span
         >
       </span>
     {:else}
@@ -456,7 +453,12 @@
       fallback={Package}
     />
   {:else if cell.column.id === "rate"}
-    <span class="ml-auto">{formatPercent(row.original.rate)}</span>
+    <span class="ml-auto"
+      >{formatPercent(row.original.rate, {
+        decimals: 1,
+        trailingZeros: true,
+      })}</span
+    >
   {:else}
     {cell.getValue()}
   {/if}
@@ -489,7 +491,12 @@
   {:else if cell.column.id === "respawn"}
     <span class="ml-auto">{formatTime(data.npc.respawn_time)}</span>
   {:else if cell.column.id === "chance"}
-    <span class="ml-auto">{formatPercent(data.npc.respawn_probability)}</span>
+    <span class="ml-auto"
+      >{formatPercent(data.npc.respawn_probability, {
+        decimals: 1,
+        trailingZeros: true,
+      })}</span
+    >
   {:else}
     {cell.getValue()}
   {/if}
@@ -708,7 +715,10 @@
             <div>
               <div class="text-sm text-muted-foreground">Block Chance</div>
               <div class="font-medium">
-                {formatPercent(data.npc.block_chance)}
+                {formatPercent(data.npc.block_chance, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })}
               </div>
             </div>
           {/if}
@@ -716,7 +726,10 @@
             <div>
               <div class="text-sm text-muted-foreground">Critical Strike</div>
               <div class="font-medium">
-                {formatPercent(data.npc.critical_chance)}
+                {formatPercent(data.npc.critical_chance, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })}
               </div>
             </div>
           {/if}
@@ -724,7 +737,10 @@
             <div>
               <div class="text-sm text-muted-foreground">Accuracy</div>
               <div class="font-medium">
-                {formatPercent(data.npc.accuracy)}
+                {formatPercent(data.npc.accuracy, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })}
               </div>
             </div>
           {/if}
@@ -773,11 +789,16 @@
           <div class="mt-4 pt-4 border-t">
             <div class="text-sm text-muted-foreground mb-1">Gold Drop</div>
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {data.npc.gold_min.toLocaleString()} - {data.npc.gold_max.toLocaleString()}
+              {formatNumber(data.npc.gold_min)} - {formatNumber(
+                data.npc.gold_max,
+              )}
               gold
               {#if data.npc.probability_drop_gold < 1}
                 <span class="text-muted-foreground font-normal">
-                  ({formatPercent(data.npc.probability_drop_gold)} chance)
+                  ({formatPercent(data.npc.probability_drop_gold, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })} chance)
                 </span>
               {/if}
             </div>

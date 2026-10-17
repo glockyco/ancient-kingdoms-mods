@@ -12,7 +12,11 @@
     SOURCE_TYPE_CONFIG,
     type ItemSourceType,
   } from "$lib/constants/source-types";
-  import { getQualityTextColorClass } from "$lib/utils/format";
+  import {
+    getQualityTextColorClass,
+    formatNumber,
+    formatPercent,
+  } from "$lib/utils/format";
   import { reputationTierName } from "$lib/utils/reputation";
   import type {
     BackpackSource,
@@ -40,12 +44,12 @@
   let { data }: { data: InventoryMechanicsPageData } = $props();
 
   function formatGold(value: number): string {
-    return value === 0 ? "Free" : value.toLocaleString();
+    return value === 0 ? "Free" : formatNumber(value);
   }
 
   function getHouseRequirement(house: HouseStorageLocation): string {
     if (house.faction_id && house.faction_required > 0) {
-      return `${reputationTierName(data.reputationTiers, house.faction_required)} (${house.faction_required.toLocaleString()})`;
+      return `${reputationTierName(data.reputationTiers, house.faction_required)} (${formatNumber(house.faction_required)})`;
     }
     if (house.faction_id) return "No reputation requirement";
     return "None recorded";
@@ -463,7 +467,7 @@
                         >{:else}Unknown{/if}
                     </td>
                     <td class="py-2 pr-4 text-right font-mono"
-                      >{house.base_price.toLocaleString()}</td
+                      >{formatNumber(house.base_price)}</td
                     >
                     <td class="py-2 pr-4">
                       <!-- Source: server-scripts/Player.cs:TargetRpcHouse; Utils.cs:GetFactionRankName — the purchase panel names the required reputation rank. -->
@@ -527,7 +531,7 @@
                       >{chest.slot_end - chest.slot_start + 1} slots</td
                     >
                     <td class="py-2 pr-4 text-right font-mono"
-                      >{chest.structure_price.toLocaleString()}</td
+                      >{formatNumber(chest.structure_price)}</td
                     >
                   </tr>
                 {/each}
@@ -834,7 +838,7 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >{skill.name}</a
           >
-          ({Math.round(skill.break_armor_prob * 100)}%)
+          ({formatPercent(skill.break_armor_prob, { decimals: 0 })})
         {/each}.
       </p>
       <!-- Source: server-scripts/Equipment.cs:6-58 and server-scripts/PlayerEquipment.cs:194-319,1614-1625 — gear at zero durability gives no equipment or attached augment attribute bonuses and no longer counts toward its armor set. -->

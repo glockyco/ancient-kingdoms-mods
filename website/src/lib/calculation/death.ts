@@ -1,6 +1,6 @@
 import type { Calculation } from "$lib/types/calculation";
 import { iround, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatNumber } from "./format";
+import { formatNumber } from "$lib/utils/format";
 import { MAX_HEALTH, MAX_MANA, situational } from "./inputs";
 
 // Source: server-scripts/Player.cs:13361-13368,14524-14528; server-scripts/EnergyResource.cs:21-35 — XP fractions and resurrection resources round to even, restored Mana is capped independently.

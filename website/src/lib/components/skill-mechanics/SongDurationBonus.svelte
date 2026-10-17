@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import {
     EXAMPLE_SONG_SECONDS,
     passiveSongDuration,
@@ -14,8 +15,9 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Song Duration Bonus</h3>
   <p class="text-muted-foreground">
-    Each rank lengthens your songs by {fmt.formatPercent(
+    Each rank lengthens your songs by {formatPercent(
       skill.bard_song_duration_bonus_per_level,
+      { decimals: 2, preserveNonzero: true },
     )}, so at rank {skill.max_level} a {fmt.formatSeconds(EXAMPLE_SONG_SECONDS)} song
     lasts {fmt.formatSeconds(
       passiveSongDuration(

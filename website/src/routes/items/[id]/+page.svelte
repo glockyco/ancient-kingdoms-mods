@@ -17,6 +17,8 @@
     formatEquipmentCategory,
     formatItemType,
     itemListType,
+    formatNumber,
+    formatPercent,
   } from "$lib/utils/format";
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
@@ -71,10 +73,16 @@
     maxChance: number | null,
   ): string | null {
     if (minChance == null || maxChance == null) return null;
-    const minPercent = (minChance * 100).toFixed(1);
-    const maxPercent = (maxChance * 100).toFixed(1);
-    if (minPercent === maxPercent) return `${minPercent}% per cast`;
-    return `${minPercent}–${maxPercent}% per cast`;
+    const minPercent = formatPercent(minChance, {
+      decimals: 1,
+      trailingZeros: true,
+    });
+    const maxPercent = formatPercent(maxChance, {
+      decimals: 1,
+      trailingZeros: true,
+    });
+    if (minPercent === maxPercent) return `${minPercent} per cast`;
+    return `${minPercent.slice(0, -1)}–${maxPercent} per cast`;
   }
 
   function formatFishingSourceNote(
@@ -115,14 +123,6 @@
 
     // Add +/- prefix for all numeric stats
     return `${value > 0 ? "+" : ""}${value}`;
-  }
-
-  /**
-   * Format gold amounts with narrow space thousands separator (U+202F).
-   * Examples: 1234 → "1 234", 10000 → "10 000"
-   */
-  function formatGold(amount: number): string {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
   }
 
   const isAugment = $derived(data.item.item_type === "augment");
@@ -544,7 +544,7 @@
           <div class={styles.label}>Buy Price</div>
           <div class={styles.valueCurrency}>
             {#if computed.soldBy[0].currency_item_id}
-              {formatGold(data.item.buy_price)}
+              {formatNumber(data.item.buy_price, { groupSeparator: "\u202F" })}
               <a
                 href={resolve("/items/[id]", {
                   id: computed.soldBy[0].currency_item_id,
@@ -554,7 +554,7 @@
                 {computed.soldBy[0].currency_item_name}
               </a>
             {:else}
-              {formatGold(data.item.buy_price)}g
+              {formatNumber(data.item.buy_price, { groupSeparator: "\u202F" })}g
             {/if}
           </div>
         </div>
@@ -564,7 +564,7 @@
         <div>
           <div class={styles.label}>Sell Price</div>
           <div class={styles.valueCurrency}>
-            {formatGold(data.item.sell_price)}g
+            {formatNumber(data.item.sell_price, { groupSeparator: "\u202F" })}g
           </div>
         </div>
       {/if}
@@ -848,9 +848,10 @@
                         data.item.weapon_proc_effect_id}
                     </a>
                     <span class={styles.label}>
-                      ({(
-                        data.item.weapon_proc_effect_probability * 100
-                      ).toFixed(0)}% chance)
+                      ({formatPercent(
+                        data.item.weapon_proc_effect_probability,
+                        { decimals: 0, trailingZeros: true },
+                      )} chance)
                     </span>
                   </span>
                 </div>
@@ -1047,7 +1048,8 @@
                 <div class={styles.label}>Cost</div>
                 <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1820-1827 -->
                 <div class={styles.value}>
-                  {formatGold(10000)}g + Token of Redemption
+                  {formatNumber(10000, { groupSeparator: "\u202F" })}g + Token
+                  of Redemption
                 </div>
               </div>
               <div>
@@ -1157,7 +1159,7 @@
               <div>
                 <div class={styles.label}>Cost</div>
                 <div class={styles.valueCurrency}>
-                  {formatGold(75)}g per rune
+                  {formatNumber(75, { groupSeparator: "\u202F" })}g per rune
                 </div>
               </div>
               <div>
@@ -1192,7 +1194,7 @@
               <div>
                 <div class={styles.label}>Blessing cost</div>
                 <div class={styles.valueCurrency}>
-                  {formatGold(75)}g per rune
+                  {formatNumber(75, { groupSeparator: "\u202F" })}g per rune
                 </div>
               </div>
               <div>
@@ -1247,11 +1249,15 @@
                 <div class={styles.label}>Removing</div>
                 <!-- Source: server-scripts/UINpcTrading.cs:164-169,228-232 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
                 <div class={styles.value}>
-                  Visit an Augmenter to remove a socketed augment. Removal costs {formatGold(
+                  Visit an Augmenter to remove a socketed augment. Removal costs {formatNumber(
                     5000,
-                  )}g for a common augment, {formatGold(10000)}g for a magic
-                  augment, or {formatGold(15000)}g for an epic augment. The
-                  Augmenter returns it to your inventory.
+                    { groupSeparator: "\u202F" },
+                  )}g for a common augment, {formatNumber(10000, {
+                    groupSeparator: "\u202F",
+                  })}g for a magic augment, or {formatNumber(15000, {
+                    groupSeparator: "\u202F",
+                  })}g for an epic augment. The Augmenter returns it to your
+                  inventory.
                 </div>
               </div>
               <div>
@@ -1696,7 +1702,11 @@
                     >
                   </a>
                 </div>
-                <span class={styles.label}>{(drop.rate * 100).toFixed(1)}%</span
+                <span class={styles.label}
+                  >{formatPercent(drop.rate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}</span
                 >
               </div>
             {/each}
@@ -1734,7 +1744,9 @@
                         {vendor.currency_item_name}
                       </a>
                     {:else}
-                      {formatGold(vendor.price)}g
+                      {formatNumber(vendor.price, {
+                        groupSeparator: "\u202F",
+                      })}g
                     {/if}
                   </span>
                 </div>
@@ -1944,7 +1956,12 @@
                       data.maxLevel,
                     )}
                   </div>
-                  <div>Drop Rate: {(altar.drop_rate * 100).toFixed(0)}%</div>
+                  <div>
+                    Drop Rate: {formatPercent(altar.drop_rate, {
+                      decimals: 0,
+                      trailingZeros: true,
+                    })}
+                  </div>
                 </div>
               </div>
             {/each}
@@ -2091,7 +2108,10 @@
                       {#if gather.rate_note}
                         {gather.rate_note}
                       {:else}
-                        {(gather.rate * 100).toFixed(1)}%
+                        {formatPercent(gather.rate, {
+                          decimals: 1,
+                          trailingZeros: true,
+                        })}
                       {/if}
                     </span>
                   </div>
@@ -2128,7 +2148,10 @@
                     {#if gather.rate_note}
                       {gather.rate_note}
                     {:else}
-                      {(gather.rate * 100).toFixed(1)}%
+                      {formatPercent(gather.rate, {
+                        decimals: 1,
+                        trailingZeros: true,
+                      })}
                     {/if}
                     {#if gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
                       {#if gather.amount_min === gather.amount_max}
@@ -2193,7 +2216,10 @@
                     />
                   </div>
                   <span class={styles.label}
-                    >{(chest.rate * 100).toFixed(1)}%</span
+                    >{formatPercent(chest.rate, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}</span
                   >
                 </div>
                 {#if chest.key_id}
@@ -2228,7 +2254,10 @@
                   {randomItem.random_item_name}
                 </a>
                 <span class={styles.label}>
-                  {(randomItem.probability * 100).toFixed(1)}%
+                  {formatPercent(randomItem.probability, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                   {#if randomItem.assumesTreasureHunterZero}
                     at 0% Treasure Hunter
                   {/if}
@@ -2254,7 +2283,10 @@
                   {item.item_name}
                 </a>
                 <span class={styles.label}>
-                  {(item.probability * 100).toFixed(1)}%
+                  {formatPercent(item.probability, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 </span>
               </div>
             {/each}
@@ -2294,7 +2326,10 @@
                   {reward.item_name}
                 </a>
                 <span class={styles.label}
-                  >{(reward.open_chance * 100).toFixed(1)}%</span
+                  >{formatPercent(reward.open_chance, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}</span
                 >
               </div>
             {/each}

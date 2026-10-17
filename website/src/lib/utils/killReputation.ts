@@ -1,3 +1,4 @@
+import { formatNumber } from "$lib/utils/format";
 import { iround } from "$lib/calculation/unity-math";
 
 export type KillReputationDirection = "improve" | "decrease";
@@ -38,9 +39,6 @@ interface NpcKillReputationInput {
 // only level. Fractional results (normal-rank loss is level * 0.75) are kept
 // exactly as the game adds them to the faction value, so up to two decimals are
 // shown.
-const reputationAmountFormat = new Intl.NumberFormat("en-US", {
-  maximumFractionDigits: 2,
-});
 
 /**
  * Reputation changed per kill for a monster, formatted as a range across its
@@ -68,8 +66,8 @@ function monsterReputationAmount(
     min = monster.level_min * multiplier;
     max = monster.level_max * multiplier;
   }
-  if (min === max) return reputationAmountFormat.format(min);
-  return `${reputationAmountFormat.format(min)}-${reputationAmountFormat.format(max)}`;
+  if (min === max) return formatNumber(min, { decimals: 2 });
+  return `${formatNumber(min, { decimals: 2 })}-${formatNumber(max, { decimals: 2 })}`;
 }
 
 export function monsterKillReputation(
@@ -107,16 +105,16 @@ export function npcKillReputation(
   if (npc.improve_faction.length > 0) {
     effects.push({
       direction: "improve",
-      amount: reputationAmountFormat.format(
-        npc.level * 1.5 * (npc.is_notable ? 60 : 1),
-      ),
+      amount: formatNumber(npc.level * 1.5 * (npc.is_notable ? 60 : 1), {
+        decimals: 2,
+      }),
       factions: npc.improve_faction,
     });
   }
   if (npc.decrease_faction.length > 0) {
     effects.push({
       direction: "decrease",
-      amount: reputationAmountFormat.format(npc.level * 5),
+      amount: formatNumber(npc.level * 5, { decimals: 2 }),
       factions: npc.decrease_faction,
     });
   }

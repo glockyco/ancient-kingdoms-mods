@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -23,7 +24,7 @@
     buildCollectionPage({
       path: "/altars",
       name: "Altars — Ancient Kingdoms Compendium",
-      description: `Find ${data.altars.length.toLocaleString()} Forgotten and Avatar altars by zone, boss, and level.`,
+      description: `Find ${formatNumber(data.altars.length)} Forgotten and Avatar altars by zone, boss, and level.`,
       items: data.altars.map((altar) => ({
         name: altar.name,
         path: `/altars/${altar.id}`,
@@ -193,7 +194,7 @@
 
 <Seo
   title="Altars - Ancient Kingdoms"
-  description={`Find ${data.altars.length.toLocaleString()} Forgotten and Avatar altars with wave counts, bosses, level requirements, and rewards from common to legendary.`}
+  description={`Find ${formatNumber(data.altars.length)} Forgotten and Avatar altars with wave counts, bosses, level requirements, and rewards from common to legendary.`}
   path="/altars"
 />
 

@@ -7,7 +7,7 @@ import {
   iround,
   multiplyF32,
 } from "$lib/calculation/unity-math";
-import { formatNumber, formatPercent } from "./format";
+import { formatNumber, formatPercent } from "$lib/utils/format";
 import {
   situational,
   TOTAL_VETERAN_POINTS,
@@ -190,8 +190,8 @@ export function killExperience(): Calculation {
           `Base share: ${formatNumber(baseXp)} ÷ ${members} = ${formatNumber(result.share)} XP, rounded up`,
           level - monsterLevel > 20
             ? "Level adjustment: monster more than 20 levels lower = 0%, no XP"
-            : `Level adjustment: percentage for level ${level} against monster level ${monsterLevel}${dungeon ? " + 10 percentage points for a dungeon" : ""} = ${formatPercent(result.multiplier)}`,
-          `Adjusted share: ${formatNumber(result.share)} × ${formatPercent(result.multiplier)} = ${formatNumber(result.roundedShare)} XP, rounded${result.balanced !== result.roundedShare ? (level - monsterLevel > 20 ? ", limited to 0 XP by the 20-level cutoff" : ", limited to 1 XP") : ""}`,
+            : `Level adjustment: percentage for level ${level} against monster level ${monsterLevel}${dungeon ? " + 10 percentage points for a dungeon" : ""} = ${formatPercent(result.multiplier, { decimals: 2, preserveNonzero: true })}`,
+          `Adjusted share: ${formatNumber(result.share)} × ${formatPercent(result.multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(result.roundedShare)} XP, rounded${result.balanced !== result.roundedShare ? (level - monsterLevel > 20 ? ", limited to 0 XP by the 20-level cutoff" : ", limited to 1 XP") : ""}`,
           `Party bonus: ${formatNumber(result.balanced)} × 125% × ${members - 1} = ${formatNumber(result.bonus)} XP, rounded`,
           `XP per living player: ${formatNumber(result.balanced)} + ${formatNumber(result.bonus)} = ${formatNumber(result.total)} XP`,
         ],

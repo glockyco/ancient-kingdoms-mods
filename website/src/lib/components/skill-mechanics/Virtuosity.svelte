@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as fmt from "$lib/calculation/format";
+  import { formatPercent } from "$lib/utils/format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -14,9 +14,14 @@
     of your songs are active.
     {#if skill.additional_damage_percent_per_song}
       Each active song beyond three adds another
-      {fmt.formatPercent(skill.additional_damage_percent_per_song)} to both, so five
-      active songs add
-      {fmt.formatPercent(2 * skill.additional_damage_percent_per_song)} more.
+      {formatPercent(skill.additional_damage_percent_per_song, {
+        decimals: 2,
+        preserveNonzero: true,
+      })} to both, so five active songs add
+      {formatPercent(2 * skill.additional_damage_percent_per_song, {
+        decimals: 2,
+        preserveNonzero: true,
+      })} more.
     {/if}
     See
     <a

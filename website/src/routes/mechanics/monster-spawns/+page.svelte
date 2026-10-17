@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber, formatPercent } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
@@ -41,10 +42,6 @@
     return `${seconds} s`;
   }
 
-  function formatChance(probability: number): string {
-    return `${Math.round(probability * 100)}%`;
-  }
-
   // Cumulative odds for the renewal-cycling table. Every spawn chance that
   // occurs in the rare spawn data (distinct respawn_probability values).
   const RARE_ROLL_CHANCES = [0.2, 0.25, 0.4, 0.5, 0.6, 0.7, 0.75];
@@ -52,7 +49,9 @@
 
   function cumulativeRollChance(chance: number, rolls: number): string {
     const percent = (1 - Math.pow(1 - chance, rolls)) * 100;
-    return percent > 99 ? ">99%" : `${Math.round(percent)}%`;
+    return percent > 99
+      ? ">99%"
+      : formatPercent(percent / 100, { decimals: 0 });
   }
 
   // Source: server-scripts/Monster.cs:UpdateServer_DEAD; SummonMonster.cs:Update — summon rolls also require the fixed guard group's readiness.
@@ -71,7 +70,11 @@
   function bossNotes(boss: BossRespawn): { text: string; href?: string }[] {
     return [
       ...(boss.respawn_probability < 1
-        ? [{ text: `${formatChance(boss.respawn_probability)} spawn chance` }]
+        ? [
+            {
+              text: `${formatPercent(boss.respawn_probability, { decimals: 0 })} spawn chance`,
+            },
+          ]
         : []),
       ...(boss.is_summonable
         ? [{ text: "guards must die", href: "#summons" }]
@@ -679,7 +682,9 @@
                   >{formatDuration(rare.respawn_time)}</td
                 >
                 <td class="py-2 pr-4 text-right font-mono"
-                  >{formatChance(rare.respawn_probability)}</td
+                  >{formatPercent(rare.respawn_probability, {
+                    decimals: 0,
+                  })}</td
                 >
                 <td class="py-2 pr-2 text-right font-mono"
                   >{formatAverageWait(rare)}</td
@@ -854,7 +859,7 @@
                 <th class="py-2 pr-4 text-left font-medium">Rolls</th>
                 {#each RARE_ROLL_CHANCES as chance (chance)}
                   <th class="py-2 text-right font-medium"
-                    >{formatChance(chance)} rare</th
+                    >{formatPercent(chance, { decimals: 0 })} rare</th
                   >
                 {/each}
               </tr>
@@ -909,7 +914,7 @@
                     >
                   </td>
                   <td class="py-2 text-right font-mono"
-                    >{sage.base_fee.toLocaleString()}</td
+                    >{formatNumber(sage.base_fee)}</td
                   >
                 </tr>
               {/each}
@@ -1317,7 +1322,7 @@
                   )} corpse time
                 </td>
                 <td class="py-2 text-right font-mono">
-                  {formatChance(trigger.spawn_chance)}
+                  {formatPercent(trigger.spawn_chance, { decimals: 0 })}
                 </td>
               </tr>
             {/each}

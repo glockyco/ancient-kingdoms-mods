@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber, formatPercent } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -67,11 +68,6 @@
 
   // Check if quest is part of a chain
   const hasQuestChain = $derived(data.chainGraph !== null);
-
-  // Format large numbers
-  function formatNumber(num: number): string {
-    return num.toLocaleString();
-  }
 
   // Game tooltip helpers
   // Check if tooltips have class-specific variants (vs just "_default")
@@ -287,12 +283,12 @@
                     <span class="text-purple-600 dark:text-purple-400">
                       {faction.tier_name}
                       <span class="text-muted-foreground font-normal"
-                        >({faction.faction_value.toLocaleString()})</span
+                        >({formatNumber(faction.faction_value)})</span
                       >
                     </span>
                   {:else}
                     <span class="text-muted-foreground"
-                      >({faction.faction_value.toLocaleString()})</span
+                      >({formatNumber(faction.faction_value)})</span
                     >
                   {/if}
                 </div>
@@ -685,7 +681,10 @@
                     >Alchemy Skill:
                   </span>
                   <span class="font-medium text-cyan-600 dark:text-cyan-400">
-                    +{(data.quest.increase_alchemy_skill * 100).toFixed(1)}%
+                    +{formatPercent(data.quest.increase_alchemy_skill, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}
                   </span>
                 </div>
               {/if}

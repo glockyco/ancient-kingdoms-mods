@@ -2,10 +2,12 @@ import {
   atRank,
   describeInput,
   describeRankScaling,
-  formatNumber as number,
-  formatPercent as percent,
   rankWorkingLines,
 } from "$lib/calculation/format";
+import {
+  formatNumber as number,
+  formatPercent as percent,
+} from "$lib/utils/format";
 import {
   DAMAGE,
   MAGIC_DAMAGE,
@@ -238,19 +240,19 @@ export function cadenceCalculation(
         rankWorkingLines(amount.baseName, amount.field, rank, number),
       );
       working.push(
-        `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw))}${bonus.raw !== bonus.limited ? `, limited to ${percent(power)}` : ""}`,
+        `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw), { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(power, { decimals: 2, preserveNonzero: true })}` : ""}`,
       );
       for (const amount of evaluated)
         working.push(
-          `${amount.scaledName}: ${number(amount.base)} × ${percent(power)} = ${number(amount.value.scaled)}, rounded`,
+          `${amount.scaledName}: ${number(amount.base)} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${number(amount.value.scaled)}, rounded`,
         );
       if (!mercenary) {
         working.push(
-          `Melody bonus: ${number(values.songs)} active songs = ${percent(melody)}`,
+          `Melody bonus: ${number(values.songs)} active songs = ${percent(melody, { decimals: 2, preserveNonzero: true })}`,
         );
         for (const amount of evaluated)
           working.push(
-            `${amount.finalName}: ${number(amount.value.scaled)} × ${percent(addF32(1, melody))} = ${number(amount.value.total)}, rounded`,
+            `${amount.finalName}: ${number(amount.value.scaled)} × ${percent(addF32(1, melody), { decimals: 2, preserveNonzero: true })} = ${number(amount.value.total)}, rounded`,
           );
       }
       return {
@@ -419,7 +421,7 @@ export function damageCalculation(
       ? [
           {
             name: "Dexterity contribution",
-            expression: `${percent(dexterityFactor)} of Dexterity above 0`,
+            expression: `${percent(dexterityFactor, { decimals: 2, preserveNonzero: true })} of Dexterity above 0`,
             rounding: "nearest" as const,
           },
         ]
@@ -452,7 +454,7 @@ export function damageCalculation(
       ? [
           {
             name: "Damage %",
-            expression: `${describeRankScaling(skill.damage_percent!, skill.max_level, percent)}${multiplierCanLapse ? ". A Damage % of 0 or less is not applied" : ""}`,
+            expression: `${describeRankScaling(skill.damage_percent!, skill.max_level, (value) => percent(value, { decimals: 2, preserveNonzero: true }))}${multiplierCanLapse ? ". A Damage % of 0 or less is not applied" : ""}`,
           },
         ]
       : []),
@@ -533,7 +535,7 @@ export function damageCalculation(
       const working = [
         ...(!scroll && dexterity && usesCharacter
           ? [
-              `Dexterity contribution: ${number(Math.max(0, values.dexterity))} × ${percent(dexterityFactor)} = ${number(dex)}, rounded`,
+              `Dexterity contribution: ${number(Math.max(0, values.dexterity))} × ${percent(dexterityFactor, { decimals: 2, preserveNonzero: true })} = ${number(dex)}, rounded`,
             ]
           : []),
         ...(!scroll && subtractOffhand && usesCharacter
@@ -548,11 +550,13 @@ export function damageCalculation(
           ? [`Combined damage: ${numberArithmetic} = ${number(combined)}`]
           : []),
         ...(multiplied
-          ? rankWorkingLines("Damage %", skill.damage_percent!, rank, percent)
+          ? rankWorkingLines("Damage %", skill.damage_percent!, rank, (value) =>
+              percent(value, { decimals: 2, preserveNonzero: true }),
+            )
           : []),
         ...(multiplier > 0
           ? [
-              `${totalName}: ${number(combined)} × ${percent(multiplier)} = ${number(result)}, rounded`,
+              `${totalName}: ${number(combined)} × ${percent(multiplier, { decimals: 2, preserveNonzero: true })} = ${number(result)}, rounded`,
             ]
           : !flatOnly && operationCount > 1
             ? [`${totalName}: ${numberArithmetic} = ${number(result)}`]
@@ -593,7 +597,7 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
         expression: describeRankScaling(
           skill.charmed_damage_percent!,
           skill.max_level,
-          percent,
+          (value) => percent(value, { decimals: 2, preserveNonzero: true }),
         ),
       },
       {
@@ -620,16 +624,16 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
           ...(skill.max_level > 1 ? [`rank ${rank}`] : []),
           `${number(values.charisma)} Charisma`,
         ],
-        result: `The charmed monster deals ${percent(result)} of its ordinary damage`,
+        result: `The charmed monster deals ${percent(result, { decimals: 2, preserveNonzero: true })} of its ordinary damage`,
         working: [
           ...rankWorkingLines(
             "Base damage share",
             skill.charmed_damage_percent!,
             rank,
-            percent,
+            (value) => percent(value, { decimals: 2, preserveNonzero: true }),
           ),
-          `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw))}${bonus.raw !== bonus.limited ? `, limited to ${percent(power)}` : ""}`,
-          `Charmed monster's damage: ${percent(base)} × ${percent(power)} = ${percent(raw)}${raw !== result ? `, limited to ${percent(result)}` : ""}`,
+          `Song power: 100% + ${number(Math.max(0, values.charisma))} × 0.1% = ${percent(addF32(1, bonus.raw), { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(power, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `Charmed monster's damage: ${percent(base, { decimals: 2, preserveNonzero: true })} × ${percent(power, { decimals: 2, preserveNonzero: true })} = ${percent(raw, { decimals: 2, preserveNonzero: true })}${raw !== result ? `, limited to ${percent(result, { decimals: 2, preserveNonzero: true })}` : ""}`,
         ],
       };
     },

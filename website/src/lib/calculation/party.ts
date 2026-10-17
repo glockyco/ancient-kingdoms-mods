@@ -1,6 +1,6 @@
 import type { Calculation } from "$lib/types/calculation";
 import { ceilToInt, divideF32 } from "$lib/calculation/unity-math";
-import { formatNumber } from "./format";
+import { formatNumber } from "$lib/utils/format";
 import { situational } from "./inputs";
 
 // Source: server-scripts/PlayerLooting.cs:149-168 — each nearby player receives the float-divided share rounded upward.

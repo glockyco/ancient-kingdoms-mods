@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -277,7 +278,10 @@
             Gain chance per craft/use
           </div>
           <div class="text-xl font-semibold">
-            {getMasteryGainChance().toFixed(0)}%
+            {formatPercent(getMasteryGainChance() / 100, {
+              decimals: 0,
+              trailingZeros: true,
+            })}
           </div>
         </div>
         <div class="rounded-lg border bg-background p-3">
@@ -290,14 +294,22 @@
               <div>No further skill gain</div>
             {:else}
               <div>
-                Craft: {CRAFT_MASTERY_GAIN_MIN.toFixed(
-                  2,
-                )}%–{CRAFT_MASTERY_GAIN_MAX.toFixed(2)}%
+                Craft: {formatPercent(CRAFT_MASTERY_GAIN_MIN / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}–{formatPercent(CRAFT_MASTERY_GAIN_MAX / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}
               </div>
               <div>
-                Use: {USE_MASTERY_GAIN_MIN.toFixed(
-                  2,
-                )}%–{USE_MASTERY_GAIN_MAX.toFixed(2)}%
+                Use: {formatPercent(USE_MASTERY_GAIN_MIN / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}–{formatPercent(USE_MASTERY_GAIN_MAX / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}
               </div>
             {/if}
           </div>

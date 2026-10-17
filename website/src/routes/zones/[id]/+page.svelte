@@ -46,7 +46,11 @@
   import Box from "@lucide/svelte/icons/box";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import BookOpen from "@lucide/svelte/icons/book-open";
-  import { formatDuration, formatPercent } from "$lib/utils/format";
+  import {
+    formatDuration,
+    formatPercent,
+    formatNumber,
+  } from "$lib/utils/format";
   import { chestRewardChance } from "$lib/utils/chest-reward";
   import { base } from "$app/paths";
   import Seo from "$lib/components/Seo.svelte";
@@ -447,7 +451,10 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "chance"}
-    {formatPercent(chestRewardChance(row.original))}
+    {formatPercent(chestRewardChance(row.original), {
+      decimals: 1,
+      trailingZeros: true,
+    })}
   {:else if cell.column.id === "drops"}
     {#if row.original.drop_count > 0}
       <span class="text-muted-foreground">{row.original.drop_count} items</span>
@@ -551,7 +558,7 @@
       {#if data.zone.discovery_exp > 0}
         <span
           >Discovery XP: <MechanicsLink section="experience"
-            >{data.zone.discovery_exp.toLocaleString()}</MechanicsLink
+            >{formatNumber(data.zone.discovery_exp)}</MechanicsLink
           ></span
         >
       {/if}
@@ -695,7 +702,7 @@
             {#if data.renewalSage.gold_cost > 0}
               The base fee is <span
                 class="whitespace-nowrap text-yellow-600 dark:text-yellow-400"
-                >{data.renewalSage.gold_cost.toLocaleString()} gold</span
+                >{formatNumber(data.renewalSage.gold_cost)} gold</span
               > before your Charisma discount (up to 25%).
             {/if}
           </span>

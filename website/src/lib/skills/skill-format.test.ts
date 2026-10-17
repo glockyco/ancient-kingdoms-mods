@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
   formatMasteryNeeded,
-  formatPercent,
   hasLinearValue,
   isNegativeLinear,
   convertTooltip,
@@ -20,11 +19,6 @@ describe("skill display formatting", () => {
       expect(formatMasteryNeeded(Number(rank))).toBe(expected);
     },
   );
-  test("page percentages retain two decimal places and nonzero small chances", () => {
-    expect(formatPercent(0.12345)).toBe("12.35%");
-    expect(formatPercent(-0.0225)).toBe("−2.25%");
-    expect(formatPercent(0.00001)).toBe("0.001%");
-  });
   test("a level-only value is present but its sign is decided by its base", () => {
     expect(hasLinearValue(null)).toBe(false);
     expect(hasLinearValue({ base_value: 0, bonus_per_level: -1 })).toBe(true);

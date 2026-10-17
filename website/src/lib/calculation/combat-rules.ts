@@ -10,8 +10,8 @@ import {
 import {
   formatNumber as number,
   formatPercent as percent,
-  formatSeconds as seconds,
-} from "$lib/calculation/format";
+} from "$lib/utils/format";
+import { formatSeconds as seconds } from "$lib/calculation/format";
 import { mitigate } from "$lib/calculation/combat";
 
 // Source: server-scripts/Combat.cs:damage,magicDamage; Strength.cs:GetDamageBonus; Intelligence.cs:GetMagicDamageBonus — percentage damage applies to the full flat stat; only the Intelligence addition and percentage addition round, not the flat-stat sum.
@@ -198,7 +198,7 @@ export const pipelineCalculation: Calculation = {
         `Level adjustment: ${number(result.behind)} × 4% = ${number(ceilToInt(multiplyF32(result.behind, 0.04)))}, rounded up`,
         `Damage after level adjustment: ${number(result.behind)} + ${number(ceilToInt(multiplyF32(result.behind, 0.04)))} = ${number(result.leveled)}`,
         `Mitigated damage: ${number(result.leveled)} − ${number(result.mitigation.prevented)} = ${number(result.mitigation.taken)}`,
-        `Critical extra percentage: 50% × (100% − 20%) = ${percent(multiplyF32(0.5, addF32(1, -0.2)))}`,
+        `Critical extra percentage: 50% × (100% − 20%) = ${percent(multiplyF32(0.5, addF32(1, -0.2)), { decimals: 2, preserveNonzero: true })}`,
         `Critical damage: ${number(result.mitigation.taken)} × 140% = ${number(result.critical)}, rounded`,
         `Damage after shields: ${number(result.critical)} − 20 − 10 = ${number(result.healthDamage)}`,
       ],
@@ -252,10 +252,10 @@ export const advantageCalculation: Calculation = {
         "100% variance",
         "no Improved Backstab",
       ],
-      result: `${number(damage + extra + 1)} damage before level adjustment and mitigation, with ${percent(movingChance)} avoidance`,
+      result: `${number(damage + extra + 1)} damage before level adjustment and mitigation, with ${percent(movingChance, { decimals: 2, preserveNonzero: true })} avoidance`,
       working: [
-        `From-behind avoidance: 50% × 80% = ${percent(behindChance)}`,
-        `Moving-player avoidance: ${percent(behindChance)} − 25 percentage points = ${percent(movingChance)}`,
+        `From-behind avoidance: 50% × 80% = ${percent(behindChance, { decimals: 2, preserveNonzero: true })}`,
+        `Moving-player avoidance: ${percent(behindChance, { decimals: 2, preserveNonzero: true })} − 25 percentage points = ${percent(movingChance, { decimals: 2, preserveNonzero: true })}`,
         `Moving-player extra damage: 201 × 10% = ${number(movingBonus)}, rounded down`,
         `From-behind extra damage: ${number(damage)} × 10% = ${number(extra)}, rounded up`,
         `From-behind damage: ${number(damage)} + ${number(extra)} + 1 = ${number(damage + extra + 1)}`,
@@ -443,9 +443,9 @@ export const cleanseCalculation: Calculation = {
     const chance = extraCleanseChance(0.5, 0.2);
     return {
       given: ["50% debuff Cleanse Resist", "20% caster Accuracy"],
-      result: `1 guaranteed layer removed, with ${percent(chance)} chance for each of 2 extra layers`,
+      result: `1 guaranteed layer removed, with ${percent(chance, { decimals: 2, preserveNonzero: true })} chance for each of 2 extra layers`,
       working: [
-        `Extra-layer chance: (100% − 50%) × (100% + 20%) = ${percent(chance)}`,
+        `Extra-layer chance: (100% − 50%) × (100% + 20%) = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
       ],
     };
   },
@@ -475,10 +475,10 @@ export const dispelCalculation: Calculation = {
         "20% caster Accuracy",
         "50% Cleanse Resist on the monster buff",
       ],
-      result: `${percent(chance)} chance to remove that buff after the spell lands`,
+      result: `${percent(chance, { decimals: 2, preserveNonzero: true })} chance to remove that buff after the spell lands`,
       working: [
-        `Cleanse Resist reduction: 20% × 50% = ${percent(reduction)}`,
-        `Buff removal chance: 100% − 50% + ${percent(reduction)} = ${percent(chance)}`,
+        `Cleanse Resist reduction: 20% × 50% = ${percent(reduction, { decimals: 2, preserveNonzero: true })}`,
+        `Buff removal chance: 100% − 50% + ${percent(reduction, { decimals: 2, preserveNonzero: true })} = ${percent(chance, { decimals: 2, preserveNonzero: true })}`,
       ],
     };
   },

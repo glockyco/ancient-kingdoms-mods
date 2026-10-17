@@ -1,6 +1,6 @@
 import type { Calculation } from "$lib/types/calculation";
 import { addF32, clamp, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatNumber, formatPercent } from "./format";
+import { formatNumber, formatPercent } from "$lib/utils/format";
 import { situational } from "./inputs";
 
 // Source: server-scripts/Database.cs:3428-3436 — each target adds 0.0002 × min(50, account kills) in float, and the sum is clamped between 0 and 1.
@@ -40,11 +40,11 @@ export function slayerMasteryCalculation(): Calculation {
           `${formatNumber(cappedTargets)} targets with 50 or more kills`,
           `${formatNumber(otherKills)} kills on targets below 50`,
         ],
-        result: `${formatPercent(mastery.total)} Slayer mastery`,
+        result: `${formatPercent(mastery.total, { decimals: 2, preserveNonzero: true })} Slayer mastery`,
         working: [
-          `Targets at the limit: ${formatNumber(cappedTargets)} × 1% = ${formatPercent(mastery.capped)}`,
-          `Other kills: ${formatNumber(otherKills)} × 0.02% = ${formatPercent(mastery.other)}`,
-          `Slayer mastery: ${formatPercent(mastery.capped)} + ${formatPercent(mastery.other)} = ${formatPercent(mastery.total)}, at most 100%`,
+          `Targets at the limit: ${formatNumber(cappedTargets)} × 1% = ${formatPercent(mastery.capped, { decimals: 2, preserveNonzero: true })}`,
+          `Other kills: ${formatNumber(otherKills)} × 0.02% = ${formatPercent(mastery.other, { decimals: 2, preserveNonzero: true })}`,
+          `Slayer mastery: ${formatPercent(mastery.capped, { decimals: 2, preserveNonzero: true })} + ${formatPercent(mastery.other, { decimals: 2, preserveNonzero: true })} = ${formatPercent(mastery.total, { decimals: 2, preserveNonzero: true })}, at most 100%`,
         ],
       };
     },

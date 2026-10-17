@@ -30,6 +30,7 @@
     formatPercent,
     formatDuration,
     formatSkillType,
+    formatNumber,
   } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
@@ -539,7 +540,12 @@
   {:else if cell.column.id === "note"}
     <span class="text-muted-foreground">{row.original.note ?? ""}</span>
   {:else if cell.column.id === "rate"}
-    <span class="ml-auto">{formatPercent(row.original.rate)}</span>
+    <span class="ml-auto"
+      >{formatPercent(row.original.rate, {
+        decimals: 1,
+        trailingZeros: true,
+      })}</span
+    >
   {:else if cell.column.id === "quality"}
     <!-- Hidden column used for sorting -->
   {:else}
@@ -583,7 +589,10 @@
     <span class="ml-auto">{formatDuration(respawnTime)}</span>
   {:else if cell.column.id === "chance"}
     <span class="ml-auto"
-      >{formatPercent(data.monster.respawn_probability)}</span
+      >{formatPercent(data.monster.respawn_probability, {
+        decimals: 1,
+        trailingZeros: true,
+      })}</span
     >
   {:else if cell.column.id === "active"}
     <span class="ml-auto">
@@ -784,7 +793,7 @@
       {#if data.monster.base_exp > 0}
         <span
           >Base XP: <MechanicsLink section="experience"
-            >{data.monster.base_exp.toLocaleString()}</MechanicsLink
+            >{formatNumber(data.monster.base_exp)}</MechanicsLink
           ></span
         >
       {/if}
@@ -1005,7 +1014,10 @@
             </a>
             {#if data.spawns.placeholder.spawn_probability < 1}
               <span class="text-muted-foreground">
-                ({formatPercent(data.spawns.placeholder.spawn_probability)} chance)
+                ({formatPercent(data.spawns.placeholder.spawn_probability, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })} chance)
               </span>
             {/if}
           </div>
@@ -1030,7 +1042,10 @@
             </a>
             {#if data.monster.placeholder_spawn_probability > 0 && data.monster.placeholder_spawn_probability < 1}
               <span class="text-muted-foreground">
-                ({formatPercent(data.monster.placeholder_spawn_probability)} chance)
+                ({formatPercent(data.monster.placeholder_spawn_probability, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })} chance)
               </span>
             {/if}
           </div>
@@ -1062,7 +1077,7 @@
                 {#if sage.cost > 0}
                   <span> for </span>
                   <span class="text-yellow-600 dark:text-yellow-400"
-                    >{sage.cost.toLocaleString()} gold</span
+                    >{formatNumber(sage.cost)} gold</span
                   >
                 {/if}
                 <span>.</span>
@@ -1183,13 +1198,19 @@
         <div>
           <div class="text-sm text-muted-foreground">Accuracy Bonus</div>
           <div class="font-medium">
-            {formatPercent(displayAccuracy)}
+            {formatPercent(displayAccuracy, {
+              decimals: 1,
+              trailingZeros: true,
+            })}
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Critical Strike</div>
           <div class="font-medium">
-            {formatPercent(displayCriticalChance)}
+            {formatPercent(displayCriticalChance, {
+              decimals: 1,
+              trailingZeros: true,
+            })}
           </div>
         </div>
         <div>
@@ -1213,7 +1234,10 @@
         <div>
           <div class="text-sm text-muted-foreground">Block Chance</div>
           <div class="font-medium">
-            {formatPercent(displayBlockChance)}
+            {formatPercent(displayBlockChance, {
+              decimals: 1,
+              trailingZeros: true,
+            })}
           </div>
         </div>
         {#if data.monster.follow_distance > 0}
@@ -1228,7 +1252,7 @@
             <div class="font-medium">
               {data.monster.chase_limit_scope === "nowhere"
                 ? "None in dungeons"
-                : `${data.monster.follow_distance.toLocaleString()} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
+                : `${formatNumber(data.monster.follow_distance)} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
             </div>
           </div>
         {/if}
@@ -1303,11 +1327,16 @@
       {#if data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0}
         <div class="mb-4 bg-muted/30 rounded-md border p-4">
           <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {data.monster.gold_min.toLocaleString()} - {data.monster.gold_max.toLocaleString()}
+            {formatNumber(data.monster.gold_min)} - {formatNumber(
+              data.monster.gold_max,
+            )}
             gold
             {#if data.monster.probability_drop_gold < 1}
               <span class="text-muted-foreground font-normal">
-                ({formatPercent(data.monster.probability_drop_gold)} chance)
+                ({formatPercent(data.monster.probability_drop_gold, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })} chance)
               </span>
             {/if}
           </div>

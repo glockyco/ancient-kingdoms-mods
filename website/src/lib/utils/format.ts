@@ -1,10 +1,59 @@
 import { QUALITY_IDS } from "$lib/constants/quality";
 
-/**
- * Format a decimal value as a percentage string (e.g., 0.5 -> "50.0%")
- */
-export function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
+/** Format a fraction at the caller's displayed precision. */
+export function formatPercent(
+  value: number,
+  {
+    decimals,
+    trailingZeros = false,
+    preserveNonzero = false,
+  }: {
+    decimals: number;
+    trailingZeros?: boolean;
+    preserveNonzero?: boolean;
+  },
+): string {
+  const percent = value * 100;
+  if (
+    preserveNonzero &&
+    percent !== 0 &&
+    Math.abs(percent) < 0.5 * 10 ** -decimals
+  ) {
+    return `${percent
+      .toLocaleString("en-US", { maximumSignificantDigits: 2 })
+      .replace(/^-/, "−")}%`;
+  }
+  const rounded = percent.toFixed(decimals);
+  return `${(trailingZeros ? rounded : String(Number(rounded))).replace(/^-/, "−")}%`;
+}
+
+/** Format a number with grouping and a true minus sign. */
+export function formatNumber(
+  value: number,
+  {
+    decimals,
+    trailingZeros = false,
+    grouping = true,
+    groupSeparator = ",",
+  }: {
+    decimals?: number;
+    trailingZeros?: boolean;
+    grouping?: boolean;
+    groupSeparator?: string;
+  } = {},
+): string {
+  const formatted =
+    decimals === undefined
+      ? value.toLocaleString("en-US", { useGrouping: grouping })
+      : grouping
+        ? value.toLocaleString("en-US", {
+            minimumFractionDigits: trailingZeros ? decimals : 0,
+            maximumFractionDigits: decimals,
+          })
+        : trailingZeros
+          ? value.toFixed(decimals)
+          : String(Number(value.toFixed(decimals)));
+  return formatted.replaceAll(",", groupSeparator).replace(/^-/, "−");
 }
 
 /**

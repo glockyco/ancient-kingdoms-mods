@@ -7,7 +7,8 @@
   import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
   import RecruiterTable from "$lib/components/RecruiterTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import { formatPercent, formatSeconds } from "$lib/calculation/format";
+  import { formatSeconds } from "$lib/calculation/format";
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import { iround, multiplyF32 } from "$lib/calculation/unity-math";
   import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import type { ClassSkill } from "$lib/queries/classes.server";
@@ -71,9 +72,8 @@
   const veteran = $derived(mercenaryOwner.veteran);
   const discount = $derived(charismaDiscount(mercenaryOwner.charisma));
 
-  const fmt = (n: number) => n.toLocaleString("en-US");
   const range = ([lo, hi]: [number, number]) =>
-    lo === hi ? fmt(lo) : `${fmt(lo)}–${fmt(hi)}`;
+    lo === hi ? formatNumber(lo) : `${formatNumber(lo)}–${formatNumber(hi)}`;
 
   const ATTRIBUTE_NAMES: Record<string, string> = {
     STR: "Strength",
@@ -314,7 +314,7 @@
         <NumberField
           label="Charisma"
           hint={discount > 0
-            ? `−${formatPercent(discount)} prices`
+            ? `−${formatPercent(discount, { decimals: 2, preserveNonzero: true })} prices`
             : "no discount"}
           value={mercenaryOwner.charisma}
           min={OWNER_LIMITS.charisma[0]}
@@ -363,11 +363,11 @@
           )}
           {@render stat(
             "Hire price",
-            `${fmt(hirePrice(level, veteran, discount))} gold`,
+            `${formatNumber(hirePrice(level, veteran, discount))} gold`,
           )}
           {@render stat(
             "Resurrection fee",
-            `${fmt(resurrectionPrice(level, veteran, discount))} gold`,
+            `${formatNumber(resurrectionPrice(level, veteran, discount))} gold`,
           )}
         </dl>
         <p class="text-sm text-muted-foreground">
@@ -699,14 +699,14 @@
               "Invulnerable for",
               formatSeconds(deathSaveInfo.now.seconds),
             )}
-            {@render stat("Rage cost", fmt(deathSaveInfo.now.rage))}
+            {@render stat("Rage cost", formatNumber(deathSaveInfo.now.rage))}
             {@render stat("Cooldown", formatSeconds(deathSaveInfo.cooldown))}
           </dl>
           <p class="text-muted-foreground">
             Duration and Rage cost rise with total veteran points, from {formatSeconds(
               deathSaveInfo.low.seconds,
-            )} for {fmt(deathSaveInfo.low.rage)} Rage with 0 total veteran points
-            to {formatSeconds(deathSaveInfo.high.seconds)} for {fmt(
+            )} for {formatNumber(deathSaveInfo.low.rage)} Rage with 0 total veteran
+            points to {formatSeconds(deathSaveInfo.high.seconds)} for {formatNumber(
               deathSaveInfo.high.rage,
             )} Rage with
             {MAX_VETERAN} total veteran points.

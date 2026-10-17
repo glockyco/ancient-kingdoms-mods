@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -172,7 +173,10 @@
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{getSkillGainChance().toFixed(0)}%</span
+          >{formatPercent(getSkillGainChance() / 100, {
+            decimals: 0,
+            trailingZeros: true,
+          })}</span
         >
         <span class="text-xs">(per success)</span>
       </div>
@@ -199,7 +203,10 @@
               <span class="text-muted-foreground">cannot gather</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {successChance.toFixed(0)}%
+                {formatPercent(successChance / 100, {
+                  decimals: 0,
+                  trailingZeros: true,
+                })}
               </span>
             {/if}
           </div>
@@ -208,14 +215,20 @@
               <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono"
-                >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+                >{formatPercent(minGain / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })} – {formatPercent(maxGain / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}</span
               >
             {/if}
           </div>
           <div class="p-3 text-right border-t">
             {#if xp}
               <MechanicsLink section="experience"
-                >{xp.toLocaleString()}</MechanicsLink
+                >{formatNumber(xp)}</MechanicsLink
               >
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -262,7 +275,10 @@
               <span class="text-muted-foreground">cannot gather</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {successChance.toFixed(0)}%
+                {formatPercent(successChance / 100, {
+                  decimals: 0,
+                  trailingZeros: true,
+                })}
               </span>
             {/if}
           </div>
@@ -271,7 +287,13 @@
               <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono">
-                {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
+                {formatPercent(minGain / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })} – {formatPercent(maxGain / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}
               </span>
             {/if}
           </div>

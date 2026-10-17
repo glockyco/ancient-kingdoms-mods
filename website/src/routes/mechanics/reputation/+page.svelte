@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
@@ -73,13 +74,13 @@
    * every boundary and leave the column nothing to align on.
    */
   function tierStart(min: number | null): string {
-    return min === null ? "—" : min.toLocaleString().replace("-", "−");
+    return min === null ? "—" : formatNumber(min).replace("-", "−");
   }
 
   /** How much reputation a tier covers, which is what it costs to cross it. */
   function tierSpan(min: number | null, max: number | null): string {
     if (min === null || max === null) return "no limit";
-    return (max - min).toLocaleString();
+    return formatNumber(max - min);
   }
 </script>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -120,7 +121,9 @@
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Each spark has a 5% to 25% chance to give Radiant Aether, depending
             on your Radiant Seeker skill. The spark returns after a random
-            {mechanics.respawnSeconds[0]} to {mechanics.respawnSeconds[1].toLocaleString()}
+            {mechanics.respawnSeconds[0]} to {formatNumber(
+              mechanics.respawnSeconds[1],
+            )}
             seconds (1 minute 40 seconds to 1 hour).
           </p>
         </div>
@@ -173,13 +176,14 @@
       <p class="text-pretty text-sm text-muted-foreground">
         At {skillLevel}% skill, each spark has a
         <strong class="font-semibold text-foreground"
-          >{(aetherChance * 100).toFixed(1)}% chance</strong
+          >{formatPercent(aetherChance, { decimals: 1, trailingZeros: true })} chance</strong
         >
         to give Radiant Aether.
         {#if skillLevel < mechanics.capPercent}
-          The chance to add 0.10% to 0.30% Radiant Seeker skill from a spark is {(
-            gainChance * 100
-          ).toFixed(0)}%.
+          The chance to add 0.10% to 0.30% Radiant Seeker skill from a spark is {formatPercent(
+            gainChance,
+            { decimals: 0, trailingZeros: true },
+          )}.
         {:else}
           Your Radiant Seeker skill is at the cap.
         {/if}

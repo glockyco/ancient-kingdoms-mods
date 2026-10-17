@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     type ColumnDef,
@@ -26,7 +27,7 @@
     buildCollectionPage({
       path: "/zones",
       name: "Zones — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.zones.length.toLocaleString()} zones in Ancient Kingdoms.`,
+      description: `Searchable database of ${formatNumber(data.zones.length)} zones in Ancient Kingdoms.`,
       items: data.zones.map((zone) => ({
         name: zone.name,
         path: `/zones/${zone.id}`,
@@ -208,7 +209,7 @@
 
 <Seo
   title="Zones - Ancient Kingdoms"
-  description={`${data.zones.length.toLocaleString()} zones across Eratiath — overworld regions and dungeons with level ranges, monster rosters, NPCs, gathering nodes, chests, and altars.`}
+  description={`${formatNumber(data.zones.length)} zones across Eratiath — overworld regions and dungeons with level ranges, monster rosters, NPCs, gathering nodes, chests, and altars.`}
   path="/zones"
 />
 

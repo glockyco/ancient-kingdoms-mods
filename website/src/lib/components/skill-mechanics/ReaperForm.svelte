@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { formatLinearPercent } from "$lib/skills/skill-format";
   import { drainMagnitude, reaperDrain } from "$lib/skills/worked-examples";
@@ -28,17 +29,18 @@
     {@const drain = drainMagnitude(skill.health_percent_per_second_bonus)}
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; server-scripts/UICharacterInfo.cs:Update — Reaper Form drains maximum Health alongside recovery, and the character window displays net recovery. -->
     <p class="text-muted-foreground">
-      Each second, the form drains {fmt.formatPercent(
+      Each second, the form drains {formatPercent(
         fmt.atRank(drain, skill.max_level),
+        { decimals: 2, preserveNonzero: true },
       )} of your maximum Health{fmt.scalesWithRank(drain, skill.max_level)
         ? ` at rank ${skill.max_level}`
-        : ""}, rounded. With {fmt.formatNumber(MAX_HEALTH.value)} maximum Health,
-      the form drains {fmt.formatNumber(
+        : ""}, rounded. With {formatNumber(MAX_HEALTH.value)} maximum Health, the
+      form drains {formatNumber(
         reaperDrain(skill.health_percent_per_second_bonus, skill.max_level),
       )} Health each second. {fmt.describeRankGrowth(
         drain,
         skill.max_level,
-        fmt.formatPercent,
+        (value) => formatPercent(value, { decimals: 2, preserveNonzero: true }),
       )}
     </p>
     <p class="text-muted-foreground">

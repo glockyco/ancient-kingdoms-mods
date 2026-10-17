@@ -12,6 +12,7 @@
     formatSpawnTimeWindow,
     getQualityTextColorClass,
     formatGatheringRespawn,
+    formatNumber,
   } from "$lib/utils/format";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
   import { formatTrapArea } from "$lib/utils/trapArea";
@@ -305,8 +306,9 @@
   }
 
   function formatChanceRange(min: number, max: number): string {
-    if (Math.abs(min - max) < 0.000001) return formatPercent(min);
-    return `${formatPercent(min)}–${formatPercent(max)}`;
+    if (Math.abs(min - max) < 0.000001)
+      return formatPercent(min, { decimals: 1, trailingZeros: true });
+    return `${formatPercent(min, { decimals: 1, trailingZeros: true })}–${formatPercent(max, { decimals: 1, trailingZeros: true })}`;
   }
 
   function getFallbackFishLabel(level: number): string {
@@ -466,7 +468,7 @@
     {@const house = entity as HouseMapEntity}
     <div class="flex justify-between border-t pt-2">
       <span class="text-muted-foreground">Base price</span>
-      <span>{house.basePrice.toLocaleString()} gold</span>
+      <span>{formatNumber(house.basePrice)} gold</span>
     </div>
     {#if house.subZoneName}
       <div class="flex justify-between">
@@ -483,7 +485,7 @@
     {#if house.factionRequired > 0}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Faction required</span>
-        <span>{house.factionRequired.toLocaleString()}</span>
+        <span>{formatNumber(house.factionRequired)}</span>
       </div>
     {/if}
   {/if}
@@ -515,7 +517,10 @@
     <!-- Rare spawn probability -->
     {#if monster.respawnProbability < 1}
       <div class="rounded bg-amber-500/20 px-2 py-1 text-amber-400">
-        Rare spawn ({formatPercent(monster.respawnProbability)} chance)
+        Rare spawn ({formatPercent(monster.respawnProbability, {
+          decimals: 1,
+          trailingZeros: true,
+        })} chance)
       </div>
     {/if}
 
@@ -582,7 +587,10 @@
         {/if}
         {#if monster.sourceSpawnProbability && monster.sourceSpawnProbability < 1}
           <span class="text-cyan-400"
-            >({formatPercent(monster.sourceSpawnProbability)})</span
+            >({formatPercent(monster.sourceSpawnProbability, {
+              decimals: 1,
+              trailingZeros: true,
+            })})</span
           >
         {/if}
       </div>
@@ -603,7 +611,11 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {monster.moveDistance.toFixed(0)} yd</span
+          >Wanders {formatNumber(monster.moveDistance, {
+            decimals: 0,
+            trailingZeros: true,
+            grouping: false,
+          })} yd</span
         >
       </div>
     {/if}
@@ -666,7 +678,10 @@
                       reward.maxLevel,
                     )}
                     {#if reward.dropRate !== null}
-                      · {formatPercent(reward.dropRate)}
+                      · {formatPercent(reward.dropRate, {
+                        decimals: 1,
+                        trailingZeros: true,
+                      })}
                     {/if}
                   </div>
                 </div>
@@ -698,7 +713,10 @@
                 onSelect={onSelectItem}
               />
               <span class="shrink-0 text-muted-foreground"
-                >{formatPercent(drop.dropRate)}</span
+                >{formatPercent(drop.dropRate, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })}</span
               >
             </div>
           {/each}
@@ -727,7 +745,7 @@
               <span class="shrink-0 text-xs">
                 {#if sage.cost > 0}
                   <span class="text-muted-foreground"
-                    >{sage.cost.toLocaleString()}</span
+                    >{formatNumber(sage.cost)}</span
                   >
                   <button
                     type="button"
@@ -773,7 +791,7 @@
         <div class="flex justify-between">
           <span class="text-muted-foreground">Cost</span>
           <span class="text-yellow-500"
-            >{npc.teleportPrice.toLocaleString()} gold</span
+            >{formatNumber(npc.teleportPrice)} gold</span
           >
         </div>
       {/if}
@@ -841,7 +859,11 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {npc.moveDistance.toFixed(0)} yd</span
+          >Wanders {formatNumber(npc.moveDistance, {
+            decimals: 0,
+            trailingZeros: true,
+            grouping: false,
+          })} yd</span
         >
       </div>
     {/if}
@@ -1054,7 +1076,10 @@
                   onSelect={onSelectItem}
                 />
                 <span class="shrink-0 text-muted-foreground"
-                  >{formatPercent(drop.dropRate)}</span
+                  >{formatPercent(drop.dropRate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}</span
                 >
               </div>
               {#if drop.isRandomItem && drop.randomItemOutcomes}
@@ -1247,7 +1272,10 @@
               <div class="text-xs text-muted-foreground">
                 {formatAltarRequirement(reward.tier, reward, reward.maxLevel)}
                 {#if reward.dropRate !== null}
-                  · {formatPercent(reward.dropRate)}
+                  · {formatPercent(reward.dropRate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 {/if}
               </div>
             </div>
@@ -1285,7 +1313,10 @@
                   onSelect={onSelectItem}
                 />
                 <span class="shrink-0 text-muted-foreground"
-                  >{formatPercent(drop.dropRate)}</span
+                  >{formatPercent(drop.dropRate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}</span
                 >
               </div>
             {/each}
@@ -1406,11 +1437,18 @@
                   </span>
                 {/if}
                 {#if drop.dropRateMax !== undefined}
-                  {formatPercent(drop.dropRate)} – {formatPercent(
-                    drop.dropRateMax,
-                  )}
+                  {formatPercent(drop.dropRate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })} – {formatPercent(drop.dropRateMax, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 {:else}
-                  {formatPercent(drop.dropRate)}
+                  {formatPercent(drop.dropRate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
                 {/if}
               </span>
             </div>

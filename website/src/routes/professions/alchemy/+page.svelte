@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -317,7 +318,7 @@
                   <div class="flex flex-col gap-1">
                     {#if quest.reward_gold > 0}
                       <span class="text-amber-600 dark:text-amber-400"
-                        >{quest.reward_gold.toLocaleString()} Gold</span
+                        >{formatNumber(quest.reward_gold)} Gold</span
                       >
                     {/if}
                     {#each quest.reward_items as item (item.item_id)}
@@ -330,7 +331,9 @@
                     {/each}
                     {#if quest.reward_alchemy_skill > 0}
                       <span class="text-green-600 dark:text-green-400"
-                        >+{Math.round(quest.reward_alchemy_skill * 100)}%
+                        >+{formatPercent(quest.reward_alchemy_skill, {
+                          decimals: 0,
+                        })}
                         Alchemy</span
                       >
                     {/if}
@@ -373,7 +376,10 @@
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
+          >{formatPercent(alchemySkillGainChancePercent(skillLevel) / 100, {
+            decimals: 0,
+            trailingZeros: true,
+          })}</span
         >
         <span class="text-xs">(per success)</span>
       </div>
@@ -399,14 +405,23 @@
               <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {successChance.toFixed(0)}%
+                {formatPercent(successChance / 100, {
+                  decimals: 0,
+                  trailingZeros: true,
+                })}
               </span>
             {/if}
           </div>
           <div class="p-3 border-t">
             {#if skillGain}
               <span class="font-mono"
-                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
+                >{formatPercent(skillGain.min / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })} – {formatPercent(skillGain.max / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}</span
               >
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -415,7 +430,7 @@
           <div class="p-3 text-right border-t">
             {#if xp}
               <MechanicsLink section="experience"
-                >{xp.toLocaleString()}</MechanicsLink
+                >{formatNumber(xp)}</MechanicsLink
               >
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -531,14 +546,23 @@
               <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {successChance.toFixed(0)}%
+                {formatPercent(successChance / 100, {
+                  decimals: 0,
+                  trailingZeros: true,
+                })}
               </span>
             {/if}
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
             {#if skillGain}
               <span class="font-mono">
-                {skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%
+                {formatPercent(skillGain.min / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })} – {formatPercent(skillGain.max / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}
               </span>
             {:else}
               <span class="text-muted-foreground">—</span>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -13,7 +14,7 @@
   <p class="text-muted-foreground">
     <span class="block"
       >{amount < 0 ? "Lowers" : "Raises"} the affected character's Accuracy by
-      {fmt.formatNumber(Math.abs(amount) * 100)} percentage points at rank
+      {formatNumber(Math.abs(amount) * 100)} percentage points at rank
       {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
         : ""}. The chance that its attacks and debuffs are blocked or resisted {amount <

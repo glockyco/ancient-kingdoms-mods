@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -187,7 +188,7 @@
 
 <Seo
   title="Traps - Ancient Kingdoms"
-  description={`${data.traps.length.toLocaleString()} traps: find types, effects, teleport destinations, and locations on the world map.`}
+  description={`${formatNumber(data.traps.length)} traps: find types, effects, teleport destinations, and locations on the world map.`}
   path="/traps"
 />
 

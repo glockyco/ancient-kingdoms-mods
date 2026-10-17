@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
@@ -99,7 +100,7 @@
       const chance =
         target.source_spawn_probability !== null &&
         target.source_spawn_probability < 1
-          ? ` (${(target.source_spawn_probability * 100).toFixed(0)}% chance)`
+          ? ` (${formatPercent(target.source_spawn_probability, { decimals: 0, trailingZeros: true })} chance)`
           : "";
       return `Appears after killing ${target.source_monster_name}${chance}`;
     }
@@ -287,7 +288,10 @@
           class="text-blue-600 hover:underline dark:text-blue-400"
           >{target.source_monster_name}</a
         >{#if target.source_spawn_probability !== null && target.source_spawn_probability < 1}
-          ({(target.source_spawn_probability * 100).toFixed(0)}% chance){/if}
+          ({formatPercent(target.source_spawn_probability, {
+            decimals: 0,
+            trailingZeros: true,
+          })} chance){/if}
       {:else}
         <span class="text-muted-foreground">-</span>
       {/if}
@@ -477,7 +481,10 @@
         {:else}
           At {slayerLevel}% mastery, a boss or elite deals
           <strong class="font-semibold text-foreground"
-            >{(damageReduction * 100).toFixed(1)}% less damage</strong
+            >{formatPercent(damageReduction, {
+              decimals: 1,
+              trailingZeros: true,
+            })} less damage</strong
           > to you.
         {/if}
       </p>

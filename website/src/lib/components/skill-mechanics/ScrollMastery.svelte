@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import {
     EXAMPLE_SCROLL_MASTERY,
     scrollRank,
   } from "$lib/skills/worked-examples";
-  import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -21,8 +21,9 @@
   </h3>
   <p class="text-muted-foreground">
     A scroll casts this skill at one rank per 5 percentage points of Scroll
-    Mastery, rounded, from rank 1 up to rank {skill.max_level}. At {fmt.formatPercent(
+    Mastery, rounded, from rank 1 up to rank {skill.max_level}. At {formatPercent(
       EXAMPLE_SCROLL_MASTERY,
+      { decimals: 2, preserveNonzero: true },
     )} Scroll Mastery, it casts at rank {scrollRank(skill.max_level)}. The Rank
     Scaling table lists the mastery each rank needs.
   </p>

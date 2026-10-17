@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/skills/skill-format";
+  import { formatPercent } from "$lib/utils/format";
   import { getMechanicsContext } from "./context";
 
   const mechanics = getMechanicsContext();
@@ -65,8 +65,10 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >{buff.name}</a
           >
-          ({formatPercent(buff.prob_ignore_cleanse)}){/each}. Every other
-        monster buff has 0%.
+          ({formatPercent(buff.prob_ignore_cleanse, {
+            decimals: 2,
+            preserveNonzero: true,
+          })}){/each}. Every other monster buff has 0%.
       </p>
     {/if}
     {#if skill.skill_type === "target_debuff"}

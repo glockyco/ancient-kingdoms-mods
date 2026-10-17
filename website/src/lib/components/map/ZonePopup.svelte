@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import PopupCard from "./PopupCard.svelte";
   import MapEntityLink from "./MapEntityLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
@@ -189,7 +190,7 @@
         </div>
         {#if sage.goldCost > 0}
           <div class="text-muted-foreground text-xs">
-            Reset cost: {sage.goldCost.toLocaleString()} gold
+            Reset cost: {formatNumber(sage.goldCost)} gold
           </div>
         {/if}
       </div>

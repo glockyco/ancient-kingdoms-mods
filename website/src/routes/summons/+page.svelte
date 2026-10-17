@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -27,7 +28,7 @@
     buildCollectionPage({
       path: "/summons",
       name: "Summons — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.summons.length.toLocaleString()} companions, familiars, and pets in Ancient Kingdoms.`,
+      description: `Searchable database of ${formatNumber(data.summons.length)} companions, familiars, and pets in Ancient Kingdoms.`,
       items: data.summons.map((summon) => ({
         name: summon.name,
         path: summon.summoning_item

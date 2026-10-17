@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -142,7 +143,10 @@
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{getSkillGainChance().toFixed(0)}%</span
+          >{formatPercent(getSkillGainChance() / 100, {
+            decimals: 0,
+            trailingZeros: true,
+          })}</span
         >
         <span class="text-xs">(per kill)</span>
       </div>
@@ -150,9 +154,13 @@
         <span>Skill gain:</span>
         <span class="font-mono text-foreground">
           {#if getSkillGainChance() > 0}
-            {getSkillGainAmount(monsterLevel)[0].toFixed(3)}% – {getSkillGainAmount(
-              monsterLevel,
-            )[1].toFixed(3)}%
+            {formatPercent(getSkillGainAmount(monsterLevel)[0] / 100, {
+              decimals: 3,
+              trailingZeros: true,
+            })} – {formatPercent(getSkillGainAmount(monsterLevel)[1] / 100, {
+              decimals: 3,
+              trailingZeros: true,
+            })}
           {:else}
             —
           {/if}
@@ -197,7 +205,13 @@
               <td class="p-3 text-right">
                 <span class="font-mono">
                   {#if maxGain > 0}
-                    {minGain.toFixed(3)}% – {maxGain.toFixed(3)}%
+                    {formatPercent(minGain / 100, {
+                      decimals: 3,
+                      trailingZeros: true,
+                    })} – {formatPercent(maxGain / 100, {
+                      decimals: 3,
+                      trailingZeros: true,
+                    })}
                   {:else}
                     —
                   {/if}

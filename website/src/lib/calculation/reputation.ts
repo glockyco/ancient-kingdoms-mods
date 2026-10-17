@@ -1,6 +1,6 @@
 import type { Calculation } from "$lib/types/calculation";
 import { divideF32, iround, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatNumber } from "./format";
+import { formatNumber } from "$lib/utils/format";
 
 // Source: server-scripts/Monster.cs:574-598 — only the Health contribution rounds, and normal monster reputation loss keeps its fraction.
 export function reputationExample(

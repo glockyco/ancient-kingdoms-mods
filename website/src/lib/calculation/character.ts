@@ -1,6 +1,6 @@
 import type { Calculation } from "$lib/types/calculation";
 import { floorToInt, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatNumber } from "./format";
+import { formatNumber } from "$lib/utils/format";
 
 // Source: server-scripts/Combat.cs:1236-1244,1247-1325 — Mystic Spark calculates Mana from the pre-shield hit, capped by pre-hit Health, before wards and Mana Shield absorb damage.
 export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {

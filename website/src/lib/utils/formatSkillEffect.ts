@@ -1,6 +1,6 @@
 import type { DamageTerm, DamageType, LinearValue } from "$lib/types/skills";
 import { iround, multiplyF32 } from "$lib/calculation/unity-math";
-import { formatDuration } from "./format";
+import { formatDuration, formatNumber, formatPercent } from "./format";
 
 /** Returns true when a LinearValue field has at least one non-zero component.
  * The DB stores all LinearValue fields as JSON objects even when both components
@@ -250,16 +250,6 @@ function parseLinearValue(
   return field;
 }
 
-/** "1,234" or "−0.5", with a true minus sign. */
-function formatNumber(value: number): string {
-  return value.toLocaleString("en-US").replace(/^-/, "−");
-}
-
-/** 0.15 as "15%", 0.025 as "2.5%", −0.05 as "−5%". */
-function formatPercent(value: number): string {
-  return `${String(parseFloat((value * 100).toFixed(2))).replace(/^-/, "−")}%`;
-}
-
 /**
  * A rank-scaled value as one formula. In the monster context it is the value
  * at `skillLevel`.
@@ -346,11 +336,16 @@ export function formatLinearPercent(
   skillLevel: number = 1,
 ): string {
   if (options?.monster) {
-    return formatPercent(lv.base_value + lv.bonus_per_level * (skillLevel - 1));
+    return formatPercent(
+      lv.base_value + lv.bonus_per_level * (skillLevel - 1),
+      { decimals: 2 },
+    );
   }
   return lv.bonus_per_level === 0
-    ? formatPercent(lv.base_value)
-    : formatSkillLevelFormula(lv, formatPercent);
+    ? formatPercent(lv.base_value, { decimals: 2 })
+    : formatSkillLevelFormula(lv, (value) =>
+        formatPercent(value, { decimals: 2 }),
+      );
 }
 
 /** "a", "a & b" or "a, b & c". */
@@ -530,7 +525,7 @@ function formatHealing(
   if (skill.is_necromancer_death_bloom && cost && healing) {
     const intelligence = skill.healing_percent_per_intelligence ?? 0;
     const bonus = intelligence
-      ? ` + ${formatPercent(intelligence)} per INT`
+      ? ` + ${formatPercent(intelligence, { decimals: 2 })} per INT`
       : "";
     parts.push(
       `spend ${formatLinearPercent(cost, options)} max hp (rounded up), heal target for health spent × (${formatLinearPercent(healing, options)}${bonus}) (rounded)`,
@@ -624,7 +619,7 @@ function formatCrowdControl(
   // Source: server-scripts/Combat.cs:DealDamageAt — a hit that is not avoided may take 1-4 durability from one random equipped item of a player or mercenary.
   if (skill.break_armor_prob && skill.break_armor_prob > 0) {
     parts.push(
-      `${formatPercent(skill.break_armor_prob)} chance a random equipped item loses 1-4 durability`,
+      `${formatPercent(skill.break_armor_prob, { decimals: 2 })} chance a random equipped item loses 1-4 durability`,
     );
   }
 
@@ -925,7 +920,9 @@ function formatBuffDebuffStats(
     "fear_resist_chance_bonus",
     "fear resist",
     true,
-    fearResistCap > 0 ? `max ${formatPercent(fearResistCap)}` : undefined,
+    fearResistCap > 0
+      ? `max ${formatPercent(fearResistCap, { decimals: 2 })}`
+      : undefined,
   );
 
   // Cooldown reduction is an instant cast effect, formatted by formatSkillEffect.
@@ -1051,7 +1048,9 @@ function formatBuffDebuffStats(
 
   // 12. Cleanse Resist, always last. The site uses one name for resisting cleanses on debuffs and dispels on buffs.
   if (skill.prob_ignore_cleanse && skill.prob_ignore_cleanse > 0) {
-    parts.push(`${formatPercent(skill.prob_ignore_cleanse)} Cleanse Resist`);
+    parts.push(
+      `${formatPercent(skill.prob_ignore_cleanse, { decimals: 2 })} Cleanse Resist`,
+    );
   }
 
   return parts;
@@ -1293,18 +1292,18 @@ export function formatSkillEffect(
   }
   if (skill.bard_song_duration_bonus_per_level) {
     parts.push(
-      `+${formatPercent(skill.bard_song_duration_bonus_per_level)} song duration per rank`,
+      `+${formatPercent(skill.bard_song_duration_bonus_per_level, { decimals: 2 })} song duration per rank`,
     );
   }
   if (skill.extra_gather_item_chance) {
     parts.push(
-      `${formatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item`,
+      `${formatPercent(skill.extra_gather_item_chance, { decimals: 2 })} chance for an extra gathered item`,
     );
   }
   // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2102-2113 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
   if (skill.food_and_drink_buff_duration_bonus_per_level) {
     parts.push(
-      `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food`,
+      `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level, { decimals: 2 })} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food`,
     );
   }
 
@@ -1354,7 +1353,7 @@ export function formatSkillEffect(
   }
   if (skill.is_bard_virtuosity && skill.additional_damage_percent_per_song) {
     parts.push(
-      `+${formatPercent(skill.additional_damage_percent_per_song)} attack and spell power per active song beyond 3`,
+      `+${formatPercent(skill.additional_damage_percent_per_song, { decimals: 2 })} attack and spell power per active song beyond 3`,
     );
   }
   // Source: server-scripts/AreaBuffSkill.cs:Apply — isOnlyForMagicClasses skips Warrior and Rogue players and mercenaries.

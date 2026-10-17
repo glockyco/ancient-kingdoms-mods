@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPercent } from "$lib/utils/format";
   import {
     EXAMPLE_SONG_BONUS,
     songDuration,
@@ -36,7 +37,10 @@
       class="text-blue-600 dark:text-blue-400 hover:underline"
       >Lingering Melody</a
     >
-    lengthens it, so with a {fmt.formatPercent(EXAMPLE_SONG_BONUS)} bonus it lasts
+    lengthens it, so with a {formatPercent(EXAMPLE_SONG_BONUS, {
+      decimals: 2,
+      preserveNonzero: true,
+    })} bonus it lasts
     {fmt.formatSeconds(songDuration(songSeconds, EXAMPLE_SONG_BONUS))}.
   </p>
 </div>

@@ -4,7 +4,11 @@
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import { formatDuration, formatPercent } from "$lib/utils/format";
+  import {
+    formatDuration,
+    formatPercent,
+    formatNumber,
+  } from "$lib/utils/format";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
   import Gem from "@lucide/svelte/icons/gem";
@@ -14,11 +18,6 @@
 
   let { data }: { data: PageData } = $props();
   const rewardChance = $derived(chestRewardChance(data.chest));
-
-  // Format gold amounts with narrow space thousands separator
-  function formatGold(amount: number): string {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
-  }
 </script>
 
 <Seo
@@ -130,8 +129,10 @@
         <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — a failed reward roll shows an empty chest, and the respawn timer starts before the roll. -->
         {#if rewardChance < 1}
           <p>
-            Each opening has a {formatPercent(rewardChance)} chance to give anything.
-            Otherwise the chest is empty until it respawns.
+            Each opening has a {formatPercent(rewardChance, {
+              decimals: 1,
+              trailingZeros: true,
+            })} chance to give anything. Otherwise the chest is empty until it respawns.
           </p>
         {/if}
         {#if data.chest.gold_min > 0 || data.chest.gold_max > 0}
@@ -139,11 +140,15 @@
             <div class="text-sm text-muted-foreground mb-1">Gold</div>
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
               {#if data.chest.gold_min === data.chest.gold_max}
-                {formatGold(data.chest.gold_min)} gold
+                {formatNumber(data.chest.gold_min, {
+                  groupSeparator: "\u202F",
+                })} gold
               {:else}
-                {formatGold(data.chest.gold_min)} - {formatGold(
-                  data.chest.gold_max,
-                )} gold
+                {formatNumber(data.chest.gold_min, {
+                  groupSeparator: "\u202F",
+                })} - {formatNumber(data.chest.gold_max, {
+                  groupSeparator: "\u202F",
+                })} gold
               {/if}
             </div>
           </div>
@@ -196,9 +201,15 @@
                 </td>
                 <td class="p-3 text-right font-mono">
                   {#if drop.actual_drop_chance != null}
-                    {formatPercent(drop.actual_drop_chance)}
+                    {formatPercent(drop.actual_drop_chance, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}
                   {:else}
-                    {formatPercent(drop.drop_rate)}
+                    {formatPercent(drop.drop_rate, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}
                   {/if}
                 </td>
               </tr>

@@ -455,7 +455,10 @@
     />
   {:else if cell.column.id === "drop_rate"}
     <span class="ml-auto">
-      {formatPercent(getDisplayedDropChance(row.original))}
+      {formatPercent(getDisplayedDropChance(row.original), {
+        decimals: 1,
+        trailingZeros: true,
+      })}
     </span>
   {:else}
     {cell.getValue()}
@@ -656,7 +659,10 @@
                   radiantAetherChance,
                 )}"
               >
-                {radiantAetherChance.toFixed(1)}%
+                {formatPercent(radiantAetherChance / 100, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })}
               </div>
             </div>
           {:else}
@@ -673,12 +679,16 @@
                 )}"
               >
                 {#if canAttempt}
-                  {successChance.toFixed(0)}%
+                  {formatPercent(successChance / 100, {
+                    decimals: 0,
+                    trailingZeros: true,
+                  })}
                 {:else}
                   <span class="text-sm">
-                    Cannot attempt yet. Need at least {(
-                      attemptFloor * 100
-                    ).toFixed(0)}% success.
+                    Cannot attempt yet. Need at least {formatPercent(
+                      attemptFloor,
+                      { decimals: 0, trailingZeros: true },
+                    )} success.
                   </span>
                 {/if}
               </div>
@@ -691,9 +701,12 @@
                 : "Skill gain chance after gathering"}
             </div>
             <div class="font-mono font-medium">
-              {resource.is_fishing_spot
-                ? fishingMasteryProcChance.toFixed(0)
-                : gatheringSkillGainChance.toFixed(0)}%
+              {formatPercent(
+                (resource.is_fishing_spot
+                  ? fishingMasteryProcChance
+                  : gatheringSkillGainChance) / 100,
+                { decimals: 0, trailingZeros: true },
+              )}
             </div>
           </div>
           <div>
@@ -706,10 +719,22 @@
               {#if !canAttempt || effortless || skillLevel >= 100}
                 <span class="text-muted-foreground">—</span>
               {:else if resource.is_radiant_spark}
-                {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%
+                {formatPercent(skillGain[0] / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })} – {formatPercent(skillGain[1] / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}
                 <span class="text-muted-foreground text-xs">(fixed)</span>
               {:else if successChance > 0}
-                {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%
+                {formatPercent(skillGain[0] / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })} – {formatPercent(skillGain[1] / 100, {
+                  decimals: 2,
+                  trailingZeros: true,
+                })}
               {:else}
                 <span class="text-muted-foreground">—</span>
               {/if}

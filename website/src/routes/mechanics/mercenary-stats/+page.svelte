@@ -9,7 +9,7 @@
     mercenaryStats,
     mercenaryHiringOdds,
   } from "$lib/calculation/mercenary-stats";
-  import { formatPercent } from "$lib/calculation/format";
+  import { formatPercent, formatNumber } from "$lib/utils/format";
   import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import {
     OWNER_LIMITS,
@@ -72,15 +72,22 @@
     atk: "Attack Power / Spell Power",
   };
 
-  const fmt = (n: number) => n.toLocaleString("en-US");
   const goldFmt = (n: number) =>
     n >= 1e6
-      ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "M"
+      ? formatNumber(n / 1e6, {
+          decimals: n >= 1e7 ? 0 : 1,
+          trailingZeros: true,
+          grouping: false,
+        }).replace(/\.0$/, "") + "M"
       : n >= 1e4
         ? Math.round(n / 1e3) + "k"
         : n >= 1e3
-          ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "k"
-          : fmt(Math.round(n));
+          ? formatNumber(n / 1e3, {
+              decimals: 1,
+              trailingZeros: true,
+              grouping: false,
+            }).replace(/\.0$/, "") + "k"
+          : formatNumber(Math.round(n));
 
   const level = $derived(mercenaryOwner.level);
   const veteran = $derived(mercenaryOwner.veteran);
@@ -317,7 +324,7 @@
     }
     let xt = "";
     for (const t of [1, 0.75, 0.5, 0.25, 0.1, 0.05]) {
-      xt += `<text x="${xOf(t).toFixed(1)}" y="${B + 16}" text-anchor="middle">${Math.round(t * 100)}%</text>`;
+      xt += `<text x="${xOf(t).toFixed(1)}" y="${B + 16}" text-anchor="middle">${formatPercent(t, { decimals: 0 })}</text>`;
     }
     let dots = "";
     for (const t of [0.25, 0.1, 0.05])
@@ -507,7 +514,7 @@
           </div>
           <div class="class-meta">
             <span class="basehp"
-              >Base Health <b class="tnum">{fmt(c.hpCurve)}</b></span
+              >Base Health <b class="tnum">{formatNumber(c.hpCurve)}</b></span
             >
             <span class="attrs">
               {#each ATTRS as a (a)}<span class="attr"
@@ -549,9 +556,9 @@
                       {@const cell = statRange(r, k)}
                       <td class="cell">
                         <div class="cell-val">
-                          <span class="lo">{fmt(cell[0])}</span><span
+                          <span class="lo">{formatNumber(cell[0])}</span><span
                             class="dash">–</span
-                          >{fmt(cell[1])}
+                          >{formatNumber(cell[1])}
                         </div>
                         <div class="bar">
                           <span style={barStyle(cell, dom[k], STAT_HUE[k])}
@@ -645,7 +652,10 @@
           </label>
           <div class="field">
             <span>Hire discount</span><span class="disc-val"
-              >−{formatPercent(discount)}</span
+              >−{formatPercent(discount, {
+                decimals: 2,
+                preserveNonzero: true,
+              })}</span
             >
           </div>
         </div>
@@ -658,7 +668,12 @@
                   ><span class="colmark" style={`background:${STAT_HUE[k]}`}
                   ></span>{TARGET_LABELS[k]}</span
                 >
-                <span class="top">top {formatPercent(read.p)}</span>
+                <span class="top"
+                  >top {formatPercent(read.p, {
+                    decimals: 2,
+                    preserveNonzero: true,
+                  })}</span
+                >
               </div>
               <RangeSlider
                 value={Math.round((frac[k] ?? 0) * 1000)}
@@ -669,10 +684,11 @@
               />
               <div class="sub">
                 {#if k === "atk"}
-                  Attack Power ≥ <b>{fmt(read.value)}</b> · Spell Power ≥
-                  <b>{fmt(read.spellValue ?? 0)}</b>
+                  Attack Power ≥ <b>{formatNumber(read.value)}</b> · Spell Power
+                  ≥
+                  <b>{formatNumber(read.spellValue ?? 0)}</b>
                 {:else}
-                  ≥ <b>{fmt(read.value)}</b>
+                  ≥ <b>{formatNumber(read.value)}</b>
                 {/if}
               </div>
             </div>
@@ -683,20 +699,23 @@
         <div class="stats3">
           <div class="stat3">
             <span class="k">Chance / hire</span><span class="v"
-              >{formatPercent(pTotal)}</span
+              >{formatPercent(pTotal, {
+                decimals: 2,
+                preserveNonzero: true,
+              })}</span
             >
           </div>
           <div class="stat3">
             <span class="k">Avg hires</span><span class="v"
               >{Number.isFinite(avgHires)
-                ? `about ${fmt(Number(avgHires.toFixed(1)))}`
+                ? `about ${formatNumber(avgHires, { decimals: 1 })}`
                 : "∞"}</span
             >
           </div>
           <div class="stat3">
             <span class="k">Avg gold</span><span class="v"
               >{Number.isFinite(avgGold)
-                ? `about ${fmt(Math.round(avgGold))}`
+                ? `about ${formatNumber(Math.round(avgGold))}`
                 : "∞"}</span
             >
           </div>

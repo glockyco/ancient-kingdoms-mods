@@ -1,4 +1,5 @@
 <script lang="ts" generics="TData">
+  import { formatNumber } from "$lib/utils/format";
   import { onMount, tick, untrack } from "svelte";
   import { afterNavigate } from "$app/navigation";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
@@ -656,7 +657,7 @@
 
   {#if isHydrated && allRowModel.rows.length < data.length}
     <p role="status" class="pb-3 text-sm text-muted-foreground">
-      {allRowModel.rows.length.toLocaleString()} of {data.length.toLocaleString()}
+      {formatNumber(allRowModel.rows.length)} of {formatNumber(data.length)}
       results
     </p>
   {/if}

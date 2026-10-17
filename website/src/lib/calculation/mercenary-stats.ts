@@ -2,7 +2,7 @@ import type { Calculation } from "$lib/types/calculation";
 import { f32, iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { CLASSES, RACES } from "$lib/utils/merc-stats";
 import type { ClassResult, Curves } from "$lib/utils/merc-stats";
-import { formatNumber, formatPercent } from "./format";
+import { formatNumber, formatPercent } from "$lib/utils/format";
 
 // Source: server-scripts/Player.cs:10640-10677,10913-10933,UpdateMercStatsByLevel; server-scripts/Health.cs:28-41; server-scripts/Mana.cs:28-41; server-scripts/Strength.cs:15-17; server-scripts/Intelligence.cs:36-38 — saved multipliers and shared combat rolls combine with current attributes and veteran totals.
 export function mercenaryStats(
@@ -56,13 +56,13 @@ export function mercenaryStats(
         : []),
       {
         name: "Health hire roll",
-        expression: `Random percentage between ${formatPercent(bands.hp[0])} and ${formatPercent(bands.hp[1])}, saved when hired`,
+        expression: `Random percentage between ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })} and ${formatPercent(bands.hp[1], { decimals: 2, preserveNonzero: true })}, saved when hired`,
       },
       ...(result.hasMana
         ? [
             {
               name: "Mana hire roll",
-              expression: `Random percentage between ${formatPercent(bands.mana[0])} and ${formatPercent(bands.mana[1])}, saved when hired`,
+              expression: `Random percentage between ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })} and ${formatPercent(bands.mana[1], { decimals: 2, preserveNonzero: true })}, saved when hired`,
             },
           ]
         : []),
@@ -106,7 +106,7 @@ export function mercenaryStats(
         : []),
       {
         name: "Highest combat hire roll",
-        expression: `Hiring level × ${formatPercent(bands.bc)} for ${race}, rounded, − 1`,
+        expression: `Hiring level × ${formatPercent(bands.bc, { decimals: 2, preserveNonzero: true })} for ${race}, rounded, − 1`,
       },
       {
         name: "Combat hire roll",
@@ -145,22 +145,22 @@ export function mercenaryStats(
               `Base Mana: ${formatNumber(curve.mana_base)} + ${formatNumber(curve.mana_per)} × (${level} − 1) = ${formatNumber(result.manaCurve)}`,
             ]
           : []),
-        `Health hire roll: lowest allowed percentage = ${formatPercent(bands.hp[0])}`,
+        `Health hire roll: lowest allowed percentage = ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })}`,
         ...(result.hasMana
           ? [
-              `Mana hire roll: lowest allowed percentage = ${formatPercent(bands.mana[0])}`,
+              `Mana hire roll: lowest allowed percentage = ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })}`,
             ]
           : []),
-        `Health multiplier: ${formatPercent(bands.hp[0])} + 0.25% × ${veteran} = ${formatPercent(healthMultiplier)}`,
+        `Health multiplier: ${formatPercent(bands.hp[0], { decimals: 2, preserveNonzero: true })} + 0.25% × ${veteran} = ${formatPercent(healthMultiplier, { decimals: 2, preserveNonzero: true })}`,
         ...(result.hasMana
           ? [
-              `Mana multiplier: ${formatPercent(bands.mana[0])} + 0.25% × ${veteran} = ${formatPercent(manaMultiplier)}`,
+              `Mana multiplier: ${formatPercent(bands.mana[0], { decimals: 2, preserveNonzero: true })} + 0.25% × ${veteran} = ${formatPercent(manaMultiplier, { decimals: 2, preserveNonzero: true })}`,
             ]
           : []),
-        `Scaled Health: ${formatNumber(result.hpCurve)} × ${formatPercent(healthMultiplier)} = ${formatNumber(scaledHealth)}, rounded`,
+        `Scaled Health: ${formatNumber(result.hpCurve)} × ${formatPercent(healthMultiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(scaledHealth)}, rounded`,
         ...(result.hasMana
           ? [
-              `Scaled Mana: ${formatNumber(result.manaCurve)} × ${formatPercent(manaMultiplier)} = ${formatNumber(scaledMana)}, rounded`,
+              `Scaled Mana: ${formatNumber(result.manaCurve)} × ${formatPercent(manaMultiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(scaledMana)}, rounded`,
             ]
           : []),
         `Maximum Health: ${formatNumber(scaledHealth)} + 25 × ${result.attrs.CON} = ${formatNumber(row.hp![0])}`,
@@ -169,7 +169,7 @@ export function mercenaryStats(
               `Maximum Mana: ${formatNumber(scaledMana)} + 20 × ${result.attrs.INT} = ${formatNumber(row.mana![0])}`,
             ]
           : []),
-        `Highest combat hire roll: ${level} × ${formatPercent(bands.bc)}, rounded, − 1 = ${combatCeiling - 1}`,
+        `Highest combat hire roll: ${level} × ${formatPercent(bands.bc, { decimals: 2, preserveNonzero: true })}, rounded, − 1 = ${combatCeiling - 1}`,
         `Combat hire roll: chosen within 0 through ${combatCeiling - 1} = 0`,
         `Attack Power: 0 + ${veteran} + ${result.attrs.STR} = ${formatNumber(row.atk![0])}`,
         `Intelligence contribution: 150% × ${result.attrs.INT} = ${spellBonus}, rounded`,
@@ -204,20 +204,20 @@ export function mercenaryHiringOdds(
     ],
     example: () => ({
       given: [
-        `${formatPercent(raceChance)} race chance`,
-        `${formatPercent(statChance)} chance of meeting the stat thresholds`,
+        `${formatPercent(raceChance, { decimals: 2, preserveNonzero: true })} race chance`,
+        `${formatPercent(statChance, { decimals: 2, preserveNonzero: true })} chance of meeting the stat thresholds`,
         `${formatNumber(price)} gold per hire`,
       ],
       result:
         chance > 0
-          ? `${formatPercent(chance)} chance per hire, averaging about ${formatNumber(roundedHires)} ${roundedHires === 1 ? "hire" : "hires"} and about ${formatNumber(roundedGold)} gold`
+          ? `${formatPercent(chance, { decimals: 2, preserveNonzero: true })} chance per hire, averaging about ${formatNumber(roundedHires)} ${roundedHires === 1 ? "hire" : "hires"} and about ${formatNumber(roundedGold)} gold`
           : "No qualifying hire from these choices",
       working: [
-        `Qualifying hire chance: ${formatPercent(raceChance)} × ${formatPercent(statChance)} = ${formatPercent(chance)}`,
+        `Qualifying hire chance: ${formatPercent(raceChance, { decimals: 2, preserveNonzero: true })} × ${formatPercent(statChance, { decimals: 2, preserveNonzero: true })} = ${formatPercent(chance, { decimals: 2, preserveNonzero: true })}`,
         ...(chance > 0
           ? [
-              `Expected hires: 1 ÷ ${formatPercent(chance)} = about ${formatNumber(roundedHires)}`,
-              `Expected gold: ${formatNumber(price)} ÷ ${formatPercent(chance)} = about ${formatNumber(roundedGold)} gold`,
+              `Expected hires: 1 ÷ ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = about ${formatNumber(roundedHires)}`,
+              `Expected gold: ${formatNumber(price)} ÷ ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = about ${formatNumber(roundedGold)} gold`,
             ]
           : [
               "Expected hires: 1 ÷ 0% = no finite expectation",
