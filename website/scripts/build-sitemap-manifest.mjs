@@ -562,11 +562,8 @@ export function computeHashes() {
     relationships: fileHash("src/lib/data/achievements/relationships.ts"),
   });
 
-  // Listed without a content hash on purpose. Each depends on several sources
-  // at once — the live game version and the map tiles — so no single
-  // hash captures "changed" cleanly, and a wrong hash is worse than none. The
-  // consequence is that IndexNow does not ping these on change; they are
-  // rediscovered by ordinary crawling instead.
+  // These pages depend on the live game version and map tiles. No reliable
+  // content date is available, so their sitemap entries omit lastmod.
   const bareUrls = [`${SITE_URL}/`, `${SITE_URL}/map`];
 
   db.close();

@@ -44,7 +44,7 @@ A first build runs every step, in this order. Later builds repeat only the steps
 pnpm dev          # development server
 pnpm build        # prerender the site
 pnpm preview      # serve the last build
-pnpm cf-deploy    # build, deploy to production, and notify IndexNow
+pnpm cf-deploy    # build and deploy to production
 ```
 
 `pnpm dev` and `pnpm build` first run `build-tool publish-mods`, which builds the mods that `website/mod-downloads.json` selects and publishes them under `/mods/`. Both therefore need `Local.props` and the game install, as well as `website/data/compendium.db`. After a new `compendium build`, restart `pnpm dev` so that it rebuilds the search index and the compressed database copies.

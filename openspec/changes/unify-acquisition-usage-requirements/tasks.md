@@ -3,7 +3,7 @@
 - [x] 1.1 Record review of the design's page-change matrix before editing project pages. Keep unreviewed layout, new routes, active-character UI and new seasonal presentation out of the implementation. Verify the accepted scope is recorded in this change.
 - [ ] 1.2 Preserve the historical database, source, export and published manifest with verified digests. Implement semantic sitemap fingerprints and a private one-time date reconciliation before the first new prebuild. Ship only the new manifest format and projector. Verify unchanged content retains reconciled dates and real content changes receive the generation date.
 - [ ] 1.3 Agree the required real-game/simulator observations for this change and record each published claim's evidence. Cover the new placement, provider, delivery, cost and condition semantics rather than repeating unchanged baseline experiments. Verify every code-only hypothesis is either confirmed before publication or remains outside published claims.
-- [ ] 1.4 Remove IndexNow scripts, tests, public verification key, deploy hooks and temporary-baseline ignore. Retain standard sitemap crawling and build/deploy failure behavior. Verify regenerated assets and an offline deploy-command smoke.
+- [x] 1.4 Remove IndexNow scripts, tests, public verification key, deploy hooks and temporary-baseline ignore. Retain standard sitemap crawling and build/deploy failure behavior. Verify regenerated assets and an offline deploy-command smoke.
 
 ## 2. Complete authoritative export inputs
 
