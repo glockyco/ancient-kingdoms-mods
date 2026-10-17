@@ -25,7 +25,7 @@
     "check:docs": "cd build-pipeline && uv run compendium docs check",
     "check:knip": "knip"
   },
-  "packageManager": "pnpm@10.34.5",
+  "packageManager": "pnpm@10.34.7",
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
   },
