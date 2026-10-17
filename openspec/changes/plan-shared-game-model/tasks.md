@@ -14,7 +14,7 @@
 - [ ] 3.2 Fold `show-pack-and-random-sources-in-map-popups` into the acquisition change, then remove it. Its proposal is marked superseded.
 - [ ] 3.3 Fold `consolidate-server-read-models` into the read-model change, then remove it. Its proposal is marked superseded.
 - [x] 3.4 Add WebAssembly to the content security policy of `add-security-headers`. That change's own tasks verify the database worker under the policy.
-- [ ] 3.5 Land `simplify-pipeline-loader-registration` and `harden-export-sessions` before the vocabulary and rules change, which adds a dataset and export fields.
+- [x] 3.5 Land `simplify-pipeline-loader-registration` and `harden-export-sessions` before the vocabulary and rules change, which adds a dataset and export fields. Both are archived.
 
 ## 4. Verification prerequisites
 
@@ -32,8 +32,8 @@
 
 Each follow-up change cites this design by decision number and lists the facts it publishes with their confirmation per D15.
 
-- [ ] 6.1 Stat vocabulary (D2): `unify-stat-vocabulary`, proposed, with the item list fix.
-- [ ] 6.2 Game rules (D5): `unify-game-rules`, proposed, with the altar tier, primal essence, item level and chest fixes.
+- [x] 6.1 Stat vocabulary (D2): `unify-stat-vocabulary`, with the item list fix. Archived as `2026-10-17-unify-stat-vocabulary`.
+- [x] 6.2 Game rules (D5): `unify-game-rules`, with the altar tier, primal essence, item level and chest fixes. Archived as `2026-10-17-unify-game-rules`.
 - [ ] 6.3 Acquisition, usage and requirements (D3, D4), with the export gaps, the NPC caster count and the remaining defects.
 - [ ] 6.4 Shared read models and relation components (D7).
 - [ ] 6.5 Character model, store and share links (D6, D13, D14).
