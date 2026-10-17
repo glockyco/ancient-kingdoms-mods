@@ -171,6 +171,8 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
         ("quests", "kill_target_2_id"),
         ("quests", "potion_item_id"),
         ("quests", "start_npc_id"),
+        ("stat_fields", "stat_id"),
+        ("stats", "pool_id"),
         ("summon_trigger_placeholders", "spawn_id"),
         ("summon_trigger_placeholders", "trigger_id"),
         ("treasure_locations", "required_map_id"),

@@ -1,6 +1,14 @@
+import json
+from pathlib import Path
+
 import pytest
 
-from compendium.denormalizers.items.tooltips import _convert_unity_markup_to_html
+from compendium.db import create_database
+from compendium.denormalizers.items.equipment import _denormalize_armor_sets
+from compendium.denormalizers.items.tooltips import (
+    _convert_unity_markup_to_html,
+    run,
+)
 
 
 @pytest.mark.parametrize("alignment", ["left", "center", "right", "justify"])
@@ -33,3 +41,88 @@ def test_color_and_price_alignment_remain_supported():
     assert result == (
         '<div style="text-align: right">250 <span style="color: #FFD700">●</span></div>'
     )
+
+
+@pytest.mark.parametrize("item_name", ["Constitution", "Exported Attribute Name"])
+def test_set_bonus_uses_catalogue_item_name(tmp_path, item_name):
+    conn = _set_bonus_database(tmp_path, item_name)
+    try:
+        run(conn)
+        html = conn.execute(
+            "SELECT tooltip_html FROM items WHERE id = 'test_armor'"
+        ).fetchone()[0]
+        assert f"Set (3): Increases {item_name} by 5" in html
+    finally:
+        conn.close()
+
+
+@pytest.mark.parametrize("missing_name", [False, True])
+def test_set_bonus_without_a_catalogue_name_fails(tmp_path, missing_name):
+    conn = _set_bonus_database(tmp_path, None if missing_name else "Constitution")
+    try:
+        if not missing_name:
+            conn.execute("DELETE FROM stat_fields")
+        with pytest.raises(
+            ValueError, match="Missing item stat name for stat constitution"
+        ):
+            run(conn)
+    finally:
+        conn.close()
+
+
+def _set_bonus_database(tmp_path, item_name):
+    schema = Path(__file__).resolve().parents[1] / "schema.sql"
+    conn = create_database(tmp_path / "tooltips.db", schema)
+    conn.execute(
+        "INSERT INTO stats (id, sort_order, name, item_name, format, per_point_of) "
+        "VALUES ('constitution', 0, 'Character Name', ?, 'integer', '[]')",
+        (item_name,),
+    )
+    conn.execute(
+        "INSERT INTO stat_fields (source, field, stat_id, modifier, curve) "
+        "VALUES ('item', 'constitution', 'constitution', 'flat', NULL)"
+    )
+    conn.execute(
+        "INSERT INTO items (id, name, item_type, tooltip, augment_armor_set_name, "
+        "augment_armor_set_members, augment_attribute_bonuses, travel_zone_id) "
+        "VALUES ('test_armor', 'Test Armor', 'armor', '{DURABILITY}', 'Test Set', ?, ?, NULL)",
+        (
+            json.dumps([{"item_id": "test_armor", "item_name": "Test Armor"}]),
+            json.dumps([{"stat_id": "constitution", "bonus": 5}]),
+        ),
+    )
+    conn.commit()
+    return conn
+
+
+def test_set_bonus_derivation_stores_stat_ids_without_display_names(tmp_path):
+    conn = _set_bonus_database(tmp_path, "Exported Constitution")
+    try:
+        conn.execute(
+            "INSERT INTO items (id, name, item_type, stats, augment_skill_bonuses, "
+            "augment_armor_set_item_ids, augment_armor_set_name, travel_zone_id) "
+            "VALUES ('set_augment', 'Set Augment', 'augment', ?, '[]', ?, 'Test Set', NULL)",
+            (
+                json.dumps({"constitution": 5}),
+                json.dumps(["test_armor"]),
+            ),
+        )
+        conn.execute(
+            "UPDATE items SET stats = ? WHERE id = 'test_armor'",
+            (json.dumps({"augment_bonus_set": "Set Augment"}),),
+        )
+        assert _denormalize_armor_sets(conn) == (1, 1)
+        rows = conn.execute(
+            "SELECT augment_attribute_bonuses FROM items ORDER BY id"
+        ).fetchall()
+        assert [json.loads(row[0]) for row in rows] == [
+            [{"stat_id": "constitution", "bonus": 5}],
+            [{"stat_id": "constitution", "bonus": 5}],
+        ]
+        run(conn)
+        html = conn.execute(
+            "SELECT tooltip_html FROM items WHERE id = 'test_armor'"
+        ).fetchone()[0]
+        assert "Set (3): Increases Exported Constitution by 5" in html
+    finally:
+        conn.close()

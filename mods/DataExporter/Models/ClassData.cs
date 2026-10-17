@@ -1,3 +1,5 @@
+#nullable disable
+
 namespace DataExporter.Models;
 
 public class ClassCombatData

@@ -56,6 +56,69 @@ class VisualAssetData(BaseModel):
     height: int
 
 
+StatSource = Literal["item", "skill", "class", "pet"]
+StatModifier = Literal["flat", "percent", "per_second", "percent_of_max_per_second"]
+
+
+class StatFieldData(BaseModel):
+    """One numeric export field that contributes to a catalogue stat."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source: StatSource
+    field: str = Field(min_length=1)
+    modifier: StatModifier
+    curve: Literal["base", "per_level"] | None
+
+
+class StatPerPointData(BaseModel):
+    """The amount a stat's getter adds per point of another stat."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    stat_id: str = Field(min_length=1)
+    amount: float
+
+
+class StatData(BaseModel):
+    """Names, formatting and numeric field mappings exported for one stat."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    name_key: str | None
+    item_name: str | None
+    item_label: str | None
+    weapon_item_name: str | None
+    override_reason: str | None
+    format: Literal["integer", "percent", "decimal"]
+    min_value: float | None
+    max_value: float | None
+    pool_id: str | None
+    per_point_of: list[StatPerPointData]
+    fields: list[StatFieldData]
+
+
+class NonStatFieldData(BaseModel):
+    """A numeric export field excluded from character stats, with its reason."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source: StatSource
+    field: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+
+
+class StatCatalogData(BaseModel):
+    """The complete exported stat vocabulary and numeric field inventory."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    stats: list[StatData] = Field(min_length=1)
+    non_stat_fields: list[NonStatFieldData]
+
+
 # =============================================================================
 # Monster Models
 # =============================================================================

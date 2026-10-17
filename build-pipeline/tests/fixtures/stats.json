@@ -1,0 +1,60 @@
+{
+  "stats": [
+    {
+      "id": "health_regen",
+      "name": "Health Regeneration",
+      "name_key": "hp_regen",
+      "item_name": "Health Regen",
+      "item_label": "Health Regen",
+      "weapon_item_name": null,
+      "override_reason": null,
+      "format": "decimal",
+      "min_value": null,
+      "max_value": null,
+      "pool_id": "health",
+      "per_point_of": [],
+      "fields": [
+        {"source": "skill", "field": "health_percent_per_second_bonus", "modifier": "percent_of_max_per_second", "curve": null}
+      ]
+    },
+    {
+      "id": "health",
+      "name": "Hit Points",
+      "name_key": null,
+      "item_name": "Hit Points",
+      "item_label": "Hit Points",
+      "weapon_item_name": null,
+      "override_reason": null,
+      "format": "integer",
+      "min_value": 1,
+      "max_value": null,
+      "pool_id": null,
+      "per_point_of": [{"stat_id": "constitution", "amount": 10}],
+      "fields": [
+        {"source": "item", "field": "health_bonus", "modifier": "flat", "curve": null},
+        {"source": "class", "field": "base_health_value", "modifier": "flat", "curve": "base"},
+        {"source": "pet", "field": "health_per_level", "modifier": "flat", "curve": "per_level"}
+      ]
+    },
+    {
+      "id": "constitution",
+      "name": "Constitution",
+      "name_key": "constitution",
+      "item_name": "Constitution",
+      "item_label": "Constitution",
+      "weapon_item_name": null,
+      "override_reason": null,
+      "format": "integer",
+      "min_value": null,
+      "max_value": null,
+      "pool_id": null,
+      "per_point_of": [],
+      "fields": [{"source": "item", "field": "constitution", "modifier": "flat", "curve": null}]
+    }
+  ],
+  "non_stat_fields": [
+    {"source": "item", "field": "max_durability", "reason": "Item durability, not a character stat"},
+    {"source": "skill", "field": "tier", "reason": "Skill progression tier"},
+    {"source": "pet", "field": "level", "reason": "Pet level, not a character stat"}
+  ]
+}

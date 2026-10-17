@@ -24,6 +24,9 @@ def _denormalize_armor_sets(conn: sqlite3.Connection) -> tuple[int, int]:
     """
     console.print("  Denormalizing armor set data...")
     cursor = conn.cursor()
+    attribute_stats = dict(
+        conn.execute("SELECT field, stat_id FROM stat_fields WHERE source = 'item'")
+    )
     cursor.execute("""
         SELECT id, name, augment_skill_bonuses, augment_armor_set_item_ids, augment_armor_set_name, stats
         FROM items
@@ -48,19 +51,23 @@ def _denormalize_armor_sets(conn: sqlite3.Connection) -> tuple[int, int]:
         if stats_json:
             try:
                 stats = json.loads(stats_json)
-                attributes = {
-                    "strength": "Strength",
-                    "dexterity": "Dexterity",
-                    "constitution": "Constitution",
-                    "intelligence": "Intelligence",
-                    "wisdom": "Wisdom",
-                    "charisma": "Charisma",
-                }
-                for attr_key, attr_name in attributes.items():
+                attributes = (
+                    "strength",
+                    "dexterity",
+                    "constitution",
+                    "intelligence",
+                    "wisdom",
+                    "charisma",
+                )
+                for attr_key in attributes:
                     value = stats.get(attr_key, 0)
                     if value > 0:
+                        if attr_key not in attribute_stats:
+                            raise ValueError(
+                                f"Missing item stat mapping for item.{attr_key}"
+                            )
                         attribute_bonuses.append(
-                            {"attribute": attr_name, "bonus": value}
+                            {"stat_id": attribute_stats[attr_key], "bonus": value}
                         )
             except json.JSONDecodeError:
                 pass

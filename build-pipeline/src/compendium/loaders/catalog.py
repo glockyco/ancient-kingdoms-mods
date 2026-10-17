@@ -48,6 +48,7 @@ from compendium.loaders.core import (
     load_scribing_tables,
     load_skills,
     load_static_data,
+    load_stats,
     load_summon_triggers,
     load_treasure_locations,
     load_visual_assets,
@@ -132,6 +133,12 @@ def _achievements(ctx: LoadContext) -> None:
 
 
 DATASETS: tuple[Dataset, ...] = (
+    Dataset(
+        "stats",
+        ("stats.json", "items.json", "skills.json", "classes_combat.json", "pets.json"),
+        ("stats", "stat_fields"),
+        handler=_plain(load_stats),
+    ),
     Dataset(
         "static_data",
         (),

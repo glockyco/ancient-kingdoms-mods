@@ -5,6 +5,37 @@
 PRAGMA foreign_keys = ON;
 
 -- =============================================================================
+-- STAT VOCABULARY (runtime-exported names and numeric field mappings)
+-- =============================================================================
+
+CREATE TABLE stats (
+    id TEXT PRIMARY KEY,
+    sort_order INTEGER NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    name_key TEXT,
+    item_name TEXT,
+    item_label TEXT,
+    weapon_item_name TEXT,
+    override_reason TEXT,
+    format TEXT NOT NULL CHECK (format IN ('integer', 'percent', 'decimal')),
+    min_value REAL,
+    max_value REAL,
+    pool_id TEXT REFERENCES stats(id) DEFERRABLE INITIALLY DEFERRED,
+    per_point_of TEXT NOT NULL
+);
+
+CREATE TABLE stat_fields (
+    source TEXT NOT NULL CHECK (source IN ('item', 'skill', 'class', 'pet')),
+    field TEXT NOT NULL,
+    stat_id TEXT NOT NULL REFERENCES stats(id),
+    modifier TEXT NOT NULL CHECK (
+        modifier IN ('flat', 'percent', 'per_second', 'percent_of_max_per_second')
+    ),
+    curve TEXT CHECK (curve IN ('base', 'per_level')),
+    PRIMARY KEY (source, field)
+);
+
+-- =============================================================================
 -- FACTIONS (static data from static_data.json)
 -- =============================================================================
 
@@ -418,7 +449,7 @@ CREATE TABLE items (
     augment_armor_set_name TEXT,
     augment_skill_bonuses TEXT,
     augment_skill_bonuses_with_names TEXT,  -- JSON: [{"skill_id": "combat_training", "skill_name": "Combat Training", "level_bonus": 2}, ...]
-    augment_attribute_bonuses TEXT,   -- JSON: [{"attribute": "strength", "bonus": 10}, ...]
+    augment_attribute_bonuses TEXT,   -- JSON: [{"stat_id": "strength", "bonus": 10}, ...]
     augment_is_defensive INTEGER,  -- NULL for non-augments; 1=Defensive (armor slots: Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), 0=Offensive (weapon slots). Source: server-scripts/AugmentItem.cs isDefensiveAugment
     recipe_potion_learned_id TEXT REFERENCES items(id),
     recipe_potion_learned_name TEXT,

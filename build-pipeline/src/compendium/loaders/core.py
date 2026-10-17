@@ -28,6 +28,7 @@ from compendium.models import (
     QuestData,
     ScribingTableData,
     SkillData,
+    StatCatalogData,
     SummonTriggerData,
     TreasureLocationData,
     VisualAssetData,
@@ -187,6 +188,118 @@ def load_static_data(conn: sqlite3.Connection, curated_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(tiers)} reputation tiers")
 
     conn.commit()
+
+
+def _is_numeric_stat_value(value: object) -> bool:
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, (int, float)):
+        return True
+    return (
+        isinstance(value, dict)
+        and "base_value" in value
+        and "bonus_per_level" in value
+        and all(
+            isinstance(value[key], (int, float)) and not isinstance(value[key], bool)
+            for key in ("base_value", "bonus_per_level")
+        )
+    )
+
+
+def load_stats(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load the catalogue and reject numeric export fields outside its inventory."""
+    console.print("Loading stat vocabulary...")
+    with open(export_dir / "stats.json", encoding="utf-8") as f:
+        catalog = StatCatalogData.model_validate(json.load(f))
+
+    stat_ids = {stat.id for stat in catalog.stats}
+    if len(stat_ids) != len(catalog.stats):
+        raise ValueError("stats.json contains duplicate stat ids")
+    mapped: set[tuple[str, str]] = set()
+    for stat in catalog.stats:
+        if stat.pool_id is not None and stat.pool_id not in stat_ids:
+            raise ValueError(
+                f"Stat {stat.id} pool_id names unknown stat {stat.pool_id}"
+            )
+        for term in stat.per_point_of:
+            if term.stat_id not in stat_ids:
+                raise ValueError(
+                    f"Stat {stat.id} per_point_of names unknown stat {term.stat_id}"
+                )
+        for field in stat.fields:
+            key = (field.source, field.field)
+            if key in mapped:
+                raise ValueError(f"Duplicate stat field {field.source}.{field.field}")
+            mapped.add(key)
+
+    non_stats: set[tuple[str, str]] = set()
+    for non_stat in catalog.non_stat_fields:
+        key = (non_stat.source, non_stat.field)
+        if key in mapped:
+            raise ValueError(
+                f"Field {non_stat.source}.{non_stat.field} is both mapped and non-stat"
+            )
+        if key in non_stats:
+            raise ValueError(
+                f"Duplicate non-stat field {non_stat.source}.{non_stat.field}"
+            )
+        non_stats.add(key)
+
+    known_fields = mapped | non_stats
+    for source, filename in (
+        ("item", "items.json"),
+        ("skill", "skills.json"),
+        ("class", "classes_combat.json"),
+        ("pet", "pets.json"),
+    ):
+        with open(export_dir / filename, encoding="utf-8") as f:
+            entries = json.load(f)
+        for entry in entries:
+            values = entry.get("stats") if source == "item" else entry
+            if values is None:
+                continue
+            for field_name, value in values.items():
+                if (
+                    _is_numeric_stat_value(value)
+                    and (source, field_name) not in known_fields
+                ):
+                    raise ValueError(
+                        f"Unmapped numeric stat field {source}.{field_name}"
+                    )
+
+    with conn:
+        for order, stat in enumerate(catalog.stats):
+            conn.execute(
+                "INSERT INTO stats "
+                "(id, sort_order, name, name_key, item_name, item_label, "
+                "weapon_item_name, override_reason, format, min_value, max_value, "
+                "pool_id, per_point_of) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    stat.id,
+                    order,
+                    stat.name,
+                    stat.name_key,
+                    stat.item_name,
+                    stat.item_label,
+                    stat.weapon_item_name,
+                    stat.override_reason,
+                    stat.format,
+                    stat.min_value,
+                    stat.max_value,
+                    stat.pool_id,
+                    json.dumps([term.model_dump() for term in stat.per_point_of]),
+                ),
+            )
+        for stat in catalog.stats:
+            conn.executemany(
+                "INSERT INTO stat_fields (source, field, stat_id, modifier, curve) "
+                "VALUES (?, ?, ?, ?, ?)",
+                [
+                    (field.source, field.field, stat.id, field.modifier, field.curve)
+                    for field in stat.fields
+                ],
+            )
+    console.print(f"  [green]OK[/green] Loaded {len(catalog.stats)} stats")
 
 
 def load_classes(

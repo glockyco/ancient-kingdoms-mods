@@ -235,6 +235,12 @@
       "sha256": "4959a70657ecf1036794d7a7ad8611e80f6d76b4796c72ef5fdf37262eaaf8d1",
       "span": 32
     },
+    "BonusSkill.cs:ToolTip": {
+      "span": 0
+    },
+    "BonusSkill.cs:ToolTipUpgrade": {
+      "span": 0
+    },
     "BookItem.cs": {
       "span": 0
     },
@@ -765,16 +771,46 @@
     "Combat.cs:blockChance": {
       "span": 0
     },
+    "Combat.cs:coldResist": {
+      "span": 0
+    },
     "Combat.cs:criticalChance": {
+      "span": 0
+    },
+    "Combat.cs:criticalResist": {
       "span": 0
     },
     "Combat.cs:damage": {
       "span": 0
     },
+    "Combat.cs:defense": {
+      "span": 0
+    },
+    "Combat.cs:diseaseResist": {
+      "span": 0
+    },
     "Combat.cs:fearResistChance": {
       "span": 0
     },
+    "Combat.cs:fireResist": {
+      "span": 0
+    },
+    "Combat.cs:haste": {
+      "span": 0
+    },
     "Combat.cs:isParry": {
+      "span": 0
+    },
+    "Combat.cs:magicDamage": {
+      "span": 0
+    },
+    "Combat.cs:magicResist": {
+      "span": 0
+    },
+    "Combat.cs:poisonResist": {
+      "span": 0
+    },
+    "Combat.cs:spellHaste": {
       "span": 0
     },
     "Constitution.cs:13-15": {
@@ -800,6 +836,9 @@
     "Constitution.cs:73-76": {
       "sha256": "439e9dc00617b4d2465c86f1ff9503cbd1b1361c8215cfd57d755622592a4984",
       "span": 4
+    },
+    "Constitution.cs:GetBlockChanceBonus": {
+      "span": 0
     },
     "Constitution.cs:GetHealthBonus": {
       "span": 0
@@ -1052,6 +1091,15 @@
       "sha256": "258fa5e9c7f4cdaac24658786357bbd4308c12b61b0df9cd26ae64fc92afdb74",
       "span": 8
     },
+    "Dexterity.cs:GetAccuracyBonus": {
+      "span": 0
+    },
+    "Dexterity.cs:GetCriticalChanceBonus": {
+      "span": 0
+    },
+    "Dexterity.cs:GetCriticalResistBonus": {
+      "span": 0
+    },
     "Dexterity.cs:GetRangedAttackBonusPerPoint": {
       "span": 0
     },
@@ -1076,6 +1124,9 @@
       "span": 11
     },
     "Energy.cs:max": {
+      "span": 0
+    },
+    "Energy.cs:recoveryRate": {
       "span": 0
     },
     "EnergyResource.cs:21-35": {
@@ -1709,6 +1760,9 @@
     "Health.cs:max": {
       "span": 0
     },
+    "Health.cs:recoveryRate": {
+      "span": 0
+    },
     "Housing.cs:13": {
       "sha256": "9c841860b2f57982b47cdbbae6d9d37fc94593a5dab2b9fdd35802518b660f3e",
       "span": 1
@@ -1861,6 +1915,9 @@
       "span": 27
     },
     "Mana.cs:max": {
+      "span": 0
+    },
+    "Mana.cs:recoveryRate": {
       "span": 0
     },
     "MercenaryEquipment.cs:116-187": {
@@ -3345,6 +3402,12 @@
     "Player.cs:refractoryPeriodSkill": {
       "span": 0
     },
+    "Player.cs:speed": {
+      "span": 0
+    },
+    "PlayerAttribute.cs:value": {
+      "span": 0
+    },
     "PlayerBank.cs:390-449": {
       "sha256": "c748087d3915ffb2423327a525ad5c469200966d695cbcb52d5df9d6b2d5cf86",
       "span": 60
@@ -4192,6 +4255,9 @@
       "sha256": "062626187f5bf897164e783144c81703879d5861c3cc0941d205a0d2c13cf65c",
       "span": 1
     },
+    "ScriptableItem.cs:LocalizedStatLabel": {
+      "span": 0
+    },
     "ScriptableItem.cs:SellPriceInGold": {
       "span": 0
     },
@@ -4477,6 +4543,12 @@
     "Skills.cs:GetHealthPercentBonus": {
       "span": 0
     },
+    "Skills.cs:GetManaRecoveryBonus": {
+      "span": 0
+    },
+    "Skills.cs:GetPassiveHealthRecoveryBonus": {
+      "span": 0
+    },
     "Skills.cs:HasInvisibilityIgnoringDetection": {
       "span": 0
     },
@@ -4506,6 +4578,9 @@
       "span": 8
     },
     "Strength.cs:GetDamageBonus": {
+      "span": 0
+    },
+    "Strength.cs:GetEnergyBonus": {
       "span": 0
     },
     "StrucItemUi.cs:27-46": {

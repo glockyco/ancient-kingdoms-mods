@@ -359,7 +359,7 @@
         Array<{ item_id: string; item_name: string; tooltip_html?: string }>
       >(data.item.augment_armor_set_members),
       armorSetAttributeBonuses: parseJson<
-        Array<{ attribute: string; bonus: number }>
+        Array<{ stat_id: string; bonus: number }>
       >(data.item.augment_attribute_bonuses),
       chestRewards: [...data.chestRewards].sort(
         (a, b) =>
@@ -1438,11 +1438,11 @@
           <div>
             <h4 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h4>
             <div class="space-y-2">
-              {#each computed.armorSetAttributeBonuses as bonus (bonus.attribute)}
+              {#each computed.armorSetAttributeBonuses as bonus (bonus.stat_id)}
                 <div
                   class="flex items-center justify-between p-2 rounded bg-muted"
                 >
-                  <span>{formatStatName(bonus.attribute)}</span>
+                  <span>{formatStatName(bonus.stat_id)}</span>
                   <span class={styles.valuePositive}>+{bonus.bonus}</span>
                 </div>
               {/each}

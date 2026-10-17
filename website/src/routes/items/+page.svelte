@@ -29,7 +29,7 @@
   import { formatClassName } from "$lib/utils/classes";
   import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
   import { getItemTooltips } from "$lib/queries/items";
-  import { formatStatName } from "$lib/terminology";
+  import { formatStatField, statField, statFieldName } from "$lib/stats";
 
   let { data } = $props();
 
@@ -193,7 +193,7 @@
   const statColumns = $derived<ColumnDef<ItemRow>[]>(
     selectedStats.map((stat) => ({
       id: `stat_${stat}`,
-      header: formatStatName(stat),
+      header: statFieldName(statField("item", stat), "item"),
       accessorFn: (row) => data.itemStatValues[row.id]?.[stat] ?? 0,
       sortDescFirst: true,
       size: 120,
@@ -336,7 +336,10 @@
     stats: "Stats",
     zone_ids: "Zone Filter",
     ...Object.fromEntries(
-      selectedStats.map((stat) => [`stat_${stat}`, formatStatName(stat)]),
+      selectedStats.map((stat) => [
+        `stat_${stat}`,
+        statFieldName(statField("item", stat), "item"),
+      ]),
     ),
   });
 </script>
@@ -400,6 +403,11 @@
     <span class={notes === "-" ? "text-muted-foreground" : ""}>{notes}</span>
   {:else if cell.column.id === "item_type" || cell.column.id === "stats" || cell.column.id === "zone_ids"}
     <!-- Hidden filter columns -->
+  {:else if cell.column.id.startsWith("stat_")}
+    {formatStatField(
+      statField("item", cell.column.id.slice("stat_".length)),
+      Number(cell.getValue()),
+    )}
   {:else}
     {cell.getValue()}
   {/if}

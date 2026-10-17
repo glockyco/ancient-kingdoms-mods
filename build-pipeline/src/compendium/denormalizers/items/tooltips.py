@@ -12,45 +12,6 @@ from rich.console import Console
 
 console = Console()
 
-# Maps internal stat field names to their display names (from game tooltips)
-STAT_DISPLAY_NAMES: dict[str, str] = {
-    "health_bonus": "Hit Points",
-    "energy_bonus": "Rage Points",
-    "mana_bonus": "Mana",
-    "hp_regen_bonus": "Health Regen",
-    "mana_regen_bonus": "Mana Regen",
-    "defense": "AC",
-    "damage": "Damage",
-    "magic_damage": "Spell Power",
-    "accuracy": "Accuracy",
-    "haste": "Haste",
-    "spell_haste": "Spell Haste",
-    "speed_bonus": "Movement Speed",
-    "critical_chance": "Critical Chance",
-    "critical_resist": "Critical Resist",
-    "block_chance": "Block Chance",
-    "fire_resist": "Fire Resist",
-    "cold_resist": "Cold Resist",
-    "poison_resist": "Poison Resist",
-    "disease_resist": "Disease Resist",
-    "magic_resist": "Magic Resist",
-    "resist_fear_chance": "Fear Resist",
-    "strength": "Strength",
-    "dexterity": "Dexterity",
-    "constitution": "Constitution",
-    "intelligence": "Intelligence",
-    "wisdom": "Wisdom",
-    "charisma": "Charisma",
-}
-
-
-def _format_stat_name(stat: str) -> str:
-    """Format an internal stat name to its game display name."""
-    if stat in STAT_DISPLAY_NAMES:
-        return STAT_DISPLAY_NAMES[stat]
-    # Fallback: title-case with underscores replaced by spaces
-    return " ".join(word.capitalize() for word in stat.split("_"))
-
 
 def _convert_unity_markup_to_html(text: str) -> str:
     """Convert Unity TextMeshPro markup tags to HTML."""
@@ -97,7 +58,7 @@ def _convert_unity_markup_to_html(text: str) -> str:
     return html
 
 
-def _parse_tooltip(item: dict) -> str:
+def _parse_tooltip(item: dict, stat_names: dict[str, str | None]) -> str:
     """Parse Unity TextMeshPro markup and replace placeholders with actual item values."""
     tooltip = item.get("tooltip") or ""
     if not tooltip:
@@ -133,7 +94,10 @@ def _parse_tooltip(item: dict) -> str:
             json.loads(attribute_bonuses_json) if attribute_bonuses_json else []
         )
         for bonus in attribute_bonuses:
-            formatted_attr = _format_stat_name(bonus["attribute"])
+            stat_id = bonus["stat_id"]
+            if stat_id not in stat_names or stat_names[stat_id] is None:
+                raise ValueError(f"Missing item stat name for stat {stat_id}")
+            formatted_attr = stat_names[stat_id]
             set_bonus += f"\n<color=#676a75>Set (3): Increases {formatted_attr} by {bonus['bonus']}</color>"
 
         # Add skill bonuses (5-piece) - grayed out since we only have 1 piece
@@ -309,6 +273,12 @@ def run(conn: sqlite3.Connection) -> None:
     """Generate pre-rendered HTML tooltips for all items."""
     console.print("Generating item tooltips...")
     cursor = conn.cursor()
+    stat_names = dict(
+        conn.execute(
+            "SELECT DISTINCT s.id, s.item_name FROM stat_fields f "
+            "JOIN stats s ON s.id = f.stat_id WHERE f.source = 'item'"
+        )
+    )
 
     cursor.execute("""
         UPDATE items
@@ -348,7 +318,7 @@ def run(conn: sqlite3.Connection) -> None:
 
     for row in cursor.fetchall():
         item = dict(zip(columns, row))
-        tooltip_html = _parse_tooltip(item)
+        tooltip_html = _parse_tooltip(item, stat_names)
 
         if tooltip_html:
             conn.execute(

@@ -77,6 +77,7 @@ namespace DataExporter
                 new("fish", new[] { "fish.json" }, () => new FishExporter(LoggerInstance, path).Export()),
                 new("quests", new[] { "quests.json" }, () => new QuestExporter(LoggerInstance, path).Export()),
                 new("skills", new[] { "skills.json" }, () => new SkillExporter(LoggerInstance, path, visuals).Export()),
+                new("stats", new[] { "stats.json" }, () => new StatExporter(LoggerInstance, path).Export()),
                 new("portals", new[] { "portals.json" }, () => new PortalExporter(LoggerInstance, path).Export()),
                 new("zoneInfo", new[] { "zone_info.json" }, () => new ZoneInfoExporter(LoggerInstance, path).Export()),
                 new("zoneTriggers", new[] { "zone_triggers.json" }, () => new ZoneTriggerExporter(LoggerInstance, path).Export()),

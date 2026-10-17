@@ -8,7 +8,7 @@
 - Four effects that are not summed. The engine reads them from individual buffs at hit or cast time: ward (`server-scripts/Combat.cs:1247-1293`), damage shield (`:921-1004`), heal on hit (`:895-916`) and cooldown reduction (`server-scripts/TargetBuffSkill.cs:281-303`).
 - Two sets of names, read in the running game in the English locale:
   - Item tooltips. `ScriptableItem.LocalizedStatLabel` maps 28 English labels to localization keys under `item.stat.` (`server-scripts/ScriptableItem.cs:269-302`), and each key's English text equals its input, such as Hit Points, AC, Health Regen and Critical Chance. An item comparison calls a weapon's damage Base Damage and any other item's Attack Power (`server-scripts/EquipmentItem.cs:557`).
-  - The character window. Its titles are bound to entries of `Localization_String_Table`, such as `defense` for Armor Class, `critical_strike` for Critical Strike, `hp_regen` for Health Regeneration and `movement_speed` for Movement Speed. The attribute titles are stored in capitals. The pool title and its regeneration title are set by code from `mana` or `rage` and from `mana_regen` or `rage_regen` (`server-scripts/UICharacterInfo.cs:259-280`). Only the HP title is fixed text in the window.
+  - The character window. Its prefab binds 22 titles to entries of `Localization_String_Table`: the six attributes, stored in capitals, and 16 stat titles such as `defense` for Armor Class, `critical_strike` for Critical Strike, `hp_regen` for Health Regeneration and `movement_speed` for Movement Speed. The pool title and its regeneration title are set by code from `mana` or `rage` and from `mana_regen` or `rage_regen` (`server-scripts/UICharacterInfo.cs:259-280`). Only the HP title is fixed text in the window. Fear Resist does not appear in it.
 - Formats. The window shows a fraction as the value times 100 with at most two decimals and a percent sign, and pools with thousands separators (`server-scripts/UICharacterInfo.cs:253,290-312`). Item tooltips format fractions the same way (`server-scripts/EquipmentItem.cs:461-467`).
 
 ### What the repository has
@@ -45,14 +45,20 @@
 A `StatCatalog` in `mods/DataExporter` declares each stat once:
 
 - its id
-- the export fields that feed it, by source: item, augment, armor set, skill, class curve and mercenary curve
-- for each field, the kind of modifier: flat, percent of the stat, amount per second, or percent of the maximum per second
-- its value type, display format and clamp
+- the export fields that feed it, from four export models: item stats, skills, class curves and pets, which include mercenaries. Augments and armor set bonuses use the item fields, because the pipeline derives a set bonus from its augment's attribute fields.
+- for each field, the kind of modifier and, for a curve, whether the field is the base value or the gain per level
+- its display format
+- the clamp of the game's getter for the stat, and every other stat that adds to it per point. These are the ten attribute terms of `Strength`, `Constitution`, `Intelligence` and `Dexterity`, such as 25 Hit Points per Constitution point (`server-scripts/Constitution.cs:GetHealthBonus`), and the 0.0001 Block Chance per point of Armor Class in the getter itself (`server-scripts/Combat.cs:309-320`). Wisdom and Charisma add to no summed stat. A term on a whole-number stat is rounded per attribute with `Mathf.RoundToInt`, which rounds ties to even.
+- for a regeneration stat, the pool whose maximum a percent field refers to
 - the game label keys of its names
 
-The catalogue refers to the export models' properties with `nameof`, so renaming an export key without updating the catalogue fails to compile. A test fails when a numeric stat property of the item or skill export model has no catalogue entry, or has two. A new `StatExporter` writes `stats.json`.
+There are four kinds of modifier. A flat modifier adds an amount to a stat that is not a regeneration rate, and a percent modifier adds a fraction of the stat's own value. A regeneration field adds either an amount per second or a fraction of the pool's maximum per second.
 
-Clamps and display formats are code constants in the game. The catalogue is their single cited copy, as `ProgressionRows.cs` is for progression, and the citation check keeps the citations current.
+The catalogue refers to the export models' properties with `nameof`, so renaming an export key without updating the catalogue fails to compile. Every other numeric property of the four models is declared as not a stat, with its reason. A test fails when a numeric property is in neither list, or is mapped twice. A new `StatExporter` writes `stats.json` with both lists, so the pipeline can also refuse an exported field that is in neither.
+
+The pipeline stores an armor set's attribute bonuses by stat id, and every consumer takes the name from the catalogue.
+
+Clamps, per-point terms and display formats are code constants in the game. The catalogue is their single cited copy, as `ProgressionRows.cs` is for progression, and the citation check keeps the citations current.
 
 Alternatives considered:
 
