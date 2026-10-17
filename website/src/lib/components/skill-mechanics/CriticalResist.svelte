@@ -1,5 +1,13 @@
 <script lang="ts">
-  import { statName } from "$lib/stats";
+  import { statName, formatStat } from "$lib/stats";
+  import { atRank } from "$lib/calculation/format";
+  import { getMechanicsContext } from "./context";
+
+  const mechanics = getMechanicsContext();
+  const { skill } = $derived(mechanics);
+  const amount = $derived(
+    atRank(skill.critical_resist_bonus!, skill.max_level),
+  );
 </script>
 
 <!-- Source: server-scripts/Combat.cs:295-307 (criticalResist, clamped 0-1), 525-530 (ApplyCriticalResistToMultiplier), 865-880 (crit damage), Dexterity.cs:34-37 -->
@@ -7,13 +15,19 @@
   <h3 class="font-semibold">{statName("critical_resist")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
-      >Critical Resist reduces the extra damage from critical hits.</span
+      >The affected character receives {formatStat(
+        "critical_resist",
+        amount,
+      ).replace("%", "")}
+      percentage points of Critical Resist at rank {skill.max_level}{skill.scales_with_charisma
+        ? ", before Charisma scaling"
+        : ""}, which reduces the extra damage from critical hits.</span
     >
     <span class="block"
       >See <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#critical-hits">critical damage reduction</a
-      > for how the stat reduces the extra damage.</span
+      >.</span
     >
     <span class="block"
       >At 100% Critical Resist, a critical hit deals the same damage as an

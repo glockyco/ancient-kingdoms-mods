@@ -15,24 +15,22 @@
   <Calculation calculation={channelCalculation(skill)} />
   <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — each pulse reads the caster's current Damage or Magic Damage and calls DealDamageAt separately. -->
   <p class="text-muted-foreground">
-    Each pulse recalculates the skill's damage from your current stats and
-    splits it as Skill Damage above shows. Each pulse is a separate hit, so the
-    target's defenses, resist roll and critical hits apply to each pulse.
+    Each pulse uses your current stats and can be resisted or critical
+    independently.
   </p>
   <p class="text-muted-foreground">
-    Mana and energy are paid at the start and are not refunded on interruption.
+    The {skill.energy_cost?.base_value ? "Rage" : "Mana"} cost is paid when the channel
+    starts and is not refunded if interrupted.
   </p>
   <!-- Source: server-scripts/Player.cs:UpdateServer_CASTING — fear and stun cancel ChanneledTargetDamageSkill; stun skips halving the channel cooldown. -->
   <p class="text-muted-foreground">
-    Moving more than 0.01 yd from your starting position, losing the target,
-    range or sight, stun or fear cancels the channel. Cancellation starts the
-    full cooldown immediately, including when a pulse kills the target.
+    Stay still and keep your target in range and line of sight. Moving more than
+    0.01 yd, losing the target, stun or fear interrupts the channel. An
+    interruption starts the full cooldown, even if a pulse killed the target.
   </p>
   <!-- Source: server-scripts/PlayerSkills.cs:CancelCast,527-577,2202-2206,2294-2301 — a valid replacement skill cancels the channel with full cooldown and then starts or applies. -->
   <p class="text-muted-foreground">
-    Using another skill cancels the channel, starts its full cooldown
-    immediately and starts the new skill. You must be free of stun and fear. The
-    new skill must be active, meet its casting requirements and have a valid
-    target within range and sight when required.
+    Casting another skill also interrupts the channel and starts its full
+    cooldown.
   </p>
 </div>

@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
-  import { formatStat, statField, formatStatField } from "$lib/stats";
+  import { statField, formatStatField } from "$lib/stats";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { formatLinearStat } from "$lib/utils/formatSkillEffect";
-  import { drainMagnitude, reaperDrain } from "$lib/skills/worked-examples";
-  import { MAX_HEALTH } from "$lib/calculation/inputs";
+  import { drainMagnitude } from "$lib/skills/worked-examples";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -19,15 +17,11 @@
   <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — an active NecromancerReaperFormSkill buff multiplies the caster's debuff ticks on others by 1 + its magicDamagePercentBonus. -->
   <!-- Source: server-scripts/Combat.cs:DealDamageAt — lifetap healing is a share of direct damage dealt. -->
   <p class="text-muted-foreground">
-    While the form is active, your Spell Power gains {formatLinearStat(
+    While the form is active, your Spell Power and your damage-over-time ticks
+    on other targets each gain {formatLinearStat(
       "magic_damage_percent_bonus",
       skill.magic_damage_percent_bonus,
-    )}, and your damage-over-time ticks on other targets gain the same
-    {formatLinearStat(
-      "magic_damage_percent_bonus",
-      skill.magic_damage_percent_bonus,
-    )}. Lifetap skills heal a share of the damage they deal, so magic lifetaps
-    heal more while the form is active.
+    )}. Your magic lifetaps also heal more.
   </p>
   {#if skill.health_percent_per_second_bonus}
     {@const drain = drainMagnitude(skill.health_percent_per_second_bonus)}
@@ -38,18 +32,7 @@
         fmt.atRank(drain, skill.max_level),
       )} of your maximum Hit Points{fmt.scalesWithRank(drain, skill.max_level)
         ? ` at rank ${skill.max_level}`
-        : ""}, rounded. With {formatStat("health", MAX_HEALTH.value)} maximum Hit
-      Points, the form drains {formatNumber(
-        reaperDrain(skill.health_percent_per_second_bonus, skill.max_level),
-      )} Hit Points each second. {fmt.describeRankGrowth(
-        drain,
-        skill.max_level,
-        (value) =>
-          formatStatField(
-            statField("skill", "health_percent_per_second_bonus"),
-            value,
-          ),
-      )}
+        : ""}, rounded.
     </p>
     <p class="text-muted-foreground">
       Your Health Regeneration still applies. The character window's Health
@@ -61,8 +44,8 @@
   <!-- Source: server-scripts/Skills.cs:251-256 — recovery ticks skip BreakMezz for NecromancerReaperFormSkill. -->
   <!-- Source: server-scripts/Skills.cs:251-268,1617-1623 — the self-drain has no low-health guard and can kill the caster. -->
   <p class="text-muted-foreground">
-    Drain ignores resistance, wards and critical hits. The drain can kill you.
-    It does not break Sleep.
+    The drain ignores resistances, Ward and critical hits. It can kill you. It
+    does not break sleep.
   </p>
   <!-- Source: server-scripts/MountItem.cs:58-63 — removes reaperForm.formSkill before mounting. -->
   <!-- Source: server-scripts/Skills.cs:OnDeath — buffs without remainAfterDeath are removed. -->

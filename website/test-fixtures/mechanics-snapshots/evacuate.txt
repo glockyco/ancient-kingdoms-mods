@@ -1,1 +1,0 @@
-Mechanics Teleport Teleports you and every other living, visible player within 8 yd, in your party or not, to the city assigned to your current zone. Each teleported player is stunned for 1 second when the spell resolves.

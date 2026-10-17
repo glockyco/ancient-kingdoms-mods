@@ -75,19 +75,39 @@
           <Card.Content
             class="space-y-1 text-sm text-muted-foreground mt-auto !px-6 !pt-6 !pb-6"
           >
-            <div>{plural(faction.member_count, "member", "members")}</div>
-            <div>
-              Monsters you can kill for reputation:
-              {formatNumber(faction.monster_source_count)}
-            </div>
-            <div>
-              Quests that award reputation:
-              {formatNumber(faction.quest_source_count)}
-            </div>
-            <div>
-              Houses and items requiring reputation:
-              {formatNumber(faction.house_count + faction.gated_item_count)}
-            </div>
+            {#if faction.member_count > 0}
+              <div>{plural(faction.member_count, "member", "members")}</div>
+            {/if}
+            {#if faction.monster_source_count > 0}
+              <div>
+                Monsters you can kill for reputation:
+                {formatNumber(faction.monster_source_count)}
+              </div>
+            {/if}
+            {#if faction.npc_source_count > 0}
+              <div>
+                NPCs you can kill for reputation:
+                {formatNumber(faction.npc_source_count)}
+              </div>
+            {/if}
+            {#if faction.chest_source_count > 0}
+              <div>
+                Chests that raise reputation:
+                {formatNumber(faction.chest_source_count)}
+              </div>
+            {/if}
+            {#if faction.quest_source_count > 0}
+              <div>
+                Quests that award reputation:
+                {formatNumber(faction.quest_source_count)}
+              </div>
+            {/if}
+            {#if faction.house_count + faction.gated_item_count > 0}
+              <div>
+                Houses and items requiring reputation:
+                {formatNumber(faction.house_count + faction.gated_item_count)}
+              </div>
+            {/if}
           </Card.Content>
         </Card.Root>
       </a>

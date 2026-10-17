@@ -78,7 +78,7 @@ export const load: PageServerLoad = (): ExploringPageData => {
          JOIN monsters m ON m.id = ms.monster_id
          WHERE ms.zone_id = z.id)
       ) as level_max,
-      z.discovery_exp
+      zt.discovery_exp
     FROM zone_triggers zt
     JOIN zones z ON zt.zone_id = z.zone_id
     ORDER BY z.name, zt.name

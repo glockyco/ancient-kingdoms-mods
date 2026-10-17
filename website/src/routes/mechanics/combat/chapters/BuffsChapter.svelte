@@ -42,31 +42,23 @@
     </p>
     <!-- Source: server-scripts/Skills.cs:AddOrRefreshBuff -->
     <p>
-      A new buff replaces every buff in its overwrite group, whatever their rank
-      or strength. <a href="/skills/divine_shield">Divine Shield</a> and
+      Buffs and debuffs in the same group replace each other, even when the new
+      effect is weaker. <a href="/skills/divine_shield">Divine Shield</a>
+      and
       <a href="/skills/shield_of_faith">Shield of Faith</a> share a group, so each
       replaces the other.
     </p>
     <!-- Source: server-scripts/Skills.cs:AddOrRefreshBuff -->
     <ul>
-      <li>Buffs without an overwrite group stack with other buffs.</li>
+      <li>Effects in different groups, or without a group, stack.</li>
       <li>
-        Debuffs with different or no overwrite groups apply independently.
+        Area buffs from mercenaries, companions and familiars do not replace
+        existing buffs in the same group. Player casts do.
       </li>
-      <li>
-        An area buff cast by a mercenary, companion or familiar skips targets
-        that already have a buff of its group. A player's area buff replaces it.
-      </li>
-      <li>
-        Each damage-over-time skill keeps its own layers when several affect the
-        same target.
-      </li>
-      <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff; PlayerSkills.cs:RefreshBardSongAura — categorized songs compare strength, while other songs replace another Bard's copy by name at each cast. -->
-      <li>
-        When two Bards sing the same song, which one applies depends on the
-        song. See <a href="/mechanics/bard#songs">Bard Songs</a>.
-      </li>
+      <li>Different damage-over-time skills stack their layers separately.</li>
     </ul>
+    <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff; PlayerSkills.cs:RefreshBardSongAura: categorized songs compare strength, while other songs replace another Bard's copy by name at each cast. -->
+    <SeeAlso links={[{ href: "/mechanics/bard#songs", label: "Bard songs" }]} />
   </Topic>
 
   <Topic id="buffs">
@@ -78,7 +70,7 @@
     <RefTable caption="Buff attribute by caster">
       <thead>
         <tr>
-          <th scope="col">Caster</th>
+          <th scope="col">Caster or buff</th>
           <th scope="col">Buff attribute</th>
         </tr>
       </thead>
@@ -129,7 +121,7 @@
       </thead>
       <tbody>
         <tr>
-          <th scope="row">{statName("health")} bonus</th>
+          <th scope="row">Maximum {statName("health")} bonus</th>
           <td>Listed bonus + 200% of buff attribute</td>
         </tr>
         <tr>
@@ -184,9 +176,8 @@
     <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardMercenarySkills.cs:RefreshAura — a song buff from a Bard or Bard mercenary carries that singer's Charisma. -->
     <!-- Source: server-scripts/Buff.cs:ScaleWithCharisma and Skills.cs:GetFinalHealOverTime — Charisma-scaled song values skip the Wisdom additions. -->
     <p>
-      A Bard song's effects grow with the Charisma of the Bard or Bard mercenary
-      singing it, instead of adding a buff attribute. Debuff songs scale the
-      same way.
+      Both beneficial and harmful Bard songs grow stronger with the singer's
+      Charisma. This applies to Bard mercenaries too.
     </p>
     <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier; Buff.cs:ScaleWithCharisma; BuffSkill.cs:ScaleFearResistChanceBonus,ScaleHealingPerSecondBonus — song power scales whole-number and percentage effects, but not Movement Speed or primary attributes. -->
     <Formula calculation={songCalculation()} />
@@ -202,14 +193,14 @@
           <th scope="row">Whole numbers, <RoundedTerm /></th>
           <td>
             Ward, Armor Class, resists, flat Attack Power and Spell Power, flat
-            Mana and Rage recovery
+            Mana Regeneration and Rage Regeneration
           </td>
         </tr>
         <tr>
           <th scope="row">Percentages</th>
           <td>
             Attack Power, Spell Power, Accuracy, Critical Strike, Haste, Spell
-            Casting Haste, percentage Mana and Rage recovery
+            Casting Haste, percentage Mana Regeneration and Rage Regeneration
           </td>
         </tr>
         <tr>
@@ -254,13 +245,20 @@
     </p>
     <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — on a boss, immunity lets through only debuffs that deal damage over time and change nothing else besides Movement Speed; on other monsters it lets through resistance-decrease skills. -->
     <p>
-      Debuffs have no effect on monsters whose pages list Immune to Debuffs,
-      with two exceptions. Those five skills still affect such a monster unless
-      it is a boss. A boss lets through debuffs that only deal damage over time,
-      such as <a href="/skills/immolate">Immolate</a> and
-      <a href="/skills/venom_of_the_grave">Venom of the Grave</a>. A slow on
-      such a debuff does not make a boss resist it.
+      Monsters whose pages list Immune to Debuffs ignore debuffs, with two
+      exceptions:
     </p>
+    <ul>
+      <li>
+        The five skills above still affect such a monster unless it is a boss.
+      </li>
+      <li>
+        A boss still takes debuffs whose only effects are damage over time and
+        optionally a slow, such as <a href="/skills/immolate">Immolate</a> and
+        <a href="/skills/venom_of_the_grave">Venom of the Grave</a>. It ignores
+        the slow.
+      </li>
+    </ul>
     <SeeAlso
       links={[{ href: "#root", label: "Root, for bosses and slowing debuffs" }]}
     />
@@ -296,7 +294,7 @@
           <td>Dexterity</td>
         </tr>
         <tr>
-          <th scope="row">Magic, fire, cold and untyped</th>
+          <th scope="row">Magic, fire, cold and no damage type</th>
           <td>Intelligence</td>
         </tr>
         <tr>
@@ -360,16 +358,16 @@
 
   <Topic id="damage-over-time">
     <p>
-      Each tick of damage over time goes through these steps. Which stat reduces
-      it is in <a href="#resistance">Defense by Damage Type</a>.
+      <a href="#resistance">Defense by Damage Type</a> shows which stat reduces damage-over-time
+      ticks.
     </p>
     <Formula calculation={damageOverTimeCalculation} />
     <!-- Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses,ApplyCriticalToOverTime — Reaper Form and execute require a different, online player caster, while critical chance is captured when the buff starts. -->
     <ul>
       <li>
         <a href="/skills/reaper_form">Reaper Form</a> and
-        <a href="/skills/deathly_focus">Deathly Focus</a> add the caster's bonuses
-        only to a player's ticks, and only while that player is online.
+        <a href="/skills/deathly_focus">Deathly Focus</a> add their bonuses only to
+        ticks of a debuff a player applied, and only while that player is online.
       </li>
       <li>
         The chance of a critical tick is the caster's Critical Strike when the
@@ -385,6 +383,8 @@
         Damage based on a percentage of the target's maximum Hit Points gets
         neither bonus and is never critical.
       </li>
+      <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,ApplyWardToDoTDamage: Ward absorbs the final tick after percentage-of-maximum-Health damage is added. -->
+      <li>Ward absorbs the final tick before the target loses Hit Points.</li>
     </ul>
   </Topic>
 
@@ -392,14 +392,15 @@
     <!-- Source: server-scripts/Buff.cs:Buff; BuffSkill.cs:GetCleanseCountersRemoved; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — each debuff starts with three layers; the four 10-yd player area cleanses affect living, visible players and pets, without a party gate; Remedy is targeted. -->
     <!-- Source: server-scripts/TargetBuffSkill.cs:HasMatchingCleanseDebuff — a cleanse matches debuffs that share one of its disease, poison, cold, fire or magic flags. -->
     <p>
-      A cleanse removes layers from debuffs of the types it lists. Each debuff
-      starts with three layers and ends when the last one is removed.
+      A cleanse removes layers from debuffs of the types it lists: disease,
+      poison, cold, fire or magic. Physical debuffs, which Armor Class resists,
+      cannot be cleansed. Each debuff starts with three layers and ends when the
+      last one is removed.
     </p>
     <!-- Source: server-scripts/Skills.cs:1867-1870 — ticks with two or one remaining layers deal 85% or 70%, rounded up. -->
     <p>
-      A debuff with fewer layers deals less
-      <a href="#damage-over-time">damage over time</a>: 85% with two layers
-      left, 70% with one.
+      A debuff deals 85% of its <a href="#damage-over-time">damage over time</a>
+      with two layers left and 70% with one, rounded up.
     </p>
     <!-- Source: website/data/compendium.db skills.player_classes — Cleanse is Cleric, Purify and Remedy are Druid, Purifying Winds is Ranger and Nullify Magic is Wizard. -->
     <ul>

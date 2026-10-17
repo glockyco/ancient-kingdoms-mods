@@ -113,7 +113,7 @@ export function merchantPrice(selling: boolean): Calculation {
   return {
     note: selling
       ? "Read the sell price beside the gold icon and the Durability percentage in the item tooltip. Read Charisma in the character window. Use 100% for items without durability. This is an estimate because the tooltip rounds durability to a whole percent."
-      : "For purchases paid in gold, use Buy Price on this site's item page and Charisma in the character window. The merchant window shows the discounted price. Purchases paid in tokens receive no Charisma discount.",
+      : "For purchases paid in gold, use Buy Price on the item's page and Charisma in the character window. The merchant window shows the discounted price. Purchases paid in tokens receive no Charisma discount.",
     steps: [
       ...(selling
         ? [
@@ -139,7 +139,9 @@ export function merchantPrice(selling: boolean): Calculation {
         expression: selling
           ? "Durability-adjusted value + extra gold"
           : "Buy Price − gold saved",
-        limit: "at least 1 gold. An item worth 1 gold always stays at 1 gold",
+        limit: selling
+          ? "at least 1 gold. An item with a 1 gold sell price always sells for 1 gold"
+          : "at least 1 gold",
       },
     ],
     inputs: [

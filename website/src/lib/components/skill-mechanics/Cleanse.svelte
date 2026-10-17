@@ -18,8 +18,7 @@
   <h3 class="font-semibold">
     <a
       href="/mechanics/combat#cleanse"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-      >Cleanse Mechanics</a
+      class="text-blue-600 dark:text-blue-400 hover:underline">Cleanse</a
     >
   </h3>
   <p class="text-muted-foreground">

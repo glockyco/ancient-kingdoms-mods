@@ -1,6 +1,7 @@
 <script lang="ts">
   import { statName } from "$lib/stats";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
@@ -89,8 +90,8 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View all books to collect.`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
+  description={`${data.profession.description} Where to find all ${data.books.length} books and the attributes each grants.`}
   path="/professions/lore_keeping"
 />
 
@@ -122,7 +123,6 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        <span class="whitespace-nowrap">Books: {data.books.length}</span>
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -139,6 +139,12 @@
       <BookOpen class="h-5 w-5 text-indigo-500" />
       Books ({data.books.length})
     </h2>
+    <p class="text-muted-foreground">
+      Reading a book for the first time uses it up and permanently raises its
+      listed attributes. Each book counts toward the {data.profession
+        .tracking_denominator}
+      books needed for 100% Lore Keeping.
+    </p>
     <div class="rounded-lg border overflow-x-auto">
       <table class="w-full min-w-[1200px] table-fixed">
         <colgroup>
@@ -151,7 +157,9 @@
           <tr>
             <th class="p-3"></th>
             <th class="text-left p-3 font-medium whitespace-nowrap">Name</th>
-            <th class="text-left p-3 font-medium whitespace-nowrap">Stats</th>
+            <th class="text-left p-3 font-medium whitespace-nowrap"
+              >Attributes gained</th
+            >
             <th class="text-left p-3 font-medium whitespace-nowrap">Source</th>
           </tr>
         </thead>

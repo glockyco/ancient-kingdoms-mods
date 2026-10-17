@@ -28,7 +28,7 @@
     { accessorKey: "npc_name", header: "Recruiter" },
     {
       accessorKey: "preferred_race",
-      header: cls ? "Race Hired" : "Preferred Race",
+      header: cls ? "Race hired" : "Preferred race",
     },
     { accessorKey: "zone_name", header: "Zone" },
     { id: "map", header: "Map", size: 80, enableSorting: false },
@@ -60,9 +60,7 @@
       {#if row.original.preferred_race && classCanBe(cls, row.original.preferred_race)}
         {row.original.preferred_race}
       {:else}
-        <span class="text-muted-foreground"
-          >Any race available to this class</span
-        >
+        <span class="text-muted-foreground">Random available race</span>
       {/if}
     {:else if row.original.preferred_race}
       {row.original.preferred_race}

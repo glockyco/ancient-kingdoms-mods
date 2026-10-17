@@ -7,6 +7,7 @@ import pytest
 
 from compendium.db import create_database
 from compendium.denormalizers.items.sources import _denormalize_quest_reward_sources
+from compendium.denormalizers.items.usages import _denormalize_quest_usages
 from compendium.denormalizers.quests import rewards, tooltips
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
@@ -131,3 +132,56 @@ def test_empty_classes_cannot_publish_unrestricted_rewards(conn):
     add_quest(conn, class_rewards())
     with pytest.raises(ValueError, match="requires playable classes"):
         rewards.run(conn)
+
+
+def test_tooltip_resolves_player_context_and_formats_reward_numbers(conn):
+    quest = {
+        "tooltip": "{PLAYER}|{RACE}|{CLASS}|{REWARDGOLD}|{REWARDEXPERIENCE}",
+        "rewards": json.dumps({"gold": 1200, "exp": 180000}),
+    }
+    parsed = tooltips._parse_quest_tooltip(conn, quest, "Wizard")
+    fields = parsed.split("|")
+    assert all("{" not in field and "}" not in field for field in fields)
+    assert fields[2] == "Wizard"
+    assert fields[3:] == ["1,200", "180,000"]
+
+
+def test_zero_amount_inventory_requirements_produce_no_usage(conn):
+    conn.executemany(
+        "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
+        [("unused", "Unused"), ("needed", "Needed")],
+    )
+    conn.execute(
+        """INSERT INTO quests
+        (id, name, quest_type, display_type, required_items, gather_items, tooltip)
+        VALUES ('quest', 'Quest', 'gather_inventory', 'Have', ?, ?, '{GATHERSTATUS}')""",
+        (
+            json.dumps(
+                [{"item_id": "unused", "amount": 0}, {"item_id": "needed", "amount": 2}]
+            ),
+            json.dumps([{"item_id": "unused", "amount": 0}]),
+        ),
+    )
+    _denormalize_quest_usages(conn)
+    assert conn.execute(
+        "SELECT item_id, amount FROM item_usages_quest ORDER BY item_id"
+    ).fetchall() == [("needed", 2)]
+    quest = {
+        "quest_type": "gather_inventory",
+        "tooltip": "{GATHERSTATUS}",
+        "gather_items": json.dumps([{"item_id": "unused", "amount": 0}]),
+    }
+    assert tooltips._parse_quest_tooltip(conn, quest, "Wizard") == ""
+
+
+def test_class_placeholder_generates_variants_without_class_rewards(conn):
+    add_classes(conn, ("Warrior", "Wizard"))
+    add_quest(conn, [])
+    conn.execute("UPDATE quests SET tooltip = '{CLASS}', tooltip_complete = '{CLASS}'")
+    tooltips.run(conn)
+    start, complete = conn.execute(
+        "SELECT tooltip_html, tooltip_complete_html FROM quests"
+    ).fetchone()
+    expected = {"Warrior": "Warrior", "Wizard": "Wizard"}
+    assert json.loads(start) == expected
+    assert json.loads(complete) == expected

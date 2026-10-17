@@ -36,7 +36,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "cooking",
                 name = "Cooking",
-                description = "Prepare food at cooking stations.",
+                description = "Cook food at Cooking Ovens.",
                 category = "crafting",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "COOKING_MASTER",
@@ -84,7 +84,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "adventuring",
                 name = "Adventuring",
-                description = "Complete Adventurer's Guild quests.",
+                description = "Complete Adventurers' Guild quests.",
                 category = "combat",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "ADVENTURING_MASTER",
@@ -134,7 +134,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "treasure_hunter",
                 name = "Treasure Hunter",
-                description = "Find treasure chests.",
+                description = "Dig up buried treasure with treasure maps.",
                 category = "exploration",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "TREASURE_HUNTER_MASTER",
@@ -146,7 +146,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "radiant_seeker",
                 name = "Radiant Seeker",
-                description = "Collect scattered radiant sparks.",
+                description = "Collect scattered Radiant Sparks.",
                 category = "gathering",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "RADIANT_SEEKER_MASTER",
@@ -170,7 +170,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "scroll_mastery",
                 name = "Scroll Mastery",
-                description = "Craft and use scrolls at scribing tables.",
+                description = "Craft scrolls at Scribing Tables and use them to cast their skills.",
                 category = "crafting",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "SCROLL_MASTERY_MASTER",

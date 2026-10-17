@@ -12,6 +12,10 @@ import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { gatheringResourceDescription } from "$lib/server/meta-description";
 import { gatheringResourcePageIds } from "../../../../scripts/gathering-resource-ids.mjs";
+import {
+  PROFESSION_MECHANICS,
+  linearProcChance,
+} from "$lib/data/professions/mechanics";
 
 export const prerender = true;
 
@@ -112,7 +116,14 @@ export const load: PageServerLoad = ({ params }) => {
     );
   }
 
-  const zoneNames = spawns.map((s) => s.zone_name);
+  const zoneNames = [
+    ...new Set(
+      (fishingSpotVariants.length > 0
+        ? fishingSpotVariants.flatMap((variant) => variant.spawns)
+        : spawns
+      ).map((spawn) => spawn.zone_name),
+    ),
+  ];
   const description = gatheringResourceDescription(
     {
       name: selectedResource.name,
@@ -125,6 +136,23 @@ export const load: PageServerLoad = ({ params }) => {
       gathering_exp: selectedResource.gathering_exp,
       item_reward_name: selectedResource.item_reward_name,
       item_reward_amount: selectedResource.item_reward_amount,
+      item_reward_amount_min: 1,
+      catches: [
+        ...new Set(
+          drops
+            .filter((drop) => !drop.is_fishing_trash)
+            .slice(0, 3)
+            .map((drop) => drop.item_name),
+        ),
+      ],
+      radiant_chance_min: linearProcChance(
+        PROFESSION_MECHANICS.radiant_seeker.procChance,
+        0,
+      ),
+      radiant_chance_max: linearProcChance(
+        PROFESSION_MECHANICS.radiant_seeker.procChance,
+        100,
+      ),
     },
     zoneNames,
   );

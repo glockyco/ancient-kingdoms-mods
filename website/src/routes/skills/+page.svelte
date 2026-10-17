@@ -207,7 +207,7 @@
         { label: "Spell", value: "spell" },
         { label: "Veteran", value: "veteran" },
         { label: "Targets Mercenaries", value: "targets_mercenaries" },
-        { label: "Targets Pet", value: "targets_pet" },
+        { label: "Targets Pets", value: "targets_pet" },
         { label: "Used by Mercenaries", value: "used_by_mercenaries" },
         { label: "Used by Pets", value: "used_by_pets" },
       ]}
@@ -217,7 +217,7 @@
 
 <Seo
   title="Skills - Ancient Kingdoms"
-  description={`${formatNumber(data.skills.length)} skills covering every class, plus monster and pet abilities — damage spells, heals, buffs, debuffs, and summons, with mana costs and tiers.`}
+  description={`${formatNumber(data.skills.length)} skills from every class, plus monster and pet abilities, with each skill's type and effect.`}
   path="/skills"
 />
 

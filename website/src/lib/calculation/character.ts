@@ -9,7 +9,7 @@ export function mysticSparkMana(hit = 200, targetHealth = 150): Calculation {
   const mana = floorToInt(multiplyF32(eligible, 0.35));
   return {
     // Source: server-scripts/Combat.cs:1236-1325 — Mana gain precedes shield absorption, so the visible hit is usable for an unshielded target.
-    note: "Use a hit on a target without shields. Shield absorption can hide damage that Mystic Spark counts for Mana.",
+    note: "Use a hit on a target without a ward or Mana Shield. They absorb damage after Mystic Spark counts it, so they lower the damage number you see.",
     steps: [
       {
         name: "Eligible hit damage",

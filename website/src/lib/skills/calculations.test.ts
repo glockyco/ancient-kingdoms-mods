@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 import type { SkillDetailView } from "$lib/types/skills";
-import { bloodPactCalculation, deathBloomCalculation } from "./calculations";
+import {
+  bloodPactCalculation,
+  channelCalculation,
+  deathBloomCalculation,
+} from "./calculations";
 
 function skill(overrides: Partial<SkillDetailView>): SkillDetailView {
   return { id: "test", max_level: 5, ...overrides } as SkillDetailView;
@@ -59,4 +63,28 @@ describe("Hit Points conversion calculations", () => {
       ),
     ).toEqual([2252]);
   });
+});
+
+describe("channel pulse timing", () => {
+  test.each([
+    [0, [1, 2, 3]],
+    [0.75, [0.25, 0.5, 0.75]],
+    [-0.75, [1.75, 3.5, 5.25]],
+    [1, [0.02, 0.03, 0.05]],
+    [1.5, [0.02, 0.03, 0.05]],
+  ] as [number, number[]][])(
+    "uses the full haste sum %s and the channel minimum",
+    (spellHaste, times) => {
+      const calculation = channelCalculation(
+        skill({
+          is_spell: true,
+          channel_pulses: 3,
+          cast_time: { base_value: 3, bonus_per_level: 0 },
+        }),
+      );
+      expect(
+        resultNumbers(calculation.example!({ spellHaste }).result),
+      ).toEqual(times);
+    },
+  );
 });

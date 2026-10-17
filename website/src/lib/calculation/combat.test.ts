@@ -47,15 +47,23 @@ describe("combat calculations", () => {
     expect(mitigate(100, -100)).toMatchObject({ prevented: 0, taken: 100 });
   });
 
-  it("keeps the reader's actual defensive stat key", () => {
-    expect(mitigationCalculation(DEFENSE, "armor_class").inputs).toEqual([
-      DEFENSE,
-    ]);
-    expect(mitigationCalculation(FIRE_RESIST, "fire_resist").inputs).toEqual([
-      FIRE_RESIST,
-    ]);
-    const calculation = mitigationCalculation(FIRE_RESIST, "fire_resist");
-    expect(calculation.example?.({ fireResist: 100 })).toBeDefined();
+  it("uses the reader's defensive stat and incoming damage", () => {
+    const armor = mitigationCalculation(DEFENSE, "armor_class");
+    const fire = mitigationCalculation(FIRE_RESIST, "fire_resist");
+    expect(armor.inputs?.[0]).toBe(DEFENSE);
+    expect(fire.inputs?.[0]).toBe(FIRE_RESIST);
+    expect(fire.inputs?.[1].key).toBe("incomingDamage");
+    expect(
+      fire.example?.({ incomingDamage: 201, fireResist: 100 }).result,
+    ).toContain("190");
+    expect(
+      fire.example?.({ incomingDamage: 401, fireResist: 100 }).result,
+    ).toContain("380");
+    expect(
+      fire
+        .example?.({ incomingDamage: 10, fireResist: 100_000 })
+        .working.at(-1),
+    ).toMatch(/= 1$/);
   });
 
   it("caps the level contribution separately from elemental avoidance", () => {
@@ -199,6 +207,21 @@ describe("combat calculations", () => {
     expect(receivedRage(1)).toBe(1);
     expect(receivedRage(100_000)).toBe(25);
     expect(receivedRage(0)).toBe(0);
+  });
+
+  it("uses received hit damage for the Rage example and preserves its limits", () => {
+    const calculation = receivedHitCalculation();
+    expect(calculation.inputs?.[0].key).toBe("receivedDamage");
+    for (const [damage, rage] of [
+      [0, 0],
+      [1, 1],
+      [101, 3],
+      [100_000, 25],
+    ]) {
+      expect(
+        calculation.example?.({ receivedDamage: damage }).result,
+      ).toContain(String(rage));
+    }
   });
 
   it("rounds a character-window percentage addition rather than the final sum", () => {

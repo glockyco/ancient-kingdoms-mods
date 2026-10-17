@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatPercent, formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -277,8 +278,8 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} Fishing spot tiers, bite timing, fish catch odds, Fisherman set bonuses, foods, and potions.`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
+  description={`${data.profession.description} Fishing spot tiers, bite timing, fish catch odds, Fisherman costume bonuses, foods and potions.`}
   path="/professions/fishing"
 />
 
@@ -352,8 +353,8 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            If your selected rod is missing or invalid, the game selects the
-            highest-quality Fishing Rod in your inventory.
+            Use a rod from your inventory to select it. If the selected rod is
+            missing or invalid, the game uses your highest-quality Fishing Rod.
           </p>
         </div>
       </div>
@@ -379,12 +380,12 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
-          <div>Interact with the spot when the fish bites.</div>
+          <div>Click the spot again when !!! appears.</div>
           <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must fall inside the tier's bite window. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
-              After the {castDelay.min}–{castDelay.max} second cast delay, interact
-              with the spot again.
+              !!! appears above your character after {castDelay.min} to {castDelay.max}
+              seconds.
             </span>
             <span class="block">
               The response window lasts 2 seconds at Tier I, 1.5 at Tier II, 1
@@ -398,11 +399,12 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">4</div>
         <div>
-          <div>Wait for a bite.</div>
+          <div>Check your bite chance.</div>
           <!-- Source: server-scripts/GatherItem.cs:698-708 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Rod quality, Fishing skill, and spot tier decide whether the attempt
-            succeeds.
+            Better rods and higher Fishing skill improve your bite chance. Hover
+            over a spot to see its Fishing Probability. You need at least 20% to
+            fish there.
           </p>
         </div>
       </div>
@@ -413,29 +415,19 @@
           <div>Catch a fish, trash, or nothing.</div>
           <!-- Source: server-scripts/GatherItem.cs:708-797 — after a bite, the spot's fish gets the first chance. On failure, lower-tier fish, trash, or escape can follow. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <span class="block">
-              When a fish bites, the game first tries to catch one of the fish
-              listed for that spot.
-            </span>
-            <span class="block">
-              If the first attempt does not catch a fish, higher-tier spots can
-              instead catch a random <a
-                href="#fishing-fallback-pools"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >fish from lower tiers</a
-              >.
-            </span>
-            <span class="block">
-              Tier II spots can catch Tier I fish, Tier III spots can catch Tier
-              I–II fish, and Tier IV spots can catch Tier I–III fish.
-            </span>
-          </p>
-          <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            If you catch no fish from the spot or a lower tier, you either catch
+            After a bite, each 10% Fishing adds 5 percentage points to the catch
+            chance for the spot's randomly selected fish, up to 100%. If you
+            miss that fish, higher-tier spots can instead give <a
+              href="#fishing-fallback-pools"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >fish from lower tiers</a
+            >. Trash and escapes are also possible. Keep inventory space for
+            your catch. The
             <a
-              href="#fishing-trash"
-              class="text-blue-600 hover:underline dark:text-blue-400">trash</a
-            > or the fish gets away.
+              href="#calculator"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >calculator</a
+            > shows each outcome's chance for your rod, skill and spot.
           </p>
         </div>
       </div>
@@ -445,13 +437,14 @@
         <div>
           <div>Gain experience and possibly Fishing skill.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A bite gives experience based on the spot's tier and can improve
-            Fishing until you pass that tier's skill limit.
+            A bite gives XP even if you catch nothing. Double XP doubles this
+            reward. Tier I stops raising Fishing above 25%, Tier II above 50%
+            and Tier III above 75%.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
           >
-            <span>Max Level: {data.profession.max_level}%</span>
+            <span>Achievement at {data.profession.max_level}%:</span>
             {#if data.profession.achievement_id}
               <AchievementLink
                 achievementId={data.profession.achievement_id}
@@ -590,6 +583,10 @@
           </p>
         {/if}
         <div>
+          <p class="mb-2 text-sm text-muted-foreground">
+            Fisherman costume pieces worn. Each adds 2 percentage points to the
+            chance to catch the spot's selected fish.
+          </p>
           <div
             class="grid gap-2 rounded-md border bg-background p-2 sm:grid-cols-3"
           >
@@ -631,9 +628,7 @@
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">
-            XP per successful cast
-          </div>
+          <div class="text-sm text-muted-foreground">Base XP per bite</div>
           <div class="text-2xl font-semibold">
             {formatNumber(fishingExperienceForTier(selectedSpot.level))}
           </div>
@@ -650,11 +645,11 @@
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">
-            Fishing gain per increase
-          </div>
+          <div class="text-sm text-muted-foreground">Each Fishing increase</div>
           <div class="text-2xl font-semibold">
-            {#if masteryGainChance > 0}
+            {#if selectedSpotSuccessChance === 0}
+              <span class="text-base">Fishing skill too low to fish here</span>
+            {:else if masteryGainChance > 0}
               {formatPercent(masteryGainRange.min / 100, {
                 decimals: 2,
                 trailingZeros: true,
@@ -674,7 +669,7 @@
           <div class="text-2xl font-semibold">
             {formatNumber(fishingClickWindowSeconds(selectedSpot.level), {
               decimals: 2,
-              trailingZeros: true,
+              trailingZeros: false,
               grouping: false,
             })}s
           </div>
@@ -774,6 +769,10 @@
     <div class="flex items-center gap-2">
       <h2 class="text-xl font-semibold">Fishing Rods ({data.rods.length})</h2>
     </div>
+    <p class="mt-2 text-sm text-muted-foreground">
+      Source level estimates where a rod can be obtained. It is not a
+      character-level requirement to use it.
+    </p>
     <div class="mt-4 overflow-hidden rounded-lg border">
       <div class="overflow-x-auto">
         <table class="w-full whitespace-nowrap">
@@ -813,19 +812,25 @@
                             class="h-4 w-4 shrink-0 {sourceConfig.color}"
                             aria-hidden="true"
                           />
-                          <span class="text-sm text-muted-foreground">
-                            {sourceConfig.label}:
-                          </span>
-                          {#each visibleSources(sources) as source, i (source.id)}
-                            <a
-                              href="{sourceConfig.linkPrefix}{source.id}"
-                              class="text-blue-600 hover:underline dark:text-blue-400"
+                          {#if type !== "crafting"}
+                            <span class="text-sm text-muted-foreground"
+                              >{sourceConfig.label}:</span
                             >
-                              {source.name}
-                            </a>
-                            {#if i < visibleSources(sources).length - 1}<span
-                                class="text-muted-foreground">,</span
-                              >{/if}
+                          {/if}
+                          {#each visibleSources(sources) as source, i (source.id)}
+                            <span>
+                              <a
+                                href="{sourceConfig.linkPrefix}{source.id}"
+                                class="text-blue-600 hover:underline dark:text-blue-400"
+                              >
+                                {type === "crafting"
+                                  ? sourceConfig.label
+                                  : source.name}
+                              </a>
+                              {#if i < visibleSources(sources).length - 1}<span
+                                  class="text-muted-foreground">,</span
+                                >{/if}
+                            </span>
                           {/each}
                           {#if sources.length > MAX_VISIBLE_SOURCES_PER_TYPE}
                             <a

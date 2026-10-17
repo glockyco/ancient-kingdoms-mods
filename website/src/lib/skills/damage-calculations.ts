@@ -13,7 +13,6 @@ import {
   MAGIC_DAMAGE,
   DEXTERITY,
   CHARISMA,
-  rankInput,
   situational,
 } from "$lib/calculation/inputs";
 import {
@@ -41,6 +40,7 @@ import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
 import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
 import { damageFormulaStats } from "$lib/utils/skillMechanics";
 import { formatStat, statName } from "$lib/stats";
+import { casterRankInputs, fixedCasterExampleRank } from "./example-ranks";
 
 /** Attribute a calculation's quantities to a mercenary instead of the reader, so its values are labelled as the mercenary's and never remembered as the reader's. */
 export function casterInputs(
@@ -77,9 +77,7 @@ export function calculationCasters(
     let key: string =
       caster.kind === "player" || caster.kind === "any_player"
         ? "player"
-        : caster.kind === "mercenary" || caster.kind === "weapon_effect"
-          ? caster.kind
-          : "other";
+        : caster.kind;
     if (caster.kind === "player" && skill) {
       if (
         caster.classId === "ranger" &&
@@ -153,21 +151,6 @@ export function damageStatInputs(
   );
 }
 
-// Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the Mercenary Skill Rank example uses owner level 50 and 20 total veteran points, giving rank 12 before the cap.
-function damageRankInputs(
-  skill: SkillDetailView,
-  mercenary = false,
-): CalculationInput[] {
-  if (skill.max_level <= 1) return [];
-  const input = rankInput(skill.max_level);
-  return [
-    {
-      ...input,
-      value: mercenary ? Math.min(skill.max_level, 12) : input.value,
-    },
-  ];
-}
-
 // Source: server-scripts/BardFinalCadenceSkill.cs:67-70 — round Charisma scaling, then round Melody scaling independently.
 export function cadenceCalculation(
   skill: SkillDetailView,
@@ -189,7 +172,7 @@ export function cadenceCalculation(
   ];
   const inputs = casterInputs(
     [
-      ...damageRankInputs(skill, mercenary),
+      ...casterRankInputs(skill.max_level, mercenary),
       CHARISMA,
       ...(!mercenary ? [ACTIVE_SONGS] : []),
     ],
@@ -307,8 +290,8 @@ export function damageCalculation(
     return {
       steps: [
         {
-          name: "Damage before defenses",
-          expression: `Current ${resource} × ${factor}. Spends all current ${resource}`,
+          name: "Damage",
+          expression: `Current ${resource} × ${factor}`,
         },
       ],
       inputs: [situational("resource", `Current ${resource}`, 100)],
@@ -316,9 +299,9 @@ export function damageCalculation(
         given: [
           `${formatStat(resourceStat, values.resource)} current ${resource}`,
         ],
-        result: `${number(values.resource * factor)} damage before the target's defenses`,
+        result: `${number(values.resource * factor)} damage, which the target's defenses do not reduce`,
         working: [
-          `Damage before defenses: ${formatStat(resourceStat, values.resource)} × ${factor} = ${number(values.resource * factor)}`,
+          `Damage: ${formatStat(resourceStat, values.resource)} × ${factor} = ${number(values.resource * factor)}`,
         ],
       }),
     };
@@ -357,7 +340,7 @@ export function damageCalculation(
   const totalName = channeled ? "Total damage" : "Damage before defenses";
   const inputs = casterInputs(
     [
-      ...damageRankInputs(skill, mercenary),
+      ...casterRankInputs(skill.max_level, mercenary),
       ...(!scroll
         ? [
             ...statInputs,
@@ -478,7 +461,7 @@ export function damageCalculation(
       ? [
           {
             name: "Damage per pulse",
-            expression: `${totalName} ÷ ${pulses}, rounded down, plus 1 on each of the first pulses until the ${pulses} pulses add up to ${totalName}`,
+            expression: `${totalName} ÷ ${pulses}, rounded down. Each point left over adds 1 to one pulse, starting with the first`,
           },
         ]
       : []),
@@ -487,8 +470,19 @@ export function damageCalculation(
     steps,
     ...(!other ? { inputs } : {}),
     example(values) {
-      // Source: server-scripts/MonsterSkills.cs:OnStartServer; Skill.cs:Skill — monster and NPC skills start at rank 1 when learnDefault, otherwise rank 0.
-      const rank = other ? (skill.learn_default ? 1 : 0) : (values.rank ?? 1);
+      const fixedRank =
+        other && casters[0]
+          ? fixedCasterExampleRank(skill, casters[0])
+          : undefined;
+      if (
+        other &&
+        (fixedRank === undefined ||
+          casters.some(
+            (caster) => fixedCasterExampleRank(skill, caster) !== fixedRank,
+          ))
+      )
+        throw new Error(`${skill.id} needs separate caster rank examples`);
+      const rank = other ? fixedRank! : (values.rank ?? 1);
       const base = atRank(
         skill.damage ?? { base_value: 0, bonus_per_level: 0 },
         rank,
@@ -578,6 +572,9 @@ export function damageCalculation(
         given: other
           ? [
               `the caster's 200 ${magic ? statName("spell_power") : statName("attack_power")}${weaponMagic ? ` and 200 ${statName("attack_power")}` : ""}`,
+              ...(casters.every((caster) => caster.kind === "familiar")
+                ? ["level 50"]
+                : []),
               ...((skill.damage?.bonus_per_level ?? 0) !== 0 ||
               (multiplied && skill.damage_percent!.bonus_per_level !== 0)
                 ? [`rank ${rank}`]
@@ -616,7 +613,7 @@ export function charmDamageCalculation(skill: SkillDetailView): Calculation {
         limit: "at most 100% of its ordinary damage",
       },
     ],
-    inputs: [...damageRankInputs(skill), CHARISMA],
+    inputs: [...casterRankInputs(skill.max_level), CHARISMA],
     example(values) {
       const rank = values.rank ?? 1;
       const base = atRank(skill.charmed_damage_percent!, rank);

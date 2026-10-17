@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
@@ -42,8 +43,8 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View all hunt targets for the Hunter profession.`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
+  description={`${data.profession.description} All ${data.monsters.length} Hunting-journal creatures, skill gains and the bonus to above-Normal item drops.`}
   path="/professions/hunter"
 />
 
@@ -90,17 +91,15 @@
     <h2 class="text-xl font-semibold">How Hunting works</h2>
     <!-- Source: server-scripts/Monster.cs:2967-2981 — only isHunt kills record Hunting and can improve the skill. -->
     <p class="text-muted-foreground">
-      <span class="block">Only creatures in the Hunting journal count.</span>
-      <span class="block">Their kills can improve Hunting skill.</span>
+      <span class="block"
+        >Only kills of creatures in the Hunting journal can raise Hunting skill.</span
+      >
     </p>
     <!-- Source: server-scripts/Monster.cs:2997-2998,3064-3069 — non-boss isHunt monsters add half the player's Hunting fraction to above-Normal item drop chances. -->
     <p class="text-muted-foreground">
       <span class="block"
-        >Against non-boss Hunting-journal creatures, each 10% Hunting adds 5
-        percentage points to the drop chance of items above Normal quality.</span
-      >
-      <span class="block"
-        >Other creatures and Normal-quality drops get no bonus.</span
+        >Each 10% Hunting adds 5 percentage points to above-Normal item drop
+        chances from non-boss creatures in the Hunting journal.</span
       >
     </p>
   </section>
@@ -115,7 +114,7 @@
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-3"
     >
       <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Hunting Skill:</label>
+        <label for="skill-slider" class="shrink-0">Hunting skill</label>
         <input
           id="skill-slider"
           type="range"
@@ -180,8 +179,8 @@
         <thead class="bg-muted/50">
           <tr>
             <th class="text-left p-3 font-medium">Name</th>
-            <th class="text-right p-3 font-medium">Min Lv</th>
-            <th class="text-right p-3 font-medium">Max Lv</th>
+            <th class="text-right p-3 font-medium">Min level</th>
+            <th class="text-right p-3 font-medium">Max level</th>
             <th class="text-right p-3 font-medium">Skill Gain</th>
           </tr>
         </thead>

@@ -246,6 +246,52 @@ describe("skill damage calculations", () => {
       )[0],
     ).toBe(308);
   });
+  test.each(["monster_melee", "monster_magic"] as const)(
+    "%s uses valid companion and level-derived familiar ranks instead of the monster default",
+    (formula) => {
+      const fields = {
+        max_level: 20,
+        learn_default: false,
+        damage: { base_value: 5, bonus_per_level: 5 },
+        damage_percent: null,
+      };
+      expect(
+        resultNumbers(damage(formula, { kind: "companion" }, fields)),
+      ).toEqual([205]);
+      expect(
+        resultNumbers(damage(formula, { kind: "familiar" }, fields)),
+      ).toEqual([300]);
+      expect(
+        resultNumbers(
+          damage(formula, { kind: "familiar" }, { ...fields, max_level: 60 }),
+        ),
+      ).toEqual([450]);
+      expect(resultNumbers(damage(formula, monster, fields))).toEqual([0]);
+    },
+  );
+  test("shared non-player damage examples preserve each caster's rank rule", () => {
+    const shared = skill({
+      max_level: 20,
+      learn_default: false,
+      damage: { base_value: 5, bonus_per_level: 5 },
+      damage_percent: null,
+    });
+    const results = calculationCasters([
+      monster,
+      { kind: "companion" },
+      { kind: "familiar" },
+    ]).map(
+      (casters) =>
+        resultNumbers(
+          damageCalculation(
+            shared,
+            { formula: "monster_melee", casters },
+            casters,
+          ),
+        )[0],
+    );
+    expect(results).toEqual([0, 205, 300]);
+  });
   test("single-rank damage, cadence and charm omit rank controls and evaluate rank one", () => {
     const single = skill({
       max_level: 1,
@@ -286,6 +332,57 @@ describe("skill damage calculations", () => {
 });
 
 describe("healing and effect calculations", () => {
+  test.each([1, 5, 30])(
+    "mercenary heals and effects use a permitted default rank at maximum %i",
+    (maxRank) => {
+      const value = { base_value: 10, bonus_per_level: 10 };
+      const heal = healingCalculation(
+        skill({ max_level: maxRank, heals_health: value }),
+        "merc",
+      );
+      const buff = effectScalingCalculation(
+        skill({ max_level: maxRank, health_max_bonus: value }),
+        "player_wis",
+        false,
+        true,
+      );
+      const debuff = effectScalingCalculation(
+        skill({
+          max_level: maxRank,
+          defense_bonus: { base_value: -10, bonus_per_level: -10 },
+        }),
+        "int",
+        true,
+        true,
+      );
+      for (const calculation of [heal, buff, debuff]) {
+        const rank = calculation.inputs?.find((input) => input.key === "rank");
+        expect(rank?.value).toBe(
+          maxRank === 1 ? undefined : Math.min(maxRank, 12),
+        );
+        expect(
+          resultNumbers(calculation, { wisdom: 0, intelligence: 0 }),
+        ).toEqual([Math.min(maxRank, 12) * 10]);
+      }
+    },
+  );
+  test.each([1, 25, 50, 100, 125, 200])(
+    "level-scaled healing retains its separate rounded bonus and cap at level %i",
+    (level) => {
+      const calculation = effectScalingCalculation(
+        skill({
+          max_level: 1,
+          healing_per_second_bonus: { base_value: 5, bonus_per_level: 0 },
+          duration_base: 30,
+        }),
+        "player_level",
+      );
+      expect(calculation.inputs?.map((input) => input.key)).toEqual(["level"]);
+      expect(resultNumbers(calculation, { level })).toEqual([
+        5 + Math.round(Math.min(level * 0.04, 5) * 5),
+      ]);
+    },
+  );
   test("healing adds a separately rounded Wisdom amount", () => {
     const heal = skill({ heals_health: { base_value: 5, bonus_per_level: 0 } });
     expect(
@@ -420,7 +517,6 @@ describe("healing and effect calculations", () => {
       "mercenary",
     );
     expect(calculation.inputs?.map((input) => input.key)).toEqual([
-      "rank",
       "maxHealth",
     ]);
     expect(resultNumbers(calculation, { maxHealth: 1000 })).toEqual([4000]);

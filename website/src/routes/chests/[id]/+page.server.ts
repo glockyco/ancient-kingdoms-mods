@@ -6,6 +6,8 @@ import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { chestDescription } from "$lib/server/meta-description";
+import { chestRewardChance } from "$lib/utils/chest-reward";
+import { queryOne } from "$lib/db.server";
 
 export const prerender = true;
 
@@ -49,6 +51,12 @@ export const load: PageServerLoad = ({ params }) => {
     gold_max: chest.gold_max,
     item_reward_name: chest.item_reward_name,
     respawn_time: chest.respawn_time,
+    chest_reward_probability: chestRewardChance(chest),
+    decrease_faction: queryOne<{ decrease_faction: string }>(
+      "SELECT decrease_faction FROM chests WHERE id = ?",
+      [params.id],
+    )?.decrease_faction,
+    reputation_loss: 200,
   });
 
   return { chest, drops, keyObtainabilityTree, description };

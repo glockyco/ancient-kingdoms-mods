@@ -350,7 +350,7 @@ export function formatLinearDuration(
   if (bonusPerLevel === 0) return formatDuration(baseValue);
   return formatSkillLevelFormula(
     { base_value: baseValue, bonus_per_level: bonusPerLevel },
-    (value) => `${formatNumber(value)}s`,
+    formatDuration,
   );
 }
 
@@ -373,10 +373,10 @@ export function formatLinearPercent(
       );
 }
 
-/** "a", "a & b" or "a, b & c". */
+/** Join a short list in prose. */
 function joinAnd(items: readonly string[]): string {
   return items.length > 1
-    ? `${items.slice(0, -1).join(", ")} & ${items[items.length - 1]}`
+    ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
     : items.join("");
 }
 
@@ -407,7 +407,7 @@ const DAMAGE_TERM_LABELS: Record<DamageTerm, string> = {
   ranged_dexterity: `150% of ${statName("dexterity")}`,
   poison_dexterity: `250% of ${statName("dexterity")}`,
   bow: `bow ${statFieldName(statField("item", "damage"), "item", { weapon: true })}`,
-  off_hand_half: `50% of off-hand ${statFieldName(statField("item", "damage"), "item", { weapon: true })}`,
+  off_hand_half: `50% of off-hand ${statFieldName(statField("item", "damage"), "item", { weapon: true })} (rounded up)`,
   main_hand: `main-hand ${statFieldName(statField("item", "damage"), "item", { weapon: true })}`,
 };
 
@@ -466,7 +466,7 @@ function formatDamage(
       multiplier && multiplier.base_value > 0
         ? iround(multiplyF32(combined, multiplier.base_value))
         : combined;
-    return [`${formatNumber(total)}${typeLabel} dmg`];
+    return [`${formatNumber(total)}${typeLabel} damage`];
   }
 
   // Formula context: name the terms so the multiplier visibly covers them and the listed damage.
@@ -491,14 +491,14 @@ function formatDamage(
         ? stats
         : addTerm(stats, listed);
   if (!multiplier)
-    return [qualify(`${combined}${typeLabel} dmg`, notes.damage)];
+    return [qualify(`${combined}${typeLabel} damage`, notes.damage)];
   const maxLevel = skill.max_level ?? 1;
   const lapses =
     multiplier.base_value <= 0 ||
     multiplier.base_value + multiplier.bonus_per_level * (maxLevel - 1) <= 0;
   return [
     qualify(
-      `${group(combined)} × ${group(formatLinearPercent(multiplier, options))}${typeLabel} dmg`,
+      `${group(combined)} × ${group(formatLinearPercent(multiplier, options))}${typeLabel} damage`,
       notes.damage,
       lapses ? "multiplied only above 0%" : undefined,
     ),
@@ -521,7 +521,7 @@ function formatHealing(
   // Source: server-scripts/NecromancerBloodPactSkill.cs:Apply — Math.Min(GetManaRestored, mana.max - mana.current); subtracts GetHealthCost.
   if (skill.is_necromancer_blood_pact && cost && restored) {
     parts.push(
-      `spend ${formatLinearPercent(cost, options)} maximum Hit Points (rounded up), restore ${formatLinearPercent(restored, options)} maximum Mana (rounded down, at most missing Mana)`,
+      `spends ${formatLinearPercent(cost, options)} of maximum Hit Points to restore ${formatLinearPercent(restored, options)} of maximum Mana`,
     );
     return parts;
   }
@@ -530,12 +530,11 @@ function formatHealing(
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:GetHealingAmount — RoundToInt(GetHealthCost * (healingPercent.Get(skillLevel) + GetIntelligenceBonus)).
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:GetIntelligenceBonus — Max(0, intelligence.value) * healingPercentPerIntelligence.
   if (skill.is_necromancer_death_bloom && cost && healing) {
-    const intelligence = skill.healing_percent_per_intelligence ?? 0;
-    const bonus = intelligence
-      ? ` + ${formatPercent(intelligence, { decimals: 2 })} per ${statName("intelligence")}`
+    const intelligence = skill.healing_percent_per_intelligence
+      ? ` + ${formatPercent(skill.healing_percent_per_intelligence, { decimals: 2 })} per Intelligence`
       : "";
     parts.push(
-      `spend ${formatLinearPercent(cost, options)} maximum Hit Points (rounded up), heal target for Hit Points spent × (${formatLinearPercent(healing, options)}${bonus}) (rounded)`,
+      `spends ${formatLinearPercent(cost, options)} of maximum Hit Points to heal the target for the Hit Points spent × (${formatLinearPercent(healing, options)}${intelligence})`,
     );
     return parts;
   }
@@ -543,22 +542,26 @@ function formatHealing(
   // Source: server-scripts/AreaHealSkill.cs:Apply,CheckDistance — a mercenary area heal reaches every active mercenary of the caster at any distance and restores Rage instead of Mana to Warrior and Rogue mercenaries.
   const mercenaryHeal =
     skill.skill_type === "area_heal" && skill.is_mercenary_skill;
-  if (mercenaryHeal) parts.push("heals your mercenaries at any distance");
 
   // Source: server-scripts/AreaHealSkill.cs:Apply — balancing sets everyone in range to their average share of maximum Health and heals nothing.
   if (skill.is_balance_health) {
-    parts.push(`balances the Hit Points % of ${areaHealRecipients(skill)}`);
+    parts.push(
+      `sets ${areaHealRecipients(skill)} to the group's average share of maximum Hit Points, rounded`,
+    );
     return parts;
   }
-  if (skill.skill_type === "area_heal" && !skill.is_mercenary_skill) {
-    parts.push(`heals ${areaHealRecipients(skill)}`);
-  }
+  const recipients =
+    skill.skill_type === "area_heal"
+      ? mercenaryHeal
+        ? "your mercenaries at any distance"
+        : areaHealRecipients(skill)
+      : null;
 
   const heal = parseLinearValue(skill.heals_health);
   if (heal) {
     parts.push(
       qualify(
-        `${formatLinearValue(heal, options)} Hit Points`,
+        `${recipients ? `heals ${recipients} for` : "heals"} ${formatLinearValue(heal, options)} Hit Points`,
         notes.heals_health,
       ),
     );
@@ -567,7 +570,7 @@ function formatHealing(
   const healMana = parseLinearValue(skill.heals_mana);
   if (healMana) {
     parts.push(
-      `${formatLinearValue(healMana, options)} ${mercenaryHeal ? "mana or rage" : "mana"}`,
+      `restores ${formatLinearValue(healMana, options)} ${mercenaryHeal ? "Mana or Rage" : "Mana"}`,
     );
   }
 
@@ -575,7 +578,7 @@ function formatHealing(
   // Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,Apply — a dead mercenary target returns at 10% of its maximum Health.
   if (skill.is_resurrect_skill) {
     parts.push(
-      "resurrect player (60% maximum Hit Points, mana = 20% maximum Hit Points, +75% lost XP) or mercenary (10% maximum Hit Points)",
+      "resurrects a player at 60% of maximum Hit Points and restores 75% of lost XP, or a mercenary at 10% of maximum Hit Points",
     );
   }
 
@@ -588,11 +591,11 @@ function areaHealRecipients(skill: Skill): string {
   const range = `within ${formatNumber(skill.cast_range ?? 0)} yd`;
   switch (skill.area_heal_caster) {
     case "player":
-      return `you & every player, companion & mercenary ${range}`;
+      return `you and every player, companion and mercenary ${range}`;
     case "pet":
-      return `itself & every companion & mercenary ${range}, not players`;
+      return `itself and every companion and mercenary ${range}, not players`;
     case "monster":
-      return `itself & every monster ${range}`;
+      return `itself and every monster ${range}`;
     case undefined:
       throw new Error(
         `Skill ${skill.id}: an area heal summary needs the kind of its caster`,
@@ -626,10 +629,10 @@ function formatCrowdControl(
     parts.push(`${formatLinearPercent(lifetap, options)} lifetap`);
   }
 
-  // Source: server-scripts/Combat.cs:DealDamageAt — a hit that is not avoided may take 1-4 durability from one random equipped item of a player or mercenary.
+  // Source: server-scripts/Combat.cs:750-773 — a hit that is not avoided rolls one random equipment slot, which may be empty.
   if (skill.break_armor_prob && skill.break_armor_prob > 0) {
     parts.push(
-      `${formatPercent(skill.break_armor_prob, { decimals: 2 })} chance a random equipped item loses 1-4 durability`,
+      `${formatPercent(skill.break_armor_prob, { decimals: 2 })} chance one random equipment slot of each player or mercenary hit loses 1-4 durability, if it holds an item`,
     );
   }
 
@@ -650,9 +653,9 @@ function formatCrowdControl(
       ? ""
       : fearDur.bonus_per_level === 0
         ? ` (${fearDur.base_value / 2}-${fearDur.base_value}s)`
-        : ` (50-100% of ${formatLinearDuration(fearDur.base_value, fearDur.bonus_per_level)})`;
+        : ` (${formatLinearDuration(fearDur.base_value / 2, fearDur.bonus_per_level / 2)} to ${formatLinearDuration(fearDur.base_value, fearDur.bonus_per_level)})`;
     parts.push(
-      `${stun ? "else " : ""}${formatLinearPercent(fear, options)} fear${durSuffix}`,
+      `${stun ? "otherwise " : ""}${formatLinearPercent(fear, options)} fear${durSuffix}`,
     );
   }
 
@@ -661,13 +664,15 @@ function formatCrowdControl(
     const distance = Number(skill.knockback_distance ?? 0);
     const reach = distance > 0 ? ` ${distance} yd` : "";
     parts.push(
-      `${stun || fear ? "else " : ""}${formatLinearPercent(knockback, options)} knockback${reach}`,
+      `${stun || fear ? "otherwise " : ""}${formatLinearPercent(knockback, options)} knockback${reach}`,
     );
   }
 
   // AoE properties
   if (skill.affects_random_target) {
-    parts.push("random target");
+    parts.push(
+      `hits one random target within ${formatNumber(skill.cast_range ?? 0)} yd`,
+    );
   }
 
   // Source: server-scripts/AreaObjectSpawnSkill.cs:AreaObjectSpawner.SpawnObjects,GetCandidates — one zone lands on the caster's target, the rest at random, each hitting within half its size.
@@ -676,7 +681,7 @@ function formatCrowdControl(
       ? `, ${skill.area_object_size} yd wide`
       : "";
     parts.push(
-      `${skill.area_objects_to_spawn} random zones + 1 on target${sizeInfo}`,
+      `in ${skill.area_objects_to_spawn + 1} circles${sizeInfo}: 1 on the target and ${skill.area_objects_to_spawn} at random spots within ${formatNumber(skill.cast_range ?? 0)} yd`,
     );
   }
 
@@ -689,10 +694,10 @@ function formatCrowdControl(
       (skill.skill_type === "area_damage" && !skill.area_projectile);
     const healthThreat =
       aggro.base_value > 0 && directHit
-        ? " plus caster maximum Hit Points"
+        ? " plus the caster's maximum Hit Points"
         : "";
     parts.push(
-      `${aggro.base_value > 0 ? "+" : ""}${formatLinearValue(aggro, options)} aggro${healthThreat}`,
+      `${aggro.base_value > 0 ? "+" : ""}${formatLinearValue(aggro, options)} threat${healthThreat}`,
     );
   }
 
@@ -719,21 +724,25 @@ function formatSummons(skill: Skill): string[] {
       skill.summoned_monster_level !== null &&
       skill.summoned_monster_level !== undefined
     ) {
-      details.push(`lv${skill.summoned_monster_level}`);
+      details.push(`level ${skill.summoned_monster_level}`);
     }
     if (
       skill.max_active_summons !== null &&
       skill.max_active_summons !== undefined
     ) {
-      details.push(`max ${skill.max_active_summons}`);
+      details.push(`at most ${skill.max_active_summons} at a time`);
     }
     const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
 
     if (skill.summon_count_per_cast === -1) {
-      parts.push(`summons 1x ${name} per player/mercenary${suffix}`);
+      parts.push(
+        `summons ${/^[aeiou]/i.test(name) ? "an" : "a"} ${name} for each player and mercenary on its threat list, up to its free summon slots${suffix}`,
+      );
     } else {
       const count = skill.summon_count_per_cast ?? 1;
-      parts.push(`summons ${count}x ${name}${suffix}`);
+      parts.push(
+        `summons ${count === 1 ? (/^[aeiou]/i.test(name) ? "an" : "a") : `${count}×`} ${name}${suffix}`,
+      );
     }
   }
 
@@ -776,7 +785,7 @@ function formatBuffDebuffStats(
         ? `companion ${name}`
         : key === "magic_damage_percent_bonus" &&
             skill.is_necromancer_reaper_form
-          ? `${name} & DoT dmg`
+          ? `${name} and damage over time`
           : name;
     parts.push(
       qualify(
@@ -791,7 +800,7 @@ function formatBuffDebuffStats(
   // Source: server-scripts/Skills.cs:hasDoubleExp; Monster.cs:OnDeath; GatherItem.cs; Player.cs — double XP covers kills, gathering, fishing, crafting, alchemy and scribing, but not quest rewards.
   if (skill.is_double_exp_spell) {
     parts.push(
-      "2× XP from kills, gathering, fishing, crafting, alchemy & scribing",
+      "2× XP from kills, gathering, fishing, crafting, alchemy and scribing",
     );
   }
   if (skill.is_dispel) parts.push("dispels buffs");
@@ -807,15 +816,19 @@ function formatBuffDebuffStats(
   if (skill.is_invisibility) {
     parts.push(
       skill.ignores_see_invisibility
-        ? "grants invis, even vs see invis"
-        : "grants invis",
+        ? "grants invisibility, even against monsters that see invisibility"
+        : "grants invisibility",
     );
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:illusionRace,86-96 (illusionRace, HasAppearanceIllusion),
   // server-scripts/Player.cs:6883-6893 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
-  if (skill.is_mana_shield) parts.push("mana shield");
+  // Source: server-scripts/Combat.cs:1295-1323 — Mana absorbs direct-hit damage one for one. A hit exceeding current Mana consumes it and removes the shield.
+  if (skill.is_mana_shield)
+    parts.push(
+      "direct hits spend Mana instead of Hit Points, 1 Mana per point of damage, until a hit exceeds your Mana",
+    );
   // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Skills.cs — undeadIlussion redraws a player as undead.
   if (skill.is_undead_illusion) parts.push("undead illusion");
 
@@ -869,7 +882,7 @@ function formatBuffDebuffStats(
   // Source: server-scripts/Skills.cs:ApplyDamageOverTimeBonuses — health.current below health.max * 0.3f sums PassiveSkill.damageOverTimeExecuteBonus.Get(skill.level).
   if (dotExecute) {
     parts.push(
-      `+${formatLinearPercent(dotExecute, options)} DoT dmg vs targets below 30% Hit Points`,
+      `+${formatLinearPercent(dotExecute, options)} damage over time to targets below 30% of maximum Hit Points`,
     );
   }
   // 4. Defense (mitigation stats grouped together)
@@ -881,7 +894,9 @@ function formatBuffDebuffStats(
     (magicResistBonus?.base_value ?? 0) >= 10000;
   if (invulnerable) {
     parts.push(
-      castByMonsters(skill, options) ? "immune to direct dmg" : "invulnerable",
+      castByMonsters(skill, options)
+        ? "immune to direct damage"
+        : "invulnerable",
     );
   } else {
     pushStat("defense_bonus", true);
@@ -962,7 +977,7 @@ function formatBuffDebuffStats(
   const healOnHit = parseLinearValue(skill.heal_on_hit_percent);
   if (healOnHit && healOnHit.base_value > 0) {
     parts.push(
-      `melee hits on the target heal the attacker ${formatLinearStat("heal_on_hit_percent", healOnHit, options)} of dmg`,
+      `melee hits on the target heal the attacker for ${formatLinearStat("heal_on_hit_percent", healOnHit, options, false)} of the damage`,
     );
   }
 
@@ -982,7 +997,7 @@ function formatBuffDebuffStats(
       const typeLabel = formattedType ? ` ${formattedType}` : "";
       parts.push(
         qualify(
-          `${debuff ? "" : "wearer takes "}${formatLinearStat("healing_per_second_bonus", negated(hps), options, false)}${typeLabel} dmg/s`,
+          `${debuff ? "" : "wearer takes "}${formatLinearStat("healing_per_second_bonus", negated(hps), options, false)}${typeLabel} damage per second`,
           notes.healing_per_second_bonus,
         ),
       );
@@ -1009,8 +1024,8 @@ function formatBuffDebuffStats(
       parts.push(
         qualify(
           debuff
-            ? `${share} maximum Hit Points dmg/s`
-            : `${share} maximum Hit Points drain/s`,
+            ? `${share} of maximum Hit Points as damage per second`
+            : `drains ${share} of maximum Hit Points per second`,
           notes.health_percent_per_second_bonus,
         ),
       );
@@ -1050,10 +1065,10 @@ function formatBuffDebuffStats(
 
   // Debuff type tags (if no specific stats shown and is a debuff). A charm's type only matters to cleanses.
   if (parts.length === 0 && debuff && !skill.is_bard_charm) {
-    if (skill.is_poison_debuff) parts.push("poison DoT");
-    else if (skill.is_fire_debuff) parts.push("fire DoT");
-    else if (skill.is_cold_debuff) parts.push("cold DoT");
-    else if (skill.is_disease_debuff) parts.push("disease DoT");
+    if (skill.is_poison_debuff) parts.push("poison damage over time");
+    else if (skill.is_fire_debuff) parts.push("fire damage over time");
+    else if (skill.is_cold_debuff) parts.push("cold damage over time");
+    else if (skill.is_disease_debuff) parts.push("disease damage over time");
     else if (skill.is_melee_debuff) parts.push("melee debuff");
     else if (skill.is_magic_debuff) parts.push("magic debuff");
   }
@@ -1084,41 +1099,42 @@ function formatBuffDebuffStats(
  */
 const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Combat.cs:DealDamageAt — learned Improved Backstab raises the from-behind bonus from 10% to 25% of the damage.
-  improved_backstab: "from-behind bonus dmg 25% instead of 10%",
+  improved_backstab:
+    "single-target hits from behind deal 25% bonus damage instead of 10%",
   // Source: server-scripts/TargetBuffSkill.cs:Apply; Player.cs; TravelItem.cs — binding sets the respawn point that Gate Scroll also returns to.
-  bind_affinity: "set bind point (respawn & Gate Scroll destination)",
-  binding: "set bind point (respawn & Gate Scroll destination)",
+  bind_affinity: "sets your bind point (respawn and Gate Scroll destination)",
+  binding: "sets your bind point (respawn and Gate Scroll destination)",
   // Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — every potion but Bandages applies its buff at 1 + rank, and each buff level adds 60s.
-  elixir_endurance: "potion buff duration +60s × rank (not bandages)",
+  elixir_endurance: "+1m × rank potion buff duration, except bandages",
   // Source: server-scripts/Monster.cs — minimap marks never show in Temple of Valaark.
   veteran_awareness:
     "reveals nearby monsters on minimap (not in Temple of Valaark)",
   // Source: server-scripts/Combat.cs:DealDamageAt,IsParry — during the cast, your target's single-target physical hits are blocked and 50% of the damage, rounded and clamped to 1-5,000, is dealt back.
   parry:
-    "while casting, blocks your target's physical melee hits & counters 50% (max 5,000)",
+    "while casting, blocks your target's physical melee hits and deals 50% back (1-5,000 damage)",
   // Source: server-scripts/SummonSkill.cs:Apply — on summon, the pet takes rank × 10% of your attributes and adds rank × 10% of your AC and resists.
-  symbiosis: `pet gets 10% × rank of your attributes, ${statName("armor_class")} & resists when summoned (max 50%)`,
+  symbiosis: `pet gets 10% × rank of your attributes, ${statName("armor_class")} and resists when summoned (max 50%)`,
   // Source: server-scripts/SummonSkillMonsters.cs:Apply — a target more than 3 yd and less than the cast range away is warped to the caster and stunned for 2s.
   summon_player: "pulls a target 3-15 yd away to the caster, stun (2s)",
   // Source: server-scripts/Trap.cs:OnInteractServer; Player.cs:HasDetectTraps — disarming needs Detect Traps or Sharp Senses.
-  disarm_trap: "disarm traps (needs Detect Traps or Sharp Senses)",
-  alchemy: "craft potions and elixirs",
-  baking: "craft food and consumables",
-  crafting: "craft equipment and items",
+  disarm_trap: "disarms traps (needs Detect Traps or Sharp Senses)",
+  alchemy: "crafts potions and elixirs",
+  baking: "crafts food and consumables",
+  crafting: "crafts equipment and items",
   // Source: server-scripts/TableUI.cs; Player.cs — the scribing table cast.
-  crafting_scroll: "scribe scrolls",
-  digging: "dig for buried treasure",
+  crafting_scroll: "scribes scrolls",
+  digging: "digs for buried treasure",
   // Source: server-scripts/Player.cs:CmdFishing — the fishing cast.
-  fishing: "catch fish",
+  fishing: "catches fish",
   // Source: server-scripts/GatherItem.cs:TryGatherItem; Player.cs — the gather cast covers every node that is not ore, fish or a chest.
-  gathering: "gather plants and Radiant Sparks",
-  mining: "mine ore and minerals",
+  gathering: "gathers plants and Radiant Sparks",
+  mining: "mines ore and minerals",
   // Source: server-scripts/GatherItem.cs:TryGatherItem; Player.cs:CmdOpenChest — every chest opens with this cast.
-  opening: "open chests",
+  opening: "opens chests",
   // Source: server-scripts/GatherItem.cs:368-376,407-428 — Lockpicking allows opening locked chests
   // using lockpicks instead of the specific key. 80% failure chance, consumes one lockpick per attempt.
   lockpicking:
-    "open locked chests with lockpicks, 1 per try (20% success chance)",
+    "opens locked chests with lockpicks, 1 per try (20% success chance)",
   blushburst: "cosmetic visual effect",
   emerald_pop: "cosmetic visual effect",
   golden_whirl: "cosmetic visual effect",
@@ -1126,37 +1142,39 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/PassiveSkill.cs (0.9.18.0+) — Detect Traps is now a passive skill.
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-194,199-209;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
-  detect_traps: "reveal and disarm traps",
+  detect_traps: "reveals and disarms traps",
   // Source: server-scripts/Player.cs:9015-9032 — Sharp Senses uses the same trap-detection gate.
-  sharp_senses: "reveal and disarm traps",
+  sharp_senses: "reveals and disarms traps",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event:
-    "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
+    "2× XP from kills, gathering, fishing, crafting, alchemy and scribing, event duration",
   winter_festival:
-    "2× XP from kills, gathering, fishing, crafting, alchemy & scribing, event duration",
+    "2× XP from kills, gathering, fishing, crafting, alchemy and scribing, event duration",
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — while active, a Rogue's
   // followupDefaultAttack skill, Stab, switches to Poison damage and adds the rounded 250% Dexterity
   // bonus to Attack Power. Duration stored in duration_base (10s).
-  master_poisoner: `Stab deals poison dmg & adds 250% of ${statName("dexterity")}, resisted by ${statName("poison_resist")}, 10s`,
+  master_poisoner: `Stab deals poison damage and adds 250% of ${statName("dexterity")} to it, 10s`,
   // Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the Ranger's next auto attack deals 10% more per buff rank as Magic damage and consumes the buff.
-  wild_strike: "next auto attack deals +10% × rank dmg as magic dmg, 5s",
+  wild_strike:
+    "your next auto attack deals 10% × rank more damage, all of it as magic damage, 5s",
   // Source: server-scripts/TargetBuffSkill.cs — isCallHeroes teleports all
   // active mercenaries to player position and clears their fear; returns before
   // applying any buff. mana_percent_per_second_bonus in game data is unused.
   call_of_the_heroes:
-    "teleport all active mercenaries to you, remove their fear",
+    "teleports all your active mercenaries to you and removes their fear",
   // Source: server-scripts/TargetBuffSkill.cs — Charge navigates caster toward target
   // monster and queues an automatic follow-up attack (pendingSkill=1). Speed/rage-gen
   // stats are in the DB but the gap-closer behavior is hardcoded.
-  charge: `charge toward target, removes roots, +3.5 ${statName("movement_speed")}, +100% ${statName("accuracy")}, +5% ${statFieldPhraseName(statField("skill", "energy_percent_per_second_bonus"))}, 2s`,
+  charge: `charges toward the target, removes roots, +3.5 ${statName("movement_speed")}, +100% ${statName("accuracy")}, +5% ${statFieldPhraseName(statField("skill", "energy_percent_per_second_bonus"))}, 2s`,
   // Source: server-scripts/PlayerInventory.cs; Player.cs — the cast before a travel item takes effect, refused in combat.
-  teleport: "use travel items (out of combat)",
+  teleport: "uses travel items (out of combat)",
   // Source: server-scripts/Combat.cs:138 — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
-  razor_of_wrath: `+1% × rank ${statName("attack_power")}, scaled by current ${statName("rage")} (full ${statName("rage")} = full bonus)`,
+  razor_of_wrath: `+1% × rank ${statName("attack_power")} × current ${statName("rage")} ÷ maximum ${statName("rage")}`,
   // Source: server-scripts/Combat.cs:170 — isResourceDepending passive: magic_damage_percent_bonus × (mana.current / mana.max)
-  arcane_edge: `+1% × rank ${statName("spell_power")}, scaled by current ${statName("mana")} (full ${statName("mana")} = full bonus)`,
-  // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
-  divine_intervention: "grants invulnerability to nearby allies, 3s",
+  arcane_edge: `+1% × rank ${statName("spell_power")} × current ${statName("mana")} ÷ maximum ${statName("mana")}`,
+  // Source: server-scripts/AreaBuffSkill.cs:Apply — the player caster and living, visible players and pets in range receive the buff.
+  divine_intervention:
+    "makes you and every player, companion, familiar and mercenary within 10 yd invulnerable, 3s",
 };
 
 /** A passive's required weapon category, as the reader knows the weapon. */
@@ -1224,7 +1242,7 @@ export function formatSkillEffect(
 
   // Source: server-scripts/AreaBuffSkill.cs:Apply — Evacuate sends the caster and every living, visible player within its cast range, party or not, to the city assigned to the caster's zone.
   if (skill.is_teleport) {
-    return `teleports you & every player within ${formatNumber(skill.cast_range ?? 0)} yd to this zone's city, stun (1s)`;
+    return `teleports you and every player within ${formatNumber(skill.cast_range ?? 0)} yd to the city assigned to your current zone, stun (1s)`;
   }
 
   // Source: server-scripts/TargetBuffSkill.cs:Apply — a cooldown-reduction spell shortens each remaining cooldown by its share, at most 30s, and applies no buff.
@@ -1241,7 +1259,7 @@ export function formatSkillEffect(
   if (skill.is_bard_final_cadence) {
     parts.push(
       skill.is_mercenary_skill
-        ? "needs level 50 & 3 active songs"
+        ? "needs level 50 and 3 active songs"
         : "needs 3+ active songs",
     );
   }
@@ -1254,7 +1272,7 @@ export function formatSkillEffect(
         [
           ...formatDamage(skill, options, {}),
           ...formatHealing(skill, options, {}),
-        ].join(" & "),
+        ].join(" and "),
         notes.damage,
       ),
     );
@@ -1264,7 +1282,9 @@ export function formatSkillEffect(
     }
     // Source: server-scripts/TargetDamageSkill.cs:245-248 — pulseCount partitions finalDamage across pulses.
     if (skill.channel_pulses && skill.channel_pulses > 0) {
-      parts.push(`channeled over ${skill.channel_pulses} pulses`);
+      parts.push(
+        `total damage split over ${skill.channel_pulses} channeled pulses`,
+      );
     }
     parts.push(...formatHealing(skill, options, notes));
   }
@@ -1281,7 +1301,9 @@ export function formatSkillEffect(
   // changes no damage.
   // Source: server-scripts/Combat.cs:783-816 (enrage scan and damage bonus, non-spell hits only)
   if (skill.skill_type === "passive" && skill.is_enrage) {
-    parts.push("+50-75% non-spell dmg below 10% Hit Points");
+    parts.push(
+      "+50-75% damage on non-spell hits while below 10% of its maximum Hit Points",
+    );
   }
   if (skill.is_bard_song) parts.push(qualify("Bard song", notes.is_bard_song));
   if (skill.is_bard_charm) {
@@ -1290,7 +1312,7 @@ export function formatSkillEffect(
     parts.push(
       charmedDamage
         ? qualify(
-            `charms a non-boss, non-elite monster at ${formatLinearPercent(charmedDamage, options)} of its dmg`,
+            `charms a non-boss, non-elite monster, which then deals ${formatLinearPercent(charmedDamage, options)} of its normal damage`,
             notes.charmed_damage_percent,
           )
         : "charms a non-boss, non-elite monster",
@@ -1304,7 +1326,7 @@ export function formatSkillEffect(
   }
   if (skill.bard_song_duration_bonus_per_level) {
     parts.push(
-      `+${formatPercent(skill.bard_song_duration_bonus_per_level, { decimals: 2 })} song duration per rank`,
+      `+${formatPercent(skill.bard_song_duration_bonus_per_level, { decimals: 2 })} × rank Bard song duration`,
     );
   }
   if (skill.extra_gather_item_chance) {
@@ -1315,12 +1337,13 @@ export function formatSkillEffect(
   // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2102-2113 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
   if (skill.food_and_drink_buff_duration_bonus_per_level) {
     parts.push(
-      `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level, { decimals: 2 })} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food`,
+      `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level, { decimals: 2 })} × rank duration of your food and drink buffs and your mercenaries' food buffs, except festive food`,
     );
   }
 
   // Source: server-scripts/NecromancerReaperFormSkill.cs:Apply — RemoveBuff when GetBuffIndexByName(nameSkill) >= 0; otherwise applies the buff.
-  if (skill.is_necromancer_reaper_form) parts.push("toggle form");
+  if (skill.is_necromancer_reaper_form)
+    parts.push("toggles on and off with no time limit");
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet,CheckDistance — only the Necromancer's own living companion within cast range, never a familiar or mercenary.
   if (skill.is_necromancer_pet_buff) {
     parts.push(
@@ -1376,14 +1399,16 @@ export function formatSkillEffect(
   // Special mechanics
   // Source: server-scripts/PlayerSkills.cs:TryUse — the cast needs the target at or below RoundToInt(max Health / 4).
   if (skill.is_assassination_skill) {
-    parts.push("usable at or below 25% target Hit Points");
+    parts.push(
+      "usable when the target is at or below 25% of its maximum Hit Points, rounded",
+    );
   }
   // Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; Combat.cs:DealDamageAt — Warrior and Rogue melee spends all Rage for 2 damage each, a Wizard projectile all Mana for 3 each, and both skip avoidance and mitigation.
   if (skill.is_manaburn_skill) {
     parts.push(
       skill.skill_type === "target_projectile"
-        ? "spends all mana for 3 dmg per mana, ignores avoidance & mitigation"
-        : "spends all rage for 2 dmg per rage, ignores avoidance & mitigation",
+        ? "spends all Mana for 3 damage per point, ignores avoidance and mitigation"
+        : "spends all Rage for 2 damage per point, ignores avoidance and mitigation",
     );
   }
 

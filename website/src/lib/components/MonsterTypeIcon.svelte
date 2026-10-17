@@ -29,12 +29,26 @@
   );
 </script>
 
-{#if isFabled}
-  <Star class="{className} {color}" />
-{:else if isBoss}
-  <Crown class="{className} {color}" />
-{:else if isElite}
-  <Shield class="{className} {color}" />
-{:else}
-  <Sword class="{className} {color}" />
-{/if}
+<span
+  class="inline-flex"
+  title={isFabled ? "Fabled" : isBoss ? "Boss" : isElite ? "Elite" : "Regular"}
+>
+  <span class="sr-only"
+    >{isFabled
+      ? "Fabled"
+      : isBoss
+        ? "Boss"
+        : isElite
+          ? "Elite"
+          : "Regular"}</span
+  >
+  {#if isFabled}
+    <Star class="{className} {color}" />
+  {:else if isBoss}
+    <Crown class="{className} {color}" />
+  {:else if isElite}
+    <Shield class="{className} {color}" />
+  {:else}
+    <Sword class="{className} {color}" />
+  {/if}
+</span>

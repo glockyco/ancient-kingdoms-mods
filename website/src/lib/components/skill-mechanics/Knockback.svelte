@@ -10,8 +10,8 @@
   <h3 class="font-semibold">Knockback</h3>
   <p class="text-muted-foreground">
     <span class="block"
-      >A hit rolls against the knockback chance only when it neither stuns nor
-      fears, and only if the target is not already stunned.</span
+      >Knockback cannot affect a stunned target or a hit that causes stun or
+      fear.</span
     >
     <span class="block"
       >It pushes the target back{skill.knockback_distance

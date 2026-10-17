@@ -30,6 +30,24 @@ A label or summary SHALL distinguish maximum pools from current resources, heali
 - **WHEN** a skill is used by a companion whose ranks start at one
 - **THEN** its example does not use rank zero
 
+#### Scenario: A skill can be resisted
+
+- **WHEN** a skill card explains which resistance can prevent its effect
+- **THEN** it retains the resistance rate, the caster's Accuracy interaction and the final chance limit
+- **AND** a link to shared calculations does not replace those local rules with a generic possibility
+
+#### Scenario: A debuff has partial cleanse resistance
+
+- **WHEN** a matching cleanse can remove between one and three layers
+- **THEN** the card explains the guaranteed layer and the two independent extra-layer chances
+- **AND** it retains the skill-specific base chance, Accuracy scaling and chance limits
+
+#### Scenario: A compact summary describes a resource trade
+
+- **WHEN** a skill spends one resource to restore another or heal a target
+- **THEN** its summary preserves the cost and the amount or scaling of the benefit
+- **AND** detailed rounding and worked examples may remain in the calculator rather than the summary
+
 ### Requirement: One term identifies one concept across surfaces
 
 The compendium SHALL use consistent player-facing stat, service, skill-type, source and spawn-condition names across pages, tables, filters, search and map displays. Internal identifiers SHALL NOT appear as explanatory labels or accessible names. Game names and quoted game text SHALL remain intact.

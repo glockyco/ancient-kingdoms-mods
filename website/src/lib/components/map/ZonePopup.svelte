@@ -190,7 +190,8 @@
         </div>
         {#if sage.goldCost > 0}
           <div class="text-muted-foreground text-xs">
-            Reset cost: {formatNumber(sage.goldCost)} gold
+            Base fee: {formatNumber(sage.goldCost)} gold before your Charisma discount
+            (up to 25%)
           </div>
         {/if}
       </div>

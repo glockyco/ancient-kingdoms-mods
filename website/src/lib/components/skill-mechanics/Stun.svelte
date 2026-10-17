@@ -9,14 +9,8 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Stun</h3>
   <p class="text-muted-foreground">
-    <span class="block"
-      >Each hit rolls once against the stun chance. A target that is already
-      feared cannot be stunned.</span
-    >
-    <span class="block"
-      >A stun on a target that is already stunned ends at whichever end time is
-      later, so a shorter stun never cuts an existing one short.</span
-    >
+    <span class="block">A feared target cannot be stunned.</span>
+    <span class="block">A shorter stun cannot shorten an existing stun.</span>
     {#if facts.usedByMonster}
       <span class="block"
         >A stunned player is dismounted. A player riding a <a

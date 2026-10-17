@@ -12,127 +12,88 @@ const baseMonster = {
 };
 
 describe("monsterKillReputation", () => {
-  it("uses max health and normal-rank multipliers for improvements", () => {
-    expect(monsterKillReputation(baseMonster)).toEqual([
-      { direction: "improve", amount: "12", factions: ["Army of Order"] },
-      { direction: "decrease", amount: "7.5", factions: ["Dark Alliance"] },
+  it.each([
+    [{}, 12, 7.5],
+    [{ is_elite: true }, 120, 10],
+    [{ is_boss: true, is_elite: true }, 240, 20],
+    [{ level_min: 7, level_max: 7 }, 9, 5.25],
+  ] as const)(
+    "keeps rank multipliers and fractional amounts for %j",
+    (overrides, gain, loss) => {
+      expect(
+        monsterKillReputation({ ...baseMonster, ...overrides }),
+      ).toMatchObject([
+        {
+          direction: "improve",
+          amount_min: gain,
+          amount_max: gain,
+          factions: ["Army of Order"],
+        },
+        {
+          direction: "decrease",
+          amount_min: loss,
+          amount_max: loss,
+          factions: ["Dark Alliance"],
+        },
+      ]);
+    },
+  );
+
+  it("retains both bounds across different spawn levels", () => {
+    expect(
+      monsterKillReputation({ ...baseMonster, level_max: 14 }),
+    ).toMatchObject([
+      { direction: "improve", amount_min: 12, amount_max: 16 },
+      { direction: "decrease", amount_min: 7.5, amount_max: 10.5 },
     ]);
   });
 
-  it("uses elite multipliers (improve 10, decrease 1)", () => {
-    const elite = { ...baseMonster, is_elite: true };
-    expect(monsterKillReputation(elite).map((e) => e.amount)).toEqual([
-      "120",
-      "10",
-    ]);
+  it("uses midpoint-to-even rounding for the health contribution", () => {
+    expect(
+      monsterKillReputation({ ...baseMonster, health: 1000 })[0].amount_min,
+    ).toBe(10);
+    expect(
+      monsterKillReputation({ ...baseMonster, health: 3000 })[0].amount_min,
+    ).toBe(12);
   });
 
-  it("uses boss multipliers (improve 20, decrease 2) and prefers boss over elite", () => {
-    const boss = { ...baseMonster, is_boss: true, is_elite: true };
-    expect(monsterKillReputation(boss).map((e) => e.amount)).toEqual([
-      "240",
-      "20",
-    ]);
-  });
-
-  it("preserves the quarter-points produced by fractional multipliers", () => {
-    const oddLevel = { ...baseMonster, level_min: 7, level_max: 7 };
-    expect(monsterKillReputation(oddLevel).map((e) => e.amount)).toEqual([
-      "9",
-      "5.25",
-    ]);
-  });
-
-  it("renders a range across the spawn levels", () => {
-    const ranged = { ...baseMonster, level_min: 10, level_max: 14 };
-    expect(monsterKillReputation(ranged).map((e) => e.amount)).toEqual([
-      "12-16",
-      "7.5-10.5",
-    ]);
-  });
-
-  it("matches Mathf.RoundToInt midpoint-to-even health rounding", () => {
-    const roundDown = { ...baseMonster, health: 1000 };
-    const roundUp = { ...baseMonster, health: 3000 };
-    expect(monsterKillReputation(roundDown)[0]?.amount).toBe("10");
-    expect(monsterKillReputation(roundUp)[0]?.amount).toBe("12");
-  });
-
-  it("groups every faction of a direction under one shared amount", () => {
-    const worldBoss = {
-      level_min: 58,
-      level_max: 58,
-      health: 0,
-      is_boss: true,
-      is_elite: false,
-      improve_faction: [
-        "Army of Order",
-        "Elven Kingdom",
-        "Children of Illithor",
-        "Dark Alliance",
-      ],
-      decrease_faction: [],
-    };
-    expect(monsterKillReputation(worldBoss)).toEqual([
+  it("applies one amount to all factions in a direction and omits empty directions", () => {
+    expect(
+      monsterKillReputation({
+        ...baseMonster,
+        improve_faction: ["Army of Order", "Elven Kingdom"],
+        decrease_faction: [],
+      }),
+    ).toMatchObject([
       {
         direction: "improve",
-        amount: "1,160",
-        factions: [
-          "Army of Order",
-          "Elven Kingdom",
-          "Children of Illithor",
-          "Dark Alliance",
-        ],
+        amount_min: 12,
+        amount_max: 12,
+        factions: ["Army of Order", "Elven Kingdom"],
       },
-    ]);
-  });
-
-  it("omits a direction with no factions", () => {
-    const improveOnly = { ...baseMonster, decrease_faction: [] };
-    expect(monsterKillReputation(improveOnly).map((e) => e.direction)).toEqual([
-      "improve",
     ]);
   });
 });
 
 describe("npcKillReputation", () => {
-  it("uses improve 1.5 and decrease 5 multipliers", () => {
-    const npc = {
-      level: 8,
-      is_notable: false,
-      improve_faction: ["Army of Order"],
-      decrease_faction: ["The Forsaken"],
-    };
-    expect(npcKillReputation(npc)).toEqual([
-      { direction: "improve", amount: "12", factions: ["Army of Order"] },
-      { direction: "decrease", amount: "40", factions: ["The Forsaken"] },
-    ]);
-  });
-
-  it("multiplies only a notable NPC's positive reputation by 60", () => {
-    const npc = {
-      level: 60,
-      is_notable: true,
-      improve_faction: ["The Forsaken"],
-      decrease_faction: ["Children of Illithor"],
-    };
-    expect(npcKillReputation(npc)).toEqual([
-      { direction: "improve", amount: "5,400", factions: ["The Forsaken"] },
-      {
-        direction: "decrease",
-        amount: "300",
-        factions: ["Children of Illithor"],
-      },
-    ]);
-  });
-
-  it("preserves the half-point from the improve multiplier", () => {
-    const npc = {
-      level: 7,
-      is_notable: false,
-      improve_faction: ["Army of Order"],
-      decrease_faction: [],
-    };
-    expect(npcKillReputation(npc).map((e) => e.amount)).toEqual(["10.5"]);
-  });
+  it.each([
+    [8, false, 12, 40],
+    [60, true, 5400, 300],
+    [7, false, 10.5, 35],
+  ] as const)(
+    "keeps gain and loss rules at level %s, notable=%s",
+    (level, is_notable, gain, loss) => {
+      expect(
+        npcKillReputation({
+          level,
+          is_notable,
+          improve_faction: ["Army of Order"],
+          decrease_faction: ["The Forsaken"],
+        }),
+      ).toMatchObject([
+        { direction: "improve", amount_min: gain, amount_max: gain },
+        { direction: "decrease", amount_min: loss, amount_max: loss },
+      ]);
+    },
+  );
 });

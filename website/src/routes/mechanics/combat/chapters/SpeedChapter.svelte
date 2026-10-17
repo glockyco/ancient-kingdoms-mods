@@ -29,15 +29,18 @@
       <tbody>
         <!-- Source: server-scripts/Player.cs:3439-3476; Combat.cs:341-347 — weapon auto attacks use cast time plus a Haste-adjusted weapon wait bounded to 0.25–2 seconds. -->
         <tr>
-          <th scope="row">Player auto attack</th>
+          <th scope="row">Player weapon auto attack</th>
           <td>Cast time + <a href="#attack-speed">weapon wait</a></td>
           <td>Shortens weapon wait</td>
           <td>No effect</td>
         </tr>
         <!-- Source: server-scripts/Skills.cs:924-933; Player.cs:2901-2902,GetSkillRefractoryPeriod — player spell casts subtract the equipment and skill spell haste total, followed by a fixed auto-attack wait. -->
         <tr>
-          <th scope="row">Player spell auto attack</th>
-          <td>Shortened cast + <a href="#cast-speed">fixed wait</a></td>
+          <th scope="row">
+            Player spell auto attack, such as
+            <a href="/skills/mystic_spark">Mystic Spark</a>
+          </th>
+          <td>Shortened cast + <a href="#cast-speed">0.75s</a></td>
           <td>No effect</td>
           <td>Shortens cast</td>
         </tr>
@@ -48,9 +51,9 @@
           <td>No effect</td>
           <td>Shortens spell casts</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:1141-1169; Pet.cs:2239-2244 — a companion's first non-spell skill uses Haste for its cooldown, and non-mercenary casts receive no spell haste. -->
+        <!-- Source: server-scripts/Skills.cs:1141-1169; Pet.cs:2239-2244: Haste shortens a companion's first skill's cooldown only if that skill is not a spell, and non-mercenary casts receive no spell haste. -->
         <tr>
-          <th scope="row">Companion's first non-spell skill</th>
+          <th scope="row">Companion's first skill, if it is not a spell</th>
           <td>Cast time + cooldown × (100% − Haste)</td>
           <td>Shortens cooldown</td>
           <td>No effect</td>
@@ -104,8 +107,8 @@
     </p>
     <!-- Source: server-scripts/Combat.cs:337-348; Player.cs:3439-3476 — player Haste is bounded to −80%–80% before changing the weapon wait. -->
     <p>
-      Haste shortens the weapon wait. It is limited to −80% to 80% before it
-      changes weapon delay.
+      Haste shortens the weapon wait. Haste above 80% counts as 80%, and below
+      −80% as −80%.
     </p>
     <!-- Source: server-scripts/Player.cs:3439-3476 — the wait is weapon delay minus its Haste share, divided by 25 and bounded to 0.25–2 seconds, then added to cast time. -->
     <Formula calculation={timingCalculation()} />

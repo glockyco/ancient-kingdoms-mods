@@ -26,15 +26,14 @@
       {#if ctx.canCrit && skill.heals_health}
         <!-- Source: server-scripts/TargetHealSkill.cs:Apply; AreaHealSkill.cs:Apply — the caster's Critical Chance gates one double/triple heal roll before the recipients are healed. -->
         <p class="text-muted-foreground">
-          The caster's Critical Strike is the chance that a heal is critical. A
-          critical heal restores double Hit Points, and 1 in 10 critical heals
-          restores triple, still capped by missing Hit Points.
+          Critical heals restore double Hit Points, or triple in 10% of critical
+          heals. The chance is the caster's Critical Strike.
           {#if ctx.casters.some((caster) => caster.kind === "player" || caster.kind === "any_player")}
             <!-- Source: server-scripts/UICharacterInfo.cs:Update — the character window displays the player's combat.criticalChance. -->
             Your Critical Strike is shown in the character window.
           {/if}
           {#if skill.skill_type === "area_heal"}
-            An area heal rolls once for all recipients.
+            An area heal is critical for all recipients or none.
           {/if}
         </p>
         {#if skill.skill_type === "target_heal" && (skill.is_pet_skill || skill.is_mercenary_skill) && skill.heals_mana}

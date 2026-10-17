@@ -68,17 +68,20 @@ export function mitigationCalculation(
         expression: "Incoming damage − damage prevented",
       },
     ],
-    inputs: [stat],
+    inputs: [
+      stat,
+      situational("incomingDamage", "Incoming damage before reduction", 201),
+    ],
     example: (values) => {
-      const incomingDamage = 201;
+      const incomingDamage = values.incomingDamage;
       const statValue = values[stat.key];
       const result = mitigate(incomingDamage, statValue);
       return {
         given: [
-          `${number(incomingDamage)} incoming damage (fixed example)`,
+          `${number(incomingDamage)} incoming damage`,
           `${formatStat(id, statValue)} ${statName(id)}`,
         ],
-        result: `You prevent ${percent(result.share, { decimals: 2, preserveNonzero: true })} of incoming damage, with the amount prevented rounded up`,
+        result: `You take ${number(result.taken)} of ${number(incomingDamage)} damage`,
         working: [
           `Reduction: ${formatStat(id, statValue)} × 0.05% = ${percent(result.share, { decimals: 2, preserveNonzero: true })}`,
           `Damage prevented: ${number(incomingDamage)} × ${percent(result.share, { decimals: 2, preserveNonzero: true })} = ${number(result.prevented)}, rounded up`,
@@ -115,20 +118,20 @@ export function avoidanceCalculation(physical = false): Calculation {
   return {
     steps: [
       {
-        name: physical ? statName("block_chance") : "Stat contribution",
+        name: physical ? statName("block_chance") : "Resist contribution",
         expression: physical
-          ? `Your character window's ${statName("block_chance")}, including ${statName("armor_class")}, equipment and skill bonuses, capped at ${formatStat("block_chance", STATS.block_chance.max!)}`
-          : "5 percentage points per 100 matching resist",
+          ? `Your character window's ${statName("block_chance")}`
+          : "0.05 percentage points per point of the matching resist",
       },
       {
         name: "Level contribution",
         expression:
-          "Target level − attacker level, adding 0.5 percentage points per level",
+          "0.5 percentage points per level the target is above the attacker, or minus 0.5 per level below",
         limit: "between −10 and +10 percentage points",
       },
       {
         name: physical ? "Block or miss chance" : "Resist chance",
-        expression: `${physical ? statName("block_chance") : "Stat contribution"} + level contribution − attacker ${statName("accuracy")}`,
+        expression: `${physical ? statName("block_chance") : "Resist contribution"} + level contribution − attacker ${statName("accuracy")}`,
         limit: "between 0% and 90%",
       },
     ],
@@ -146,7 +149,7 @@ export function avoidanceCalculation(physical = false): Calculation {
         working: [
           physical
             ? `${statName("block_chance")}: ${formatStat("block_chance", 0.08)}`
-            : "Stat contribution: 100 × 0.05% = 5%",
+            : "Resist contribution: 100 × 0.05% = 5%",
           "Level contribution: 4 × 0.5 percentage points = 2 percentage points",
           `${physical ? "Block or miss chance" : "Resist chance"}: ${physical ? "8%" : "5%"} + 2% − 3% = ${percent(result, { decimals: 2, preserveNonzero: true })}`,
         ],
@@ -182,10 +185,10 @@ export function healingCalculation(ranger = false): Calculation {
       },
       {
         name: "Extra healing",
-        expression: "Base healing × Wisdom bonus",
+        expression: "Listed healing × Wisdom bonus",
         rounding: "nearest",
       },
-      { name: "Healing", expression: "Base healing + extra healing" },
+      { name: "Healing", expression: "Listed healing + extra healing" },
     ],
     inputs: [
       listedValue("Healing in the skill tooltip, without its (+bonus)"),
@@ -195,7 +198,7 @@ export function healingCalculation(ranger = false): Calculation {
       const result = wisdomHeal(baseValue, wisdom, ranger);
       return {
         given: [
-          `${number(baseValue)} base healing`,
+          `${number(baseValue)} listed healing`,
           `${formatStat("wisdom", wisdom)} ${statName("wisdom")}`,
         ],
         result: `Heals ${number(result.total)} Hit Points before a critical heal`,
@@ -243,13 +246,12 @@ export function songCalculation(): Calculation {
       },
       {
         name: "Whole-number effect",
-        expression: "Base value × song power",
+        expression: "Listed value × song power",
         rounding: "nearest",
       },
       {
         name: "Percentage effect",
-        expression:
-          "Base percentage × song power, without whole-number rounding",
+        expression: "Listed percentage × song power, not rounded",
       },
     ],
     inputs: [
@@ -267,9 +269,9 @@ export function songCalculation(): Calculation {
       const percentageEffect = multiplyF32(basePercentage, result.power);
       return {
         given: [
-          `${number(baseValue)} base whole-number value`,
+          `${number(baseValue)} listed whole-number value`,
           `${formatStat("charisma", charisma)} ${statName("charisma")}`,
-          `${percent(basePercentage, { decimals: 2, preserveNonzero: true })} base percentage effect`,
+          `${percent(basePercentage, { decimals: 2, preserveNonzero: true })} listed percentage effect`,
         ],
         result: `${number(result.scaled)} whole-number effect or ${percent(percentageEffect, { decimals: 2, preserveNonzero: true })} percentage effect`,
         working: [
@@ -297,11 +299,11 @@ export function attributeBuff(
 // Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity.
 export const BUFF_EFFECTS = {
   defense: `${statName("armor_class")} or matching resist`,
-  capacity: `${statName("health")} bonus or ${statName("ward")} capacity`,
+  capacity: `Maximum ${statName("health")} bonus or ${statName("ward")} capacity`,
   shield: statName("damage_shield"),
   shortHeal: `Healing each second, base duration below ${seconds(60)}`,
   longHeal: `Healing each second, base duration at least ${seconds(60)}`,
-  leadership: `${statName("attack_power")} or ${statName("spell_power")} (Leadership)`,
+  leadership: `${statName("attack_power")} and ${statName("spell_power")} (Leadership)`,
 };
 export type BuffEffect = keyof typeof BUFF_EFFECTS;
 
@@ -335,7 +337,14 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
           : effect === "longHeal"
             ? 0.3
             : 0.15;
-  const label = BUFF_EFFECTS[effect];
+  const resultLabel =
+    effect === "capacity"
+      ? `maximum ${statName("health")} or ${statName("ward")} capacity`
+      : effect === "shortHeal" || effect === "longHeal"
+        ? "healing each second"
+        : effect === "leadership"
+          ? `${statName("attack_power")} and ${statName("spell_power")}`
+          : BUFF_EFFECTS[effect];
   const effectStat: StatId | null =
     effect === "defense"
       ? "armor_class"
@@ -354,7 +363,7 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
         expression:
           effect === "leadership"
             ? "(Your Wisdom + Constitution + Charisma) ÷ 2, rounded"
-            : "Wisdom, or Intelligence for buffs that scale with it. Triple that stat for a player Ranger's targeted buff. Your area buffs for mercenaries use (Wisdom + Constitution) ÷ 2, rounded",
+            : "The buff attribute from the table above, for the buff source you choose",
       },
       ...(shortHeal
         ? [
@@ -368,13 +377,13 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
       {
         name: "Attribute addition",
         expression: shortHeal
-          ? "Base healing × healing bonus"
+          ? "Listed healing × healing bonus"
           : `${percent(coefficient, { decimals: 2, preserveNonzero: true })} of buff attribute${effect === "longHeal" ? " above 0" : ""}`,
         ...(rounded ? { rounding: "nearest" as const } : {}),
       },
       {
         name: "Buff received",
-        expression: "Base value + attribute addition",
+        expression: "Listed value + attribute addition",
       },
     ],
     inputs: [
@@ -393,8 +402,8 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
           effect === "leadership"
             ? [{ value: 3, label: "Leadership" }]
             : [
-                { value: 0, label: "Player's ordinary non-song buff" },
-                { value: 1, label: "Player Ranger's targeted buff" },
+                { value: 0, label: "Your ordinary non-song buff" },
+                { value: 1, label: "Your targeted buff as a Ranger" },
                 { value: 2, label: "Your area buff for mercenaries" },
               ],
       },
@@ -432,7 +441,7 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
       );
       return {
         given: [
-          `${number(baseValue)} base value`,
+          `${number(baseValue)} listed value`,
           ...(caster === 2 || caster === 3
             ? [
                 `${formatStat("wisdom", wisdom)} ${statName("wisdom")}`,
@@ -448,7 +457,7 @@ export function buffCalculation(effect: BuffEffect = "defense"): Calculation {
                 ...(caster === 1 ? ["player Ranger's targeted buff"] : []),
               ]),
         ],
-        result: `You receive ${effectStat ? formatStat(effectStat, result.total, { signed: true }) : number(result.total)} ${label}`,
+        result: `You receive ${effectStat ? formatStat(effectStat, result.total, { signed: true }) : number(result.total)} ${resultLabel}`,
         working: [
           `Buff attribute: ${caster === 2 || caster === 3 ? `(${formatStat("wisdom", wisdom)} + ${formatStat("constitution", constitution)}${caster === 3 ? ` + ${formatStat("charisma", charisma)}` : ""}) ÷ 2 = ${number(attribute)}, rounded` : caster === 1 ? `${formatStat(usesIntelligence === 1 ? "intelligence" : "wisdom", usesIntelligence === 1 ? intelligence : wisdom)} × 3 = ${number(attribute)}` : number(attribute)}`,
           ...(shortHeal
@@ -496,20 +505,20 @@ export function timingCalculation(spell = false): Calculation {
         ]
       : [
           {
-            name: "Wait after casting",
-            expression: "(Weapon delay − weapon delay × Haste) ÷ 25",
+            name: "Weapon wait",
+            expression: "(Attack Delay − Attack Delay × Haste) ÷ 25",
             limit: `between ${seconds(0.25)} and ${seconds(2)}`,
           },
           {
-            name: "Interval",
-            expression: "Base cast time + wait after casting",
+            name: "Attack interval",
+            expression: "Base cast time + weapon wait",
           },
         ],
     inputs: [
       cast,
       ...(spell
         ? [SPELL_HASTE]
-        : [situational("weaponDelay", "Weapon delay", 30), HASTE]),
+        : [situational("weaponDelay", "Attack Delay", 30), HASTE]),
     ],
     example: (values) => {
       if (spell) {
@@ -534,13 +543,13 @@ export function timingCalculation(spell = false): Calculation {
       return {
         given: [
           `${seconds(values.castTime)} base cast time`,
-          `${number(values.weaponDelay)} weapon delay`,
+          `${number(values.weaponDelay)} Attack Delay`,
           `${formatStat("haste", values.haste)} ${statName("haste")}`,
         ],
         result: `${seconds(result.total)} attack interval`,
         working: [
-          `Wait after casting: (${number(values.weaponDelay)} − ${number(values.weaponDelay)} × ${formatStat("haste", result.effective)}) ÷ 25 = ${seconds(result.rawWait)}${result.rawWait !== result.wait ? `, limited to ${seconds(result.wait)}` : ""}`,
-          `Interval: ${seconds(values.castTime)} + ${seconds(result.wait)} = ${seconds(result.total)}`,
+          `Weapon wait: (${number(values.weaponDelay)} − ${number(values.weaponDelay)} × ${formatStat("haste", result.effective)}) ÷ 25 = ${seconds(result.rawWait)}${result.rawWait !== result.wait ? `, limited to ${seconds(result.wait)}` : ""}`,
+          `Attack interval: ${seconds(values.castTime)} + ${seconds(result.wait)} = ${seconds(result.total)}`,
         ],
       };
     },
@@ -548,6 +557,7 @@ export function timingCalculation(spell = false): Calculation {
 }
 
 // Source: server-scripts/Combat.cs:DealDamageAt; BuffSkill.cs:ToolTip — lifetap uses post-shield damage shown on the target, multiplied by its listed share and Lich Shroud's healing bonus.
+// Source: exported-data/skills.json lifetap_healing_percent_bonus: Lich Shroud is the only skill with a positive lifetap healing bonus.
 export function lifetapHeal(damage: number, share: number, bonus: number) {
   return floorToInt(multiplyF32(multiplyF32(share, damage), addF32(1, bonus)));
 }
@@ -556,8 +566,7 @@ export function lifetapCalculation(): Calculation {
     steps: [
       {
         name: "Healing multiplier",
-        expression:
-          "100% + summed lifetap healing bonuses from your active or permanent buffs",
+        expression: "100% + Lich Shroud's lifetap healing bonus",
       },
       {
         name: "Lifetap healing",
@@ -587,7 +596,7 @@ export function lifetapCalculation(): Calculation {
           `${percent(lifetap, { decimals: 2, preserveNonzero: true })} lifetap`,
           `${percent(lifetapBonus, { decimals: 2, preserveNonzero: true })} healing bonus`,
         ],
-        result: `Heals ${number(result)} Hit Points before your maximum Hit Points limit`,
+        result: `Heals ${number(result)} Hit Points, up to your maximum Hit Points`,
         working: [
           `Healing multiplier: 100% + ${percent(lifetapBonus, { decimals: 2, preserveNonzero: true })} = ${percent(addF32(1, lifetapBonus), { decimals: 2, preserveNonzero: true })}`,
           `Lifetap healing: ${percent(lifetap, { decimals: 2, preserveNonzero: true })} × ${number(remainingDamage)} × ${percent(addF32(1, lifetapBonus), { decimals: 2, preserveNonzero: true })} = ${number(result)}, rounded down`,
@@ -616,25 +625,37 @@ export function receivedHitCalculation(): Calculation {
   return {
     steps: [
       {
-        name: `${statName("rage")} gained`,
+        name: "Damage counted",
         expression:
-          "35% of the square root of targeted physical melee hit damage after mitigation and critical hits, before Ward and Mana Shield",
-        limit: "between 1 and 25 for a positive hit, otherwise 0",
+          "Damage of the targeted physical melee hit after damage reduction and critical hits, before Ward and Mana Shield",
+      },
+      {
+        name: `${statName("rage")} gained`,
+        expression: "Square root of damage counted × 35%",
+        limit: "between 1 and 25 when the hit deals damage, otherwise 0",
         rounding: "down",
       },
     ],
-    example: () => {
-      const receivedDamage = 101;
+    inputs: [
+      situational(
+        "receivedDamage",
+        "Physical melee hit damage before Ward and Mana Shield",
+        101,
+      ),
+    ],
+    example: ({ receivedDamage }) => {
       const root = f32(Math.sqrt(f32(receivedDamage)));
       const scaled = multiplyF32(root, 0.35);
+      const rounded = floorToInt(scaled);
       const result = receivedRage(receivedDamage);
       return {
         given: [
-          "101 damage from a targeted physical melee hit, after mitigation and critical hits but before Ward and Mana Shield (fixed example)",
+          `${number(receivedDamage)} damage from a targeted physical melee hit, after damage reduction and critical hits but before Ward and Mana Shield`,
         ],
         result: `${formatStat("rage", result)} ${statName("rage")} gained`,
         working: [
-          `Rage gained: √101 = ${number(root)}, × 35% = ${number(scaled)} = ${number(result)}, rounded down`,
+          `Damage counted: ${number(receivedDamage)}`,
+          `Rage gained: floor(√${number(receivedDamage)} × 35%) = ${number(rounded)}${rounded !== result ? `, limited to ${number(result)}` : ""}`,
         ],
       };
     },

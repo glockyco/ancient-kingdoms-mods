@@ -113,8 +113,7 @@
   {/if}
   <span class={cn("min-w-0", maxWidth && "truncate", qualityClass, nameClass)}
     >{name}</span
-  >
-  {#if renderedTrailing}
+  >{#if renderedTrailing}
     {@render renderedTrailing()}
-  {/if}
-</a>
+  {/if}</a
+>

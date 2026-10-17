@@ -53,13 +53,8 @@
       <p>An active mercenary still uses a place while dead.</p>
       <!-- Source: server-scripts/PlayerParty.cs:219-253,267-292 — invitee must be online, partyless and out of combat; capacity is checked at invitation and acceptance, including mercenaries. -->
       <p>
-        <span class="block"
-          >Invite an online player who is not in a party or in combat.</span
-        >
-        <span class="block"
-          >The game checks that a place is available again when the invited
-          player accepts.</span
-        >
+        Invite an online player who is not in a party or in combat. There must
+        still be room when they accept.
       </p>
       <!-- Source: server-scripts/Party.cs:master; PartySystem.cs:FormParty,AddToParty,LeaveParty,KickFromParty,DismissParty; PlayerParty.cs:UserCode_CmdInvite__String — any member can invite; the first remaining member leads a party that continues after its leader leaves. -->
       <p>
@@ -67,8 +62,8 @@
           >The player who starts the party leads it. Any member can invite.</span
         >
         <span class="block"
-          >If the party continues after the leader leaves, the remaining member
-          who joined earliest becomes leader.</span
+          >If at least two players remain when the leader leaves, the player who
+          joined earliest becomes leader.</span
         >
         <span class="block"
           >Only the leader can remove a member or dismiss the party.</span
@@ -107,8 +102,8 @@
           owner.</span
         >
         <span class="block"
-          >That player and every party member closer than 40 yd to them get loot
-          access and a share of the kill XP.</span
+          >That player and every other player in the party closer than 40 yd to
+          them get loot access. Living players receive a share of the kill XP.</span
         >
       </p>
       <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
@@ -126,11 +121,9 @@
       <Calculation calculation={partyGold()} />
       <!-- Source: server-scripts/PlayerLooting.cs:108-147 — matching unfinished GatherQuest objectives advance for nearby party members on monster or chest pickup; the loot is consumed rather than copied. -->
       <p>
-        <span class="block"
-          >A gather-quest drop from a dead monster or chest can advance each
-          nearby member's matching unfinished quest.</span
-        >
-        <span class="block">Quest progress does not duplicate the item.</span>
+        Collecting a gather-quest drop from a monster or chest advances each
+        nearby member's matching unfinished quest. The drop is used up rather
+        than added to anyone's inventory.
       </p>
       <!-- Source: server-scripts/PlayerLooting.cs:177-203 and server-scripts/Monster.cs:4570-4609 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
@@ -161,11 +154,8 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/ItemsRollSystem.cs:39-79,188-197 and server-scripts/UIRollForItem.cs:60-67 — 120-second deadline, early resolution once all answer, unanswered choices treated as passes after expiry. -->
       <p>
-        <span class="block"
-          >Each player offered the roll has up to 120 seconds to answer.</span
-        >
-        <span class="block">The roll resolves sooner if everyone answers.</span>
-        <span class="block">No answer by the deadline counts as Pass.</span>
+        You have 2 minutes to answer. The roll resolves when everyone answers or
+        time runs out. No answer counts as Pass.
       </p>
       <!-- Source: server-scripts/Player.cs:14030-14036 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
@@ -281,35 +271,22 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/PlayerChat.cs:UserCode_CmdMsgLocal__String__String — local messages exceeding 120 characters are discarded. -->
-      <p>Local messages longer than 120 characters are not sent.</p>
-      <!-- Source: server-scripts/PlayerChat.cs:457-504,540-546 — party/guild chat requires membership; whispers only reach online characters. -->
+      <!-- Source: server-scripts/PlayerChat.cs:439,459,487,542 — all four chat channels discard messages exceeding 120 characters. -->
       <p>
-        <span class="block">Party and guild chat require membership.</span>
-        <span class="block">Whispers do not reach offline characters.</span>
+        Local, party, guild, and whisper messages longer than 120 characters are
+        not sent.
       </p>
       <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:3930-3950,4013-4034 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
       <p>
-        <span class="block"
-          >Select a living player in your zone and enter <code>/follow</code
-          >.</span
-        >
-        <span class="block">Party membership is not required.</span>
-        <span class="block">Following only moves you toward the player.</span>
-        <span class="block"
-          >You stop moving within 1 yd of the player and keep following when
-          they move.</span
-        >
+        Select a living player in your zone and enter <code>/follow</code>. You
+        follow within 1 yd, without attacking. You do not need to be in their
+        party.
       </p>
       <!-- Source: server-scripts/Player.cs:3953-3976,3980-4012 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
-        <span class="block"
-          >Moving manually or using a skill cancels follow.</span
-        >
-        <span class="block"
-          >Either player's death, a hidden or absent target, a zone change, or a
-          target jump over 8 yd also ends following.</span
-        >
+        Moving or using a skill cancels follow. It also ends if either player
+        dies, the target disappears or changes zone, or they move more than 8 yd
+        at once, such as by teleporting.
       </p>
     </Card.Content>
   </Card.Root>

@@ -1,9 +1,4 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/utils/format";
-  import {
-    EXAMPLE_SONG_BONUS,
-    songDuration,
-  } from "$lib/skills/worked-examples";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -24,24 +19,18 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Song Aura</h3>
   <p class="text-muted-foreground">
-    The song you select keeps recasting itself. Each cast takes
-    {fmt.formatSeconds(fmt.atRank(skill.cast_time!, skill.max_level))},
-    shortened by Spell Casting Haste. Each completed cast renews the song for
+    Your selected song repeats automatically, renewing its duration after each
+    cast. Spell Casting Haste speeds up these casts. The song lasts
     {fmt.formatSeconds(songSeconds)}{skill.duration_per_level &&
     skill.max_level > 1
       ? ` at rank ${skill.max_level}`
-      : ""}. After you select another song, this one lasts the rest of its
-    duration. A learned song-duration bonus such as
+      : ""} after its last cast, even when you switch songs.
     <a
       href="/skills/lingering_melody"
       class="text-blue-600 dark:text-blue-400 hover:underline"
       >Lingering Melody</a
     >
-    lengthens it, so with a {formatPercent(EXAMPLE_SONG_BONUS, {
-      decimals: 2,
-      preserveNonzero: true,
-    })} bonus it lasts
-    {fmt.formatSeconds(songDuration(songSeconds, EXAMPLE_SONG_BONUS))}.
+    lengthens this duration.
   </p>
 </div>
 <!-- Source: server-scripts/PlayerSkills.cs:GetMaximumActiveBardSongs,BeginBardSong; server-scripts/UICharacterInfo.cs:Update — default limit is two, Polyphony removes it, and renewals move songs to the end of the active list. -->

@@ -36,22 +36,23 @@
   <h3 class="font-semibold">Resist Chance</h3>
   <p class="text-muted-foreground">
     {#if debuffResistance}
-      The target's {debuffResistance} gives it 5 percentage points of chance per 100
-      points to resist this {skill.is_dispel ? "skill" : "debuff"}, at most 90%.
-      See
+      Every 100 points of the target's {debuffResistance} add 5 percentage points
+      to its chance to resist this {skill.is_dispel ? "skill" : "debuff"}. Each
+      1% of the caster's Accuracy subtracts 1 percentage point. Level
+      differences also apply. The final chance is limited to 0-90%. See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#avoidance">resistance and avoidance</a
-      > for Accuracy and level differences.
+      > for level adjustments.
     {:else}
-      This debuff has no resistance-stat roll.
+      The target gets no resist roll against this debuff.
     {/if}
   </p>
   {#if (skill.healing_per_second_bonus?.base_value ?? 0) < 0}
     <!-- Runtime verification: docs/game-bugs/dexterity-scaled-disease-ticks-use-poison-resist.md -->
     <p class="text-muted-foreground">
-      Once it lands, the target's {tickStat} reduces each tick by 5% per 100 points,
-      at most 90%.{diseaseTickDefect
+      Every 100 points of the target's {tickStat} reduce each damage tick by 5%, up
+      to 90%, with the reduction rounded up.{diseaseTickDefect
         ? " A game defect makes Poison Resist apply here instead of Disease Resist."
         : ""} See
       <a
@@ -61,22 +62,19 @@
       >.
     </p>
   {/if}
-  {#if skill.player_classes.length > 0 || mechanics.facts.usedByMercenary || mechanics.facts.usedByCompanion || skill.is_scroll}
-    <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — immunity lets through pure damage over time on bosses, and resistance-decrease skills and positive Health per second on other monsters. -->
-    <p class="text-muted-foreground">
-      {#if bypass.boss && bypass.otherMonster}
-        Immune to Debuffs does not stop this debuff.
-      {:else if bypass.boss}
-        Monsters whose pages list Immune to Debuffs are unaffected, except
-        bosses. A boss's immunity lets through debuffs that only deal damage
-        over time.
-      {:else if bypass.otherMonster}
-        Monsters whose pages list Immune to Debuffs are still affected, except
-        bosses.
-      {:else}
-        This {skill.is_dispel ? "skill" : "debuff"} has no effect on monsters whose
-        pages list Immune to Debuffs.
-      {/if}
-    </p>
-  {/if}
+  <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — immunity lets through pure damage over time on bosses, and resistance-decrease skills and positive Health per second on other monsters. -->
+  <p class="text-muted-foreground">
+    {#if bypass.boss && bypass.otherMonster}
+      Immune to Debuffs does not stop this debuff.
+    {:else if bypass.boss}
+      Bosses with Immune to Debuffs are still affected. Other monsters with that
+      immunity are unaffected.
+    {:else if bypass.otherMonster}
+      Monsters whose pages list Immune to Debuffs are still affected, except
+      bosses.
+    {:else}
+      This {skill.is_dispel ? "skill" : "debuff"} has no effect on monsters whose
+      pages list Immune to Debuffs.
+    {/if}
+  </p>
 </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { formatNumber, formatPercent } from "$lib/utils/format";
+  import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -50,7 +51,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
   description={`Radiant Seeker raises the Radiant Aether chance from 5% to 25%. Find ${data.resource.node_count} Radiant Sparks across ${data.resource.zones.length} zones and learn how Aether changes combat.`}
   path="/professions/radiant_seeker"
 />
@@ -81,22 +82,21 @@
         imageAvailable={data.resource.reward_visual_public_path}
       />.
       <strong class="font-semibold text-foreground"
-        >Your Aether chance increases from 5% at 0 skill to 25% at 100.</strong
+        >Your chance of Radiant Aether rises from 5% at 0% Radiant Seeker to 25%
+        at 100%.</strong
       >
     </p>
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Radiant Sparks work</h2>
+    <h2 class="text-xl font-semibold">How Radiant Seeker works</h2>
     <ol class="divide-y divide-border">
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
         <span class="text-sm tabular-nums text-muted-foreground">1</span>
         <div>
           <p class="font-medium">Find a Radiant Spark.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The world has {data.resource.node_count} sparks in {data.resource
-              .zones.length}
-            zones. You do not need a tool.
+            No tool or minimum Radiant Seeker skill is needed.
           </p>
         </div>
       </li>
@@ -106,9 +106,8 @@
         <div>
           <p class="font-medium">Gather the spark.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            A spark has no success check. Each gather gives {data.resource
-              .gathering_exp}
-            experience and can increase Radiant Seeker.
+            Gathering a spark always succeeds. Each gather gives {data.resource
+              .gathering_exp} XP and can raise Radiant Seeker.
           </p>
         </div>
       </li>
@@ -117,14 +116,10 @@
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
         <span class="text-sm tabular-nums text-muted-foreground">3</span>
         <div>
-          <p class="font-medium">See whether you find Radiant Aether.</p>
+          <p class="font-medium">Return for more sparks.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Each spark has a 5% to 25% chance to give Radiant Aether, depending
-            on your Radiant Seeker skill. The spark returns after a random
-            {mechanics.respawnSeconds[0]} to {formatNumber(
-              mechanics.respawnSeconds[1],
-            )}
-            seconds (1 minute 40 seconds to 1 hour).
+            A gathered spark returns between 1 minute 40 seconds and 1 hour
+            later.
           </p>
         </div>
       </li>
@@ -139,10 +134,6 @@
 
   <section id="chance" class="space-y-4">
     <h2 class="text-xl font-semibold">Aether chance</h2>
-    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Radiant Seeker increases the chance that a spark gives you Radiant Aether.
-      You can gather sparks at any Radiant Seeker skill.
-    </p>
 
     <div class="space-y-5 rounded-lg border p-4 md:p-5">
       <div class="flex flex-wrap items-baseline gap-3">
@@ -180,10 +171,10 @@
         >
         to give Radiant Aether.
         {#if skillLevel < mechanics.capPercent}
-          The chance to add 0.10% to 0.30% Radiant Seeker skill from a spark is {formatPercent(
-            gainChance,
-            { decimals: 0, trailingZeros: true },
-          )}.
+          Each spark has a {formatPercent(gainChance, {
+            decimals: 0,
+            trailingZeros: true,
+          })} chance to raise Radiant Seeker by 0.10% to 0.30%.
         {:else}
           Your Radiant Seeker skill is at the cap.
         {/if}
@@ -246,8 +237,8 @@
     <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
       <!-- Source: server-scripts/Player.cs:HasRadiantAether — combat checks only slots 0–23. -->
       <span class="font-medium text-foreground">Inventory requirement:</span>
-      Carry Radiant Aether in one of your first 24 inventory slots to use it in combat.
-      Backpack-added slots do not count.
+      Carry Radiant Aether in one of your 24 base inventory slots to use it in combat.
+      Backpack storage slots do not count.
     </p>
 
     <div class="divide-y divide-border border-y border-border">
@@ -263,12 +254,13 @@
           </div>
           <span
             class="pl-7 text-xs font-medium tabular-nums text-rose-500 sm:pl-0"
-            >15% activation</span
+            >15% chance</span
           >
         </div>
         <h3 class="mt-2 font-semibold">Deal 3× damage instead of 1.5×</h3>
         <p class="mt-1 text-pretty text-sm text-muted-foreground">
-          With 50% Critical Resist, a 3× critical hit deals 2× damage instead.
+          Against a target with 50% Critical Resist, the 3× critical hit deals
+          2× damage.
         </p>
       </div>
 
@@ -284,11 +276,11 @@
           </div>
           <span
             class="pl-7 text-xs font-medium tabular-nums text-emerald-500 sm:pl-0"
-            >15% activation</span
+            >15% chance</span
           >
         </div>
         <h3 class="mt-2 font-semibold">
-          Take no damage and return to full health
+          Take no damage and return to maximum Hit Points
         </h3>
       </div>
 
@@ -302,23 +294,19 @@
           <div class="flex min-w-0 items-center gap-2 text-muted-foreground">
             <Shield class="h-5 w-5 shrink-0 text-sky-500" />
             <span
-              >When hostile area damage or a debuff targets players carrying
-              Aether</span
+              >When hostile area damage or an area debuff targets players
+              carrying Aether</span
             >
           </div>
           <span class="pl-7 text-xs font-medium text-sky-500 sm:pl-0"
-            >Chance depends on the number of eligible Aether carriers</span
+            >Chance depends on how many targeted players carry Aether</span
           >
         </div>
         <h3 class="mt-2 font-semibold">Cancel the area skill for everyone</h3>
-        <p class="mt-1 text-pretty text-sm text-muted-foreground">
-          One activation prevents the hostile area damage or debuff from
-          affecting any target.
-        </p>
         <details class="mt-3 text-sm">
           <summary
             class="w-fit cursor-pointer font-medium text-foreground hover:underline"
-            >How group activation is calculated</summary
+            >Group activation chance</summary
           >
           <dl
             class="mt-2 max-w-lg divide-y divide-border text-muted-foreground"
@@ -335,9 +323,8 @@
             </div>
           </dl>
           <p class="mt-2 max-w-lg text-pretty text-sm text-muted-foreground">
-            Only players who carry Aether in a base inventory slot get an
-            activation chance. The game checks each of them until one activation
-            succeeds.
+            Only targeted players carrying Aether in a base inventory slot
+            contribute. One activation protects everyone.
           </p>
         </details>
       </div>

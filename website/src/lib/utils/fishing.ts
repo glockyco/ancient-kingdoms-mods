@@ -526,7 +526,7 @@ export interface FishingRoleRangeParams {
 
 /** The loadouts behind every per-cast range from `fishingRangeForRole`, for display beside the range. */
 export const FISHING_RANGE_ASSUMPTIONS =
-  "Per-cast bounds compare the required rod at minimum usable skill without costume bonuses with the best rod at 100% Fishing and all three Fisherman costume pieces. Both assume you click in time and have inventory space.";
+  "The reference loadouts are the spot's minimum rod at the lowest Fishing skill that works here, without Fisherman costume pieces, and the best rod at 100% Fishing with all three pieces. The range spans their chances, which can decrease for lower-tier fish and trash. Both assume you click in time and have inventory space.";
 
 // Single entry point that picks the right per-cast range helper for a fishing
 // source role, so consumers never re-decide the formula.
@@ -673,7 +673,7 @@ export function fishOutcomeRangesForSpot({
   const noCatch = chanceBounds(1 - successLow, 1 - successHigh);
   rows.push({
     kind: "no_catch",
-    label: "No catch",
+    label: "No bite",
     chancePerCastMin: noCatch.min,
     chancePerCastMax: noCatch.max,
   });

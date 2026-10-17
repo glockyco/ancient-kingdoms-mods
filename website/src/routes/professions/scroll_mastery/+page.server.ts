@@ -83,6 +83,7 @@ interface RawScrollEffect {
   speed_bonus: string | null;
   healing_per_second_bonus: string | null;
   haste_bonus: string | null;
+  damage_over_time_type: string | null;
   spell_haste_bonus: string | null;
 }
 
@@ -129,13 +130,6 @@ function parseLinear(json: string | null): {
   }
 }
 
-function hasPerLevelScaling(json: string | null): boolean {
-  const value = parseLinear(json);
-  return (
-    typeof value?.bonus_per_level === "number" && value.bonus_per_level !== 0
-  );
-}
-
 function scalingLabels(row: RawScrollEffect): string[] {
   const labels: string[] = [];
 
@@ -144,8 +138,33 @@ function scalingLabels(row: RawScrollEffect): string[] {
   }
 
   for (const field of SCALING_FIELDS) {
-    if (hasPerLevelScaling(row[field.key] as string | null)) {
-      labels.push(field.label);
+    const value = parseLinear(row[field.key] as string | null);
+    if (
+      typeof value?.bonus_per_level === "number" &&
+      value.bonus_per_level !== 0
+    ) {
+      if (
+        field.key === "healing_per_second_bonus" &&
+        typeof value?.base_value === "number" &&
+        value.base_value < 0
+      ) {
+        const debuff =
+          row.skill_type === "target_debuff" ||
+          row.skill_type === "area_debuff";
+        if (debuff && !row.damage_over_time_type) {
+          throw new Error(
+            `Missing damage type for scroll effect ${row.skill_id}`,
+          );
+        }
+        labels.push(
+          statFieldName(statField("skill", field.key), "character", {
+            damageType: debuff ? row.damage_over_time_type! : undefined,
+            drain: !debuff,
+          }),
+        );
+      } else {
+        labels.push(field.label);
+      }
     }
   }
 
@@ -225,7 +244,8 @@ export const load: PageServerLoad = (): ScrollMasteryPageData => {
       s.speed_bonus,
       s.haste_bonus,
       s.spell_haste_bonus,
-      s.healing_per_second_bonus
+      s.healing_per_second_bonus,
+      s.damage_over_time_type
     FROM items i
     JOIN skills s ON s.id = i.scroll_skill_id
     LEFT JOIN scribing_recipes sr ON sr.result_item_id = i.id

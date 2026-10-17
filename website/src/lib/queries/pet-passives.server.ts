@@ -3,12 +3,18 @@ import { query } from "$lib/db.server";
 export interface PetHealthPassive {
   id: string;
   name: string;
+  health_percent_min: number;
+  health_percent_max: number;
 }
 
 // Source: server-scripts/Skills.cs:174-185 — learned pet passives add maximum-health percentages to non-familiar companions.
 export function getPetHealthPassives(petId?: string): PetHealthPassive[] {
   return query<PetHealthPassive>(
-    `SELECT DISTINCT passive.id, passive.name
+    `SELECT DISTINCT passive.id, passive.name,
+       json_extract(passive.health_max_percent_bonus, '$.base_value') AS health_percent_min,
+       json_extract(passive.health_max_percent_bonus, '$.base_value')
+         + json_extract(passive.health_max_percent_bonus, '$.bonus_per_level')
+           * (passive.max_level - 1) AS health_percent_max
      FROM skills AS summon
      JOIN json_each(summon.player_classes) AS summoning_class
      JOIN skills AS passive ON passive.is_pet_skill = 1

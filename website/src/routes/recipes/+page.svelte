@@ -210,7 +210,7 @@
     />
     {#if row.original.result_amount > 1}
       <span class="text-muted-foreground ml-1"
-        >x{row.original.result_amount}</span
+        >×{row.original.result_amount}</span
       >
     {/if}
   {:else if cell.column.id === "ingredient1"}
@@ -222,7 +222,7 @@
           imageAvailable={row.original.ingredients[0].visual_public_path}
         />
         <span class="text-muted-foreground">
-          x{row.original.ingredients[0].amount}</span
+          ×{row.original.ingredients[0].amount}</span
         >
       </span>
     {:else}
@@ -237,7 +237,7 @@
           imageAvailable={row.original.ingredients[1].visual_public_path}
         />
         <span class="text-muted-foreground">
-          x{row.original.ingredients[1].amount}</span
+          ×{row.original.ingredients[1].amount}</span
         >
       </span>
     {:else}
@@ -252,7 +252,7 @@
           imageAvailable={row.original.ingredients[2].visual_public_path}
         />
         <span class="text-muted-foreground">
-          x{row.original.ingredients[2].amount}</span
+          ×{row.original.ingredients[2].amount}</span
         >
       </span>
     {:else}
@@ -288,11 +288,9 @@
 <JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
-  <Breadcrumb
-    items={[{ label: "Home", href: "/" }, { label: "Crafting Recipes" }]}
-  />
+  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Recipes" }]} />
 
-  <h1 class="text-3xl font-bold">Crafting Recipes</h1>
+  <h1 class="text-3xl font-bold">Recipes</h1>
 
   <DataTable
     data={dataWithVirtual}

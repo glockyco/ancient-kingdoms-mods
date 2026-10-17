@@ -163,7 +163,11 @@
               size="sm"
               aria-expanded={editing}
               onclick={() => (editing = !editing)}
-              >{editing ? "Done" : "Use your numbers"}</Button
+              >{editing
+                ? "Done"
+                : changed
+                  ? "Change your numbers"
+                  : "Use your numbers"}</Button
             >
           </div>
         {/if}

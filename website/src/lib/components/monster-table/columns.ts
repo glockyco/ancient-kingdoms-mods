@@ -1,5 +1,6 @@
 import type { ColumnDef } from "$lib/components/ui/data-table";
 import type { RespawnInfo } from "$lib/types/respawn";
+import { formatSpecialSpawn } from "$lib/utils/respawn";
 
 /**
  * Creates respawn-related column definitions for monster tables.
@@ -20,25 +21,16 @@ export function createRespawnColumns<T extends RespawnInfo>(): ColumnDef<T>[] {
     },
     {
       id: "respawn_chance",
-      header: "Chance",
+      header: "Spawn chance",
       size: 110,
-      accessorFn: (row) =>
-        row.respawn_probability === 1 ? -1 : row.respawn_probability,
+      accessorFn: (row) => (row.no_respawn ? null : row.respawn_probability),
       enableGlobalFilter: false,
     },
     {
       id: "special",
-      header: "Special",
+      header: "Spawn condition",
       size: 120,
-      accessorFn: (row) => {
-        if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
-          return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
-        }
-        if (row.special_spawn_type === "altar") return "Altar";
-        if (row.special_spawn_type === "summon") return "Blocked";
-        if (row.special_spawn_type === "placeholder") return "On Death";
-        return "";
-      },
+      accessorFn: formatSpecialSpawn,
       sortingFn: (rowA, rowB) => {
         const order = (row: RespawnInfo) => {
           if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) return 1;

@@ -35,14 +35,17 @@
           class="h-4 w-4 shrink-0 {config.color}"
           aria-hidden="true"
         />
+        <span class="text-muted-foreground">{config.label}:</span>
         {#each shown as source, index (source.id)}
-          <a
-            href="{config.linkPrefix}{source.id}"
-            class="text-blue-600 hover:underline dark:text-blue-400"
-            >{source.name}</a
-          >{#if index < shown.length - 1}<span class="text-muted-foreground"
-              >,</span
-            >{/if}
+          <span>
+            <a
+              href="{config.linkPrefix}{source.id}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >{source.name}</a
+            >{#if index < shown.length - 1}<span class="text-muted-foreground"
+                >,</span
+              >{/if}
+          </span>
         {/each}
         {#if hidden > 0}
           <a

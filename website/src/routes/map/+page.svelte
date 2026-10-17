@@ -1166,16 +1166,17 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <Seo
-  title="Ancient Kingdoms Map — Interactive World Map of Eratiath"
-  description="Click any marker to see monster spawns, NPC services, gathering nodes, treasure chests, and altar locations across Eratiath, with respawn timers and drop tables."
+  title="Interactive World Map - Ancient Kingdoms"
+  description="Interactive map of Eratiath with monster spawns, NPCs and their services, gathering resources, chests, treasure dig sites, and altars. Select a marker for respawn timers and drops."
   path="/map"
 />
 
 <div class="dark relative h-screen w-full bg-background text-foreground">
   <h1 class="sr-only">Ancient Kingdoms Interactive Map</h1>
   <p id="map-keyboard-help" class="sr-only">
-    Use arrow keys to pan and plus or minus to zoom. Open Markers in view to
-    browse and select visible markers with the keyboard.
+    Use the arrow keys to pan and the plus and minus keys to zoom. Open the
+    "Markers in view" list to browse and select visible markers with the
+    keyboard.
   </p>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
@@ -1206,9 +1207,9 @@
       class="absolute inset-0 flex items-center justify-center bg-background/80"
     >
       <div class="text-center">
-        <p class="text-destructive">Error: {loadError}</p>
+        <p class="text-destructive">The map could not load.</p>
         <p class="mt-2 text-sm text-muted-foreground">
-          Please try refreshing the page.
+          Refresh the page to try again.
         </p>
       </div>
     </div>
@@ -1240,10 +1241,11 @@
       <div class="border-t p-2">
         <p class="px-1 pb-2 text-sm text-muted-foreground">
           {#if viewportMarkers.total > 0}
-            {viewportMarkers.markers.length} of {viewportMarkers.total} markers. Nearest
-            to the view centre first.
+            Showing {viewportMarkers.markers.length} of {viewportMarkers.total} markers,
+            nearest to the center first.
           {:else}
-            No markers in view for the enabled layers.
+            No markers in view. Zoom out, move the map or turn on more marker
+            types.
           {/if}
         </p>
         <ul
@@ -1297,6 +1299,7 @@
       {:else if selectedEntity}
         <EntityPopup
           entity={selectedEntity}
+          reputationTiers={data.reputationTiers}
           onClose={handleClosePopup}
           onFocusClick={hasHighlightPositions
             ? handleFocusHighlighted
@@ -1374,6 +1377,7 @@
             {:else if selectedEntity}
               <EntityPopup
                 entity={selectedEntity}
+                reputationTiers={data.reputationTiers}
                 onClose={() => {
                   mobileDrawerOpen = false;
                   handleClosePopup();

@@ -1,4 +1,8 @@
 import type { AltarThresholds } from "$lib/calculation/altar";
+import {
+  calculateBossLootChance,
+  type BossLootDrop,
+} from "$lib/calculation/boss-loot";
 import { query, queryScalar } from "$lib/db";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
@@ -48,6 +52,9 @@ export interface PopupDropItem {
   itemName: string;
   quality: number;
   dropRate: number;
+  fatecharmDropRate?: number;
+  isDistributionRoll?: boolean;
+  requiresQuest?: boolean;
   dropRateMax?: number;
   amountMin?: number;
   amountMax?: number;
@@ -187,6 +194,7 @@ export interface PopupAltarBossDrop {
 export interface AltarPopupDetails {
   rewards: PopupAltarReward[];
   bossDrops: PopupAltarBossDrop[];
+  finalMonsterIds: string[];
 }
 
 interface MonsterStatsRow {
@@ -203,6 +211,9 @@ interface MonsterStatsRow {
   visual_width: number | null;
   visual_height: number | null;
   visual_source_type: string | null;
+  is_boss: number;
+  loot_inputs: string;
+  has_fatecharm: number;
 }
 
 interface MonsterDropRow {
@@ -211,7 +222,50 @@ interface MonsterDropRow {
   quality: number;
   rate: number;
   is_bestiary_drop: number;
+  is_quest_item: number;
   tooltip_html: string | null;
+}
+
+function popupLootChance(
+  inputs: readonly BossLootDrop[],
+  itemId: string,
+  configuredRate: number,
+  isBoss: boolean,
+  hasFatecharm: boolean,
+  questOnly: boolean,
+): Pick<
+  PopupDropItem,
+  "dropRate" | "fatecharmDropRate" | "isDistributionRoll" | "requiresQuest"
+> {
+  const direct = inputs.filter((drop) => drop.item_id === itemId);
+  const isDistributionRoll = direct.some(
+    (drop) => drop.random_items !== undefined && !drop.requires_quest,
+  );
+  const requiresQuest =
+    direct.length > 0 &&
+    direct.every((drop) => (isBoss ? drop.requires_quest : questOnly));
+  const isOutcome =
+    direct.some(
+      (drop) => drop.random_items === undefined || drop.requires_quest,
+    ) ||
+    inputs.some((drop) =>
+      drop.random_items?.some((outcome) => outcome.item_id === itemId),
+    );
+  if (!isBoss || isDistributionRoll || !isOutcome) {
+    return { dropRate: configuredRate, isDistributionRoll, requiresQuest };
+  }
+  const neededQuestItemIds = new Set([itemId]);
+  return {
+    dropRate: calculateBossLootChance(inputs, itemId, { neededQuestItemIds }),
+    fatecharmDropRate: hasFatecharm
+      ? calculateBossLootChance(inputs, itemId, {
+          neededQuestItemIds,
+          fatecharm: true,
+        })
+      : undefined,
+    isDistributionRoll,
+    requiresQuest,
+  };
 }
 
 interface RenewalSageRow {
@@ -248,6 +302,14 @@ export async function loadMonsterPopupDetails(
       m.damage_per_level,
       m.magic_damage_base,
       m.magic_damage_per_level,
+      m.is_boss,
+      m.loot_inputs,
+      EXISTS (
+        SELECT 1 FROM monster_spawns fs
+        JOIN zones fz ON fz.id = fs.zone_id AND fz.is_dungeon = 1 AND fz.zone_id > 0
+        JOIN items charm ON charm.luck_token_zone_id = fs.zone_id AND charm.luck_token_bonus > 0
+        WHERE fs.monster_id = m.id AND (? IS NULL OR fs.id = ?)
+      ) as has_fatecharm,
       ms.health as spawn_health,
       ms.damage as spawn_damage,
       ms.magic_damage as spawn_magic_damage,
@@ -264,21 +326,22 @@ export async function loadMonsterPopupDetails(
       ON ms.id = ?
     WHERE m.id = ?
     `,
-    [spawnId, monsterId],
+    [spawnId, spawnId, spawnId, monsterId],
   );
 
   const drops = await query<MonsterDropRow>(
     `
     SELECT
-      json_extract(d.value, '$.item_id') as item_id,
-      json_extract(d.value, '$.item_name') as item_name,
-      COALESCE(i.quality, json_extract(d.value, '$.quality')) as quality,
-      json_extract(d.value, '$.rate') as rate,
+      ism.item_id,
+      i.name as item_name,
+      i.quality,
+      i.is_quest_item,
+      ism.drop_rate as rate,
       COALESCE(i.is_bestiary_drop, 0) as is_bestiary_drop,
       i.tooltip_html
-    FROM monsters m, json_each(m.drops) d
-    LEFT JOIN items i ON i.id = json_extract(d.value, '$.item_id')
-    WHERE m.id = ?
+    FROM item_sources_monster ism
+    JOIN items i ON i.id = ism.item_id
+    WHERE ism.monster_id = ?
     ${orderBy}
     `,
     [monsterId],
@@ -324,6 +387,10 @@ export async function loadMonsterPopupDetails(
   const scaledMagicDamage =
     (stats?.magic_damage_base ?? 0) +
     (stats?.magic_damage_per_level ?? 0) * levelOffset;
+  if (!stats || typeof stats.loot_inputs !== "string") {
+    throw new Error(`Missing monster loot inputs for ${monsterId}`);
+  }
+  const lootInputs = JSON.parse(stats.loot_inputs) as BossLootDrop[];
   return {
     health: stats?.spawn_health ?? scaledHealth,
     damage: stats?.spawn_damage ?? scaledDamage,
@@ -340,7 +407,14 @@ export async function loadMonsterPopupDetails(
       itemId: d.item_id,
       itemName: d.item_name,
       quality: d.quality,
-      dropRate: d.rate,
+      ...popupLootChance(
+        lootInputs,
+        d.item_id,
+        d.rate,
+        Boolean(stats.is_boss),
+        Boolean(stats.has_fatecharm),
+        Boolean(d.is_quest_item),
+      ),
       tooltipHtml: d.tooltip_html,
       isBestiary: Boolean(d.is_bestiary_drop),
     })),
@@ -766,6 +840,7 @@ export async function loadAltarPopupDetails(
       reward_legendary_id: string | null;
       reward_legendary_name: string | null;
       waves: string | null;
+      has_fatecharm: number;
     }
   >(
     `
@@ -775,15 +850,20 @@ export async function loadAltarPopupDetails(
       reward_epic_id, reward_epic_name,
       reward_legendary_id, reward_legendary_name,
       magic_reward_threshold, epic_reward_threshold, legendary_reward_threshold,
-      waves
-    FROM altars
-    WHERE id = ?
+      waves,
+      EXISTS (
+        SELECT 1 FROM zones z
+        JOIN items charm ON charm.luck_token_zone_id = z.id AND charm.luck_token_bonus > 0
+        WHERE z.id = a.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
+      ) AS has_fatecharm
+    FROM altars a
+    WHERE a.id = ?
   `,
     [altarId],
   );
 
   if (!altar) {
-    return { rewards: [], bossDrops: [] };
+    return { rewards: [], bossDrops: [], finalMonsterIds: [] };
   }
 
   const maxLevel = await queryScalar<number>(
@@ -808,75 +888,43 @@ export async function loadAltarPopupDetails(
   let bossIds: string[] = [];
 
   if (altar.waves) {
-    try {
-      const waves = JSON.parse(altar.waves) as Array<{
-        monsters: Array<{ monster_id: string }>;
-      }>;
-      if (waves.length > 0) {
-        const finalWave = waves[waves.length - 1];
-        bossIds = [...new Set(finalWave.monsters.map((m) => m.monster_id))];
-
-        // Look up each boss monster's bestiary drops
-        for (const monsterId of bossIds) {
-          const drops = await query<{
-            monster_name: string;
-            item_id: string;
-            item_name: string;
-            quality: number;
-            rate: number;
-            tooltip_html: string | null;
-          }>(
-            `
-            SELECT
-              m.name as monster_name,
-              json_extract(d.value, '$.item_id') as item_id,
-              json_extract(d.value, '$.item_name') as item_name,
-              COALESCE(i.quality, json_extract(d.value, '$.quality')) as quality,
-              json_extract(d.value, '$.rate') as rate,
-              i.tooltip_html
-            FROM monsters m, json_each(m.drops) d
-            LEFT JOIN items i ON i.id = json_extract(d.value, '$.item_id')
-            WHERE m.id = ?
-              AND (m.is_boss = 1 OR m.is_elite = 1)
-              AND i.is_bestiary_drop = 1
-            ORDER BY rate DESC
-            `,
-            [monsterId],
-          );
-
-          if (drops.length > 0) {
-            // Track max rates for bestiary drops
-            for (const drop of drops) {
-              const existing = bossMonsterDrops.get(drop.item_id);
-              if (!existing || drop.rate > existing) {
-                bossMonsterDrops.set(drop.item_id, drop.rate);
-              }
-            }
-
-            // Filter out altar rewards for display (they're shown in the Rewards section)
-            const filteredDrops = drops.filter(
-              (d) => !altarRewardIds.has(d.item_id),
-            );
-
-            if (filteredDrops.length > 0) {
-              bossDrops.push({
-                monsterId,
-                monsterName: drops[0].monster_name,
-                drops: filteredDrops.map((d) => ({
-                  itemId: d.item_id,
-                  itemName: d.item_name,
-                  quality: d.quality,
-                  dropRate: d.rate,
-                  tooltipHtml: d.tooltip_html,
-                  isBestiary: true,
-                })),
-              });
-            }
-          }
+    const waves = JSON.parse(altar.waves) as Array<{
+      monsters: Array<{ monster_id: string }>;
+    }>;
+    const finalWave = waves[waves.length - 1];
+    bossIds = [
+      ...new Set(
+        finalWave?.monsters.map((monster) => monster.monster_id) ?? [],
+      ),
+    ];
+    for (const monsterId of bossIds) {
+      const [monster] = await query<{ name: string; level: number }>(
+        "SELECT name, level FROM monsters WHERE id = ? AND (is_boss = 1 OR is_elite = 1)",
+        [monsterId],
+      );
+      if (!monster) continue;
+      const details = await loadMonsterPopupDetails(
+        monsterId,
+        monster.level,
+        null,
+        true,
+      );
+      const drops = details.drops
+        .filter((drop) => drop.isBestiary)
+        .map((drop) =>
+          altar.has_fatecharm
+            ? drop
+            : { ...drop, fatecharmDropRate: undefined },
+        );
+      for (const drop of drops) {
+        const existing = bossMonsterDrops.get(drop.itemId);
+        if (existing === undefined || drop.dropRate > existing) {
+          bossMonsterDrops.set(drop.itemId, drop.dropRate);
         }
       }
-    } catch {
-      // Invalid waves JSON
+      if (drops.length > 0) {
+        bossDrops.push({ monsterId, monsterName: monster.name, drops });
+      }
     }
   }
 
@@ -960,7 +1008,7 @@ export async function loadAltarPopupDetails(
     }
   }
 
-  return { rewards, bossDrops };
+  return { rewards, bossDrops, finalMonsterIds: bossIds };
 }
 
 /**
@@ -1064,6 +1112,9 @@ export interface ItemPopupDropper {
   isFabled: boolean;
   isElite: boolean;
   dropRate: number;
+  fatecharmDropRate?: number;
+  isDistributionRoll?: boolean;
+  requiresQuest?: boolean;
   zoneName: string | null;
 }
 
@@ -1078,6 +1129,10 @@ export interface ItemPopupAltarSource extends AltarThresholds {
   tier: "common" | "magic" | "epic" | "legendary" | null;
   dropRate: number;
   maxLevel: number;
+  monsterName?: string;
+  isDistributionRoll?: boolean;
+  requiresQuest?: boolean;
+  fatecharmDropRate?: number;
 }
 
 /**
@@ -1194,6 +1249,7 @@ interface ItemPopupRow {
   id: string;
   name: string;
   quality: number;
+  is_quest_item: number;
   tooltip_html: string | null;
   public_path: string | null;
   width: number | null;
@@ -1208,6 +1264,8 @@ interface ItemDropperRow {
   is_fabled: number;
   is_elite: number;
   drop_rate: number;
+  loot_inputs: string;
+  has_fatecharm: number;
   zone_name: string | null;
 }
 
@@ -1249,7 +1307,7 @@ export async function loadItemPopupDetails(
   itemId: string,
 ): Promise<ItemPopupDetails | null> {
   const [item] = await query<ItemPopupRow>(
-    `SELECT i.id, i.name, i.quality, i.tooltip_html,
+    `SELECT i.id, i.name, i.quality, i.tooltip_html, i.is_quest_item,
             va.public_path, va.width, va.height
      FROM items i
      LEFT JOIN visual_assets va
@@ -1284,13 +1342,21 @@ export async function loadItemPopupDetails(
       m.is_boss,
       m.is_fabled,
       m.is_elite,
-      json_extract(d.value, '$.rate') as drop_rate,
+      ism.drop_rate,
+      m.loot_inputs,
+      EXISTS (
+        SELECT 1 FROM monster_spawns fs
+        JOIN zones fz ON fz.id = fs.zone_id AND fz.is_dungeon = 1 AND fz.zone_id > 0
+        JOIN items charm ON charm.luck_token_zone_id = fs.zone_id AND charm.luck_token_bonus > 0
+        WHERE fs.monster_id = m.id
+      ) as has_fatecharm,
       z.name as zone_name
-    FROM monsters m, json_each(m.drops) d
+    FROM item_sources_monster ism
+    JOIN monsters m ON m.id = ism.monster_id
     LEFT JOIN monster_spawns ms ON ms.monster_id = m.id
       AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
     LEFT JOIN zones z ON z.id = ms.zone_id
-    WHERE json_extract(d.value, '$.item_id') = ?
+    WHERE ism.item_id = ?
       -- Exclude altar-only monsters (those with no regular/summon/placeholder spawns)
       AND EXISTS (
         SELECT 1 FROM monster_spawns ms2
@@ -1357,6 +1423,52 @@ export async function loadItemPopupDetails(
     maxLevel,
     dropRate: r.drop_rate ?? 0,
   }));
+  const finalWaveSources = await query<
+    Omit<AltarSourceRow, "tier"> & {
+      monster_name: string;
+      is_boss: number;
+      loot_inputs: string;
+      drop_rate: number;
+      has_fatecharm: number;
+    }
+  >(
+    `SELECT DISTINCT a.id as altar_id, a.name as altar_name, a.type as altar_type,
+       a.magic_reward_threshold, a.epic_reward_threshold, a.legendary_reward_threshold,
+       m.name as monster_name, m.is_boss, m.loot_inputs, ism.drop_rate,
+       EXISTS (
+         SELECT 1 FROM zones z
+         JOIN items charm ON charm.luck_token_zone_id = z.id AND charm.luck_token_bonus > 0
+         WHERE z.id = a.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
+       ) as has_fatecharm
+     FROM altars a, json_each(a.waves) wave, json_each(wave.value, '$.monsters') member
+     JOIN monsters m ON m.id = json_extract(member.value, '$.monster_id')
+     JOIN item_sources_monster ism ON ism.monster_id = m.id AND ism.item_id = ?
+     WHERE CAST(wave.key AS INTEGER) = json_array_length(a.waves) - 1
+     ORDER BY a.min_level_required, a.id, m.name`,
+    [itemId],
+  );
+  for (const source of finalWaveSources) {
+    const chance = popupLootChance(
+      JSON.parse(source.loot_inputs) as BossLootDrop[],
+      itemId,
+      source.drop_rate,
+      Boolean(source.is_boss),
+      Boolean(source.has_fatecharm),
+      Boolean(item.is_quest_item),
+    );
+    altarSources.push({
+      altarId: source.altar_id,
+      altarName: source.altar_name,
+      altarType: source.altar_type,
+      tier: null,
+      magic_reward_threshold: source.magic_reward_threshold,
+      epic_reward_threshold: source.epic_reward_threshold,
+      legendary_reward_threshold: source.legendary_reward_threshold,
+      maxLevel,
+      monsterName: source.monster_name,
+      ...chance,
+    });
+  }
 
   // Query vendors from junction table
   const vendors = await query<ItemPopupVendor>(
@@ -1474,17 +1586,17 @@ export async function loadItemPopupDetails(
   });
 
   // Query chest sources from junction table
-  // Always display as "Chest" regardless of actual chest name
   const chestSources = await query<ItemPopupChestSource>(
     `
     SELECT
       isc.chest_id as chestId,
-      'Chest' as chestName,
-      isc.drop_rate as rate
+      CASE WHEN z.name IS NOT NULL THEN 'Chest (' || z.name || ')' ELSE 'Chest' END as chestName,
+      COALESCE(isc.actual_drop_chance, isc.drop_rate) as rate
     FROM item_sources_chest isc
     JOIN chests c ON isc.chest_id = c.id
+    LEFT JOIN zones z ON c.zone_id = z.id
     WHERE isc.item_id = ?
-    ORDER BY c.name ASC
+    ORDER BY z.name ASC, isc.chest_id ASC
   `,
     [itemId],
   );
@@ -1622,7 +1734,14 @@ export async function loadItemPopupDetails(
       isBoss: Boolean(d.is_boss),
       isFabled: Boolean(d.is_fabled),
       isElite: Boolean(d.is_elite),
-      dropRate: d.drop_rate,
+      ...popupLootChance(
+        JSON.parse(d.loot_inputs) as BossLootDrop[],
+        itemId,
+        d.drop_rate,
+        Boolean(d.is_boss),
+        Boolean(d.has_fatecharm),
+        Boolean(item.is_quest_item),
+      ),
       zoneName: d.zone_name,
     })),
     altarSources,
@@ -1874,13 +1993,15 @@ export async function loadQuestPopupDetails(
   }
 
   // Source: server-scripts/GatherInventoryQuest.cs:IsFulfilled
-  // Both gatherItems and requiredItems contribute inventory objectives.
+  // Zero-amount required items neither gate completion nor consume an item.
   if (quest.gather_items || quest.required_items) {
     try {
-      const gatherItems = [
-        ...JSON.parse(quest.gather_items ?? "[]"),
-        ...JSON.parse(quest.required_items ?? "[]"),
-      ] as Array<{ item_id: string; amount: number }>;
+      const gatherItems = (
+        [
+          ...JSON.parse(quest.gather_items ?? "[]"),
+          ...JSON.parse(quest.required_items ?? "[]"),
+        ] as Array<{ item_id: string; amount: number }>
+      ).filter((item) => item.amount > 0);
       if (gatherItems.length > 0) {
         // Fetch item details
         const itemIds = gatherItems.map((g) => g.item_id);

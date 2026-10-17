@@ -39,9 +39,9 @@
 <Chapter id="defense">
   <Topic id="resistance">
     <p>
-      Physical damage has its own defenses. Every other damage type meets the
-      matching resist: Magic Resist against magic, Fire Resist against fire, and
-      so on.
+      Physical damage has its own defenses. Every other damage type uses the
+      matching resist instead: Magic Resist against magic, Fire Resist against
+      fire, and so on.
     </p>
     <!-- Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage,GetProbResistMagic,DealDamageAt — physical hits roll Block Chance, other hits their matching resist, and the matching stat reduces the damage. -->
     <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; Combat.cs:GetProbResistMeleeDebuff — physical debuffs land against Armor Class, other typed debuffs against their matching resist, and untyped debuffs skip the roll. -->
@@ -79,7 +79,7 @@
     </RefTable>
     <p>
       Debuffs without a damage type cannot be resisted, and their damage over
-      time meets Magic Resist.
+      time is reduced by Magic Resist.
     </p>
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT — the poison-or-disease branch that does not scale with Intelligence subtracts Poison Resist. -->
     <!-- Runtime verification: docs/game-bugs/dexterity-scaled-disease-ticks-use-poison-resist.md -->
@@ -98,17 +98,17 @@
   </Topic>
 
   <Topic id="avoidance">
-    <!-- Source: server-scripts/Combat.cs:GetProbResistMagic,DealDamageAt — a resisted hit deals no damage and applies no stun, fear or knockback. -->
+    <!-- Source: server-scripts/Combat.cs:DealDamageAt: any avoided hit skips damage, stun, fear and knockback. -->
     <p>
       Each hit gets one roll to miss entirely: a block or miss against physical
-      hits, a resist against every other type. A resisted hit also causes no
+      hits, a resist against every other type. An avoided hit also causes no
       stun, fear or knockback.
     </p>
     <VariantPicker
       label="Hit type"
       options={[
         { value: "physical", label: "Physical" },
-        { value: "other", label: "Magic, fire, cold, poison, disease" },
+        { value: "other", label: "Magic, fire, cold, poison and disease" },
       ]}
       bind:value={hitType}
     />
@@ -126,10 +126,15 @@
       attacks from behind and for hits on a moving player.
     </p>
     <!-- Source: server-scripts/Combat.cs:578-582 — returning-home monsters evade incoming hits. -->
-    <p>
-      A monster returning home after a chase avoids every hit. See
-      <a href="/mechanics/monster-spawns#leashing">Chase Limits and Resets</a>.
-    </p>
+    <p>A monster returning home after a chase avoids every hit.</p>
+    <SeeAlso
+      links={[
+        {
+          href: "/mechanics/monster-spawns#leashing",
+          label: "Chase limits and resets",
+        },
+      ]}
+    />
   </Topic>
 
   <Topic id="mitigation">
@@ -182,7 +187,7 @@
     <SeeAlso
       links={[
         { href: "#buffs", label: "Buff Strength for ward capacity" },
-        { href: "#damage-pipeline", label: "Damage Pipeline" },
+        { href: "#damage-pipeline", label: "Damage steps" },
       ]}
     />
   </Topic>

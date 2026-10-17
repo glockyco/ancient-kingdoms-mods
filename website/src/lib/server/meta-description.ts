@@ -1,10 +1,9 @@
 /**
  * Meta description and title generators for SEO.
  *
- * Each generator builds a search-engine-friendly description from the same
- * normalized DB shape that powers the page UI. Strings are full-length: Google
- * indexes the entire description and only the SERP display is truncated, so
- * cutting at 160 chars would lose ranking signal for no benefit.
+ * Descriptions summarize the outcome and conditions a player needs. Keep the
+ * full mechanics on the detail page rather than repeating every loaded field.
+ * Descriptions are not truncated to a fixed character limit.
  */
 
 import {
@@ -13,16 +12,28 @@ import {
   formatEquipmentCategory,
   formatDuration,
   formatNumber,
+  formatSkillType,
+  formatPercent,
 } from "$lib/utils/format";
 
 import { QUALITY_NAMES } from "$lib/constants/quality";
 import { ALL_CLASS_IDS, getResourceDisplayName } from "$lib/utils/classes";
-import { formatStat, statName } from "$lib/stats";
+import {
+  formatStat,
+  formatStatField,
+  statFieldName,
+  statFieldPhraseName,
+  statName,
+} from "$lib/stats";
+import { ITEM_STAT_FIELDS } from "$lib/constants/items";
+import type { StatId } from "$lib/generated/stat-vocabulary";
+import { detailTitle, type DetailTitleContext } from "$lib/seo/title";
+import { getRoleLabel } from "$lib/utils/roles";
 
 // =============================================================================
 // Items
 //
-// Title pattern: `{Name} - Ancient Kingdoms`
+// Detail titles can include loaded family, class, source and zone context.
 // Description pattern is per-branch (one per item_type, with sub-branches for
 // flag- and field-driven distinctions). Every gameplay claim cites its source
 // in the game scripts to keep the wiki honest about what these items actually
@@ -30,7 +41,7 @@ import { formatStat, statName } from "$lib/stats";
 // =============================================================================
 
 import type { Item } from "$lib/queries/items";
-import type { ItemUsages } from "$lib/types/item-sources";
+import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
 
 /** Optional pre-loaded data the description may incorporate. */
 export interface ItemMetaContext {
@@ -58,6 +69,13 @@ export interface ItemMetaContext {
   buffDurationSeconds?: number | null;
   /** Whether the linked relic buff is a cleanse spell. */
   relicIsCleanse?: boolean;
+  /** Complete shared effect summary, including its duration, at the applied buff rank. */
+  buffEffect?: string | null;
+  /** Loaded treasure_locations row for this map. */
+  treasureLocation?: { zone_name: string; reward_name: string | null } | null;
+  sources?: ItemSources;
+  /** Ingredients of the representative crafting recipe loaded for the item. */
+  recipeIngredients?: RecipeIngredient[];
 }
 
 // ---------------------------------------------------------------------------
@@ -97,6 +115,7 @@ function classListPhrase(classRequiredJson: string | null | undefined): string {
   const names = (parsed as unknown[])
     .filter((x): x is string => typeof x === "string")
     .filter((c) => c !== "all")
+    .sort()
     .map((c) => c.charAt(0).toUpperCase() + c.slice(1) + "s");
   if (names.length === 0) return "";
   if (names.length === 1) return names[0];
@@ -105,7 +124,7 @@ function classListPhrase(classRequiredJson: string | null | undefined): string {
 }
 
 function levelGate(level: number): string {
-  return level > 0 ? ` Requires level ${level}.` : "";
+  return level > 1 ? ` Requires level ${level}.` : "";
 }
 
 /** Returns " for {classListPhrase}" or empty string. */
@@ -121,8 +140,8 @@ function classRestrictionPhrase(
 // ---------------------------------------------------------------------------
 
 /** Compute the page title for an item detail page. */
-export function itemTitle(item: Item): string {
-  return `${item.name} - Ancient Kingdoms`;
+export function itemTitle(item: Item, context?: DetailTitleContext): string {
+  return detailTitle(item.name, context);
 }
 
 // ---------------------------------------------------------------------------
@@ -132,9 +151,9 @@ export function itemTitle(item: Item): string {
 export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
   switch (item.item_type) {
     case "weapon":
-      return weaponDescription(item);
+      return weaponDescription(item) + sourcePhrase(ctx);
     case "equipment":
-      return equipmentDescription(item);
+      return equipmentDescription(item) + sourcePhrase(ctx);
     case "ammo":
       return ammoDescription(item);
     case "potion":
@@ -148,7 +167,7 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
     case "book":
       return bookDescription(item);
     case "mount":
-      return mountDescription();
+      return mountDescription(item) + sourcePhrase(ctx);
     case "backpack":
       return backpackDescription(item);
     case "pack":
@@ -156,7 +175,7 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
     case "travel":
       return travelDescription(item);
     case "treasure_map":
-      return treasureMapDescription();
+      return treasureMapDescription(ctx);
     case "chest":
       return chestContainerDescription(item);
     case "random":
@@ -173,8 +192,14 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
       return structureDescription(item);
     case "general":
       return generalDescription(item, ctx);
+    case "costume":
+      return `${item.slot ? `${formatEquipmentCategory(item.slot)} costume` : "Costume"}. Using it saves its appearance to your wardrobe.${sourcePhrase(ctx)}`;
+    case "pet": {
+      const summon = item.tooltip?.match(/Summons [^<\n.]+\./)?.[0];
+      return `${summon ?? "Cosmetic pet whistle."} Use the whistle again to dismiss the pet.${sourcePhrase(ctx)}`;
+    }
     default:
-      return `${quality(item)} ${formatItemType(item.item_type)}.`;
+      return `${quality(item)} ${formatItemType(item.item_type).toLowerCase()}.${sourcePhrase(ctx)}`;
   }
 }
 
@@ -182,40 +207,95 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
 
 function weaponDescription(item: Item): string {
   const q = quality(item);
-  const cat = item.weapon_category
-    ? formatEquipmentCategory(item.weapon_category).toLowerCase()
-    : "weapon";
+  const cat = equipmentNoun(item.weapon_category, "weapon");
   const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
   // Source: server-scripts/WeaponItem.cs — weapon_proc_effect_id triggers on hit
   const proc = item.weapon_proc_effect_name
     ? ` Procs ${item.weapon_proc_effect_name} on hit.`
     : "";
-  return `${q} ${cat}${classes}.${level}${proc}`;
+  return `${q} ${cat}${classes}.${level}${itemStatPhrase(item)}${proc}`;
 }
 
 function equipmentDescription(item: Item): string {
   const q = quality(item);
   const slot = item.slot ?? "";
-  const displaySlot = slot
-    ? formatEquipmentCategory(slot).toLowerCase()
-    : "equipment";
+  const displaySlot = equipmentNoun(slot, "equipment");
   const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
   if (ARMOR_SLOTS.has(slot)) {
-    const noun = slot === "Shield" ? "shield" : `${displaySlot} armor`;
-    return `${q} ${noun}${classes}.${level}`;
+    const noun = ["Shield", "Bracers", "Belt"].includes(slot)
+      ? displaySlot
+      : `${displaySlot} armor`;
+    return `${q} ${noun}${classes}.${level}${itemStatPhrase(item)}`;
   }
   if (JEWELRY_SLOTS.has(slot)) {
-    return `${q} ${displaySlot}${classes}.${level}`;
+    return `${q} ${displaySlot}${classes}.${level}${itemStatPhrase(item)}`;
   }
-  return `${q} ${displaySlot}${classes}.${level}`;
+  return `${q} ${displaySlot}${classes}.${level}${itemStatPhrase(item)}`;
 }
 
 function ammoDescription(item: Item): string {
   const q = quality(item);
   const level = levelGate(item.level_required);
   return `${q} ammunition for ranged weapons.${level}`;
+}
+
+function equipmentNoun(category: string | null, fallback: string): string {
+  const names: Record<string, string> = {
+    WeaponDagger: "light one-handed weapon",
+    WeaponSword: "one-handed weapon",
+    WeaponSword2H: "two-handed weapon",
+    Hands: "hand",
+    Feet: "foot",
+    Legs: "leg",
+    Neck: "necklace",
+    Ear: "earring",
+  };
+  return category
+    ? (names[category] ?? formatEquipmentCategory(category).toLowerCase())
+    : fallback;
+}
+
+function itemStatPhrase(item: Item): string {
+  const stats = JSON.parse(item.stats || "{}") as Record<string, unknown>;
+  const phrases = ITEM_STAT_FIELDS.flatMap((field) => {
+    const value = stats[field.field];
+    return typeof value === "number" && value !== 0
+      ? [
+          `${formatStatField(field, value, { signed: item.item_type !== "weapon" || field.stat !== "attack_power" })} ${item.item_type === "weapon" && field.stat === "attack_power" ? statFieldName(field, "item", { weapon: true }) : statFieldPhraseName(field, "item")}`,
+        ]
+      : [];
+  });
+  return phrases.length ? ` Grants ${joinList(phrases.slice(0, 3))}.` : "";
+}
+
+function sourcePhrase(ctx: ItemMetaContext): string {
+  if (ctx.recipeIngredients?.length) {
+    return ` Crafted from ${joinList(ctx.recipeIngredients.map((i) => `${formatNumber(i.amount)} ${i.item_name}`))}.`;
+  }
+  const sources = ctx.sources;
+  if (!sources) return "";
+  if (sources.vendors.length) {
+    const vendor = sources.vendors[0];
+    return ` Sold by ${vendor.npc_name} for ${formatNumber(vendor.price)} ${vendor.currency_item_name || "gold"}.`;
+  }
+  const phrases: string[] = [];
+  const monsters = new Set(sources.monsters.map((m) => m.monster_id)).size;
+  const gathers = new Set(sources.gathers.map((g) => g.resource_id)).size;
+  const containers = new Set([
+    ...sources.chests.map((c) => `chest:${c.chest_id}`),
+    ...sources.packs.map((p) => `pack:${p.pack_item_id}`),
+    ...sources.randoms.map((r) => `random:${r.random_item_id}`),
+    ...sources.chestItems.map((c) => `item:${c.chest_item_id}`),
+  ]).size;
+  if (monsters)
+    phrases.push(`dropped by ${plural(monsters, "monster", "monsters")}`);
+  if (gathers)
+    phrases.push(`gathered from ${plural(gathers, "resource", "resources")}`);
+  if (containers)
+    phrases.push(`found in ${plural(containers, "container", "containers")}`);
+  return phrases.length ? ` ${capitalizeFirst(joinList(phrases))}.` : "";
 }
 
 /**
@@ -259,38 +339,46 @@ function potionDescription(item: Item, ctx: ItemMetaContext): string {
     restored.push(
       `${formatStat("health", item.usage_pet_health)} pet ${statName("health")}`,
     );
-  if (item.usage_experience > 0)
-    restored.push(`${item.usage_experience} experience`);
+  const experience =
+    item.usage_experience > 0
+      ? ` Grants ${formatNumber(item.usage_experience)} experience when used.`
+      : "";
   const restorePhrase =
     restored.length > 0 ? ` Restores ${joinList(restored)}.` : "";
   const buff = item.potion_buff_name
-    ? ` ${buffPhrase("Applies", item.potion_buff_name, ctx.buffDurationSeconds)}${
-        isBandage
-          ? " Uses its base buff level."
-          : " Non-bandage buff levels can use Elixir Endurance. Mercenary utility potions use their owner's veteran rank."
-      }`
+    ? ctx.buffEffect
+      ? ` Applies ${ctx.buffEffect.replace(/[.]$/, "")}.`
+      : ` ${buffPhrase("Applies", item.potion_buff_name, ctx.buffDurationSeconds)}`
     : "";
-  const subtype = isBandage ? "Bandage" : "Potion";
+  const subtype = isBandage
+    ? "Bandage"
+    : item.usage_experience > 0
+      ? "Scroll"
+      : "Potion";
   // Source: server-scripts/PotionItem.cs:138-142 — dungeon-disabled buffs
   // reject use before the buff is applied.
   const dungeon =
     !item.potion_buff_allow_dungeon && item.potion_buff_name
-      ? " Dungeon use disabled."
+      ? " Cannot be used inside dungeons."
       : "";
-  return `${subtype}.${restorePhrase}${buff}${dungeon}`;
+  return (
+    `${restorePhrase}${experience}${buff}${dungeon}`.trim() || `${subtype}.`
+  );
 }
 
 function foodDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/FoodItem.cs — applies buffEffect at fixed buffLevel
   const kind = item.food_type === "Drink" ? "Drink" : "Food";
   const buff = item.food_buff_name
-    ? ` ${buffPhrase("Grants", item.food_buff_name, ctx.buffDurationSeconds)}`
+    ? ctx.buffEffect
+      ? ` Grants ${ctx.buffEffect.replace(/[.]$/, "")}.`
+      : ` ${buffPhrase("Grants", item.food_buff_name, ctx.buffDurationSeconds)}`
     : "";
   const dungeon =
     !item.food_buff_allow_dungeon && item.food_buff_name
-      ? " Buff disabled inside dungeons."
+      ? " Cannot be used inside dungeons."
       : "";
-  return `${kind}.${buff}${dungeon}`;
+  return `${buff}${dungeon}`.trim() || `${kind}.`;
 }
 
 function scrollDescription(item: Item): string {
@@ -311,11 +399,10 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
   if (isOrnament) {
     return `Saves an armor piece's appearance to your wardrobe collection.`;
   }
-  const q = quality(item);
+  const buffName = item.relic_buff_name ?? "a buff";
   // Source: server-scripts/RelicItem.cs:54-58 — relic buffs apply at
   // buffEffect.maxLevel, not at the relic's own buff_level. We surface base
   // duration only; ctx.buffDurationSeconds is null when no timer is known.
-  const buffName = item.relic_buff_name ?? "a buff";
   const dur =
     ctx.buffDurationSeconds && ctx.buffDurationSeconds > 0
       ? ` for ${formatDuration(ctx.buffDurationSeconds)}`
@@ -326,13 +413,13 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
   // before Use can decrement a charge. Infinite-charge relics skip this gate.
   const cleanseGate = ctx.relicIsCleanse
     ? item.infinite_charges
-      ? " Infinite-charge cleanse relics can be used without a matching debuff."
-      : " Requires an active matching cleanseable debuff. No charge is consumed when none exists."
+      ? " Has unlimited charges and can be used without a debuff to cleanse."
+      : " Usable only while you have a debuff it can cleanse."
     : "";
   const dungeon = !item.relic_buff_allow_dungeon
     ? " Cannot be used inside dungeons."
     : "";
-  return `${q} relic.${buff}${cleanseGate}${dungeon}`;
+  return `${buff}${cleanseGate}${dungeon}`.trim();
 }
 
 function bookDescription(item: Item): string {
@@ -363,13 +450,12 @@ function bookDescription(item: Item): string {
     gains.push(
       `${formatStat("charisma", item.book_charisma_gain, { signed: true })} ${statName("charisma", "item")}`,
     );
-  const phrase = gains.length > 0 ? ` Grants ${joinList(gains)}.` : "";
-  return `One-time read that permanently increases your attributes.${phrase}`;
+  return `Permanently grants ${joinList(gains)}. The book is used up.`;
 }
 
-function mountDescription(): string {
-  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:115-123,588-592 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
-  return `Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
+function mountDescription(item: Item): string {
+  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,588-592.
+  return `Mount with a speed of ${formatNumber(item.mount_speed, { decimals: 2 })}.${levelGate(item.level_required)} Cannot be mounted in dungeons or in combat.`;
 }
 
 function backpackDescription(item: Item): string {
@@ -378,12 +464,12 @@ function backpackDescription(item: Item): string {
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
     slots > 0
-      ? ` Adds ${slots} extra inventory slots while equipped in your Combined Backpack.`
+      ? ` that adds ${slots} inventory slots while equipped in your Combined Backpack`
       : "";
   const equipPhrase = item.backpack_is_unique
     ? " You can equip only one copy of it."
     : " You can equip several copies at once.";
-  return `Storage bag.${equipPhrase}${slotPhrase}`;
+  return `Backpack${slotPhrase}.${equipPhrase}`;
 }
 
 function packDescription(item: Item, ctx: ItemMetaContext): string {
@@ -394,7 +480,7 @@ function packDescription(item: Item, ctx: ItemMetaContext): string {
     const phrase = c.amount > 1 ? `${c.amount} × ${c.item_name}` : c.item_name;
     return `Redeems for ${phrase}.`;
   }
-  return `Container that redeems for a fixed item bundle on use.`;
+  return `Redeems for a fixed item bundle.`;
 }
 
 function travelDescription(item: Item): string {
@@ -406,13 +492,12 @@ function travelDescription(item: Item): string {
   return `Teleports you to ${dest}. Cannot be used inside the Temple of Valaark.`;
 }
 
-function treasureMapDescription(): string {
-  // Source: server-scripts/TreasureMapItem.cs:12-15 — using the map opens
-  // its clue image. server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — at the
-  // matching dig site, using the map with a Shovel consumes it and grants
-  // a Buried Treasure Chest plus +0.5% Treasure Hunter skill. Each map
-  // points at exactly one dig site.
-  return `Reveals one buried treasure dig site. Dig at the marked spot with a Shovel to claim a Buried Treasure Chest.`;
+function treasureMapDescription(ctx: ItemMetaContext): string {
+  // Source: server-scripts/TreasureLocation.cs:117-129,158-161 grants rewardItem.
+  const location = ctx.treasureLocation;
+  const where = location ? ` in ${location.zone_name}` : "";
+  const reward = location?.reward_name;
+  return `Treasure map to a dig site${where}. Dig there with a Shovel${reward ? ` to claim ${reward}` : " to claim its reward"}.`;
 }
 
 function chestContainerDescription(item: Item): string {
@@ -427,17 +512,17 @@ function chestContainerDescription(item: Item): string {
     : item.chest_num_items;
   const itemsWord = n === 1 ? "item" : "items";
   return fixed
-    ? `Loot container. Contains ${n} fixed ${itemsWord}.`
-    : `Loot container. Yields up to ${n} ${itemsWord} from a chance-based reward pool.`;
+    ? `Contains ${n} fixed ${itemsWord}.`
+    : `Yields up to ${n} ${itemsWord} from a chance-based reward pool.`;
 }
 
 function randomDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/RandomItem.cs:6 — yields one of items[] at random
   const n = ctx.randomOutcomes?.length ?? 0;
   if (n > 0) {
-    return `Mystery container. Yields one of ${n} possible items at random.`;
+    return `Yields one of ${n} possible items at random.`;
   }
-  return `Mystery container. Yields one item at random from a fixed pool.`;
+  return `Yields one item at random from a fixed pool.`;
 }
 
 function augmentDescription(item: Item): string {
@@ -446,10 +531,23 @@ function augmentDescription(item: Item): string {
   // station and can be removed by Augmenter NPCs (5,000g/10,000g/15,000g per quality).
   const q = quality(item);
   if (item.augment_armor_set_name) {
-    return `${q} augment in the ${item.augment_armor_set_name} armor set, contributing to its set bonuses.`;
+    const attributes = JSON.parse(
+      item.augment_attribute_bonuses || "[]",
+    ) as Array<{ stat_id: StatId; bonus: number }>;
+    const skills = JSON.parse(
+      item.augment_skill_bonuses_with_names || "[]",
+    ) as Array<{ skill_name: string; level_bonus: number }>;
+    // Source: server-scripts/PlayerEquipment.cs:OnEquipmentChanged.
+    const attributePhrase = attributes.length
+      ? ` 3 pieces: ${joinList(attributes.map((b) => `${formatStat(b.stat_id, b.bonus, { signed: true })} ${statName(b.stat_id, "item")}`))}.`
+      : "";
+    const skillPhrase = skills.length
+      ? ` 5 pieces: ${joinList(skills.map((b) => `${b.skill_name} +${b.level_bonus} ${b.level_bonus === 1 ? "rank" : "ranks"}`))}.`
+      : "";
+    return `${item.augment_armor_set_name} set bonuses${classRestrictionPhrase(item.class_required)}.${attributePhrase}${skillPhrase}`;
   }
   const target = item.augment_is_defensive ? "armor piece" : "weapon";
-  return `${q} augment. Permanently socketed into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station, removable at an Augmenter NPC.`;
+  return `${q} ${item.augment_is_defensive ? "armor" : "weapon"} augment.${itemStatPhrase(item)} Socket it into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station. An Augmenter can remove it.`;
 }
 
 function fragmentDescription(item: Item): string {
@@ -472,9 +570,9 @@ function recipeItemDescription(item: Item): string {
   // refused if already known.
   const taught = item.recipe_potion_learned_name;
   if (taught) {
-    return `Teaches the recipe for ${taught}. Refused if you already know it.`;
+    return `Teaches the recipe for ${taught}.`;
   }
-  return `Recipe item. Teaches a craftable on first use.`;
+  return `Teaches a crafting recipe.`;
 }
 
 function mergeDescription(item: Item, ctx: ItemMetaContext): string {
@@ -500,7 +598,7 @@ function structureDescription(item: Item): string {
 function generalDescription(item: Item, ctx: ItemMetaContext): string {
   if (item.is_chest_key) return chestKeyDescription(item, ctx);
   if (item.is_key) return keyDescription(ctx);
-  if (item.is_quest_item) return questItemDescription(item);
+  if (item.is_quest_item) return questItemDescription(item, ctx);
   return generalUsageDescription(item, ctx);
 }
 
@@ -538,26 +636,34 @@ function keyDescription(ctx: ItemMetaContext): string {
   return `Unlocks ${portalPhrase} across ${destinations.size} zones.`;
 }
 
-function questItemDescription(item: Item): string {
+function questItemDescription(item: Item, ctx: ItemMetaContext): string {
+  const quests = [
+    ...new Set(ctx.usages?.quests.map((q) => q.quest_name) ?? []),
+  ];
   const flags: string[] = [];
-  if (!item.sellable) flags.push("not sellable");
-  if (!item.tradable) flags.push("not tradable");
-  if (!item.destroyable) flags.push("not destroyable");
-  const flagPhrase =
-    flags.length > 0 ? ` ${capitalizeFirst(joinList(flags))}.` : "";
-  return `Quest item.${flagPhrase}`;
+  if (!item.sellable) flags.push("sold");
+  if (!item.tradable) flags.push("traded");
+  if (!item.destroyable) flags.push("destroyed");
+  return `Quest item${quests.length ? ` for ${joinList(quests)}` : ""}.${flags.length ? ` Cannot be ${joinList(flags)}.` : ""}`;
 }
 
 function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   const q = quality(item);
+  const sell =
+    item.sellable && item.sell_price > 0
+      ? ` Sells for ${formatNumber(item.sell_price)} gold.`
+      : "";
   const usages = ctx.usages;
   if (!usages) {
-    return `${q} item.`;
+    return `${q} item.${sell}${sourcePhrase(ctx)}`;
   }
   const counts: Array<{ category: string; count: number }> = [
     { category: "recipe", count: usages.recipes.length },
     { category: "quest", count: usages.quests.length },
-    { category: "exchange", count: usages.currency.length },
+    {
+      category: "exchange",
+      count: new Set(usages.currency.map((c) => c.purchasable_item_id)).size,
+    },
     { category: "altar", count: usages.altars.length },
     { category: "portal", count: usages.portals.length },
     { category: "chest", count: usages.chests.length },
@@ -565,7 +671,7 @@ function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   ].filter((c) => c.count > 0);
   counts.sort((a, b) => b.count - a.count);
   if (counts.length === 0) {
-    return `${q} item.`;
+    return `${q} item.${sell}${sourcePhrase(ctx)}`;
   }
   // Surface up to the top 2 usage categories. One category alone reads as
   // "Used in 5 quests." Two categories share the verb: "Used in 5 quests
@@ -575,7 +681,11 @@ function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   const phrases = top.map(
     (c) => `${c.count} ${pluralize(c.category, c.count)}`,
   );
-  return `${q} item. Used in ${joinList(phrases)}.`;
+  const currency = counts.find((c) => c.category === "exchange");
+  if (currency && counts.length === 1) {
+    return `Currency for ${plural(currency.count, "item", "items")}.${sourcePhrase(ctx)}`;
+  }
+  return `Used in ${joinList(phrases)}.${sourcePhrase(ctx)}`;
 }
 
 function pluralize(category: string, n: number): string {
@@ -585,7 +695,7 @@ function pluralize(category: string, n: number): string {
     case "quest":
       return n === 1 ? "quest" : "quests";
     case "exchange":
-      return n === 1 ? "vendor exchange" : "vendor exchanges";
+      return n === 1 ? "currency purchase" : "currency purchases";
     case "altar":
       return n === 1 ? "altar activation" : "altar activations";
     case "portal":
@@ -623,6 +733,17 @@ interface MonsterDescriptionInput {
   is_hunt: boolean;
   level_min: number;
   level_max: number;
+  health?: number;
+  respawn_time?: number;
+  death_time?: number;
+  does_respawn?: boolean;
+  /** Shared, probability-correct drop summary from the loaded page. */
+  drop_summary?: string | null;
+  triggered_origins?: Array<{
+    monster_name: string;
+    zone_name?: string | null;
+    trigger: "death" | "summon";
+  }>;
 }
 
 interface AltarSpawnInfo {
@@ -631,8 +752,7 @@ interface AltarSpawnInfo {
 }
 
 /**
- * A fixed spawn the game holds back until its placeholder monsters are all
- * dead (SummonMonster): `kill_count` of `kill_monster_name`.
+ * The fixed guard group checked by server-scripts/SummonMonster.cs:73-93.
  */
 interface SummonSpawnInfo {
   zone_name: string;
@@ -651,7 +771,7 @@ export function monsterDescription(
   if (monster.is_fabled) classification = " Fabled Boss";
   else if (monster.is_boss) classification = " Boss";
   else if (monster.is_elite) classification = " Elite";
-  else if (monster.is_hunt) classification = " Hunt target";
+  else if (monster.is_hunt) classification = " Hunt Target";
 
   const species = monster.type_name ?? "Creature";
   const range =
@@ -659,27 +779,38 @@ export function monsterDescription(
       ? `${monster.level_min}`
       : `${monster.level_min}-${monster.level_max}`;
 
-  // Origin precedence: altar > summon placeholders > zone list.
-  let origin = "";
+  const zones = [...new Set(zoneNames)];
+  let origin = zones.length
+    ? ` Found in ${zones.length <= 3 ? joinList(zones) : `${zones[0]} and ${zones.length - 1} other zones`}.`
+    : "";
   if (altarSpawn) {
-    origin = ` Summoned at ${altarSpawn.altar_name} in ${altarSpawn.zone_name}.`;
-  } else if (summonSpawn) {
-    // The count is the trigger's own placeholders; other monsters of that
-    // kind in the zone do not count, so the text never says "all".
-    const placeholders =
+    origin += ` ${zones.length ? "Also summoned" : "Summoned"} at ${altarSpawn.altar_name} in ${altarSpawn.zone_name}.`;
+  }
+  if (summonSpawn) {
+    const guards =
       summonSpawn.kill_count === 1
-        ? `its placeholder ${summonSpawn.kill_monster_name} is slain`
-        : `its ${summonSpawn.kill_count} placeholder ${summonSpawn.kill_monster_name}s are slain`;
-    origin = ` Appears in ${summonSpawn.zone_name} once ${placeholders}.`;
-  } else if (zoneNames.length === 1) {
-    origin = ` Found in ${zoneNames[0]}.`;
-  } else if (zoneNames.length === 2 || zoneNames.length === 3) {
-    origin = ` Found in ${joinList(zoneNames)}.`;
-  } else if (zoneNames.length > 3) {
-    origin = ` Found in ${zoneNames[0]} and ${zoneNames.length - 1} other zones.`;
+        ? `its guard, ${summonSpawn.kill_monster_name}, is dead`
+        : `all ${summonSpawn.kill_count} of its ${summonSpawn.kill_monster_name} guards are dead at the same time`;
+    origin += ` Appears in ${summonSpawn.zone_name} once ${guards}.`;
+  }
+  for (const triggered of monster.triggered_origins ?? []) {
+    const location = triggered.zone_name ? ` in ${triggered.zone_name}` : "";
+    origin +=
+      triggered.trigger === "death"
+        ? ` Appears where ${triggered.monster_name} dies${location}.`
+        : ` Summoned by ${triggered.monster_name}${location}.`;
   }
 
-  return `Level ${range} ${species}${classification}.${origin}`;
+  // Source: server-scripts/Monster.cs:OnDeath - the respawn deadline follows corpse time plus the respawn timer.
+  const respawn =
+    monster.does_respawn === false
+      ? " Does not respawn."
+      : monster.does_respawn === true &&
+          monster.respawn_time != null &&
+          monster.death_time != null
+        ? ` Ready to respawn ${formatDuration(monster.death_time + monster.respawn_time)} after death.`
+        : "";
+  return `Level ${range} ${species}${classification}.${origin}${monster.drop_summary ? ` ${monster.drop_summary}` : ""}${respawn}`;
 }
 
 // =============================================================================
@@ -717,6 +848,9 @@ interface NpcDescriptionInput {
   roles: NpcRoles;
   /** Number of quests offered by this NPC, used in the description tail. */
   questCount?: number;
+  level?: number;
+  sub_zone_name?: string | null;
+  kill_reputation_summary?: string | null;
 }
 
 /**
@@ -724,46 +858,40 @@ interface NpcDescriptionInput {
  * merchant because that's what users search for; faction vendors outrank plain
  * merchants because the faction context is more specific.
  */
-const NPC_ROLE_PRIORITY: Array<{ flag: keyof NpcRoles; label: string }> = [
-  { flag: "is_quest_giver", label: "quest giver" },
-  { flag: "is_skill_master", label: "skill master" },
-  { flag: "is_recruiter_mercenaries", label: "mercenary recruiter" },
-  { flag: "is_faction_vendor", label: "faction vendor" },
-  { flag: "is_merchant", label: "merchant" },
-  { flag: "is_essence_trader", label: "essence trader" },
-  { flag: "is_priestess", label: "priestess" },
-  { flag: "is_augmenter", label: "augmenter" },
-  { flag: "is_barber", label: "barber" },
-  { flag: "is_guild_management", label: "guild manager" },
-  { flag: "is_renewal_sage", label: "renewal sage" },
-  { flag: "is_teleporter", label: "teleporter" },
-  { flag: "is_bank", label: "banker" },
-  { flag: "is_inkeeper", label: "innkeeper" },
-  { flag: "is_soul_binder", label: "soul binder" },
-  { flag: "is_veteran_master", label: "veteran master" },
-  { flag: "is_reset_attributes", label: "attribute reset trainer" },
-  { flag: "is_taskgiver_adventurer", label: "adventurer task giver" },
-  { flag: "is_merchant_adventurer", label: "adventurer merchant" },
-  { flag: "can_repair_equipment", label: "repair NPC" },
-  { flag: "is_guard", label: "guard" },
-  { flag: "is_villager", label: "villager" },
+const NPC_ROLE_PRIORITY: Array<keyof NpcRoles> = [
+  "is_quest_giver",
+  "is_skill_master",
+  "is_recruiter_mercenaries",
+  "is_faction_vendor",
+  "is_merchant",
+  "is_essence_trader",
+  "is_priestess",
+  "is_augmenter",
+  "is_barber",
+  "is_guild_management",
+  "is_renewal_sage",
+  "is_teleporter",
+  "is_bank",
+  "is_inkeeper",
+  "is_soul_binder",
+  "is_veteran_master",
+  "is_reset_attributes",
+  "is_taskgiver_adventurer",
+  "is_merchant_adventurer",
+  "can_repair_equipment",
+  "is_guard",
 ];
 
 function pickPrimaryRole(roles: NpcRoles): {
   label: string;
-  otherCount: number;
+  others: string[];
 } {
-  let primary: string | null = null;
-  let total = 0;
-  for (const { flag, label } of NPC_ROLE_PRIORITY) {
-    if (roles[flag]) {
-      total += 1;
-      if (!primary) primary = label;
-    }
-  }
+  const labels = NPC_ROLE_PRIORITY.filter((flag) => roles[flag]).map((flag) =>
+    getRoleLabel(flag),
+  );
   return {
-    label: primary ?? "NPC",
-    otherCount: total > 0 ? total - 1 : 0,
+    label: labels[0] ?? (roles.is_villager ? "villager" : "NPC"),
+    others: labels.slice(1),
   };
 }
 
@@ -771,7 +899,7 @@ export function npcDescription(
   npc: NpcDescriptionInput,
   zoneNames: string[],
 ): string {
-  const { label: primaryRole, otherCount } = pickPrimaryRole(npc.roles);
+  const { label: primaryRole, others } = pickPrimaryRole(npc.roles);
   const primary = capitalizeFirst(primaryRole);
 
   let location = "";
@@ -782,29 +910,24 @@ export function npcDescription(
   } else if (zoneNames.length > 3) {
     location = ` across ${zoneNames.length} zones`;
   }
+  if (npc.sub_zone_name && !zoneNames.includes(npc.sub_zone_name)) {
+    location = ` in ${npc.sub_zone_name}${location.replace(/^ in /, ", ")}`;
+  }
 
-  const factionPhrase = npc.faction
-    ? ` Allied with the ${npc.faction} faction.`
-    : "";
+  const factionPhrase = npc.faction ? ` Member of the ${npc.faction}.` : "";
 
   const tail: string[] = [];
-  if (npc.questCount && npc.questCount > 0) {
-    tail.push(
-      npc.questCount === 1
-        ? "Offers 1 quest."
-        : `Offers ${npc.questCount} quests.`,
-    );
+  const questCount =
+    npc.questCount && npc.questCount > 0
+      ? ` with ${plural(npc.questCount, "quest", "quests")}`
+      : "";
+  if (others.length > 0) {
+    tail.push(`Also: ${joinList(others)}.`);
   }
-  if (otherCount > 0) {
-    tail.push(
-      otherCount === 1
-        ? "Also fills 1 other role."
-        : `Also fills ${otherCount} other roles.`,
-    );
-  }
+  if (npc.kill_reputation_summary) tail.push(npc.kill_reputation_summary);
   const tailPhrase = tail.length > 0 ? ` ${tail.join(" ")}` : "";
 
-  return `${primary}${location}.${factionPhrase}${tailPhrase}`;
+  return `${primary}${location}${questCount}.${factionPhrase}${tailPhrase}`;
 }
 
 // =============================================================================
@@ -816,6 +939,8 @@ interface ZoneDescriptionInput {
   is_dungeon: boolean;
   level_min: number | null;
   level_max: number | null;
+  median_level?: number | null;
+  boss_names?: string[];
 }
 
 interface ZoneCounts {
@@ -842,7 +967,15 @@ export function zoneDescription(
         : `levels ${zone.level_min}-${zone.level_max}`;
   }
 
-  const head = levelPhrase ? `${typeLabel}, ${levelPhrase}.` : `${typeLabel}.`;
+  const median =
+    zone.median_level != null
+      ? ` Most monsters are near level ${zone.median_level}.`
+      : "";
+  const bosses = zone.boss_names?.length
+    ? ` Bosses: ${joinList(zone.boss_names)}.`
+    : "";
+  const head = `${levelPhrase ? `${typeLabel}, ${levelPhrase}.` : `${typeLabel}.`}${median}${bosses}`;
+  if (zone.boss_names?.length) return head;
 
   const contentParts: string[] = [];
   if (counts.boss_count > 0)
@@ -852,9 +985,7 @@ export function zoneDescription(
   if (counts.npc_count > 0)
     contentParts.push(plural(counts.npc_count, "NPC", "NPCs"));
   if (counts.gather_count > 0)
-    contentParts.push(
-      plural(counts.gather_count, "gathering node", "gathering nodes"),
-    );
+    contentParts.push(plural(counts.gather_count, "resource", "resources"));
   if (counts.chest_count > 0)
     contentParts.push(plural(counts.chest_count, "chest", "chests"));
   if (counts.altar_count > 0)
@@ -892,6 +1023,7 @@ interface QuestObjective {
     | "other";
   name: string;
   amount: number;
+  zone_name?: string | null;
 }
 
 interface QuestDescriptionInput {
@@ -919,37 +1051,12 @@ function questTierLabel(quest: QuestDescriptionInput): string {
   // we report the most specific one in priority order.
   if (quest.is_main_quest) return "Main story quest";
   if (quest.is_epic_quest) return "Epic quest";
-  if (quest.is_adventurer_quest) return "Adventurer task";
+  if (quest.is_adventurer_quest) return "Adventurer quest";
   if (quest.is_repeatable) return "Repeatable quest";
   return "Quest";
 }
 
-/**
- * Render an "amount + name" or just "name" fragment, dropping the count
- * when amount is 1. Keeps "Defeat 50 Troll and Troll King Grimlok." natural
- * (boss line drops the "1") while preserving counts for grunt waves.
- */
-function qtyName(amount: number, name: string): string {
-  return amount > 1 ? `${amount} ${name}` : name;
-}
-
-/**
- * Append the turn-in NPC + zone to a body fragment.
- *
- * Mode picks the preposition that reads naturally for the surrounding verb:
- * - "inline":  "<body> to <NPC> in <Zone>." — used for `gather_inventory`
- *              ("Bring") where the action IS delivering to the NPC, so "to"
- *              attaches to the verb without distortion.
- * - "report":  "<body>. Report to <NPC> in <Zone>." — used for kill, gather,
- *              equip, alchemy. "Defeat X to NPC" / "Brew X to NPC" reads as
- *              the wrong preposition; a separate "Report to" sentence keeps
- *              the grammar clean while still anchoring the player.
- * - "none":    "<body>." — used for `location` where the destination is
- *              itself the objective.
- *
- * Falls back to "<body>." when no NPC is known so callers can pass the mode
- * unconditionally.
- */
+/** Keep delivery and report destinations separate from the objective's own location. */
 function appendTurnIn(
   quest: QuestDescriptionInput,
   body: string,
@@ -965,17 +1072,7 @@ function appendTurnIn(
   return `${body}. Report to ${quest.turn_in_npc_name}${zone}.`;
 }
 
-/**
- * Render a list of must-do targets with a verb prefix. Quest objectives
- * within a verb are concurrent (the player must satisfy all), so the
- * connector is always "and", never "then".
- * - 1–3 distinct entries: enumerate by name with the Oxford-comma joiner
- *   ("Bring 3 Fragment of Resilience and 3 Fragment of Serenity").
- * - 4+ entries: aggregate to "<verb> <total> items". Only realistically
- *   fires for `gather_inventory` quests with many distinct mats; in-DB
- *   worst case is 5 distinct items (Path of Scales).
- * Returns null when the list is empty so the caller can omit the sentence.
- */
+/** Concurrent targets keep game-authored names singular, followed by their quantities. */
 function renderTargetList(
   verb: string,
   list: ReadonlyArray<{ name: string; amount: number }>,
@@ -983,7 +1080,7 @@ function renderTargetList(
 ): string | null {
   if (list.length === 0) return null;
   if (list.length <= 3) {
-    return `${verb} ${joinList(list.map((o) => qtyName(o.amount, o.name)))}`;
+    return `${verb} ${joinList(list.map((o) => (o.amount > 1 ? `${o.name} x${formatNumber(o.amount)}` : o.name)))}`;
   }
   const total = list.reduce((sum, o) => sum + Math.max(o.amount, 1), 0);
   return `${verb} ${total} ${collective}`;
@@ -1015,15 +1112,12 @@ function buildObjectiveSentence(
     objectives.filter((o) => types.includes(o.type));
 
   let body: string | null;
-  // Mode picks the natural preposition for the verb. "to" reads as a
-  // delivery target only after "Bring"; for every other verb a separate
-  // "Report to" sentence keeps the grammar clean. Location quests have no
-  // separate destination — the find/discover target IS the destination.
+  // Discoveries still have a turn-in. Finding the completion NPC is itself the destination.
   let mode: "inline" | "report" | "none" = "report";
 
   switch (quest.quest_type) {
     case "kill":
-      body = renderTargetList("Defeat", pickByType("kill"));
+      body = renderTargetList("Kill", pickByType("kill"));
       break;
     case "gather":
       // Progress-counter: items don't have to stay in inventory after the
@@ -1032,12 +1126,16 @@ function buildObjectiveSentence(
       body = renderTargetList("Collect", pickByType("gather"));
       break;
     case "gather_inventory": {
-      // gatherItems and requiredItems both gate fulfillment via inventory
-      // (requiredItems also accepts equipped slots). For description
-      // purposes the player action is identical: get them and walk to NPC.
-      body = renderTargetList("Bring", pickByType("have", "deliver"));
-      mode = "inline";
-      break;
+      // The loader distinguishes inventory checks from items consumed at turn-in.
+      const have = renderTargetList("Have", pickByType("have"));
+      const deliver = renderTargetList("Deliver", pickByType("deliver"));
+      const parts: string[] = [];
+      if (have) parts.push(`${have}.`);
+      if (deliver) parts.push(appendTurnIn(quest, deliver, "inline"));
+      else if (have && quest.turn_in_npc_name) {
+        parts.push(appendTurnIn(quest, "Report", "inline"));
+      }
+      return parts.length ? ` ${parts.join(" ")}` : "";
     }
     case "equip_item":
       body = renderTargetList(
@@ -1050,10 +1148,15 @@ function buildObjectiveSentence(
       body = renderTargetList("Brew", pickByType("brew"));
       break;
     case "location": {
-      body = quest.is_find_npc_quest
-        ? renderTargetList("Find", pickByType("find"))
-        : renderTargetList("Discover", pickByType("discover"));
-      mode = "none";
+      const targets = pickByType(quest.is_find_npc_quest ? "find" : "discover");
+      body = renderTargetList(
+        quest.is_find_npc_quest ? "Find" : "Discover",
+        targets.map((target) => ({
+          ...target,
+          name: `${target.name}${target.zone_name ? ` in ${target.zone_name}` : ""}`,
+        })),
+      );
+      mode = quest.is_find_npc_quest ? "none" : "report";
       break;
     }
     // "general" or any unrecognized type: the quest has no mechanical
@@ -1071,7 +1174,7 @@ export function questDescription(
 ): string {
   const tier = questTierLabel(quest);
   const levelPhrase =
-    quest.level_required > 0 ? ` for level ${quest.level_required}+` : "";
+    quest.level_required > 1 ? ` for level ${quest.level_required}+` : "";
   const objectiveSentence = buildObjectiveSentence(quest, objectives);
   return `${tier}${levelPhrase}.${objectiveSentence}`;
 }
@@ -1093,8 +1196,10 @@ interface RecipeDescriptionInput {
   result_amount?: number;
   /** Crafting station required (e.g. "forge"). null for scribing. */
   station_type?: string | null;
-  /** Profession level required (alchemy/scribing). null for crafting. */
+  /** Alchemy stores its zero-based tier here. Scribing stores its skill gate. */
   level_required?: number | null;
+  /** Zero-based crafting or cooking tier from the loaded recipe. */
+  tier?: number | null;
   /** XP awarded per craft (crafting/alchemy). 0 for scribing. */
   xp?: number;
 }
@@ -1130,32 +1235,36 @@ export function recipeDescription(
   ingredients: RecipeIngredient[],
 ): string {
   const family = recipe.type.toLowerCase();
+  const tier = recipe.type === "Alchemy" ? recipe.level_required : recipe.tier;
+  const tierPhrase = tier != null ? `Tier ${toRomanNumeral(tier)} ` : "";
   const levelPhrase =
-    recipe.level_required && recipe.level_required > 0
-      ? ` requiring profession level ${recipe.level_required}`
+    recipe.type === "Scribing" && (recipe.level_required ?? 0) > 0
+      ? ` requiring ${recipe.level_required}% Scroll Mastery`
       : "";
 
   const station = humanizeStation(recipe.station_type);
   const stationPhrase = station
-    ? ` Crafted at ${indefiniteArticle(station)} ${station}.`
+    ? ` at ${indefiniteArticle(station)} ${station}`
     : "";
 
   // Top 2 materials by amount, then "and N more" if there are more.
   const sorted = [...ingredients].sort((a, b) => b.amount - a.amount);
   const topMaterials = sorted
     .slice(0, 2)
-    .map((i) => (i.amount > 1 ? `${i.amount} ${i.item_name}` : i.item_name));
+    .map((i) =>
+      i.amount > 1 ? `${formatNumber(i.amount)} ${i.item_name}` : i.item_name,
+    );
   const remaining = Math.max(0, ingredients.length - 2);
   let materialsPhrase = "";
   if (topMaterials.length > 0) {
-    const more = remaining > 0 ? ` and ${remaining} more` : "";
-    materialsPhrase = ` Requires ${joinList(topMaterials)}${more}.`;
+    if (remaining > 0)
+      topMaterials.push(
+        `${remaining} more ${remaining === 1 ? "ingredient" : "ingredients"}`,
+      );
+    materialsPhrase = ` Requires ${joinList(topMaterials)}.`;
   }
 
-  const xpPhrase =
-    recipe.xp && recipe.xp > 0 ? ` Awards ${formatNumber(recipe.xp)} XP.` : "";
-
-  return `${capitalizeFirst(family)} recipe${levelPhrase}.${stationPhrase}${materialsPhrase}${xpPhrase}`;
+  return `${tierPhrase}${tierPhrase ? family : capitalizeFirst(family)} recipe${levelPhrase}${stationPhrase}.${materialsPhrase}`;
 }
 
 // =============================================================================
@@ -1169,6 +1278,11 @@ interface ChestDescriptionInput {
   gold_max: number;
   item_reward_name: string | null;
   respawn_time: number;
+  /** Effective per-opening probability returned by chestRewardChance(). */
+  chest_reward_probability?: number;
+  /** Resolved faction display name. Empty means no reputation loss. */
+  decrease_faction?: string | null;
+  reputation_loss?: number;
 }
 
 export function chestDescription(chest: ChestDescriptionInput): string {
@@ -1176,17 +1290,18 @@ export function chestDescription(chest: ChestDescriptionInput): string {
     ? ` Requires ${chest.key_required_name} to open.`
     : "";
 
-  let goldPhrase = "";
-  if (chest.gold_max > 0) {
-    goldPhrase =
-      chest.gold_min === chest.gold_max
-        ? `${formatNumber(chest.gold_max)} gold`
-        : `${formatNumber(chest.gold_min)}-${formatNumber(chest.gold_max)} gold`;
+  // Source: server-scripts/GatherItem.cs:431 uses integer Random.Range.
+  const goldMax =
+    chest.gold_max > chest.gold_min ? chest.gold_max - 1 : chest.gold_min;
+  const rewards: string[] = [];
+  if (goldMax > 0) {
+    rewards.push(
+      chest.gold_min === goldMax
+        ? `${formatNumber(goldMax)} gold`
+        : `${formatNumber(chest.gold_min)}-${formatNumber(goldMax)} gold`,
+    );
   }
-
-  const itemPhrase = chest.item_reward_name
-    ? ` and a chance at ${chest.item_reward_name}`
-    : "";
+  if (chest.item_reward_name) rewards.push(chest.item_reward_name);
 
   // Source: schema chests.respawn_time — seconds between server-side resets.
   const respawnPhrase =
@@ -1194,12 +1309,19 @@ export function chestDescription(chest: ChestDescriptionInput): string {
       ? ` Respawns every ${formatDuration(chest.respawn_time)}.`
       : "";
 
-  const yieldsPhrase =
-    goldPhrase || itemPhrase
-      ? ` Yields ${goldPhrase || "random loot"}${itemPhrase}.`
+  const probability = chest.chest_reward_probability;
+  const yieldsPhrase = rewards.length
+    ? probability == null
+      ? ` Rewards include ${joinList(rewards)}.`
+      : probability < 1
+        ? ` Each opening has a ${formatPercent(probability, { decimals: 2 })} chance to yield ${joinList(rewards)}.`
+        : ` Yields ${joinList(rewards)}.`
+    : "";
+  const reputation =
+    chest.decrease_faction && chest.reputation_loss
+      ? ` Opening it costs ${formatNumber(chest.reputation_loss)} ${chest.decrease_faction} reputation.`
       : "";
-
-  return `Treasure chest in ${chest.zone_name}.${keyPhrase}${yieldsPhrase}${respawnPhrase}`;
+  return `Chest in ${chest.zone_name}.${keyPhrase}${yieldsPhrase}${reputation}${respawnPhrase}`;
 }
 
 // =============================================================================
@@ -1217,6 +1339,11 @@ interface GatheringResourceDescriptionInput {
   gathering_exp?: number | null;
   item_reward_name?: string | null;
   item_reward_amount?: number | null;
+  item_reward_amount_min?: number | null;
+  catches?: string[];
+  /** Base and maximum Radiant Seeker chances from the shared gathering model. */
+  radiant_chance_min?: number;
+  radiant_chance_max?: number;
 }
 
 export function gatheringResourceDescription(
@@ -1243,14 +1370,24 @@ export function gatheringResourceDescription(
 
   const rewardName = resource.item_reward_name;
   const rewardAmount = resource.item_reward_amount ?? 1;
-  const rewardPhrase = rewardName
-    ? ` Yields ${rewardAmount > 1 ? `${rewardAmount} ${rewardName}` : rewardName} per harvest.`
-    : "";
-
-  const xpPhrase =
-    resource.gathering_exp && resource.gathering_exp > 0
-      ? ` Awards ${formatNumber(resource.gathering_exp)} gathering XP.`
-      : "";
+  const rewardMin = resource.item_reward_amount_min ?? 1;
+  const amount =
+    rewardAmount > rewardMin
+      ? `${rewardMin}-${rewardAmount}`
+      : `${rewardAmount}`;
+  const rewardPhrase = resource.is_radiant_spark
+    ? rewardName &&
+      resource.radiant_chance_min != null &&
+      resource.radiant_chance_max != null
+      ? ` ${formatPercent(resource.radiant_chance_min, { decimals: 2 })} chance to gather ${rewardName} at 0% Radiant Seeker, rising to ${formatPercent(resource.radiant_chance_max, { decimals: 2 })} at 100%.`
+      : ""
+    : resource.is_fishing_spot
+      ? resource.catches?.length
+        ? ` Catches ${joinList(resource.catches)}.`
+        : ""
+      : rewardName
+        ? ` Yields ${amount} ${rewardName} per harvest.`
+        : "";
 
   let locationPhrase = "";
   if (zoneNames.length === 1) locationPhrase = ` Found in ${zoneNames[0]}.`;
@@ -1264,17 +1401,15 @@ export function gatheringResourceDescription(
   const head = tierPhrase
     ? `${tierPhrase}${typeLabel}`
     : capitalizeFirst(typeLabel);
-  return `${head}.${toolPhrase}${rewardPhrase}${xpPhrase}${locationPhrase}`;
+  return `${head}.${rewardPhrase}${toolPhrase}${locationPhrase}`;
 }
 
 // =============================================================================
 // Skills
 // =============================================================================
 //
-// Skill ownership is layered: a skill can belong to classes, pets,
-// mercenaries, monsters, scrolls, or any combination. The description routes
-// to the most specific owner first so the player searching for it gets the
-// answer they expect ("who casts this?").
+// Ownership adds access or caster context when the effect alone is not enough.
+// A single player class is already included in the page title.
 
 /**
  * Counts of items that grant or trigger this skill, grouped by source type.
@@ -1304,6 +1439,18 @@ interface SkillDescriptionInput {
   required_skill_points: number;
   required_spent_points: number;
   is_veteran: boolean;
+  base_skill?: boolean;
+  prerequisite_skill_name?: string | null;
+  prerequisite_level?: number;
+  prerequisite2_skill_name?: string | null;
+  prerequisite2_level?: number;
+  /** Display names resolved from pet_skills, monster_skills and granted_by_items. */
+  mercenary_names?: string[];
+  pet_names?: string[];
+  monster_names?: string[];
+  granting_item_names?: string[];
+  /** Shared effect summary at the page's initial valid rank. */
+  effect_summary?: string | null;
   is_necromancer_blood_pact?: boolean;
   is_necromancer_death_bloom?: boolean;
   is_necromancer_reaper_form?: boolean;
@@ -1326,34 +1473,18 @@ interface SkillDescriptionInput {
   granted_by: SkillGrantedByCounts;
 }
 
-const SKILL_TYPE_LABELS: Record<string, string> = {
-  target_damage: "Single-target damage spell",
-  area_damage: "Area-of-effect damage spell",
-  target_projectile: "Ranged projectile attack",
-  frontal_damage: "Frontal cone attack",
-  frontal_projectiles: "Frontal projectile barrage",
-  target_buff: "Single-target buff",
-  area_buff: "Party-wide buff",
-  target_debuff: "Single-target debuff",
-  area_debuff: "Area-of-effect debuff",
-  target_heal: "Single-target heal",
-  area_heal: "Party-wide heal",
-  health_to_mana: "Hit Points-to-Mana conversion",
-  passive: "Passive ability",
-  summon_monsters: "Summon spell",
-  summon: "Summon spell",
-  area_object_spawn: "Placed area effect",
-};
-
-function humanizeSkillType(skillType: string): string {
-  if (skillType in SKILL_TYPE_LABELS) return SKILL_TYPE_LABELS[skillType];
-  return capitalizeFirst(skillType.replace(/_/g, " "));
+function representativeNames(names: string[]): string {
+  const unique = [...new Set(names)];
+  const top = unique.slice(0, 3);
+  if (unique.length > top.length)
+    top.push(`${unique.length - top.length} others`);
+  return joinList(top);
 }
 
 function classesPhrase(classes: string[]): string {
   if (classes.length === 0) return "";
-  if (classes.length === ALL_CLASS_IDS.length) return "Universal";
-  const titled = classes.map((c) => capitalizeFirst(c));
+  if (ALL_CLASS_IDS.every((id) => classes.includes(id))) return "all classes";
+  const titled = [...classes].sort().map((c) => capitalizeFirst(c));
   if (titled.length === 1) return titled[0];
   return joinList(titled);
 }
@@ -1377,23 +1508,21 @@ function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
     return `Veteran skill for ${classes}`;
   }
 
-  // Class tree — most actionable signal. Note the "also used by N monsters"
-  // augmentation when monsters share a class skill.
-  if (hasClasses && skill.monster_count > 0) {
-    const noun = skill.monster_count === 1 ? "monster" : "monsters";
-    return `${classes} skill, also used by ${skill.monster_count} ${noun}`;
-  }
   if (hasClasses) {
-    return `${classes} skill`;
+    return `Skill for ${classes}`;
   }
 
   // Mercenary ability before pet ability: a hireable mercenary is more
   // actionable than a familiar/companion locked behind a class skill.
   if (skill.mercenary_user_count > 0) {
-    return "Mercenary ability";
+    return skill.mercenary_names?.length
+      ? `Used by ${representativeNames(skill.mercenary_names)}`
+      : "Mercenary ability";
   }
   if (skill.pet_user_count > 0) {
-    return "Pet ability";
+    return skill.pet_names?.length
+      ? `Used by ${representativeNames(skill.pet_names)}`
+      : "Pet ability";
   }
 
   // Item-granted spells/buffs — pick the dominant single source where possible
@@ -1402,6 +1531,9 @@ function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
   const sourceTotal =
     g.scroll + g.potion_buff + g.food_buff + g.relic_buff + g.weapon_proc;
   if (sourceTotal > 0) {
+    if (skill.granting_item_names?.length) {
+      return `Granted by ${representativeNames(skill.granting_item_names)}`;
+    }
     if (g.scroll === sourceTotal) {
       return g.scroll === 1
         ? "Spell cast from a scroll"
@@ -1435,8 +1567,9 @@ function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
 
   // Monsters only — last resort signal before "truly orphan".
   if (skill.monster_count > 0) {
-    const noun = skill.monster_count === 1 ? "creature" : "creatures";
-    return `Monster ability used by ${skill.monster_count} ${noun}`;
+    return skill.monster_names?.length
+      ? `Used by ${representativeNames(skill.monster_names)}`
+      : `Monster ability used by ${plural(skill.monster_count, "monster", "monsters")}`;
   }
 
   // Truly orphan: no class, no pet, no item, no monster. The type label
@@ -1444,11 +1577,7 @@ function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
   return null;
 }
 
-/**
- * Compose the per-skill description.
- * Format: `{typeLabel}.{tier} {ownership}.{gate}`
- * Each section is omitted when it has no useful content.
- */
+/** Lead with the effect, followed by its source and meaningful learning requirements. */
 export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/NecromancerDeathBloomSkill.cs:CorrectedTarget — another living Player or non-familiar Pet only.
   // Source: server-scripts/NecromancerPetBuffSkill.cs:HasLivingCombatPet — owned living combat pet, not a familiar or mercenary.
@@ -1459,18 +1588,16 @@ export function skillDescription(skill: SkillDescriptionInput): string {
     : skill.is_necromancer_reaper_form
       ? "Toggleable Reaper Form"
       : skill.is_necromancer_pet_buff
-        ? "Buff for your living companion"
+        ? "Buff for your active combat pet"
         : (skill.channel_pulses ?? 0) > 0
-          ? "Channeled single-target damage spell"
+          ? `Channeled ${formatSkillType(skill.skill_type).toLowerCase()}`
           : skill.skill_type === "summon" &&
               !skill.is_familiar &&
               skill.player_classes.includes("necromancer")
-            ? "Undead combat-pet summon that replaces a different active pet"
-            : humanizeSkillType(skill.skill_type);
-  const ownership = skillOwnershipPhrase(skill);
-
-  const tierPhrase =
-    skill.tier > 0 ? ` Tier ${toRomanNumeral(skill.tier)}.` : "";
+            ? "Summons an undead combat pet and replaces any other active pet"
+            : formatSkillType(skill.skill_type);
+  const ownership =
+    skill.player_classes.length === 1 ? null : skillOwnershipPhrase(skill);
 
   // The level/cost gate only applies when the player can actually act on it:
   //  - Veteran: cost in veteran points (with spent-points threshold).
@@ -1485,26 +1612,48 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/Player.cs:7439-7449 and ScriptableSkill.cs:237-239
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
-  const veteranPointText = `${skill.required_skill_points} veteran ${
-    skill.required_skill_points === 1 ? "point" : "points"
-  }`;
   // Veteran-tree skills with no player classes are mercenary-side veteran
   // skills the player can't learn, so the cost gate is only meaningful when
   // classes are set. Falling through to the class-skill branch in that case
   // would also be wrong — we just skip the gate.
   const isVeteranOwnedByPlayer =
     skill.is_veteran && skill.player_classes.length >= 1;
-  const isClassLearned = skill.player_classes.length >= 1 && !skill.is_veteran;
-  const gate = isVeteranOwnedByPlayer
-    ? skill.required_spent_points > 0
-      ? ` Costs ${veteranPointText} after ${skill.required_spent_points} spent veteran points.`
-      : ` Costs ${veteranPointText}.`
-    : isClassLearned && skill.level_required > 0
-      ? ` Unlocks at level ${skill.level_required}.`
-      : "";
-
+  const isClassLearned =
+    skill.player_classes.length >= 1 && !skill.is_veteran && !skill.base_skill;
+  const requirements: string[] = [];
+  let cost = "";
+  if (isVeteranOwnedByPlayer || isClassLearned) {
+    const pointType = skill.is_veteran ? "veteran" : "class skill";
+    if (skill.required_skill_points > 1) {
+      cost = ` Costs ${skill.required_skill_points} ${pointType} points per rank.`;
+    }
+    if (skill.level_required > 1)
+      requirements.push(`level ${skill.level_required}`);
+    if (skill.required_spent_points > 0) {
+      requirements.push(
+        `${skill.required_spent_points} ${pointType} points already spent`,
+      );
+    }
+    if (skill.prerequisite_skill_name && (skill.prerequisite_level ?? 0) > 0) {
+      requirements.push(
+        `${skill.prerequisite_skill_name} rank ${skill.prerequisite_level}`,
+      );
+    }
+    if (
+      skill.prerequisite2_skill_name &&
+      (skill.prerequisite2_level ?? 0) > 0
+    ) {
+      requirements.push(
+        `${skill.prerequisite2_skill_name} rank ${skill.prerequisite2_level}`,
+      );
+    }
+  }
+  const gate = requirements.length
+    ? ` Requires ${joinList(requirements)}.`
+    : "";
+  const effect = skill.effect_summary || typeLabel;
   const ownershipPhrase = ownership ? ` ${ownership}.` : "";
-  return `${typeLabel}.${tierPhrase}${ownershipPhrase}${gate}`
+  return `${capitalizeFirst(effect.replace(/[.]$/, ""))}.${ownershipPhrase}${cost}${gate}`
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1541,7 +1690,7 @@ function petRolePhrase(input: PetDescriptionInput): string {
   if (input.has_heals && input.has_buffs) return "Provides heals and buffs.";
   if (input.has_heals) return "Provides heals.";
   if (input.has_buffs) return "Provides buffs.";
-  return "Combat-focused.";
+  return "";
 }
 
 function petOriginPhrase(input: PetDescriptionInput): string {
@@ -1562,22 +1711,26 @@ function petOriginPhrase(input: PetDescriptionInput): string {
         return ` Companion of the ${input.summoning_mercenary_name}, summoned by ${input.summoning_skill_name ?? "its summon skill"}. Level matches its owner, up to level ${input.level_max}.`;
       }
       if (input.summoning_class_id === "necromancer") {
-        return ` Undead companion summoned by ${input.summoning_skill_name ?? "a Necromancer skill"}. Level follows the summoner, up to level ${input.level_max}.`;
+        return ` Summoned by ${input.summoning_skill_name ? `the Necromancer skill ${input.summoning_skill_name}` : "a Necromancer skill"}. Its level matches yours, up to level ${input.level_max}.`;
       }
       if (input.summoning_skill_name && className) {
-        return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level matches the summoner, up to level ${input.level_max}.`;
+        return ` Summoned by the ${className} skill ${input.summoning_skill_name}. Its level matches yours, up to level ${input.level_max}.`;
       }
-      return ` Summoned by a class skill. Level matches the summoner, up to level ${input.level_max}.`;
+      return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
       // Source: server-scripts/Player.cs:10703-10717; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
-      return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
+      return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }
 
 export function petDescription(input: PetDescriptionInput): string {
   const origin = petOriginPhrase(input);
   const role = petRolePhrase(input);
-  return `${input.kind} (${input.type_monster}).${origin} ${role}`;
+  const head =
+    input.kind === "Mercenary"
+      ? `${input.type_monster} mercenary`
+      : `${input.type_monster} ${input.kind.toLowerCase()}`;
+  return `${head}.${role ? ` ${role}` : ""}${origin}`;
 }
 
 // =============================================================================
@@ -1598,6 +1751,8 @@ interface AltarDescriptionInput {
   uses_veteran_scaling: boolean;
   reward_common_name: string | null;
   reward_legendary_name: string | null;
+  final_boss_name?: string | null;
+  reward_chance?: number;
 }
 
 export function altarDescription(altar: AltarDescriptionInput): string {
@@ -1609,7 +1764,9 @@ export function altarDescription(altar: AltarDescriptionInput): string {
     : "";
 
   const wavesPhrase =
-    altar.total_waves > 0 ? ` ${altar.total_waves}-wave encounter.` : "";
+    altar.total_waves > 0
+      ? ` ${altar.total_waves} waves${altar.final_boss_name ? ` ending with ${altar.final_boss_name}` : ""}.`
+      : "";
 
   // Avatar altars suppress the level line entirely (their min level is 0 by
   // design). For forgotten altars only print when there's an actual gate.
@@ -1623,9 +1780,14 @@ export function altarDescription(altar: AltarDescriptionInput): string {
     const legendaryReward = altar.reward_legendary_name.startsWith("Legendary ")
       ? altar.reward_legendary_name
       : `Legendary ${altar.reward_legendary_name}`;
+    const chance =
+      altar.reward_chance != null
+        ? `${formatPercent(altar.reward_chance, { decimals: 2 })} chance to receive`
+        : "Reward:";
+    // Source: server-scripts/DefaultEvent.cs:209-237 adds the activating player's level and total veteran points.
     rewardPhrase = altar.uses_veteran_scaling
-      ? ` Drops ${altar.reward_common_name} through ${legendaryReward} based on player level and veteran level.`
-      : ` Drops ${altar.reward_common_name} through ${altar.reward_legendary_name}.`;
+      ? ` ${chance} ${altar.reward_common_name} through ${legendaryReward}, based on your level plus total veteran points at activation.`
+      : ` ${chance} ${altar.reward_common_name} through ${altar.reward_legendary_name}.`;
   }
 
   return `${typeLabel} in ${altar.zone_name}.${activationPhrase}${wavesPhrase}${levelPhrase}${rewardPhrase}`;
@@ -1646,25 +1808,14 @@ interface ClassDescriptionInput {
   resource_type: string;
 }
 
-function loreSnippet(description: string): string {
-  if (!description) return "";
-  const sanitized = description.trim().replace(/;/g, ".");
-  const firstSentenceMatch = sanitized.match(/^[^.!?]+[.!?]/);
-  const sentence = firstSentenceMatch
-    ? firstSentenceMatch[0].trim()
-    : sanitized;
-  return sentence;
-}
-
 export function classDescription(klass: ClassDescriptionInput): string {
   const resource = getResourceDisplayName(klass.resource_type);
-  const role = klass.secondary_role
-    ? `${klass.primary_role}. Secondary role: ${klass.secondary_role}`
-    : klass.primary_role;
-  const lore = loreSnippet(klass.description);
-  const lorePhrase = lore ? ` ${lore}` : "";
-
-  return `${role}. Uses ${resource}.${lorePhrase}`;
+  const roles = joinList(
+    [klass.primary_role, klass.secondary_role].filter((role): role is string =>
+      Boolean(role),
+    ),
+  );
+  return `${klass.name} class: ${roles}. Resource: ${resource}. Attribute effects, class skills, and usable weapons and armor.`;
 }
 
 // =============================================================================
@@ -1676,42 +1827,41 @@ export interface FactionDescriptionInput {
   member_count: number;
   monster_source_count: number;
   quest_source_count: number;
+  npc_source_count?: number;
+  chest_source_count?: number;
   unlock_count: number;
   /** Highest reputation any of this faction's unlocks asks for, 0 when none. */
   top_requirement: number;
   top_requirement_tier: string | null;
 }
 
-/**
- * Per-faction meta description. The six factions differ mainly in how much
- * content hangs off them, so the counts are what makes each page distinct.
- * The Forsaken has no members, quests, or unlocks at all, and falls back to
- * naming the one thing it does have.
- */
+/** Summarize positive reputation sources and reward thresholds. */
 export function factionDescription(faction: FactionDescriptionInput): string {
   const clauses: string[] = [];
 
   const sources: string[] = [];
   if (faction.monster_source_count > 0)
-    sources.push(plural(faction.monster_source_count, "monster", "monsters"));
-  if (faction.quest_source_count > 0)
-    sources.push(plural(faction.quest_source_count, "quest", "quests"));
-  if (sources.length > 0) {
-    const total = faction.monster_source_count + faction.quest_source_count;
-    clauses.push(`${joinList(sources)} ${total === 1 ? "raises" : "raise"} it`);
-  }
-
-  if (faction.member_count > 0)
-    clauses.push(
-      `${plural(faction.member_count, "NPC", "NPCs")} ${
-        faction.member_count === 1 ? "belongs" : "belong"
-      } to it`,
+    sources.push(
+      `killing ${plural(faction.monster_source_count, "monster", "monsters")}`,
     );
+  if (faction.quest_source_count > 0)
+    sources.push(
+      `completing ${plural(faction.quest_source_count, "quest", "quests")}`,
+    );
+  if ((faction.npc_source_count ?? 0) > 0)
+    sources.push(`killing ${plural(faction.npc_source_count!, "NPC", "NPCs")}`);
+  if ((faction.chest_source_count ?? 0) > 0)
+    sources.push(
+      `opening ${plural(faction.chest_source_count!, "chest", "chests")}`,
+    );
+  if (sources.length > 0) {
+    clauses.push(`${joinList(sources)} can raise it`);
+  }
 
   if (faction.unlock_count > 0) {
     const gate =
       faction.top_requirement_tier && faction.top_requirement > 0
-        ? ` up to ${faction.top_requirement_tier} at ${formatNumber(faction.top_requirement)}`
+        ? ` at tiers up to ${faction.top_requirement_tier} (${formatNumber(faction.top_requirement)} reputation)`
         : "";
     clauses.push(
       `${plural(faction.unlock_count, "reward", "rewards")} ${
@@ -1719,8 +1869,8 @@ export function factionDescription(faction: FactionDescriptionInput): string {
       }${gate}`,
     );
   } else {
-    clauses.push("nothing unlocks from it yet");
+    clauses.push("no rewards unlock from it");
   }
 
-  return `${faction.name} reputation in Ancient Kingdoms: ${joinList(clauses)}.`;
+  return `${faction.name} reputation. ${clauses.map(capitalizeFirst).join(". ")}.`;
 }

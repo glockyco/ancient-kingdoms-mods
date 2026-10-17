@@ -143,10 +143,13 @@ def _parse_quest_tooltip(
     replacements: dict[str, str] = {
         "NAME": quest.get("name", ""),
         "RECOMMENDEDLEVEL": str(quest.get("level_recommended", 0)),
-        "REWARDGOLD": f"{reward_gold:,}".replace(",", " "),
-        "REWARDEXPERIENCE": f"{reward_exp:,}".replace(",", " "),
+        "REWARDGOLD": f"{reward_gold:,}",
+        "REWARDEXPERIENCE": f"{reward_exp:,}",
         "REWARDITEM": reward_item_text,
         "REWARDITEMCLASS": class_reward_item,
+        "PLAYER": "[your name]",
+        "RACE": "[your race]",
+        "CLASS": player_class,
     }
 
     # Quest type specific replacements
@@ -209,7 +212,7 @@ def _parse_quest_tooltip(
         for gi in gather_items:
             item_id = gi.get("item_id")
             amount = gi.get("amount", 1)
-            if item_id:
+            if item_id and amount > 0:
                 item_name = _get_item_name(conn, item_id)
                 gather_status_lines.append(f"Get {amount} {item_name}")
 
@@ -324,11 +327,15 @@ def run(conn: sqlite3.Connection) -> None:
     for row in quest_rows:
         quest = dict(zip(columns, row))
 
-        # Check if quest has class-specific rewards
+        # Class placeholders need variants even when all rewards are shared.
         has_class_rewards = _has_class_specific_rewards(quest)
+        has_class_context = any(
+            "{CLASS}" in (quest.get(field) or "")
+            for field in ("tooltip", "tooltip_complete")
+        )
 
-        if has_class_rewards:
-            # Generate per-class tooltips
+        if has_class_rewards or has_class_context:
+            # Generate per-class tooltips.
             tooltip_html_dict = {}
             tooltip_complete_html_dict = {}
 

@@ -64,20 +64,10 @@
     atk: "attack_power",
     spell: "spell_power",
   };
-  const TITLES: Record<StatKey, string> = {
-    // Source: server-scripts/Player.cs:10718-10732; Health.cs:max; Constitution.cs:GetHealthBonus — maximum Health combines the saved hire multiplier, veteran bonus and Constitution.
-    hp: "Multiply base Hit Points by the combined percentage from the saved Hit Points hire roll and 0.25% per veteran point (VT), round, then add 25 Hit Points per point of Constitution.",
-    // Source: server-scripts/Player.cs:10718-10732; Mana.cs:max; Intelligence.cs:GetManaBonus — maximum Mana combines the saved hire multiplier, veteran bonus and Intelligence.
-    mana: "Multiply base Mana by the combined percentage from the saved Mana hire roll and 0.25% per veteran point (VT), round, then add 20 Mana per point of Intelligence.",
-    // Source: server-scripts/Player.cs:10714-10720; Strength.cs:GetDamageBonus — Attack Power adds Strength, the combat hire roll and veteran points.
-    atk: "Add Strength at this level, the saved combat hire roll and veteran points (VT).",
-    // Source: server-scripts/Player.cs:10714-10720; Intelligence.cs:GetMagicDamageBonus — Spell Power adds rounded Intelligence scaling, the combat hire roll and veteran points.
-    spell:
-      "Round 150% of Intelligence, then add the saved combat hire roll and veteran points (VT).",
-  };
+  const RANGE_NOTE = "Base range before equipment or buffs.";
   const TARGET_LABELS: Record<TargetKey, string> = {
-    hp: statName(STAT_IDS.hp),
-    mana: statName(STAT_IDS.mana),
+    hp: "Maximum Hit Points",
+    mana: "Maximum Mana",
     atk: `${statName(STAT_IDS.atk)} / ${statName(STAT_IDS.spell)}`,
   };
 
@@ -286,16 +276,16 @@
   function recruiterSpecialty(preferred: string) {
     return preferred && classCanBe(cCls, preferred)
       ? `hires ${preferred}`
-      : "rolls from class pool";
+      : "random race for this class";
   }
 
   function impossibleMessage() {
     if (pRace !== 0) return "";
     if (!classCanBe(cCls, cRace)) return `A ${cCls} cannot be ${cRace}.`;
     if (!listedByClass[cCls].includes(cRace))
-      return `No recruiter listed here hires ${cRace}, so you cannot hire a ${cRace} ${cCls}.`;
+      return `No recruiter hires ${cRace}, so you cannot hire a ${cRace} ${cCls}.`;
     if (preferredRace)
-      return `${recruiter} hires ${preferredRace} for the chosen class.`;
+      return `${recruiter} always hires ${preferredRace} for ${cCls}, not ${cRace}. Choose another recruiter.`;
     return "";
   }
 
@@ -349,14 +339,14 @@
       ${grid}${xt}
       <polyline class="curve" points="${pts.join(" ")}"/>
       ${dots}${now}
-      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">minimum stats: top percentage of each stat roll →</text>
+      <text x="${(L + R) / 2}" y="${H - 2}" text-anchor="middle">Top percentage accepted for each stat roll</text>
     </svg>`;
   }
 </script>
 
 <Seo
   title="Mercenary Stat Ranges - Ancient Kingdoms"
-  description="Possible Hit Points, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, by character level and veteran points (VT), plus hiring odds and average costs."
+  description="Compare possible maximum Hit Points, maximum Mana, Attack Power, and Spell Power for every mercenary race and class, by your level and total veteran points, plus hiring odds and expected costs."
   path="/mechanics/mercenary-stats"
 />
 
@@ -366,7 +356,7 @@
       items={[
         { label: "Home", href: "/" },
         { label: "Mechanics", href: "/mechanics" },
-        { label: "Mercenary Stats" },
+        { label: "Mercenary stat ranges" },
       ]}
     />
   </div>
@@ -375,21 +365,11 @@
     <MercenaryNav mercenaries={data.links} current="stat-ranges" />
   </div>
 
-  <h1>Mercenary Stat Ranges</h1>
+  <h1>Mercenary stat ranges</h1>
   <p class="lead">
-    <span class="block"
-      >Compare possible mercenary Hit Points, Mana, Attack Power, and Spell
-      Power by class, race, level, and veteran points (VT).</span
-    >
-    <span class="block"
-      >A recruiter guarantees its preferred race only if that race can take the
-      chosen class.</span
-    >
-    <!-- Source: server-scripts/Player.cs:10640-10677 — each hire generates independent Health and resource rolls and one combat roll. -->
-    <span class="block"
-      >Each hire rolls its stat bonuses, so two otherwise identical mercenaries
-      can have different stats.</span
-    >
+    Compare classes and races before hiring. Individual hires vary in strength,
+    and a recruiter's preferred race is guaranteed only for classes that allow
+    it.
   </p>
   <p class="text-sm text-muted-foreground">{TOTAL_VETERAN_POINTS_NOTE}</p>
 
@@ -397,66 +377,24 @@
     <summary>How to read these ranges</summary>
     <div class="howto-body">
       <p>
-        <span class="block"
-          >A recruiter's preferred race is guaranteed if it can take the chosen
-          class.</span
-        >
-        <span class="block"
-          >Otherwise, the game draws a race from that class's pool.</span
-        >
-        <!-- Source: server-scripts/Player.cs:10640-10685,10903-10933; Database.cs:1922-1943; Energy.cs:27-39; Mana.cs:28-41 — hire values are saved, veteran multipliers are reapplied on summon, and Rage ignores its multiplier. -->
-        <span class="block"
-          >Hiring sets three hire rolls: a Hit Points multiplier, a resource
-          multiplier, and a combat hire roll shared by Attack Power and Spell
-          Power.</span
-        >
-        <span class="block"
-          >Warriors and Rogues roll a resource multiplier, but their Rage
-          ignores it.</span
-        >
-        <span class="block"
-          >Bards' base Mana is zero, so their multiplier does not increase it.</span
-        >
-        <span class="block">Other classes use the multiplier for Mana.</span>
-        <span class="block"
-          >These hire rolls determine where the hire falls within each range.</span
-        >
+        Set your level and total veteran points to compare stats without gear.
+        The bonuses rolled when you hire do not change. Hit Points and Mana vary
+        separately, while Attack Power and Spell Power share one roll.
       </p>
-      <ul>
-        <li>
-          <!-- Source: server-scripts/Player.cs:10903-10933; Health.cs:max; Mana.cs:max — saved resource multipliers scale current base resources, before equipment bonuses. -->
-          <span class="block"
-            >Without equipment, an existing mercenary's Hit Points and Mana fall
-            within the row at its current level.</span
-          >
-        </li>
-        <li>
-          <!-- Source: server-scripts/Player.cs:10714-10720,10913-10920 — hiring and resummoning set base damage and base magic damage to the shared hire roll plus total veteran points, including a zero roll. -->
-          <span class="block"
-            >Resummoning or reloading restores the same combat hire roll and
-            reapplies your full veteran Attack Power and Spell Power bonus.</span
-          >
-          <span class="block"
-            >Without equipment, Attack Power and Spell Power equal the current
-            row's lowest values plus the saved combat hire roll. Set Level to
-            the hiring level to see the largest possible combat hire roll.</span
-          >
-        </li>
-        <li>
-          <span class="block"><b>Every class lists every race.</b></span>
-          <span class="block">A "–" means that race cannot take the class.</span
-          >
-          <!-- Source: server-scripts/Utils.cs:GetRandomChar; website/data/compendium.db npcs.preferred_mercenary_race — no recruiter prefers Drassar, and no random pool includes it. -->
-          <span class="block"
-            >No recruiter hires Drassar, so you cannot hire a Drassar mercenary.
-            Its rows show what one would roll.</span
-          >
-        </li>
-      </ul>
       <p>
-        <span class="block">Warriors and Rogues use Rage.</span>
-        <span class="block">Bard displays active songs instead of Mana.</span>
-        <span class="block">These classes have no rolled Mana column.</span>
+        Hiring at a higher level offers better possible Attack Power and Spell
+        Power bonuses. Mercenaries still grow with later levels and veteran
+        points.
+      </p>
+      <p>
+        If a recruiter cannot provide its preferred race for your class, it
+        hires a random available race. A "–" marks an unavailable class and race
+        combination. Drassar cannot be hired.
+      </p>
+      <p>
+        Warriors and Rogues use Rage, and Bards use songs instead of Mana. See <a
+          href="/mercenaries#how-it-works">mercenary growth and skill ranks</a
+        >.
       </p>
       <Calculation
         calculation={mercenaryStats(cd, level, veteran, data.curves, cRace)}
@@ -476,8 +414,8 @@
       />
       <!-- Source: server-scripts/Player.cs:CmdBuyMercenary; UICharacterInfo.cs:Update — VT adds base-resource multipliers and both combat-power bonuses. -->
       <NumberField
-        label="Veteran points (VT)"
-        hint={`+0.25% of base ${statName("health")} & ${statName("mana")}, +1 ${statName("attack_power")} & ${statName("spell_power")} each`}
+        label="Total veteran points"
+        hint="increases stats and skill ranks"
         value={veteran}
         min={OWNER_LIMITS.veteran[0]}
         max={OWNER_LIMITS.veteran[1]}
@@ -541,7 +479,7 @@
               <tr>
                 <th>Race</th>
                 {#each cols as k (k)}
-                  <th title={TITLES[k]}
+                  <th title={RANGE_NOTE}
                     ><span class="colmark" style={`background:${STAT_HUE[k]}`}
                     ></span>{statName(STAT_IDS[k])}</th
                   >
@@ -555,11 +493,11 @@
                   <td class="race"
                     >{race}{#if r.eligible && !listedByClass[c.cls].includes(race)}<span
                         class="racenote"
-                        title="No recruiter listed here hires this race."
-                        >no recruiter listed</span
+                        title="No recruiter hires this race."
+                        >cannot be hired</span
                       >{:else if r.preferredOnly}<span
                         class="racenote"
-                        title="No class pool contains this race, so only a recruiter that hires it produces it."
+                        title="Only a recruiter that prefers this race can hire it for this class."
                         >recruiter only</span
                       >{/if}</td
                   >
@@ -596,16 +534,8 @@
   <section class="cost-sec" aria-label="Hiring cost and odds">
     <h2>Hiring odds &amp; cost</h2>
     <p class="sub">
-      <!-- Source: server-scripts/Player.cs:10640-10677 — each hire generates new random stat bonuses. -->
-      <span class="block">Each hire rolls new stat bonuses.</span>
-      <span class="block"
-        >Choose a recruiter that can provide your chosen race, then set the
-        lowest stats you want.</span
-      >
-      <span class="block"
-        >The calculator shows your chance per hire and average gold cost at the
-        selected level and veteran points (VT).</span
-      >
+      Choose a class, race, and recruiter, then set the lowest stats you would
+      accept. Compare the chance and expected cost before spending gold.
       <!-- Source: server-scripts/UIMercenaries.cs:ButtonSummonMercenary; Player.cs:CmdBuyMercenary — hiring checks active limits below level 40 and the ten-mercenary roster cap. -->
       <span class="block">
         Each hire joins your party if there is room. Below level 40, dismiss an
@@ -667,10 +597,12 @@
           </label>
           <div class="field">
             <span>Hire discount</span><span class="disc-val"
-              >−{formatPercent(discount, {
-                decimals: 2,
-                preserveNonzero: true,
-              })}</span
+              >{discount > 0
+                ? `−${formatPercent(discount, {
+                    decimals: 2,
+                    preserveNonzero: true,
+                  })}`
+                : "No discount"}</span
             >
           </div>
         </div>
@@ -715,7 +647,7 @@
       <div class="cost-outputs">
         <div class="stats3">
           <div class="stat3">
-            <span class="k">Chance / hire</span><span class="v"
+            <span class="k">Qualifying hire chance</span><span class="v"
               >{formatPercent(pTotal, {
                 decimals: 2,
                 preserveNonzero: true,
@@ -723,14 +655,14 @@
             >
           </div>
           <div class="stat3">
-            <span class="k">Avg hires</span><span class="v"
+            <span class="k">Expected hires</span><span class="v"
               >{Number.isFinite(avgHires)
                 ? `about ${formatNumber(avgHires, { decimals: 1 })}`
                 : "∞"}</span
             >
           </div>
           <div class="stat3">
-            <span class="k">Avg gold</span><span class="v"
+            <span class="k">Expected gold</span><span class="v"
               >{Number.isFinite(avgGold)
                 ? `about ${formatNumber(Math.round(avgGold))}`
                 : "∞"}</span
@@ -749,15 +681,14 @@
           <div id="c-chart">{@html chartSvg}</div>
           <p class="chart-cap">
             <span class="block"
-              >Average gold needed to hire a mercenary meeting these stat
+              >Expected gold needed to hire a mercenary meeting these stat
               thresholds, including the chance of getting the chosen race.</span
             >
-            <!-- Source: server-scripts/Player.cs:10640-10677 — stat rolls are independent. drawChart expresses their combined chance as equal per-roll chances and clamps the displayed range to 5–100%. -->
             <span class="block"
-              >Within the chart's range, the dot shows your thresholds' combined
-              chance spread evenly across the stat rolls. A 25% position means
-              the top 25% of each roll. The chart spans the top 5% through 100%
-              of each roll.</span
+              >Lower percentages demand stronger hires. At 25%, you accept only
+              the best quarter of each stat roll. The dot represents your
+              overall chance using equally strict stat requirements, so it may
+              not match your individual sliders.</span
             >
           </p>
         {/if}
@@ -1080,20 +1011,6 @@
     max-width: 75ch;
     margin: 0 0 0.6rem;
     text-wrap: pretty;
-  }
-  .howto-body ul {
-    max-width: 75ch;
-    margin: 0 0 0.6rem;
-    padding-left: 1.25rem;
-    list-style: disc outside;
-  }
-  .howto-body li {
-    margin: 0 0 0.4rem;
-    text-wrap: pretty;
-  }
-  .howto-body b {
-    color: var(--foreground);
-    font-weight: 600;
   }
 
   .cost-sec {

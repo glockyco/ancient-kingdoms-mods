@@ -19,14 +19,14 @@ export function levelExperience(costs: readonly number[]): Calculation {
   return {
     steps: [
       {
-        name: "Through level 40",
-        expression: "78 XP × 125.8% to the power of (your level − 1)",
+        name: "XP to next level, levels 1 to 40",
+        expression: "78 XP × (125.8% to the power of (your level − 1))",
         rounding: "nearest",
       },
       {
-        name: "After level 40",
+        name: "XP to next level, levels 41 to 49",
         expression:
-          "602,060 XP (the level 40 requirement) × 118% to the power of (your level − 40)",
+          "602,060 XP (the level 40 requirement) × (118% to the power of (your level − 40))",
         rounding: "nearest",
       },
     ],
@@ -43,8 +43,8 @@ export function levelExperience(costs: readonly number[]): Calculation {
       result: `${formatNumber(costs[level - 1])} XP to level ${level + 1}`,
       working: [
         level <= 40
-          ? `Through level 40: 78 × 125.8% raised to ${level - 1} = ${formatNumber(costs[level - 1])} XP, rounded`
-          : `After level 40: ${formatNumber(costs[39])} × 118% raised to ${level - 40} = ${formatNumber(costs[level - 1])} XP, rounded`,
+          ? `XP to next level: 78 × (125.8% to the power of ${level - 1}) = ${formatNumber(costs[level - 1])} XP, rounded`
+          : `XP to next level: ${formatNumber(costs[39])} × (118% to the power of ${level - 40}) = ${formatNumber(costs[level - 1])} XP, rounded`,
       ],
     }),
   };
@@ -117,8 +117,6 @@ export function evaluateKillExperience(
 // Source: server-scripts/Experience.cs:BalanceExperienceReward,CalculateExperienceShare; server-scripts/Monster.cs:OnDeath — nearby party players share XP using their highest level, with the 20-level cutoff before the dungeon bonus.
 export function killExperience(): Calculation {
   return {
-    // Mirror.dll in the server build of Steam build 25863605 (SHA-256 2b5fb2bfa840b6ba…, NetworkServer.RebuildObserversCustom) adds a player's own connection to its observers, so GetMembersInProximity counts the credited player.
-    note: "Count the player with kill credit among the nearby party players.",
     steps: [
       {
         name: "Base share",
@@ -185,7 +183,7 @@ export function killExperience(): Calculation {
           `${members} nearby party players`,
           dungeon ? "Dungeon" : "Outside a dungeon",
         ],
-        result: `${formatNumber(result.total)} XP per living player before XP buffs and events`,
+        result: `${formatNumber(result.total)} XP per living player before Double XP and Forgotten Altar bonuses`,
         working: [
           `Base share: ${formatNumber(baseXp)} ÷ ${members} = ${formatNumber(result.share)} XP, rounded up`,
           level - monsterLevel > 20
@@ -224,7 +222,7 @@ export function deathExperience(): Calculation {
       const lost = Math.min(penalty, currentXp);
       return {
         given: [
-          `${formatNumber(requiredXp)} XP bar`,
+          `${formatNumber(requiredXp)} XP to next level or veteran point`,
           `${formatNumber(currentXp)} current XP`,
         ],
         result: `${formatNumber(lost)} XP lost`,

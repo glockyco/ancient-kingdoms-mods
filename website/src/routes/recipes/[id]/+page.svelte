@@ -3,6 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import Hammer from "@lucide/svelte/icons/hammer";
@@ -71,7 +72,9 @@
 </script>
 
 <Seo
-  title={`${data.recipe.result_item_name} ${data.recipe.type} Recipe - Ancient Kingdoms`}
+  title={detailTitle(data.recipe.result_item_name, {
+    family: `${data.recipe.type} recipe`,
+  })}
   description={data.description}
   path={`/recipes/${data.recipe.id}`}
 />
@@ -80,7 +83,7 @@
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      { label: "Crafting Recipes", href: "/recipes" },
+      { label: "Recipes", href: "/recipes" },
       { label: data.recipe.result_item_name },
     ]}
   />
@@ -151,7 +154,7 @@
                   variant="reference"
                   fallback={Package}
                 />
-                <span class="text-muted-foreground">x{mat.amount}</span>
+                <span class="text-muted-foreground">×{mat.amount}</span>
               </div>
             {/each}
           </div>
@@ -173,7 +176,7 @@
           />
           {#if data.recipe.result_amount > 1}
             <span class="text-muted-foreground"
-              >x{data.recipe.result_amount}</span
+              >×{data.recipe.result_amount}</span
             >
           {/if}
         </div>

@@ -1,1 +1,0 @@
-Mechanics Resist Chance This debuff has no resistance-stat roll. This debuff has no effect on monsters whose pages list Immune to Debuffs.

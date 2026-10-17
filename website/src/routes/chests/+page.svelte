@@ -88,7 +88,7 @@
   const columns: ColumnDef<ChestWithDrops>[] = [
     {
       id: "name",
-      header: "Icon",
+      header: "Chest",
       enableHiding: false,
       size: 80,
     },
@@ -163,7 +163,7 @@
   const columnLabels: Record<string, string> = {
     zone: "Zone",
     location: "Location",
-    name: "Icon",
+    name: "Chest",
     respawn_time: "Respawn",
     key: "Key",
     gold: "Gold",
@@ -226,15 +226,15 @@
   {:else if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      aria-label={`Chest ${row.original.id}`}
-      title={`Chest ${row.original.id}`}
+      aria-label={`Chest in ${row.original.zone_name}`}
+      title={`Chest in ${row.original.zone_name}`}
       class="inline-flex"
     >
       <EntityIcon
         src={row.original.visual_public_path
           ? `${base}/${row.original.visual_public_path}`
           : null}
-        alt={`Chest ${row.original.id} icon`}
+        alt=""
         fallback={Box}
         size={32}
       />
@@ -255,14 +255,17 @@
   {:else if cell.column.id === "gold"}
     {#if row.original.gold_min > 0 || row.original.gold_max > 0}
       <span class="text-yellow-600 dark:text-yellow-400">
-        {#if row.original.gold_min === row.original.gold_max}
+        {#if row.original.gold_min >= row.original.gold_max - 1}
           {formatNumber(row.original.gold_min, { groupSeparator: "\u202F" })}
         {:else}
           {formatNumber(row.original.gold_min, {
             groupSeparator: "\u202F",
-          })}–{formatNumber(row.original.gold_max, {
-            groupSeparator: "\u202F",
-          })}
+          })} to {formatNumber(
+            Math.max(row.original.gold_min, row.original.gold_max - 1),
+            {
+              groupSeparator: "\u202F",
+            },
+          )}
         {/if}
       </span>
     {:else}
@@ -289,12 +292,14 @@
   {:else if cell.column.id === "chance"}
     {formatPercent(chestRewardChance(row.original), {
       decimals: 1,
-      trailingZeros: true,
+      trailingZeros: false,
     })}
   {:else if cell.column.id === "drops"}
     {@const drops = row.original.drops}
     {#if drops.length > 0}
-      <span class="text-muted-foreground">{drops.length} items</span>
+      <span class="text-muted-foreground"
+        >{drops.length} {drops.length === 1 ? "item" : "items"}</span
+      >
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}

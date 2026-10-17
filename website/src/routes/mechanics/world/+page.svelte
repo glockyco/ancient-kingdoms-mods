@@ -27,7 +27,7 @@
 
   <Card.Root id="game-modes" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Game Modes and Hardcore</Card.Title>
+      <Card.Title>Game modes and Hardcore</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/UICharacterSelection.cs:160-211,284-331 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
@@ -45,7 +45,7 @@
                 >Single Player</th
               >
               <td class="py-2"
-                >Starts a local world that does not listen for other players.</td
+                >Starts a local world that other players cannot join.</td
               >
             </tr>
             <tr class="border-b border-border/60">
@@ -70,8 +70,8 @@
       <!-- Source: server-scripts/UICharacterEditor.cs:542-544 and server-scripts/Database.cs:CanCreateHardcoreCharacter — Hardcore starts unchecked and unlocks when a saved character is level 50 or Hardcore. -->
       <p>
         <span class="block"
-          >Hardcore becomes selectable once a saved character reaches level 50
-          or another Hardcore character exists.</span
+          >The Hardcore option unlocks once one of your characters reaches level
+          50, or once you have a Hardcore character.</span
         >
         <span class="block"
           >Hardcore starts unchecked for each new character.</span
@@ -94,7 +94,7 @@
 
   <Card.Root id="exploration" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Exploration and Maps</Card.Title>
+      <Card.Title>Exploration and maps</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/ZoneTrigger.cs:120-123,139-185 — a named area is recorded on first entry; discovery awards 10 city, 25 other, or 150 dungeon XP and increases Exploring. -->
@@ -111,11 +111,6 @@
         <span class="block"
           >A city gives 10 XP, another area gives 25 XP, and a dungeon gives 150
           XP.</span
-        >
-        <span class="block"
-          >See <MechanicsLink section="experience#zone-discovery-xp"
-            >zone discovery XP</MechanicsLink
-          > for the reward breakdown.</span
         >
       </p>
       <!-- Source: server-scripts/UIMap.cs:268-334 — the game switches between its local and world maps. -->
@@ -158,7 +153,7 @@
 
   <Card.Root id="map-notes" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Personal Map Notes</Card.Title>
+      <Card.Title>Personal map notes</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/UIMapNotesController.cs:47-51,427-437,464-469,522-552 — note text is limited to 80 characters, empty notes cannot be saved, and a zone accepts at most 50 notes. -->
@@ -169,7 +164,8 @@
       <!-- Source: server-scripts/UIMapNotesController.cs:200-250,253-268 — notes persist in a single local PlayerPrefs key and render on the local map for their zone. -->
       <p>
         <span class="block"
-          >All characters on this installation share their saved map notes.</span
+          >Map notes are saved on your computer, and every character you play on
+          it shares them.</span
         >
         <span class="block"
           >Your notes appear on that zone's local map, not the world map.</span
@@ -182,35 +178,29 @@
 
   <Card.Root id="binding-and-travel" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Binding and Travel</Card.Title>
+      <Card.Title>Binding and travel</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Npc.cs:InteractNpc; Player.cs:UserCode_CmdBindPlayer; TargetBuffSkill.cs:Apply; ScrollItem.cs:UseAfterCast; website/data/compendium.db:skills.bind_affinity — confirming a binder or bind spell saves the player's current zone and position; Bind Affinity belongs to Ranger, Cleric, Wizard, Druid and Necromancer. -->
       <p>
-        <span class="block"
-          >Confirming a binding saves your current position and zone as your new
-          bind point.</span
+        Set your bind point where you want to return, using a <a
+          href="/npcs?npcs.role_keys=is_soul_binder"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >soul binder</a
+        >,
+        <a
+          href="/skills/bind_affinity"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Bind Affinity</a
         >
-        <span class="block"
-          >A <a
-            href="/npcs?npcs.role_keys=is_soul_binder"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >soul binder</a
-          >, the
-          <a
-            href="/skills/bind_affinity"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Bind Affinity</a
-          >
-          spell, or a
-          <a
-            href="/items/scroll_of_binding"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Scroll of Binding</a
-          >
-          asks you to confirm a binding. Bind Affinity is available to Rangers, Clerics,
-          Wizards, Druids, and Necromancers.</span
+        spell, or a
+        <a
+          href="/items/scroll_of_binding"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Scroll of Binding</a
         >
+        and confirm the binding. Bind Affinity is available to Rangers, Clerics, Wizards,
+        Druids, and Necromancers.
       </p>
       <!-- Source: server-scripts/TravelItem.cs:22-41 — a Bind Point travel item reads the saved bind point and teleports without changing it. The exported gate_scroll item is a TravelItem. -->
       <p>
@@ -218,7 +208,7 @@
           href="/items/gate_scroll"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >Gate Scroll</a
-        > returns to your saved bind point without changing it.
+        > returns you to your bind point.
       </p>
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: the export's items.json — scroll_of_binding has level_required 30. -->
@@ -240,16 +230,16 @@
       <!-- Source: server-scripts/TravelItem.cs:15-42 — blocked use in zone 23 returns before consuming a charge; successful use decrements one charge unless the item has infinite charges. -->
       <p>
         <span class="block"
-          >Destination travel items teleport you to their assigned destination
-          and consume one charge on successful use.</span
+          >Scrolls named after a place teleport you there. Each successful use
+          consumes one scroll.</span
         >
         <span class="block"
           ><a
             href="/zones/temple_of_valaark"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Temple of Valaark</a
-          > blocks travel items before they consume a charge. Gate Scroll works in
-          other dungeons.</span
+          > blocks all travel scrolls, including Gate Scroll, without consuming them.
+          Travel scrolls work in every other dungeon.</span
         >
       </p>
       <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14277-14289 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
@@ -261,14 +251,13 @@
             >travel NPC</a
           > shows its offer and any gold cost before travel.</span
         >
-        <span class="block">Paid travel requires enough gold.</span>
       </p>
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="portals" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Portals and Entry Requirements</Card.Title>
+      <Card.Title>Portals and entry requirements</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Portal.cs:25-32 and server-scripts/InteractablePortal.cs:80-91 — ordinary portals respond to entering their trigger; interactable portals respond to interaction. -->
@@ -302,7 +291,7 @@
             <tr class="border-b border-border/60">
               <th scope="row" class="py-2 pr-6 text-left font-medium">Closed</th
               >
-              <td class="py-2">No passage while the entrance is closed.</td>
+              <td class="py-2">The entrance cannot be passed.</td>
             </tr>
             <tr class="border-b border-border/60">
               <th scope="row" class="py-2 pr-6 text-left font-medium"
@@ -313,9 +302,8 @@
             <tr class="border-b border-border/60">
               <th scope="row" class="py-2 pr-6 text-left font-medium">Key</th>
               <td class="py-2"
-                >Walk-in portals accept a key from any online party member
-                unless each player needs their own key. Portals you click accept
-                a key from any online party member.</td
+                >Any online party member's key lets you through. Some walk-in
+                portals require every player to carry the key.</td
               >
             </tr>
             <!-- Source: server-scripts/Portal.cs:OnTriggerEnter2D; InteractablePortal.cs:OnClick; UIEquipment.cs:Update — entry checks each player's own level and total item level, reports missing thresholds, and the equipment window displays the total. -->
@@ -335,8 +323,8 @@
       <!-- Source: server-scripts/Player.cs:11302-11316,3615-3617, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
-          >A successful portal transition removes invisibility, including
-          resurrection protection.</span
+          >Passing through a portal ends invisibility, including Resurrection
+          Effects.</span
         >
         <span class="block"
           >Entering a dungeon dismounts you, and you cannot mount inside.</span
@@ -346,7 +334,7 @@
   </Card.Root>
   <Card.Root id="seasonal-events" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Seasonal Events</Card.Title>
+      <Card.Title>Seasonal events</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2214-2224 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->

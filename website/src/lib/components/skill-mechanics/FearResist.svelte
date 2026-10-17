@@ -38,6 +38,5 @@
     <span class="block"
       >Total Fear Resist from all sources is capped at 100%.</span
     >
-    <span class="block">At 100%, the target resists every fear effect.</span>
   </p>
 </div>

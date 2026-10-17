@@ -20,9 +20,9 @@
       The Protect NPCs setting, on by default, stops you, your companions and
       your mercenaries from attacking friendly NPCs. An NPC without a faction
       always counts as friendly. A faction's NPC counts as friendly while your
-      reputation is high enough that it would not attack you on sight. An NPC
-      that is attacking you, a party member, or a companion or mercenary of
-      either can always be fought.
+      reputation is high enough that it would not attack you on sight. You can
+      always fight an NPC attacking you, a party member, or a companion or
+      mercenary belonging to you or a party member.
     </p>
     <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,83-135; PlayerSkills.cs:815-838 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
     <ul>
@@ -32,8 +32,8 @@
         you.
       </li>
       <li>
-        Selecting a monster can instead heal the player, mercenary, companion or
-        familiar it is attacking.
+        With a monster selected, a targeted heal can go to the player,
+        mercenary, companion or familiar the monster is attacking.
       </li>
       <li>Resurrection targets only player remains or a dead mercenary.</li>
     </ul>
@@ -70,10 +70,9 @@
   <Topic id="follow-up-attacks">
     <!-- Source: server-scripts/PlayerSkills.cs:StartDefaultAttackAfterMeleeSkill — non-spell Weapon or Shield TargetDamageSkill or damaging TargetDebuffSkill casts queue the learned/default followupDefaultAttack on an attackable current target when no follow-up exists and CheckWeapon passes. -->
     <p>
-      After a non-spell weapon or shield skill that damages one target, or
-      applies a damaging debuff to it, you continue with your selected auto
-      attack if your weapon can use it and it is learned or available by
-      default. This does not replace an auto attack already queued.
+      Non-spell weapon or shield skills that damage one target, directly or with
+      a debuff, resume your chosen auto attack if your weapon supports it. An
+      already queued auto attack is kept.
     </p>
     <!-- Source: server-scripts/Skills.cs:StartCast — an invisibility buff clears the pending skill and the follow-up auto attack. -->
     <p>

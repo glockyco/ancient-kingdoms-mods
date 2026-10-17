@@ -49,6 +49,8 @@ export const load: PageServerLoad = async ({
   ItemDetailPageData & {
     hasMapLocation: boolean;
     hasKnownSource: boolean;
+    acquisitionNotes: string[];
+    foodBuffUsesTavernSpirit: boolean;
     /** Effect summary of the potion or food buff at the rank the item applies. */
     consumableBuffEffect: string | null;
   }
@@ -115,9 +117,9 @@ export const load: PageServerLoad = async ({
 
   const fishingEffect = FISHERMAN_COSTUME_IDS.has(item.id)
     ? {
-        title: "Fishing Bonus",
+        title: "Fishing bonus",
         description_paragraphs: [
-          "Each Fisherman set piece adds +2 percentage points to the catch chance of every fish available at the Fishing Spot.",
+          "Each Fisherman set piece adds 2 percentage points to the catch chance of every fish available at the Fishing Spot.",
           "This bonus applies only after you get a bite. Bite chance is determined by your Fishing skill, the Fishing Spot tier, and your rod.",
         ],
         fishing_page_href: "/professions/fishing#calculator",
@@ -139,7 +141,19 @@ export const load: PageServerLoad = async ({
   // Load item sources and usages from normalized junction tables
   const sources = getItemSources(db, params.id);
   const usages = getItemUsages(db, params.id);
-  const hasKnownSource = getItemSourceSummaries(db, [params.id]).length > 0;
+  const sourceSummaries = getItemSourceSummaries(db, [params.id]);
+  const acquisitionNotes: string[] = [];
+  if (sourceSummaries.some((source) => source.type === "starter")) {
+    acquisitionNotes.push("Every new character starts with this item.");
+  }
+  if (item.item_type === "structure") {
+    acquisitionNotes.push(
+      `Buy and place this furniture through the house panel for ${item.structure_price.toLocaleString("en-US")} gold while at a house owned by your account.`,
+    );
+  }
+  const hasKnownSource =
+    sourceSummaries.length > 0 ||
+    Object.values(sources).some((entries) => entries.length > 0);
   const hasMapLocation =
     (await getItemMapBounds(params.id, async (sql, bindings) =>
       db.prepare(sql).all(...bindings),
@@ -284,12 +298,25 @@ export const load: PageServerLoad = async ({
     item.potion_buff_id || item.food_buff_id || item.relic_buff_id || null;
   let buffDurationSeconds: number | null = null;
   let relicIsCleanse = false;
+  let foodBuffUsesTavernSpirit = false;
   if (buffId) {
     const row = db
-      .prepare("SELECT duration_base, is_cleanse FROM skills WHERE id = ?")
-      .get(buffId) as { duration_base: number; is_cleanse: number } | undefined;
+      .prepare(
+        "SELECT duration_base, is_cleanse, buff_category FROM skills WHERE id = ?",
+      )
+      .get(buffId) as
+      | {
+          duration_base: number;
+          is_cleanse: number;
+          buff_category: string | null;
+        }
+      | undefined;
     buffDurationSeconds = row?.duration_base ?? null;
     relicIsCleanse = Boolean(item.relic_buff_id && row?.is_cleanse);
+    foodBuffUsesTavernSpirit = Boolean(
+      item.food_buff_id &&
+      (row?.buff_category === "Food" || row?.buff_category === "Drink"),
+    );
   }
   const consumableBuffId = item.potion_buff_id || item.food_buff_id;
   const consumableBuffEffect = consumableBuffId
@@ -345,8 +372,14 @@ export const load: PageServerLoad = async ({
     mergeResultName,
     buffDurationSeconds,
     relicIsCleanse,
+    sources,
+    treasureLocation,
+    buffEffect: consumableBuffEffect,
+    recipeIngredients: sources.recipes[0]
+      ? recipeMaterials[sources.recipes[0].recipe_id]
+      : undefined,
   });
-  const title = itemTitle(item);
+  const title = itemTitle(item, { family: "Item" });
 
   return {
     item,
@@ -358,6 +391,8 @@ export const load: PageServerLoad = async ({
     sources,
     usages,
     hasKnownSource,
+    acquisitionNotes,
+    foodBuffUsesTavernSpirit,
     hasMapLocation,
     fishing_role: fishingRole,
     fishing_effect: fishingEffect,

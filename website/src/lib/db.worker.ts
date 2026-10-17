@@ -32,15 +32,23 @@ interface QueryResponse {
 let databasePromise: Promise<Database> | null = null;
 
 async function loadDatabase(): Promise<Database> {
-  const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
-  if (!databaseUrl) {
-    throw new Error("Database worker was queried before it was configured");
+  try {
+    const SQL = await initSqlJs({ locateFile: () => sqlWasmUrl });
+    if (!databaseUrl) {
+      throw new Error("Database worker was queried before it was configured");
+    }
+    const response = await fetch(databaseUrl);
+    if (!response.ok) {
+      throw new Error(`Unable to load the database (${response.status})`);
+    }
+    return new SQL.Database(await inflatedBytes(response));
+  } catch (error) {
+    console.error("Compendium data loading failed", error);
+    throw new Error(
+      "The compendium data could not be loaded. Check your connection and reload the page.",
+      { cause: error },
+    );
   }
-  const response = await fetch(databaseUrl);
-  if (!response.ok) {
-    throw new Error(`Unable to load the database (${response.status})`);
-  }
-  return new SQL.Database(await inflatedBytes(response));
 }
 
 async function execute(request: QueryRequest): Promise<unknown[]> {

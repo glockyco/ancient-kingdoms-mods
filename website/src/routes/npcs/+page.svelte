@@ -299,7 +299,7 @@
 
 <Seo
   title="NPCs - Ancient Kingdoms"
-  description={`${formatNumber(data.npcs.length)} NPCs sortable by zone, faction, and role — merchants, quest givers, skill masters, faction vendors, bankers, and innkeepers.`}
+  description={`${formatNumber(data.npcs.length)} NPCs you can filter by zone, faction, and role, including Merchants, Quest Givers, Skill Masters, Bankers, and innkeepers.`}
   path="/npcs"
 />
 

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -87,8 +88,8 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View plants and herbs you can gather with the Herbalism skill.`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
+  description={`${data.profession.description} Success chances, skill gains and XP for every plant tier at your Herbalism skill.`}
   path="/professions/herbalism"
 />
 
@@ -132,19 +133,17 @@
   </div>
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Gathering Plants works</h2>
+    <h2 class="text-xl font-semibold">How Herbalism works</h2>
     <!-- Source: server-scripts/GatherItem.cs:208-250,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
     <p class="text-muted-foreground">
-      <span class="block">A growing plant cannot be gathered.</span>
-      <span class="block"
-        >You need at least a 10% success chance to harvest a plant.</span
-      >
+      Harvest fully grown plants with at least a 10% success chance and
+      inventory space.
     </p>
     <!-- Source: server-scripts/GatherItem.cs:379-400 — an allowed harvest starts regrowth before the success roll. -->
     <p class="text-muted-foreground">
-      A ready plant starts regrowing when you attempt to harvest it with enough
-      inventory space and at least a 10% success chance, even if you gather
-      nothing.
+      Even a failed harvest makes the plant regrow before you can try again.
+      Tier I plants stop raising Herbalism above 25%, Tier II above 50% and Tier
+      III above 75%.
     </p>
   </section>
 

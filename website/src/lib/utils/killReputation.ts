@@ -11,8 +11,11 @@ export type KillReputationDirection = "improve" | "decrease";
  */
 export interface KillReputationEffect {
   direction: KillReputationDirection;
-  /** Pre-formatted amount, e.g. "174" or a level range like "15-21". */
+  /** Signed amount or range, ready to display. */
   amount: string;
+  /** Unsigned bounds for sorting without parsing display text. */
+  amount_min: number;
+  amount_max: number;
   factions: string[];
 }
 
@@ -53,7 +56,7 @@ interface NpcKillReputationInput {
 function monsterReputationAmount(
   monster: MonsterKillReputationInput,
   direction: KillReputationDirection,
-): string {
+): Pick<KillReputationEffect, "amount" | "amount_min" | "amount_max"> {
   let min: number;
   let max: number;
   if (direction === "improve") {
@@ -66,8 +69,16 @@ function monsterReputationAmount(
     min = monster.level_min * multiplier;
     max = monster.level_max * multiplier;
   }
-  if (min === max) return formatNumber(min, { decimals: 2 });
-  return `${formatNumber(min, { decimals: 2 })}-${formatNumber(max, { decimals: 2 })}`;
+  const sign = direction === "improve" ? "+" : "−";
+  const first = `${sign}${formatNumber(min, { decimals: 2 })}`;
+  return {
+    amount:
+      min === max
+        ? first
+        : `${first} to ${sign}${formatNumber(max, { decimals: 2 })}`,
+    amount_min: min,
+    amount_max: max,
+  };
 }
 
 export function monsterKillReputation(
@@ -77,14 +88,14 @@ export function monsterKillReputation(
   if (monster.improve_faction.length > 0) {
     effects.push({
       direction: "improve",
-      amount: monsterReputationAmount(monster, "improve"),
+      ...monsterReputationAmount(monster, "improve"),
       factions: monster.improve_faction,
     });
   }
   if (monster.decrease_faction.length > 0) {
     effects.push({
       direction: "decrease",
-      amount: monsterReputationAmount(monster, "decrease"),
+      ...monsterReputationAmount(monster, "decrease"),
       factions: monster.decrease_faction,
     });
   }
@@ -102,19 +113,23 @@ export function npcKillReputation(
   npc: NpcKillReputationInput,
 ): KillReputationEffect[] {
   const effects: KillReputationEffect[] = [];
+  const gain = npc.level * 1.5 * (npc.is_notable ? 60 : 1);
+  const loss = npc.level * 5;
   if (npc.improve_faction.length > 0) {
     effects.push({
       direction: "improve",
-      amount: formatNumber(npc.level * 1.5 * (npc.is_notable ? 60 : 1), {
-        decimals: 2,
-      }),
+      amount: `+${formatNumber(gain, { decimals: 2 })}`,
+      amount_min: gain,
+      amount_max: gain,
       factions: npc.improve_faction,
     });
   }
   if (npc.decrease_faction.length > 0) {
     effects.push({
       direction: "decrease",
-      amount: formatNumber(npc.level * 5, { decimals: 2 }),
+      amount: `−${formatNumber(loss, { decimals: 2 })}`,
+      amount_min: loss,
+      amount_max: loss,
       factions: npc.decrease_faction,
     });
   }

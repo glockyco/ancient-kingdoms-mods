@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
   import { statName } from "$lib/stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
@@ -17,12 +16,9 @@
     DEATH_SAVE_MIN_LEVEL,
     MAX_HIRED,
     MAX_PARTY,
-    MAX_VETERAN,
     MERC_MIN_LEVEL,
     activeMercenaryLimit,
-    hirePrice,
     mercenaryResource,
-    resurrectionPrice,
   } from "$lib/utils/merc-stats";
   import { petHref } from "$lib/utils/pets";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
@@ -106,7 +102,7 @@
 
 <Seo
   title="Mercenaries - Ancient Kingdoms"
-  description={`Compare the ${data.mercenaries.length} mercenary classes in Ancient Kingdoms. How hiring, party limits, growth, stance, and resurrection work, and where to find every recruiter.`}
+  description={`Compare the ${data.mercenaries.length} mercenary classes in Ancient Kingdoms. Learn how hiring, party limits, growth, stance, and resurrection work, and find every recruiter.`}
   path="/mercenaries"
 />
 
@@ -311,36 +307,20 @@
           <div class="mt-1 space-y-2 text-sm leading-6 text-muted-foreground">
             <!-- Source: server-scripts/Npc.cs:1898-1909, UIMercenaries.cs:CalculatePriceMercenaryLevel, Charisma.cs:17-20, UINpcTrading.cs:870-877, Utils.cs:GetRandomChar -->
             <p>
-              <span class="block"
-                >Recruiters serve you from level {MERC_MIN_LEVEL}.</span
-              >
-              <span class="block">
-                The base price is {formatNumber(hirePrice(MERC_MIN_LEVEL, 0))} gold
-                at level
-                {MERC_MIN_LEVEL}.
-              </span>
-              <span class="block">
-                It rises to {formatNumber(hirePrice(50, MAX_VETERAN))} gold at level
-                50 with
-                {MAX_VETERAN} veteran points (VT).
-              </span>
-              <span class="block">
-                A recruiter that prefers a race hires that race when the class
-                allows it.
-              </span>
-              <span class="block">
-                Otherwise, the race is random.
-                <a href="/mechanics/mercenary-stats" class={link}
-                  >Race odds and stat ranges</a
-                >
-              </span>
+              Recruiters serve you from level {MERC_MIN_LEVEL}. Hiring costs
+              more as your level and veteran points rise. Charisma lowers the
+              price. For a particular race, choose a recruiter that prefers it
+              and check that your class allows it.
+              <a href="/mechanics/mercenary-stats" class={link}
+                >Compare races and hiring odds</a
+              >.
             </p>
             <Calculation calculation={mercenaryPrice()} />
             <p id="total-veteran-points">
               {TOTAL_VETERAN_POINTS_NOTE}
               See
               <a href="/mechanics/experience#veteran-points" class={link}
-                >Veteran Points</a
+                >Veteran points</a
               >
               for the counting and reset rules.
             </p>
@@ -372,15 +352,8 @@
               {/each}
             </ul>
             <p>
-              <span class="block"
-                >A party holds at most {MAX_PARTY} members.</span
-              >
-              <span class="block"
-                >Each active mercenary counts as one member.</span
-              >
-              <span class="block"
-                >In a full party, you cannot summon a mercenary.</span
-              >
+              A party holds at most {MAX_PARTY} members, including active mercenaries.
+              Make room before summoning one.
             </p>
           </div>
         </div>
@@ -400,10 +373,11 @@
               again.</span
             >
             <span class="block"
-              >Dismiss an active mercenary before renaming them.</span
+              >Dismiss an active mercenary before renaming it.</span
             >
             <span class="block"
-              >Permanent deletion requires removing their equipped gear.</span
+              >Remove the mercenary's equipped gear before permanently deleting
+              it.</span
             >
             <span class="block"
               >Retrieve supplies before deletion if you want to keep them.</span
@@ -426,38 +400,28 @@
               </span>
               <span class="block">
                 Each total veteran point adds 0.25% of base Hit Points to
-                maximum Hit Points and, for mana users other than Bards, 0.25%
-                of base Mana to maximum Mana, before rounding.
+                maximum Hit Points. For Mana users other than Bards, it also
+                adds 0.25% of base Mana to maximum Mana.
               </span>
               <span class="block">
                 Warriors and Rogues keep the same maximum Rage as total veteran
                 points rise.
               </span>
               <span class="block">
-                A Bard's active-song limit follows character level.
+                Total veteran points do not change a Bard's active-song limit.
               </span>
             </p>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — Bard and Necromancer skill ranks have a minimum of 1, and every skill has its own maximum rank. -->
             <div id="skill-ranks">
               <Calculation calculation={rankCalculation} />
               <p class="mt-2 text-muted-foreground">
-                Find Max Rank in the Skills table on each
+                Find Max rank in the Skills table on each
                 <a href="#classes" class={link}>mercenary class page</a>.
               </p>
             </div>
-            <!-- Source: server-scripts/BardMercenarySkills.cs:60-104 — a Bard mercenary gains a third combat song at level 40, and Final Cadence requires level 50 with all combat songs active. -->
             <p>
-              <span class="block"
-                ><a href={petHref("bard_mercenary", true)} class={link}
-                  >Bard mercenaries</a
-                > can sustain three combat songs from level 40 instead of two.</span
-              >
-              <span class="block"
-                >At level 50, <a
-                  href="/skills/mercenary_final_cadence"
-                  class={link}>Final Cadence</a
-                >
-                requires all three combat songs to be active.</span
+              <a href={petHref("bard_mercenary", true)} class={link}
+                >Bard songs and level unlocks</a
               >
             </p>
             <Alert variant="info">
@@ -484,15 +448,7 @@
           <div>Give it orders.</div>
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,OnMercenaryStanceKeyPressed; Player.cs:9356-9382 — group orders affect combat pets too, while Warrior-first timing requires a Warrior mercenary. -->
           <p class="text-sm leading-6 text-muted-foreground">
-            These orders apply to your mercenaries and combat companion. In this
-            table, "companion" includes both.
-            <!-- Source: server-scripts/Pet.cs:IsValidCombatReacquireTarget,OnAggro — mercenaries reject Monster.isDummy when acquiring targets automatically. -->
-            Mercenaries skip training dummies when choosing targets automatically.
-            <!-- Source: server-scripts/Pet.cs:UpdateServer_CASTING — back-seeking enabled mercenaries reposition by class and frontal attacks, excluding Warriors. -->
-            Rogue and Bard mercenaries try to move behind their targets after attacks.
-            Ranger, Wizard and Necromancer mercenaries also do this against bosses
-            and elites. Every non-Warrior mercenary tries to move behind monsters
-            with frontal-attack skills.
+            These orders apply to your mercenaries and combat companion.
           </p>
           <!-- Source: server-scripts/Pet.cs:1491-1494,2222-2233,6060-6070; PetSkills.cs:NextBuffSkill — aggression gates attacks, while defensive stance clears a hostile action but retains support. -->
           <!-- Source: server-scripts/GameManager.cs:OnMercenaryHoldPositionKeyPressed,OnMercenaryAttackKeyPressed,2402-2463,OnMercenaryStanceKeyPressed; Player.cs:9356-9382; Pet.cs:ComeHereNow,5998-6046 — group toggles, Warrior-first attack order, and movement commands. -->
@@ -510,8 +466,9 @@
                     >Aggressive</th
                   ><td class="py-2"
                     ><span class="block"
-                      >The companion attacks the enemies you are fighting.</span
-                    ><span class="block">It still heals and buffs.</span></td
+                      >Your mercenaries and companion attack the enemies you are
+                      fighting.</span
+                    ><span class="block">They still heal and buff.</span></td
                   ></tr
                 >
                 <tr class="border-b"
@@ -519,8 +476,8 @@
                     >Defensive</th
                   ><td class="py-2"
                     ><span class="block"
-                      >The companion stops attacking and drops its target.</span
-                    ><span class="block">It still heals and buffs.</span></td
+                      >Stop attacking but continue healing and buffing.</span
+                    ></td
                   ></tr
                 >
                 <tr class="border-b"
@@ -528,8 +485,8 @@
                     >Group stance</th
                   ><td class="py-2"
                     ><span class="block"
-                      >If any companion is aggressive, all become defensive.</span
-                    ><span class="block">Otherwise, all become aggressive.</span
+                      >Switch everyone to defensive stance if anyone is
+                      aggressive. Otherwise, switch everyone to aggressive.</span
                     ></td
                   ></tr
                 >
@@ -540,10 +497,11 @@
                     ><span class="block"
                       >A Warrior mercenary attacks first.</span
                     ><span class="block"
-                      >Other aggressive companions join 1.5 seconds later.</span
+                      >Other aggressive mercenaries and your companion join 1.5
+                      seconds later.</span
                     ><span class="block"
-                      >A defensive companion takes the target but waits until
-                      you make it aggressive.</span
+                      >A defensive mercenary or companion takes the target but
+                      waits until you make it aggressive.</span
                     ></td
                   ></tr
                 >
@@ -553,16 +511,14 @@
                     >Individual attack</th
                   ><td class="py-2"
                     ><span class="block"
-                      >The order sends one companion at your target and ends
-                      Hold Position.</span
+                      >In aggressive stance, the selected mercenary or companion
+                      attacks your target and stops holding position.</span
                     ><span class="block"
                       >The order interrupts its current action.</span
                     ><span class="block"
                       >It ends <a href="/mechanics/combat#sleep" class={link}
                         >Sleep</a
                       > on the target.</span
-                    ><span class="block"
-                      >The companion must be in aggressive stance.</span
                     ></td
                   ></tr
                 >
@@ -571,8 +527,8 @@
                     >Hold Position</th
                   ><td class="py-2"
                     ><span class="block"
-                      >Companions stay in place until you order Follow or an
-                      attack.</span
+                      >Mercenaries and companions stay in place until you order
+                      Follow or an attack.</span
                     ></td
                   ></tr
                 >
@@ -580,7 +536,8 @@
                   ><th class="py-2 pr-5 font-medium text-foreground">Follow</th
                   ><td class="py-2"
                     ><span class="block"
-                      >Companions return to you and stop holding position.</span
+                      >Mercenaries and companions return to you and stop holding
+                      position.</span
                     ></td
                   ></tr
                 >
@@ -589,11 +546,11 @@
                     >Come Here</th
                   ><td class="py-2"
                     ><span class="block"
-                      >The companion drops its target, stops casting, and moves
-                      next to you.</span
+                      >The selected mercenary or companion drops its target,
+                      stops casting, and moves next to you.</span
                     ><span class="block"
-                      >The order does not work while the companion is feared,
-                      stunned, or rooted.</span
+                      >The order does not work while it is feared, stunned, or
+                      rooted.</span
                     ></td
                   ></tr
                 >
@@ -632,12 +589,12 @@
                 <thead>
                   <tr class="text-left">
                     <th class="py-1.5 pr-6 font-medium text-foreground"
-                      >Way back</th
+                      >Recovery method</th
                     >
                     <th class="py-1.5 pr-6 font-medium text-foreground">When</th
                     >
                     <th class="py-1.5 font-medium text-foreground"
-                      >{statName("health")}</th
+                      >Maximum Hit Points restored</th
                     >
                   </tr>
                 </thead>
@@ -680,20 +637,7 @@
             </p>
             <!-- Source: server-scripts/Player.cs:GetMercenaryResurrectionPrice, Combat.cs:752-768 -->
             <p>
-              <span class="block">
-                The base fee is {formatNumber(
-                  resurrectionPrice(MERC_MIN_LEVEL, 0),
-                )} gold at level
-                {MERC_MIN_LEVEL}.
-              </span>
-              <span class="block">
-                It rises to {formatNumber(resurrectionPrice(50, MAX_VETERAN))} gold
-                at level 50 with {MAX_VETERAN} veteran points (VT).
-              </span>
-              <span class="block">
-                Gear stays on the mercenary at its current durability after
-                death.
-              </span>
+              Gear stays on the mercenary at its current durability after death.
             </p>
             <Calculation calculation={mercenaryPrice(true)} />
             <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
@@ -724,18 +668,19 @@
               resurrects you.
             </span>
             <span class="block">
-              When you respawn, the game also pays the fee for each dead
+              When you respawn, you pay the resurrection fee for each dead
               summoned mercenary, up to 4.
             </span>
             <span class="block">
-              If you cannot pay for all of them, none of them return.
+              If you cannot pay for all dead summoned mercenaries, none of the
+              dead ones return.
             </span>
             <!-- Source: server-scripts/UIRespawn.cs:30-63 — the paid mercenary return is available only through non-Hardcore respawn. -->
             <span class="block">
               <a href="/mechanics/world#game-modes" class={link}
                 >Hardcore characters</a
               >
-              have no normal respawn, so this does not apply to them.
+              cannot respawn.
             </span>
           </p>
         </div>
@@ -755,9 +700,14 @@
       >
       <span class="block">Your level must meet its level requirement.</span>
       <span class="block"
-        >A two-handed weapon cannot share the off-hand slot with a shield or
-        instrument.</span
+        >With a two-handed weapon in the main hand, the off-hand cannot hold a
+        shield or instrument.</span
       >
+    </p>
+    <!-- Source: server-scripts/Pet.cs:OnDeath; Combat.cs:752-768. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      Gear stays equipped when the mercenary dies. Death does not lower its
+      durability.
     </p>
     <!-- Source: server-scripts/MercenaryEquipment.cs:116-187,201-256 — only durable items and augments grant attributes; three active matching pieces give attribute bonuses, with no five-piece skill bonus. -->
     <p class="text-sm leading-6 text-muted-foreground">
@@ -823,9 +773,7 @@
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground">Food</th><td
               class="py-2"
-              ><span class="block"
-                >The mercenary eats food when it has no food buff.</span
-              ><span class="block">It checks every 5–9 seconds.</span></td
+              ><span class="block">When no food buff is active.</span></td
             ></tr
           >
           <tr class="border-b"
@@ -833,9 +781,8 @@
               >Utility potion</th
             ><td class="py-2"
               ><span class="block"
-                >The mercenary uses a utility potion when it has no buff from
-                the potion's category.</span
-              ><span class="block">It checks every 5–9 seconds.</span></td
+                >When no buff from that potion category is active.</span
+              ></td
             ></tr
           >
           <tr class="border-b"
@@ -843,11 +790,9 @@
               >Healing potion</th
             ><td class="py-2"
               ><span class="block"
-                >The mercenary uses a healing potion below 50% Hit Points.</span
-              ><span class="block"
-                >The mercenary must be missing at least 90% of the Hit Points
-                that the potion restores.</span
-              ><span class="block">It checks every 1–2 seconds.</span></td
+                >Below 50% Hit Points, if at least 90% of the potion's healing
+                would be used.</span
+              ></td
             ></tr
           >
           <tr
@@ -855,13 +800,10 @@
               >Resource potion</th
             ><td class="py-2"
               ><span class="block"
-                >The mercenary uses a resource potion below 25% Rage for a
-                Warrior or Rogue, or below 25% Mana for other classes except
-                Bard.</span
-              ><span class="block"
-                >The mercenary must be missing at least 90% of the Rage or Mana
-                that the potion restores.</span
-              ><span class="block">It checks every 1–2 seconds.</span></td
+                >Below 25% Rage for Warriors and Rogues, or 25% Mana for Mana
+                users other than Bards, if at least 90% of the potion would be
+                used.</span
+              ></td
             ></tr
           >
         </tbody>
@@ -880,21 +822,56 @@
     <!-- Source: server-scripts/Pet.cs:4471-4508,4551-4588,4713-4728,5182-5220,5222-5268; PetSkills.cs:173-221,275-282 — target score, healing thresholds, range, efficiency, and offensive mana reserve. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
-        >Cleric and Druid healers consider you, your companions, and nearby
-        party members and companions.</span
-      >
-      <span class="block"
-        >Other party members must be within 12 yd of the healer.</span
+        >Cleric and Druid healers consider you, your mercenaries and companion,
+        and other party members within 12 yd of the healer, along with those
+        members' mercenaries and companions.</span
       >
       <span class="block"
         >Healers prioritize allies with fewer Hit Points, allies under attack,
         and Warriors.</span
       >
       <span class="block"
-        >Offensive skills preserve at least 35% of a healer's maximum Mana after
-        casting.</span
+        >Healers reserve 35% of maximum Mana rather than spend it on attacks.</span
       >
     </p>
+    <!-- Source: server-scripts/Pet.cs:OnAggro,UpdateServer_CASTING. -->
+    <p class="text-sm leading-6 text-muted-foreground">
+      Mercenaries skip training dummies when choosing targets automatically.
+    </p>
+    <div class="overflow-x-auto rounded-lg border">
+      <table class="w-full text-left text-sm">
+        <thead
+          ><tr class="border-b"
+            ><th class="px-4 py-2">Class</th><th class="px-4 py-2"
+              >Moves behind the target after attacks</th
+            ></tr
+          ></thead
+        >
+        <tbody>
+          <tr class="border-b"
+            ><th class="px-4 py-2 font-medium">Rogue, Bard</th><td
+              class="px-4 py-2">Against any target</td
+            ></tr
+          >
+          <tr class="border-b bg-muted/50"
+            ><th class="px-4 py-2 font-medium">Ranger, Wizard, Necromancer</th
+            ><td class="px-4 py-2"
+              >Against bosses, elites, and monsters with frontal-attack skills</td
+            ></tr
+          >
+          <tr class="border-b"
+            ><th class="px-4 py-2 font-medium">Cleric, Druid</th><td
+              class="px-4 py-2">Against monsters with frontal-attack skills</td
+            ></tr
+          >
+          <tr class="bg-muted/50"
+            ><th class="px-4 py-2 font-medium">Warrior</th><td class="px-4 py-2"
+              >Does not move behind the target</td
+            ></tr
+          >
+        </tbody>
+      </table>
+    </div>
     <!-- Source: server-scripts/Pet.cs:4471-4498,4637-4674,4713-4728,5182-5220 — candidate, heal-over-time, area, and direct-heal thresholds. -->
     <div class="overflow-x-auto">
       <table class="w-full min-w-[32rem] text-left text-sm leading-6">
@@ -908,25 +885,23 @@
         <tbody class="text-muted-foreground">
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
-              >Heal candidate</th
+              >When healing starts</th
             ><td class="py-2"
-              >The healer considers allies below 90% Hit Points, or below 40%
-              when urgent healing is needed.</td
+              >Below 90% Hit Points. Below 40%, healing can interrupt an
+              offensive cast.</td
             ></tr
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground"
               >Heal-over-time buff</th
             ><td class="py-2"
-              >The healer considers an ally below 70% Hit Points who does not
-              already have that buff.</td
+              >Below 70% Hit Points, without that buff already active.</td
             ></tr
           >
           <tr class="border-b"
             ><th class="py-2 pr-5 font-medium text-foreground">Area heal</th><td
               class="py-2"
-              >The healer considers an area heal when at least 3 living allies
-              below 60% Hit Points are in range and can receive it.</td
+              >At least 3 allies below 60% Hit Points within healing range.</td
             ></tr
           >
           <tr
@@ -934,11 +909,8 @@
               >Single-target heal</th
             ><td class="py-2"
               ><span class="block"
-                >The healer always considers a single-target heal at 75% Hit
-                Points or lower, rising to 85% when the healer has full Mana.</span
-              ><span class="block"
-                >Above that threshold, the ally must need at least half the
-                heal.</span
+                >At 75% Hit Points or lower, or 85% with full Mana. Above that,
+                the ally must need at least half the heal.</span
               ></td
             ></tr
           >
@@ -965,27 +937,26 @@
       <span class="block"
         >Warriors prioritize <a href="/skills/challenge" class={link}
           >Challenge</a
-        > against one target.</span
+        >
+        over other attacks.</span
       >
       <span class="block"
         >In aggressive stance, <a href="/skills/battle_shout" class={link}
           >Battle Shout</a
-        > takes priority when at least two attackable monsters within 20 yd of you
-        attack party members and are close enough to each other for the shout.</span
+        > takes priority against groups attacking your party. At least two monsters
+        must be within 20 yd of you and close enough to hit together.</span
       >
     </p>
     <!-- Source: server-scripts/MonsterSkills.cs:177-279; Pet.cs:2727-2734,2839-2860 — telegraphed area avoidance needs a reachable safe destination; familiars and aggressive Warriors are excluded; healers can cast at the escape point. -->
     <p class="text-sm leading-6 text-muted-foreground">
       <span class="block"
-        >Companions and mercenaries can step out of a monster's area attack
-        whose cast takes at least 1 second, if a reachable safe spot exists.</span
+        >Companions and mercenaries try to dodge area attacks with cast times of
+        at least 1 second when they can reach safety.</span
       >
       <span class="block"
         >Familiars and aggressive Warriors do not try this escape.</span
       >
-      <span class="block"
-        >A healer can cast support skills from the escape position.</span
-      >
+      <span class="block">Healers can keep supporting you from safety.</span>
     </p>
   </section>
 

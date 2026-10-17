@@ -9,7 +9,11 @@ function createDb() {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       quality INTEGER NOT NULL DEFAULT 0,
-      comments TEXT DEFAULT ''
+      comments TEXT DEFAULT '',
+      item_type TEXT DEFAULT 'general',
+      structure_price INTEGER DEFAULT 0,
+      luck_token_fragment_id TEXT,
+      luck_token_fragments_needed INTEGER
     );
     CREATE TABLE fish (
       item_id TEXT PRIMARY KEY,
@@ -29,9 +33,11 @@ function createDb() {
       source_level INTEGER,
       source_sort_name TEXT NOT NULL
     );
+    CREATE TABLE npcs (id TEXT PRIMARY KEY, name TEXT NOT NULL, roles TEXT);
+    CREATE TABLE item_sources_merge (item_id TEXT, component_item_id TEXT);
   `);
   db.exec(`
-    INSERT INTO items VALUES
+    INSERT INTO items (id, name, quality, comments) VALUES
       ('worn_rucksack', 'Worn Rucksack', 0, ''),
       ('ironjaw_catfish', 'Ironjaw Catfish', 0, ''),
       ('worn_backpack', 'Worn Backpack', 0, 'Starter backpack.'),
@@ -86,6 +92,41 @@ describe("getItemSourceSummaries", () => {
       ]),
     );
 
+    db.close();
+  });
+  test("includes services, furniture, fragments and merge components as acquisitions", () => {
+    const db = createDb();
+    db.exec(`
+      INSERT INTO items (id, name) VALUES
+        ('primal_essence', 'Primal Essence'), ('blessed_rune', 'Blessed Rune'),
+        ('fragment', 'Fragment'), ('merged_book', 'Merged Book');
+      INSERT INTO items (id, name, luck_token_fragment_id, luck_token_fragments_needed)
+        VALUES ('fatecharm', 'Fatecharm', 'fragment', 5);
+      INSERT INTO items (id, name, item_type, structure_price)
+        VALUES ('workbench', 'Workbench', 'structure', 250000);
+      INSERT INTO npcs VALUES
+        ('trader', 'Trader', '{"is_essence_trader":1}'),
+        ('priestess', 'Priestess', '{"is_priestess":1}');
+      INSERT INTO item_sources_merge VALUES ('merged_book', 'fragment');
+    `);
+    const rows = getItemSourceSummaries(db, [
+      "primal_essence",
+      "blessed_rune",
+      "fatecharm",
+      "workbench",
+      "merged_book",
+    ]);
+    for (const [item_id, type, id] of [
+      ["primal_essence", "special", "trader"],
+      ["blessed_rune", "special", "priestess"],
+      ["fatecharm", "merge", "fragment"],
+      ["workbench", "housing", "housing#furniture"],
+      ["merged_book", "merge", "fragment"],
+    ]) {
+      expect(rows).toContainEqual(
+        expect.objectContaining({ item_id, type, id }),
+      );
+    }
     db.close();
   });
 });

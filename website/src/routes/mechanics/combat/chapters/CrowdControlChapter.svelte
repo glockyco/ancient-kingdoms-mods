@@ -14,7 +14,7 @@
         <tr>
           <th scope="col">Effect</th>
           <th scope="col">Caused by</th>
-          <th scope="col">A monster</th>
+          <th scope="col">Effect on a monster</th>
           <th scope="col">Ends</th>
           <th scope="col">Stopped by</th>
         </tr>
@@ -62,14 +62,15 @@
   <Topic id="stun">
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — stun keeps the later end time; the Bear mount's 90% resist sits inside the successful stun branch, so the fear and knockback else-if branches are skipped; applied stun dismounts a player. -->
     <ul>
-      <li>A hit stuns when the skill's stun chance roll succeeds.</li>
       <li>A feared target cannot be stunned.</li>
       <li>
-        A new stun ends at whichever end time is later. Durations do not add up.
+        A new stun can extend an existing one, but their durations do not add
+        up.
       </li>
       <li>
-        <a href="/items/bear_mount">Bear Mount</a> resists 90% of stuns. The hit still
-        cannot fear or knock back. A stun dismounts a player.
+        <a href="/items/bear_mount">Bear Mount</a> resists 90% of stuns. A hit whose
+        stun the mount resists does not try fear or knockback either. A stun dismounts
+        a player.
       </li>
     </ul>
   </Topic>
@@ -78,8 +79,8 @@
     <!-- Source: server-scripts/Combat.cs:fearResistChance,DealDamageAt; EquipmentItem.cs:ToolTip — Fear Resist caps at 100%; fear sits in the else-if branch after the stun roll, so only a failed stun roll reaches it, and applying fear dismounts the player. -->
     <ul>
       <li>
-        Fear is tried only when the hit's stun roll fails. It applies when the
-        fear chance succeeds and the target then fails a Fear Resist roll.
+        Fear can follow a failed stun roll. The target can then resist it with
+        Fear Resist.
       </li>
       <li>
         Fear lasts a random time between half and all of the skill's listed fear
@@ -127,9 +128,10 @@
   <Topic id="root">
     <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE,speed,RemoveRoot; Pet.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE; TargetDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — Movement Speed at most −10 roots; monsters roll every 2 seconds, NPCs and pets every second; boss/elite monsters resist listed speed bonuses below −10 unless a boss faces a debuff that only deals damage over time, and Monster.speed ignores a boss's slows. -->
     <p>
-      A debuff that brings Movement Speed to −10 or lower roots the target, such
-      as <a href="/skills/root">Root</a> and
-      <a href="/skills/immobilize">Immobilize</a>. Damage does not end it.
+      A debuff that brings Movement Speed to −10 or lower, such as
+      <a href="/skills/root">Root</a> or
+      <a href="/skills/immobilize">Immobilize</a>, roots the target. Damage does
+      not end it.
     </p>
     <RefTable caption="Chance for a rooted target to break free">
       <thead>
@@ -147,19 +149,15 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">NPC</th>
-          <td>Every second, 10%</td>
-        </tr>
-        <tr>
-          <th scope="row">Mercenary, companion or familiar</th>
+          <th scope="row">NPC, mercenary, companion or familiar</th>
           <td>Every second, 10%</td>
         </tr>
       </tbody>
     </RefTable>
     <p>
       Bosses and elite monsters resist every debuff that lists a Movement Speed
-      bonus below −10. A boss still takes such a debuff if it only deals damage
-      over time, but a boss ignores every slow.
+      bonus below −10. A boss still takes such a debuff when its only other
+      effect is damage over time, but ignores the slow.
     </p>
   </Topic>
 

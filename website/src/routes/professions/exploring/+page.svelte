@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import Compass from "@lucide/svelte/icons/compass";
@@ -13,8 +14,8 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View all areas to discover.`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
+  description={`${data.profession.description} All ${data.areas.length} areas with their zones, zone monster levels and discovery XP.`}
   path="/professions/exploring"
 />
 
@@ -46,7 +47,13 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex flex-wrap items-center gap-4 mt-3 text-muted-foreground">
-        <span class="whitespace-nowrap">Areas: {data.areas.length}</span>
+        <span
+          >Each new area adds {formatNumber(
+            100 / (data.profession.tracking_denominator ?? data.areas.length),
+            { decimals: 2 },
+          )}% Exploring, rounded. Discover {data.profession
+            .tracking_denominator} areas to reach 100%.</span
+        >
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -61,18 +68,17 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <MapPin class="h-5 w-5 text-emerald-500" />
-      Areas to Discover ({data.areas.length})
+      Areas to discover ({data.areas.length})
     </h2>
     <div class="rounded-lg border overflow-x-auto">
       <table class="w-full whitespace-nowrap">
         <thead class="bg-muted/50">
           <tr>
-            <th class="p-3 w-10"></th>
+            <th class="p-3 font-medium">Type</th>
             <th class="text-left p-3 font-medium">Zone</th>
             <th class="text-left p-3 font-medium">Area</th>
-            <th class="text-right p-3 font-medium">Min Level</th>
-            <th class="text-right p-3 font-medium">Max Level</th>
-            <th class="text-right p-3 font-medium">Discovery EXP</th>
+            <th class="text-right p-3 font-medium">Zone monster levels</th>
+            <th class="text-right p-3 font-medium">Discovery XP</th>
           </tr>
         </thead>
         <tbody>
@@ -81,9 +87,15 @@
               <td class="p-3">
                 <div class="flex justify-center">
                   {#if area.is_dungeon}
-                    <Castle class="h-4 w-4 text-purple-500" />
+                    <Castle
+                      class="h-4 w-4 text-purple-500"
+                      aria-label="Dungeon"
+                    />
                   {:else}
-                    <Trees class="h-4 w-4 text-green-500" />
+                    <Trees
+                      class="h-4 w-4 text-green-500"
+                      aria-label="Outdoors"
+                    />
                   {/if}
                 </div>
               </td>
@@ -97,17 +109,11 @@
               </td>
               <td class="p-3">{area.name}</td>
               <td class="p-3 text-right">
-                {#if area.level_min !== null}
-                  {area.level_min}
+                {#if area.level_min !== null && area.level_max !== null}
+                  {area.level_min}{#if area.level_max !== area.level_min}
+                    to {area.level_max}{/if}
                 {:else}
-                  <span class="text-muted-foreground">—</span>
-                {/if}
-              </td>
-              <td class="p-3 text-right">
-                {#if area.level_max !== null}
-                  {area.level_max}
-                {:else}
-                  <span class="text-muted-foreground">—</span>
+                  <span class="text-muted-foreground">Unknown</span>
                 {/if}
               </td>
               <td class="p-3 text-right">

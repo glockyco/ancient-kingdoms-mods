@@ -1,5 +1,4 @@
 <script lang="ts">
-  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Table from "$lib/components/ui/table";
   import {
@@ -11,6 +10,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import { getClassConfig } from "$lib/utils/classes";
   import {
     MERCENARY_COMPANION_SPELL_POWER_SHARE,
@@ -50,7 +50,7 @@
       accessorKey: "class_id",
       header: pet.classLink.mercenary ? "Mercenary" : "Class",
     },
-    { accessorKey: "skill_id", header: "Via Skill" },
+    { accessorKey: "skill_id", header: "Via skill" },
   ]);
 
   const statsScale = $derived(
@@ -98,7 +98,10 @@
 {/snippet}
 
 <Seo
-  title={`${pet.name} - Ancient Kingdoms`}
+  title={detailTitle(pet.name, {
+    family: pet.kind,
+    source: pet.classLink.mercenary?.name ?? pet.classLink.skill_name,
+  })}
   {description}
   path={petHref(pet.id, false)}
 />
@@ -123,7 +126,7 @@
       </span>
     </div>
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      <span>Class: {pet.type_monster}</span>
+      <span>Creature type: {pet.type_monster}</span>
     </div>
   </div>
   {#if visualAsset}
@@ -149,7 +152,7 @@
   <section>
     <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
       <MapPin class="h-5 w-5 text-emerald-500" />
-      Summoned By
+      Summoned by
     </h2>
     <DataTable
       data={[pet.classLink]}
@@ -184,7 +187,7 @@
             {/if}
             {#if pet.has_necromancer_pet_stats}
               <Table.Head class="table-cell text-right">
-                Level {pet.level_max} (VT 200)
+                Level {pet.level_max}, 200 total veteran points
               </Table.Head>
             {/if}
           </Table.Row>
@@ -215,20 +218,7 @@
     </div>
     <!-- Source: server-scripts/Skills.cs:174-185; SummonSkill.cs:84-97 — owner pet-health passives add maximum Health, while Symbiosis copies attributes, defense, and resistances at summon time. -->
     <p class="text-muted-foreground">
-      These values exclude owner passives and other buffs.
-      {#if pet.healthPassives?.length}
-        {#each pet.healthPassives as passive (passive.id)}
-          <a
-            href="/skills/{passive.id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >{passive.name}</a
-          >
-          adds to maximum Hit Points when learned.
-        {/each}
-      {/if}
-      {#if pet.classLink.class_id === "druid"}
-        Symbiosis adds your copied attributes, Armor Class, and resistances.
-      {/if}
+      These values exclude your passive skills and other buffs.
     </p>
   </section>
 
@@ -252,7 +242,7 @@
         {#if pet.classLink.mercenary}
           {@const mercenary = pet.classLink.mercenary}
           <dl class="space-y-2">
-            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner — the companion takes its owner's level, up to Level.max. -->
+            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner — the companion takes the player's level, up to Level.max. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>Matches your regular level, up to level {pet.level_max}.</dd>
@@ -293,31 +283,31 @@
                   Each gains {formatPercent(
                     MERCENARY_COMPANION_SPELL_POWER_SHARE,
                     { decimals: 0 },
-                  )} of its mercenary's Spell Power, rounded. Veteran points add no
-                  stats.
+                  )} of its mercenary's Spell Power. It has no separate veteran stat
+                  bonus.
                 </p>
-                <RoundingDefinition />
               </dd>
             </div>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — a NecromancerMercenaryPet ranks its skills like a mercenary, with a minimum of 1. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Skill ranks</dt>
               <dd>
-                Uses the
+                Gains one rank per 5 character levels and per 10 total veteran
+                points, up to each skill's maximum. Uses the
                 <a
                   href="/mercenaries#skill-ranks"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   >mercenary skill rank</a
                 >
-                for your level and veteran points, with a minimum of 1.
+                for your level and total veteran points.
               </dd>
             </div>
             <!-- Source: server-scripts/NecromancerMercenaryPet.cs:CanAttack — the companion attacks only its living summoner's target while both are in aggressive stance. -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Targets</dt>
               <dd>
-                Attacks only its mercenary's target, while both are in
-                aggressive stance.
+                Attacks only its mercenary's target while the companion and
+                mercenary are both in aggressive stance.
               </dd>
             </div>
             <!-- Source: server-scripts/NecromancerMercenarySummons.cs:LateUpdate,HasLivingSummoner — the companion is removed when its mercenary or owner dies, and its death restarts the summon cooldown. -->
@@ -325,7 +315,8 @@
               <dt class="text-muted-foreground w-40 shrink-0">Lifetime</dt>
               <dd>
                 It disappears when its mercenary or you die. When it dies, its
-                mercenary's summon cooldown starts again.
+                mercenary must wait the full summon cooldown before summoning
+                another.
               </dd>
             </div>
           </dl>
@@ -335,12 +326,7 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Level</dt>
               <dd>
-                {#if pet.has_necromancer_pet_stats}
-                  Matches your regular level, up to level {pet.level_max}, and
-                  refreshes when you level up.
-                {:else}
-                  Matches your regular level, up to level {pet.level_max}.
-                {/if}
+                Matches your regular level, up to level {pet.level_max}.
               </dd>
             </div>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — combat pet skill ranks use total veteran points divided by 10 and cap at each skill's maxLevel. -->
@@ -359,25 +345,19 @@
                 </dt>
                 <dd class="space-y-1">
                   <p>
-                    Each of your veteran points (VT) adds 1% of base Attack
-                    Power and Spell Power, and 0.25% of base Hit Points, Armor
-                    Class and each resistance, rounded. At 200 points, Attack
-                    Power and Spell Power reach +200% and the other stats +50%.
-                    The bonus refreshes whenever you gain a veteran point.
+                    Up to 200 total veteran points, each point adds 1% of base
+                    Attack Power and Spell Power, and 0.25% of base maximum Hit
+                    Points, Armor Class, and each resistance. Compare
+                    <a
+                      href="/summons#undead-title"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >undead companions</a
+                    >. The table above shows the stats at 200 points.
                   </p>
-                  <RoundingDefinition />
-                </dd>
-              </div>
-              <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces an active pet with a different non-familiar summon; the matching summon key commands its active pet. -->
-              <div class="flex gap-2">
-                <dt class="text-muted-foreground w-40 shrink-0">Summon key</dt>
-                <dd>
-                  Commands this pet while it is active. Casting a different
-                  undead summon replaces it.
                 </dd>
               </div>
             {:else if pet.classLink.class_id === "druid"}
-              <!-- Source: server-scripts/SummonSkill.cs:73-97 — each rank of Symbiosis copies 0.1 of the owner's attributes, defense, and resistances to the summoned pet. -->
+              <!-- Source: server-scripts/SummonSkill.cs:73-97 — each rank of Symbiosis copies 0.1 of the Druid's attributes, defense, and resistances to the summoned pet. -->
               <div class="flex gap-2">
                 <dt class="text-muted-foreground w-40 shrink-0">Symbiosis</dt>
                 <dd>
@@ -390,8 +370,18 @@
                 </dd>
               </div>
             {/if}
+            <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">Summon key</dt>
+              <dd>
+                Sends this active companion to attack your target.
+                {#if pet.has_necromancer_pet_stats}
+                  Casting a different undead summon replaces it.
+                {/if}
+              </dd>
+            </div>
             {#if pet.healthPassives?.length}
-              <!-- Source: server-scripts/Skills.cs:174-185 — learned pet maximum-health passives apply to the companion and exclude the owner. -->
+              <!-- Source: server-scripts/Skills.cs:174-185 — learned pet maximum-health passives apply to the companion and exclude the player. -->
               <div class="flex gap-2">
                 <dt class="text-muted-foreground w-40 shrink-0">
                   {statName("health")}
@@ -403,10 +393,15 @@
                       class="text-blue-600 dark:text-blue-400 hover:underline"
                       >{passive.name}</a
                     >
-                    increases this companion's maximum Hit Points by its listed percentage
-                    when learned.
+                    increases this companion's maximum Hit Points by
+                    {formatPercent(passive.health_percent_min, {
+                      decimals: 2,
+                    })}{passive.health_percent_max !==
+                    passive.health_percent_min
+                      ? ` to ${formatPercent(passive.health_percent_max, { decimals: 2 })}`
+                      : ""}, depending on rank.
                   {/each}
-                  Your own maximum Hit Points is unchanged.
+                  These passives do not increase your own maximum Hit Points.
                 </dd>
               </div>
             {/if}
@@ -417,8 +412,8 @@
               </div>
             {/if}
             <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
-              <dd>It vanishes when it dies. Summon it again to restore it.</dd>
+              <dt class="text-muted-foreground w-40 shrink-0">On death</dt>
+              <dd>Summon it again after it dies.</dd>
             </div>
           </dl>
         {:else}
@@ -441,12 +436,11 @@
                 {:else}
                   the summoning skill.
                 {/if}
-                Its maximum rank is {pet.effective_max_level}.
               </dd>
             </div>
             <div class="flex gap-2">
-              <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
-              <dd>It vanishes when it dies. Summon it again to restore it.</dd>
+              <dt class="text-muted-foreground w-40 shrink-0">On death</dt>
+              <dd>Summon it again after it dies.</dd>
             </div>
           </dl>
         {/if}

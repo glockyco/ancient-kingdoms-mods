@@ -1,5 +1,2 @@
 <!-- Source: server-scripts/PlayerSkills.cs:CmdUse — casting requires Health at most RoundToInt(maximum Health / 4). -->
-<p>
-  You can cast this skill only when the target's Hit Points are at most 25% of
-  its maximum Hit Points, rounded to the nearest whole point.
-</p>
+<p>You can use this skill only when the target has 25% Hit Points or less.</p>

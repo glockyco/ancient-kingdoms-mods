@@ -25,21 +25,21 @@
 
   <Card.Root id="death" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Death and Remains</Card.Title>
       <!-- Source: server-scripts/Player.cs:OnDeath,UserCode_CmdGetExpFromRemains,UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity; server-scripts/PlayerDead.cs:Start — death costs XP and durability, remains and Resurrection return XP, and remains use the player's name followed by "'s corpse". -->
       <Card.Description
         >Death costs XP and durability. Remains or Resurrection can restore some
-        lost XP. Your remains use your character's name followed by “'s corpse”
-        in game.</Card.Description
+        lost XP. Your remains appear in the game as your character's name
+        followed by "'s corpse".</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">On death</h3>
-        <!-- Source: server-scripts/Player.cs:4104-4136 — loss is limited to current XP and every equipped item loses one durability. -->
+        <!-- Source: server-scripts/Experience.cs:Death; server-scripts/Player.cs:4104-4136 - death removes 10% of the bar requirement, rounded and limited to current XP, and one durability from every equipped item. -->
         <p>
           <span class="block"
-            >Death removes XP from your current level's progress.</span
+            >Death removes 10% of the XP needed to fill your current experience
+            bar, rounded, up to the XP you currently have.</span
           >
           <span class="block"
             >Each equipped item loses one durability point.</span
@@ -66,16 +66,16 @@
             >.</span
           >
           <span class="block"
-            ><MechanicsLink section="inventory#durability-and-repair"
+            >See <MechanicsLink section="inventory#durability-and-repair"
               >Equipment durability and repair</MechanicsLink
-            > covers repairs.</span
+            >.</span
           >
         </p>
         <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath,ProcessMercenariesOnPlayerRespawn — living mercenaries leave; respawn may also return dead summoned mercenaries for a fee. -->
         <p>
-          Your living mercenaries leave and return when you respawn or are
-          resurrected. Respawning also charges for dead summoned mercenaries. If
-          you cannot pay for all of them, none of the dead ones return. See <a
+          Living mercenaries leave until you respawn or are resurrected.
+          Respawning also revives dead summoned mercenaries for a gold fee, but
+          only if you can pay for all of them. See <a
             href="/mercenaries#how-it-works"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >mercenary recovery after your death</a
@@ -84,7 +84,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold text-foreground">Respawn and Remains</h3>
+        <h3 class="font-semibold text-foreground">Respawn and remains</h3>
         <!-- Source: server-scripts/Player.cs:3589-3616 — respawn creates remains at the death site, moves the player to the bind point, and revives at half health. -->
         <!-- Source: server-scripts/Entity.cs:346-357 — Revive rounds the specified fraction of maximum health. -->
         <p>
@@ -127,7 +127,7 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/PlayerDead.cs:103-119 — only the owner can collect unused remains. -->
+              <!-- Source: server-scripts/PlayerDead.cs:103-119 — only the character who died can collect unused remains. -->
               <!-- Source: server-scripts/Player.cs:14524-14533 — collecting remains returns half the stored XP loss and destroys the remains. -->
               <tr class="border-b">
                 <th class="p-2 font-medium text-foreground"
@@ -136,9 +136,9 @@
                 <td class="p-2">50%, rounded</td>
                 <td class="p-2">
                   <span class="block"
-                    >Collect your remains after respawning at your bind point.</span
+                    >After you respawn, return to your remains and collect them.</span
                   >
-                  <span class="block">No extra health or mana is restored.</span
+                  <span class="block">This restores no Hit Points or Mana.</span
                   >
                 </td>
               </tr>
@@ -167,10 +167,8 @@
         <!-- Source: server-scripts/Player.cs:13361-13362; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
-          Accepting Resurrection sets Hit Points to 60% of maximum Hit Points
-          and Mana to 20% of maximum Hit Points (at most maximum Mana), even if
-          you had more. Rage is unchanged. The Mana amount uses maximum Hit
-          Points because of a game defect.
+          Rage is unchanged. The Mana amount uses maximum Hit Points because of
+          a game defect.
         </p>
         <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget — Resurrection can target player remains or dead mercenaries. -->
         <p>

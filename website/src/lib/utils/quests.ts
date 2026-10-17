@@ -54,7 +54,7 @@ export const QUEST_TYPE_CONFIG: Record<QuestDisplayType, QuestTypeConfig> = {
 export const QUEST_FLAG_CONFIG: QuestFlagConfig[] = [
   { key: "main", label: "Main", iconColor: "text-yellow-500" },
   { key: "epic", label: "Epic", iconColor: "text-purple-500" },
-  { key: "daily", label: "Daily", iconColor: "text-orange-500" },
+  { key: "daily", label: "Adventurer", iconColor: "text-orange-500" },
   { key: "repeatable", label: "Repeatable", iconColor: "text-green-500" },
 ];
 

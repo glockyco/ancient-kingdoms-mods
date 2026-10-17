@@ -1,7 +1,10 @@
 <script lang="ts">
-  import { formatPercent, formatNumber } from "$lib/utils/format";
+  import {
+    formatPercent,
+    formatNumber,
+    formatDuration,
+  } from "$lib/utils/format";
   import { statName, formatStat } from "$lib/stats";
-  import type { StatId } from "$lib/generated/stat-vocabulary";
   import {
     DataTable,
     type ColumnDef,
@@ -14,6 +17,7 @@
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
   import FactionLink from "$lib/components/FactionLink.svelte";
   import { npcKillReputation } from "$lib/utils/killReputation";
@@ -83,20 +87,20 @@
 
       if (isWorldBoss) {
         return data.npc.gold_required_respawn_dungeon > 0
-          ? `Resets World Boss respawn timers for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold.`
-          : `Resets World Boss respawn timers.`;
+          ? `Makes dead World Bosses ready to respawn for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold.`
+          : `Makes dead World Bosses ready to respawn.`;
       }
 
       const target = `<a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>`;
 
       return data.npc.gold_required_respawn_dungeon > 0
-        ? `Resets respawn timers for monsters in ${target}. The base fee is <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold before your Charisma discount (up to 25%).`
-        : `Resets respawn timers for monsters in ${target}.`;
+        ? `Makes dead monsters in ${target} ready to respawn. The base fee is <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(data.npc.gold_required_respawn_dungeon)}</span> gold before your Charisma discount (up to 25%).`
+        : `Makes dead monsters in ${target} ready to respawn.`;
     }
 
     if (role.key === "is_teleporter") {
       if (data.teleportRoutes.length === 0) {
-        return "Teleports players to another location.";
+        return "Teleports you to another location.";
       }
 
       return data.teleportRoutes
@@ -104,8 +108,8 @@
           const from = `<a href="/zones/${route.fromZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.fromZoneName}</a>`;
           const to = `<a href="/zones/${route.toZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.toZoneName}</a>`;
           return route.price > 0
-            ? `Teleports players from ${from} to ${to} for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(route.price)}</span> gold.`
-            : `Teleports players from ${from} to ${to}.`;
+            ? `Teleports you from ${from} to ${to} for <span class="text-yellow-600 dark:text-yellow-400">${formatNumber(route.price)}</span> gold.`
+            : `Teleports you from ${from} to ${to}.`;
         })
         .join("<br>");
     }
@@ -126,29 +130,13 @@
   // Check if NPC has combat stats (health > 0 indicates a combatant)
   const hasCombatStats = $derived(data.npc.health > 0);
 
-  // Build resistances array for display (only non-zero values)
-  const resistances = $derived.by(() => {
-    const resists: { id: StatId; value: number }[] = [];
-    if (data.npc.magic_resist !== 0)
-      resists.push({ id: "magic_resist", value: data.npc.magic_resist });
-    if (data.npc.poison_resist !== 0)
-      resists.push({ id: "poison_resist", value: data.npc.poison_resist });
-    if (data.npc.fire_resist !== 0)
-      resists.push({ id: "fire_resist", value: data.npc.fire_resist });
-    if (data.npc.cold_resist !== 0)
-      resists.push({ id: "cold_resist", value: data.npc.cold_resist });
-    if (data.npc.disease_resist !== 0)
-      resists.push({ id: "disease_resist", value: data.npc.disease_resist });
-    return resists;
-  });
-
   // Build abilities array for display
   const abilities = $derived.by(() => {
     const abs: { label: string }[] = [];
     if (data.npc.invincible) abs.push({ label: "Invincible" });
     if (data.npc.see_invisibility) abs.push({ label: "Sees Invisibility" });
-    if (data.npc.flee_on_low_hp) abs.push({ label: "Flees on Low HP" });
-    if (data.npc.is_summonable) abs.push({ label: "Summonable" });
+    if (data.npc.flee_on_low_hp)
+      abs.push({ label: "Can flee below 15% Hit Points" });
     return abs;
   });
 
@@ -226,12 +214,12 @@
     cols.push(
       {
         accessorKey: "level_required",
-        header: "Req. Level",
+        header: "Required level",
         size: 130,
       },
       {
         accessorKey: "level_recommended",
-        header: "Rec. Level",
+        header: "Recommended level",
         size: 130,
       },
     );
@@ -311,7 +299,7 @@
     if (showChanceColumn) {
       cols.push({
         id: "chance",
-        header: "Chance",
+        header: "Spawn chance",
         size: 150,
       });
     }
@@ -319,13 +307,7 @@
     return cols;
   });
 
-  function formatTime(seconds: number): string {
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  }
+  const formatTime = formatDuration;
 </script>
 
 {#snippet renderQuestCell({
@@ -419,7 +401,7 @@
         >
       </span>
     {:else}
-      <span class="text-muted-foreground">—</span>
+      <span class="text-muted-foreground">-</span>
     {/if}
   {:else}
     {cell.getValue()}
@@ -517,7 +499,10 @@
 {/snippet}
 
 <Seo
-  title={`${data.npc.name} - Ancient Kingdoms`}
+  title={detailTitle(data.npc.name, {
+    family: "NPC",
+    zone: data.spawns[0]?.zone_name ?? data.summonTriggers[0]?.zone_name,
+  })}
   description={data.description}
   path={`/npcs/${data.npc.id}`}
 />
@@ -540,12 +525,18 @@
         <MapLink entityId={data.npc.id} entityType="npc" />
       {/if}
       {#if data.npc.is_notable}
-        <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
+        <span
+          class="{ICON_BADGE.base} {ICON_BADGE.static}"
+          title="Killing this NPC gives 60 times the usual reputation gain."
+        >
           <Sparkles class="{ICON_BADGE.iconSize} text-amber-500" />
           Notable
         </span>
       {/if}
-      <RoleBadges roles={data.npc.roles} linked />
+      {#if activeRoles.length > 0}<RoleBadges
+          roles={data.npc.roles}
+          linked
+        />{/if}
       {#if data.npc.is_christmas_npc}
         <a
           href="/mechanics/world#seasonal-events"
@@ -572,7 +563,7 @@
     titleId="npc-summary-title"
     title="NPC summary"
     imageSrc={npcImageSrc}
-    imageAlt={`${data.npc.name} NPC sprite`}
+    imageAlt={data.npc.name}
     imageWidth={data.visualAsset?.width}
     imageHeight={data.visualAsset?.height}
     health={data.npc.health}
@@ -653,7 +644,7 @@
   {/if}
 
   <!-- Spawns Section (at top, like monsters) -->
-  {#if data.spawns.length > 0}
+  {#if data.spawns.length > 0 || data.summonTriggers.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <MapPin class="h-5 w-5 text-emerald-500" />
@@ -661,17 +652,39 @@
       </h2>
 
       <div class="space-y-4">
-        <DataTable
-          data={data.spawns}
-          columns={spawnColumns}
-          renderCell={renderSpawnCell}
-          renderHeader={renderSpawnHeader}
-          initialSorting={[{ id: "zone_name", desc: false }]}
-          urlKey="npc-{data.npc.id}-spawns"
-          pageSize={10}
-          zebraStripe={true}
-          class="bg-muted/30"
-        />
+        {#each data.summonTriggers as trigger (trigger.trigger_id + trigger.monster_id)}
+          <div class="rounded-md border bg-muted/30 p-3">
+            Appears in <a
+              href="/zones/{trigger.zone_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{trigger.zone_name}</a
+            >
+            once {trigger.count > 1 ? `all ${trigger.count} of its ` : "its "}
+            <a
+              href="/monsters/{trigger.monster_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{trigger.monster_name}</a
+            >
+            {trigger.count > 1 ? "guards are" : "guard is"} dead at the same time.
+            <p class="mt-2 text-sm text-muted-foreground">
+              After this NPC dies, kill its guards again. Its respawn timer must
+              also finish.
+            </p>
+          </div>
+        {/each}
+        {#if data.spawns.length > 0}
+          <DataTable
+            data={data.spawns}
+            columns={spawnColumns}
+            renderCell={renderSpawnCell}
+            renderHeader={renderSpawnHeader}
+            initialSorting={[{ id: "zone_name", desc: false }]}
+            urlKey="npc-{data.npc.id}-spawns"
+            pageSize={10}
+            zebraStripe={true}
+            class="bg-muted/30"
+          />
+        {/if}
       </div>
     </section>
   {/if}
@@ -681,22 +694,10 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Sword class="h-5 w-5 text-red-500" />
-        Combat Stats
+        Combat stats
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <div>
-            <div class="text-sm text-muted-foreground">Level</div>
-            <div class="font-medium">{data.npc.level}</div>
-          </div>
-          <div>
-            <div class="text-sm text-muted-foreground">
-              {statName("health")}
-            </div>
-            <div class="font-medium">
-              {formatStat("health", data.npc.health)}
-            </div>
-          </div>
           {#if data.npc.mana > 0}
             <div>
               <div class="text-sm text-muted-foreground">
@@ -705,32 +706,6 @@
               <div class="font-medium">{formatStat("mana", data.npc.mana)}</div>
             </div>
           {/if}
-          <div>
-            <div class="text-sm text-muted-foreground">
-              {statName("attack_power")}
-            </div>
-            <div class="font-medium">
-              {formatStat("attack_power", data.npc.damage)}
-            </div>
-          </div>
-          {#if data.npc.magic_damage > 0}
-            <div>
-              <div class="text-sm text-muted-foreground">
-                {statName("spell_power")}
-              </div>
-              <div class="font-medium">
-                {formatStat("spell_power", data.npc.magic_damage)}
-              </div>
-            </div>
-          {/if}
-          <div>
-            <div class="text-sm text-muted-foreground">
-              {statName("armor_class")}
-            </div>
-            <div class="font-medium">
-              {formatStat("armor_class", data.npc.defense)}
-            </div>
-          </div>
           {#if data.npc.block_chance > 0}
             <div>
               <div class="text-sm text-muted-foreground">
@@ -757,36 +732,14 @@
                 {statName("accuracy")}
               </div>
               <div class="font-medium">
-                {formatStat("accuracy", data.npc.accuracy)}
+                {formatStat("accuracy", data.npc.accuracy, { signed: true })}
               </div>
             </div>
           {/if}
         </div>
 
-        {#if resistances.length > 0 || abilities.length > 0}
+        {#if abilities.length > 0}
           <div class="mt-4 pt-4 border-t flex flex-col md:flex-row gap-4">
-            {#if resistances.length > 0}
-              <div class="md:w-[500px] shrink-0">
-                <div class="text-sm text-muted-foreground mb-2">
-                  Resistances
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  {#each resistances as resist (resist.id)}
-                    <span
-                      class="inline-flex items-center rounded-md px-2 py-1 text-sm
-                        {resist.value > 0
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
-                    >
-                      {statName(resist.id)}: {formatStat(
-                        resist.id,
-                        resist.value,
-                      )}
-                    </span>
-                  {/each}
-                </div>
-              </div>
-            {/if}
             {#if abilities.length > 0}
               <div class="flex-1">
                 <div class="text-sm text-muted-foreground mb-2">Special</div>
@@ -794,6 +747,9 @@
                   {#each abilities as ability (ability.label)}
                     <span
                       class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                      title={ability.label === "Can flee below 15% Hit Points"
+                        ? "When it engages, it has a 70% chance to flee below 15% of maximum Hit Points, while its target is above 50% of maximum Hit Points and has more than twice this NPC's current Hit Points."
+                        : undefined}
                     >
                       {ability.label}
                     </span>
@@ -801,27 +757,6 @@
                 </div>
               </div>
             {/if}
-          </div>
-        {/if}
-
-        <!-- Gold Drop (if any) -->
-        {#if data.npc.gold_max > 0}
-          <div class="mt-4 pt-4 border-t">
-            <div class="text-sm text-muted-foreground mb-1">Gold Drop</div>
-            <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {formatNumber(data.npc.gold_min)} - {formatNumber(
-                data.npc.gold_max,
-              )}
-              gold
-              {#if data.npc.probability_drop_gold < 1}
-                <span class="text-muted-foreground font-normal">
-                  ({formatPercent(data.npc.probability_drop_gold, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })} chance)
-                </span>
-              {/if}
-            </div>
           </div>
         {/if}
       </div>
@@ -872,8 +807,10 @@
               {/if}
               {role.label}
             </span>
-            <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static content -->
-            <p class="mt-1">{@html description}</p>
+            {#if description}
+              <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static content -->
+              <p class="mt-1">{@html description}</p>
+            {/if}
             {#if details && details.length > 0}
               <ul class="mt-1 space-y-0.5">
                 {#each details as detail, i (i)}
@@ -929,23 +866,45 @@
   {/if}
 
   <!-- Item Drops Section -->
-  {#if data.drops.length > 0}
+  {#if data.drops.length > 0 || data.npc.gold_max > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
-        Item Drops ({data.drops.length})
+        Loot
       </h2>
-      <DataTable
-        data={data.drops}
-        columns={dropColumns}
-        renderCell={renderDropCell}
-        renderHeader={renderDropHeader}
-        initialSorting={[{ id: "rate", desc: true }]}
-        urlKey="npc-{data.npc.id}-drops"
-        pageSize={10}
-        zebraStripe={true}
-        class="bg-muted/30"
-      />
+      <!-- Gold Drop (if any) -->
+      {#if data.npc.gold_max > 0}
+        <div class="mt-4 pt-4 border-t">
+          <div class="text-sm text-muted-foreground mb-1">Gold drop</div>
+          <div class="font-medium text-yellow-600 dark:text-yellow-400">
+            {formatNumber(data.npc.gold_min)} - {formatNumber(
+              data.npc.gold_max,
+            )}
+            gold
+            {#if data.npc.probability_drop_gold < 1}
+              <span class="text-muted-foreground font-normal">
+                ({formatPercent(data.npc.probability_drop_gold, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })} chance)
+              </span>
+            {/if}
+          </div>
+        </div>
+      {/if}
+      {#if data.drops.length > 0}
+        <DataTable
+          data={data.drops}
+          columns={dropColumns}
+          renderCell={renderDropCell}
+          renderHeader={renderDropHeader}
+          initialSorting={[{ id: "rate", desc: true }]}
+          urlKey="npc-{data.npc.id}-drops"
+          pageSize={10}
+          zebraStripe={true}
+          class="bg-muted/30"
+        />
+      {/if}
     </section>
   {/if}
 

@@ -9,7 +9,6 @@
   import Calculation from "$lib/components/Calculation.svelte";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { mysticSparkMana } from "$lib/calculation/character";
-  import { TOTAL_VETERAN_POINTS_NOTE } from "$lib/calculation/inputs";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import { getQualityTextColorClass } from "$lib/utils/format";
 
@@ -18,7 +17,7 @@
 
 <Seo
   title="Character Build - Ancient Kingdoms"
-  description="The six attributes, class resources, skill prerequisites, Veteran Points, and specializations."
+  description="The six attributes, class resources, skill prerequisites, veteran points, and specializations."
   path="/mechanics/character"
 />
 
@@ -55,9 +54,10 @@
                   >Each point adds 1 Attack Power and 10 maximum Rage.</span
                 >
                 <span class="block"
-                  >Melee damage-over-time effects and Armor Class reductions
-                  gain 50% of Strength, rounded. With 100 Strength, they deal 50
-                  more damage per tick or reduce Armor Class by 50 more.</span
+                  >Damage-over-time effects and Armor Class reductions from
+                  melee debuffs gain 50% of Strength, rounded. With 100
+                  Strength, they deal 50 more damage per tick or reduce Armor
+                  Class by 50 more.</span
                 >
               </td>
             </tr>
@@ -72,7 +72,7 @@
                   you receive 25 Poison Resist.</span
                 >
                 <span class="block"
-                  >It adds no Armor Class and no health recovery.</span
+                  >It adds no Armor Class or Health Regeneration.</span
                 >
               </td>
             </tr>
@@ -93,10 +93,12 @@
                   rounded. With 100 Dexterity, it gains 250 damage.</span
                 >
                 <!-- Source: server-scripts/BuffSkill.cs:485-527 — non-melee poison and disease without Intelligence scaling use Dexterity times 1.5. -->
+                <!-- Source: website/data/compendium.db skills — Critical Pain and Virulent Slash are non-melee poison/disease effects without Intelligence scaling. -->
                 <span class="block"
-                  >Dexterity-scaled poison and disease damage-over-time effects
-                  gain 150% of Dexterity per tick, rounded. With 100 Dexterity,
-                  they gain 150 damage per tick.</span
+                  >Non-melee poison and disease damage-over-time effects that do
+                  not scale with Intelligence, such as Critical Pain and
+                  Virulent Slash, gain 150% of Dexterity per tick, rounded. With
+                  100 Dexterity, they gain 150 damage per tick.</span
                 >
               </td>
             </tr>
@@ -119,17 +121,18 @@
                   grows by 50.</span
                 >
                 <!-- Source: server-scripts/BuffSkill.cs:485-527 — fire, cold, magic and Intelligence-scaled poison/disease use the skill's Intelligence coefficient, except Charisma-scaled effects. -->
+                <!-- Source: website/data/compendium.db skills. Venom of the Grave and Wasting Plague use Intelligence. Class skills use a 1.25 coefficient except Ensnare's 1.15. -->
                 <span class="block"
                   >Fire, cold, magic, and Intelligence-scaled poison and disease
-                  damage-over-time effects gain the skill's percentage of
-                  Intelligence per tick, rounded. Usually this is 125%, giving
-                  125 damage per tick with 100 Intelligence. <a
+                  damage-over-time effects (such as Venom of the Grave and
+                  Wasting Plague) gain the skill's percentage of Intelligence
+                  per tick, rounded. Class skills use 125%, except <a
                     href="/skills/ensnare"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Ensnare</a
-                  >
-                  uses 115%, giving 115 instead. Bard song damage-over-time gains
-                  no Intelligence bonus. Charisma raises its power instead (see
+                  >, which uses 115%. With 100 Intelligence, that gives 125 or
+                  115 damage per tick. Bard song damage-over-time gains no
+                  Intelligence bonus. Charisma raises its power instead (see
                   <a
                     href="/mechanics/combat#songs"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -149,16 +152,15 @@
                 >
                 <span class="block"
                   >Protective buffs use Wisdom, or Intelligence when the skill
-                  scales with Intelligence. Each selected attribute point adds 2
+                  scales with Intelligence. Each point of that attribute adds 2
                   maximum Hit Points to buffs that raise maximum Hit Points and
-                  2 points of ward capacity.</span
+                  2 Ward to buffs that grant a ward.</span
                 >
                 <span class="block"
                   >Armor Class and Magic Resist buffs each gain 15% of the
-                  selected attribute, rounded. With 100 selected attribute
-                  points, you receive 15 extra Armor Class or Magic Resist.
-                  Ranger targeted buffs triple the selected attribute before
-                  scaling.</span
+                  selected attribute, rounded. With 100 points in that
+                  attribute, you receive 15 extra Armor Class or Magic Resist. A
+                  Ranger's targeted buffs count that attribute three times.</span
                 >
                 <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
                 <span class="block"
@@ -175,8 +177,8 @@
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Death Bloom</a
                   >
-                  uses Intelligence. Scroll healing and buffs normally gain no attribute
-                  bonus. The
+                  healing scales with Intelligence instead. Scroll healing and buffs
+                  gain no attribute bonus, with one exception. The
                   <a
                     href="/items/runed_scroll_of_restoration"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -195,7 +197,7 @@
                   > for other resistances and effects.</span
                 >
                 <span class="block"
-                  >Wisdom adds neither maximum Mana nor mana recovery.</span
+                  >Wisdom adds neither maximum Mana nor Mana Regeneration.</span
                 >
               </td>
             </tr>
@@ -271,12 +273,12 @@
       <p>
         <span class="block">Every class has Hit Points.</span>
         <span class="block"
-          >Equipment, augments, passive skills, and buffs can also raise maximum
-          Hit Points.</span
+          >Constitution, equipment, augments, passive skills, and buffs raise
+          maximum Hit Points.</span
         >
         <span class="block"
           >Equipment, augments, passive skills, and healing-over-time buffs
-          increase health recovery.</span
+          raise Health Regeneration.</span
         >
         <span class="block"
           >See <a
@@ -304,11 +306,11 @@
               <td class="p-2">Cleric, Druid, Necromancer, Ranger, Wizard</td>
               <td class="p-2">
                 <span class="block"
-                  >Intelligence raises maximum Mana, not mana recovery.</span
+                  >Intelligence raises maximum Mana, not Mana Regeneration.</span
                 >
                 <span class="block"
-                  >Equipment, augments, passive skills, and buffs can increase
-                  mana recovery.</span
+                  >Equipment, augments, passive skills, and buffs raise Mana
+                  Regeneration.</span
                 >
               </td>
             </tr>
@@ -326,7 +328,7 @@
                 >
                 <span class="block"
                   ><MechanicsLink section="combat#rage-generation"
-                    >See exact rage formulas</MechanicsLink
+                    >See Rage Generation</MechanicsLink
                   >.</span
                 >
               </td>
@@ -337,7 +339,8 @@
               <td class="p-2">Bard</td>
               <td class="p-2">
                 <span class="block"
-                  >Bards can play two songs at once by default.</span
+                  >Bards can keep two songs active at once, or any number with
+                  Polyphony.</span
                 >
                 <span class="block">Each song lasts for its own duration.</span>
                 <span class="block">Songs require an instrument.</span>
@@ -359,9 +362,7 @@
             href="/skills/mystic_spark"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Mystic Spark</a
-          > restores Mana equal to 35% of damage before shield absorption, counting
-          at most the target's Hit Points before the hit, rounded down. Against a
-          target without shields, use the hit's damage number.</span
+          > restores Mana equal to 35% of its eligible hit damage, rounded down.</span
         >
         <span class="block"
           ><a
@@ -404,15 +405,9 @@
         <!-- Source: server-scripts/ScriptableSkill.cs:53-70 — requirements include spent points, up to two ranked predecessors, level, and tier. -->
         <!-- Source: server-scripts/PlayerSkills.cs:1962-2020 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
         <p>
-          <span class="block"
-            >A rank can require a character level, unspent points, points
-            already spent in its pool, and up to two prerequisite skills at
-            specified ranks.</span
-          >
-          <span class="block"
-            >An armor-set skill bonus does not count as a purchased prerequisite
-            rank.</span
-          >
+          Skill ranks may require a level, enough points, earlier spending in
+          the same skill tree, and up to two prerequisite skills. Armor-set
+          bonuses do not count toward prerequisite ranks.
         </p>
         <!-- Source: server-scripts/PlayerSkills.cs:1807-1816 — prerequisite checks exclude armor-set bonus levels. -->
         <!-- Source: server-scripts/PlayerSkills.cs:1988-2020 — new choices are limited by tier, but existing choices can be upgraded. -->
@@ -433,16 +428,16 @@
         <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill; website/data/compendium.db skills.tier — all veteran skills have tier 0, which allows every choice. -->
         <p>
           <span class="block"
-            >At level 50, further XP grants Veteran Points while your total is
+            >At level 50, further XP grants veteran points while your total is
             below 200.</span
           >
           <span class="block"
-            >Veteran skill upgrades spend unspent Veteran Points and follow rank
-            and prerequisite limits. Veteran skills have no tier limit.</span
+            >Veteran skill upgrades cost veteran points and follow rank and
+            prerequisite limits. Veteran skills have no tier limit.</span
           >
           <span class="block"
             ><MechanicsLink section="experience#veteran-points"
-              >See Veteran Point costs</MechanicsLink
+              >See veteran point costs</MechanicsLink
             >.</span
           >
         </p>
@@ -456,47 +451,39 @@
             >At level 50, a second specialization costs 10,000 gold.</span
           >
           <span class="block"
-            >Switching requires all class skill points spent and a living
-            character out of combat while standing still.</span
+            >To switch, spend all your class skill points and be alive, out of
+            combat, and standing still.</span
           >
           <span class="block">You must wait 10 minutes between switches.</span>
         </p>
         <!-- Source: server-scripts/Player.cs:UserCode_CmdSetCurrentSpec__Int32__List_00601__List_00601 — switching loads the chosen class-skill ranks and its skillbar, removes the pet, and leaves veteran ranks untouched. -->
         <!-- Source: server-scripts/PlayerSkills.cs:1832-1880 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
         <p>
-          <span class="block"
-            >Your second specialization stores another set of class skills for
-            the same class.</span
-          >
-          <span class="block"
-            >Veteran skills are shared between both builds.</span
-          >
-          <span class="block"
-            >Switching loads the selected class skills and skillbar, removes
-            your pet, and stops Bard songs.</span
-          >
+          Each specialization has its own class skills and skillbar, but both
+          share veteran skills. Switching removes your pet and stops Bard songs.
         </p>
         <!-- Source: server-scripts/Player.cs:GetTotalAttributePoints,ChangeAttributeSpec — each allocation has level.current - 1 + GetTotalVeteranPoints points; switching applies attribute differences and recalculates unspent points. -->
         <p>
-          Each specialization stores its own attribute allocation. Each has
-          points equal to your level minus 1, plus your total veteran points. At
-          level 50 with 200 total veteran points, each has 249 points. Switching
-          applies that specialization's allocation and restores its unspent
+          Each specialization also has its own assigned and unspent attribute
+          points. Its total is your level minus 1, plus your total veteran
           points.
         </p>
-        <p>{TOTAL_VETERAN_POINTS_NOTE}</p>
+        <p>
+          Your total veteran points count unspent points plus learned veteran
+          ranks. They appear as VT beside your level in the character window.
+        </p>
         <!-- Source: server-scripts/PlayerSkills.cs:GetTotalVeteranPoints,ResetVeteranSkillPoints — ranks that cost 2 points count and refund only 1 point. -->
         <p>
           <a
             href="/mechanics/experience#veteran-points"
             class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Veteran Point counting and reset losses</a
-          > explains how the game miscounts ranks that cost 2 Veteran Points.
+            >Veteran point counting and reset losses</a
+          > explains how the game miscounts ranks that cost 2 veteran points.
         </p>
         <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:15297-15300 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
-          If the game cannot determine a saved character's attribute allocation,
-          the first specialization switch resets assigned attributes for free.
+          On some saved characters, the first specialization switch resets
+          assigned attributes for free.
         </p>
         <!-- Source: server-scripts/Utils.cs:506-525 — class skill reset price increases at levels 10, 20, 30, and 40. -->
         <p>
@@ -515,7 +502,7 @@
               href="/npcs/{data.skillMaster.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{data.skillMaster.name}</a
-            >
+            >, the Skill Master,
           {:else}The Skill Master{/if}
           resets your class skills.
           {#if data.attributeMaster}
@@ -523,7 +510,7 @@
               href="/npcs/{data.attributeMaster.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{data.attributeMaster.name}</a
-            >
+            >, who offers Attribute Reset,
           {:else}The Attribute Master{/if}
           resets your assigned attribute points for the same price, but not while
           a debuff is on you.
@@ -661,8 +648,7 @@
               <tr class="border-b">
                 <td class="p-2"><code>/follow</code></td>
                 <td class="p-2"
-                  >Follow your selected living player in the same zone, other
-                  than yourself. Takes no arguments.</td
+                  >Follow your selected living player in the same zone.</td
                 >
               </tr>
               <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse — pause accepts integer tenths from 1 through 600. -->
@@ -721,10 +707,10 @@
         <!-- Source: server-scripts/UISkillbar.cs:TickMacro; server-scripts/UISkillbarMacros.cs:Open; server-scripts/GameManager.cs:IsGameplayUIInputBlocked — sequences stop on death, inactive or changed characters, specialization or zone changes, stun, fear, barber use, blocking UI, confirmation or popup dialogs, and position jumps over 8 units between updates. -->
         <p>
           The sequence also stops on death, stun, fear, a character,
-          specialization, or zone change, or a position jump of more than 8 yd
-          between updates. Opening the macro editor, using the barber, opening
-          the Adventurer's Guide, rebinding controls, or a confirmation or popup
-          dialog also stops it.
+          specialization, or zone change, or an instant move of more than 8 yd,
+          such as a teleport. Opening the macro editor, using the barber,
+          opening the Adventurer's Guide, rebinding controls, or a confirmation
+          or popup dialog also stops it.
         </p>
       </div>
     </Card.Content>

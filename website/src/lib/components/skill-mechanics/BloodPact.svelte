@@ -12,9 +12,8 @@
   <h3 class="font-semibold">Blood Pact</h3>
   <Calculation calculation={bloodPactCalculation(skill)} />
   <p class="text-muted-foreground">
-    You can use it only while your Mana is below maximum, your current Hit
-    Points are above the Hit Points spent and the Mana from conversion is at
-    least 1. You pay the full Hit Points cost even when the Mana restored is
-    capped.
+    You must be missing Mana and have more Hit Points than the cost. The
+    conversion must restore at least 1 Mana. You pay the full Hit Points cost
+    even if you need less Mana than it restores.
   </p>
 </div>

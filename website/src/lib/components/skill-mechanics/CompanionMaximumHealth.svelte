@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { statName, statField, formatStatField } from "$lib/stats";
+  import { statFieldName, statField, formatStatField } from "$lib/stats";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
 
@@ -10,9 +10,11 @@
 
 {#if skill.health_max_percent_bonus}
   {@const bonus = skill.health_max_percent_bonus}
-  <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — owner's learned isPetSkill PassiveSkill.healthMaxPercentBonus goes to non-mercenary, non-familiar pets, not the owner. -->
+  <!-- Source: server-scripts/Skills.cs:GetHealthPercentBonus — the player's learned isPetSkill PassiveSkill.healthMaxPercentBonus goes to non-mercenary, non-familiar pets, not the player. -->
   <div class="space-y-2">
-    <h3 class="font-semibold">Companion {statName("health")}</h3>
+    <h3 class="font-semibold">
+      Companion {statFieldName(statField("skill", "health_max_bonus"))}
+    </h3>
     <p class="text-muted-foreground">
       Your companion receives {formatStatField(
         field,

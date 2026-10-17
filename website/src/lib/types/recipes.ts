@@ -51,6 +51,8 @@ export type ObtainabilitySourceType =
   | "random"
   | "merge"
   | "treasure_map"
+  | "housing"
+  | "starter"
   | "special";
 
 /**

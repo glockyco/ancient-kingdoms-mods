@@ -19,7 +19,7 @@ Compendium prose sometimes describes internal recomputation instead of the playe
 
 ### Modified Capabilities
 
-- None. The existing stat, calculation, metadata and game-data requirements still apply. This change repairs their consumers and adds a cross-surface copy contract.
+- `skill-mechanics-card`: Replace literal prose snapshots with behavior-focused regression and rendered-interface verification.
 
 ## Impact
 

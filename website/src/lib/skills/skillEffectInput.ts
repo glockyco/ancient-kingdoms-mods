@@ -93,18 +93,18 @@ function attributeSource(
       return { attribute: statName("charisma"), multiplier: 1, song: true };
     case "player_wis_con_avg":
       return {
-        attribute: `${statName("wisdom")} or ${statName("constitution")}`,
+        attribute: `${statName("wisdom")} and ${statName("constitution")} combined`,
         multiplier: 0.5,
         song: false,
       };
     case "player_wis_con_cha_half":
       return {
-        attribute: `${statName("wisdom")}, ${statName("constitution")} or ${statName("charisma")}`,
+        attribute: `${statName("wisdom")}, ${statName("constitution")} and ${statName("charisma")} combined`,
         multiplier: 0.5,
         song: false,
       };
     case "player_level":
-      return { attribute: "level", multiplier: 10, song: false };
+      return { attribute: "character level", multiplier: 10, song: false };
     case "str":
       return { attribute: statName("strength"), multiplier: 1, song: false };
     case "dex":
@@ -117,6 +117,13 @@ function attributeSource(
 /** The lead of a note that multiplies a song's value by song power. */
 const SONG_POWER_LEAD = `${percent(SONG_POWER_PER_CHARISMA, { decimals: 2, preserveNonzero: true })} stronger`;
 
+/** Additive attribute shares are rounded by the game before being added. */
+function additiveLead(value: number, negative = false): string {
+  const sign = negative ? "−" : "+";
+  return Number.isInteger(value)
+    ? `${sign}${number(value)}`
+    : `${sign}${percent(value, { decimals: 2, preserveNonzero: true })} of`;
+}
 // Source: server-scripts/Buff.cs:47-258; BuffSkill.cs:230-247,464-527; Wisdom.cs:116-128 — song power multiplies a song's values, other buffs add a share of the attribute, and short heal-over-time buffs add a share of the heal.
 /** How an attribute source changes one listed value, as a note lead, or null when it does not. */
 function scalingLead(
@@ -128,22 +135,22 @@ function scalingLead(
   const { mode, factor } = scaling;
   const { multiplier } = source;
   if (source.song) {
-    if (mode === "dot" && factor > 0) return `+${number(factor)}`;
+    if (mode === "dot" && factor > 0) return additiveLead(factor);
     return SONG_POWER_LEAD;
   }
   switch (mode) {
     case "song":
       return SONG_POWER_LEAD;
     case "flat":
-      return `${value.base_value < 0 ? "−" : "+"}${number(factor * multiplier)}`;
+      return additiveLead(factor * multiplier, value.base_value < 0);
     case "healing":
       return durationBase < 60
         ? `${percent(WISDOM_HEAL_SHARE * multiplier, { decimals: 2, preserveNonzero: true })} more`
-        : `+${number(factor * multiplier)}`;
+        : additiveLead(factor * multiplier);
     case "ward":
-      return `+${number(factor * multiplier)}`;
+      return additiveLead(factor * multiplier);
     case "dot":
-      return factor > 0 ? `+${number(factor * multiplier)}` : null;
+      return factor > 0 ? additiveLead(factor * multiplier) : null;
   }
 }
 
@@ -157,6 +164,15 @@ function contextOwner(
   return source.startsWith("player_ranger") ? "ranger" : "any";
 }
 
+function renderNote(note: Note, owned = false): string {
+  const attribute =
+    note.owner === "mercenary" && owned
+      ? `the mercenary's ${note.attribute}`
+      : note.attribute;
+  return note.lead.endsWith(" of")
+    ? `${note.lead} ${attribute}`
+    : `${note.lead} per ${note.owner === "mercenary" && owned ? "point of " : ""}${attribute}`;
+}
 /** One note per value from each caster group's notes. */
 function renderNotes(entries: Map<NotedField, Note[]>): SummaryNotes {
   const notes: SummaryNotes = {};
@@ -178,8 +194,7 @@ function renderNotes(entries: Map<NotedField, Note[]>): SummaryNotes {
         );
       }
       const [only] = distinct;
-      notes[field] =
-        `${only.lead} per ${only.owner === "mercenary" ? `mercenary ${only.attribute}` : only.attribute}`;
+      notes[field] = renderNote(only, true);
       continue;
     }
     const base =
@@ -197,11 +212,11 @@ function renderNotes(entries: Map<NotedField, Note[]>): SummaryNotes {
       )
       .map((note) => {
         const who = note.owner === "ranger" ? "Rangers" : "mercenaries";
-        return note.attribute === base.attribute
+        return note.attribute === base.attribute && !note.lead.endsWith(" of")
           ? `${who} ${note.lead}`
-          : `${who} ${note.lead} per ${note.attribute}`;
+          : `${who} ${renderNote(note)}`;
       });
-    notes[field] = [`${base.lead} per ${base.attribute}`, ...rest].join(", ");
+    notes[field] = [renderNote(base), ...rest].join(", ");
   }
   return notes;
 }

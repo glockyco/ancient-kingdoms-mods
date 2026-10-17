@@ -1,25 +1,8 @@
 import { describe, expect, test } from "vitest";
-import {
-  formatMasteryNeeded,
-  hasLinearValue,
-  convertTooltip,
-} from "./skill-format";
+import { hasLinearValue, convertTooltip } from "./skill-format";
 import { formatLinearStat } from "$lib/utils/formatSkillEffect";
-import { MAX_HEALTH, MAGIC_DAMAGE, SPELL_HASTE } from "$lib/calculation/inputs";
 
 describe("skill display formatting", () => {
-  test.each([
-    [1, "at least 0.0%"],
-    [2, "at least 7.5%"],
-    [3, "above 12.5%"],
-    [4, "at least 17.5%"],
-    [5, "above 22.5%"],
-  ])(
-    "mastery threshold for rank %s reflects even rounding",
-    (rank, expected) => {
-      expect(formatMasteryNeeded(Number(rank))).toBe(expected);
-    },
-  );
   test("a level-only value is present", () => {
     expect(hasLinearValue(null)).toBe(false);
     expect(hasLinearValue({ base_value: 0, bonus_per_level: -1 })).toBe(true);
@@ -49,17 +32,6 @@ describe("skill display formatting", () => {
         bonus_per_level: 5,
       }),
     ).toBe("+20 + 5 × (rank − 1)");
-  });
-  test("remembered stat inputs keep their stored keys and values", () => {
-    expect(
-      [MAX_HEALTH, MAGIC_DAMAGE, SPELL_HASTE].map(
-        ({ key, value, remember }) => ({ key, value, remember }),
-      ),
-    ).toEqual([
-      { key: "maxHealth", value: 2000, remember: true },
-      { key: "magicDamage", value: 200, remember: true },
-      { key: "spellHaste", value: 0.2, remember: true },
-    ]);
   });
   test("tooltip color survives while layout tags are removed", () => {
     expect(

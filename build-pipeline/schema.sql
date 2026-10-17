@@ -732,6 +732,7 @@ CREATE TABLE monsters (
     placeholder_monster_id TEXT REFERENCES monsters(id),
 
     -- Loot and rewards
+    loot_inputs TEXT,                 -- Canonical template rolls before contextual display expansion
     gold_min INTEGER,
     gold_max INTEGER,
     probability_drop_gold REAL DEFAULT 1.0,
@@ -1446,6 +1447,7 @@ CREATE TABLE zone_triggers (
     name TEXT NOT NULL,
     zone_id INTEGER NOT NULL REFERENCES zones(zone_id),
     is_outdoor BOOLEAN DEFAULT 0,
+    discovery_exp INTEGER,             -- EXP granted for discovering this named area
     position_x REAL,
     position_y REAL,
     position_z REAL,

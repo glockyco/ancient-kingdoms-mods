@@ -90,7 +90,7 @@ export function getGatherItemsFromDb(
           WHEN gr.is_plant = 1 THEN 'Plant'
           WHEN gr.is_mineral = 1 THEN 'Mineral'
           WHEN gr.is_radiant_spark = 1 THEN 'Radiant Spark'
-          ELSE 'Resource'
+          ELSE 'Other'
         END as type,
         gr.level,
         gr.respawn_time,
@@ -353,6 +353,7 @@ export function getAllResourceDropsFromDb(
     FROM item_sources_gather grd
     JOIN gathering_resources gr ON gr.id = grd.resource_id
     JOIN items i ON grd.item_id = i.id
+    WHERE gr.item_reward_id IS NULL OR grd.item_id != gr.item_reward_id
     ORDER BY resource_id, i.name`,
     )
     .all() as ResourceDropListView[];

@@ -240,6 +240,9 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
     uses_veteran_scaling: altar.usesVeteranScaling,
     reward_common_name: rewardCommonName,
     reward_legendary_name: rewardLegendaryName,
+    final_boss_name: bosses.map((boss) => boss.monsterName).join(" and "),
+    reward_chance:
+      rewards.find((reward) => reward.tier === "common")?.dropRate ?? undefined,
   });
 
   return {

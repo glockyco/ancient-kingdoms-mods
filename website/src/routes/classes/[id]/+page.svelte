@@ -32,8 +32,10 @@
   } from "$lib/utils/classes";
   import { QUALITY_NAMES } from "$lib/constants/quality";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import {
     formatEquipmentCategory,
+    formatSkillType,
     getQualityTextColorClass,
   } from "$lib/utils/format";
   import {
@@ -67,11 +69,10 @@
       .sort(),
   );
 
-  const daggerSkillCount = untrack(
-    () =>
-      data.skills.filter(
-        (skill) => skill.required_weapon_category === "WeaponDagger",
-      ).length,
+  const lightWeaponSkills = untrack(() =>
+    data.skills.filter(
+      (skill) => skill.required_weapon_category === "WeaponDagger",
+    ),
   );
   // Sorted class IDs for sibling nav (alphabetical)
   const sortedClassIds = [...ALL_CLASS_IDS].sort();
@@ -203,7 +204,7 @@
       const maxPicks = TIER_MAX_PICKS[skill.tier];
       const available = tierSkillCounts[skill.tier] ?? 0;
       if (maxPicks && available > 0) {
-        return `${key} (${maxPicks} of ${available})`;
+        return `${key} (choose ${maxPicks} of ${available})`;
       }
     }
     return key;
@@ -296,9 +297,9 @@
     },
     {
       accessorKey: "required_spent_points",
-      header: "Req Points",
+      header: "Points already spent",
     },
-    { accessorKey: "level_required", header: "Req Lvl" },
+    { accessorKey: "level_required", header: "Required level" },
     {
       id: "prerequisites",
       header: "Prerequisites",
@@ -475,7 +476,7 @@
     if (hasQuestFlags) {
       cols.push({
         id: "flags",
-        header: "Quest labels",
+        header: "Categories",
         enableSorting: false,
         accessorFn: (row) => {
           const flags: string[] = [];
@@ -492,7 +493,7 @@
       { accessorKey: "name", header: "Name" },
       {
         accessorKey: "level_required",
-        header: "Req Lvl",
+        header: "Required level",
         filterFn: (
           row,
           columnId,
@@ -610,8 +611,8 @@
       {/if}
     </span>
   {:else if cell.column.id === "skill_type"}
-    <span class="text-muted-foreground capitalize"
-      >{String(cell.getValue()).replace(/_/g, " ")}</span
+    <span class="text-muted-foreground"
+      >{formatSkillType(String(cell.getValue()))}</span
     >
   {:else if cell.column.id === "cost"}
     <span class="ml-auto">
@@ -631,7 +632,7 @@
     </span>
   {:else if cell.column.id === "max_level"}
     <span class="ml-auto">
-      {#if (cell.getValue() as number) <= 1}
+      {#if (cell.getValue() as number) < 1}
         <span class="text-muted-foreground">—</span>
       {:else}
         {cell.getValue()}
@@ -671,9 +672,7 @@
       column={typeCol}
       title="Type"
       options={uniqueSkillTypes.map((t) => ({
-        label: t
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        label: formatSkillType(t),
         value: t,
       }))}
     />
@@ -742,7 +741,11 @@
         {#each [...typeCounts] as [type, count] (type)}
           {@const sourceConfig = SOURCE_TYPE_CONFIG[type as ItemSourceType]}
           {#if sourceConfig}
-            <span class="flex items-center gap-0.5 text-sm">
+            <span
+              class="flex items-center gap-0.5 text-sm"
+              title={`${sourceConfig.label}: ${count}`}
+              aria-label={`${sourceConfig.label}: ${count}`}
+            >
               <sourceConfig.icon
                 class="h-4 w-4 shrink-0 {sourceConfig.color}"
               />
@@ -843,8 +846,6 @@
       <DataTableStatPanel
         column={statsCol}
         bind:open={statPanel.open}
-        totalRows={data.items.length}
-        filteredRows={table.getFilteredRowModel().rows.length}
         {facetedItemIds}
         showDeltas={false}
       />
@@ -905,7 +906,7 @@
 {/snippet}
 
 <Seo
-  title={`${data.class.name} - Ancient Kingdoms`}
+  title={detailTitle(data.class.name, { family: "Class" })}
   description={data.description}
   path={`/classes/${data.class.id}`}
 />
@@ -967,14 +968,14 @@
       {data.class.description}
     </p>
 
-    {#if ["warrior", "rogue", "cleric", "druid", "ranger", "wizard", "bard"].includes(data.class.id)}
+    {#if ["warrior", "rogue", "cleric", "druid", "ranger", "wizard", "bard", "necromancer"].includes(data.class.id)}
       <p class="mt-3 text-muted-foreground">
-        See the
+        You can also hire a
         <a
           href="/mercenaries/{data.class.id}_mercenary"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >{data.class.name} Mercenary</a
-        > page.
+        >.
       </p>
     {/if}
   </div>
@@ -1039,9 +1040,19 @@
           {#each data.guide.rules as rule, index (rule.text)}
             <li>
               {#if data.class.id === "rogue" && index === 0}
-                {daggerSkillCount}
+                {#each lightWeaponSkills as skill, skillIndex (skill.id)}{skillIndex >
+                  0
+                    ? ", "
+                    : ""}<a
+                    href="/skills/{skill.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{skill.name}</a
+                  >{/each}
+                need a light one-handed weapon, such as a dagger or spear, in your
+                main hand.
+              {:else}
+                {rule.text}
               {/if}
-              {rule.text}
               {#if rule.href && rule.linkText}
                 <a
                   href={rule.href}
@@ -1061,8 +1072,12 @@
     <section id="equipment" class="scroll-mt-4">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
-        Armor & Weapons ({data.items.length})
+        Equipment ({data.items.length})
       </h2>
+      <p class="mb-4 text-sm text-muted-foreground">
+        Source level is the lowest level among an item's sources. It does not
+        limit who can equip the item.
+      </p>
 
       <DataTable
         data={data.items}
@@ -1094,6 +1109,13 @@
         <Zap class="h-5 w-5 text-purple-500" />
         Skills ({data.skills.length})
       </h2>
+      <p class="mb-4 text-sm text-muted-foreground">
+        Base skills are your auto attacks. Core and Mastery skills have no tier
+        limit. Each tier allows only the stated number of skills. Utility skills
+        include Fishing, Mining and Teleport. Veteran skills cost veteran
+        points. Points already spent are a learning prerequisite, not a rank's
+        cost.
+      </p>
 
       <DataTable
         data={data.skills}

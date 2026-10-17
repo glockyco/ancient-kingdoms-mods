@@ -114,7 +114,7 @@
           ? "Cooking Oven"
           : result.subcategory === "scribing"
             ? "Scribing Table"
-            : "Forge"
+            : "Craft Station"
       : result.name,
   );
   const isResourceTier = $derived(
@@ -143,7 +143,7 @@
       class="flex shrink-0 items-center gap-1 text-xs text-amber-600 dark:text-amber-400"
     >
       <Sparkles size={14} />
-      Notable
+      Notable NPC
     </span>
   {/if}
   {#if roleCategories.length > 0}
@@ -156,7 +156,10 @@
   {/if}
   {#if result.spawnCount}
     <span class="shrink-0 text-xs text-muted-foreground"
-      >{result.spawnCount} spawns</span
+      >{result.spawnCount}
+      {result.category === "item" || result.category === "quest"
+        ? "locations"
+        : "spawns"}</span
     >
   {/if}
   {#if result.level != null}
@@ -166,7 +169,10 @@
       >
     {:else if result.category !== "resource" && result.level > 0}
       <span class="shrink-0 text-xs text-muted-foreground"
-        >Lv {result.level}</span
+        >Lv {result.level}{result.category === "altar" ||
+        result.category === "item"
+          ? "+"
+          : ""}</span
       >
     {/if}
   {/if}

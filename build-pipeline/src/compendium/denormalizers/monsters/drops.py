@@ -28,6 +28,49 @@ class AltarRewardInfo(TypedDict):
     legendary_name: str | None
 
 
+def _record_loot_inputs(conn: sqlite3.Connection) -> None:
+    """Retain template rolls and item eligibility before display-only expansion."""
+    items = {
+        row[0]: {
+            "item_id": row[0],
+            "item_name": row[1],
+            "counts_as_equipment": row[3] > 0
+            and row[2] in {"weapon", "equipment", "ammo", "costume"},
+            "requires_quest": bool(row[4] or row[5]),
+            "item_type": row[2],
+        }
+        for row in conn.execute(
+            "SELECT id, name, item_type, quality, is_quest_item, has_gather_quest FROM items"
+        )
+    }
+    random_pools: dict[str, list[dict]] = {}
+    for item_id, parent_id in conn.execute(
+        "SELECT item_id, random_item_id FROM item_sources_random ORDER BY id"
+    ):
+        child = items[item_id]
+        random_pools.setdefault(parent_id, []).append(
+            {
+                "item_id": item_id,
+                "counts_as_equipment": child["counts_as_equipment"],
+            }
+        )
+    for monster_id, drops_json in conn.execute(
+        "SELECT id, drops FROM monsters WHERE loot_inputs IS NULL"
+    ).fetchall():
+        inputs = []
+        for drop in json.loads(drops_json or "[]"):
+            item = items[drop["item_id"]]
+            entry = {key: value for key, value in item.items() if key != "item_type"}
+            entry["probability"] = drop["rate"]
+            if item["item_type"] == "random":
+                entry["random_items"] = random_pools.get(item["item_id"], [])
+            inputs.append(entry)
+        conn.execute(
+            "UPDATE monsters SET loot_inputs = ? WHERE id = ?",
+            (json.dumps(inputs), monster_id),
+        )
+
+
 def _denormalize_drop_names(conn: sqlite3.Connection) -> int:
     """Add item names and quality to existing monster drops.
 
@@ -294,6 +337,8 @@ def run(conn: sqlite3.Connection) -> None:
     and expands altar rewards with altar identities and tier names.
     """
     console.print("Denormalizing monster drops...")
+
+    _record_loot_inputs(conn)
 
     names_count = _denormalize_drop_names(conn)
     fragment_count = _add_fragment_drops(conn)

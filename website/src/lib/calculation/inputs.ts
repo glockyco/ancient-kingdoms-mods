@@ -13,10 +13,12 @@ function characterStat(
   key: string,
   stat: StatId,
   value: number,
+  maximum = false,
 ): CalculationInput {
   return {
     key,
-    label: statName(stat),
+    label: maximum ? `Maximum ${statName(stat)}` : statName(stat),
+    phrase: maximum ? `maximum ${statName(stat)}` : undefined,
     value,
     min: 0,
     max: 1_000_000,
@@ -25,8 +27,8 @@ function characterStat(
   };
 }
 
-export const MAX_HEALTH = characterStat("maxHealth", "health", 2000);
-export const MAX_MANA = characterStat("maxMana", "mana", 1500);
+export const MAX_HEALTH = characterStat("maxHealth", "health", 2000, true);
+export const MAX_MANA = characterStat("maxMana", "mana", 1500, true);
 export const STRENGTH = characterStat("strength", "strength", 100);
 export const DEXTERITY = characterStat("dexterity", "dexterity", 100);
 export const INTELLIGENCE = characterStat("intelligence", "intelligence", 100);
@@ -43,7 +45,7 @@ export const MAGIC_DAMAGE = characterStat("magicDamage", "spell_power", 200);
  */
 export const SPELL_HASTE: CalculationInput = {
   key: "spellHaste",
-  label: `${statName("spell_haste")}, all sources`,
+  label: statName("spell_haste"),
   value: 0.2,
   min: -10,
   max: 10,

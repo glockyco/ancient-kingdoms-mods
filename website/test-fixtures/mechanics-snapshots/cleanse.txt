@@ -1,1 +1,0 @@
-Mechanics Cleanse Mechanics Removes poison and disease debuffs from you and every other visible player and pet within 10 yd, in your party or not. See cleanse calculations for layer removal and damage-over-time scaling.

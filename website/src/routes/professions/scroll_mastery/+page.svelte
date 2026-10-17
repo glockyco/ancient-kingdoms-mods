@@ -1,6 +1,8 @@
 <script lang="ts">
   import { formatPercent } from "$lib/utils/format";
+  import { iround } from "$lib/calculation/unity-math";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -73,13 +75,13 @@
 
   function getScrollRank(maxLevel: number): number {
     if (maxLevel <= 1) return 1;
-    return Math.min(maxLevel, Math.max(1, Math.round(skillLevel / 5)));
+    return Math.min(maxLevel, Math.max(1, iround(skillLevel / 5)));
   }
 
   function formatSkillType(skillType: string): string {
     const labels: Record<string, string> = {
       area_damage: "Area damage",
-      target_projectile: "Targeted projectile",
+      target_projectile: "Single-target projectile",
       target_buff: "Targeted buff",
       target_debuff: "Targeted debuff",
       target_heal: "Targeted heal",
@@ -101,7 +103,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
   description={`${data.profession.description} View scroll recipes, Scribing Table locations, rank scaling, and Scroll Mastery gains.`}
   path="/professions/scroll_mastery"
 />
@@ -176,7 +178,7 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Craft scrolls from recipes at a Scribing Table.
+            You do not need to learn scroll recipes first.
           </p>
         </div>
       </div>
@@ -187,11 +189,10 @@
           <div>Craft scrolls.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <!-- Source: server-scripts/Player.cs:13587-13607,13646-13651; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
-            All current scroll recipes have 100% crafting success chance. Crafting
-            grants
+            All current scroll recipes succeed. Crafting grants
             <MechanicsLink section="experience#scribing-xp"
-              >Player Level × 100 XP</MechanicsLink
-            >. A double-XP effect doubles this crafting XP.
+              >100 XP per character level</MechanicsLink
+            >. Double XP doubles it.
           </p>
         </div>
       </div>
@@ -203,13 +204,11 @@
           <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast — a valid scroll casts its skill at rank RoundToInt(scrollMasteryLevel × 20), clamped between 1 and the skill's maximum rank, and consumes one charge unless infiniteCharges is set. -->
           <!-- Source: server-scripts/ScrollItem.cs:125 — RoundToInt rounds an exact half to the even rank. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A scroll takes 1 second to cast its skill without teaching it.
-            Scaling scrolls cast at one rank per 5 percentage points of Scroll
-            Mastery, rounded, from rank 1 up to the skill's highest rank. At 37%
-            Scroll Mastery, they cast at rank 7. Exact halves go to the even
-            rank, so 12.5% Scroll Mastery casts at rank 2. Fixed scrolls cast at
-            rank 1. Successful completion consumes one charge unless the scroll
-            has infinite charges. Mastery gains also occur on completion.
+            Cast a scroll's skill in 1 second without learning it. Scaling
+            scrolls cast at one rank per 5 percentage points of Scroll Mastery,
+            rounded to the nearest rank, with a minimum of 1 and the skill's own
+            maximum. Fixed-rank scrolls stay at rank 1. Each completed cast uses
+            one charge unless the scroll has infinite charges.
           </p>
           <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, a lost start target, another active skill, or an empty or changed slot. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
@@ -226,8 +225,9 @@
         <div>
           <div>Gain Scroll Mastery.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Crafting a scroll or using a scroll can raise Scroll Mastery. Both
-            use the same gain chance, but using a scroll grants more mastery.
+            Crafting and using scrolls have the same chance to raise Scroll
+            Mastery. Using them grants larger increases. Check the calculator
+            below for your rank and skill gains.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
@@ -285,9 +285,7 @@
           </div>
         </div>
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">
-            Gain amount per increase
-          </div>
+          <div class="text-sm text-muted-foreground">Scroll Mastery gained</div>
           <div class="text-sm leading-6">
             <!-- Source: server-scripts/Player.cs:13610; server-scripts/ScrollItem.cs:108 — crafting and use stop granting Scroll Mastery at the cap. -->
             {#if skillLevel >= 100}
@@ -334,7 +332,7 @@
               <th class="p-3 text-left font-medium">Scroll</th>
               <th class="p-3 text-left font-medium">Ingredients</th>
               <th class="p-3 text-left font-medium">Casts</th>
-              <th class="p-3 text-left font-medium">Scaling</th>
+              <th class="p-3 text-left font-medium">Improves with rank</th>
             </tr>
           </thead>
           <tbody>
@@ -426,7 +424,7 @@
                   {#if formatScalingSummary(recipe)}
                     {formatScalingSummary(recipe)}
                   {:else}
-                    <span class="text-muted-foreground">—</span>
+                    <span class="text-muted-foreground">Fixed at rank 1</span>
                   {/if}
                 </td>
               </tr>

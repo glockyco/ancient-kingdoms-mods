@@ -26,6 +26,9 @@ type Builder = (db: Database.Database) => EntityText[];
 
 const tableColumnsCache = new Map<string, Set<string>>();
 
+const LOCATION_SQL =
+  "CASE WHEN t.name IS NOT NULL AND t.name != z.name THEN t.name || ', ' ELSE '' END || z.name";
+
 function tableColumns(db: Database.Database, table: string): Set<string> {
   const cached = tableColumnsCache.get(table);
   if (cached) return cached;
@@ -113,7 +116,23 @@ function tableBuilder(
 
 const builders: Record<SearchableEntityId, Builder> = {
   item: tableBuilder("items"),
-  monster: tableBuilder("monsters"),
+  monster: (db) =>
+    rowsToText(
+      db
+        .prepare(
+          `
+    SELECT m.id, m.name, m.keywords, NULL AS content,
+      (SELECT group_concat(location, ', ') FROM (
+        SELECT DISTINCT ${LOCATION_SQL} AS location
+        FROM monster_spawns s JOIN zones z ON z.id = s.zone_id
+        LEFT JOIN zone_triggers t ON t.id = s.sub_zone_id
+        WHERE s.monster_id = m.id ORDER BY location
+      )) AS detail
+    FROM monsters m ORDER BY m.id
+  `,
+        )
+        .all() as RawRow[],
+    ),
   npc: (db) =>
     rowsToText(
       db
@@ -152,8 +171,52 @@ const builders: Record<SearchableEntityId, Builder> = {
     "tooltip_html",
     "tooltip",
   ]),
-  chest: tableBuilder("chests", ["description"]),
-  gathering_resource: tableBuilder("gathering_resources", ["description"]),
+  chest: (db) =>
+    rowsToText(
+      db
+        .prepare(
+          `
+    SELECT c.id, 'Chest' AS name, c.keywords,
+      ${LOCATION_SQL} AS detail
+    FROM chests c JOIN zones z ON z.id = c.zone_id
+    LEFT JOIN zone_triggers t ON t.id = c.sub_zone_id
+    ORDER BY c.id
+  `,
+        )
+        .all() as RawRow[],
+    ),
+  gathering_resource: (db) =>
+    rowsToText(
+      db
+        .prepare(
+          `
+    SELECT r.id, r.name, r.keywords, r.description AS content,
+      (SELECT group_concat(location, ', ') FROM (
+        SELECT DISTINCT ${LOCATION_SQL} AS location
+        FROM gathering_resource_spawns s JOIN zones z ON z.id = s.zone_id
+        LEFT JOIN zone_triggers t ON t.id = s.sub_zone_id
+        WHERE s.resource_id = r.id ORDER BY location
+      )) AS detail,
+      (SELECT group_concat(name, ', ') FROM (
+        SELECT DISTINCT i.name FROM item_sources_gather g
+        JOIN items i ON i.id = g.item_id
+        WHERE g.resource_id = r.id AND r.is_fishing_spot = 1
+        ORDER BY g.actual_drop_chance DESC, i.name LIMIT 3
+      )) AS catches
+    FROM gathering_resources r ORDER BY r.id
+  `,
+        )
+        .all()
+        .map((raw) => {
+          const row = raw as RawRow;
+          return {
+            ...row,
+            detail: [row.detail, row.catches ? `Catches: ${row.catches}` : null]
+              .filter(Boolean)
+              .join(". "),
+          };
+        }),
+    ),
   skill: (db) => {
     const columns = tableColumns(db, "skills");
     const keywordExpr = columns.has("keywords")
@@ -173,7 +236,20 @@ const builders: Record<SearchableEntityId, Builder> = {
     );
   },
   class: tableBuilder("classes", ["description"]),
-  altar: tableBuilder("altars", ["description"]),
+  altar: (db) =>
+    rowsToText(
+      db
+        .prepare(
+          `
+    SELECT a.id, a.name, a.keywords,
+      ${LOCATION_SQL} AS detail
+    FROM altars a JOIN zones z ON z.id = a.zone_id
+    LEFT JOIN zone_triggers t ON t.id = a.sub_zone_id
+    ORDER BY a.id
+  `,
+        )
+        .all() as RawRow[],
+    ),
   faction: tableBuilder("factions", ["description"]),
   profession: tableBuilder("professions", ["description"]),
   trap: tableBuilder("traps", ["description"]),
@@ -208,7 +284,7 @@ const builders: Record<SearchableEntityId, Builder> = {
       db
         .prepare(
           `
-        SELECT tl.id, COALESCE(i.name, 'Treasure Map ' || tl.id) AS name,
+        SELECT tl.id, COALESCE(i.name, 'Treasure map') AS name,
                NULL AS keywords, NULL AS content
         FROM treasure_locations tl
         LEFT JOIN items i ON i.id = tl.required_map_id
@@ -248,7 +324,20 @@ const builders: Record<SearchableEntityId, Builder> = {
     rowsToText(
       db
         .prepare(
-          "SELECT id, name, 'summon companion pet' AS keywords, NULL AS content FROM pets WHERE is_mercenary = 0 ORDER BY id",
+          `
+    SELECT p.id, p.name, 'summon companion pet' AS keywords,
+      (SELECT group_concat(owner, ', ') FROM (
+        SELECT DISTINCT upper(substr(c.value, 1, 1)) || substr(c.value, 2) || ' skill: ' || s.name AS owner
+        FROM skills s, json_each(s.player_classes) c WHERE s.pet_id = p.id
+        UNION
+        SELECT DISTINCT m.name AS owner FROM skills s
+        JOIN pet_skills ps ON ps.skill_id = s.id
+        JOIN pets m ON m.id = ps.pet_id AND m.is_mercenary = 1
+        WHERE p.id IN (s.archer_pet_id, s.reaper_pet_id)
+        ORDER BY owner
+      )) AS detail
+    FROM pets p WHERE p.is_mercenary = 0 ORDER BY p.id
+  `,
         )
         .all() as RawRow[],
     ),
@@ -295,7 +384,7 @@ function entityDocs(db: Database.Database): IndexedDoc[] {
         label: def.label,
         detail: text.detail,
         image: imageFor(def, text.entityId),
-        keywords: text.keywords,
+        keywords: `${text.keywords} ${text.detail ?? ""}`.trim(),
         content: text.content,
       });
     }
@@ -341,7 +430,7 @@ function pageDocs(): IndexedDoc[] {
   docs.push(...overviews.values());
   docs.push(
     page("Map", "/map", "interactive world map locations"),
-    page("Game Mechanics", "/mechanics", "rules reference"),
+    page("Mechanics", "/mechanics", "rules reference"),
   );
   return docs;
 }
@@ -374,7 +463,7 @@ function withSections(docs: readonly IndexedDoc[]): IndexedDoc[] {
           name: section.label,
           href,
           label: entityRegistry.guide_topic.label,
-          detail: null,
+          detail: mechanics.title,
           image: null,
           aliases: "",
           keywords: mechanics.title,
@@ -384,7 +473,9 @@ function withSections(docs: readonly IndexedDoc[]): IndexedDoc[] {
         const article = result[at];
         result[at] = {
           ...article,
-          aliases: `${article.aliases} ${section.label}`.trim(),
+          aliases:
+            `${article.aliases} ${section.label} ${mechanics.title}`.trim(),
+          detail: mechanics.title,
         };
       }
     }

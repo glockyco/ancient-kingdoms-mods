@@ -1,5 +1,5 @@
 import type { Calculation } from "$lib/types/calculation";
-import { formatPercent } from "$lib/utils/format";
+import { formatDuration, formatPercent } from "$lib/utils/format";
 import { situational } from "./inputs";
 
 // Source: server-scripts/Monster.cs:UpdateServer_DEAD,OnDeath — failed independent rolls restart the respawn timer; the first deadline also includes corpse time. Odds and average waits are derived from these rolls for non-summoned rares in an active zone.
@@ -38,21 +38,6 @@ export function rareSpawnOdds(chance: number): Calculation {
     },
   };
 }
-function duration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainder = Number((seconds % 60).toFixed(2));
-  return (
-    [
-      [hours, "h"],
-      [minutes, "min"],
-      [remainder, "s"],
-    ]
-      .filter(([amount]) => Number(amount) > 0)
-      .map(([amount, unit]) => `${amount} ${unit}`)
-      .join(" ") || "0 s"
-  );
-}
 
 export function rareSpawnWait(chance: number, interval: number): Calculation {
   const seconds = interval / chance;
@@ -65,12 +50,12 @@ export function rareSpawnWait(chance: number, interval: number): Calculation {
     ],
     example: () => ({
       given: [
-        `${duration(interval)} respawn timer`,
+        `${formatDuration(interval)} respawn timer`,
         `${formatPercent(chance, { decimals: 2, preserveNonzero: true })} spawn chance`,
       ],
-      result: `About ${duration(seconds)} on average`,
+      result: `${formatDuration(seconds)} on average`,
       working: [
-        `Average wait: ${duration(interval)} ÷ ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = about ${duration(seconds)}`,
+        `Average wait: ${formatDuration(interval)} ÷ ${formatPercent(chance, { decimals: 2, preserveNonzero: true })} = ${formatDuration(seconds)}`,
       ],
     }),
   };

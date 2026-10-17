@@ -238,19 +238,19 @@ const monsterMarker = (
 });
 
 const NPC_FACET_METADATA = {
-  isVendor: { visibilityKey: "npcVendors", label: "Vendors" },
+  isVendor: { visibilityKey: "npcVendors", label: "Merchants" },
   isQuestGiver: { visibilityKey: "npcQuestGivers", label: "Quest Givers" },
-  canRepair: { visibilityKey: "npcRepair", label: "Repair" },
-  isBank: { visibilityKey: "npcBanks", label: "Banks" },
+  canRepair: { visibilityKey: "npcRepair", label: "Repairs" },
+  isBank: { visibilityKey: "npcBanks", label: "Bankers" },
   isInnkeeper: { visibilityKey: "npcInnkeepers", label: "Innkeepers" },
   isSoulBinder: { visibilityKey: "npcSoulBinders", label: "Soul Binders" },
   isSkillTrainer: {
     visibilityKey: "npcSkillTrainers",
-    label: "Skill Trainers",
+    label: "Skill Masters",
   },
   isVeteranTrainer: {
     visibilityKey: "npcVeteranTrainers",
-    label: "Veteran Trainers",
+    label: "Veteran Masters",
   },
   isAttributeReset: {
     visibilityKey: "npcAttributeReset",
@@ -258,7 +258,7 @@ const NPC_FACET_METADATA = {
   },
   isFactionVendor: {
     visibilityKey: "npcFactionVendors",
-    label: "Faction Vendors",
+    label: "Faction Merchants",
   },
   isEssenceTrader: {
     visibilityKey: "npcEssenceTraders",
@@ -269,11 +269,11 @@ const NPC_FACET_METADATA = {
   isRenewalSage: { visibilityKey: "npcRenewalSages", label: "Renewal Sages" },
   isAdventurerTaskgiver: {
     visibilityKey: "npcAdventurerTasks",
-    label: "Adventurer Tasks",
+    label: "Adventurer Taskgivers",
   },
   isAdventurerVendor: {
     visibilityKey: "npcAdventurerVendors",
-    label: "Adventurer Vendors",
+    label: "Adventurer Merchants",
   },
   isMercenaryRecruiter: {
     visibilityKey: "npcMercenaryRecruiters",
@@ -417,8 +417,8 @@ export const markerRegistry = {
   ),
   hunts: monsterMarker(
     "hunts",
-    "Hunt",
-    "Hunts",
+    "Hunt Target",
+    "Hunt Targets",
     200,
     (row) => row.isHunt,
     Crosshair,
@@ -457,8 +457,8 @@ export const markerRegistry = {
     source: "npcs",
     precedence: 200,
     match: (row: NpcMapEntity) => row.type === "npc" && row.isNotable,
-    label: "Notable",
-    pluralLabel: "Notable",
+    label: "Notable NPC",
+    pluralLabel: "Notable NPCs",
     color: [245, 158, 11],
     icon: Sparkles,
     iconType: "notable_npc",
@@ -575,8 +575,8 @@ export const markerRegistry = {
     id: "treasure",
     entity: "treasure",
     source: "interactables",
-    label: "Treasure",
-    pluralLabel: "Treasure",
+    label: "Dig Site",
+    pluralLabel: "Dig Sites",
     color: [20, 184, 166],
     icon: Shovel,
     iconType: "treasure",
@@ -760,7 +760,7 @@ export const markerRegistry = {
     entity: "gathering_resource",
     source: "resources",
     label: "Resource",
-    pluralLabel: "Resources",
+    pluralLabel: "Other resources",
     color: [156, 163, 175],
     icon: Package,
     iconType: "gathering_other",
@@ -803,8 +803,8 @@ export const markerRegistry = {
     id: "forges",
     entity: "crafting_station",
     source: "interactables",
-    label: "Forge",
-    pluralLabel: "Forges",
+    label: "Craft Station",
+    pluralLabel: "Craft Stations",
     color: [139, 92, 246],
     icon: Hammer,
     iconType: "crafting_station",

@@ -11,23 +11,18 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Mercenary Song Aura</h3>
   <p>
-    The mercenary keeps the song running automatically, renewing its aura every
-    2.5 seconds. Each renewal lasts {formatDuration(
+    The <a
+      href="/mercenaries/bard_mercenary"
+      class="text-blue-600 dark:text-blue-400 hover:underline">Bard mercenary</a
+    >
+    keeps the song running automatically, renewing its aura every 2.5 seconds. Each
+    renewal lasts {formatDuration(
       skill.duration_base,
       skill.duration_per_level,
     )}. A recipient loses the effect when it leaves range. When combat starts or
     ends, the previous set stops renewing and lasts its remaining duration.
   </p>
   <p class="text-muted-foreground">
-    <span class="block"
-      >The
-      <a
-        href="/mercenaries/bard_mercenary"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-        >Bard mercenary</a
-      >
-      sings automatically.</span
-    >
     <span class="block"
       >Out of combat, it keeps only
       <a
@@ -63,8 +58,8 @@
     >
     <span class="block">It starts one song at a time.</span>
     <span class="block"
-      >All song effects end immediately when the mercenary or its owner dies, or
-      when the mercenary is stunned, feared, or asleep.</span
+      >All song effects end immediately when you or the mercenary die, or when
+      the mercenary is stunned, feared, or asleep.</span
     >
   </p>
 </div>

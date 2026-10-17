@@ -27,7 +27,7 @@
     buildCollectionPage({
       path: "/zones",
       name: "Zones — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${formatNumber(data.zones.length)} zones in Ancient Kingdoms.`,
+      description: `${formatNumber(data.zones.length)} zones in Ancient Kingdoms, with their monsters, NPCs, and resources.`,
       items: data.zones.map((zone) => ({
         name: zone.name,
         path: `/zones/${zone.id}`,
@@ -50,15 +50,15 @@
     },
     {
       id: "level_range",
-      header: "Level Range",
+      header: "Monster levels",
       accessorFn: (row) => row.level_min,
       enableSorting: false,
       size: 150,
     },
     {
       accessorKey: "level_median",
-      header: "Median",
-      size: 150,
+      header: "Median monster level",
+      size: 210,
       sortingFn: (rowA, rowB) => {
         const a = rowA.original.level_median;
         const b = rowB.original.level_median;
@@ -98,8 +98,8 @@
   const columnLabels: Record<string, string> = {
     is_dungeon: "Type",
     name: "Name",
-    level_range: "Level Range",
-    level_median: "Median Level",
+    level_range: "Monster levels",
+    level_median: "Median monster level",
     boss_count: "Bosses",
     elite_count: "Elites",
     altar_count: "Altars",
@@ -159,11 +159,24 @@
   row: Row<ZoneListView>;
 })}
   {#if cell.column.id === "is_dungeon"}
-    <div class="flex justify-center">
+    <div
+      class="flex justify-center"
+      title={row.original.is_dungeon ? "Dungeon" : "Overworld"}
+    >
       {#if row.original.is_dungeon}
-        <Castle class="{ICON_BADGE.iconSize} text-purple-500" />
+        <Castle
+          class="{ICON_BADGE.iconSize} text-purple-500"
+          role="img"
+          aria-label="Dungeon"
+          aria-hidden="false"
+        />
       {:else}
-        <Trees class="{ICON_BADGE.iconSize} text-green-500" />
+        <Trees
+          class="{ICON_BADGE.iconSize} text-green-500"
+          role="img"
+          aria-label="Overworld"
+          aria-hidden="false"
+        />
       {/if}
     </div>
   {:else if cell.column.id === "name"}
@@ -179,10 +192,10 @@
         {#if row.original.level_min === row.original.level_max}
           {row.original.level_min}
         {:else}
-          {row.original.level_min} – {row.original.level_max}
+          {row.original.level_min} to {row.original.level_max}
         {/if}
       {:else}
-        <span class="text-muted-foreground">—</span>
+        <span class="text-muted-foreground">-</span>
       {/if}
     </span>
   {:else if cell.column.id === "level_median"}
@@ -190,7 +203,7 @@
       {#if row.original.level_median !== null}
         {row.original.level_median}
       {:else}
-        <span class="text-muted-foreground">—</span>
+        <span class="text-muted-foreground">-</span>
       {/if}
     </span>
   {:else if cell.column.id === "boss_count" || cell.column.id === "elite_count" || cell.column.id === "altar_count" || cell.column.id === "npc_count" || cell.column.id === "gather_count"}

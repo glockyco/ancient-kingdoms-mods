@@ -9,8 +9,8 @@ export const TRAP_TYPE_LABELS: Record<TrapType, string> = {
 
 /** Visitor-facing mechanics summary for each exported trap kind. */
 export const TRAP_TYPE_DESCRIPTIONS: Record<TrapType, string> = {
-  disarmable: "A contact trap activates when you step on it.",
+  disarmable: "A disarmable trap triggers when you step on it.",
   dangerous_ground:
     "The hazard triggers once per second while you stand in its area.",
-  wall_trap: "The wall trap fires into its area and can damage players inside.",
+  wall_trap: "The wall trap fires into its area and can damage you inside.",
 };

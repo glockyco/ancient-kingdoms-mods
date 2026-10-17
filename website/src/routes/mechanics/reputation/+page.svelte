@@ -63,9 +63,9 @@
   const TIER_UNLOCKS: Record<number, string> = {
     0: "NPCs of this faction refuse services",
     1: "NPCs of this faction refuse services",
-    4: "Faction vendors, at 15,000 (panel: Friendly 14,000 / 20,000)",
-    6: "Recipes, costumes, and pets, at 221,000 (panel: Ally 0 / 500,000)",
-    7: "Mounts, at 721,000 (panel: Revered 0 / 1,279,000)",
+    4: "Faction vendors, at 15,000 (Friendly 14,000 / 20,000 in the faction panel)",
+    6: "Recipes, costumes, and pets, at 221,000 (Ally 0 / 500,000 in the faction panel)",
+    7: "Mounts, at 721,000 (Revered 0 / 1,279,000 in the faction panel)",
   };
 
   /**
@@ -146,7 +146,7 @@
       <!-- Source: server-scripts/GatherItem.cs:OnInteractServer; server-scripts/Npc.cs:OnDeath; server-scripts/Database.cs:CharacterCreate — faction chests raise The Forsaken, NPC kills use their listed factions, and no race starts with a Forsaken bonus. -->
       <p>
         Opening faction chests raises your standing with The Forsaken. Killing
-        NPCs can also raise it. No race starts with bonus reputation for it.
+        NPCs can also raise it.
       </p>
     </Card.Content>
   </Card.Root>
@@ -218,7 +218,8 @@
                       class="text-blue-600 dark:text-blue-400 hover:underline"
                       >Trial of the Ancients</a
                     >
-                    requires 21,000 with Elven Kingdom (panel: Honored 0 / 200,000).
+                    requires 21,000 with Elven Kingdom (Honored 0 / 200,000 in the
+                    faction panel).
                   {:else if TIER_UNLOCKS[tier.id]}
                     {TIER_UNLOCKS[tier.id]}
                   {:else}
@@ -230,35 +231,21 @@
           </tbody>
         </table>
       </div>
-      <p>
-        <span class="block">Each table entry is the minimum for its tier.</span>
-        <span class="block"
-          >Friendly starts at 1,000 points, so 999 points is Neutral.</span
-        >
-      </p>
+      <p>Each table entry is the minimum for its tier.</p>
       <!-- Source: server-scripts/UIFactions.cs:adaptTextFaction — Neutral through Revered display whole points above the tier start, out of the tier's span. -->
       <p>
         From Neutral through Revered, the faction panel shows your progress
         toward the next tier, not your total reputation. It rounds down to whole
         points. A total of 15,000 reads Friendly 14,000 / 20,000.
       </p>
-      <!-- Source: server-scripts/UIFactions.cs:124-153 — Unfriendly is −500 through below 0, Hostile is −3,000 through below −500, and Hated is below −3,000. -->
-      <p>
-        <span class="block">Below zero, Unfriendly covers −500 to below 0.</span
-        >
-        <span class="block">Hostile covers −3,000 to below −500.</span>
-        <span class="block">Hated begins below −3,000.</span>
-      </p>
       <!-- Source: server-scripts/Npc.cs:1732-1738; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
-        <span class="block"
-          >An NPC refuses to talk to you when your reputation with its faction
-          falls below −500.</span
-        >
-        <span class="block"
-          >A quest can require reputation with any faction, not only its quest
-          giver's.</span
-        >
+        Quests may require reputation with a faction other than their quest
+        giver's. See <a
+          href="#unlocks"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >reputation requirements</a
+        > for access to quests and services.
       </p>
     </Card.Content>
   </Card.Root>
@@ -274,13 +261,8 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:574-604 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
       <p>
-        <span class="block"
-          >A monster's level, maximum Hit Points, and rank determine reputation
-          gained.</span
-        >
-        <span class="block"
-          >Only its level and rank determine reputation lost.</span
-        >
+        Reputation gains depend on the monster's level, maximum Hit Points, and
+        rank. Losses depend only on level and rank.
       </p>
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -311,7 +293,7 @@
             >
               <td class="py-2 pr-4">Normal</td>
               <td class="py-2 pr-4">Base gain</td>
-              <td class="py-2">Monster level × 0.75, without rounding</td>
+              <td class="py-2">75% of monster level, not rounded</td>
             </tr>
           </tbody>
         </table>
@@ -326,8 +308,6 @@
           > is a level 56 boss with 800,000 maximum Hit Points. Its kill raises Elven
           Kingdom, Children of Illithor, and Army of Order, and lowers Ancient Gods.</span
         >
-        <span class="block">The worked example below uses Avatar of Water.</span
-        >
       </p>
       <Calculation calculation={reputationExample(56, 800_000)} />
       <!-- Source: server-scripts/Monster.cs:OnDeath — each nearby party player receives the full faction change. -->
@@ -335,7 +315,7 @@
         Each <a
           href="/mechanics/party#shared-rewards"
           class="text-blue-600 dark:text-blue-400 hover:underline"
-          >nearby party member</a
+          >nearby party player</a
         > receives the full monster-kill reputation.
       </p>
     </Card.Content>
@@ -359,17 +339,25 @@
               href="/npcs/{npc.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{npc.name}</a
-            >, a Notable NPC, raises {#each npc.improveFactions as faction, i (faction.id)}{i >
+            >, a Notable NPC, raises {#each npc.improveFactions as faction, i (faction.id)}{i ===
               0
-                ? ", "
-                : ""}<a
+                ? ""
+                : i === npc.improveFactions.length - 1
+                  ? npc.improveFactions.length > 2
+                    ? ", and "
+                    : " and "
+                  : ", "}<a
                 href="/factions/{faction.id}"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
                 >{faction.name}</a
-              >{/each}{#each npc.decreaseFactions as faction, i (faction.id)}{i >
+              >{/each}{#each npc.decreaseFactions as faction, i (faction.id)}{i ===
               0
-                ? ", "
-                : " and lowers "}<a
+                ? " and lowers "
+                : i === npc.decreaseFactions.length - 1
+                  ? npc.decreaseFactions.length > 2
+                    ? ", and "
+                    : " and "
+                  : ", "}<a
                 href="/factions/{faction.id}"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
                 >{faction.name}</a
@@ -382,7 +370,7 @@
         Each <a
           href="/mechanics/party#shared-rewards"
           class="text-blue-600 dark:text-blue-400 hover:underline"
-          >nearby party member</a
+          >nearby party player</a
         > receives the full reputation change from an NPC kill.
       </p>
       <!-- Source: server-scripts/Player.cs:IsProtectedFriendlyNpc; UISettings.cs:ProtectFriendlyNpcs,InitializeFriendlyNpcToggle — the setting is on by default and blocks attacks on friendly NPCs; its protect_friendly_npcs label reads "Protect NPCs" in the English localization table, read in the running game. -->
@@ -409,7 +397,6 @@
           >Handing in an ordinary quest gives 20 reputation per recommended
           level with its starting quest giver's faction.</span
         >
-        <span class="block">A level 40 quest gives 800.</span>
       </p>
       <p>
         <a
@@ -433,9 +420,8 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — both reputation changes precede the reward roll. Source: website/data/compendium.db:chests — all 54 faction chests have a 75% gold reward chance and require no key. -->
       <p>
-        Both reputation changes apply every time you open a faction chest,
-        including openings that give no reward. Each opening has a 75% chance to
-        give gold.
+        Both reputation changes apply even if the chest gives no gold. The
+        chance of gold is 75%.
       </p>
     </Card.Content>
   </Card.Root>
@@ -444,21 +430,15 @@
     <Card.Header>
       <Card.Title>Petting Animals</Card.Title>
       <Card.Description>
-        Petting a friendly animal grants 1–4 reputation with its faction at most
-        once every 30 seconds.
+        Petting a friendly animal grants 1-4 reputation with its faction.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
       <!-- Source: server-scripts/Player.cs:13513-13517 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
-        <span class="block"
-          >Click an animal within 3 yd to pet it for 1–4 reputation with its
-          faction.</span
-        >
-        <span class="block"
-          >The same animal cannot grant more for another 30 seconds.</span
-        >
+        Click an animal within 3 yd to pet it. The same animal can grant
+        reputation only once every 30 seconds.
       </p>
     </Card.Content>
   </Card.Root>
@@ -493,8 +473,8 @@
             href="/mechanics/housing"
             class="font-bold text-blue-600 dark:text-blue-400 hover:underline"
             >Houses</a
-          > have their own faction and requirement. Every purchasable house needs
-          21,000 reputation (panel: Honored 0 / 200,000).
+          > each require 21,000 reputation with their own faction (Honored 0 / 200,000
+          in the faction panel).
         </li>
         <li>
           <!-- Source: server-scripts/PlayerQuests.cs:131-143 — every quest faction requirement must be met. -->
@@ -505,7 +485,8 @@
         <li>
           <!-- Source: server-scripts/Npc.cs:1732-1738 — faction values below -500 select the lowFactionMessages branch instead of services. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
-          that faction will not talk to you. No shop, no quests, no services.
+          that faction refuse to talk to you, so you cannot shop, take quests, or
+          use their services.
         </li>
       </ul>
       <p>
@@ -529,18 +510,10 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <p>
-        If you stop gaining or losing reputation with a faction, your points
-        with that faction stay the same.
-      </p>
       <!-- Source: server-scripts/Player.cs:13513-13517, Monster.cs:3186-3198, Npc.cs:1636-1646, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
-        <span class="block">Reputation has no maximum or minimum.</span>
-        <span class="block"
-          >Kills, quests, and other sources can move your saved points past the
-          Exalted or Hated tier.</span
-        >
+        Your reputation can keep rising above Exalted or falling below Hated.
       </p>
       <!-- Source: server-scripts/UIFactions.cs:84-105 — the Exalted readout clamps only the slider. -->
       <!-- Source: server-scripts/UIFactions.cs:148-154 — the Hated readout floors the displayed number at 0. -->

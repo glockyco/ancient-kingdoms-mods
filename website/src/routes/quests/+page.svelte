@@ -26,7 +26,7 @@
     buildCollectionPage({
       path: "/quests",
       name: "Quests — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${formatNumber(data.quests.length)} quests in Ancient Kingdoms.`,
+      description: `${formatNumber(data.quests.length)} quests in Ancient Kingdoms, with objectives, requirements, rewards, and prerequisite chains.`,
       items: data.quests.map((quest) => ({
         name: quest.name,
         path: `/quests/${quest.id}`,
@@ -83,7 +83,7 @@
         const flags: string[] = [];
         if (row.is_main_quest) flags.push("Main");
         if (row.is_epic_quest) flags.push("Epic");
-        if (row.is_adventurer_quest) flags.push("Daily");
+        if (row.is_adventurer_quest) flags.push("Adventurer");
         if (row.is_repeatable) flags.push("Repeatable");
         return flags.join(" ");
       },
@@ -115,8 +115,8 @@
     },
     {
       accessorKey: "level_required",
-      header: "Req. Level",
-      size: 140,
+      header: "Required level",
+      size: 170,
       filterFn: (
         row,
         _columnId,
@@ -142,8 +142,8 @@
     },
     {
       accessorKey: "level_recommended",
-      header: "Rec. Level",
-      size: 140,
+      header: "Recommended level",
+      size: 200,
     },
     {
       id: "display_type_filter",
@@ -173,8 +173,8 @@
   const columnLabels: Record<string, string> = {
     name: "Name",
     display_type: "Type",
-    level_required: "Req. Level",
-    level_recommended: "Rec. Level",
+    level_required: "Required level",
+    level_recommended: "Recommended level",
     flags: "Categories",
     class: "Class",
     quest_giver: "Quest Giver",
@@ -237,7 +237,7 @@
       </a>
       {#if row.original.quest_giver_count > 1}
         <span class="text-muted-foreground ml-1"
-          >+{row.original.quest_giver_count - 1}</span
+          >+{row.original.quest_giver_count - 1} more</span
         >
       {/if}
     {:else}
@@ -292,7 +292,7 @@
 
 <Seo
   title="Quests - Ancient Kingdoms"
-  description={`${formatNumber(data.quests.length)} quests — main story, epic, adventurer, and repeatable. Browse objectives, level gates, rewards, and prerequisite chains.`}
+  description={`${formatNumber(data.quests.length)} quests: main story, epic, Adventurer, and repeatable. Browse objectives, level requirements, rewards, and prerequisite chains.`}
   path="/quests"
 />
 
@@ -337,8 +337,7 @@
           <div>
             <p class="font-medium">Accept the quest.</p>
             <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-              If it lists several prerequisite quests, completing any one of
-              them is enough.
+              Complete any one of the listed prerequisite quests.
             </p>
           </div>
         </li>
@@ -359,8 +358,16 @@
           <div>
             <p class="font-medium">Complete the objective.</p>
             <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-              What counts depends on the quest type. Abandoning a quest deletes
-              its progress.
+              Abandoning a quest deletes its progress.
+            </p>
+          </div>
+        </li>
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="text-sm tabular-nums text-muted-foreground">4</span>
+          <div>
+            <p class="font-medium">Turn in the quest.</p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              Talk to the completion NPC to collect your rewards.
             </p>
           </div>
         </li>
@@ -400,33 +407,35 @@
           <!-- Source: server-scripts/PlayerQuests.cs:333-349; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Find" /></td>
-            <td class="px-4 py-2">Done as soon as you accept</td>
-            <td class="px-4 py-2 text-muted-foreground"
-              >Talk to the completion NPC</td
-            >
+            <td class="px-4 py-2">Talking to the completion NPC</td>
+            <td class="px-4 py-2 text-muted-foreground">Nothing is taken</td>
           </tr>
           <!-- Source: server-scripts/GatherQuest.cs:21-26,63-74; server-scripts/PlayerQuests.cs:100-108 — Gather quests record items collected after acceptance. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Gather" /></td>
             <td class="px-4 py-2">Items you gather after you accept</td>
             <td class="px-4 py-2 text-muted-foreground"
-              >You need not keep the items</td
+              >Nothing is taken. You do not need to keep the items.</td
             >
           </tr>
           <!-- Source: server-scripts/GatherInventoryQuest.cs:15-96 — Have checks current items without removal; Deliver removes them, taking an equipped required item when inventory has too few, and keeps stored keys. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Have" /></td>
             <td class="px-4 py-2"
-              >Items, keys, or equipped items you hold, even from before</td
+              >Items in your inventory or keys you hold, including ones you had
+              before you accepted. Equipped items do not count.</td
             >
             <td class="px-4 py-2 text-muted-foreground">You keep the items</td>
           </tr>
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Deliver" /></td>
-            <td class="px-4 py-2">Items you hold, even from before</td>
+            <td class="px-4 py-2">
+              Items in your inventory or keys you hold, including ones you had
+              before you accepted. Some quests also accept worn items.
+            </td>
             <td class="px-4 py-2 text-muted-foreground"
-              >The items are taken. An equipped required item is taken if
-              inventory has too few. Keys stay.</td
+              >Items are taken, including accepted worn items if needed. Keys
+              are kept.</td
             >
           </tr>
           <!-- Source: server-scripts/EquipItemQuest.cs:9-19 — fulfilled while every listed item is equipped. -->

@@ -20,16 +20,16 @@
       at rank
       {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
-        : ""},
-      {amount < 0 ? "to at least 0%" : "to at most 80%"}. Block Chance applies
-      only to physical hits.</span
+        : ""}. Total Block Chance {amount < 0
+        ? "cannot fall below 0%"
+        : "cannot exceed 80%"}. It applies only to physical hits.</span
     >
     <span class="block"
-      >Block Chance is capped at 80% before Accuracy and level difference are
-      applied.</span
-    >
-    <span class="block"
-      >The final chance for an attack to miss is capped at 90%.</span
+      >See <a
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        href="/mechanics/combat#avoidance">resistance and avoidance</a
+      >
+      for how level difference and Accuracy change the final chance.</span
     >
   </p>
 </div>

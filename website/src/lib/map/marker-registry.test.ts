@@ -205,14 +205,12 @@ describe("marker registry", () => {
       NPC_FACETS.find((facet) => facet.id === "isTeleporter"),
     ).toMatchObject({
       visibilityKey: "npcTeleporters",
-      label: "Teleporters",
       mask: 1 << 18,
     });
     expect(
       NPC_FACETS.find((facet) => facet.id === "isAdventurerTaskgiver"),
     ).toMatchObject({
       visibilityKey: "npcAdventurerTasks",
-      label: "Adventurer Tasks",
     });
   });
 

@@ -29,7 +29,7 @@
 
 <div class="mb-2">
   <div id="zone-focus-label" class="text-xs text-muted-foreground mb-1">
-    Focus
+    Show markers in
   </div>
   <Popover.Root bind:open>
     <Popover.Trigger>
@@ -46,7 +46,7 @@
             id="zone-focus-value"
             class={selectedZone ? "" : "text-muted-foreground"}
           >
-            {selectedZone?.name ?? "All Zones"}
+            {selectedZone?.name ?? "All zones"}
           </span>
           <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

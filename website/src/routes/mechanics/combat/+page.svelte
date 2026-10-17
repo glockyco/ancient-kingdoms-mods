@@ -16,7 +16,7 @@
 
 <Seo
   title="Combat Mechanics - Ancient Kingdoms"
-  description="How damage, Armor Class and resistance, healing, Haste and Spell Casting Haste, and buff and debuff scaling work in Ancient Kingdoms combat."
+  description="Damage, healing, Armor Class, resists, Haste, Spell Casting Haste and how buffs and debuffs scale in Ancient Kingdoms combat."
   path="/mechanics/combat"
 />
 
@@ -30,7 +30,7 @@
           { label: "Combat" },
         ]}
       />
-      <h1 class="mt-4 text-4xl font-bold tracking-tight">Combat Mechanics</h1>
+      <h1 class="mt-4 text-4xl font-bold tracking-tight">Combat</h1>
       <p class="mt-3 max-w-[72ch] text-lg text-muted-foreground">
         How the game works out hits, defense, healing, effects, speed and
         threat.

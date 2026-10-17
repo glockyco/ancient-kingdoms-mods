@@ -20,8 +20,8 @@
       points at rank
       {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
-        : ""},
-      {amount < 0 ? "to at least 0%" : "to at most 70%"}.</span
+        : ""}. Total Critical Strike
+      {amount < 0 ? "cannot fall below 0%" : "cannot exceed 70%"}.</span
     >
     <span class="block"
       >See <a

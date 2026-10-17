@@ -175,6 +175,14 @@ export interface NpcDetailPageData {
   questsCompletedHere: NpcQuestOffered[];
   itemsSold: NpcItemSold[];
   spawns: NpcSpawnLocation[];
+  summonTriggers: Array<{
+    trigger_id: string;
+    zone_id: string;
+    zone_name: string;
+    monster_id: string;
+    monster_name: string;
+    count: number;
+  }>;
   drops: NpcDrop[];
   skills: NpcSkill[];
   respawnDungeonName: string | null;

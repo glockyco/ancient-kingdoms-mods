@@ -23,8 +23,8 @@
   <!-- Source: server-scripts/BardCharmSongSkill.cs:IsValidCharmTarget,GetCharmTarget,Apply — debuff immunity blocks charm, and recasts roll resistance against the active charm. -->
   <p class="text-muted-foreground">
     <span class="block"
-      >Only living monsters that are not bosses, elites, training dummies,
-      returning home, or immune to debuffs can be charmed.</span
+      >You cannot charm bosses, elites, training dummies, dead monsters,
+      monsters returning home or monsters immune to debuffs.</span
     >
     <span class="block">A Bard can control one charmed monster at a time.</span>
     <span class="block"

@@ -73,6 +73,9 @@ export interface MonsterSource {
   is_fabled: boolean;
   is_elite: boolean;
   drop_rate: number;
+  per_kill_chance?: number;
+  per_kill_chance_with_fatecharm?: number;
+  is_distribution_roll?: boolean;
 }
 
 /**

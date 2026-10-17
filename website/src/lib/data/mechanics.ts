@@ -29,13 +29,15 @@ export const MECHANICS_GROUPS = [
       {
         title: "Character Build",
         href: "/mechanics/character",
-        description: "Attributes, resources, skills, and specializations",
+        description:
+          "Attributes, resources, skills, specializations, and macros",
         summary: "Attributes and skills",
       },
       {
         title: "Experience",
         href: "/mechanics/experience",
-        description: "Level costs, veteran points, and every XP source",
+        description:
+          "XP needed to level up, level rewards, total veteran points, and XP sources",
         summary: "Levels and XP sources",
         featured: true,
       },
@@ -59,7 +61,7 @@ export const MECHANICS_GROUPS = [
       {
         title: "Death & Remains",
         href: "/mechanics/death",
-        description: "What death costs, remains, and resurrection",
+        description: "Death penalties, remains, and resurrection",
         summary: "Death costs and remains",
       },
       {
@@ -84,14 +86,14 @@ export const MECHANICS_GROUPS = [
       {
         title: "Mercenary Stats",
         href: "/mechanics/mercenary-stats",
-        description: "Stat ranges per class and race, plus hiring odds",
-        summary: "Stat ranges and odds",
+        description: "Stat ranges per class and race, and hiring odds",
+        summary: "Stats and hiring odds",
         featured: true,
       },
       {
         title: "Bard Songs & Charm",
         href: "/mechanics/bard",
-        description: "Song slots, auras, and charming a monster",
+        description: "Song slots, auras, Final Cadence, and charm",
         summary: "Songs and charming",
       },
     ],
@@ -114,7 +116,7 @@ export const MECHANICS_GROUPS = [
       {
         title: "Reputation",
         href: "/mechanics/reputation",
-        description: "Faction standing, the tier ladder, and every source",
+        description: "Faction standing, reputation tiers, sources, and unlocks",
         summary: "Faction standing",
         featured: true,
       },
@@ -126,8 +128,7 @@ export const MECHANICS_GROUPS = [
       {
         title: "World & Travel",
         href: "/mechanics/world",
-        description:
-          "Game modes, seasonal events, binding, travel, and portals",
+        description: "Game modes, maps, binding, travel, and portals",
         summary: "Binding, travel, and portals",
       },
       {
@@ -140,7 +141,8 @@ export const MECHANICS_GROUPS = [
       {
         title: "Crafting & Augments",
         href: "/mechanics/crafting",
-        description: "Craft Stations, recipes, and attaching augments",
+        description:
+          "Craft Stations, recipes, the Crafting journal, and augments",
         summary: "Stations and augments",
       },
     ],

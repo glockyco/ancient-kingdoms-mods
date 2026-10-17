@@ -7,6 +7,8 @@
   import Snowflake from "@lucide/svelte/icons/snowflake";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Sword from "@lucide/svelte/icons/sword";
+  import Bug from "@lucide/svelte/icons/bug";
+  import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
   import { statName, formatStat } from "$lib/stats";
 
   interface Props {
@@ -108,7 +110,7 @@
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-800 text-emerald-50 shadow-sm"
             aria-hidden="true"
           >
-            <Skull class="h-5 w-5" />
+            <Bug class="h-5 w-5" />
           </span>
           <span class="sr-only">{statName("disease_resist")}: </span>
           <span class="text-lg font-semibold"
@@ -166,7 +168,7 @@
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-violet-700 text-violet-50 shadow-sm"
             aria-hidden="true"
           >
-            <Sparkles class="h-5 w-5" />
+            <WandSparkles class="h-5 w-5" />
           </span>
           <span class="sr-only">{statName("spell_power")}: </span>
           <span class="min-w-0 text-lg font-semibold break-words"

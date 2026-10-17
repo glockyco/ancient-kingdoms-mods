@@ -3,6 +3,7 @@ import sqlite3
 from compendium.denormalizers.experience.calculations import (
     get_alchemy_exp,
     get_crafting_exp,
+    get_discovery_exp,
     run,
 )
 
@@ -17,7 +18,8 @@ def test_gathering_xp_only_for_rewarding_resource_types():
         conn.executescript("""
             CREATE TABLE monsters (id, level, health, is_boss, is_elite,
                                    no_aggro_monster, exp_multiplier, base_exp);
-            CREATE TABLE zones (id, is_dungeon, discovery_exp);
+            CREATE TABLE zones (id, zone_id, name, is_dungeon, discovery_exp);
+            CREATE TABLE zone_triggers (id, zone_id, name, discovery_exp);
             CREATE TABLE items (id, quality, is_quest_item, alchemy_exp,
                                 recipe_potion_learned_id);
             CREATE TABLE crafting_recipes (id, result_item_id, crafting_exp);
@@ -25,6 +27,12 @@ def test_gathering_xp_only_for_rewarding_resource_types():
             CREATE TABLE gathering_resources (id, level, is_plant, is_mineral,
                 is_radiant_spark, is_fishing_spot, item_reward_id, gathering_exp);
             INSERT INTO items (id, is_quest_item) VALUES ('quest_reward', 1), ('normal', 0);
+            INSERT INTO zones VALUES
+                ('forest', 1, 'Forest', 0, NULL), ('dungeon', 2, 'Dungeon', 1, NULL);
+            INSERT INTO zone_triggers VALUES
+                ('city', 1, 'Alaenanore Village', NULL),
+                ('field', 1, 'Forest', NULL),
+                ('underground', 2, 'Alaenanore Village', NULL);
             INSERT INTO gathering_resources VALUES
                 ('plant', 0, 1, 0, 0, 0, 'normal', NULL),
                 ('mineral', 1, 0, 1, 0, 0, 'normal', NULL),
@@ -48,3 +56,18 @@ def test_gathering_xp_only_for_rewarding_resource_types():
             "weathered_scroll": 0,
             "quest_plant": 0,
         }
+        assert dict(conn.execute("SELECT id, discovery_exp FROM zone_triggers")) == {
+            "city": 10,
+            "field": 25,
+            "underground": 150,
+        }
+        assert dict(conn.execute("SELECT id, discovery_exp FROM zones")) == {
+            "forest": 25,
+            "dungeon": 150,
+        }
+
+
+def test_discovery_uses_named_area_and_parent_dungeon():
+    assert get_discovery_exp("Alaenanore Village", False) == 10
+    assert get_discovery_exp("Alaenanore Forest", False) == 25
+    assert get_discovery_exp("Alaenanore Village", True) == 150

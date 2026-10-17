@@ -19,6 +19,7 @@
   let query = $state("");
   let results = $state<MapSearchResult[]>([]);
   let loading = $state(false);
+  let failed = $state(false);
 
   // Responsive detection
   let isMobile = $state(false);
@@ -34,16 +35,33 @@
   let searchTimeout: ReturnType<typeof setTimeout>;
   $effect(() => {
     clearTimeout(searchTimeout);
-    if (query.length >= 2) {
+    const searchQuery = query;
+    let cancelled = false;
+    failed = false;
+    if (searchQuery.length >= 2) {
       loading = true;
       searchTimeout = setTimeout(async () => {
-        results = await searchMapEntities(query);
-        loading = false;
+        try {
+          const matches = await searchMapEntities(searchQuery);
+          if (!cancelled) results = matches;
+        } catch (error) {
+          console.error("Failed to search map:", error);
+          if (!cancelled) {
+            results = [];
+            failed = true;
+          }
+        } finally {
+          if (!cancelled) loading = false;
+        }
       }, 150);
     } else {
       results = [];
       loading = false;
     }
+    return () => {
+      cancelled = true;
+      clearTimeout(searchTimeout);
+    };
   });
 
   // Reset query when dialog closes
@@ -63,9 +81,9 @@
     monster: "Monsters",
     npc: "NPCs",
     zone: "Zones",
-    resource: "Gathering",
+    resource: "Resources",
     chest: "Chests",
-    treasure: "Treasure",
+    treasure: "Dig sites",
     altar: "Altars",
     house: "Houses",
     trap: "Traps",
@@ -107,6 +125,12 @@
               Searching...
             </div>
           </Command.Loading>
+        {:else if failed}
+          <Command.Empty>
+            <div role="alert" class="py-6 text-center text-sm text-destructive">
+              Search is unavailable. Check your connection and try again.
+            </div>
+          </Command.Empty>
         {:else if query.length < 2}
           <Command.Empty>
             <div class="py-6 text-center text-sm text-muted-foreground">

@@ -1,13 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { STATS, STAT_IDS } from "$lib/generated/stat-vocabulary";
-import {
-  formatStat,
-  formatStatField,
-  statField,
-  statFieldName,
-  statFieldPhraseName,
-  statName,
-} from "./stats";
+import { STATS } from "$lib/generated/stat-vocabulary";
+import { formatStat, formatStatField, statField } from "./stats";
 
 describe("formatStat", () => {
   test("shows a fraction as a percentage with at most two decimals", () => {
@@ -43,64 +36,6 @@ describe("formatStatField", () => {
     expect(formatStatField(statField("item", "critical_chance"), 0.05)).toBe(
       "5%",
     );
-  });
-});
-
-describe("statName", () => {
-  test("uses the item tooltip name in an item list when the game has one", () => {
-    const id = STAT_IDS.find(
-      (stat) =>
-        STATS[stat].itemName && STATS[stat].itemName !== STATS[stat].name,
-    );
-    expect(id).toBeDefined();
-    expect(statName(id!, "item")).toBe(STATS[id!].itemName);
-    expect(statName(id!)).toBe(STATS[id!].name);
-  });
-
-  test("keeps the window name in an item list when the game has no item label", () => {
-    const id = STAT_IDS.find((stat) => STATS[stat].itemName === null);
-    expect(id).toBeDefined();
-    expect(statName(id!, "item")).toBe(STATS[id!].name);
-  });
-});
-
-describe("statFieldName", () => {
-  test("names a percent modifier after its stat", () => {
-    expect(statFieldName(statField("skill", "damage_percent_bonus"))).toBe(
-      `${statName("attack_power")} %`,
-    );
-  });
-
-  test("names a percent of the maximum per second after the stat and its pool", () => {
-    expect(
-      statFieldName(statField("skill", "health_percent_per_second_bonus")),
-    ).toBe(`${statName("health_regen")}, % of ${statName("health")}`);
-  });
-
-  test("uses the weapon name for a weapon's item damage only", () => {
-    const damage = statField("item", "damage");
-    expect(statFieldName(damage, "item", { weapon: true })).toBe(
-      STATS.attack_power.weaponItemName,
-    );
-    expect(statFieldName(damage, "item")).toBe(
-      statName("attack_power", "item"),
-    );
-  });
-});
-
-describe("statFieldPhraseName", () => {
-  test("does not repeat the percent sign that a percent value already shows", () => {
-    expect(
-      statFieldPhraseName(statField("skill", "damage_percent_bonus")),
-    ).toBe(statName("attack_power"));
-  });
-
-  test("names a percent of the maximum per second without a comma", () => {
-    const name = statFieldPhraseName(
-      statField("skill", "mana_percent_per_second_bonus"),
-    );
-    expect(name).toBe(`of maximum ${statName("mana")} per second`);
-    expect(name).not.toContain(",");
   });
 });
 

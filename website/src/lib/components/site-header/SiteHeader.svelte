@@ -189,7 +189,7 @@
             rel="noopener noreferrer"
           >
             <KofiIcon class="size-5" />
-            <span>Support the Compendium on Ko-fi</span>
+            <span>Support the compendium on Ko-fi</span>
           </a>
         </div>
       </details>
@@ -204,8 +204,8 @@
         href={STEAM_GUIDE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Steam Guide"
-        title="Steam Guide"
+        aria-label="Compendium guide on Steam"
+        title="Compendium guide on Steam"
       >
         <SteamIcon class="size-5" />
       </a>
@@ -214,8 +214,8 @@
         href={DISCORD_URL}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Join Discord"
-        title="Join Discord"
+        aria-label="Join the Ancient Kingdoms Discord"
+        title="Join the Ancient Kingdoms Discord"
       >
         <DiscordIcon class="size-5" />
       </a>
@@ -225,7 +225,7 @@
         href={KOFI_URL}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Support the Compendium on Ko-fi"
+        aria-label="Support the compendium on Ko-fi"
       >
         <KofiIcon class="size-6" />
         <span>Support</span>

@@ -17,13 +17,13 @@ from rich.console import Console
 
 console = Console()
 
-# Zone discovery EXP amounts
-CITY_ZONES = {
-    "alaenanore_village",
-    "thogh_maldur",
-    "milldenn",
-    "bonebreach",
-    "felarii_village",
+# Source: server-scripts/ZoneTrigger.cs:167-175 - discovery checks the trigger name.
+CITY_NAMES = {
+    "Alaenanore Village",
+    "Thogh Maldur",
+    "Milldenn",
+    "Bonebreach",
+    "Felarii Village",
 }
 DISCOVERY_EXP_DUNGEON = 150
 DISCOVERY_EXP_CITY = 10
@@ -109,21 +109,11 @@ def calculate_monster_base_exp(
     return round(base)
 
 
-def get_discovery_exp(zone_id: str, is_dungeon: bool) -> int:
-    """Get EXP reward for discovering a zone.
-
-    Formula from ZoneTrigger.cs:148-174.
-
-    Args:
-        zone_id: Zone identifier
-        is_dungeon: Whether zone is a dungeon
-
-    Returns:
-        Discovery EXP reward
-    """
+def get_discovery_exp(area_name: str, is_dungeon: bool) -> int:
+    """Get discovery EXP from the area's name and its parent dungeon flag."""
     if is_dungeon:
         return DISCOVERY_EXP_DUNGEON
-    if zone_id in CITY_ZONES:
+    if area_name in CITY_NAMES:
         return DISCOVERY_EXP_CITY
     return DISCOVERY_EXP_REGULAR
 
@@ -206,13 +196,13 @@ def run(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Calculated base_exp for {monster_count} monsters"
     )
 
-    # Calculate zone discovery_exp
-    cursor.execute("SELECT id, is_dungeon FROM zones")
+    # Parent zones and their named trigger areas use the same discovery rule.
+    cursor.execute("SELECT id, name, is_dungeon FROM zones")
     zones = cursor.fetchall()
 
     zone_count = 0
-    for zone_id, is_dungeon in zones:
-        discovery_exp = get_discovery_exp(zone_id, bool(is_dungeon))
+    for zone_id, name, is_dungeon in zones:
+        discovery_exp = get_discovery_exp(name, bool(is_dungeon))
         cursor.execute(
             "UPDATE zones SET discovery_exp = ? WHERE id = ?",
             (discovery_exp, zone_id),
@@ -221,6 +211,18 @@ def run(conn: sqlite3.Connection) -> None:
 
     console.print(
         f"  [green]OK[/green] Calculated discovery_exp for {zone_count} zones"
+    )
+
+    areas = cursor.execute("""
+        SELECT t.id, t.name, z.is_dungeon
+        FROM zone_triggers t JOIN zones z ON z.zone_id = t.zone_id
+    """).fetchall()
+    cursor.executemany(
+        "UPDATE zone_triggers SET discovery_exp = ? WHERE id = ?",
+        [
+            (get_discovery_exp(name, bool(is_dungeon)), area_id)
+            for area_id, name, is_dungeon in areas
+        ],
     )
 
     # Source: server-scripts/GatherItem.cs:630-644,817-828 — only plants, minerals,

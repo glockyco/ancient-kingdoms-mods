@@ -35,7 +35,10 @@ function workerClient(): Worker {
     else request.resolve(response.rows ?? []);
   };
   worker.onerror = (event) => {
-    const error = new Error(event.message || "Database worker failed");
+    console.error("Compendium data worker failed", event.message);
+    const error = new Error(
+      "The compendium data could not be loaded. Check your connection and reload the page.",
+    );
     for (const request of pending.values()) request.reject(error);
     pending.clear();
   };

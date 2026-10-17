@@ -29,12 +29,13 @@ export function reputationExample(
       },
       {
         name: "Reputation gained",
-        expression: "Base gain × monster rank's multiplier from the table",
+        expression:
+          "Base gain × 20 for a boss, × 10 for an elite, or unchanged for a normal monster",
       },
       {
         name: "Reputation lost",
         expression:
-          "Monster level × monster rank's loss multiplier from the table",
+          "Monster level × 2 for a boss, × 1 for an elite, or × 75% for a normal monster, not rounded",
       },
     ],
     example: () => ({
@@ -42,12 +43,12 @@ export function reputationExample(
         `Level ${level} ${boss ? "boss" : elite ? "elite" : "normal monster"}`,
         `${formatNumber(health)} maximum Hit Points`,
       ],
-      result: `+${formatNumber(gain)} reputation for each improved faction, −${formatNumber(loss)} for each decreased faction`,
+      result: `+${formatNumber(gain)} reputation with each faction it raises, −${formatNumber(loss)} with each faction it lowers`,
       working: [
         `${statName("health")} contribution: ${formatNumber(health)} ÷ 2,000 = ${formatNumber(healthContribution)}, rounded`,
         `Base gain: ${level} + ${formatNumber(healthContribution)} = ${formatNumber(base)}`,
         `Reputation gained: ${formatNumber(base)} × ${factor} = ${formatNumber(gain)}`,
-        `Reputation lost: ${level} × ${lossFactor} = ${formatNumber(loss)}`,
+        `Reputation lost: ${level} × ${lossFactor === 0.75 ? "75%" : lossFactor} = ${formatNumber(loss)}`,
       ],
     }),
   };
@@ -69,12 +70,12 @@ export function npcReputation(level = 60, notable = true): Calculation {
       },
       {
         name: "Reputation lost",
-        expression: "Five reputation points per NPC level",
+        expression: "5 reputation points per NPC level",
       },
     ],
     example: () => ({
       given: [`Level ${level} ${notable ? "Notable" : "ordinary"} NPC`],
-      result: `+${formatNumber(gain)} for each improved faction, −${formatNumber(loss)} for each decreased faction`,
+      result: `+${formatNumber(gain)} reputation with each faction it raises, −${formatNumber(loss)} with each faction it lowers`,
       working: [
         `Base reputation gain: 150% × ${level} = ${formatNumber(baseGain)}`,
         `Reputation gained: ${formatNumber(baseGain)} × ${notable ? 60 : "100%"} = ${formatNumber(gain)}`,

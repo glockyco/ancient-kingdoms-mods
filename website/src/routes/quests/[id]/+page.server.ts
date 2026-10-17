@@ -427,7 +427,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     ? JSON.parse(questRaw.gather_items as string)
     : [];
   for (const gi of gatherItemsJson) {
-    if (gi.item_id) {
+    if (gi.item_id && (gi.amount ?? 1) > 0) {
       const itemData = db
         .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
         .get(gi.item_id) as
@@ -436,20 +436,21 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
         gatherInventoryItems.push({
           id: itemData.id,
           name: itemData.name,
-          amount: gi.amount || 1,
+          amount: gi.amount ?? 1,
           tooltip_html: itemData.tooltip_html,
         });
       }
     }
   }
 
-  // Get required items (for gather_inventory quests)
+  // Zero-amount requirements neither require nor consume an item.
+  // Source: server-scripts/GatherInventoryQuest.cs:IsFulfilled,OnCompleted
   const requiredItems: QuestItemTarget[] = [];
   const requiredItemsJson = questRaw.required_items
     ? JSON.parse(questRaw.required_items as string)
     : [];
   for (const ri of requiredItemsJson) {
-    if (ri.item_id) {
+    if (ri.item_id && (ri.amount ?? 1) > 0) {
       const itemData = db
         .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
         .get(ri.item_id) as
@@ -546,6 +547,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     type: ObjectiveType;
     name: string;
     amount: number;
+    zone_name?: string | null;
   }> = [];
 
   for (const target of killTargets) {
@@ -555,10 +557,18 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     objectives.push({ type: "gather", name: item.name, amount: item.amount });
   }
   for (const item of gatherInventoryItems) {
-    objectives.push({ type: "have", name: item.name, amount: item.amount });
+    objectives.push({
+      type: quest.remove_items_on_complete ? "deliver" : "have",
+      name: item.name,
+      amount: item.amount,
+    });
   }
   for (const item of requiredItems) {
-    objectives.push({ type: "deliver", name: item.name, amount: item.amount });
+    objectives.push({
+      type: quest.remove_items_on_complete ? "deliver" : "have",
+      name: item.name,
+      amount: item.amount,
+    });
   }
   for (const item of equipItems) {
     objectives.push({ type: "equip", name: item.name, amount: item.amount });
@@ -573,12 +583,23 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
   if (quest.discovered_location) {
     objectives.push({
       type: "discover",
-      name: quest.discovered_location,
+      name:
+        quest.discovered_location_sub_zone?.name ??
+        quest.discovered_location_zone?.name ??
+        "the marked location",
+      zone_name: quest.discovered_location_sub_zone
+        ? quest.discovered_location_zone?.name
+        : null,
       amount: 1,
     });
   }
   if (quest.is_find_npc_quest && endNpc) {
-    objectives.push({ type: "find", name: endNpc.name, amount: 1 });
+    objectives.push({
+      type: "find",
+      name: endNpc.name,
+      amount: 1,
+      zone_name: endNpc.zone_name,
+    });
   }
 
   const description = questDescription(

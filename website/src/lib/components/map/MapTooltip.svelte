@@ -10,7 +10,11 @@
     GatheringMapEntity,
     CraftingMapEntity,
   } from "$lib/types/map";
-  import { toRomanNumeral } from "$lib/utils/format";
+  import {
+    toRomanNumeral,
+    formatNumber,
+    formatPercent,
+  } from "$lib/utils/format";
   import {
     calculateTooltipPosition,
     getNpcRoles,
@@ -61,7 +65,7 @@
     if (entity.type === "scribing_table") return "Scribing Table";
     if (entity.type === "crafting_station") {
       const crafting = entity as CraftingMapEntity;
-      return crafting.isCookingOven ? "Cooking Oven" : "Forge";
+      return crafting.isCookingOven ? "Cooking Oven" : "Craft Station";
     }
     if (entity.type === "trap") {
       return trapDisplayName(entity as TrapMapEntity);
@@ -102,8 +106,8 @@
         -->{@const monster =
           entity as MonsterMapEntity}<!--
         -->{#if typeName}<span
-            class="ml-1">Lv. {monster.level}</span
-          >{:else}Lv. {monster.level}{/if}<!--
+            class="ml-1">Lv {monster.level}</span
+          >{:else}Lv {monster.level}{/if}<!--
       -->{:else if entity.type === "gathering_plant" || entity.type === "gathering_mineral" || entity.type === "gathering_fish"}<!--
         -->{@const gathering =
           entity as GatheringMapEntity}<!--
@@ -150,13 +154,17 @@
       </div>
     {/if}
     {#if altar.minLevel > 0}
-      <div class="text-xs text-muted-foreground">Lv. {altar.minLevel}+</div>
+      <div class="text-xs text-muted-foreground">Lv {altar.minLevel}+</div>
     {/if}
   {:else if entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
     {@const monster = entity as MonsterMapEntity}
     {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
       <div class="text-sm text-cyan-400">
-        Spawns after killing {monster.sourceMonsterName}
+        {#if monster.sourceSpawnProbability != null && monster.sourceSpawnProbability < 1}{formatPercent(
+            monster.sourceSpawnProbability,
+            { decimals: 1, trailingZeros: true },
+          )} chance to spawn when you kill{:else}Spawns when you kill{/if}
+        {monster.sourceMonsterName}
       </div>
     {/if}
     {#if monster.isPatrolling}
@@ -172,22 +180,22 @@
         <div class="text-sm text-amber-400">
           Key: {portal.requiredItemName}{portal.requiresEveryoneKey
             ? " (each player needs their own)"
-            : " (any online party member's key)"}
+            : " (any online party member can carry it)"}
         </div>
       {/if}
       {#if portal.needMonsterDeadName}
         <div class="text-sm text-amber-400">
-          Kill {portal.needMonsterDeadName} to enter
+          Blocked while {portal.needMonsterDeadName} is alive
         </div>
       {/if}
       {#if portal.requiredLevel > 0}
         <div class="text-xs text-muted-foreground">
-          Lv. {portal.requiredLevel}+
+          Lv {portal.requiredLevel}+
         </div>
       {/if}
       {#if portal.requiredItemLevel > 0}
         <div class="text-xs text-muted-foreground">
-          Item Lv. {portal.requiredItemLevel}+
+          Total item level {formatNumber(portal.requiredItemLevel)}+
         </div>
       {/if}
     {/if}

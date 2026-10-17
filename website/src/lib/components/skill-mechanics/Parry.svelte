@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import { formatLinear } from "$lib/skills/skill-format";
   import { getMechanicsContext } from "./context";
 
@@ -28,4 +29,5 @@
       >. Fully absorbed hits do not trigger it.</span
     >
   </p>
+  <RoundingDefinition />
 </div>

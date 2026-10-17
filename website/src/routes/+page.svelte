@@ -27,7 +27,7 @@
 
   const title = "Ancient Kingdoms Compendium — Wiki, Map & Guides";
   const description =
-    "Look up items, monsters, NPCs, zones, quests, skills, and recipes from game files updated after each patch.";
+    "Look up items, monsters, NPCs, zones, quests, skills, recipes, and mechanics, or explore the interactive map. Updated from game files after each patch.";
 
   /**
    * Pixel art is shown at a whole multiple of its own size so every source
@@ -63,7 +63,6 @@
     { id: "quest", count: HOME_COUNTS.quests },
     { id: "skill", count: HOME_COUNTS.skills },
     { id: "npc", count: HOME_COUNTS.npcs },
-    { id: "profession", count: HOME_COUNTS.professions },
     { id: "mercenary", count: HOME_COUNTS.mercenaries },
     { id: "summon", count: HOME_COUNTS.summons },
     { id: "achievement", count: HOME_COUNTS.achievements },
@@ -178,7 +177,7 @@
         decoding="async"
       />
       <span class="map-copy">
-        <span class="map-title">Interactive World Map</span>
+        <span class="map-title">Interactive world map</span>
         <span class="map-cta"
           >Open the map <span aria-hidden="true">→</span></span
         >
@@ -413,7 +412,7 @@
             href={STEAM_GUIDE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Steam Guide"
+            aria-label="Compendium guide on Steam"
             class="footer-icon"
           >
             <SteamIcon class="size-5" />
@@ -422,7 +421,7 @@
             href={DISCORD_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Join Discord"
+            aria-label="Join the Ancient Kingdoms Discord"
             class="footer-icon"
           >
             <DiscordIcon class="size-5" />

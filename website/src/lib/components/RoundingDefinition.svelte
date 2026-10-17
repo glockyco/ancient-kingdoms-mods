@@ -12,6 +12,6 @@
 {#if first}
   <p class="text-muted-foreground">
     Rounded means to the nearest whole number. Exact halves go to the even
-    number, so 2.5 becomes 2.
+    number, so 2.5 becomes 2 and 3.5 becomes 4.
   </p>
 {/if}

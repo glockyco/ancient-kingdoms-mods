@@ -21,7 +21,7 @@ interface ExperiencePageData {
   redemptionToken: ItemRef | null;
   maxLevelReward: ItemRef | null;
   veteranMaster: NamedRef | null;
-  discoveryCities: NamedRef[];
+  discoveryCities: Array<NamedRef & { zoneId: string | null }>;
   maxLevel: number;
   maxVeteranPoints: number;
   attributeGains: Array<{ className: string; gains: string[] }>;
@@ -60,12 +60,16 @@ export const load: PageServerLoad = (): ExperiencePageData => {
       "SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_veteran_master') = 1 ORDER BY name LIMIT 1",
     )
     .get() as NamedRef | undefined;
-  // Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — these five settlements receive 10 discovery XP.
+  // Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — per-area discovery XP is derived by the pipeline.
   const discoveryCities = db
     .prepare(
-      "SELECT id, name FROM zones WHERE id IN ('alaenanore_village', 'thogh_maldur', 'milldenn', 'bonebreach', 'felarii_village') ORDER BY name",
+      `SELECT t.id, t.name, z.id AS zoneId
+       FROM zone_triggers t
+       LEFT JOIN zones z ON z.zone_id = t.zone_id
+       WHERE t.discovery_exp = 10
+       ORDER BY t.name`,
     )
-    .all() as NamedRef[];
+    .all() as ExperiencePageData["discoveryCities"];
 
   const rules = db
     .prepare(

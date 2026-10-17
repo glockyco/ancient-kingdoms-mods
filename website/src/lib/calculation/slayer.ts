@@ -20,8 +20,8 @@ export function slayerMasteryCalculation(): Calculation {
       {
         name: "Target contribution",
         expression:
-          "0.02% per account kill of that target, counting at most 50 kills",
-        limit: "at most 1 percentage point",
+          "0.02 percentage points per kill of that target on your account",
+        limit: "at most 1 percentage point, reached at 50 kills",
       },
       {
         name: "Slayer mastery",
@@ -31,14 +31,18 @@ export function slayerMasteryCalculation(): Calculation {
     ],
     inputs: [
       situational("cappedTargets", "Targets with 50 or more kills", 30),
-      situational("otherKills", "Kills on targets below 50", 120),
+      situational(
+        "otherKills",
+        "Kills on targets with fewer than 50 kills",
+        120,
+      ),
     ],
     example: ({ cappedTargets, otherKills }) => {
       const mastery = slayerMastery(cappedTargets, otherKills);
       return {
         given: [
           `${formatNumber(cappedTargets)} targets with 50 or more kills`,
-          `${formatNumber(otherKills)} kills on targets below 50`,
+          `${formatNumber(otherKills)} kills on targets with fewer than 50 kills`,
         ],
         result: `${formatPercent(mastery.total, { decimals: 2, preserveNonzero: true })} Slayer mastery`,
         working: [

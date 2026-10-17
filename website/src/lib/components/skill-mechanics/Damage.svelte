@@ -32,6 +32,10 @@
 
 <div class="space-y-3">
   <h3 class="font-semibold">Skill Damage</h3>
+  {#if skill.area_projectile}
+    <!-- Source: server-scripts/AreaDamageSkill.cs:Apply — projectile skills launch a separate projectile at each selected target. -->
+    <p class="text-muted-foreground">This area skill fires projectiles.</p>
+  {/if}
   {#each damageBlocks as block (block.key)}
     <div class="space-y-2">
       <h4 class="font-medium text-muted-foreground">
@@ -52,10 +56,10 @@
         </p>
       {/if}
       {#if isMercenaryGroup(block.casters) && skill.max_level > 1}
-        <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the owner determines the mercenary's skill rank. -->
+        <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the player's level and veteran points determine the mercenary's skill rank. -->
         <p class="text-muted-foreground">
-          Use the rank from Mercenary Skill Rank on this page. The examples use
-          the same owner level and veteran points.
+          Use your mercenary's rank from Mercenary skill rank above. This
+          example uses the rank from that section's example.
         </p>
       {/if}
       {#if block.calculation.inputs?.some((input) => input.key === "bowDamage" || input.key === "offhandDamage")}
@@ -81,9 +85,9 @@
       {/if}
       {#if block.kind === "monster_magic" || block.kind === "monster_melee"}
         <p class="text-muted-foreground">
-          The caster uses its own {block.stats
+          The caster adds its own {block.stats
             .map((stat) => stat.label)
-            .join(" and ")} at its level.
+            .join(" and ")}, which its page lists for its level.
         </p>
       {/if}
       <Calculation calculation={block.calculation} />
@@ -93,34 +97,33 @@
   {#if skill.is_manaburn_skill}
     <!-- Source: server-scripts/Combat.cs:711-714,847-886 — Mana Burn and Rageblow skip avoidance and mitigation, not variance, combat advantage, level adjustment or critical scaling. -->
     <p class="text-muted-foreground">
-      This skill skips avoidance and damage reduction from Armor Class or
-      resistance. Variance, combat advantage, level adjustment and eligible
-      critical hits still apply. See the <a
+      This skill bypasses avoidance, Armor Class and resistance. Other damage
+      modifiers still apply. See the <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#damage-pipeline">damage pipeline</a
+        href="/mechanics/combat#damage-pipeline">damage steps</a
       >.
     </p>
   {:else if damageMechanics}
     <!-- Source: server-scripts/Combat.cs:309-321,855-872,1550-1591 — the matching stat reduces damage by 0.0005 per point, at most 0.9, rounded up; Defense adds 0.0001 per point to blockChance, at most 0.8; a resist stat adds 0.0005 per point to the resist chance. -->
     <p class="text-muted-foreground">
       {#if damageMechanics.avoidance === "block"}
-        The target's Armor Class reduces this damage by 5% per 100 points, at
-        most 90%, with the reduction rounded up. The hit can also be blocked or
-        missed, at the target's base block chance plus 1 percentage point per
-        100 Armor Class and any block bonuses, at most 80%.
+        Every 100 Armor Class reduces this damage by 5%, up to 90%, with the
+        reduction rounded up. Physical hits can also be blocked or missed.
       {:else}
-        The target's {damageMechanics.stat} reduces this damage by 5% per 100 points,
-        at most 90%, with the reduction rounded up, and gives 5 percentage points
-        of chance per 100 points to resist the hit entirely.
+        Every 100 points of the target's {damageMechanics.stat} reduce this damage
+        by 5%, up to 90%, with the reduction rounded up. They also add 5 percentage
+        points to its chance to resist the hit entirely. Each 1% of the caster's Accuracy
+        subtracts 1 percentage point. Level differences also apply. The final resist
+        chance is limited to 0-90%.
       {/if}
-      Level differences and Accuracy change these chances: see
+      See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#avoidance">resistance and avoidance</a
-      >. See also the
+      >, the
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
-        href="/mechanics/combat#damage-pipeline">damage pipeline</a
+        href="/mechanics/combat#damage-pipeline">damage steps</a
       >
       and
       <a
@@ -156,9 +159,8 @@
         class="text-blue-600 dark:text-blue-400 hover:underline">Wild Strike</a
       >
       active, the Ranger's next hit deals 10% more per Wild Strike rank, rounded,
-      as Magic damage. Apply this bonus after the calculation above. Magic Resist
-      reduces that hit by 5% per 100 points, at most 90%, and adds 5 percentage points
-      per 100 points to its chance to be resisted.
+      as Magic damage against Magic Resist. Apply this bonus after the calculation
+      above.
     </p>
   {/if}
 </div>

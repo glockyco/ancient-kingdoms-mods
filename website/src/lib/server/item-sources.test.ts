@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import { describe, expect, test } from "vitest";
 import {
   getGatherSources,
+  getMonsterSources,
   getPackSources,
   getRandomSources,
   getChestItemSources,
@@ -21,7 +22,8 @@ function createDb() {
       is_radiant_spark INTEGER NOT NULL DEFAULT 0,
       is_fishing_spot INTEGER NOT NULL DEFAULT 0,
       level INTEGER NOT NULL DEFAULT 0,
-      tool_required_id TEXT
+      tool_required_id TEXT,
+      item_reward_id TEXT
     );
     CREATE TABLE gathering_resource_spawns (
       id TEXT PRIMARY KEY,
@@ -57,9 +59,10 @@ function createDb() {
       ('worn_rucksack', 0, NULL),
       ('rusty_rod', 0, 'Fishing Rod'),
       ('gilded_rod', 4, 'Fishing Rod');
-    INSERT INTO gathering_resources VALUES
+    INSERT INTO gathering_resources (id, name, item_reward_amount, is_radiant_spark, is_fishing_spot, level, tool_required_id) VALUES
       ('iron_node', 'Iron Node', 3, 0, 0, 0, NULL),
       ('rough_fishing_spot', 'Rough Fishing Spot', 0, 0, 1, 1, 'rusty_rod');
+    UPDATE gathering_resources SET item_reward_id = 'iron_ore' WHERE id = 'iron_node';
     INSERT INTO gathering_resource_spawns VALUES
       ('rough_fishing_spot_lone_lands_-10_0', 'rough_fishing_spot', 'lone_lands'),
       ('rough_fishing_spot_lone_lands_20_30', 'rough_fishing_spot', 'lone_lands'),
@@ -91,6 +94,17 @@ describe("getGatherSources", () => {
       amount_max: 3,
     });
 
+    db.close();
+  });
+  test("random gather drops do not inherit the primary reward quantity", () => {
+    const db = createDb();
+    db.exec(`
+      INSERT INTO item_sources_gather VALUES ('gem', 'iron_node', 0.1, 0.025);
+    `);
+    expect(getGatherSources(db, "gem")[0]).toMatchObject({
+      amount_min: 1,
+      amount_max: 1,
+    });
     db.close();
   });
 
@@ -183,6 +197,76 @@ describe("getGatherSources", () => {
 
     db.close();
   });
+});
+
+test("boss sources expose per-kill chances without replacing configured roll chances", () => {
+  const db = new Database(":memory:");
+  db.exec(`
+    CREATE TABLE monsters (
+      id TEXT, name TEXT, level INTEGER, level_min INTEGER, level_max INTEGER,
+      is_boss INTEGER, is_fabled INTEGER, is_elite INTEGER, loot_inputs TEXT
+    );
+    CREATE TABLE item_sources_monster (item_id TEXT, monster_id TEXT, drop_rate REAL);
+    CREATE TABLE monster_spawns (monster_id TEXT, zone_id TEXT);
+    CREATE TABLE zones (id TEXT, zone_id INTEGER, is_dungeon INTEGER);
+    CREATE TABLE items (luck_token_zone_id TEXT, luck_token_bonus INTEGER);
+    INSERT INTO monster_spawns VALUES ('boss', 'dungeon');
+    INSERT INTO zones VALUES ('dungeon', 1, 1);
+    INSERT INTO items VALUES ('dungeon', 1);
+    INSERT INTO item_sources_monster VALUES ('helm', 'boss', 0.5);
+  `);
+  db.prepare("INSERT INTO monsters VALUES (?, ?, 50, 50, 50, 1, 0, 0, ?)").run(
+    "boss",
+    "Boss",
+    JSON.stringify([
+      {
+        item_id: "helm",
+        item_name: "Helm",
+        probability: 0.5,
+        counts_as_equipment: true,
+        requires_quest: false,
+      },
+      {
+        item_id: "boots",
+        item_name: "Boots",
+        probability: 0.5,
+        counts_as_equipment: true,
+        requires_quest: false,
+      },
+    ]),
+  );
+  const [source] = getMonsterSources(db, "helm");
+  expect(source.drop_rate).toBe(0.5);
+  expect(source.per_kill_chance).toBeCloseTo(0.625);
+  expect(source.per_kill_chance_with_fatecharm).toBeGreaterThan(
+    source.per_kill_chance!,
+  );
+  db.exec("UPDATE zones SET is_dungeon = 0");
+  expect(
+    getMonsterSources(db, "helm")[0].per_kill_chance_with_fatecharm,
+  ).toBeUndefined();
+  db.exec(
+    "INSERT INTO item_sources_monster VALUES ('distribution', 'boss', 0.25)",
+  );
+  db.prepare("UPDATE monsters SET loot_inputs = ?").run(
+    JSON.stringify([
+      {
+        item_id: "distribution",
+        item_name: "Distribution",
+        probability: 0.25,
+        counts_as_equipment: false,
+        requires_quest: false,
+        random_items: [{ item_id: "helm", counts_as_equipment: true }],
+      },
+    ]),
+  );
+  const [distribution] = getMonsterSources(db, "distribution");
+  expect(distribution).toMatchObject({
+    drop_rate: 0.25,
+    is_distribution_roll: true,
+  });
+  expect(distribution.per_kill_chance).toBeUndefined();
+  db.close();
 });
 
 test("container source queries use canonical reachability without losing contents", () => {

@@ -180,7 +180,7 @@
 
 <Seo
   title="Professions - Ancient Kingdoms"
-  description="Crafting, gathering, combat, and exploration professions — required tools, leveling sources, and the recipes or content each unlocks."
+  description="Every Ancient Kingdoms profession in gathering, crafting, combat and exploration, with required tools, how to raise it and what it unlocks."
   path="/professions"
 />
 
@@ -243,7 +243,7 @@
                         ? "books to collect"
                         : "areas to discover"}
                     {:else}
-                      Max level: {profession.max_level}%
+                      {profession.achievement_name ?? "Mastery"} at {profession.max_level}%
                     {/if}
                     <ArrowRight class="ml-2 h-4 w-4" />
                   </div>

@@ -38,6 +38,6 @@
     class="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
   >
     <MapPin class="h-3.5 w-3.5" />
-    View on Map
+    View on map
   </a>
 {/if}

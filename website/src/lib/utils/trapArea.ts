@@ -12,9 +12,8 @@ export function parseTrapAreaRings(json: string | null): TrapAreaRing[] | null {
 }
 
 /**
- * Describe an area the way its shape allows: a rectangle by its side lengths,
- * anything else by how far it reaches, since only the map outline can show
- * which ground inside that reach is actually covered.
+ * Describe rectangles by their side lengths and irregular areas by their
+ * bounding box. Only the map outline shows which ground inside is covered.
  */
 export function formatTrapArea(rings: TrapAreaRing[]): string {
   const [width, height] = getExtent(rings);
@@ -22,7 +21,7 @@ export function formatTrapArea(rings: TrapAreaRing[]): string {
   if (rings.length === 1 && isRectangle(rings[0])) {
     return `${width} × ${height} yd`;
   }
-  return `reaches ${width} × ${height} yd`;
+  return `irregular, fits within ${width} × ${height} yd`;
 }
 
 /** Width and height of the area, rounded to the tenth of a unit shown. */

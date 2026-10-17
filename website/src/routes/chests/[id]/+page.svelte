@@ -15,13 +15,21 @@
   import Dices from "@lucide/svelte/icons/dices";
   import { chestRewardChance } from "$lib/utils/chest-reward";
   import type { PageData } from "./$types";
+  import { detailTitle } from "$lib/seo/title";
 
   let { data }: { data: PageData } = $props();
   const rewardChance = $derived(chestRewardChance(data.chest));
+  const chestName = $derived(`Chest in ${data.chest.zone_name}`);
+  const goldMaximum = $derived(
+    Math.max(data.chest.gold_min, data.chest.gold_max - 1),
+  );
 </script>
 
 <Seo
-  title={`Chest - ${data.chest.zone_name} - Ancient Kingdoms`}
+  title={detailTitle("Chest", {
+    zone: data.chest.zone_name,
+    source: data.chest.key_required_name,
+  })}
   description={data.description}
   path={`/chests/${data.chest.id}`}
 />
@@ -32,20 +40,15 @@
     items={[
       { label: "Home", href: "/" },
       { label: "Chests", href: "/chests" },
-      { label: data.chest.zone_name },
+      { label: chestName },
     ]}
   />
 
   <!-- Header -->
   <div>
     <div class="flex items-center gap-3 flex-wrap">
-      <h1 class="text-3xl font-bold">Chest</h1>
+      <h1 class="text-3xl font-bold">{chestName}</h1>
       <MapLink entityId={data.chest.id} entityType="chest" />
-      <span
-        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-      >
-        Chest
-      </span>
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -77,22 +80,22 @@
         >
           {data.chest.key_required_name}
         </a>
+        <p class="mt-2">Each opening that gives rewards uses up one key.</p>
         <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — without the key, learned Lockpicking and Lockpicks open the chest: each attempt removes one Lockpicks, fails when Random.value < 0.8, and the respawn timer starts before the attempt. -->
         <p class="mt-3">
-          Without the key, a character who has learned
-          <a
-            href="/skills/lockpicking"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Lockpicking</a
-          >
-          can use
+          Without the key, you can use
           <a
             href="/items/lockpicks"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Lockpicks</a
           >
-          instead. Each attempt uses up one and succeeds 20% of the time. A failed
-          attempt still starts the chest's respawn timer.
+          if you have learned
+          <a
+            href="/skills/lockpicking"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Lockpicking</a
+          >. Each attempt uses up one Lockpicks and succeeds 20% of the time. A
+          failed attempt leaves the chest empty until it respawns.
         </p>
       </div>
     </section>
@@ -131,7 +134,7 @@
           <p>
             Each opening has a {formatPercent(rewardChance, {
               decimals: 1,
-              trailingZeros: true,
+              trailingZeros: false,
             })} chance to give anything. Otherwise the chest is empty until it respawns.
           </p>
         {/if}
@@ -139,14 +142,14 @@
           <div>
             <div class="text-sm text-muted-foreground mb-1">Gold</div>
             <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {#if data.chest.gold_min === data.chest.gold_max}
+              {#if data.chest.gold_min === goldMaximum}
                 {formatNumber(data.chest.gold_min, {
                   groupSeparator: "\u202F",
                 })} gold
               {:else}
                 {formatNumber(data.chest.gold_min, {
                   groupSeparator: "\u202F",
-                })} - {formatNumber(data.chest.gold_max, {
+                })} to {formatNumber(goldMaximum, {
                   groupSeparator: "\u202F",
                 })} gold
               {/if}
@@ -190,7 +193,8 @@
           <thead>
             <tr class="border-b bg-muted/50">
               <th class="text-left font-medium p-3">Item</th>
-              <th class="text-right font-medium p-3 w-28">Drop Rate</th>
+              <th class="text-right font-medium p-3 w-28">Chance per opening</th
+              >
             </tr>
           </thead>
           <tbody>

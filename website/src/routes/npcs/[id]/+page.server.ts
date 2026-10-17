@@ -16,6 +16,8 @@ import {
   DB_SOURCE_PATH,
 } from "$lib/constants/constants";
 import { npcDescription } from "$lib/server/meta-description";
+import { npcKillReputation } from "$lib/utils/killReputation";
+import { formatNumber } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
@@ -290,8 +292,8 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     is_notable: Boolean(npcRaw.is_notable),
 
     // Respawn and behavior
-    respawn_time: (npcRaw.respawn_time as number) || 600,
-    respawn_probability: (npcRaw.respawn_probability as number) || 1.0,
+    respawn_time: (npcRaw.respawn_time as number | null) ?? 600,
+    respawn_probability: (npcRaw.respawn_probability as number | null) ?? 1.0,
     respawn_dungeon_id: (npcRaw.respawn_dungeon_id as number) || 0,
     gold_required_respawn_dungeon:
       (npcRaw.gold_required_respawn_dungeon as number) || 0,
@@ -323,16 +325,41 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
          WHERE domain = 'npc' AND entity_id = ? AND kind = 'primary'`,
       )
       .get(params.id) as EntityVisualAsset | undefined) ?? null;
+  // Source: server-scripts/SummonMonster.cs:AreAllPlaceholdersDead,Update.
+  const summonTriggers = db
+    .prepare(
+      `
+    SELECT st.id AS trigger_id, z.id AS zone_id, z.name AS zone_name,
+      m.id AS monster_id, m.name AS monster_name, COUNT(*) AS count
+    FROM summon_triggers st
+    JOIN zones z ON z.id = st.zone_id
+    JOIN summon_trigger_placeholders p ON p.trigger_id = st.id
+    JOIN monster_spawns ms ON ms.id = p.spawn_id
+    JOIN monsters m ON m.id = ms.monster_id
+    WHERE st.summoned_entity_type = 'Npc' AND st.summoned_entity_id = ?
+    GROUP BY st.id, m.id
+    ORDER BY z.name, m.name
+  `,
+    )
+    .all(params.id) as NpcDetailPageData["summonTriggers"];
 
   db.close();
 
-  const zoneNames = spawns.map((s) => s.zone_name);
+  const zoneNames = [...new Set(spawns.map((spawn) => spawn.zone_name))];
   const description = npcDescription(
     {
       name: npc.name,
       faction: npc.faction,
       roles,
       questCount: questsOffered.length,
+      level: npc.level,
+      sub_zone_name: spawns.length === 1 ? spawns[0].sub_zone_name : null,
+      kill_reputation_summary: npcKillReputation(npc)
+        .map(
+          (effect) =>
+            `Killing this NPC ${effect.direction === "improve" ? "grants" : "costs"} ${formatNumber(effect.amount_min)} reputation with ${effect.factions.join(" and ")}.`,
+        )
+        .join(" "),
     },
     zoneNames,
   );
@@ -345,6 +372,7 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     questsCompletedHere,
     itemsSold,
     spawns,
+    summonTriggers,
     drops,
     skills,
     respawnDungeonName,

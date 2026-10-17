@@ -15,7 +15,7 @@ export const achievementGroupDetails: Record<
 > = {
   progression: {
     name: "Progression",
-    description: "Character levels and the veteran system.",
+    description: "Character levels and veteran points.",
   },
   quests: {
     name: "Quests",
@@ -23,12 +23,11 @@ export const achievementGroupDetails: Record<
   },
   combat: {
     name: "Combat",
-    description: "Named bosses and the world-boss milestone.",
+    description: "Named bosses, plus five world bosses for Bane of Titans.",
   },
   professions: {
     name: "Professions",
-    description:
-      "Profession mastery, ordered by gathering, crafting, combat, and exploration.",
+    description: "Reaching 100% in each profession.",
   },
   exploration: {
     name: "Exploration",

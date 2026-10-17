@@ -51,6 +51,7 @@ export type ItemSourceType =
   | "treasure_map"
   | "fishing"
   | "starter"
+  | "housing"
   | "special";
 
 export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
@@ -63,7 +64,7 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
   vendor: {
     icon: Store,
     color: "text-green-500",
-    label: "Vendor",
+    label: "Merchant",
     linkPrefix: "/npcs/",
   },
   quest: {
@@ -123,19 +124,19 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
   random: {
     icon: Dices,
     color: "text-purple-500",
-    label: "Random",
+    label: "Opened from",
     linkPrefix: "/items/",
   },
   merge: {
     icon: Combine,
     color: "text-indigo-500",
-    label: "Merge",
+    label: "Combined from",
     linkPrefix: "/items/",
   },
   treasure_map: {
     icon: Shovel,
     color: "text-teal-500",
-    label: "Treasure",
+    label: "Treasure map",
     linkPrefix: "/items/",
   },
   fishing: {
@@ -150,10 +151,16 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
     label: "Starter",
     linkPrefix: "/items/",
   },
+  housing: {
+    icon: Store,
+    color: "text-green-500",
+    label: "House panel",
+    linkPrefix: "/mechanics/",
+  },
   special: {
     icon: Sparkles,
     color: "text-purple-500",
-    label: "Service",
+    label: "NPC service",
     linkPrefix: "/npcs/",
   },
 };

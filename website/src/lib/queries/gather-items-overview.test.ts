@@ -121,4 +121,18 @@ describe("gather item overview queries", () => {
 
     db.close();
   });
+  test("excludes primary gather rewards from random drops", () => {
+    const db = createDb();
+    db.exec(`
+      INSERT INTO items VALUES ('wheat_item', 'Wheat'), ('gem', 'Gem');
+      UPDATE gathering_resources SET item_reward_id = 'wheat_item' WHERE id = 'wheat';
+      INSERT INTO item_sources_gather VALUES ('wheat_item', 'wheat'), ('gem', 'wheat');
+    `);
+    expect(
+      getAllResourceDropsFromDb(db).filter(
+        (drop) => drop.resource_id === "wheat",
+      ),
+    ).toEqual([{ resource_id: "wheat", item_id: "gem", item_name: "Gem" }]);
+    db.close();
+  });
 });

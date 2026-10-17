@@ -25,7 +25,7 @@
     <VariantPicker
       label="Healer"
       options={[
-        { value: "ordinary", label: "Mercenaries and other players" },
+        { value: "ordinary", label: "Mercenaries and non-Ranger players" },
         { value: "ranger", label: "Player Ranger" },
       ]}
       bind:value={healer}
@@ -37,11 +37,15 @@
     <ul>
       <!-- Source: server-scripts/TargetHealSkill.cs:GetHealingAmount; AreaHealSkill.cs:Apply — only player and mercenary casters receive Wisdom healing additions. -->
       <li>
-        Monsters, NPCs, companions and familiars use listed healing before
-        critical checks.
+        Monsters, NPCs, companions and familiars add no Wisdom bonus to their
+        heals.
       </li>
-      <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:GetIntelligenceBonus,GetHealingAmount,Apply — Death Bloom uses Intelligence for its healing bonus. -->
-      <li><a href="/skills/death_bloom">Death Bloom</a> uses Intelligence.</li>
+      <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:GetIntelligenceBonus,GetHealingAmount: each positive Intelligence point adds 0.1% of the Health spent to healing instead of a Wisdom bonus. -->
+      <li>
+        <a href="/skills/death_bloom">Death Bloom</a> adds no Wisdom bonus. Its healing
+        instead grows by 0.1% of the Hit Points spent per point of Intelligence above
+        0.
+      </li>
       <!-- Source: server-scripts/TargetHealSkill.cs:GetHealingAmount,Apply — ordinary scroll heals omit Wisdom, but mercenary-targeted scroll heals use the player caster's Wisdom, tripled for Rangers, and can be critical. -->
       <li>
         <a href="/items/runed_scroll_of_restoration"
@@ -107,9 +111,5 @@
     </p>
     <!-- Source: server-scripts/Combat.cs:1326-1344 — lifetap healing rounds down after multiplying remaining damage by its percentage and summed active or permanent healing bonuses. -->
     <Formula calculation={lifetapCalculation()} />
-    <!-- Source: server-scripts/Combat.cs:1326-1344; BuffSkill.cs:ToolTip — active and permanent buffs add their listed lifetap healing bonus. -->
-    <p>
-      <a href="/skills/lich_shroud">Lich Shroud</a> supplies the lifetap healing bonus.
-    </p>
   </Topic>
 </Chapter>

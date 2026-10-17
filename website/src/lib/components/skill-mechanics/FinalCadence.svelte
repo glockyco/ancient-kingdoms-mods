@@ -23,15 +23,15 @@
   </p>
   <Calculation calculation={cadenceCalculation(skill, usedByBardMercenary)} />
   {#if usedByBardMercenary && skill.max_level > 1}
-    <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the owner determines the mercenary's skill rank. -->
+    <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — the player's level and veteran points determine the mercenary's skill rank. -->
     <p class="text-muted-foreground">
       Use the rank from Mercenary Skill Rank on this page. The examples use the
-      same owner level and veteran points.
+      same character level and veteran points.
     </p>
   {/if}
   <p>
-    Critical heals restore double Hit Points, or triple Hit Points in 10% of
-    cases.
+    A critical heal restores double Hit Points, or triple in 10% of critical
+    heals.
   </p>
   {#if !usedByBardMercenary}
     <!-- Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:GetFinalCadenceSongBonus — Apply reads the active song count when the cast finishes. -->
@@ -42,20 +42,19 @@
   <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,FindEnemies,IsEngagedWithParty — one roll covers all allied healing; sleeping monsters are excluded and Pet targets map to their owner. -->
   <p class="text-muted-foreground">
     <span class="block"
-      >One critical roll, with a chance equal to the {usedByBardMercenary
+      >Healing is critical for every ally or none. The chance is the {usedByBardMercenary
         ? "mercenary's"
-        : "Bard's"}
-      Critical Strike, applies to the healing of every ally.</span
+        : "Bard's"} Critical Strike.</span
     >
     <span class="block"
-      >Its damage hits living, visible, attackable monsters within range in the
-      same zone that are already in combat and are not asleep.</span
+      >Damages visible monsters in range that are already fighting, but leaves
+      sleeping monsters alone.</span
     >
     <span class="block">Final Cadence does not heal familiars.</span>
     {#if usedByBardMercenary}
       <span class="block"
-        >The mercenary damages only enemies that target its owner, any party
-        member, or one of their companions or mercenaries.</span
+        >The mercenary damages only enemies that target you, any party member,
+        or one of their companions or mercenaries.</span
       >
     {/if}
   </p>
@@ -67,11 +66,13 @@
   </p>
   <!-- Source: server-scripts/Combat.cs:665-672,855-872,1550-1591 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">
-    The target's Magic Resist reduces the damage by 5% per 100 points, at most
-    90%, and gives 5 percentage points of chance per 100 points to resist it
-    entirely. See the <a
+    Every 100 Magic Resist reduces this damage by 5%, up to 90%, with the
+    reduction rounded up, and adds 5 percentage points to the chance to resist
+    it entirely. Each 1% of the caster's Accuracy subtracts 1 percentage point.
+    Level differences also apply. The final resist chance is limited to 0-90%.
+    See the <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
-      href="/mechanics/combat#damage-pipeline">damage pipeline</a
+      href="/mechanics/combat#damage-pipeline">damage steps</a
     >,
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"

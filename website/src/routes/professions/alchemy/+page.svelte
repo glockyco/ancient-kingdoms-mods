@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -122,8 +123,8 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View all potions and elixirs you can craft with the Alchemy skill.`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
+  description={`${data.profession.description} Recipe ingredients, success chances, skill gains, Alchemy Table locations and the Alchemy quest line.`}
   path="/professions/alchemy"
 />
 
@@ -167,26 +168,23 @@
   </div>
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
+    <h2 class="text-xl font-semibold">How Alchemy works</h2>
     <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — a known recipe cannot be learned again; learning consumes one recipe item. -->
     <p class="text-muted-foreground">
-      <span class="block"
-        >Learning a new potion recipe consumes one recipe item.</span
-      >
-      <span class="block"
-        >A recipe you already know cannot be learned again.</span
-      >
+      Learn a potion recipe by using its recipe item. This consumes the item.
+      Recipes you already know cannot be learned again.
     </p>
     <!-- Source: server-scripts/Player.cs:13563-13574,13587-13607 — brewing requires a learned recipe, output space, and at least 10% success chance; ingredients are consumed before the roll. -->
     <p class="text-muted-foreground">
       <span class="block"
-        >Brewing requires a learned recipe, room for the potion, and at least a
-        10% success chance.</span
+        >Brewing requires a learned recipe, inventory space for the potion, and
+        at least a 10% success chance.</span
       >
-      <span class="block"
-        >You spend ingredients before you know whether the brew succeeds.</span
-      >
-      <span class="block">A failed brew does not return them.</span>
+      <span class="block">A failed brew still uses up the ingredients.</span>
+    </p>
+    <p class="text-muted-foreground">
+      Tier I recipes stop raising Alchemy above 25%, Tier II above 50% and Tier
+      III above 75%.
     </p>
   </section>
 
@@ -202,7 +200,7 @@
           <thead class="bg-muted/50">
             <tr>
               <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Sub-zone</th>
+              <th class="text-left p-3 font-medium">Area</th>
               <th class="text-left p-3 font-medium">Map</th>
             </tr>
           </thead>
@@ -251,7 +249,7 @@
               <th class="text-left p-3 font-medium">Quest</th>
               <th class="text-left p-3 font-medium">Objective</th>
               <th class="text-left p-3 font-medium">Rewards</th>
-              <th class="text-right p-3 font-medium">Level</th>
+              <th class="text-right p-3 font-medium">Recommended level</th>
             </tr>
           </thead>
           <tbody>
@@ -361,7 +359,7 @@
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
     >
       <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Alchemy Skill:</label>
+        <label for="skill-slider" class="shrink-0">Alchemy skill</label>
         <input
           id="skill-slider"
           type="range"
@@ -402,7 +400,7 @@
           <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
           <div class="p-3 border-t">
             {#if successChance === 0}
-              <span class="text-muted-foreground">—</span>
+              <span class="text-muted-foreground">Cannot brew</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
                 {formatPercent(successChance / 100, {
@@ -415,16 +413,16 @@
           <div class="p-3 border-t">
             {#if skillGain}
               <span class="font-mono"
-                >{formatPercent(skillGain.min / 100, {
+                >{formatNumber(skillGain.min, {
                   decimals: 2,
                   trailingZeros: true,
-                })} – {formatPercent(skillGain.max / 100, {
+                })} to {formatPercent(skillGain.max / 100, {
                   decimals: 2,
                   trailingZeros: true,
                 })}</span
               >
             {:else}
-              <span class="text-muted-foreground">—</span>
+              <span class="text-muted-foreground">No skill gain</span>
             {/if}
           </div>
           <div class="p-3 text-right border-t">

@@ -1,13 +1,3 @@
-<script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
-  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
-  import { EXAMPLE_HIT, wildStrikeHit } from "$lib/skills/worked-examples";
-  import { getMechanicsContext } from "./context";
-
-  const mechanics = getMechanicsContext();
-  const { skill } = $derived(mechanics);
-</script>
-
 <!-- Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike) -->
 <!-- Source: server-scripts/TargetDamageSkill.cs:244,291 (ApplyDamage) -->
 <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 (Apply) -->
@@ -15,20 +5,17 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Wild Strike</h3>
   <p class="text-muted-foreground">
-    Your next auto attack, Swift Slash with any melee weapon or Archer Shot,
-    consumes the buff. After its ordinary damage calculation, the hit deals 10%
-    more per Wild Strike rank, rounded, and becomes Magic damage. Magic Resist
-    reduces it by 5% per 100 points, at most 90%. At rank {skill.max_level}, a {formatNumber(
-      EXAMPLE_HIT,
-    )}-damage auto attack deals {formatNumber(wildStrikeHit(skill.max_level))}.
-    See
+    Your next melee auto attack (Swift Slash) or bow auto attack (Archer Shot)
+    consumes the buff, deals 10% more damage per Wild Strike rank and becomes
+    Magic damage. Every 100 Magic Resist reduces the converted damage by 5%, up
+    to 90%, with the reduction rounded up. See
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#wild-strike">Wild Strike</a
     >,
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
-      href="/mechanics/combat#damage-pipeline">the damage pipeline</a
+      href="/mechanics/combat#damage-pipeline">the damage steps</a
     >
     and
     <a
@@ -36,7 +23,6 @@
       href="/mechanics/combat#resistance">resistance</a
     >.
   </p>
-  <RoundingDefinition />
   <!-- Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — the buff multiplies the completed auto-attack calculation. -->
   <p class="text-muted-foreground">
     Use the <a
@@ -47,7 +33,6 @@
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/skills/archer_shot#mechanics">Archer Shot</a
-    > calculator for the auto attack's damage, then multiply it by 100% + 10% per
-    Wild Strike rank, rounded, before the target's defenses.
+    > calculator for the auto attack's damage before this bonus.
   </p>
 </div>

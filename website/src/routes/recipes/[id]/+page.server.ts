@@ -7,7 +7,10 @@ import type {
   RecipeDetailInfo,
   RecipeType,
 } from "$lib/types/recipes";
-import { buildObtainabilityTree } from "$lib/server/obtainability";
+import {
+  buildObtainabilityTree,
+  getRecipeMaterials,
+} from "$lib/server/obtainability";
 import { recipeDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
@@ -66,11 +69,15 @@ export const load: PageServerLoad = ({ params }): RecipeDetailPageData => {
   );
 
   // Build ingredients list for meta description
-  const ingredients =
-    obtainabilityTree.recipe?.materials.map((mat) => ({
-      item_name: mat.item_name,
-      amount: mat.amount,
-    })) ?? [];
+  const ingredients = getRecipeMaterials(
+    db,
+    recipe.id,
+    recipe.type === "Alchemy"
+      ? "alchemy"
+      : recipe.type === "Scribing"
+        ? "scribing"
+        : "crafting",
+  );
 
   const description = recipeDescription(
     {
@@ -79,6 +86,7 @@ export const load: PageServerLoad = ({ params }): RecipeDetailPageData => {
       result_amount: recipe.result_amount,
       station_type: recipe.station_type,
       xp: recipe.xp,
+      tier: recipe.type === "Scribing" ? null : recipe.tier,
       level_required:
         recipe.type === "Alchemy" || recipe.type === "Scribing"
           ? recipe.tier

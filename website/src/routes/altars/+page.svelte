@@ -79,7 +79,7 @@
     },
     {
       accessorKey: "minLevelRequired",
-      header: "Level",
+      header: "Required level",
       size: 100,
     },
     {
@@ -140,7 +140,7 @@
     {#if row.original.minLevelRequired > 0}
       {row.original.minLevelRequired}+
     {:else}
-      <span class="text-muted-foreground">-</span>
+      <span class="text-muted-foreground">None</span>
     {/if}
   {:else if cell.column.id === "boss"}
     {#if row.original.bossIds.length > 0}
@@ -158,7 +158,7 @@
     {/if}
   {:else if cell.column.id === "scaling"}
     {#if row.original.usesVeteranScaling}
-      <Check class="h-4 w-4 text-green-500" />
+      <Check class="h-4 w-4 text-green-500" /><span class="sr-only">Yes</span>
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}

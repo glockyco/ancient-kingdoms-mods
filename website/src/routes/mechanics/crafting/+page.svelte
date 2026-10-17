@@ -27,25 +27,20 @@
 
   <Card.Root id="crafting" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Crafting at a Station</Card.Title>
+      <Card.Title>Crafting at a station</Card.Title>
       <Card.Description
-        >Choose materials at a Craft Station and record successful crafts in the
-        Crafting journal.</Card.Description
+        >Put materials into a Craft Station to craft the recipe they match.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/UICraftingStation.cs:400-449 — the current station chooses a recipe whose ingredient names and quantities match the selected materials, preferring the recipe with more ingredients. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          The station matches selected materials and quantities against its
-          recipes.
+          Supply the materials and quantities listed in a station's recipe.
         </li>
         <li>
-          Unrelated extra materials do not prevent an otherwise matching recipe.
-        </li>
-        <li>
-          If more than one recipe matches, the recipe listing the most
-          ingredients takes priority.
+          Extra materials are allowed, but if they match another recipe, the
+          recipe with the most materials takes priority.
         </li>
       </ul>
       <p>
@@ -89,8 +84,8 @@
       <ul class="list-disc space-y-1 pl-5">
         <li>Crafted equipment starts at its maximum durability.</li>
         <li>
-          A bundle recipe gives the specified quantity of its final item
-          directly, not a pack to open.
+          A pack recipe puts the pack's contents straight into your inventory
+          instead of giving you a pack to open.
         </li>
       </ul>
       <!-- Source: server-scripts/Player.cs:12771-12784 and server-scripts/UIJournal.cs:83-90,273-306 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
@@ -104,20 +99,15 @@
       <!-- Source: server-scripts/Player.cs:12886-12892 — after each result, Craft All crafts again while the station panel stays open. -->
       <!-- Source: server-scripts/UICraftingStation.cs:400-450 — a craft stops when no recipe matches the materials or the result does not fit in the inventory. -->
       <p>
-        <span class="block"
-          >Craft All repeats the craft while the station stays open.</span
-        >
-        <span class="block"
-          >Craft All stops when no recipe matches the remaining materials or the
-          result cannot fit in your inventory.</span
-        >
+        Craft All repeats while the station is open, until you run out of
+        materials for a recipe or inventory space for its result.
       </p>
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="augments" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Attaching and Removing Augments</Card.Title>
+      <Card.Title>Attaching and removing augments</Card.Title>
       <Card.Description
         >Each equipment piece holds one augment.</Card.Description
       >
@@ -143,10 +133,7 @@
       </ul>
       <!-- Source: server-scripts/Player.cs:13784-13811 and server-scripts/Inventory.cs:67-92 — attaching requires an unaugmented copy, consumes the loose augment, and returns the equipment with maximum durability. -->
       <ul class="list-disc space-y-1 pl-5">
-        <li>
-          Attaching an augment consumes the loose augment and returns the
-          equipment with that augment attached.
-        </li>
+        <li>Attaching consumes the augment.</li>
         <li>
           The returned piece has full durability, even if it was damaged before
           attachment.
@@ -177,31 +164,29 @@
             >
             <tbody>
               <tr class="border-b border-border/50"
+                ><td class="py-2 pr-4">Normal and Uncommon</td><td
+                  class="py-2 text-right tabular-nums">5,000 gold</td
+                ></tr
+              >
+              <tr class="border-b border-border/50"
                 ><td class="py-2 pr-4">Magic</td><td
                   class="py-2 text-right tabular-nums">10,000 gold</td
                 ></tr
               >
-              <tr class="border-b border-border/50"
+              <tr
                 ><td class="py-2 pr-4">Epic</td><td
                   class="py-2 text-right tabular-nums">15,000 gold</td
-                ></tr
-              >
-              <tr
-                ><td class="py-2 pr-4">Normal and Uncommon</td><td
-                  class="py-2 text-right tabular-nums">5,000 gold</td
                 ></tr
               >
             </tbody>
           </table>
         </div>
         <p>
-          The merchant leaves the equipment intact and returns the augment to
-          your inventory.
+          Removal preserves the equipment and returns the augment to your
+          inventory. Leave room for it.
         </p>
-        <p>You need room for the returned augment before removal succeeds.</p>
       </div>
       <!-- Source: server-scripts/UINpcTrading.cs:143-159 — selling augmented equipment displays an attached-augment warning. -->
-      <p>Sale confirmation warns when equipment has an augment attached.</p>
       <p>Remove an augment before selling if you want to keep it.</p>
       <p>
         For general equipment repair, see <MechanicsLink

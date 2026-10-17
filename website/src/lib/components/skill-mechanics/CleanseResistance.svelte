@@ -8,7 +8,7 @@
 
 <!-- Source: server-scripts/Buff.cs:.ctor; BuffSkill.cs:GetCleanseCountersRemoved; TargetBuffSkill.cs:HasMatchingCleanseDebuff,Apply; AreaBuffSkill.cs:Apply; Skills.cs:GetFinalDamageDoT — elemental type matching, three layers, cleanser Accuracy and rounded-up 85%/70% DoT ticks. -->
 <div class="space-y-1">
-  <h3 class="font-semibold">Cleanse Resistance</h3>
+  <h3 class="font-semibold">Cleanse Resist</h3>
   {#if !skill.is_disease_debuff && !skill.is_poison_debuff && !skill.is_cold_debuff && !skill.is_fire_debuff && !skill.is_magic_debuff}
     <p class="text-muted-foreground">No cleanse can remove this debuff.</p>
   {:else if skill.prob_ignore_cleanse >= 1}
@@ -26,16 +26,16 @@
         })} Cleanse Resist and three layers. Cleansing removes the debuff only after
         all three are gone.</span
       >
-      <span class="block">A matching cleanse always removes one layer.</span>
       <span class="block"
-        >It rolls twice more to remove one additional layer per roll.</span
-      >
-      <span class="block"
-        >Each of those rolls succeeds at {formatPercent(
+        >A matching cleanse always removes one layer. Each of the other two
+        layers has an independent {formatPercent(
           1 - skill.prob_ignore_cleanse,
-          { decimals: 2, preserveNonzero: true },
-        )} × (100% + the cleansing caster's Accuracy), limited to 0–100%. At 100%,
-        one cast removes all three layers. See
+          {
+            decimals: 2,
+            preserveNonzero: true,
+          },
+        )} × (100% + the cleansing caster's Accuracy) chance of removal, limited to
+        0-100%. At 100%, one cast removes all three layers. See
         <a
           class="text-blue-600 dark:text-blue-400 hover:underline"
           href="/mechanics/combat#cleanse">cleanse calculations</a

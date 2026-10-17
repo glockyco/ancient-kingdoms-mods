@@ -16,6 +16,7 @@ import type {
 } from "$lib/types/zones";
 import { normalizeRoles } from "$lib/utils/roles";
 import { zoneDescription } from "$lib/server/meta-description";
+import { fishingSpotBaseId } from "../../../../scripts/gathering-resource-ids.mjs";
 
 export const prerender = true;
 
@@ -397,6 +398,10 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       is_dungeon: zone.is_dungeon,
       level_min: zone.level_min,
       level_max: zone.level_max,
+      median_level: zone.level_median,
+      boss_names: monsters
+        .filter((monster) => monster.is_boss)
+        .map((monster) => monster.name),
     },
     {
       boss_count: bossCount,
@@ -404,7 +409,13 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       altar_count: altars.length,
       npc_count: npcs.length,
       chest_count: chests.length,
-      gather_count: gatherResources.length,
+      gather_count: new Set(
+        gatherResources.map((resource) =>
+          resource.is_fishing_spot
+            ? fishingSpotBaseId(resource.id)
+            : resource.id,
+        ),
+      ).size,
     },
   );
 

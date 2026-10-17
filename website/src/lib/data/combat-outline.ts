@@ -11,12 +11,12 @@ import type { ReferenceChapterText } from "$lib/components/reference/outline";
 export const COMBAT_CHAPTERS = [
   {
     id: "targeting",
-    title: "Targets and Casting",
+    title: "Targets and casting",
     description: "Who your skills can reach and what a cast needs.",
     topics: [
-      { id: "targets", title: "Valid Targets" },
-      { id: "casting", title: "Casting Requirements" },
-      { id: "follow-up-attacks", title: "Follow-Up Auto Attacks" },
+      { id: "targets", title: "Valid targets" },
+      { id: "casting", title: "Casting requirements" },
+      { id: "follow-up-attacks", title: "Follow-up auto attacks" },
     ],
   },
   {
@@ -24,12 +24,12 @@ export const COMBAT_CHAPTERS = [
     title: "Damage",
     description: "How the game turns an attack into damage.",
     topics: [
-      { id: "damage-pipeline", title: "Damage Pipeline" },
-      { id: "damage-formulas", title: "Starting Damage" },
-      { id: "critical-hits", title: "Critical Hits" },
+      { id: "damage-pipeline", title: "Damage steps" },
+      { id: "damage-formulas", title: "Starting damage" },
+      { id: "critical-hits", title: "Critical hits" },
       { id: "combat-advantage", title: "Combat Advantage" },
-      { id: "weapon-on-hit-effects", title: "Weapon On-Hit Effects" },
-      { id: "ground-area-damage", title: "Ground Area Damage" },
+      { id: "weapon-on-hit-effects", title: "Weapon on-hit effects" },
+      { id: "ground-area-damage", title: "Ground area damage" },
     ],
   },
   {
@@ -37,11 +37,11 @@ export const COMBAT_CHAPTERS = [
     title: "Defense",
     description: "What avoids, reduces and absorbs incoming damage.",
     topics: [
-      { id: "resistance", title: "Defense by Damage Type" },
-      { id: "avoidance", title: "Block, Miss and Resist" },
-      { id: "mitigation", title: "Damage Reduction" },
+      { id: "resistance", title: "Defense by damage type" },
+      { id: "avoidance", title: "Block, miss and resist" },
+      { id: "mitigation", title: "Damage reduction" },
       { id: "ward-and-mana-shield", title: "Ward and Mana Shield" },
-      { id: "damage-shields", title: "Damage Shields" },
+      { id: "damage-shields", title: "Damage shields" },
     ],
   },
   {
@@ -49,30 +49,30 @@ export const COMBAT_CHAPTERS = [
     title: "Healing",
     description: "How much a heal restores and when it is critical.",
     topics: [
-      { id: "heal-bonus", title: "Wisdom Heal Bonus" },
-      { id: "critical-heals", title: "Critical Heals" },
+      { id: "heal-bonus", title: "Wisdom heal bonus" },
+      { id: "critical-heals", title: "Critical heals" },
       { id: "lifetap", title: "Lifetap" },
     ],
   },
   {
     id: "buffs-and-debuffs",
-    title: "Buffs and Debuffs",
+    title: "Buffs and debuffs",
     description:
       "How long effects last, how strong they are and how they are removed.",
     topics: [
-      { id: "duration-and-stacking", title: "Duration and Stacking" },
-      { id: "buffs", title: "Buff Strength" },
-      { id: "songs", title: "Song Strength" },
-      { id: "debuff-landing", title: "Landing a Debuff" },
-      { id: "debuffs", title: "Debuff Strength" },
-      { id: "damage-over-time", title: "Damage over Time" },
+      { id: "duration-and-stacking", title: "Duration and stacking" },
+      { id: "buffs", title: "Buff strength" },
+      { id: "songs", title: "Song strength" },
+      { id: "debuff-landing", title: "Landing a debuff" },
+      { id: "debuffs", title: "Debuff strength" },
+      { id: "damage-over-time", title: "Damage over time" },
       { id: "cleanse", title: "Cleanse" },
       { id: "dispel", title: "Dispel" },
     ],
   },
   {
     id: "crowd-control",
-    title: "Crowd Control",
+    title: "Crowd control",
     description: "Stun, fear, knockback, root and sleep.",
     topics: [
       { id: "stun", title: "Stun" },
@@ -84,11 +84,11 @@ export const COMBAT_CHAPTERS = [
   },
   {
     id: "timing",
-    title: "Attack and Cast Speed",
+    title: "Attack and cast speed",
     description: "What Haste and Spell Casting Haste change.",
     topics: [
-      { id: "haste", title: "What Haste Affects" },
-      { id: "attack-speed", title: "Auto-Attack Speed" },
+      { id: "haste", title: "What Haste affects" },
+      { id: "attack-speed", title: "Auto-attack speed" },
       { id: "cast-speed", title: statName("spell_haste") },
     ],
   },
@@ -100,10 +100,10 @@ export const COMBAT_CHAPTERS = [
   },
   {
     id: "class-mechanics",
-    title: "Class Mechanics",
+    title: "Class mechanics",
     description: "Rules that belong to one class.",
     topics: [
-      { id: "rage-generation", title: "Rage Generation" },
+      { id: "rage-generation", title: "Rage generation" },
       { id: "wild-strike", title: "Wild Strike" },
       { id: "parry", title: "Parry" },
       { id: "assassination", title: "Assassination" },

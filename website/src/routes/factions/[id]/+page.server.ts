@@ -39,6 +39,9 @@ export const load: PageServerLoad = ({ params }) => {
     member_count: faction.members.length,
     monster_source_count: faction.monstersImprove.length,
     quest_source_count: faction.questGrants.length,
+    npc_source_count: faction.npcKillsImprove.length,
+    chest_source_count:
+      faction.name === "The Forsaken" ? faction.chests.length : 0,
     unlock_count:
       faction.gatedItems.length +
       faction.houses.length +

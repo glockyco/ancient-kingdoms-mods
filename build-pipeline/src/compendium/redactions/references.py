@@ -187,6 +187,7 @@ JSON_PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("items", "augment_skill_bonuses_with_names"),
         ("items", "chest_rewards"),
         ("monsters", "drops"),
+        ("monsters", "loot_inputs"),
         ("npcs", "drops"),
         ("npcs", "items_sold"),
         ("npcs", "quests_completed_here"),

@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { formatNumber, formatPercent } from "./format";
+import {
+  formatDuration,
+  formatGatheringRespawn,
+  formatNumber,
+  formatPercent,
+} from "./format";
 
 describe("formatPercent", () => {
   test.each([
@@ -104,5 +109,24 @@ describe("formatNumber", () => {
       "−1234.57",
     );
     expect(formatNumber(0, { decimals: 2, trailingZeros: true })).toBe("0.00");
+  });
+});
+
+describe("duration precision", () => {
+  test.each([
+    [59.75, "59.75s"],
+    [60, "1m"],
+    [90, "1m 30s"],
+    [150, "2m 30s"],
+    [400, "6m 40s"],
+    [3600, "1h"],
+    [3605, "1h 5s"],
+    [3661.25, "1h 1m 1.25s"],
+  ])("retains all duration components for %s seconds", (seconds, expected) => {
+    expect(formatDuration(seconds as number)).toBe(expected);
+  });
+
+  test("keeps a mineral's fractional half-time boundary", () => {
+    expect(formatGatheringRespawn("Mineral", 301)).toBe("2m 30.5s to 5m 1s");
   });
 });

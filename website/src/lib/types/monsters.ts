@@ -15,6 +15,8 @@ export interface MonsterDrop {
   tooltip_html: string | null;
   quality: number;
   rate: number;
+  per_kill_chance?: number;
+  per_kill_chance_with_fatecharm?: number;
   is_bestiary: boolean;
   note: string | null;
   altar_id?: string;
@@ -283,6 +285,7 @@ export interface SpawnedFromInfo {
 export interface SummonsInfo {
   summoned_monster_id: string;
   summoned_monster_name: string;
+  summoned_entity_type: "Monster" | "Npc";
   kill_count: number;
   zone_id: string;
   zone_name: string;
@@ -319,6 +322,23 @@ export interface MonsterDetailData {
   quests: MonsterQuest[];
   skills: MonsterSkill[];
   summons: SummonsInfo[];
+  combatSummoners: Array<{
+    monster_id: string;
+    monster_name: string;
+    skill_id: string;
+    skill_name: string;
+    count_per_cast: number;
+    max_active: number;
+  }>;
+  altarContext: {
+    only_altar_spawns: boolean;
+    only_nonfinal_waves: boolean;
+    only_lootless_spawns: boolean;
+    only_avatar_altars: boolean;
+    has_nonfinal_waves: boolean;
+    has_avatar_altars: boolean;
+    has_scaled_final_gold: boolean;
+  };
   visualAsset: EntityVisualAsset | null;
   renewalSages: Array<{
     id: string;

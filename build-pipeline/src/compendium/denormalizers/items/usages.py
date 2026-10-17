@@ -123,8 +123,8 @@ def _denormalize_quest_usages(conn: sqlite3.Connection) -> None:
         # Process gather_item_1, 2, 3
         for i, (item_idx, amount_idx) in enumerate([(1, 2), (3, 4), (5, 6)]):
             item_id = row[item_idx]
-            amount = row[amount_idx] or 1
-            if item_id:
+            amount = row[amount_idx] if row[amount_idx] is not None else 1
+            if item_id and amount > 0:
                 cursor.execute(
                     """
                     INSERT INTO item_usages_quest (item_id, quest_id, purpose, amount)
@@ -138,13 +138,14 @@ def _denormalize_quest_usages(conn: sqlite3.Connection) -> None:
             gather_items_list = json.loads(row[7])
             for item_obj in gather_items_list:
                 item_id = item_obj.get("item_id")
-                if item_id:
+                amount = item_obj.get("amount", 1)
+                if item_id and amount > 0:
                     cursor.execute(
                         """
                         INSERT INTO item_usages_quest (item_id, quest_id, purpose, amount)
                         VALUES (?, ?, ?, ?)
                     """,
-                        (item_id, quest_id, display_type, item_obj.get("amount", 1)),
+                        (item_id, quest_id, display_type, amount),
                     )
 
         # Process required_items (JSON array)
@@ -152,16 +153,15 @@ def _denormalize_quest_usages(conn: sqlite3.Connection) -> None:
             required_items_list = json.loads(row[8])
             for item_obj in required_items_list:
                 item_id = item_obj.get("item_id")
-                if item_id:
-                    amount = item_obj.get("amount", 1)
-                    # amount=0 means "must possess but not consumed" -> Have
-                    purpose = "Have" if amount == 0 else display_type
+                amount = item_obj.get("amount", 1)
+                # Source: server-scripts/GatherInventoryQuest.cs:33,83-86 - zero requires and consumes nothing.
+                if item_id and amount > 0:
                     cursor.execute(
                         """
                         INSERT INTO item_usages_quest (item_id, quest_id, purpose, amount)
                         VALUES (?, ?, ?, ?)
                     """,
-                        (item_id, quest_id, purpose, amount),
+                        (item_id, quest_id, display_type, amount),
                     )
 
         # Process equip_items (JSON array of item IDs)

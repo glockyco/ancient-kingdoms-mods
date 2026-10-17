@@ -90,7 +90,7 @@
     },
     {
       title: "Professions",
-      description: "Gathering, crafting, and combat",
+      description: "Gathering, crafting, combat, and exploration",
       href: "/professions",
       icon: Hammer,
       badge: "bg-yellow-500/10 text-yellow-500",
@@ -99,7 +99,7 @@
     },
     {
       title: "Crafting Recipes",
-      description: "Alchemy, cooking, forge, and scribing",
+      description: "Crafting, alchemy, cooking, and scribing",
       href: "/recipes",
       icon: FlaskConical,
       badge: "bg-purple-500/10 text-purple-500",
@@ -384,7 +384,7 @@
           href={STEAM_GUIDE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Steam Guide"
+          aria-label="Compendium guide on Steam"
           class={buttonVariants({ variant: "ghost", size: "icon" })}
         >
           <SteamIcon class="size-5" />
@@ -393,7 +393,7 @@
           href={DISCORD_URL}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Join Discord"
+          aria-label="Join the Ancient Kingdoms Discord"
           class={buttonVariants({ variant: "ghost", size: "icon" })}
         >
           <DiscordIcon class="size-5" />

@@ -18,7 +18,6 @@
     type SearchResult,
   } from "$lib/search/search";
   import Clock from "@lucide/svelte/icons/clock";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import { FileText, ListFilter, type IconNode } from "lucide";
 
   let query = $state("");
@@ -106,7 +105,7 @@
   <div class="contents" use:linkActiveDescendant>
     <Command.Input
       bind:value={query}
-      placeholder="Search items, monsters, rules..."
+      placeholder="Search items, monsters, mechanics..."
       autofocus
     />
     <div class="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -165,20 +164,24 @@
                   fallbackIcon={iconFor(result.kind)}
                   size={28}
                 />
-                <span class="min-w-0 flex-1 truncate font-medium">
-                  {result.name}
-                </span>
-                {#if result.detail}
-                  <span
-                    class="flex shrink-0 items-center gap-1 text-sm text-amber-600 dark:text-amber-400"
-                  >
-                    <Sparkles size={14} aria-hidden="true" />
-                    {result.detail}
-                  </span>
-                {/if}
-                <span class="shrink-0 text-sm text-muted-foreground">
-                  {result.label}
-                </span>
+                <div class="min-w-0 flex-1">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <span class="min-w-0 flex-1 truncate font-medium">
+                      {result.name}
+                    </span>
+                    <span class="shrink-0 text-sm text-muted-foreground">
+                      {result.label}
+                    </span>
+                  </div>
+                  {#if result.detail}
+                    <p
+                      class="mt-0.5 line-clamp-2 break-words text-sm text-muted-foreground"
+                      title={result.detail}
+                    >
+                      {result.detail}
+                    </p>
+                  {/if}
+                </div>
               </div>
             </Command.Item>
           {/each}
@@ -206,7 +209,7 @@
   <Command.Dialog
     bind:open={searchPalette.open}
     title="Search the compendium"
-    description="Search items, monsters, NPCs, zones, rules, and lists"
+    description="Search items, monsters, NPCs, zones, mechanics, and lists such as Rings or Merchants"
     shouldFilter={false}
   >
     {@render searchContent()}

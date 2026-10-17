@@ -17,15 +17,13 @@
       Every boss is immune.</span
     >
     <span class="block"
-      >A hit rolls against the fear chance only when it does not stun: the skill
-      has no stun chance, its stun roll fails, or the target is already feared.
-      If the fear roll succeeds, the target rolls its Fear Resist and is feared
-      only if that roll fails.</span
+      >A hit that stuns cannot also cause fear. The target's Fear Resist is a
+      separate chance to avoid fear, even when the skill's fear chance succeeds.</span
     >
     <span class="block"
       >Fear lasts a random time from {fmt.formatSeconds(duration / 2)} to
-      {fmt.formatSeconds(duration)} at rank {skill.max_level}. A new fear
-      replaces the remaining fear time, so it can end sooner.</span
+      {fmt.formatSeconds(duration)} at rank {skill.max_level}. Reapplying fear
+      can shorten it.</span
     >
     {#if facts.usedByMonster}
       <!-- Source: server-scripts/Combat.cs:DealDamageAt — successful fear dismounts players. -->

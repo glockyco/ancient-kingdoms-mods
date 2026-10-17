@@ -69,7 +69,7 @@
 
 <Seo
   title="Achievements - Ancient Kingdoms"
-  description="All 38 Ancient Kingdoms Steam achievements, grouped by unlock type with related quests, bosses, professions, and mechanics guides."
+  description="All 38 Ancient Kingdoms Steam achievements, grouped by unlock type, with links to related quests, bosses, professions, and mechanics pages."
   path="/achievements"
 />
 <JsonLd node={collectionNode} />
@@ -89,9 +89,8 @@
       <p
         class="mt-5 max-w-xl text-pretty text-base leading-7 text-muted-foreground sm:text-lg"
       >
-        Find all {data.total} Steam achievements for Ancient Kingdoms. Entries show
-        the unlock condition when Steam reveals it. Related entries link to their
-        compendium pages.
+        Ancient Kingdoms has {data.total} Steam achievements. Each entry shows its
+        unlock condition unless Steam hides it, and links to related compendium pages.
       </p>
     </div>
 

@@ -8,7 +8,8 @@ import {
 
 // Source: server-scripts/ScrollItem.cs:UseAfterCast — exact half-ranks round to even, so odd ranks require mastery above the half-rank threshold.
 export function formatMasteryNeeded(rank: number): string {
-  const percentage = rank <= 1 ? 0 : rank * 5 - 2.5;
+  if (rank <= 1) return "Any";
+  const percentage = rank * 5 - 2.5;
   return `${rank > 1 && rank % 2 !== 0 ? "above " : "at least "}${formatPercent(percentage / 100, { decimals: 1, trailingZeros: true })}`;
 }
 

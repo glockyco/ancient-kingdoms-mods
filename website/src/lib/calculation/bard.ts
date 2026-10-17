@@ -21,13 +21,13 @@ export function finalCadenceMelody(): Calculation {
   return {
     steps: [
       {
-        name: "Melody multiplier",
-        expression: "100% + the bonus for active songs from the table",
+        name: "Melody bonus",
+        expression: "The bonus for your active songs from the table",
       },
       {
         name: "Damage or healing",
         expression:
-          "Tooltip damage or healing (base plus bonus) × Melody multiplier",
+          "Tooltip damage or healing (base plus bonus) × (100% + Melody bonus)",
         rounding: "nearest",
       },
     ],
@@ -48,9 +48,9 @@ export function finalCadenceMelody(): Calculation {
           `${songs} active songs`,
         ],
         // Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies; Combat.cs:DealDamageAt — defenses modify damage and heals can crit before being capped by missing Health.
-        result: `${formatNumber(total)} damage before defenses, or healing before critical heals and the missing-Hit-Points cap`,
+        result: `${formatNumber(total)} damage before defenses, or ${formatNumber(total)} healing before critical heals, at most the target's missing Hit Points`,
         working: [
-          `Melody multiplier: 100% + ${formatPercent(melodyBonus(songs), { decimals: 2, preserveNonzero: true })} = ${formatPercent(multiplier, { decimals: 2, preserveNonzero: true })}`,
+          `Melody bonus: ${formatPercent(melodyBonus(songs), { decimals: 2, preserveNonzero: true })} for ${songs} active songs`,
           `Damage or healing: ${formatNumber(scaledAmount)} × ${formatPercent(multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(total)}, rounded`,
         ],
       };
@@ -87,18 +87,19 @@ export function bardCharmResistance(): Calculation {
     steps: [
       {
         name: "Level adjustment",
-        expression: "(Monster level − your level) × 0.5%",
-        limit: "between −10% and +10%",
+        expression: "(Monster level − your level) × 0.5 percentage points",
+        limit: "between −10 and +10 percentage points",
       },
       {
         name: "Base resist chance",
-        expression: "Monster's Magic Resist × 0.05% + level adjustment",
+        expression:
+          "Monster's Magic Resist × 0.05 percentage points + level adjustment",
         limit: "between 0% and 90%",
       },
       {
         name: "Charm resist chance",
         expression:
-          "Base resist chance + 2.5% per level the monster is above you − 0.02% per point of Charisma above 0",
+          "Base resist chance + 2.5 percentage points per level the monster is above you − 0.02 percentage points per point of Charisma above 0",
         limit: "between 0% and 95%",
       },
     ],
@@ -114,19 +115,17 @@ export function bardCharmResistance(): Calculation {
         ...situational(
           "monsterLevel",
           "Monster level (target frame or monster page)",
-          40,
+          52,
         ),
         min: 1,
         max: 100,
       },
-      situational("magicResist", "Monster's Magic Resist (monster page)", 100),
+      situational("magicResist", "Monster's Magic Resist (monster page)", 300),
     ],
     example: ({ level, charisma, monsterLevel, magicResist }) => {
       const difference = monsterLevel - level;
-      const adjustment = Math.max(
-        f32(-0.1),
-        Math.min(f32(0.1), multiplyF32(difference, 0.005)),
-      );
+      const rawAdjustment = multiplyF32(difference, 0.005);
+      const adjustment = Math.max(f32(-0.1), Math.min(f32(0.1), rawAdjustment));
       const base = Math.max(
         0,
         Math.min(
@@ -134,6 +133,14 @@ export function bardCharmResistance(): Calculation {
           addF32(multiplyF32(magicResist, 0.0005), adjustment),
         ),
       );
+      const rawBase = addF32(multiplyF32(magicResist, 0.0005), adjustment);
+      const rawChance = f32(
+        addF32(base, multiplyF32(Math.max(0, difference), 0.025)) -
+          multiplyF32(Math.max(0, charisma), 0.0002),
+      );
+      const percent = (value: number) => formatPercent(value, { decimals: 2 });
+      const points = (value: number) =>
+        percent(value).replace("%", " percentage points");
       const chance = charmResistChance(
         monsterLevel,
         level,
@@ -145,11 +152,11 @@ export function bardCharmResistance(): Calculation {
           `Level ${level}, ${charisma} Charisma`,
           `Level ${monsterLevel} monster, ${magicResist} Magic Resist`,
         ],
-        result: `${formatPercent(chance, { decimals: 2, preserveNonzero: true })} chance to resist Charm`,
+        result: `${percent(chance)} chance to resist Charm`,
         working: [
-          `Level adjustment: (${monsterLevel} − ${level}) × 0.5% = ${formatPercent(adjustment, { decimals: 2, preserveNonzero: true })}, limited to ±10%`,
-          `Base resist chance: ${magicResist} × 0.05% + ${formatPercent(adjustment, { decimals: 2, preserveNonzero: true })} = ${formatPercent(base, { decimals: 2, preserveNonzero: true })}, limited to 0–90%`,
-          `Charm resist chance: ${formatPercent(base, { decimals: 2, preserveNonzero: true })} + ${Math.max(0, difference)} × 2.5% − ${Math.max(0, charisma)} × 0.02% = ${formatPercent(chance, { decimals: 2, preserveNonzero: true })}, limited to 0–95%`,
+          `Level adjustment: (${monsterLevel} − ${level}) × 0.5 percentage points = ${points(rawAdjustment)}${adjustment !== rawAdjustment ? `, limited to ${points(adjustment)}` : ""}`,
+          `Base resist chance: ${magicResist} × 0.05 percentage points ${adjustment < 0 ? "−" : "+"} ${points(Math.abs(adjustment))} = ${percent(rawBase)}${base !== rawBase ? `, limited to ${percent(base)}` : ""}`,
+          `Charm resist chance: ${percent(base)} + ${Math.max(0, difference)} × 2.5 percentage points − ${Math.max(0, charisma)} × 0.02 percentage points = ${percent(rawChance)}${chance !== rawChance ? `, limited to ${percent(chance)}` : ""}`,
         ],
       };
     },

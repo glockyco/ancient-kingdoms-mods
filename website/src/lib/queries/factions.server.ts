@@ -10,6 +10,8 @@ export interface FactionListView {
   name: string;
   member_count: number;
   monster_source_count: number;
+  npc_source_count: number;
+  chest_source_count: number;
   quest_source_count: number;
   house_count: number;
   gated_item_count: number;
@@ -125,6 +127,15 @@ export function getFactionsList(): FactionListView[] {
       (SELECT COUNT(*) FROM monsters m
          JOIN json_each(m.improve_faction) je ON je.value = f.name
        WHERE m.is_dummy = 0) AS monster_source_count,
+      (SELECT COUNT(*) FROM npcs n
+       WHERE EXISTS (SELECT 1 FROM json_each(n.improve_faction) je
+                     WHERE je.value = f.name)) AS npc_source_count,
+      (SELECT COUNT(*) FROM chests c
+       WHERE f.name = 'The Forsaken'
+         AND c.decrease_faction <> ''
+         AND c.chest_reward_probability > 0
+         AND (c.item_reward_id IS NOT NULL OR (c.gold_min > 0 AND c.gold_max > 0))
+      ) AS chest_source_count,
       (SELECT COUNT(*) FROM quests q
          JOIN npcs n ON n.id = q.start_npc_id
        WHERE n.faction = f.name AND q.is_adventurer_quest = 0) AS quest_source_count,

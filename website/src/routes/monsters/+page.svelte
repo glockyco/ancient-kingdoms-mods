@@ -216,8 +216,8 @@
       Object.entries(columnStats).map(([key, id]) => [key, statName(id)]),
     ),
     respawn_time: "Respawn",
-    respawn_chance: "Chance",
-    special: "Special",
+    respawn_chance: "Spawn chance",
+    special: "Spawn condition",
     zones: "Zones",
     classification: "Classification",
     zone_ids: "Zone Filter",
@@ -265,9 +265,8 @@
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = row.original.level_min !== row.original.level_max}
     <span class="ml-auto"
-      >{row.original.level_min}<span class={hasVariance ? "" : "invisible"}
-        >+</span
-      ></span
+      >{row.original.level_min}{#if hasVariance}
+        to {row.original.level_max}{/if}</span
     >
   {:else if cell.column.id === "health"}
     {@const hasVariance = row.original.level_min !== row.original.level_max}
@@ -348,7 +347,7 @@
 
 <Seo
   title="Monsters - Ancient Kingdoms"
-  description={`${formatNumber(data.monsters.length)} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
+  description={`${formatNumber(data.monsters.length)} monsters across Eratiath, from regular spawns to elites, bosses and hunts. Filter by level, classification, or zone, then see drops, abilities, and respawn timers.`}
   path="/monsters"
 />
 

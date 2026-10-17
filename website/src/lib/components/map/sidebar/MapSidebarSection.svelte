@@ -48,6 +48,7 @@
     class="flex w-full items-center justify-between px-4 py-3 text-sm font-medium hover:bg-muted/50 transition-colors"
     aria-expanded={expanded}
     aria-controls="section-{id}"
+    aria-label={title}
     onclick={toggle}
   >
     <div class="flex items-center gap-2">
@@ -58,7 +59,7 @@
           indeterminate={toggleState === "some"}
           onclick={handleToggleClick}
           class="h-4 w-4 rounded border-border accent-primary cursor-pointer"
-          aria-label="Toggle all {title.toLowerCase()}"
+          aria-label="Toggle all {title}"
         />
       {/if}
       {#if Icon}

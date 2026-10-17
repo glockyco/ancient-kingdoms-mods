@@ -1,1 +1,0 @@
-Mechanics Block Chance Raises the affected character's Block Chance by 1 percentage points at rank 1, to at most 80%. Block Chance applies only to physical hits. Block Chance is capped at 80% before Accuracy and level difference are applied. The final chance for an attack to miss is capped at 90%.

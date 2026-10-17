@@ -7,6 +7,10 @@
 
 import { calculateChestRewards } from "$lib/calculation/chest-rewards";
 import {
+  calculateBossLootChance,
+  type BossLootDrop,
+} from "$lib/calculation/boss-loot";
+import {
   CHEST_REWARDS_QUERY,
   assembleChests,
   type ChestRewardRow,
@@ -77,14 +81,54 @@ export function getMonsterSources(
 			COALESCE(m.is_boss, 0) as is_boss,
 			COALESCE(m.is_fabled, 0) as is_fabled,
 			COALESCE(m.is_elite, 0) as is_elite,
-			ism.drop_rate
+			ism.drop_rate,
+      m.loot_inputs,
+      EXISTS (
+        SELECT 1 FROM monster_spawns ms
+        JOIN zones z ON z.id = ms.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
+        JOIN items charm ON charm.luck_token_zone_id = ms.zone_id
+        WHERE ms.monster_id = m.id AND charm.luck_token_bonus > 0
+      ) AS has_fatecharm
 		FROM item_sources_monster ism
 		JOIN monsters m ON ism.monster_id = m.id
 		WHERE ism.item_id = ?
 		ORDER BY ism.drop_rate DESC, m.name ASC
 	`);
 
-  return stmt.all(itemId) as MonsterSource[];
+  const rows = stmt.all(itemId) as Array<
+    MonsterSource & { loot_inputs: string; has_fatecharm: number }
+  >;
+  const chances = new Map<string, { base: number; fatecharm?: number }>();
+  return rows.map(({ loot_inputs, has_fatecharm, ...row }) => {
+    const drops = JSON.parse(loot_inputs) as BossLootDrop[];
+    if (
+      drops.some(
+        (drop) => drop.item_id === itemId && drop.random_items !== undefined,
+      )
+    ) {
+      return { ...row, is_distribution_roll: true };
+    }
+    if (!row.is_boss) return row;
+    let chance = chances.get(row.monster_id);
+    if (!chance) {
+      const neededQuestItemIds = new Set([itemId]);
+      chance = {
+        base: calculateBossLootChance(drops, itemId, { neededQuestItemIds }),
+        fatecharm: has_fatecharm
+          ? calculateBossLootChance(drops, itemId, {
+              fatecharm: true,
+              neededQuestItemIds,
+            })
+          : undefined,
+      };
+      chances.set(row.monster_id, chance);
+    }
+    return {
+      ...row,
+      per_kill_chance: chance.base,
+      per_kill_chance_with_fatecharm: chance.fatecharm,
+    };
+  });
 }
 
 /**
@@ -314,7 +358,7 @@ export function getGatherSources(
 					ELSE 1
 				END as amount_min,
 				CASE
-					WHEN gr.is_radiant_spark = 1 THEN 1
+					WHEN gr.is_radiant_spark = 1 OR gr.item_reward_id IS NULL OR isg.item_id != gr.item_reward_id THEN 1
 					ELSE gr.item_reward_amount
 				END as amount_max,
 				NULL as spawn_id,

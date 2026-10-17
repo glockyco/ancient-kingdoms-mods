@@ -155,7 +155,9 @@ function getSourceSummary(
     return {
       type: "merge",
       label:
-        moreCount > 0 ? `${firstName} + ${moreCount} more` : `${firstName}`,
+        moreCount > 0
+          ? `Merge: ${firstName} + ${moreCount} more`
+          : `Merge: ${firstName}`,
     };
   }
 
@@ -167,8 +169,8 @@ function getSourceSummary(
     return {
       type: "drop",
       label: zoneName
-        ? `${monster.monster_name} (${zoneName})`
-        : monster.monster_name,
+        ? `Drop: ${monster.monster_name} (${zoneName})`
+        : `Drop: ${monster.monster_name}`,
       linkHref: `/monsters/${monster.monster_id}`,
     };
   }
@@ -181,7 +183,7 @@ function getSourceSummary(
     const quest = rewardQuests[0];
     return {
       type: "quest",
-      label: quest.quest_name,
+      label: `Quest: ${quest.quest_name}`,
       linkHref: `/quests/${quest.quest_id}`,
     };
   }

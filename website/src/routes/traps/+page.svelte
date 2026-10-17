@@ -24,6 +24,9 @@
   let { data } = $props();
 
   const PAGE_SIZE = 20;
+  const trapCount = $derived(
+    data.traps.reduce((total, trap) => total + trap.count, 0),
+  );
 
   const typeOptions = Object.entries(TRAP_TYPE_LABELS).map(
     ([value, label]) => ({ value: value as TrapType, label }),
@@ -160,12 +163,15 @@
       teleportZoneName={row.original.teleport_zone_name}
     />
     {#if row.original.count > 1}
-      <span class="text-muted-foreground">&nbsp;×{row.original.count}</span>
+      <span class="text-muted-foreground"
+        >&nbsp;({row.original.count} traps)</span
+      >
     {/if}
   {:else if cell.column.id === "mechanics"}
     <TrapMechanics
       type={row.original.type}
       fireInterval={row.original.fire_interval}
+      compact
     />
   {:else if cell.column.id === "zone"}
     <IconBadge
@@ -179,7 +185,7 @@
     {#if row.original.position_x != null && row.original.position_y != null}
       <MapLink entityId={row.original.id} entityType="trap" compact />
     {:else}
-      <span class="text-muted-foreground">Withheld in game</span>
+      <span class="text-muted-foreground">No in-game map</span>
     {/if}
   {:else}
     {cell.getValue()}
@@ -188,7 +194,7 @@
 
 <Seo
   title="Traps - Ancient Kingdoms"
-  description={`${formatNumber(data.traps.length)} traps: find types, effects, teleport destinations, and locations on the world map.`}
+  description={`${formatNumber(trapCount)} traps by zone, with effects, teleport destinations, and map locations where an in-game map is available.`}
   path="/traps"
 />
 
@@ -199,6 +205,19 @@
     <TriangleAlert class="h-8 w-8 text-rose-600" />
     Traps
   </h1>
+  <p class="text-muted-foreground">
+    Disarmable traps trigger when you step on them. A Rogue with
+    <a
+      href="/skills/detect_traps"
+      class="text-blue-600 dark:text-blue-400 hover:underline">Detect Traps</a
+    >
+    or a Bard with
+    <a
+      href="/skills/sharp_senses"
+      class="text-blue-600 dark:text-blue-400 hover:underline">Sharp Senses</a
+    >
+    can disarm them. An active Rogue or Bard mercenary disarms them automatically.
+  </p>
 
   <DataTable
     data={data.traps}

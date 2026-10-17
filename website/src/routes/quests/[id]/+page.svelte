@@ -4,10 +4,12 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import FactionLink from "$lib/components/FactionLink.svelte";
   import { questReputationGain } from "$lib/utils/reputation";
+  import { adventuringSkillGain } from "$lib/calculation/adventuring";
   import QuestChainGraph from "$lib/components/QuestChainGraph.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -110,7 +112,11 @@
 </script>
 
 <Seo
-  title={`${data.quest.name} - Ancient Kingdoms`}
+  title={detailTitle(data.quest.name, {
+    family: "Quest",
+    source: data.startNpc?.name,
+    zone: data.startNpc?.zone_name,
+  })}
   description={data.description}
   path={`/quests/${data.quest.id}`}
 />
@@ -140,26 +146,38 @@
         <span>
           Offered from level {data.quest.level_recommended}{data.quest
             .veteran_level_recommended > 0
-            ? ` with ${data.quest.veteran_level_recommended} veteran points`
+            ? ` with ${data.quest.veteran_level_recommended} total veteran points`
             : ""}
         </span>
       {:else}
         {#if data.quest.level_required > 0}
-          <span>Required Level: {data.quest.level_required}</span>
+          <span>Required level: {data.quest.level_required}</span>
         {/if}
         {#if data.quest.level_recommended > 0}
-          <span>Recommended Level: {data.quest.level_recommended}</span>
+          <span>Recommended level: {data.quest.level_recommended}</span>
         {/if}
       {/if}
     </div>
   </div>
 
-  <!-- Daily Quest Info -->
+  <!-- Quest cooldowns -->
   {#if data.quest.is_adventurer_quest}
     <div class="bg-muted/30 rounded-md border p-4">
       <p class="text-sm">
-        You can repeat this quest once every 24 hours. Daily quests appear in a
-        random order, one at a time.
+        You can take this quest again 24 hours after completing it, when an
+        Adventurer Taskgiver next offers it.
+        <a
+          href="/professions/adventuring#how-it-works"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >How Adventurer quests work</a
+        >.
+      </p>
+    </div>
+  {:else if data.quest.is_repeatable}
+    <!-- Source: server-scripts/PlayerQuests.cs:CanAccept -->
+    <div class="bg-muted/30 rounded-md border p-4">
+      <p class="text-sm">
+        You can take this quest again 8 hours after completing it.
       </p>
     </div>
   {/if}
@@ -264,7 +282,10 @@
             {#if data.quest.class_requirements.length > 0}
               <div class="flex items-center gap-2">
                 <span class="text-sm text-muted-foreground w-16">Class:</span>
-                <ClassPills classes={data.quest.class_requirements} />
+                <ClassPills
+                  classes={data.quest.class_requirements}
+                  abbreviated={false}
+                />
               </div>
             {/if}
             {#if data.quest.faction_requirements.length > 0}
@@ -375,6 +396,10 @@
             NPCs
           </h2>
           <div class="bg-muted/30 rounded-md border p-4 space-y-2">
+            <p class="text-sm text-muted-foreground">
+              Any of these Adventurer Taskgivers offers the quest and accepts it
+              when you are done.
+            </p>
             {#each data.adventurerNpcs as npc (npc.id)}
               <div class="flex items-center gap-2">
                 <a
@@ -445,7 +470,7 @@
                 >
                   {target.name}
                 </a>
-                <span class="text-muted-foreground">x{target.amount}</span>
+                <span class="text-muted-foreground">×{target.amount}</span>
               </div>
             {/each}
 
@@ -463,7 +488,7 @@
                   tooltipHtml={item.tooltip_html}
                   imageAvailable={data.itemIconPaths[item.id]}
                 />
-                <span class="text-muted-foreground">x{item.amount}</span>
+                <span class="text-muted-foreground">×{item.amount}</span>
               </div>
             {/each}
 
@@ -490,17 +515,17 @@
                   tooltipHtml={item.tooltip_html}
                   imageAvailable={data.itemIconPaths[item.id]}
                 />
-                <span class="text-muted-foreground">x{item.amount}</span>
+                <span class="text-muted-foreground">×{item.amount}</span>
               </div>
             {/each}
 
-            <!-- Required items (GatherInventoryQuest) - also shown as Deliver since they're consumed -->
+            <!-- Required items also accept equipment, unlike the gather list. -->
             {#each data.requiredItems as item, i (i)}
               <div class="flex items-center gap-2">
                 <span
                   class="inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-16 bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
                 >
-                  Deliver
+                  {data.quest.remove_items_on_complete ? "Deliver" : "Have"}
                 </span>
                 <ItemLink
                   itemId={item.id}
@@ -508,9 +533,10 @@
                   tooltipHtml={item.tooltip_html}
                   imageAvailable={data.itemIconPaths[item.id]}
                 />
-                {#if item.amount > 1}
-                  <span class="text-muted-foreground">x{item.amount}</span>
-                {/if}
+                <span class="text-muted-foreground">×{item.amount}</span>
+                <span class="text-sm text-muted-foreground">
+                  (inventory, equipped, or key ring)
+                </span>
               </div>
             {/each}
 
@@ -546,7 +572,7 @@
                   imageAvailable={data.itemIconPaths[data.potionItem.id]}
                 />
                 <span class="text-muted-foreground"
-                  >x{data.potionItem.amount}</span
+                  >×{data.potionItem.amount}</span
                 >
               </div>
             {/if}
@@ -588,20 +614,15 @@
                   <span>{data.quest.discovered_location_sub_zone.name}</span>
                 {/if}
                 {#if data.quest.discovered_location_zone}
-                  <span class="text-muted-foreground">in</span>
+                  {#if data.quest.discovered_location_sub_zone}
+                    <span class="text-muted-foreground">in</span>
+                  {/if}
                   <a
                     href="/zones/{data.quest.discovered_location_zone.id}"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     {data.quest.discovered_location_zone.name}
                   </a>
-                {/if}
-                {#if data.quest.discovered_location_position}
-                  <span class="text-muted-foreground text-sm">
-                    at ({data.quest.discovered_location_position.x.toFixed(0)}, {data.quest.discovered_location_position.y.toFixed(
-                      0,
-                    )})
-                  </span>
                 {/if}
               </div>
             {/if}
@@ -644,7 +665,7 @@
                   </span>
                   <span class="font-medium">
                     <MechanicsLink section="experience"
-                      >{formatNumber(data.quest.rewards.exp)} XP</MechanicsLink
+                      >{formatNumber(data.quest.rewards.exp)}</MechanicsLink
                     >
                   </span>
                 </div>
@@ -675,11 +696,31 @@
                   </span>
                 </div>
               {/if}
-              {#if data.quest.increase_alchemy_skill > 0}
+              {#if data.quest.is_adventurer_quest && data.quest.rewards.exp > 0}
+                <!-- Source: server-scripts/PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32 -->
                 <div>
                   <span class="text-sm text-muted-foreground"
-                    >Alchemy Skill:
+                    >Adventuring:
                   </span>
+                  <a
+                    href="/professions/adventuring"
+                    class="font-medium text-cyan-600 dark:text-cyan-400 hover:underline"
+                    >+{formatPercent(
+                      adventuringSkillGain(data.quest.rewards.exp),
+                      {
+                        decimals: 2,
+                        trailingZeros: true,
+                      },
+                    )}</a
+                  >
+                  <span class="text-sm text-muted-foreground">
+                    (up to the 100% cap)
+                  </span>
+                </div>
+              {/if}
+              {#if data.quest.increase_alchemy_skill > 0}
+                <div>
+                  <span class="text-sm text-muted-foreground">Alchemy: </span>
                   <span class="font-medium text-cyan-600 dark:text-cyan-400">
                     +{formatPercent(data.quest.increase_alchemy_skill, {
                       decimals: 1,

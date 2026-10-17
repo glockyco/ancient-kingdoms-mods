@@ -67,6 +67,10 @@
     onZoneFocusChange,
     isCollapsed = $bindable(false),
   }: Props = $props();
+  let isMac = $state(false);
+  onMount(() => {
+    isMac = navigator.platform.includes("Mac");
+  });
 
   // State initialized once on mount
   let expandedSections = $state<string[]>([
@@ -295,8 +299,8 @@
           : ''}"
         onclick={toggleCollapsed}
         title={isCollapsed
-          ? "Expand sidebar (Cmd+B)"
-          : "Collapse sidebar (Cmd+B)"}
+          ? `Expand sidebar (${isMac ? "⌘B" : "Ctrl+B"})`
+          : `Collapse sidebar (${isMac ? "⌘B" : "Ctrl+B"})`}
       >
         {#if isCollapsed}
           <PanelLeftOpen class="h-4 w-4" />
@@ -324,7 +328,7 @@
           type="button"
           class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-muted text-muted-foreground hover:text-foreground mb-1"
           onclick={onSearchClick}
-          title="Search (Cmd+K)"
+          title={`Search (${isMac ? "⌘K" : "Ctrl+K"})`}
         >
           <Search class="h-5 w-5" />
         </button>

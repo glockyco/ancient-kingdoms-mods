@@ -197,6 +197,10 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
   let text = (skill.tooltip_template ?? "")
     .replaceAll("{CASTTIME} cast", castText)
     .replaceAll("{CASTTIME}", castText);
+  // Source: server-scripts/ScriptableSkill.cs:336-344 — resource-cost tooltips pad the range token.
+  if (/\{(?:MANACOSTS|ENERGYCOSTS)\}/.test(text)) {
+    text = text.replace(/(\S)(\{CASTRANGE\})/g, "$1 $2");
+  }
   // Death Bloom supplies its own percent sign. Other percent tokens take it from the template.
   if (skill.is_necromancer_death_bloom) {
     values.HEALTHCOSTPERCENT += "%";
@@ -401,6 +405,20 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     required_spent_points: skill.required_spent_points,
     player_classes: skill.player_classes,
     is_veteran: skill.is_veteran,
+    base_skill: skill.base_skill,
+    prerequisite_skill_name: skill.prerequisite_skill_name,
+    prerequisite_level: skill.prerequisite_level,
+    prerequisite2_skill_name: skill.prerequisite2_skill_name,
+    prerequisite2_level: skill.prerequisite2_level,
+    mercenary_names: usedByPets
+      .filter((pet) => pet.is_mercenary)
+      .map((pet) => pet.name),
+    pet_names: usedByPets
+      .filter((pet) => !pet.is_mercenary)
+      .map((pet) => pet.name),
+    monster_names: usedByMonsters.map((monster) => monster.name),
+    granting_item_names: grantedByItems.map((item) => item.item_name),
+    effect_summary: effectSummary,
     monster_count: usedByMonsters.length,
     mercenary_user_count: mercenaryUserCount,
     pet_user_count: petUserCount,

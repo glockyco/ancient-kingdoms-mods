@@ -18,7 +18,6 @@ import {
   STRENGTH,
   DEXTERITY,
   MAX_HEALTH,
-  rankInput,
   situational,
 } from "$lib/calculation/inputs";
 import { multiplyF32, iround } from "$lib/calculation/unity-math";
@@ -36,6 +35,7 @@ import type {
   LinearValue,
 } from "$lib/types/skills";
 import { casterInputs } from "./damage-calculations";
+import { casterRankInputs } from "./example-ranks";
 import {
   RANGER_ATTRIBUTE_MULTIPLIER,
   WISDOM_HEAL_CAP,
@@ -90,12 +90,12 @@ export function healingCalculation(
   const share = healWisdomShare(skill, kind);
   const wisdom = share !== null;
   const resource = health ? skill.heals_mana : null;
-  const criticalResource =
-    skill.skill_type === "target_heal" &&
-    (skill.is_pet_skill || skill.is_mercenary_skill);
   const ranger = kind === "player_ranger";
   const inputs = casterInputs(
-    [rankInput(skill.max_level), ...(wisdom ? [WISDOM] : [])],
+    [
+      ...casterRankInputs(skill.max_level, kind === "merc"),
+      ...(wisdom ? [WISDOM] : []),
+    ],
     kind === "merc",
   );
   return {
@@ -111,11 +111,6 @@ export function healingCalculation(
           skill.max_level,
           number,
         ),
-        ...(!wisdom
-          ? {
-              limit: `at most the recipient's missing ${health ? "Hit Points" : "Mana or Rage"}`,
-            }
-          : {}),
       },
       ...(share !== null
         ? [
@@ -136,7 +131,6 @@ export function healingCalculation(
             {
               name: `${statName("health")} restored`,
               expression: "Skill healing + Wisdom healing",
-              limit: "at most the recipient's missing Hit Points",
             },
           ]
         : []),
@@ -149,7 +143,6 @@ export function healingCalculation(
                 skill.max_level,
                 number,
               ),
-              limit: "at most the recipient's missing Mana or Rage",
             },
           ]
         : []),
@@ -165,11 +158,10 @@ export function healingCalculation(
         ? wisdomHeal(base, values.wisdom, ranger)
         : { rawShare: 0, share: 0, bonus: 0, total: base };
       return {
-        given: [
-          `rank ${rank}`,
-          ...(wisdom ? [`${formatStat("wisdom", values.wisdom)} Wisdom`] : []),
-        ],
-        result: `${number(scaled.total)} ${health ? "Hit Points before critical heals and the missing-Hit-Points cap" : "Mana (Rage for Warrior and Rogue mercenaries), capped at what is missing"}${resource ? `, and ${number(atRank(resource, rank))} Mana (Rage for Warrior and Rogue mercenaries)${criticalResource ? " before critical pet restoration" : ""}, capped at what is missing` : ""}`,
+        given: inputs.map((input) =>
+          describeInput(input, values[input.key] ?? rank),
+        ),
+        result: `Restores ${number(scaled.total)} ${health ? "Hit Points" : "Mana or Rage"}${resource ? ` and ${number(atRank(resource, rank))} Mana or Rage` : ""}${health ? " before critical heals" : ""}`,
         working: [
           ...rankWorkingLines(
             wisdom
@@ -327,6 +319,34 @@ function effectFormat(effect: Effect, value: number): string {
   return formatStatField(statField("skill", effect.key), value);
 }
 
+function effectRankDescription(
+  effect: Effect,
+  field: LinearValue,
+  maxRank: number,
+): string {
+  if (!effect.chance || field.bonus_per_level === 0 || maxRank <= 1)
+    return describeRankScaling(field, maxRank, (value) =>
+      effectFormat(effect, value),
+    );
+  return `${effectFormat(effect, field.base_value)} at rank 1, ${field.bonus_per_level > 0 ? "+" : "−"}${formatStatField(statField("skill", effect.key), Math.abs(field.bonus_per_level)).replace("%", "")} per rank (${formatStatField(statField("skill", effect.key), atRank(field, maxRank)).replace("%", "")} at rank ${maxRank})`;
+}
+
+function effectRankWorkingLines(
+  name: string,
+  effect: Effect,
+  field: LinearValue,
+  rank: number,
+): string[] {
+  if (!effect.chance)
+    return rankWorkingLines(name, field, rank, (value) =>
+      effectFormat(effect, value),
+    );
+  if (field.bonus_per_level === 0) return [];
+  return [
+    `${name}: ${formatStatField(statField("skill", effect.key), field.base_value).replace("%", "")} ${field.bonus_per_level > 0 ? "+" : "−"} ${formatStatField(statField("skill", effect.key), Math.abs(field.bonus_per_level)).replace("%", "")} × (${rank} − 1) = ${effectFormat(effect, atRank(field, rank))}`,
+  ];
+}
+
 function effectIsFraction(effect: Effect): boolean {
   const field = statField("skill", effect.key);
   return (
@@ -362,9 +382,8 @@ function attributeExpression(
   source: BuffBonusAttrSource | DebuffBonusAttrKind,
 ): string {
   if (source === "player_wis_con_cha_half")
-    return "Half of Wisdom, Constitution, and Charisma added together";
-  if (source === "player_wis_con_avg")
-    return "Half of Wisdom and Constitution added together";
+    return "(Wisdom + Constitution + Charisma) ÷ 2";
+  if (source === "player_wis_con_avg") return "(Wisdom + Constitution) ÷ 2";
   if (source === "player_level") return "Character level × 10";
   const name = attributeInputs(source)[0]?.label ?? "0";
   return source.startsWith("player_ranger") ? `${name} × 3` : name;
@@ -468,7 +487,6 @@ export function effectScalingCalculation(
 ): Calculation {
   const song = skill.scales_with_charisma;
   const scalings = effectScalings(skill, debuff);
-  const fields = scalings.map(({ effect }) => effect);
   const average =
     source === "player_wis_con_avg" || source === "player_wis_con_cha_half";
   const ward =
@@ -477,6 +495,11 @@ export function effectScalingCalculation(
     !!skill.ward_bonus &&
     (skill.ward_bonus.base_value !== 0 ||
       skill.ward_bonus.bonus_per_level !== 0);
+  const levelPercentage =
+    source === "player_level" &&
+    !ward &&
+    scalings.every(({ mode }) => mode === "healing") &&
+    skill.duration_base < 60;
   const derivedAttribute =
     average || source === "player_level" || source.startsWith("player_ranger");
   const attributeName = source.startsWith("player_ranger")
@@ -505,7 +528,7 @@ export function effectScalingCalculation(
     // The result puts the value first, so it names the stat without repeating the percent sign.
     const phrase =
       effect.key === "healing_per_second_bonus" && field.base_value < 0
-        ? name
+        ? name.toLowerCase()
         : `${statFieldPhraseName(statField("skill", effect.key))}${debuff && field.base_value < 0 ? " reduction" : ""}`;
     const magnitude = mode === "dot" || (debuff && field.base_value < 0);
     const displayField =
@@ -520,9 +543,7 @@ export function effectScalingCalculation(
         ? "Skill Ward"
         : mode === "dot" && factor === 0 && !song
           ? name
-          : fields.length === 1
-            ? "Skill amount"
-            : `Skill ${name}`;
+          : `Skill ${name}`;
     const bonusName = `${song ? "Charisma" : sourceName} ${
       mode === "dot" ? "damage" : mode === "healing" ? "healing" : name
     }`;
@@ -549,14 +570,14 @@ export function effectScalingCalculation(
     );
   const inputs = casterInputs(
     [
-      rankInput(skill.max_level),
+      ...casterRankInputs(skill.max_level, mercenary),
       ...(usesAttribute ? attributeInputs(source) : []),
     ],
     mercenary,
   );
   const healingPercentageName = `${sourceName} percentage`;
   const steps: CalculationStep[] = [
-    ...(derivedAttribute && usesAttribute
+    ...(derivedAttribute && usesAttribute && !levelPercentage
       ? [
           {
             name: attributeName,
@@ -568,9 +589,9 @@ export function effectScalingCalculation(
     ...(usesSongMultiplier
       ? [
           {
-            name: `${statName("charisma")} bonus`,
-            expression: "0.1% per point of Charisma above 0",
-            limit: "at most 200%",
+            name: "Song power",
+            expression: "100% + 0.1% per point of Charisma above 0",
+            limit: "at most 300%",
           },
         ]
       : []),
@@ -603,10 +624,10 @@ export function effectScalingCalculation(
     if (!(mode === "ward" && ward))
       steps.push({
         name: baseName,
-        expression: describeRankScaling(
+        expression: effectRankDescription(
+          effect,
           displayField,
           skill.max_level,
-          (value) => effectFormat(effect, value),
         ),
       });
     if (!song && (mode === "ward" || (mode === "dot" && factor === 0)))
@@ -618,7 +639,7 @@ export function effectScalingCalculation(
     ) {
       steps.push({
         name,
-        expression: `${baseName} × (100% + Charisma bonus)`,
+        expression: `${baseName} × Song power`,
         ...(!effectIsFraction(effect) ? { rounding: "nearest" as const } : {}),
         ...(effect.key === "fear_resist_chance_bonus" &&
         skill.fear_resist_chance_bonus_cap > 0
@@ -630,7 +651,9 @@ export function effectScalingCalculation(
     } else if (mode === "healing" && skill.duration_base < 60) {
       steps.push({
         name: healingPercentageName,
-        expression: `0.4% per point of ${contributionName} above 0`,
+        expression: levelPercentage
+          ? "4% per character level"
+          : `0.4% per point of ${contributionName} above 0`,
         limit: "at most 500%",
       });
       steps.push({
@@ -662,9 +685,10 @@ export function effectScalingCalculation(
     steps,
     inputs,
     example(values) {
+      const rank = values.rank ?? 1;
       let attribute = usesAttribute ? attributeValue(source, values) : 0;
       const working: string[] = [];
-      if (derivedAttribute && usesAttribute) {
+      if (derivedAttribute && usesAttribute && !levelPercentage) {
         const rawInput = attributeInputs(source)[0];
         const arithmetic = average
           ? `(${formatStat("wisdom", values.wisdom)} + ${formatStat("constitution", values.constitution)}${source === "player_wis_con_cha_half" ? ` + ${formatStat("charisma", values.charisma)}` : ""}) ÷ 2`
@@ -679,18 +703,13 @@ export function effectScalingCalculation(
       if (usesSongMultiplier) {
         const bonus = bardBonus(attribute);
         working.push(
-          `Charisma bonus: ${number(Math.max(0, attribute))} × 0.1% = ${percent(bonus.raw, { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(bonus.limited, { decimals: 2, preserveNonzero: true })}` : ""}`,
+          `Song power: 100% + ${number(Math.max(0, attribute))} × 0.1% = ${percent(1 + bonus.raw, { decimals: 2, preserveNonzero: true })}${bonus.raw !== bonus.limited ? `, limited to ${percent(power, { decimals: 2, preserveNonzero: true })}` : ""}`,
         );
       }
       if (ward) {
-        const baseWard = atRank(skill.ward_bonus!, values.rank);
+        const baseWard = atRank(skill.ward_bonus!, rank);
         working.push(
-          ...rankWorkingLines(
-            "Skill Ward",
-            skill.ward_bonus!,
-            values.rank,
-            number,
-          ),
+          ...rankWorkingLines("Skill Ward", skill.ward_bonus!, rank, number),
         );
         const originalAttribute = attribute;
         attribute = attributeBuff(baseWard, attribute, 2).total;
@@ -709,15 +728,10 @@ export function effectScalingCalculation(
           baseName,
           bonusName,
         }) => {
-          const base = atRank(displayField, values.rank);
+          const base = atRank(displayField, rank);
           if (!(mode === "ward" && ward))
             working.push(
-              ...rankWorkingLines(
-                baseName,
-                displayField,
-                values.rank,
-                (value) => effectFormat(effect, value),
-              ),
+              ...effectRankWorkingLines(baseName, effect, displayField, rank),
             );
           let result: number;
           if (
@@ -752,7 +766,7 @@ export function effectScalingCalculation(
             result = scaled.total;
             if (healing) {
               working.push(
-                `${healingPercentageName}: ${number(effectiveAttribute)} × 0.4% = ${percent(healing.rawShare, { decimals: 2, preserveNonzero: true })}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
+                `${healingPercentageName}: ${levelPercentage ? `${number(values.level)} × 4%` : `${number(effectiveAttribute)} × 0.4%`} = ${percent(healing.rawShare, { decimals: 2, preserveNonzero: true })}${healing.rawShare !== healing.share ? `, limited to ${percent(healing.share, { decimals: 2, preserveNonzero: true })}` : ""}`,
               );
               working.push(
                 `${bonusName}: ${number(base)} × ${percent(healing.share, { decimals: 2, preserveNonzero: true })} = ${number(scaled.bonus)}, rounded`,
@@ -770,11 +784,15 @@ export function effectScalingCalculation(
               `${name}: ${number(base)} + ${addition} = ${number(result)}`,
             );
           }
-          return `${effectFormat(effect, result)} ${mode === "dot" && debuff ? "Damage per second before the target's resistance" : phrase}`;
+          return `${effectFormat(effect, result)}${effect.chance ? " of" : ""} ${mode === "dot" && debuff ? "damage per second before the target's defenses" : phrase}`;
         },
       );
       return {
-        given: inputs.map((input) => describeInput(input, values[input.key])),
+        given: inputs.map((input) =>
+          input.key === "level"
+            ? `level ${number(values.level)}`
+            : describeInput(input, values[input.key] ?? rank),
+        ),
         result: results.join(", "),
         working,
       };
@@ -806,6 +824,13 @@ export function aggroCalculation(
   );
   const stuns = hasNonZeroField(skill.stun_chance);
   const fears = hasNonZeroField(skill.fear_chance);
+  const rankChangesThreat =
+    skill.max_level > 1 &&
+    [
+      skill.aggro,
+      ...(stuns ? [skill.stun_chance, skill.stun_time] : []),
+      ...(fears ? [skill.fear_chance, skill.fear_time] : []),
+    ].some((field) => field && field.bonus_per_level !== 0);
   const owner =
     caster === "player"
       ? "Your"
@@ -814,16 +839,8 @@ export function aggroCalculation(
         : "The caster's";
   const inputs = casterInputs(
     [
-      // Source: server-scripts/PetSkills.cs:RefreshSkillLevels — level 50 and 20 veteran points give rank 12; the skill page's Mercenary Ranks section exposes the full rule.
-      ...(skill.max_level > 1
-        ? [
-            {
-              ...rankInput(skill.max_level),
-              ...(caster === "mercenary"
-                ? { value: Math.min(skill.max_level, 12) }
-                : {}),
-            },
-          ]
+      ...(rankChangesThreat
+        ? casterRankInputs(skill.max_level, caster === "mercenary")
         : []),
       // The hit's damage before defenses is the Skill Damage result, so the example states one
       // fixed hit instead of asking for a number the reader cannot see.
@@ -877,23 +894,9 @@ export function aggroCalculation(
       },
     ],
     note:
-      [
-        ...(caster === "mercenary" && skill.max_level > 1
-          ? [
-              "Use the rank from Mercenary Skill Rank on this page. The examples use the same owner level and veteran points.",
-            ]
-          : []),
-        ...(dealsDamage && caster !== "other"
-          ? [
-              `Damage before defenses is the result of Skill Damage above. The example uses a ${number(EXAMPLE_HIT_DAMAGE)}-damage hit.`,
-            ]
-          : []),
-        ...(skill.skill_type === "area_damage" && skill.area_projectile
-          ? [
-              "This skill's hits travel as projectiles, which add no Hit Points contribution.",
-            ]
-          : []),
-      ].join(" ") || undefined,
+      caster === "mercenary" && rankChangesThreat
+        ? "Use the rank shown under Mercenary skill rank."
+        : undefined,
     ...(caster !== "other" ? { inputs } : {}),
     example(values) {
       if (caster === "other")
@@ -930,7 +933,7 @@ export function aggroCalculation(
         given:
           caster === "other"
             ? [
-                ...(skill.max_level > 1 ? [`rank ${rank}`] : []),
+                ...(rankChangesThreat ? [`rank ${rank}`] : []),
                 ...(dealsDamage
                   ? [`a ${number(damage)}-damage hit before defenses`]
                   : []),
@@ -948,7 +951,7 @@ export function aggroCalculation(
                   ? [`a ${number(damage)}-damage hit before defenses`]
                   : []),
               ],
-        result: `${number(threat.total)} threat before the target's current-Hit-Points cap`,
+        result: `${number(threat.total)} threat, at most the target's current Hit Points`,
         working: [
           ...rankWorkingLines("Skill threat", skill.aggro!, rank, number),
           ...(stuns
@@ -959,11 +962,6 @@ export function aggroCalculation(
           ...(fears
             ? [
                 `Fear threat: ${percent(fearChance, { decimals: 2, preserveNonzero: true })} × ${seconds(fearTime)} × 10 = ${number(threat.fear)}, rounded`,
-              ]
-            : []),
-          ...(direct && health === 0
-            ? [
-                `Hit Points contribution: 0, because Skill threat is not above 0`,
               ]
             : []),
           `Threat added: ${amounts.map((value) => number(value)).join(" + ")} = ${number(threat.total)}`,

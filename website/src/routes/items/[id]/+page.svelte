@@ -19,6 +19,7 @@
     itemListType,
     formatNumber,
     formatPercent,
+    formatDuration,
   } from "$lib/utils/format";
   import { ALL_CLASS_IDS, formatClassName } from "$lib/utils/classes";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
@@ -83,16 +84,14 @@
     maxChance: number | null,
   ): string | null {
     if (minChance == null || maxChance == null) return null;
-    const minPercent = formatPercent(minChance, {
-      decimals: 1,
-      trailingZeros: true,
-    });
-    const maxPercent = formatPercent(maxChance, {
-      decimals: 1,
-      trailingZeros: true,
-    });
+    const percent = (chance: number) =>
+      chance > 0 && chance < 0.0005
+        ? "under 0.1%"
+        : formatPercent(chance, { decimals: 1, trailingZeros: true });
+    const minPercent = percent(minChance);
+    const maxPercent = percent(maxChance);
     if (minPercent === maxPercent) return `${minPercent} per cast`;
-    return `${minPercent.slice(0, -1)}–${maxPercent} per cast`;
+    return `${minPercent} to ${maxPercent} per cast`;
   }
 
   function formatFishingSourceNote(
@@ -128,10 +127,8 @@
     isBackpack ||
       isHouseChestStructure ||
       isSetPiece ||
-      isAugment ||
       isCostume ||
-      isTravelItem ||
-      isPet,
+      isTravelItem,
   );
 
   // Compute all derived values from item data and server-loaded sources/usages
@@ -171,11 +168,12 @@
       classRequired: parseJson<string[]>(data.item.class_required) || [],
 
       // SOURCES - Transform normalized types to template-expected format
-      droppedBy:
-        data.sources.monsters?.map((m) => ({
-          ...m,
-          rate: m.drop_rate, // Rename for template compatibility
-        })) || [],
+      droppedBy: Array.from(
+        Map.groupBy(data.sources.monsters ?? [], (m) => m.monster_id).values(),
+      ).map((rolls) => ({
+        ...rolls[0],
+        rates: rolls.map((roll) => roll.drop_rate),
+      })),
 
       soldBy: data.sources.vendors || [],
 
@@ -217,25 +215,51 @@
         })) || [],
 
       gatheredFrom:
-        data.sources.gathers?.map((g) => ({
-          gather_item_id: g.resource_id,
-          gather_item_name: g.resource_name,
-          rate: g.actual_drop_chance,
-          amount_min: g.amount_min,
-          amount_max: g.amount_max,
-          is_fishing_spot: g.is_fishing_spot,
-          virtual_location_count: g.virtual_location_count,
-          fishing_source_role: g.fishing_source_role,
-          spawn_id: g.spawn_id,
-          zone_id: g.zone_id,
-          zone_name: g.zone_name,
-          rate_note: g.is_radiant_spark
-            ? "5-25% based on Radiant Seeker level"
-            : formatFishingSourceNote(
-                g.fishing_chance_min,
-                g.fishing_chance_max,
-              ),
-        })) || [],
+        Array.from(
+          Map.groupBy(
+            (data.sources.gathers ?? []).filter(
+              (g) =>
+                !g.is_fishing_spot ||
+                g.fishing_chance_max == null ||
+                g.fishing_chance_max > 0,
+            ),
+            (g) =>
+              g.is_fishing_spot
+                ? JSON.stringify([
+                    g.resource_name,
+                    g.zone_id,
+                    g.fishing_source_role,
+                    g.fishing_chance_min,
+                    g.fishing_chance_max,
+                    g.actual_drop_chance,
+                  ])
+                : g.resource_id,
+          ).values(),
+        )
+          .map((group) => ({
+            ...group[0],
+            virtual_location_count: group.length,
+          }))
+          .map((g) => ({
+            gather_item_id: g.resource_id,
+            gather_item_name: g.resource_name,
+            rate: g.actual_drop_chance,
+            amount_min: g.amount_min,
+            amount_max: g.amount_max,
+            is_fishing_spot: g.is_fishing_spot,
+            virtual_location_count: g.virtual_location_count,
+            fishing_source_role: g.fishing_source_role,
+            spawn_id: g.spawn_id,
+            zone_id: g.zone_id,
+            zone_name: g.zone_name,
+            is_radiant_spark: g.is_radiant_spark,
+            rate_note: g.is_radiant_spark
+              ? "5% plus 0.2 percentage points per 1% Radiant Seeker (25% at 100%)"
+              : formatFishingSourceNote(
+                  g.fishing_chance_min,
+                  g.fishing_chance_max,
+                ),
+          })) || [],
 
       foundInChests:
         data.sources.chests?.map((c) => ({
@@ -427,7 +451,7 @@
   <!-- Basic Info -->
   <Card.Root class="bg-muted/30">
     <Card.Header>
-      <Card.Title level={2}>Basic Information</Card.Title>
+      <Card.Title level={2}>Basic information</Card.Title>
     </Card.Header>
     <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div>
@@ -437,14 +461,14 @@
 
       {#if data.item.level_required > 1}
         <div>
-          <div class={styles.label}>Level Required</div>
+          <div class={styles.label}>Required level</div>
           <div class={styles.value}>{data.item.level_required}</div>
         </div>
       {/if}
 
       {#if hasSpecificClassRestriction(computed.classRequired)}
         <div>
-          <div class={styles.label}>Class Required</div>
+          <div class={styles.label}>Required class</div>
           <div class={styles.value}>
             {computed.classRequired.map(formatClassName).join(", ")}
           </div>
@@ -453,7 +477,9 @@
 
       {#if data.item.slot}
         <div>
-          <div class={styles.label}>Equipment Slot</div>
+          <div class={styles.label}>
+            {isCostume ? "Costume slot" : "Equipment slot"}
+          </div>
           <div class={styles.value}>
             {formatEquipmentCategory(data.item.slot)}
           </div>
@@ -462,14 +488,14 @@
 
       {#if data.item.max_stack > 1}
         <div>
-          <div class={styles.label}>Max Stack</div>
+          <div class={styles.label}>Maximum stack</div>
           <div class={styles.value}>{data.item.max_stack}</div>
         </div>
       {/if}
 
       {#if data.item.backpack_slots > 0}
         <div>
-          <div class={styles.label}>Backpack Slots</div>
+          <div class={styles.label}>Backpack slots</div>
           <div class={styles.value}>{data.item.backpack_slots}</div>
         </div>
       {/if}
@@ -482,37 +508,37 @@
         </div>
       {/if}
 
-      {#if computed.maxDurability && !isAugment}
+      {#if computed.maxDurability && !isAugment && !isCostume}
         <div>
-          <div class={styles.label}>Max Durability</div>
-          <div class={styles.value}>{computed.maxDurability}</div>
+          <div class={styles.label}>Durability</div>
+          <div class={styles.value}>{computed.maxDurability} points</div>
         </div>
       {/if}
 
       {#if data.item.mount_speed > 0}
         <div>
-          <div class={styles.label}>Mount Speed</div>
+          <div class={styles.label}>Mount speed</div>
           <div class={styles.value}>{data.item.mount_speed}</div>
         </div>
       {/if}
 
       {#if data.item.food_type}
         <div>
-          <div class={styles.label}>Food Type</div>
+          <div class={styles.label}>Food type</div>
           <div class={styles.value}>{data.item.food_type}</div>
         </div>
       {/if}
 
       {#if computed.hasSerenity}
         <div>
-          <div class={styles.label}>Special Effect</div>
+          <div class={styles.label}>Special effect</div>
           <a href="/skills/serenity" class={styles.link}>Serenity</a>
         </div>
       {/if}
 
       {#if computed.armorSetName && computed.armorSetId}
         <div>
-          <div class={styles.label}>Set Bonus</div>
+          <div class={styles.label}>Set bonus</div>
           <a href="/items/{computed.armorSetId}" class={styles.link}>
             {computed.armorSetName}
           </a>
@@ -521,7 +547,7 @@
 
       {#if data.item.buy_price > 0 && computed.soldBy && computed.soldBy.length > 0}
         <div>
-          <div class={styles.label}>Buy Price</div>
+          <div class={styles.label}>Buy price</div>
           <div class={styles.valueCurrency}>
             {#if computed.soldBy[0].currency_item_id}
               {formatNumber(data.item.buy_price, { groupSeparator: "\u202F" })}
@@ -542,7 +568,7 @@
 
       {#if data.item.sell_price > 0 && data.item.sellable}
         <div>
-          <div class={styles.label}>Sell Price</div>
+          <div class={styles.label}>Sell price</div>
           <div class={styles.valueCurrency}>
             {formatNumber(data.item.sell_price, { groupSeparator: "\u202F" })}g
           </div>
@@ -551,10 +577,10 @@
 
       {#if data.item.primal_essence_value}
         <div>
-          <div class={styles.label}>Primal Essence</div>
+          <div class={styles.label}>Trades for</div>
           <div class={styles.value}>
             <a href="/items/primal_essence" class={styles.link}>
-              {data.item.primal_essence_value}
+              {data.item.primal_essence_value} Primal Essence
             </a>
           </div>
         </div>
@@ -578,7 +604,7 @@
         {#if isBackpack}
           <div class="space-y-2 text-muted-foreground">
             <p>
-              Equipping a backpack expands your carry inventory. See
+              Equipping a backpack adds its slots to your Combined Backpack. See
               <a href="/mechanics/inventory#backpacks" class={styles.link}>
                 backpack storage rules
               </a>
@@ -589,7 +615,7 @@
         {#if isHouseChestStructure}
           <div class="space-y-2 text-muted-foreground">
             <p>
-              House chest use requires owning a house. See
+              You need to own a house to use a house chest. See
               <a href="/mechanics/inventory#house-chests" class={styles.link}>
                 house chest storage rules
               </a>
@@ -606,15 +632,6 @@
             for the piece thresholds.
           </p>
         {/if}
-        {#if isAugment}
-          <p class="text-muted-foreground">
-            Augments attach to equipment at a Craft Station. See
-            <a href="/mechanics/crafting#augments" class={styles.link}>
-              augment rules
-            </a>
-            for compatibility and removal.
-          </p>
-        {/if}
         {#if isCostume}
           <p class="text-muted-foreground">
             Using a costume saves its appearance to your wardrobe. See
@@ -625,20 +642,11 @@
         {/if}
         {#if isTravelItem}
           <p class="text-muted-foreground">
-            See
+            Travel scrolls do not work inside the Temple of Valaark. See
             <a href="/mechanics/world#binding-and-travel" class={styles.link}>
               binding and travel rules
             </a>
-            for bind points and where travel items cannot be used.
-          </p>
-        {/if}
-        {#if isPet}
-          <p class="text-muted-foreground">
-            Whistles summon a friendly follower that does not fight. See
-            <a href="/summons#how-summons-work" class={styles.link}>
-              friendly follower rules
-            </a>
-            for the follower limit and naming.
+            for bind points.
           </p>
         {/if}
       </Card.Content>
@@ -688,7 +696,7 @@
       {#if specialMechanics[0]}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Special Use</Card.Title>
+            <Card.Title level={2}>Special use</Card.Title>
           </Card.Header>
           <Card.Content>
             <div>
@@ -735,7 +743,7 @@
 
             {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
               <div>
-                <div class={styles.label}>Created From</div>
+                <div class={styles.label}>Created from</div>
                 <div>
                   <a
                     href="/items/{data.item.luck_token_fragment_id}"
@@ -745,7 +753,7 @@
                   </a>
                   {#if data.item.luck_token_fragments_needed}
                     <span class={styles.label}>
-                      (x{data.item.luck_token_fragments_needed})</span
+                      ×{data.item.luck_token_fragments_needed}</span
                     >
                   {/if}
                 </div>
@@ -759,7 +767,7 @@
       {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Fatecharm Fragment</Card.Title>
+            <Card.Title level={2}>Fatecharm fragment</Card.Title>
           </Card.Header>
           <Card.Content class="flex flex-col gap-4">
             <div>
@@ -778,7 +786,7 @@
               </a>
             </div>
             <div>
-              <div class={styles.label}>Amount Needed</div>
+              <div class={styles.label}>Amount needed</div>
               <div class={styles.value}>{data.item.fragment_amount_needed}</div>
             </div>
           </Card.Content>
@@ -789,7 +797,7 @@
       {#if data.packContents.length > 0}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Pack Contents</Card.Title>
+            <Card.Title level={2}>Pack contents</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
@@ -840,7 +848,7 @@
                 <div
                   class="flex justify-between items-center p-2 rounded bg-muted"
                 >
-                  <span class="text-sm font-medium">Attack Delay</span>
+                  <span class="text-sm font-medium">Delay</span>
                   <span class="text-sm font-bold">{data.item.weapon_delay}</span
                   >
                 </div>
@@ -874,7 +882,7 @@
         {@const mergeTarget = data.usages.merges[0]}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Combine to Create</Card.Title>
+            <Card.Title level={2}>Combine to create</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div>
@@ -896,8 +904,8 @@
             </div>
           </Card.Content>
         </Card.Root>
-      {:else if computed.createdFromMerge && computed.createdFromMerge.length > 0}
-        <!-- Created From (shown when no stats and not a merge item) -->
+      {/if}
+      {#if computed.createdFromMerge && computed.createdFromMerge.length > 0}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title level={2}>Created from</Card.Title>
@@ -921,11 +929,11 @@
       {#if data.item.item_type === "treasure_map" && data.treasureLocation}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Treasure Location</Card.Title>
+            <Card.Title level={2}>Treasure location</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div>
-              <div class={styles.label}>Dig Location</div>
+              <div class={styles.label}>Dig location</div>
               <div class="flex items-center gap-2">
                 <a
                   href="/zones/{data.treasureLocation.zone_id}"
@@ -941,7 +949,7 @@
               </div>
             </div>
             <div>
-              <div class={styles.label}>Required Tool</div>
+              <div class={styles.label}>Required tool</div>
               <a href="/items/shovel" class={styles.link}>Shovel</a>
             </div>
             {#if data.treasureLocation.reward_id}
@@ -977,7 +985,9 @@
                     {item.item_name}
                   </a>
                   <span class={styles.label}>
-                    {item.price === 0 ? "Free" : `${item.price}x`}
+                    {item.price === 0
+                      ? "Free"
+                      : `Costs ${formatNumber(item.price)}`}
                   </span>
                 </div>
               {/each}
@@ -988,7 +998,7 @@
         <!-- Primal Essence Acquisition -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>How to Acquire</Card.Title>
+            <Card.Title level={2}>How to get</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1006,15 +1016,21 @@
                 <div class={styles.label}>Requirements</div>
                 <div class={styles.value}>
                   <ul class="list-disc list-inside space-y-0.5">
-                    <li>Equipment items only</li>
-                    <li>Magic quality or higher</li>
+                    <li>Equipment of Magic quality or higher</li>
+                    <li>
+                      Sellable, with a positive sell price, and not broken
+                    </li>
+                    <li>Not a pickaxe</li>
                   </ul>
                 </div>
               </div>
               <div>
                 <div class={styles.label}>Amount received</div>
-                <!-- Source: server-scripts/Utils.cs:getPrimalEssenceAmount — ceil(sellPrice * 0.06f), rounded up to a whole essence -->
-                <div class={styles.value}>6% of sell price, rounded up</div>
+                <!-- Source: server-scripts/Utils.cs:getPrimalEssenceAmount, isTradeableForPrimalEssence and UINpcTrading.cs:562-580 - trades use the item's own sell price and require durability left. -->
+                <div class={styles.value}>
+                  6% of the sell price, rounded up. Gear bought with tokens uses
+                  its sell price in tokens, not its gold value.
+                </div>
               </div>
             </div>
           </Card.Content>
@@ -1023,7 +1039,7 @@
         <!-- Token of Redemption Usage -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Usage</Card.Title>
+            <Card.Title level={2}>How to use</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1059,7 +1075,7 @@
         <!-- Source: server-scripts/ScriptableSkill.cs:TryActivateRadiantAetherForArea -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Passive Effects</Card.Title>
+            <Card.Title level={2}>Passive effects</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-4">
@@ -1067,31 +1083,28 @@
                 <div class={styles.label}>How it works</div>
                 <div class={styles.value}>
                   <p>
-                    Keep Radiant Aether in one of your first 24 carry slots. An
-                    ability critical hit, a hit that would kill you, or an
-                    enemy's area attack or debuff can activate it. Each
-                    activation uses one Radiant Aether.
+                    Keep Radiant Aether in your 24 base inventory slots, not in
+                    a backpack. Each activation consumes one.
                   </p>
                   <p>
-                    Ability critical hits and hits that would kill you each have
-                    a 15% activation chance. If an area skill targets one player
-                    carrying Radiant Aether, that player has a 15% chance to
-                    cancel it. If it targets two or more such players, each has
-                    the lower of 10% or 25% divided by their number. The first
-                    successful activation cancels the skill for every target.
+                    Ability critical hits and otherwise fatal hits each have a
+                    15% activation chance. Against an enemy's area skill, the
+                    chance per carrier is 15% with one carrier targeted, or 25%
+                    divided among multiple carriers, capped at 10% each.
                   </p>
                 </div>
               </div>
               <div class="space-y-2">
                 <div>
                   <div class={styles.label}>
-                    When an Ability Lands a Critical Hit
+                    When an ability lands a critical hit
                   </div>
                   <div class={styles.value}>
                     <span class={styles.valuePositive}
-                      >Raises the critical multiplier from ×1.5 to ×3</span
+                      >The critical hit deals 3 times normal damage instead of
+                      1.5 times.</span
                     >
-                    before Critical Resist
+                    The target's Critical Resist still reduces the bonus.
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether surges - your strike rends the heavens!"
@@ -1100,7 +1113,7 @@
               </div>
               <div class="space-y-2">
                 <div>
-                  <div class={styles.label}>When a Hit Would Kill You</div>
+                  <div class={styles.label}>When a hit would kill you</div>
                   <div class={styles.value}>
                     <span class={styles.valuePositive}
                       >Restores all Hit Points</span
@@ -1115,7 +1128,7 @@
               <div class="space-y-2">
                 <div>
                   <div class={styles.label}>
-                    When an Enemy Uses an Area Skill
+                    When an enemy uses an area skill
                   </div>
                   <div class={styles.value}>
                     <span class={styles.valuePositive}
@@ -1124,7 +1137,7 @@
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether flares brightly - your party withstand
-                    &#123;SKILL_NAME&#125;!"
+                    &lt;skill name&gt;!"
                   </div>
                 </div>
               </div>
@@ -1170,7 +1183,7 @@
         <!-- Blessed Rune Origin -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Acquisition</Card.Title>
+            <Card.Title level={2}>How to get</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1220,7 +1233,7 @@
         <!-- Socketable Augment Usage -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>How to Use</Card.Title>
+            <Card.Title level={2}>How to use</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-3">
@@ -1236,12 +1249,12 @@
               </div>
               <div>
                 <div class={styles.label}>Removing</div>
-                <!-- Source: server-scripts/UINpcTrading.cs:164-169,228-232 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
+                <!-- Source: server-scripts/UINpcTrading.cs:261-265 — removal prices depend on the augment's quality. -->
                 <div class={styles.value}>
                   Visit an Augmenter to remove a socketed augment. Removal costs {formatNumber(
                     5000,
                     { groupSeparator: "\u202F" },
-                  )}g for a common augment, {formatNumber(10000, {
+                  )}g for an uncommon augment, {formatNumber(10000, {
                     groupSeparator: "\u202F",
                   })}g for a magic augment, or {formatNumber(15000, {
                     groupSeparator: "\u202F",
@@ -1266,7 +1279,7 @@
         <!-- Found in Packs -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Found in Packs</Card.Title>
+            <Card.Title level={2}>Found in packs</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
@@ -1275,7 +1288,9 @@
                   <a href="/items/{pack.pack_id}" class={styles.link}>
                     {pack.pack_name}
                   </a>
-                  <span class={styles.value}>×{pack.amount}</span>
+                  <span class={styles.value}
+                    >Contains {formatNumber(pack.amount)}</span
+                  >
                 </div>
               {/each}
             </div>
@@ -1285,7 +1300,7 @@
         <!-- Teaches Recipe -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title level={2}>Teaches Recipe</Card.Title>
+            <Card.Title level={2}>Teaches recipe</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div class="grid grid-cols-3 gap-4">
@@ -1301,7 +1316,7 @@
 
               {#if data.item.alchemy_recipe_level_required != null}
                 <div class="text-right">
-                  <div class={styles.label}>Recipe Tier</div>
+                  <div class={styles.label}>Recipe tier</div>
                   <div class={styles.value}>
                     {formatTier(data.item.alchemy_recipe_level_required)}
                   </div>
@@ -1361,7 +1376,7 @@
 
               {#if data.item.alchemy_recipe_level_required != null}
                 <div class="text-right">
-                  <div class={styles.label}>Recipe Tier</div>
+                  <div class={styles.label}>Recipe tier</div>
                   <div class={styles.value}>
                     {formatTier(data.item.alchemy_recipe_level_required)}
                   </div>
@@ -1406,7 +1421,7 @@
         {#if computed.armorSetMembers && computed.armorSetMembers.length > 0}
           <div>
             <h4 class="text-sm font-semibold mb-2">
-              Set Pieces ({computed.armorSetMembers.length})
+              Set pieces ({computed.armorSetMembers.length})
             </h4>
             <div class="flex flex-wrap gap-x-4 gap-y-1">
               {#each computed.armorSetMembers as member (member.item_id)}
@@ -1425,7 +1440,7 @@
         <!-- Source: server-scripts/PlayerEquipment.cs:OnEquipmentChanged — set bonuses apply at 3 pieces (attributes) and 5 pieces (skills) -->
         {#if computed.armorSetAttributeBonuses && computed.armorSetAttributeBonuses.length > 0}
           <div>
-            <h4 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h4>
+            <h4 class="text-sm font-semibold mb-2">Set bonuses (3 pieces)</h4>
             <div class="space-y-2">
               {#each computed.armorSetAttributeBonuses as bonus (bonus.stat_id)}
                 <div
@@ -1446,7 +1461,7 @@
         <!-- Skill Bonuses (5-piece) -->
         {#if computed.armorSetSkillBonuses && computed.armorSetSkillBonuses.length > 0}
           <div>
-            <h4 class="text-sm font-semibold mb-2">Set Bonuses (5 pieces)</h4>
+            <h4 class="text-sm font-semibold mb-2">Set bonuses (5 pieces)</h4>
             <div class="space-y-2">
               {#each computed.armorSetSkillBonuses as bonus (bonus.skill_id)}
                 <div
@@ -1456,7 +1471,7 @@
                     {bonus.skill_name}
                   </a>
                   <span class={styles.valuePositive}>
-                    +{bonus.level_bonus} level{bonus.level_bonus !== 1
+                    +{bonus.level_bonus} rank{bonus.level_bonus !== 1
                       ? "s"
                       : ""}
                   </span>
@@ -1473,7 +1488,7 @@
   {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.potion_buff_id || data.item.food_buff_id || data.item.relic_buff_id || data.item.scroll_skill_id}
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title level={2}>Use Effects</Card.Title>
+        <Card.Title level={2}>Use effects</Card.Title>
       </Card.Header>
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.usage_health > 0}
@@ -1514,7 +1529,7 @@
 
         {#if data.item.potion_buff_id && data.item.potion_buff_name}
           <div>
-            <div class={styles.label}>Grants Buff</div>
+            <div class={styles.label}>Grants buff</div>
             <a href="/skills/{data.item.potion_buff_id}" class={styles.link}>
               {data.item.potion_buff_name}
             </a>
@@ -1526,7 +1541,7 @@
 
         {#if data.item.food_buff_id && data.item.food_buff_name}
           <div>
-            <div class={styles.label}>Grants Buff</div>
+            <div class={styles.label}>Grants buff</div>
             <a href="/skills/{data.item.food_buff_id}" class={styles.link}>
               {data.item.food_buff_name}
             </a>
@@ -1556,7 +1571,7 @@
         {/if}
 
         <div>
-          <div class={styles.label}>Consumed on Use</div>
+          <div class={styles.label}>Consumed on use</div>
           <div class={styles.value}>
             {data.item.infinite_charges ? "No" : "Yes"}
           </div>
@@ -1564,24 +1579,24 @@
 
         {#if data.item.cooldown > 0}
           <div>
-            <div class={styles.label}>Recharge Time</div>
-            <div class={styles.value}>{data.item.cooldown}s</div>
+            <div class={styles.label}>Recharge time</div>
+            <div class={styles.value}>{formatDuration(data.item.cooldown)}</div>
           </div>
         {/if}
 
         <!-- Source: server-scripts/FoodItem.cs:Use; server-scripts/PassiveSkill.cs:GetFoodAndDrinkBuffDurationBonus — Tavern Spirit lengthens food and drink buffs. -->
-        {#if data.item.food_buff_id}
+        {#if data.foodBuffUsesTavernSpirit}
           <p class="col-span-full text-sm text-muted-foreground">
             <a href="/skills/tavern_spirit" class={styles.link}>Tavern Spirit</a
             >
-            lengthens food and drink buffs.
+            lengthens this buff by 10% per rank.
           </p>
-          <!-- Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance — learned Elixir Endurance sets a potion buff's rank to 1 + its own rank, except for bandages. -->
+          <!-- Source: server-scripts/PotionItem.cs:GetBuffLevelWithElixirEndurance - learned Elixir Endurance sets a potion buff's rank to 1 + the Elixir Endurance rank, except for bandages. -->
         {:else if data.item.potion_buff_id && data.item.cooldown_category !== "Bandages"}
           <p class="col-span-full text-sm text-muted-foreground">
-            <a href="/skills/elixir_endurance" class={styles.link}
+            With <a href="/skills/elixir_endurance" class={styles.link}
               >Elixir Endurance</a
-            > raises this buff's rank to one more than its own rank.
+            > learned, this buff's rank is 1 + your Elixir Endurance rank.
           </p>
         {/if}
       </Card.Content>
@@ -1592,10 +1607,7 @@
   {#if data.item.book_strength_gain > 0 || data.item.book_dexterity_gain > 0 || data.item.book_constitution_gain > 0 || data.item.book_intelligence_gain > 0 || data.item.book_wisdom_gain > 0 || data.item.book_charisma_gain > 0}
     <Card.Root class="bg-muted/30">
       <Card.Header>
-        <Card.Title level={2}>Permanent Stat Gains</Card.Title>
-        <Card.Description
-          >Reading this book permanently increases the attributes listed below.</Card.Description
-        >
+        <Card.Title level={2}>Permanent stat gains</Card.Title>
       </Card.Header>
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.book_strength_gain > 0}
@@ -1669,17 +1681,21 @@
 
   <!-- Relationships -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {#if !data.hasKnownSource}
+    {#if !isArmorSetMetadata && (!data.hasKnownSource || data.acquisitionNotes.length > 0)}
       <Card.Root class="bg-muted/30 self-start">
         <Card.Header>
           <Card.Title level={2}>Sources</Card.Title>
         </Card.Header>
         <Card.Content>
-          <ItemSourceLinks
-            groups={[]}
-            itemId={data.item.id}
-            emptyLabel="No known source"
-          />
+          {#each data.acquisitionNotes as note (note)}
+            <p>{note}</p>
+          {:else}
+            <ItemSourceLinks
+              groups={[]}
+              itemId={data.item.id}
+              emptyLabel="No known source"
+            />
+          {/each}
         </Card.Content>
       </Card.Root>
     {/if}
@@ -1687,7 +1703,11 @@
     {#if computed.droppedBy && computed.droppedBy.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Dropped by</Card.Title>
+          <Card.Title level={2}
+            >{computed.droppedBy.every((drop) => drop.is_distribution_roll)
+              ? "Loot distributions"
+              : "Dropped by"}</Card.Title
+          >
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1711,15 +1731,55 @@
                     >
                   </a>
                 </div>
-                <span class={styles.label}
-                  >{formatPercent(drop.rate, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}</span
-                >
+                <span class={styles.label}>
+                  {#if drop.per_kill_chance != null}
+                    {formatPercent(drop.per_kill_chance, {
+                      decimals: 1,
+                      trailingZeros: false,
+                    })} per kill
+                    {#if drop.per_kill_chance_with_fatecharm != null && drop.per_kill_chance_with_fatecharm !== drop.per_kill_chance}
+                      ({formatPercent(drop.per_kill_chance_with_fatecharm, {
+                        decimals: 1,
+                        trailingZeros: false,
+                      })} with the zone's Fatecharm)
+                    {/if}
+                  {:else}
+                    {drop.rates
+                      .map((rate) =>
+                        formatPercent(rate, {
+                          decimals: 1,
+                          trailingZeros: true,
+                        }),
+                      )
+                      .join(" + ")}
+                    {#if drop.is_distribution_roll}
+                      to drop one item from this pool{/if}
+                    {#if drop.rates.length > 1}
+                      ({drop.rates.length} separate rolls)
+                    {/if}
+                  {/if}
+                </span>
               </div>
             {/each}
           </div>
+          {#if computed.droppedBy.some((drop) => drop.per_kill_chance != null)}
+            <p class="mt-3 text-sm text-muted-foreground">
+              Chances are without Fatecharm unless shown. A matching dungeon
+              Fatecharm is consumed when used.
+            </p>
+          {/if}
+          {#if data.item.is_quest_item}
+            <p class="mt-3 text-sm text-muted-foreground">
+              Drops only while you or a nearby party member needs it for an
+              unfinished gathering quest.
+            </p>
+          {:else if data.item.has_gather_quest && computed.droppedBy.some((drop) => drop.is_boss)}
+            <p class="mt-3 text-sm text-muted-foreground">
+              Boss drops require you or a nearby party member to need this item
+              for an unfinished gathering quest. Other monsters can drop it
+              without that quest.
+            </p>
+          {/if}
         </Card.Content>
       </Card.Root>
     {/if}
@@ -1761,8 +1821,12 @@
                 </div>
                 {#if vendor.npc_faction && (data.item.faction_required_tier_name || vendor.is_faction_vendor)}
                   <div class="{styles.label} pl-2">
-                    Requires {data.item.faction_required_tier_name ??
-                      "Friendly"} with {vendor.npc_faction}
+                    {#if data.item.faction_required_tier_name}
+                      Requires {data.item.faction_required_tier_name} standing with
+                      {vendor.npc_faction}
+                    {:else}
+                      Requires {formatNumber(15000)} reputation with {vendor.npc_faction}
+                    {/if}
                   </div>
                 {/if}
               </div>
@@ -1791,12 +1855,11 @@
             and hyphens. Without a name the pet is called "&lt;your
             character&gt;'s pet".
           </p>
-          <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <!-- Source: server-scripts/Player.cs:11317-11320 — portals respawn the followers at the destination. -->
+          <!-- Source: server-scripts/PetFriendly.cs:UpdateServer_PLAYER_FOLLOWER - followers leave when their whistle is absent and catch up when far behind. -->
           <p>
-            The pet follows you, catches up when it falls far behind, and
-            reappears beside you after you take a portal. It is cosmetic and
-            takes no part in combat.
+            The pet follows you and catches up when it falls far behind. It
+            leaves when its whistle is no longer in your inventory. It is
+            cosmetic and takes no part in combat.
           </p>
         </Card.Content>
       </Card.Root>
@@ -1812,7 +1875,7 @@
       )}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Rewarded by Quests</Card.Title>
+          <Card.Title level={2}>Rewarded by quests</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           {#if repeatableQuests.length > 0}
@@ -1876,7 +1939,7 @@
       )}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Provided by Quests</Card.Title>
+          <Card.Title level={2}>Given when you start a quest</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           {#if repeatableQuests.length > 0}
@@ -1934,7 +1997,7 @@
     {#if computed.rewardedByAltars && computed.rewardedByAltars.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Dropped by Altar Boss</Card.Title>
+          <Card.Title level={2}>Dropped by altar boss</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1959,6 +2022,7 @@
                     </div>
                   {/if}
                   <div>
+                    If you activate the altar:
                     {formatAltarRequirement(
                       altar.reward_tier,
                       altar,
@@ -1983,7 +2047,7 @@
     {#if computed.rewardedByTreasureMaps && computed.rewardedByTreasureMaps.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Rewarded by Treasure Maps</Card.Title>
+          <Card.Title level={2}>Rewarded by treasure maps</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2006,7 +2070,7 @@
     {#if computed.requiredForAltars && computed.requiredForAltars.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Required to Activate Altars</Card.Title>
+          <Card.Title level={2}>Required to activate altars</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2027,7 +2091,7 @@
     {#if computed.requiredForPortals && computed.requiredForPortals.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Required for Portals</Card.Title>
+          <Card.Title level={2}>Required for portals</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2060,7 +2124,7 @@
       <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title level={2} class="flex items-center gap-2">
-            Crafted from Recipe
+            Crafted from recipe
             <a
               href="/recipes/{computed.craftedFrom[0].recipe_id}"
               class="text-muted-foreground hover:text-foreground transition-colors"
@@ -2080,7 +2144,7 @@
                 >
                   {material.item_name}
                 </a>
-                <span class={styles.label}>x{material.amount}</span>
+                <span class={styles.label}>×{material.amount}</span>
               </div>
             {/each}
           </div>
@@ -2126,7 +2190,10 @@
                   </div>
                   <div class="ml-0 flex items-center gap-1.5 text-sm sm:ml-2">
                     {#if gather.zone_name}
-                      <span class={styles.label}>{gather.zone_name}</span>
+                      <span class={styles.label}
+                        >{gather.zone_name}{#if gather.virtual_location_count > 1}
+                          ({gather.virtual_location_count} spots){/if}</span
+                      >
                     {/if}
                     <MapLink
                       entityId={gather.gather_item_id}
@@ -2162,11 +2229,11 @@
                         trailingZeros: true,
                       })}
                     {/if}
-                    {#if gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
+                    {#if !gather.is_radiant_spark && gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
                       {#if gather.amount_min === gather.amount_max}
-                        ({gather.amount_max}×)
+                        , {gather.amount_max} per gather
                       {:else}
-                        ({gather.amount_min}-{gather.amount_max}×)
+                        , {gather.amount_min} to {gather.amount_max} per gather
                       {/if}
                     {/if}
                   </span>
@@ -2182,7 +2249,7 @@
     {#if computed.opensChests && computed.opensChests.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Opens Chests</Card.Title>
+          <Card.Title level={2}>Opens chests</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2204,7 +2271,7 @@
     {#if computed.foundInChests && computed.foundInChests.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Found in Chests</Card.Title>
+          <Card.Title level={2}>Found in chests</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2250,7 +2317,7 @@
     {#if computed.foundInRandomLoot && computed.foundInRandomLoot.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Found in Random Loot</Card.Title>
+          <Card.Title level={2}>Opened from</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2282,7 +2349,7 @@
     {#if data.randomOutcomes && data.randomOutcomes.length > 0 && (!computed.chestRewards || computed.chestRewards.length === 0)}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Possible Items</Card.Title>
+          <Card.Title level={2}>Possible items</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2308,7 +2375,7 @@
     {#if computed.chestRewards && computed.chestRewards.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Chest Rewards</Card.Title>
+          <Card.Title level={2}>Chest rewards</Card.Title>
           <Card.Description>
             {#if hasFixedChestContents}
               Each opening gives {Math.min(
@@ -2320,9 +2387,8 @@
               {data.item.chest_num_items === 1 ? "item" : "items"}. An item
               cannot appear twice in one opening.
               {#if computed.chestRewards.some((reward) => reward.scales_with_treasure_hunter)}
-                The chances are exact, at 0% Treasure Hunter.
-              {:else}
-                The chances are exact.
+                Chances are at 0% Treasure Hunter. Each 1% Treasure Hunter adds
+                0.1 percentage points to each relic's roll.
               {/if}
             {/if}
           </Card.Description>
@@ -2351,7 +2417,7 @@
     {#if computed.usedInRecipes && computed.usedInRecipes.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Used in Recipes</Card.Title>
+          <Card.Title level={2}>Used in recipes</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -2372,7 +2438,9 @@
                     {recipe.result_item_name}
                   </a>
                 </div>
-                <span class={styles.label}>x{recipe.amount}</span>
+                <span class={styles.label}
+                  >Needs {formatNumber(recipe.amount)}</span
+                >
               </div>
             {/each}
           </div>
@@ -2390,7 +2458,7 @@
       )}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title level={2}>Required for Quests</Card.Title>
+          <Card.Title level={2}>Required for quests</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           {#if repeatableQuests.length > 0}
@@ -2412,7 +2480,8 @@
                       </span>
                     </a>
                     <span class={styles.label}
-                      >{quest.purpose} (x{quest.amount})</span
+                      >{quest.purpose}{#if quest.amount > 0}
+                        ×{quest.amount}{/if}</span
                     >
                   </div>
                 {/each}
@@ -2439,7 +2508,8 @@
                       </span>
                     </a>
                     <span class={styles.label}
-                      >{quest.purpose} (x{quest.amount})</span
+                      >{quest.purpose}{#if quest.amount > 0}
+                        ×{quest.amount}{/if}</span
                     >
                   </div>
                 {/each}

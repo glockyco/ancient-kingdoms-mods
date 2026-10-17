@@ -1,1 +1,0 @@
-Mechanics Cleanse Mechanics Removes poison, disease, fire, cold and magic debuffs from you or an ally. See cleanse calculations for layer removal and damage-over-time scaling.

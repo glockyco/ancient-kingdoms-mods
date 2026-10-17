@@ -10,26 +10,21 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Song Category: {skill.buff_category}</h3>
   {#if skill.buff_category === "Ward"}
-    <p>
-      Ward capacity does not count toward song strength, so this song's strength
-      is 0. At equal strength, the song already active stays.
-    </p>
+    <p>Another Ward song cannot replace this song while it is active.</p>
     <p class="text-muted-foreground">
-      Ward is also an overwrite group for other buffs. This song replaces a
-      non-song Ward buff, and another Ward buff can replace this song,
-      regardless of ward capacity.
+      Non-song Ward buffs and this song replace each other, regardless of
+      capacity.
     </p>
   {:else}
-    <p>
-      Songs in one category compare strength: the sum of their movement speed,
-      Attack Power, Spell Power, Haste, Spell Casting Haste and Accuracy
-      bonuses. Each bonus except movement speed counts after the singer's
-      Charisma scaling.
-    </p>
     <p class="text-muted-foreground">
       A target keeps one song of each category, including songs from other Bards
       and Bard mercenaries. A stronger song replaces a song in the same
       category. At equal strength, the song already active stays.
+    </p>
+    <p class="text-muted-foreground">
+      Strength is the sum of the song's movement speed, Attack Power, Spell
+      Power, Haste, Spell Casting Haste and Accuracy bonuses. All except
+      movement speed include the singer's Charisma scaling.
     </p>
   {/if}
   <p class="text-muted-foreground">

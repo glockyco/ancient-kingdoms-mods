@@ -1,1 +1,0 @@
-Mechanics Buff Scaling Druid Skill Ward 1,000 at rank 1, +200 per rank (1,800 at rank 5) Ward Skill Ward + Wisdom × 2 Example ·,rank 5·,100 Wisdom Use your numbers 2,000 Ward Skill Ward: 1,000 + 200 × (5 − 1) = 1,800 Ward: 1,800 + 100 × 2 = 2,000

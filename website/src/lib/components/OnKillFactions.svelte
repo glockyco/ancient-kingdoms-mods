@@ -14,10 +14,6 @@
 
   let { effects, factionIds }: Props = $props();
 
-  const sign: Record<KillReputationDirection, string> = {
-    improve: "+",
-    decrease: "-",
-  };
   const cls: Record<KillReputationDirection, string> = {
     improve: "text-green-600 dark:text-green-400",
     decrease: "text-red-600 dark:text-red-400",
@@ -26,11 +22,9 @@
 
 {#if effects.length > 0}
   <span>
-    On Kill: {#each effects as effect, i (effect.direction)}{i > 0
+    Reputation per kill: {#each effects as effect, i (effect.direction)}{i > 0
         ? ", "
-        : ""}<span class={cls[effect.direction]}
-        >{sign[effect.direction]}{effect.amount}</span
-      >
+        : ""}<span class={cls[effect.direction]}>{effect.amount}</span>
       {#each effect.factions as faction, j (faction)}{j > 0
           ? " / "
           : ""}<FactionLink

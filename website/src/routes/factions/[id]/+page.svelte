@@ -14,6 +14,7 @@
   import MapLink from "$lib/components/MapLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import {
     FACTION_ACCENTS,
     FACTION_ACCENT_FALLBACK,
@@ -47,6 +48,27 @@
     FACTION_ACCENTS[data.faction.id] ?? FACTION_ACCENT_FALLBACK,
   );
   const FactionIcon = $derived(accent.icon);
+  const summary = $derived(
+    [
+      data.faction.members.length > 0
+        ? `${formatNumber(data.faction.members.length)} members`
+        : null,
+      data.faction.monstersImprove.length > 0
+        ? `${formatNumber(data.faction.monstersImprove.length)} monsters raise reputation`
+        : null,
+      data.faction.npcKillsImprove.length > 0
+        ? `${formatNumber(data.faction.npcKillsImprove.length)} NPCs raise reputation`
+        : null,
+      data.faction.id === "the_forsaken" && data.faction.chests.length > 0
+        ? `${formatNumber(data.faction.chests.length)} chests raise reputation`
+        : null,
+      data.faction.questGrants.length > 0
+        ? `${formatNumber(data.faction.questGrants.length)} quests grant reputation`
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  );
 
   const GAIN_CLASS = "text-green-600 dark:text-green-400";
   const LOSS_CLASS = "text-red-600 dark:text-red-400";
@@ -59,45 +81,34 @@
   );
 
   /**
-   * Magnitude the kill applies to *this* faction. The shared helpers group
+   * Effect the kill applies to this faction. The shared helpers group
    * every faction of a kill into one effect per direction, so pick the effect
    * that both matches the direction and names this faction.
    */
-  function monsterAmount(
+  function monsterEffect(
     monster: FactionMonsterRow,
     direction: KillReputationDirection,
-  ): string {
-    const effect = monsterKillReputation(monster).find(
+  ) {
+    return monsterKillReputation(monster).find(
       (e) =>
         e.direction === direction && e.factions.includes(data.faction.name),
     );
-    return effect?.amount ?? "-";
   }
 
-  function npcAmount(
+  function npcEffect(
     npc: FactionNpcKillRow,
     direction: KillReputationDirection,
-  ): string {
-    const effect = npcKillReputation(npc).find(
+  ) {
+    return npcKillReputation(npc).find(
       (e) =>
         e.direction === direction && e.factions.includes(data.faction.name),
     );
-    return effect?.amount ?? "-";
-  }
-
-  /**
-   * Sort key for a pre-formatted amount: the top of the range, ungrouped.
-   * The helpers hand back display strings like "31,400" or "15-21".
-   */
-  function amountSortValue(formatted: string): number {
-    const top = formatted.split("-").pop() ?? "";
-    return Number(top.replace(/,/g, "")) || 0;
   }
 
   function monsterLevel(monster: FactionMonsterRow): string {
     return monster.level_min === monster.level_max
       ? `${monster.level_min}`
-      : `${monster.level_min}–${monster.level_max}`;
+      : `${monster.level_min} to ${monster.level_max}`;
   }
 
   function monsterRank(monster: FactionMonsterRow): string {
@@ -131,8 +142,8 @@
       {
         id: "amount",
         header: "On kill",
-        size: 130,
-        accessorFn: (row) => amountSortValue(monsterAmount(row, direction)),
+        size: 220,
+        accessorFn: (row) => monsterEffect(row, direction)?.amount_max ?? 0,
       },
       { id: "location", header: "Location", size: 90, enableSorting: false },
     ];
@@ -147,8 +158,8 @@
       {
         id: "amount",
         header: "On kill",
-        size: 130,
-        accessorFn: (row) => amountSortValue(npcAmount(row, direction)),
+        size: 220,
+        accessorFn: (row) => npcEffect(row, direction)?.amount_max ?? 0,
       },
       { id: "location", header: "Location", size: 90, enableSorting: false },
     ];
@@ -160,14 +171,14 @@
   const npcKillDecreaseColumns = $derived(npcKillColumns("decrease"));
 
   const chestColumns: ColumnDef<FactionChestRow>[] = [
-    { id: "name", header: "Icon", size: 80, enableSorting: false },
+    { id: "name", header: "Chest", size: 80, enableSorting: false },
     {
       id: "zone",
       header: "Zone",
       minSize: 180,
       accessorFn: (row) => row.zone_name ?? "",
     },
-    { id: "amount", header: "On loot", size: 130, enableSorting: false },
+    { id: "amount", header: "On opening", size: 130, enableSorting: false },
     { id: "location", header: "Location", size: 90, enableSorting: false },
   ];
 
@@ -198,7 +209,7 @@
     { accessorKey: "name", header: "Item", minSize: 240 },
     {
       id: "vendor",
-      header: "Vendor",
+      header: "Merchant",
       minSize: 180,
       accessorFn: (row) => row.vendor_name,
     },
@@ -264,10 +275,7 @@
     {monsterRank(row.original)}
   {:else if cell.column.id === "amount"}
     <span class={direction === "improve" ? GAIN_CLASS : LOSS_CLASS}>
-      {direction === "improve" ? "+" : "−"}{monsterAmount(
-        row.original,
-        direction,
-      )}
+      {monsterEffect(row.original, direction)?.amount ?? "-"}
     </span>
   {:else if cell.column.id === "location"}
     <MapLink entityId={row.original.id} entityType="monster" compact />
@@ -315,7 +323,7 @@
     />
   {:else if cell.column.id === "amount"}
     <span class={direction === "improve" ? GAIN_CLASS : LOSS_CLASS}>
-      {direction === "improve" ? "+" : "−"}{npcAmount(row.original, direction)}
+      {npcEffect(row.original, direction)?.amount ?? "-"}
     </span>
   {:else if cell.column.id === "location"}
     <MapLink entityId={row.original.id} entityType="npc" compact />
@@ -354,15 +362,19 @@
   {#if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      aria-label={`Chest ${row.original.id}`}
-      title={`Chest ${row.original.id}`}
+      aria-label={row.original.zone_name
+        ? `Chest in ${row.original.zone_name}`
+        : "Chest details"}
+      title={row.original.zone_name
+        ? `Chest in ${row.original.zone_name}`
+        : "Chest details"}
       class="inline-flex"
     >
       <EntityIcon
         src={row.original.visual_public_path
           ? `${base}/${row.original.visual_public_path}`
           : null}
-        alt={`Chest ${row.original.id} icon`}
+        alt=""
         fallback={Box}
         size={32}
       />
@@ -378,7 +390,7 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "amount"}
-    {@render reputationValue(200, false)}
+    {@render reputationValue(200, data.faction.id === "the_forsaken")}
   {:else if cell.column.id === "location"}
     <MapLink entityId={row.original.id} entityType="chest" compact />
   {:else}
@@ -454,7 +466,7 @@
       size={28}
     />
   {:else if cell.column.id === "requires"}
-    Requires 15,000 reputation
+    {@render requirementValue(15000)}
   {:else if cell.column.id === "location"}
     <MapLink entityId={row.original.id} entityType="npc" compact />
   {:else}
@@ -564,7 +576,7 @@
 {/snippet}
 
 <Seo
-  title="{data.faction.name} - Factions - Ancient Kingdoms"
+  title={detailTitle(data.faction.name, { family: "Faction" })}
   description={data.description}
   path="/factions/{data.faction.id}"
 />
@@ -587,14 +599,11 @@
     </div>
 
     <p class="mt-3 text-sm text-muted-foreground">
-      {formatNumber(data.faction.members.length)} members ·
-      {formatNumber(data.faction.monstersImprove.length)} monsters raise reputation
-      · {formatNumber(data.faction.questGrants.length)} quests grant reputation
+      {summary}
     </p>
 
     <p class="mt-2 text-sm text-muted-foreground">
-      The tables below show which monsters, NPCs, quests, and chests change your
-      reputation with this faction. See
+      See
       <a
         href="/mechanics/reputation"
         class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -633,7 +642,7 @@
       {#if data.faction.vendors.length > 0}
         <div>
           <h3 class="mb-3 text-lg font-medium">
-            Faction vendors ({data.faction.vendors.length})
+            Faction merchants ({data.faction.vendors.length})
           </h3>
           <DataTable
             data={data.faction.vendors}

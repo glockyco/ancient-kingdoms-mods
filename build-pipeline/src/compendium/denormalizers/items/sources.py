@@ -26,13 +26,35 @@ console = Console()
 
 
 def _denormalize_monster_sources(conn: sqlite3.Connection) -> None:
-    """Populate item_sources_monster from monsters.drops.
-
-    Skips drops with is_altar_reward=True since those go to item_sources_altar
-    instead.
-    """
+    """Populate monster sources, excluding contextual rewards and lootless summons."""
     console.print("  Processing monster drops...")
     cursor = conn.cursor()
+    nonfinal: set[str] = set()
+    final: set[str] = set()
+    for (waves_json,) in cursor.execute(
+        "SELECT waves FROM altars WHERE waves IS NOT NULL"
+    ):
+        waves = json.loads(waves_json)
+        for index, wave in enumerate(waves):
+            target = final if index == len(waves) - 1 else nonfinal
+            target.update(monster["monster_id"] for monster in wave.get("monsters", []))
+    other_spawns = {
+        row[0]
+        for row in cursor.execute(
+            "SELECT DISTINCT monster_id FROM monster_spawns WHERE spawn_type != 'altar'"
+        )
+    }
+    combat_summoned = {
+        row[0]
+        for row in cursor.execute("""
+            SELECT DISTINCT s.summoned_monster_id
+            FROM skills s JOIN monster_skills ms ON ms.skill_id = s.id
+            WHERE s.summoned_monster_id IS NOT NULL AND s.summon_count_per_cast != 0
+        """)
+    }
+    # Sources: server-scripts/DefaultEvent.cs:223-226;
+    # server-scripts/SummonSkillMonsters.cs:106-116 - these instances carry no loot.
+    lootless = (nonfinal | combat_summoned) - final - other_spawns
     cursor.execute("""
         SELECT id, drops
         FROM monsters
@@ -40,6 +62,8 @@ def _denormalize_monster_sources(conn: sqlite3.Connection) -> None:
     """)
 
     for monster_id, drops_json in cursor.fetchall():
+        if monster_id in lootless:
+            continue
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")

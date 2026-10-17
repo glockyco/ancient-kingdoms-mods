@@ -79,7 +79,8 @@
       })
       .catch((e) => {
         if (cancelled) return;
-        error = e instanceof Error ? e.message : "Failed to load quest";
+        console.error("Failed to load map quest:", e);
+        error = "Refresh the page to try again.";
       })
       .finally(() => {
         if (!cancelled) isLoading = false;
@@ -128,7 +129,7 @@
     </div>
   </PopupCard>
 {:else if error}
-  <PopupCard title="Error" {onClose} {mode}>
+  <PopupCard title="Could not load quest" {onClose} {mode}>
     <p class="text-destructive">{error}</p>
   </PopupCard>
 {:else if details}
@@ -148,7 +149,7 @@
       <!-- Adventurer quests: list of NPCs (all are giver+turn-in) -->
       <div>
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Start / End
+          Start and end with any of
         </div>
         <div class="flex flex-col items-start gap-0.5">
           {#each adventurerNpcs as npc (npc.npcId)}
@@ -292,10 +293,6 @@
                     onclick={onSelectDiscovery}
                   >
                     {obj.targetName}{obj.zoneName ? ` in ${obj.zoneName}` : ""}
-                    <span class="block text-sm text-muted-foreground">
-                      ({obj.position[0].toFixed(0)}, {(-obj
-                        .position[1]).toFixed(0)})
-                    </span>
                   </button>
                 {:else}
                   <span

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -120,8 +121,8 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View all food recipes you can cook with the Cooking skill.`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
+  description={`${data.profession.description} Recipes, ingredients, Cooking Oven locations, success chances and skill gains at your Cooking skill.`}
   path="/professions/cooking"
 />
 
@@ -153,7 +154,7 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        <span>Max Level: {data.profession.max_level}%</span>
+        <span>Achievement at {data.profession.max_level}%:</span>
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -168,13 +169,12 @@
     <h2 class="text-xl font-semibold">How Cooking works</h2>
     <!-- Source: server-scripts/Player.cs:13860-13862,13886-13899,13922-13925,12835-12862 — baking checks output space, spends ingredients before success, and displays a burned result on failure without adding food. -->
     <p class="text-muted-foreground">
-      <span class="block">Baking needs room for the food.</span>
-      <span class="block"
-        >You spend ingredients before you know whether baking succeeds.</span
-      >
-      <span class="block"
-        >A failed bake shows burned food in the oven, but gives you no food.</span
-      >
+      Baking needs inventory space for the food. Failure consumes the
+      ingredients without giving food.
+    </p>
+    <p class="text-muted-foreground">
+      The oven refuses recipes below 10% success chance. Tier I recipes stop
+      raising Cooking above 25%, Tier II above 50% and Tier III above 75%.
     </p>
     <!-- Source: server-scripts/FoodItem.cs:21-35 — eating food expires an existing buff in the same nonempty category before applying the new one. -->
     <p class="text-muted-foreground">
@@ -232,13 +232,13 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
-      Calculator
+      Success and skill gain by tier
     </h2>
     <div
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
     >
       <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Cooking Skill:</label>
+        <label for="skill-slider" class="shrink-0">Cooking skill</label>
         <input
           id="skill-slider"
           type="range"
@@ -268,7 +268,7 @@
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill gained</div>
         <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
         <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
         {#each [0, 1, 2, 3, 4] as tier (tier)}
@@ -279,7 +279,7 @@
           <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
           <div class="p-3 border-t">
             {#if successChance === 0}
-              <span class="text-muted-foreground">—</span>
+              <span class="text-muted-foreground">Cannot cook</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
                 {formatPercent(successChance / 100, {
@@ -301,7 +301,7 @@
                 })}</span
               >
             {:else}
-              <span class="text-muted-foreground">—</span>
+              <span class="text-muted-foreground">No skill gain</span>
             {/if}
           </div>
           <div class="p-3 text-right border-t">

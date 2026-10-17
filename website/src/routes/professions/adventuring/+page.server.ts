@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { adventuringSkillGain } from "$lib/calculation/adventuring";
 
 export const prerender = true;
 
@@ -48,6 +49,7 @@ interface VendorUnlock {
   currencies: {
     item_id: string | null;
     item_name: string;
+    price: number;
   }[];
 }
 
@@ -289,8 +291,11 @@ export const load = ((): AdventuringPageData => {
           item !== null,
       );
 
-    // Source: server-scripts/PlayerQuests.cs:394-396 — Adventuring skill increase is rewardExperience * 5E-08f.
-    const adventuringSkillIncrease = (rewards.exp ?? 0) * 0.00000005;
+    // Source: server-scripts/PlayerQuests.cs:394-396.
+    const adventuringSkillIncrease = Math.min(
+      1,
+      adventuringSkillGain(rewards.exp ?? 0),
+    );
 
     return {
       id: raw.id,
@@ -321,7 +326,8 @@ export const load = ((): AdventuringPageData => {
       n.id as npc_id,
       n.name as npc_name,
       json_extract(sold.value, '$.currency_item_id') as currency_item_id,
-      json_extract(sold.value, '$.currency_item_name') as currency_item_name
+      json_extract(sold.value, '$.currency_item_name') as currency_item_name,
+      json_extract(sold.value, '$.price') as price
     FROM items i
     JOIN npcs n
       ON n.items_sold IS NOT NULL
@@ -344,6 +350,7 @@ export const load = ((): AdventuringPageData => {
     npc_name: string;
     currency_item_id: string | null;
     currency_item_name: string | null;
+    price: number;
   }[];
 
   const vendorUnlockMap = new Map<string, VendorUnlock>();
@@ -365,12 +372,15 @@ export const load = ((): AdventuringPageData => {
     const currencyName = row.currency_item_name ?? "Gold";
     if (
       !unlock.currencies.some(
-        (currency) => currency.item_id === row.currency_item_id,
+        (currency) =>
+          currency.item_id === row.currency_item_id &&
+          currency.price === row.price,
       )
     ) {
       unlock.currencies.push({
         item_id: row.currency_item_id,
         item_name: currencyName,
+        price: row.price,
       });
     }
 

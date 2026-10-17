@@ -10,7 +10,6 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
-  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
@@ -66,9 +65,9 @@
   const undeadCaps = $derived(levelCaps(undeadSummons));
   // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:91,240,254; the export's skills.json — each familiar's buff per rank and its maximum rank.
   const FAMILIAR_EFFECTS: Record<string, string> = {
-    blue_fairy: "+2 Mana per second per rank, up to rank 8",
-    red_fairy: "+1% accuracy per rank, up to rank 8",
-    arcane_fairy: "+1.5% spell power per rank, up to rank 10",
+    blue_fairy: "+2 Mana Regeneration per rank, up to rank 8",
+    red_fairy: "+1 percentage point of Accuracy per rank, up to rank 8",
+    arcane_fairy: "+1.5% Spell Power per rank, up to rank 10",
   };
 
   function effectText(summon: SummonListView): string {
@@ -198,8 +197,8 @@
           >{row.original.summoning_skill_name}</a
         >,
         {mercenary.form === "reaper"
-          ? `from owner level ${MERCENARY_REAPER_OWNER_LEVEL}`
-          : `below owner level ${MERCENARY_REAPER_OWNER_LEVEL}`}
+          ? `from your level ${MERCENARY_REAPER_OWNER_LEVEL}`
+          : `below your level ${MERCENARY_REAPER_OWNER_LEVEL}`}
       </span>
     {:else}
       <span class="text-muted-foreground">—</span>
@@ -235,7 +234,7 @@
 
 <Seo
   title="Summons - Ancient Kingdoms"
-  description="Companions, Necromancer undead summons, familiars, and whistle pets in Ancient Kingdoms. Skills, veteran bonuses, and summoning rules."
+  description="Compare companions, Necromancer undead summons, familiars, and whistle pets in Ancient Kingdoms, including their skills, veteran bonuses, and summoning rules."
   path="/summons"
 />
 
@@ -311,11 +310,16 @@
           <li>Skills gain a rank every 10 veteran points.</li>
           <!-- Source: server-scripts/Pet.cs:OnAggro,UserCode_CmdSetAggresiveStance__Boolean; server-scripts/GameManager.cs:OnMercenaryAttackKeyPressed — combat pets accept companion commands and stances. -->
           <li>
-            Takes the mercenary <a
+            Companions follow the mercenary <a
               href="/mercenaries#commands"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >commands and stances</a
             >.
+          </li>
+          <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply. -->
+          <li>
+            Press your active companion's summon key to send it to attack your
+            target.
           </li>
           {#if data.healthPassives.length}
             <!-- Source: server-scripts/Skills.cs:174-185 — learned pet maximum-health passives apply to companions owned by the passive's class. -->
@@ -326,18 +330,21 @@
                   class="text-blue-600 hover:underline dark:text-blue-400"
                   >{passive.name}</a
                 >
-                increases its class's companions' maximum Hit Points by its listed
-                percentage when learned.
+                increases your companions' maximum Hit Points by
+                {formatNumber(
+                  passive.health_percent_min * 100,
+                )}%{passive.health_percent_max !== passive.health_percent_min
+                  ? ` to ${formatNumber(passive.health_percent_max * 100)}%`
+                  : ""}, depending on rank.
               {/each}
               Your own maximum Hit Points are unchanged.
             </li>
           {/if}
           <!-- Source: server-scripts/Pet.cs:UpdateServer_CASTING — back-seeking companions flank for melee first skills, bosses, elites or frontal attacks, while close ranged companions step away. -->
           <li>
-            Companions that seek targets' backs try to move behind monsters
-            after attacks when their first skill is melee, the target is a boss
-            or elite, or it has a frontal-attack skill. Skeleton does not seek
-            targets' backs. Ranged companions that stand too close step away.
+            Melee companions try to flank enemies. Ranged companions keep their
+            distance and try to flank bosses, elites, and enemies with frontal
+            attacks. Skeleton does not flank.
           </li>
         </ul>
       </div>
@@ -409,9 +416,9 @@
         <ul
           class="list-disc space-y-1 border-t py-3 pl-8 pr-4 text-muted-foreground"
         >
-          <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:34-55,84-96 — using the whistle of an active follower dismisses it, and the whistle has unlimited charges. -->
+          <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:34-55,84-96 — reusing the whistle dismisses its active follower. -->
           <li>Use the whistle again to dismiss the pet.</li>
-          <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454; server-scripts/Player.cs:4324-4360 — a follower without its inventory whistle is removed, and active followers return after portal travel. -->
+          <!-- Source: server-scripts/PetFriendly.cs:379-386,433-454 — a follower without its inventory whistle is removed. -->
           <li>The pet leaves if its whistle is not in your inventory.</li>
           <!-- Source: server-scripts/PetFriendly.cs:688-702; server-scripts/Player.cs:13513-13517 — petting grants 1–4 faction standing every 30 seconds per animal. -->
           <li>
@@ -447,20 +454,16 @@
     </ul>
     <!-- Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus; Experience.cs:85,380,RefreshNecromancerPet — owner level and veteran gains refresh the pet; up to 200 veteran points add 0.01 per point to base damage and magic damage and 0.0025 per point to base Health, defense, and resistances. -->
     <p>
-      These companions track your regular level, up to {undeadCaps}. Each of
-      your veteran points adds 1% of base Attack Power and Spell Power, and
-      0.25% of base Hit Points, Armor Class and each resist, rounded. At 200
-      points, Attack Power and Spell Power reach +200% and the other stats +50%.
-      Their stats and skill ranks refresh when you level up or gain a veteran
-      point.
+      These companions grow with your level, up to {undeadCaps}, and veteran
+      points. Up to 200 points, each total veteran point adds 1% of base Attack
+      Power and Spell Power, and 0.25% of base maximum Hit Points, Armor Class,
+      and each resistance. Compare their stats in the pages above.
     </p>
-    <RoundingDefinition />
     <!-- Source: server-scripts/SummonSkill.cs:UsesPetAttackCommand,MatchesPet,Apply — a Necromancer replaces NetworkactivePet with a different non-familiar summon; a matching pet uses the summon key as an attack command; other classes receive You already have an active pet. -->
     <p>
-      Casting a different undead summon replaces your active pet. Pressing the
-      active undead pet's summon key commands it to attack your target. Other
+      Casting a different undead summon replaces your active companion. Other
       classes must dismiss their active companion or familiar before summoning
-      another. Otherwise, the game reports "You already have an active pet".
+      another.
     </p>
   </section>
 </div>

@@ -20,7 +20,7 @@
       <a href="/skills/charge">Charge</a>,
       <a href="/skills/frenzied_vigor">Frenzied Vigor</a> and
       <a href="/skills/prowess">Prowess</a> also restore their listed percentages
-      of Rage each second.
+      of maximum Rage each second.
     </p>
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — dealt-hit Rage counts auto-attack damage after mitigation and critical hits, before Ward and Mana Shield, capped at current target Health. -->
     <h4>Dealing an auto attack</h4>
@@ -46,9 +46,8 @@
     </p>
     <!-- Source: server-scripts/DamageSkill.cs:TryConsumeWildStrike — any Ranger follow-up consumes Wild Strike, multiplies damage by 1 + 0.1 × rank and rounds, with no flat damage bonus. -->
     <p>
-      Damage increases by 10% per Wild Strike rank, giving 150% of normal damage
-      at rank 5. The result rounds after the auto attack's own calculation. Wild
-      Strike adds no flat Attack Power bonus.
+      Wild Strike multiplies the auto attack's starting damage by 100% + 10% per
+      rank, <RoundedTerm />, so rank 5 deals 150%. It adds no flat Attack Power.
     </p>
     <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — a melee follow-up passes the magic damage override to DealDamageAt. -->
     <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 — Apply consumes the override for a bow follow-up and passes it to the projectile effect. -->
@@ -70,17 +69,16 @@
     <p>
       Your Ward and Mana Shield still absorb the hit first. Parry blocks the
       rest and returns half of it to the attacker, <RoundedTerm />, at least 1
-      and at most 5,000. An exact half rounds to the even number, so 101
-      remaining damage returns 50.
+      and at most 5,000. For example, 101 remaining damage returns 50.
     </p>
   </Topic>
 
   <Topic id="assassination">
     <!-- Source: server-scripts/PlayerSkills.cs:CmdUse — Assasination requires current target Health at most one quarter of maximum Health, rounded to the nearest whole point. -->
     <p>
-      The Rogue's <a href="/skills/assasination">Assassination</a> requires the target's
-      current Hit Points to be at most 25% of its maximum Hit Points. That Hit Points
-      limit rounds to the nearest whole point.
+      The Rogue's <a href="/skills/assasination">Assassination</a> requires the
+      target's current Hit Points to be at most 25% of its maximum Hit Points, <RoundedTerm
+      />.
     </p>
   </Topic>
 
@@ -92,8 +90,8 @@
     </p>
     <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT,GetBuffHealthRecoveryBonus; NetworkManagerMMO.cs:OnStartServer — Reaper Form drain bypasses resistance, wards, critical ticks and Deathly Focus bonuses. -->
     <p>
-      This drain ignores resistance, wards, critical ticks and Deathly Focus
-      bonuses.
+      The drain ignores Armor Class, resists and Ward, is never critical and
+      gets no Deathly Focus bonus.
     </p>
   </Topic>
 </Chapter>

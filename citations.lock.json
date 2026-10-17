@@ -92,6 +92,9 @@
     "AugmentItem.cs": {
       "span": 0
     },
+    "AvatarEvent.cs:CheckPlayersUp": {
+      "span": 0
+    },
     "AvatarEvent.cs:SummonMonsters": {
       "span": 0
     },
@@ -183,10 +186,6 @@
     },
     "BardFinalCadenceSkill.cs:HealNearbyAllies": {
       "span": 0
-    },
-    "BardMercenarySkills.cs:60-104": {
-      "sha256": "98e2e613a8e964444d4ec0ffaa7a587c605204427b261c9ace97c7b8408fab6b",
-      "span": 45
     },
     "BardMercenarySkills.cs:60-69": {
       "sha256": "adef4a6da1be6c5c81349cf21298e0570c66f5f758796b1eed39305498f669fb",
@@ -385,6 +384,9 @@
     "BuffSkill.cs:buffTime": {
       "span": 0
     },
+    "BuffSkill.cs:damageOverTimeBonusPerIntelligencePoint": {
+      "span": 0
+    },
     "BuffSkill.cs:ignoreSeeInvisibility": {
       "span": 0
     },
@@ -501,6 +503,10 @@
       "sha256": "7a8eac0719181080ad3eb95e8689aeb7df5455b311fb49728acac680b083e840",
       "span": 228
     },
+    "Combat.cs:1183-1197": {
+      "sha256": "7edc4e6318e91443170c8eb22bfae0f43dc3173d8bc184a21c0cd2eff1af3e1e",
+      "span": 15
+    },
     "Combat.cs:1235-1244": {
       "sha256": "49fd774778e9c15ce843ca758b66154c60fec04644f1542ed2a32b4b47507f7c",
       "span": 10
@@ -524,6 +530,10 @@
     "Combat.cs:1247-1325": {
       "sha256": "aa2b291c8dba93b85d12200493b1b539fee84e48c5fb1af7addcf02f2964094b",
       "span": 79
+    },
+    "Combat.cs:1295-1323": {
+      "sha256": "afe24859737538bfeb2371cab270904eb9119ce478559449d97660aa786ea20c",
+      "span": 29
     },
     "Combat.cs:1295-1325": {
       "sha256": "f5440695849c8f0faf94475c1660a743dd375d530293a84d15d98d26ac3919c2",
@@ -668,6 +678,10 @@
     "Combat.cs:711-717": {
       "sha256": "971635cfd23532039a767abcb238f5a78c79a287826e29ec8e3d3e7d7d01344b",
       "span": 7
+    },
+    "Combat.cs:750-773": {
+      "sha256": "187636d80b9b330059ffbcddec086a571286809963475a3ded7370d5270a310c",
+      "span": 24
     },
     "Combat.cs:752-768": {
       "sha256": "24167489d5a293de6bf3a3376c41ba3fed1a36266e4a8176aca0e8f40d316ffd",
@@ -983,29 +997,9 @@
       "sha256": "6ba37b3786935b208fcb53190993833d72a8c6d63dcbd5462bae88ceacf7d2e0",
       "span": 15
     },
-    "Database.cs:1922-1943": {
-      "sha256": "a595b9077c3da37c993c983f7ed3659bb23348ac8738f851b748aa0bb40331cd",
-      "span": 22
-    },
     "Database.cs:2112-2128": {
       "sha256": "432b83543e18c944468f83b382f49deecbce4f5bbda51fca09aa3950b3bd8ae5",
       "span": 17
-    },
-    "Database.cs:2184-2193": {
-      "sha256": "bf7b11eb1ac164d6bc77e50d1bc2270f5a08a3fae8d1af9b44b47c822eaf6462",
-      "span": 10
-    },
-    "Database.cs:2711-2735": {
-      "sha256": "55d196d94057980f3ad334b373897aacf1ea6c0822dd136bc309ca8b7e6431cd",
-      "span": 25
-    },
-    "Database.cs:2986-2988": {
-      "sha256": "9746e0536dd3b9409530201fde12188471de2ce12a572e86458d7322e36dd0be",
-      "span": 3
-    },
-    "Database.cs:3029-3033": {
-      "sha256": "3f9a1f0002d289997d25d98fe88ab49cf6e848196de70060628bbaf1c59830ee",
-      "span": 5
     },
     "Database.cs:3205-3207": {
       "sha256": "23734c664b5a574cd9d409f800c556456df6ef660a79f41055ea390d89fe33ec",
@@ -1014,14 +1008,6 @@
     "Database.cs:3428-3436": {
       "sha256": "25a1d5941267b4d036b3bcd89c2a2880d558bed86252ef62718cb7cf921ed126",
       "span": 9
-    },
-    "Database.cs:425-435": {
-      "sha256": "2d70b7ae188d1b620a1b9dff437ede00223ffdf9162fcf934e8119c89bfd4eb9",
-      "span": 11
-    },
-    "Database.cs:803-804": {
-      "sha256": "621304c24569d3678ba79f40807bac3a5703ff6326713e1b5513c6f7d0d62444",
-      "span": 2
     },
     "Database.cs:CalculateSlayerLevelForAccount": {
       "span": 0
@@ -1056,6 +1042,14 @@
       "sha256": "b9e244dc75e373948e027e4c286de1a10402716ff945d491f39bf68374664a2c",
       "span": 9
     },
+    "DefaultEvent.cs:209-237": {
+      "sha256": "0de3355d6f08212bad0ef3112fd9e68970de03932fc49e903652f03b42cb5084",
+      "span": 29
+    },
+    "DefaultEvent.cs:223-226": {
+      "sha256": "cc07feccb8dcfd8c8e34fd8a3baad76e6a21929796c35e758c9439da0946de22",
+      "span": 4
+    },
     "DefaultEvent.cs:229-239": {
       "sha256": "c3094b6a3d2d89aac1bd8764f0fff83e9c18e2de2018e2353be74b6b5969cc82",
       "span": 11
@@ -1063,6 +1057,9 @@
     "DefaultEvent.cs:231-237": {
       "sha256": "8c45e15cd4f94d7a3b22f379abe73625295d00db43c84822da04af90e8b0c2a6",
       "span": 7
+    },
+    "DefaultEvent.cs:CheckPlayersUp": {
+      "span": 0
     },
     "DefaultEvent.cs:SummonMonsters": {
       "span": 0
@@ -1198,10 +1195,6 @@
     "EquipmentItem.cs:445": {
       "sha256": "02e4b47bef54e38535208d35dfddd2e68b8201fdba6b7d25dc2188f43bffa755",
       "span": 1
-    },
-    "EquipmentItem.cs:485-527": {
-      "sha256": "ddf7914bf56b5f03bfc98cb23d13c1b44e9b6855c1a1523d02c99f4c990b53d3",
-      "span": 43
     },
     "EquipmentItem.cs:525-527": {
       "sha256": "7c46957e168f13dbad7e4ebce736fe7da1cc125cef7ed368735a1c4621e86e67",
@@ -1447,6 +1440,9 @@
     "GameManager.cs:SkillbarKeyPressed": {
       "span": 0
     },
+    "GameManager.cs:TryUseValaarkDragonbaitStew": {
+      "span": 0
+    },
     "GatherInventoryQuest.cs:15-96": {
       "sha256": "10ca0de8a2c61ef7c572998755fd1e1b6d177c34fa2339e8eaadd8f3c3412fa7",
       "span": 82
@@ -1455,9 +1451,17 @@
       "sha256": "14d68a0d5abaa7a9c18e4b4fd536a651c127680ef56b918698adc4c030d08cb1",
       "span": 1
     },
+    "GatherInventoryQuest.cs:33": {
+      "sha256": "9384e2b4a3438452a0c2dfbf0e55c4153f077b1f78cb6b3ee9ecd01ba0d9db58",
+      "span": 1
+    },
     "GatherInventoryQuest.cs:47": {
       "sha256": "c9c3a14131184f4302211992badd2aa2cee796fed5ed3ced8e436b0d44d27602",
       "span": 1
+    },
+    "GatherInventoryQuest.cs:83-86": {
+      "sha256": "3e862275c08e1f3126e71f57feb0033a607e7a8548b5d3d5489a980f13c392c7",
+      "span": 4
     },
     "GatherInventoryQuest.cs:IsFulfilled": {
       "span": 0
@@ -1527,6 +1531,10 @@
     "GatherItem.cs:407-428": {
       "sha256": "a36fb402e3f0c517d0927f6b200e6dbadba7638932dc135eac505d05ca91a664",
       "span": 22
+    },
+    "GatherItem.cs:431": {
+      "sha256": "dc6b7f3b0f17fcb2821f869ee399de4b4b88dd1120e27ad6fa0db56182efe838",
+      "span": 1
     },
     "GatherItem.cs:444-455": {
       "sha256": "e2c764504127d3004e203ed423cec9d5c5389fd13cc255e422fdb75c11c70665",
@@ -1704,10 +1712,6 @@
       "sha256": "7a80bc29e33b7ec7cfea598cdaa5c5da7fcaa3d8f921f98073ba61b72d08469d",
       "span": 1
     },
-    "GuildSystem.cs:179-250": {
-      "sha256": "39271cd6b765a96c3e62e90b69bb2326dd6be5dbe55af9757bea1a6e4a206659",
-      "span": 72
-    },
     "GuildSystem.cs:266-279": {
       "sha256": "ea08bdd45d4607390d706703a0f41a97b933e8a7e08ddeac20b3e8f3a3efd5ce",
       "span": 14
@@ -1723,10 +1727,6 @@
     "GuildSystem.cs:32-71": {
       "sha256": "3211b1f3bae32b504007356925b619809339e2b44a5bed73eb87a425dc889061",
       "span": 40
-    },
-    "GuildSystem.cs:359-446": {
-      "sha256": "1417a12981040a9ad6b2a56c8c6d12b7d1c3d8efd97fc1dd750dd72a5a6cadc4",
-      "span": 88
     },
     "GuildSystem.cs:400-430": {
       "sha256": "35f9888b2e4658bfc95807901a5920b7ab454000eb28e4ae1ab4ddde325af91c",
@@ -2009,14 +2009,6 @@
       "sha256": "1921d8e97be791f92fc1e1314559788913a13bb46f74d7c561316ae1b0de74c4",
       "span": 4
     },
-    "Monster.cs:2247-2260": {
-      "sha256": "085f0a879d62aed3d3f2cd4395acebcecb5107fc5999733ed8da605810cf8d93",
-      "span": 14
-    },
-    "Monster.cs:2262-2270": {
-      "sha256": "4228f4f3caf5b7f0f00b968050efb35234c9afba25032c01459d291a787137a9",
-      "span": 9
-    },
     "Monster.cs:2446-2464": {
       "sha256": "7851f7128e8d9b8154f0499a066f53fbcbad753db8c470c87f26e56600456628",
       "span": 19
@@ -2065,6 +2057,10 @@
       "sha256": "07e44a3e82c077cc7cb26e9ffbc93110185e00c320b97ef83e0c4abe17adb2c5",
       "span": 2
     },
+    "Monster.cs:2997-3062": {
+      "sha256": "763385fa05f052142bc7af74065204618fd7e3df2087d1ca5f3a476309395663",
+      "span": 66
+    },
     "Monster.cs:3064-3069": {
       "sha256": "38ff59b1cbaa6c504651ea0322926f85917ade42e6fe2ed8addd519399718f09",
       "span": 6
@@ -2089,9 +2085,21 @@
       "sha256": "2b60aee24def2a704ca0494b5716ad3d6b885d5898497f2b1d45342c656da065",
       "span": 1
     },
+    "Monster.cs:3418-3436": {
+      "sha256": "18da1830749bbd993d9cf9d28ac2440f909ee89a0b79c1d2c625ddeca7184659",
+      "span": 19
+    },
     "Monster.cs:4106-4112": {
       "sha256": "f40feddd3a37f8ea373e94158f9fffb6102ad463e07f6623638d3cb255cf5cac",
       "span": 7
+    },
+    "Monster.cs:4176-4285": {
+      "sha256": "3b20de3751a8a55a39e04af1559e95a2a077d82b9a7d0651a27fec74b2113940",
+      "span": 110
+    },
+    "Monster.cs:4343-4373": {
+      "sha256": "d63605941e7540b06fd89272a0dfc889aec932d7ac4155ee24660332157f71a4",
+      "span": 31
     },
     "Monster.cs:4570-4609": {
       "sha256": "9482355022b53dddc8ccdec93c2b3669a06219382c796d628fa1dcdb158fc340",
@@ -2121,13 +2129,12 @@
       "sha256": "cf2fc42e1f3661484d9358c1791bc5c2c3b056fb327f835e63708e4d0e8e0b15",
       "span": 11
     },
-    "Monster.cs:931-938": {
-      "sha256": "2427a287ec0583204831cae5929d93d74b47c92afc1d24446a90f95386f5ebd0",
-      "span": 8
-    },
     "Monster.cs:940-947": {
       "sha256": "537907c18934a4a0b809e11cb79adb552508b5538a23dcedd4bbb9052eb81ce1",
       "span": 8
+    },
+    "Monster.cs:ApplyValaarkVulnerability": {
+      "span": 0
     },
     "Monster.cs:BeginBardCharm": {
       "span": 0
@@ -2136,6 +2143,9 @@
       "span": 0
     },
     "Monster.cs:EndBardCharm": {
+      "span": 0
+    },
+    "Monster.cs:EventDeathNoLoot": {
       "span": 0
     },
     "Monster.cs:EventEntityTooFarToFollow": {
@@ -2184,9 +2194,6 @@
       "span": 0
     },
     "Monster.cs:UserCode_CmdLootMonster": {
-      "span": 0
-    },
-    "Monster.cs:WarpPosition": {
       "span": 0
     },
     "Monster.cs:speed": {
@@ -2446,6 +2453,9 @@
     "Npc.cs:InteractNpc": {
       "span": 0
     },
+    "Npc.cs:OnAggro": {
+      "span": 0
+    },
     "Npc.cs:OnDeath": {
       "span": 0
     },
@@ -2640,9 +2650,6 @@
     "Pet.cs:ComeHereNow": {
       "span": 0
     },
-    "Pet.cs:IsValidCombatReacquireTarget": {
-      "span": 0
-    },
     "Pet.cs:OnAggro": {
       "span": 0
     },
@@ -2671,10 +2678,6 @@
       "sha256": "902a3e48724038c4c0153f825948fbb9d3a7817b08083b9dd12598dffcdf768d",
       "span": 8
     },
-    "PetFriendly.cs:389-396": {
-      "sha256": "8ee242d5337d502c1fe3167b4b7bd23619c4d086bc0ba3a30d6796c756b6b5cb",
-      "span": 8
-    },
     "PetFriendly.cs:433-454": {
       "sha256": "3ddf7f934dc67da4958bd234d05cb4688d8c113ec447a45fd9a4ecf9309eda63",
       "span": 22
@@ -2686,6 +2689,9 @@
     "PetFriendly.cs:9-25": {
       "sha256": "94a6f9702f32dc094d855cb24f53da3a966b3c2746dbdf3165e96dd1d4676bc4",
       "span": 17
+    },
+    "PetFriendly.cs:UpdateServer_PLAYER_FOLLOWER": {
+      "span": 0
     },
     "PetSkills.cs:128-130": {
       "sha256": "a35125d663e199f518c58447b145d078a218c495af680f2cb074307ac2590f6f",
@@ -2716,6 +2722,10 @@
     "Player.cs": {
       "span": 0
     },
+    "Player.cs:10": {
+      "sha256": "e5a09839c6bfed201f2f9fa5e7ac1861716ea7126bc6435221a0fc95c474e008",
+      "span": 1
+    },
     "Player.cs:10105-10110": {
       "sha256": "3b418300bf58ada4476a1fe905c610cae53256388f3ad4a844010bb251677b93",
       "span": 6
@@ -2743,10 +2753,6 @@
     "Player.cs:10640-10677": {
       "sha256": "e27c5ecb6057bda965d03fe4f957752c90b6600c63e5c354eed550997a71716a",
       "span": 38
-    },
-    "Player.cs:10640-10685": {
-      "sha256": "3faec93c011519de876436f7a41490e159ceeff96cc0c9ffa27f8e2e232f5c42",
-      "span": 46
     },
     "Player.cs:10678-10683": {
       "sha256": "597902ac145f06a4f7181ca641cde8e99390ac8a1dd90bdd23d081e350e6b352",
@@ -2840,9 +2846,9 @@
       "sha256": "52d528b41ab858fb4441a0a962edd59f441912398bfed6ec0efbb8631944c14c",
       "span": 15
     },
-    "Player.cs:11317-11320": {
-      "sha256": "d32a10a2361248d0114defe62311e4652490a43a520d5fa749ac48de25da93c8",
-      "span": 4
+    "Player.cs:11309-11315": {
+      "sha256": "249b20fdb41d1190ea9e4e35d1f9ed3c49e714a41b3f4990725987a6318d980d",
+      "span": 7
     },
     "Player.cs:115-123": {
       "sha256": "a521440e9642f9879a618a93dc6e0ebd3acb8777af03a22cd39c3398b7c01751",
@@ -3080,10 +3086,6 @@
       "sha256": "d947276937d7f06ed79834df922827610f05f822fb04c504800b4ab3e6997048",
       "span": 28
     },
-    "Player.cs:14595-14600": {
-      "sha256": "170d53df8d542a76bee8cbcf8dfdc50eaa178b9d960f954ce7703e8afe0fc28e",
-      "span": 6
-    },
     "Player.cs:14600-14612": {
       "sha256": "f2251430cdef53e8224b0af1caa7ee435036f381662748ad7b04121b9a77febc",
       "span": 13
@@ -3200,10 +3202,6 @@
       "sha256": "9465f7d5eae3e3a7ffa4841cb8f89d8c0e1cd6c10b75597eb61fb5113a837ca9",
       "span": 31
     },
-    "Player.cs:4324-4360": {
-      "sha256": "c97ba24db78d3901f47a2d727bae3d5492ef54408748b51d0a5aceb97876094a",
-      "span": 37
-    },
     "Player.cs:4451-4461": {
       "sha256": "c146d50d7c92549919d8f0c737fd3bc95a2c526da079e3a50d220c37d8fab9ed",
       "span": 11
@@ -3211,6 +3209,10 @@
     "Player.cs:4598-4601": {
       "sha256": "be9fbb71d1d37ff035a04a8be9e090f774504cae80d0c8a5b850355b5ae03457",
       "span": 4
+    },
+    "Player.cs:470": {
+      "sha256": "72ea8e37b5c9735a6d56e38fa4055e4c56c22f923421016bfda13cb0e3eb5a55",
+      "span": 1
     },
     "Player.cs:4779-4804": {
       "sha256": "e876e9e941632c239e40b1da545b8e2cfbf5899e879c51896ad031aa86eeec3d",
@@ -3268,7 +3270,13 @@
       "sha256": "d587808f469c9792684562c805e4cd33f4db4bfe9b70dc81ac9bc771eb71d9bd",
       "span": 18
     },
+    "Player.cs:AddKey": {
+      "span": 0
+    },
     "Player.cs:CanAttack": {
+      "span": 0
+    },
+    "Player.cs:CmdBlessRunes": {
       "span": 0
     },
     "Player.cs:CmdBuyMercenary": {
@@ -3346,10 +3354,16 @@
     "Player.cs:UpdateMercStatsByLevel": {
       "span": 0
     },
+    "Player.cs:UpdateServer_BARBER": {
+      "span": 0
+    },
     "Player.cs:UpdateServer_CASTING": {
       "span": 0
     },
     "Player.cs:UpdateServer_DEAD": {
+      "span": 0
+    },
+    "Player.cs:UpdateServer_IDLE": {
       "span": 0
     },
     "Player.cs:UserCode_CmdBindPlayer": {
@@ -3371,6 +3385,9 @@
       "span": 0
     },
     "Player.cs:UserCode_CmdMakePotion__Int32": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdRemoveInvencibleValaark__Int32": {
       "span": 0
     },
     "Player.cs:UserCode_CmdResetAttributes": {
@@ -3432,16 +3449,21 @@
       "sha256": "68a69e637846c9f6d8fa59bd64c472f83bffd8679b40e2f2e220c578d380586f",
       "span": 109
     },
-    "PlayerChat.cs:457-504": {
-      "sha256": "a4d0f293cfe97f56f35303a4e4f555d7f6906a14c330c75b8d05c83d622f80e2",
-      "span": 48
+    "PlayerChat.cs:439": {
+      "sha256": "2cbed6d3462a07b4c63bbdfb6e3eed97b07bbe2ff39d64a9b3ef8a6ac8af0006",
+      "span": 1
     },
-    "PlayerChat.cs:540-546": {
-      "sha256": "b32fa0e9679b3462f60deef635ac7bc26419128c5e1e26027983c052132ad4c6",
-      "span": 7
+    "PlayerChat.cs:459": {
+      "sha256": "7b63be3e800038d04ca094c7da4118e0b8f46e4bb9726ba745459e30f601f3c4",
+      "span": 1
     },
-    "PlayerChat.cs:UserCode_CmdMsgLocal__String__String": {
-      "span": 0
+    "PlayerChat.cs:487": {
+      "sha256": "ad9507a82ba2da031b8780c8b5c2a16eb2cba656cef555da518fad9c29a4c70c",
+      "span": 1
+    },
+    "PlayerChat.cs:542": {
+      "sha256": "7533e0123eb1ec248604c1a46b2dfdce670e2e281c086dbc5caafec1cc481d5b",
+      "span": 1
     },
     "PlayerChest.cs:254-255": {
       "sha256": "00436be44997ee1c71c606b6cafe9efbecbaa7c94291bf58dd4128c04272f2e3",
@@ -3513,10 +3535,6 @@
     "PlayerEquipment.cs:107-114": {
       "sha256": "c58fdafe87bbd35e65563497476f9eb280b736b753293a88a12344454e8ea559",
       "span": 8
-    },
-    "PlayerEquipment.cs:1580-1595": {
-      "sha256": "3023755ec771ba0750220a11f59a04e45c3ad35d3366d5dc7362eb36f90c4913",
-      "span": 16
     },
     "PlayerEquipment.cs:1614-1625": {
       "sha256": "1dcf0b870db57899db1e741bbbe387a3506984dc811122a5ee08d8f1b22ccb41",
@@ -3643,9 +3661,9 @@
     "PlayerInventory.cs": {
       "span": 0
     },
-    "PlayerInventory.cs:108-113": {
-      "sha256": "c6ec9058fd955aebbc51268250e6f364a875866c5688929d856ab48c5e6880b6",
-      "span": 6
+    "PlayerInventory.cs:1717-1729": {
+      "sha256": "2a6862918e7485e2487031d3d71319056ceaf759783a3d1a1367cef9373511fc",
+      "span": 13
     },
     "PlayerInventory.cs:1914-1976": {
       "sha256": "9428f32f3ae1d67d39fdc1db4c43540d7737c261b09e9f697593c9a8daff39fc",
@@ -3694,10 +3712,6 @@
     "PlayerInventory.cs:670-683": {
       "sha256": "a0b3ac938f0cd1c8b2498636fdc7b71a06113fd6e396d60c919adab6c22acbd0",
       "span": 14
-    },
-    "PlayerInventory.cs:685-688": {
-      "sha256": "7b4fa89071d308bb958a92eb80dd193bff96c7429c6ec535d75781f4c2c7c268",
-      "span": 4
     },
     "PlayerInventory.cs:701-707": {
       "sha256": "8c6bd7fed67a85660f48871c2b13bbd235d502a4ebdd3e0abbfd0e6c4817b88a",
@@ -3802,6 +3816,9 @@
     "PlayerNpcTrading.cs:CalculateSellItemPrice": {
       "span": 0
     },
+    "PlayerNpcTrading.cs:CmdTradeEssence": {
+      "span": 0
+    },
     "PlayerNpcTrading.cs:UserCode_CmdRepairItem__Int32__Int64__Boolean": {
       "span": 0
     },
@@ -3889,6 +3906,12 @@
     "PlayerQuests.cs:50-51": {
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
+    },
+    "PlayerQuests.cs:CanAccept": {
+      "span": 0
+    },
+    "PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32": {
+      "span": 0
     },
     "PlayerSkillbar.cs:SaveMacro": {
       "span": 0
@@ -4195,10 +4218,6 @@
       "sha256": "77945c11926a3e318b4aa58a541f1fa031b689f504a467b0f2c4ad4a37e2896a",
       "span": 3
     },
-    "PotionItem.cs:24-30": {
-      "sha256": "c03bb2c023826ab8f5095632611eb1ddb4e0d2a5b7075881e61a6cb63c5d23b7",
-      "span": 7
-    },
     "PotionItem.cs:24-39": {
       "sha256": "6599aa1d3a0adc00beede35d7c166f51f2104cf7a14a67c1f60fc64def1808b1",
       "span": 16
@@ -4231,10 +4250,6 @@
     "RelicItem.cs:12-13": {
       "sha256": "bd9b584a79c3542b75d4d262dfba52709430d46e913f70c93670d6b68ff3c495",
       "span": 2
-    },
-    "RelicItem.cs:20-35": {
-      "sha256": "2e7ec4b3783326adbd19f08b60fe6b8969af6210b17fdc30ae8314414c5d03d7",
-      "span": 16
     },
     "RelicItem.cs:20-37": {
       "sha256": "2e19f08aa39e68e1248512daf0608ca615a5f3ab59b69fb09a0ad3c84ffd81f6",
@@ -4320,6 +4335,10 @@
     "ScriptableSkill.cs:237-239": {
       "sha256": "3efdd0f0d0a984c2b4b89b670428354938f4182ec30b63d405e35308945d035d",
       "span": 3
+    },
+    "ScriptableSkill.cs:336-344": {
+      "sha256": "8e40e5080cb09b988004c95374d98da18fdd3e9ec53b593cb5f7e26e198c2d51",
+      "span": 9
     },
     "ScriptableSkill.cs:387-402": {
       "sha256": "fac7186e03f9510946b242c8c6e080d93d87913fba9651853ef8669a4231772d",
@@ -4432,6 +4451,10 @@
     "Skills.cs:1141-1169": {
       "sha256": "2d5025a3d824b6837631bb6543236fdb5b054b9d2b4fcecac947718784cec59c",
       "span": 29
+    },
+    "Skills.cs:125": {
+      "sha256": "dc56f1cf9fbd8eee0d1534ed3a51e7f1b1af20e94d0f460bc9bcfbd97b6e01a8",
+      "span": 1
     },
     "Skills.cs:1261-1263": {
       "sha256": "06485cb714fee867b915d4fbbca7b8ce07907b050972dd1a26da84ba1293e5bc",
@@ -4553,6 +4576,9 @@
     "Skills.cs:GetPassiveHealthRecoveryBonus": {
       "span": 0
     },
+    "Skills.cs:GetSpellHasteBonus": {
+      "span": 0
+    },
     "Skills.cs:HasInvisibilityIgnoringDetection": {
       "span": 0
     },
@@ -4595,9 +4621,15 @@
       "sha256": "f31bc5c5fcf570bf2fd42f772eb7997ba6879d1dfe4d841ebc73be34ae2e62ee",
       "span": 11
     },
+    "StrucItemUi.cs:SetPreviewId": {
+      "span": 0
+    },
     "Structure.cs:154-161": {
       "sha256": "577ac4f2ddfef6ce747451cd52cf2f4ce15f23f0c2c8ce1eea415dbe3256a0a7",
       "span": 8
+    },
+    "SummonMonster.cs:AreAllPlaceholdersDead": {
+      "span": 0
     },
     "SummonMonster.cs:IsSummonDead": {
       "span": 0
@@ -4645,6 +4677,10 @@
     },
     "SummonSkillMonsters.cs": {
       "span": 0
+    },
+    "SummonSkillMonsters.cs:106-116": {
+      "sha256": "52509eb3f512a4c5f9a505b7205e63f31d1fa64726b7c71e206ee1490513cbff",
+      "span": 11
     },
     "SummonSkillMonsters.cs:Apply": {
       "span": 0
@@ -4918,9 +4954,6 @@
       "sha256": "f3f16a5b048d6936d4f0341e1021fffd8f19671322faa6b44d1eb2975c34d171",
       "span": 5
     },
-    "TravelItem.cs:Use": {
-      "span": 0
-    },
     "TreasureLocation.cs:117-129": {
       "sha256": "06de83cb00048bdc47b1247a1ef0e0558e2806de357e7b39be903efe59c0739a",
       "span": 13
@@ -5101,10 +5134,6 @@
       "sha256": "f35a37c3f3d21c44fbfbb66750c2977ac2f78797bd81bb343c2a63924a0644c6",
       "span": 7
     },
-    "UIFactions.cs:124-153": {
-      "sha256": "d367fc8a38e36dc62c398c86428aa78b97723e32e24b1aded836d85f7c45391b",
-      "span": 30
-    },
     "UIFactions.cs:126": {
       "sha256": "181128bdd42ee82d2f2b28c25ea8fc24eb618bdb50eb18ed272bea094ac8c3ef",
       "span": 1
@@ -5202,6 +5231,9 @@
       "sha256": "430480a7e74bf50ed6e0cae1719f0ff6f034fe2a40bab7a8d75d2937c67c8623",
       "span": 16
     },
+    "UIMap.cs:Update": {
+      "span": 0
+    },
     "UIMapNotesController.cs:121-140": {
       "sha256": "4709a60947e449b83fcbaac9437bdec43fb28758137834ec9c29489117774de6",
       "span": 20
@@ -5292,14 +5324,6 @@
       "sha256": "474954921afb05ea0555214d12cfeb951eb90bbb939138cedc9e0a1bca7bc887",
       "span": 17
     },
-    "UINpcTrading.cs:164-169": {
-      "sha256": "a63cb6201b7d6cb698d0dbe0c72506ca435ab4bc51aad8b8223993d9b3e4ee62",
-      "span": 6
-    },
-    "UINpcTrading.cs:228-232": {
-      "sha256": "a6358b1f0b1e5f43e8a8d76e8add43141deecb1b3233b4c810dd3a339fbab510",
-      "span": 5
-    },
     "UINpcTrading.cs:249-266": {
       "sha256": "c7598c54a0805fbc5437a049ad90f112a61324037b7819361d37efdc2dbc90db",
       "span": 18
@@ -5307,6 +5331,10 @@
     "UINpcTrading.cs:260-265": {
       "sha256": "890c3f5ed4a7dabc89c5c3c66ded3379b9c8ffe6045092d17d72a2202d09a6a0",
       "span": 6
+    },
+    "UINpcTrading.cs:261-265": {
+      "sha256": "078aba7cc43fd6a0fe565b1267048a623437d43c2e4f0b9dc6f6953ffd7b8017",
+      "span": 5
     },
     "UINpcTrading.cs:314-331": {
       "sha256": "0482b6307fe5f7bbfd32270c36678d3a6331510158f9d40cec0cc3aaf546c478",
@@ -5327,6 +5355,14 @@
     "UINpcTrading.cs:556-564": {
       "sha256": "3379f884917f58314711b1eada08e1c3d335e6c1b6a8ef4a81954323f1b94a80",
       "span": 9
+    },
+    "UINpcTrading.cs:556-565": {
+      "sha256": "dce747628e897e32a5a3de3788ef55dca4d612b48c6aaf7a9ff570da74316b23",
+      "span": 10
+    },
+    "UINpcTrading.cs:562-580": {
+      "sha256": "c75b722bf2f22199e5fab31dd4928c755fde4d6d2a7498f3b10937fbc74a5386",
+      "span": 19
     },
     "UINpcTrading.cs:567-574": {
       "sha256": "c3580f1811db16ae13529ec52309a3e721516a6dad9def79dc676f6177fd91a1",
@@ -5577,6 +5613,10 @@
       "sha256": "406926ad7c52d7e4c285062e9ea8e5a9fbb4203f539805c3c970e753b41f92d1",
       "span": 47
     },
+    "ZoneTrigger.cs:167-175": {
+      "sha256": "8299aac8f61a9e66f4cf3dcab800b24ab3024ac8fbd8de113935d40eaae27337",
+      "span": 9
+    },
     "ZoneTrigger.cs:180": {
       "sha256": "3d968c0e7b9b4a0702e7279ec3a93ce07e72240f82b7457c639f97f2013f8b57",
       "span": 1
@@ -5608,6 +5648,9 @@
     "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48": {
       "sha256": "7c6b83cd92a51305c5555c1a2e39f5b071d6cb21e2d51b7846c44499397bdaa5",
       "span": 34
+    },
+    "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:Use": {
+      "span": 0
     },
     "uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27": {
       "sha256": "d1d53edf95ee4216614bce9c2c9a58b12ffcb17b6143e3b16998dfe4b246a91f",

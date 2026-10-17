@@ -27,7 +27,7 @@
 
   <Card.Root id="furniture" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Furniture and Home Workstations</Card.Title>
+      <Card.Title>Furniture and home workstations</Card.Title>
       <Card.Description
         >Buy furniture for your account's house, then move it without another
         purchase.</Card.Description
@@ -40,11 +40,12 @@
         house owned by your account.
       </p>
       <p>
-        House purchase rules and house chests are covered on the
+        See
         <a
           href="/mechanics/inventory#house-chests"
-          class="text-blue-600 dark:text-blue-400 hover:underline">Inventory</a
-        > page.
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >house chests and shared storage</a
+        > for buying a house and placing chests.
       </p>
       <!-- Source: server-scripts/CustomStrucUI.cs:164-258 and server-scripts/Player.cs:13404-13421 — placement requires a footprint inside the owned buildable zone without a structure overlap; gold is deducted when the structure is created. -->
       <ul class="list-disc space-y-1 pl-5">
@@ -53,7 +54,7 @@
           overlapping another structure.
         </li>
         <li>
-          Placement costs the catalog price when the structure is created.
+          You pay the price shown in the house panel when you place the piece.
         </li>
       </ul>
       <!-- Source: server-scripts/CustomStrucUI.cs:71-84,220-226,261-313 and server-scripts/Player.cs:13436-13473 — movement repositions an owned structure without charging gold; confirmed removal deletes it without a refund. -->
@@ -128,7 +129,7 @@
 
   <Card.Root id="appearance" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Barbers and Appearance</Card.Title>
+      <Card.Title>Barbers and appearance</Card.Title>
       <Card.Description
         >Change your appearance at a barber or select saved outfits from your
         wardrobe.</Card.Description
@@ -144,27 +145,27 @@
           > changes your appearance for 100 gold.
         </li>
         <li>
-          You must be alive, out of combat, and within 2.5 yd of a living
-          barber. The barber refuses you while an appearance-changing illusion
-          or
+          Visit while alive and out of combat, within 2.5 yd of the barber.
+          Appearance-changing illusions and
           <a
             href="/skills/reaper_form"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Reaper Form</a
-          > is active.
+          > prevent a visit.
         </li>
+        <li>Have 100 gold available. You pay only when you Apply.</li>
         <li>
-          You need 100 gold to open the service, but payment happens only on a
-          successful Apply.
+          <!-- Source: server-scripts/Player.cs:UpdateServer_BARBER,IsBarberSessionValid -->
+          Entering combat, dying, being stunned or feared, or moving more than 2.5
+          yd from the barber cancels the session.
         </li>
-        <li>Combat, death, or moving away can cancel the session.</li>
       </ul>
       <!-- Source: server-scripts/BarberAppearanceOptions.cs:8-78 and server-scripts/Player.cs:9535-9558 — race and gender determine available hair, secondary styles, and colors; only hair, beard, and eye appearance fields change. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Style choices depend on your current race and gender.</li>
         <li>
           Felarii choose Pattern. Drassar choose Crest and Body Type. Male
-          Humans, Dwarves, and Fire Goblins can choose Beard.
+          Humans, male Dwarves, and male Fire Goblins can choose Beard.
         </li>
         <li>
           Every race except Felarii and Drassar can change hair and eye colors.
@@ -173,8 +174,7 @@
       <!-- Source: server-scripts/UIBarber.cs:499-515,526-558 and server-scripts/Player.cs:6684-6726 — the preview changes the local appearance, hair color updates beard color, and Cancel restores the prior appearance without payment. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Hair color changes beard color at the same time.</li>
-        <li>Preview shows the result before payment.</li>
-        <li>Cancel restores your previous appearance without a charge.</li>
+        <li>Preview is free. Cancel keeps your previous appearance.</li>
       </ul>
       <!-- Source: server-scripts/EquipmentItem.cs:297-309, server-scripts/Player.cs:14637-14648 and server-scripts/Database.cs:2112-2128 — using costume equipment consumes the item and stores its appearance for that character. -->
       <p>

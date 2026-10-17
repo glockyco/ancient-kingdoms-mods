@@ -1,12 +1,14 @@
 <script lang="ts">
   import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import Calculation from "$lib/components/Calculation.svelte";
   import { slayerMasteryCalculation } from "$lib/calculation/slayer";
   import {
@@ -94,7 +96,9 @@
     if (target.spawn_type === "summon") {
       const count = target.source_summon_kill_count ?? 1;
       const plural = count > 1 ? "s" : "";
-      return `Blocked while ${count} ${target.source_summon_kill_monster_name}${plural} alive`;
+      return count === 1
+        ? `Cannot spawn until ${target.source_summon_kill_monster_name} is dead`
+        : `Cannot spawn until its ${count} ${target.source_summon_kill_monster_name}${plural} are dead`;
     }
     if (target.spawn_type === "placeholder") {
       const chance =
@@ -272,7 +276,9 @@
         >{#if target.source_altar_wave !== null}, wave {target.source_altar_wave +
             1}{/if}
       {:else if target.spawn_type === "summon"}
-        Blocked while {target.source_summon_kill_count}
+        Cannot spawn until {(target.source_summon_kill_count ?? 1) > 1
+          ? `its ${target.source_summon_kill_count}`
+          : ""}
         <a
           href="/monsters/{target.source_summon_kill_monster_id}"
           class="text-blue-600 hover:underline dark:text-blue-400"
@@ -280,7 +286,8 @@
             1) > 1
             ? "s"
             : ""}</a
-        > alive
+        >
+        {(target.source_summon_kill_count ?? 1) > 1 ? "are" : "is"} dead
       {:else if target.spawn_type === "placeholder"}
         Appears after killing
         <a
@@ -337,7 +344,7 @@
 {/snippet}
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
   description={`Slayer reduces the damage that bosses and elites deal to you, up to 10% at full mastery. All ${data.targets.length} Slayer targets with levels, zones, spawn requirements, and respawn times.`}
   path="/professions/slayer"
 />
@@ -369,7 +376,7 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">Bestiary Discoveries and Slayer</h2>
+    <h2 class="text-xl font-semibold">How Slayer works</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity -->
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
@@ -377,13 +384,12 @@
         <div>
           <p class="font-medium">Find a boss or an elite.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Only these {data.targets.length} targets give Slayer mastery. When you
-            come near one, your Bestiary adds it with zero kills.
+            Approach any target listed below to add it to your Bestiary.
           </p>
           <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13992-13999; server-scripts/UIBestiaryDetail.cs:150-154 — approach discovery and loot discovery are separate records. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Finding a boss does not reveal its drops. You discover loot
-            separately.
+            Finding a target does not reveal its drops. Each drop appears in the
+            Bestiary once a corpse holding it is looted.
           </p>
         </div>
       </li>
@@ -393,8 +399,8 @@
         <div>
           <p class="font-medium">Kill the target.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The player who drew the most of the monster's attention gets kill
-            credit. In a party, each nearby member also gets
+            The player with the most threat on the monster gets kill credit. In
+            a party, each member within 40 yd of that player also gets
             <a
               href="#mastery"
               class="text-blue-600 hover:underline dark:text-blue-400">credit</a
@@ -406,7 +412,7 @@
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
         <span class="text-sm tabular-nums text-muted-foreground">3</span>
         <div>
-          <p class="font-medium">Collect the mastery.</p>
+          <p class="font-medium">Gain Slayer mastery.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Each credited kill adds 0.02 percentage points to
             <a
@@ -424,13 +430,11 @@
         <div>
           <p class="font-medium">Take less damage.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            From {mechanics.damageReduction.thresholdPercent}% mastery, every
-            boss and elite deals
-            <a
+            Bosses and elites deal <a
               href="#payoff"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >less damage</a
-            > to you. The reduction grows to 10% at full mastery.
+            > to you, your mercenaries and your summons.
           </p>
         </div>
       </li>
@@ -440,9 +444,10 @@
   <section id="payoff" class="space-y-4">
     <h2 class="text-xl font-semibold">Damage reduction</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Below 10% Slayer, boss and elite hits deal full damage. At 10% Slayer, a
-      100-damage hit loses 1 damage. At 100%, it loses 10. Armor Class and
-      elemental resistance reduce the remaining damage.
+      Slayer reduction applies before
+      <MechanicsLink section="combat#damage"
+        >Armor Class or the matching resist</MechanicsLink
+      >.
     </p>
 
     <div class="space-y-5 rounded-lg border p-4 md:p-5">
@@ -496,11 +501,9 @@
         <!-- Source: server-scripts/Combat.cs:DealDamageAt -->
         <div class="mt-2 space-y-2 text-pretty text-muted-foreground">
           <p>
-            At 10% Slayer, a boss or elite hit loses 1% of its damage, rounded
-            up. Each additional 10 percentage points of Slayer adds another 1%
-            reduction, up to 10%. Even a 10-damage hit loses 1 damage.
+            Damage reduction rounds up, so even a 10-damage hit loses 1 damage.
           </p>
-          <p>A mercenary or summon uses the Slayer mastery of its owner.</p>
+          <p>Your mercenary or summon uses your Slayer mastery.</p>
         </div>
       </details>
     </div>
@@ -510,9 +513,8 @@
     <h2 class="text-xl font-semibold">Account-wide mastery</h2>
     <!-- Source: server-scripts/Database.cs:CalculateSlayerLevelForAccount -->
     <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      The game adds the capped kills of every character on the account, then
-      stops Slayer at 100%. One target adds a maximum of 1 percentage point, so
-      100% needs kills from a minimum of 100 targets.
+      Slayer mastery is shared by every character on your account. Only the
+      first 50 kills of each target count toward the 100% cap.
     </p>
 
     <!-- Source: server-scripts/Database.cs:3428-3436 — each target adds 0.02% per account kill up to 50 kills, and the total stops at 100%. -->
@@ -521,14 +523,11 @@
     <div class="max-w-2xl space-y-3 text-pretty text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:OnDeath -->
       <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcUpdateKillsBestiary__String -->
+      <p>Threat from your mercenary or summon counts for you.</p>
       <p>
-        A mercenary or summon that draws the most attention gives kill credit to
-        its owner. In a party, each nearby member gets the same credit.
-      </p>
-      <p>
-        The Bestiary count stays with one character. Slayer mastery is the total
-        for the account, and every race starts at 0%. A kill after the 50-kill
-        limit still increases the Bestiary count, but not Slayer mastery.
+        Bestiary counts belong to each character and keep increasing after the
+        account's 50-kill mastery limit. New characters share your Slayer
+        mastery. No race has a starting Slayer bonus.
       </p>
     </div>
   </section>

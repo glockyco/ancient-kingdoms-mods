@@ -57,49 +57,48 @@ export function formatNumber(
 }
 
 /**
- * Format a duration in seconds to a human-readable string (e.g., "5m", "1h 30m")
+ * Format a duration in the reader's units, retaining seconds after whole minutes and hours.
  */
 export function formatDuration(seconds: number): string {
   if (seconds <= 0) return "-";
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  if (hours > 0) {
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}m`
-      : `${hours}h`;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds - hours * 3600) / 60);
+  const remainingSeconds = seconds - hours * 3600 - minutes * 60;
+  let text = hours > 0 ? `${hours}h` : "";
+  if (minutes > 0) text += `${text ? " " : ""}${minutes}m`;
+  if (remainingSeconds > 0) {
+    text += `${text ? " " : ""}${formatNumber(remainingSeconds)}s`;
   }
-  return `${minutes}m`;
+  return text;
 }
 
 /**
  * Maps internal item type identifiers to display names.
  */
 const itemTypeDisplayNames: Record<string, string> = {
-  ammo: "Ammo",
-  armor_set_bonus: "Armor Set Bonus",
+  ammo: "Ammunition",
+  armor_set_bonus: "Armor set bonus",
   augment: "Augment",
   backpack: "Backpack",
   book: "Book",
-  chest: "Chest",
+  chest: "Loot container",
   equipment: "Equipment",
   costume: "Costume",
   food: "Food",
   fragment: "Fragment",
   general: "General",
-  merge: "Merge",
+  merge: "Combinable item",
   mount: "Mount",
   pack: "Pack",
-  pet: "Pet",
+  pet: "Pet whistle",
   potion: "Potion",
-  random: "Random",
+  random: "Mystery container",
   recipe: "Recipe",
   relic: "Relic",
   scroll: "Scroll",
-  structure: "Structure",
+  structure: "Furniture",
   travel: "Travel",
-  treasure_map: "Treasure Map",
+  treasure_map: "Treasure map",
   weapon: "Weapon",
 };
 
@@ -151,6 +150,7 @@ const skillTypeDisplayNames: Record<string, string> = {
   passive: "Passive",
   summon: "Summon",
   summon_monsters: "Summon monsters",
+  mercenary_summon: "Mercenary summon",
   area_object_spawn: "Area effect",
 };
 
@@ -204,7 +204,7 @@ export function formatSpawnTimeWindow(
   // 0-0 or both same means no restriction (24h spawn)
   if ((start === 0 && end === 0) || start === end) return null;
   const formatHour = (h: number) => `${h.toString().padStart(2, "0")}:00`;
-  return `${formatHour(start)}-${formatHour(end)}`;
+  return `${formatHour(start)} to ${formatHour(end)}`;
 }
 
 /**
@@ -233,7 +233,7 @@ export function getQualityTextColorClass(quality: number): string {
 
 /**
  * Format gathering resource respawn time with type-specific logic:
- * - Radiant Sparks: Fixed "1m40s – 1h" range
+ * - Radiant Sparks: Fixed range from 1m 40s to 1h
  * - Minerals: Range from half respawn to full respawn
  * - Plants/Other: Single value
  *
@@ -246,13 +246,13 @@ export function formatGatheringRespawn(
 ): string {
   // Source: server-scripts/GatherItem.cs:286-289,379-382 — Random.Range(100f, 3600f)
   if (type === "gathering_spark" || type === "Radiant Spark") {
-    return "1m40s – 1h";
+    return "1m 40s to 1h";
   }
   // Source: server-scripts/GatherItem.cs:864-872 — mineral and plant readiness uses Random.Range with half and full timeToWaitReady
   if ((type === "gathering_mineral" || type === "Mineral") && respawnTime > 0) {
-    const min = formatDuration(Math.floor(respawnTime / 2));
+    const min = formatDuration(respawnTime / 2);
     const max = formatDuration(respawnTime);
-    return `${min} – ${max}`;
+    return `${min} to ${max}`;
   }
   return formatDuration(respawnTime);
 }

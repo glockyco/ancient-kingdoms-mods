@@ -414,7 +414,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "radiant_seeker",
           name: "Radiant Seeker",
-          description: "Collect scattered radiant sparks.",
+          description: "Collect scattered Radiant Sparks.",
           href: "/professions/radiant_seeker",
           icon: {
             src: "/images/professions/radiant_seeker/icon.webp",
@@ -441,7 +441,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "cooking",
           name: "Cooking",
-          description: "Prepare food at cooking stations.",
+          description: "Cook food at Cooking Ovens.",
           href: "/professions/cooking",
           icon: {
             src: "/images/professions/cooking/icon.webp",
@@ -452,7 +452,8 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "scroll_mastery",
           name: "Scroll Mastery",
-          description: "Craft and use scrolls at scribing tables.",
+          description:
+            "Craft scrolls at Scribing Tables and use them to cast their skills.",
           href: "/professions/scroll_mastery",
           icon: {
             src: "/images/professions/scroll_mastery/icon.webp",
@@ -468,7 +469,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "adventuring",
           name: "Adventuring",
-          description: "Complete Adventurer's Guild quests.",
+          description: "Complete Adventurers' Guild quests.",
           href: "/professions/adventuring",
           icon: {
             src: "/images/professions/adventuring/icon.webp",
@@ -528,7 +529,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "treasure_hunter",
           name: "Treasure Hunter",
-          description: "Find treasure chests.",
+          description: "Dig up buried treasure with treasure maps.",
           href: "/professions/treasure_hunter",
           icon: {
             src: "/images/professions/treasure_hunter/icon.webp",

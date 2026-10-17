@@ -36,6 +36,9 @@ export function getItemSourceSummaries(
     )
     .all(...itemIds) as ItemSourceSummary[];
 
+  // Source: server-scripts/PlayerNpcTrading.cs:CmdTradeEssence,
+  // Player.cs:CmdBlessRunes, MergeItem.cs:Use, StrucItemUi.cs:SetPreviewId.
+  // These acquisitions do not have an ordinary vendor, drop or recipe row.
   const virtualRows = db
     .prepare(
       `
@@ -80,10 +83,54 @@ export function getItemSourceSummaries(
           FROM item_source_entries ise
           WHERE ise.item_id = i.id
         )
+
+      UNION ALL
+
+      SELECT i.id, 'special', n.id, n.name, NULL
+      FROM items i
+      JOIN npcs n ON
+        (i.id = 'primal_essence' AND json_extract(n.roles, '$.is_essence_trader') = 1)
+        OR (i.id = 'blessed_rune' AND json_extract(n.roles, '$.is_priestess') = 1)
+      WHERE i.id IN (${placeholders})
+        AND NOT EXISTS (
+          SELECT 1 FROM item_source_entries ise
+          WHERE ise.item_id = i.id AND ise.source_type = 'special' AND ise.source_id = n.id
+        )
+
+      UNION ALL
+
+      SELECT i.id, 'housing', 'housing#furniture',
+        'Buy and place for ' || i.structure_price || ' gold', NULL
+      FROM items i
+      WHERE i.id IN (${placeholders}) AND i.item_type = 'structure'
+
+      UNION ALL
+
+      SELECT i.id, 'merge', f.id,
+        'Combine ' || i.luck_token_fragments_needed || ' ' || f.name, NULL
+      FROM items i JOIN items f ON f.id = i.luck_token_fragment_id
+      WHERE i.id IN (${placeholders})
+
+      UNION ALL
+
+      SELECT ism.item_id, 'merge', ci.id, ci.name, NULL
+      FROM item_sources_merge ism JOIN items ci ON ci.id = ism.component_item_id
+      WHERE ism.item_id IN (${placeholders})
+        AND NOT EXISTS (
+          SELECT 1 FROM item_source_entries ise
+          WHERE ise.item_id = ism.item_id AND ise.source_type = 'merge' AND ise.source_id = ci.id
+        )
       ORDER BY item_id ASC, name ASC
       `,
     )
-    .all(...itemIds, ...itemIds) as ItemSourceSummary[];
+    .all(
+      ...itemIds,
+      ...itemIds,
+      ...itemIds,
+      ...itemIds,
+      ...itemIds,
+      ...itemIds,
+    ) as ItemSourceSummary[];
 
   return [...rows, ...virtualRows];
 }

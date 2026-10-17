@@ -10,6 +10,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import type {
@@ -19,6 +20,7 @@
   import {
     formatPercent,
     formatDuration,
+    formatNumber,
     getQualityTextColorClass,
   } from "$lib/utils/format";
   import {
@@ -94,13 +96,15 @@
     return spawns.map((spawn) => spawn.zone_name).join(", ");
   }
 
-  function formatFishingSpotVariant(
-    variant: FishingSpotVariant,
-    index: number,
-  ): string {
-    return `Spot ${index + 1}: ${variant.resource.name} (Tier ${
-      romanNumerals[variant.resource.level] ?? variant.resource.level
-    }) — ${formatZoneList(variant.spawns)}`;
+  function formatFishingSpotVariant(variant: FishingSpotVariant): string {
+    const zone = formatZoneList(variant.spawns);
+    const sameZone = data.fishingSpotVariants.filter(
+      (candidate) => formatZoneList(candidate.spawns) === zone,
+    );
+    const position = sameZone.indexOf(variant) + 1;
+    return sameZone.length > 1
+      ? `${zone} (${position} of ${sameZone.length})`
+      : zone;
   }
   // Type colors for badges
 
@@ -129,11 +133,8 @@
       "border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-300",
     "Radiant Spark":
       "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300",
-    Resource:
-      "border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-300",
+    Other: "border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-300",
   };
-
-  import { QUALITY_NAMES } from "$lib/constants/quality";
 
   // Get type string from resource flags
   function getResourceType(resource: {
@@ -146,7 +147,7 @@
     if (resource.is_plant) return "Plant";
     if (resource.is_mineral) return "Mineral";
     if (resource.is_radiant_spark) return "Radiant Spark";
-    return "Resource";
+    return "Other";
   }
 
   // Derive display values
@@ -415,7 +416,7 @@
     },
     {
       accessorKey: "drop_rate",
-      header: resource.is_fishing_spot ? "Chance / Cast" : "Drop Rate",
+      header: resource.is_fishing_spot ? "Chance per cast" : "Drop chance",
       size: 140,
     },
   ] satisfies ColumnDef<GatheringResourceDrop>[]);
@@ -511,7 +512,16 @@
 {/snippet}
 
 <Seo
-  title={`${resource.name} - Ancient Kingdoms`}
+  title={detailTitle(resource.name, {
+    family: "Gathering",
+    zone:
+      data.fishingSpotVariants.length === 0 && data.spawns.length === 1
+        ? data.spawns[0].zone_name
+        : null,
+    source: resource.is_fishing_spot
+      ? data.drops.find((drop) => !drop.is_fishing_trash)?.item_name
+      : null,
+  })}
   description={data.description}
   path={`/gather-items/${resource.id}`}
 />
@@ -555,7 +565,7 @@
         <span>Tier {resource.level}</span>
       {/if}
       {#if resource.is_radiant_spark}
-        <span>Respawn: 1m40s – 1h (random)</span>
+        <span>Respawn: 1m 40s to 1h (random)</span>
       {:else if resource.is_mineral && resource.respawn_time > 0}
         <span>
           Respawn: {formatDuration(Math.floor(resource.respawn_time / 2))} –
@@ -567,7 +577,7 @@
       {#if resource.gathering_exp && resource.gathering_exp > 0}
         <span
           >Gathering XP: <MechanicsLink section="experience"
-            >{resource.gathering_exp}</MechanicsLink
+            >{formatNumber(resource.gathering_exp)}</MechanicsLink
           ></span
         >
       {/if}
@@ -613,7 +623,7 @@
         <div class="space-y-3">
           <div class="flex items-center gap-4">
             <label for="skill-slider" class="w-40 shrink-0">
-              {skillName} Skill:
+              {skillName}:
             </label>
             <input
               id="skill-slider"
@@ -630,7 +640,7 @@
           {#if resource.is_mineral}
             <div class="flex items-center gap-4">
               <label for="pickaxe-slider" class="w-40 shrink-0">
-                Pickaxe Quality:
+                Pickaxe:
               </label>
               <input
                 id="pickaxe-slider"
@@ -641,9 +651,86 @@
                 bind:value={pickaxeQuality}
                 class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
               />
-              <span class="font-mono w-24 text-right">
-                {QUALITY_NAMES[pickaxeQuality]}
+              <span class="w-40 text-right">
+                {[
+                  "Rusty Pickaxe",
+                  "Steel Pickaxe",
+                  "Gold Pickaxe",
+                  "Beryllium Pickaxe",
+                  "Draconium Pickaxe",
+                ][pickaxeQuality]}
               </span>
+            </div>
+          {/if}
+          {#if resource.is_fishing_spot}
+            {#if data.rods.length > 0}
+              <label for="fishing-rod">Fishing rod:</label>
+              <div
+                class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+              >
+                <div
+                  class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1"
+                >
+                  <select
+                    id="fishing-rod"
+                    bind:value={selectedRodId}
+                    aria-label="Fishing rod"
+                    class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    {#each data.rods as rod (rod.item_id)}
+                      <option value={rod.item_id}>{rod.item_name}</option>
+                    {/each}
+                  </select>
+                  <ChevronDown
+                    class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+                  disabled={selectedRodIndex === 0}
+                  onclick={selectPreviousRod}
+                  aria-label="Previous fishing rod"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+                  disabled={selectedRodIndex === data.rods.length - 1}
+                  onclick={selectNextRod}
+                  aria-label="Next fishing rod"
+                >
+                  Next
+                </button>
+              </div>
+            {/if}
+
+            <p>Fisherman's costume pieces worn:</p>
+            <div class="grid gap-2 sm:grid-cols-3">
+              {#each fishermanSetPieces as piece (piece.itemId)}
+                <label
+                  class="flex items-center gap-2 rounded-md border bg-background p-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCostumeIds.has(piece.itemId)}
+                    onchange={(event) =>
+                      toggleCostume(
+                        piece.itemId,
+                        (event.currentTarget as HTMLInputElement).checked,
+                      )}
+                    class="h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <a
+                    href="/items/{piece.itemId}"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    {piece.itemName}
+                  </a>
+                </label>
+              {/each}
             </div>
           {/if}
         </div>
@@ -652,7 +739,7 @@
           {#if resource.is_radiant_spark}
             <div>
               <div class="text-sm text-muted-foreground">
-                Radiant Aether Chance
+                Radiant Aether chance
               </div>
               <div
                 class="font-mono font-medium {getSuccessChanceColor(
@@ -671,7 +758,7 @@
               <div class="text-sm text-muted-foreground">
                 {resource.is_fishing_spot
                   ? "Bite chance per cast"
-                  : "Success Chance"}
+                  : "Success chance"}
               </div>
               <div
                 class="font-mono font-medium {getSuccessChanceColor(
@@ -685,10 +772,15 @@
                   })}
                 {:else}
                   <span class="text-sm">
-                    Cannot attempt yet. Need at least {formatPercent(
+                    Too low to {resource.is_fishing_spot
+                      ? "fish here"
+                      : resource.is_mineral
+                        ? "mine"
+                        : "gather"}. You need at least a {formatPercent(
                       attemptFloor,
-                      { decimals: 0, trailingZeros: true },
-                    )} success.
+                      { decimals: 0, trailingZeros: false },
+                    )}
+                    {resource.is_fishing_spot ? "bite" : "success"} chance.
                   </span>
                 {/if}
               </div>
@@ -698,7 +790,7 @@
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
                 ? "Fishing gain chance per cast"
-                : "Skill gain chance after gathering"}
+                : `${skillName} gain chance per successful gather`}
             </div>
             <div class="font-mono font-medium">
               {formatPercent(
@@ -713,7 +805,7 @@
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
                 ? "Fishing gain per increase"
-                : "Skill Gain Amount"}
+                : `${skillName} gain per increase`}
             </div>
             <div class="font-mono">
               {#if !canAttempt || effortless || skillLevel >= 100}
@@ -726,7 +818,6 @@
                   decimals: 2,
                   trailingZeros: true,
                 })}
-                <span class="text-muted-foreground text-xs">(fixed)</span>
               {:else if successChance > 0}
                 {formatPercent(skillGain[0] / 100, {
                   decimals: 2,
@@ -793,6 +884,10 @@
 
       {#if resource.is_fishing_spot}
         <div class="mb-4 space-y-3 rounded-md border bg-muted/30 p-4">
+          <div class="flex items-center gap-3">
+            <label for="fishing-spot-variant">Fishing spot:</label>
+            <MapLink entityId={resource.id} entityType="resource" compact />
+          </div>
           {#if data.fishingSpotVariants.length > 1}
             <div
               class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
@@ -806,7 +901,7 @@
                 >
                   {#each data.fishingSpotVariants as variant, index (variant.resource.id)}
                     <option value={index}>
-                      {formatFishingSpotVariant(variant, index)}
+                      {formatFishingSpotVariant(variant)}
                     </option>
                   {/each}
                 </select>
@@ -836,71 +931,6 @@
               </button>
             </div>
           {/if}
-
-          {#if data.rods.length > 0}
-            <div
-              class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
-            >
-              <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
-                <select
-                  bind:value={selectedRodId}
-                  aria-label="Fishing rod"
-                  class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                >
-                  {#each data.rods as rod (rod.item_id)}
-                    <option value={rod.item_id}>{rod.item_name}</option>
-                  {/each}
-                </select>
-                <ChevronDown
-                  class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden="true"
-                />
-              </div>
-              <button
-                type="button"
-                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
-                disabled={selectedRodIndex === 0}
-                onclick={selectPreviousRod}
-                aria-label="Previous fishing rod"
-              >
-                Prev
-              </button>
-              <button
-                type="button"
-                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
-                disabled={selectedRodIndex === data.rods.length - 1}
-                onclick={selectNextRod}
-                aria-label="Next fishing rod"
-              >
-                Next
-              </button>
-            </div>
-          {/if}
-
-          <div class="grid gap-2 sm:grid-cols-3">
-            {#each fishermanSetPieces as piece (piece.itemId)}
-              <label
-                class="flex items-center gap-2 rounded-md border bg-background p-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCostumeIds.has(piece.itemId)}
-                  onchange={(event) =>
-                    toggleCostume(
-                      piece.itemId,
-                      (event.currentTarget as HTMLInputElement).checked,
-                    )}
-                  class="h-4 w-4 rounded border-border accent-primary"
-                />
-                <a
-                  href="/items/{piece.itemId}"
-                  class="text-blue-600 hover:underline dark:text-blue-400"
-                >
-                  {piece.itemName}
-                </a>
-              </label>
-            {/each}
-          </div>
         </div>
       {/if}
       {#if resource.item_reward_id}
@@ -917,6 +947,14 @@
             </span>
           {:else}
             <span class="text-muted-foreground"> ×1 </span>
+          {/if}
+          {#if resource.is_radiant_spark}
+            <span class="text-muted-foreground">
+              , {formatPercent(radiantAetherChance / 100, {
+                decimals: 1,
+                trailingZeros: false,
+              })} chance
+            </span>
           {/if}
         </div>
       {/if}

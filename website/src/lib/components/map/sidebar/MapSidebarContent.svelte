@@ -143,13 +143,13 @@
   const zoneLayers: LayerOption[] = [
     {
       key: "parentZones",
-      label: "Zones",
+      label: "Zone outlines",
       color: ZONE_COLORS.parentZone.stroke,
       icon: MapPin,
     },
     {
       key: "subZones",
-      label: "Areas",
+      label: "Area outlines",
       color: ZONE_COLORS.subZone.stroke,
       icon: MapPin,
     },
@@ -218,7 +218,7 @@
       <Search class="h-4 w-4" />
       <span>Search map...</span>
       <kbd class="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
-        {navigator?.platform?.includes("Mac") ? "⌘" : "Ctrl"}K
+        {navigator?.platform?.includes("Mac") ? "⌘K" : "Ctrl K"}
       </kbd>
     </button>
   {/if}
@@ -265,7 +265,7 @@
 
   <!-- Interactables section -->
   <MapSidebarSection
-    title="Interactables"
+    title="Points of interest"
     icon={MousePointerClick}
     expanded={isSectionExpanded("interactables")}
     onExpandedChange={(expanded) =>

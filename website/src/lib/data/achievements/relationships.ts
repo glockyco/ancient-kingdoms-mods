@@ -18,7 +18,7 @@ export const achievementNotes: Record<string, string> = {
   // Source: Player.cs:11517-11525 versus Utils.cs:291 — Scaleblight is in the
   // game's world-boss list but not among the bosses the achievement checks.
   KILL_WORLD_BOSSES:
-    "Requires each of the five bosses below once. Scaleblight, also a world boss, does not count.",
+    "Kill each of the five bosses below at least once. Scaleblight is also a world boss but does not count.",
 };
 
 const professionLinks: Record<string, AchievementRelationship> = {
@@ -211,7 +211,7 @@ export const achievementRelationships: Record<
   VETERAN_EDGE: [
     {
       kind: "mechanic",
-      label: "Veteran experience",
+      label: "Veteran points",
       href: "/mechanics/experience#veteran-points",
     },
   ],

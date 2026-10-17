@@ -79,7 +79,7 @@
     <div class="actions">
       <a class="action primary" href="/map">
         <MapIcon class="size-[1.15rem]" aria-hidden="true" />
-        <span class="long">Open the Map</span>
+        <span class="long">Open the map</span>
         <span class="short">Map</span>
       </a>
       <a class="action secondary" href="/items">

@@ -15,6 +15,7 @@
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
@@ -73,7 +74,8 @@
       data.spawns.altar.length > 0 ||
       data.spawns.placeholder !== null ||
       data.summons.length > 0 ||
-      hasSpawnsOnDeath,
+      hasSpawnsOnDeath ||
+      data.combatSummoners.length > 0,
   );
 
   // Combine regular and summon spawns for the table
@@ -130,20 +132,19 @@
     ),
   );
 
-  function resistanceBadgeClass(value: number): string {
-    if (value > 0) {
-      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-    }
-
-    if (value < 0) {
-      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-    }
-
-    return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200";
-  }
-
   function formatZoneList(zoneNames: string[]): string {
     return zoneNames.join(", ");
+  }
+  function spawnSubZone(
+    zoneName: string,
+    subZoneName: string | null | undefined,
+  ): string | null {
+    if (!subZoneName || subZoneName.toLowerCase() === zoneName.toLowerCase())
+      return null;
+    const prefix = `${zoneName}:`;
+    return subZoneName.toLowerCase().startsWith(prefix.toLowerCase())
+      ? subZoneName.slice(prefix.length).trim()
+      : subZoneName;
   }
 
   function selectSpawnCombatStats(index: number): void {
@@ -324,27 +325,27 @@
   const abilities = $derived(
     [
       { flag: data.monster.see_invisibility, label: "Sees Invisibility" },
-      { flag: data.monster.is_immune_debuffs, label: "Immune to Debuffs" },
+      {
+        flag: data.monster.is_immune_debuffs,
+        label: "Debuff immunity (some skills bypass)",
+      },
       // Source: server-scripts/Combat.cs:DealDamageAt — fear never lands on a boss or on a target whose Combat.fearImmune is set.
       {
         flag: data.monster.is_boss || data.monster.fear_immune,
         label: "Immune to Fear",
       },
       { flag: data.monster.yell_friends, label: "Calls for Help" },
-      { flag: data.monster.flee_on_low_hp, label: "Flees on Low HP" },
-      { flag: data.monster.has_aura, label: "Has Aura" },
+      {
+        flag: data.monster.flee_on_low_hp,
+        label: "Can flee below 15% Hit Points",
+      },
+      {
+        flag: data.monster.has_aura,
+        label: "Aura reapplied every second (see Abilities)",
+      },
       { flag: data.monster.no_aggro_monster, label: "Non-Aggressive" },
     ].filter((a) => a.flag),
   );
-
-  // Combat resistances always render so zero values remain visible.
-  const resistances = $derived([
-    { id: "magic_resist", value: displayMagicResist },
-    { id: "poison_resist", value: displayPoisonResist },
-    { id: "fire_resist", value: displayFireResist },
-    { id: "cold_resist", value: displayColdResist },
-    { id: "disease_resist", value: displayDiseaseResist },
-  ] as const);
 
   // Check if any drop has a note
   const hasDropNotes = $derived(data.drops.some((d) => d.note));
@@ -356,7 +357,7 @@
     if (data.monster.is_boss || data.monster.is_elite) {
       cols.push({
         accessorKey: "is_bestiary",
-        header: "",
+        header: "Bestiary",
         size: 50,
         enableSorting: true,
       });
@@ -371,15 +372,20 @@
     if (hasDropNotes) {
       cols.push({
         accessorKey: "note",
-        header: "Note",
+        header: data.drops
+          .filter((drop) => drop.note)
+          .every((drop) => drop.altar_id)
+          ? "Required level"
+          : "Note",
         size: 230,
       });
     }
 
     cols.push(
       {
-        accessorKey: "rate",
-        header: "Drop Rate",
+        id: "rate",
+        accessorFn: (drop) => drop.per_kill_chance ?? drop.rate,
+        header: "Drop chance",
         size: 140,
       },
       {
@@ -388,6 +394,17 @@
         enableHiding: false,
       },
     );
+    if (
+      data.drops.some(
+        (drop) => drop.per_kill_chance_with_fatecharm !== undefined,
+      )
+    ) {
+      cols.push({
+        accessorKey: "per_kill_chance_with_fatecharm",
+        header: "With Fatecharm",
+        size: 170,
+      });
+    }
 
     return cols;
   });
@@ -433,7 +450,7 @@
     if (showChanceColumn) {
       cols.push({
         id: "chance",
-        header: "Chance",
+        header: "Spawn chance",
         size: 120,
       });
     }
@@ -441,7 +458,7 @@
     if (showActiveColumn) {
       cols.push({
         id: "active",
-        header: "Active",
+        header: "Window (game time)",
         size: 150,
       });
     }
@@ -502,7 +519,7 @@
       },
       {
         accessorKey: "level_recommended",
-        header: "Level",
+        header: "Recommended level",
         size: 100,
       },
       {
@@ -526,7 +543,11 @@
 })}
   {#if cell.column.id === "is_bestiary"}
     {#if row.original.is_bestiary}
-      <BookOpen class="h-4 w-4 text-amber-500" />
+      <span title="Shown in the Bestiary loot list"
+        ><BookOpen class="h-4 w-4 text-amber-500" /><span class="sr-only"
+          >Shown in the Bestiary loot list</span
+        ></span
+      >
     {/if}
   {:else if cell.column.id === "item_name"}
     <ItemLink
@@ -542,11 +563,21 @@
     <span class="text-muted-foreground">{row.original.note ?? ""}</span>
   {:else if cell.column.id === "rate"}
     <span class="ml-auto"
-      >{formatPercent(row.original.rate, {
+      >{formatPercent(row.original.per_kill_chance ?? row.original.rate, {
         decimals: 1,
         trailingZeros: true,
-      })}</span
+      })}{row.original.per_kill_chance !== undefined
+        ? " per kill"
+        : row.original.altar_id
+          ? ""
+          : " per roll"}</span
     >
+  {:else if cell.column.id === "per_kill_chance_with_fatecharm"}
+    <span class="ml-auto">
+      {row.original.per_kill_chance_with_fatecharm !== undefined
+        ? `${formatPercent(row.original.per_kill_chance_with_fatecharm, { decimals: 1, trailingZeros: true })} per kill`
+        : "-"}
+    </span>
   {:else if cell.column.id === "quality"}
     <!-- Hidden column used for sorting -->
   {:else}
@@ -559,7 +590,7 @@
 }: {
   header: Header<MonsterDrop, unknown>;
 })}
-  {#if header.id === "rate"}
+  {#if header.id === "rate" || header.id === "per_kill_chance_with_fatecharm"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -579,8 +610,12 @@
       class="text-blue-600 dark:text-blue-400 hover:underline"
     >
       {row.original.zone_name}
-    </a>{#if row.original.sub_zone_name}<span class="text-muted-foreground"
-        >&nbsp;({row.original.sub_zone_name})</span
+    </a>{#if spawnSubZone(row.original.zone_name, row.original.sub_zone_name)}<span
+        class="text-muted-foreground"
+        >&nbsp;({spawnSubZone(
+          row.original.zone_name,
+          row.original.sub_zone_name,
+        )})</span
       >{/if}
   {:else if cell.column.id === "level_min"}
     <span class="ml-auto">{row.original.level_min}</span>
@@ -591,13 +626,12 @@
   {:else if cell.column.id === "chance"}
     <span class="ml-auto"
       >{formatPercent(data.monster.respawn_probability, {
-        decimals: 1,
-        trailingZeros: true,
+        decimals: 0,
       })}</span
     >
   {:else if cell.column.id === "active"}
     <span class="ml-auto">
-      {data.monster.spawn_time_start}:00-{data.monster.spawn_time_end}:00
+      {data.monster.spawn_time_start}:00 to {data.monster.spawn_time_end}:00
     </span>
   {:else if cell.column.id === "spawn_count"}
     <span class="ml-auto">{row.original.spawn_count}</span>
@@ -693,13 +727,13 @@
       nameClass="truncate"
     />
     {#if row.original.skill_index === 0}
-      <span class="ml-1 text-xs text-muted-foreground">(Default)</span>
+      <span class="ml-1 text-xs text-muted-foreground">(basic attack)</span>
     {/if}
   {:else if cell.column.id === "skill_type"}
     <span class="text-muted-foreground">
       {row.original.skill_type === "summon_monsters" &&
       row.original.summon_count_per_cast === 0
-        ? "Teleports target to this monster"
+        ? "Single-target teleport"
         : formatSkillType(row.original.skill_type)}
     </span>
   {:else if cell.column.id === "effect"}
@@ -728,7 +762,14 @@
 {/snippet}
 
 <Seo
-  title={`${data.monster.name} - Ancient Kingdoms`}
+  title={detailTitle(data.monster.name, {
+    family: "Monster",
+    zone:
+      data.spawns.regular[0]?.zone_name ??
+      data.spawns.summon[0]?.zone_name ??
+      data.spawns.placeholder?.zone_name ??
+      data.spawns.altar[0]?.zone_name,
+  })}
   description={data.description}
   path={`/monsters/${data.monster.id}`}
 />
@@ -777,11 +818,13 @@
         </span>
       {/if}
       {#if data.monster.is_hunt}
-        <span
-          class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+        <a
+          href="/professions/hunter"
+          title="Counts toward the Hunter profession"
+          class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:underline"
         >
           Hunt
-        </span>
+        </a>
       {/if}
     </div>
 
@@ -810,7 +853,7 @@
     titleId="monster-summary-title"
     title="Monster summary"
     imageSrc={monsterImageSrc}
-    imageAlt={`${data.monster.name} monster sprite`}
+    imageAlt={data.monster.name}
     imageWidth={data.visualAsset?.width}
     imageHeight={data.visualAsset?.height}
     health={displayHealth}
@@ -899,7 +942,12 @@
             {#each data.spawns.altar as altar (altar.altar_id)}
               <div class="bg-muted/30 rounded-md border p-3">
                 <div>
-                  <span class="font-medium">{altar.altar_name}</span>
+                  Appears in the <a
+                    href="/altars/{altar.altar_id}"
+                    class="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    >{altar.altar_name}</a
+                  >
+                  event
                   <span class="text-muted-foreground"> in </span>
                   <a
                     href="/zones/{altar.zone_id}"
@@ -917,7 +965,9 @@
                 {/if}
                 {#if altar.activation_item_id && altar.activation_item_name}
                   <div class="text-sm mt-1">
-                    <span class="text-muted-foreground">Requires: </span>
+                    <span class="text-muted-foreground"
+                      >Start the event with
+                    </span>
                     <a
                       href="/items/{altar.activation_item_id}"
                       class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -937,46 +987,18 @@
             {#each data.spawns.summon as summon (summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
                 <span>
-                  This monster cannot respawn while {summon.kill_count > 1
-                    ? `${summon.kill_count} copies of `
-                    : ""}</span
+                  This monster cannot spawn until {summon.kill_count > 1
+                    ? `all ${summon.kill_count} of its `
+                    : "its "}</span
                 >
                 <a
                   href="/monsters/{summon.kill_monster_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   >{summon.kill_monster_name}</a
                 >
-                <span>{summon.kill_count > 1 ? " are" : " is"} alive in </span>
-                <a
-                  href="/zones/{summon.zone_id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {summon.zone_name}
-                </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
-                    class="text-muted-foreground"
-                    >&nbsp;({summon.sub_zone_name})</span
-                  >{/if}
-              </div>
-            {/each}
-          </div>
-        {/if}
-
-        <!-- Blocks Spawning (what this monster being alive blocks) -->
-        {#if data.summons.length > 0}
-          <div class="space-y-2">
-            {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
-              <div class="bg-muted/30 rounded-md border p-3">
-                <span>This monster prevents </span>
-                <a
-                  href="/monsters/{summon.summoned_monster_id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {summon.summoned_monster_name}
-                </a>
-                <span>
-                  from respawning while {summon.kill_count > 1
-                    ? `${summon.kill_count} copies of this monster are`
-                    : "this monster is"} alive in
+                <span
+                  >{summon.kill_count > 1 ? " guards are" : " guard is"} dead at the
+                  same time in
                 </span>
                 <a
                   href="/zones/{summon.zone_id}"
@@ -987,6 +1009,46 @@
                     class="text-muted-foreground"
                     >&nbsp;({summon.sub_zone_name})</span
                   >{/if}
+                <p class="mt-2 text-sm text-muted-foreground">
+                  After this monster dies, kill its guards again. Its respawn
+                  timer must also finish.
+                </p>
+              </div>
+            {/each}
+          </div>
+        {/if}
+
+        <!-- Blocks Spawning (what this monster being alive blocks) -->
+        {#if data.summons.length > 0}
+          <div class="space-y-2">
+            {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
+              <div class="bg-muted/30 rounded-md border p-3">
+                <a
+                  href="/{summon.summoned_entity_type === 'Npc'
+                    ? 'npcs'
+                    : 'monsters'}/{summon.summoned_monster_id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {summon.summoned_monster_name}
+                </a>
+                <span>
+                  cannot spawn until {summon.kill_count > 1
+                    ? `all ${summon.kill_count} of its ${data.monster.name} guards are`
+                    : `its ${data.monster.name} guard is`} dead at the same time in
+                </span>
+                <a
+                  href="/zones/{summon.zone_id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {summon.zone_name}
+                </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
+                    class="text-muted-foreground"
+                    >&nbsp;({summon.sub_zone_name})</span
+                  >{/if}
+                <p class="mt-2 text-sm text-muted-foreground">
+                  After {summon.summoned_monster_name} dies, kill its guards again.
+                  Its respawn timer must also finish.
+                </p>
               </div>
             {/each}
           </div>
@@ -998,7 +1060,7 @@
             <span
               >This monster {data.spawns.placeholder.spawn_probability < 1
                 ? "can appear"
-                : "appears"} after you kill
+                : "appears"} where
             </span>
             <a
               href="/monsters/{data.spawns.placeholder.source_monster_id}"
@@ -1006,7 +1068,7 @@
             >
               {data.spawns.placeholder.source_monster_name}
             </a>
-            <span class="text-muted-foreground"> in </span>
+            <span class="text-muted-foreground"> dies in </span>
             <a
               href="/zones/{data.spawns.placeholder.zone_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1021,6 +1083,7 @@
                 })} chance)
               </span>
             {/if}
+            <span>. It does not respawn.</span>
           </div>
         {/if}
 
@@ -1041,6 +1104,7 @@
               {data.monster.placeholder_monster_name ||
                 data.monster.placeholder_monster_id}
             </a>
+            <span> where this monster dies</span>
             {#if data.monster.placeholder_spawn_probability > 0 && data.monster.placeholder_spawn_probability < 1}
               <span class="text-muted-foreground">
                 ({formatPercent(data.monster.placeholder_spawn_probability, {
@@ -1049,8 +1113,27 @@
                 })} chance)
               </span>
             {/if}
+            <span>.</span>
           </div>
         {/if}
+        {#each data.combatSummoners as summoner (summoner.monster_id + summoner.skill_id)}
+          <div class="bg-muted/30 rounded-md border p-3">
+            Summoned in combat by
+            <a
+              href="/monsters/{summoner.monster_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{summoner.monster_name}</a
+            >
+            using
+            <a
+              href="/skills/{summoner.skill_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{summoner.skill_name}</a
+            >{#if summoner.count_per_cast > 0}, {summoner.count_per_cast} per cast{/if}{#if summoner.max_active > 0},
+              at most {summoner.max_active} active{/if}. Combat summons carry no
+            items or gold.
+          </div>
+        {/each}
 
         <!-- Renewal Sages (for world bosses) -->
         {#if data.renewalSages.length > 0}
@@ -1074,7 +1157,7 @@
                     {sage.zoneName}
                   </a>
                 {/if}
-                <span> to reset this monster's respawn timer</span>
+                <span> to make this dead monster ready to respawn</span>
                 {#if sage.cost > 0}
                   <span> for </span>
                   <span class="text-yellow-600 dark:text-yellow-400"
@@ -1094,7 +1177,7 @@
   <section>
     <h2 class="mb-2 text-xl font-semibold flex items-center gap-2">
       <Sword class="h-5 w-5 text-red-500" />
-      Combat Stats
+      Combat stats
     </h2>
     <div class="bg-muted/30 rounded-md border p-4">
       {#if selectedSpawnCombatStats && data.spawnCombatStats.length > 1}
@@ -1123,8 +1206,8 @@
               >
                 {#each data.spawnCombatStats as stats, index (`variant-${stats.level}-${index}`)}
                   <option value={index}>
-                    Variant {index + 1}: Level {stats.level}, {stats.spawn_count}
-                    {stats.spawn_count === 1 ? "spawn" : "spawns"} — {formatZoneList(
+                    Level {stats.level}: {stats.spawn_count}
+                    {stats.spawn_count === 1 ? "spawn" : "spawns"} in {formatZoneList(
                       stats.zone_names,
                     )}
                   </option>
@@ -1186,22 +1269,6 @@
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
           <div class="text-sm text-muted-foreground">
-            {statName("attack_power")}
-          </div>
-          <div class="font-medium">
-            {formatStat("attack_power", displayDamage)}
-          </div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">
-            {statName("spell_power")}
-          </div>
-          <div class="font-medium">
-            {formatStat("spell_power", displayMagicDamage)}
-          </div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">
             {statName("accuracy")}
           </div>
           <div class="font-medium">
@@ -1217,25 +1284,11 @@
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">{statName("health")}</div>
-          <div class="font-medium">
-            {formatStat("health", displayHealth)}
-          </div>
-        </div>
-        <div>
           <div class="text-sm text-muted-foreground">
             {statName("health_regen")}
           </div>
           <div class="font-medium">
-            {formatStat("health_regen", data.monster.health_regen_base)} / sec
-          </div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">
-            {statName("armor_class")}
-          </div>
-          <div class="font-medium">
-            {formatStat("armor_class", displayDefense)}
+            {formatStat("health_regen", data.monster.health_regen_base)} per second
           </div>
         </div>
         <div>
@@ -1256,32 +1309,23 @@
               >
             </div>
             <div class="font-medium">
-              {data.monster.chase_limit_scope === "nowhere"
-                ? "None in dungeons"
-                : `${formatNumber(data.monster.follow_distance)} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
+              {data.altarContext.only_avatar_altars
+                ? "90 yd from the altar"
+                : data.monster.chase_limit_scope === "nowhere"
+                  ? "None in dungeons"
+                  : `${formatNumber(data.monster.follow_distance)} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
             </div>
           </div>
         {/if}
       </div>
+      {#if data.altarContext.has_avatar_altars && !data.altarContext.only_avatar_altars}
+        <p class="mt-3 text-sm text-muted-foreground">
+          In Avatar altar events, the chase limit is 90 yd from the altar.
+        </p>
+      {/if}
 
-      {#if resistances.length > 0 || abilities.length > 0}
+      {#if abilities.length > 0}
         <div class="mt-4 pt-4 border-t flex flex-col md:flex-row gap-4">
-          {#if resistances.length > 0}
-            <div class="md:w-[500px] shrink-0">
-              <div class="text-sm text-muted-foreground mb-2">Resistances</div>
-              <div class="flex flex-wrap gap-2">
-                {#each resistances as resist (resist.id)}
-                  <span
-                    class="inline-flex items-center rounded-md px-2 py-1 text-sm {resistanceBadgeClass(
-                      resist.value,
-                    )}"
-                  >
-                    {statName(resist.id)}: {formatStat(resist.id, resist.value)}
-                  </span>
-                {/each}
-              </div>
-            </div>
-          {/if}
           {#if abilities.length > 0}
             <div class="flex-1">
               <div class="text-sm text-muted-foreground mb-2">Special</div>
@@ -1289,6 +1333,9 @@
                 {#each abilities as ability (ability.label)}
                   <span
                     class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                    title={ability.label === "Can flee below 15% Hit Points"
+                      ? "When it engages, it has a 70% chance to flee below 15% of maximum Hit Points, while its target is above 50% of maximum Hit Points and has more than twice this monster's current Hit Points."
+                      : undefined}
                   >
                     {ability.label}
                   </span>
@@ -1323,56 +1370,92 @@
   {/if}
 
   <!-- Loot Section -->
-  {#if (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
+  {#if data.altarContext.only_lootless_spawns || data.altarContext.has_scaled_final_gold || (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
         Loot
       </h2>
+      {#if data.altarContext.only_lootless_spawns}
+        <p class="rounded-md border bg-muted/30 p-4">
+          Drops nothing. Combat summons and monsters in altar waves before the
+          final wave carry no items or gold.
+        </p>
+      {:else}
+        {#if data.drops.some((drop) => drop.per_kill_chance !== undefined)}
+          <p class="mb-4 text-sm text-muted-foreground">
+            Chances are per kill without Fatecharm. Quest items assume an
+            unfinished gathering quest. Other drops assume no quest.
+          </p>
+        {/if}
+        {#if data.drops.some((drop) => drop.per_kill_chance_with_fatecharm !== undefined)}
+          <p class="mb-4 text-sm text-muted-foreground">
+            A matching dungeon Fatecharm is consumed for the boosted chance.
+          </p>
+        {/if}
+        {#if data.altarContext.has_nonfinal_waves}
+          <p class="mb-4 text-sm text-muted-foreground">
+            Monsters in altar waves before the final wave carry no items or
+            gold.
+          </p>
+        {/if}
 
-      {#if data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0}
-        <div class="mb-4 bg-muted/30 rounded-md border p-4">
-          <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {formatNumber(data.monster.gold_min)} - {formatNumber(
-              data.monster.gold_max,
-            )}
-            gold
-            {#if data.monster.probability_drop_gold < 1}
-              <span class="text-muted-foreground font-normal">
-                ({formatPercent(data.monster.probability_drop_gold, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })} chance)
-              </span>
-            {/if}
+        {#if data.altarContext.has_scaled_final_gold || (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0)}
+          <div class="mb-4 bg-muted/30 rounded-md border p-4">
+            <div class="font-medium text-yellow-600 dark:text-yellow-400">
+              {#if data.altarContext.only_altar_spawns && data.altarContext.has_scaled_final_gold}
+                20 gold per level plus 5 gold per total veteran point of the
+                player who activated the altar.
+              {:else if data.monster.gold_min !== null && data.monster.gold_max !== null}
+                {formatNumber(data.monster.gold_min)} - {formatNumber(
+                  data.monster.gold_max,
+                )}
+                gold
+              {/if}
+              {#if data.monster.probability_drop_gold < 1}
+                <span class="text-muted-foreground font-normal">
+                  ({formatPercent(data.monster.probability_drop_gold, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })} chance)
+                </span>
+              {/if}
+            </div>
           </div>
-        </div>
-      {/if}
+        {/if}
+        {#if data.altarContext.has_scaled_final_gold && !data.altarContext.only_altar_spawns}
+          <p class="mb-4 text-sm text-muted-foreground">
+            In the final wave of a Forgotten Altar event, gold is 20 per level
+            plus 5 per total veteran point of the player who activated the
+            altar.
+          </p>
+        {/if}
 
-      {#if data.drops.length > 0}
-        <DataTable
-          data={data.drops}
-          columns={dropColumns}
-          renderCell={renderDropCell}
-          renderHeader={renderDropHeader}
-          initialSorting={data.monster.is_boss || data.monster.is_elite
-            ? [
-                { id: "is_bestiary", desc: true },
-                { id: "rate", desc: true },
-                { id: "quality", desc: true },
-                { id: "item_name", desc: false },
-              ]
-            : [
-                { id: "rate", desc: true },
-                { id: "quality", desc: true },
-                { id: "item_name", desc: false },
-              ]}
-          urlKey="monster-{data.monster.id}-drops"
-          pageSize={10}
-          zebraStripe={true}
-          class="bg-muted/30"
-          initialColumnVisibility={{ quality: false }}
-        />
+        {#if data.drops.length > 0}
+          <DataTable
+            data={data.drops}
+            columns={dropColumns}
+            renderCell={renderDropCell}
+            renderHeader={renderDropHeader}
+            initialSorting={data.monster.is_boss || data.monster.is_elite
+              ? [
+                  { id: "is_bestiary", desc: true },
+                  { id: "rate", desc: true },
+                  { id: "quality", desc: true },
+                  { id: "item_name", desc: false },
+                ]
+              : [
+                  { id: "rate", desc: true },
+                  { id: "quality", desc: true },
+                  { id: "item_name", desc: false },
+                ]}
+            urlKey="monster-{data.monster.id}-drops"
+            pageSize={10}
+            zebraStripe={true}
+            class="bg-muted/30"
+            initialColumnVisibility={{ quality: false }}
+          />
+        {/if}
       {/if}
     </section>
   {/if}
@@ -1430,7 +1513,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <BookOpen class="h-5 w-5 text-cyan-500" />
-        Lore
+        {data.monster.lore_boss ? "Lore" : "Combat messages"}
       </h2>
       <div class="bg-muted/30 rounded-md border p-4 space-y-4">
         {#if data.monster.lore_boss}
@@ -1438,6 +1521,9 @@
         {/if}
         {#if data.monster.aggro_messages.length > 0}
           <div class="space-y-1">
+            {#if data.monster.lore_boss}<h3 class="font-medium">
+                Combat messages
+              </h3>{/if}
             {#each data.monster.aggro_messages as message, i (i)}
               <div class="italic text-muted-foreground">"{message}"</div>
             {/each}

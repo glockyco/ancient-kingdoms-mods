@@ -5,12 +5,12 @@ import type { ClassGuide } from "$lib/types/classes";
 export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   warrior: {
     attributes: {
-      text: "Strength raises Attack Power and maximum Rage. Each Constitution point adds 25 maximum Hit Points and 0.03 percentage points of Block Chance. Constitution adds no Health Regeneration.",
+      text: "Each Strength point adds 1 Attack Power and 10 maximum Rage. Each Constitution point adds 25 maximum Hit Points and 0.03 percentage points of Block Chance. Constitution adds no Health Regeneration.",
       source:
         "Source: server-scripts/Strength.cs:15-18,80-83; server-scripts/Constitution.cs:13-25,73-76; server-scripts/Health.cs:28-44 — Constitution adds maximum health, not recovery",
     },
     equipment: {
-      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
@@ -21,9 +21,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/PlayerEquipment.cs:322-328 — shield removal clears both buffs",
       },
       {
-        text: "You gain rage when your auto attacks deal damage and when you take physical damage.",
+        text: "You gain Rage when your auto attacks deal damage and when a single-target physical melee hit damages you.",
         source:
-          "Source: server-scripts/Combat.cs:1386-1410 — rage gain from hits and follow-up attacks",
+          "Source: server-scripts/Combat.cs:1183-1197,1386-1410 — Rage gain from targeted physical melee hits and auto attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage formulas",
       },
@@ -31,12 +31,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   cleric: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum Hit Points to buffs that grant them. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
+      text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
-      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
@@ -49,7 +49,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         linkText: "Death and remains",
       },
       {
-        text: "Cleanse removes only poison and disease effects. An effect with high resistance can need more than one cast.",
+        text: "Cleanse removes only poison and disease effects. A debuff with Cleanse Resist above 0% can need more than one cast. At 100% Cleanse Resist it cannot be cleansed.",
         source:
           "Source: server-scripts/TargetBuffSkill.cs:137-161,321-340 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
         href: "/mechanics/combat#cleanse",
@@ -59,20 +59,20 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   druid: {
     attributes: {
-      text: "Each Wisdom point adds up to 0.4% to direct heals and 2 maximum Hit Points to buffs that grant them. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
+      text: "Each Wisdom point adds 0.4% to direct heals, up to a 500% bonus. Buffs that raise maximum Hit Points gain 2 maximum Hit Points per Wisdom point. Armor Class and Magic Resist buffs each gain 15% of your Wisdom, rounded. Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded.",
       source:
         "Source: server-scripts/Wisdom.cs:107-114; server-scripts/Buff.cs:47-60,113-150; server-scripts/Intelligence.cs:21-39 — Wisdom scales heals and protective buffs; Intelligence increases maximum mana and magic damage",
     },
     equipment: {
-      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
     rules: [
       {
-        text: "Spirit of Wolf does not work inside dungeons.",
+        text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:810-815,1048-1051 — skills without allowDungeon cannot be cast in dungeons",
+          "Source: server-scripts/PlayerSkills.cs:810-815,1048-1051; server-scripts/Player.cs:11309-11315 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -85,7 +85,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   ranger: {
     attributes: {
-      text: "Dexterity adds bow damage, Accuracy, and Critical Strike. Strength raises Attack Power. Wisdom counts three times for your healing, before the healing cap applies.",
+      text: "Each Dexterity point adds 0.05 percentage points of Accuracy and 0.03 percentage points of Critical Strike. Bow damage gains 150% of your Dexterity, rounded. Each Strength point adds 1 Attack Power. Direct heals gain 1.2% per Wisdom point, up to a 500% bonus.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-92; server-scripts/Strength.cs:15-18; server-scripts/Wisdom.cs:107-114 — attribute effects and Ranger multiplier",
     },
@@ -101,47 +101,47 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/TargetProjectileSkill.cs:32-48,103-109 — Ranger ammunition check",
       },
       {
-        text: "Wild Strike turns your next sword or bow auto attack into magic damage.",
+        text: "Wild Strike turns your next melee or bow auto attack into magic damage.",
         source:
           "Source: server-scripts/DamageSkill.cs:49-65 — a Ranger follow-up attack consumes Wild Strike and becomes Magic damage",
         href: "/mechanics/combat#wild-strike",
         linkText: "Wild Strike damage",
       },
       {
-        text: "Game defect: A broken bow subtracts its damage from melee attacks despite giving none. Repair or unequip the bow before melee combat.",
+        text: "Game defect: A broken bow adds no Attack Power, but melee attacks still subtract its Base Damage. Repair or unequip the bow before melee combat.",
         source:
           "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:223-227; server-scripts/FrontalDamageSkill.cs:88-92 — broken bows are still subtracted",
         href: "/mechanics/combat#damage-formulas",
-        linkText: "Broken-bow damage and defect note",
+        linkText: "Broken bow damage",
       },
     ],
   },
   rogue: {
     attributes: {
-      text: "Dexterity raises Accuracy, Critical Strike, and poison damage. Strength raises Attack Power and maximum Rage.",
+      text: "Each Dexterity point adds 0.05 percentage points of Accuracy and 0.03 percentage points of Critical Strike. Poison damage from your attacks gains 250% of your Dexterity, rounded. Each Strength point adds 1 Attack Power and 10 maximum Rage.",
       source:
         "Source: server-scripts/Dexterity.cs:59-71,89-96; server-scripts/Strength.cs:15-18,80-83 — attribute effects",
     },
     equipment: {
-      text: "Your off-hand holds a second weapon, so you fight with two. Weapon skills still need a weapon in your main hand.",
+      text: "Your off-hand holds a second weapon. Weapon skills still need a weapon in your main hand.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:790-795,834-839; server-scripts/ScriptableSkill.cs:139-143 — dual wield and main-hand check",
     },
     rules: [
       {
-        text: "Rogue skills need a 1H Weapon (Light), such as a dagger or spear, in your main hand.",
+        text: "Rogue skills need a light one-handed weapon, such as a dagger or spear, in your main hand.",
         source:
           "Source: server-scripts/ScriptableSkill.cs:102-145 — a required weapon category prevents casting with the wrong weapon",
       },
       {
-        text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when you take physical damage. Passive skills and buffs can add regeneration.",
+        text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when a single-target physical melee hit damages you. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1386-1410 — rage recovery comes only from passive skill and buff bonuses; combat rage gain",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1183-1197,1386-1410 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },
       {
-        text: "Game defect: A broken off-hand weapon subtracts half its damage, rounded up, from melee attacks despite giving none. Repair or unequip it before melee combat.",
+        text: "Game defect: A broken off-hand weapon adds no Attack Power, but melee attacks still subtract half its Base Damage, rounded up. Repair or unequip it before melee combat.",
         source:
           "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:228-232 — broken off-hand weapons are still subtracted",
         href: "/mechanics/combat#damage-formulas",
@@ -151,12 +151,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   wizard: {
     attributes: {
-      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. Dexterity raises Accuracy and Critical Strike.",
+      text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. Each Dexterity point adds 0.05 percentage points of Accuracy and 0.03 percentage points of Critical Strike.",
       source:
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Dexterity.cs:59-71 — Intelligence increases maximum mana and magic damage",
     },
     equipment: {
-      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield.",
+      text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
     },
@@ -167,9 +167,11 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/Combat.cs:1235-1244,1245-1294 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
-        text: "Mana Shield absorbs incoming damage by spending one Mana per point. It ends when a hit needs more Mana than you have. A hit that spends exactly your remaining Mana leaves the shield active.",
+        text: "Mana Shield spends 1 Mana per damage point absorbed. Damage beyond your remaining Mana reaches your Hit Points and ends the shield.",
         source:
           "Source: server-scripts/Combat.cs:1295-1325 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
+        href: "/skills/mana_shield",
+        linkText: "Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
@@ -180,7 +182,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
   },
   bard: {
     attributes: {
-      text: "Each point of Charisma adds 0.1% song power, up to +200%, and lowers the chance that a target resists your charm by 0.02 percentage points. Wisdom and Intelligence do not change your songs or Final Cadence.",
+      text: "Each Charisma point makes your songs and Final Cadence 0.1% stronger, up to a 200% bonus, and lowers the chance that a target resists your charm by 0.02 percentage points. Wisdom and Intelligence do not change your songs or Final Cadence.",
       source:
         "Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:27-40; server-scripts/BardCharmSongSkill.cs:66-71; server-scripts/BardSongSkill.cs:Apply; server-scripts/BardFinalCadenceSkill.cs:Apply — Charisma scales songs and Final Cadence and reduces charm resistance",
     },
@@ -191,7 +193,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     },
     rules: [
       {
-        text: "You can keep two songs active at once. Polyphony removes this limit, though each song still ends when its duration runs out.",
+        text: "You can keep two songs active at once. Polyphony removes this limit.",
         source:
           "Source: server-scripts/PlayerSkills.cs:1658-1673 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
@@ -218,7 +220,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:464-527; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
     equipment: {
-      text: "Your off-hand holds a shield. A two-handed weapon uses both hands, so you cannot combine it with a shield. Check each item's class requirements before equipping it.",
+      text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
         "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-148 — Shield slot; two-handed restrictions and requiredClass check",
     },
@@ -232,7 +234,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       },
       {
         // Source: server-scripts/NecromancerPetStats.cs:38; SummonSkill.cs:99 — companion level clamps to Level.max, exported as 50 for every undead pet in the export's pets.json.
-        text: "Your undead companion follows your level, up to level 50. Each of your veteran points adds 1% of its base Attack Power and Spell Power, and 0.25% of its base maximum Hit Points, Armor Class, Magic Resist, Poison Resist, Fire Resist, Cold Resist, and Disease Resist, rounded to whole points. At 200 veteran points, Attack Power and Spell Power reach +200% and the other stats +50%.",
+        text: "Your undead companion follows your level, up to level 50. Each of your total veteran points adds 1% of its base Attack Power and Spell Power and 0.25% of its base maximum Hit Points, Armor Class and every resist, rounded to whole points. These bonuses stop growing at 200 total veteran points.",
         source:
           "Source: server-scripts/NecromancerPetStats.cs:RefreshFromOwner,GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — RefreshFromOwner caps pet level at Level.max and veteran points at 200; damage and magic damage use 0.01 and the other base stats 0.0025, each with RoundToInt",
         href: "/summons?summons.class=necromancer",
@@ -240,14 +242,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       },
       {
         // Exported skills.blood_pact: max_level 5; health_cost_percent and mana_restored_percent each { base_value: 0.05, bonus_per_level: 0.05 }.
-        text: "Blood Pact trades 5% of maximum Hit Points for 5% of maximum Mana at rank 1. Both percentages rise by 5 percentage points per rank, reaching 25% at rank 5. The Hit Points cost rounds up and Mana restored rounds down. You must have more Hit Points than the cost, and the full cost is paid even when you need only a little Mana.",
+        text: "Blood Pact trades Hit Points for Mana, from 5% of each maximum at rank 1 to 25% at rank 5. You must have more Hit Points than the cost. You pay the full cost even if you need less Mana than it restores.",
         source:
           "Source: server-scripts/NecromancerBloodPactSkill.cs:13-31,53-62 — GetHealthCost uses CeilToInt of health.max; GetManaRestored uses FloorToInt of mana.max; CanConvert requires health.current > healthCost; Apply caps mana gain but pays full health cost",
         href: "/skills/blood_pact",
         linkText: "Blood Pact costs by rank",
       },
       {
-        text: "Death Bloom spends 50% of your maximum Hit Points, rounded up, to heal another living player or a non-familiar pet. You must have more Hit Points than the cost. It cannot heal you or a familiar.",
+        text: "Death Bloom spends 50% of your maximum Hit Points, rounded up, to heal another player, companion or mercenary. You must have more Hit Points than the cost. It cannot heal you or a familiar.",
         source:
           "Source: server-scripts/NecromancerDeathBloomSkill.cs:7-17,28-45,52-59 — healthCostPercent is 0.5; GetHealthCost rounds up; CheckSelf requires health above cost; CorrectedTarget excludes self and familiars",
         href: "/skills/death_bloom",

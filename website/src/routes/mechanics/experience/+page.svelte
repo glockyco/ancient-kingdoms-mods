@@ -112,7 +112,7 @@
     },
     {
       level: LEVEL_CAP,
-      unlock: "At maximum level, further experience earns Veteran Points.",
+      unlock: "Further experience earns veteran points.",
       href: "#veteran-points",
       extra: "Unlock a second specialization for 10,000 gold.",
       extraHref: "/mechanics/character#skills-and-specializations",
@@ -228,7 +228,7 @@
 
 <Seo
   title="Experience Mechanics - Ancient Kingdoms"
-  description={`Level requirements to ${LEVEL_CAP}, what each level grants, veteran points past the cap, and every experience source: kills, death, scrolls, professions, quests, and zone discovery.`}
+  description={`XP needed for each level up to ${LEVEL_CAP}, what each level grants, veteran points past the cap, XP lost on death, and every XP source: kills, scrolls, professions, quests, and zone discovery.`}
   path="/mechanics/experience"
 />
 
@@ -266,8 +266,9 @@
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
           <h3 class="font-semibold">Experience per level</h3>
           <span class="text-xs text-muted-foreground"
-            >Log scale &middot; <span class="text-emerald-500">green</span> shows
-            18% growth after 40, while dashed shows continued 25.8% growth</span
+            >Log scale &middot; <span class="text-emerald-500">green</span>: 18%
+            more XP per level after level 40 &middot; dashed: the earlier 25.8%
+            growth, continued for comparison</span
           >
         </div>
         <svg
@@ -370,7 +371,9 @@
             <dd class="font-mono text-foreground">{formatNumber(xpBehind)}</dd>
           </div>
           <div>
-            <dt class="text-xs text-muted-foreground">Left to {LEVEL_CAP}</dt>
+            <dt class="text-xs text-muted-foreground">
+              XP left to level {LEVEL_CAP}
+            </dt>
             <dd class="font-mono text-foreground">{formatNumber(xpAhead)}</dd>
           </div>
           <div>
@@ -435,16 +438,13 @@
             >Each level grants one attribute point and one class skill point.</span
           >
           <span class="block"
-            >If your character is alive, leveling also refills health and mana.</span
+            >If you are alive, leveling also refills your Hit Points and Mana.</span
           >
         </p>
         <!-- Source: server-scripts/Experience.cs:current — each class-growth column applies independently when the level is divisible by its number. -->
         <p class="text-sm text-muted-foreground">
-          Your class raises attributes at the levels shown below. The Every 6th
-          column raises both listed attributes. A level divisible by several
-          column numbers raises all of them: at level 12, a Warrior gains
-          Constitution, Strength, Dexterity, Wisdom, and Charisma. Levels such
-          as 7, 11, and 13 raise none.
+          Your class grants the attribute increases below at each matching
+          level. If several columns apply, you receive all of them.
         </p>
       </div>
 
@@ -520,8 +520,8 @@
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:372-390 — at the cap a filled bar grants a Veteran Point, an attribute point, a full heal, and a veteran bonus refresh for mercenaries. -->
           <span class="block"
-            >At level {LEVEL_CAP}, filling the experience bar grants one Veteran
-            Point and one attribute point instead of another level.</span
+            >At level {LEVEL_CAP}, filling the experience bar grants one veteran
+            point and one attribute point instead of another level.</span
           >
           <!-- Source: server-scripts/Experience.cs:current; server-scripts/Player.cs:LevelUpMercenaries — living players refill Health and Mana; summoned mercenaries gain their veteran bonuses and heal. -->
           <span class="block">
@@ -538,7 +538,7 @@
 
       <div class="space-y-3">
         <div class="flex flex-wrap items-baseline justify-between gap-x-4">
-          <h3 class="font-semibold">Total XP to reach each Veteran Level</h3>
+          <h3 class="font-semibold">Total XP by total veteran points</h3>
           <span class="text-xs text-muted-foreground"
             >Dashed line: total XP from level 1 to {LEVEL_CAP}</span
           >
@@ -548,7 +548,7 @@
           class="level-chart"
           viewBox="0 0 {VET_CHART.w} {VET_CHART.h}"
           role="img"
-          aria-label="Total XP to reach each Veteran Level without learning ranks that cost 2 Veteran Points"
+          aria-label="Total XP by total veteran points without learning ranks that cost 2 veteran points"
         >
           {#each VET_Y_TICKS as tick (tick)}
             <line
@@ -647,7 +647,7 @@
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Total XP to reach this Veteran Level
+              Total XP to reach this point count
             </dt>
             <dd class="font-mono text-foreground">
               {formatNumber(veteranBehind)}
@@ -655,7 +655,7 @@
           </div>
           <div>
             <dt class="text-xs text-muted-foreground">
-              Equivalent level 1–{LEVEL_CAP} climbs
+              Times the XP from level 1 to {LEVEL_CAP}
             </dt>
             <dd class="font-mono text-foreground">
               {formatNumber(veteranRuns, {
@@ -674,23 +674,23 @@
             VETERAN_TOTAL / TOTAL_TO_CAP,
             { decimals: 0, trailingZeros: true, grouping: false },
           )}
-          times the climb from level 1 to {LEVEL_CAP}.
+          times the XP from level 1 to {LEVEL_CAP}.
         </p>
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold">Spending and Counting</h3>
+        <h3 class="font-semibold">Spending and counting</h3>
         <p class="text-sm text-muted-foreground">
-          Veteran Points buy ranks in veteran skills.
+          Veteran points buy ranks in veteran skills. Your total counts unspent
+          points plus learned veteran ranks.
         </p>
         <!-- Source: server-scripts/PlayerSkills.cs:GetTotalVeteranPoints,ResetVeteranSkillPoints; server-scripts/Experience.cs:max — two-point ranks count and refund only one point. -->
         <!-- Observed: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md — two-point ranks lower VT and XP cost; paid resets lose the second point. -->
         <p class="text-sm text-muted-foreground">
           A game defect counts a veteran skill rank that costs 2 points as only
-          1 point. Each such rank lowers your Veteran Level by 1 and the next
-          point's XP cost by 20,000 XP. A veteran skill reset refunds only 1 of
-          its 2 points. The total-XP chart assumes you learn no ranks that cost
-          2 points.
+          1 point. Each such rank lowers your total veteran points by 1 and the
+          next point's XP cost by 20,000 XP. A veteran skill reset refunds only
+          1 of its 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Player.cs:11123-11158; server-scripts/Npc.cs:1822-1840; server-scripts/PlayerSkills.cs:1883-1910 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
@@ -721,7 +721,7 @@
         <p class="text-sm text-muted-foreground">
           <!-- Source: server-scripts/Experience.cs:372-407 — earning stops at 200 total points and pays out the max-level reward item instead. -->
           <span class="block"
-            >Further XP grants Veteran Points while your total is below {MAX_VETERAN_POINTS}.</span
+            >Further XP grants veteran points while your total is below {MAX_VETERAN_POINTS}.</span
           >
           <span class="block"
             >At that total, each filled experience bar grants a
@@ -778,30 +778,28 @@
         </p>
         <!-- Source: server-scripts/Npc.cs:CalculateRewardExp,OnDeath — NPC base XP is rounded before halving and rounding again; sharing, level, dungeon, and Double XP rules follow. -->
         <p class="text-sm text-muted-foreground">
-          To find a hostile NPC's base XP, start with 15 XP and increase it by
-          12% for each level after level 1. Round the result, halve it, then
-          round again. The same level-difference, dungeon, party, and Double XP
-          rules apply, but the Forgotten Altar bonus does not.
+          To find a hostile NPC's base XP, multiply 15 XP by 112% once for each
+          level above 1, then round, halve, and round again. NPCs use the same
+          level, dungeon, party, and Double XP modifiers, but receive no
+          Forgotten Altar bonus.
         </p>
         <!-- Source: server-scripts/PlayerParty.cs:GetMembersInProximity — party players observing the credited player and within 40 yd share rewards. -->
         <!-- Mirror.dll and Mirror.Components.dll in the server build of Steam build 25863605: NetworkServer.RebuildObserversCustom adds a player's own connection to its observers, so the credited player always counts. SpatialHashingInterestManagement (visRange 96 at runtime, 48-unit cells, 3×3 neighbourhood) makes every player closer than 40 yd an observer, rebuilt once per second. -->
         <p class="text-sm text-muted-foreground">
-          <a
+          Kill XP is shared among <a
             href="/mechanics/party#shared-rewards"
             class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Nearby party players</a
-          >
-          are the player with kill credit and every party member closer than 40 yd
-          to that player. Use your own level and one player when alone.
+            >nearby party players</a
+          >. Use your own level and one player when alone.
         </p>
       </div>
       <Calculation calculation={killExperience()} />
 
       <div class="space-y-2">
-        <h3 class="font-semibold">Level Difference Scaling</h3>
+        <h3 class="font-semibold">Level difference scaling</h3>
         <p class="text-sm text-muted-foreground">
           <span class="block"
-            >Monsters ten or more levels above you award 150% of their base XP.</span
+            >Monsters 10 or more levels above you award 150% of their base XP.</span
           >
           <span class="block"
             >Monsters 21 or more levels below you award no XP.</span
@@ -812,7 +810,7 @@
           class="level-chart"
           viewBox="0 0 {DIFF_CHART.w} {DIFF_CHART.h}"
           role="img"
-          aria-label="Experience multiplier by the difference between your level and the monster's level"
+          aria-label="Level-difference percentage by how far the monster's level is from yours"
         >
           {#each DIFF_Y_TICKS as tick (tick)}
             <line
@@ -891,7 +889,9 @@
                   <th class="text-left p-2 font-medium"
                     >Monster level compared with yours</th
                   >
-                  <th class="text-right p-2 font-medium">XP multiplier</th>
+                  <th class="text-right p-2 font-medium"
+                    >Level-difference percentage</th
+                  >
                 </tr>
               </thead>
               <tbody>
@@ -915,7 +915,7 @@
       </div>
 
       <div class="space-y-2">
-        <h3 class="font-semibold">Additional Modifiers</h3>
+        <h3 class="font-semibold">Additional modifiers</h3>
         <p class="text-sm text-muted-foreground">
           Dungeon kills, the Forgotten Altar event, and Double XP buffs change
           the level-scaled XP award:
@@ -963,7 +963,7 @@
         <!-- Source: server-scripts/Skills.cs:hasDoubleExp; server-scripts/Monster.cs:OnDeath — any Double XP buff doubles the award once, then the Forgotten Altar multiplier applies. -->
         <p class="text-sm text-muted-foreground">
           Multiple Double XP buffs do not stack. For monsters from a Forgotten
-          Altar, Double XP applies first, then the 40% bonus is rounded.
+          Altar, Double XP applies first, then the 40% bonus, rounded.
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,825 — double XP applies to gathering -->
@@ -1015,7 +1015,7 @@
                 <td class="p-2">3</td>
                 <td
                   class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >116.7%</td
+                  >116.67%</td
                 >
               </tr>
               <tr class="border-b hover:bg-muted/30">
@@ -1072,7 +1072,7 @@
     <Card.Header>
       <Card.Title>Scroll XP</Card.Title>
       <Card.Description>
-        Experience earned by using XP scrolls. No multipliers apply.
+        Experience earned by using XP scrolls. No bonus or penalty changes it.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1157,9 +1157,8 @@
       <Card.Description>
         <!-- Source: server-scripts/GatherItem.cs:630-644,817-828 — qualifying resources and successful catch rolls award XP, other objects do not. -->
         Experience for each successful gather of an herb, mineral, or radiant spark,
-        and each successful catch at a fishing spot. Herbs, minerals, and sparks that
-        award items usable only for quests give no XP. Other gatherable objects also
-        give no XP.
+        and each successful catch at a fishing spot. Resources that give only quest
+        items give no XP.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1211,7 +1210,7 @@
       <Card.Title>Alchemy XP</Card.Title>
       <Card.Description>
         <!-- Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — successful brews award XP by recipe level. -->
-        Experience for each successful brew at an alchemy table.
+        Experience for each successful brew at an Alchemy Table.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1246,7 +1245,7 @@
     <Card.Header>
       <Card.Title>Scribing XP</Card.Title>
       <Card.Description>
-        Experience earned by crafting scrolls at a scribing table.
+        Experience earned by crafting scrolls at a Scribing Table.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1276,7 +1275,7 @@
       <Card.Title>Cooking XP</Card.Title>
       <Card.Description>
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — food awards XP only after a successful cook. -->
-        Experience for each successful cook at a cooking oven.
+        Experience for each successful cook at a Cooking Oven.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -1399,8 +1398,8 @@
     <Card.Content>
       <!-- Source: server-scripts/PlayerQuests.cs:390-391 — rewardExperience added directly, no multipliers -->
       <p class="text-sm text-muted-foreground">
-        XP varies per quest and is shown on each quest's page. No multipliers
-        apply.
+        XP varies per quest and is shown on each quest's page. No bonus or
+        penalty changes it.
       </p>
     </Card.Content>
   </Card.Root>
@@ -1430,13 +1429,15 @@
           </tr>
           <tr class="border-b hover:bg-muted/30">
             <td class="p-2">
-              {#each data.discoveryCities as zone, index (zone.id)}
-                {index > 0 ? ", " : ""}<a
-                  href="/zones/{zone.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >{zone.name}</a
-                >
+              City (
+              {#each data.discoveryCities as city, index (city.id)}
+                {index > 0 ? ", " : ""}{#if city.zoneId}<a
+                    href="/zones/{city.zoneId}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{city.name}</a
+                  >{:else}{city.name}{/if}
               {/each}
+              )
             </td>
             <td class="p-2 text-right font-mono">10</td>
           </tr>
@@ -1447,7 +1448,7 @@
         </tbody>
       </table>
       <p class="text-sm text-muted-foreground">
-        Zone discovery XP has no multipliers. See <a
+        No bonus or penalty changes zone discovery XP. See <a
           href="/zones"
           class="text-blue-600 dark:text-blue-400 hover:underline">Zones</a
         > for each zone's discovery XP.

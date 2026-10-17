@@ -140,6 +140,14 @@ function createDb() {
     INSERT INTO alchemy_recipes VALUES
       ('fish_potion_recipe', 'fish_potion');
   `);
+  db.exec(`
+    ALTER TABLE items ADD COLUMN item_type TEXT;
+    ALTER TABLE items ADD COLUMN structure_price INTEGER DEFAULT 0;
+    ALTER TABLE items ADD COLUMN luck_token_fragment_id TEXT;
+    ALTER TABLE items ADD COLUMN luck_token_fragments_needed INTEGER DEFAULT 0;
+    CREATE TABLE npcs (id TEXT PRIMARY KEY, name TEXT, roles TEXT);
+    CREATE TABLE item_sources_merge (item_id TEXT, component_item_id TEXT);
+  `);
   return db;
 }
 

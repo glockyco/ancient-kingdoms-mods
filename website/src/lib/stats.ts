@@ -47,26 +47,49 @@ function poolName(field: StatField, context: StatContext): string {
   return statName(pool, context);
 }
 
+function quantityName(
+  field: StatField,
+  context: StatContext,
+  phrase = false,
+): string {
+  const name = statName(field.stat, context);
+  const maximumPool =
+    context === "character" &&
+    (field.stat === "health" || field.stat === "mana" || field.stat === "rage");
+  return maximumPool ? `${phrase ? "maximum" : "Maximum"} ${name}` : name;
+}
+
 /**
- * The name of an export field, as a label beside its value. A modifier that is not a flat amount
- * names its kind after the stat, such as "Attack Power %" or "Health Regeneration, % of Hit
- * Points". A weapon's item damage takes the game's weapon name.
+ * An export field's quantity and modifier. Character pool fields identify their maximum,
+ * while an item stat list retains the game's tooltip label.
  */
 export function statFieldName(
   field: StatField,
   context: StatContext = "character",
-  { weapon = false }: { weapon?: boolean } = {},
+  {
+    weapon = false,
+    damageType,
+    drain = false,
+  }: { weapon?: boolean; damageType?: string; drain?: boolean } = {},
 ): string {
+  if ((damageType || drain) && field.stat === "health_regen") {
+    const quantity = drain
+      ? `${statName("health", context)} drained`
+      : `${damageType} damage`;
+    return field.modifier === "percent_of_max_per_second"
+      ? `${quantity}, % of maximum ${poolName(field, context)} per second`
+      : `${quantity} per second`;
+  }
   const stat = STATS[field.stat];
   const name =
     context === "item" && weapon && stat.weaponItemName
       ? stat.weaponItemName
-      : statName(field.stat, context);
+      : quantityName(field, context);
   switch (field.modifier) {
     case "percent":
       return `${name} %`;
     case "percent_of_max_per_second":
-      return `${name}, % of ${poolName(field, context)}`;
+      return `${name}, % of maximum ${poolName(field, context)} per second`;
     default:
       return name;
   }
@@ -83,7 +106,7 @@ export function statFieldPhraseName(
 ): string {
   return field.modifier === "percent_of_max_per_second"
     ? `of maximum ${poolName(field, context)} per second`
-    : statName(field.stat, context);
+    : quantityName(field, context, true);
 }
 
 function signedText(value: number, text: string, signed: boolean): string {

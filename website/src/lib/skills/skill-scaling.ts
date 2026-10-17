@@ -21,19 +21,19 @@ const SCALING_FIELDS: Array<{
 }> = [
   {
     key: "health_cost_percent",
-    label: "Hit Points cost %",
+    label: "Hit Points cost (% of maximum)",
     isPercent: true,
     suffix: "",
   },
   {
     key: "mana_restored_percent",
-    label: "Mana restored %",
+    label: "Mana restored (% of maximum)",
     isPercent: true,
     suffix: "",
   },
   {
     key: "healing_percent",
-    label: "Skill heal %",
+    label: "Healing percentage",
     isPercent: true,
     suffix: "",
   },
@@ -45,7 +45,7 @@ const SCALING_FIELDS: Array<{
   },
   {
     key: "damage_over_time_execute_bonus",
-    label: "DoT execute bonus",
+    label: "Damage-over-time execute bonus",
     isPercent: true,
     suffix: "",
   },
@@ -78,7 +78,7 @@ const SCALING_FIELDS: Array<{
     isPercent: false,
     suffix: "",
   },
-  { key: "aggro", label: "Aggro", isPercent: false, suffix: "" },
+  { key: "aggro", label: "Threat", isPercent: false, suffix: "" },
   {
     key: "lifetap_percent",
     label: "Lifetap",
@@ -202,18 +202,40 @@ export function scalingColumns(
     if (sharedConversion && def.key === "mana_restored_percent") continue;
     const val = skill[def.key] as LinearValue | null;
     if (val && val.bonus_per_level !== 0) {
-      const field = val;
+      const damageTick =
+        (def.key === "healing_per_second_bonus" ||
+          def.key === "health_percent_per_second_bonus") &&
+        val.base_value < 0;
+      const field = damageTick
+        ? { base_value: -val.base_value, bonus_per_level: -val.bonus_per_level }
+        : val;
       const label =
-        sharedConversion && def.key === "health_cost_percent"
-          ? "Conversion %"
-          : def.label;
+        damageTick && def.stat
+          ? statFieldName(
+              def.stat,
+              "character",
+              skill.skill_type === "target_debuff" ||
+                skill.skill_type === "area_debuff"
+                ? {
+                    damageType:
+                      skill.damage_over_time_type !== "Unknown"
+                        ? (skill.damage_over_time_type ?? undefined)
+                        : undefined,
+                  }
+                : { drain: true },
+            )
+          : sharedConversion && def.key === "health_cost_percent"
+            ? "Conversion (% of maximum Hit Points and Mana)"
+            : def.label;
 
       cols.push({
         label,
         field,
-        isPercent: def.isPercent,
+        isPercent: damageTick
+          ? def.key === "health_percent_per_second_bonus"
+          : def.isPercent,
         suffix: def.suffix,
-        stat: def.stat,
+        stat: damageTick ? undefined : def.stat,
       });
     }
   }

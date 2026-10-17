@@ -45,11 +45,17 @@
     type GatheringPopupDetails,
     type AltarPopupDetails,
   } from "$lib/queries/popup";
+  import type { PopupDropItem } from "$lib/queries/popup";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
   import { markerRegistry, resolveMarker } from "$lib/map/marker-registry";
   import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
+  import {
+    reputationTierName,
+    type ReputationTier,
+  } from "$lib/utils/reputation";
   interface Props {
     entity: AnyMapEntity;
+    reputationTiers: ReputationTier[];
     onClose: () => void;
     onFocusClick?: () => void;
     onSelectMonster: (monsterId: string) => void;
@@ -67,6 +73,7 @@
 
   let {
     entity,
+    reputationTiers,
     onClose,
     onFocusClick,
     onSelectMonster,
@@ -228,20 +235,7 @@
     };
   });
 
-  // Filter monster drops to exclude items already shown as altar rewards
-  let filteredMonsterDrops = $derived.by(() => {
-    if (!monsterDetails || monsterAltarDetails.length === 0) {
-      return monsterDetails?.drops ?? [];
-    }
-    const rewardItemIds = new Set(
-      monsterAltarDetails.flatMap((altar) =>
-        altar.details.rewards.map((r) => r.itemId),
-      ),
-    );
-    return monsterDetails.drops.filter(
-      (drop) => !rewardItemIds.has(drop.itemId),
-    );
-  });
+  const filteredMonsterDrops = $derived(monsterDetails?.drops ?? []);
 
   // Get display zone name and ID for altar-only monsters
   let displayZoneName = $derived.by(() => {
@@ -313,8 +307,8 @@
   }
 
   function getFallbackFishLabel(level: number): string {
-    if (level <= 1) return "Tier I fallback fish";
-    return `Tier I–${toRomanNumeral(level - 1)} fallback fish`;
+    if (level <= 2) return "Any lower-tier fish (Tier I)";
+    return `Any lower-tier fish (Tier I to ${toRomanNumeral(level - 1)})`;
   }
 
   function getEntityUrl(entity: AnyMapEntity): string | null {
@@ -366,7 +360,7 @@
     }
     if (entity.type === "crafting_station") {
       const crafting = entity as CraftingMapEntity;
-      return crafting.isCookingOven ? "Cooking Oven" : "Forge";
+      return crafting.isCookingOven ? "Cooking Oven" : "Craft Station";
     }
     if (entity.type === "trap") {
       const trap = entity as TrapMapEntity;
@@ -382,6 +376,26 @@
 
   const url = $derived(getEntityUrl(entity));
 </script>
+
+{#snippet lootChance(drop: PopupDropItem)}
+  <span class="text-right text-muted-foreground">
+    {formatPercent(drop.dropRate, { decimals: 1, trailingZeros: true })}
+    {drop.isDistributionRoll ? "to drop one item from this pool" : "per kill"}
+    {#if drop.fatecharmDropRate !== undefined}
+      <span>without Fatecharm</span>
+      <span class="block text-xs">
+        {formatPercent(drop.fatecharmDropRate, {
+          decimals: 1,
+          trailingZeros: true,
+        })}
+        with matching dungeon Fatecharm (consumed)
+      </span>
+    {/if}
+    {#if drop.requiresQuest}
+      <span class="block text-xs">While needed for a gather quest</span>
+    {/if}
+  </span>
+{/snippet}
 
 <PopupCard
   title={getDisplayName(entity)}
@@ -400,7 +414,7 @@
         {#if monsterVisualAsset}
           <img
             src={`${base}/${monsterVisualAsset.publicPath}`}
-            alt={`${getDisplayName(entity)} monster image`}
+            alt={getDisplayName(entity)}
             width={monsterVisualAsset.width}
             height={monsterVisualAsset.height}
             class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] {isCompositeMonsterImage
@@ -485,8 +499,12 @@
     {/if}
     {#if house.factionRequired > 0}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Faction required</span>
-        <span>{formatNumber(house.factionRequired)}</span>
+        <span class="text-muted-foreground">Reputation required</span>
+        <span
+          >{reputationTierName(reputationTiers, house.factionRequired)} ({formatNumber(
+            house.factionRequired,
+          )})</span
+        >
       </div>
     {/if}
   {/if}
@@ -511,17 +529,17 @@
       <div class="rounded bg-sky-500/20 px-2 py-1 text-sky-300">
         <span class="text-sky-400">Active</span>
         <span class="text-sky-200">{spawnWindow}</span>
-        <span class="text-sky-400">only</span>
+        <span class="text-sky-400">game time only</span>
       </div>
     {/if}
 
     <!-- Rare spawn probability -->
     {#if monster.respawnProbability < 1}
       <div class="rounded bg-amber-500/20 px-2 py-1 text-amber-400">
-        Rare spawn ({formatPercent(monster.respawnProbability, {
+        Rare spawn: {formatPercent(monster.respawnProbability, {
           decimals: 1,
           trailingZeros: true,
-        })} chance)
+        })} chance when its respawn timer ends
       </div>
     {/if}
 
@@ -550,9 +568,8 @@
     {#if monster.spawnType === "summon" && monster.summonKillMonsterName}
       {@const count = monster.summonKillCount ?? 1}
       <div class="rounded bg-purple-500/20 px-2 py-1 text-purple-300">
-        <span class="text-purple-400">This monster cannot respawn while</span>
-        {#if count > 1}{count}
-        {/if}
+        <span class="text-purple-400">This monster cannot spawn until</span>
+        {#if count > 1}all {count}{:else}its{/if}
         {#if monster.summonKillMonsterId}
           <button
             type="button"
@@ -566,13 +583,26 @@
         {:else}
           <span class="text-purple-200">{monster.summonKillMonsterName}</span>
         {/if}
-        <span class="text-purple-400">{count > 1 ? "are" : "is"} alive</span>
+        <span class="text-purple-400"
+          >{count > 1
+            ? "guards are dead at the same time"
+            : "guard is dead"}</span
+        >
+        <span class="text-purple-400"
+          >After this monster dies, kill its guards again. Its respawn timer
+          must also finish.</span
+        >
       </div>
     {/if}
 
     {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
       <div class="rounded bg-cyan-500/20 px-2 py-1 text-cyan-300">
-        <span class="text-cyan-400">Spawns after killing</span>
+        <span class="text-cyan-400"
+          >{#if monster.sourceSpawnProbability != null && monster.sourceSpawnProbability < 1}{formatPercent(
+              monster.sourceSpawnProbability,
+              { decimals: 1, trailingZeros: true },
+            )} chance to spawn when you kill{:else}Spawns when you kill{/if}</span
+        >
         {#if monster.sourceMonsterId}
           <button
             type="button"
@@ -586,14 +616,6 @@
         {:else}
           <span class="text-cyan-200">{monster.sourceMonsterName}</span>
         {/if}
-        {#if monster.sourceSpawnProbability && monster.sourceSpawnProbability < 1}
-          <span class="text-cyan-400"
-            >({formatPercent(monster.sourceSpawnProbability, {
-              decimals: 1,
-              trailingZeros: true,
-            })})</span
-          >
-        {/if}
       </div>
     {/if}
 
@@ -602,21 +624,18 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
         <span class="text-muted-foreground"
-          >Patrol route has {monster.patrolWaypoints.length} point{monster
-            .patrolWaypoints.length === 1
-            ? ""
-            : "s"}</span
+          >Patrols the route shown on the map</span
         >
       </div>
     {:else if monster.moveDistance > 0}
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {formatNumber(monster.moveDistance, {
+          >Wanders up to {formatNumber(monster.moveDistance, {
             decimals: 0,
             trailingZeros: true,
             grouping: false,
-          })} yd</span
+          })} yd from its spawn point</span
         >
       </div>
     {/if}
@@ -655,7 +674,7 @@
 
       <!-- Altar tier rewards -->
       {#each monsterAltarDetails as altar (altar.id)}
-        {#if altar.details.rewards.length > 0}
+        {#if altar.details.rewards.length > 0 && altar.details.finalMonsterIds.includes(monster.monsterId)}
           <div class="border-t pt-2">
             <div class="mb-1 text-xs font-medium text-muted-foreground">
               {altar.name} Rewards
@@ -713,12 +732,7 @@
                 class="truncate"
                 onSelect={onSelectItem}
               />
-              <span class="shrink-0 text-muted-foreground"
-                >{formatPercent(drop.dropRate, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })}</span
-              >
+              {@render lootChance(drop)}
             </div>
           {/each}
         </div>
@@ -746,15 +760,8 @@
               <span class="shrink-0 text-xs">
                 {#if sage.cost > 0}
                   <span class="text-muted-foreground"
-                    >{formatNumber(sage.cost)}</span
+                    >{formatNumber(sage.cost)} gold</span
                   >
-                  <button
-                    type="button"
-                    class="cursor-pointer text-blue-400 hover:underline"
-                    onclick={() => onSelectItem("adventurers_essence")}
-                  >
-                    Adv. Essence
-                  </button>
                 {:else}
                   <span class="text-muted-foreground">Free</span>
                 {/if}
@@ -850,21 +857,18 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
         <span class="text-muted-foreground"
-          >Patrol route has {npc.patrolWaypoints.length} point{npc
-            .patrolWaypoints.length === 1
-            ? ""
-            : "s"}</span
+          >Patrols the route shown on the map</span
         >
       </div>
     {:else if npc.moveDistance > 0}
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
         <span class="text-muted-foreground"
-          >Wanders {formatNumber(npc.moveDistance, {
+          >Wanders up to {formatNumber(npc.moveDistance, {
             decimals: 0,
             trailingZeros: true,
             grouping: false,
-          })} yd</span
+          })} yd from its spawn point</span
         >
       </div>
     {/if}
@@ -904,7 +908,7 @@
     {:else if npcDetails && npcDetails.itemsSold.length > 0}
       <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Items for Sale
+          Items for sale
         </div>
         <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
           {#each npcDetails.itemsSold as item, i (i)}
@@ -972,8 +976,8 @@
             {/if}
             {#if portal.requiredItemLevel > 0}
               <div class="flex justify-between">
-                <span class="text-muted-foreground">Item Level</span>
-                <span>{portal.requiredItemLevel}+</span>
+                <span class="text-muted-foreground">Total item level</span>
+                <span>{formatNumber(portal.requiredItemLevel)}+</span>
               </div>
             {/if}
             {#if portal.requiredItemName && portal.requiredItemId}
@@ -1000,14 +1004,14 @@
                   href="/mechanics/world#portals"
                   class="text-blue-600 hover:underline dark:text-blue-400"
                   >{portal.requiresEveryoneKey
-                    ? "Each player needs their own"
-                    : "Any online party member's key"}</a
+                    ? "Each player"
+                    : "Any online party member"}</a
                 >
               </div>
             {/if}
             {#if portal.needMonsterDeadName}
               <div class="rounded bg-red-500/20 px-2 py-1 text-red-300">
-                <span class="text-red-400">Kill</span>
+                <span class="text-red-400">Blocked while</span>
                 {#if portal.needMonsterDeadId}
                   <button
                     type="button"
@@ -1022,7 +1026,7 @@
                 {:else}
                   <span class="text-red-200">{portal.needMonsterDeadName}</span>
                 {/if}
-                <span class="text-red-400">to unlock</span>
+                <span class="text-red-400">is alive</span>
               </div>
             {/if}
           </div>
@@ -1085,7 +1089,7 @@
               </div>
               {#if drop.isRandomItem && drop.randomItemOutcomes}
                 <div class="ml-2 truncate text-muted-foreground">
-                  <span>Can be:</span>
+                  <span>One of:</span>
                   {#each drop.randomItemOutcomes.slice(0, 3) as outcome, j (j)}
                     <button
                       type="button"
@@ -1097,7 +1101,8 @@
                         : ""}</button
                     >
                   {/each}
-                  {#if drop.randomItemOutcomes.length > 3}...{/if}
+                  {#if drop.randomItemOutcomes.length > 3}and {drop
+                      .randomItemOutcomes.length - 3} more{/if}
                 </div>
               {/if}
             </div>
@@ -1159,7 +1164,7 @@
     {/if}
     {#if trap.teleportZoneId && trap.teleportZoneName}
       <div class="flex justify-between gap-4">
-        <span class="text-muted-foreground">Teleports To</span>
+        <span class="text-muted-foreground">Teleports to</span>
         <a
           href="/zones/{trap.teleportZoneId}"
           class="text-blue-600 dark:text-blue-400 hover:underline text-right"
@@ -1170,7 +1175,7 @@
     {/if}
     {#if trap.fireInterval != null}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Fires Every</span>
+        <span class="text-muted-foreground">Fires every</span>
         <span>{trap.fireInterval}s</span>
       </div>
     {/if}
@@ -1243,7 +1248,8 @@
       <div class="flex items-center gap-2 border-t pt-2">
         <span class="inline-block h-2 w-2 rounded-full bg-amber-400"></span>
         <span class="text-muted-foreground"
-          >Event radius {altar.radiusEvent} yd</span
+          >Event radius {altar.radiusEvent} yd. The event ends if the player who started
+          it leaves this area or dies.</span
         >
       </div>
     {/if}
@@ -1313,12 +1319,7 @@
                   class="truncate"
                   onSelect={onSelectItem}
                 />
-                <span class="shrink-0 text-muted-foreground"
-                  >{formatPercent(drop.dropRate, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}</span
-                >
+                {@render lootChance(drop)}
               </div>
             {/each}
           </div>
@@ -1373,7 +1374,7 @@
     {:else if entity.type === "gathering_fish" && gatheringDetails?.fishingOutcomes?.length}
       <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Per Cast
+          Per cast
         </div>
         <div class="space-y-1 text-sm">
           {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "primary_fish") as outcome (outcome.itemId)}
@@ -1441,7 +1442,7 @@
                   {formatPercent(drop.dropRate, {
                     decimals: 1,
                     trailingZeros: true,
-                  })} – {formatPercent(drop.dropRateMax, {
+                  })} to {formatPercent(drop.dropRateMax, {
                     decimals: 1,
                     trailingZeros: true,
                   })}

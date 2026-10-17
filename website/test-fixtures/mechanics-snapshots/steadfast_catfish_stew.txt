@@ -1,1 +1,0 @@
-Mechanics Fear Resist The affected character receives 3 percentage points of Fear Resist at rank 1. When a fear roll succeeds, the target can still resist the fear, with a chance equal to its Fear Resist. Total Fear Resist from all sources is capped at 100%. At 100%, the target resists every fear effect.

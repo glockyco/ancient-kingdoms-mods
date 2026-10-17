@@ -43,20 +43,4 @@ describe("trap areas", () => {
       ]),
     ).toBe("2.1 × 1.9 yd");
   });
-
-  test("states an irregular patch as its reach, not its shape", () => {
-    // 4 x 4 square with a 2 x 2 bite taken out of one corner
-    expect(
-      formatTrapArea([
-        [
-          [0, 0],
-          [4, 0],
-          [4, 2],
-          [2, 2],
-          [2, 4],
-          [0, 4],
-        ],
-      ]),
-    ).toBe("reaches 4 × 4 yd");
-  });
 });

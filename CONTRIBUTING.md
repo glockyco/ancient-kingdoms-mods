@@ -108,10 +108,9 @@ pnpm check:redactions                        # needs the full export
 pnpm check:clean                             # the build-pipeline CI gates on a clean checkout of HEAD
 pnpm build
 nix build --no-link ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).openspec"
-(cd website && node scripts/snapshot-mechanics.mjs)
 ```
 
-`pnpm check:docs` checks the documentation: links, anchors, repository paths, and named commands resolve, every mod has a README, and the front page stays within its budget and lists exactly the published downloads. The last command compares each skill page's Mechanics card with its snapshot. After an intended change to a card, run it with `--update` and commit the snapshots with the change.
+`pnpm check:docs` checks the documentation: links, anchors, repository paths, and named commands resolve, every mod has a README, and the front page stays within its budget and lists exactly the published downloads. Mechanics verification covers calculated quantities, eligibility and state transitions, with browser checks for the rendered explanation. Literal prose snapshots are not a correctness gate because wording changes do not establish changed game behavior.
 
 ## Troubleshooting
 

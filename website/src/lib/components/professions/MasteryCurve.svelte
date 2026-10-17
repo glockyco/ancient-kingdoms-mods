@@ -122,7 +122,7 @@
         x={xPosition(band.from) + 6}
         y={PLOT.top + plotHeight - 7}
         class="fill-muted-foreground text-sm lg:text-[9.5px]"
-        >no skill from {band.label}</text
+        >{band.label}: no skill</text
       >
     {/each}
 

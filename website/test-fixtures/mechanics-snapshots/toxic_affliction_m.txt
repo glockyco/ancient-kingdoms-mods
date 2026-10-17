@@ -1,1 +1,0 @@
-Mechanics Resist Chance The target's Poison Resist gives it 5 percentage points of chance per 100 points to resist this debuff, at most 90%. See resistance and avoidance for Accuracy and level differences. Once it lands, the target's Poison Resist reduces each tick by 5% per 100 points, at most 90%. See damage-over-time calculations.

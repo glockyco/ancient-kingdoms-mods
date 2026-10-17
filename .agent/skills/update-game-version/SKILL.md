@@ -64,7 +64,7 @@ Re-read each report in `docs/game-bugs/` against the server-script diff. Delete 
 
 A patch can edit the in-game Adventurer's Guide. `website/src/lib/data/game-guide/coverage.db.test.ts` names every guide article that is new, removed, or edited since its compendium section was reviewed. For each named article, update the section and its digest in `coverage.ts` together.
 
-See `website/scripts/snapshot-mechanics.mjs` for mechanics snapshot generation and its `--update` option.
+Follow the [contributor checks](../../../CONTRIBUTING.md#checks) for mechanics verification.
 
 ## 5. Publish and verify the release
 

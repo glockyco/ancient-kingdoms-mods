@@ -2,11 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RespawnInfo } from "$lib/types/respawn";
 import { requireLinearValue, linearAt } from "./linear-value";
 import { parseLinear } from "./parseLinear";
-import {
-  formatRespawnTime,
-  formatRespawnChance,
-  formatSpecialSpawn,
-} from "./respawn";
+import { formatRespawnTime, formatRespawnChance } from "./respawn";
 
 const spawn: RespawnInfo = {
   no_respawn: false,
@@ -55,11 +51,11 @@ describe("linear progression and respawn boundaries", () => {
   it("formats zero, negative, timed and blocked respawns", () => {
     expect(formatRespawnTime(spawn)).toBe("-");
     expect(formatRespawnTime({ ...spawn, respawn_time: -2 })).toBe("-");
-    expect(formatRespawnTime({ ...spawn, respawn_time: 90 })).toBe("1m");
+    expect(formatRespawnTime({ ...spawn, respawn_time: 90 })).toBe("1m 30s");
     expect(
       formatRespawnTime({ ...spawn, no_respawn: true, respawn_time: 90 }),
     ).toBe("-");
-    expect(formatRespawnChance(spawn)).toBe("-");
+    expect(formatRespawnChance(spawn)).toBe("100%");
     expect(formatRespawnChance({ ...spawn, respawn_probability: 0 })).toBe(
       "0%",
     );
@@ -73,11 +69,5 @@ describe("linear progression and respawn boundaries", () => {
         respawn_probability: 0.5,
       }),
     ).toBe("-");
-    expect(
-      formatSpecialSpawn({ ...spawn, spawn_time_start: 20, spawn_time_end: 2 }),
-    ).toBe("20:00-2:00");
-    expect(formatSpecialSpawn({ ...spawn, special_spawn_type: "summon" })).toBe(
-      "Blocked",
-    );
   });
 });

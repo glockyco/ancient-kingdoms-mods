@@ -7,6 +7,7 @@
   import PetSkillsTable from "$lib/components/PetSkillsTable.svelte";
   import RecruiterTable from "$lib/components/RecruiterTable.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import { formatSeconds } from "$lib/calculation/format";
   import { formatPercent, formatNumber } from "$lib/utils/format";
   import { statName, formatStat } from "$lib/stats";
@@ -132,7 +133,7 @@
   );
   const races = $derived(obtainableRaces(cls, preferredRaces));
 
-  /** Stat ranges at the owner's values, over every race a recruiter can hire. */
+  /** Stat ranges at the player's values, over every race a recruiter can hire. */
   const stats = $derived(
     classStatSpan(cls, level, veteran, pet.profile.curves, races),
   );
@@ -151,9 +152,19 @@
         ? "text-stat-atk"
         : "text-stat-mana",
   );
-  const veteranBonus = $derived(
-    formatPercent(veteran * VET_MULT_PER_POINT, { decimals: 2 }),
-  );
+  // Source: server-scripts/Player.cs:UpdateMercStatsByLevel,10918-10933 — the veteran percentage multiplies the class's current base-resource curve before the pool is rounded.
+  const veteranPools = $derived.by(() => {
+    const curve = pet.profile.curves[classDef.type];
+    const bonus = multiplyF32(veteran, VET_MULT_PER_POINT);
+    return {
+      health: iround(
+        multiplyF32(curve.hp_base + curve.hp_per * (level - 1), bonus),
+      ),
+      mana: iround(
+        multiplyF32(curve.mana_base + curve.mana_per * (level - 1), bonus),
+      ),
+    };
+  });
 
   // Source: mods/DataExporter/Exporters/PetExporter.cs — the only innate mercenary skill is GameManager.invulWarriorSkill, which Combat applies on a lethal hit.
   const deathSave = $derived(pet.skills.find((s) => s.is_innate) ?? null);
@@ -242,7 +253,7 @@
 {/snippet}
 
 <Seo
-  title={`${pet.name} - Ancient Kingdoms`}
+  title={detailTitle(pet.name, { family: "Mercenary" })}
   {description}
   path={petHref(pet.id, true)}
 />
@@ -312,7 +323,7 @@
           onchange={(v) => setMercenaryOwner("level", v)}
         />
         <NumberField
-          label="Veteran points (VT)"
+          label="Total veteran points"
           value={veteran}
           min={OWNER_LIMITS.veteran[0]}
           max={OWNER_LIMITS.veteran[1]}
@@ -343,18 +354,18 @@
       class="mb-4 text-xl font-semibold flex items-center gap-2"
     >
       <TrendingUp class="h-5 w-5 text-emerald-500" />
-      At level {level}, with {veteran} veteran points (VT)
+      At level {level}, with {veteran} total veteran points
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-4">
         <!-- Source: server-scripts/Player.cs:10903-10933, Constitution.cs:13-15 — Health and Mana come from the class curve, the hire roll, veteran points, and attributes. -->
         <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
           {#if stats.health}{@render stat(
-              statName("health"),
+              "Maximum Hit Points",
               range("health", stats.health),
             )}{/if}
           {#if stats.mana}{@render stat(
-              statName("mana"),
+              "Maximum Mana",
               range("mana", stats.mana),
             )}{/if}
           {#if stats.attack}{@render stat(
@@ -370,6 +381,25 @@
             String(skillRank),
             "Each skill stops at its own maximum rank.",
           )}
+        </dl>
+        <p class="text-sm text-muted-foreground">
+          Ranges include all available races and hire bonuses, but not gear.
+          <a
+            href="/mechanics/mercenary-stats"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Compare the races</a
+          >.
+        </p>
+      </Card.Content>
+    </Card.Root>
+  </section>
+  <section aria-labelledby="shared-rules-title">
+    <h2 id="shared-rules-title" class="mb-4 text-xl font-semibold">
+      Shared mercenary rules
+    </h2>
+    <Card.Root class="bg-muted/30">
+      <Card.Content class="space-y-4">
+        <dl class="grid gap-3 sm:grid-cols-3">
           {@render stat(
             "Active mercenaries",
             String(activeMercenaryLimit(level)),
@@ -385,12 +415,11 @@
           )}
         </dl>
         <p class="text-sm text-muted-foreground">
-          Stat ranges do not include gear. They cover every race a recruiter can
-          hire and every hire roll.
+          These limits and prices apply to every class.
           <a
-            href="/mechanics/mercenary-stats"
+            href="/mercenaries#how-it-works"
             class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Compare the races</a
+            >Hiring, orders, and resurrection</a
           >.
         </p>
       </Card.Content>
@@ -467,41 +496,31 @@
             <h3 class="text-sm font-semibold">Skill rank</h3>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — mercenary ranks use owner level and veteran points, cap at each skill's max, and have a minimum of 1 for Bards and Necromancers. -->
             <p class="mt-1 text-sm">
+              Gains one rank per 5 character levels and per 10 total veteran
+              points, up to each skill's maximum.
               <a
                 href="/mercenaries#skill-ranks"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
-                >See the skill-rank calculation</a
+                >How skill ranks grow</a
               >
-              for your level and veteran points (VT).
             </p>
-            {#if cls === "Bard" || cls === "Necromancer"}
-              <p class="mt-1 text-sm text-muted-foreground">
-                {cls} skills have a minimum rank of 1.
-              </p>
-            {/if}
           </div>
           <div>
-            <h3 class="text-sm font-semibold">Veteran points (VT)</h3>
+            <h3 class="text-sm font-semibold">Veteran resource bonuses</h3>
             <!-- Source: server-scripts/Player.cs:10718-10732,10918-10933; Health.cs:max; Mana.cs:max; Energy.cs:max; BardMercenarySkills.cs:MaximumCombatSongs — veteran points raise maximum Health and usable Mana but not maximum Rage or the Bard song limit. -->
             <p class="mt-1 text-sm">
-              Each veteran point (VT) adds 0.25% of base Hit Points to maximum
-              Hit Points{veteranRaisesMana
-                ? " and 0.25% of base Mana to maximum Mana"
-                : ""}, before rounding.
-            </p>
-            <p class="mt-1 text-sm text-muted-foreground">
-              Your {veteran} veteran points (VT) add {veteranBonus} of base Hit Points
-              to maximum Hit Points{veteranRaisesMana
-                ? ` and ${veteranBonus} of base Mana to maximum Mana`
-                : ""}.
+              Your {veteran} total veteran points add about
+              {formatNumber(veteranPools.health)} maximum Hit Points{veteranRaisesMana
+                ? ` and ${formatNumber(veteranPools.mana)} maximum Mana`
+                : ""} at level {level}.
             </p>
             {#if classDef.role === "energy"}
               <p class="mt-1 text-sm text-muted-foreground">
-                The maximum Rage stays the same as veteran points (VT) rise.
+                Total veteran points do not change maximum Rage.
               </p>
             {:else if cls === "Bard"}
               <p class="mt-1 text-sm text-muted-foreground">
-                A Bard's active-song limit follows character level.
+                Veteran points do not increase the Bard's combat-song limit.
               </p>
             {/if}
           </div>
@@ -510,11 +529,14 @@
         <Alert variant="info">
           <Info />
           <div>
-            <!-- Source: server-scripts/Player.cs:10714-10720,10913-10920 — hiring and resummoning add total veteran points to both base damage values after restoring the shared hire roll, including zero. -->
-            <p class="font-medium">Veteran Attack Power and Spell Power</p>
             <p>
-              Each of your total veteran points adds 1 to the mercenary's base
-              Attack Power and Spell Power.
+              Each total veteran point adds 1 to base Attack Power and Spell
+              Power.
+              <a
+                href="/mercenaries#how-it-works"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Veteran bonuses shared by all mercenaries</a
+              >
             </p>
           </div>
         </Alert>
@@ -534,7 +556,7 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
-          <!-- Source: server-scripts/NecromancerMercenarySummons.cs:NeedsCompanion,SummonCompanion; MercenarySummonSkill.cs:UsesReaper,GetPrefab — the mercenary keeps one companion, chosen by the owner's level. -->
+          <!-- Source: server-scripts/NecromancerMercenarySummons.cs:NeedsCompanion,SummonCompanion; MercenarySummonSkill.cs:UsesReaper,GetPrefab — the mercenary keeps one companion, chosen by the player's level. -->
           <p>
             The mercenary uses
             <a
@@ -578,22 +600,22 @@
               {/each}
             </tbody>
           </table>
-          <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,CanAttack; NecromancerMercenarySummons.cs:LateUpdate — the companion takes the owner's level, gains 10% of the mercenary's Spell Power, attacks the mercenary's target, and leaves when either dies. -->
+          <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,CanAttack; NecromancerMercenarySummons.cs:LateUpdate — the companion takes the player's level, gains 10% of the mercenary's Spell Power, attacks the mercenary's target, and leaves when either dies. -->
           <ul class="list-disc space-y-1 pl-5">
             <li>
               Its level matches yours. It gains {formatPercent(
                 MERCENARY_COMPANION_SPELL_POWER_SHARE,
                 { decimals: 0 },
-              )} of the mercenary's Spell Power as Attack Power and as Spell Power,
-              rounded.
+              )} of the mercenary's Spell Power as Attack Power and as Spell Power.
             </li>
             <li>
-              It attacks only the mercenary's target, while both are in
-              aggressive stance.
+              It attacks only the mercenary's target while the companion and
+              mercenary are both in aggressive stance.
             </li>
             <li>
               It disappears when the mercenary or you die. When it dies, the
-              summon cooldown starts again.
+              mercenary must wait the full summon cooldown before summoning
+              another.
             </li>
           </ul>
         </Card.Content>
@@ -615,8 +637,8 @@
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
           <p>
-            The Bard mercenary starts its songs automatically, one at a time,
-            and keeps each song active.
+            The Bard starts and maintains its songs automatically, with two
+            combat songs below level 40 and three from level 40.
           </p>
           <table class="w-full">
             <thead>
@@ -657,7 +679,7 @@
               > needs level 50 and every combat song active.
             </li>
             <li>
-              In combat it uses {cadence.name} when it can, then
+              Its attack priority is {cadence.name}, then
               <a
                 href="/skills/{strike.id}"
                 class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -690,16 +712,16 @@
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content class="space-y-4 text-sm">
-          <!-- Source: server-scripts/Combat.cs:1372-1383,1049-1070 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the owner is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
+          <!-- Source: server-scripts/Combat.cs:1372-1383,1049-1070 — a lethal hit on a Warrior or Rogue mercenary applies GameManager.invulWarriorSkill when the player is level 50+, the cooldown has elapsed, and the mercenary has enough Rage. -->
           <p>
-            From level {DEATH_SAVE_MIN_LEVEL}, a lethal hit triggers
+            From level {DEATH_SAVE_MIN_LEVEL},
             <a
               href="/skills/{deathSave.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{deathSave.name}</a
             >
-            if its cooldown has ended and the mercenary has enough Rage. The skill
-            makes it invulnerable to attacks for {deathSaveInfo.now.seconds} seconds.
+            saves the mercenary from a lethal hit and briefly makes it invulnerable
+            to attacks. It needs enough Rage and must be off cooldown.
           </p>
           {#if level < DEATH_SAVE_MIN_LEVEL}
             <Alert variant="warning">
@@ -721,19 +743,31 @@
             )}
             {@render stat("Cooldown", formatSeconds(deathSaveInfo.cooldown))}
           </dl>
-          <p class="text-muted-foreground">
-            Duration and Rage cost rise with total veteran points, from {formatSeconds(
-              deathSaveInfo.low.seconds,
-            )} for {formatStat("rage", deathSaveInfo.low.rage)} Rage with 0 total
-            veteran points to {formatSeconds(deathSaveInfo.high.seconds)} for {formatStat(
-              "rage",
-              deathSaveInfo.high.rage,
-            )} Rage with
-            {MAX_VETERAN} total veteran points.
-          </p>
-          <p class="text-muted-foreground">
-            Without enough Rage, the hit kills the mercenary.
-          </p>
+          <table class="w-full text-left">
+            <thead
+              ><tr class="border-b"
+                ><th class="py-2">Total veteran points</th><th class="py-2"
+                  >Duration</th
+                ><th class="py-2">Rage cost</th></tr
+              ></thead
+            >
+            <tbody>
+              <tr class="border-b"
+                ><td class="py-2">0</td><td class="py-2"
+                  >{formatSeconds(deathSaveInfo.low.seconds)}</td
+                ><td class="py-2"
+                  >{formatStat("rage", deathSaveInfo.low.rage)}</td
+                ></tr
+              >
+              <tr class="bg-muted/50"
+                ><td class="py-2">{MAX_VETERAN}</td><td class="py-2"
+                  >{formatSeconds(deathSaveInfo.high.seconds)}</td
+                ><td class="py-2"
+                  >{formatStat("rage", deathSaveInfo.high.rage)}</td
+                ></tr
+              >
+            </tbody>
+          </table>
         </Card.Content>
       </Card.Root>
     </section>
@@ -763,17 +797,22 @@
               g.category,
             )}{g.count > 1 ? ` ×${g.count}` : ""}{/each}
         </p>
-        <!-- Source: server-scripts/EquipmentItem.cs:CanEquipMercenary,CanClassUse — the item must allow the mercenary's class, and the owner must meet its level. -->
+        <!-- Source: server-scripts/EquipmentItem.cs:CanEquipMercenary,CanClassUse — the item must allow the mercenary's class, and the player must meet its level. -->
         <ul class="list-disc space-y-1 pl-5">
           <li>
-            Only
             <a
               href="/classes/{pet.classLink.class_id}#equipment"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{cls} gear</a
-            > meets this mercenary's class restriction.
+            > only.
           </li>
-          <li>Your level must meet the item's level requirement.</li>
+          <li>
+            <a
+              href="/mercenaries#equipment"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >Shared equipment rules</a
+            >
+          </li>
           {#if slot13?.accepted_category === "Shield" || slot13?.accepted_category === "Instrument"}
             <!-- Source: server-scripts/EquipmentItem.cs:CanEquipMercenary — WeaponSword2H and WeaponWand2H block the off-hand shield or instrument; the export has no 2H wand. -->
             <li>
@@ -783,11 +822,6 @@
                 : "a shield"} in the off-hand.
             </li>
           {/if}
-          <!-- Source: server-scripts/Pet.cs:OnDeath, Combat.cs:752-768 — hits lower gear durability; death does not. -->
-          <li>
-            Gear stays on the mercenary when it dies, and death does not lower
-            durability.
-          </li>
         </ul>
       </Card.Content>
     </Card.Root>
@@ -807,16 +841,16 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <MapPin class="h-5 w-5 text-emerald-500" />
-        Recruited At
+        Recruited at
       </h2>
       <!-- Source: server-scripts/Npc.cs:1898-1909 — recruiters serve players from level 10. -->
       <p class="mb-3 text-sm text-muted-foreground">
-        Every recruiter hires every mercenary class, from level 10.
+        Hire this class at any recruiter from level 10.
         <a
           href="/mercenaries#how-it-works"
           class="text-blue-600 dark:text-blue-400 hover:underline"
-          >How mercenaries work</a
-        > covers stance, party limits, death, and resurrection.
+          >Hiring, commands, and resurrection</a
+        >
       </p>
       <RecruiterTable
         recruiters={pet.recruiters}

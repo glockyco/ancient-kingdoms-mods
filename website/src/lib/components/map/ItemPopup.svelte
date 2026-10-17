@@ -118,7 +118,8 @@
         if (!d) error = "Item not found";
       })
       .catch((e) => {
-        error = e instanceof Error ? e.message : "Failed to load item";
+        console.error("Failed to load map item:", e);
+        error = "Refresh the page to try again.";
       })
       .finally(() => {
         isLoading = false;
@@ -135,7 +136,7 @@
     </div>
   </PopupCard>
 {:else if error}
-  <PopupCard title="Error" {onClose} {mode}>
+  <PopupCard title="Could not load item" {onClose} {mode}>
     <p class="text-destructive">{error}</p>
   </PopupCard>
 {:else if details}
@@ -179,15 +180,31 @@
                 </MapEntityLink>
               </div>
               <div
-                class="flex items-center gap-2 shrink-0 text-xs text-muted-foreground"
+                class="flex flex-col items-end gap-1 text-xs text-muted-foreground"
               >
                 <span>Lv {dropper.level}</span>
-                <span
-                  >{formatPercent(dropper.dropRate, {
+                <span>
+                  {formatPercent(dropper.dropRate, {
                     decimals: 1,
                     trailingZeros: true,
-                  })}</span
-                >
+                  })}
+                  {dropper.isDistributionRoll
+                    ? "to drop one item from this pool"
+                    : "per kill"}
+                </span>
+                {#if dropper.fatecharmDropRate !== undefined}
+                  <span>without Fatecharm</span>
+                  <span class="text-right">
+                    {formatPercent(dropper.fatecharmDropRate, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}
+                    with matching dungeon Fatecharm (consumed)
+                  </span>
+                {/if}
+                {#if dropper.requiresQuest}
+                  <span>While needed for a gather quest</span>
+                {/if}
               </div>
             </div>
           {/each}
@@ -214,7 +231,7 @@
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
                 {#if vendor.currencyItemId}
-                  {formatNumber(vendor.price)}x {vendor.currencyItemName}
+                  {formatNumber(vendor.price)} {vendor.currencyItemName}
                 {:else}
                   {formatNumber(vendor.price)}g
                 {/if}
@@ -295,10 +312,10 @@
           : ""}
       >
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Altar Rewards
+          Altar rewards and final-wave drops
         </div>
         <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
-          {#each details.altarSources as altar (altar.altarId)}
+          {#each details.altarSources as altar, i (i)}
             <div>
               <MapEntityLink
                 href={buildEntityUrl(altar.altarId, "altar")}
@@ -312,12 +329,28 @@
               <div class="text-xs text-muted-foreground">
                 {#if altar.tier}
                   {formatAltarRequirement(altar.tier, altar, altar.maxLevel)}
+                {:else}
+                  Final-wave drop from {altar.monsterName}
+                  {#if altar.isDistributionRoll}(distribution roll, not an
+                    inventory award){/if}
+                  {#if altar.requiresQuest}(while needed for a gather quest){/if}
                 {/if}
-                {#if altar.dropRate > 0}
+                {#if altar.dropRate > 0 || altar.tier === null}
                   · {formatPercent(altar.dropRate, {
                     decimals: 1,
                     trailingZeros: true,
                   })}
+                  {#if altar.tier === null && !altar.isDistributionRoll}per kill{/if}
+                  {#if altar.fatecharmDropRate !== undefined}
+                    <span>without Fatecharm</span>
+                    <span class="block">
+                      {formatPercent(altar.fatecharmDropRate, {
+                        decimals: 1,
+                        trailingZeros: true,
+                      })}
+                      per kill with a matching dungeon Fatecharm consumed
+                    </span>
+                  {/if}
                 {/if}
               </div>
             </div>
@@ -337,7 +370,7 @@
           : ""}
       >
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Found in Chests
+          Found in chests
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.chestSources as chest (chest.chestId)}
@@ -374,7 +407,7 @@
           : ""}
       >
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Quest Rewards
+          Quest rewards
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.questRewards as quest (quest.questId)}
@@ -413,7 +446,7 @@
           {#each details.craftingSources as recipe (recipe.recipeId)}
             {#each recipe.materials as material (material.itemId)}
               <div class="flex items-center gap-1">
-                <span class="text-muted-foreground">{material.amount}x</span>
+                <span class="text-muted-foreground">{material.amount}×</span>
                 <MapItemLink
                   itemId={material.itemId}
                   itemName={material.itemName}
@@ -471,7 +504,7 @@
           : ""}
       >
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          From Treasure
+          Dug up with
         </div>
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.treasureMapSources as source (source.mapItemId)}

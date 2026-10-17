@@ -17,9 +17,9 @@ import {
   getPackSources,
   getRandomSources,
   getChestItemSources,
-  getMergeSources,
   getTreasureMapSources,
 } from "./item-sources";
+import { getItemSourceSummaries } from "./item-source-summary";
 
 // Basic item data for obtainability tree building
 interface BasicItemData {
@@ -134,13 +134,28 @@ export function buildObtainabilityTree(
   const gathers = getGatherSources(db, itemId);
   seen.clear();
   for (const g of gathers) {
-    if (!seen.has(g.resource_id)) {
+    const key = g.is_fishing_spot
+      ? JSON.stringify([
+          g.resource_name,
+          g.zone_id,
+          g.fishing_source_role,
+          g.fishing_chance_min,
+          g.fishing_chance_max,
+          g.actual_drop_chance,
+        ])
+      : g.resource_id;
+    if (g.is_fishing_spot && g.fishing_chance_max === 0) continue;
+    if (!seen.has(key)) {
+      const chance =
+        g.fishing_chance_min != null && g.fishing_chance_max != null
+          ? `, ${g.fishing_chance_min === g.fishing_chance_max ? `${(g.fishing_chance_min * 100).toPrecision(2)}%` : `${(g.fishing_chance_min * 100).toPrecision(2)}% to ${(g.fishing_chance_max * 100).toPrecision(2)}%`} per cast`
+          : "";
       addSource({
         type: "gather",
         id: g.resource_id,
-        name: g.resource_name,
+        name: `${g.resource_name}${g.zone_name ? ` (${g.zone_name}${chance})` : ""}`,
       });
-      seen.add(g.resource_id);
+      seen.add(key);
     }
   }
 
@@ -220,19 +235,6 @@ export function buildObtainabilityTree(
       id: firstRecipe.recipe_id,
       name: `Recipe (Tier ${firstRecipe.tier || 0})`,
     });
-  }
-
-  // Add merge sources
-  const merges = getMergeSources(db, itemId);
-  if (merges.length > 0) {
-    const firstMerge = merges[0];
-    for (const componentId of firstMerge.component_item_ids) {
-      addSource({
-        type: "merge",
-        id: componentId,
-        name: "", // Will be filled from components
-      });
-    }
   }
 
   // Build sources array (limited to 3 per type) and count totals per type
@@ -342,34 +344,19 @@ function getSpecialItemSources(
   db: Database.Database,
   itemId: string,
 ): SourceSummary[] {
-  switch (itemId) {
-    case "primal_essence": {
-      const essenceTraders = db
-        .prepare(
-          `SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_essence_trader') = 1`,
-        )
-        .all() as Array<{ id: string; name: string }>;
-      return essenceTraders.map((npc) => ({
-        type: "special",
-        id: npc.id,
-        name: npc.name,
-      }));
-    }
-    case "blessed_rune": {
-      const priestesses = db
-        .prepare(
-          `SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_priestess') = 1`,
-        )
-        .all() as Array<{ id: string; name: string }>;
-      return priestesses.map((npc) => ({
-        type: "special",
-        id: npc.id,
-        name: npc.name,
-      }));
-    }
-    default:
-      return [];
-  }
+  return getItemSourceSummaries(db, [itemId])
+    .filter(
+      (source) =>
+        source.type === "special" ||
+        source.type === "housing" ||
+        source.type === "starter" ||
+        source.type === "merge",
+    )
+    .map((source) => ({
+      type: source.type as ObtainabilitySourceType,
+      id: source.id,
+      name: source.name,
+    }));
 }
 
 // Get service transformation for special items (e.g., blessed rune from cursed rune)

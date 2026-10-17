@@ -35,8 +35,8 @@ export interface RoleDescription {
  * Order determines display order in badges.
  *
  * Categories:
- * - quest: Quest-related (Quest Giver, Daily Quests)
- * - merchant: Merchants (Merchant, Adv. Merchant, Faction Vendor, Essence Trader)
+ * - quest: Quest-related services
+ * - merchant: Item merchants and traders
  * - service: Services (Banker, Repairs, Skill Master, etc.)
  * - special: Special services (Priestess, Augmenter)
  * - combat: Combat (Guard)
@@ -44,11 +44,15 @@ export interface RoleDescription {
  */
 export const ROLE_CONFIG: RoleConfig[] = [
   { key: "is_quest_giver", label: "Quest Giver", category: "quest" },
-  { key: "is_taskgiver_adventurer", label: "Daily Quests", category: "quest" },
+  {
+    key: "is_taskgiver_adventurer",
+    label: "Adventurer Taskgiver",
+    category: "quest",
+  },
   { key: "is_merchant", label: "Merchant", category: "merchant" },
   {
     key: "is_merchant_adventurer",
-    label: "Adv. Merchant",
+    label: "Adventurer Merchant",
     category: "merchant",
   },
   { key: "is_faction_vendor", label: "Faction Vendor", category: "merchant" },
@@ -146,73 +150,73 @@ export const ROLE_DESCRIPTIONS: Partial<
   Record<keyof NpcRoles, RoleDescription>
 > = {
   is_quest_giver: {
-    description: "This NPC offers quests.",
+    description: "",
   },
   is_taskgiver_adventurer: {
-    description: "This NPC offers daily adventurer quests.",
+    description: "Offers adventurer quests with a daily cooldown.",
     details: ["You must reach level 40."],
   },
   is_merchant: {
-    description: "This NPC sells items.",
+    description: "",
   },
   is_merchant_adventurer: {
-    description: "This NPC sells adventurer items and rewards.",
+    description: "Sells adventurer items and rewards.",
   },
   // Source: server-scripts/Npc.cs:InteractNpc; UIFactions.cs:adaptTextFaction — the 15,000 raw requirement appears as Friendly 14,000 / 20,000.
   is_faction_vendor: {
-    description: "This NPC sells items exclusive to its faction.",
+    description: "Sells items exclusive to its faction.",
     details: [
       "You need at least 15,000 reputation with this faction (Friendly 14,000 / 20,000 in the faction panel).",
     ],
   },
+  // Source: server-scripts/Npc.cs:InteractNpc; server-scripts/UINpcTrading.cs:556-565 — the trading window offers only equipment with durability above zero.
   is_essence_trader: {
     description:
       'Trade Magic-quality or better equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
-    details: ["Bring Magic-quality or better equipment in your inventory."],
+    details: ["Broken equipment cannot be traded."],
   },
-  // Source: server-scripts/UIBank.cs:294-307 — tab costs use the number of tabs already unlocked.
+  // Source: server-scripts/UIBank.cs:294-307; server-scripts/Player.cs:470 — tab costs use the unlocked count, which starts at one.
   is_bank: {
-    description: "This NPC gives you access to your bank.",
+    description: "Gives you access to your bank.",
     details: [
-      "Each tab has 30 slots. You can unlock up to 10 tabs.",
+      "Each tab has 30 slots. You start with 1 tab and can unlock 9 more.",
       "Tabs cost 200, 1,000, 2,000, 5,000, 10,000, 15,000, 20,000, 50,000, then 100,000 gold.",
     ],
   },
   can_repair_equipment: {
-    description: "This NPC repairs damaged equipment for gold.",
+    description: "Repairs damaged equipment for gold.",
   },
   is_skill_master: {
-    description: "This NPC resets your class skill points.",
+    description: "Resets your class skill points.",
     details: [
       "The reset costs 100 gold at levels 1–9, 250 at 10–19, 500 at 20–29, 1,000 at 30–39, or 3,000 at 40+.",
     ],
   },
   is_veteran_master: {
-    description: "This NPC resets your veteran skill points.",
+    description: "Resets your veteran skill points.",
     details: [
       'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
     ],
   },
   // Source: server-scripts/Player.cs:5174-5189,11208-11226 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
-    description:
-      "This NPC resets your current specialization's assigned attribute points.",
+    description: "Resets attribute points for your current specialization.",
     details: [
       "The reset costs 100 gold at levels 1–9, 250 at 10–19, 500 at 20–29, 1,000 at 30–39, or 3,000 at 40+.",
       "A curse or debuff prevents the reset.",
     ],
   },
+  // Source: server-scripts/Player.cs:UserCode_CmdBindPlayer — stores the player's current position and zone.
   is_soul_binder: {
-    description: "This NPC sets your respawn point to the current area.",
+    description: "Sets your bind point to your current position.",
   },
   // Source: server-scripts/Npc.cs:1757-1780 — the innkeeper offers a drink for 25 gold.
   is_inkeeper: {
-    description: "This NPC sells food and drinks.",
-    details: ["An innkeeper drink costs 25 gold."],
+    description: "Serves you a random drink from its stock for 25 gold.",
   },
   // Source: server-scripts/Npc.cs:BarberPrice — BarberPrice is 100 gold.
   is_barber: {
-    description: "This NPC changes your character's appearance.",
+    description: "Changes your character's appearance.",
     details: ["The change costs 100 gold."],
   },
   // Source: server-scripts/Npc.cs:InteractNpc — the mercenary recruiter opens at level 10.
@@ -228,24 +232,24 @@ export const ROLE_DESCRIPTIONS: Partial<
   // Source: server-scripts/Npc.cs:1866-1880
   is_priestess: {
     description:
-      'This NPC converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
-    details: ["Bring Cursed Runes in your inventory."],
+      'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',
   },
   // Source: server-scripts/UINpcTrading.cs:260-265,325-330 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
   is_augmenter: {
-    description: "This NPC removes augments from equipment.",
+    description: "Removes augments from equipment and returns them to you.",
     details: [
-      "Removal costs 5,000 gold for other augment qualities, 10,000 for Magic, or 15,000 for Epic.",
-      "You get the removed augment back in your inventory.",
-      "Bring augmented equipment in your inventory or wear it.",
+      "Removal costs 10,000 gold for a Magic augment, 15,000 for an Epic augment, and 5,000 for any other augment.",
+      "Wear the equipment or bring it in your inventory.",
     ],
   },
   is_guild_management: {
-    description: "This NPC creates guilds and manages memberships.",
+    description: "Creates guilds and manages memberships.",
     details: ["A new guild costs 10,000 gold.", "A guild can have 10 members."],
   },
+  // Source: server-scripts/Npc.cs:OnAggro,CanAttack — nearby guards assist against attackable players, pets and aggressive monsters.
   is_guard: {
-    description: "This guard protects the area and can attack hostile players.",
+    description:
+      "Protects the area and helps NPCs within 30 yd fight players, pets and aggressive monsters.",
   },
   // is_renewal_sage: handled dynamically in NPC detail page
   // is_teleporter: handled dynamically in NPC detail page (destination varies)

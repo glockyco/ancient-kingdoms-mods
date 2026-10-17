@@ -103,7 +103,7 @@
 
     // Equipment/weapons: show stat count (pre-computed in SQL)
     if (type === "equipment" || type === "weapon") {
-      if (item.stat_count > 0) return `${item.stat_count} stats`;
+      if (item.stat_count > 0) return `${item.stat_count} stat bonuses`;
       return "-";
     }
 
@@ -114,7 +114,7 @@
 
     // Potions: show tier from alchemy recipe level
     if (type === "potion" && item.alchemy_recipe_level_required != null) {
-      return `Tier ${item.alchemy_recipe_level_required}`;
+      return `Tier ${["I", "II", "III", "IV", "V"][item.alchemy_recipe_level_required] ?? item.alchemy_recipe_level_required}`;
     }
 
     // Backpacks: show capacity
@@ -226,7 +226,7 @@
     },
     {
       accessorKey: "level_required",
-      header: "Level",
+      header: "Required level",
       size: 100,
       filterFn: (
         row,
@@ -328,7 +328,7 @@
     quality: "Quality",
     name: "Name",
     item_level: "Item Level",
-    level_required: "Level",
+    level_required: "Required level",
     slot: "Slot",
     class: "Class",
     notes: "Notes",
@@ -447,7 +447,7 @@
     />
   {/if}
   {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Level" />
+    <DataTableRangeFilter column={levelCol} title="Required level" />
   {/if}
   {#if slotCol}
     <DataTableFacetedFilter
@@ -494,8 +494,6 @@
       <DataTableStatPanel
         column={statsCol}
         bind:open={statPanel.open}
-        totalRows={dataWithVirtual.length}
-        filteredRows={table.getFilteredRowModel().rows.length}
         {facetedItemIds}
       />
     {/if}

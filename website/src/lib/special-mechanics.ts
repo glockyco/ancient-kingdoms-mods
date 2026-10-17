@@ -21,36 +21,48 @@ const VALAARK_LINK: SpecialMechanicLink = {
   label: "Valaark",
 };
 
+// Sources: server-scripts/GameManager.cs:TryUseValaarkDragonbaitStew,
+// server-scripts/Player.cs:UserCode_CmdRemoveInvencibleValaark__Int32,
+// server-scripts/Monster.cs:ApplyValaarkVulnerability,RestoreValaarkInvincibility;
+// server-scripts/AreaDamageSkill.cs:Apply.
 const VALAARK_INVULNERABILITY: SpecialMechanic = {
   title: "Invulnerability",
   summary: [
     "Valaark is invulnerable until ",
     DRAGONBAIT_STEW_LINK,
-    " is used nearby.",
+    " is used within 4 yd of him.",
   ],
   details: [
     [
       "Use ",
       DRAGONBAIT_STEW_LINK,
-      " while targeting Valaark within melee range.",
-    ],
-    ["One stew makes Valaark vulnerable for 60-299 seconds."],
-    [
-      "During that window, two different random damage resistances drop to 200 while the other three stay at 2000.",
+      " while targeting Valaark from within 4 yd.",
     ],
     [
-      "Using another stew while Valaark is already vulnerable only shows a warning and does not consume it.",
+      "One stew makes Valaark vulnerable for a random duration from 1m to 4m 59s.",
     ],
     [
-      "When the timer expires, or when Valaark leashes and returns home, invulnerability returns.",
+      "While Valaark is vulnerable, two of his five resistances, chosen at random, drop to 200. The other three stay at 2,000.",
     ],
-    ["While vulnerable, Valaark's area damage is halved."],
+    [
+      "A stew used while Valaark is already vulnerable is not consumed and does not extend the timer.",
+    ],
+    [
+      "Invulnerability returns when the timer ends or when Valaark returns to his spawn point after losing his targets.",
+    ],
+    [
+      "While vulnerable, Valaark's area damage is halved, rounded to the nearest integer. Exact halves round to the even number.",
+    ],
   ],
 };
 
 const DRAGONBAIT_STEW_USE: SpecialMechanic = {
-  title: "Valaark Vulnerability",
-  summary: ["Used to temporarily remove ", VALAARK_LINK, "'s invulnerability."],
+  title: "Valaark vulnerability",
+  summary: [
+    "Target ",
+    VALAARK_LINK,
+    " and use the stew within 4 yd to make him vulnerable for a random duration from 1m to 4m 59s.",
+  ],
   details: [],
 };
 

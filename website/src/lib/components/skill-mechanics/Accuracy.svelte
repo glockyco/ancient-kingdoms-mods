@@ -21,10 +21,15 @@
         : ""}. The chance that its attacks and debuffs are blocked or resisted {amount <
       0
         ? "rises"
-        : "falls"} by the same number of percentage points, within each roll's limits.</span
+        : "falls"} by the same number of percentage points.</span
     >
     <span class="block"
-      >Total Accuracy is limited to a value between −50% and 100%.</span
+      >Total Accuracy is limited to a value between -50% and 100%. See
+      <a
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        href="/mechanics/combat#avoidance">resistance and avoidance</a
+      >
+      for each roll's limits.</span
     >
   </p>
 </div>

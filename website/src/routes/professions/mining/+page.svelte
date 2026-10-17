@@ -1,5 +1,6 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
+  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
@@ -83,7 +84,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms`}
+  title={detailTitle(data.profession.name, { family: "Profession" })}
   description={`Mining raises your success chance on higher-tier ore. ${data.ores.length} ores across ${data.totalNodes} nodes, with success odds, respawn timers, bonus gems, and what each ore is used for.`}
   path="/professions/mining"
 />
@@ -104,21 +105,15 @@
     iconBackgroundClass="bg-amber-500/10"
     {sections}
   >
-    <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — tier V is 0.05 per
-         pickaxe quality plus 0.5 per skill, so a Draconium pickaxe alone gives 20%
-         and full Mining adds the other 50 points. -->
+    <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — success depends on pickaxe quality and Mining skill. -->
     <p>
-      Mine ore from nodes across the world. Your skill and your pickaxe together
-      control your chance to get ore from a node.
-      <strong class="font-semibold text-foreground"
-        >A Draconium node with a Draconium pickaxe gives 20% at 0 Mining and 70%
-        at 100.</strong
-      >
+      Gather ore and gems with a pickaxe. Better pickaxes and higher Mining
+      skill improve your success chance.
     </p>
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Mining and Pickaxes work</h2>
+    <h2 class="text-xl font-semibold">How Mining works</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:TryGetSelectedPickaxe — the gather needs a
            Pickaxe-category weapon that is not broken. -->
@@ -127,17 +122,19 @@
         <div>
           <p class="font-medium">Carry a pickaxe.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            On nodes where your success chance is below 100%, a higher-quality
-            <a
+            A better <a
               href="#pickaxes"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >pickaxe</a
-            > can improve it. A broken pickaxe does not work.
+            > adds 20 percentage points of success per quality step on Tier II, 15
+            on Tier III, 10 on Tier IV and 5 on Tier V, up to 100%. Any pickaxe above
+            Rusty always succeeds on Tier I. Broken pickaxes cannot be used.
           </p>
           <!-- Source: server-scripts/Player.cs:10105-10110; server-scripts/PlayerInventory.cs:277-291 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            If no usable pickaxe is selected, the game selects the best one in
-            your inventory.
+            Use a pickaxe from your inventory to select it. If the selected
+            pickaxe is missing or broken, the game uses your highest-quality
+            working pickaxe.
           </p>
         </div>
       </li>
@@ -150,9 +147,9 @@
         <div>
           <p class="font-medium">Click a node.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            If your chance is less than {MINING_SUCCESS_FLOOR * 100}%, you
-            cannot mine the node. Each try costs 1 durability. This includes the
-            tries that fail.
+            Hover over a node to see your Mining Probability. Below
+            {MINING_SUCCESS_FLOOR * 100}%, you cannot mine it. Each try costs 1
+            pickaxe durability, even when it fails.
           </p>
         </div>
       </li>
@@ -162,11 +159,10 @@
           <p class="font-medium">Collect the ore.</p>
           <!-- Source: server-scripts/GatherItem.cs:383-405,444-455,547-563 — success depletes the node and can give ore and a separate random drop. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            A successful mine gives ore and a separate chance at a <a
+            Collect ore and possibly a <a
               href="#gems"
               class="text-blue-600 hover:underline dark:text-blue-400">gem</a
-            >. Only a successful attempt depletes the node. A failure leaves it
-            ready.
+            >. Failed attempts leave the node ready to try again.
           </p>
         </div>
       </li>
@@ -185,7 +181,7 @@
           <tr class="border-b bg-muted/50 text-left text-xs">
             <th class="whitespace-nowrap p-3 font-medium">Pickaxe</th>
             <th class="whitespace-nowrap p-3 text-right font-medium"
-              >Tier V at 100 Mining</th
+              >Tier V success at 100% Mining</th
             >
             <th class="p-3 font-medium">Where to get it</th>
           </tr>
@@ -226,9 +222,8 @@
   <section id="calculator" class="space-y-4">
     <h2 class="text-xl font-semibold">Success by skill</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      On Tier V ore, each pickaxe quality adds 5 percentage points to your
-      success chance. Each 1% Mining adds another 0.5 points. In the shaded
-      bands, the node still gives ore and <MechanicsLink
+      Each 10% Mining adds 5 percentage points of success on Tier V. In the
+      shaded bands, nodes still give ore and <MechanicsLink
         section="experience#gathering-xp">experience</MechanicsLink
       >, but no more Mining skill.
     </p>
@@ -301,24 +296,17 @@
         {:else}
           {payingTiers.length}
           of them still {payingTiers.length === 1 ? "gives" : "give"} Mining skill,
-          at {formatPercent(gainChance / 100, {
+          with a {formatPercent(gainChance / 100, {
             decimals: 0,
             trailingZeros: true,
-          })} for each success.
+          })} chance per success.
         {/if}
         The dashed lines show what you cannot mine.
       </p>
 
       <!-- Source: server-scripts/GatherItem.cs:588-597 — successful mines can increase skill below the cap; gain chance is 0.95 − 0.6 × miningLevel², and the amount is Random.Range(1, 4) divided by success chance × 1000. -->
       <p class="text-pretty text-sm text-muted-foreground">
-        Mining is a value from 0% to 100% and has no experience bar. When mining
-        can increase skill, the chance is {formatPercent(
-          miningSkillGainChancePercent(0) / 100,
-          { decimals: 0, trailingZeros: true },
-        )} at 0% Mining and {formatPercent(
-          miningSkillGainChancePercent(50) / 100,
-          { decimals: 0, trailingZeros: true },
-        )} at 50%. At 100%, Mining cannot increase further. Dwarves start at
+        Mining stops increasing at 100%. Dwarves start at
         {DWARF_STARTING_MINING_PERCENT}%. Every other race starts at 0%.
       </p>
     </div>
@@ -446,13 +434,13 @@
   <section id="gems" class="space-y-4">
     <h2 class="text-xl font-semibold">Bonus gems</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Every success makes one more roll for a gem. The chance is between 0.8%
-      and 2.5%. Mining skill does not change it.
+      Successful mines can also give gems. The chance depends on the ore, not
+      your Mining skill.
     </p>
     <details class="group">
       <summary
         class="cursor-pointer text-sm text-blue-600 hover:underline dark:text-blue-400"
-        >Every gem pool</summary
+        >Gems by ore</summary
       >
       <div class="mt-4 grid gap-4 sm:grid-cols-2">
         {#each data.ores.filter((ore) => ore.gems.length > 0) as ore (ore.id)}
@@ -461,6 +449,15 @@
               <span class="text-muted-foreground">{ROMAN[ore.tier]}</span>
               {ore.name}
             </h3>
+            <p class="text-sm text-muted-foreground">
+              {formatPercent(
+                ore.gems.reduce((total, gem) => total + gem.chance, 0),
+                {
+                  decimals: 1,
+                  trailingZeros: true,
+                },
+              )} chance of any gem per successful mine
+            </p>
             {#each ore.gems as gem (gem.item_id)}
               <div class="flex items-baseline justify-between gap-3 text-sm">
                 <ItemLink
@@ -527,10 +524,7 @@
                 </td>
                 <td class="p-3 text-muted-foreground">{quest.ore_name}</td>
                 <td class="p-3 text-right tabular-nums"
-                  >{quest.amount}
-                  <span class="text-xs text-muted-foreground"
-                    >{quest.purpose.toLowerCase()}</span
-                  ></td
+                  >{quest.purpose} {quest.amount}</td
                 >
                 <td class="p-3 text-right tabular-nums text-muted-foreground"
                   >{quest.level_recommended}</td
@@ -560,11 +554,7 @@
         href="/professions/alchemy"
         class="text-blue-600 hover:underline dark:text-blue-400">Alchemy</a
       >
-      recipes and other crafting stations. Ore follows the same experience rules as
-      other gathering. See
-      <MechanicsLink section="experience#gathering-xp">Experience</MechanicsLink
-      >
-      for the rule.
+      recipes and at other crafting stations.
     </p>
   </section>
 </div>

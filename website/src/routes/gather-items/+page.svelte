@@ -81,7 +81,7 @@
     Mineral: "bg-gray-500",
     "Radiant Spark": "bg-purple-600",
     "Fishing Spot": "bg-sky-600",
-    Resource: "bg-gray-400",
+    Other: "bg-gray-400",
   };
 
   // Get unique types for filter
@@ -245,13 +245,18 @@
       {:else}
         <span class="text-muted-foreground">&nbsp;×1</span>
       {/if}
+      {#if row.original.type === "Radiant Spark"}
+        <span class="text-muted-foreground">, 5% to 25% chance</span>
+      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "drops"}
     {@const drops = row.original.drops}
     {#if drops.length > 0}
-      <span class="text-muted-foreground">{drops.length} items</span>
+      <span class="text-muted-foreground"
+        >{drops.length} {drops.length === 1 ? "item" : "items"}</span
+      >
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -316,7 +321,7 @@
 
 <Seo
   title="Gathering Resources - Ancient Kingdoms"
-  description="Find plants, minerals, fishing spots, and radiant sparks across Eratiath by tier, gathering XP, spawn zone, and rewards."
+  description="Find plants, minerals, fishing spots, and radiant sparks across Eratiath by tier, zone, and reward."
   path="/gather-items"
 />
 

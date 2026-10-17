@@ -25,10 +25,15 @@ import type {
   MonsterSpawnCombatStats,
 } from "$lib/types/monsters";
 import { monsterDescription } from "$lib/server/meta-description";
+import { formatPercent } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { statAtLevel } from "$lib/utils/monster-stats";
+import {
+  calculateBossLootChance,
+  type BossLootDrop,
+} from "$lib/calculation/boss-loot";
 
 export const prerender = true;
 
@@ -231,7 +236,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     does_respawn: Boolean(monsterRaw.does_respawn),
     death_time: (monsterRaw.death_time as number) || 0,
     respawn_time: (monsterRaw.respawn_time as number) || 0,
-    respawn_probability: (monsterRaw.respawn_probability as number) || 1,
+    respawn_probability: (monsterRaw.respawn_probability as number) ?? 1,
     spawn_time_start: (monsterRaw.spawn_time_start as number) || 0,
     spawn_time_end: (monsterRaw.spawn_time_end as number) || 0,
     placeholder_monster_id: monsterRaw.placeholder_monster_id as string | null,
@@ -576,6 +581,123 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     altar.waves.sort((a, b) => a - b);
   }
   spawns.placeholder = placeholderInfo;
+  // Sources: server-scripts/DefaultEvent.cs:SummonMonsters;
+  // server-scripts/AvatarEvent.cs:SummonMonsters. Classify actual wave placements,
+  // not monster names, since the same template can also appear outside an altar.
+  if (typeof monsterRaw.loot_inputs !== "string") {
+    throw new Error(`Missing monsters.loot_inputs for ${params.id}`);
+  }
+  const lootInputs = JSON.parse(monsterRaw.loot_inputs) as BossLootDrop[];
+  const templateHasDrops = lootInputs.length > 0;
+  if (monster.is_boss) {
+    const fatecharmContext = db
+      .prepare(
+        `
+      SELECT EXISTS (
+        SELECT 1 FROM monster_spawns ms
+        JOIN zones z ON z.id = ms.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
+        JOIN items charm ON charm.luck_token_zone_id = ms.zone_id AND charm.luck_token_bonus > 0
+        WHERE ms.monster_id = ?
+      ) AS eligible
+    `,
+      )
+      .get(params.id) as { eligible: number };
+    const hasFatecharm = Boolean(fatecharmContext.eligible);
+    const isLootOutcome = (itemId: string) =>
+      lootInputs.some(
+        (input) =>
+          (input.item_id === itemId && input.random_items === undefined) ||
+          input.random_items?.some((item) => item.item_id === itemId),
+      );
+    const seen = new Set<string>();
+    const groupedDrops = drops.filter((drop) => {
+      if (drop.altar_id || drop.note || !isLootOutcome(drop.item_id))
+        return true;
+      if (seen.has(drop.item_id)) return false;
+      seen.add(drop.item_id);
+      return true;
+    });
+    for (const drop of groupedDrops) {
+      if (drop.altar_id || !isLootOutcome(drop.item_id)) continue;
+      const neededQuestItemIds = new Set([drop.item_id]);
+      drop.per_kill_chance = calculateBossLootChance(lootInputs, drop.item_id, {
+        neededQuestItemIds,
+      });
+      if (hasFatecharm) {
+        drop.per_kill_chance_with_fatecharm = calculateBossLootChance(
+          lootInputs,
+          drop.item_id,
+          { neededQuestItemIds, fatecharm: true },
+        );
+      }
+    }
+    drops.splice(0, drops.length, ...groupedDrops);
+  }
+  const altarPlacements = db
+    .prepare(
+      `
+    SELECT a.type,
+      CAST(w.key AS INTEGER) = json_array_length(a.waves) - 1 AS is_final,
+      a.reward_common_id IS NOT NULL AND a.reward_magic_id IS NOT NULL
+        AND a.reward_epic_id IS NOT NULL AND a.reward_legendary_id IS NOT NULL AS has_rewards
+    FROM altars a, json_each(a.waves) w, json_each(w.value, '$.monsters') wm
+    WHERE json_extract(wm.value, '$.monster_id') = ?
+  `,
+    )
+    .all(params.id) as Array<{
+    type: string;
+    is_final: number;
+    has_rewards: number;
+  }>;
+  const combatSummoners = db
+    .prepare(
+      `
+    SELECT DISTINCT m.id AS monster_id, m.name AS monster_name,
+      s.id AS skill_id, s.name AS skill_name,
+      s.summon_count_per_cast AS count_per_cast, s.max_active_summons AS max_active
+    FROM monster_skills ms
+    JOIN monsters m ON m.id = ms.monster_id
+    JOIN skills s ON s.id = ms.skill_id
+    WHERE s.summoned_monster_id = ? AND s.summon_count_per_cast <> 0
+    ORDER BY m.name, s.name
+  `,
+    )
+    .all(params.id) as MonsterDetailData["combatSummoners"];
+  const hasOtherLootSpawns =
+    spawns.regular.length > 0 ||
+    spawns.summon.length > 0 ||
+    spawns.placeholder !== null;
+  const hasOtherSpawns = hasOtherLootSpawns || combatSummoners.length > 0;
+  const altarContext: MonsterDetailData["altarContext"] = {
+    only_altar_spawns: altarPlacements.length > 0 && !hasOtherSpawns,
+    only_nonfinal_waves:
+      altarPlacements.length > 0 &&
+      !hasOtherLootSpawns &&
+      altarPlacements.every((p) => !p.is_final),
+    // Source: server-scripts/SummonSkillMonsters.cs:Apply - combat summons also have no loot.
+    only_lootless_spawns:
+      !hasOtherLootSpawns &&
+      (altarPlacements.length > 0 || combatSummoners.length > 0) &&
+      altarPlacements.every((p) => !p.is_final),
+    only_avatar_altars:
+      altarPlacements.length > 0 &&
+      !hasOtherSpawns &&
+      altarPlacements.every((p) => p.type === "avatar"),
+    has_nonfinal_waves: altarPlacements.some((p) => !p.is_final),
+    has_avatar_altars: altarPlacements.some((p) => p.type === "avatar"),
+    has_scaled_final_gold:
+      monster.is_elite &&
+      templateHasDrops &&
+      altarPlacements.some(
+        (p) => p.type === "forgotten" && p.is_final && p.has_rewards,
+      ),
+  };
+  if (altarContext.only_lootless_spawns) {
+    drops.splice(0, drops.length);
+    monster.gold_min = 0;
+    monster.gold_max = 0;
+    monster.probability_drop_gold = 0;
+  }
 
   const spawnCombatStats = Array.from(spawnCombatStatsByKey.values())
     .map(({ zoneNameSet, ...stats }) => ({
@@ -764,19 +886,19 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   const summons = db
     .prepare(
       `
-    SELECT DISTINCT
-      ms.monster_id as summoned_monster_id,
-      m.name as summoned_monster_name,
-      ms.source_summon_kill_count as kill_count,
-      z.id as zone_id,
-      z.name as zone_name,
-      ms.sub_zone_id,
-      zt.name as sub_zone_name
-    FROM monster_spawns ms
-    JOIN monsters m ON m.id = ms.monster_id
-    JOIN zones z ON z.id = ms.zone_id
-    LEFT JOIN zone_triggers zt ON zt.id = ms.sub_zone_id
-    WHERE ms.source_summon_kill_monster_id = ?
+    SELECT
+      st.summoned_entity_id AS summoned_monster_id,
+      st.summoned_entity_name AS summoned_monster_name,
+      st.summoned_entity_type,
+      COUNT(*) AS kill_count,
+      z.id AS zone_id, z.name AS zone_name,
+      NULL AS sub_zone_id, NULL AS sub_zone_name
+    FROM summon_triggers st
+    JOIN summon_trigger_placeholders p ON p.trigger_id = st.id
+    JOIN monster_spawns guard ON guard.id = p.spawn_id
+    JOIN zones z ON z.id = st.zone_id
+    WHERE guard.monster_id = ?
+    GROUP BY st.id
   `,
     )
     .all(params.id) as SummonsInfo[];
@@ -857,6 +979,10 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         }
       : null;
   const summonSpawn = spawns.summon[0] ?? null;
+  const metadataDrops = drops.filter((drop) => !drop.altar_id);
+  const topMetadataDrop = metadataDrops[0];
+  const metadataItemCount = new Set(metadataDrops.map((drop) => drop.item_id))
+    .size;
 
   const description = monsterDescription(
     {
@@ -868,6 +994,36 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       is_fabled: monster.is_fabled,
       is_hunt: monster.is_hunt,
       type_name: monster.type_name,
+      health:
+        spawnCombatStats.length === 1 ? spawnCombatStats[0].health : undefined,
+      does_respawn:
+        spawns.regular.length > 0 ? monster.does_respawn : undefined,
+      death_time: monster.death_time,
+      respawn_time:
+        spawns.regular.length > 0 &&
+        monster.does_respawn &&
+        monster.respawn_probability === 1 &&
+        monster.spawn_time_start === monster.spawn_time_end
+          ? monster.respawn_time
+          : undefined,
+      drop_summary: topMetadataDrop
+        ? `Drops ${topMetadataDrop.item_name}${topMetadataDrop.per_kill_chance != null ? ` (${formatPercent(topMetadataDrop.per_kill_chance, { decimals: 2 })} per kill)` : ""}${metadataItemCount > 1 ? ` and ${metadataItemCount - 1} other items` : ""}.`
+        : null,
+      triggered_origins: [
+        ...(spawns.placeholder
+          ? [
+              {
+                monster_name: spawns.placeholder.source_monster_name,
+                zone_name: spawns.placeholder.zone_name,
+                trigger: "death" as const,
+              },
+            ]
+          : []),
+        ...combatSummoners.map((summoner) => ({
+          monster_name: summoner.monster_name,
+          trigger: "summon" as const,
+        })),
+      ],
     },
     zoneNames,
     altarSpawn,
@@ -879,6 +1035,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     factionIds: getFactionIdsByName(),
     description,
     drops,
+    combatSummoners,
+    altarContext,
     spawns,
     spawnCombatStats,
     quests,

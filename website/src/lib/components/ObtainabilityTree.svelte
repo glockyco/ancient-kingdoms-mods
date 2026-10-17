@@ -52,18 +52,26 @@
     {@const moreCount = totalForType - sources.length}
     <div class="flex items-center gap-1.5 py-1 pl-4 whitespace-nowrap">
       <config.icon class="h-4 w-4 shrink-0 {config.color}" />
-      <span class="text-muted-foreground">{config.label}:</span>
+      <span class="text-muted-foreground"
+        >{type === "special"
+          ? node.item_id === "blessed_rune"
+            ? "Blessed by"
+            : "Traded by"
+          : config.label}:</span
+      >
       <div class="flex items-center gap-1">
-        {#each sources as source, i (source.id)}
-          <a
-            href="{config.linkPrefix}{source.id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {source.name}
-          </a>
-          {#if i < sources.length - 1 || moreCount > 0}
-            <span class="text-muted-foreground">,</span>
-          {/if}
+        {#each sources as source, i (`${source.id}_${i}`)}
+          <span>
+            <a
+              href="{config.linkPrefix}{source.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {source.name}
+            </a>
+            {#if i < sources.length - 1 || moreCount > 0}
+              <span class="text-muted-foreground">,</span>
+            {/if}
+          </span>
         {/each}
         {#if moreCount > 0}
           <span class="text-muted-foreground">
@@ -81,7 +89,7 @@
       <button
         onclick={() => (isExpanded = !isExpanded)}
         class="p-0.5 rounded hover:bg-muted transition-colors"
-        aria-label={isExpanded ? "Collapse" : "Expand"}
+        aria-label={`${isExpanded ? "Collapse" : "Expand"} sources for ${node.item_name}`}
       >
         {#if isExpanded}
           <ChevronDown class="h-4 w-4 text-muted-foreground" />
@@ -107,7 +115,7 @@
     {/if}
 
     {#if node.amount > 1}
-      <span class="text-muted-foreground text-sm">x{node.amount}</span>
+      <span class="text-muted-foreground text-sm">×{node.amount}</span>
     {/if}
 
     {#if !hasChildren}
@@ -139,7 +147,7 @@
               <button
                 onclick={() => (isServiceExpanded = !isServiceExpanded)}
                 class="p-0.5 rounded hover:bg-muted transition-colors"
-                aria-label={isServiceExpanded ? "Collapse" : "Expand"}
+                aria-label={`${isServiceExpanded ? "Collapse" : "Expand"} service materials for ${node.item_name}`}
               >
                 {#if isServiceExpanded}
                   <ChevronDown class="h-4 w-4 text-muted-foreground" />
@@ -148,18 +156,26 @@
                 {/if}
               </button>
               <config.icon class="h-4 w-4 shrink-0 {config.color}" />
-              <span class="text-muted-foreground">{config.label}:</span>
+              <span class="text-muted-foreground"
+                >{type === "special"
+                  ? node.item_id === "blessed_rune"
+                    ? "Blessed by"
+                    : "Traded by"
+                  : config.label}:</span
+              >
               <div class="flex items-center gap-1">
-                {#each sources as source, i (source.id)}
-                  <a
-                    href="{config.linkPrefix}{source.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {source.name}
-                  </a>
-                  {#if i < sources.length - 1 || moreCount > 0}
-                    <span class="text-muted-foreground">,</span>
-                  {/if}
+                {#each sources as source, i (`${source.id}_${i}`)}
+                  <span>
+                    <a
+                      href="{config.linkPrefix}{source.id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      {source.name}
+                    </a>
+                    {#if i < sources.length - 1 || moreCount > 0}
+                      <span class="text-muted-foreground">,</span>
+                    {/if}
+                  </span>
                 {/each}
                 {#if moreCount > 0}
                   <span class="text-muted-foreground">+{moreCount} more</span>
