@@ -514,10 +514,7 @@
             <p class="font-medium">Veteran Attack Power and Spell Power</p>
             <p>
               Each of your total veteran points adds 1 to the mercenary's base
-              Attack Power and Spell Power. The bonus follows your current
-              veteran points: whenever the mercenary is summoned or the game
-              reloads, it gets its hire roll plus your veteran points at that
-              moment.
+              Attack Power and Spell Power.
             </p>
           </div>
         </Alert>
