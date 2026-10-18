@@ -196,7 +196,9 @@
         const aPrimary = a.note === "Fish from this spot" ? 0 : 1;
         const bPrimary = b.note === "Fish from this spot" ? 0 : 1;
         if (aPrimary !== bPrimary) return aPrimary - bPrimary;
-        return (b.quality ?? 0) - (a.quality ?? 0);
+        return (
+          (b.quality ?? 0) - (a.quality ?? 0) || a.label.localeCompare(b.label)
+        );
       }),
   );
 
