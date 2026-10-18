@@ -222,6 +222,10 @@ No new seasonal presentation is included. A renderer must not turn an internal d
 
 An altar boss's own loot is listed as a monster drop. Only an altar's tiered rewards appear as altar rows.
 
+A zone's boss and elite totals count the monsters its page lists: world placements, altar wave members and placeholder spawns near their parent placement. Regular altar wave members count toward neither. A zone's level range and median come from world placements only, so altar waves do not move them.
+
+A vendor row shows the offered item, as the trade window does, with identical repeated offers merged. A pack's page and popup list its vendors, and the delivered item's rows show the delivered amount.
+
 ## Migration Plan
 
 1. Confirm the page matrix and record field-by-field runtime evidence for new or changed published claims. Reuse valid prior evidence for unchanged rules. Coordinate the required simulator cases rather than substituting new theoretical output for game observation.
