@@ -1,24 +1,13 @@
 import Database from "better-sqlite3";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
-import type { ItemSourceType } from "$lib/constants/source-types";
+import type { MethodView } from "$lib/acquisition/types";
 import { HOUSE_CHEST_SLOT_RANGES } from "$lib/inventory/house-chests";
 import type { ReputationTier } from "$lib/utils/reputation";
-import {
-  getItemSourceSummaries,
-  getMinimumSourceLevel,
-  groupItemSourceSummaries,
-} from "$lib/server/item-source-summary";
+import { loadItemAcquisition } from "$lib/server/acquisition";
 import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
-
-export interface BackpackSource {
-  type: ItemSourceType;
-  id: string;
-  name: string;
-  source_level: number | null;
-}
 
 export interface BackpackListItem {
   id: string;
@@ -28,7 +17,7 @@ export interface BackpackListItem {
   backpack_is_unique: boolean;
   tooltip_html: string | null;
   min_source_level: number | null;
-  sources: BackpackSource[];
+  sources: readonly MethodView[];
 }
 
 export interface HouseStorageLocation {
@@ -151,57 +140,57 @@ function compareBackpacks(a: BackpackListItem, b: BackpackListItem): number {
   );
 }
 
-export const load: PageServerLoad = (): InventoryMechanicsPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+export const load: PageServerLoad =
+  async (): Promise<InventoryMechanicsPageData> => {
+    const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
-  try {
-    const rows = getBackpackRows(db);
-    const sourcesByItemId = groupItemSourceSummaries(
-      getItemSourceSummaries(
-        db,
+    try {
+      const rows = getBackpackRows(db);
+      const acquisition = await loadItemAcquisition(
+        async (sql, params) =>
+          db.prepare(sql).all(...params) as Record<string, unknown>[],
         rows.map((row) => row.id),
-      ),
-    );
+      );
 
-    const backpacks = rows
-      .map((row) => {
-        const sources = sourcesByItemId.get(row.id) ?? [];
+      const backpacks = rows
+        .map((row) => {
+          const source = acquisition.sources[row.id];
 
-        return {
-          ...row,
-          min_source_level: getMinimumSourceLevel(sources),
-          sources,
-        };
-      })
-      .sort(compareBackpacks);
+          return {
+            ...row,
+            min_source_level: source.sourceLevelHint,
+            sources: source.methods,
+          };
+        })
+        .sort(compareBackpacks);
 
-    const houseChests = getHouseChests(db);
-    const itemIconPaths = getItemIconPaths(
-      db,
-      [...backpacks, ...houseChests].map((item) => item.id),
-    );
-    return {
-      backpacks,
-      houses: getHouseLocations(db),
-      houseChests,
-      itemIconPaths,
-      reputationTiers: db
-        .prepare("SELECT * FROM reputation_tiers ORDER BY id")
-        .all() as ReputationTier[],
-      // Source: server-scripts/Combat.cs:DealDamageAt — DamageSkill.breakArmorProb gates the random equipment-slot durability loss.
-      armorBreakingSkills: db
-        .prepare(
-          "SELECT id, name, break_armor_prob FROM skills WHERE break_armor_prob > 0 ORDER BY name",
-        )
-        .all() as InventoryMechanicsPageData["armorBreakingSkills"],
-      // Source: server-scripts/PotionItem.cs:Use — a buff potion whose buff disallows dungeons is refused there.
-      dungeonRefusedPotions: db
-        .prepare(
-          "SELECT id, name FROM items WHERE potion_buff_id IS NOT NULL AND potion_buff_allow_dungeon = 0 ORDER BY name",
-        )
-        .all() as InventoryMechanicsPageData["dungeonRefusedPotions"],
-    };
-  } finally {
-    db.close();
-  }
-};
+      const houseChests = getHouseChests(db);
+      const itemIconPaths = getItemIconPaths(
+        db,
+        [...backpacks, ...houseChests].map((item) => item.id),
+      );
+      return {
+        backpacks,
+        houses: getHouseLocations(db),
+        houseChests,
+        itemIconPaths,
+        reputationTiers: db
+          .prepare("SELECT * FROM reputation_tiers ORDER BY id")
+          .all() as ReputationTier[],
+        // Source: server-scripts/Combat.cs:DealDamageAt — DamageSkill.breakArmorProb gates the random equipment-slot durability loss.
+        armorBreakingSkills: db
+          .prepare(
+            "SELECT id, name, break_armor_prob FROM skills WHERE break_armor_prob > 0 ORDER BY name",
+          )
+          .all() as InventoryMechanicsPageData["armorBreakingSkills"],
+        // Source: server-scripts/PotionItem.cs:Use — a buff potion whose buff disallows dungeons is refused there.
+        dungeonRefusedPotions: db
+          .prepare(
+            "SELECT id, name FROM items WHERE potion_buff_id IS NOT NULL AND potion_buff_allow_dungeon = 0 ORDER BY name",
+          )
+          .all() as InventoryMechanicsPageData["dungeonRefusedPotions"],
+      };
+    } finally {
+      db.close();
+    }
+  };

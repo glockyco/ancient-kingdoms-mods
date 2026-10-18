@@ -578,6 +578,18 @@ export const HOME_SHOWCASE: HomeShowcase = {
       },
     },
     {
+      id: "crescent_coast",
+      name: "Crescent Coast",
+      levelMedian: 12,
+      isDungeon: false,
+      href: "/zones/crescent_coast",
+      shot: {
+        src: "/images/zones/crescent_coast/shot.webp",
+        width: 960,
+        height: 540,
+      },
+    },
+    {
       id: "abandoned_mines",
       name: "Abandoned Mines",
       levelMedian: 13,
@@ -602,21 +614,9 @@ export const HOME_SHOWCASE: HomeShowcase = {
       },
     },
     {
-      id: "crescent_coast",
-      name: "Crescent Coast",
-      levelMedian: 15,
-      isDungeon: false,
-      href: "/zones/crescent_coast",
-      shot: {
-        src: "/images/zones/crescent_coast/shot.webp",
-        width: 960,
-        height: 540,
-      },
-    },
-    {
       id: "twilight_forest",
       name: "Twilight Forest",
-      levelMedian: 18,
+      levelMedian: 13,
       isDungeon: false,
       href: "/zones/twilight_forest",
       shot: {
@@ -638,6 +638,18 @@ export const HOME_SHOWCASE: HomeShowcase = {
       },
     },
     {
+      id: "the_lone-lands",
+      name: "The Lone-lands",
+      levelMedian: 21,
+      isDungeon: false,
+      href: "/zones/the_lone-lands",
+      shot: {
+        src: "/images/zones/the_lone-lands/shot.webp",
+        width: 960,
+        height: 540,
+      },
+    },
+    {
       id: "black_ice_deep",
       name: "Black Ice Deep",
       levelMedian: 24,
@@ -645,18 +657,6 @@ export const HOME_SHOWCASE: HomeShowcase = {
       href: "/zones/black_ice_deep",
       shot: {
         src: "/images/zones/black_ice_deep/shot.webp",
-        width: 960,
-        height: 540,
-      },
-    },
-    {
-      id: "the_lone-lands",
-      name: "The Lone-lands",
-      levelMedian: 26,
-      isDungeon: false,
-      href: "/zones/the_lone-lands",
-      shot: {
-        src: "/images/zones/the_lone-lands/shot.webp",
         width: 960,
         height: 540,
       },
@@ -700,7 +700,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       id: "everfrost",
       name: "Everfrost",
-      levelMedian: 31,
+      levelMedian: 32,
       isDungeon: false,
       href: "/zones/everfrost",
       shot: {
@@ -782,6 +782,18 @@ export const HOME_SHOWCASE: HomeShowcase = {
       },
     },
     {
+      id: "winterforge",
+      name: "Winterforge",
+      levelMedian: 50,
+      isDungeon: true,
+      href: "/zones/winterforge",
+      shot: {
+        src: "/images/zones/winterforge/shot.webp",
+        width: 960,
+        height: 540,
+      },
+    },
+    {
       id: "northern_wastes",
       name: "Northern Wastes",
       levelMedian: 51,
@@ -789,18 +801,6 @@ export const HOME_SHOWCASE: HomeShowcase = {
       href: "/zones/northern_wastes",
       shot: {
         src: "/images/zones/northern_wastes/shot.webp",
-        width: 960,
-        height: 540,
-      },
-    },
-    {
-      id: "winterforge",
-      name: "Winterforge",
-      levelMedian: 51,
-      isDungeon: true,
-      href: "/zones/winterforge",
-      shot: {
-        src: "/images/zones/winterforge/shot.webp",
         width: 960,
         height: 540,
       },

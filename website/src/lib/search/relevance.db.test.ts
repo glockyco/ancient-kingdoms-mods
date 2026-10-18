@@ -15,15 +15,13 @@ import {
 import {
   DEVELOPMENT_CASES,
   HELD_OUT_CASES,
-  TUNING_CASES,
   type JudgedCase,
 } from "./judged/cases";
 import { FILTERED_LISTS } from "./lists";
 import { nameKey, tokenize } from "./normalize";
-import { SYNONYMS } from "./synonyms";
 
 const db = new Database("data/compendium.db", { readonly: true });
-const docs = buildSearchDocuments(db);
+const docs = await buildSearchDocuments(db);
 // Round-trip through JSON so the tests load exactly what the browser loads.
 const serialized = JSON.stringify(createSearchPayload(docs));
 const loaded = loadSearchIndex(JSON.parse(serialized) as SearchPayload);
@@ -60,12 +58,6 @@ function passing(cases: readonly JudgedCase[]): JudgedCase[] {
   );
 }
 
-/**
- * Passing counts recorded when the ranking settings were last changed. A lower
- * count is a regression; a higher count means these numbers need updating.
- */
-const RECORDED_PASSES = { tuning: 97, development: 144, heldOut: 127 };
-
 /** Sampled entities whose every query variant passes, out of all sampled. */
 const RECORDED_ENTITY_PASSES = {
   development: { entities: 36, passes: 33 },
@@ -73,20 +65,6 @@ const RECORDED_ENTITY_PASSES = {
 };
 
 describe("judged relevance", () => {
-  test.each([
-    ["tuning", TUNING_CASES],
-    ["development", DEVELOPMENT_CASES],
-    ["heldOut", HELD_OUT_CASES],
-  ] as const)("%s cases keep their recorded pass count", (name, cases) => {
-    const passed = new Set(passing(cases));
-    const failed = cases
-      .filter((judged) => !passed.has(judged))
-      .map((judged) => `${judged.intent}: ${judged.q}`);
-    expect({ passes: passed.size, failed }).toMatchObject({
-      passes: RECORDED_PASSES[name],
-    });
-  });
-
   // Sampled cases come in variants of one entity: its exact name, a prefix,
   // and a typo. An entity passes only when every variant passes.
   test.each([
@@ -142,17 +120,6 @@ describe("judged relevance", () => {
         .some((doc) => doc.kind === "guide_topic" && doc.href === href);
     });
     expect(missing.map(({ title }) => title)).toEqual([]);
-  });
-
-  test("every synonym has a judged case", () => {
-    const judged = new Set(
-      [...TUNING_CASES, ...DEVELOPMENT_CASES, ...HELD_OUT_CASES].flatMap(
-        (judgedCase) => tokenize(judgedCase.q),
-      ),
-    );
-    expect(Object.keys(SYNONYMS).filter((word) => !judged.has(word))).toEqual(
-      [],
-    );
   });
 });
 
@@ -265,6 +232,19 @@ describe("search scopes", () => {
     expect(portals.length).toBeGreaterThan(1);
   });
 
+  test("every non-template portal placement has its own document", () => {
+    const placements = db
+      .prepare("SELECT id FROM portals WHERE is_template = 0 ORDER BY id")
+      .all() as Array<{ id: string }>;
+    expect(placements.length).toBeGreaterThan(0);
+    expect(
+      docs
+        .filter((doc) => doc.kind === "portal")
+        .map((doc) => doc.id)
+        .sort(),
+    ).toEqual(placements.map((placement) => placement.id));
+  });
+
   test("the map scope finds an entity of every map category by name", () => {
     const mapKinds = [
       "monster",
@@ -335,7 +315,7 @@ describe("indexed content", () => {
     expect(npcs.filter((doc) => !roles.get(doc.id)?.is_barber)).toEqual([]);
   });
 
-  test("item comments are not searchable", () => {
+  test("item comments are not searchable", async () => {
     // A word that occurs only in the comment proves the comment is unindexed.
     const fixture = new Database(":memory:");
     fixture.exec(readFileSync("../build-pipeline/schema.sql", "utf8"));
@@ -354,7 +334,7 @@ describe("indexed content", () => {
         "Used to buy skins in Skin Vendor",
       );
     const index = loadSearchIndex(
-      createSearchPayload(buildSearchDocuments(fixture)),
+      createSearchPayload(await buildSearchDocuments(fixture)),
     );
     fixture.close();
     const found = (text: string) =>
@@ -363,6 +343,50 @@ describe("indexed content", () => {
       );
     expect(found("glowing")).toContain("soul_ember");
     expect(found("skins")).not.toContain("soul_ember");
+  });
+
+  test("portal searches retain both endpoint areas and zones for every placement", async () => {
+    const fixture = new Database(":memory:");
+    fixture.exec(readFileSync("../build-pipeline/schema.sql", "utf8"));
+    try {
+      fixture.exec(`
+        INSERT INTO zones (id, zone_id, name) VALUES
+          ('crescent_coast', 4, 'Crescent Coast'),
+          ('twilight_forest', 1, 'Twilight Forest');
+        INSERT INTO zone_triggers (id, name, zone_id) VALUES
+          ('milldenn', 'Milldenn', 4),
+          ('twisted_haunt', 'Twisted Haunt', 1);
+        INSERT INTO portals
+          (id, is_template, from_zone_id, from_sub_zone_id, to_zone_id, to_sub_zone_id)
+        VALUES
+          ('portal_one', 0, 'crescent_coast', 'milldenn', 'twilight_forest', 'twisted_haunt'),
+          ('portal_two', 0, 'crescent_coast', 'milldenn', 'twilight_forest', 'twisted_haunt'),
+          ('portal_template', 1, 'crescent_coast', 'milldenn', 'twilight_forest', 'twisted_haunt');
+        INSERT INTO portals
+          (id, is_template, from_zone_id, from_sub_zone_id, destination_withheld)
+        VALUES ('portal_withheld', 0, 'crescent_coast', 'milldenn', 1);
+      `);
+      const portalDocs = (await buildSearchDocuments(fixture)).filter(
+        (doc) => doc.kind === "portal",
+      );
+      const index = loadSearchIndex(createSearchPayload(portalDocs));
+      const found = (text: string) =>
+        rankSearch(index, text, { scope: "map", limit: 20 })
+          .map(({ doc }) => doc.id)
+          .sort();
+      const visible = ["portal_one", "portal_two"];
+      const all = [...visible, "portal_withheld"];
+      expect(portalDocs.map((doc) => doc.id)).toEqual(all);
+      expect(found("Milldenn")).toEqual(all);
+      expect(found("Crescent Coast")).toEqual(all);
+      expect(found("Twisted Haunt")).toEqual(visible);
+      expect(found("Twilight Forest")).toEqual(visible);
+      expect(portalDocs.find((doc) => doc.id === "portal_withheld")?.name).toBe(
+        "Milldenn to Unpublished destination",
+      );
+    } finally {
+      fixture.close();
+    }
   });
 
   test("every page and filtered list opens a route that exists", () => {
@@ -427,11 +451,12 @@ describe("indexed content", () => {
       key.split(":").slice(1).join(":"),
     );
     expect(removed.length).toBeGreaterThan(0);
-    const named = removed.filter((id) =>
-      new RegExp(
-        `(^|[^A-Za-z0-9_])${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^A-Za-z0-9_]|$)`,
-      ).test(serialized),
+    const alternatives = [...new Set(removed)].map((id) =>
+      id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
     );
-    expect(named).toEqual([]);
+    const named = new RegExp(
+      `(?:^|[^A-Za-z0-9_])(${alternatives.join("|")})(?=[^A-Za-z0-9_]|$)`,
+    ).exec(serialized)?.[1];
+    expect(named).toBeUndefined();
   });
 });

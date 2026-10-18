@@ -1,34 +1,30 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
-  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import LazyObtainabilityTree from "$lib/components/LazyObtainabilityTree.svelte";
+  import DeferredDetails from "$lib/components/DeferredDetails.svelte";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import ScrollRegion from "$lib/components/acquisition/ScrollRegion.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import {
-    formatDuration,
-    formatPercent,
-    formatNumber,
-  } from "$lib/utils/format";
+  import { formatDuration, formatPercent } from "$lib/utils/format";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
-  import Gem from "@lucide/svelte/icons/gem";
   import Dices from "@lucide/svelte/icons/dices";
-  import { chestRewardChance } from "$lib/utils/chest-reward";
   import type { PageData } from "./$types";
   import { detailTitle } from "$lib/seo/title";
 
   let { data }: { data: PageData } = $props();
-  const rewardChance = $derived(chestRewardChance(data.chest));
   const chestName = $derived(`Chest in ${data.chest.zone_name}`);
-  const goldMaximum = $derived(
-    Math.max(data.chest.gold_min, data.chest.gold_max - 1),
-  );
 </script>
 
 <Seo
   title={detailTitle("Chest", {
     zone: data.chest.zone_name,
-    source: data.chest.key_required_name,
+    source:
+      data.chest.keys
+        .map((key) => key.itemName ?? "Unpublished key")
+        .join(", ") || undefined,
   })}
   description={data.description}
   path={`/chests/${data.chest.id}`}
@@ -66,119 +62,66 @@
     </div>
   </div>
 
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Opening and rewards</h2>
+    {#if data.chest.openingChance !== null && data.chest.openingChance < 1}
+      <p>An unsuccessful opening leaves the chest empty until it respawns.</p>
+    {/if}
+    <MethodList
+      methods={data.acquisitionMethods}
+      items={data.acquisitionItems}
+      names={data.acquisitionNames}
+    />
+  </section>
+
   <!-- Requirements -->
-  {#if data.chest.key_required_id}
+  {#if data.chest.keys.length}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Key class="h-5 w-5 text-yellow-500" />
-        Key
+        Lockpicking alternative
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        <a
-          href="/items/{data.chest.key_required_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-        >
-          {data.chest.key_required_name}
-        </a>
-        <p class="mt-2">Each opening that gives rewards uses up one key.</p>
-        <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — without the key, learned Lockpicking and Lockpicks open the chest: each attempt removes one Lockpicks, fails when Random.value < 0.8, and the respawn timer starts before the attempt. -->
-        <p class="mt-3">
-          Without the key, you can use
-          <a
-            href="/items/lockpicks"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >Lockpicks</a
-          >
-          if you have learned
+        <!-- Source: server-scripts/GatherItem.cs:OnInteractServer -->
+        <p>
+          Without a matching key, learned
           <a
             href="/skills/lockpicking"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Lockpicking</a
-          >. Each attempt uses up one Lockpicks and succeeds 20% of the time. A
-          failed attempt leaves the chest empty until it respawns.
+          >
+          gives each lockpick attempt a 20% success chance. A failed lockpick attempt
+          leaves the chest empty until it respawns.
         </p>
       </div>
     </section>
 
     <!-- How to Obtain Key -->
-    {#if data.keyObtainabilityTree}
+    {#if data.chest.keys.some((key) => key.itemId)}
       <section>
         <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
           <ListTree class="h-5 w-5 text-muted-foreground" />
           How to Obtain Key
         </h2>
-        <div class="bg-muted/30 rounded-md border p-4">
-          <div class="bg-background rounded-md p-4 border overflow-x-auto">
-            <div class="w-fit pr-2">
-              <ObtainabilityTree
-                node={data.keyObtainabilityTree}
-                hideRootLink={true}
-              />
+        <DeferredDetails
+          summary="Show sources"
+          className="bg-muted/30 rounded-md border p-4"
+        >
+          <ScrollRegion
+            label="Chest key sources"
+            className="mt-4 max-h-[32rem] overflow-auto overscroll-contain pr-2"
+          >
+            <div class="space-y-4 min-w-0">
+              {#each data.chest.keys as key, index (index)}
+                {#if key.itemId}
+                  <LazyObtainabilityTree itemId={key.itemId} />
+                {/if}
+              {/each}
             </div>
-          </div>
-        </div>
+          </ScrollRegion>
+        </DeferredDetails>
       </section>
     {/if}
-  {/if}
-
-  <!-- Rewards -->
-  {#if data.chest.gold_min > 0 || data.chest.gold_max > 0 || data.chest.item_reward_id}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Gem class="h-5 w-5 text-amber-500" />
-        Rewards
-      </h2>
-      <div class="bg-muted/30 rounded-md border p-4 space-y-4">
-        <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — a failed reward roll shows an empty chest, and the respawn timer starts before the roll. -->
-        {#if rewardChance < 1}
-          <p>
-            Each opening has a {formatPercent(rewardChance, {
-              decimals: 1,
-              trailingZeros: false,
-            })} chance to give anything. Otherwise the chest is empty until it respawns.
-          </p>
-        {/if}
-        {#if data.chest.gold_min > 0 || data.chest.gold_max > 0}
-          <div>
-            <div class="text-sm text-muted-foreground mb-1">Gold</div>
-            <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {#if data.chest.gold_min === goldMaximum}
-                {formatNumber(data.chest.gold_min, {
-                  groupSeparator: "\u202F",
-                })} gold
-              {:else}
-                {formatNumber(data.chest.gold_min, {
-                  groupSeparator: "\u202F",
-                })} to {formatNumber(goldMaximum, {
-                  groupSeparator: "\u202F",
-                })} gold
-              {/if}
-            </div>
-          </div>
-        {/if}
-
-        {#if data.chest.item_reward_id}
-          <div>
-            <div class="text-sm text-muted-foreground mb-1">Item Reward</div>
-            <div class="font-medium">
-              <a
-                href="/items/{data.chest.item_reward_id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {data.chest.item_reward_name}
-              </a>
-              {#if data.chest.item_reward_amount > 1}
-                <span class="text-muted-foreground">
-                  ×1–{data.chest.item_reward_amount}
-                </span>
-              {:else}
-                <span class="text-muted-foreground"> ×1 </span>
-              {/if}
-            </div>
-          </div>
-        {/if}
-      </div>
-    </section>
   {/if}
 
   <!-- Random Drops -->
@@ -193,7 +136,8 @@
           <thead>
             <tr class="border-b bg-muted/50">
               <th class="text-left font-medium p-3">Item</th>
-              <th class="text-right font-medium p-3 w-28">Chance per opening</th
+              <th class="text-right font-medium p-3 w-28"
+                >Chance per successful opening</th
               >
             </tr>
           </thead>
@@ -210,10 +154,7 @@
                       trailingZeros: true,
                     })}
                   {:else}
-                    {formatPercent(drop.drop_rate, {
-                      decimals: 1,
-                      trailingZeros: true,
-                    })}
+                    Unknown
                   {/if}
                 </td>
               </tr>

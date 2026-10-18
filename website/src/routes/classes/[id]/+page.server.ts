@@ -14,7 +14,7 @@ import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
 
-export const load: PageServerLoad = ({ params }) => {
+export const load: PageServerLoad = async ({ params }) => {
   const className = validateClassName(params.id);
   const classData = getClassById(className);
 
@@ -22,7 +22,9 @@ export const load: PageServerLoad = ({ params }) => {
     throw error(404, `Class not found: ${className}`);
   }
 
-  const rawItems = getClassItemsWithSources(classData.id);
+  const { items: rawItems, acquisitionNames } = await getClassItemsWithSources(
+    classData.id,
+  );
 
   // Precompute parsed stat key arrays at build time (avoids JSON.parse on client)
   const itemStatKeys: Record<string, string[]> = {};
@@ -51,6 +53,7 @@ export const load: PageServerLoad = ({ params }) => {
     skills,
     items,
     itemStatKeys,
+    acquisitionNames,
     quests: getClassQuests(classData.id),
     classIcon: getClassVisualAsset(classData.id),
     description,

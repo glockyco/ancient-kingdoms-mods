@@ -7,8 +7,8 @@ import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
 
-export const load: PageServerLoad = () => {
-  const gatherItems = getGatherItems();
+export const load: PageServerLoad = async () => {
+  const gatherItems = await getGatherItems();
   const resources = gatherItems.filter((item) => item.type !== "Chest");
   const resourceZones = getResourceZones();
   const resourceDrops = getAllResourceDrops();

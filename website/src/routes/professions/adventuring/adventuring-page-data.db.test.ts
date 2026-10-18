@@ -2,8 +2,8 @@ import { describe, expect, test } from "vitest";
 import { load } from "./+page.server";
 
 describe("Adventuring quest objectives", () => {
-  test("loads every delivery item and amount alongside kill targets", () => {
-    const { quests } = load();
+  test("loads every delivery item and amount alongside kill targets", async () => {
+    const { quests } = await load();
     expect(
       quests.find((quest) => quest.id === "2_gather_bellflowers")?.objectives,
     ).toEqual([

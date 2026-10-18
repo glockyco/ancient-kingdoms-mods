@@ -8,8 +8,8 @@ import type { ReputationTier } from "$lib/utils/reputation";
 
 export const prerender = true;
 
-export const load: PageServerLoad = () => {
-  const entityData = loadAllMapEntitiesServer();
+export const load: PageServerLoad = async () => {
+  const entityData = await loadAllMapEntitiesServer();
   const zoneList = loadZoneListServer();
   const reputationTiers = query<ReputationTier>(
     "SELECT * FROM reputation_tiers ORDER BY id",

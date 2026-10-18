@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Il2CppInterop.Runtime;
@@ -18,23 +19,9 @@ public abstract class BaseExporter
     protected string PlacementId(string prefix, Vector3 position) =>
         _placementIds.Register(prefix, position.x, position.y);
 
-    private static Il2CppSystem.Object[] _zoneTriggers;
+    private static List<(ZoneInfo Info, ZoneBoundary Boundary)> _configuredZones;
 
-    /// <summary>
-    /// Gets zone triggers from the scene. Loaded once and cached for all exporters.
-    /// </summary>
-    protected static Il2CppSystem.Object[] ZoneTriggers
-    {
-        get
-        {
-            if (_zoneTriggers == null)
-            {
-                var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
-                _zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
-            }
-            return _zoneTriggers;
-        }
-    }
+    internal static void ResetZoneTriggers() => _configuredZones = null;
 
     protected BaseExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets = null)
     {
@@ -177,79 +164,103 @@ public abstract class BaseExporter
         public string SubZoneId;
     }
 
-    /// <summary>
-    /// Determines zone and sub-zone IDs from a position using area containment checking.
-    /// Tests if the position falls within any ZoneTrigger's Collider2D boundary.
-    /// Falls back to nearest zone collider if not inside any zone.
-    /// Filters for scene zone triggers only (not templates).
-    /// </summary>
-    protected static ZoneInfo GetZoneInfoFromPosition(Vector3 position)
+    protected static void PrepareConfiguredZoneGeometry()
     {
-        var position2D = new Vector2(position.x, position.y);
-
-        // First pass: check if position is inside any zone
-        foreach (var triggerObj in ZoneTriggers)
+        ResetZoneTriggers();
+        var triggers = Resources.FindObjectsOfTypeAll(Il2CppType.Of<Il2Cpp.ZoneTrigger>());
+        var zones = new List<(ZoneInfo Info, ZoneBoundary Boundary)>(triggers.Length);
+        foreach (var obj in triggers)
         {
-            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
-            if (trigger == null || trigger.gameObject == null || !trigger.gameObject.scene.IsValid())
+            var trigger = obj.TryCast<Il2Cpp.ZoneTrigger>();
+            if (trigger == null || trigger.gameObject == null || !trigger.gameObject.scene.IsValid()
+                || trigger.gameObject.scene.name != "World")
                 continue;
-
             var collider = trigger.GetComponent<Collider2D>();
             if (collider == null)
-                continue;
-
-            if (collider.OverlapPoint(position2D))
-            {
-                return new ZoneInfo
-                {
-                    ZoneId = GetZoneIdFromByte(trigger.idZone),
-                    SubZoneId = GetSubZoneId(trigger)
-                };
-            }
+                throw new InvalidOperationException($"Zone trigger {trigger.name}: missing configured collider. Reload World.");
+            var zoneId = GetZoneIdFromByte(trigger.idZone);
+            if (zoneId == "unknown")
+                throw new InvalidOperationException($"Zone trigger {trigger.name}: configured zone {trigger.idZone} has no public identity. Reload World.");
+            zones.Add((new ZoneInfo { ZoneId = zoneId, SubZoneId = GetSubZoneId(trigger) },
+                ReadZoneBoundary(collider)));
         }
-
-        // Second pass: find nearest zone collider boundary
-        Il2Cpp.ZoneTrigger nearestTrigger = null;
-        float nearestDistance = float.MaxValue;
-
-        foreach (var triggerObj in ZoneTriggers)
-        {
-            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
-            if (trigger == null || trigger.gameObject == null || !trigger.gameObject.scene.IsValid())
-                continue;
-
-            var collider = trigger.GetComponent<Collider2D>();
-            if (collider == null)
-                continue;
-
-            var closestPoint = collider.ClosestPoint(position2D);
-            var distance = Vector2.Distance(position2D, closestPoint);
-
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestTrigger = trigger;
-            }
-        }
-
-        if (nearestTrigger != null)
-        {
-            return new ZoneInfo
-            {
-                ZoneId = GetZoneIdFromByte(nearestTrigger.idZone),
-                SubZoneId = GetSubZoneId(nearestTrigger)
-            };
-        }
-
-        return new ZoneInfo { ZoneId = "unknown", SubZoneId = null };
+        if (zones.Count == 0)
+            throw new InvalidOperationException("World capture has no configured zone boundaries. Reload World.");
+        _configuredZones = zones;
     }
 
-    /// <summary>
-    /// Legacy method for backwards compatibility - returns only the main zone ID.
-    /// </summary>
-    protected static string GetZoneIdFromPosition(Vector3 position)
+    private static ZoneBoundary ReadZoneBoundary(Collider2D collider)
     {
-        return GetZoneInfoFromPosition(position).ZoneId;
+        // Authored vertices exist before physics registers the collider. Transform
+        // them once so all exporters use the same immutable World geometry.
+        var matrix = collider.transform.localToWorldMatrix;
+        var offset = collider.offset;
+        ZoneBoundary.Point ToWorld(Vector2 point)
+        {
+            double x = point.x + offset.x;
+            double y = point.y + offset.y;
+            return new ZoneBoundary.Point(matrix.m00 * x + matrix.m01 * y + matrix.m03,
+                matrix.m10 * x + matrix.m11 * y + matrix.m13);
+        }
+
+        ZoneBoundary.Point[] points;
+        var box = collider.TryCast<BoxCollider2D>();
+        var polygon = collider.TryCast<PolygonCollider2D>();
+        if (box != null)
+        {
+            if (box.edgeRadius != 0)
+                throw new InvalidOperationException($"Zone collider {collider.name}: rounded boxes are unsupported. Reload World.");
+            var half = box.size * 0.5f;
+            points = new[]
+            {
+                ToWorld(new Vector2(-half.x, -half.y)), ToWorld(new Vector2(half.x, -half.y)),
+                ToWorld(new Vector2(half.x, half.y)), ToWorld(new Vector2(-half.x, half.y))
+            };
+        }
+        else if (polygon != null)
+        {
+            if (polygon.pathCount != 1)
+                throw new InvalidOperationException($"Zone collider {collider.name}: expected one configured polygon path. Reload World.");
+            var path = polygon.GetPath(0);
+            points = new ZoneBoundary.Point[path.Length];
+            for (var i = 0; i < path.Length; i++)
+                points[i] = ToWorld(path[i]);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Zone collider {collider.name}: unsupported configured shape {collider.GetIl2CppType().FullName}. Reload World.");
+        }
+        try
+        {
+            return new ZoneBoundary(points);
+        }
+        catch (ArgumentException error)
+        {
+            throw new InvalidOperationException($"Zone collider {collider.name}: invalid authored boundary. Reload World.", error);
+        }
+    }
+
+    /// <summary>Uses the captured authored boundary, including before physics starts.</summary>
+    protected static ZoneInfo GetZoneInfoFromPosition(Vector3 position)
+    {
+        if (_configuredZones == null || !float.IsFinite(position.x) || !float.IsFinite(position.y))
+            throw new InvalidOperationException($"Configured zone geometry or position {position} is unavailable. Reload World.");
+        double nearest = double.PositiveInfinity;
+        ZoneInfo result = default;
+        foreach (var zone in _configuredZones)
+        {
+            if (zone.Boundary.BoundsDistanceSquared(position.x, position.y) >= nearest)
+                continue;
+            var distance = zone.Boundary.DistanceSquared(position.x, position.y);
+            if (distance == 0)
+                return zone.Info;
+            if (distance < nearest)
+            {
+                nearest = distance;
+                result = zone.Info;
+            }
+        }
+        return result;
     }
 
     /// <summary>

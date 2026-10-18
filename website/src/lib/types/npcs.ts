@@ -1,4 +1,6 @@
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
+import type { MethodView, RequirementRoot } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
 export interface NpcRoles {
   is_merchant: boolean;
   is_barber: boolean;
@@ -122,6 +124,7 @@ export interface NpcQuestOffered {
   race_requirements?: string[];
   class_requirements?: string[];
   faction_requirements?: NpcQuestFactionRequirement[];
+  requirements: readonly RequirementRoot[];
 }
 
 export interface NpcItemSold {
@@ -133,17 +136,7 @@ export interface NpcItemSold {
   currency_item_id: string | null;
   currency_item_name: string | null;
   tooltip_html: string | null;
-  faction_required: number;
-  faction_tier_name: string | null;
-}
-
-export interface NpcDrop {
-  item_id: string;
-  item_name: string;
-  visual_public_path: string | null;
-  quality: number;
-  rate: number;
-  tooltip_html: string | null;
+  method: MethodView;
 }
 
 export interface NpcSkill {
@@ -173,6 +166,8 @@ export interface NpcDetailPageData {
   description: string;
   questsOffered: NpcQuestOffered[];
   questsCompletedHere: NpcQuestOffered[];
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
   itemsSold: NpcItemSold[];
   spawns: NpcSpawnLocation[];
   summonTriggers: Array<{
@@ -183,7 +178,6 @@ export interface NpcDetailPageData {
     monster_name: string;
     count: number;
   }>;
-  drops: NpcDrop[];
   skills: NpcSkill[];
   respawnDungeonName: string | null;
   respawnDungeonZoneId: string | null;

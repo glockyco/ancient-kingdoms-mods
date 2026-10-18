@@ -3,8 +3,10 @@ import unittest
 from pathlib import Path
 
 from compendium.db import create_database
-from compendium.redactions import closure
+from compendium.denormalizers.acquisition import STAGING_FAMILIES
+from compendium.redactions import closure, rekey, validate_semantics
 from compendium.redactions.config import RedactionConfig
+from compendium.redactions.references import resolve
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 
@@ -21,6 +23,8 @@ class PolymorphicSummonTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.conn = create_database(Path(self.tmp.name) / "test.db", SCHEMA_PATH)
         self.addCleanup(self.conn.close)
+        for family in STAGING_FAMILIES:
+            self.conn.execute(f'DROP TABLE "_acquisition_input_{family}"')
 
         self.conn.executemany(
             "INSERT INTO zones (id, zone_id, name) VALUES (?, ?, ?)",
@@ -38,13 +42,23 @@ class PolymorphicSummonTests(unittest.TestCase):
         self.conn.commit()
 
     def _summon(self, trigger_id, zone_id, kind, entity_id):
+        spawn_id = f"{trigger_id}_configured_target"
+        table, entity_column, target_column = (
+            ("monster_spawns", "monster_id", "summoned_monster_spawn_id")
+            if kind == "Monster"
+            else ("npc_spawns", "npc_id", "summoned_npc_spawn_id")
+        )
+        self.conn.execute(
+            f"INSERT INTO {table}(id,{entity_column},zone_id) VALUES (?,?,?)",
+            (spawn_id, entity_id, zone_id),
+        )
         self.conn.execute(
             "INSERT INTO summon_triggers "
             "(id, summoned_entity_type, summoned_entity_id, "
             "summoned_entity_name, zone_id, summoned_is_summonable, "
-            "summoned_respawn_time, summoned_respawn_probability) "
-            "VALUES (?, ?, ?, ?, ?, 1, 60, 1)",
-            (trigger_id, kind, entity_id, "Summoned", zone_id),
+            f"summoned_respawn_time, summoned_respawn_probability, {target_column}) "
+            "VALUES (?, ?, ?, ?, ?, 1, 60, 1, ?)",
+            (trigger_id, kind, entity_id, "Summoned", zone_id, spawn_id),
         )
         self.conn.commit()
 
@@ -117,6 +131,53 @@ class PolymorphicSummonTests(unittest.TestCase):
         self.assertFalse(self._present("summon_triggers", "monster_trigger"))
         self.assertTrue(self._present("npcs", "twin"))
         self.assertTrue(self._present("summon_triggers", "npc_trigger"))
+
+    def test_removed_guard_remains_an_unknown_ordered_operand(self):
+        self._summon("public_trigger", PUBLISHED, "Monster", "twin")
+        self.conn.execute("INSERT INTO monsters(id,name) VALUES ('guard','Guard')")
+        self.conn.execute(
+            "INSERT INTO monster_spawns(id,monster_id,zone_id) VALUES ('private_guard','guard',?)",
+            (REDACTED,),
+        )
+        self.conn.execute(
+            "INSERT INTO summon_trigger_placeholders(id,trigger_id,spawn_id,placeholder_order) VALUES ('private_guard_link','public_trigger','private_guard',3)"
+        )
+        self._run()
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT spawn_id,withheld,placeholder_order FROM summon_trigger_placeholders"
+            ).fetchone(),
+            (None, 1, 3),
+        )
+        self.assertTrue(self._present("summon_triggers", "public_trigger"))
+        rekey(self.conn)
+        validate_semantics(self.conn)
+
+    def test_exact_target_removal_never_retargets_same_template(self):
+        self._summon("public_trigger", PUBLISHED, "Monster", "twin")
+        self.conn.execute(
+            "INSERT INTO monster_spawns(id,monster_id,zone_id) VALUES ('another_twin','twin',?)",
+            (PUBLISHED,),
+        )
+        self.conn.execute(
+            "UPDATE summon_triggers SET spawn_position_x=12,spawn_position_y=34 WHERE id='public_trigger'"
+        )
+        removed = [
+            closure.Removal(
+                "monster_spawns",
+                "public_trigger_configured_target",
+                "manual",
+                "withheld exact target",
+            )
+        ]
+        closure.apply(self.conn, removed, resolve(self.conn))
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT summoned_entity_type,summoned_monster_spawn_id,summoned_target_withheld,spawn_position_x,spawn_position_y FROM summon_triggers"
+            ).fetchone(),
+            ("Monster", None, 1, None, None),
+        )
+        self.assertTrue(self._present("monster_spawns", "another_twin"))
 
 
 if __name__ == "__main__":

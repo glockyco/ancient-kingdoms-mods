@@ -29,13 +29,7 @@ class ConfigurationTests(unittest.TestCase):
 
 
 class HiddenCraftingTests(unittest.TestCase):
-    """Hidden crafting removes the recipes and keeps the item.
-
-    A recipe carries the identifier of the item it produces, and nothing in the
-    schema references a recipe table. So the removal can dangle nothing, and the
-    verification must not scan for these identifiers: every hit would name the
-    item, which is published on purpose.
-    """
+    """Hidden crafting removes complete variants in every family, not items."""
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -47,11 +41,35 @@ class HiddenCraftingTests(unittest.TestCase):
             "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
             [("secret_blade", "Secret Blade"), ("plain_blade", "Plain Blade")],
         )
-        self.conn.executemany(
-            "INSERT INTO crafting_recipes (id, result_item_id, result_amount) "
-            "VALUES (?, ?, 1)",
-            [("secret_blade", "secret_blade"), ("plain_blade", "plain_blade")],
-        )
+        for family in crafting.RECIPE_TABLES:
+            self.conn.executemany(
+                f"INSERT INTO {family} (id, result_item_id) VALUES (?, ?)",
+                [("secret_blade", "secret_blade"), ("plain_blade", "plain_blade")],
+            )
+            rule = family.removesuffix("_recipes")
+            for item in ("secret_blade", "plain_blade"):
+                method = f"{family}_{item}"
+                self.conn.execute(
+                    "INSERT INTO acquisition_methods(id,kind,rule_id) VALUES (?,'recipe',?)",
+                    (method, rule),
+                )
+                route_column = f"{rule}_recipe_id"
+                self.conn.execute(
+                    f"INSERT INTO acquisition_recipe_details(id,{route_column},declared_result_item_id,result_amount,tier,display_kind) VALUES (?,?,?,1,0,?)",
+                    (method, item, item, rule),
+                )
+                self.conn.execute(
+                    "INSERT INTO acquisition_providers_items(id,method_id,item_id) VALUES (?,?,'plain_blade')",
+                    (f"{method}_provider", method),
+                )
+                self.conn.execute(
+                    "INSERT INTO acquisition_cost_groups(id,method_id,phase,quantity_rule,consumption_rule) VALUES (?,?,'attempt','fixed','on_success')",
+                    (f"{method}_cost", method),
+                )
+                self.conn.execute(
+                    "INSERT INTO acquisition_inputs(id,cost_group_id,ordinal,resource_kind,item_id,amount,role) VALUES (?,?,0,'item','plain_blade',2,'material')",
+                    (f"{method}_input", f"{method}_cost"),
+                )
         self.conn.commit()
         self.removed = crafting.run(
             self.conn, RedactionConfig(hide_crafting_item_ids={"secret_blade"})
@@ -84,7 +102,7 @@ class HiddenCraftingTests(unittest.TestCase):
         )
 
     def test_the_removal_is_counted_for_the_ledger(self):
-        self.assertEqual(self.removed, {"secret_blade": 1})
+        self.assertEqual(self.removed, {"secret_blade": 3})
 
     def test_scanning_the_identifier_would_report_the_surviving_item(self):
         """Why the verification subject holds no identifier for this mechanism.
@@ -96,6 +114,35 @@ class HiddenCraftingTests(unittest.TestCase):
         findings = verify.scan(self.conn, {"secret_blade"})
 
         self.assertIn("items", {finding.table for finding in findings})
+
+    def test_all_hidden_variants_memberships_and_costs_disappear(self):
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT count(*) FROM acquisition_recipe_details WHERE declared_result_item_id='secret_blade'"
+            ).fetchone()[0],
+            0,
+        )
+        self.assertEqual(
+            self.conn.execute("SELECT count(*) FROM acquisition_methods").fetchone()[0],
+            3,
+        )
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT count(*) FROM acquisition_providers_items"
+            ).fetchone()[0],
+            3,
+        )
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT count(*) FROM acquisition_cost_groups"
+            ).fetchone()[0],
+            3,
+        )
+        self.assertEqual(
+            self.conn.execute("SELECT count(*) FROM acquisition_inputs").fetchone()[0],
+            3,
+        )
+        self.assertEqual(list(self.conn.execute("PRAGMA foreign_key_check")), [])
 
 
 if __name__ == "__main__":

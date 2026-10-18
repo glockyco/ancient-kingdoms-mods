@@ -17,6 +17,13 @@ import type {
 import { normalizeRoles } from "$lib/utils/roles";
 import { zoneDescription } from "$lib/server/meta-description";
 import { fishingSpotBaseId } from "../../../../scripts/gathering-resource-ids.mjs";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import {
+  projectAcquisitionNames,
+  projectProviderMethods,
+} from "$lib/acquisition/projections";
+import { summarizePrimaryRewards } from "$lib/utils/primary-rewards";
 
 export const prerender = true;
 
@@ -31,7 +38,9 @@ export const entries: EntryGenerator = () => {
   return zones.map((zone) => ({ id: zone.id }));
 };
 
-export const load: PageServerLoad = ({ params }): ZoneDetailData => {
+export const load: PageServerLoad = async ({
+  params,
+}): Promise<ZoneDetailData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   // Get zone basic info with pre-computed level range
@@ -62,12 +71,35 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     throw error(404, `Zone not found: ${params.id}`);
   }
 
-  // Get monsters in this zone with health, spawn count, respawn info, and sample coordinates
-  // For altar spawns, count each altar only once (not per-wave)
-  // Get level range specific to this zone from monster_spawns
+  // Count physical spawns and each altar once, with levels from their source facts.
   const monsters = db
     .prepare(
       `
+    WITH zone_spawns AS (
+      SELECT ms.monster_id, ms.level, ms.position_x, ms.position_y, ms.position_z,
+        'spawn:' || ms.id AS spawn_key,
+        CASE WHEN st.id IS NOT NULL THEN 'summon' END AS special_spawn_type
+      FROM monster_spawns ms
+      LEFT JOIN summon_triggers st ON st.summoned_monster_spawn_id = ms.id
+      WHERE ms.zone_id = ?
+      UNION ALL
+      SELECT k.monster_id, json_extract(member.value, '$.base_level'),
+        a.position_x, a.position_y, a.position_z, 'altar:' || a.id, 'altar'
+      FROM acquisition_kill_details k
+      JOIN altars a ON a.id = k.altar_id
+      JOIN json_each(a.waves) wave ON CAST(wave.key AS INTEGER) = k.wave_number
+      JOIN json_each(wave.value, '$.monsters') member
+        ON CAST(member.key AS INTEGER) = k.wave_member_index
+      WHERE a.zone_id = ?
+      UNION ALL
+      SELECT k.monster_id, target.level,
+        parent.position_x, parent.position_y, parent.position_z,
+        'placeholder:' || parent.id, 'placeholder'
+      FROM acquisition_kill_details k
+      JOIN monster_spawns parent ON parent.id = k.parent_monster_spawn_id
+      JOIN monsters target ON target.id = k.monster_id
+      WHERE k.event_kind = 'placeholder' AND parent.zone_id = ?
+    )
     SELECT
       m.id,
       m.name,
@@ -87,33 +119,29 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       m.respawn_probability,
       m.spawn_time_start,
       m.spawn_time_end,
-      m.placeholder_monster_id,
       MIN(ms.level) as level_min,
       MAX(ms.level) as level_max,
-      (SELECT COUNT(*) FROM monster_spawns ms2
-       WHERE ms2.monster_id = m.id AND ms2.zone_id = ?
-       AND ms2.spawn_type != 'altar') +
-      (SELECT COUNT(DISTINCT ms3.source_altar_id) FROM monster_spawns ms3
-       WHERE ms3.monster_id = m.id AND ms3.zone_id = ?
-       AND ms3.spawn_type = 'altar') as spawn_count,
+      COUNT(DISTINCT ms.spawn_key) as spawn_count,
       MIN(ms.position_x) as position_x,
       MIN(ms.position_y) as position_y,
       MIN(ms.position_z) as position_z,
-      (SELECT ms4.spawn_type FROM monster_spawns ms4
-       WHERE ms4.monster_id = m.id AND ms4.zone_id = ?
-       AND ms4.spawn_type != 'regular' LIMIT 1) as special_spawn_type
+      CASE
+        WHEN MAX(ms.special_spawn_type = 'summon') THEN 'summon'
+        WHEN MAX(ms.special_spawn_type = 'altar') THEN 'altar'
+        WHEN MAX(ms.special_spawn_type = 'placeholder') THEN 'placeholder'
+        ELSE NULL
+      END as special_spawn_type
     FROM monsters m
     LEFT JOIN visual_assets va
       ON va.domain = 'monster'
      AND va.entity_id = m.id
      AND va.kind = 'primary'
-    JOIN monster_spawns ms ON ms.monster_id = m.id
-    WHERE ms.zone_id = ?
+    JOIN zone_spawns ms ON ms.monster_id = m.id
     GROUP BY m.id
     ORDER BY m.level DESC, m.name
   `,
     )
-    .all(params.id, params.id, params.id, params.id)
+    .all(params.id, params.id, params.id)
     .map((row) => {
       const m = row as {
         id: string;
@@ -134,7 +162,6 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
         respawn_probability: number;
         spawn_time_start: number;
         spawn_time_end: number;
-        placeholder_monster_id: string | null;
         level_min: number | null;
         level_max: number | null;
         spawn_count: number;
@@ -171,9 +198,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
         respawn_probability: m.respawn_probability,
         spawn_time_start: m.spawn_time_start,
         spawn_time_end: m.spawn_time_end,
-        special_spawn_type:
-          m.special_spawn_type ??
-          (m.placeholder_monster_id ? "placeholder" : null),
+        special_spawn_type: m.special_spawn_type,
       } as ZoneMonster;
     });
 
@@ -248,22 +273,13 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     .all(params.id) as ZoneGatherResource[];
 
   // Get chests in this zone
-  const chests = db
+  const chestRows = db
     .prepare(
       `
     SELECT
       c.id,
       va.public_path AS visual_public_path,
       c.respawn_time,
-      c.key_required_id,
-      k.name as key_required_name,
-      c.item_reward_id,
-      r.name as item_reward_name,
-      c.item_reward_amount,
-      c.gold_min,
-      c.gold_max,
-      c.chest_reward_probability,
-      (SELECT COUNT(*) FROM item_sources_chest cd WHERE cd.chest_id = c.id AND (c.item_reward_id IS NULL OR cd.item_id != c.item_reward_id)) as drop_count,
       c.position_x,
       c.position_y
     FROM chests c
@@ -271,13 +287,98 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       ON va.domain = 'chest'
      AND va.entity_id = c.id
      AND va.kind = 'primary'
-    LEFT JOIN items k ON c.key_required_id = k.id
-    LEFT JOIN items r ON c.item_reward_id = r.id
     WHERE c.zone_id = ?
-    ORDER BY k.name, c.position_x, c.position_y
+    ORDER BY c.position_x, c.position_y, c.id
   `,
     )
-    .all(params.id) as ZoneChest[];
+    .all(params.id) as Array<
+    Pick<
+      ZoneChest,
+      "id" | "visual_public_path" | "respawn_time" | "position_x" | "position_y"
+    >
+  >;
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const chestAcquisition = await loadAcquisition(execute, {
+    kind: "providers",
+    providers: chestRows.map((chest) => ({ kind: "chests", id: chest.id })),
+  });
+  const acquisitionItems = await loadAcquisitionItems(
+    execute,
+    chestAcquisition,
+  );
+  const chests: ZoneChest[] = chestRows.map((chest) => {
+    const methods = projectProviderMethods(chestAcquisition, {
+      kind: "chests",
+      id: chest.id,
+    }).filter((method) => method.kind === "world_chest");
+    if (methods.length === 0)
+      throw new Error(`Missing world chest acquisition ${chest.id}`);
+    const requiredKeys = [
+      ...new Map(
+        methods.flatMap((method) => {
+          const itemId =
+            typeof method.detail.key_item_id === "string"
+              ? method.detail.key_item_id
+              : null;
+          const withheld = Boolean(method.detail.key_item_withheld);
+          if (!itemId && !withheld) return [];
+          return [
+            [
+              `${itemId ?? ""}:${withheld}`,
+              {
+                itemId,
+                itemName: itemId
+                  ? (acquisitionItems[itemId]?.name ?? null)
+                  : null,
+                withheld,
+              },
+            ] as const,
+          ];
+        }),
+      ).values(),
+    ];
+    const randomItems = new Set<string>();
+    for (const method of methods) {
+      const fixedItems = new Set<string>();
+      for (const output of method.outputs) {
+        if (
+          output.resource_kind !== "item" ||
+          output.withheld ||
+          !output.item_id
+        )
+          continue;
+        if (output.yield_rule === "pool") randomItems.add(output.item_id);
+        else fixedItems.add(output.item_id);
+      }
+      for (const result of method.probabilityResults) {
+        if (
+          result.target.kind === "item" &&
+          !fixedItems.has(result.target.itemId)
+        ) {
+          randomItems.add(result.target.itemId);
+        }
+      }
+    }
+    return {
+      ...chest,
+      methods,
+      requiredKeys,
+      primaryRewards: summarizePrimaryRewards(methods, acquisitionItems),
+      rewardProbabilities: [
+        ...new Set(
+          methods.map((method) =>
+            typeof method.detail.outer_success === "number"
+              ? method.detail.outer_success
+              : null,
+          ),
+        ),
+      ],
+      drop_count: randomItems.size,
+    };
+  });
 
   // Get traps in this zone
   const traps = db
@@ -340,6 +441,30 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
   `,
     )
     .all(params.id, params.id) as ZoneConnection[];
+  const portalRows = db
+    .prepare(
+      `
+    SELECT p.id, p.to_zone_id, z.name, p.is_closed, p.destination_withheld FROM portals p
+    LEFT JOIN zones z ON z.id = p.to_zone_id
+    WHERE p.from_zone_id = ? ORDER BY p.id
+  `,
+    )
+    .all(params.id) as Array<{
+    id: string;
+    to_zone_id: string | null;
+    name: string | null;
+    is_closed: number;
+    destination_withheld: number;
+  }>;
+  const portalAcquisition = await loadAcquisition(execute, {
+    kind: "requirements",
+    entities: portalRows.map((portal) => ({ kind: "portal", id: portal.id })),
+  });
+  const portals = portalRows.map((portal) => ({
+    ...portal,
+    requirements:
+      portalAcquisition.requirements.get(`portal:${portal.id}`) ?? [],
+  }));
 
   // Get sub-zones (zone triggers) for this zone
   const subZones = db
@@ -429,6 +554,12 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     traps,
     altars,
     connectedZones,
+    portals,
+    acquisitionItems,
+    acquisitionNames: {
+      ...projectAcquisitionNames(chestAcquisition),
+      ...projectAcquisitionNames(portalAcquisition),
+    },
     subZones,
     renewalSage: renewalSage ?? null,
   };

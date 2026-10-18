@@ -4,7 +4,8 @@
   import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import LazyObtainabilityTree from "$lib/components/LazyObtainabilityTree.svelte";
+  import ScrollRegion from "$lib/components/acquisition/ScrollRegion.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
@@ -48,16 +49,6 @@
     merge: "text-purple-500",
     unknown: "text-muted-foreground",
   } as const;
-
-  function hasObtainabilityInfo(book: (typeof data.books)[0]): boolean {
-    const tree = book.obtainabilityTree;
-    return (
-      (tree.sources && tree.sources.length > 0) ||
-      !!tree.recipe ||
-      !!tree.service ||
-      !!tree.merge
-    );
-  }
 
   function formatStatGains(
     stats: (typeof data.books)[0]["statGains"],
@@ -242,24 +233,26 @@
             {#if isExpanded}
               <tr class="border-t bg-muted/20">
                 <td colspan="4" class="p-4">
-                  <div class="space-y-4">
+                  <div
+                    class="w-[calc(100vw-6rem-2px)] max-w-[calc(72rem-6rem-2px)] space-y-4 whitespace-normal"
+                  >
                     <!-- Obtainability Section -->
-                    {#if hasObtainabilityInfo(book)}
+                    {#if book.hasObtainabilityInfo}
                       <div>
                         <h4
                           class="text-sm font-semibold text-muted-foreground mb-2"
                         >
                           How to Obtain
                         </h4>
-                        <div
-                          class="bg-background rounded-md p-3 border overflow-x-auto"
+                        <ScrollRegion
+                          label="Sources for {book.name}"
+                          className="bg-background rounded-md p-3 border max-h-[32rem] overflow-auto overscroll-contain"
                         >
-                          <ObtainabilityTree
-                            node={book.obtainabilityTree}
-                            defaultExpanded={true}
+                          <LazyObtainabilityTree
+                            itemId={book.id}
                             hideRootLink={true}
                           />
-                        </div>
+                        </ScrollRegion>
                       </div>
                     {/if}
 

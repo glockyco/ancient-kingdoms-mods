@@ -6,7 +6,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import RecipeIngredients from "$lib/components/RecipeIngredients.svelte";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Scroll from "@lucide/svelte/icons/scroll";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -49,9 +50,8 @@
   }
 
   function hasIngredients(recipe: (typeof data.recipes)[number]): boolean {
-    return (
-      !!recipe.obtainabilityTree.recipe &&
-      recipe.obtainabilityTree.recipe.materials.length > 0
+    return recipe.methods.some((method) =>
+      method.costGroups.some((group) => group.inputs.length > 0),
     );
   }
 
@@ -336,22 +336,22 @@
             </tr>
           </thead>
           <tbody>
-            {#each data.recipes as recipe (recipe.recipe_id)}
+            {#each data.recipes as recipe (recipe.id)}
               {@const canExpand = hasIngredients(recipe)}
-              {@const isExpanded = expandedRecipes.has(recipe.recipe_id)}
+              {@const isExpanded = expandedRecipes.has(recipe.id)}
               <tr
-                class="border-t hover:bg-muted/25 {canExpand
+                class="border-t odd:bg-muted/20 hover:bg-muted/25 {canExpand
                   ? 'cursor-pointer'
                   : ''}"
                 role={canExpand ? "button" : undefined}
                 tabindex={canExpand ? 0 : undefined}
                 onclick={(e) => {
                   if (!canExpand || isInteractiveEvent(e)) return;
-                  toggleRecipe(recipe.recipe_id);
+                  toggleRecipe(recipe.id);
                 }}
                 onkeydown={(e) => {
                   if (!canExpand || isInteractiveEvent(e)) return;
-                  handleRecipeKeydown(e, recipe.recipe_id);
+                  handleRecipeKeydown(e, recipe.id);
                 }}
               >
                 <td class="p-3">
@@ -365,7 +365,7 @@
                           : "Expand ingredients"}
                         onclick={(e) => {
                           e.stopPropagation();
-                          toggleRecipe(recipe.recipe_id);
+                          toggleRecipe(recipe.id);
                         }}
                       >
                         {#if isExpanded}
@@ -381,33 +381,39 @@
                       itemId={recipe.item_id}
                       itemName={recipe.item_name}
                       tooltipHtml={recipe.tooltip_html}
-                      imageAvailable={recipe.obtainabilityTree
-                        .visual_public_path}
                     />
                   </div>
                 </td>
                 <td class="p-3">
-                  {#if recipe.obtainabilityTree.recipe?.materials}
-                    <div
-                      class="flex flex-col gap-1 2xl:flex-row 2xl:flex-wrap 2xl:gap-x-3 2xl:gap-y-1"
-                    >
-                      {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
-                        <span>
-                          <ItemLink
-                            itemId={mat.item_id}
-                            itemName={mat.item_name}
-                            tooltipHtml={mat.tooltip_html}
-                            imageAvailable={mat.visual_public_path}
-                          />
-                          <span class="text-muted-foreground"
-                            >×{mat.amount}</span
-                          >
-                        </span>
+                  {#each recipe.methods as method, alternative (method.methodId)}
+                    <div class="space-y-1">
+                      {#if recipe.methods.length > 1}
+                        <div class="text-sm text-muted-foreground">
+                          Alternative {alternative + 1}
+                        </div>
+                      {/if}
+                      {#each method.costGroups as group (group.id)}
+                        {#each group.inputs as input (input.id)}
+                          <div class="flex items-center gap-1">
+                            {#if input.item_id}
+                              <ItemLink
+                                itemId={input.item_id}
+                                itemName={data.acquisitionItems[input.item_id]
+                                  .name}
+                              />
+                            {:else}
+                              <span
+                                >{input.resource_kind === "gold"
+                                  ? "Gold"
+                                  : "Unpublished required item"}</span
+                              >
+                            {/if}
+                            <span>×{input.amount}</span>
+                          </div>
+                        {/each}
                       {/each}
                     </div>
-                  {:else}
-                    <span class="text-muted-foreground">—</span>
-                  {/if}
+                  {/each}
                 </td>
                 <td class="p-3">
                   <a
@@ -431,16 +437,22 @@
               {#if isExpanded && canExpand}
                 <tr class="border-t bg-muted/20">
                   <td class="p-4" colspan="4">
+                    <MethodList
+                      methods={recipe.methods}
+                      items={data.acquisitionItems}
+                      names={data.acquisitionNames}
+                      selectedItemId={recipe.item_id}
+                    />
                     <div class="mb-2 text-muted-foreground">
                       How to obtain ingredients:
                     </div>
                     <div
-                      class="overflow-x-auto rounded-md border bg-background p-3"
+                      class="w-[calc(100vw-6rem-2px)] max-w-5xl whitespace-normal overflow-x-auto rounded-md border bg-background p-3"
                     >
-                      <ObtainabilityTree
-                        node={recipe.obtainabilityTree}
-                        defaultExpanded={true}
-                        hideRootLink={true}
+                      <RecipeIngredients
+                        methods={recipe.methods}
+                        items={data.acquisitionItems}
+                        names={data.acquisitionNames}
                       />
                     </div>
                   </td>
@@ -470,7 +482,7 @@
           </thead>
           <tbody>
             {#each data.locations as location (location.id)}
-              <tr class="border-t hover:bg-muted/30">
+              <tr class="border-t odd:bg-muted/20 hover:bg-muted/30">
                 <td class="p-3">
                   <a
                     href="/zones/{location.zone_id}"

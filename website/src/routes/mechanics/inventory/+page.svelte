@@ -8,10 +8,7 @@
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
   import { repairCost, merchantPrice } from "$lib/calculation/inventory";
-  import {
-    SOURCE_TYPE_CONFIG,
-    type ItemSourceType,
-  } from "$lib/constants/source-types";
+  import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import {
     getQualityTextColorClass,
     formatNumber,
@@ -19,12 +16,10 @@
   } from "$lib/utils/format";
   import { reputationTierName } from "$lib/utils/reputation";
   import type {
-    BackpackSource,
     HouseStorageLocation,
     InventoryMechanicsPageData,
   } from "./+page.server";
 
-  const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
   const BANK_TAB_COSTS = [
     0, 200, 1000, 2000, 5000, 10000, 15000, 20000, 50000, 100000,
   ];
@@ -54,27 +49,6 @@
     if (house.faction_id) return "No reputation requirement";
     return "None recorded";
   }
-
-  function getSourcesByType(
-    sources: BackpackSource[],
-  ): [ItemSourceType, BackpackSource[]][] {
-    const grouped: [ItemSourceType, BackpackSource[]][] = [];
-
-    for (const source of sources) {
-      const group = grouped.find(([type]) => type === source.type);
-      if (group) {
-        group[1].push(source);
-      } else {
-        grouped.push([source.type, [source]]);
-      }
-    }
-
-    return grouped;
-  }
-
-  function visibleSources(sources: BackpackSource[]): BackpackSource[] {
-    return sources.slice(0, MAX_VISIBLE_SOURCES_PER_TYPE);
-  }
 </script>
 
 <Seo
@@ -83,7 +57,9 @@
   path="/mechanics/inventory"
 />
 
-<div class="container mx-auto max-w-5xl space-y-8 p-8">
+<div
+  class="container mx-auto max-w-5xl space-y-8 p-8 [&_tbody_tr:nth-child(odd)]:bg-muted/20"
+>
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -106,7 +82,7 @@
     </Card.Header>
     <Card.Content class="space-y-6">
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
+        <table class="w-full min-w-[38rem] border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-4 text-left font-medium">Storage</th>
@@ -184,15 +160,14 @@
         </li>
       </ul>
 
-      <!-- Source: website/src/lib/server/item-source-summary.ts:getMinimumSourceLevel -->
       <p class="text-sm text-muted-foreground">
-        Source Level is the lowest level among the bag's known sources. It does
+        Source level is the lowest known level among a bag's sources. It does
         not limit who can equip the bag.
       </p>
 
       {#if data.backpacks.length > 0}
         <div class="overflow-x-auto">
-          <table class="w-full border-collapse text-sm">
+          <table class="w-full min-w-[48rem] border-collapse text-sm">
             <thead>
               <tr class="border-b border-border">
                 <th class="py-2 pr-4 text-left font-medium">Bag</th>
@@ -230,50 +205,11 @@
                       <span class="text-muted-foreground">—</span>
                     {/if}
                   </td>
-                  <td class="py-2">
-                    {#if backpack.sources.length === 0}
-                      <span class="text-muted-foreground">No known source</span>
-                    {:else}
-                      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                        {#each getSourcesByType(backpack.sources) as [type, sources] (type)}
-                          {@const sourceConfig = SOURCE_TYPE_CONFIG[type]}
-                          <div class="flex flex-wrap items-center gap-1.5">
-                            <sourceConfig.icon
-                              class="h-4 w-4 shrink-0 {sourceConfig.color}"
-                            />
-                            {#if type !== "fishing"}
-                              <span class="text-muted-foreground"
-                                >{type === "random"
-                                  ? "Opened from"
-                                  : sourceConfig.label}:</span
-                              >
-                            {/if}
-                            {#each visibleSources(sources) as source, i (source.id)}
-                              <span>
-                                <a
-                                  href="{sourceConfig.linkPrefix}{source.id}"
-                                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                                  >{type === "crafting"
-                                    ? `${backpack.name} recipe`
-                                    : source.name}</a
-                                >{i < visibleSources(sources).length - 1
-                                  ? ","
-                                  : ""}
-                              </span>
-                            {/each}
-                            {#if sources.length > MAX_VISIBLE_SOURCES_PER_TYPE}
-                              <a
-                                href="/items/{backpack.id}"
-                                class="text-sm text-muted-foreground hover:underline"
-                              >
-                                +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE}
-                                more
-                              </a>
-                            {/if}
-                          </div>
-                        {/each}
-                      </div>
-                    {/if}
+                  <td class="min-w-64 py-2">
+                    <ItemSourceLinks
+                      sources={backpack.sources}
+                      emptyLabel="No known source"
+                    />
                   </td>
                 </tr>
               {/each}
@@ -425,7 +361,7 @@
         <h3 class="font-semibold">House locations</h3>
         {#if data.houses.length > 0}
           <div class="overflow-x-auto">
-            <table class="w-full border-collapse text-sm">
+            <table class="w-full min-w-[40rem] border-collapse text-sm">
               <thead>
                 <tr class="border-b border-border">
                   <th class="py-2 pr-4 text-left font-medium">House</th>
@@ -701,13 +637,15 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerEquipment.cs:485-494 — template 2 through 5 unlock prices. -->
-      <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {#each EQUIPMENT_TEMPLATE_ROWS as row (row.template)}
           <div
             class="min-w-0 rounded border border-border bg-muted/50 px-2 py-2 text-center"
           >
-            <span class="block truncate text-sm">Template {row.template}</span>
-            <span class="block truncate font-mono text-foreground"
+            <span class="block whitespace-normal text-sm"
+              >Template {row.template}</span
+            >
+            <span class="block whitespace-normal font-mono text-foreground"
               >{row.cost === 0 ? "Free" : `${formatGold(row.cost)} gold`}</span
             >
           </div>

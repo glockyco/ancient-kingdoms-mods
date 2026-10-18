@@ -2,12 +2,7 @@
 
 import sqlite3
 
-from compendium.denormalizers.quests import display_type, rewards, tooltips
-
-
-def run_rewards(conn: sqlite3.Connection) -> None:
-    """Normalize rewards before item sources and tooltips read them."""
-    rewards.run(conn)
+from compendium.denormalizers.quests import display_type, tooltips
 
 
 def run_display_type(conn: sqlite3.Connection) -> None:
@@ -22,6 +17,5 @@ def run_tooltips(conn: sqlite3.Connection) -> None:
 
 def run_all(conn: sqlite3.Connection) -> None:
     """Run all quest denormalizations."""
-    rewards.run(conn)
     display_type.run(conn)
     tooltips.run(conn)

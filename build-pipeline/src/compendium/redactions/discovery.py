@@ -10,9 +10,8 @@ A foreign key also gives the identifier space of a reference. ``chests.zone_id``
 targets ``zones.id`` and holds a string. ``items.travel_zone_id`` targets
 ``zones.zone_id`` and holds a number.
 
-Some references cannot be immediate foreign keys. The quest zone fields below
-use -1 for "no zone". Skills load before monsters and pets, so their summon
-references are declared separately.
+Some summon references cannot be immediate foreign keys because skills load
+before monsters and pets. Discovery declares those references separately.
 """
 
 import json
@@ -26,10 +25,8 @@ SUB_ZONE_PARENT = "zone_id"
 
 # References the schema does not declare as foreign keys.
 UNDECLARED_ZONE_REFERENCES: tuple[tuple[str, str, str], ...] = (
-    # table, column, target column in zones
     ("items", "luck_token_zone_id", "id"),
-    ("quests", "zone_id_final_npc", "zone_id"),
-    ("quests", "zone_id_quest_action", "zone_id"),
+    ("acquisition_kill_details", "loot_zone_number", "zone_id"),
 )
 
 UNDECLARED_ENTITY_REFERENCES: tuple[tuple[str, str, str, str], ...] = (
@@ -59,35 +56,17 @@ POLYMORPHIC_REFERENCES: tuple[tuple[str, str, str, str, str], ...] = (
 
 # Columns holding a zone identifier inside a JSON value, with the key that holds
 # it and the target column that fixes its identifier space.
-ZONE_JSON_CARRIERS: tuple[tuple[str, str, str, str], ...] = (
-    ("quests", "objectives", "zone_id", "id"),
-    ("quests", "finish_quest_locations", "zone_id", "zone_id"),
-)
+ZONE_JSON_CARRIERS: tuple[tuple[str, str, str, str], ...] = ()
 
 # Columns holding entity identifiers inside a JSON value. A key of "*" means the
 # value is an array of bare identifiers rather than a list of objects.
 ENTITY_JSON_CARRIERS: tuple[tuple[str, str, tuple[str, ...], str], ...] = (
-    ("alchemy_recipes", "materials", ("item_id",), "items"),
     ("altars", "waves", ("monster_id",), "monsters"),
-    ("crafting_recipes", "materials", ("item_id",), "items"),
-    ("items", "chest_rewards", ("item_id",), "items"),
     ("items", "augment_armor_set_item_ids", ("*",), "items"),
     ("items", "augment_armor_set_members", ("item_id",), "items"),
     ("items", "augment_skill_bonuses", ("skill_id",), "skills"),
     ("items", "augment_skill_bonuses_with_names", ("skill_id",), "skills"),
-    ("monsters", "drops", ("item_id",), "items"),
-    ("monsters", "loot_inputs", ("item_id",), "items"),
-    ("npcs", "quests_offered", ("id",), "quests"),
-    ("npcs", "quests_completed_here", ("id",), "quests"),
-    ("npcs", "items_sold", ("item_id", "currency_item_id"), "items"),
     ("npcs", "drops", ("item_id",), "items"),
-    ("npcs", "skill_ids", ("id",), "skills"),
-    ("quests", "rewards", ("item_id",), "items"),
-    ("quests", "predecessor_ids", ("*",), "quests"),
-    ("quests", "gather_items", ("item_id",), "items"),
-    ("quests", "required_items", ("item_id",), "items"),
-    ("quests", "equip_items", ("*",), "items"),
-    ("scribing_recipes", "materials", ("item_id",), "items"),
     ("skills", "granted_by_items", ("item_id",), "items"),
 )
 
@@ -141,23 +120,28 @@ def has_identifier(conn: sqlite3.Connection, table: str) -> bool:
 
 
 def foreign_keys(conn: sqlite3.Connection) -> list[ForeignKey]:
-    """Every reference the schema declares, and the three it cannot."""
+    """Every schema FK and explicitly registered non-FK reference."""
     found = [
         ForeignKey(table, row[3], row[2], row[4] or "id")
         for table in tables(conn)
         for row in conn.execute(f"PRAGMA foreign_key_list({table})")
     ]
+    present = {table: set(columns(conn, table)) for table in tables(conn)}
+    declared = {(key.table, key.column) for key in found}
     found += [
         ForeignKey(table, column, ZONE_TABLE, target)
         for table, column, target in UNDECLARED_ZONE_REFERENCES
+        if column in present.get(table, set()) and (table, column) not in declared
     ]
     found += [
         ForeignKey(table, column, target_table, target_column)
         for table, column, target_table, target_column in UNDECLARED_ENTITY_REFERENCES
+        if column in present.get(table, set()) and (table, column) not in declared
     ]
     found += [
         ForeignKey(table, column, target, "id", (type_column, type_value))
         for table, column, target, type_column, type_value in POLYMORPHIC_REFERENCES
+        if column in present.get(table, set())
     ]
     return found
 

@@ -6,12 +6,12 @@ import {
   itemDescription,
   monsterDescription,
   questDescription,
-  recipeDescription,
   skillDescription,
 } from "./meta-description.ts";
 import type { Item } from "$lib/queries/items";
-import type { ItemUsages } from "$lib/types/item-sources";
+import type { ItemUseView } from "$lib/acquisition/types";
 import { detailTitle } from "$lib/seo/title";
+import type { PrimaryReward } from "$lib/utils/primary-rewards";
 
 const skill = {
   name: "Avatar of War",
@@ -149,51 +149,77 @@ test("find metadata preserves the target zone without a duplicate turn-in", () =
   assert.ok(out.includes("The Lone-lands"));
 });
 
-test("recipe metadata preserves ingredient amounts and zero-based tiers", () => {
-  const out = recipeDescription(
-    { result_item_name: "Armor", type: "Alchemy", level_required: 4 },
-    [
-      { item_name: "Primal Essence", amount: 2500 },
-      { item_name: "Gold Ore", amount: 3 },
-      { item_name: "Gem", amount: 1 },
-    ],
-  );
-  assert.ok(out.includes("V"));
-  assert.ok(out.includes("2,500"));
-  assert.ok(out.includes("Gold Ore"));
-  assert.ok(!out.includes("level 4"));
-});
-
-test("chest metadata converts exclusive gold bounds exactly once", () => {
+test("chest metadata retains evaluated gold bounds and every reward alternative", () => {
+  const rewards: PrimaryReward[] = [
+    {
+      resourceKind: "gold",
+      itemId: null,
+      itemName: null,
+      withheld: false,
+      quantity: { kind: "range", min: 5, max: 14 },
+      delivery: "inventory",
+      methodIds: ["one"],
+      variants: [],
+    },
+    {
+      resourceKind: "item",
+      itemId: "flower",
+      itemName: "Bellflower",
+      withheld: false,
+      quantity: { kind: "range", min: 1, max: 4 },
+      delivery: "inventory",
+      methodIds: ["two"],
+      variants: [],
+    },
+  ];
   const out = chestDescription({
     zone_name: "Everfrost",
-    key_required_name: null,
-    gold_min: 5,
-    gold_max: 15,
-    item_reward_name: null,
+    keys: [],
+    primaryRewards: rewards,
     respawn_time: 0,
-    chest_reward_probability: 0.75,
   });
-  assert.ok(out.includes("5-14"));
-  assert.ok(!out.includes("15"));
-  assert.ok(out.includes("75%"));
+  assert.ok(out.includes("5-14 gold"));
+  assert.ok(out.includes("1-4 Bellflower"));
 });
 
-test("gathering metadata retains the base yield range", () => {
+test("gathering metadata retains canonical yield ranges without inventing unknown quantities", () => {
+  const rewards: PrimaryReward[] = [
+    {
+      resourceKind: "item",
+      itemId: "lily",
+      itemName: "Lily",
+      withheld: false,
+      quantity: { kind: "range", min: 1, max: 4 },
+      delivery: "inventory",
+      methodIds: ["one", "two"],
+      variants: [],
+    },
+    {
+      resourceKind: "item",
+      itemId: null,
+      itemName: null,
+      withheld: true,
+      quantity: { kind: "unknown" },
+      delivery: "quest_progress",
+      methodIds: ["three"],
+      variants: [],
+    },
+  ];
   const out = gatheringResourceDescription(
     {
-      name: "Bellflower",
+      name: "Lily",
       is_plant: true,
       is_fishing_spot: false,
       is_mineral: false,
       is_radiant_spark: false,
       level: 0,
-      item_reward_name: "Bellflower",
-      item_reward_amount: 2,
+      primaryRewards: rewards,
     },
     ["Twilight Forest"],
   );
-  assert.ok(out.includes("1-2"));
+  assert.ok(out.includes("1-4 Lily"));
+  assert.ok(out.includes("unknown amount"));
+  assert.ok(out.includes("quest progress"));
 });
 
 test("treasure map metadata uses its actual reward", () => {
@@ -205,19 +231,14 @@ test("treasure map metadata uses its actual reward", () => {
 });
 
 test("currency metadata counts purchasable items rather than merchant listings", () => {
-  const usages = {
-    recipes: [],
-    quests: [],
-    currency: [
-      { purchasable_item_id: "one" },
-      { purchasable_item_id: "one" },
-      { purchasable_item_id: "two" },
-    ],
-    altars: [],
-    portals: [],
-    chests: [],
-    merges: [],
-  } as unknown as ItemUsages;
+  const usages = ["one", "one", "two"].map((itemId) => ({
+    kind: "cost",
+    method: {
+      kind: "vendor",
+      methodId: `vendor:${itemId}`,
+      outputs: [{ item_id: itemId }],
+    },
+  })) as unknown as ItemUseView[];
   const out = itemDescription({ item_type: "general", quality: 0 } as Item, {
     usages,
   });
@@ -240,4 +261,28 @@ test("base skills do not advertise learning gates", () => {
   const out = skillDescription({ ...skill, base_skill: true });
   assert.ok(!out.includes("Mend"));
   assert.ok(!out.includes("40"));
+});
+
+test("non-equipment metadata retains canonical use restrictions", () => {
+  const out = itemDescription({ item_type: "general", quality: 0 } as Item, {
+    requirements: [
+      {
+        phase: "use",
+        subject: "player",
+        enforcement: "both",
+        expression: {
+          kind: "predicate",
+          predicate: {
+            kind: "metric_at_least",
+            subject: "player",
+            metric: "level",
+            amount: 12,
+            unit: "level",
+          },
+        },
+      },
+    ],
+  });
+  assert.ok(out.includes("12"));
+  assert.ok(out.includes("Requirements:"));
 });

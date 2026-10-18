@@ -71,14 +71,11 @@ class GatherItemsLoaderTests(unittest.TestCase):
                     WHERE id = 'lake_fishing_spot_elven_10_20'
                     """
                 ).fetchone()
-                drops = conn.execute(
-                    """
-                    SELECT item_id, drop_rate, actual_drop_chance
-                    FROM item_sources_gather
-                    WHERE resource_id = 'lake_fishing_spot'
-                    ORDER BY item_id
-                    """
-                ).fetchall()
+                payload = conn.execute(
+                    "SELECT payload FROM _acquisition_input_gathering WHERE id=?",
+                    ("lake_fishing_spot_elven_10_20",),
+                ).fetchone()[0]
+                drops = json.loads(payload)["random_drops"]
             finally:
                 conn.close()
 
@@ -92,7 +89,10 @@ class GatherItemsLoaderTests(unittest.TestCase):
         )
         self.assertEqual(
             drops,
-            [("golden_stripe_eel", 0.25, 0.125), ("river_carp", 0.75, 0.375)],
+            [
+                {"item_id": "golden_stripe_eel", "rate": 0.25},
+                {"item_id": "river_carp", "rate": 0.75},
+            ],
         )
 
     def test_load_gather_items_keeps_fishing_spots_with_different_drop_pools_separate(
@@ -170,11 +170,11 @@ class GatherItemsLoaderTests(unittest.TestCase):
                 ).fetchall()
                 ironjaw_sources = conn.execute(
                     """
-                    SELECT gr.name, grs.zone_id
-                    FROM item_sources_gather isg
-                    JOIN gathering_resources gr ON gr.id = isg.resource_id
-                    JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
-                    WHERE isg.item_id = 'ironjaw_catfish'
+                    SELECT json_extract(input.payload,'$.name'),
+                           json_extract(input.payload,'$.zone_id')
+                    FROM _acquisition_input_gathering input,
+                         json_each(input.payload,'$.random_drops') drop_entry
+                    WHERE json_extract(drop_entry.value,'$.item_id')='ironjaw_catfish'
                     """
                 ).fetchall()
             finally:

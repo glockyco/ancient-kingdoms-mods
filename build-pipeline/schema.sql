@@ -277,18 +277,23 @@ CREATE TABLE altars (
     position_y REAL,
     position_z REAL,
     min_level_required INTEGER DEFAULT 0,
-    required_activation_item_id TEXT,
+    required_activation_item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    required_activation_item_withheld INTEGER NOT NULL DEFAULT 0 CHECK (required_activation_item_withheld IN (0,1)),
     required_activation_item_name TEXT,
     init_event_message TEXT,
     radius_event INTEGER DEFAULT 0,
     uses_veteran_scaling BOOLEAN DEFAULT 0,
-    reward_common_id TEXT,
+    reward_common_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    reward_common_withheld INTEGER NOT NULL DEFAULT 0 CHECK (reward_common_withheld IN (0,1)),
     reward_common_name TEXT,
-    reward_magic_id TEXT,
+    reward_magic_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    reward_magic_withheld INTEGER NOT NULL DEFAULT 0 CHECK (reward_magic_withheld IN (0,1)),
     reward_magic_name TEXT,
-    reward_epic_id TEXT,
+    reward_epic_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    reward_epic_withheld INTEGER NOT NULL DEFAULT 0 CHECK (reward_epic_withheld IN (0,1)),
     reward_epic_name TEXT,
-    reward_legendary_id TEXT,
+    reward_legendary_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    reward_legendary_withheld INTEGER NOT NULL DEFAULT 0 CHECK (reward_legendary_withheld IN (0,1)),
     reward_legendary_name TEXT,
     magic_reward_threshold INTEGER,
     epic_reward_threshold INTEGER,
@@ -346,7 +351,6 @@ CREATE TABLE items (
     item_type TEXT,                 -- weapon, armor, consumable, etc.
     quality INTEGER,                -- 0-5 (common to legendary)
     level_required INTEGER DEFAULT 0,
-    class_required TEXT,            -- JSON array: ["Warrior", "Mage"]
     faction_required_to_buy INTEGER DEFAULT 0,
     faction_required_tier_name TEXT,  -- Denormalized from reputation_tiers
     adventuring_level_needed REAL DEFAULT 0.0,
@@ -359,6 +363,7 @@ CREATE TABLE items (
     sell_price INTEGER DEFAULT 0,
     primal_essence_value INTEGER,   -- Game-computed trade amount, NULL when the game refuses the item
     buy_token_id TEXT REFERENCES items(id),
+    buy_token_withheld INTEGER NOT NULL DEFAULT 0 CHECK (buy_token_withheld IN (0,1)),
     sellable BOOLEAN DEFAULT 1,
     tradable BOOLEAN DEFAULT 1,
     destroyable BOOLEAN DEFAULT 1,
@@ -409,15 +414,12 @@ CREATE TABLE items (
     mount_speed REAL DEFAULT 0.0,
     backpack_slots INTEGER DEFAULT 0,
     backpack_is_unique BOOLEAN DEFAULT 0,
-    travel_zone_id INTEGER DEFAULT 0 REFERENCES zones(zone_id),
+    travel_zone_id INTEGER REFERENCES zones(zone_id),
     travel_destination_x REAL,
     travel_destination_y REAL,
     travel_destination_z REAL,
     travel_destination_name TEXT,
 
-    -- Chest reward inputs with display names
-    chest_rewards TEXT,             -- JSON array
-    chest_num_items INTEGER DEFAULT 0,
 
     -- Additional item properties
     relic_buff_level INTEGER DEFAULT 0,
@@ -427,8 +429,10 @@ CREATE TABLE items (
     weapon_proc_effect_name TEXT,
     weapon_delay INTEGER DEFAULT 0,
     weapon_required_ammo_id TEXT REFERENCES items(id),
+    weapon_required_ammo_withheld INTEGER NOT NULL DEFAULT 0 CHECK (weapon_required_ammo_withheld IN (0,1)),
     fragment_amount_needed INTEGER DEFAULT 0,
     fragment_result_item_id TEXT REFERENCES items(id),
+    fragment_result_item_withheld INTEGER NOT NULL DEFAULT 0 CHECK (fragment_result_item_withheld IN (0,1)),
     fragment_result_item_name TEXT,
 
     -- Luck token properties
@@ -453,10 +457,6 @@ CREATE TABLE items (
     augment_is_defensive INTEGER,  -- NULL for non-augments; 1=Defensive (armor slots: Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), 0=Offensive (weapon slots). Source: server-scripts/AugmentItem.cs isDefensiveAugment
     recipe_potion_learned_id TEXT REFERENCES items(id),
     recipe_potion_learned_name TEXT,
-    alchemy_recipe_level_required INTEGER,
-    taught_by_recipe_id TEXT REFERENCES items(id),  -- Reverse: which recipe teaches this potion
-    taught_by_recipe_name TEXT,
-    alchemy_exp INTEGER,              -- EXP granted when crafting this potion (from alchemy_recipes)
     relic_buff_id TEXT REFERENCES skills(id),
     relic_buff_name TEXT,
     is_ornamentation_token BOOLEAN DEFAULT 0
@@ -468,166 +468,12 @@ CREATE INDEX idx_items_quality ON items(quality);
 CREATE INDEX idx_items_level ON items(level_required);
 CREATE INDEX idx_items_weapon_category ON items(weapon_category);
 
--- =============================================================================
--- ITEM SOURCES (normalized junction tables for item obtainability)
--- =============================================================================
-
--- Items dropped by monsters
-CREATE TABLE item_sources_monster (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    monster_id TEXT NOT NULL REFERENCES monsters(id),
-    drop_rate REAL NOT NULL
-);
-CREATE INDEX idx_item_sources_monster_item ON item_sources_monster(item_id);
-CREATE INDEX idx_item_sources_monster_monster ON item_sources_monster(monster_id);
-
--- Items sold by NPC vendors
-CREATE TABLE item_sources_vendor (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    npc_id TEXT NOT NULL REFERENCES npcs(id),
-    price INTEGER NOT NULL DEFAULT 0,
-    currency_item_id TEXT REFERENCES items(id),
-    required_faction TEXT REFERENCES factions(name),
-    required_reputation_tier INTEGER
-);
-CREATE INDEX idx_item_sources_vendor_item ON item_sources_vendor(item_id);
-CREATE INDEX idx_item_sources_vendor_npc ON item_sources_vendor(npc_id);
-CREATE INDEX idx_item_sources_vendor_currency ON item_sources_vendor(currency_item_id);
-CREATE INDEX idx_item_sources_vendor_faction ON item_sources_vendor(required_faction);
-
--- Items obtained from quests (as rewards or provided items)
-CREATE TABLE item_sources_quest (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    quest_id TEXT NOT NULL REFERENCES quests(id),
-    source_type TEXT NOT NULL CHECK (source_type IN ('reward', 'provided')),
-    class_restriction TEXT  -- JSON array of class names, NULL if no restriction
-);
-CREATE INDEX idx_item_sources_quest_item ON item_sources_quest(item_id);
-CREATE INDEX idx_item_sources_quest_quest ON item_sources_quest(quest_id);
-CREATE INDEX idx_item_sources_quest_type ON item_sources_quest(source_type);
-
--- Items rewarded by altars
-CREATE TABLE item_sources_altar (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    altar_id TEXT NOT NULL REFERENCES altars(id),
-    reward_tier TEXT NOT NULL CHECK (reward_tier IN ('common', 'magic', 'epic', 'legendary')),
-    drop_rate REAL NOT NULL,
-    min_level_plus_veteran INTEGER NOT NULL,
-    min_level INTEGER NOT NULL,
-    min_veteran_points INTEGER NOT NULL
-);
-CREATE INDEX idx_item_sources_altar_item ON item_sources_altar(item_id);
-CREATE INDEX idx_item_sources_altar_altar ON item_sources_altar(altar_id);
-CREATE INDEX idx_item_sources_altar_tier ON item_sources_altar(reward_tier);
-
-CREATE TABLE chest_item_rewards (
-    chest_item_id TEXT NOT NULL REFERENCES items(id),
-    item_id TEXT NOT NULL REFERENCES items(id),
-    roll_order INTEGER NOT NULL,
-    roll_chance REAL NOT NULL,
-    scales_with_treasure_hunter INTEGER NOT NULL
-);
-CREATE INDEX idx_chest_item_rewards_chest ON chest_item_rewards(chest_item_id);
-CREATE INDEX idx_chest_item_rewards_item ON chest_item_rewards(item_id);
-
--- Items crafted from recipes
-CREATE TABLE item_sources_recipe (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    recipe_id TEXT NOT NULL,  -- References crafting_recipes, alchemy_recipes, or scribing_recipes
-    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy', 'scribing')),
-    result_amount INTEGER NOT NULL DEFAULT 1,
-    source_level INTEGER              -- Derived: max of min source levels across materials (denormalized)
-);
-CREATE INDEX idx_item_sources_recipe_item ON item_sources_recipe(item_id);
-CREATE INDEX idx_item_sources_recipe_recipe ON item_sources_recipe(recipe_id);
-CREATE INDEX idx_item_sources_recipe_type ON item_sources_recipe(recipe_type);
-
--- Items found in packs
-CREATE TABLE item_sources_pack (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    pack_item_id TEXT NOT NULL REFERENCES items(id),
-    amount INTEGER NOT NULL DEFAULT 1
-);
-CREATE INDEX idx_item_sources_pack_item ON item_sources_pack(item_id);
-CREATE INDEX idx_item_sources_pack_pack ON item_sources_pack(pack_item_id);
-
--- Items found in random item containers
-CREATE TABLE item_sources_random (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    random_item_id TEXT NOT NULL REFERENCES items(id),
-    probability REAL NOT NULL
-);
-CREATE INDEX idx_item_sources_random_item ON item_sources_random(item_id);
-CREATE INDEX idx_item_sources_random_random ON item_sources_random(random_item_id);
-
--- Items created from merge recipes
-CREATE TABLE item_sources_merge (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    component_item_id TEXT NOT NULL REFERENCES items(id)
-);
-CREATE INDEX idx_item_sources_merge_item ON item_sources_merge(item_id);
-CREATE INDEX idx_item_sources_merge_component ON item_sources_merge(component_item_id);
-
--- Items rewarded by treasure maps
-CREATE TABLE item_sources_treasure_map (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    map_item_id TEXT NOT NULL REFERENCES items(id),
-    treasure_location_id TEXT REFERENCES treasure_locations(id)
-);
-CREATE INDEX idx_item_sources_treasure_map_item ON item_sources_treasure_map(item_id);
-CREATE INDEX idx_item_sources_treasure_map_map ON item_sources_treasure_map(map_item_id);
-CREATE INDEX idx_item_sources_treasure_map_location ON item_sources_treasure_map(treasure_location_id);
-
--- Items gathered from resources (renamed from gathering_resource_drops)
-CREATE TABLE item_sources_gather (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
-    drop_rate REAL NOT NULL,
-    actual_drop_chance REAL
-);
-CREATE INDEX idx_item_sources_gather_item ON item_sources_gather(item_id);
-CREATE INDEX idx_item_sources_gather_resource ON item_sources_gather(resource_id);
-
 CREATE TABLE fish (
     item_id TEXT PRIMARY KEY REFERENCES items(id),
     is_trash BOOLEAN NOT NULL DEFAULT 0
 );
 CREATE INDEX idx_fish_trash ON fish(is_trash);
 
--- Items found in chests (renamed from chest_drops)
-CREATE TABLE item_sources_chest (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    chest_id TEXT NOT NULL REFERENCES chests(id),
-    drop_rate REAL NOT NULL,
-    actual_drop_chance REAL
-);
-CREATE INDEX idx_item_sources_chest_item ON item_sources_chest(item_id);
-CREATE INDEX idx_item_sources_chest_chest ON item_sources_chest(chest_id);
-
-CREATE TABLE item_source_entries (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    source_type TEXT NOT NULL,
-    source_id TEXT NOT NULL,
-    source_name TEXT NOT NULL,
-    source_level INTEGER,
-    source_sort_name TEXT NOT NULL
-);
-
-CREATE INDEX idx_item_source_entries_item ON item_source_entries(item_id);
-CREATE INDEX idx_item_source_entries_type ON item_source_entries(source_type);
-CREATE INDEX idx_item_source_entries_level ON item_source_entries(source_level);
 
 
 -- =============================================================================
@@ -732,13 +578,12 @@ CREATE TABLE monsters (
     placeholder_monster_id TEXT REFERENCES monsters(id),
 
     -- Loot and rewards
-    loot_inputs TEXT,                 -- Canonical template rolls before contextual display expansion
+    loot_pool_id TEXT REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
     gold_min INTEGER,
     gold_max INTEGER,
     probability_drop_gold REAL DEFAULT 1.0,
     exp_multiplier REAL DEFAULT 1.0,
     base_exp INTEGER,               -- Pre-computed base EXP reward (before level scaling)
-    drops TEXT,                     -- JSON array
 
     -- Messages and interactions
     aggro_messages TEXT,            -- JSON array
@@ -777,89 +622,6 @@ CREATE TABLE monster_skills (
 CREATE INDEX idx_monster_skills_monster ON monster_skills(monster_id);
 CREATE INDEX idx_monster_skills_skill ON monster_skills(skill_id);
 
--- =============================================================================
--- ITEM USAGES (normalized junction tables for item consumption/requirements)
--- =============================================================================
-
--- Items used as materials in recipes
-CREATE TABLE item_usages_recipe (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    recipe_id TEXT NOT NULL,  -- References crafting_recipes, alchemy_recipes, or scribing_recipes
-    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy', 'scribing')),
-    amount INTEGER NOT NULL DEFAULT 1
-);
-CREATE INDEX idx_item_usages_recipe_item ON item_usages_recipe(item_id);
-CREATE INDEX idx_item_usages_recipe_recipe ON item_usages_recipe(recipe_id);
-CREATE INDEX idx_item_usages_recipe_type ON item_usages_recipe(recipe_type);
-
--- Items required for quests
-CREATE TABLE item_usages_quest (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    quest_id TEXT NOT NULL REFERENCES quests(id),
-    purpose TEXT NOT NULL,  -- 'Collect', 'Deliver', 'Equip', 'Have', etc.
-    amount INTEGER NOT NULL DEFAULT 1
-);
-CREATE INDEX idx_item_usages_quest_item ON item_usages_quest(item_id);
-CREATE INDEX idx_item_usages_quest_quest ON item_usages_quest(quest_id);
-CREATE INDEX idx_item_usages_quest_purpose ON item_usages_quest(purpose);
-
--- Items used as currency for purchases
-CREATE TABLE item_usages_currency (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    currency_item_id TEXT NOT NULL REFERENCES items(id),
-    purchasable_item_id TEXT NOT NULL REFERENCES items(id),
-    npc_id TEXT NOT NULL REFERENCES npcs(id),
-    price INTEGER NOT NULL DEFAULT 0
-);
-CREATE INDEX idx_item_usages_currency_currency ON item_usages_currency(currency_item_id);
-CREATE INDEX idx_item_usages_currency_purchasable ON item_usages_currency(purchasable_item_id);
-CREATE INDEX idx_item_usages_currency_npc ON item_usages_currency(npc_id);
-
--- Items required for altar activation
-CREATE TABLE item_usages_altar (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    altar_id TEXT NOT NULL REFERENCES altars(id)
-);
-CREATE INDEX idx_item_usages_altar_item ON item_usages_altar(item_id);
-CREATE INDEX idx_item_usages_altar_altar ON item_usages_altar(altar_id);
-
--- Items required for portal access
-CREATE TABLE item_usages_portal (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    portal_id TEXT NOT NULL REFERENCES portals(id)
-);
-CREATE INDEX idx_item_usages_portal_item ON item_usages_portal(item_id);
-CREATE INDEX idx_item_usages_portal_portal ON item_usages_portal(portal_id);
-
--- Items that open chests (keys)
-CREATE TABLE item_usages_chest (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    item_id TEXT NOT NULL REFERENCES items(id),
-    chest_id TEXT NOT NULL REFERENCES chests(id)
-);
-CREATE INDEX idx_item_usages_chest_item ON item_usages_chest(item_id);
-CREATE INDEX idx_item_usages_chest_chest ON item_usages_chest(chest_id);
-
--- =============================================================================
--- ITEM ZONES (precomputed item-zone relationships for filtering)
--- =============================================================================
-
--- Items obtainable in specific zones
-CREATE TABLE item_zones_obtainable (
-    item_id TEXT NOT NULL REFERENCES items(id),
-    zone_id TEXT NOT NULL REFERENCES zones(id),
-    source_type TEXT NOT NULL CHECK (source_type IN (
-        'monster', 'vendor', 'quest', 'altar', 'recipe',
-        'gather', 'chest', 'pack', 'random', 'merge', 'treasure_map'
-    )),
-    PRIMARY KEY (item_id, zone_id, source_type)
-);
-CREATE INDEX idx_item_zones_obtainable_zone ON item_zones_obtainable(zone_id);
-CREATE INDEX idx_item_zones_obtainable_source ON item_zones_obtainable(source_type);
 
 -- =============================================================================
 -- MONSTER SPAWNS
@@ -886,23 +648,8 @@ CREATE TABLE monster_spawns (
     move_probability REAL DEFAULT 0.0,
     move_distance REAL DEFAULT 0.0,
     is_patrolling BOOLEAN DEFAULT 0,
-    patrol_waypoints TEXT,          -- JSON array
+    patrol_waypoints TEXT           -- JSON array
 
-    -- Spawn source info (for non-regular spawns)
-    spawn_type TEXT DEFAULT 'regular',      -- 'regular', 'placeholder', 'altar', 'summon'
-    source_monster_id TEXT,                 -- placeholder: parent monster that triggers spawn
-    source_monster_name TEXT,
-    source_spawn_probability REAL,          -- placeholder: chance when parent dies
-    source_altar_id TEXT,                   -- altar: which altar event
-    source_altar_name TEXT,
-    source_altar_wave INTEGER,              -- altar: which wave (0-indexed)
-    source_altar_activation_item_id TEXT,   -- altar: item needed to start event
-    source_altar_activation_item_name TEXT,
-    source_summon_trigger_id TEXT,          -- summon: trigger that spawns this
-    source_summon_kill_monster_id TEXT,     -- summon: monster to kill (FK to monsters)
-    source_summon_kill_monster_name TEXT,   -- summon: denormalized name for display
-    source_summon_kill_count INTEGER,       -- summon: how many to kill
-    source_summon_message TEXT              -- summon: message shown when summoned
 );
 
 CREATE INDEX idx_monster_spawns_monster ON monster_spawns(monster_id);
@@ -915,9 +662,12 @@ CREATE INDEX idx_monster_spawns_sub_zone ON monster_spawns(sub_zone_id);
 
 CREATE TABLE summon_triggers (
     id TEXT PRIMARY KEY,
-    summoned_entity_type TEXT NOT NULL,   -- "Monster" or "Npc"
+    summoned_entity_type TEXT NOT NULL CHECK (summoned_entity_type IN ('Monster','Npc')),
     summoned_entity_id TEXT NOT NULL,      -- References monsters(id) or npcs(id)
     summoned_entity_name TEXT NOT NULL,
+    summoned_monster_spawn_id TEXT REFERENCES monster_spawns(id) DEFERRABLE INITIALLY DEFERRED,
+    summoned_npc_spawn_id TEXT REFERENCES npc_spawns(id) DEFERRABLE INITIALLY DEFERRED,
+    summoned_target_withheld INTEGER NOT NULL DEFAULT 0 CHECK (summoned_target_withheld IN (0,1)),
     summon_message TEXT DEFAULT '',
     spawn_position_x REAL,
     spawn_position_y REAL,
@@ -927,18 +677,28 @@ CREATE TABLE summon_triggers (
     summoned_is_summonable BOOLEAN NOT NULL,
     summoned_respawn_time REAL NOT NULL,
     summoned_respawn_probability REAL NOT NULL,
-    summoned_death_time REAL  -- NULL for an Npc, whose corpse time is a code constant
+    summoned_death_time REAL, -- NULL for an Npc, whose corpse time is a code constant
+    CHECK (
+        (summoned_target_withheld=1 AND summoned_monster_spawn_id IS NULL AND summoned_npc_spawn_id IS NULL)
+        OR (summoned_target_withheld=0 AND (
+            (summoned_entity_type='Monster' AND summoned_monster_spawn_id IS NOT NULL AND summoned_npc_spawn_id IS NULL)
+            OR (summoned_entity_type='Npc' AND summoned_npc_spawn_id IS NOT NULL AND summoned_monster_spawn_id IS NULL)
+        ))
+    )
 );
 
 CREATE INDEX idx_summon_triggers_zone ON summon_triggers(zone_id);
 CREATE INDEX idx_summon_triggers_entity ON summon_triggers(summoned_entity_id);
 
--- Junction table for placeholder monsters (specific spawns that must be killed)
+-- Ordered current-instance guards. A withheld guard remains an unknown operand.
 CREATE TABLE summon_trigger_placeholders (
-    trigger_id TEXT NOT NULL REFERENCES summon_triggers(id) ON DELETE CASCADE,
-    spawn_id TEXT NOT NULL REFERENCES monster_spawns(id),
-    placeholder_order INTEGER NOT NULL,    -- Preserve list order
-    PRIMARY KEY (trigger_id, spawn_id)
+    id TEXT PRIMARY KEY,
+    trigger_id TEXT NOT NULL REFERENCES summon_triggers(id) DEFERRABLE INITIALLY DEFERRED,
+    spawn_id TEXT REFERENCES monster_spawns(id) DEFERRABLE INITIALLY DEFERRED,
+    placeholder_order INTEGER NOT NULL CHECK (placeholder_order >= 0),
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (trigger_id,placeholder_order),
+    CHECK ((spawn_id IS NOT NULL AND withheld=0) OR (spawn_id IS NULL AND withheld=1))
 );
 
 CREATE INDEX idx_summon_placeholders_trigger ON summon_trigger_placeholders(trigger_id);
@@ -960,10 +720,6 @@ CREATE TABLE npcs (
     -- Race a mercenary recruiter always hires ('' when unset)
     preferred_mercenary_race TEXT DEFAULT '',
 
-    -- What they offer
-    quests_offered TEXT,            -- JSON array: [{id, name, level_required, level_recommended}]
-    quests_completed_here TEXT,     -- JSON array: [{id, name, level_required, level_recommended}] - denormalized
-    items_sold TEXT,                -- JSON array: [{item_id, item_name, quality, price, currency_item_id, currency_item_name, required_faction}]
 
     -- Base stats
     level INTEGER DEFAULT 1,
@@ -1038,8 +794,6 @@ CREATE TABLE npcs (
     aggro_message_probability REAL DEFAULT 0.0,
     summon_message TEXT DEFAULT '',
 
-    -- Skills (for guards and hostile NPCs)
-    skill_ids TEXT,                 -- JSON array: ["skill_id1", "skill_id2"]
 
     -- Search keywords (generated: service types from roles JSON)
     keywords TEXT
@@ -1091,28 +845,15 @@ CREATE TABLE quests (
     level_recommended INTEGER DEFAULT 0,
     -- Total veteran points before the Adventurer offers this quest; 0 means no gate.
     veteran_level_recommended INTEGER NOT NULL DEFAULT 0,
-    zone_id_final_npc INTEGER DEFAULT -1,
-    zone_id_quest_action INTEGER DEFAULT -1,
 
     -- Flags
     is_main_quest BOOLEAN DEFAULT 0,
     is_epic_quest BOOLEAN DEFAULT 0,
     is_adventurer_quest BOOLEAN DEFAULT 0,
     is_repeatable BOOLEAN DEFAULT 0,
+    reward_gold INTEGER NOT NULL DEFAULT 0,
+    reward_experience INTEGER NOT NULL DEFAULT 0,
 
-    -- Requirements (stored as JSON arrays)
-    race_requirements TEXT,         -- JSON array: ["Human", "Elf"]
-    class_requirements TEXT,        -- JSON array: ["Warrior", "Mage"]
-    faction_requirements TEXT,      -- JSON array
-    finish_quest_locations TEXT,    -- JSON array
-
-    -- Objectives as JSON (flexible structure)
-    -- Example: [{"type": "kill", "target": "fire_ele", "amount": 10}]
-    objectives TEXT,                -- JSON array
-
-    -- Rewards (stored as JSON)
-    -- Example: {"gold": 500, "exp": 150000, "items": [{"item_id": "helm"}]}
-    rewards TEXT,                   -- JSON object
 
     -- UI
     tooltip TEXT,
@@ -1121,41 +862,11 @@ CREATE TABLE quests (
     tooltip_html TEXT,
     tooltip_complete_html TEXT,
 
-    -- Quest NPCs and quest chains
-    start_npc_id TEXT REFERENCES npcs(id),
-    end_npc_id TEXT REFERENCES npcs(id),
-    predecessor_ids TEXT,  -- JSON array of prerequisite quest IDs (any one unlocks this quest)
-
-    -- Kill quest fields
-    kill_target_1_id TEXT REFERENCES monsters(id),
-    kill_amount_1 INTEGER DEFAULT 0,
-    kill_target_2_id TEXT REFERENCES monsters(id),
-    kill_amount_2 INTEGER DEFAULT 0,
-
-    -- Gather quest fields
-    gather_item_1_id TEXT REFERENCES items(id),
-    gather_amount_1 INTEGER DEFAULT 0,
-    gather_item_2_id TEXT REFERENCES items(id),
-    gather_amount_2 INTEGER DEFAULT 0,
-    gather_item_3_id TEXT REFERENCES items(id),
-    gather_amount_3 INTEGER DEFAULT 0,
-    gather_items TEXT,              -- JSON array with structured gather objectives
-    required_items TEXT,            -- JSON array
-    equip_items TEXT,               -- JSON array
-    given_item_on_start_id TEXT REFERENCES items(id),
 
     -- Other quest flags
     remove_items_on_complete BOOLEAN DEFAULT 0,
     is_find_npc_quest BOOLEAN DEFAULT 0,
-    potions_amount INTEGER DEFAULT 0,
-    potion_item_id TEXT REFERENCES items(id),
-    increase_alchemy_skill REAL DEFAULT 0.0,
-    discovered_location TEXT,
-    discovered_location_zone_id TEXT REFERENCES zones(id),
-    discovered_location_sub_zone_id TEXT REFERENCES zone_triggers(id),
-    discovered_location_position TEXT,    -- JSON: {x, y, z}
-    discovered_location_bounds TEXT,      -- JSON: {min_x, min_y, max_x, max_y}
-    tracking_quest_location TEXT
+    increase_alchemy_skill REAL DEFAULT 0.0
 );
 
 CREATE INDEX idx_quests_level ON quests(level_required);
@@ -1179,10 +890,8 @@ CREATE TABLE skills (
     level_required INTEGER DEFAULT 0,
     required_skill_points INTEGER DEFAULT 1,
     required_spent_points INTEGER DEFAULT 0,
-    prerequisite_skill_id TEXT REFERENCES skills(id),
-    prerequisite_level INTEGER DEFAULT 0,
-    prerequisite2_skill_id TEXT REFERENCES skills(id),
-    prerequisite2_level INTEGER DEFAULT 0,
+    level_requirement TEXT CHECK (level_requirement IS NULL OR json_valid(level_requirement)),
+    skill_point_cost TEXT CHECK (skill_point_cost IS NULL OR json_valid(skill_point_cost)),
     required_weapon_category TEXT,
     required_weapon_category2 TEXT,
 
@@ -1378,7 +1087,6 @@ CREATE TABLE skills (
 
 CREATE INDEX idx_skills_skill_type ON skills(skill_type);
 CREATE INDEX idx_skills_tier ON skills(tier);
-CREATE INDEX idx_skills_prerequisite ON skills(prerequisite_skill_id);
 CREATE INDEX idx_skills_is_spell ON skills(is_spell) WHERE is_spell = 1;
 CREATE INDEX idx_skills_is_veteran ON skills(is_veteran) WHERE is_veteran = 1;
 
@@ -1403,8 +1111,11 @@ CREATE TABLE portals (
     orientation_y REAL DEFAULT 0.0,
     orientation_z REAL DEFAULT 0.0,
     required_item_id TEXT REFERENCES items(id),
+    required_item_withheld INTEGER NOT NULL DEFAULT 0 CHECK (required_item_withheld IN (0,1)),
     requires_everyone_key BOOLEAN NOT NULL DEFAULT 0,
-    need_monster_dead_id TEXT REFERENCES monsters(id),
+    need_monster_dead_spawn_id TEXT REFERENCES monster_spawns(id) DEFERRABLE INITIALLY DEFERRED,
+    need_monster_dead_withheld INTEGER NOT NULL DEFAULT 0 CHECK (need_monster_dead_withheld IN (0,1)),
+    destination_withheld INTEGER NOT NULL DEFAULT 0 CHECK (destination_withheld IN (0,1)),
     level_required INTEGER DEFAULT 0,
     item_level_required INTEGER DEFAULT 0,
     is_closed BOOLEAN DEFAULT 0,
@@ -1431,6 +1142,7 @@ CREATE TABLE treasure_locations (
     position_y REAL,
     position_z REAL,
     required_map_id TEXT REFERENCES items(id),
+    required_map_withheld INTEGER NOT NULL DEFAULT 0 CHECK (required_map_withheld IN (0,1)),
     reward_id TEXT REFERENCES items(id)
 );
 
@@ -1530,13 +1242,10 @@ CREATE TABLE gathering_resources (
     -- Gathering properties
     level INTEGER DEFAULT 0,
     tool_required_id TEXT REFERENCES items(id),
+    tool_required_withheld INTEGER NOT NULL DEFAULT 0 CHECK (tool_required_withheld IN (0,1)),
     respawn_time REAL DEFAULT 0.0,
     spawn_ready BOOLEAN DEFAULT 0,
     prob_despawn REAL DEFAULT 0.0,
-
-    -- Guaranteed reward (some nodes give fixed item)
-    item_reward_id TEXT REFERENCES items(id),
-    item_reward_amount INTEGER DEFAULT 0,
 
     -- EXP reward
     gathering_exp INTEGER,             -- EXP granted when gathering this resource
@@ -1586,16 +1295,6 @@ CREATE TABLE chests (
     position_y REAL,
     position_z REAL,
 
-    -- Requirements
-    key_required_id TEXT REFERENCES items(id),
-
-    -- Rewards
-    gold_min INTEGER DEFAULT 0,
-    gold_max INTEGER DEFAULT 0,
-    item_reward_id TEXT REFERENCES items(id),
-    item_reward_amount INTEGER DEFAULT 0,
-    chest_reward_probability REAL DEFAULT 0.0,
-
     -- Respawn
     respawn_time REAL DEFAULT 0.0,
 
@@ -1606,7 +1305,6 @@ CREATE TABLE chests (
 
 CREATE INDEX idx_chests_zone ON chests(zone_id);
 CREATE INDEX idx_chests_sub_zone ON chests(sub_zone_id);
-CREATE INDEX idx_chests_key ON chests(key_required_id);
 
 -- =============================================================================
 -- CRAFTING RECIPES
@@ -1614,18 +1312,7 @@ CREATE INDEX idx_chests_key ON chests(key_required_id);
 
 CREATE TABLE crafting_recipes (
     id TEXT PRIMARY KEY,
-    result_item_id TEXT REFERENCES items(id),
-    result_amount INTEGER DEFAULT 1,
-
-    -- Materials as JSON (denormalized)
-    -- Example: [{"item_id": "iron_ore", "amount": 5}, {"item_id": "coal", "amount": 2}]
-    materials TEXT,                 -- JSON array
-
-    -- Crafting station requirement
-    station_type TEXT,              -- cooking, forge, alchemy_table, etc.
-
-    -- EXP reward
-    crafting_exp INTEGER            -- EXP granted when crafting this recipe
+    result_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE INDEX idx_crafting_result ON crafting_recipes(result_item_id);
@@ -1636,19 +1323,10 @@ CREATE INDEX idx_crafting_result ON crafting_recipes(result_item_id);
 
 CREATE TABLE alchemy_recipes (
     id TEXT PRIMARY KEY,
-    result_item_id TEXT REFERENCES items(id),
-    level_required INTEGER DEFAULT 0,
-
-    -- Materials as JSON (denormalized)
-    -- Example: [{"item_id": "healing_herb", "amount": 3}, {"item_id": "water", "amount": 1}]
-    materials TEXT,                 -- JSON array
-
-    -- EXP reward
-    alchemy_exp INTEGER             -- EXP granted when crafting this potion
+    result_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE INDEX idx_alchemy_result ON alchemy_recipes(result_item_id);
-CREATE INDEX idx_alchemy_level ON alchemy_recipes(level_required);
 
 -- =============================================================================
 -- SCRIBING RECIPES
@@ -1656,13 +1334,10 @@ CREATE INDEX idx_alchemy_level ON alchemy_recipes(level_required);
 
 CREATE TABLE scribing_recipes (
     id TEXT PRIMARY KEY,
-    result_item_id TEXT REFERENCES items(id),
-    level_required INTEGER NOT NULL DEFAULT 0,
-    materials TEXT  -- JSON: [{"item_id": "...", "item_name": "...", "amount": N}]
+    result_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE INDEX idx_scribing_result ON scribing_recipes(result_item_id);
-CREATE INDEX idx_scribing_level ON scribing_recipes(level_required);
 
 -- =============================================================================
 -- ALCHEMY TABLES (world locations)
@@ -1800,3 +1475,547 @@ CREATE TABLE pet_skills (
     is_innate BOOLEAN DEFAULT 0,
     PRIMARY KEY (pet_id, skill_id, skill_index)
 );
+
+-- Canonical acquisition facts. Private staging is consumed before closure.
+CREATE TABLE acquisition_methods (
+    id TEXT PRIMARY KEY,
+    kind TEXT NOT NULL CHECK (kind IN ('kill','vendor','quest_accept','quest_complete','altar_activate','recipe','gather','world_chest','portable_chest','pack_use','merge','fragment','treasure_dig','blessing','essence','creation','housing','cap_xp')),
+    rule_id TEXT NOT NULL CHECK (rule_id IN ('monster_loot','boss_loot','altar_final_loot','placeholder_loot','lootless','vendor','quest_accept','quest_complete','altar_activate','crafting','cooking','alchemy','scribing','herbalism','mining','fishing','radiant','gather_fixed','world_chest','portable_chest','pack_use','merge','fragment','treasure_dig','blessing','essence','creation','housing','cap_xp')),
+    setup_method_id TEXT REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    rooted INTEGER NOT NULL DEFAULT 0 CHECK (rooted IN (0,1)),
+    source_level_hint INTEGER
+);
+CREATE TABLE acquisition_cost_groups (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    phase TEXT NOT NULL CHECK (phase IN ('activate','purchase','accept','complete','attempt','use','exchange')),
+    quantity_rule TEXT NOT NULL CHECK (quantity_rule IN ('fixed','all_carried','quest_completion')),
+    consumption_rule TEXT NOT NULL CHECK (consumption_rule IN ('on_success','before_roll','after_outer_success','quest_inventory_then_equipped','replace_carried_stack')),
+    selection_rule TEXT NOT NULL DEFAULT 'always' CHECK (selection_rule IN ('always','chest_key_first','chest_lockpick_fallback'))
+);
+CREATE TABLE acquisition_inputs (
+    id TEXT PRIMARY KEY,
+    cost_group_id TEXT NOT NULL REFERENCES acquisition_cost_groups(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    resource_kind TEXT NOT NULL CHECK (resource_kind IN ('item','gold')),
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    amount INTEGER NOT NULL CHECK (amount > 0),
+    role TEXT NOT NULL CHECK (role IN ('material','currency','activation','key','lockpick','component','fragment','selected_instance','quest_primary','quest_secondary')),
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (cost_group_id,ordinal),
+    CHECK ((resource_kind='gold' AND item_id IS NULL AND withheld=0) OR (resource_kind='item' AND ((item_id IS NOT NULL AND withheld=0) OR (item_id IS NULL AND withheld=1))))
+);
+CREATE TABLE acquisition_outputs (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    resource_kind TEXT NOT NULL CHECK (resource_kind IN ('item','gold')),
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    amount_min INTEGER,
+    amount_max INTEGER,
+    yield_rule TEXT NOT NULL CHECK (yield_rule IN ('fixed','uniform_inclusive','uniform_upper_exclusive','all_carried','extra_gather','radiant','pool')),
+    delivery TEXT NOT NULL CHECK (delivery IN ('inventory','keyring','equipment','corpse','placed_structure','quest_progress')),
+    slot INTEGER,
+    condition_slot INTEGER,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (method_id,ordinal),
+    CHECK (resource_kind != 'gold' OR (item_id IS NULL AND withheld=0)),
+    CHECK (yield_rule != 'fixed' OR (amount_min IS NOT NULL AND amount_max IS NOT NULL AND amount_min > 0 AND amount_min=amount_max)),
+    CHECK (slot IS NULL OR (delivery='equipment' AND slot>=0)),
+    CHECK (condition_slot IS NULL OR condition_slot>=0)
+);
+CREATE TABLE acquisition_faction_effects (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    event TEXT NOT NULL CHECK (event IN ('corpse_generation','eligible_kill','successful_hook','cast','attempt','successful_opening','opening','parent_award')),
+    faction_id TEXT REFERENCES factions(id) DEFERRABLE INITIALLY DEFERRED,
+    delta INTEGER NOT NULL,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1))
+);
+CREATE TABLE acquisition_global_roots (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    origin TEXT NOT NULL CHECK (origin IN ('creation','housing','cap_xp'))
+);
+CREATE TABLE loot_pools (
+    id TEXT PRIMARY KEY,
+    kind TEXT NOT NULL CHECK (kind IN ('monster','random','portable_chest','resource_secondary','fishing_primary','fishing_trash','fishing_fallback'))
+);
+CREATE TABLE loot_pool_entries (
+    id TEXT PRIMARY KEY,
+    pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    child_pool_id TEXT REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    resolution TEXT NOT NULL CHECK (resolution IN ('direct','uniform_child')),
+    probability REAL NOT NULL CHECK (probability >= 0 AND probability <= 1),
+    duplicate_group INTEGER NOT NULL CHECK (duplicate_group >= 0),
+    cap INTEGER CHECK (cap IS NULL OR cap >= 0),
+    counts_equipment INTEGER NOT NULL CHECK (counts_equipment IN (0,1)),
+    guaranteed_equipment_candidate INTEGER NOT NULL CHECK (guaranteed_equipment_candidate IN (0,1)),
+    quest_gate TEXT NOT NULL CHECK (quest_gate IN ('none','public_need','withheld_need')),
+    scales_with_treasure_hunter INTEGER NOT NULL CHECK (scales_with_treasure_hunter IN (0,1)),
+    quality INTEGER,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (pool_id,ordinal),
+    CHECK ((resolution='direct' AND child_pool_id IS NULL) OR (resolution='uniform_child' AND child_pool_id IS NOT NULL))
+);
+CREATE TABLE acquisition_method_pools (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    event TEXT NOT NULL CHECK (event IN ('corpse_generation','eligible_kill','successful_hook','cast','attempt','successful_opening','opening','parent_award')),
+    UNIQUE (method_id,ordinal)
+);
+CREATE TABLE loot_monster_rules (
+    id TEXT PRIMARY KEY,
+    pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE loot_chest_rules (
+    id TEXT PRIMARY KEY,
+    pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    num_items INTEGER NOT NULL CHECK (num_items >= 0)
+);
+CREATE TABLE loot_fishing_rules (
+    id TEXT PRIMARY KEY,
+    primary_pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    trash_pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    fallback_pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    spot_tier INTEGER NOT NULL CHECK (spot_tier >= 0)
+);
+CREATE TABLE acquisition_method_fishing_rules (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL UNIQUE REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    fishing_rule_id TEXT NOT NULL REFERENCES loot_fishing_rules(id) DEFERRABLE INITIALLY DEFERRED,
+    CHECK (id=method_id)
+);
+CREATE TABLE item_pool_definitions (
+    id TEXT PRIMARY KEY,
+    item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    role TEXT NOT NULL CHECK (role IN ('random','portable_chest'))
+);
+CREATE TABLE acquisition_kill_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    monster_id TEXT NOT NULL REFERENCES monsters(id) DEFERRABLE INITIALLY DEFERRED,
+    loot_pool_id TEXT NOT NULL REFERENCES loot_pools(id) DEFERRABLE INITIALLY DEFERRED,
+    loot_zone_number INTEGER,
+    loot_zone_id TEXT REFERENCES zones(id) DEFERRABLE INITIALLY DEFERRED,
+    loot_zone_withheld INTEGER NOT NULL DEFAULT 0 CHECK (loot_zone_withheld IN (0,1)),
+    respawn INTEGER NOT NULL CHECK (respawn IN (0,1)),
+    exp_multiplier REAL NOT NULL,
+    is_boss INTEGER NOT NULL CHECK (is_boss IN (0,1)),
+    is_elite INTEGER NOT NULL CHECK (is_elite IN (0,1)),
+    is_hunt INTEGER NOT NULL CHECK (is_hunt IN (0,1)),
+    is_summoned_pet INTEGER NOT NULL CHECK (is_summoned_pet IN (0,1)),
+    altar_id TEXT REFERENCES altars(id) DEFERRABLE INITIALLY DEFERRED,
+    wave_number INTEGER,
+    wave_member_index INTEGER,
+    parent_monster_spawn_id TEXT REFERENCES monster_spawns(id) DEFERRABLE INITIALLY DEFERRED,
+    event_kind TEXT NOT NULL CHECK (event_kind IN ('authored','altar_final','placeholder','lootless')),
+    gold_min INTEGER NOT NULL,
+    gold_max INTEGER NOT NULL,
+    gold_probability REAL NOT NULL CHECK (gold_probability >= 0 AND gold_probability <= 1),
+    CHECK ((loot_zone_withheld=1 AND loot_zone_number IS NULL AND loot_zone_id IS NULL) OR (loot_zone_withheld=0 AND loot_zone_number IS NOT NULL))
+);
+CREATE TABLE acquisition_vendor_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
+    offered_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    season TEXT NOT NULL CHECK (season IN ('none','halloween','christmas'))
+);
+CREATE TABLE acquisition_quest_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    phase TEXT NOT NULL CHECK (phase IN ('accept','complete'))
+);
+CREATE TABLE acquisition_recipe_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    crafting_recipe_id TEXT REFERENCES crafting_recipes(id) DEFERRABLE INITIALLY DEFERRED,
+    alchemy_recipe_id TEXT REFERENCES alchemy_recipes(id) DEFERRABLE INITIALLY DEFERRED,
+    scribing_recipe_id TEXT REFERENCES scribing_recipes(id) DEFERRABLE INITIALLY DEFERRED,
+    declared_result_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    result_amount INTEGER NOT NULL CHECK (result_amount > 0),
+    tier INTEGER NOT NULL CHECK (tier >= 0),
+    display_kind TEXT NOT NULL CHECK (display_kind IN ('crafting','cooking','alchemy','scribing')),
+    experience INTEGER,
+    CHECK ((crafting_recipe_id IS NOT NULL)+(alchemy_recipe_id IS NOT NULL)+(scribing_recipe_id IS NOT NULL)=1)
+);
+CREATE TABLE acquisition_resource_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    resource_id TEXT NOT NULL REFERENCES gathering_resources(id) DEFERRABLE INITIALLY DEFERRED,
+    resource_kind TEXT NOT NULL CHECK (resource_kind IN ('plant','mineral','fishing','radiant','other')),
+    outer_success REAL NOT NULL CHECK (outer_success >= 0 AND outer_success <= 1),
+    gold_min INTEGER NOT NULL,
+    gold_max INTEGER NOT NULL
+);
+CREATE TABLE acquisition_world_chest_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    chest_id TEXT NOT NULL REFERENCES chests(id) DEFERRABLE INITIALLY DEFERRED,
+    key_item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    key_item_withheld INTEGER NOT NULL DEFAULT 0 CHECK (key_item_withheld IN (0,1)),
+    outer_success REAL NOT NULL CHECK (outer_success >= 0 AND outer_success <= 1),
+    gold_min INTEGER NOT NULL,
+    gold_max INTEGER NOT NULL
+);
+CREATE TABLE acquisition_item_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE acquisition_treasure_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    treasure_location_id TEXT NOT NULL REFERENCES treasure_locations(id) DEFERRABLE INITIALLY DEFERRED,
+    map_item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    map_item_withheld INTEGER NOT NULL DEFAULT 0 CHECK (map_item_withheld IN (0,1))
+);
+CREATE TABLE acquisition_service_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    service_role TEXT NOT NULL CHECK (service_role IN ('blessing','essence'))
+);
+CREATE TABLE acquisition_creation_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    class_id TEXT NOT NULL REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE acquisition_housing_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    structure_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE acquisition_cap_xp_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    reward_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE acquisition_altar_details (
+    id TEXT PRIMARY KEY REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    altar_id TEXT NOT NULL REFERENCES altars(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE acquisition_providers_monster_spawns (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    monster_spawn_id TEXT NOT NULL REFERENCES monster_spawns(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_npcs (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_altars (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    altar_id TEXT NOT NULL REFERENCES altars(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_resource_spawns (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    resource_spawn_id TEXT NOT NULL REFERENCES gathering_resource_spawns(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_chests (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    chest_id TEXT NOT NULL REFERENCES chests(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_crafting_stations (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    crafting_station_id TEXT NOT NULL REFERENCES crafting_stations(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_alchemy_tables (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    alchemy_table_id TEXT NOT NULL REFERENCES alchemy_tables(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_scribing_tables (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    scribing_table_id TEXT NOT NULL REFERENCES scribing_tables(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_items (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_classes (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    class_id TEXT NOT NULL REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_providers_treasure_locations (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    treasure_location_id TEXT NOT NULL REFERENCES treasure_locations(id) DEFERRABLE INITIALLY DEFERRED,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE acquisition_home_providers (
+    id TEXT PRIMARY KEY,
+    method_id TEXT NOT NULL REFERENCES acquisition_methods(id) DEFERRABLE INITIALLY DEFERRED,
+    structure_item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    component_path TEXT NOT NULL,
+    offer_index INTEGER CHECK (offer_index IS NULL OR offer_index >= 0)
+);
+CREATE TABLE quest_objectives (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    kind TEXT NOT NULL CHECK (kind IN ('item','monster','location','brew')),
+    role TEXT NOT NULL CHECK (role IN ('gather_counter','inventory_primary','inventory_secondary','equipped','kill_counter','location_visit','tracking_location','brew_counter')),
+    amount INTEGER,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal),
+    CHECK ((kind='location' AND amount IS NULL) OR (kind!='location' AND amount>0))
+);
+CREATE TABLE quest_objective_items (
+    id TEXT PRIMARY KEY REFERENCES quest_objectives(id) DEFERRABLE INITIALLY DEFERRED,
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE quest_objective_monsters (
+    id TEXT PRIMARY KEY REFERENCES quest_objectives(id) DEFERRABLE INITIALLY DEFERRED,
+    monster_id TEXT REFERENCES monsters(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE quest_objective_brews (
+    id TEXT PRIMARY KEY REFERENCES quest_objectives(id) DEFERRABLE INITIALLY DEFERRED,
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE quest_objective_locations (
+    id TEXT PRIMARY KEY REFERENCES quest_objectives(id) DEFERRABLE INITIALLY DEFERRED,
+    zone_id TEXT REFERENCES zones(id) DEFERRABLE INITIALLY DEFERRED,
+    sub_zone_id TEXT REFERENCES zone_triggers(id) DEFERRABLE INITIALLY DEFERRED,
+    discovered_location TEXT,
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+    min_x REAL,
+    min_y REAL,
+    max_x REAL,
+    max_y REAL,
+    tracking_quest_location TEXT
+);
+CREATE TABLE quest_predecessors (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    predecessor_quest_id TEXT REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal)
+);
+CREATE TABLE quest_class_requirements (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    class_id TEXT REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal)
+);
+CREATE TABLE quest_race_requirements (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    race_id TEXT REFERENCES race_progression(id) DEFERRABLE INITIALLY DEFERRED,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal)
+);
+CREATE TABLE quest_faction_requirements (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    faction_id TEXT REFERENCES factions(id) DEFERRABLE INITIALLY DEFERRED,
+    standing INTEGER NOT NULL,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal)
+);
+CREATE TABLE quest_reward_slots (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    slot_kind TEXT NOT NULL CHECK (slot_kind IN ('shared','class')),
+    class_id TEXT REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED,
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    class_withheld INTEGER NOT NULL DEFAULT 0 CHECK (class_withheld IN (0,1)),
+    item_withheld INTEGER NOT NULL DEFAULT 0 CHECK (item_withheld IN (0,1)),
+    amount INTEGER NOT NULL CHECK (amount > 0),
+    UNIQUE (quest_id,ordinal),
+    CHECK ((slot_kind='shared' AND class_id IS NULL AND class_withheld=0) OR (slot_kind='class' AND (class_id IS NOT NULL OR class_withheld=1)))
+);
+CREATE TABLE quest_provided_items (
+    id TEXT PRIMARY KEY,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    item_id TEXT REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    amount INTEGER NOT NULL CHECK (amount > 0),
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (quest_id,ordinal)
+);
+CREATE TABLE npc_quest_memberships (
+    id TEXT PRIMARY KEY,
+    npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
+    quest_id TEXT NOT NULL REFERENCES quests(id) DEFERRABLE INITIALLY DEFERRED,
+    role TEXT NOT NULL CHECK (role IN ('offer','complete')),
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    UNIQUE (npc_id,role,ordinal)
+);
+CREATE TABLE npc_skills (
+    id TEXT PRIMARY KEY,
+    npc_id TEXT NOT NULL REFERENCES npcs(id) DEFERRABLE INITIALLY DEFERRED,
+    skill_id TEXT NOT NULL REFERENCES skills(id) DEFERRABLE INITIALLY DEFERRED,
+    skill_index INTEGER NOT NULL CHECK (skill_index >= 0),
+    UNIQUE (npc_id,skill_index)
+);
+CREATE TABLE item_class_requirements (
+    id TEXT PRIMARY KEY,
+    item_id TEXT NOT NULL REFERENCES items(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    class_id TEXT REFERENCES classes(id) DEFERRABLE INITIALLY DEFERRED,
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (item_id,ordinal)
+);
+CREATE TABLE skill_predecessors (
+    id TEXT PRIMARY KEY,
+    skill_id TEXT NOT NULL REFERENCES skills(id) DEFERRABLE INITIALLY DEFERRED,
+    ordinal INTEGER NOT NULL CHECK (ordinal >= 0),
+    predecessor_skill_id TEXT REFERENCES skills(id) DEFERRABLE INITIALLY DEFERRED,
+    rank INTEGER NOT NULL CHECK (rank >= 0),
+    withheld INTEGER NOT NULL DEFAULT 0 CHECK (withheld IN (0,1)),
+    UNIQUE (skill_id,ordinal)
+);
+
+CREATE TABLE _acquisition_input_items (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_skills (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_monsters (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_monster_spawns (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_npcs (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_quests (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_gathering (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_crafting_recipes (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_alchemy_recipes (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_scribing_recipes (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_crafting_stations (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_alchemy_tables (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_scribing_tables (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+CREATE TABLE _acquisition_input_game_config (
+    id TEXT PRIMARY KEY, payload TEXT NOT NULL CHECK (json_valid(payload))
+);
+
+CREATE INDEX idx_acquisition_methods_setup ON acquisition_methods(setup_method_id);
+CREATE INDEX idx_acquisition_cost_groups_method ON acquisition_cost_groups(method_id);
+CREATE INDEX idx_acquisition_inputs_item ON acquisition_inputs(item_id);
+CREATE INDEX idx_acquisition_outputs_item ON acquisition_outputs(item_id);
+CREATE INDEX idx_acquisition_faction_effects_method ON acquisition_faction_effects(method_id);
+CREATE INDEX idx_acquisition_faction_effects_faction ON acquisition_faction_effects(faction_id);
+CREATE INDEX idx_acquisition_global_roots_method ON acquisition_global_roots(method_id);
+CREATE INDEX idx_acquisition_method_pools_pool ON acquisition_method_pools(pool_id);
+CREATE INDEX idx_loot_pool_entries_item ON loot_pool_entries(item_id);
+CREATE INDEX idx_loot_pool_entries_child ON loot_pool_entries(child_pool_id);
+CREATE INDEX idx_loot_monster_rules_pool ON loot_monster_rules(pool_id);
+CREATE INDEX idx_loot_chest_rules_pool ON loot_chest_rules(pool_id);
+CREATE INDEX idx_loot_fishing_rules_primary ON loot_fishing_rules(primary_pool_id);
+CREATE INDEX idx_loot_fishing_rules_trash ON loot_fishing_rules(trash_pool_id);
+CREATE INDEX idx_loot_fishing_rules_fallback ON loot_fishing_rules(fallback_pool_id);
+CREATE INDEX idx_acquisition_method_fishing_rules_rule ON acquisition_method_fishing_rules(fishing_rule_id);
+CREATE INDEX idx_item_pool_definitions_item ON item_pool_definitions(item_id);
+CREATE INDEX idx_item_pool_definitions_pool ON item_pool_definitions(pool_id);
+CREATE INDEX idx_monsters_loot_pool ON monsters(loot_pool_id);
+CREATE INDEX idx_acquisition_kill_details_monster ON acquisition_kill_details(monster_id);
+CREATE INDEX idx_acquisition_kill_details_pool ON acquisition_kill_details(loot_pool_id);
+CREATE INDEX idx_acquisition_kill_details_zone ON acquisition_kill_details(loot_zone_id);
+CREATE INDEX idx_acquisition_kill_details_altar ON acquisition_kill_details(altar_id);
+CREATE INDEX idx_acquisition_kill_details_parent ON acquisition_kill_details(parent_monster_spawn_id);
+CREATE INDEX idx_acquisition_vendor_details_npc ON acquisition_vendor_details(npc_id);
+CREATE INDEX idx_acquisition_vendor_details_item ON acquisition_vendor_details(offered_item_id);
+CREATE INDEX idx_acquisition_quest_details_quest ON acquisition_quest_details(quest_id);
+CREATE INDEX idx_acquisition_recipe_details_crafting ON acquisition_recipe_details(crafting_recipe_id);
+CREATE INDEX idx_acquisition_recipe_details_alchemy ON acquisition_recipe_details(alchemy_recipe_id);
+CREATE INDEX idx_acquisition_recipe_details_scribing ON acquisition_recipe_details(scribing_recipe_id);
+CREATE INDEX idx_acquisition_recipe_details_item ON acquisition_recipe_details(declared_result_item_id);
+CREATE INDEX idx_acquisition_resource_details_resource ON acquisition_resource_details(resource_id);
+CREATE INDEX idx_acquisition_world_chest_details_chest ON acquisition_world_chest_details(chest_id);
+CREATE INDEX idx_acquisition_world_chest_details_key ON acquisition_world_chest_details(key_item_id);
+CREATE INDEX idx_acquisition_item_details_item ON acquisition_item_details(item_id);
+CREATE INDEX idx_acquisition_treasure_details_location ON acquisition_treasure_details(treasure_location_id);
+CREATE INDEX idx_acquisition_treasure_details_map ON acquisition_treasure_details(map_item_id);
+CREATE INDEX idx_acquisition_creation_details_class ON acquisition_creation_details(class_id);
+CREATE INDEX idx_acquisition_housing_details_item ON acquisition_housing_details(structure_item_id);
+CREATE INDEX idx_acquisition_cap_xp_details_item ON acquisition_cap_xp_details(reward_item_id);
+CREATE INDEX idx_acquisition_altar_details_altar ON acquisition_altar_details(altar_id);
+CREATE INDEX idx_acquisition_providers_monster_spawns_method ON acquisition_providers_monster_spawns(method_id);
+CREATE INDEX idx_acquisition_providers_monster_spawns_target ON acquisition_providers_monster_spawns(monster_spawn_id);
+CREATE INDEX idx_acquisition_providers_npcs_method ON acquisition_providers_npcs(method_id);
+CREATE INDEX idx_acquisition_providers_npcs_target ON acquisition_providers_npcs(npc_id);
+CREATE INDEX idx_acquisition_providers_altars_method ON acquisition_providers_altars(method_id);
+CREATE INDEX idx_acquisition_providers_altars_target ON acquisition_providers_altars(altar_id);
+CREATE INDEX idx_acquisition_providers_resource_spawns_method ON acquisition_providers_resource_spawns(method_id);
+CREATE INDEX idx_acquisition_providers_resource_spawns_target ON acquisition_providers_resource_spawns(resource_spawn_id);
+CREATE INDEX idx_acquisition_providers_chests_method ON acquisition_providers_chests(method_id);
+CREATE INDEX idx_acquisition_providers_chests_target ON acquisition_providers_chests(chest_id);
+CREATE INDEX idx_acquisition_providers_crafting_stations_method ON acquisition_providers_crafting_stations(method_id);
+CREATE INDEX idx_acquisition_providers_crafting_stations_target ON acquisition_providers_crafting_stations(crafting_station_id);
+CREATE INDEX idx_acquisition_providers_alchemy_tables_method ON acquisition_providers_alchemy_tables(method_id);
+CREATE INDEX idx_acquisition_providers_alchemy_tables_target ON acquisition_providers_alchemy_tables(alchemy_table_id);
+CREATE INDEX idx_acquisition_providers_scribing_tables_method ON acquisition_providers_scribing_tables(method_id);
+CREATE INDEX idx_acquisition_providers_scribing_tables_target ON acquisition_providers_scribing_tables(scribing_table_id);
+CREATE INDEX idx_acquisition_providers_items_method ON acquisition_providers_items(method_id);
+CREATE INDEX idx_acquisition_providers_items_target ON acquisition_providers_items(item_id);
+CREATE INDEX idx_acquisition_providers_classes_method ON acquisition_providers_classes(method_id);
+CREATE INDEX idx_acquisition_providers_classes_target ON acquisition_providers_classes(class_id);
+CREATE INDEX idx_acquisition_providers_treasure_locations_method ON acquisition_providers_treasure_locations(method_id);
+CREATE INDEX idx_acquisition_providers_treasure_locations_target ON acquisition_providers_treasure_locations(treasure_location_id);
+CREATE INDEX idx_acquisition_home_providers_method ON acquisition_home_providers(method_id);
+CREATE INDEX idx_acquisition_home_providers_item ON acquisition_home_providers(structure_item_id);
+CREATE INDEX idx_quest_objective_items_item ON quest_objective_items(item_id);
+CREATE INDEX idx_quest_objective_monsters_monster ON quest_objective_monsters(monster_id);
+CREATE INDEX idx_quest_objective_brews_item ON quest_objective_brews(item_id);
+CREATE INDEX idx_quest_objective_locations_zone ON quest_objective_locations(zone_id);
+CREATE INDEX idx_quest_objective_locations_sub_zone ON quest_objective_locations(sub_zone_id);
+CREATE INDEX idx_quest_predecessors_target ON quest_predecessors(predecessor_quest_id);
+CREATE INDEX idx_quest_class_requirements_target ON quest_class_requirements(class_id);
+CREATE INDEX idx_quest_race_requirements_target ON quest_race_requirements(race_id);
+CREATE INDEX idx_quest_faction_requirements_target ON quest_faction_requirements(faction_id);
+CREATE INDEX idx_quest_reward_slots_class ON quest_reward_slots(class_id);
+CREATE INDEX idx_quest_reward_slots_item ON quest_reward_slots(item_id);
+CREATE INDEX idx_quest_provided_items_item ON quest_provided_items(item_id);
+CREATE INDEX idx_npc_quest_memberships_quest ON npc_quest_memberships(quest_id);
+CREATE INDEX idx_npc_skills_skill ON npc_skills(skill_id);
+CREATE INDEX idx_item_class_requirements_class ON item_class_requirements(class_id);
+CREATE INDEX idx_skill_predecessors_target ON skill_predecessors(predecessor_skill_id);
+CREATE INDEX idx_portals_monster_gate ON portals(need_monster_dead_spawn_id);
+CREATE INDEX idx_altars_activation_item ON altars(required_activation_item_id);
+CREATE INDEX idx_altars_reward_common ON altars(reward_common_id);
+CREATE INDEX idx_altars_reward_magic ON altars(reward_magic_id);
+CREATE INDEX idx_altars_reward_epic ON altars(reward_epic_id);
+CREATE INDEX idx_altars_reward_legendary ON altars(reward_legendary_id);
+CREATE INDEX idx_summon_triggers_monster_target ON summon_triggers(summoned_monster_spawn_id);
+CREATE INDEX idx_summon_triggers_npc_target ON summon_triggers(summoned_npc_spawn_id);

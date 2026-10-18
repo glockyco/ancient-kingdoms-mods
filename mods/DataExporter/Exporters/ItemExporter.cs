@@ -135,6 +135,16 @@ public class ItemExporter : BaseExporter
                 comments = scriptableItem.comments ?? ""
             };
 
+            if (!string.IsNullOrWhiteSpace(scriptableItem.requiredClass))
+            {
+                foreach (var value in scriptableItem.requiredClass.Split(','))
+                {
+                    var requiredClass = value.Trim();
+                    if (requiredClass.Length > 0)
+                        itemData.class_required.Add(requiredClass);
+                }
+            }
+
             if (usableItem != null)
             {
                 itemData.level_required = usableItem.minLevel;
@@ -256,19 +266,6 @@ public class ItemExporter : BaseExporter
         itemData.is_costume = equipItem.isCostume;
         itemData.slot = equipItem.category ?? "";
 
-        // Parse required class
-        if (!string.IsNullOrEmpty(equipItem.requiredClass))
-        {
-            var classes = equipItem.requiredClass.Split(',');
-            foreach (var cls in classes)
-            {
-                var trimmed = cls.Trim();
-                if (!string.IsNullOrEmpty(trimmed))
-                {
-                    itemData.class_required.Add(trimmed);
-                }
-            }
-        }
 
         // Export stats
         itemData.stats = new ItemStats

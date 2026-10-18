@@ -9,8 +9,8 @@ dependent, or a missing input fails the build and names the dataset.
 Adding a dataset:
 
 - A simple dataset is one JSON array whose elements each validate against one
-  model and become one row of one table. Declare it with `model`. It needs no
-  loader function and no other registration.
+  model and become one row of one table, optionally retaining private acquisition
+  staging. Declare it with `model`. It needs no loader function.
 - Anything else is a custom dataset: several inputs or tables, derived columns,
   checks against other tables, junction rows, or published files. Write its
   loader in `core.py` and declare it with `handler`.
@@ -36,6 +36,7 @@ from compendium.loaders.core import (
     load_alchemy_tables,
     load_classes,
     load_crafting_stations,
+    load_game_config,
     load_gather_items,
     load_houses,
     load_items,
@@ -45,6 +46,7 @@ from compendium.loaders.core import (
     load_professions,
     load_progression,
     load_quests,
+    load_recipe_family,
     load_scribing_tables,
     load_skills,
     load_static_data,
@@ -56,9 +58,7 @@ from compendium.loaders.core import (
     record_visual_assets,
 )
 from compendium.models import (
-    AlchemyRecipeData,
     AltarData,
-    CraftingRecipeData,
     EquipmentSlotData,
     FishData,
     GameGuideArticleData,
@@ -68,7 +68,6 @@ from compendium.models import (
     NpcData,
     NpcSpawnData,
     PortalData,
-    ScribingRecipeData,
     TrapData,
     ZoneData,
     ZoneTriggerData,
@@ -104,10 +103,13 @@ class Dataset:
         if (self.model is None) == (self.handler is None):
             raise ValueError(f"Dataset {self.id} needs exactly one of model or handler")
         if self.model is not None and (
-            len(self.inputs) + len(self.curated_inputs) != 1 or len(self.tables) != 1
+            len(self.inputs) + len(self.curated_inputs) != 1
+            or not self.tables
+            or self.tables[1:] not in ((), (f"_acquisition_input_{self.tables[0]}",))
         ):
             raise ValueError(
                 f"Simple dataset {self.id} needs exactly one input and one table"
+                " with optional private acquisition staging"
             )
 
 
@@ -197,7 +199,12 @@ DATASETS: tuple[Dataset, ...] = (
         after=("achievements",),
         handler=_plain(load_professions),
     ),
-    Dataset("skills", ("skills.json",), ("skills",), handler=_plain(load_skills)),
+    Dataset(
+        "skills",
+        ("skills.json",),
+        ("skills", "_acquisition_input_skills"),
+        handler=_plain(load_skills),
+    ),
     Dataset(
         "zone_triggers",
         ("zone_triggers.json",),
@@ -215,13 +222,7 @@ DATASETS: tuple[Dataset, ...] = (
     Dataset(
         "items",
         ("items.json",),
-        (
-            "items",
-            "item_sources_pack",
-            "item_sources_random",
-            "item_sources_merge",
-            "chest_item_rewards",
-        ),
+        ("items", "_acquisition_input_items"),
         after=("zones", "skills"),
         handler=_plain(load_items),
     ),
@@ -237,14 +238,19 @@ DATASETS: tuple[Dataset, ...] = (
         "altars",
         ("altars.json",),
         ("altars",),
-        after=("zones", "zone_triggers"),
+        after=("zones", "zone_triggers", "items"),
         model=AltarData,
     ),
-    Dataset("monsters", ("monsters.json",), ("monsters",), model=MonsterData),
+    Dataset(
+        "monsters",
+        ("monsters.json",),
+        ("monsters", "_acquisition_input_monsters"),
+        model=MonsterData,
+    ),
     Dataset(
         "monster_spawns",
         ("monster_spawns.json",),
-        ("monster_spawns",),
+        ("monster_spawns", "_acquisition_input_monster_spawns"),
         after=("zones", "zone_triggers", "monsters"),
         model=MonsterSpawnData,
     ),
@@ -273,7 +279,7 @@ DATASETS: tuple[Dataset, ...] = (
     Dataset(
         "npcs",
         ("npcs.json",),
-        ("npcs",),
+        ("npcs", "_acquisition_input_npcs"),
         after=("static_data",),
         model=NpcData,
     ),
@@ -288,13 +294,13 @@ DATASETS: tuple[Dataset, ...] = (
         "summon_triggers",
         ("summon_triggers.json",),
         ("summon_triggers", "summon_trigger_placeholders"),
-        after=("zones", "monster_spawns"),
+        after=("zones", "monster_spawns", "npc_spawns"),
         handler=_plain(load_summon_triggers),
     ),
     Dataset(
         "quests",
         ("quests.json",),
-        ("quests",),
+        ("quests", "_acquisition_input_quests"),
         after=("zones", "zone_triggers", "items", "monsters", "npcs"),
         handler=_plain(load_quests),
     ),
@@ -302,14 +308,13 @@ DATASETS: tuple[Dataset, ...] = (
         "portals",
         ("portals.json",),
         ("portals",),
-        after=("zones", "zone_triggers", "items", "monsters"),
+        after=("zones", "zone_triggers", "items", "monster_spawns"),
         model=PortalData,
     ),
     Dataset(
         "treasure_locations",
         ("treasure_locations.json",),
-        ("treasure_locations", "item_sources_treasure_map"),
-        # The items loader leaves the treasure maps it found for this loader.
+        ("treasure_locations",),
         after=("zones", "zone_triggers", "items"),
         handler=_plain(load_treasure_locations),
     ),
@@ -327,8 +332,7 @@ DATASETS: tuple[Dataset, ...] = (
             "gathering_resources",
             "gathering_resource_spawns",
             "chests",
-            "item_sources_gather",
-            "item_sources_chest",
+            "_acquisition_input_gathering",
         ),
         after=("zones", "zone_triggers", "items"),
         handler=_plain(load_gather_items),
@@ -336,44 +340,56 @@ DATASETS: tuple[Dataset, ...] = (
     Dataset(
         "crafting_recipes",
         ("crafting_recipes.json",),
-        ("crafting_recipes",),
+        ("crafting_recipes", "_acquisition_input_crafting_recipes"),
         after=("items",),
-        model=CraftingRecipeData,
+        handler=lambda ctx: load_recipe_family(
+            ctx.conn, ctx.session_dir, "crafting_recipes"
+        ),
     ),
     Dataset(
         "alchemy_recipes",
         ("alchemy_recipes.json",),
-        ("alchemy_recipes",),
+        ("alchemy_recipes", "_acquisition_input_alchemy_recipes"),
         after=("items",),
-        model=AlchemyRecipeData,
+        handler=lambda ctx: load_recipe_family(
+            ctx.conn, ctx.session_dir, "alchemy_recipes"
+        ),
     ),
     Dataset(
         "alchemy_tables",
         ("alchemy_tables.json",),
-        ("alchemy_tables",),
+        ("alchemy_tables", "_acquisition_input_alchemy_tables"),
         after=("zones", "zone_triggers"),
         handler=_plain(load_alchemy_tables),
     ),
     Dataset(
         "scribing_recipes",
         ("scribing_recipes.json",),
-        ("scribing_recipes",),
+        ("scribing_recipes", "_acquisition_input_scribing_recipes"),
         after=("items",),
-        model=ScribingRecipeData,
+        handler=lambda ctx: load_recipe_family(
+            ctx.conn, ctx.session_dir, "scribing_recipes"
+        ),
     ),
     Dataset(
         "scribing_tables",
         ("scribing_tables.json",),
-        ("scribing_tables",),
+        ("scribing_tables", "_acquisition_input_scribing_tables"),
         after=("zones", "zone_triggers"),
         handler=_plain(load_scribing_tables),
     ),
     Dataset(
         "crafting_stations",
         ("crafting_stations.json",),
-        ("crafting_stations",),
+        ("crafting_stations", "_acquisition_input_crafting_stations"),
         after=("zones", "zone_triggers"),
         handler=_plain(load_crafting_stations),
+    ),
+    Dataset(
+        "game_config",
+        ("game_config.json",),
+        ("_acquisition_input_game_config",),
+        handler=_plain(load_game_config),
     ),
 )
 
@@ -436,7 +452,7 @@ def load_dataset(ctx: LoadContext, dataset: Dataset) -> None:
     else:
         (input_name,) = dataset.curated_inputs
         input_dir = ctx.curated_dir
-    (table,) = dataset.tables
+    table = dataset.tables[0]
     console.print(f"Loading {dataset.id}...")
     data = json.loads((input_dir / input_name).read_text(encoding="utf-8"))
     if not isinstance(data, list) or not data:

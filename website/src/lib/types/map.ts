@@ -29,7 +29,7 @@ export type EntityType =
  * Base interface for all map entities
  */
 export interface MapEntity {
-  id: string; // spawn ID for a monster, entity ID for every other kind; detail routes need the entity ID
+  id: string; // Map selection ID. Monster and resource definitions carry their own detail-route IDs.
   type: EntityType;
   name: string;
   position: [number, number] | null; // deck coordinates: game X and negated game Y (the game is 2D, Z is always 0), converted in queries/map.server.ts; null without spawns
@@ -169,8 +169,11 @@ export interface PortalMapEntity extends MapEntity {
  */
 export interface ChestMapEntity extends MapEntity {
   type: "chest";
-  keyRequiredId: string | null;
-  keyRequiredName: string | null;
+  requiredKeys: readonly {
+    itemId: string | null;
+    itemName: string | null;
+    withheld: boolean;
+  }[];
   // Popup fields
   respawnTime: number;
   dropCount: number;
@@ -246,10 +249,11 @@ export interface GatheringMapEntity extends MapEntity {
     | "gathering_fish"
     | "gathering_other";
   resourceName: string;
+  resourceId: string;
   /**
    * Stable key used for map selection highlighting.
    * Fishing spot variants share their base resource id so selecting one
-   * highlights every same-type spot. Other resources use their concrete id.
+   * highlights every same-type spot. Other resources use their definition id.
    */
   selectionGroupId: string;
   level: number;

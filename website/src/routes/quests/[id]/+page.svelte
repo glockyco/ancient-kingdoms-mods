@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteSet } from "svelte/reactivity";
   import { formatNumber, formatPercent } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -14,10 +15,20 @@
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
-  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import LazyObtainabilityTree from "$lib/components/LazyObtainabilityTree.svelte";
+  import DeferredDetails from "$lib/components/DeferredDetails.svelte";
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import {
+    distinctSubzoneName,
+    questPresentationRequirements,
+  } from "$lib/components/acquisition/display";
+  import type { QuestLocationTarget } from "$lib/types/quests";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import ScrollRegion from "$lib/components/acquisition/ScrollRegion.svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Target from "@lucide/svelte/icons/target";
+  import Compass from "@lucide/svelte/icons/compass";
   import Gift from "@lucide/svelte/icons/gift";
   import User from "@lucide/svelte/icons/user";
   import GitBranch from "@lucide/svelte/icons/git-branch";
@@ -25,13 +36,55 @@
   import ListTree from "@lucide/svelte/icons/list-tree";
 
   let { data } = $props();
+  const objectiveSourceItems = $derived([
+    ...data.gatherItems,
+    ...data.gatherInventoryItems,
+    ...data.requiredItems,
+    ...data.equipItems,
+  ]);
 
-  // Check if quest has any requirements (start conditions)
+  const visibleRequirements = $derived(
+    questPresentationRequirements(data.requirements, data.quest.id, {
+      requiredLevel: data.quest.level_required,
+      restrictions: true,
+    }),
+  );
   const hasRequirements = $derived(
-    data.quest.race_requirements.length > 0 ||
+    visibleRequirements.length > 0 ||
+      data.quest.race_requirements.length > 0 ||
       data.quest.class_requirements.length > 0 ||
       data.quest.faction_requirements.length > 0,
   );
+
+  const discoveryTargets = $derived(
+    data.locationTargets.filter(
+      (target: QuestLocationTarget) => target.role === "location_visit",
+    ),
+  );
+  const trackingLocations = $derived.by(() => {
+    const seen = new SvelteSet<string>();
+    return data.locationTargets.filter((target: QuestLocationTarget) => {
+      if (
+        target.role !== "tracking_location" ||
+        target.withheld ||
+        !(
+          target.zone_id ||
+          target.tracking_quest_location ||
+          target.discovered_location
+        )
+      )
+        return false;
+      const key = JSON.stringify([
+        target.zone_id,
+        target.sub_zone_name,
+        target.tracking_quest_location,
+        target.discovered_location,
+      ]);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  });
 
   // Check if quest has any objectives to display
   const hasObjectives = $derived(
@@ -41,22 +94,20 @@
       data.requiredItems.length > 0 ||
       data.equipItems.length > 0 ||
       data.potionItem !== null ||
-      data.quest.tracking_quest_location ||
-      data.quest.discovered_location ||
-      (data.quest.is_find_npc_quest && data.endNpc !== null),
+      discoveryTargets.length > 0 ||
+      (data.quest.is_find_npc_quest && data.endNpcs.length > 0),
   );
 
-  // Handing a quest in credits the giver's faction. Adventurer quests grant
-  // nothing, and they have no single giver to credit.
-  const reputationReward = $derived.by(() => {
-    const faction = data.quest.is_adventurer_quest
-      ? null
-      : data.startNpc?.faction;
-    if (!faction) return null;
-    return {
+  const reputationRewards = $derived.by(() => {
+    if (data.quest.is_adventurer_quest) return [];
+    return [
+      ...new Set(
+        data.startNpcs.flatMap((npc) => (npc.faction ? [npc.faction] : [])),
+      ),
+    ].map((faction) => ({
       faction,
       amount: questReputationGain(data.quest.level_recommended),
-    };
+    }));
   });
 
   // Check if quest has any rewards
@@ -65,7 +116,7 @@
       data.quest.rewards.exp > 0 ||
       data.quest.rewards.items.length > 0 ||
       data.quest.increase_alchemy_skill > 0 ||
-      reputationReward !== null,
+      reputationRewards.length > 0,
   );
 
   // Check if quest is part of a chain
@@ -111,11 +162,41 @@
   });
 </script>
 
+{#snippet locationName(location: QuestLocationTarget)}
+  {@const label =
+    distinctSubzoneName(location.zone_name, location.sub_zone_name) ||
+    distinctSubzoneName(location.zone_name, location.tracking_quest_location)}
+  {#if location.withheld}
+    <span>Unpublished location</span>
+  {:else}
+    {#if label}<span>{label}</span>{/if}
+    {#if location.zone_id && location.zone_name}
+      {#if label}<span class="text-muted-foreground">in</span>{/if}
+      <a
+        href="/zones/{location.zone_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        >{location.zone_name}</a
+      >
+    {:else if !label}
+      <span>{location.discovered_location || "Marked location"}</span>
+    {/if}
+  {/if}
+{/snippet}
+
 <Seo
   title={detailTitle(data.quest.name, {
     family: "Quest",
-    source: data.startNpc?.name,
-    zone: data.startNpc?.zone_name,
+    source:
+      [...new Set(data.startNpcs.map((npc) => npc.name))].join(" / ") ||
+      undefined,
+    zone:
+      [
+        ...new Set(
+          data.startNpcs.flatMap((npc) =>
+            npc.zone_name ? [npc.zone_name] : [],
+          ),
+        ),
+      ].join(" / ") || undefined,
   })}
   description={data.description}
   path={`/quests/${data.quest.id}`}
@@ -265,6 +346,10 @@
             Requirements
           </h2>
           <div class="bg-muted/30 rounded-md border p-4 space-y-3">
+            <Requirements
+              roots={visibleRequirements}
+              names={data.acquisitionNames}
+            />
             {#if data.quest.race_requirements.length > 0}
               <div class="flex items-center gap-2">
                 <span class="text-sm text-muted-foreground w-16">Race:</span>
@@ -320,125 +405,56 @@
       {/if}
 
       <!-- NPCs -->
-      {#if data.startNpc}
+      {#if data.startNpcs.length > 0 || data.endNpcs.length > 0}
         <section>
           <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-            <User class="h-5 w-5 text-blue-500" />
-            NPCs
+            <User class="h-5 w-5 text-blue-500" /> NPCs
           </h2>
           <div class="bg-muted/30 rounded-md border p-4 space-y-3">
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-muted-foreground w-16">Start:</span>
-              <a
-                href="/npcs/{data.startNpc.id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {data.startNpc.name}
-              </a>
-              {#if data.startNpc.zone_name}
-                <span class="text-muted-foreground">
-                  in
-                  <a
-                    href="/zones/{data.startNpc.zone_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
+            {#each [{ label: "Start", npcs: data.startNpcs }, { label: "End", npcs: data.endNpcs }] as group (group.label)}
+              {#each group.npcs as npc (npc)}
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-muted-foreground w-16"
+                    >{group.label}:</span
                   >
-                    {data.startNpc.zone_name}
-                  </a>
-                </span>
-              {/if}
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-muted-foreground w-16">End:</span>
-              {#if data.endNpc}
-                <a
-                  href="/npcs/{data.endNpc.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {data.endNpc.name}
-                </a>
-                {#if data.endNpc.zone_name}
-                  <span class="text-muted-foreground">
-                    in
-                    <a
-                      href="/zones/{data.endNpc.zone_id}"
-                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                  <a
+                    href="/npcs/{npc.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{npc.name}</a
+                  >
+                  {#if npc.zone_id && npc.zone_name}
+                    <span class="text-muted-foreground"
+                      >in <a
+                        href="/zones/{npc.zone_id}"
+                        class="text-blue-600 dark:text-blue-400 hover:underline"
+                        >{npc.zone_name}</a
+                      ></span
                     >
-                      {data.endNpc.zone_name}
-                    </a>
-                  </span>
-                {/if}
-              {:else}
-                <a
-                  href="/npcs/{data.startNpc.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {data.startNpc.name}
-                </a>
-                {#if data.startNpc.zone_name}
-                  <span class="text-muted-foreground">
-                    in
-                    <a
-                      href="/zones/{data.startNpc.zone_id}"
-                      class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      {data.startNpc.zone_name}
-                    </a>
-                  </span>
-                {/if}
-              {/if}
-            </div>
-          </div>
-        </section>
-      {:else if data.adventurerNpcs.length > 0}
-        <section>
-          <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-            <User class="h-5 w-5 text-blue-500" />
-            NPCs
-          </h2>
-          <div class="bg-muted/30 rounded-md border p-4 space-y-2">
-            <p class="text-sm text-muted-foreground">
-              Any of these Adventurer Taskgivers offers the quest and accepts it
-              when you are done.
-            </p>
-            {#each data.adventurerNpcs as npc (npc.id)}
-              <div class="flex items-center gap-2">
-                <a
-                  href="/npcs/{npc.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {npc.name}
-                </a>
-                {#if npc.zone_name}
-                  <span class="text-muted-foreground">
-                    in
-                    <a
-                      href="/zones/{npc.zone_id}"
-                      class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      {npc.zone_name}
-                    </a>
-                  </span>
-                {/if}
-              </div>
+                  {/if}
+                </div>
+              {/each}
             {/each}
           </div>
         </section>
       {/if}
 
       <!-- Given Item on Start -->
-      {#if data.givenItemOnStart}
+      {#if data.givenItemsOnStart.length > 0}
         <section>
           <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
             <Gift class="h-5 w-5 text-green-500" />
             Given on Start
           </h2>
           <div class="bg-muted/30 rounded-md border p-4">
-            <ItemLink
-              itemId={data.givenItemOnStart.id}
-              itemName={data.givenItemOnStart.name}
-              tooltipHtml={data.givenItemOnStart.tooltip_html}
-              imageAvailable={data.itemIconPaths[data.givenItemOnStart.id]}
-            />
+            {#each data.givenItemsOnStart as item (item)}
+              <ItemLink
+                itemId={item.id}
+                itemName={item.name}
+                tooltipHtml={item.tooltip_html}
+                imageAvailable={data.itemIconPaths[item.id]}
+              />
+              <span class="text-muted-foreground">×{item.amount}</span>
+            {/each}
           </div>
         </section>
       {/if}
@@ -578,74 +594,85 @@
             {/if}
 
             <!-- Location quest objectives -->
-            {#if data.quest.is_find_npc_quest && data.endNpc}
-              <div class="flex items-center gap-2">
-                <span
-                  class="inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-16 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                >
-                  Find
-                </span>
-                <a
-                  href="/npcs/{data.endNpc.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {data.endNpc.name}
-                </a>
-                {#if data.endNpc.zone_name}
-                  <span class="text-muted-foreground">
-                    in
-                    <a
-                      href="/zones/{data.endNpc.zone_id}"
-                      class="text-blue-600 dark:text-blue-400 hover:underline"
+            {#if data.quest.is_find_npc_quest && data.endNpcs.length > 0}
+              {#each data.endNpcs as npc (npc)}
+                <div class="flex items-center gap-2">
+                  <span
+                    class="inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-16 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                    >Find</span
+                  >
+                  <a
+                    href="/npcs/{npc.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{npc.name}</a
+                  >
+                  {#if npc.zone_id && npc.zone_name}
+                    <span class="text-muted-foreground"
+                      >in <a
+                        href="/zones/{npc.zone_id}"
+                        class="text-blue-600 dark:text-blue-400 hover:underline"
+                        >{npc.zone_name}</a
+                      ></span
                     >
-                      {data.endNpc.zone_name}
-                    </a>
-                  </span>
-                {/if}
-              </div>
-            {:else if data.quest.discovered_location}
+                  {/if}
+                </div>
+              {/each}
+            {/if}
+            {#each discoveryTargets as location (location.id)}
               <div class="flex items-center gap-2 flex-wrap">
                 <span
                   class="inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-16 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
                 >
-                  Discover
+                  Visit
                 </span>
-                {#if data.quest.discovered_location_sub_zone}
-                  <span>{data.quest.discovered_location_sub_zone.name}</span>
-                {/if}
-                {#if data.quest.discovered_location_zone}
-                  {#if data.quest.discovered_location_sub_zone}
-                    <span class="text-muted-foreground">in</span>
-                  {/if}
-                  <a
-                    href="/zones/{data.quest.discovered_location_zone.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {data.quest.discovered_location_zone.name}
-                  </a>
-                {/if}
+                {@render locationName(location)}
               </div>
-            {/if}
+            {/each}
+          </div>
+        </section>
+      {/if}
+
+      {#if trackingLocations.length > 0}
+        <section>
+          <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+            <Compass class="h-5 w-5 text-muted-foreground" />
+            Locations
+          </h2>
+          <div class="bg-muted/30 rounded-md border p-4 space-y-2">
+            {#each trackingLocations as location (location.id)}
+              <div class="flex items-center gap-2 flex-wrap">
+                {@render locationName(location)}
+              </div>
+            {/each}
           </div>
         </section>
       {/if}
 
       <!-- How to Obtain Items -->
-      {#if data.itemObtainabilityTrees.length > 0}
+      {#if objectiveSourceItems.length > 0}
         <section>
           <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
             <ListTree class="h-5 w-5 text-muted-foreground" />
             How to Obtain Items
           </h2>
-          <div class="bg-muted/30 rounded-md border p-4 mt-4">
-            <div class="bg-background rounded-md p-4 border overflow-x-auto">
-              <div class="w-fit pr-2 space-y-4">
-                {#each data.itemObtainabilityTrees as tree (tree.item_id)}
-                  <ObtainabilityTree node={tree} />
+          <DeferredDetails
+            summary="Show sources"
+            className="bg-muted/30 rounded-md border p-4 mt-4"
+          >
+            <ScrollRegion
+              label="Quest item sources"
+              className="mt-4 max-h-[32rem] overflow-auto overscroll-contain pr-2"
+            >
+              <div class="min-w-0 space-y-4">
+                {#each objectiveSourceItems as item, index (index)}
+                  <LazyObtainabilityTree
+                    itemId={item.id}
+                    amount={item.amount}
+                  />
                 {/each}
               </div>
-            </div>
-          </div>
+            </ScrollRegion>
+          </DeferredDetails>
         </section>
       {/if}
 
@@ -670,7 +697,7 @@
                   </span>
                 </div>
               {/if}
-              {#if reputationReward}
+              {#each reputationRewards as reputationReward (reputationReward.faction)}
                 <div>
                   <span class="text-sm text-muted-foreground"
                     >Reputation:
@@ -685,7 +712,7 @@
                     />
                   </span>
                 </div>
-              {/if}
+              {/each}
               {#if data.quest.rewards.gold > 0}
                 <div>
                   <span class="text-sm text-muted-foreground">Gold: </span>
@@ -744,12 +771,27 @@
                       tooltipHtml={item.tooltip_html}
                       imageAvailable={data.itemIconPaths[item.item_id]}
                     />
+                    <span class="text-muted-foreground">×{item.amount}</span>
                   </div>
                 {/each}
               </div>
             {/if}
           </div>
         </section>
+      {/if}
+      {#if data.methods.length > 0}
+        <details class="rounded-md border bg-muted/30 p-4">
+          <summary class="cursor-pointer font-medium"
+            >Acceptance and completion requirements, costs and delivery</summary
+          >
+          <div class="mt-4">
+            <MethodList
+              methods={data.methods}
+              items={data.acquisitionItems}
+              names={data.acquisitionNames}
+            />
+          </div>
+        </details>
       {/if}
     </Tabs.Content>
 

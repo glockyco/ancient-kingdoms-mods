@@ -112,9 +112,8 @@
       return `${item.mount_speed} speed`;
     }
 
-    // Potions: show tier from alchemy recipe level
-    if (type === "potion" && item.alchemy_recipe_level_required != null) {
-      return `Tier ${["I", "II", "III", "IV", "V"][item.alchemy_recipe_level_required] ?? item.alchemy_recipe_level_required}`;
+    if (type === "potion" && item.alchemy_recipe_tiers.length) {
+      return `Tier ${item.alchemy_recipe_tiers.map((tier) => ["I", "II", "III", "IV", "V"][tier] ?? tier).join(" / ")}`;
     }
 
     // Backpacks: show capacity
@@ -144,9 +143,8 @@
   );
 
   // Get unique classes for filter (using precomputed data)
-  // Items with no restriction are stored as ["all"] in the database
   const allClasses = Array.from(new Set(Object.values(itemClassKeys).flat()))
-    .filter((c) => c !== "all")
+    .filter((c) => c !== "all" && c !== "withheld")
     .sort();
 
   // Expand items with no class restriction to include all classes (for correct filtering/faceting)
@@ -393,7 +391,14 @@
     >
   {:else if cell.column.id === "class"}
     {@const classes = itemClassKeys[row.original.id] ?? []}
-    {#if classes.length === allClasses.length}
+    {#if classes.includes("withheld")}
+      <ClassPills
+        classes={classes
+          .filter((c) => c !== "withheld")
+          .map((c) => c.toLowerCase())}
+      />
+      <span class="text-muted-foreground">Unpublished restriction</span>
+    {:else if classes.length === allClasses.length}
       <span class="text-muted-foreground">-</span>
     {:else}
       <ClassPills classes={classes.map((c) => c.toLowerCase())} />

@@ -9,10 +9,11 @@
   import Leaf from "@lucide/svelte/icons/leaf";
   import {
     PROFESSION_MECHANICS,
-    rawTierSuccessChance,
     isEffortlessAtTier,
     skillGainChance,
   } from "$lib/data/professions/mechanics";
+  import { professionAttempt } from "$lib/acquisition/rules";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
 
   let { data } = $props();
 
@@ -34,11 +35,8 @@
 
   function getSuccessChance(resourceLevel: number): number {
     return (
-      rawTierSuccessChance(
-        PROFESSION_MECHANICS.herbalism.success,
-        resourceLevel,
-        skillLevel,
-      ) * 100
+      professionAttempt("herbalism", resourceLevel, skillLevel / 100, null)
+        .raw * 100
     );
   }
 
@@ -103,7 +101,7 @@
   />
 
   <!-- Header -->
-  <div class="flex items-start gap-4">
+  <div class="flex flex-wrap items-start gap-4 sm:flex-nowrap">
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
@@ -156,7 +154,7 @@
     <div
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
     >
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3">
         <label for="skill-slider" class="shrink-0">Herbalism Skill:</label>
         <input
           id="skill-slider"
@@ -182,12 +180,12 @@
     </div>
     <div class="rounded-lg border overflow-x-auto">
       <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(5, 1fr);"
+        class="grid w-full min-w-[36rem] whitespace-nowrap"
+        style="grid-template-columns: 4rem minmax(9rem, 1fr) minmax(11rem, 1fr) minmax(6rem, 1fr) minmax(6rem, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Success</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Skill Gain</div>
         <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
         <div class="bg-muted/50 p-3 font-medium text-right">Plants</div>
         {#each [0, 1, 2, 3, 4] as tier (tier)}
@@ -196,44 +194,50 @@
           {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
           {@const resourceCount = resourceCountMap.get(tier) ?? 0}
           {@const xp = xpByTierMap.get(tier)}
-          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
-          <div class="p-3 border-t">
-            {#if successChance < successFloorPercent}
-              <span class="text-muted-foreground">cannot gather</span>
-            {:else}
-              <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {formatPercent(successChance / 100, {
-                  decimals: 0,
-                  trailingZeros: true,
-                })}
-              </span>
-            {/if}
+          <div
+            class="col-span-full grid grid-cols-subgrid {tier % 2 === 0
+              ? 'bg-muted/20'
+              : ''}"
+          >
+            <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
+            <div class="p-3 border-t text-right">
+              {#if successChance < successFloorPercent}
+                <span class="text-muted-foreground">cannot gather</span>
+              {:else}
+                <span class="font-mono {getSuccessChanceColor(successChance)}">
+                  {formatPercent(successChance / 100, {
+                    decimals: 0,
+                    trailingZeros: true,
+                  })}
+                </span>
+              {/if}
+            </div>
+            <div class="p-3 border-t text-right">
+              {#if effortless || successChance < successFloorPercent}
+                <span class="text-muted-foreground">—</span>
+              {:else}
+                <span class="font-mono"
+                  >{formatPercent(minGain / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })} – {formatPercent(maxGain / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })}</span
+                >
+              {/if}
+            </div>
+            <div class="p-3 text-right border-t">
+              {#if xp}
+                <MechanicsLink section="experience"
+                  >{formatNumber(xp)}</MechanicsLink
+                >
+              {:else}
+                <span class="text-muted-foreground">—</span>
+              {/if}
+            </div>
+            <div class="p-3 text-right border-t">{resourceCount}</div>
           </div>
-          <div class="p-3 border-t">
-            {#if effortless || successChance < successFloorPercent}
-              <span class="text-muted-foreground">—</span>
-            {:else}
-              <span class="font-mono"
-                >{formatPercent(minGain / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} – {formatPercent(maxGain / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}</span
-              >
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">
-            {#if xp}
-              <MechanicsLink section="experience"
-                >{formatNumber(xp)}</MechanicsLink
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">{resourceCount}</div>
         {/each}
       </div>
     </div>
@@ -247,57 +251,73 @@
     </h2>
     <div class="rounded-lg border overflow-x-auto">
       <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(4, 1fr);"
+        class="grid w-full min-w-[36rem] whitespace-nowrap"
+        style="grid-template-columns: 4rem minmax(12rem, 2fr) minmax(9rem, 1fr) minmax(11rem, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Name</div>
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
-        {#each data.resources as resource (resource.id)}
+        <div class="bg-muted/50 p-3 font-medium text-right">Success</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Skill Gain</div>
+        {#each data.resources as resource, index (resource.id)}
           {@const successChance = getSuccessChance(resource.level)}
           {@const effortless = isEffortless(resource.level)}
           {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
-          <div class="p-3 font-medium border-t">
-            {romanNumerals[resource.level] ?? resource.level}
-          </div>
-          <div class="p-3 border-t">
-            <a
-              href="/gather-items/{resource.id}"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              {resource.name}
-            </a>
-          </div>
-          <div class="p-3 border-t">
-            {#if successChance < successFloorPercent}
-              <span class="text-muted-foreground">cannot gather</span>
-            {:else}
-              <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {formatPercent(successChance / 100, {
-                  decimals: 0,
-                  trailingZeros: true,
-                })}
-              </span>
-            {/if}
-          </div>
-          <div class="p-3 border-t">
-            {#if effortless || successChance < successFloorPercent}
-              <span class="text-muted-foreground">—</span>
-            {:else}
-              <span class="font-mono">
-                {formatPercent(minGain / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} – {formatPercent(maxGain / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}
-              </span>
-            {/if}
+          <div
+            class="col-span-full grid grid-cols-subgrid {index % 2 === 0
+              ? 'bg-muted/20'
+              : ''}"
+          >
+            <div class="p-3 font-medium border-t">
+              {romanNumerals[resource.level] ?? resource.level}
+            </div>
+            <div class="p-3 border-t">
+              <a
+                href="/gather-items/{resource.id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {resource.name}
+              </a>
+            </div>
+            <div class="p-3 border-t text-right">
+              {#if successChance < successFloorPercent}
+                <span class="text-muted-foreground">cannot gather</span>
+              {:else}
+                <span class="font-mono {getSuccessChanceColor(successChance)}">
+                  {formatPercent(successChance / 100, {
+                    decimals: 0,
+                    trailingZeros: true,
+                  })}
+                </span>
+              {/if}
+            </div>
+            <div class="p-3 border-t text-right">
+              {#if effortless || successChance < successFloorPercent}
+                <span class="text-muted-foreground">—</span>
+              {:else}
+                <span class="font-mono">
+                  {formatPercent(minGain / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })} – {formatPercent(maxGain / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })}
+                </span>
+              {/if}
+            </div>
           </div>
         {/each}
       </div>
     </div>
   </section>
+  <details class="space-y-4">
+    <summary class="cursor-pointer text-xl font-semibold"
+      >Gathering methods and requirements</summary
+    >
+    <MethodList
+      methods={data.acquisitionMethods}
+      items={data.acquisitionItems}
+      names={data.acquisitionNames}
+    />
+  </details>
 </div>

@@ -38,7 +38,7 @@ def _calculate_bestiary_drop(conn: sqlite3.Connection) -> int:
     """)
     updated = cursor.rowcount
 
-    # Source: server-scripts/Monster.cs:4106-4112 — boss/elite scroll drops update bestiary discovery.
+    # Boss and elite scroll discovery uses the original configured loot pools.
     cursor.execute("""
         UPDATE items
         SET is_bestiary_drop = 1
@@ -46,9 +46,10 @@ def _calculate_bestiary_drop(conn: sqlite3.Connection) -> int:
           AND is_quest_item = 0
           AND EXISTS (
             SELECT 1
-            FROM monsters m, json_each(m.drops) d
+            FROM monsters m
+            JOIN loot_pool_entries e ON e.pool_id = m.loot_pool_id
             WHERE (m.is_boss = 1 OR m.is_elite = 1)
-              AND json_extract(d.value, '$.item_id') = items.id
+              AND e.item_id = items.id
           )
     """)
     updated += cursor.rowcount

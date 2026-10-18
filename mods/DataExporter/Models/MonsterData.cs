@@ -15,6 +15,18 @@ public class MonsterSpawnData
     public string zone_id { get; set; }
     public string sub_zone_id { get; set; }
     public Position position { get; set; }
+    public int loot_zone_number { get; set; }
+    public bool loot_respawn { get; set; }
+    public float loot_exp_multiplier { get; set; }
+    public bool loot_is_boss { get; set; }
+    public bool loot_is_elite { get; set; }
+    public bool loot_is_hunt { get; set; }
+    public bool loot_is_summoned_pet { get; set; }
+    public string loot_event_kind { get; set; } = "authored";
+    public List<ItemDrop> loot_drops { get; set; } = new();
+    public int loot_gold_min { get; set; }
+    public int loot_gold_max { get; set; }
+    public float loot_gold_probability { get; set; }
 
     // Level of this specific spawn (may differ from canonical monster level)
     public int level { get; set; }
@@ -44,6 +56,8 @@ public class MonsterData
     // Identity
     public string id { get; set; }
     public string name { get; set; }
+    public int loot_zone_number { get; set; }
+    public bool is_summoned_pet { get; set; }
 
     // Base stats
     public int level { get; set; }

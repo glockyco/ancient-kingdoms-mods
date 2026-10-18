@@ -7,9 +7,11 @@ namespace DataExporter.Exporters;
 
 public class GameConfigExporter : BaseExporter
 {
-    public GameConfigExporter(MelonLogger.Instance logger, string exportPath)
+    private readonly ConfiguredWorldSnapshot _snapshot;
+    public GameConfigExporter(MelonLogger.Instance logger, string exportPath, ConfiguredWorldSnapshot snapshot)
         : base(logger, exportPath)
     {
+        _snapshot = snapshot;
     }
 
     public override void Export()
@@ -19,7 +21,11 @@ public class GameConfigExporter : BaseExporter
         var config = new GameConfigData
         {
             game_version = Application.version,
-            export_locale = SelectedLocaleCode()
+            export_locale = SelectedLocaleCode(),
+            lockpicks_item_id = _snapshot.Read<string>("lockpicks"),
+            journal_fish_item_ids = _snapshot.Read<System.Collections.Generic.List<string>>("journal_fish"),
+            trash_fish_item_ids = _snapshot.Read<System.Collections.Generic.List<string>>("trash_fish"),
+            housing_catalog = _snapshot.Read<System.Collections.Generic.List<HousingCatalogData>>("housing_catalog")
         };
         Logger.Msg(
             $"Export game version: {config.game_version ?? "none"}; "

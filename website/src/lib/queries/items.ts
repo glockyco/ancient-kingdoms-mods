@@ -117,11 +117,6 @@ export interface Item {
   // Alchemy recipe (for recipe items)
   recipe_potion_learned_id: string | null;
   recipe_potion_learned_name: string | null;
-  alchemy_recipe_level_required: number | null;
-  // Alchemy recipe (for potion items)
-  taught_by_recipe_id: string | null;
-  taught_by_recipe_name: string | null;
-  alchemy_exp: number;
   // Relic buff
   relic_buff_id: string | null;
   relic_buff_name: string | null;

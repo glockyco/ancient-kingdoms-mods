@@ -1,8 +1,9 @@
-import type { AltarRewardTier } from "$lib/calculation/altar";
 import type { SkillListRow } from "$lib/skills/skillListRow";
 import type { Skill as SkillEffectInput } from "$lib/utils/formatSkillEffect";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { RespawnInfo } from "./respawn";
+import type { MethodView, MonsterLootView } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
 
 /**
  * Item drop from a monster
@@ -14,13 +15,17 @@ export interface MonsterDrop {
   visual_public_path: string | null;
   tooltip_html: string | null;
   quality: number;
-  rate: number;
+  rate: number | null;
   per_kill_chance?: number;
   per_kill_chance_with_fatecharm?: number;
   is_bestiary: boolean;
   note: string | null;
   altar_id?: string;
-  altar_reward_tier?: AltarRewardTier;
+  method_id: string;
+}
+
+export interface MonsterLootDrop extends MonsterDrop {
+  chance_event: string;
 }
 
 /**
@@ -316,7 +321,13 @@ export interface MonsterDetailData {
   /** Faction display name to route id, for linking out to `/factions/[id]`. */
   factionIds: Record<string, string>;
   description: string;
-  drops: MonsterDrop[];
+  drops: MonsterLootDrop[];
+  loot: MonsterLootView;
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
+  lootContextLabels: Record<string, string>;
+  lootCommonContext: string | null;
+  goldMethods: readonly MethodView[];
   spawns: MonsterSpawnData;
   spawnCombatStats: MonsterSpawnCombatStats[];
   quests: MonsterQuest[];

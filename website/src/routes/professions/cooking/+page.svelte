@@ -5,7 +5,9 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import RecipeIngredients from "$lib/components/RecipeIngredients.svelte";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import { evaluateRequirement } from "$lib/acquisition/conditions";
   import MapLink from "$lib/components/MapLink.svelte";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -35,9 +37,8 @@
   }
 
   function hasIngredients(recipe: (typeof data.recipes)[0]): boolean {
-    return (
-      !!recipe.obtainabilityTree.recipe &&
-      recipe.obtainabilityTree.recipe.materials.length > 0
+    return recipe.methods.some((method) =>
+      method.costGroups.some((group) => group.inputs.length > 0),
     );
   }
 
@@ -54,14 +55,52 @@
         `p-3 border-t ${canExpand ? "cursor-pointer" : ""} ${extraClass}`.trim(),
       role: canExpand ? ("button" as const) : undefined,
       tabindex: canExpand ? 0 : undefined,
-      onclick: () => canExpand && toggleRecipe(recipeId),
-      onkeydown: (e: KeyboardEvent) =>
-        canExpand && handleCellKeydown(e, recipeId),
+      onclick: (e: MouseEvent) => {
+        if ((e.target as HTMLElement).closest("a, button, details")) return;
+        if (canExpand) toggleRecipe(recipeId);
+      },
+      onkeydown: (e: KeyboardEvent) => {
+        if ((e.target as HTMLElement).closest("a, button, details")) return;
+        if (canExpand) handleCellKeydown(e, recipeId);
+      },
     };
   }
 
   // Skill level state (0-100%)
   let skillLevel = $state(0);
+  function qualifies(tier: number): boolean {
+    return (
+      evaluateRequirement(
+        {
+          phase: "attempt",
+          subject: "player",
+          enforcement: "both",
+          expression: {
+            kind: "predicate",
+            predicate: {
+              kind: "profession_floor",
+              subject: "player",
+              profession: "cooking",
+              tier,
+            },
+          },
+        },
+        {
+          subjects: {
+            player: {
+              professions: {
+                cooking: {
+                  known: true,
+                  value: skillLevel / 100,
+                  provenance: "entered",
+                },
+              },
+            },
+          },
+        },
+      ).status === "met"
+    );
+  }
 
   // Recipe list filters
   let nameFilter = $state("");
@@ -136,7 +175,7 @@
   />
 
   <!-- Header -->
-  <div class="flex items-start gap-4">
+  <div class="flex flex-wrap items-start gap-4 sm:flex-nowrap">
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
@@ -263,12 +302,12 @@
     </div>
     <div class="rounded-lg border overflow-x-auto">
       <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(5, 1fr);"
+        class="grid w-full min-w-[37rem] whitespace-nowrap"
+        style="grid-template-columns: 4rem minmax(10rem, 1fr) minmax(11rem, 1fr) minmax(6rem, 1fr) minmax(6rem, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Skill gained</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Success</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Skill gained</div>
         <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
         <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
         {#each [0, 1, 2, 3, 4] as tier (tier)}
@@ -276,44 +315,50 @@
           {@const skillGain = cookingSkillGainRange(tier, skillLevel, true)}
           {@const recipeCount = recipeCountMap.get(tier) ?? 0}
           {@const xp = xpByTierMap.get(tier)}
-          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
-          <div class="p-3 border-t">
-            {#if successChance === 0}
-              <span class="text-muted-foreground">Cannot cook</span>
-            {:else}
-              <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {formatPercent(successChance / 100, {
-                  decimals: 0,
-                  trailingZeros: true,
-                })}
-              </span>
-            {/if}
+          <div
+            class="col-span-full grid grid-cols-subgrid {tier % 2 === 0
+              ? 'bg-muted/20'
+              : ''}"
+          >
+            <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
+            <div class="p-3 border-t text-right">
+              {#if !qualifies(tier)}
+                <span class="text-muted-foreground">Below attempt floor</span>
+              {:else}
+                <span class="font-mono {getSuccessChanceColor(successChance)}">
+                  {formatPercent(successChance / 100, {
+                    decimals: 0,
+                    trailingZeros: true,
+                  })}
+                </span>
+              {/if}
+            </div>
+            <div class="p-3 border-t text-right">
+              {#if skillGain}
+                <span class="font-mono"
+                  >{formatPercent(skillGain.min / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })} – {formatPercent(skillGain.max / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })}</span
+                >
+              {:else}
+                <span class="text-muted-foreground">No skill gain</span>
+              {/if}
+            </div>
+            <div class="p-3 text-right border-t">
+              {#if xp}
+                <MechanicsLink section="experience"
+                  >{formatNumber(xp)}</MechanicsLink
+                >
+              {:else}
+                <span class="text-muted-foreground">—</span>
+              {/if}
+            </div>
+            <div class="p-3 text-right border-t">{recipeCount}</div>
           </div>
-          <div class="p-3 border-t">
-            {#if skillGain}
-              <span class="font-mono"
-                >{formatPercent(skillGain.min / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} – {formatPercent(skillGain.max / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}</span
-              >
-            {:else}
-              <span class="text-muted-foreground">No skill gain</span>
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">
-            {#if xp}
-              <MechanicsLink section="experience"
-                >{formatNumber(xp)}</MechanicsLink
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 text-right border-t">{recipeCount}</div>
         {/each}
       </div>
     </div>
@@ -353,15 +398,15 @@
     </div>
     <div class="rounded-lg border overflow-x-auto">
       <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: 1fr 2fr 4fr 1fr 2fr;"
+        class="grid w-full min-w-[53rem] whitespace-nowrap"
+        style="grid-template-columns: 4rem minmax(13rem, 2fr) minmax(15rem, 3fr) minmax(10rem, 1fr) minmax(11rem, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Output</div>
         <div class="bg-muted/50 p-3 font-medium">Ingredients</div>
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
-        {#each filteredRecipes as recipe (recipe.id)}
+        <div class="bg-muted/50 p-3 font-medium text-right">Success</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Skill Gain</div>
+        {#each filteredRecipes as recipe, recipeIndex (recipe.id)}
           {@const isFood = recipe.result_item_type === "food"}
           {@const successChance = cookingSuccessPercent(
             recipe.result_quality,
@@ -375,93 +420,119 @@
           )}
           {@const isExpanded = expandedRecipes.has(recipe.id)}
           {@const canExpand = hasIngredients(recipe)}
-          <div {...cellProps(canExpand, recipe.id, "font-medium")}>
-            <div class="flex items-center gap-1">
-              {#if canExpand}
-                <button
-                  class="p-0.5 rounded hover:bg-muted transition-colors"
-                  aria-label={isExpanded ? "Collapse" : "Expand"}
-                >
-                  {#if isExpanded}
-                    <ChevronDown class="h-4 w-4 text-muted-foreground" />
-                  {:else}
-                    <ChevronRight class="h-4 w-4 text-muted-foreground" />
+          <div
+            class="col-span-full grid grid-cols-subgrid {recipeIndex % 2 === 0
+              ? 'bg-muted/20'
+              : ''}"
+          >
+            <div {...cellProps(canExpand, recipe.id, "font-medium")}>
+              <div class="flex items-center gap-1">
+                {#if canExpand}
+                  <button
+                    type="button"
+                    onclick={() => toggleRecipe(recipe.id)}
+                    class="p-0.5 rounded hover:bg-muted transition-colors"
+                    aria-label={isExpanded ? "Collapse" : "Expand"}
+                  >
+                    {#if isExpanded}
+                      <ChevronDown class="h-4 w-4 text-muted-foreground" />
+                    {:else}
+                      <ChevronRight class="h-4 w-4 text-muted-foreground" />
+                    {/if}
+                  </button>
+                {:else}
+                  <span class="w-5"></span>
+                {/if}
+                {romanNumerals[recipe.result_quality] ?? recipe.result_quality}
+              </div>
+            </div>
+            <div {...cellProps(canExpand, recipe.id)}>
+              <ItemLink
+                itemId={recipe.result_item_id}
+                itemName={recipe.result_item_name}
+                tooltipHtml={recipe.result_tooltip_html}
+              />
+            </div>
+            <div {...cellProps(canExpand, recipe.id)}>
+              {#each recipe.methods as method, alternative (method.methodId)}
+                <div class="space-y-1">
+                  {#if recipe.methods.length > 1}
+                    <div class="text-sm text-muted-foreground">
+                      Alternative {alternative + 1}
+                    </div>
                   {/if}
-                </button>
+                  {#each method.costGroups as group (group.id)}
+                    {#each group.inputs as input (input.id)}
+                      <div class="flex items-center gap-1">
+                        {#if input.item_id}
+                          <ItemLink
+                            itemId={input.item_id}
+                            itemName={data.acquisitionItems[input.item_id].name}
+                          />
+                        {:else}
+                          <span
+                            >{input.resource_kind === "gold"
+                              ? "Gold"
+                              : "Unpublished required item"}</span
+                          >
+                        {/if}
+                        <span>×{input.amount}</span>
+                      </div>
+                    {/each}
+                  {/each}
+                </div>
+              {/each}
+            </div>
+            <div {...cellProps(canExpand, recipe.id, "text-right")}>
+              {#if !qualifies(recipe.result_quality)}
+                <span class="text-muted-foreground">Below attempt floor</span>
               {:else}
-                <span class="w-5"></span>
+                <span class="font-mono {getSuccessChanceColor(successChance)}">
+                  {formatPercent(successChance / 100, {
+                    decimals: 0,
+                    trailingZeros: true,
+                  })}
+                </span>
               {/if}
-              {romanNumerals[recipe.result_quality] ?? recipe.result_quality}
             </div>
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            <ItemLink
-              itemId={recipe.result_item_id}
-              itemName={recipe.result_item_name}
-              tooltipHtml={recipe.result_tooltip_html}
-              imageAvailable={recipe.obtainabilityTree.visual_public_path}
-            />
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            {#if recipe.obtainabilityTree.recipe?.materials}
-              <div class="flex gap-3">
-                {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
-                  <span>
-                    <ItemLink
-                      itemId={mat.item_id}
-                      itemName={mat.item_name}
-                      tooltipHtml={mat.tooltip_html}
-                      imageAvailable={mat.visual_public_path}
-                    />
-                    <span class="text-muted-foreground">×{mat.amount}</span>
-                  </span>
-                {/each}
-              </div>
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            {#if successChance === 0}
-              <span class="text-muted-foreground">—</span>
-            {:else}
-              <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {formatPercent(successChance / 100, {
-                  decimals: 0,
-                  trailingZeros: true,
-                })}
-              </span>
-            {/if}
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            {#if skillGain}
-              <span class="font-mono">
-                {formatPercent(skillGain.min / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} – {formatPercent(skillGain.max / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}
-              </span>
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          {#if isExpanded && canExpand}
-            <div class="bg-muted/20 p-4" style="grid-column: 1 / -1;">
-              <div class="text-muted-foreground mb-2">
-                How to obtain ingredients:
-              </div>
-              <div class="bg-background rounded-md p-3 border overflow-x-auto">
-                <ObtainabilityTree
-                  node={recipe.obtainabilityTree}
-                  defaultExpanded={true}
-                  hideRootLink={true}
+            <div {...cellProps(canExpand, recipe.id, "text-right")}>
+              {#if skillGain}
+                <span class="font-mono">
+                  {formatPercent(skillGain.min / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })} – {formatPercent(skillGain.max / 100, {
+                    decimals: 2,
+                    trailingZeros: true,
+                  })}
+                </span>
+              {:else}
+                <span class="text-muted-foreground">—</span>
+              {/if}
+            </div>
+            {#if isExpanded && canExpand}
+              <div class="bg-muted/20 p-4" style="grid-column: 1 / -1;">
+                <MethodList
+                  methods={recipe.methods}
+                  items={data.acquisitionItems}
+                  names={data.acquisitionNames}
+                  selectedItemId={recipe.result_item_id}
                 />
+                <div class="text-muted-foreground mb-2">
+                  How to obtain ingredients:
+                </div>
+                <div
+                  class="w-[calc(100vw-6rem-2px)] max-w-5xl whitespace-normal bg-background rounded-md p-3 border overflow-x-auto"
+                >
+                  <RecipeIngredients
+                    methods={recipe.methods}
+                    items={data.acquisitionItems}
+                    names={data.acquisitionNames}
+                  />
+                </div>
               </div>
-            </div>
-          {/if}
+            {/if}
+          </div>
         {/each}
         {#if filteredRecipes.length === 0}
           <div class="text-muted-foreground p-3" style="grid-column: 1 / -1;">

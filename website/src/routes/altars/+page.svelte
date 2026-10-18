@@ -80,7 +80,7 @@
     {
       accessorKey: "minLevelRequired",
       header: "Required level",
-      size: 100,
+      size: 140,
     },
     {
       id: "scaling",
@@ -100,7 +100,7 @@
     name: "Name",
     type: "Type",
     zone: "Zone",
-    minLevelRequired: "Level",
+    minLevelRequired: "Required level",
     boss: "Boss",
     totalEnemies: "Enemies",
     totalWaves: "Waves",
@@ -109,7 +109,13 @@
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<AltarRow, unknown> })}
-  {columnLabels[header.id] ?? header.id}
+  {#if ["totalEnemies", "totalWaves", "minLevelRequired"].includes(header.id)}
+    <span class="ml-auto whitespace-normal text-right"
+      >{columnLabels[header.id] ?? header.id}</span
+    >
+  {:else}
+    {columnLabels[header.id] ?? header.id}
+  {/if}
 {/snippet}
 
 {#snippet renderCell({
@@ -137,17 +143,19 @@
       {row.original.zoneName}
     </IconBadge>
   {:else if cell.column.id === "minLevelRequired"}
-    {#if row.original.minLevelRequired > 0}
-      {row.original.minLevelRequired}+
-    {:else}
-      <span class="text-muted-foreground">None</span>
-    {/if}
+    <span class="ml-auto">
+      {#if row.original.minLevelRequired > 0}
+        {row.original.minLevelRequired}+
+      {:else}
+        <span class="text-muted-foreground">None</span>
+      {/if}
+    </span>
   {:else if cell.column.id === "boss"}
     {#if row.original.bossIds.length > 0}
       {#each row.original.bossIds as bossId, i (bossId)}
         <a
           href="/monsters/{bossId}"
-          class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
         >
           {row.original.bossNames[i]}
         </a>{#if i < row.original.bossIds.length - 1},
@@ -162,6 +170,8 @@
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
+  {:else if cell.column.id === "totalEnemies" || cell.column.id === "totalWaves"}
+    <span class="ml-auto">{cell.getValue()}</span>
   {:else}
     {cell.getValue()}
   {/if}

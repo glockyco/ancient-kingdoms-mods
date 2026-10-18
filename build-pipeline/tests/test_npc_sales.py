@@ -4,10 +4,11 @@ from compendium.models import NpcData, NpcItemSale
 
 
 class NpcSalesTests(unittest.TestCase):
-    def test_repeated_shop_slots_become_one_offer(self) -> None:
+    def test_repeated_shop_slots_keep_authored_order_and_multiplicity(self) -> None:
         npc = NpcData(
             id="vendor",
             name="Vendor",
+            quest_offers=[],
             items_sold=[
                 NpcItemSale(item_id="beer", price=10),
                 NpcItemSale(item_id="beer", price=10),
@@ -23,6 +24,7 @@ class NpcSalesTests(unittest.TestCase):
                 for sale in npc.items_sold
             ],
             [
+                ("beer", 10, None),
                 ("beer", 10, None),
                 ("beer", 20, None),
                 ("ale", 10, None),

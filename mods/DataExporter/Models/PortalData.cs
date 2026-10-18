@@ -22,5 +22,7 @@ public class PortalData
     public int level_required { get; set; }
     public int item_level_required { get; set; }
     public string need_monster_dead_id { get; set; }
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Include)]
+    public string need_monster_dead_spawn_id { get; set; }
     public bool is_closed { get; set; }
 }

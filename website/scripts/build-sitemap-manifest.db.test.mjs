@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import Database from "better-sqlite3";
-import { test, expect } from "vitest";
+import { beforeAll, test, expect } from "vitest";
 import { computeHashes } from "./build-sitemap-manifest.mjs";
 import { gatheringResourcePageIds } from "./gathering-resource-ids.mjs";
 
@@ -17,6 +17,11 @@ const EXCLUDED_ROUTES = {
   "/gather-items/rough_fishing_spot":
     "Aggregate alias canonicalizes to its first suffixed fishing-spot variant.",
 };
+
+let sitemap;
+beforeAll(async () => {
+  sitemap = await computeHashes();
+}, 30000);
 
 function staticRoutes(directory = "src/routes", segments = []) {
   const routes = [];
@@ -39,10 +44,10 @@ function staticRoutes(directory = "src/routes", segments = []) {
   return routes;
 }
 
-test("every fixed-path route has a sitemap URL or a stated exclusion", () => {
+test("every fixed-path route has a sitemap URL or a stated exclusion", async () => {
   const routes = new Set(staticRoutes());
   expect(routes.delete("/sitemap.xml")).toBe(true);
-  const { hashes, bareUrls } = computeHashes();
+  const { hashes, bareUrls } = sitemap;
   const sitemapUrls = new Set([...Object.keys(hashes), ...bareUrls]);
   for (const [route, reason] of Object.entries(EXCLUDED_ROUTES)) {
     expect(reason).toBeTruthy();
@@ -53,7 +58,7 @@ test("every fixed-path route has a sitemap URL or a stated exclusion", () => {
   ).toEqual([]);
 }, 30000);
 
-test("noncanonical aggregate fishing aliases stay out of the sitemap", () => {
+test("noncanonical aggregate fishing aliases stay out of the sitemap", async () => {
   const db = new Database("data/compendium.db", { readonly: true });
   let resources;
   try {
@@ -73,7 +78,7 @@ test("noncanonical aggregate fishing aliases stay out of the sitemap", () => {
     "deep_fishing_spot",
     "rough_fishing_spot",
   ]);
-  const { hashes } = computeHashes();
+  const { hashes } = sitemap;
   expect(
     Object.keys(EXCLUDED_ROUTES)
       .filter((route) => route.startsWith("/gather-items/"))

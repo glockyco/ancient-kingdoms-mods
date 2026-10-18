@@ -93,3 +93,9 @@ Long method lists SHALL retain the established bounded scrolling and mobile-draw
 - **THEN** readers can reach the remaining methods and source links with pointer, touch and keyboard
 - **AND** source-list scrolling does not disable the existing popup close and navigation controls
 
+#### Scenario: Several encounters grant tiered rewards
+
+- **WHEN** a selected item can be obtained from several encounters with tiered rewards
+- **THEN** each encounter identifies its shared activation requirements and cost once
+- **AND** all configured reward-tier methods remain independently inspectable with their own tier bounds, rewards and event-qualified chances
+- **AND** different altars, bosses and waves remain distinct encounters

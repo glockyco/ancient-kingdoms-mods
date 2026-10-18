@@ -6,6 +6,10 @@ import {
   type SearchKind,
   type SearchResult,
 } from "$lib/search/search";
+import { loadBrowserAcquisition, itemMapLocations } from "$lib/map/acquisition";
+import { browserAcquisitionQuery } from "$lib/acquisition/browser";
+import type { AcquisitionQuery } from "$lib/acquisition/types";
+import { projectMonsterLoot } from "$lib/acquisition/projections";
 
 export interface MapSearchBounds {
   minX: number;
@@ -81,9 +85,6 @@ type GeometryRow = {
   renewal_dungeon_name?: string | null;
   quality?: number | null;
   display_name?: string | null;
-  is_altar_only?: number | null;
-  altar_x?: number | null;
-  altar_y?: number | null;
 };
 
 type MapEntityCategory = MapSearchCategory;
@@ -112,34 +113,6 @@ const ENTITY_CATEGORY: Partial<Record<SearchKind, MapEntityCategory>> = {
  * only restore the map result contract and physical source geometry.
  */
 const GEOMETRY_QUERY: Partial<Record<SearchKind, string>> = {
-  monster: `
-    SELECT m.id,
-      MIN(ms.position_x) min_x, MAX(ms.position_x) max_x,
-      MIN(ms.position_y) min_y, MAX(ms.position_y) max_y,
-      COALESCE(ms.zone_id, a.zone_id) zone_id,
-      COALESCE(z.name, az.name) zone_name,
-      COALESCE(ms.level, m.level) level,
-      COUNT(ms.id) spawn_count,
-      CASE WHEN m.is_fabled THEN 'fabled'
-           WHEN m.is_boss THEN 'boss'
-           WHEN m.is_elite THEN 'elite'
-           WHEN m.is_hunt THEN 'hunt' END subcategory,
-      m.keywords,
-      CASE
-        WHEN SUM(CASE WHEN ms.spawn_type IN ('regular', 'summon', 'placeholder') THEN 1 ELSE 0 END) = 0
-         AND SUM(CASE WHEN ms.spawn_type = 'altar' THEN 1 ELSE 0 END) > 0 THEN 1
-        ELSE 0
-      END is_altar_only,
-      MAX(a.position_x) altar_x, MAX(a.position_y) altar_y,
-      NULL quality, NULL roles, NULL renewal_dungeon_name, NULL display_name
-    FROM monsters m
-    LEFT JOIN monster_spawns ms ON ms.monster_id = m.id
-    LEFT JOIN altars a ON a.id = ms.source_altar_id
-    LEFT JOIN zones az ON az.id = a.zone_id
-    LEFT JOIN zones z ON z.id = ms.zone_id
-    WHERE m.id IN (/*IDS*/)
-    GROUP BY m.id
-  `,
   npc: `
     SELECT n.id,
       MIN(ns.position_x) min_x, MAX(ns.position_x) max_x,
@@ -276,13 +249,7 @@ const GEOMETRY_QUERY: Partial<Record<SearchKind, string>> = {
       NULL keywords, NULL roles, NULL renewal_dungeon_name, NULL quality,
       NULL display_name
     FROM quests q
-    LEFT JOIN (
-      SELECT n.id npc_id, json_extract(qo.value, '$.id') quest_id
-      FROM npcs n, json_each(n.quests_offered) qo
-      UNION
-      SELECT n.id npc_id, json_extract(qc.value, '$.id') quest_id
-      FROM npcs n, json_each(n.quests_completed_here) qc
-    ) nq ON nq.quest_id = q.id
+    LEFT JOIN (SELECT DISTINCT npc_id, quest_id FROM npc_quest_memberships) nq ON nq.quest_id = q.id
     LEFT JOIN npc_spawns ns ON ns.npc_id = nq.npc_id AND ns.position_x IS NOT NULL
     LEFT JOIN zones z ON z.id = ns.zone_id
     WHERE q.id IN (/*IDS*/)
@@ -304,81 +271,39 @@ function parseRoles(
   }
 }
 
-type GeometryQuery = (sql: string, params: string[]) => Promise<unknown[]>;
-
-function itemBoundsQuery(
-  idsJson: string,
-  execute: GeometryQuery = query,
+async function itemBoundsQuery(
+  itemIds: readonly string[],
+  execute: AcquisitionQuery = browserAcquisitionQuery,
 ): Promise<GeometryRow[]> {
-  return execute(
-    `
-    SELECT item_id id, MIN(x) min_x, MAX(x) max_x, MIN(y) min_y, MAX(y) max_y,
-      NULL zone_id, NULL zone_name, NULL level, COUNT(*) spawn_count,
-      NULL subcategory, NULL keywords, NULL roles, NULL renewal_dungeon_name,
-      NULL quality, NULL display_name
-    FROM (
-      SELECT json_extract(d.value, '$.item_id') item_id, ms.position_x x, ms.position_y y
-      FROM monsters m, json_each(m.drops) d
-      JOIN monster_spawns ms ON ms.monster_id = m.id
-        AND ms.spawn_type IN ('regular', 'summon', 'placeholder') AND ms.position_x IS NOT NULL
-      WHERE json_extract(d.value, '$.item_id') IN (SELECT value FROM json_each(?))
-      UNION ALL
-      SELECT isv.item_id, ns.position_x, ns.position_y
-      FROM item_sources_vendor isv
-      JOIN npc_spawns ns ON ns.npc_id = isv.npc_id AND ns.position_x IS NOT NULL
-      WHERE isv.item_id IN (SELECT value FROM json_each(?))
-      UNION ALL
-      SELECT isg.item_id, gs.position_x, gs.position_y
-      FROM item_sources_gather isg
-      JOIN gathering_resource_spawns gs ON gs.resource_id = isg.resource_id AND gs.position_x IS NOT NULL
-      WHERE isg.item_id IN (SELECT value FROM json_each(?))
-      UNION ALL
-      SELECT f.item_id, gs.position_x, gs.position_y
-      FROM fish f
-      JOIN items i ON i.id = f.item_id
-      JOIN gathering_resources gr ON gr.is_fishing_spot = 1
-      JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id AND gs.position_x IS NOT NULL
-      WHERE f.item_id IN (SELECT value FROM json_each(?))
-        AND (f.is_trash = 1 OR gr.level > COALESCE(i.quality, -1))
-        AND NOT EXISTS (
-          SELECT 1 FROM item_sources_gather existing
-          WHERE existing.item_id = f.item_id AND existing.resource_id = gr.id
-        )
-      UNION ALL
-      SELECT isc.item_id, c.position_x, c.position_y
-      FROM item_sources_chest isc
-      JOIN chests c ON c.id = isc.chest_id AND c.position_x IS NOT NULL
-      WHERE isc.item_id IN (SELECT value FROM json_each(?))
-      UNION ALL
-      SELECT reward.item_id, a.position_x, a.position_y
-      FROM (
-        SELECT reward_common_id item_id, id altar_id FROM altars WHERE reward_common_id IS NOT NULL
-        UNION ALL SELECT reward_magic_id, id FROM altars WHERE reward_magic_id IS NOT NULL
-        UNION ALL SELECT reward_epic_id, id FROM altars WHERE reward_epic_id IS NOT NULL
-        UNION ALL SELECT reward_legendary_id, id FROM altars WHERE reward_legendary_id IS NOT NULL
-      ) reward JOIN altars a ON a.id = reward.altar_id AND a.position_x IS NOT NULL
-      WHERE reward.item_id IN (SELECT value FROM json_each(?))
-      UNION ALL
-      SELECT tl.required_map_id, tl.position_x, tl.position_y
-      FROM treasure_locations tl
-      WHERE tl.required_map_id IN (SELECT value FROM json_each(?)) AND tl.position_x IS NOT NULL
-      UNION ALL
-      SELECT tl.reward_id, tl.position_x, tl.position_y
-      FROM treasure_locations tl
-      WHERE tl.reward_id IN (SELECT value FROM json_each(?)) AND tl.position_x IS NOT NULL
-    )
-    GROUP BY item_id
-  `,
-    Array.from({ length: 8 }, () => idsJson),
-  ) as Promise<GeometryRow[]>;
+  const model = await loadBrowserAcquisition(
+    { kind: "items", itemIds },
+    execute,
+  );
+  return [...new Set(itemIds)].map((id) => {
+    const locations = itemMapLocations(model, id);
+    const positions = locations.flatMap((location) =>
+      location.position ? [location.position] : [],
+    );
+    return {
+      id,
+      min_x: positions.length ? Math.min(...positions.map((p) => p.x)) : null,
+      max_x: positions.length ? Math.max(...positions.map((p) => p.x)) : null,
+      min_y: positions.length ? Math.min(...positions.map((p) => p.y)) : null,
+      max_y: positions.length ? Math.max(...positions.map((p) => p.y)) : null,
+      zone_id: null,
+      zone_name: null,
+      spawn_count: positions.length,
+      level: null,
+    };
+  });
 }
 
 /** Physical locations available when the map selects this item. */
 export async function getItemMapBounds(
   itemId: string,
-  execute: GeometryQuery = query,
+  execute: AcquisitionQuery = browserAcquisitionQuery,
 ): Promise<MapSearchBounds | null> {
-  const [row] = await itemBoundsQuery(JSON.stringify([itemId]), execute);
+  const [row] = await itemBoundsQuery([itemId], execute);
   if (
     row?.min_x == null ||
     row.max_x == null ||
@@ -399,19 +324,26 @@ async function itemRows(
   matches: SearchResult[],
 ): Promise<Map<string, GeometryRow>> {
   const ids = matches.map((match) => match.id);
-  const placeholders = ids.map(() => "?").join(",");
-  const basics = await query<{
-    id: string;
-    quality: number | null;
-    level: number | null;
-  }>(
-    `SELECT id, quality, level_required level FROM items WHERE id IN (${placeholders})`,
-    ids,
-  );
-  const bounds = await itemBoundsQuery(JSON.stringify(ids));
+  const basics: { id: string; quality: number | null; level: number | null }[] =
+    [];
+  for (let offset = 0; offset < ids.length; offset += 200) {
+    const batch = ids.slice(offset, offset + 200);
+    basics.push(
+      ...(await query<{
+        id: string;
+        quality: number | null;
+        level: number | null;
+      }>(
+        `SELECT id,quality,level_required level FROM items WHERE id IN (${batch.map(() => "?").join(",")})`,
+        batch,
+      )),
+    );
+  }
+  const bounds = await itemBoundsQuery(ids);
+  const boundsById = new Map(bounds.map((row) => [row.id, row]));
   const result = new Map<string, GeometryRow>();
   for (const row of basics) {
-    const source = bounds.find((candidate) => candidate.id === row.id);
+    const source = boundsById.get(row.id);
     result.set(row.id, {
       ...(source ?? {
         id: row.id,
@@ -429,25 +361,64 @@ async function itemRows(
   }
   return result;
 }
+async function monsterRows(matches: SearchResult[]): Promise<GeometryRow[]> {
+  const model = await loadBrowserAcquisition({
+    kind: "monsters",
+    monsterIds: matches.map((match) => match.id),
+  });
+  return matches.map((match) => {
+    const monster = model.entities.get("monsters")?.get(match.id);
+    const contexts = projectMonsterLoot(model, match.id).contexts;
+    const seen = new Set<string>();
+    const locations = contexts.flatMap((method) =>
+      method.providers.flatMap((provider) => {
+        const location = provider.location;
+        if (location?.geometryVisibility !== "visible" || !location.position)
+          return [];
+        const key = `${provider.ref.kind}:${provider.ref.id}:${location.position.x}:${location.position.y}:${location.position.z}`;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        return [location];
+      }),
+    );
+    const positions = locations.map((location) => location.position!);
+    const zoneId = locations[0]?.zoneId ?? null;
+    return {
+      id: match.id,
+      min_x: positions.length ? Math.min(...positions.map((p) => p.x)) : null,
+      max_x: positions.length ? Math.max(...positions.map((p) => p.x)) : null,
+      min_y: positions.length ? Math.min(...positions.map((p) => p.y)) : null,
+      max_y: positions.length ? Math.max(...positions.map((p) => p.y)) : null,
+      zone_id: zoneId,
+      zone_name: zoneId
+        ? String(model.entities.get("zones")?.get(zoneId)?.name ?? "")
+        : null,
+      level: typeof monster?.level === "number" ? monster.level : null,
+      spawn_count: positions.length,
+      subcategory: monster?.is_fabled
+        ? "fabled"
+        : monster?.is_boss
+          ? "boss"
+          : monster?.is_elite
+            ? "elite"
+            : monster?.is_hunt
+              ? "hunt"
+              : null,
+      keywords: typeof monster?.keywords === "string" ? monster.keywords : null,
+    };
+  });
+}
 
 function toMapSearchResult(
   match: SearchResult,
   row: GeometryRow | undefined,
 ): MapSearchResult {
   const category = ENTITY_CATEGORY[match.kind]!;
-  const isAltarOnly =
-    Boolean(row?.is_altar_only) && row?.altar_x != null && row.altar_y != null;
-  const bounds = isAltarOnly
-    ? {
-        minX: row!.altar_x!,
-        maxX: row!.altar_x!,
-        minY: -row!.altar_y!,
-        maxY: -row!.altar_y!,
-      }
-    : row?.min_x != null &&
-        row.max_x != null &&
-        row.min_y != null &&
-        row.max_y != null
+  const bounds =
+    row?.min_x != null &&
+    row.max_x != null &&
+    row.min_y != null &&
+    row.max_y != null
       ? { minX: row.min_x, maxX: row.max_x, minY: -row.max_y, maxY: -row.min_y }
       : null;
   const level = row?.level ?? undefined;
@@ -507,14 +478,22 @@ export async function searchMapEntities(
           geometry.set(`${entityType}:${id}`, row);
         return;
       }
+      if (entityType === "monster") {
+        for (const row of await monsterRows(categoryMatches))
+          geometry.set(`monster:${row.id}`, row);
+        return;
+      }
       const queryText = GEOMETRY_QUERY[entityType as SearchKind];
       if (!queryText) return;
       const ids = categoryMatches.map((match) => match.id);
-      const rows = await query<GeometryRow>(
-        queryText.replaceAll("/*IDS*/", ids.map(() => "?").join(",")),
-        ids,
-      );
-      for (const row of rows) geometry.set(`${entityType}:${row.id}`, row);
+      for (let offset = 0; offset < ids.length; offset += 200) {
+        const batch = ids.slice(offset, offset + 200);
+        const rows = await query<GeometryRow>(
+          queryText.replaceAll("/*IDS*/", batch.map(() => "?").join(",")),
+          batch,
+        );
+        for (const row of rows) geometry.set(`${entityType}:${row.id}`, row);
+      }
     }),
   );
 

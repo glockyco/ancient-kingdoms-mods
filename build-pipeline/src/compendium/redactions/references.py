@@ -79,17 +79,10 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("items", "scroll_skill_id"),
         ("items", "weapon_proc_effect_id"),
         ("items", "relic_buff_id"),
-        ("skills", "prerequisite_skill_id"),
-        ("skills", "prerequisite2_skill_id"),
         ("traps", "effect_skill_id"),
         ("zone_triggers", "environment_hazard_skill_id"),
         # These references yield an item.
-        ("chests", "item_reward_id"),
-        ("gathering_resources", "item_reward_id"),
         ("fish", "item_id"),
-        ("chest_item_rewards", "item_id"),
-        ("treasure_locations", "reward_id"),
-        ("quests", "given_item_on_start_id"),
         ("alchemy_recipes", "result_item_id"),
         ("crafting_recipes", "result_item_id"),
         ("scribing_recipes", "result_item_id"),
@@ -98,21 +91,6 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("items", "recipe_potion_learned_id"),
         ("luck_tokens", "boss_luck_token_id"),
         ("luck_tokens", "fragment_token_id"),
-        # Denormalized source tables. These are empty when the closure runs in
-        # this pipeline. They are declared so that a closure over a fully
-        # denormalized database gives the same result.
-        ("item_source_entries", "item_id"),
-        ("item_sources_altar", "item_id"),
-        ("item_sources_chest", "item_id"),
-        ("item_sources_gather", "item_id"),
-        ("item_sources_merge", "item_id"),
-        ("item_sources_monster", "item_id"),
-        ("item_sources_pack", "item_id"),
-        ("item_sources_quest", "item_id"),
-        ("item_sources_random", "item_id"),
-        ("item_sources_recipe", "item_id"),
-        ("item_sources_treasure_map", "item_id"),
-        ("item_sources_vendor", "item_id"),
     }
 )
 
@@ -121,61 +99,24 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
 MENTIONS: frozenset[tuple[str, str]] = frozenset(
     {
         ("altars", "required_activation_item_id"),
-        ("chests", "key_required_id"),
-        ("chest_item_rewards", "chest_item_id"),
+        ("altars", "reward_common_id"),
+        ("altars", "reward_magic_id"),
+        ("altars", "reward_epic_id"),
+        ("altars", "reward_legendary_id"),
         ("class_level_progression", "class_id"),
         ("gathering_resources", "tool_required_id"),
         ("items", "buy_token_id"),
-        ("items", "taught_by_recipe_id"),
         ("items", "weapon_required_ammo_id"),
-        ("item_sources_altar", "altar_id"),
-        ("item_sources_chest", "chest_id"),
-        ("item_sources_gather", "resource_id"),
-        ("item_sources_merge", "component_item_id"),
-        ("item_sources_monster", "monster_id"),
-        ("item_sources_pack", "pack_item_id"),
-        ("item_sources_quest", "quest_id"),
-        ("item_sources_random", "random_item_id"),
-        ("item_sources_treasure_map", "map_item_id"),
-        ("item_sources_treasure_map", "treasure_location_id"),
-        ("item_sources_vendor", "currency_item_id"),
-        ("item_sources_vendor", "npc_id"),
-        ("item_sources_vendor", "required_faction"),
-        ("item_usages_altar", "altar_id"),
-        ("item_usages_altar", "item_id"),
-        ("item_usages_chest", "chest_id"),
-        ("item_usages_chest", "item_id"),
-        ("item_usages_currency", "currency_item_id"),
-        ("item_usages_currency", "npc_id"),
-        ("item_usages_currency", "purchasable_item_id"),
-        ("item_usages_portal", "item_id"),
-        ("item_usages_portal", "portal_id"),
-        ("item_usages_quest", "item_id"),
-        ("item_usages_quest", "quest_id"),
-        ("item_usages_recipe", "item_id"),
-        ("item_zones_obtainable", "item_id"),
         ("monster_skills", "monster_id"),
-        ("monster_spawns", "source_altar_activation_item_id"),
-        ("monster_spawns", "source_monster_id"),
-        ("monster_spawns", "source_summon_kill_monster_id"),
         ("npcs", "faction"),
         ("pet_skills", "pet_id"),
-        ("portals", "need_monster_dead_id"),
+        ("portals", "need_monster_dead_spawn_id"),
         ("portals", "required_item_id"),
         ("professions", "achievement_id"),
-        ("quests", "end_npc_id"),
-        ("quests", "gather_item_1_id"),
-        ("quests", "gather_item_2_id"),
-        ("quests", "gather_item_3_id"),
-        ("quests", "kill_target_1_id"),
-        ("quests", "kill_target_2_id"),
-        ("quests", "potion_item_id"),
-        ("quests", "start_npc_id"),
         ("stat_fields", "stat_id"),
         ("stats", "pool_id"),
-        ("summon_trigger_placeholders", "spawn_id"),
-        ("summon_trigger_placeholders", "trigger_id"),
         ("treasure_locations", "required_map_id"),
+        ("treasure_locations", "reward_id"),
     }
 )
 
@@ -185,26 +126,13 @@ JSON_PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("altars", "waves"),
         ("items", "augment_skill_bonuses"),
         ("items", "augment_skill_bonuses_with_names"),
-        ("items", "chest_rewards"),
-        ("monsters", "drops"),
-        ("monsters", "loot_inputs"),
         ("npcs", "drops"),
-        ("npcs", "items_sold"),
-        ("npcs", "quests_completed_here"),
-        ("npcs", "quests_offered"),
-        ("npcs", "skill_ids"),
-        ("quests", "predecessor_ids"),
-        ("quests", "rewards"),
         ("skills", "granted_by_items"),
     }
 )
 
-# References through which the rows a row names provide it. Removing all of them
-# removes the row, because nothing is left to reach it.
-#
-# No plain foreign key is a composed relation today. A single-valued column names
-# one member, and a row with one member is that member's dependent rather than an
-# aggregate of it, so a new composed relation belongs in JSON_PROVIDED_BY below.
+# Existing aggregate references. Canonical identified memberships are declared
+# separately because each membership is a graph node rather than a junction.
 PROVIDED_BY: frozenset[tuple[str, str]] = frozenset()
 
 # An armour set bonus is reached by wearing its pieces, so the pieces provide it.
@@ -216,16 +144,133 @@ JSON_PROVIDED_BY: frozenset[tuple[str, str]] = frozenset(
     }
 )
 
-JSON_MENTIONS: frozenset[tuple[str, str]] = frozenset(
-    {
-        ("alchemy_recipes", "materials"),
-        ("crafting_recipes", "materials"),
-        ("quests", "equip_items"),
-        ("quests", "gather_items"),
-        ("quests", "required_items"),
-        ("scribing_recipes", "materials"),
-    }
-)
+JSON_MENTIONS: frozenset[tuple[str, str]] = frozenset()
+
+PROVIDER_COLUMNS = {
+    "monster_spawns": "monster_spawn_id",
+    "npcs": "npc_id",
+    "altars": "altar_id",
+    "resource_spawns": "resource_spawn_id",
+    "chests": "chest_id",
+    "crafting_stations": "crafting_station_id",
+    "alchemy_tables": "alchemy_table_id",
+    "scribing_tables": "scribing_table_id",
+    "items": "item_id",
+    "classes": "class_id",
+    "treasure_locations": "treasure_location_id",
+}
+
+# Parent ownership is backwards. Targets of costs, gates and lookups are never
+# providers. A provider reaches its membership, which reaches the method.
+CANONICAL_DIRECTIONS: dict[tuple[str, str], Direction] = {
+    ("acquisition_methods", "setup_method_id"): "provides",
+    ("acquisition_kill_details", "loot_zone_number"): "none",
+    ("summon_triggers", "summoned_monster_spawn_id"): "none",
+    ("summon_triggers", "summoned_npc_spawn_id"): "none",
+    ("summon_trigger_placeholders", "trigger_id"): "provided_by",
+    ("summon_trigger_placeholders", "spawn_id"): "none",
+    ("acquisition_cost_groups", "method_id"): "provided_by",
+    ("acquisition_inputs", "cost_group_id"): "provided_by",
+    ("acquisition_inputs", "item_id"): "none",
+    ("acquisition_outputs", "method_id"): "provided_by",
+    ("acquisition_outputs", "item_id"): "provides",
+    ("acquisition_faction_effects", "method_id"): "provided_by",
+    ("acquisition_faction_effects", "faction_id"): "none",
+    ("acquisition_method_pools", "method_id"): "provided_by",
+    ("acquisition_method_pools", "pool_id"): "provides",
+    ("acquisition_global_roots", "method_id"): "provides",
+    ("acquisition_home_providers", "method_id"): "provides",
+    ("acquisition_home_providers", "structure_item_id"): "provided_by",
+    ("acquisition_method_fishing_rules", "method_id"): "provided_by",
+    ("acquisition_method_fishing_rules", "fishing_rule_id"): "provides",
+    ("loot_pool_entries", "pool_id"): "provided_by",
+    ("loot_pool_entries", "item_id"): "provides",
+    ("loot_pool_entries", "child_pool_id"): "provides",
+    ("loot_monster_rules", "pool_id"): "provided_by",
+    ("loot_chest_rules", "pool_id"): "provided_by",
+    ("loot_fishing_rules", "primary_pool_id"): "provides",
+    ("loot_fishing_rules", "trash_pool_id"): "provides",
+    ("loot_fishing_rules", "fallback_pool_id"): "provides",
+    ("item_pool_definitions", "item_id"): "provided_by",
+    ("item_pool_definitions", "pool_id"): "provides",
+    ("monsters", "loot_pool_id"): "provides",
+    ("quest_objectives", "quest_id"): "provided_by",
+    ("quest_objective_items", "id"): "provided_by",
+    ("quest_objective_items", "item_id"): "none",
+    ("quest_objective_monsters", "id"): "provided_by",
+    ("quest_objective_monsters", "monster_id"): "none",
+    ("quest_objective_locations", "id"): "provided_by",
+    ("quest_objective_locations", "zone_id"): "none",
+    ("quest_objective_locations", "sub_zone_id"): "none",
+    ("quest_objective_brews", "id"): "provided_by",
+    ("quest_objective_brews", "item_id"): "none",
+    ("quest_predecessors", "quest_id"): "provided_by",
+    ("quest_predecessors", "predecessor_quest_id"): "none",
+    ("quest_class_requirements", "quest_id"): "provided_by",
+    ("quest_class_requirements", "class_id"): "none",
+    ("quest_race_requirements", "quest_id"): "provided_by",
+    ("quest_race_requirements", "race_id"): "none",
+    ("quest_faction_requirements", "quest_id"): "provided_by",
+    ("quest_faction_requirements", "faction_id"): "none",
+    ("quest_reward_slots", "quest_id"): "provided_by",
+    ("quest_reward_slots", "class_id"): "none",
+    ("quest_reward_slots", "item_id"): "provides",
+    ("quest_provided_items", "quest_id"): "provided_by",
+    ("quest_provided_items", "item_id"): "provides",
+    ("npc_quest_memberships", "npc_id"): "provided_by",
+    ("npc_quest_memberships", "quest_id"): "provides",
+    ("npc_skills", "npc_id"): "provided_by",
+    ("npc_skills", "skill_id"): "provides",
+    ("item_class_requirements", "item_id"): "provided_by",
+    ("item_class_requirements", "class_id"): "none",
+    ("skill_predecessors", "skill_id"): "provided_by",
+    ("skill_predecessors", "predecessor_skill_id"): "none",
+}
+for _domain, _column in PROVIDER_COLUMNS.items():
+    CANONICAL_DIRECTIONS[(f"acquisition_providers_{_domain}", _column)] = "provided_by"
+    CANONICAL_DIRECTIONS[(f"acquisition_providers_{_domain}", "method_id")] = "provides"
+
+DETAIL_TARGETS = {
+    "kill": (
+        "monster_id",
+        "loot_pool_id",
+        "loot_zone_id",
+        "altar_id",
+        "parent_monster_spawn_id",
+    ),
+    "vendor": ("npc_id", "offered_item_id"),
+    "quest": ("quest_id",),
+    "recipe": (
+        "crafting_recipe_id",
+        "alchemy_recipe_id",
+        "scribing_recipe_id",
+        "declared_result_item_id",
+    ),
+    "resource": ("resource_id",),
+    "world_chest": ("chest_id", "key_item_id"),
+    "item": ("item_id",),
+    "treasure": ("treasure_location_id", "map_item_id"),
+    "service": (),
+    "creation": ("class_id",),
+    "housing": ("structure_item_id",),
+    "cap_xp": ("reward_item_id",),
+    "altar": ("altar_id",),
+}
+for _family, _columns in DETAIL_TARGETS.items():
+    _table = f"acquisition_{_family}_details"
+    CANONICAL_DIRECTIONS[(_table, "id")] = "provided_by"
+    for _column in _columns:
+        CANONICAL_DIRECTIONS[(_table, _column)] = "none"
+for _key in (
+    ("acquisition_kill_details", "loot_pool_id"),
+    ("acquisition_vendor_details", "offered_item_id"),
+    ("acquisition_recipe_details", "crafting_recipe_id"),
+    ("acquisition_recipe_details", "alchemy_recipe_id"),
+    ("acquisition_recipe_details", "scribing_recipe_id"),
+    ("acquisition_recipe_details", "declared_result_item_id"),
+):
+    CANONICAL_DIRECTIONS[_key] = "provides"
+CANONICAL_DIRECTIONS[("acquisition_item_details", "item_id")] = "provided_by"
 
 
 @dataclass(frozen=True)
@@ -284,6 +329,8 @@ class UndeclaredReference(Exception):
 
 
 def _semantics(key: tuple[str, str], embedded: bool) -> Direction | None:
+    if not embedded and key in CANONICAL_DIRECTIONS:
+        return CANONICAL_DIRECTIONS[key]
     provides = JSON_PROVIDES if embedded else PROVIDES
     provided_by = JSON_PROVIDED_BY if embedded else PROVIDED_BY
     mentions = JSON_MENTIONS if embedded else MENTIONS
@@ -306,7 +353,8 @@ def resolve(conn: sqlite3.Connection) -> list[Reference]:
     undeclared: list[str] = []
 
     for key in foreign_keys(conn):
-        if key.target_table in (ZONE_TABLE, SUB_ZONE_TABLE):
+        canonical = CANONICAL_DIRECTIONS.get((key.table, key.column))
+        if key.target_table in (ZONE_TABLE, SUB_ZONE_TABLE) and canonical is None:
             prefixes = DESTINATIONS.get((key.table, key.column))
             references.append(
                 Reference(
@@ -332,12 +380,16 @@ def resolve(conn: sqlite3.Connection) -> list[Reference]:
                 target_table=key.target_table,
                 target_column=key.target_column,
                 direction=direction,
-                locus="none",
+                locus="own" if key.table == "quest_objective_locations" else "none",
                 condition=key.condition,
             )
         )
 
     for table, column, keys, target in ENTITY_JSON_CARRIERS:
+        if column not in {
+            row[1] for row in conn.execute(f"PRAGMA table_info({table})")
+        }:
+            continue
         direction = _semantics((table, column), embedded=True)
         if direction is None:
             undeclared.append(f"{table}.{column} -> {target} (embedded)")

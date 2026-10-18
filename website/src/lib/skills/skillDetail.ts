@@ -19,14 +19,15 @@ const SKILL_CASTER_COLUMNS = `(
       ) AS caster_pets,
       (SELECT COUNT(*) FROM monster_skills ms WHERE ms.skill_id = s.id) AS caster_monster_count,
       (
-        SELECT COUNT(*) FROM npcs n, json_each(n.skill_ids) npc_skill
-        WHERE npc_skill.value = s.id
+        SELECT COUNT(DISTINCT ns.npc_id) FROM npc_skills ns
+        WHERE ns.skill_id = s.id
       ) AS caster_npc_count,
       (SELECT COUNT(*) FROM traps t WHERE t.effect_skill_id = s.id) AS caster_trap_count,
       coalesce(json_array_length(s.granted_by_items), 0) AS caster_item_count,
       (
         SELECT json_group_array(json_object(
-          'class_required', i.class_required,
+          'class_required', (SELECT json_group_array(cr.class_id) FROM item_class_requirements cr WHERE cr.item_id = i.id AND cr.class_id IS NOT NULL),
+          'class_restrictions_withheld', EXISTS(SELECT 1 FROM item_class_requirements cr WHERE cr.item_id = i.id AND cr.withheld = 1),
           'weapon_category', i.weapon_category
         ))
         FROM json_each(s.granted_by_items) granted
@@ -35,13 +36,19 @@ const SKILL_CASTER_COLUMNS = `(
       ) AS caster_weapon_procs,
       (
         SELECT json_group_array(DISTINCT i.potion_buff_level)
-        FROM items i
-        WHERE i.potion_buff_id = s.id
+        FROM json_each(s.granted_by_items) granted
+        JOIN items i ON i.id = json_extract(granted.value, '$.item_id')
+        WHERE json_extract(granted.value, '$.type') = 'potion_buff'
+          AND i.potion_buff_id = s.id
           AND coalesce(i.cooldown_category, '') != 'Bandages'
       ) AS caster_potion_buff_levels`;
 
 /** The skill row with the names and casters `skillDetailFromRow` and `skillCastersFromRow` read. */
 export const SKILL_DETAIL_COLUMNS = `s.*,
+      sp.predecessor_skill_id AS prerequisite_skill_id,
+      sp.rank AS prerequisite_level,
+      sp2.predecessor_skill_id AS prerequisite2_skill_id,
+      sp2.rank AS prerequisite2_level,
       ps.name AS prerequisite_skill_name,
       ps2.name AS prerequisite2_skill_name,
       sm.name AS summoned_monster_name,
@@ -49,8 +56,10 @@ export const SKILL_DETAIL_COLUMNS = `s.*,
       pet_lookup.is_mercenary AS pet_is_mercenary,
       ${SKILL_CASTER_COLUMNS}`;
 
-export const SKILL_DETAIL_JOINS = `LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
-    LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
+export const SKILL_DETAIL_JOINS = `LEFT JOIN skill_predecessors sp ON sp.skill_id = s.id AND sp.ordinal = 0
+    LEFT JOIN skill_predecessors sp2 ON sp2.skill_id = s.id AND sp2.ordinal = 1
+    LEFT JOIN skills ps ON ps.id = sp.predecessor_skill_id
+    LEFT JOIN skills ps2 ON ps2.id = sp2.predecessor_skill_id
     LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
     LEFT JOIN pets pet_lookup ON pet_lookup.id = s.pet_id`;
 
@@ -64,6 +73,7 @@ export type SkillCasterPet = Pick<
 export interface SkillWeaponProc {
   classes: string[] | null;
   weaponCategory: string | null;
+  classRestrictionsWithheld?: boolean;
 }
 
 /** Who casts a skill besides the player classes listed on it. */
@@ -129,10 +139,12 @@ export function skillCastersFromRow(
     weaponProcs: jsonArray(row, "caster_weapon_procs").map((entry) => {
       const item = record(entry, "caster_weapon_procs");
       return {
-        classes:
-          typeof item.class_required === "string"
+        classes: Array.isArray(item.class_required)
+          ? item.class_required.map(String)
+          : typeof item.class_required === "string"
             ? (JSON.parse(item.class_required) as string[])
             : null,
+        classRestrictionsWithheld: Boolean(item.class_restrictions_withheld),
         weaponCategory:
           typeof item.weapon_category === "string"
             ? item.weapon_category
@@ -164,9 +176,10 @@ export function skillDetailFromRow(
     name: skillRaw.name as string,
     skill_type: skillRaw.skill_type as string,
     tier: (skillRaw.tier as number) || 0,
-    max_level: (skillRaw.max_level as number) || 1,
+    max_level: (skillRaw.max_level as number | null) ?? 1,
     level_required: (skillRaw.level_required as number) || 0,
-    required_skill_points: (skillRaw.required_skill_points as number) || 1,
+    required_skill_points:
+      (skillRaw.required_skill_points as number | null) ?? 1,
     required_spent_points: (skillRaw.required_spent_points as number) || 0,
     player_classes: playerClasses,
     tooltip_template: skillRaw.tooltip_template as string | null,

@@ -48,6 +48,12 @@ A predicate SHALL identify the quantity, unit and subject the game reads. Player
 - **THEN** the predicate uses that profession's units and applicable rule
 - **AND** it does not treat a recipe tier or source sort level as a player-level gate
 
+#### Scenario: Quest tracking locations are not objective counters
+
+- **WHEN** a find-NPC quest supplies map tracking locations
+- **THEN** those locations remain available for navigation without requiring visits
+- **AND** genuine discovery objectives retain their required progress
+
 ### Requirement: Evaluation has three-valued semantics
 
 Evaluation SHALL return met, unmet or unknown with child outcomes sufficient to explain the result. A conjunction is unmet if any child is unmet and met only when all are met. An alternative is met if any child is met and unmet only when all are unmet. Other cases are unknown.

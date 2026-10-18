@@ -1,400 +1,229 @@
-import type { AltarThresholds } from "$lib/calculation/altar";
-import {
-  calculateBossLootChance,
-  type BossLootDrop,
-} from "$lib/calculation/boss-loot";
-import { query, queryScalar } from "$lib/db";
+import { query } from "$lib/db";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
-import { fishOutcomeRangesForSpot } from "$lib/utils/fishing";
 import {
-  FISHING_RANGE_QUERIES,
-  assembleFishingRangeData,
-  resolveFishingSourceRange,
-  type FishingRangeData,
-  type FishingSpotRow,
-  type FishingDropRateRow,
-} from "$lib/utils/fishing-source-ranges";
+  loadBrowserAcquisition,
+  itemMapLocations,
+  mapMethodIsVisible,
+} from "$lib/map/acquisition";
+import {
+  projectAcquisitionNames,
+  projectItemSources,
+  projectItemUsages,
+  projectMonsterLoot,
+  projectProviderMethods,
+} from "$lib/acquisition/projections";
+import type {
+  AcquisitionModel,
+  DirectLocation,
+  ItemSourceView,
+  ItemUseView,
+  MethodView,
+  ProviderRef,
+  RequirementEntityRef,
+  RequirementRoot,
+} from "$lib/acquisition/types";
 
 const itemIconPathCache = new Map<string, string | null>();
-
 export async function loadMapItemIconPaths(
   ids: Iterable<string>,
 ): Promise<Record<string, string | null>> {
-  const uniqueIds = [...new Set(ids)];
-  const missingIds = uniqueIds.filter((id) => !itemIconPathCache.has(id));
-  if (missingIds.length > 0) {
+  const unique = [...new Set(ids)];
+  const missing = unique.filter((id) => !itemIconPathCache.has(id));
+  for (let offset = 0; offset < missing.length; offset += 200) {
+    const batch = missing.slice(offset, offset + 200);
     const rows = await query<{ id: string; public_path: string | null }>(
-      `SELECT i.id, va.public_path
-       FROM items i
-       LEFT JOIN visual_assets va
-         ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
-       WHERE i.id IN (SELECT value FROM json_each(?))`,
-      [JSON.stringify(missingIds)],
+      `SELECT i.id, va.public_path FROM items i LEFT JOIN visual_assets va ON va.domain='item' AND va.entity_id=i.id AND va.kind='icon' WHERE i.id IN (${batch.map(() => "?").join(",")})`,
+      batch,
     );
     for (const row of rows) itemIconPathCache.set(row.id, row.public_path);
-    for (const id of missingIds) {
-      if (!itemIconPathCache.has(id)) {
+    for (const id of batch)
+      if (!itemIconPathCache.has(id))
         throw new Error(`Missing item for icon availability: ${id}`);
-      }
-    }
   }
   return Object.fromEntries(
-    uniqueIds.map((id) => [id, itemIconPathCache.get(id)!]),
+    unique.map((id) => [id, itemIconPathCache.get(id)!]),
   );
 }
 
-/**
- * Drop item for popup display
- */
-export interface PopupDropItem {
-  itemId: string;
-  itemName: string;
-  quality: number;
-  dropRate: number;
-  fatecharmDropRate?: number;
-  isDistributionRoll?: boolean;
-  requiresQuest?: boolean;
-  dropRateMax?: number;
-  amountMin?: number;
-  amountMax?: number;
-  tooltipHtml: string | null;
-  isBestiary?: boolean;
-  isRandomItem?: boolean;
-  randomItemOutcomes?: Array<{
-    itemId: string;
-    itemName: string;
-  }>;
-}
-
-/**
- * Quest info for NPC popup
- */
-export interface PopupQuestInfo {
+export interface PopupItem {
   id: string;
   name: string;
-  levelRecommended: number;
-}
-
-/**
- * Item sold info for NPC popup
- */
-export interface PopupItemSoldInfo {
-  itemId: string;
-  itemName: string;
   quality: number;
-  price: number;
   tooltipHtml: string | null;
+  iconPath: string | null;
 }
-
-/**
- * Altar reward info for popup
- */
-export interface PopupAltarReward extends AltarThresholds {
-  tier: "common" | "magic" | "epic" | "legendary";
-  maxLevel: number;
-  itemId: string;
-  itemName: string;
-  quality: number;
-  dropRate: number | null;
-  tooltipHtml: string | null;
+export interface PopupAcquisition {
+  model: AcquisitionModel;
+  methods: readonly MethodView[];
+  items: Readonly<Record<string, PopupItem>>;
+  names: Readonly<Record<string, string>>;
+  requirements: readonly RequirementRoot[];
 }
-
-/**
- * Renewal Sage info for world boss popup
- */
+async function presentation(
+  model: AcquisitionModel,
+  methods: readonly MethodView[],
+  requirements: readonly RequirementRoot[] = [],
+): Promise<PopupAcquisition> {
+  const items: Record<string, PopupItem> = {};
+  const names = projectAcquisitionNames(model);
+  const paths = await loadMapItemIconPaths(
+    (model.rows.entities.items ?? []).map((row) => row.id),
+  );
+  for (const row of model.rows.entities.items ?? [])
+    items[row.id] = {
+      id: row.id,
+      name: String(row.name),
+      quality: Number(row.quality ?? 0),
+      tooltipHtml:
+        typeof row.tooltip_html === "string" ? row.tooltip_html : null,
+      iconPath: paths[row.id],
+    };
+  return {
+    model,
+    methods: methods.filter(mapMethodIsVisible),
+    items,
+    names,
+    requirements,
+  };
+}
+export async function loadMapItems(
+  ids: Iterable<string>,
+): Promise<Readonly<Record<string, PopupItem>>> {
+  const unique = [...new Set(ids)];
+  const paths = await loadMapItemIconPaths(unique);
+  const result: Record<string, PopupItem> = {};
+  for (let offset = 0; offset < unique.length; offset += 200) {
+    const batch = unique.slice(offset, offset + 200);
+    const rows = await query<{
+      id: string;
+      name: string;
+      quality: number;
+      tooltip_html: string | null;
+    }>(
+      `SELECT id,name,quality,tooltip_html FROM items WHERE id IN (${batch.map(() => "?").join(",")})`,
+      batch,
+    );
+    for (const row of rows)
+      result[row.id] = {
+        id: row.id,
+        name: row.name,
+        quality: row.quality,
+        tooltipHtml: row.tooltip_html,
+        iconPath: paths[row.id],
+      };
+  }
+  return result;
+}
 export interface PopupRenewalSage {
   npcId: string;
   npcName: string;
-  zoneId: string | null;
-  zoneName: string | null;
+  zoneId: string;
+  zoneName: string;
   cost: number;
 }
-
-/**
- * Runtime-exported visual asset for popup display.
- */
-export interface MonsterPopupVisualAsset {
-  publicPath: string;
-  width: number;
-  height: number;
-  sourceType: string;
-}
-
-/**
- * Monster popup details (lazy-loaded)
- */
-export interface MonsterPopupDetails {
-  drops: PopupDropItem[];
+export type MonsterPopupVisualAsset = Pick<
+  EntityVisualAsset,
+  "width" | "height"
+> & {
+  publicPath: EntityVisualAsset["public_path"];
+  sourceType: EntityVisualAsset["source_type"];
+};
+export interface MonsterPopupDetails extends PopupAcquisition {
   renewalSages: PopupRenewalSage[];
   health: number;
   damage: number;
   magicDamage: number;
   visualAsset: MonsterPopupVisualAsset | null;
 }
-
-/**
- * World boss info for Renewal Sage NPC popup
- */
-export interface PopupWorldBoss {
-  id: string;
-  name: string;
-  level: number;
-}
-
-/**
- * NPC popup details (lazy-loaded)
- */
-export interface NpcPopupDetails {
-  quests: PopupQuestInfo[];
-  itemsSold: PopupItemSoldInfo[];
-  worldBosses: PopupWorldBoss[];
-  subZones: string[];
-  visualAsset: MonsterPopupVisualAsset | null;
-}
-
-/**
- * Chest popup details (lazy-loaded)
- */
-export interface ChestPopupDetails {
-  drops: PopupDropItem[];
-}
-
-export interface FishingPopupOutcome {
-  kind: "primary_fish" | "fallback_fish" | "trash" | "escape" | "no_catch";
-  label: string;
-  itemId: string | null;
-  itemName: string | null;
-  quality: number | null;
-  dropRateMin: number;
-  dropRateMax: number;
-  tooltipHtml: string | null;
-}
-
-/**
- * Gathering popup details (lazy-loaded)
- */
-export interface GatheringPopupDetails {
-  drops: PopupDropItem[];
-  fishingOutcomes?: FishingPopupOutcome[];
-}
-
-/**
- * Boss drop info for altar popup
- */
-export interface PopupAltarBossDrop {
-  monsterId: string;
-  monsterName: string;
-  drops: PopupDropItem[];
-}
-
-/**
- * Altar popup details (lazy-loaded)
- */
-export interface AltarPopupDetails {
-  rewards: PopupAltarReward[];
-  bossDrops: PopupAltarBossDrop[];
-  finalMonsterIds: string[];
-}
-
-interface MonsterStatsRow {
-  health_base: number;
-  health_per_level: number;
-  damage_base: number;
-  damage_per_level: number;
-  magic_damage_base: number;
-  magic_damage_per_level: number;
-  spawn_health: number | null;
-  spawn_damage: number | null;
-  spawn_magic_damage: number | null;
-  visual_public_path: string | null;
-  visual_width: number | null;
-  visual_height: number | null;
-  visual_source_type: string | null;
-  is_boss: number;
-  loot_inputs: string;
-  has_fatecharm: number;
-}
-
-interface MonsterDropRow {
-  item_id: string;
-  item_name: string;
-  quality: number;
-  rate: number;
-  is_bestiary_drop: number;
-  is_quest_item: number;
-  tooltip_html: string | null;
-}
-
-function popupLootChance(
-  inputs: readonly BossLootDrop[],
-  itemId: string,
-  configuredRate: number,
-  isBoss: boolean,
-  hasFatecharm: boolean,
-  questOnly: boolean,
-): Pick<
-  PopupDropItem,
-  "dropRate" | "fatecharmDropRate" | "isDistributionRoll" | "requiresQuest"
-> {
-  const direct = inputs.filter((drop) => drop.item_id === itemId);
-  const isDistributionRoll = direct.some(
-    (drop) => drop.random_items !== undefined && !drop.requires_quest,
-  );
-  const requiresQuest =
-    direct.length > 0 &&
-    direct.every((drop) => (isBoss ? drop.requires_quest : questOnly));
-  const isOutcome =
-    direct.some(
-      (drop) => drop.random_items === undefined || drop.requires_quest,
-    ) ||
-    inputs.some((drop) =>
-      drop.random_items?.some((outcome) => outcome.item_id === itemId),
-    );
-  if (!isBoss || isDistributionRoll || !isOutcome) {
-    return { dropRate: configuredRate, isDistributionRoll, requiresQuest };
-  }
-  const neededQuestItemIds = new Set([itemId]);
-  return {
-    dropRate: calculateBossLootChance(inputs, itemId, { neededQuestItemIds }),
-    fatecharmDropRate: hasFatecharm
-      ? calculateBossLootChance(inputs, itemId, {
-          neededQuestItemIds,
-          fatecharm: true,
-        })
-      : undefined,
-    isDistributionRoll,
-    requiresQuest,
-  };
-}
-
-interface RenewalSageRow {
-  npc_id: string;
-  npc_name: string;
-  zone_id: string | null;
-  zone_name: string | null;
-  cost: number;
-}
-
-/**
- * Load monster drops for popup.
- * For bosses/elites: bestiary items first, then by drop rate.
- * For other monsters: just by drop rate (they don't have bestiary entries).
- * For world bosses: also loads renewal sage NPCs that can reset them.
- */
 export async function loadMonsterPopupDetails(
   monsterId: string,
   level: number,
   spawnId: string | null = null,
-  isBossOrElite: boolean = false,
-  isWorldBoss: boolean = false,
+  isWorldBoss = false,
 ): Promise<MonsterPopupDetails> {
-  const orderBy = isBossOrElite
-    ? "ORDER BY is_bestiary_drop DESC, rate DESC"
-    : "ORDER BY rate DESC";
-
-  const [stats] = await query<MonsterStatsRow>(
-    `
-    SELECT
-      m.health_base,
-      m.health_per_level,
-      m.damage_base,
-      m.damage_per_level,
-      m.magic_damage_base,
-      m.magic_damage_per_level,
-      m.is_boss,
-      m.loot_inputs,
-      EXISTS (
-        SELECT 1 FROM monster_spawns fs
-        JOIN zones fz ON fz.id = fs.zone_id AND fz.is_dungeon = 1 AND fz.zone_id > 0
-        JOIN items charm ON charm.luck_token_zone_id = fs.zone_id AND charm.luck_token_bonus > 0
-        WHERE fs.monster_id = m.id AND (? IS NULL OR fs.id = ?)
-      ) as has_fatecharm,
-      ms.health as spawn_health,
-      ms.damage as spawn_damage,
-      ms.magic_damage as spawn_magic_damage,
-      va.public_path as visual_public_path,
-      va.width as visual_width,
-      va.height as visual_height,
-      va.source_type as visual_source_type
-    FROM monsters m
-    LEFT JOIN visual_assets va
-      ON va.domain = 'monster'
-      AND va.entity_id = m.id
-      AND va.kind = 'primary'
-    LEFT JOIN monster_spawns ms
-      ON ms.id = ?
-    WHERE m.id = ?
-    `,
-    [spawnId, spawnId, spawnId, monsterId],
+  const [stats] = await query<{
+    health_base: number;
+    health_per_level: number;
+    damage_base: number;
+    damage_per_level: number;
+    magic_damage_base: number;
+    magic_damage_per_level: number;
+    spawn_id: string | null;
+    spawn_health: number | null;
+    spawn_damage: number | null;
+    spawn_magic_damage: number | null;
+    visual_public_path: string | null;
+    visual_width: number | null;
+    visual_height: number | null;
+    visual_source_type: string | null;
+  }>(
+    `SELECT m.health_base,m.health_per_level,m.damage_base,m.damage_per_level,m.magic_damage_base,m.magic_damage_per_level,ms.id spawn_id,ms.health spawn_health,ms.damage spawn_damage,ms.magic_damage spawn_magic_damage,va.public_path visual_public_path,va.width visual_width,va.height visual_height,va.source_type visual_source_type FROM monsters m LEFT JOIN monster_spawns ms ON ms.id=? LEFT JOIN visual_assets va ON va.domain='monster' AND va.entity_id=m.id AND va.kind='primary' WHERE m.id=?`,
+    [spawnId, monsterId],
   );
-
-  const drops = await query<MonsterDropRow>(
-    `
-    SELECT
-      ism.item_id,
-      i.name as item_name,
-      i.quality,
-      i.is_quest_item,
-      ism.drop_rate as rate,
-      COALESCE(i.is_bestiary_drop, 0) as is_bestiary_drop,
-      i.tooltip_html
-    FROM item_sources_monster ism
-    JOIN items i ON i.id = ism.item_id
-    WHERE ism.monster_id = ?
-    ${orderBy}
-    `,
-    [monsterId],
+  const model = await loadBrowserAcquisition(
+    stats?.spawn_id
+      ? {
+          kind: "providers",
+          providers: [{ kind: "monster_spawns", id: stats.spawn_id }],
+        }
+      : { kind: "monsters", monsterIds: [monsterId] },
   );
-
-  // Query renewal sages for world bosses
+  const loot = projectMonsterLoot(model, monsterId);
+  // A presentation-only event marker is not an authored placement. Select its
+  // canonical context through the event identity rather than template geometry.
+  const methods =
+    spawnId && model.methodViews.has(spawnId)
+      ? loot.contexts.filter((method) => method.methodId === spawnId)
+      : spawnId && model.entities.get("monster_spawns")?.has(spawnId)
+        ? loot.contexts.filter((method) =>
+            method.providers.some(
+              (p) => p.ref.kind === "monster_spawns" && p.ref.id === spawnId,
+            ),
+          )
+        : loot.contexts;
+  const triggerRequirements = spawnId
+    ? [...(model.entities.get("summon_triggers")?.values() ?? [])]
+        .filter((trigger) => trigger.summoned_monster_spawn_id === spawnId)
+        .flatMap(
+          (trigger) =>
+            model.requirements.get(`summon_trigger:${trigger.id}`) ?? [],
+        )
+    : [];
   let renewalSages: PopupRenewalSage[] = [];
-  if (isWorldBoss) {
-    const sages = await query<RenewalSageRow>(
-      `
-      SELECT
-        n.id as npc_id,
-        n.name as npc_name,
-        ns.zone_id,
-        z.name as zone_name,
-        n.gold_required_respawn_dungeon as cost
-      FROM npcs n
-      LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
-      LEFT JOIN zones z ON z.id = ns.zone_id
-      WHERE n.respawn_dungeon_id = ?
-      `,
-      [WORLD_BOSS_DUNGEON_ID],
-    );
-    renewalSages = sages.map((s) => ({
+  if (isWorldBoss)
+    renewalSages = (
+      await query<{
+        npc_id: string;
+        npc_name: string;
+        zone_id: string;
+        zone_name: string;
+        cost: number;
+      }>(
+        `SELECT n.id npc_id,n.name npc_name,ns.zone_id,z.name zone_name,n.gold_required_respawn_dungeon cost FROM npcs n JOIN npc_spawns ns ON ns.npc_id=n.id LEFT JOIN zones z ON z.id=ns.zone_id WHERE n.respawn_dungeon_id=?`,
+        [WORLD_BOSS_DUNGEON_ID],
+      )
+    ).map((s) => ({
       npcId: s.npc_id,
       npcName: s.npc_name,
       zoneId: s.zone_id,
       zoneName: s.zone_name,
       cost: s.cost,
     }));
-  }
-
-  // Prefer runtime stats exported from the specific scene spawn. Most spawns
-  // match canonical scaling, but Unity scene instances can override serialized
-  // Attribute/Combat values independently of the prefab/template (the Northern
-  // Wastes training dummy is level 55 with 1,000,000 HP rather than the
-  // formula-derived 370,000 HP).
-  const levelOffset = Math.max(0, level - 1);
-  const scaledHealth =
-    (stats?.health_base ?? 0) + (stats?.health_per_level ?? 0) * levelOffset;
-  const scaledDamage =
-    (stats?.damage_base ?? 0) + (stats?.damage_per_level ?? 0) * levelOffset;
-  const scaledMagicDamage =
-    (stats?.magic_damage_base ?? 0) +
-    (stats?.magic_damage_per_level ?? 0) * levelOffset;
-  if (!stats || typeof stats.loot_inputs !== "string") {
-    throw new Error(`Missing monster loot inputs for ${monsterId}`);
-  }
-  const lootInputs = JSON.parse(stats.loot_inputs) as BossLootDrop[];
+  const offset = Math.max(0, level - 1);
   return {
-    health: stats?.spawn_health ?? scaledHealth,
-    damage: stats?.spawn_damage ?? scaledDamage,
-    magicDamage: stats?.spawn_magic_damage ?? scaledMagicDamage,
+    ...(await presentation(model, methods, triggerRequirements)),
+    renewalSages,
+    health:
+      stats?.spawn_health ??
+      (stats?.health_base ?? 0) + (stats?.health_per_level ?? 0) * offset,
+    damage:
+      stats?.spawn_damage ??
+      (stats?.damage_base ?? 0) + (stats?.damage_per_level ?? 0) * offset,
+    magicDamage:
+      stats?.spawn_magic_damage ??
+      (stats?.magic_damage_base ?? 0) +
+        (stats?.magic_damage_per_level ?? 0) * offset,
     visualAsset: stats?.visual_public_path
       ? {
           publicPath: stats.visual_public_path,
@@ -403,1366 +232,187 @@ export async function loadMonsterPopupDetails(
           sourceType: stats.visual_source_type ?? "",
         }
       : null,
-    drops: drops.map((d) => ({
-      itemId: d.item_id,
-      itemName: d.item_name,
-      quality: d.quality,
-      ...popupLootChance(
-        lootInputs,
-        d.item_id,
-        d.rate,
-        Boolean(stats.is_boss),
-        Boolean(stats.has_fatecharm),
-        Boolean(d.is_quest_item),
-      ),
-      tooltipHtml: d.tooltip_html,
-      isBestiary: Boolean(d.is_bestiary_drop),
-    })),
-    renewalSages,
   };
 }
-
-interface NpcQuestRow {
+export interface PopupQuestInfo {
   id: string;
   name: string;
-  level_recommended: number;
+  levelRecommended: number;
+  role: "offer" | "complete";
 }
-
-interface NpcItemSoldRow {
-  item_id: string;
-  item_name: string;
-  quality: number;
-  price: number;
+export interface PopupWorldBoss {
+  id: string;
+  name: string;
+  level: number;
 }
-
-/**
- * Load NPC details for popup (all quests and items sold)
- */
+export interface NpcPopupDetails extends PopupAcquisition {
+  quests: PopupQuestInfo[];
+  skills: { id: string; name: string; index: number }[];
+  worldBosses: PopupWorldBoss[];
+  subZones: string[];
+  visualAsset: MonsterPopupVisualAsset | null;
+}
 export async function loadNpcPopupDetails(
   npcId: string,
-  isWorldBossReset: boolean = false,
+  isWorldBossReset = false,
 ): Promise<NpcPopupDetails> {
-  const [npc] = await query<{
-    quests_offered: string | null;
-    items_sold: string | null;
-    visual_public_path: string | null;
-    visual_width: number | null;
-    visual_height: number | null;
-    visual_source_type: string | null;
+  const model = await loadBrowserAcquisition({
+    kind: "providers",
+    providers: [{ kind: "npcs", id: npcId }],
+  });
+  const [visual] = await query<{
+    public_path: string;
+    width: number;
+    height: number;
+    source_type: string;
   }>(
-    `
-    SELECT
-      n.quests_offered,
-      n.items_sold,
-      va.public_path as visual_public_path,
-      va.width as visual_width,
-      va.height as visual_height,
-      va.source_type as visual_source_type
-    FROM npcs n
-    LEFT JOIN visual_assets va
-      ON va.domain = 'npc'
-     AND va.entity_id = n.id
-     AND va.kind = 'primary'
-    WHERE n.id = ?
-    `,
+    `SELECT public_path,width,height,source_type FROM visual_assets WHERE domain='npc' AND entity_id=? AND kind='primary'`,
     [npcId],
   );
-
-  if (!npc) {
-    return {
-      quests: [],
-      itemsSold: [],
-      worldBosses: [],
-      subZones: [],
-      visualAsset: null,
-    };
-  }
-
-  let quests: PopupQuestInfo[] = [];
-  let itemsSold: PopupItemSoldInfo[] = [];
-
-  try {
-    if (npc.quests_offered) {
-      const questsData = JSON.parse(npc.quests_offered) as NpcQuestRow[];
-      quests = questsData
-        .map((q) => ({
-          id: q.id,
-          name: q.name,
-          levelRecommended: q.level_recommended,
-        }))
-        .sort((a, b) => {
-          // Sort by level ascending, then by name alphabetically
-          if (a.levelRecommended !== b.levelRecommended) {
-            return a.levelRecommended - b.levelRecommended;
-          }
-          return a.name.localeCompare(b.name);
-        });
-    }
-  } catch {
-    /* empty */
-  }
-
-  try {
-    if (npc.items_sold) {
-      const itemsData = JSON.parse(npc.items_sold) as NpcItemSoldRow[];
-      // Fetch tooltips for all items in one query
-      const itemIds = itemsData.map((i) => i.item_id);
-      const tooltips = await query<{ id: string; tooltip_html: string | null }>(
-        `SELECT id, tooltip_html FROM items WHERE id IN (${itemIds.map(() => "?").join(",")})`,
-        itemIds,
-      );
-      const tooltipMap = new Map(tooltips.map((t) => [t.id, t.tooltip_html]));
-
-      itemsSold = itemsData
-        .map((i) => ({
-          itemId: i.item_id,
-          itemName: i.item_name,
-          quality: i.quality,
-          price: i.price,
-          tooltipHtml: tooltipMap.get(i.item_id) ?? null,
-        }))
-        .sort((a, b) => {
-          // Sort by quality descending, then by name alphabetically
-          if (a.quality !== b.quality) {
-            return b.quality - a.quality;
-          }
-          return a.itemName.localeCompare(b.itemName);
-        });
-    }
-  } catch {
-    /* empty */
-  }
-
-  // Query world bosses for Renewal Sages with world boss reset
-  let worldBosses: PopupWorldBoss[] = [];
-  if (isWorldBossReset) {
-    const bosses = await query<{ id: string; name: string; level: number }>(
-      `SELECT id, name, level FROM monsters WHERE is_world_boss = 1 ORDER BY level, name`,
-    );
-    worldBosses = bosses;
-  }
-
+  const quests = await query<{
+    id: string;
+    name: string;
+    levelRecommended: number;
+    role: "offer" | "complete";
+  }>(
+    `SELECT q.id,q.name,q.level_recommended levelRecommended,m.role FROM npc_quest_memberships m JOIN quests q ON q.id=m.quest_id WHERE m.npc_id=? ORDER BY m.role,m.ordinal`,
+    [npcId],
+  );
+  const skills = await query<{ id: string; name: string; index: number }>(
+    `SELECT s.id,s.name,ns.skill_index 'index' FROM npc_skills ns JOIN skills s ON s.id=ns.skill_id WHERE ns.npc_id=? ORDER BY ns.skill_index`,
+    [npcId],
+  );
   const subZones = await query<{ name: string }>(
-    `SELECT DISTINCT zt.name
-     FROM npc_spawns ns
-     JOIN zone_triggers zt ON zt.id = ns.sub_zone_id
-     WHERE ns.npc_id = ?
-     ORDER BY zt.name`,
+    `SELECT DISTINCT zt.name FROM npc_spawns ns JOIN zone_triggers zt ON zt.id=ns.sub_zone_id WHERE ns.npc_id=? ORDER BY zt.name`,
     [npcId],
   );
-
   return {
+    ...(await presentation(
+      model,
+      projectProviderMethods(model, { kind: "npcs", id: npcId }),
+    )),
     quests,
-    itemsSold,
-    worldBosses,
-    subZones: subZones.map((zone) => zone.name),
-    visualAsset: npc.visual_public_path
+    skills,
+    worldBosses: isWorldBossReset
+      ? await query<PopupWorldBoss>(
+          `SELECT id,name,level FROM monsters WHERE is_world_boss=1 ORDER BY level,name`,
+        )
+      : [],
+    subZones: subZones.map((z) => z.name),
+    visualAsset: visual
       ? {
-          publicPath: npc.visual_public_path,
-          width: npc.visual_width ?? 0,
-          height: npc.visual_height ?? 0,
-          sourceType: npc.visual_source_type ?? "",
+          publicPath: visual.public_path,
+          width: visual.width,
+          height: visual.height,
+          sourceType: visual.source_type,
         }
       : null,
   };
 }
-
-interface ChestDropRow {
-  item_id: string;
-  item_name: string;
-  quality: number;
-  drop_rate: number;
-  tooltip_html: string | null;
+export type ChestPopupDetails = PopupAcquisition;
+export type GatheringPopupDetails = PopupAcquisition;
+export type AltarPopupDetails = PopupAcquisition;
+export async function loadProviderPopupDetails(
+  provider: ProviderRef,
+): Promise<PopupAcquisition> {
+  const model = await loadBrowserAcquisition({
+    kind: "providers",
+    providers: [provider],
+  });
+  return presentation(model, projectProviderMethods(model, provider));
 }
-
-/**
- * Load chest drops for popup from item_sources_chest junction table.
- * This table contains all drops (both guaranteed and random).
- */
+export async function loadRequirementPopupDetails(
+  kind: RequirementEntityRef["kind"],
+  id: string,
+): Promise<PopupAcquisition> {
+  const model = await loadBrowserAcquisition({
+    kind: "requirements",
+    entities: [{ kind, id }],
+  });
+  return presentation(model, [], model.requirements.get(`${kind}:${id}`) ?? []);
+}
 export async function loadChestPopupDetails(
   chestId: string,
 ): Promise<ChestPopupDetails> {
-  const rows = await query<ChestDropRow>(
-    `
-    SELECT
-      isc.item_id,
-      i.name as item_name,
-      i.quality,
-      COALESCE(isc.actual_drop_chance, isc.drop_rate) as drop_rate,
-      i.tooltip_html
-    FROM item_sources_chest isc
-    JOIN items i ON i.id = isc.item_id
-    WHERE isc.chest_id = ?
-    ORDER BY drop_rate DESC, i.name ASC
-    `,
-    [chestId],
-  );
-
-  return {
-    drops: rows.map((r) => ({
-      itemId: r.item_id,
-      itemName: r.item_name,
-      quality: r.quality,
-      dropRate: r.drop_rate,
-      tooltipHtml: r.tooltip_html,
-    })),
-  };
+  return loadProviderPopupDetails({ kind: "chests", id: chestId });
 }
-
-interface GatheringDropRow {
-  item_id: string;
-  item_name: string;
-  quality: number;
-  drop_rate: number;
-  drop_rate_max: number | null;
-  amount_min: number;
-  amount_max: number;
-  tooltip_html: string | null;
-}
-
-/**
- * Load gathering resource drops for popup.
- * Includes the primary (guaranteed) drop and secondary random drops.
- * For secondary drops, uses actual_drop_chance = (1/N) * drop_rate.
- * For radiant sparks, radiant aether drop is 5-25% based on skill, not guaranteed.
- */
-// Source: server-scripts/GatherItem.cs:446-451
 export async function loadGatheringPopupDetails(
-  resourceId: string,
+  resourceSpawnId: string,
 ): Promise<GatheringPopupDetails> {
-  const rows = await query<GatheringDropRow>(
-    `
-    -- Primary drop from gathering_resources
-    -- Source: server-scripts/GatherItem.cs:446-451
-    -- For radiant sparks, radiant aether is 5-25% based on skill
-    -- For plants/minerals, it's guaranteed (100%)
-    SELECT
-      gr.item_reward_id as item_id,
-      i.name as item_name,
-      i.quality,
-      CASE WHEN gr.is_radiant_spark = 1 THEN 0.05 ELSE 1.0 END as drop_rate,
-      CASE WHEN gr.is_radiant_spark = 1 THEN 0.25 ELSE NULL END as drop_rate_max,
-      -- Source: server-scripts/GatherItem.cs:446-451
-      1 as amount_min,
-      CASE WHEN gr.is_radiant_spark = 1 THEN 1 ELSE gr.item_reward_amount END as amount_max,
-      i.tooltip_html
-    FROM gathering_resources gr
-    JOIN items i ON i.id = gr.item_reward_id
-    WHERE gr.id = ? AND gr.item_reward_id IS NOT NULL
-
-    UNION ALL
-
-    -- Secondary drops retain configured fishing probabilities for per-cast calculations.
-    SELECT
-      isg.item_id,
-      i.name as item_name,
-      i.quality,
-      -- Source: server-scripts/GatherItem.cs:OnInteractFishServer
-      CASE WHEN gr.is_fishing_spot = 1 THEN isg.drop_rate ELSE COALESCE(isg.actual_drop_chance, isg.drop_rate) END as drop_rate,
-      NULL as drop_rate_max,
-      -- Source: server-scripts/GatherItem.cs:549-552
-      1 as amount_min,
-      1 as amount_max,
-      i.tooltip_html
-    FROM item_sources_gather isg
-    JOIN items i ON i.id = isg.item_id
-    JOIN gathering_resources gr ON gr.id = isg.resource_id
-    WHERE isg.resource_id = ?
-      AND (gr.item_reward_id IS NULL OR isg.item_id != gr.item_reward_id)
-
-    ORDER BY drop_rate DESC
-  `,
-    [resourceId, resourceId],
-  );
-
-  const [resourceInfo] = await query<{
-    is_fishing_spot: number;
-    level: number;
-    required_rod_quality: number;
-  }>(
-    `
-    SELECT gr.is_fishing_spot AS is_fishing_spot, gr.level AS level,
-           COALESCE(rod.quality, 0) AS required_rod_quality
-    FROM gathering_resources gr
-    LEFT JOIN items rod ON rod.id = gr.tool_required_id
-    WHERE gr.id = ?
-  `,
-    [resourceId],
-  );
-
-  if (resourceInfo?.is_fishing_spot) {
-    const fallbackFish = await query<{
-      item_id: string;
-      item_name: string;
-      quality: number;
-      tooltip_html: string | null;
-    }>(
-      `
-      SELECT
-        f.item_id,
-        i.name as item_name,
-        i.quality,
-        i.tooltip_html
-      FROM fish f
-      JOIN items i ON i.id = f.item_id
-      WHERE f.is_trash = 0
-      ORDER BY i.quality, i.name
-    `,
-    );
-    const fishPoolsByQuality: Record<
-      number,
-      Array<{
-        itemId: string;
-        itemName: string;
-        quality: number;
-        tooltipHtml: string | null;
-      }>
-    > = {};
-    for (const fish of fallbackFish) {
-      const pool = fishPoolsByQuality[fish.quality] ?? [];
-      pool.push({
-        itemId: fish.item_id,
-        itemName: fish.item_name,
-        quality: fish.quality,
-        tooltipHtml: fish.tooltip_html,
-      });
-      fishPoolsByQuality[fish.quality] = pool;
-    }
-
-    const spotDrops = rows.map((r) => ({
-      itemId: r.item_id,
-      itemName: r.item_name,
-      quality: r.quality,
-      tooltipHtml: r.tooltip_html,
-      probability: r.drop_rate,
-    }));
-    const bestRodQuality = await queryScalar<number>(
-      FISHING_RANGE_QUERIES.bestRodQuality,
-    );
-    const outcomeRows = fishOutcomeRangesForSpot({
-      spotDrops,
-      fishPoolsByQuality,
-      spotTier: resourceInfo.level,
-      requiredRodQuality: resourceInfo.required_rod_quality,
-      bestRodQuality: bestRodQuality ?? 0,
-    });
-    return {
-      drops: [],
-      fishingOutcomes: outcomeRows.map((row) => {
-        if ("itemId" in row) {
-          return {
-            kind: row.kind,
-            label: row.itemName,
-            itemId: row.itemId,
-            itemName: row.itemName,
-            quality: row.quality,
-            dropRateMin: row.chancePerCastMin,
-            dropRateMax: row.chancePerCastMax,
-            tooltipHtml: row.tooltipHtml,
-          };
-        }
-        return {
-          kind: row.kind,
-          label: row.label,
-          itemId: null,
-          itemName: null,
-          quality: null,
-          dropRateMin: row.chancePerCastMin,
-          dropRateMax: row.chancePerCastMax,
-          tooltipHtml: null,
-        };
-      }),
-    };
-  }
-  return {
-    drops: rows.map((r) => ({
-      itemId: r.item_id,
-      itemName: r.item_name,
-      quality: r.quality,
-      dropRate: r.drop_rate,
-      dropRateMax: r.drop_rate_max ?? undefined,
-      amountMin: r.amount_min,
-      amountMax: r.amount_max,
-      tooltipHtml: r.tooltip_html,
-    })),
-  };
+  return loadProviderPopupDetails({
+    kind: "resource_spawns",
+    id: resourceSpawnId,
+  });
 }
-
-/**
- * Altar info with name (for monster popup altar links)
- */
+export async function loadAltarPopupDetails(
+  altarId: string,
+): Promise<AltarPopupDetails> {
+  return loadProviderPopupDetails({ kind: "altars", id: altarId });
+}
 export interface AltarBasicInfo {
   id: string;
   name: string;
   zoneId: string;
   zoneName: string;
 }
-
-/**
- * Load basic altar info (id, name, zone)
- */
 export async function loadAltarBasicInfo(
   altarId: string,
 ): Promise<AltarBasicInfo | null> {
-  const [altar] = await query<{
-    id: string;
-    name: string;
-    zone_id: string;
-    zone_name: string;
-  }>(
-    `SELECT a.id, a.name, a.zone_id, z.name as zone_name FROM altars a JOIN zones z ON z.id = a.zone_id WHERE a.id = ?`,
+  const [altar] = await query<AltarBasicInfo>(
+    `SELECT a.id,a.name,a.zone_id zoneId,z.name zoneName FROM altars a LEFT JOIN zones z ON z.id=a.zone_id WHERE a.id=?`,
     [altarId],
   );
-  return altar
-    ? {
-        id: altar.id,
-        name: altar.name,
-        zoneId: altar.zone_id,
-        zoneName: altar.zone_name,
-      }
-    : null;
+  return altar ?? null;
 }
-
-/**
- * Load altar rewards for popup with level scaling info and drop rates
- */
-export async function loadAltarPopupDetails(
-  altarId: string,
-): Promise<AltarPopupDetails> {
-  const [altar] = await query<
-    AltarThresholds & {
-      reward_common_id: string | null;
-      reward_common_name: string | null;
-      reward_magic_id: string | null;
-      reward_magic_name: string | null;
-      reward_epic_id: string | null;
-      reward_epic_name: string | null;
-      reward_legendary_id: string | null;
-      reward_legendary_name: string | null;
-      waves: string | null;
-      has_fatecharm: number;
-    }
-  >(
-    `
-    SELECT
-      reward_common_id, reward_common_name,
-      reward_magic_id, reward_magic_name,
-      reward_epic_id, reward_epic_name,
-      reward_legendary_id, reward_legendary_name,
-      magic_reward_threshold, epic_reward_threshold, legendary_reward_threshold,
-      waves,
-      EXISTS (
-        SELECT 1 FROM zones z
-        JOIN items charm ON charm.luck_token_zone_id = z.id AND charm.luck_token_bonus > 0
-        WHERE z.id = a.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
-      ) AS has_fatecharm
-    FROM altars a
-    WHERE a.id = ?
-  `,
-    [altarId],
-  );
-
-  if (!altar) {
-    return { rewards: [], bossDrops: [], finalMonsterIds: [] };
-  }
-
-  const maxLevel = await queryScalar<number>(
-    "SELECT max_level FROM progression_rules WHERE id = 1",
-  );
-  if (typeof maxLevel !== "number")
-    throw new Error("Missing progression_rules.max_level");
-
-  // Collect altar reward item IDs to exclude from boss drops
-  const altarRewardIds = new Set<string>(
-    [
-      altar.reward_common_id,
-      altar.reward_magic_id,
-      altar.reward_epic_id,
-      altar.reward_legendary_id,
-    ].filter((id): id is string => id !== null),
-  );
-
-  // Extract boss monster ID from final wave and get drop rates
-  const bossMonsterDrops: Map<string, number> = new Map();
-  const bossDrops: PopupAltarBossDrop[] = [];
-  let bossIds: string[] = [];
-
-  if (altar.waves) {
-    const waves = JSON.parse(altar.waves) as Array<{
-      monsters: Array<{ monster_id: string }>;
-    }>;
-    const finalWave = waves[waves.length - 1];
-    bossIds = [
-      ...new Set(
-        finalWave?.monsters.map((monster) => monster.monster_id) ?? [],
-      ),
-    ];
-    for (const monsterId of bossIds) {
-      const [monster] = await query<{ name: string; level: number }>(
-        "SELECT name, level FROM monsters WHERE id = ? AND (is_boss = 1 OR is_elite = 1)",
-        [monsterId],
-      );
-      if (!monster) continue;
-      const details = await loadMonsterPopupDetails(
-        monsterId,
-        monster.level,
-        null,
-        true,
-      );
-      const drops = details.drops
-        .filter((drop) => drop.isBestiary)
-        .map((drop) =>
-          altar.has_fatecharm
-            ? drop
-            : { ...drop, fatecharmDropRate: undefined },
-        );
-      for (const drop of drops) {
-        const existing = bossMonsterDrops.get(drop.itemId);
-        if (existing === undefined || drop.dropRate > existing) {
-          bossMonsterDrops.set(drop.itemId, drop.dropRate);
-        }
-      }
-      if (drops.length > 0) {
-        bossDrops.push({ monsterId, monsterName: monster.name, drops });
-      }
-    }
-  }
-
-  // Get drop rates for altar reward items from boss drops (not bestiary-restricted)
-  if (bossIds.length > 0 && altarRewardIds.size > 0) {
-    const rewardIdList = [...altarRewardIds];
-    for (const monsterId of bossIds) {
-      const rewardDrops = await query<{ item_id: string; rate: number }>(
-        `
-        SELECT
-          json_extract(d.value, '$.item_id') as item_id,
-          json_extract(d.value, '$.rate') as rate
-        FROM monsters m, json_each(m.drops) d
-        WHERE m.id = ?
-          AND json_extract(d.value, '$.item_id') IN (${rewardIdList.map(() => "?").join(",")})
-        `,
-        [monsterId, ...rewardIdList],
-      );
-      for (const drop of rewardDrops) {
-        const existing = bossMonsterDrops.get(drop.item_id);
-        if (!existing || drop.rate > existing) {
-          bossMonsterDrops.set(drop.item_id, drop.rate);
-        }
-      }
-    }
-  }
-
-  const rewards: PopupAltarReward[] = [];
-
-  // Add rewards in order with level thresholds
-  const tiers: Array<{
-    tier: "common" | "magic" | "epic" | "legendary";
-    idKey: keyof typeof altar;
-    nameKey: keyof typeof altar;
-  }> = [
-    {
-      tier: "common",
-      idKey: "reward_common_id",
-      nameKey: "reward_common_name",
-    },
-    {
-      tier: "magic",
-      idKey: "reward_magic_id",
-      nameKey: "reward_magic_name",
-    },
-    {
-      tier: "epic",
-      idKey: "reward_epic_id",
-      nameKey: "reward_epic_name",
-    },
-    {
-      tier: "legendary",
-      idKey: "reward_legendary_id",
-      nameKey: "reward_legendary_name",
-    },
-  ];
-
-  for (const { tier, idKey, nameKey } of tiers) {
-    const itemId = altar[idKey];
-    const itemName = altar[nameKey];
-    if (itemId && itemName) {
-      // Get item quality and tooltip
-      const [item] = await query<{
-        quality: number;
-        tooltip_html: string | null;
-      }>(`SELECT quality, tooltip_html FROM items WHERE id = ?`, [itemId]);
-      // Get drop rate from boss monster drops
-      const dropRate = bossMonsterDrops.get(itemId as string) ?? null;
-      rewards.push({
-        tier,
-        magic_reward_threshold: altar.magic_reward_threshold,
-        epic_reward_threshold: altar.epic_reward_threshold,
-        legendary_reward_threshold: altar.legendary_reward_threshold,
-        maxLevel,
-        itemId: itemId as string,
-        itemName: itemName as string,
-        quality: item?.quality ?? 0,
-        dropRate,
-        tooltipHtml: item?.tooltip_html ?? null,
-      });
-    }
-  }
-
-  return { rewards, bossDrops, finalMonsterIds: bossIds };
-}
-
-/**
- * Virtual monster popup details (for altar-only monsters)
- */
-export interface VirtualMonsterPopupDetails {
-  id: string;
-  name: string;
-  level: number;
-  isBoss: boolean;
-  isElite: boolean;
-  altars: Array<{
-    id: string;
-    name: string;
-    zoneName: string;
-  }>;
-  drops: PopupDropItem[];
-}
-
-interface VirtualMonsterRow {
-  id: string;
-  name: string;
-  level: number;
-  is_boss: number;
-  is_elite: number;
-}
-
-interface VirtualMonsterAltarRow {
-  altar_id: string;
-  altar_name: string;
-  zone_name: string;
-}
-
-/**
- * Load details for an altar-only monster (virtual entity).
- * These monsters don't have regular spawns - they only appear in altar events.
- */
-export async function loadVirtualMonsterPopupDetails(
-  monsterId: string,
-): Promise<VirtualMonsterPopupDetails | null> {
-  // Get basic monster info
-  const [monster] = await query<VirtualMonsterRow>(
-    `SELECT id, name, level, is_boss, is_elite FROM monsters WHERE id = ?`,
-    [monsterId],
-  );
-
-  if (!monster) {
-    return null;
-  }
-
-  // Get altars that spawn this monster (from altar spawns)
-  const altars = await query<VirtualMonsterAltarRow>(
-    `
-    SELECT DISTINCT
-      a.id as altar_id,
-      a.name as altar_name,
-      z.name as zone_name
-    FROM monster_spawns ms
-    JOIN altars a ON a.id = ms.source_altar_id
-    JOIN zones z ON z.id = a.zone_id
-    WHERE ms.monster_id = ? AND ms.spawn_type = 'altar'
-    ORDER BY z.name, a.name
-    `,
-    [monsterId],
-  );
-
-  // Get all drops (bestiary items ordered first)
-  const dropsResult = await loadMonsterPopupDetails(
-    monsterId,
-    monster.level,
-    null,
-  );
-
-  return {
-    id: monster.id,
-    name: monster.name,
-    level: monster.level,
-    isBoss: Boolean(monster.is_boss),
-    isElite: Boolean(monster.is_elite),
-    altars: altars.map((a) => ({
-      id: a.altar_id,
-      name: a.altar_name,
-      zoneName: a.zone_name,
-    })),
-    drops: dropsResult.drops,
-  };
-}
-
-// ============================================================================
-// Item Popup (virtual entity)
-// ============================================================================
-
-/**
- * Monster that drops an item
- */
-export interface ItemPopupDropper {
-  monsterId: string;
-  monsterName: string;
-  level: number;
-  isBoss: boolean;
-  isFabled: boolean;
-  isElite: boolean;
-  dropRate: number;
-  fatecharmDropRate?: number;
-  isDistributionRoll?: boolean;
-  requiresQuest?: boolean;
-  zoneName: string | null;
-}
-
-/**
- * Altar that yields an item (via tier rewards or boss drops)
- */
-export interface ItemPopupAltarSource extends AltarThresholds {
-  altarId: string;
-  altarName: string;
-  altarType: string;
-  /** Tier for tier rewards, null for boss bestiary drops */
-  tier: "common" | "magic" | "epic" | "legendary" | null;
-  dropRate: number;
-  maxLevel: number;
-  monsterName?: string;
-  isDistributionRoll?: boolean;
-  requiresQuest?: boolean;
-  fatecharmDropRate?: number;
-}
-
-/**
- * NPC vendor that sells an item
- */
-export interface ItemPopupVendor {
-  npcId: string;
-  npcName: string;
-  price: number;
-  currencyItemId: string | null;
-  currencyItemName: string | null;
-}
-
-/**
- * Quest that rewards an item
- */
-export interface ItemPopupQuestReward {
-  questId: string;
-  questName: string;
-  levelRecommended: number;
-}
-
-/**
- * Gathering resource that drops an item
- */
-export interface ItemPopupGatherSource {
-  resourceId: string;
-  resourceName: string;
-  resourceType: "resource" | "chest";
-  rate: number;
-  rateNote?: string;
-  isFishingSpot: boolean;
-  fishingSourceRole: "primary" | "fallback" | "trash" | null;
-  fishingChanceMin: number | null;
-  fishingChanceMax: number | null;
-  virtualLocationCount: number;
-}
-
-/**
- * Chest that contains an item
- */
-export interface ItemPopupChestSource {
-  chestId: string;
-  chestName: string;
-  rate: number;
-}
-
-/**
- * Crafting recipe that produces an item
- */
-export interface ItemPopupCraftSource {
-  recipeId: string;
-  resultAmount: number;
-  materials: Array<{ itemId: string; itemName: string; amount: number }>;
-}
-
-/**
- * Merge source (items that combine to create this item)
- */
-export interface ItemPopupMergeSource {
-  itemId: string;
-  itemName: string;
-}
-
-/**
- * Treasure map that leads to this item as a reward
- */
-export interface ItemPopupTreasureMapSource {
-  mapItemId: string;
-  mapItemName: string;
-  mapItemTooltipHtml: string | null;
-  zoneName: string;
-}
-
-/**
- * Treasure destination info (for items that ARE treasure maps)
- */
-export interface ItemPopupTreasureDestination {
-  treasureLocationId: string;
-  zoneId: string;
-  zoneName: string;
-  rewardItemId: string | null;
-  rewardItemName: string | null;
-  rewardItemTooltipHtml: string | null;
-}
-
-/**
- * Item popup details (virtual entity - no map position)
- */
-export interface ItemPopupDetails {
+export interface ItemPopupDetails extends PopupAcquisition {
   id: string;
   name: string;
   quality: number;
-  tooltipHtml: string | null;
-  visualAsset: Pick<
-    EntityVisualAsset,
-    "public_path" | "width" | "height"
-  > | null;
-  droppers: ItemPopupDropper[];
-  altarSources: ItemPopupAltarSource[];
-  vendors: ItemPopupVendor[];
-  questRewards: ItemPopupQuestReward[];
-  gatheringSources: ItemPopupGatherSource[];
-  chestSources: ItemPopupChestSource[];
-  craftingSources: ItemPopupCraftSource[];
-  mergeSources: ItemPopupMergeSource[];
-  /** Treasure maps that lead to this item as a reward */
-  treasureMapSources: ItemPopupTreasureMapSource[];
-  /** Treasure location info for items that ARE treasure maps */
-  treasureDestination: ItemPopupTreasureDestination | null;
+  sources: ItemSourceView;
+  usages: readonly ItemUseView[];
+  locations: readonly DirectLocation[];
 }
-
-interface ItemPopupRow {
-  id: string;
-  name: string;
-  quality: number;
-  is_quest_item: number;
-  tooltip_html: string | null;
-  public_path: string | null;
-  width: number | null;
-  height: number | null;
-}
-
-interface ItemDropperRow {
-  monster_id: string;
-  monster_name: string;
-  level: number;
-  is_boss: number;
-  is_fabled: number;
-  is_elite: number;
-  drop_rate: number;
-  loot_inputs: string;
-  has_fatecharm: number;
-  zone_name: string | null;
-}
-
-interface ItemPopupGatherRow {
-  resourceId: string;
-  resourceName: string;
-  resourceType: "resource" | "chest";
-  rate: number;
-  isFishingSpot: number;
-  fishingSourceRole: "primary" | "fallback" | "trash" | null;
-  configuredDropRate: number;
-  virtualLocationCount: number;
-}
-
-// Browser-side (sql.js) loader for the shared fishing range inputs.
-async function loadFishingRangeData(): Promise<FishingRangeData> {
-  const [spots, dropRates, bestRodQuality, trashCount, fishQualities] =
-    await Promise.all([
-      query<FishingSpotRow>(FISHING_RANGE_QUERIES.spots),
-      query<FishingDropRateRow>(FISHING_RANGE_QUERIES.dropRates),
-      queryScalar<number>(FISHING_RANGE_QUERIES.bestRodQuality),
-      queryScalar<number>(FISHING_RANGE_QUERIES.trashCount),
-      query<{ quality: number }>(FISHING_RANGE_QUERIES.fishQualities),
-    ]);
-  return assembleFishingRangeData({
-    spots,
-    dropRates,
-    bestRodQuality: bestRodQuality ?? 0,
-    trashCount: trashCount ?? 0,
-    fishQualities: fishQualities.map((row) => row.quality),
-  });
-}
-
-/**
- * Load item details for popup (virtual entity).
- * Shows item info and all obtainability sources.
- */
 export async function loadItemPopupDetails(
   itemId: string,
 ): Promise<ItemPopupDetails | null> {
-  const [item] = await query<ItemPopupRow>(
-    `SELECT i.id, i.name, i.quality, i.tooltip_html, i.is_quest_item,
-            va.public_path, va.width, va.height
-     FROM items i
-     LEFT JOIN visual_assets va
-       ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
-     WHERE i.id = ?`,
-    [itemId],
-  );
-
-  if (!item) {
-    return null;
-  }
-  let visualAsset: ItemPopupDetails["visualAsset"] = null;
-  if (item.public_path !== null) {
-    if (item.width === null || item.height === null) {
-      throw new Error(`Missing icon dimensions for item ${item.id}`);
-    }
-    visualAsset = {
-      public_path: item.public_path,
-      width: item.width,
-      height: item.height,
-    };
-  }
-
-  // Get monsters that drop this item (excluding altar-only monsters)
-  // Altar-only monsters are shown via altarSources instead
-  const droppers = await query<ItemDropperRow>(
-    `
-    SELECT DISTINCT
-      m.id as monster_id,
-      m.name as monster_name,
-      COALESCE(MIN(ms.level), m.level) as level,
-      m.is_boss,
-      m.is_fabled,
-      m.is_elite,
-      ism.drop_rate,
-      m.loot_inputs,
-      EXISTS (
-        SELECT 1 FROM monster_spawns fs
-        JOIN zones fz ON fz.id = fs.zone_id AND fz.is_dungeon = 1 AND fz.zone_id > 0
-        JOIN items charm ON charm.luck_token_zone_id = fs.zone_id AND charm.luck_token_bonus > 0
-        WHERE fs.monster_id = m.id
-      ) as has_fatecharm,
-      z.name as zone_name
-    FROM item_sources_monster ism
-    JOIN monsters m ON m.id = ism.monster_id
-    LEFT JOIN monster_spawns ms ON ms.monster_id = m.id
-      AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
-    LEFT JOIN zones z ON z.id = ms.zone_id
-    WHERE ism.item_id = ?
-      -- Exclude altar-only monsters (those with no regular/summon/placeholder spawns)
-      AND EXISTS (
-        SELECT 1 FROM monster_spawns ms2
-        WHERE ms2.monster_id = m.id
-          AND ms2.spawn_type IN ('regular', 'summon', 'placeholder')
-      )
-    GROUP BY m.id
-    ORDER BY drop_rate DESC, m.level ASC
-    `,
-    [itemId],
-  );
-
-  // Get altars that yield this item (via tier rewards)
-  interface AltarSourceRow extends AltarThresholds {
-    altar_id: string;
-    altar_name: string;
-    altar_type: string;
-    tier: "common" | "magic" | "epic" | "legendary";
-    drop_rate: number | null;
-  }
-  const altarSourceRows = await query<AltarSourceRow>(
-    `
-    SELECT
-      a.id as altar_id,
-      a.name as altar_name,
-      a.type as altar_type,
-      a.magic_reward_threshold, a.epic_reward_threshold, a.legendary_reward_threshold,
-      CASE
-        WHEN a.reward_common_id = ? THEN 'common'
-        WHEN a.reward_magic_id = ? THEN 'magic'
-        WHEN a.reward_epic_id = ? THEN 'epic'
-        WHEN a.reward_legendary_id = ? THEN 'legendary'
-      END as tier,
-      -- Get drop rate from altar boss monster drops (for display)
-      (
-        SELECT MAX(json_extract(d.value, '$.rate'))
-        FROM monster_spawns ms
-        JOIN monsters m ON m.id = ms.monster_id
-        JOIN json_each(m.drops) d ON json_extract(d.value, '$.item_id') = ?
-        WHERE ms.source_altar_id = a.id AND ms.spawn_type = 'altar'
-      ) as drop_rate
-    FROM altars a
-    WHERE a.reward_common_id = ?
-       OR a.reward_magic_id = ?
-       OR a.reward_epic_id = ?
-       OR a.reward_legendary_id = ?
-    ORDER BY a.min_level_required ASC
-    `,
-    [itemId, itemId, itemId, itemId, itemId, itemId, itemId, itemId, itemId],
-  );
-  const maxLevel = await queryScalar<number>(
-    "SELECT max_level FROM progression_rules WHERE id = 1",
-  );
-  if (typeof maxLevel !== "number")
-    throw new Error("Missing progression_rules.max_level");
-  const altarSources: ItemPopupAltarSource[] = altarSourceRows.map((r) => ({
-    altarId: r.altar_id,
-    altarName: r.altar_name,
-    altarType: r.altar_type,
-    tier: r.tier,
-    magic_reward_threshold: r.magic_reward_threshold,
-    epic_reward_threshold: r.epic_reward_threshold,
-    legendary_reward_threshold: r.legendary_reward_threshold,
-    maxLevel,
-    dropRate: r.drop_rate ?? 0,
-  }));
-  const finalWaveSources = await query<
-    Omit<AltarSourceRow, "tier"> & {
-      monster_name: string;
-      is_boss: number;
-      loot_inputs: string;
-      drop_rate: number;
-      has_fatecharm: number;
-    }
-  >(
-    `SELECT DISTINCT a.id as altar_id, a.name as altar_name, a.type as altar_type,
-       a.magic_reward_threshold, a.epic_reward_threshold, a.legendary_reward_threshold,
-       m.name as monster_name, m.is_boss, m.loot_inputs, ism.drop_rate,
-       EXISTS (
-         SELECT 1 FROM zones z
-         JOIN items charm ON charm.luck_token_zone_id = z.id AND charm.luck_token_bonus > 0
-         WHERE z.id = a.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
-       ) as has_fatecharm
-     FROM altars a, json_each(a.waves) wave, json_each(wave.value, '$.monsters') member
-     JOIN monsters m ON m.id = json_extract(member.value, '$.monster_id')
-     JOIN item_sources_monster ism ON ism.monster_id = m.id AND ism.item_id = ?
-     WHERE CAST(wave.key AS INTEGER) = json_array_length(a.waves) - 1
-     ORDER BY a.min_level_required, a.id, m.name`,
-    [itemId],
-  );
-  for (const source of finalWaveSources) {
-    const chance = popupLootChance(
-      JSON.parse(source.loot_inputs) as BossLootDrop[],
-      itemId,
-      source.drop_rate,
-      Boolean(source.is_boss),
-      Boolean(source.has_fatecharm),
-      Boolean(item.is_quest_item),
-    );
-    altarSources.push({
-      altarId: source.altar_id,
-      altarName: source.altar_name,
-      altarType: source.altar_type,
-      tier: null,
-      magic_reward_threshold: source.magic_reward_threshold,
-      epic_reward_threshold: source.epic_reward_threshold,
-      legendary_reward_threshold: source.legendary_reward_threshold,
-      maxLevel,
-      monsterName: source.monster_name,
-      ...chance,
-    });
-  }
-
-  // Query vendors from junction table
-  const vendors = await query<ItemPopupVendor>(
-    `
-    SELECT
-      isv.npc_id as npcId,
-      n.name as npcName,
-      isv.price,
-      isv.currency_item_id as currencyItemId,
-      ci.name as currencyItemName
-    FROM item_sources_vendor isv
-    JOIN npcs n ON isv.npc_id = n.id
-    LEFT JOIN items ci ON isv.currency_item_id = ci.id
-    WHERE isv.item_id = ?
-    ORDER BY n.name ASC
-  `,
-    [itemId],
-  );
-
-  // Query quest rewards from junction table
-  const questRewards = await query<ItemPopupQuestReward>(
-    `
-    SELECT
-      isq.quest_id as questId,
-      q.name as questName,
-      q.level_recommended as levelRecommended
-    FROM item_sources_quest isq
-    JOIN quests q ON isq.quest_id = q.id
-    WHERE isq.item_id = ? AND isq.source_type = 'reward'
-    ORDER BY q.name ASC
-  `,
-    [itemId],
-  );
-
-  // Query gathering sources from junction table, then resolve per-cast fishing
-  // ranges through the shared helper.
-  const gatheringRows = await query<ItemPopupGatherRow>(
-    `
-    SELECT
-      isg.resource_id as resourceId,
-      gr.name as resourceName,
-      'resource' as resourceType,
-      COALESCE(isg.actual_drop_chance, isg.drop_rate) as rate,
-      COALESCE(gr.is_fishing_spot, 0) as isFishingSpot,
-      CASE WHEN COALESCE(gr.is_fishing_spot, 0) = 1 THEN 'primary' ELSE NULL END as fishingSourceRole,
-      isg.drop_rate as configuredDropRate,
-      (
-        SELECT COUNT(*)
-        FROM gathering_resource_spawns grs
-        WHERE grs.resource_id = gr.id
-          AND grs.position_x IS NOT NULL
-      ) as virtualLocationCount
-    FROM item_sources_gather isg
-    JOIN gathering_resources gr ON isg.resource_id = gr.id
-    WHERE isg.item_id = ?
-
-    UNION ALL
-
-    SELECT
-      gr.id as resourceId,
-      gr.name as resourceName,
-      'resource' as resourceType,
-      0 as rate,
-      1 as isFishingSpot,
-      CASE WHEN f.is_trash = 1 THEN 'trash' ELSE 'fallback' END as fishingSourceRole,
-      0 as configuredDropRate,
-      (
-        SELECT COUNT(*)
-        FROM gathering_resource_spawns grs
-        WHERE grs.resource_id = gr.id
-          AND grs.position_x IS NOT NULL
-      ) as virtualLocationCount
-    FROM fish f
-    JOIN items i ON i.id = f.item_id
-    JOIN gathering_resources gr ON gr.is_fishing_spot = 1
-    WHERE f.item_id = ?
-      AND (
-        f.is_trash = 1
-        OR gr.level > COALESCE(i.quality, -1)
-      )
-      AND NOT EXISTS (
-        SELECT 1
-        FROM item_sources_gather existing
-        WHERE existing.item_id = f.item_id
-          AND existing.resource_id = gr.id
-      )
-    ORDER BY gr.name ASC
-  `,
-    [itemId, itemId],
-  );
-
-  const gatheringRangeData = gatheringRows.some((row) => row.isFishingSpot)
-    ? await loadFishingRangeData()
-    : null;
-  const gatheringSources: ItemPopupGatherSource[] = gatheringRows.map((row) => {
-    const bounds =
-      gatheringRangeData && row.isFishingSpot
-        ? resolveFishingSourceRange(gatheringRangeData, {
-            resourceId: row.resourceId,
-            role: row.fishingSourceRole,
-            configuredDropRate: row.configuredDropRate,
-          })
-        : null;
-    return {
-      resourceId: row.resourceId,
-      resourceName: row.resourceName,
-      resourceType: row.resourceType,
-      rate: row.rate,
-      isFishingSpot: Boolean(row.isFishingSpot),
-      fishingSourceRole: row.fishingSourceRole,
-      fishingChanceMin: bounds?.min ?? null,
-      fishingChanceMax: bounds?.max ?? null,
-      virtualLocationCount: row.virtualLocationCount,
-    };
+  const model = await loadBrowserAcquisition({
+    kind: "items",
+    itemIds: [itemId],
   });
-
-  // Query chest sources from junction table
-  const chestSources = await query<ItemPopupChestSource>(
-    `
-    SELECT
-      isc.chest_id as chestId,
-      CASE WHEN z.name IS NOT NULL THEN 'Chest (' || z.name || ')' ELSE 'Chest' END as chestName,
-      COALESCE(isc.actual_drop_chance, isc.drop_rate) as rate
-    FROM item_sources_chest isc
-    JOIN chests c ON isc.chest_id = c.id
-    LEFT JOIN zones z ON c.zone_id = z.id
-    WHERE isc.item_id = ?
-    ORDER BY z.name ASC, isc.chest_id ASC
-  `,
-    [itemId],
+  const item = model.entities.get("items")?.get(itemId);
+  if (!item) return null;
+  const canonical = projectItemSources(model, itemId);
+  const methods = canonical.methods.filter(mapMethodIsVisible);
+  const hints = methods.flatMap((method) =>
+    method.sourceLevelHint === null ? [] : [method.sourceLevelHint],
   );
-
-  const craftingRows = await query<{
-    recipeId: string;
-    resultAmount: number;
-    materialId: string | null;
-    materialName: string | null;
-    amount: number | null;
-  }>(
-    `SELECT isr.recipe_id AS recipeId, isr.result_amount AS resultAmount,
-            u.item_id AS materialId, i.name AS materialName, u.amount
-     FROM item_sources_recipe isr
-     LEFT JOIN item_usages_recipe u
-       ON u.recipe_id = isr.recipe_id AND u.recipe_type = isr.recipe_type
-     LEFT JOIN items i ON i.id = u.item_id
-     WHERE isr.item_id = ?
-     ORDER BY isr.recipe_id, i.name COLLATE BINARY, i.id, u.id`,
-    [itemId],
-  );
-  const craftingSources: ItemPopupCraftSource[] = [];
-  for (const row of craftingRows) {
-    let source = craftingSources[craftingSources.length - 1];
-    if (!source || source.recipeId !== row.recipeId) {
-      source = {
-        recipeId: row.recipeId,
-        resultAmount: row.resultAmount,
-        materials: [],
-      };
-      craftingSources.push(source);
-    }
-    if (
-      row.materialId !== null &&
-      row.materialName !== null &&
-      row.amount !== null
-    ) {
-      source.materials.push({
-        itemId: row.materialId,
-        itemName: row.materialName,
-        amount: row.amount,
-      });
-    }
-  }
-
-  // Query merge sources from junction table
-  const mergeSources = await query<ItemPopupMergeSource>(
-    `
-    SELECT
-      ism.component_item_id as itemId,
-      i.name as itemName
-    FROM item_sources_merge ism
-    JOIN items i ON ism.component_item_id = i.id
-    WHERE ism.item_id = ?
-    ORDER BY i.name ASC
-  `,
-    [itemId],
-  );
-
-  // Query treasure maps that lead to this item as a reward
-  const treasureMapSourceRows = await query<{
-    map_item_id: string;
-    map_item_name: string;
-    map_item_tooltip_html: string | null;
-    zone_name: string;
-  }>(
-    `
-    SELECT
-      tl.required_map_id as map_item_id,
-      m.name as map_item_name,
-      m.tooltip_html as map_item_tooltip_html,
-      z.name as zone_name
-    FROM treasure_locations tl
-    JOIN items m ON m.id = tl.required_map_id
-    JOIN zones z ON z.id = tl.zone_id
-    WHERE tl.reward_id = ?
-    ORDER BY z.name, m.name
-    `,
-    [itemId],
-  );
-  const treasureMapSources: ItemPopupTreasureMapSource[] =
-    treasureMapSourceRows.map((r) => ({
-      mapItemId: r.map_item_id,
-      mapItemName: r.map_item_name,
-      mapItemTooltipHtml: r.map_item_tooltip_html,
-      zoneName: r.zone_name,
-    }));
-
-  // Query treasure destination if this item IS a treasure map
-  const [treasureDestRow] = await query<{
-    treasure_location_id: string;
-    zone_id: string;
-    zone_name: string;
-    reward_item_id: string | null;
-    reward_item_name: string | null;
-    reward_item_tooltip_html: string | null;
-  }>(
-    `
-    SELECT
-      tl.id as treasure_location_id,
-      tl.zone_id,
-      z.name as zone_name,
-      tl.reward_id as reward_item_id,
-      r.name as reward_item_name,
-      r.tooltip_html as reward_item_tooltip_html
-    FROM treasure_locations tl
-    JOIN zones z ON z.id = tl.zone_id
-    LEFT JOIN items r ON r.id = tl.reward_id
-    WHERE tl.required_map_id = ?
-    `,
-    [itemId],
-  );
-  const treasureDestination: ItemPopupTreasureDestination | null =
-    treasureDestRow
-      ? {
-          treasureLocationId: treasureDestRow.treasure_location_id,
-          zoneId: treasureDestRow.zone_id,
-          zoneName: treasureDestRow.zone_name,
-          rewardItemId: treasureDestRow.reward_item_id,
-          rewardItemName: treasureDestRow.reward_item_name,
-          rewardItemTooltipHtml: treasureDestRow.reward_item_tooltip_html,
-        }
-      : null;
-
+  const sources: ItemSourceView = {
+    ...canonical,
+    methods,
+    hasKnownSource: methods.length > 0,
+    sourceLevelHint: hints.length ? Math.min(...hints) : null,
+    inspection: {
+      ...canonical.inspection,
+      offeredAssets:
+        canonical.inspection.offeredAssets.filter(mapMethodIsVisible),
+    },
+  };
   return {
+    ...(await presentation(
+      model,
+      sources.methods,
+      model.requirements.get(`item:${itemId}`) ?? [],
+    )),
     id: item.id,
-    name: item.name,
-    quality: item.quality,
-    tooltipHtml: item.tooltip_html,
-    visualAsset,
-    droppers: droppers.map((d) => ({
-      monsterId: d.monster_id,
-      monsterName: d.monster_name,
-      level: d.level,
-      isBoss: Boolean(d.is_boss),
-      isFabled: Boolean(d.is_fabled),
-      isElite: Boolean(d.is_elite),
-      ...popupLootChance(
-        JSON.parse(d.loot_inputs) as BossLootDrop[],
-        itemId,
-        d.drop_rate,
-        Boolean(d.is_boss),
-        Boolean(d.has_fatecharm),
-        Boolean(item.is_quest_item),
-      ),
-      zoneName: d.zone_name,
-    })),
-    altarSources,
-    vendors,
-    questRewards,
-    gatheringSources,
-    chestSources,
-    craftingSources,
-    mergeSources,
-    treasureMapSources,
-    treasureDestination,
+    name: String(item.name),
+    quality: Number(item.quality ?? 0),
+    sources,
+    usages: projectItemUsages(model, itemId).filter(
+      (use) => !use.method || mapMethodIsVisible(use.method),
+    ),
+    locations: itemMapLocations(model, itemId),
   };
 }
-
-// ============================================================================
-// Quest Popup (virtual entity)
-// ============================================================================
-
-/**
- * NPC associated with a quest
- */
 export interface QuestPopupNpc {
   npcId: string;
   npcName: string;
@@ -1770,30 +420,20 @@ export interface QuestPopupNpc {
   isGiver: boolean;
   isTurnIn: boolean;
 }
-
-/**
- * Quest popup details (virtual entity - no map position)
- */
-export interface QuestRewardItem {
-  itemId: string;
-  itemName: string;
-  quality: number;
-  classSpecific: string | null;
-  tooltipHtml: string | null;
-}
-
 export interface QuestObjective {
-  type: "kill" | "gather" | "have" | "deliver" | "equip" | "find" | "discover";
+  id: string;
+  kind: "item" | "monster" | "location" | "brew";
+  role: string;
   targetId: string | null;
   targetName: string;
-  amount: number;
-  quality?: number;
-  tooltipHtml?: string | null;
+  amount: number | null;
+  quality: number;
+  tooltipHtml: string | null;
   position?: [number, number];
-  zoneName?: string | null;
+  zoneName: string | null;
+  withheld: boolean;
 }
-
-export interface QuestPopupDetails {
+export interface QuestPopupDetails extends PopupAcquisition {
   id: string;
   name: string;
   levelRecommended: number;
@@ -1804,455 +444,173 @@ export interface QuestPopupDetails {
   isRepeatable: boolean;
   gold: number;
   exp: number;
-  rewardItems: QuestRewardItem[];
   objectives: QuestObjective[];
   npcs: QuestPopupNpc[];
 }
-
-interface QuestPopupRow {
-  id: string;
-  name: string;
-  level_recommended: number;
-  display_type: string;
-  is_main_quest: number;
-  is_epic_quest: number;
-  is_adventurer_quest: number;
-  is_repeatable: number;
-  rewards: string | null;
-  kill_target_1_id: string | null;
-  kill_target_1_name: string | null;
-  kill_amount_1: number;
-  kill_target_2_id: string | null;
-  kill_target_2_name: string | null;
-  kill_amount_2: number;
-  gather_item_1_id: string | null;
-  gather_item_1_name: string | null;
-  gather_item_1_quality: number | null;
-  gather_item_1_tooltip: string | null;
-  gather_amount_1: number;
-  gather_item_2_id: string | null;
-  gather_item_2_name: string | null;
-  gather_item_2_quality: number | null;
-  gather_item_2_tooltip: string | null;
-  gather_amount_2: number;
-  gather_item_3_id: string | null;
-  gather_item_3_name: string | null;
-  gather_item_3_quality: number | null;
-  gather_item_3_tooltip: string | null;
-  gather_amount_3: number;
-  gather_items: string | null;
-  required_items: string | null;
-  objectives: string | null;
-  equip_items: string | null;
-  remove_items_on_complete: number;
-  start_npc_id: string | null;
-  end_npc_id: string | null;
-  is_find_npc_quest: number;
-  end_npc_name: string | null;
-  discovered_location: string | null;
-  discovered_location_zone_name: string | null;
-  discovered_location_sub_zone_name: string | null;
-  discovered_location_position: string | null;
-}
-
-/**
- * Load quest details for popup (virtual entity).
- * Shows quest info and NPCs that give/accept it.
- */
 export async function loadQuestPopupDetails(
   questId: string,
 ): Promise<QuestPopupDetails | null> {
-  // Get quest info with objectives and rewards
-  const [quest] = await query<QuestPopupRow>(
-    `
-    SELECT
-      q.id, q.name, q.level_recommended, q.display_type,
-      q.is_main_quest, q.is_epic_quest, q.is_adventurer_quest, q.is_repeatable,
-      q.rewards,
-      q.kill_target_1_id, m1.name as kill_target_1_name, q.kill_amount_1,
-      q.kill_target_2_id, m2.name as kill_target_2_name, q.kill_amount_2,
-      q.gather_item_1_id, i1.name as gather_item_1_name, i1.quality as gather_item_1_quality, i1.tooltip_html as gather_item_1_tooltip, q.gather_amount_1,
-      q.gather_item_2_id, i2.name as gather_item_2_name, i2.quality as gather_item_2_quality, i2.tooltip_html as gather_item_2_tooltip, q.gather_amount_2,
-      q.gather_item_3_id, i3.name as gather_item_3_name, i3.quality as gather_item_3_quality, i3.tooltip_html as gather_item_3_tooltip, q.gather_amount_3,
-      q.gather_items, q.required_items, q.objectives, q.equip_items, q.remove_items_on_complete,
-      q.start_npc_id, q.end_npc_id,
-      q.is_find_npc_quest, end_npc.name as end_npc_name,
-      q.discovered_location, dlz.name as discovered_location_zone_name,
-      dlsz.name as discovered_location_sub_zone_name, q.discovered_location_position
-    FROM quests q
-    LEFT JOIN monsters m1 ON m1.id = q.kill_target_1_id
-    LEFT JOIN monsters m2 ON m2.id = q.kill_target_2_id
-    LEFT JOIN items i1 ON i1.id = q.gather_item_1_id
-    LEFT JOIN items i2 ON i2.id = q.gather_item_2_id
-    LEFT JOIN items i3 ON i3.id = q.gather_item_3_id
-    LEFT JOIN npcs end_npc ON end_npc.id = q.end_npc_id
-    LEFT JOIN zones dlz ON dlz.id = q.discovered_location_zone_id
-    LEFT JOIN zone_triggers dlsz ON dlsz.id = q.discovered_location_sub_zone_id
-    WHERE q.id = ?
-    `,
-    [questId],
-  );
-
-  if (!quest) {
-    return null;
-  }
-
-  // Parse rewards JSON
-  let gold = 0;
-  let exp = 0;
-  let rewardItems: QuestRewardItem[] = [];
-  if (quest.rewards) {
-    try {
-      const rewards = JSON.parse(quest.rewards) as {
-        gold?: number;
-        exp?: number;
-        items?: Array<{ item_id: string; class_specific: string | null }>;
-      };
-      gold = rewards.gold ?? 0;
-      exp = rewards.exp ?? 0;
-      if (rewards.items && rewards.items.length > 0) {
-        // Fetch item names and qualities
-        const itemIds = rewards.items.map((i) => i.item_id);
-        const itemRows = await query<{
-          id: string;
-          name: string;
-          quality: number;
-          tooltip_html: string | null;
-        }>(
-          `SELECT id, name, quality, tooltip_html FROM items WHERE id IN (${itemIds.map(() => "?").join(",")})`,
-          itemIds,
-        );
-        const itemMap = new Map(itemRows.map((i) => [i.id, i]));
-        rewardItems = rewards.items.map((ri) => {
-          const item = itemMap.get(ri.item_id);
-          return {
-            itemId: ri.item_id,
-            itemName: item?.name ?? ri.item_id,
-            quality: item?.quality ?? 0,
-            classSpecific: ri.class_specific,
-            tooltipHtml: item?.tooltip_html ?? null,
-          };
-        });
-      }
-    } catch {
-      // Invalid JSON
-    }
-  }
-
-  // Build objectives array
-  const objectives: QuestObjective[] = [];
-
-  // Kill objectives from legacy columns
-  if (quest.kill_target_1_id && quest.kill_amount_1 > 0) {
-    objectives.push({
-      type: "kill",
-      targetId: quest.kill_target_1_id,
-      targetName: quest.kill_target_1_name ?? quest.kill_target_1_id,
-      amount: quest.kill_amount_1,
-    });
-  }
-  if (quest.kill_target_2_id && quest.kill_amount_2 > 0) {
-    objectives.push({
-      type: "kill",
-      targetId: quest.kill_target_2_id,
-      targetName: quest.kill_target_2_name ?? quest.kill_target_2_id,
-      amount: quest.kill_amount_2,
-    });
-  }
-
-  // Gather objectives from legacy columns
-  if (quest.gather_item_1_id && quest.gather_amount_1 > 0) {
-    objectives.push({
-      type: "gather",
-      targetId: quest.gather_item_1_id,
-      targetName: quest.gather_item_1_name ?? quest.gather_item_1_id,
-      amount: quest.gather_amount_1,
-      quality: quest.gather_item_1_quality ?? undefined,
-      tooltipHtml: quest.gather_item_1_tooltip,
-    });
-  }
-  if (quest.gather_item_2_id && quest.gather_amount_2 > 0) {
-    objectives.push({
-      type: "gather",
-      targetId: quest.gather_item_2_id,
-      targetName: quest.gather_item_2_name ?? quest.gather_item_2_id,
-      amount: quest.gather_amount_2,
-      quality: quest.gather_item_2_quality ?? undefined,
-      tooltipHtml: quest.gather_item_2_tooltip,
-    });
-  }
-  if (quest.gather_item_3_id && quest.gather_amount_3 > 0) {
-    objectives.push({
-      type: "gather",
-      targetId: quest.gather_item_3_id,
-      targetName: quest.gather_item_3_name ?? quest.gather_item_3_id,
-      amount: quest.gather_amount_3,
-      quality: quest.gather_item_3_quality ?? undefined,
-      tooltipHtml: quest.gather_item_3_tooltip,
-    });
-  }
-
-  // Source: server-scripts/GatherInventoryQuest.cs:IsFulfilled
-  // Zero-amount required items neither gate completion nor consume an item.
-  if (quest.gather_items || quest.required_items) {
-    try {
-      const gatherItems = (
-        [
-          ...JSON.parse(quest.gather_items ?? "[]"),
-          ...JSON.parse(quest.required_items ?? "[]"),
-        ] as Array<{ item_id: string; amount: number }>
-      ).filter((item) => item.amount > 0);
-      if (gatherItems.length > 0) {
-        // Fetch item details
-        const itemIds = gatherItems.map((g) => g.item_id);
-        const itemRows = await query<{
-          id: string;
-          name: string;
-          quality: number;
-          tooltip_html: string | null;
-        }>(
-          `SELECT id, name, quality, tooltip_html FROM items WHERE id IN (${itemIds.map(() => "?").join(",")})`,
-          itemIds,
-        );
-        const itemMap = new Map(
-          itemRows.map((i) => [
-            i.id,
-            { name: i.name, quality: i.quality, tooltipHtml: i.tooltip_html },
-          ]),
-        );
-
-        // Use "deliver" if items are removed on complete, "have" otherwise
-        const objectiveType = quest.remove_items_on_complete
-          ? "deliver"
-          : "have";
-
-        for (const gi of gatherItems) {
-          // Skip if already added from gather columns
-          if (
-            objectives.some(
-              (o) => o.type === "gather" && o.targetId === gi.item_id,
-            )
-          ) {
-            continue;
-          }
-          const item = itemMap.get(gi.item_id);
-          objectives.push({
-            type: objectiveType,
-            targetId: gi.item_id,
-            targetName: item?.name ?? gi.item_id,
-            amount: gi.amount,
-            quality: item?.quality,
-            tooltipHtml: item?.tooltipHtml,
-          });
-        }
-      }
-    } catch {
-      // Invalid JSON
-    }
-  }
-
-  // Note: quest.objectives contains location waypoints for in-game navigation.
-  // We don't display these in the popup since the map shows everything already.
-
-  // Find NPC objective
-  if (quest.is_find_npc_quest && quest.end_npc_id && quest.end_npc_name) {
-    objectives.push({
-      type: "find",
-      targetId: quest.end_npc_id,
-      targetName: quest.end_npc_name,
-      amount: 1,
-    });
-  }
-
-  // Source: server-scripts/LocationQuest.cs:OnLocation
-  // Discovery completes at the quest location, not at its notification text.
-  if (quest.discovered_location) {
-    const position = quest.discovered_location_position
-      ? (JSON.parse(quest.discovered_location_position) as {
-          x: number;
-          y: number;
-        })
-      : null;
-    objectives.push({
-      type: "discover",
-      targetId: null,
-      targetName:
-        quest.discovered_location_sub_zone_name ??
-        quest.discovered_location_zone_name ??
-        quest.discovered_location,
-      zoneName: quest.discovered_location_sub_zone_name
-        ? quest.discovered_location_zone_name
-        : null,
-      position: position ? [position.x, -position.y] : undefined,
-      amount: 1,
-    });
-  }
-
-  // Equip objectives from JSON column
-  if (quest.equip_items) {
-    try {
-      const equipItemIds = JSON.parse(quest.equip_items) as string[];
-      if (equipItemIds.length > 0) {
-        // Fetch item details
-        const itemRows = await query<{
-          id: string;
-          name: string;
-          quality: number;
-          tooltip_html: string | null;
-        }>(
-          `SELECT id, name, quality, tooltip_html FROM items WHERE id IN (${equipItemIds.map(() => "?").join(",")})`,
-          equipItemIds,
-        );
-        const itemMap = new Map(
-          itemRows.map((i) => [
-            i.id,
-            { name: i.name, quality: i.quality, tooltipHtml: i.tooltip_html },
-          ]),
-        );
-
-        for (const itemId of equipItemIds) {
-          const item = itemMap.get(itemId);
-          objectives.push({
-            type: "equip",
-            targetId: itemId,
-            targetName: item?.name ?? itemId,
-            amount: 1,
-            quality: item?.quality,
-            tooltipHtml: item?.tooltipHtml,
-          });
-        }
-      }
-    } catch {
-      // Invalid JSON
-    }
-  }
-
-  // Get NPCs from authoritative start_npc_id and end_npc_id columns
-  const npcs: QuestPopupNpc[] = [];
-
-  // Get start NPC (quest giver)
-  if (quest.start_npc_id) {
-    const [startNpc] = await query<{
-      npc_id: string;
-      npc_name: string;
-      zone_name: string | null;
-    }>(
-      `
-      SELECT n.id as npc_id, n.name as npc_name, z.name as zone_name
-      FROM npcs n
-      LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
-      LEFT JOIN zones z ON z.id = ns.zone_id
-      WHERE n.id = ?
-      LIMIT 1
-      `,
-      [quest.start_npc_id],
-    );
-    if (startNpc) {
-      npcs.push({
-        npcId: startNpc.npc_id,
-        npcName: startNpc.npc_name,
-        zoneName: startNpc.zone_name,
-        isGiver: true,
-        isTurnIn: quest.end_npc_id === quest.start_npc_id || !quest.end_npc_id,
-      });
-    }
-  } else if (quest.is_adventurer_quest) {
-    // Adventurer quests don't have start_npc_id - find NPCs that offer this quest
-    const adventurerNpcs = await query<{
-      npc_id: string;
-      npc_name: string;
-    }>(
-      `
-      SELECT n.id as npc_id, n.name as npc_name
-      FROM npcs n
-      WHERE EXISTS (
-        SELECT 1 FROM json_each(n.quests_offered)
-        WHERE json_extract(value, '$.id') = ?
-      )
-      ORDER BY n.name
-      `,
-      [questId],
-    );
-    for (const npc of adventurerNpcs) {
-      npcs.push({
-        npcId: npc.npc_id,
-        npcName: npc.npc_name,
-        zoneName: null,
-        isGiver: true,
-        isTurnIn: true,
-      });
-    }
-  }
-
-  // Get end NPC (turn-in) if different from start
-  if (quest.end_npc_id && quest.end_npc_id !== quest.start_npc_id) {
-    const [endNpc] = await query<{
-      npc_id: string;
-      npc_name: string;
-      zone_name: string | null;
-    }>(
-      `
-      SELECT n.id as npc_id, n.name as npc_name, z.name as zone_name
-      FROM npcs n
-      LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
-      LEFT JOIN zones z ON z.id = ns.zone_id
-      WHERE n.id = ?
-      LIMIT 1
-      `,
-      [quest.end_npc_id],
-    );
-    if (endNpc) {
-      npcs.push({
-        npcId: endNpc.npc_id,
-        npcName: endNpc.npc_name,
-        zoneName: endNpc.zone_name,
-        isGiver: false,
-        isTurnIn: true,
-      });
-    }
-  }
-
-  return {
-    id: quest.id,
-    name: quest.name,
-    levelRecommended: quest.level_recommended,
-    displayType: quest.display_type,
-    isMainQuest: Boolean(quest.is_main_quest),
-    isEpicQuest: Boolean(quest.is_epic_quest),
-    isAdventurerQuest: Boolean(quest.is_adventurer_quest),
-    isRepeatable: Boolean(quest.is_repeatable),
-    gold,
-    exp,
-    rewardItems,
-    objectives,
-    npcs,
-  };
+  return (await loadQuestPopupDetailsBatch([questId])).get(questId) ?? null;
 }
-
-// ============================================================================
-// Zone Popup
-// ============================================================================
-
-/**
- * Monster info for zone popup (bosses/elites)
- */
+export async function loadQuestPopupDetailsBatch(
+  questIds: readonly string[],
+): Promise<ReadonlyMap<string, QuestPopupDetails>> {
+  const ids = [...new Set(questIds)];
+  const result = new Map<string, QuestPopupDetails>();
+  if (!ids.length) return result;
+  const model = await loadBrowserAcquisition({
+    kind: "requirements",
+    entities: ids.map((id) => ({ kind: "quest", id })),
+  });
+  const base = await presentation(model, []);
+  const objectivesByQuest = new Map<string, QuestObjective[]>();
+  const childTables: Record<string, string> = {
+    item: "quest_objective_items",
+    monster: "quest_objective_monsters",
+    location: "quest_objective_locations",
+    brew: "quest_objective_brews",
+  };
+  const children = new Map(
+    Object.entries(childTables).map(([kind, table]) => [
+      kind,
+      new Map((model.rows.facts[table] ?? []).map((row) => [row.id, row])),
+    ]),
+  );
+  for (const objective of [...(model.rows.facts.quest_objectives ?? [])].sort(
+    (a, b) => Number(a.ordinal) - Number(b.ordinal),
+  )) {
+    const kind = String(objective.kind) as QuestObjective["kind"];
+    const child = children.get(kind)?.get(objective.id);
+    if (!child)
+      throw new Error(
+        `acquisition: quest objective ${objective.id}: missing ${kind} detail`,
+      );
+    const targetId =
+      typeof child.item_id === "string"
+        ? child.item_id
+        : typeof child.monster_id === "string"
+          ? child.monster_id
+          : typeof child.sub_zone_id === "string"
+            ? child.sub_zone_id
+            : typeof child.zone_id === "string"
+              ? child.zone_id
+              : null;
+    const target = targetId
+      ? model.entities
+          .get(
+            kind === "monster"
+              ? "monsters"
+              : kind === "location"
+                ? child.sub_zone_id
+                  ? "zone_triggers"
+                  : "zones"
+                : "items",
+          )
+          ?.get(targetId)
+      : null;
+    const questId = String(objective.quest_id);
+    const objectives = objectivesByQuest.get(questId) ?? [];
+    objectives.push({
+      id: objective.id,
+      kind,
+      role: String(objective.role),
+      targetId,
+      targetName: objective.withheld
+        ? "Unpublished target"
+        : String(target?.name ?? child.discovered_location ?? "Location"),
+      amount: objective.amount === null ? null : Number(objective.amount),
+      quality: Number(target?.quality ?? 0),
+      tooltipHtml:
+        typeof target?.tooltip_html === "string" ? target.tooltip_html : null,
+      position:
+        !objective.withheld &&
+        typeof child.position_x === "number" &&
+        typeof child.position_y === "number"
+          ? [child.position_x, -child.position_y]
+          : undefined,
+      zoneName:
+        typeof child.zone_id === "string"
+          ? String(model.entities.get("zones")?.get(child.zone_id)?.name ?? "")
+          : null,
+      withheld: Boolean(objective.withheld),
+    });
+    objectivesByQuest.set(questId, objectives);
+  }
+  const npcsByQuest = new Map<string, QuestPopupNpc[]>();
+  for (let offset = 0; offset < ids.length; offset += 200) {
+    const batch = ids.slice(offset, offset + 200);
+    const memberships = await query<{
+      quest_id: string;
+      npc_id: string;
+      name: string;
+      role: string;
+      zone_name: string | null;
+    }>(
+      `SELECT DISTINCT m.quest_id,m.npc_id,n.name,m.role,z.name zone_name FROM npc_quest_memberships m JOIN npcs n ON n.id=m.npc_id LEFT JOIN npc_spawns ns ON ns.npc_id=n.id LEFT JOIN zones z ON z.id=ns.zone_id WHERE m.quest_id IN (${batch.map(() => "?").join(",")}) ORDER BY n.name,z.name,m.role`,
+      batch,
+    );
+    for (const row of memberships) {
+      const npcs = npcsByQuest.get(row.quest_id) ?? [];
+      let npc = npcs.find(
+        (n) => n.npcId === row.npc_id && n.zoneName === row.zone_name,
+      );
+      if (!npc) {
+        npc = {
+          npcId: row.npc_id,
+          npcName: row.name,
+          zoneName: row.zone_name,
+          isGiver: false,
+          isTurnIn: false,
+        };
+        npcs.push(npc);
+      }
+      if (row.role === "offer") npc.isGiver = true;
+      if (row.role === "complete") npc.isTurnIn = true;
+      npcsByQuest.set(row.quest_id, npcs);
+    }
+  }
+  const methodsByQuest = new Map<string, MethodView[]>();
+  for (const method of base.model.methodViews.values()) {
+    if (method.kind !== "quest_accept" && method.kind !== "quest_complete")
+      continue;
+    if (!mapMethodIsVisible(method)) continue;
+    const questId = String(method.detail.quest_id);
+    const methods = methodsByQuest.get(questId) ?? [];
+    methods.push(method);
+    methodsByQuest.set(questId, methods);
+  }
+  for (const questId of ids) {
+    const quest = model.entities.get("quests")?.get(questId);
+    if (!quest) continue;
+    result.set(questId, {
+      ...base,
+      methods: methodsByQuest.get(questId) ?? [],
+      requirements: model.requirements.get(`quest:${questId}`) ?? [],
+      id: quest.id,
+      name: String(quest.name),
+      levelRecommended: Number(quest.level_recommended ?? 0),
+      displayType: String(quest.display_type ?? ""),
+      isMainQuest: Boolean(quest.is_main_quest),
+      isEpicQuest: Boolean(quest.is_epic_quest),
+      isAdventurerQuest: Boolean(quest.is_adventurer_quest),
+      isRepeatable: Boolean(quest.is_repeatable),
+      gold: Number(quest.reward_gold ?? 0),
+      exp: Number(quest.reward_experience ?? 0),
+      objectives: objectivesByQuest.get(questId) ?? [],
+      npcs: npcsByQuest.get(questId) ?? [],
+    });
+  }
+  return result;
+}
 export interface ZonePopupMonster {
   id: string;
   name: string;
   level: number;
 }
-
-/**
- * Altar info for zone popup
- */
 export interface ZonePopupAltar {
   id: string;
   name: string;
 }
-
-/**
- * Renewal sage info for zone popup (dungeons only)
- */
 export interface ZonePopupRenewalSage {
   id: string;
   name: string;
@@ -2260,93 +618,72 @@ export interface ZonePopupRenewalSage {
   zoneName: string;
   goldCost: number;
 }
-
-/**
- * Zone popup details (lazy-loaded)
- */
 export interface ZonePopupDetails {
   bosses: ZonePopupMonster[];
   elites: ZonePopupMonster[];
   altars: ZonePopupAltar[];
   renewalSage: ZonePopupRenewalSage | null;
 }
-
-/**
- * Load zone details for popup
- */
 export async function loadZonePopupDetails(
   zoneId: string,
 ): Promise<ZonePopupDetails> {
-  // Query bosses in zone (deduplicated by monster_id, show lowest level)
-  // Fall back to monster's base level if spawn level is null
-  const bosses = await query<{ id: string; name: string; level: number }>(
-    `
-    SELECT m.id, m.name, COALESCE(MIN(ms.level), m.level) as level
-    FROM monster_spawns ms
-    JOIN monsters m ON m.id = ms.monster_id
-    WHERE ms.zone_id = ? AND m.is_boss = 1
-    GROUP BY m.id
-    ORDER BY level, m.name
-    `,
+  const spawns = await query<{ id: string }>(
+    `SELECT id FROM monster_spawns WHERE zone_id=?`,
     [zoneId],
   );
-
-  // Query elites in zone (deduplicated by monster_id, show lowest level)
-  // Fall back to monster's base level if spawn level is null
-  const elites = await query<{ id: string; name: string; level: number }>(
-    `
-    SELECT m.id, m.name, COALESCE(MIN(ms.level), m.level) as level
-    FROM monster_spawns ms
-    JOIN monsters m ON m.id = ms.monster_id
-    WHERE ms.zone_id = ? AND m.is_elite = 1 AND m.is_boss = 0
-    GROUP BY m.id
-    ORDER BY level, m.name
-    `,
+  const altars = await query<ZonePopupAltar>(
+    `SELECT id,name FROM altars WHERE zone_id=? ORDER BY name`,
     [zoneId],
   );
-
-  // Query altars in zone
-  const altars = await query<{ id: string; name: string }>(
-    `
-    SELECT id, name FROM altars WHERE zone_id = ? ORDER BY name
-    `,
-    [zoneId],
+  const providers: ProviderRef[] = [
+    ...spawns.map((spawn): ProviderRef => ({
+      kind: "monster_spawns",
+      id: spawn.id,
+    })),
+    ...altars.map((altar): ProviderRef => ({ kind: "altars", id: altar.id })),
+  ];
+  const model = await loadBrowserAcquisition({ kind: "providers", providers });
+  const byMonster = new Map<
+    string,
+    ZonePopupMonster & { isBoss: boolean; isElite: boolean }
+  >();
+  for (const method of model.methodViews.values()) {
+    if (method.kind !== "kill") continue;
+    const monster = model.entities
+      .get("monsters")
+      ?.get(String(method.detail.monster_id));
+    if (!monster || (!monster.is_boss && !monster.is_elite)) continue;
+    const levels = method.providers.flatMap((provider) => {
+      const spawn =
+        provider.ref.kind === "monster_spawns"
+          ? model.entities.get("monster_spawns")?.get(provider.ref.id)
+          : undefined;
+      return spawn?.monster_id === monster.id && typeof spawn.level === "number"
+        ? [spawn.level]
+        : [];
+    });
+    const level = levels.length ? Math.min(...levels) : Number(monster.level);
+    const existing = byMonster.get(monster.id);
+    if (existing && existing.level <= level) continue;
+    byMonster.set(monster.id, {
+      id: monster.id,
+      name: String(monster.name),
+      level,
+      isBoss: Boolean(monster.is_boss),
+      isElite: Boolean(monster.is_elite),
+    });
+  }
+  const monsters = [...byMonster.values()].sort(
+    (a, b) => a.level - b.level || a.name.localeCompare(b.name),
   );
-
-  // Query renewal sage for this dungeon (if applicable)
-  // Find NPCs whose respawn_dungeon_id points to this zone
-  const sages = await query<{
-    id: string;
-    name: string;
-    zone_id: string;
-    zone_name: string;
-    gold_cost: number;
-  }>(
-    `
-    SELECT n.id, n.name, ns.zone_id, z.name as zone_name, n.gold_required_respawn_dungeon as gold_cost
-    FROM npcs n
-    JOIN npc_spawns ns ON ns.npc_id = n.id
-    JOIN zones z ON z.id = ns.zone_id
-    JOIN zones dz ON dz.zone_id = n.respawn_dungeon_id
-    WHERE dz.id = ?
-      AND n.respawn_dungeon_id != ?
-    LIMIT 1
-    `,
+  const [sage] = await query<ZonePopupRenewalSage>(
+    `SELECT n.id,n.name,ns.zone_id zoneId,z.name zoneName,n.gold_required_respawn_dungeon goldCost FROM npcs n JOIN npc_spawns ns ON ns.npc_id=n.id JOIN zones z ON z.id=ns.zone_id JOIN zones dz ON dz.zone_id=n.respawn_dungeon_id WHERE dz.id=? AND n.respawn_dungeon_id!=? ORDER BY n.id,ns.id LIMIT 1`,
     [zoneId, WORLD_BOSS_DUNGEON_ID],
   );
-
   return {
-    bosses: bosses.map((b) => ({ id: b.id, name: b.name, level: b.level })),
-    elites: elites.map((e) => ({ id: e.id, name: e.name, level: e.level })),
-    altars: altars.map((a) => ({ id: a.id, name: a.name })),
-    renewalSage: sages[0]
-      ? {
-          id: sages[0].id,
-          name: sages[0].name,
-          zoneId: sages[0].zone_id,
-          zoneName: sages[0].zone_name,
-          goldCost: sages[0].gold_cost,
-        }
-      : null,
+    bosses: monsters.filter((m) => m.isBoss),
+    elites: monsters.filter((m) => m.isElite && !m.isBoss),
+    altars,
+    renewalSage: sage ?? null,
   };
 }

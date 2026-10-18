@@ -306,6 +306,13 @@ export function computeSelectionFromGroups(
   const results: AnyMapEntity[] = [];
 
   for (const group of overrideGroups) {
+    if (group.exactPlacement && group.category === "monster") {
+      for (const id of group.ids) {
+        const entity = index.monstersBySpawnId.get(id);
+        if (entity?.position) results.push(entity);
+      }
+      continue;
+    }
     const entityIndex = getIndexForCategory(index, group.category);
     if (!entityIndex) continue;
 

@@ -24,6 +24,13 @@ import type {
   ZoneListItem,
 } from "$lib/types/map";
 import { parseTrapAreaRings } from "$lib/utils/trapArea";
+import { loadAcquisition } from "$lib/server/acquisition";
+import type {
+  AcquisitionModel,
+  AcquisitionQuery,
+  MethodView,
+  ProviderRef,
+} from "$lib/acquisition/types";
 
 /**
  * Compute level ranges from loaded entity data
@@ -46,7 +53,7 @@ function computeLevelRanges(
 /**
  * Load all map entities for prerendering
  */
-export function loadAllMapEntitiesServer(): MapEntityData {
+export async function loadAllMapEntitiesServer(): Promise<MapEntityData> {
   const db = new Database(resolve(DB_SOURCE_PATH), { readonly: true });
 
   try {
@@ -62,6 +69,24 @@ export function loadAllMapEntitiesServer(): MapEntityData {
     const houses = loadHousesServer(db);
     const subZones = loadZoneTriggersServer(db);
     const parentZones = loadZoneBoundsServer(db);
+    const execute: AcquisitionQuery = async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[];
+    const providers = db
+      .prepare(
+        `
+      SELECT 'monster_spawns' AS kind, id FROM monster_spawns
+      UNION ALL SELECT 'resource_spawns', id FROM gathering_resource_spawns
+      UNION ALL SELECT 'chests', id FROM chests
+      UNION ALL SELECT 'altars', id FROM altars
+    `,
+      )
+      .all() as ProviderRef[];
+    const model = await loadAcquisition(execute, {
+      kind: "providers",
+      providers,
+    });
+    applyAcquisitionCounts(model, monsters, gathering, chests);
+    appendEventMonsterMarkers(model, monsters);
 
     const levelRanges = computeLevelRanges(monsters, gathering);
 
@@ -82,6 +107,184 @@ export function loadAllMapEntitiesServer(): MapEntityData {
     };
   } finally {
     db.close();
+  }
+}
+
+function methodDropCounts(
+  model: AcquisitionModel,
+  methods: readonly MethodView[],
+) {
+  const items = new Set<string>();
+  const randomItems = new Set<string>();
+  for (const method of methods) {
+    const fixed = new Set<string>();
+    for (const output of method.outputs) {
+      if (output.withheld || output.resource_kind !== "item" || !output.item_id)
+        continue;
+      items.add(output.item_id);
+      if (output.yield_rule === "pool") randomItems.add(output.item_id);
+      else fixed.add(output.item_id);
+    }
+    for (const result of method.probabilityResults) {
+      if (result.target.kind !== "item") continue;
+      items.add(result.target.itemId);
+      if (!fixed.has(result.target.itemId))
+        randomItems.add(result.target.itemId);
+    }
+  }
+  return {
+    dropCount: items.size,
+    bestiaryDropCount: [...items].filter((id) =>
+      Boolean(model.entities.get("items")?.get(id)?.is_bestiary_drop),
+    ).length,
+    randomDropCount: randomItems.size,
+  };
+}
+
+function applyAcquisitionCounts(
+  model: AcquisitionModel,
+  monsters: MonsterMapEntity[],
+  gathering: GatheringMapEntity[],
+  chests: ChestMapEntity[],
+): void {
+  const byProvider = new Map<string, MethodView[]>();
+  for (const method of model.methodViews.values()) {
+    if (!method.rooted) continue;
+    if (method.kind === "kill" && method.detail.event_kind !== "authored")
+      continue;
+    for (const provider of method.providers) {
+      const key = `${provider.ref.kind}:${provider.ref.id}`;
+      const methods = byProvider.get(key) ?? [];
+      methods.push(method);
+      byProvider.set(key, methods);
+    }
+  }
+  for (const monster of monsters) {
+    const counts = methodDropCounts(
+      model,
+      byProvider.get(`monster_spawns:${monster.id}`) ?? [],
+    );
+    monster.dropCount = counts.dropCount;
+    monster.bestiaryDropCount = counts.bestiaryDropCount;
+  }
+  for (const resource of gathering) {
+    resource.dropCount = methodDropCounts(
+      model,
+      byProvider.get(`resource_spawns:${resource.id}`) ?? [],
+    ).dropCount;
+  }
+  for (const chest of chests) {
+    const methods = (byProvider.get(`chests:${chest.id}`) ?? []).filter(
+      (method) => method.kind === "world_chest",
+    );
+    const counts = methodDropCounts(model, methods);
+    chest.dropCount = counts.dropCount;
+    chest.randomDropCount = counts.randomDropCount;
+    chest.requiredKeys = [
+      ...new Map(
+        methods.flatMap((method) => {
+          const itemId =
+            typeof method.detail.key_item_id === "string"
+              ? method.detail.key_item_id
+              : null;
+          const withheld = Boolean(method.detail.key_item_withheld);
+          if (!itemId && !withheld) return [];
+          const item = itemId ? model.entities.get("items")?.get(itemId) : null;
+          return [
+            [
+              `${itemId ?? ""}:${withheld}`,
+              {
+                itemId,
+                itemName: item ? String(item.name) : null,
+                withheld,
+              },
+            ] as const,
+          ];
+        }),
+      ).values(),
+    ];
+  }
+}
+
+function appendEventMonsterMarkers(
+  model: AcquisitionModel,
+  monsters: MonsterMapEntity[],
+): void {
+  const definitions = new Map(
+    monsters.map((monster) => [monster.monsterId, monster]),
+  );
+  const placements = new Map(monsters.map((monster) => [monster.id, monster]));
+  const altarMethods = new Map<string, MethodView[]>();
+  for (const method of model.methodViews.values()) {
+    if (method.kind !== "kill" || !method.rooted) continue;
+    const event = method.detail.event_kind;
+    if (
+      typeof method.detail.parent_monster_spawn_id !== "string" &&
+      event !== "altar_final"
+    )
+      continue;
+    const monsterId = String(method.detail.monster_id);
+    const definition = definitions.get(monsterId);
+    if (!definition)
+      throw new Error(`Missing monster marker definition: ${monsterId}`);
+    if (event === "altar_final") {
+      const methods = altarMethods.get(monsterId) ?? [];
+      methods.push(method);
+      altarMethods.set(monsterId, methods);
+      continue;
+    }
+    const provider = method.providers.find(
+      (entry) => entry.ref.kind === "monster_spawns",
+    );
+    const location = provider?.location;
+    const parentId = method.detail.parent_monster_spawn_id;
+    const parent =
+      typeof parentId === "string" ? placements.get(parentId) : undefined;
+    if (!parent)
+      throw new Error(`Missing placeholder parent: ${method.methodId}`);
+    const parentDefinition = model.entities
+      .get("monsters")
+      ?.get(parent.monsterId);
+    const counts = methodDropCounts(model, [method]);
+    const position =
+      location?.geometryVisibility === "visible" ? location.position : null;
+    monsters.push({
+      ...definition,
+      id: method.methodId,
+      level: Number(model.entities.get("monsters")?.get(monsterId)?.level),
+      // The offset separates the placeholder pin from its parent, not its acquisition location.
+      position: position ? [position.x + 3, -position.y] : null,
+      zoneId: location?.zoneId ?? null,
+      zoneName: location?.zoneId
+        ? String(
+            model.entities.get("zones")?.get(location.zoneId)?.name ??
+              "Unknown",
+          )
+        : "Unknown",
+      isPatrolling: false,
+      patrolWaypoints: null,
+      moveDistance: 0,
+      spawnType: "placeholder",
+      sourceMonsterId: parent.monsterId,
+      sourceMonsterName: parent.name,
+      sourceSpawnProbability: Number(
+        parentDefinition?.placeholder_spawn_probability,
+      ),
+      sourceSpawnIds: [parent.id],
+      altarIds: null,
+      dropCount: counts.dropCount,
+      bestiaryDropCount: counts.bestiaryDropCount,
+    });
+  }
+  for (const [monsterId, methods] of altarMethods) {
+    const definition = definitions.get(monsterId)!;
+    if (definition.position !== null) continue;
+    const counts = methodDropCounts(model, methods);
+    definition.altarIds = [
+      ...new Set(methods.map((method) => String(method.detail.altar_id))),
+    ];
+    definition.dropCount = counts.dropCount;
+    definition.bestiaryDropCount = counts.bestiaryDropCount;
   }
 }
 
@@ -139,25 +342,6 @@ function parseIdArrayJson(json: string | null): string[] | null {
 }
 
 /**
- * Count total drops and bestiary drops from monster drops JSON
- */
-function countDrops(dropsJson: string | null): {
-  dropCount: number;
-  bestiaryDropCount: number;
-} {
-  if (!dropsJson) return { dropCount: 0, bestiaryDropCount: 0 };
-  try {
-    const drops = JSON.parse(dropsJson) as Array<{ is_bestiary?: boolean }>;
-    return {
-      dropCount: drops.length,
-      bestiaryDropCount: drops.filter((d) => d.is_bestiary).length,
-    };
-  } catch {
-    return { dropCount: 0, bestiaryDropCount: 0 };
-  }
-}
-
-/**
  * Parse final bosses JSON array into names and IDs.
  */
 function parseFinalBosses(json: string | null): {
@@ -200,7 +384,6 @@ interface MonsterSpawnRow {
   spawn_time_start: number;
   spawn_time_end: number;
   base_exp: number;
-  drops: string | null;
   spawn_type: string;
   source_monster_id: string | null;
   source_monster_name: string | null;
@@ -220,7 +403,21 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
   const rows = db
     .prepare(
       `
-    -- Monsters with regular/summon/placeholder spawns (rendered on map)
+    WITH summon_sources AS (
+      SELECT st.summoned_monster_spawn_id AS spawn_id,
+        CASE WHEN COUNT(DISTINCT blocker.monster_id) = 1
+          THEN MIN(blocker.monster_id) END AS monster_id,
+        group_concat(DISTINCT blocker_monster.name) AS monster_names,
+        COUNT(DISTINCT stp.spawn_id) AS blocker_count,
+        json_group_array(DISTINCT stp.spawn_id)
+          FILTER (WHERE stp.spawn_id IS NOT NULL) AS blocker_ids
+      FROM summon_triggers st
+      LEFT JOIN summon_trigger_placeholders stp ON stp.trigger_id = st.id
+      LEFT JOIN monster_spawns blocker ON blocker.id = stp.spawn_id
+      LEFT JOIN monsters blocker_monster ON blocker_monster.id = blocker.monster_id
+      WHERE st.summoned_monster_spawn_id IS NOT NULL
+      GROUP BY st.summoned_monster_spawn_id
+    )
     SELECT
       ms.id,
       ms.monster_id,
@@ -243,47 +440,27 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       m.spawn_time_start,
       m.spawn_time_end,
       m.base_exp,
-      m.drops,
-      ms.spawn_type,
-      ms.source_monster_id,
-      ms.source_monster_name,
-      ms.source_spawn_probability,
-      ms.source_summon_kill_monster_id,
-      ms.source_summon_kill_monster_name,
-      ms.source_summon_kill_count,
-      (
-        SELECT json_group_array(stp.spawn_id)
-        FROM summon_trigger_placeholders stp
-        WHERE stp.trigger_id = ms.source_summon_trigger_id
-      ) as blocker_spawn_ids,
-      (
-        SELECT json_group_array(src_ms.id)
-        FROM monster_spawns src_ms
-        WHERE src_ms.monster_id = ms.source_monster_id
-          AND src_ms.zone_id = ms.zone_id
-          AND src_ms.spawn_type IN ('regular', 'summon')
-      ) as source_spawn_ids,
-      (
-        SELECT json_group_array(a.id)
-        FROM altars a
-        WHERE EXISTS (
-          SELECT 1
-          FROM json_each(a.waves, '$[' || (json_array_length(a.waves) - 1) || '].monsters') as jm
-          JOIN monsters fm ON fm.id = json_extract(jm.value, '$.monster_id')
-          WHERE fm.id = ms.monster_id AND (fm.is_boss = 1 OR fm.is_elite = 1)
-        )
-      ) as altar_ids,
+      CASE WHEN summon.spawn_id IS NOT NULL THEN 'summon' ELSE 'regular' END AS spawn_type,
+      NULL AS source_monster_id,
+      NULL AS source_monster_name,
+      NULL AS source_spawn_probability,
+      summon.monster_id AS source_summon_kill_monster_id,
+      summon.monster_names AS source_summon_kill_monster_name,
+      summon.blocker_count AS source_summon_kill_count,
+      summon.blocker_ids AS blocker_spawn_ids,
+      NULL AS source_spawn_ids,
+      NULL as altar_ids,
       va.width as visual_width,
       va.height as visual_height,
       va.source_type as visual_source_type
     FROM monster_spawns ms
     JOIN monsters m ON m.id = ms.monster_id
+    LEFT JOIN summon_sources summon ON summon.spawn_id = ms.id
     LEFT JOIN visual_assets va
       ON va.domain = 'monster'
      AND va.entity_id = m.id
      AND va.kind = 'primary'
     JOIN zones z ON z.id = ms.zone_id
-    WHERE ms.spawn_type IN ('regular', 'summon', 'placeholder')
 
     UNION ALL
 
@@ -310,7 +487,6 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       m.spawn_time_start,
       m.spawn_time_end,
       m.base_exp,
-      m.drops,
       'regular' as spawn_type,
       NULL as source_monster_id,
       NULL as source_monster_name,
@@ -320,16 +496,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       NULL as source_summon_kill_count,
       NULL as blocker_spawn_ids,
       NULL as source_spawn_ids,
-      (
-        SELECT json_group_array(a.id)
-        FROM altars a
-        WHERE EXISTS (
-          SELECT 1
-          FROM json_each(a.waves, '$[' || (json_array_length(a.waves) - 1) || '].monsters') as jm
-          JOIN monsters fm ON fm.id = json_extract(jm.value, '$.monster_id')
-          WHERE fm.id = m.id AND (fm.is_boss = 1 OR fm.is_elite = 1)
-        )
-      ) as altar_ids,
+      NULL as altar_ids,
       va.width as visual_width,
       va.height as visual_height,
       va.source_type as visual_source_type
@@ -340,7 +507,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
      AND va.kind = 'primary'
     WHERE NOT EXISTS (
       SELECT 1 FROM monster_spawns ms
-      WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
+      WHERE ms.monster_id = m.id
     )
   `,
     )
@@ -368,8 +535,6 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
     else if (r.is_elite) type = "elite";
     else if (r.is_hunt) type = "hunt";
 
-    const { dropCount, bestiaryDropCount } = countDrops(r.drops);
-
     return {
       id: r.id,
       monsterId: r.monster_id,
@@ -395,8 +560,8 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       spawnTimeStart: r.spawn_time_start,
       spawnTimeEnd: r.spawn_time_end,
       baseExp: r.base_exp,
-      dropCount,
-      bestiaryDropCount,
+      dropCount: 0,
+      bestiaryDropCount: 0,
       spawnType: r.spawn_type as "regular" | "summon" | "placeholder" | "altar",
       sourceMonsterName: r.source_monster_name,
       sourceMonsterId: r.source_monster_id,
@@ -436,8 +601,8 @@ interface NpcSpawnRow {
   renewal_dungeon_zone_id: string | null;
   patrol_waypoints: string | null;
   move_distance: number;
-  quests_offered: string | null;
-  items_sold: string | null;
+  quest_count: number;
+  items_sold_count: number;
   teleport_zone_id: string | null;
   teleport_zone_name: string | null;
   teleport_destination_x: number | null;
@@ -464,8 +629,11 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       rz.id as renewal_dungeon_zone_id,
       ns.patrol_waypoints,
       ns.move_distance,
-      n.quests_offered,
-      n.items_sold,
+      (SELECT COUNT(*) FROM npc_quest_memberships membership
+       WHERE membership.npc_id = n.id AND membership.role = 'offer') AS quest_count,
+      (SELECT COUNT(*) FROM acquisition_providers_npcs provider
+       JOIN acquisition_methods method ON method.id = provider.method_id
+       WHERE provider.npc_id = n.id AND method.kind = 'vendor' AND method.rooted = 1) AS items_sold_count,
       ns.teleport_zone_id,
       tz.name as teleport_zone_name,
       ns.teleport_destination_x,
@@ -481,23 +649,6 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
     .all() as NpcSpawnRow[];
 
   return rows.map((r) => {
-    let questCount = 0;
-    let itemsSoldCount = 0;
-    try {
-      if (r.quests_offered) {
-        questCount = JSON.parse(r.quests_offered).length;
-      }
-    } catch {
-      /* empty */
-    }
-    try {
-      if (r.items_sold) {
-        itemsSoldCount = JSON.parse(r.items_sold).length;
-      }
-    } catch {
-      /* empty */
-    }
-
     let patrolWaypoints: [number, number][] | null = null;
     if (r.patrol_waypoints) {
       try {
@@ -537,8 +688,8 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       isPatrolling: patrolWaypoints !== null && patrolWaypoints.length > 1,
       patrolWaypoints,
       moveDistance: r.move_distance ?? 0,
-      questCount,
-      itemsSoldCount,
+      questCount: r.quest_count,
+      itemsSoldCount: r.items_sold_count,
       hasTeleport: r.teleport_zone_id !== null,
       teleportDestName: r.teleport_zone_name,
       teleportZoneId: r.teleport_zone_id,
@@ -596,22 +747,17 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       p.requires_everyone_key,
       COALESCE(p.level_required, 0) as required_level,
       COALESCE(p.item_level_required, 0) as required_item_level,
-      p.need_monster_dead_id,
+      dead_spawn.monster_id AS need_monster_dead_id,
       m.name as need_monster_dead_name,
-      (
-        SELECT json_group_array(ms.id)
-        FROM monster_spawns ms
-        WHERE ms.monster_id = p.need_monster_dead_id
-          AND ms.zone_id = p.from_zone_id
-          AND ms.spawn_type IN ('regular', 'summon')
-      ) as kill_requirement_spawn_ids
+      CASE WHEN dead_spawn.id IS NOT NULL THEN json_array(dead_spawn.id) END as kill_requirement_spawn_ids
     FROM portals p
     JOIN zones fz ON fz.id = p.from_zone_id
     LEFT JOIN zone_triggers fsz ON fsz.id = p.from_sub_zone_id
     LEFT JOIN zones tz ON tz.id = p.to_zone_id
     LEFT JOIN zone_triggers tsz ON tsz.id = p.to_sub_zone_id
     LEFT JOIN items i ON i.id = p.required_item_id
-    LEFT JOIN monsters m ON m.id = p.need_monster_dead_id
+    LEFT JOIN monster_spawns dead_spawn ON dead_spawn.id = p.need_monster_dead_spawn_id
+    LEFT JOIN monsters m ON m.id = dead_spawn.monster_id
     WHERE p.is_template = 0
   `,
     )
@@ -663,8 +809,6 @@ interface ChestRow {
   position_y: number | null;
   zone_id: string;
   zone_name: string;
-  key_required_id: string | null;
-  key_required_name: string | null;
   respawn_time: number;
   drop_count: number;
   random_drop_count: number;
@@ -681,17 +825,11 @@ function loadChestsServer(db: Database.Database): ChestMapEntity[] {
       c.position_y,
       c.zone_id,
       z.name as zone_name,
-      c.key_required_id,
-      i.name as key_required_name,
       c.respawn_time,
-      (SELECT COUNT(*) FROM item_sources_chest isc WHERE isc.chest_id = c.id) as drop_count,
-      (SELECT COUNT(DISTINCT isr.random_item_id)
-       FROM item_sources_chest isc
-       JOIN item_sources_random isr ON isr.item_id = isc.item_id
-       WHERE isc.chest_id = c.id) as random_drop_count
+      0 as drop_count,
+      0 as random_drop_count
     FROM chests c
     JOIN zones z ON z.id = c.zone_id
-    LEFT JOIN items i ON i.id = c.key_required_id
   `,
     )
     .all() as ChestRow[];
@@ -706,8 +844,7 @@ function loadChestsServer(db: Database.Database): ChestMapEntity[] {
         : null,
     zoneId: r.zone_id,
     zoneName: r.zone_name,
-    keyRequiredId: r.key_required_id,
-    keyRequiredName: r.key_required_name,
+    requiredKeys: [],
     respawnTime: r.respawn_time,
     dropCount: r.drop_count,
     randomDropCount: r.random_drop_count,
@@ -811,9 +948,10 @@ function loadAltarsServer(db: Database.Database): AltarMapEntity[] {
       a.reward_legendary_name,
       (
         SELECT json_group_array(json_object('id', m.id, 'name', m.name))
-        FROM json_each(a.waves, '$[' || (json_array_length(a.waves) - 1) || '].monsters') as jm
-        JOIN monsters m ON m.id = json_extract(jm.value, '$.monster_id')
-        WHERE m.is_boss = 1 OR m.is_elite = 1
+        FROM acquisition_kill_details d
+        JOIN acquisition_methods am ON am.id = d.id AND am.rooted = 1
+        JOIN monsters m ON m.id = d.monster_id
+        WHERE d.altar_id = a.id AND d.event_kind = 'altar_final'
       ) as final_bosses
     FROM altars a
     JOIN zones z ON z.id = a.zone_id
@@ -924,6 +1062,7 @@ function loadTrapsServer(db: Database.Database): TrapMapEntity[] {
 
 interface GatheringRow {
   id: string;
+  resource_id: string;
   name: string;
   position_x: number | null;
   position_y: number | null;
@@ -954,7 +1093,8 @@ function loadGatheringSpawnsServer(
     .prepare(
       `
     SELECT
-      gr.id,
+      COALESCE(gs.id, gr.id) AS id,
+      gr.id AS resource_id,
       gr.name,
       gs.position_x,
       gs.position_y,
@@ -968,7 +1108,7 @@ function loadGatheringSpawnsServer(
       gr.respawn_time,
       gr.tool_required_id,
       t.name as tool_required_name,
-      (SELECT COUNT(*) FROM item_sources_gather isg WHERE isg.resource_id = gr.id) as drop_count
+      0 as drop_count
     FROM gathering_resources gr
     LEFT JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
     LEFT JOIN zones z ON z.id = gs.zone_id
@@ -987,6 +1127,7 @@ function loadGatheringSpawnsServer(
 
     return {
       id: r.id,
+      resourceId: r.resource_id,
       type,
       name: r.name,
       position:
@@ -996,7 +1137,10 @@ function loadGatheringSpawnsServer(
       zoneId: r.zone_id,
       zoneName: r.zone_name,
       resourceName: r.name,
-      selectionGroupId: getGatheringSelectionGroupId(r.id, r.is_fishing_spot),
+      selectionGroupId: getGatheringSelectionGroupId(
+        r.resource_id,
+        r.is_fishing_spot,
+      ),
       level: r.level,
       respawnTime: r.respawn_time,
       toolRequiredId: r.tool_required_id,

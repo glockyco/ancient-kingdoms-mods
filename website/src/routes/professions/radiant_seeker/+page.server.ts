@@ -6,5 +6,5 @@ import {
 
 export const prerender = true;
 
-export const load: PageServerLoad = (): RadiantSeekerPageData =>
+export const load: PageServerLoad = (): Promise<RadiantSeekerPageData> =>
   getRadiantSeekerPageData();

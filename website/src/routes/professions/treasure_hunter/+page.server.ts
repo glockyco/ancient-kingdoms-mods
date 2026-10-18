@@ -8,6 +8,11 @@ import {
   type ChestRewardRow,
 } from "$lib/queries/chest-rewards";
 import type { ChestDefinition } from "$lib/calculation/chest-rewards";
+import { loadItemAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import type { MethodView } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -59,6 +64,9 @@ interface TreasureHunterPageData {
   buriedChest: ChestDefinition<ChestRewardRow>;
   keyItems: Record<"random_map" | "buried_treasure_chest" | "shovel", KeyItem>;
   itemIconPaths: Record<string, string | null>;
+  acquisitionMethods: readonly MethodView[];
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
 }
 
 interface RawTreasureMap {
@@ -79,12 +87,13 @@ interface RawTreasureMap {
   position_y: number;
 }
 
-export const load: PageServerLoad = (): TreasureHunterPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+export const load: PageServerLoad =
+  async (): Promise<TreasureHunterPageData> => {
+    const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
-  const profession = db
-    .prepare(
-      `
+    const profession = db
+      .prepare(
+        `
     SELECT
       id,
       name,
@@ -96,12 +105,12 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     FROM professions
     WHERE id = 'treasure_hunter'
   `,
-    )
-    .get() as TreasureHunterPageData["profession"];
+      )
+      .get() as TreasureHunterPageData["profession"];
 
-  const rawMaps = db
-    .prepare(
-      `
+    const rawMaps = db
+      .prepare(
+        `
     SELECT
       i.id,
       i.name,
@@ -126,96 +135,125 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     WHERE tl.reward_id = 'buried_treasure_chest'
     ORDER BY i.quality DESC, i.name
   `,
-    )
-    .all() as RawTreasureMap[];
-
-  const treasureMaps: TreasureMapRow[] = rawMaps.map((map) => ({
-    id: map.id,
-    name: map.name,
-    quality: map.quality,
-    tooltip_html: map.tooltip_html,
-    treasure_map_image_location: map.treasure_map_image_location,
-    treasure_location_id: map.treasure_location_id,
-    destination_zone_id: map.zone_id,
-    destination_zone_name: map.zone_name,
-    destination_sub_zone_name: map.sub_zone_name,
-    position_x: map.position_x,
-    position_y: map.position_y,
-    reward_item_id: map.reward_id,
-    reward_item_name: map.reward_name ?? "Unknown",
-    reward_item_type: map.reward_item_type,
-    reward_item_tooltip: map.reward_tooltip,
-  }));
-
-  const [buriedChest] = assembleChests(
-    db
-      .prepare(
-        `${CHEST_REWARDS_QUERY} WHERE r.chest_item_id = 'buried_treasure_chest' ORDER BY r.roll_order`,
       )
-      .all() as ChestRewardRow[],
-  );
-  if (!buriedChest)
-    throw new Error("Missing chest_item_rewards for buried_treasure_chest");
-  const buriedChestRewards = buriedChest.rewards;
-  const buriedChestRewardLimit = buriedChest.num_items;
+      .all() as RawTreasureMap[];
 
-  const stats: TreasureHunterStats = {
-    map_count: treasureMaps.length,
-    relic_reward_count: buriedChestRewards.filter(
-      (reward) => reward.scales_with_treasure_hunter,
-    ).length,
-    zone_count: new Set(treasureMaps.map((map) => map.destination_zone_id))
-      .size,
-    // Source: server-scripts/TreasureLocation.cs:87-90 — successful treasure dig grants +0.5% Treasure Hunter.
-    skill_gain_percent: 0.5,
-  };
+    const treasureMaps: TreasureMapRow[] = rawMaps.map((map) => ({
+      id: map.id,
+      name: map.name,
+      quality: map.quality,
+      tooltip_html: map.tooltip_html,
+      treasure_map_image_location: map.treasure_map_image_location,
+      treasure_location_id: map.treasure_location_id,
+      destination_zone_id: map.zone_id,
+      destination_zone_name: map.zone_name,
+      destination_sub_zone_name: map.sub_zone_name,
+      position_x: map.position_x,
+      position_y: map.position_y,
+      reward_item_id: map.reward_id,
+      reward_item_name: map.reward_name ?? "Unknown",
+      reward_item_type: map.reward_item_type,
+      reward_item_tooltip: map.reward_tooltip,
+    }));
 
-  const keyItemRows = db
-    .prepare(
-      `
+    const [buriedChest] = assembleChests(
+      db
+        .prepare(
+          `${CHEST_REWARDS_QUERY} WHERE definition.item_id = 'buried_treasure_chest' ORDER BY entry.ordinal`,
+        )
+        .all() as ChestRewardRow[],
+    );
+    if (!buriedChest)
+      throw new Error(
+        "Missing portable chest definition for buried_treasure_chest",
+      );
+    const buriedChestRewards = buriedChest.rewards.filter(
+      (reward) => !reward.withheld,
+    );
+    const buriedChestRewardLimit = buriedChest.num_items;
+
+    const stats: TreasureHunterStats = {
+      map_count: treasureMaps.length,
+      relic_reward_count: buriedChestRewards.filter(
+        (reward) => reward.scales_with_treasure_hunter,
+      ).length,
+      zone_count: new Set(treasureMaps.map((map) => map.destination_zone_id))
+        .size,
+      // Source: server-scripts/TreasureLocation.cs:87-90 — successful treasure dig grants +0.5% Treasure Hunter.
+      skill_gain_percent: 0.5,
+    };
+
+    const keyItemRows = db
+      .prepare(
+        `
     SELECT id, name, tooltip_html
     FROM items
     WHERE id IN ('random_map', 'buried_treasure_chest', 'shovel')
   `,
-    )
-    .all() as KeyItem[];
+      )
+      .all() as KeyItem[];
 
-  const keyItemsById = Object.fromEntries(
-    keyItemRows.map((item) => [item.id, item]),
-  ) as Record<string, KeyItem | undefined>;
+    const keyItemsById = Object.fromEntries(
+      keyItemRows.map((item) => [item.id, item]),
+    ) as Record<string, KeyItem | undefined>;
 
-  const requiredKeyItemIds = [
-    "random_map",
-    "buried_treasure_chest",
-    "shovel",
-  ] as const;
-  for (const id of requiredKeyItemIds) {
-    if (!keyItemsById[id]) {
-      throw new Error(`Treasure Hunter key item is missing: ${id}`);
+    const requiredKeyItemIds = [
+      "random_map",
+      "buried_treasure_chest",
+      "shovel",
+    ] as const;
+    for (const id of requiredKeyItemIds) {
+      if (!keyItemsById[id]) {
+        throw new Error(`Treasure Hunter key item is missing: ${id}`);
+      }
     }
-  }
 
-  const keyItems: TreasureHunterPageData["keyItems"] = {
-    random_map: keyItemsById.random_map!,
-    buried_treasure_chest: keyItemsById.buried_treasure_chest!,
-    shovel: keyItemsById.shovel!,
+    const keyItems: TreasureHunterPageData["keyItems"] = {
+      random_map: keyItemsById.random_map!,
+      buried_treasure_chest: keyItemsById.buried_treasure_chest!,
+      shovel: keyItemsById.shovel!,
+    };
+
+    const execute = async (
+      sql: string,
+      values: readonly (string | number | null)[],
+    ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+    const acquisition = await loadItemAcquisition(execute, [
+      ...requiredKeyItemIds,
+      ...treasureMaps.map((map) => map.id),
+    ]);
+    const acquisitionMethods = [
+      ...new Map(
+        Object.values(acquisition.sources)
+          .flatMap((source) => [
+            ...source.methods,
+            ...source.inspection.initiatingMemberships,
+          ])
+          .map((method) => [method.methodId, method]),
+      ).values(),
+    ];
+    const acquisitionItems = await loadAcquisitionItems(
+      execute,
+      acquisition.model,
+    );
+    const itemIconPaths = getItemIconPaths(db, [
+      ...requiredKeyItemIds,
+      ...treasureMaps.flatMap((map) => [map.id, map.reward_item_id]),
+      ...buriedChestRewards.map((reward) => reward.item_id),
+    ]);
+    db.close();
+
+    return {
+      profession,
+      stats,
+      treasureMaps,
+      buriedChestRewards,
+      buriedChestRewardLimit,
+      buriedChest,
+      keyItems,
+      itemIconPaths,
+      acquisitionMethods,
+      acquisitionItems,
+      acquisitionNames: projectAcquisitionNames(acquisition.model),
+    };
   };
-
-  const itemIconPaths = getItemIconPaths(db, [
-    ...requiredKeyItemIds,
-    ...treasureMaps.flatMap((map) => [map.id, map.reward_item_id]),
-    ...buriedChestRewards.map((reward) => reward.item_id),
-  ]);
-  db.close();
-
-  return {
-    profession,
-    stats,
-    treasureMaps,
-    buriedChestRewards,
-    buriedChestRewardLimit,
-    buriedChest,
-    keyItems,
-    itemIconPaths,
-  };
-};

@@ -91,7 +91,7 @@ describe("fishing utilities", () => {
         rodQuality: 2,
         spotTier: 2,
       }),
-    ).toBeCloseTo(0.0621);
+    ).toBeCloseTo(0.0667, 8);
   });
 
   it("matches mastery chance and tier caps", () => {

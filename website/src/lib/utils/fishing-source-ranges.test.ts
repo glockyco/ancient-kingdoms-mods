@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
+import Database from "better-sqlite3";
+import { professionAttempt } from "$lib/acquisition/rules";
 import {
   assembleFishingRangeData,
   resolveFishingSourceRange,
+  FISHING_RANGE_QUERIES,
 } from "./fishing-source-ranges";
 import {
   fishDropChanceRange,
@@ -108,5 +111,55 @@ describe("fishing source ranges", () => {
         bestRodQuality: 4,
       }),
     );
+  });
+
+  it("loads canonical primary slots once across spawn methods, including anonymous slots", () => {
+    const db = new Database(":memory:");
+    try {
+      db.exec(`
+        CREATE TABLE acquisition_resource_details (id TEXT, resource_id TEXT);
+        CREATE TABLE acquisition_method_pools (method_id TEXT, pool_id TEXT);
+        CREATE TABLE loot_pools (id TEXT, kind TEXT);
+        CREATE TABLE loot_pool_entries (id TEXT, pool_id TEXT, probability REAL);
+        INSERT INTO acquisition_resource_details VALUES ('spawn_a', 'spot'), ('spawn_b', 'spot');
+        INSERT INTO acquisition_method_pools VALUES ('spawn_a', 'primary'), ('spawn_b', 'primary'), ('spawn_a', 'trash');
+        INSERT INTO loot_pools VALUES ('primary', 'fishing_primary'), ('trash', 'fishing_trash');
+        INSERT INTO loot_pool_entries VALUES ('first', 'primary', 0.2), ('anonymous', 'primary', 0.2), ('trash', 'trash', 1);
+      `);
+      expect(db.prepare(FISHING_RANGE_QUERIES.dropRates).all()).toEqual([
+        { resourceId: "spot", id: "anonymous", dropRate: 0.2 },
+        { resourceId: "spot", id: "first", dropRate: 0.2 },
+      ]);
+    } finally {
+      db.close();
+    }
+  });
+
+  it("evaluates entered profession and tool scenarios without assuming missing tools", () => {
+    expect(professionAttempt("mining", 4, 0, 4)).toEqual({
+      raw: 0.2,
+      qualified: true,
+      displayed: 0.2,
+    });
+    expect(professionAttempt("fishing", 4, 0, null)).toEqual({
+      raw: 0,
+      qualified: false,
+      displayed: 0,
+    });
+    expect(professionAttempt("herbalism", 4, 0, null)).toEqual({
+      raw: 0,
+      qualified: false,
+      displayed: 0,
+    });
+    expect(professionAttempt("herbalism", 4, 1, null)).toEqual({
+      raw: 1,
+      qualified: true,
+      displayed: 1,
+    });
+    expect(professionAttempt("fishing", 4, 0.4, 0)).toEqual({
+      raw: 0.2,
+      qualified: true,
+      displayed: 0.2,
+    });
   });
 });

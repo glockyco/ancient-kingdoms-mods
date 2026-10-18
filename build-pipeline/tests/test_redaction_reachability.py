@@ -40,11 +40,23 @@ class ReachabilityTestCase(unittest.TestCase):
     def _dropped_by(self, item_id, monster_id, zone):
         """Give an item a public source, so it is live rather than unconnected."""
         self._monster(monster_id, zone)
-        self.conn.execute(
-            "UPDATE monsters SET drops = ? WHERE id = ?",
-            (f'[{{"item_id": "{item_id}", "rate": 0.5}}]', monster_id),
-        )
+        self._loot(monster_id, item_id)
         self.conn.commit()
+
+    def _loot(self, monster_id, item_id):
+        pool_id = f"{monster_id}_loot"
+        self.conn.execute(
+            "INSERT INTO loot_pools(id,kind) VALUES (?,'monster')", (pool_id,)
+        )
+        self.conn.execute(
+            "UPDATE monsters SET loot_pool_id=? WHERE id=?", (pool_id, monster_id)
+        )
+        self.conn.execute(
+            "INSERT INTO loot_pool_entries(id,pool_id,ordinal,item_id,resolution,probability,"
+            "duplicate_group,counts_equipment,guaranteed_equipment_candidate,quest_gate,"
+            "scales_with_treasure_hunter) VALUES (?,?,0,?,'direct',0.1,0,0,0,'none',1)",
+            (f"{pool_id}_entry", pool_id, item_id),
+        )
 
     def _item(self, item_id, **columns):
         columns.setdefault("travel_zone_id", None)
@@ -161,10 +173,7 @@ class DepthTests(ReachabilityTestCase):
         # zone -> spawn -> monster -> drop -> item
         self._item("loot")
         self._monster("dropper", REDACTED)
-        self.conn.execute(
-            "UPDATE monsters SET drops = ? WHERE id = 'dropper'",
-            ('[{"item_id": "loot", "rate": 0.1}]',),
-        )
+        self._loot("dropper", "loot")
         self.conn.commit()
 
         removals = self._run()
@@ -176,16 +185,13 @@ class DepthTests(ReachabilityTestCase):
     def test_the_reason_chain_names_what_it_followed(self):
         self._item("loot")
         self._monster("dropper", REDACTED)
-        self.conn.execute(
-            "UPDATE monsters SET drops = ? WHERE id = 'dropper'",
-            ('[{"item_id": "loot", "rate": 0.1}]',),
-        )
+        self._loot("dropper", "loot")
         self.conn.commit()
 
         removals = self._run()
 
         followed = next(r.via for r in removals if r.entity_id == "loot")
-        self.assertIn("monsters:dropper", followed)
+        self.assertIn("loot_pool_entries:dropper_loot_entry", followed)
 
 
 class UnconnectedContentTests(ReachabilityTestCase):
@@ -242,8 +248,14 @@ class ReferenceKindTests(ReachabilityTestCase):
             ("carrier", "private_proc"),
         )
         self.conn.commit()
+        self.conn.execute("PRAGMA foreign_keys = ON")
+        self.assertFalse(self.conn.in_transaction)
 
         self._run()
+        self.assertTrue(self.conn.in_transaction)
+        self.conn.commit()
+        self.assertEqual(self.conn.execute("PRAGMA foreign_key_check").fetchall(), [])
+        self.assertEqual(self.conn.execute("PRAGMA foreign_keys").fetchone(), (1,))
 
         self.assertFalse(self._present("skills", "private_proc"))
 

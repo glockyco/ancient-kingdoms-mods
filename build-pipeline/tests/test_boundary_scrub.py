@@ -83,9 +83,9 @@ class BoundaryScrubTests(unittest.TestCase):
 
         self.assertEqual(
             self.conn.execute(
-                "SELECT to_zone_id, to_sub_zone_id FROM portals WHERE id = 'gate'"
+                "SELECT to_zone_id, to_sub_zone_id, destination_withheld FROM portals WHERE id = 'gate'"
             ).fetchone(),
-            (None, None),
+            (None, None, 1),
         )
 
     def test_the_destination_coordinates_are_absent(self):
@@ -99,6 +99,18 @@ class BoundaryScrubTests(unittest.TestCase):
                 "SELECT destination_x, destination_y FROM portals WHERE id = 'gate'"
             ).fetchone(),
             (None, None),
+        )
+
+    def test_a_withheld_key_keeps_the_portal_gate_and_other_requirements(self):
+        self.config = RedactionConfig(
+            exclude_zone_ids={EXCLUDED}, exclude_entity_ids={"key"}
+        )
+        self._apply()
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT required_item_id,required_item_withheld,level_required,item_level_required FROM portals WHERE id='gate'"
+            ).fetchone(),
+            (None, 1, 50, 25000),
         )
 
     def test_a_portal_between_published_zones_is_untouched(self):

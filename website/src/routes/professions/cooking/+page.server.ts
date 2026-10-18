@@ -1,20 +1,27 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import type { ObtainabilityNode } from "$lib/types/recipes";
-import { buildObtainabilityTree } from "$lib/server/obtainability";
+import type { AcquisitionQuery, MethodView } from "$lib/acquisition/types";
+import { loadAcquisition } from "$lib/server/acquisition";
+import {
+  loadAcquisitionItems,
+  type AcquisitionItem,
+} from "$lib/acquisition/items";
 
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 export const prerender = true;
 
 interface CookingRecipe {
   id: string;
+  recipe_id: string;
   result_item_id: string;
+  result_amount: number;
   result_item_name: string;
   result_tooltip_html: string | null;
   result_quality: number;
   result_item_type: string | null;
-  obtainabilityTree: ObtainabilityNode;
+  methods: readonly MethodView[];
 }
 
 interface StationLocation {
@@ -45,13 +52,17 @@ interface CookingPageData {
     achievement_name: string;
   };
   recipes: CookingRecipe[];
+  acquisitionItems: Record<string, AcquisitionItem>;
+  acquisitionNames: Readonly<Record<string, string>>;
   locations: StationLocation[];
   recipeCounts: TierCount[];
   xpByTier: TierXp[];
 }
 
-export const load: PageServerLoad = (): CookingPageData => {
+export const load: PageServerLoad = async (): Promise<CookingPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const execute: AcquisitionQuery = async (sql, params) =>
+    db.prepare(sql).all(...params) as Record<string, unknown>[];
 
   const profession = db
     .prepare(
@@ -75,40 +86,43 @@ export const load: PageServerLoad = (): CookingPageData => {
     .prepare(
       `
     SELECT
-      cr.id,
+      d.id,
+      cr.id as recipe_id,
       cr.result_item_id,
+      d.result_amount,
       i.name as result_item_name,
       i.tooltip_html as result_tooltip_html,
       i.quality as result_quality,
       i.item_type as result_item_type
-    FROM crafting_recipes cr
+    FROM acquisition_recipe_details d
+    JOIN crafting_recipes cr ON cr.id = d.crafting_recipe_id
     JOIN items i ON i.id = cr.result_item_id
-    WHERE cr.station_type = 'cooking'
-    ORDER BY i.quality, i.name
+    WHERE d.display_kind = 'cooking'
+    ORDER BY i.quality, i.name, cr.id
   `,
     )
-    .all() as Omit<CookingRecipe, "obtainabilityTree">[];
+    .all() as Omit<CookingRecipe, "methods">[];
 
-  const recipes: CookingRecipe[] = rawRecipes.map((recipe) => {
-    const visited = new Set<string>();
-    const obtainabilityTree = buildObtainabilityTree(
-      db,
-      recipe.result_item_id,
-      1,
-      0,
-      visited,
-      true,
-    );
-    return { ...recipe, obtainabilityTree };
+  const recipeModel = await loadAcquisition(execute, {
+    kind: "recipes",
+    recipeIds: rawRecipes.map((recipe) => recipe.recipe_id),
   });
+  const recipes: CookingRecipe[] = rawRecipes.map((recipe) => {
+    const method = recipeModel.methodViews.get(recipe.id);
+    if (!method) throw new Error(`Missing cooking method ${recipe.id}`);
+    return { ...recipe, methods: [method] };
+  });
+  const acquisitionItems = await loadAcquisitionItems(execute, recipeModel);
 
   const locations = db
     .prepare(
       `
-    SELECT id, zone_id, zone_name, sub_zone_name
-    FROM crafting_stations
-    WHERE is_cooking_oven = 1
-    ORDER BY zone_name, sub_zone_name
+    SELECT DISTINCT s.id, s.zone_id, s.zone_name, s.sub_zone_name
+    FROM crafting_stations s
+    JOIN acquisition_providers_crafting_stations p ON p.crafting_station_id = s.id
+    JOIN acquisition_recipe_details d ON d.id = p.method_id
+    WHERE d.display_kind = 'cooking'
+    ORDER BY s.zone_name, s.sub_zone_name
   `,
     )
     .all() as StationLocation[];
@@ -117,12 +131,11 @@ export const load: PageServerLoad = (): CookingPageData => {
   const recipeCounts = db
     .prepare(
       `
-    SELECT i.quality as tier, COUNT(*) as count
-    FROM crafting_recipes cr
-    JOIN items i ON i.id = cr.result_item_id
-    WHERE cr.station_type = 'cooking'
-    GROUP BY i.quality
-    ORDER BY i.quality
+    SELECT d.tier, COUNT(*) as count
+    FROM acquisition_recipe_details d
+    WHERE d.display_kind = 'cooking'
+    GROUP BY d.tier
+    ORDER BY d.tier
   `,
     )
     .all() as TierCount[];
@@ -131,17 +144,24 @@ export const load: PageServerLoad = (): CookingPageData => {
   const xpByTier = db
     .prepare(
       `
-    SELECT i.quality as tier, MAX(cr.crafting_exp) as xp
-    FROM crafting_recipes cr
-    JOIN items i ON i.id = cr.result_item_id
-    WHERE cr.station_type = 'cooking'
-    GROUP BY i.quality
-    ORDER BY i.quality
+    SELECT d.tier, MAX(d.experience) as xp
+    FROM acquisition_recipe_details d
+    WHERE d.display_kind = 'cooking'
+    GROUP BY d.tier
+    ORDER BY d.tier
   `,
     )
     .all() as TierXp[];
 
   db.close();
 
-  return { profession, recipes, locations, recipeCounts, xpByTier };
+  return {
+    profession,
+    recipes,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(recipeModel),
+    locations,
+    recipeCounts,
+    xpByTier,
+  };
 };

@@ -76,9 +76,7 @@
 
   const PAGE_SIZE = 20;
 
-  // Tier rendering: Crafting/Cooking/Alchemy use Roman numerals (I-V).
-  // Scribing 'tier' is a Scroll Mastery % threshold, so render it as 'N%'
-  // when set and '-' when the scroll has no mastery requirement.
+  // Scribing recipes do not have a Scroll Mastery requirement.
   const romanNumerals = ["I", "II", "III", "IV", "V"];
 
   function formatTier(
@@ -86,7 +84,7 @@
     tier: number,
   ): string {
     if (type === "Scribing") {
-      return tier > 0 ? `${tier}%` : "-";
+      return "-";
     }
     return romanNumerals[tier] ?? "-";
   }
@@ -119,7 +117,7 @@
     {
       accessorKey: "type",
       header: "Type",
-      size: 90,
+      size: 120,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
         if (!filterValue || filterValue.length === 0) return true;
@@ -156,7 +154,7 @@
     },
     {
       id: "ingredient3",
-      header: "Ingredient 3",
+      header: "Other ingredients",
       minSize: 220,
       enableSorting: false,
       accessorFn: (row) => row.ingredients[2]?.item_name ?? "",
@@ -170,12 +168,16 @@
     result_item_name: "Output",
     ingredient1: "Ingredient 1",
     ingredient2: "Ingredient 2",
-    ingredient3: "Ingredient 3",
+    ingredient3: "Other ingredients",
   };
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<RecipeRow, unknown> })}
-  {columnLabels[header.id] ?? header.id}
+  {#if header.id === "tier"}
+    <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
+  {:else}
+    {columnLabels[header.id] ?? header.id}
+  {/if}
 {/snippet}
 
 {#snippet renderCell({
@@ -196,7 +198,7 @@
   {:else if cell.column.id === "type"}
     {row.original.type}
   {:else if cell.column.id === "tier"}
-    <span class="font-medium"
+    <span class="ml-auto font-medium"
       >{formatTier(row.original.type, row.original.tier)}</span
     >
   {:else if cell.column.id === "result_item_name"}
@@ -213,51 +215,26 @@
         >×{row.original.result_amount}</span
       >
     {/if}
-  {:else if cell.column.id === "ingredient1"}
-    {#if row.original.ingredients[0]}
-      <span class="whitespace-nowrap">
-        <ItemLink
-          itemId={row.original.ingredients[0].item_id}
-          itemName={row.original.ingredients[0].item_name}
-          imageAvailable={row.original.ingredients[0].visual_public_path}
-        />
-        <span class="text-muted-foreground">
-          ×{row.original.ingredients[0].amount}</span
-        >
-      </span>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "ingredient2"}
-    {#if row.original.ingredients[1]}
-      <span class="whitespace-nowrap">
-        <ItemLink
-          itemId={row.original.ingredients[1].item_id}
-          itemName={row.original.ingredients[1].item_name}
-          imageAvailable={row.original.ingredients[1].visual_public_path}
-        />
-        <span class="text-muted-foreground">
-          ×{row.original.ingredients[1].amount}</span
-        >
-      </span>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "ingredient3"}
-    {#if row.original.ingredients[2]}
-      <span class="whitespace-nowrap">
-        <ItemLink
-          itemId={row.original.ingredients[2].item_id}
-          itemName={row.original.ingredients[2].item_name}
-          imageAvailable={row.original.ingredients[2].visual_public_path}
-        />
-        <span class="text-muted-foreground">
-          ×{row.original.ingredients[2].amount}</span
-        >
-      </span>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
+  {:else if cell.column.id.startsWith("ingredient")}
+    {@const index = Number(cell.column.id.slice(-1)) - 1}
+    {@const ingredients =
+      index === 2
+        ? row.original.ingredients.slice(2)
+        : row.original.ingredients.slice(index, index + 1)}
+    <div class="space-y-1">
+      {#each ingredients as ingredient (ingredient)}
+        <div class="flex flex-wrap items-baseline gap-1">
+          {#if ingredient.item_id}
+            <ItemLink
+              itemId={ingredient.item_id}
+              itemName={ingredient.item_name}
+              imageAvailable={ingredient.visual_public_path}
+            />
+          {:else}<span>{ingredient.item_name}</span>{/if}
+          <span class="text-muted-foreground">×{ingredient.amount}</span>
+        </div>
+      {:else}<span class="text-muted-foreground">-</span>{/each}
+    </div>
   {:else}
     {cell.getValue()}
   {/if}

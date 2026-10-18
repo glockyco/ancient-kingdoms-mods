@@ -6,6 +6,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import { calculateChestRewards } from "$lib/calculation/chest-rewards";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapIcon from "@lucide/svelte/icons/map";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -27,6 +28,7 @@
     calculateChestRewards(data.buriedChest, skillFraction).map(
       (reward, index) => ({
         ...reward,
+        item_name: reward.display_name,
         baseline_chance: baselineChestRewards[index].open_chance,
         change_from_baseline:
           reward.open_chance - baselineChestRewards[index].open_chance,
@@ -35,7 +37,9 @@
   );
   const displayedChestRewards = $derived(
     adjustedChestRewards
-      .filter((reward) => reward.scales_with_treasure_hunter)
+      .filter(
+        (reward) => reward.scales_with_treasure_hunter && !reward.withheld,
+      )
       .sort((a, b) => a.item_name.localeCompare(b.item_name)),
   );
 
@@ -299,7 +303,7 @@
           </thead>
           <tbody>
             {#each displayedChestRewards as reward (reward.item_id)}
-              <tr class="border-t hover:bg-muted/25">
+              <tr class="border-t odd:bg-muted/20 hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink
                     itemId={reward.item_id}
@@ -378,7 +382,7 @@
           </thead>
           <tbody>
             {#each data.treasureMaps as map (map.id)}
-              <tr class="border-t hover:bg-muted/25">
+              <tr class="border-t odd:bg-muted/20 hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink
                     itemId={map.id}
@@ -413,5 +417,13 @@
         </table>
       </div>
     </div>
+  </section>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Acquisition methods</h2>
+    <MethodList
+      methods={data.acquisitionMethods}
+      items={data.acquisitionItems}
+      names={data.acquisitionNames}
+    />
   </section>
 </div>

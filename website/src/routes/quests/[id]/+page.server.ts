@@ -8,16 +8,17 @@ import type {
   QuestNpc,
   QuestMonsterTarget,
   QuestItemTarget,
+  QuestLocationTarget,
   QuestRewards,
   QuestFactionRequirement,
   QuestRewardItem,
   QuestChainGraph,
   QuestGraphNode,
   QuestGraphEdge,
-  QuestPosition,
 } from "$lib/types/quests";
-import type { ObtainabilityNode } from "$lib/types/recipes";
-import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 import { questDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
@@ -34,13 +35,9 @@ export const entries: EntryGenerator = () => {
   return quests.map((quest) => ({ id: quest.id }));
 };
 
-const defaultRewards: QuestRewards = {
-  gold: 0,
-  exp: 0,
-  items: [],
-};
-
-export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
+export const load: PageServerLoad = async ({
+  params,
+}): Promise<QuestDetailPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const questRaw = db
@@ -52,21 +49,34 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     throw error(404, `Quest not found: ${params.id}`);
   }
 
-  // Parse JSON fields
-  const raceRequirements: string[] = questRaw.race_requirements
-    ? JSON.parse(questRaw.race_requirements as string)
-    : [];
-
-  const classRequirements: string[] = questRaw.class_requirements
-    ? JSON.parse(questRaw.class_requirements as string)
-    : [];
-
-  const factionRequirementsRaw: Array<{
-    faction: string;
-    faction_value: number;
-  }> = questRaw.faction_requirements
-    ? JSON.parse(questRaw.faction_requirements as string)
-    : [];
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "requirements",
+    entities: [{ kind: "quest", id: params.id }],
+  });
+  const requirements = acquisition.requirements.get(`quest:${params.id}`) ?? [];
+  const raceRequirements = (
+    db
+      .prepare(
+        "SELECT race_id AS name FROM quest_race_requirements WHERE quest_id = ? AND withheld = 0 ORDER BY ordinal",
+      )
+      .all(params.id) as { name: string }[]
+  ).map((row) => row.name);
+  const classRequirements = (
+    db
+      .prepare(
+        "SELECT c.name FROM quest_class_requirements r JOIN classes c ON c.id = r.class_id WHERE r.quest_id = ? ORDER BY r.ordinal",
+      )
+      .all(params.id) as { name: string }[]
+  ).map((row) => row.name);
+  const factionRequirementsRaw = db
+    .prepare(
+      "SELECT f.name AS faction, r.standing AS faction_value FROM quest_faction_requirements r JOIN factions f ON f.id = r.faction_id WHERE r.quest_id = ? ORDER BY r.ordinal",
+    )
+    .all(params.id) as Array<{ faction: string; faction_value: number }>;
 
   // Enrich faction requirements with tier names
   const factionRequirements: QuestFactionRequirement[] =
@@ -89,32 +99,33 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       };
     });
 
-  const rewardsRaw = questRaw.rewards
-    ? JSON.parse(questRaw.rewards as string)
-    : defaultRewards;
-
-  // Enrich reward items with names and tooltips
-  const rewardItems: QuestRewardItem[] = [];
-  if (rewardsRaw.items && Array.isArray(rewardsRaw.items)) {
-    for (const ri of rewardsRaw.items) {
-      const itemData = db
-        .prepare("SELECT name, tooltip_html FROM items WHERE id = ?")
-        .get(ri.item_id) as
-        { name: string; tooltip_html: string | null } | undefined;
-      rewardItems.push({
-        item_id: ri.item_id,
-        item_name: itemData?.name ?? ri.item_id,
-        class_specific: ri.class_specific ?? null,
-        tooltip_html: itemData?.tooltip_html ?? null,
-      });
-    }
-  }
-
+  const rewardItems = db
+    .prepare(
+      `
+    SELECT i.id AS item_id, i.name AS item_name, c.name AS class_specific, i.tooltip_html, r.amount
+    FROM quest_reward_slots r JOIN items i ON i.id = r.item_id
+    LEFT JOIN classes c ON c.id = r.class_id WHERE r.quest_id = ? ORDER BY r.ordinal
+  `,
+    )
+    .all(params.id) as QuestRewardItem[];
   const rewards: QuestRewards = {
-    gold: rewardsRaw.gold ?? 0,
-    exp: rewardsRaw.exp ?? 0,
+    gold: Number(questRaw.reward_gold),
+    exp: Number(questRaw.reward_experience),
     items: rewardItems,
   };
+  const locationTargets = db
+    .prepare(
+      `
+    SELECT o.id, o.role, o.withheld, l.zone_id, z.name AS zone_name,
+      s.name AS sub_zone_name, l.discovered_location, l.tracking_quest_location
+    FROM quest_objectives o
+    JOIN quest_objective_locations l ON l.id = o.id
+    LEFT JOIN zones z ON z.id = l.zone_id
+    LEFT JOIN zone_triggers s ON s.id = l.sub_zone_id
+    WHERE o.quest_id = ? ORDER BY o.ordinal
+  `,
+    )
+    .all(params.id) as QuestLocationTarget[];
 
   const quest: QuestInfo = {
     id: questRaw.id as string,
@@ -145,392 +156,104 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
           string
         >)
       : null,
-    // Location quest fields
-    discovered_location: (questRaw.discovered_location as string) || null,
-    discovered_location_zone: (() => {
-      // For discover quests, look up the zone from discovered_location_zone_id
-      if (
-        questRaw.discovered_location &&
-        questRaw.discovered_location_zone_id
-      ) {
-        const zone = db
-          .prepare("SELECT id, name FROM zones WHERE id = ?")
-          .get(questRaw.discovered_location_zone_id) as
-          { id: string; name: string } | undefined;
-        return zone ? { id: zone.id, name: zone.name } : null;
-      }
-      return null;
-    })(),
-    discovered_location_sub_zone: (() => {
-      // Look up the sub-zone (area) from discovered_location_sub_zone_id
-      if (questRaw.discovered_location_sub_zone_id) {
-        const subZone = db
-          .prepare("SELECT id, name FROM zone_triggers WHERE id = ?")
-          .get(questRaw.discovered_location_sub_zone_id) as
-          { id: string; name: string } | undefined;
-        return subZone ? { id: subZone.id, name: subZone.name } : null;
-      }
-      return null;
-    })(),
-    discovered_location_position: questRaw.discovered_location_position
-      ? (JSON.parse(
-          questRaw.discovered_location_position as string,
-        ) as QuestPosition)
-      : null,
-    tracking_quest_location:
-      (questRaw.tracking_quest_location as string) || null,
     is_find_npc_quest: Boolean(questRaw.is_find_npc_quest),
     // Gather inventory quest fields
     remove_items_on_complete: Boolean(questRaw.remove_items_on_complete),
     // Alchemy quest fields
-    potions_amount: (questRaw.potions_amount as number) || 0,
+    potions_amount: Number(
+      (
+        db
+          .prepare(
+            "SELECT amount FROM quest_objectives WHERE quest_id = ? AND kind = 'brew' ORDER BY ordinal",
+          )
+          .get(params.id) as { amount: number } | undefined
+      )?.amount ?? 0,
+    ),
     increase_alchemy_skill: (questRaw.increase_alchemy_skill as number) || 0,
   };
 
-  // Get start NPC(s)
-  // For regular quests, use the start_npc_id field
-  // For adventurer quests, find all NPCs that offer this quest
-  let startNpc: QuestNpc | null = null;
-  let adventurerNpcs: QuestNpc[] = [];
-
-  if (questRaw.start_npc_id) {
-    const npcData = db
-      .prepare(
-        `
-      SELECT n.id, n.name, n.faction, ns.zone_id, z.name as zone_name
-      FROM npcs n
-      LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
-      LEFT JOIN zones z ON z.id = ns.zone_id
-      WHERE n.id = ?
-      LIMIT 1
-    `,
-      )
-      .get(questRaw.start_npc_id) as
-      | {
-          id: string;
-          name: string;
-          faction: string | null;
-          zone_id: string | null;
-          zone_name: string | null;
-        }
-      | undefined;
-
-    if (npcData) {
-      startNpc = {
-        id: npcData.id,
-        name: npcData.name,
-        faction: npcData.faction,
-        zone_id: npcData.zone_id,
-        zone_name: npcData.zone_name,
-      };
-    }
-  } else if (questRaw.is_adventurer_quest) {
-    // Find all NPCs that offer this adventurer quest
-    const npcsOffering = db
-      .prepare(
-        `
-      SELECT n.id, n.name, n.faction, ns.zone_id, z.name as zone_name
-      FROM npcs n
-      LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
-      LEFT JOIN zones z ON z.id = ns.zone_id
-      WHERE EXISTS (
-        SELECT 1 FROM json_each(n.quests_offered)
-        WHERE json_extract(value, '$.id') = ?
-      )
-      GROUP BY n.id
-      ORDER BY n.name
-    `,
-      )
-      .all(params.id) as Array<{
-      id: string;
-      name: string;
-      faction: string | null;
-      zone_id: string | null;
-      zone_name: string | null;
-    }>;
-
-    adventurerNpcs = npcsOffering.map((npc) => ({
-      id: npc.id,
-      name: npc.name,
-      faction: npc.faction,
-      zone_id: npc.zone_id,
-      zone_name: npc.zone_name,
-    }));
-  }
-
-  // Get end NPC
-  let endNpc: QuestNpc | null = null;
-  if (questRaw.end_npc_id && questRaw.end_npc_id !== questRaw.start_npc_id) {
-    const npcData = db
-      .prepare(
-        `
-      SELECT n.id, n.name, n.faction, ns.zone_id, z.name as zone_name
-      FROM npcs n
-      LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
-      LEFT JOIN zones z ON z.id = ns.zone_id
-      WHERE n.id = ?
-      LIMIT 1
-    `,
-      )
-      .get(questRaw.end_npc_id) as
-      | {
-          id: string;
-          name: string;
-          faction: string | null;
-          zone_id: string | null;
-          zone_name: string | null;
-        }
-      | undefined;
-
-    if (npcData) {
-      endNpc = {
-        id: npcData.id,
-        name: npcData.name,
-        faction: npcData.faction,
-        zone_id: npcData.zone_id,
-        zone_name: npcData.zone_name,
-      };
-    }
-  }
+  const questNpcs = db
+    .prepare(
+      `
+    SELECT n.id, n.name, n.faction, ns.zone_id, z.name AS zone_name, m.role
+    FROM npc_quest_memberships m JOIN npcs n ON n.id = m.npc_id
+    LEFT JOIN npc_spawns ns ON ns.npc_id = n.id LEFT JOIN zones z ON z.id = ns.zone_id
+    WHERE m.quest_id = ? ORDER BY m.role, n.name, z.name, ns.id
+  `,
+    )
+    .all(params.id) as Array<QuestNpc & { role: string }>;
+  const startNpcs = questNpcs.filter((npc) => npc.role === "offer");
+  const endNpcs = questNpcs.filter((npc) => npc.role === "complete");
 
   // Build quest chain graph
   const chainGraph = buildQuestChainGraph(db, params.id);
 
-  // Parse predecessor IDs and get predecessor quests for breadcrumb nav
-  const predecessorIds: string[] = questRaw.predecessor_ids
-    ? JSON.parse(questRaw.predecessor_ids as string)
-    : [];
-
-  const predecessors: { id: string; name: string; quest_type: string }[] = [];
-  for (const predId of predecessorIds) {
-    const predData = db
-      .prepare("SELECT id, name, quest_type FROM quests WHERE id = ?")
-      .get(predId) as
-      { id: string; name: string; quest_type: string } | undefined;
-    if (predData) {
-      predecessors.push(predData);
-    }
-  }
+  const predecessors = db
+    .prepare(
+      `
+    SELECT q.id, q.name, q.quest_type FROM quest_predecessors p JOIN quests q ON q.id = p.predecessor_quest_id
+    WHERE p.quest_id = ? ORDER BY p.ordinal
+  `,
+    )
+    .all(params.id) as { id: string; name: string; quest_type: string }[];
 
   // Get successor quests for breadcrumb nav
   const successors = db
     .prepare(
       `SELECT DISTINCT q.id, q.name, q.quest_type
-       FROM quests q, json_each(q.predecessor_ids) AS pred
-       WHERE pred.value = ?`,
+       FROM quests q JOIN quest_predecessors pred ON pred.quest_id = q.id
+       WHERE pred.predecessor_quest_id = ?`,
     )
     .all(params.id) as { id: string; name: string; quest_type: string }[];
 
-  // Get kill targets
-  const killTargets: QuestMonsterTarget[] = [];
-  if (questRaw.kill_target_1_id) {
-    const monsterData = db
+  const killTargets = db
+    .prepare(
+      `
+    SELECT m.id, m.name, o.amount, m.is_boss, m.is_fabled, m.is_elite
+    FROM quest_objectives o JOIN quest_objective_monsters t ON t.id = o.id
+    JOIN monsters m ON m.id = t.monster_id WHERE o.quest_id = ? ORDER BY o.ordinal
+  `,
+    )
+    .all(params.id) as QuestMonsterTarget[];
+  const itemObjectives = db
+    .prepare(
+      `
+    SELECT i.id, i.name, i.tooltip_html, o.amount, o.role FROM quest_objectives o
+    JOIN quest_objective_items t ON t.id = o.id JOIN items i ON i.id = t.item_id
+    WHERE o.quest_id = ? ORDER BY o.ordinal
+  `,
+    )
+    .all(params.id) as Array<QuestItemTarget & { role: string }>;
+  const gatherItems = itemObjectives.filter(
+    (item) => item.role === "gather_counter",
+  );
+  const gatherInventoryItems = itemObjectives.filter(
+    (item) => item.role === "inventory_primary",
+  );
+  const requiredItems = itemObjectives.filter(
+    (item) => item.role === "inventory_secondary",
+  );
+  const equipItems = itemObjectives.filter((item) => item.role === "equipped");
+  const givenItemsOnStart = db
+    .prepare(
+      `
+    SELECT i.id, i.name, i.tooltip_html, p.amount FROM quest_provided_items p
+    JOIN items i ON i.id = p.item_id WHERE p.quest_id = ? ORDER BY p.ordinal
+  `,
+    )
+    .all(params.id) as QuestItemTarget[];
+  const potionItem =
+    (db
       .prepare(
-        "SELECT id, name, is_boss, is_fabled, is_elite FROM monsters WHERE id = ?",
+        `
+    SELECT i.id, i.name, i.tooltip_html, o.amount FROM quest_objectives o
+    JOIN quest_objective_brews b ON b.id = o.id JOIN items i ON i.id = b.item_id
+    WHERE o.quest_id = ? ORDER BY o.ordinal
+  `,
       )
-      .get(questRaw.kill_target_1_id) as
-      | {
-          id: string;
-          name: string;
-          is_boss: number;
-          is_fabled: number;
-          is_elite: number;
-        }
-      | undefined;
+      .get(params.id) as QuestItemTarget | undefined) ?? null;
 
-    if (monsterData) {
-      killTargets.push({
-        id: monsterData.id,
-        name: monsterData.name,
-        amount: (questRaw.kill_amount_1 as number) || 1,
-        is_boss: Boolean(monsterData.is_boss),
-        is_fabled: Boolean(monsterData.is_fabled),
-        is_elite: Boolean(monsterData.is_elite),
-      });
-    }
-  }
-  if (questRaw.kill_target_2_id) {
-    const monsterData = db
-      .prepare(
-        "SELECT id, name, is_boss, is_fabled, is_elite FROM monsters WHERE id = ?",
-      )
-      .get(questRaw.kill_target_2_id) as
-      | {
-          id: string;
-          name: string;
-          is_boss: number;
-          is_fabled: number;
-          is_elite: number;
-        }
-      | undefined;
-
-    if (monsterData) {
-      killTargets.push({
-        id: monsterData.id,
-        name: monsterData.name,
-        amount: (questRaw.kill_amount_2 as number) || 1,
-        is_boss: Boolean(monsterData.is_boss),
-        is_fabled: Boolean(monsterData.is_fabled),
-        is_elite: Boolean(monsterData.is_elite),
-      });
-    }
-  }
-
-  // Get gather items
-  const gatherItems: QuestItemTarget[] = [];
-  const gatherFields = [
-    { idField: "gather_item_1_id", amountField: "gather_amount_1" },
-    { idField: "gather_item_2_id", amountField: "gather_amount_2" },
-    { idField: "gather_item_3_id", amountField: "gather_amount_3" },
-  ];
-
-  for (const field of gatherFields) {
-    const itemId = questRaw[field.idField] as string | null;
-    if (itemId) {
-      const itemData = db
-        .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
-        .get(itemId) as
-        { id: string; name: string; tooltip_html: string | null } | undefined;
-
-      if (itemData) {
-        gatherItems.push({
-          id: itemData.id,
-          name: itemData.name,
-          amount: (questRaw[field.amountField] as number) || 1,
-          tooltip_html: itemData.tooltip_html,
-        });
-      }
-    }
-  }
-
-  // Get given item on start
-  let givenItemOnStart: QuestItemTarget | null = null;
-  if (questRaw.given_item_on_start_id) {
-    const itemData = db
-      .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
-      .get(questRaw.given_item_on_start_id) as
-      { id: string; name: string; tooltip_html: string | null } | undefined;
-
-    if (itemData) {
-      givenItemOnStart = {
-        id: itemData.id,
-        name: itemData.name,
-        amount: 1,
-        tooltip_html: itemData.tooltip_html,
-      };
-    }
-  }
-
-  // Get gather inventory items (for gather_inventory quests)
-  const gatherInventoryItems: QuestItemTarget[] = [];
-  const gatherItemsJson = questRaw.gather_items
-    ? JSON.parse(questRaw.gather_items as string)
-    : [];
-  for (const gi of gatherItemsJson) {
-    if (gi.item_id && (gi.amount ?? 1) > 0) {
-      const itemData = db
-        .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
-        .get(gi.item_id) as
-        { id: string; name: string; tooltip_html: string | null } | undefined;
-      if (itemData) {
-        gatherInventoryItems.push({
-          id: itemData.id,
-          name: itemData.name,
-          amount: gi.amount ?? 1,
-          tooltip_html: itemData.tooltip_html,
-        });
-      }
-    }
-  }
-
-  // Zero-amount requirements neither require nor consume an item.
-  // Source: server-scripts/GatherInventoryQuest.cs:IsFulfilled,OnCompleted
-  const requiredItems: QuestItemTarget[] = [];
-  const requiredItemsJson = questRaw.required_items
-    ? JSON.parse(questRaw.required_items as string)
-    : [];
-  for (const ri of requiredItemsJson) {
-    if (ri.item_id && (ri.amount ?? 1) > 0) {
-      const itemData = db
-        .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
-        .get(ri.item_id) as
-        { id: string; name: string; tooltip_html: string | null } | undefined;
-      if (itemData) {
-        requiredItems.push({
-          id: itemData.id,
-          name: itemData.name,
-          amount: ri.amount ?? 1,
-          tooltip_html: itemData.tooltip_html,
-        });
-      }
-    }
-  }
-
-  // Get equip items (for equip_item quests)
-  const equipItems: QuestItemTarget[] = [];
-  const equipItemsJson = questRaw.equip_items
-    ? JSON.parse(questRaw.equip_items as string)
-    : [];
-  for (const itemId of equipItemsJson) {
-    if (itemId) {
-      const itemData = db
-        .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
-        .get(itemId) as
-        { id: string; name: string; tooltip_html: string | null } | undefined;
-      if (itemData) {
-        equipItems.push({
-          id: itemData.id,
-          name: itemData.name,
-          amount: 1,
-          tooltip_html: itemData.tooltip_html,
-        });
-      }
-    }
-  }
-
-  // Get potion item (for alchemy quests)
-  let potionItem: QuestItemTarget | null = null;
-  if (questRaw.potion_item_id) {
-    const itemData = db
-      .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
-      .get(questRaw.potion_item_id) as
-      { id: string; name: string; tooltip_html: string | null } | undefined;
-
-    if (itemData) {
-      potionItem = {
-        id: itemData.id,
-        name: itemData.name,
-        amount: quest.potions_amount || 1,
-        tooltip_html: itemData.tooltip_html,
-      };
-    }
-  }
-
-  // Build obtainability trees for items that need to be gathered/delivered/equipped
-  // Combine all item objectives that players need to obtain
-  const allObjectiveItems = [
-    ...gatherItems,
-    ...gatherInventoryItems,
-    ...requiredItems,
-    ...equipItems,
-  ];
-
-  const itemObtainabilityTrees: ObtainabilityNode[] = [];
-  for (const item of allObjectiveItems) {
-    const visited = new Set<string>();
-    const tree = buildObtainabilityTree(
-      db,
-      item.id,
-      item.amount,
-      0,
-      visited,
-      true,
-    );
-    // Only include if the item has sources or is craftable
-    if (tree.sources.length > 0 || tree.recipe) {
-      itemObtainabilityTrees.push(tree);
-    }
-  }
+  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
 
   // Build objectives for meta description
   type ObjectiveType =
@@ -580,26 +303,31 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       amount: potionItem.amount,
     });
   }
-  if (quest.discovered_location) {
+  for (const target of locationTargets) {
+    if (target.role !== "location_visit") continue;
     objectives.push({
       type: "discover",
-      name:
-        quest.discovered_location_sub_zone?.name ??
-        quest.discovered_location_zone?.name ??
-        "the marked location",
-      zone_name: quest.discovered_location_sub_zone
-        ? quest.discovered_location_zone?.name
-        : null,
+      name: target.withheld
+        ? "an unpublished location"
+        : target.sub_zone_name ||
+          target.tracking_quest_location ||
+          target.zone_name ||
+          target.discovered_location ||
+          "the marked location",
+      zone_name:
+        !target.withheld && target.sub_zone_name ? target.zone_name : null,
       amount: 1,
     });
   }
-  if (quest.is_find_npc_quest && endNpc) {
-    objectives.push({
-      type: "find",
-      name: endNpc.name,
-      amount: 1,
-      zone_name: endNpc.zone_name,
-    });
+  if (quest.is_find_npc_quest) {
+    for (const npc of endNpcs) {
+      objectives.push({
+        type: "find",
+        name: npc.name,
+        amount: 1,
+        zone_name: npc.zone_name,
+      });
+    }
   }
 
   const description = questDescription(
@@ -612,13 +340,14 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       is_adventurer_quest: quest.is_adventurer_quest,
       is_repeatable: quest.is_repeatable,
       is_find_npc_quest: quest.is_find_npc_quest,
-      // Turn-in NPC = end NPC if distinct from start, else fall back to the
-      // start NPC (many quests are turned in to the same NPC who offered them).
-      // Source: server-scripts/ScriptableQuest.cs:startQuestNPC, server-scripts/ScriptableQuest.cs:finishQuestNPC — startQuestNPC and
-      // finishQuestNPC are stored separately even when they reference the
-      // same NPC.
-      turn_in_npc_name: (endNpc ?? startNpc)?.name ?? null,
-      turn_in_npc_zone_name: (endNpc ?? startNpc)?.zone_name ?? null,
+      turn_in_npc_name:
+        [...new Set(endNpcs.map((npc) => npc.name))].join(" or ") || null,
+      turn_in_npc_zone_name:
+        [
+          ...new Set(
+            endNpcs.flatMap((npc) => (npc.zone_name ? [npc.zone_name] : [])),
+          ),
+        ].join(" or ") || null,
     },
     objectives,
   );
@@ -630,7 +359,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     ...requiredItems.map((item) => item.id),
     ...equipItems.map((item) => item.id),
     ...(potionItem ? [potionItem.id] : []),
-    ...(givenItemOnStart ? [givenItemOnStart.id] : []),
+    ...givenItemsOnStart.map((item) => item.id),
   ]);
   db.close();
 
@@ -638,21 +367,26 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     quest,
     factionIds: getFactionIdsByName(),
     description,
-    startNpc,
-    endNpc,
-    adventurerNpcs,
+    startNpcs,
+    endNpcs,
+    requirements,
     chainGraph,
     predecessors,
     successors,
     killTargets,
+    locationTargets,
     gatherItems,
     gatherInventoryItems,
     requiredItems,
     equipItems,
     potionItem,
-    givenItemOnStart,
+    givenItemsOnStart,
     itemIconPaths,
-    itemObtainabilityTrees,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(acquisition),
+    methods: [...acquisition.methodViews.values()].filter(
+      (method) => method.detail.quest_id === params.id,
+    ),
   };
 };
 
@@ -701,7 +435,7 @@ function buildQuestChainGraph(
 
     const questData = db
       .prepare(
-        "SELECT id, name, quest_type, display_type, predecessor_ids FROM quests WHERE id = ?",
+        "SELECT id, name, quest_type, display_type FROM quests WHERE id = ?",
       )
       .get(questId) as
       | {
@@ -709,15 +443,18 @@ function buildQuestChainGraph(
           name: string;
           quest_type: string;
           display_type: string | null;
-          predecessor_ids: string | null;
         }
       | undefined;
 
     if (!questData) continue;
 
-    const predecessorIds: string[] = questData.predecessor_ids
-      ? JSON.parse(questData.predecessor_ids)
-      : [];
+    const predecessorIds = (
+      db
+        .prepare(
+          "SELECT predecessor_quest_id FROM quest_predecessors WHERE quest_id = ? AND withheld = 0 ORDER BY ordinal",
+        )
+        .all(questId) as { predecessor_quest_id: string }[]
+    ).map((row) => row.predecessor_quest_id);
 
     allQuests.set(questId, {
       id: questData.id,
@@ -738,8 +475,8 @@ function buildQuestChainGraph(
     // Find successors (quests that have this quest as a predecessor)
     const successors = db
       .prepare(
-        `SELECT quests.id FROM quests, json_each(quests.predecessor_ids) AS pred
-         WHERE pred.value = ?`,
+        `SELECT quest_id AS id FROM quest_predecessors
+         WHERE predecessor_quest_id = ?`,
       )
       .all(questId) as { id: string }[];
 

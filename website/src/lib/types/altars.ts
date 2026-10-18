@@ -1,4 +1,5 @@
 import type { AltarThresholds } from "$lib/calculation/altar";
+import type { EvaluatedQuantity } from "$lib/acquisition/types";
 
 // Wave monster info (parsed from waves JSON)
 export interface AltarWaveMonster {
@@ -58,8 +59,7 @@ export interface AltarInfo extends AltarThresholds {
 export interface AltarBossDrop {
   itemId: string;
   itemName: string;
-  rate: number;
-  quantity: number;
+  rate: number | null;
   tooltipHtml: string | null;
 }
 
@@ -72,11 +72,16 @@ export interface AltarBoss {
   damage: number;
   magicDamage: number;
   drops: AltarBossDrop[];
+  gold: {
+    quantity: EvaluatedQuantity;
+    probability: number | null;
+  } | null;
 }
 
 // Detail page data
 export interface AltarDetailPageData {
   altar: AltarInfo;
+  activationCost: number | null;
   maxLevel: number;
   description: string;
   rewards: AltarReward[];

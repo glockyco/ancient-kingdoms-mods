@@ -67,28 +67,7 @@ def _convert_unity_markup_to_html(text: str) -> str:
     return html
 
 
-def _get_item_name(conn: sqlite3.Connection, item_id: str | None) -> str:
-    """Get item name from database."""
-    if not item_id:
-        return ""
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM items WHERE id = ?", (item_id,))
-    row = cursor.fetchone()
-    return row[0] if row else item_id
-
-
-def _get_monster_name(conn: sqlite3.Connection, monster_id: str | None) -> str:
-    """Get monster name from database."""
-    if not monster_id:
-        return ""
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM monsters WHERE id = ?", (monster_id,))
-    row = cursor.fetchone()
-    return row[0] if row else monster_id
-
-
 def _parse_quest_tooltip(
-    conn: sqlite3.Connection,
     quest: dict,
     player_class: str,
     is_complete: bool = False,
@@ -110,34 +89,19 @@ def _parse_quest_tooltip(
 
     parsed = tooltip
 
-    # Parse rewards JSON
-    rewards_json = quest.get("rewards")
-    rewards = json.loads(rewards_json) if rewards_json else {}
-    reward_gold = rewards.get("gold", 0)
-    reward_exp = rewards.get("exp", 0)
-    reward_items = rewards.get("items", [])
-
-    # Source: server-scripts/ScriptableQuest.cs:111-113,124-126 — generic and class rewards use separate tooltip placeholders.
-    # Collapsed shared class rewards retain their original placeholder.
     generic_reward_items = []
-    class_reward_item = ""
-
-    for item in reward_items:
-        item_id = item.get("item_id")
-        class_specific = item.get("class_specific")
-        if item_id:
-            item_name = _get_item_name(conn, item_id)
-            if item.get("tooltip_placeholder") == "REWARDITEMCLASS":
-                class_reward_item = item_name
-            elif class_specific:
-                # Only include if it matches the player's class
-                if class_specific == player_class:
-                    class_reward_item = item_name
-            else:
-                generic_reward_items.append(item_name)
-
-    # Join generic items with newlines
+    class_reward_items = []
+    for reward in quest.get("reward_slots", ()):
+        name = reward["item_name"] or "Unpublished item"
+        if reward["slot_kind"] == "shared":
+            generic_reward_items.append(name)
+        elif reward["class_name"] == player_class:
+            class_reward_items.append(name)
     reward_item_text = "\n".join(generic_reward_items)
+    class_reward_item = "\n".join(class_reward_items)
+    reward_gold = quest["reward_gold"]
+    reward_exp = quest["reward_experience"]
+    objectives = quest.get("objectives", ())
 
     # Base replacements (from ScriptableQuest)
     replacements: dict[str, str] = {
@@ -152,113 +116,51 @@ def _parse_quest_tooltip(
         "CLASS": player_class,
     }
 
-    # Quest type specific replacements
-    quest_type = quest.get("quest_type", "")
-
-    if quest_type == "kill":
-        # KillQuest replacements
-        kill_target_1 = _get_monster_name(conn, quest.get("kill_target_1_id"))
-        kill_target_2 = _get_monster_name(conn, quest.get("kill_target_2_id"))
-        kill_amount_1 = quest.get("kill_amount_1", 0)
-        kill_amount_2 = quest.get("kill_amount_2", 0)
-
-        replacements.update(
-            {
-                "KILLTARGET": kill_target_1,
-                "KILLAMOUNT": str(kill_amount_1),
-                "KILLED": "0",  # Minimal: not started
-                "KILLTARGET2": kill_target_2,
-                "KILLAMOUNT2": str(kill_amount_2) if kill_target_2 else "",
-                "KILLED2": "0" if kill_target_2 else "",
-                # Status shows 0/amount in red (not started)
-                "STATUS": "",  # Empty when not active
-                "STATUS2": "",
-            }
+    quest_type = quest["quest_type"]
+    replacements.update(
+        STATUS="",
+        STATUS2="",
+        STATUS3="",
+        LOCATIONSTATUS="",
+        ALCHEMYQUESTSTATUS="",
+    )
+    if quest_type in {"kill", "gather"}:
+        target_prefix, amount_prefix, progress_prefix = (
+            ("KILLTARGET", "KILLAMOUNT", "KILLED")
+            if quest_type == "kill"
+            else ("GATHERITEM", "GATHERAMOUNT", "GATHERED")
         )
-
-    elif quest_type == "gather":
-        # GatherQuest replacements
-        gather_item_1 = _get_item_name(conn, quest.get("gather_item_1_id"))
-        gather_item_2 = _get_item_name(conn, quest.get("gather_item_2_id"))
-        gather_item_3 = _get_item_name(conn, quest.get("gather_item_3_id"))
-        gather_amount_1 = quest.get("gather_amount_1", 0)
-        gather_amount_2 = quest.get("gather_amount_2", 0)
-        gather_amount_3 = quest.get("gather_amount_3", 0)
-
-        replacements.update(
-            {
-                "GATHERITEM": gather_item_1,
-                "GATHERAMOUNT": str(gather_amount_1),
-                "GATHERED": "0",
-                "GATHERITEM2": gather_item_2,
-                "GATHERAMOUNT2": str(gather_amount_2) if gather_item_2 else "",
-                "GATHERED2": "0" if gather_item_2 else "",
-                "GATHERITEM3": gather_item_3,
-                "GATHERAMOUNT3": str(gather_amount_3) if gather_item_3 else "",
-                "GATHERED3": "0" if gather_item_3 else "",
-                "STATUS": "",
-                "STATUS2": "",
-                "STATUS3": "",
-            }
-        )
-
+        count = 2 if quest_type == "kill" else 3
+        by_ordinal = {row["ordinal"]: row for row in objectives}
+        for ordinal in range(count):
+            suffix = "" if ordinal == 0 else str(ordinal + 1)
+            objective = by_ordinal.get(ordinal)
+            replacements[target_prefix + suffix] = (
+                objective["target_name"] or "Unpublished target"
+                if objective is not None
+                else ""
+            )
+            replacements[amount_prefix + suffix] = (
+                str(objective["amount"]) if objective is not None else ""
+            )
+            replacements[progress_prefix + suffix] = (
+                "0" if objective is not None else ""
+            )
     elif quest_type == "gather_inventory":
-        # GatherInventoryQuest replacements
-        gather_items_json = quest.get("gather_items")
-        gather_items = json.loads(gather_items_json) if gather_items_json else []
-
-        # Build gather status text (minimal: shows items needed, no progress)
-        gather_status_lines = []
-        for gi in gather_items:
-            item_id = gi.get("item_id")
-            amount = gi.get("amount", 1)
-            if item_id and amount > 0:
-                item_name = _get_item_name(conn, item_id)
-                gather_status_lines.append(f"Get {amount} {item_name}")
-
-        replacements.update(
-            {
-                "GATHERSTATUS": "\n".join(gather_status_lines),
-            }
+        replacements["GATHERSTATUS"] = "\n".join(
+            f"Get {row['amount']} {row['target_name'] or 'Unpublished item'}"
+            for row in objectives
         )
-
     elif quest_type == "equip_item":
-        # EquipItemQuest replacements
-        equip_items_json = quest.get("equip_items")
-        equip_items = json.loads(equip_items_json) if equip_items_json else []
-
-        # Build equip status text (minimal: shows items to equip, no progress)
-        equip_status_lines = []
-        for item_id in equip_items:
-            if item_id:
-                item_name = _get_item_name(conn, item_id)
-                equip_status_lines.append(f"Equip {item_name}")
-
-        replacements.update(
-            {
-                "EQUIPSTATUS": "\n".join(equip_status_lines),
-            }
+        replacements["EQUIPSTATUS"] = "\n".join(
+            f"Equip {row['target_name'] or 'Unpublished item'}" for row in objectives
         )
-
-    elif quest_type == "location":
-        # LocationQuest replacements
-        replacements.update(
-            {
-                "LOCATIONSTATUS": "",  # Empty when not active
-            }
-        )
-
     elif quest_type == "alchemy":
-        # AlchemyQuest replacements
-        potion_item = _get_item_name(conn, quest.get("potion_item_id"))
-        alchemy_skill = quest.get("increase_alchemy_skill", 0)
-
-        replacements.update(
-            {
-                "POTIONITEM": potion_item,
-                "REWARDALCHEMYSKILL": f"{alchemy_skill * 100:.1f}",
-                "ALCHEMYQUESTSTATUS": "",  # Empty when not active
-            }
+        replacements["POTIONITEM"] = "\n".join(
+            row["target_name"] or "Unpublished item" for row in objectives
+        )
+        replacements["REWARDALCHEMYSKILL"] = (
+            f"{quest['increase_alchemy_skill'] * 100:.1f}"
         )
 
     # Apply all replacements
@@ -272,13 +174,8 @@ def _parse_quest_tooltip(
 
 
 def _has_class_specific_rewards(quest: dict) -> bool:
-    """Check if quest has any class-specific reward items."""
-    rewards_json = quest.get("rewards")
-    if not rewards_json:
-        return False
-    rewards = json.loads(rewards_json)
-    items = rewards.get("items", [])
-    return any(item.get("class_specific") for item in items)
+    """Check the canonical reward slot kind, including withheld classes."""
+    return any(row["slot_kind"] == "class" for row in quest["reward_slots"])
 
 
 def run(conn: sqlite3.Connection) -> None:
@@ -295,20 +192,8 @@ def run(conn: sqlite3.Connection) -> None:
             level_recommended,
             tooltip,
             tooltip_complete,
-            rewards,
-            kill_target_1_id,
-            kill_amount_1,
-            kill_target_2_id,
-            kill_amount_2,
-            gather_item_1_id,
-            gather_amount_1,
-            gather_item_2_id,
-            gather_amount_2,
-            gather_item_3_id,
-            gather_amount_3,
-            gather_items,
-            equip_items,
-            potion_item_id,
+            reward_gold,
+            reward_experience,
             increase_alchemy_skill
         FROM quests
         WHERE tooltip IS NOT NULL AND tooltip != ''
@@ -316,6 +201,47 @@ def run(conn: sqlite3.Connection) -> None:
 
     columns = [desc[0] for desc in cursor.description]
     quest_rows = cursor.fetchall()
+    rewards_by_quest: dict[str, list[dict]] = {}
+    for quest_id, kind, class_name, item_name in conn.execute("""
+        SELECT r.quest_id, r.slot_kind, c.name, i.name
+        FROM quest_reward_slots r
+        LEFT JOIN classes c ON c.id = r.class_id
+        LEFT JOIN items i ON i.id = r.item_id
+        ORDER BY r.quest_id, r.ordinal
+    """):
+        rewards_by_quest.setdefault(quest_id, []).append(
+            {
+                "slot_kind": kind,
+                "class_name": class_name,
+                "item_name": item_name,
+            }
+        )
+    objectives_by_quest: dict[str, list[dict]] = {}
+    for (
+        quest_id,
+        ordinal,
+        amount,
+        item_name,
+        monster_name,
+        brew_name,
+    ) in conn.execute("""
+        SELECT o.quest_id, o.ordinal, o.amount, i.name, m.name, b.name
+        FROM quest_objectives o
+        LEFT JOIN quest_objective_items oi ON oi.id = o.id
+        LEFT JOIN items i ON i.id = oi.item_id
+        LEFT JOIN quest_objective_monsters om ON om.id = o.id
+        LEFT JOIN monsters m ON m.id = om.monster_id
+        LEFT JOIN quest_objective_brews ob ON ob.id = o.id
+        LEFT JOIN items b ON b.id = ob.item_id
+        ORDER BY o.quest_id, o.ordinal
+    """):
+        objectives_by_quest.setdefault(quest_id, []).append(
+            {
+                "ordinal": ordinal,
+                "amount": amount,
+                "target_name": item_name or monster_name or brew_name,
+            }
+        )
     player_classes = [
         row[0] for row in conn.execute("SELECT name FROM classes ORDER BY name")
     ]
@@ -326,6 +252,8 @@ def run(conn: sqlite3.Connection) -> None:
 
     for row in quest_rows:
         quest = dict(zip(columns, row))
+        quest["reward_slots"] = rewards_by_quest.get(quest["id"], ())
+        quest["objectives"] = objectives_by_quest.get(quest["id"], ())
 
         # Class placeholders need variants even when all rewards are shared.
         has_class_rewards = _has_class_specific_rewards(quest)
@@ -340,14 +268,12 @@ def run(conn: sqlite3.Connection) -> None:
             tooltip_complete_html_dict = {}
 
             for player_class in player_classes:
-                html = _parse_quest_tooltip(
-                    conn, quest, player_class, is_complete=False
-                )
+                html = _parse_quest_tooltip(quest, player_class, is_complete=False)
                 if html:
                     tooltip_html_dict[player_class] = html
 
                 complete_html = _parse_quest_tooltip(
-                    conn, quest, player_class, is_complete=True
+                    quest, player_class, is_complete=True
                 )
                 if complete_html:
                     tooltip_complete_html_dict[player_class] = complete_html
@@ -360,11 +286,9 @@ def run(conn: sqlite3.Connection) -> None:
             )
         else:
             # No class-specific rewards - generate a single tooltip.
-            html = _parse_quest_tooltip(
-                conn, quest, player_classes[0], is_complete=False
-            )
+            html = _parse_quest_tooltip(quest, player_classes[0], is_complete=False)
             complete_html = _parse_quest_tooltip(
-                conn, quest, player_classes[0], is_complete=True
+                quest, player_classes[0], is_complete=True
             )
 
             # Store as JSON with single key for consistency

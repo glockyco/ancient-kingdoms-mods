@@ -24,6 +24,14 @@ public class NpcSpawnData
     public string teleport_message { get; set; }
 }
 
+public sealed class NpcQuestOfferData
+{
+    public string quest_id { get; set; }
+    public int offer_index { get; set; }
+    public bool accept_here { get; set; }
+    public bool complete_here { get; set; }
+}
+
 public class NpcRoles
 {
     public bool is_merchant { get; set; }
@@ -70,7 +78,7 @@ public class NpcData
     // uniformly over the mercenary class race pool.
     public string preferred_mercenary_race { get; set; } = "";
 
-    public List<string> quests_offered { get; set; } = new();
+    public List<NpcQuestOfferData> quest_offers { get; set; } = new();
     public List<ItemSold> items_sold { get; set; } = new();
 
     // Base stats

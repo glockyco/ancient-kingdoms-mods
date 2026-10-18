@@ -1,7 +1,4 @@
-"""Monster level range denormalization.
-
-Populates level_min and level_max on monsters from monster_spawns data.
-"""
+"""Monster level ranges from configured placements and altar wave definitions."""
 
 import sqlite3
 
@@ -11,22 +8,25 @@ console = Console()
 
 
 def run(conn: sqlite3.Connection) -> None:
-    """Populate level_min/level_max from monster_spawns.
+    """Retain configured event levels without inventing authored placements.
 
-    For monsters with spawns, calculates the min/max level across all spawns.
-    For monsters without spawns (templates only), uses the canonical level.
-
-    Args:
-        conn: Database connection with monsters and monster_spawns loaded
+    A template without any configured placement or wave uses its own level.
     """
     console.print("Denormalizing monster level ranges...")
     cursor = conn.cursor()
 
-    # Get level ranges from spawns
     cursor.execute("""
+        WITH configured_levels AS (
+            SELECT monster_id, level FROM monster_spawns
+            UNION ALL
+            SELECT json_extract(member.value, '$.monster_id'),
+                   json_extract(member.value, '$.base_level')
+            FROM altars a, json_each(a.waves) wave,
+                 json_each(wave.value, '$.monsters') member
+        )
         SELECT monster_id, MIN(level), MAX(level)
-        FROM monster_spawns
-        WHERE level IS NOT NULL AND level > 0
+        FROM configured_levels
+        WHERE monster_id IS NOT NULL AND level IS NOT NULL AND level > 0
         GROUP BY monster_id
     """)
     spawn_levels = {row[0]: (row[1], row[2]) for row in cursor.fetchall()}

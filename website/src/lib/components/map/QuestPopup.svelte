@@ -2,28 +2,31 @@
   import PopupCard from "./PopupCard.svelte";
   import MapEntityLink from "./MapEntityLink.svelte";
   import MapItemLink from "./MapItemLink.svelte";
+  import AcquisitionMethods from "./AcquisitionMethods.svelte";
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import {
+    distinctSubzoneName,
+    questPresentationRequirements,
+  } from "$lib/components/acquisition/display";
   import { buildEntityUrl } from "$lib/map/url-state";
   import {
     loadQuestPopupDetails,
-    loadMapItemIconPaths,
     type QuestPopupDetails,
   } from "$lib/queries/popup";
-  import { getQualityTextColorClass, formatNumber } from "$lib/utils/format";
-
+  import { formatNumber, getQualityTextColorClass } from "$lib/utils/format";
   interface Props {
     questId: string;
     onClose: () => void;
     onFocusClick?: () => void;
-    onSelectNpc: (npcId: string) => void;
-    onSelectMonster: (monsterId: string) => void;
-    onSelectItem: (itemId: string) => void;
+    onSelectNpc: (id: string) => void;
+    onSelectMonster: (id: string) => void;
+    onSelectItem: (id: string) => void;
     onDiscoveryLocationChange: (position: [number, number] | null) => void;
     onSelectDiscovery: () => void;
-    onHoverNpc?: (npcId: string | null) => void;
-    onHoverMonster?: (monsterId: string | null) => void;
+    onHoverNpc?: (id: string | null) => void;
+    onHoverMonster?: (id: string | null) => void;
     mode?: "card" | "drawer";
   }
-
   let {
     questId,
     onClose,
@@ -37,340 +40,211 @@
     onHoverMonster,
     mode = "card",
   }: Props = $props();
-
   let details = $state<QuestPopupDetails | null>(null);
-  let isLoading = $state(true);
+  let loading = $state(true);
   let error = $state<string | null>(null);
-  let itemIconPaths = $state<Record<string, string | null> | null>(null);
-
+  const objectiveLabels: Record<string, string> = {
+    kill_counter: "Kill",
+    gather_counter: "Gather while this quest is active",
+    inventory_primary: "Have in inventory or key ring",
+    inventory_secondary: "Have in inventory, or one equipped, or in key ring",
+    equipped: "Equip",
+    brew_counter: "Successful brews while this quest is active",
+    location_visit: "Visit",
+  };
+  const objectives = $derived(
+    details?.objectives.filter(
+      (objective) => objective.role !== "tracking_location",
+    ) ?? [],
+  );
+  const locations = $derived(
+    details?.objectives.filter(
+      (objective) => objective.role === "tracking_location",
+    ) ?? [],
+  );
+  const visibleRequirements = $derived(
+    details
+      ? questPresentationRequirements(details.requirements, details.id, {})
+      : [],
+  );
+  const acquisitionData = $derived.by(() => {
+    if (!details) return null;
+    const currentQuestId = details.id;
+    const shown = visibleRequirements.flatMap((root) => [
+      JSON.stringify(root),
+      ...(root.phase === "fulfill"
+        ? [JSON.stringify({ ...root, phase: "complete" })]
+        : []),
+    ]);
+    const remaining = (roots: QuestPopupDetails["requirements"]) =>
+      questPresentationRequirements(roots, currentQuestId, {}).filter(
+        (root) => !shown.includes(JSON.stringify(root)),
+      );
+    return {
+      ...details,
+      requirements: [],
+      methods: details.methods.map((method) => ({
+        ...method,
+        requirements: remaining(method.requirements),
+        providers: method.providers.map((provider) => ({
+          ...provider,
+          requirements: remaining(
+            provider.requirements.filter(
+              (root) => !method.requirements.includes(root),
+            ),
+          ),
+        })),
+      })),
+    };
+  });
   $effect(() => {
     let cancelled = false;
     onDiscoveryLocationChange(null);
-    isLoading = true;
+    loading = true;
     error = null;
     details = null;
-    itemIconPaths = null;
-
     loadQuestPopupDetails(questId)
-      .then(async (d) => {
-        const paths = await loadMapItemIconPaths(
-          d
-            ? [
-                ...d.rewardItems.map((item) => item.itemId),
-                ...d.objectives.flatMap((objective) =>
-                  objective.targetId &&
-                  ["gather", "have", "deliver", "equip"].includes(
-                    objective.type,
-                  )
-                    ? [objective.targetId]
-                    : [],
-                ),
-              ]
-            : [],
-        );
+      .then((value) => {
         if (cancelled) return;
-        itemIconPaths = paths;
-        details = d;
+        details = value;
         onDiscoveryLocationChange(
-          d?.objectives.find((objective) => objective.type === "discover")
+          value?.objectives.find((o) => o.kind === "location" && o.position)
             ?.position ?? null,
         );
-        if (!d) error = "Quest not found";
+        if (!value) error = "Quest not found";
       })
-      .catch((e) => {
-        if (cancelled) return;
-        console.error("Failed to load map quest:", e);
-        error = "Refresh the page to try again.";
+      .catch(() => {
+        if (!cancelled) error = "Refresh the page to try again.";
       })
       .finally(() => {
-        if (!cancelled) isLoading = false;
+        if (!cancelled) loading = false;
       });
     return () => {
       cancelled = true;
       onDiscoveryLocationChange(null);
     };
   });
-
-  // For adventurer quests, all NPCs are givers+turn-ins (show as list)
-  // For regular quests, show Start/End pattern
-  let isAdventurerQuest = $derived(
-    details?.isAdventurerQuest &&
-      details.npcs.length > 0 &&
-      details.npcs.every((n) => n.isGiver && n.isTurnIn),
-  );
-  let adventurerNpcs = $derived(isAdventurerQuest ? (details?.npcs ?? []) : []);
-
-  // Get start and end NPCs for regular quests
-  let startNpc = $derived(
-    !isAdventurerQuest ? (details?.npcs.find((n) => n.isGiver) ?? null) : null,
-  );
-  let endNpc = $derived(
-    !isAdventurerQuest
-      ? // Different turn-in NPC if available, otherwise use start NPC
-        (details?.npcs.find((n) => n.isTurnIn && !n.isGiver) ?? startNpc)
-      : null,
-  );
-
-  // Split reward items into regular and class-specific
-  let regularRewards = $derived(
-    details?.rewardItems.filter((r) => !r.classSpecific) ?? [],
-  );
-  let classRewards = $derived(
-    details?.rewardItems.filter((r) => r.classSpecific) ?? [],
-  );
 </script>
 
-{#if isLoading}
-  <PopupCard title="Loading..." {onClose} {mode}>
-    <div class="flex items-center justify-center py-4">
-      <div
-        class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
-      ></div>
-    </div>
-  </PopupCard>
-{:else if error}
-  <PopupCard title="Could not load quest" {onClose} {mode}>
-    <p class="text-destructive">{error}</p>
-  </PopupCard>
+{#snippet objectiveTarget(objective: QuestPopupDetails["objectives"][number])}
+  {@const distinctName =
+    objective.kind === "location"
+      ? distinctSubzoneName(objective.zoneName, objective.targetName)
+      : objective.targetName}
+  {@const name = distinctName || objective.zoneName || objective.targetName}
+  {#if objective.kind === "monster" && objective.targetId}
+    <MapEntityLink
+      href={buildEntityUrl(objective.targetId, "monster")}
+      onSelect={() => onSelectMonster(objective.targetId!)}
+      onHoverStart={() => onHoverMonster?.(objective.targetId!)}
+      onHoverEnd={() => onHoverMonster?.(null)}>{name}</MapEntityLink
+    >
+  {:else if (objective.kind === "item" || objective.kind === "brew") && objective.targetId}
+    <MapItemLink
+      itemId={objective.targetId}
+      itemName={name}
+      tooltipHtml={objective.tooltipHtml}
+      imageAvailable={details?.items[objective.targetId]?.iconPath ?? null}
+      colorClass={getQualityTextColorClass(objective.quality)}
+      onSelect={onSelectItem}
+    />
+  {:else if objective.kind === "location" && objective.position}
+    <button
+      type="button"
+      class="text-blue-400 underline"
+      onclick={() => {
+        onDiscoveryLocationChange(objective.position!);
+        onSelectDiscovery();
+      }}>{name}</button
+    >
+  {:else}
+    <span>{name}</span>
+  {/if}
+  {#if objective.zoneName && distinctName}
+    <span class="text-muted-foreground">({objective.zoneName})</span>
+  {/if}
+{/snippet}
+
+{#if loading}<PopupCard title="Loading..." {onClose} {mode}
+    ><p>Loading quest...</p></PopupCard
+  >
+{:else if error}<PopupCard title="Could not load quest" {onClose} {mode}
+    ><p class="text-destructive">{error}</p></PopupCard
+  >
 {:else if details}
-  {@const hasHighlightedEntities =
-    details.npcs.length > 0 ||
-    details.objectives.some((o) => o.type === "kill" && o.targetId)}
   <PopupCard
     title={details.name}
-    subtitle="Quest · Lv {details.levelRecommended}"
-    detailsUrl="/quests/{details.id}"
+    subtitle={`Quest · Lv ${details.levelRecommended}`}
+    detailsUrl={`/quests/${details.id}`}
     {onClose}
-    onFocusClick={hasHighlightedEntities ? onFocusClick : undefined}
     {mode}
+    onFocusClick={details.npcs.length ? onFocusClick : undefined}
   >
-    <!-- NPCs -->
-    {#if adventurerNpcs.length > 0}
-      <!-- Adventurer quests: list of NPCs (all are giver+turn-in) -->
-      <div>
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Start and end with any of
-        </div>
-        <div class="flex flex-col items-start gap-0.5">
-          {#each adventurerNpcs as npc (npc.npcId)}
-            <MapEntityLink
-              href={buildEntityUrl(npc.npcId, "npc")}
-              onSelect={() => onSelectNpc(npc.npcId)}
-              onHoverStart={() => onHoverNpc?.(npc.npcId)}
-              onHoverEnd={() => onHoverNpc?.(null)}
-              class="text-blue-400"
-            >
-              {npc.npcName}
-            </MapEntityLink>
-          {/each}
-        </div>
-      </div>
-    {:else if startNpc}
-      <!-- Regular quests: Start/End pattern -->
-      <div class="space-y-0.5">
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Start</span>
-          <MapEntityLink
-            href={buildEntityUrl(startNpc.npcId, "npc")}
-            onSelect={() => onSelectNpc(startNpc.npcId)}
-            onHoverStart={() => onHoverNpc?.(startNpc.npcId)}
-            onHoverEnd={() => onHoverNpc?.(null)}
-            class="text-blue-400"
-          >
-            {startNpc.npcName}
-          </MapEntityLink>
-        </div>
-        {#if endNpc}
-          <div class="flex justify-between">
-            <span class="text-muted-foreground">End</span>
-            <MapEntityLink
-              href={buildEntityUrl(endNpc.npcId, "npc")}
-              onSelect={() => onSelectNpc(endNpc.npcId)}
-              onHoverStart={() => onHoverNpc?.(endNpc.npcId)}
-              onHoverEnd={() => onHoverNpc?.(null)}
-              class="text-blue-400"
-            >
-              {endNpc.npcName}
-            </MapEntityLink>
-          </div>
-        {/if}
-      </div>
-    {/if}
-
-    <!-- Objectives -->
-    {#if details.objectives.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Objectives
-        </div>
-        <div class="space-y-0.5">
-          {#each details.objectives as obj, i (i)}
-            <div class="flex items-center gap-1">
-              {#if obj.type === "kill"}
-                <span class="text-muted-foreground">Kill</span>
-                <span>{obj.amount}×</span>
-                {#if obj.targetId}
-                  <MapEntityLink
-                    href={buildEntityUrl(obj.targetId, "monster")}
-                    onSelect={() => onSelectMonster(obj.targetId!)}
-                    onHoverStart={() => onHoverMonster?.(obj.targetId!)}
-                    onHoverEnd={() => onHoverMonster?.(null)}
-                    class="truncate text-red-400"
-                  >
-                    {obj.targetName}
-                  </MapEntityLink>
-                {:else}
-                  <span class="truncate">{obj.targetName}</span>
-                {/if}
-              {:else if obj.type === "gather" && obj.targetId}
-                <span class="text-muted-foreground">Gather</span>
-                <span>{obj.amount}×</span>
-                <MapItemLink
-                  itemId={obj.targetId}
-                  itemName={obj.targetName}
-                  tooltipHtml={obj.tooltipHtml ?? null}
-                  imageAvailable={itemIconPaths?.[obj.targetId]}
-                  colorClass={getQualityTextColorClass(obj.quality ?? 0)}
-                  class="truncate"
-                  onSelect={onSelectItem}
-                />
-              {:else if obj.type === "have" && obj.targetId}
-                <span class="text-muted-foreground">Have</span>
-                <span>{obj.amount}×</span>
-                <MapItemLink
-                  itemId={obj.targetId}
-                  itemName={obj.targetName}
-                  tooltipHtml={obj.tooltipHtml ?? null}
-                  imageAvailable={itemIconPaths?.[obj.targetId]}
-                  colorClass={getQualityTextColorClass(obj.quality ?? 0)}
-                  class="truncate"
-                  onSelect={onSelectItem}
-                />
-              {:else if obj.type === "deliver" && obj.targetId}
-                <span class="text-muted-foreground">Deliver</span>
-                {#if obj.amount > 0}<span>{obj.amount}×</span>{/if}
-                <MapItemLink
-                  itemId={obj.targetId}
-                  itemName={obj.targetName}
-                  tooltipHtml={obj.tooltipHtml ?? null}
-                  imageAvailable={itemIconPaths?.[obj.targetId]}
-                  colorClass={getQualityTextColorClass(obj.quality ?? 0)}
-                  class="truncate"
-                  onSelect={onSelectItem}
-                />
-              {:else if obj.type === "equip" && obj.targetId}
-                <span class="text-muted-foreground">Equip</span>
-                <MapItemLink
-                  itemId={obj.targetId}
-                  itemName={obj.targetName}
-                  tooltipHtml={obj.tooltipHtml ?? null}
-                  imageAvailable={itemIconPaths?.[obj.targetId]}
-                  colorClass={getQualityTextColorClass(obj.quality ?? 0)}
-                  class="truncate"
-                  onSelect={onSelectItem}
-                />
-              {:else if obj.type === "find"}
-                <span class="text-muted-foreground">Find</span>
-                {#if obj.targetId}
-                  <MapEntityLink
-                    href={buildEntityUrl(obj.targetId, "npc")}
-                    onSelect={() => onSelectNpc(obj.targetId!)}
-                    onHoverStart={() => onHoverNpc?.(obj.targetId!)}
-                    onHoverEnd={() => onHoverNpc?.(null)}
-                    class="truncate text-blue-400"
-                  >
-                    {obj.targetName}
-                  </MapEntityLink>
-                {:else}
-                  <span class="truncate">{obj.targetName}</span>
-                {/if}
-              {:else if obj.type === "discover"}
-                <span class="text-muted-foreground">Discover</span>
-                {#if obj.position}
-                  <button
-                    type="button"
-                    class="text-left text-blue-400 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    onclick={onSelectDiscovery}
-                  >
-                    {obj.targetName}{obj.zoneName ? ` in ${obj.zoneName}` : ""}
-                  </button>
-                {:else}
-                  <span
-                    >{obj.targetName}{obj.zoneName
-                      ? ` in ${obj.zoneName}`
-                      : ""}</span
-                  >
-                {/if}
-              {:else}
-                <span class="text-muted-foreground">{obj.type}</span>
-                {#if obj.amount > 1}<span>{obj.amount}×</span>{/if}
-                <span class="truncate">{obj.targetName}</span>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- Rewards -->
-    {#if details.gold > 0 || details.exp > 0 || regularRewards.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Rewards
-        </div>
-        <div class="space-y-0.5">
-          {#if details.exp > 0}
-            <div class="flex justify-between">
-              <span class="text-muted-foreground">XP</span>
-              <span>{formatNumber(details.exp)}</span>
-            </div>
-          {/if}
-          {#if details.gold > 0}
-            <div class="flex justify-between">
-              <span class="text-muted-foreground">Gold</span>
-              <span class="text-yellow-500">{formatNumber(details.gold)}</span>
-            </div>
-          {/if}
-          {#each regularRewards as item, i (i)}
-            <MapItemLink
-              itemId={item.itemId}
-              itemName={item.itemName}
-              tooltipHtml={item.tooltipHtml}
-              imageAvailable={itemIconPaths?.[item.itemId]}
-              colorClass={getQualityTextColorClass(item.quality)}
-              class="truncate"
-              onSelect={onSelectItem}
-            />
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- Class-specific rewards -->
-    {#if classRewards.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Class Rewards
-        </div>
-        <div class="space-y-0.5">
-          {#each classRewards as item, i (i)}
-            <div class="flex items-center justify-between gap-2">
-              <MapItemLink
-                itemId={item.itemId}
-                itemName={item.itemName}
-                tooltipHtml={item.tooltipHtml}
-                imageAvailable={itemIconPaths?.[item.itemId]}
-                colorClass={getQualityTextColorClass(item.quality)}
-                class="truncate"
-                onSelect={onSelectItem}
-              />
-              <span class="shrink-0 text-muted-foreground"
-                >{item.classSpecific}</span
+    {#if details.npcs.length}
+      <section class="space-y-1">
+        <h3 class="font-medium">Quest NPCs</h3>
+        <div class="max-h-48 space-y-1 overflow-y-auto overscroll-contain pr-2">
+          {#each details.npcs as npc, index (index)}
+            <div class="flex flex-wrap justify-between gap-x-2 text-sm">
+              <MapEntityLink
+                href={buildEntityUrl(npc.npcId, "npc")}
+                onSelect={() => onSelectNpc(npc.npcId)}
+                onHoverStart={() => onHoverNpc?.(npc.npcId)}
+                onHoverEnd={() => onHoverNpc?.(null)}
+                >{npc.npcName}</MapEntityLink
+              >
+              <span class="text-muted-foreground"
+                >{`${
+                  npc.isGiver && npc.isTurnIn
+                    ? "Start and finish"
+                    : npc.isGiver
+                      ? "Start"
+                      : "Finish"
+                }${npc.zoneName ? ` (${npc.zoneName})` : ""}`}</span
               >
             </div>
           {/each}
         </div>
-      </div>
+      </section>
+    {/if}
+    {#if objectives.length}
+      <section class="space-y-2 border-t pt-2">
+        <h3 class="font-medium">Objectives</h3>
+        <div class="max-h-64 space-y-2 overflow-y-auto overscroll-contain pr-2">
+          {#each objectives as objective (objective.id)}
+            <div class="text-sm">
+              <p class="text-muted-foreground">
+                {objectiveLabels[
+                  objective.role
+                ]}{#if objective.amount !== null && objective.kind !== "location"}
+                  {objective.amount} x{/if}
+              </p>
+              {@render objectiveTarget(objective)}
+            </div>
+          {/each}
+        </div>
+      </section>
+    {/if}
+    {#if locations.length}
+      <section class="space-y-2 border-t pt-2">
+        <h3 class="font-medium">Locations</h3>
+        <div class="max-h-64 space-y-2 overflow-y-auto overscroll-contain pr-2">
+          {#each locations as location (location.id)}
+            <div class="text-sm">{@render objectiveTarget(location)}</div>
+          {/each}
+        </div>
+      </section>
+    {/if}
+    <Requirements roots={visibleRequirements} names={details.names} />
+    {#if details.exp > 0}<p class="border-t pt-2 text-sm">
+        Experience: {formatNumber(details.exp)}
+      </p>{/if}
+    {#if acquisitionData}
+      <AcquisitionMethods
+        data={acquisitionData}
+        selectedQuestId={details.id}
+        {onSelectItem}
+      />
     {/if}
   </PopupCard>
 {/if}

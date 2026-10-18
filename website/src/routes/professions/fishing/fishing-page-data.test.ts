@@ -1,97 +1,26 @@
 import Database from "better-sqlite3";
+import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
-import type { ItemSourceType } from "$lib/constants/source-types";
 import { loadFishingPageData } from "./fishing-page-data.server";
+import {
+  BASELINE_ASSUMPTIONS,
+  calculateMethodProbabilities,
+} from "$lib/acquisition/rules";
+import { fishDropChancePerSuccessfulHook } from "$lib/utils/fishing";
 
 function createDb() {
   const db = new Database(":memory:");
+  db.exec(readFileSync("../build-pipeline/schema.sql", "utf8"));
   db.exec(`
-    CREATE TABLE professions (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT DEFAULT '',
-      category TEXT NOT NULL,
-      max_level INTEGER DEFAULT 100,
-      achievement_id TEXT NOT NULL
-    );
-    CREATE TABLE achievements (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL
-    );
-    CREATE TABLE items (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      quality INTEGER DEFAULT 0,
-      level_required INTEGER DEFAULT 0,
-      tooltip_html TEXT,
-      weapon_category TEXT,
-      slot TEXT,
-      food_buff_id TEXT,
-      food_buff_name TEXT,
-      potion_buff_id TEXT,
-      potion_buff_name TEXT
-    );
-    CREATE TABLE fish (
-      item_id TEXT PRIMARY KEY,
-      is_trash INTEGER NOT NULL DEFAULT 0
-    );
-    CREATE TABLE zones (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL
-    );
-    CREATE TABLE gathering_resources (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      level INTEGER DEFAULT 0,
-      tool_required_id TEXT,
-      is_fishing_spot INTEGER NOT NULL DEFAULT 0
-    );
-    CREATE TABLE gathering_resource_spawns (
-      id TEXT PRIMARY KEY,
-      resource_id TEXT NOT NULL,
-      zone_id TEXT NOT NULL
-    );
-    CREATE TABLE item_sources_gather (
-      item_id TEXT NOT NULL,
-      resource_id TEXT NOT NULL,
-      drop_rate REAL NOT NULL,
-      actual_drop_chance REAL
-    );
-    CREATE TABLE item_usages_recipe (
-      item_id TEXT NOT NULL,
-      recipe_id TEXT NOT NULL,
-      recipe_type TEXT NOT NULL,
-      amount INTEGER NOT NULL DEFAULT 1
-    );
-    CREATE TABLE crafting_recipes (
-      id TEXT PRIMARY KEY,
-      result_item_id TEXT NOT NULL,
-      station_type TEXT
-    );
-    CREATE TABLE alchemy_recipes (
-      id TEXT PRIMARY KEY,
-      result_item_id TEXT NOT NULL
-    );
-    CREATE TABLE item_source_entries (
-      item_id TEXT NOT NULL,
-      source_type TEXT NOT NULL,
-      source_id TEXT NOT NULL,
-      source_name TEXT NOT NULL,
-      source_level INTEGER,
-      source_sort_name TEXT NOT NULL
-    );
-  `);
-  db.exec(`
-    INSERT INTO achievements VALUES
-      ('FISHER_MASTER', 'Master Angler');
-    INSERT INTO professions VALUES
-      ('fishing', 'Fishing', 'Catch fish.', 'gathering', 100, 'FISHER_MASTER');
-
-    INSERT INTO items VALUES
+    INSERT INTO achievements (id, name, description, display_order) VALUES ('FISHER_MASTER', 'Master Angler', 'Catch fish.', 0);
+    INSERT INTO professions (id, name, description, category, max_level, achievement_id, tracking_type)
+      VALUES ('fishing', 'Fishing', 'Catch fish.', 'gathering', 100, 'FISHER_MASTER', 'float_level');
+    INSERT INTO skills (id, name, skill_type) VALUES
+      ('fish_chowder_buff', 'Fish Chowder Buff', 'buff'),
+      ('fish_potion_buff', 'Fish Potion Buff', 'buff');
+    INSERT INTO items (id, name, quality, level_required, tooltip_html, weapon_category, slot, food_buff_id, food_buff_name, potion_buff_id, potion_buff_name) VALUES
       ('rusty_fishing_rod', 'Rusty Fishing Rod', 0, 1, '<p>rod</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
-      ('bamboo_fishing_rod', 'Bamboo Fishing Rod', 1, 1, '<p>bamboo rod</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
       ('crafted_fishing_rod', 'Crafted Fishing Rod', 2, 35, '<p>crafted rod</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
-      ('gilded_wyrmhook', 'Gilded Wyrmhook', 4, 1, '<p>wyrmhook</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
       ('fishermans_garb', 'Fisherman''s Garb', 0, 1, '<p>garb</p>', NULL, 'Chest', NULL, NULL, NULL, NULL),
       ('fishermans_hat', 'Fisherman''s Hat', 0, 1, '<p>hat</p>', NULL, 'Head', NULL, NULL, NULL, NULL),
       ('fishermans_trousers', 'Fisherman''s Trousers', 0, 1, '<p>trousers</p>', NULL, 'Legs', NULL, NULL, NULL, NULL),
@@ -100,176 +29,166 @@ function createDb() {
       ('trash_fish', 'Trash Fish', 0, 1, '<p>trash</p>', NULL, NULL, NULL, NULL, NULL, NULL),
       ('fish_chowder', 'Fish Chowder', 0, 1, '<p>food</p>', NULL, NULL, 'fish_chowder_buff', 'Fish Chowder Buff', NULL, NULL),
       ('fish_potion', 'Fish Potion', 0, 1, '<p>potion</p>', NULL, NULL, NULL, NULL, 'fish_potion_buff', 'Fish Potion Buff'),
-      ('ember_prawn', 'Ember Prawn', 3, 1, '<p>ember prawn</p>', NULL, NULL, NULL, NULL, NULL, NULL),
-      ('firecoil_worm', 'Firecoil Worm', 3, 1, '<p>firecoil worm</p>', NULL, NULL, NULL, NULL, NULL, NULL),
-      ('dragonbait_stew', 'Dragonbait Stew', 4, 54, '<p>dragonbait stew</p>', NULL, NULL, NULL, NULL, NULL, NULL);
-
-    INSERT INTO fish VALUES
-      ('cooking_fish', 0),
-      ('alchemy_fish', 0),
-      ('trash_fish', 1),
-      ('ember_prawn', 0),
-      ('firecoil_worm', 0);
-
-    ALTER TABLE items ADD COLUMN comments TEXT DEFAULT '';
-    INSERT INTO zones VALUES ('zone_a', 'Zone A');
-    INSERT INTO gathering_resources VALUES
-      ('rough_fishing_spot', 'Rough Fishing Spot', 1, 'rusty_fishing_rod', 1);
-    INSERT INTO gathering_resource_spawns VALUES
-      ('spawn_1', 'rough_fishing_spot', 'zone_a'),
-      ('spawn_2', 'rough_fishing_spot', 'zone_a');
-    INSERT INTO item_sources_gather VALUES
-      ('cooking_fish', 'rough_fishing_spot', 0.2, 0.0666666667),
-      ('alchemy_fish', 'rough_fishing_spot', 0.2, 0.0666666667),
-      ('trash_fish', 'rough_fishing_spot', 0.2, 0.0666666667);
-    INSERT INTO item_source_entries VALUES
-      ('rusty_fishing_rod', 'vendor', 'rod_vendor', 'Rod Vendor', 1, 'Rod Vendor'),
-      ('bamboo_fishing_rod', 'drop', 'rod_monster', 'Rod Monster', 40, 'Rod Monster'),
-      ('crafted_fishing_rod', 'crafting', 'crafted_fishing_rod_recipe', 'Crafting', 35, 'Crafting'),
-      ('gilded_wyrmhook', 'drop', 'lesser_wyrm', 'Lesser Wyrm', 55, 'Lesser Wyrm'),
-      ('gilded_wyrmhook', 'drop', 'wyrm_boss', 'Wyrm Boss', 60, 'Wyrm Boss');
-
-    INSERT INTO item_usages_recipe VALUES
-      ('cooking_fish', 'fish_chowder_recipe', 'crafting', 2),
-      ('ember_prawn', 'dragonbait_stew_recipe', 'crafting', 1),
-      ('firecoil_worm', 'dragonbait_stew_recipe', 'crafting', 1),
-      ('alchemy_fish', 'fish_potion_recipe', 'alchemy', 1);
-    INSERT INTO crafting_recipes VALUES
-      ('fish_chowder_recipe', 'fish_chowder', 'cooking'),
-      ('dragonbait_stew_recipe', 'dragonbait_stew', 'cooking');
-    INSERT INTO alchemy_recipes VALUES
-      ('fish_potion_recipe', 'fish_potion');
-  `);
-  db.exec(`
-    ALTER TABLE items ADD COLUMN item_type TEXT;
-    ALTER TABLE items ADD COLUMN structure_price INTEGER DEFAULT 0;
-    ALTER TABLE items ADD COLUMN luck_token_fragment_id TEXT;
-    ALTER TABLE items ADD COLUMN luck_token_fragments_needed INTEGER DEFAULT 0;
-    CREATE TABLE npcs (id TEXT PRIMARY KEY, name TEXT, roles TEXT);
-    CREATE TABLE item_sources_merge (item_id TEXT, component_item_id TEXT);
+      ('ember_prawn', 'Ember Prawn', 3, 1, '<p>prawn</p>', NULL, NULL, NULL, NULL, NULL, NULL),
+      ('firecoil_worm', 'Firecoil Worm', 3, 1, '<p>worm</p>', NULL, NULL, NULL, NULL, NULL, NULL),
+      ('dragonbait_stew', 'Dragonbait Stew', 4, 54, '<p>stew</p>', NULL, NULL, NULL, NULL, NULL, NULL);
+    INSERT INTO fish VALUES ('cooking_fish', 0), ('alchemy_fish', 0), ('trash_fish', 1), ('ember_prawn', 0), ('firecoil_worm', 0);
+    INSERT INTO zones (id, zone_id, name) VALUES ('zone_a', 0, 'Zone A');
+    INSERT INTO gathering_resources (id, name, level, tool_required_id, is_fishing_spot)
+      VALUES ('rough_fishing_spot', 'Rough Fishing Spot', 1, 'rusty_fishing_rod', 1);
+    INSERT INTO gathering_resource_spawns (id, resource_id, zone_id) VALUES
+      ('spawn_1', 'rough_fishing_spot', 'zone_a'), ('spawn_2', 'rough_fishing_spot', 'zone_a');
+    INSERT INTO acquisition_methods (id, kind, rule_id, rooted, source_level_hint) VALUES
+      ('fishing', 'gather', 'fishing', 1, NULL),
+      ('rod_offer', 'vendor', 'vendor', 1, 1),
+      ('rod_recipe', 'recipe', 'crafting', 1, 35),
+      ('food_method', 'recipe', 'cooking', 0, NULL),
+      ('stew_method', 'recipe', 'cooking', 0, NULL),
+      ('potion_method', 'recipe', 'alchemy', 0, NULL);
+    INSERT INTO acquisition_resource_details VALUES ('fishing', 'rough_fishing_spot', 'fishing', 1, 0, 0);
+    INSERT INTO acquisition_providers_resource_spawns VALUES
+      ('provider_1', 'fishing', 'spawn_1', NULL), ('provider_2', 'fishing', 'spawn_2', NULL);
+    INSERT INTO loot_pools VALUES ('primary', 'fishing_primary'), ('trash', 'fishing_trash'), ('fallback', 'fishing_fallback');
+    INSERT INTO acquisition_method_pools VALUES ('spot_pool', 'fishing', 'primary', 0, 'successful_hook');
+    INSERT INTO loot_fishing_rules VALUES ('fishing_rule', 'primary', 'trash', 'fallback', 1);
+    INSERT INTO acquisition_method_fishing_rules VALUES ('fishing', 'fishing', 'fishing_rule');
+    INSERT INTO loot_pool_entries (id, pool_id, ordinal, item_id, resolution, probability, duplicate_group, cap, counts_equipment, guaranteed_equipment_candidate, quest_gate, scales_with_treasure_hunter, quality) VALUES
+      ('cook', 'primary', 0, 'cooking_fish', 'direct', 0.2, 0, 1, 0, 0, 'none', 0, 0),
+      ('alchemy', 'primary', 1, 'alchemy_fish', 'direct', 0.2, 1, 1, 0, 0, 'none', 0, 1),
+      ('trash_entry', 'trash', 0, 'trash_fish', 'direct', 1, 0, 1, 0, 0, 'none', 0, 0),
+      ('fallback_cook', 'fallback', 0, 'cooking_fish', 'direct', 1, 0, 1, 0, 0, 'none', 0, 0),
+      ('fallback_alchemy', 'fallback', 1, 'alchemy_fish', 'direct', 1, 1, 1, 0, 0, 'none', 0, 1),
+      ('fallback_prawn', 'fallback', 2, 'ember_prawn', 'direct', 1, 2, 1, 0, 0, 'none', 0, 3),
+      ('fallback_worm', 'fallback', 3, 'firecoil_worm', 'direct', 1, 3, 1, 0, 0, 'none', 0, 3);
+    INSERT INTO npcs (id, name) VALUES ('rod_vendor', 'Rod Vendor');
+    INSERT INTO npc_spawns (id, npc_id, zone_id) VALUES ('vendor_spawn', 'rod_vendor', 'zone_a');
+    INSERT INTO crafting_stations (id, name, zone_id) VALUES ('rod_station', 'Rod Station', 'zone_a');
+    INSERT INTO acquisition_providers_crafting_stations VALUES ('rod_station_provider', 'rod_recipe', 'rod_station', 0);
+    INSERT INTO acquisition_vendor_details VALUES ('rod_offer', 'rod_vendor', 'rusty_fishing_rod', 'none');
+    INSERT INTO acquisition_providers_npcs VALUES ('rod_provider', 'rod_offer', 'rod_vendor', 0);
+    INSERT INTO crafting_recipes VALUES ('crafted_fishing_rod_recipe', 'crafted_fishing_rod'), ('fish_chowder_recipe', 'fish_chowder'), ('dragonbait_stew_recipe', 'dragonbait_stew');
+    INSERT INTO alchemy_recipes VALUES ('fish_potion_recipe', 'fish_potion');
+    INSERT INTO acquisition_recipe_details VALUES
+      ('rod_recipe', 'crafted_fishing_rod_recipe', NULL, NULL, 'crafted_fishing_rod', 1, 2, 'crafting', 0),
+      ('food_method', 'fish_chowder_recipe', NULL, NULL, 'fish_chowder', 1, 0, 'cooking', 0),
+      ('stew_method', 'dragonbait_stew_recipe', NULL, NULL, 'dragonbait_stew', 1, 4, 'cooking', 0),
+      ('potion_method', NULL, 'fish_potion_recipe', NULL, 'fish_potion', 1, 0, 'alchemy', 0);
+    INSERT INTO acquisition_outputs (id, method_id, ordinal, resource_kind, item_id, amount_min, amount_max, yield_rule, delivery) VALUES
+      ('rod_sale', 'rod_offer', 0, 'item', 'rusty_fishing_rod', 1, 1, 'fixed', 'inventory'),
+      ('rod_crafted', 'rod_recipe', 0, 'item', 'crafted_fishing_rod', 1, 1, 'fixed', 'inventory');
+    INSERT INTO acquisition_cost_groups VALUES
+      ('food_cost', 'food_method', 'attempt', 'fixed', 'on_success', 'always'),
+      ('stew_cost', 'stew_method', 'attempt', 'fixed', 'on_success', 'always'),
+      ('potion_cost', 'potion_method', 'attempt', 'fixed', 'on_success', 'always');
+    INSERT INTO acquisition_inputs (id, cost_group_id, ordinal, resource_kind, item_id, amount, role) VALUES
+      ('food_fish', 'food_cost', 0, 'item', 'cooking_fish', 2, 'material'),
+      ('stew_prawn', 'stew_cost', 0, 'item', 'ember_prawn', 1, 'material'),
+      ('stew_worm', 'stew_cost', 1, 'item', 'firecoil_worm', 1, 'material'),
+      ('potion_fish', 'potion_cost', 0, 'item', 'alchemy_fish', 1, 'material');
   `);
   return db;
 }
 
 describe("loadFishingPageData", () => {
-  test("loads fishing equipment and trash fish metadata", () => {
+  test("loads canonical rod methods, fishing pools, and recipe inputs", async () => {
     const db = createDb();
-    const data = loadFishingPageData(db);
-
-    expect(data.rods.map((rod) => rod.item_id)).toEqual([
-      "rusty_fishing_rod",
-      "bamboo_fishing_rod",
-      "crafted_fishing_rod",
-      "gilded_wyrmhook",
-    ]);
-    expect(data.rods[3]).toMatchObject({
-      item_id: "gilded_wyrmhook",
-      quality: 4,
-      min_source_level: 55,
-      tooltip_html: expect.any(String),
-      sources: [
+    try {
+      const data = await loadFishingPageData(db);
+      expect(data.rods.map((rod) => rod.item_id)).toEqual([
+        "rusty_fishing_rod",
+        "crafted_fishing_rod",
+      ]);
+      expect(data.rods[0]).toMatchObject({
+        min_source_level: 1,
+        sources: [{ kind: "vendor", methodId: "rod_offer" }],
+      });
+      expect(data.rods[1]).toMatchObject({
+        min_source_level: 35,
+        sources: [{ kind: "recipe", methodId: "rod_recipe" }],
+      });
+      expect(data.stats.spot_count).toBe(2);
+      expect(data.spots.map((spot) => spot.id)).toEqual(["spawn_1", "spawn_2"]);
+      expect(data.spots[0].drops.map((drop) => drop.item_id)).toEqual([
+        "alchemy_fish",
+        "cooking_fish",
+      ]);
+      expect(
+        data.spots[0].drops.every((drop) => drop.configured_drop_rate === 0.2),
+      ).toBe(true);
+      expect(data.costumePieces).toHaveLength(3);
+      expect(data.trashFish).toMatchObject([
+        { item_id: "trash_fish", tooltip_html: "<p>trash</p>" },
+      ]);
+      expect(data.fishPoolsByQuality[0].map((fish) => fish.item_id)).toEqual([
+        "cooking_fish",
+      ]);
+      expect(data.foods[0]).toMatchObject({
+        result_item_id: "fish_chowder",
+        effect_skill_id: "fish_chowder_buff",
+        ingredients: [{ item_id: "cooking_fish", amount: 2 }],
+      });
+      expect(data.foods[1]).toMatchObject({
+        result_item_id: "dragonbait_stew",
+        ingredients: [
+          { item_id: "ember_prawn", amount: 1 },
+          { item_id: "firecoil_worm", amount: 1 },
+        ],
+      });
+      expect(data.potions[0]).toMatchObject({
+        result_item_id: "fish_potion",
+        effect_skill_id: "fish_potion_buff",
+        ingredients: [{ item_id: "alchemy_fish", amount: 1 }],
+      });
+    } finally {
+      db.close();
+    }
+  });
+  test("preserves anonymous primary slots in shared fishing evaluation", async () => {
+    const db = createDb();
+    try {
+      db.exec(`INSERT INTO loot_pool_entries
+        (id, pool_id, ordinal, resolution, probability, duplicate_group, cap, counts_equipment, guaranteed_equipment_candidate, quest_gate, scales_with_treasure_hunter, quality, withheld)
+        VALUES ('anonymous', 'primary', 2, 'direct', 0.2, 2, 1, 0, 0, 'none', 0, 1, 1)`);
+      const data = await loadFishingPageData(db);
+      expect(data.spots[0].drops).toHaveLength(2);
+      expect(
+        data.spotAcquisitionRows.poolEntries.filter(
+          (entry) => entry.pool_id === "primary",
+        ),
+      ).toHaveLength(3);
+      const method = data.spotMethods[0];
+      const results = calculateMethodProbabilities(
+        data.spotAcquisitionRows,
+        data.spotAcquisitionRows.methods.find(
+          (row) => row.id === method.methodId,
+        )!,
+        method.detail,
         {
-          type: "drop" satisfies ItemSourceType,
-          id: "lesser_wyrm",
-          name: "Lesser Wyrm",
-          source_level: 55,
+          assumptions: {
+            ...BASELINE_ASSUMPTIONS,
+            scenario: "entered",
+            professionFraction: 0.4,
+            toolQuality: 2,
+          },
         },
-        {
-          type: "drop" satisfies ItemSourceType,
-          id: "wyrm_boss",
-          name: "Wyrm Boss",
-          source_level: 60,
-        },
-      ],
-    });
-    const craftedRod = data.rods.find(
-      (rod) => rod.item_id === "crafted_fishing_rod",
-    );
-    expect(craftedRod).toMatchObject({
-      min_source_level: 35,
-      sources: [
-        {
-          type: "crafting" satisfies ItemSourceType,
-          id: "crafted_fishing_rod_recipe",
-          name: "Crafting",
-          source_level: 35,
-        },
-      ],
-    });
-    expect(data.stats.rod_count).toBe(4);
-    expect(data).not.toHaveProperty("rod");
-    expect(data).not.toHaveProperty("recipes");
-    expect(data.stats).not.toHaveProperty("zone_count");
-    expect(data.spots[0]).not.toHaveProperty("zone_count");
-    expect(data.stats.spot_count).toBe(2);
-    expect(data.costumePieces.map((item) => item.item_id)).toEqual([
-      "fishermans_garb",
-      "fishermans_hat",
-      "fishermans_trousers",
-    ]);
-    expect(data.trashFish.map((fish) => fish.item_id)).toEqual(["trash_fish"]);
-    expect(data.trashFish[0]).toMatchObject({
-      item_id: "trash_fish",
-      item_name: "Trash Fish",
-      tooltip_html: expect.any(String),
-    });
-    expect(data.trashFish[0]).not.toHaveProperty("cooking_recipe_count");
-    expect(data.trashFish[0]).not.toHaveProperty("alchemy_recipe_count");
-    expect(data.fishPoolsByQuality[0].map((fish) => fish.item_id)).toEqual([
-      "cooking_fish",
-    ]);
-    expect(data.fishPoolsByQuality[1].map((fish) => fish.item_id)).toEqual([
-      "alchemy_fish",
-    ]);
-    expect(data.foods[0]).toMatchObject({
-      result_item_id: "fish_chowder",
-      effect_skill_id: "fish_chowder_buff",
-      result_tooltip_html: expect.any(String),
-      ingredients: [
-        {
-          item_id: "cooking_fish",
-          amount: 2,
-          tooltip_html: expect.any(String),
-        },
-      ],
-    });
-    expect(data.foods).toHaveLength(2);
-    expect(data.foods[1]).toMatchObject({
-      recipe_id: "dragonbait_stew_recipe",
-      result_item_id: "dragonbait_stew",
-      effect_skill_id: null,
-      ingredients: [
-        {
-          item_id: "ember_prawn",
-          item_name: "Ember Prawn",
-          amount: 1,
-          quality: 3,
-          tooltip_html: expect.any(String),
-        },
-        {
-          item_id: "firecoil_worm",
-          item_name: "Firecoil Worm",
-          amount: 1,
-          quality: 3,
-          tooltip_html: expect.any(String),
-        },
-      ],
-    });
-    expect(data.potions[0]).toMatchObject({
-      result_item_id: "fish_potion",
-      effect_skill_id: "fish_potion_buff",
-      result_tooltip_html: expect.any(String),
-      ingredients: [
-        {
-          item_id: "alchemy_fish",
-          amount: 1,
-          tooltip_html: expect.any(String),
-        },
-      ],
-    });
-    expect(data.costumePieces).toHaveLength(3);
-    expect(data.trashFish[0]).not.toHaveProperty("qualityLabel");
-
-    db.close();
+      );
+      expect(
+        results.find(
+          (result) =>
+            result.event === "successful_hook" &&
+            result.target.kind === "item" &&
+            result.target.itemId === "alchemy_fish",
+        )?.probability,
+      ).toBeCloseTo(
+        fishDropChancePerSuccessfulHook({
+          configuredDropRate: 0.2,
+          fishCountAtSpot: 3,
+          fishingPercent: 40,
+          fishermanCostumePieces: 0,
+        }),
+      );
+    } finally {
+      db.close();
+    }
   });
 });

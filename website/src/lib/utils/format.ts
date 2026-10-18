@@ -1,4 +1,4 @@
-import { QUALITY_IDS } from "$lib/constants/quality";
+import { QUALITY_IDS } from "../constants/quality";
 
 /** Format a fraction at the caller's displayed precision. */
 export function formatPercent(

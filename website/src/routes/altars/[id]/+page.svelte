@@ -3,6 +3,8 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import { calculateAltarGold } from "$lib/acquisition/rules";
+  import { quantityText } from "$lib/components/acquisition/display";
   import Seo from "$lib/components/Seo.svelte";
   import { detailTitle } from "$lib/seo/title";
   import * as Card from "$lib/components/ui/card";
@@ -40,6 +42,9 @@
   const veteranBonus = $derived(altarVeteranLevelBonus(veteranPoints));
   const effectiveLevel = $derived(playerLevel + veteranBonus);
   const levelAdjustment = $derived(effectiveLevel - 30);
+  const forgottenGold = $derived(
+    calculateAltarGold(playerLevel, veteranPoints),
+  );
 
   // Calculate scaled monster level
   function getScaledLevel(baseLevel: number): number {
@@ -163,7 +168,7 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
           >
             {data.altar.zoneName}
-            {#if data.altar.subZoneName}
+            {#if data.altar.subZoneName && data.altar.subZoneName !== data.altar.zoneName}
               <span class="text-muted-foreground"
                 >({data.altar.subZoneName})</span
               >
@@ -173,16 +178,21 @@
 
         <!-- Activation Item -->
         {#if data.altar.requiredActivationItemId && data.altar.requiredActivationItemName}
-          <div class="flex justify-between items-center">
-            <span class="text-muted-foreground">Activation Item</span>
-            <ItemLink
-              itemId={data.altar.requiredActivationItemId}
-              itemName={data.altar.requiredActivationItemName}
-              tooltipHtml={data.altar.activationItemTooltipHtml}
-              imageAvailable={data.itemIconPaths[
-                data.altar.requiredActivationItemId
-              ]}
-            />
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <span class="text-muted-foreground">Activation cost</span>
+            <span class="inline-flex flex-wrap items-center gap-1">
+              <ItemLink
+                itemId={data.altar.requiredActivationItemId}
+                itemName={data.altar.requiredActivationItemName}
+                tooltipHtml={data.altar.activationItemTooltipHtml}
+                imageAvailable={data.itemIconPaths[
+                  data.altar.requiredActivationItemId
+                ]}
+              />
+              {#if data.activationCost !== null}
+                <span class="tabular-nums">×{data.activationCost}</span>
+              {/if}
+            </span>
           </div>
         {/if}
 
@@ -295,13 +305,16 @@
         <Card.Content>
           <!-- Source: server-scripts/DefaultEvent.cs:229-239 — reward quality uses player level plus total veteran points, with thresholds at 40, 50, and 150 -->
           <p class="text-muted-foreground mb-4">
-            The reward depends on the level plus total veteran points of the
-            player who activated the altar.
+            Each eligible final-wave kill can drop the reward for the activating
+            player's level plus total veteran points. The reward is not
+            guaranteed.
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             {#each data.rewards as reward (reward.tier)}
               <div class="rounded-lg border p-4 bg-background/50">
-                <div class="flex items-center justify-between mb-2">
+                <div
+                  class="flex flex-wrap items-center justify-between gap-2 mb-2"
+                >
                   <span class="font-medium capitalize">{reward.tier}</span>
                   <span class="text-sm text-muted-foreground">
                     {formatAltarRequirement(
@@ -312,7 +325,9 @@
                   </span>
                 </div>
                 {#if reward.itemId && reward.itemName}
-                  <div class="flex items-center justify-between">
+                  <div
+                    class="flex flex-wrap items-center justify-between gap-2"
+                  >
                     <ItemLink
                       itemId={reward.itemId}
                       itemName={reward.itemName}
@@ -324,7 +339,7 @@
                         {formatPercent(reward.dropRate, {
                           decimals: 1,
                           trailingZeros: true,
-                        })} drop chance
+                        })} per eligible final-wave kill
                       </span>
                     {/if}
                   </div>
@@ -352,22 +367,78 @@
         <Card.Content>
           <div class="space-y-2">
             {#each data.bosses as boss (boss.monsterId)}
-              <div class="flex items-center justify-between">
-                <a
-                  href="/monsters/{boss.monsterId}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                >
-                  {boss.monsterName}
-                </a>
-                <span class="text-muted-foreground">
-                  {#if isForgotten && data.altar.usesVeteranScaling}
-                    Base level {boss.level}, scaled level {getScaledLevel(
-                      boss.level,
-                    )}
-                  {:else}
-                    Level {boss.level}
-                  {/if}
-                </span>
+              <div class="space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <a
+                    href="/monsters/{boss.monsterId}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                  >
+                    {boss.monsterName}
+                  </a>
+                  <span class="text-muted-foreground">
+                    {#if isForgotten && data.altar.usesVeteranScaling}
+                      Base level {boss.level}, scaled level {getScaledLevel(
+                        boss.level,
+                      )}
+                    {:else}
+                      Level {boss.level}
+                    {/if}
+                  </span>
+                </div>
+                {#if boss.drops.length > 0 || boss.gold || isForgotten}
+                  <p class="text-sm text-muted-foreground">
+                    {isForgotten ? "Additional loot" : "Loot"} per eligible final-wave
+                    kill. Item chances use the baseline without Treasure Hunter or
+                    other loot bonuses.
+                  </p>
+                  <div class="divide-y">
+                    {#if isForgotten}
+                      <div
+                        class="flex flex-wrap items-center justify-between gap-2 py-2"
+                      >
+                        <span>Gold</span>
+                        <span class="tabular-nums text-right"
+                          >{forgottenGold}</span
+                        >
+                      </div>
+                    {:else if boss.gold}
+                      <div
+                        class="flex flex-wrap items-center justify-between gap-2 py-2"
+                      >
+                        <span>Gold</span>
+                        <span class="tabular-nums text-right">
+                          {quantityText(boss.gold.quantity)}
+                          {#if boss.gold.probability !== null && boss.gold.probability < 1}
+                            ({formatPercent(boss.gold.probability, {
+                              decimals: 4,
+                              preserveNonzero: true,
+                            })} chance)
+                          {/if}
+                        </span>
+                      </div>
+                    {/if}
+                    {#each boss.drops as drop (drop.itemId)}
+                      <div
+                        class="flex flex-wrap items-center justify-between gap-2 py-2"
+                      >
+                        <ItemLink
+                          itemId={drop.itemId}
+                          itemName={drop.itemName}
+                          tooltipHtml={drop.tooltipHtml}
+                          imageAvailable={data.itemIconPaths[drop.itemId]}
+                        />
+                        {#if drop.rate !== null}
+                          <span class="tabular-nums text-right"
+                            >{formatPercent(drop.rate, {
+                              decimals: 4,
+                              preserveNonzero: true,
+                            })}</span
+                          >
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
               </div>
             {/each}
           </div>
@@ -391,8 +462,12 @@
             {@const timingInfo = getWaveTimingInfo(wave, isLastWave)}
             <div class="rounded-lg border p-4 bg-background/50">
               <!-- Wave Header -->
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="font-semibold flex items-center gap-2">
+              <div
+                class="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+              >
+                <h3
+                  class="font-semibold flex shrink-0 items-center gap-2 whitespace-nowrap"
+                >
                   Wave {wave.wave_number + 1}
                   {#if isLastWave}
                     <span
@@ -403,7 +478,7 @@
                     </span>
                   {/if}
                 </h3>
-                <div class="flex gap-3 text-sm text-muted-foreground">
+                <div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
                   {#if index > 0 && wave.seconds_before_start > 0}
                     <span class="flex items-center gap-1">
                       <Timer class="h-4 w-4" />
@@ -429,7 +504,9 @@
               {#if monsterCounts.length > 0}
                 <div class="space-y-1">
                   {#each monsterCounts as monster (monster.monsterId)}
-                    <div class="flex items-center justify-between">
+                    <div
+                      class="flex flex-col items-start gap-x-4 gap-y-1 sm:flex-row sm:items-center sm:justify-between"
+                    >
                       <a
                         href="/monsters/{monster.monsterId}"
                         class="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline"

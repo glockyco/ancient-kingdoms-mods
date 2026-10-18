@@ -14,16 +14,7 @@ REDACTED = "old_valorath"
 
 
 class EmbeddedScrubTests(unittest.TestCase):
-    """A surviving row can name a removed entity inside a JSON value.
-
-    Reachability alone cannot produce this case. An item that a surviving
-    monster drops is reachable, so the closure keeps it. The case needs a
-    mechanism that removes an entity for another reason, such as a manual
-    exclusion or the ignore_journal flag.
-
-    Today's export contains no such row, so disabling the scrub changes no
-    published byte. These tests hold the behaviour for the case that reaches it.
-    """
+    """Remaining embedded armor-set references scrub removed members."""
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -39,24 +30,16 @@ class EmbeddedScrubTests(unittest.TestCase):
             "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
             [("common_ore", "Common Ore"), ("secret_ore", "Secret Ore")],
         )
-        # The monster survives in a published zone and drops both items. A
-        # reachable item stays published, so the removal must come from another
-        # mechanism. `secret_ore` is named for manual exclusion below.
         self.conn.execute(
-            "INSERT INTO monsters (id, name, drops) VALUES ('wolf', 'Wolf', ?)",
+            "INSERT INTO items(id,name,travel_zone_id,augment_armor_set_members) VALUES ('set_bonus','Set Bonus',NULL,?)",
             (
                 json.dumps(
                     [
-                        {"item_id": "common_ore", "rate": 0.5},
-                        {"item_id": "secret_ore", "rate": 0.1},
+                        {"item_id": "common_ore", "required": 2},
+                        {"item_id": "secret_ore", "required": 3},
                     ]
                 ),
             ),
-        )
-        self.conn.execute(
-            "INSERT INTO monster_spawns (id, monster_id, zone_id) "
-            "VALUES ('s1', 'wolf', ?)",
-            (PUBLISHED,),
         )
         self.conn.commit()
 
@@ -67,20 +50,22 @@ class EmbeddedScrubTests(unittest.TestCase):
             ),
         )
 
-    def _drops(self):
+    def _members(self):
         raw = self.conn.execute(
-            "SELECT drops FROM monsters WHERE id = 'wolf'"
+            "SELECT augment_armor_set_members FROM items WHERE id='set_bonus'"
         ).fetchone()[0]
         return json.loads(raw)
 
-    def test_the_surviving_monster_keeps_its_published_drop(self):
-        self.assertEqual([drop["item_id"] for drop in self._drops()], ["common_ore"])
+    def test_the_surviving_set_keeps_its_published_member(self):
+        self.assertEqual(
+            [member["item_id"] for member in self._members()], ["common_ore"]
+        )
 
-    def test_the_removed_item_is_absent_from_the_json_value(self):
-        self.assertNotIn("secret_ore", json.dumps(self._drops()))
+    def test_the_removed_member_is_absent_from_the_json_value(self):
+        self.assertNotIn("secret_ore", json.dumps(self._members()))
 
     def test_the_rest_of_the_entry_survives(self):
-        self.assertEqual(self._drops()[0]["rate"], 0.5)
+        self.assertEqual(self._members()[0]["required"], 2)
 
 
 if __name__ == "__main__":

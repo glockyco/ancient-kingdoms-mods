@@ -7,30 +7,6 @@ from compendium.redactions import discovery, references
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 
-# Every table the current schema gives a zone or sub-zone reference. Discovery
-# replaced a maintained list covering eleven of them, so the set is the property
-# worth asserting: a table added later must arrive here on its own.
-ZONE_REFERENCING_TABLES = {
-    "alchemy_tables",
-    "altars",
-    "chests",
-    "crafting_stations",
-    "gathering_resource_spawns",
-    "houses",
-    "item_zones_obtainable",
-    "items",
-    "luck_tokens",
-    "monster_spawns",
-    "npc_spawns",
-    "portals",
-    "quests",
-    "scribing_tables",
-    "summon_triggers",
-    "traps",
-    "treasure_locations",
-    "zone_triggers",
-}
-
 
 class ReferenceDeclarationTests(unittest.TestCase):
     def setUp(self):
@@ -46,7 +22,14 @@ class ReferenceDeclarationTests(unittest.TestCase):
         # what makes a schema addition visible instead of silently defaulted.
         resolved = references.resolve(self.conn)
 
-        self.assertGreater(len(resolved), 100)
+        declared = {
+            (r.table, r.column, r.target_table) for r in resolved if not r.embedded
+        }
+        actual = {
+            (r.table, r.column, r.target_table)
+            for r in discovery.foreign_keys(self.conn)
+        }
+        self.assertEqual(declared, actual)
 
     def test_an_undeclared_reference_stops_the_build(self):
         self.conn.executescript(
@@ -67,13 +50,15 @@ class ReferenceDeclarationTests(unittest.TestCase):
         resolved = references.resolve(self.conn)
 
         found = {r.table for r in resolved if r.to_zone and r.table != "zones"}
-        self.assertEqual(found, ZONE_REFERENCING_TABLES)
+        self.assertIn("quest_objective_locations", found)
+        self.assertIn("acquisition_kill_details", found)
+        self.assertNotIn("item_zones_obtainable", found)
 
     def test_both_identifier_spaces_are_recognised(self):
         resolved = {(r.table, r.column): r for r in references.resolve(self.conn)}
 
         self.assertTrue(resolved[("items", "travel_zone_id")].numeric)
-        self.assertTrue(resolved[("quests", "zone_id_quest_action")].numeric)
+        self.assertFalse(resolved[("acquisition_kill_details", "loot_zone_id")].reaches)
         self.assertFalse(resolved[("chests", "zone_id")].numeric)
 
     def test_a_destination_reaches_nothing(self):
@@ -96,7 +81,7 @@ class ReferenceDeclarationTests(unittest.TestCase):
         resolved = {(r.table, r.column): r for r in references.resolve(self.conn)}
 
         self.assertFalse(resolved[("portals", "required_item_id")].reaches)
-        self.assertFalse(resolved[("quests", "kill_target_1_id")].reaches)
+        self.assertFalse(resolved[("quest_objective_monsters", "monster_id")].reaches)
 
 
 class SubZoneResolutionTests(unittest.TestCase):

@@ -7,11 +7,9 @@ import {
 } from "$lib/skills/skillsListQuery";
 import { skillEffectSummaries } from "$lib/skills/skillEffects.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
-import {
-  getItemSourceSummaries,
-  getMinimumSourceLevel,
-  groupItemSourceSummaries,
-} from "$lib/server/item-source-summary";
+import { loadItemAcquisition } from "$lib/server/acquisition";
+import type { AcquisitionQuery, MethodView } from "$lib/acquisition/types";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 /**
  * Get all player classes (server-side, for prerendering)
@@ -79,12 +77,13 @@ export interface ClassSkill extends SkillListRow {
   visual_height: number | null;
   visual_source_field: string | null;
   visual_source_type: string | null;
-  prerequisite_skill_id: string | null;
-  prerequisite_skill_name: string | null;
-  prerequisite_level: number;
-  prerequisite2_skill_id: string | null;
-  prerequisite2_skill_name: string | null;
-  prerequisite2_level: number;
+  prerequisites: {
+    id: string;
+    skill_id: string | null;
+    name: string | null;
+    rank: number;
+    withheld: boolean;
+  }[];
   required_weapon_category: string;
   is_innate?: boolean;
   mana_cost: string | null;
@@ -103,19 +102,13 @@ export interface ClassSkill extends SkillListRow {
  * Uses universal class-filtered query pattern
  */
 export function getClassSkills(classId: string): ClassSkill[] {
-  const rows = query<Omit<ClassSkill, "effect">>(
+  const rows = query<Omit<ClassSkill, "effect" | "prerequisites">>(
     `SELECT
       ${SKILL_LIST_COLUMNS},
       va.width AS visual_width,
       va.height AS visual_height,
       va.source_field AS visual_source_field,
       va.source_type AS visual_source_type,
-      s.prerequisite_skill_id,
-      ps.name AS prerequisite_skill_name,
-      s.prerequisite_level,
-      s.prerequisite2_skill_id,
-      ps2.name AS prerequisite2_skill_name,
-      s.prerequisite2_level,
       s.required_weapon_category,
       s.mana_cost,
       s.energy_cost,
@@ -128,25 +121,34 @@ export function getClassSkills(classId: string): ClassSkill[] {
       json_extract(s.class_skill_positions, '$.' || ?) AS class_skill_position
     FROM skills s
     ${SKILL_LIST_JOINS}
-    LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
-    LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
     WHERE (? IN (SELECT value FROM json_each(s.player_classes))
        OR 'all' IN (SELECT value FROM json_each(s.player_classes)))
     ORDER BY class_skill_position`,
     [classId, classId],
   );
   const effects = skillEffectSummaries(rows.map((row) => row.id));
-  return rows.map((row, index) => ({ ...row, effect: effects[index] }));
-}
-
-/**
- * A single source for an item (from any of the 11 source tables)
- */
-export interface ClassItemSource {
-  type: string;
-  id: string;
-  name: string;
-  source_level: number | null;
+  const prerequisites = query<
+    ClassSkill["prerequisites"][number] & { owner_skill_id: string }
+  >(
+    `SELECT p.id, p.skill_id AS owner_skill_id, p.predecessor_skill_id AS skill_id,
+            s.name, p.rank, p.withheld
+     FROM skill_predecessors p
+     LEFT JOIN skills s ON s.id = p.predecessor_skill_id
+     WHERE p.skill_id IN (SELECT value FROM json_each(?))
+     ORDER BY p.skill_id, p.ordinal`,
+    [JSON.stringify(rows.map((row) => row.id))],
+  );
+  const prerequisitesBySkill = new Map<string, ClassSkill["prerequisites"]>();
+  for (const { owner_skill_id, ...requirement } of prerequisites) {
+    const list = prerequisitesBySkill.get(owner_skill_id) ?? [];
+    list.push({ ...requirement, withheld: Boolean(requirement.withheld) });
+    prerequisitesBySkill.set(owner_skill_id, list);
+  }
+  return rows.map((row, index) => ({
+    ...row,
+    effect: effects[index],
+    prerequisites: prerequisitesBySkill.get(row.id) ?? [],
+  }));
 }
 
 /**
@@ -165,16 +167,17 @@ export interface ClassItem {
   level_required: number;
   quality: number;
   item_type: string;
-  sources: ClassItemSource[];
+  sources: readonly MethodView[];
   min_source_level: number | null;
 }
 
 /**
  * Get all equipment and weapons for a class with aggregated sources.
  */
-export function getClassItemsWithSources(
-  classId: string,
-): (ClassItem & { stat_keys: string })[] {
+export async function getClassItemsWithSources(classId: string): Promise<{
+  items: (ClassItem & { stat_keys: string })[];
+  acquisitionNames: Readonly<Record<string, string>>;
+}> {
   const items = query<
     Omit<ClassItem, "sources" | "min_source_level"> & { stat_keys: string }
   >(
@@ -205,28 +208,37 @@ export function getClassItemsWithSources(
      AND va.entity_id = i.id
      AND va.kind = 'icon'
     WHERE i.item_type IN ('equipment', 'weapon')
-      AND (? IN (SELECT value FROM json_each(i.class_required))
-           OR 'all' IN (SELECT value FROM json_each(i.class_required)))
+      AND (EXISTS (
+        SELECT 1 FROM item_class_requirements cr
+        WHERE cr.item_id = i.id AND cr.class_id = ?
+      ) OR NOT EXISTS (
+        SELECT 1 FROM item_class_requirements cr WHERE cr.item_id = i.id
+      ))
       AND i.slot NOT IN ('Shovel', 'Pickaxe')
       AND json_extract(i.stats, '$.is_costume') IS NOT 1
     ORDER BY i.level_required, i.name`,
     [classId],
   );
 
-  const sourceRows = getItemSourceSummaries(
-    getDb(),
+  const db = getDb();
+  const execute: AcquisitionQuery = async (sql, params) =>
+    db.prepare(sql).all(...params) as Record<string, unknown>[];
+  const { model, sources } = await loadItemAcquisition(
+    execute,
     items.map((item) => item.id),
   );
-  const sourcesByItemId = groupItemSourceSummaries(sourceRows);
 
-  return items.map((item) => {
-    const sources = sourcesByItemId.get(item.id) ?? [];
-    return {
-      ...item,
-      sources,
-      min_source_level: getMinimumSourceLevel(sources),
-    };
-  });
+  return {
+    items: items.map((item) => {
+      const source = sources[item.id];
+      return {
+        ...item,
+        sources: source.methods,
+        min_source_level: source.sourceLevelHint,
+      };
+    }),
+    acquisitionNames: projectAcquisitionNames(model),
+  };
 }
 
 /**
@@ -261,8 +273,12 @@ export function getClassQuests(classId: string): ClassQuest[] {
       is_adventurer_quest,
       is_repeatable
     FROM quests
-    WHERE ? IN (SELECT value FROM json_each(class_requirements))
-       OR 'all' IN (SELECT value FROM json_each(class_requirements))
+    WHERE EXISTS (
+      SELECT 1 FROM quest_class_requirements cr
+      WHERE cr.quest_id = quests.id AND cr.class_id = ?
+    ) OR NOT EXISTS (
+      SELECT 1 FROM quest_class_requirements cr WHERE cr.quest_id = quests.id
+    )
     ORDER BY level_required, name`,
     [classId],
   );

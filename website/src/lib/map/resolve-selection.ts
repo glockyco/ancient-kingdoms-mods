@@ -16,6 +16,8 @@ import type {
 import { query } from "$lib/db";
 import type { EntityId } from "$lib/entities/registry";
 import { resolveMapEntityType } from "./selection";
+import { loadBrowserAcquisition, itemMapLocations } from "./acquisition";
+import type { LocationRef } from "$lib/acquisition/types";
 
 // ============================================================================
 // Types
@@ -55,6 +57,7 @@ export type HighlightCategory =
 export interface OverrideGroup {
   ids: string[];
   category: HighlightCategory;
+  exactPlacement?: boolean;
 }
 
 /** What to highlight on the map */
@@ -71,6 +74,8 @@ interface SelectionHighlight {
 export interface ResolvedSelection {
   /** What popup to show */
   popup: EntityPopup | ZonePopup | VirtualPopup | null;
+  /** Requested physical identity, independent of template/group popup data. */
+  selectionId?: string;
   /** What to highlight on the map */
   highlight: SelectionHighlight | null;
 }
@@ -92,7 +97,11 @@ export function resolvePhysicalSelection(
   const resolver = entityType
     ? PHYSICAL_SELECTION_BY_ENTITY[entityType]
     : undefined;
-  return resolver ? resolver(id, entityData) : { popup: null, highlight: null };
+  const resolved: ResolvedSelection = resolver
+    ? resolver(id, entityData)
+    : { popup: null, highlight: null };
+  if (resolved.popup?.type === "entity") resolved.selectionId = id;
+  return resolved;
 }
 
 /**
@@ -104,41 +113,50 @@ export async function resolveVirtualSelection(
   id: string,
 ): Promise<ResolvedSelection> {
   if (category === "item") {
-    const [
-      dropperIds,
-      vendorIds,
-      gatheringIds,
-      chestIds,
-      altarIds,
-      treasureIds,
-    ] = await Promise.all([
-      queryItemDroppers(id),
-      queryItemVendors(id),
-      queryItemGatheringSources(id),
-      queryItemChestSources(id),
-      queryItemAltarSources(id),
-      queryItemTreasureSources(id),
-    ]);
-
-    const overrideGroups: OverrideGroup[] = [];
-    if (dropperIds.length > 0) {
-      overrideGroups.push({ ids: dropperIds, category: "monster" });
+    const model = await loadBrowserAcquisition({
+      kind: "items",
+      itemIds: [id],
+    });
+    const categories: Partial<Record<LocationRef["kind"], HighlightCategory>> =
+      {
+        monster_spawns: "monster",
+        npcs: "npc",
+        resource_spawns: "resource",
+        chests: "chest",
+        altars: "altar",
+        treasure_locations: "treasure",
+        crafting_stations: "crafting",
+        alchemy_tables: "crafting",
+        scribing_tables: "crafting",
+        portals: "portal",
+      };
+    const groups = new Map<HighlightCategory, Set<string>>();
+    for (const location of itemMapLocations(model, id)) {
+      const category = categories[location.provider.kind];
+      if (!category) continue;
+      const ids = groups.get(category) ?? new Set<string>();
+      if (category === "monster" && location.approximate) {
+        for (const methodId of location.methodIds) {
+          const method = model.methodViews.get(methodId);
+          ids.add(
+            method?.kind === "kill" &&
+              method.detail.event_kind === "placeholder"
+              ? methodId
+              : location.provider.id,
+          );
+        }
+      } else {
+        ids.add(location.provider.id);
+      }
+      groups.set(category, ids);
     }
-    if (vendorIds.length > 0) {
-      overrideGroups.push({ ids: vendorIds, category: "npc" });
-    }
-    if (gatheringIds.length > 0) {
-      overrideGroups.push({ ids: gatheringIds, category: "resource" });
-    }
-    if (chestIds.length > 0) {
-      overrideGroups.push({ ids: chestIds, category: "chest" });
-    }
-    if (altarIds.length > 0) {
-      overrideGroups.push({ ids: altarIds, category: "altar" });
-    }
-    if (treasureIds.length > 0) {
-      overrideGroups.push({ ids: treasureIds, category: "treasure" });
-    }
+    const overrideGroups: OverrideGroup[] = [...groups].map(
+      ([category, ids]) => ({
+        category,
+        ids: [...ids],
+        exactPlacement: category === "monster" || category === "resource",
+      }),
+    );
 
     return {
       popup: { type: "item", id },
@@ -180,8 +198,9 @@ function resolveMonsterSelection(
   monsterId: string,
   entityData: MapEntityData,
 ): ResolvedSelection {
-  // Find ANY monster with this monsterId (may have position or not)
-  const monster = entityData.monsters.find((m) => m.monsterId === monsterId);
+  const exactSpawn = entityData.monsters.find((m) => m.id === monsterId);
+  const monster =
+    exactSpawn ?? entityData.monsters.find((m) => m.monsterId === monsterId);
 
   if (!monster) {
     return { popup: null, highlight: null };
@@ -191,10 +210,18 @@ function resolveMonsterSelection(
   const hasPosition = monster.position !== null;
 
   if (hasPosition) {
-    // Physical entity - has map position, highlight all spawns
+    // Placement links highlight one spawn. Template links highlight the group.
     return {
       popup: { type: "entity", entity: monster },
-      highlight: { entityId: monsterId, entityType: "monster" },
+      highlight: exactSpawn
+        ? {
+            entityId: monsterId,
+            entityType: "monster",
+            overrideGroups: [
+              { ids: [monsterId], category: "monster", exactPlacement: true },
+            ],
+          }
+        : { entityId: monsterId, entityType: "monster" },
     };
   }
 
@@ -410,8 +437,9 @@ function resolveGatheringSelection(
   ) as GatheringMapEntity | undefined;
   const resource =
     exactResource ??
-    (entityData.gathering.find((g) => g.selectionGroupId === resourceId) as
-      GatheringMapEntity | undefined);
+    (entityData.gathering.find(
+      (g) => g.selectionGroupId === resourceId || g.resourceId === resourceId,
+    ) as GatheringMapEntity | undefined);
 
   if (!resource) {
     return { popup: null, highlight: null };
@@ -421,7 +449,19 @@ function resolveGatheringSelection(
     popup: { type: "entity", entity: resource },
     highlight:
       resource.position !== null
-        ? { entityId: resource.selectionGroupId, entityType: "resource" }
+        ? exactResource
+          ? {
+              entityId: resourceId,
+              entityType: "resource",
+              overrideGroups: [
+                {
+                  ids: [resourceId],
+                  category: "resource",
+                  exactPlacement: true,
+                },
+              ],
+            }
+          : { entityId: resourceId, entityType: "resource" }
         : null,
   };
 }
@@ -475,159 +515,13 @@ const PHYSICAL_SELECTION_BY_ENTITY: Partial<
 // Database Query Helpers (for virtual entities)
 // ============================================================================
 
-interface DropperRow {
-  monster_id: string;
-}
-
-/**
- * Query monster IDs that drop a specific item.
- */
-async function queryItemDroppers(itemId: string): Promise<string[]> {
-  const rows = await query<DropperRow>(
-    `
-    SELECT DISTINCT m.id as monster_id
-    FROM monsters m, json_each(m.drops) d
-    WHERE json_extract(d.value, '$.item_id') = ?
-  `,
-    [itemId],
-  );
-
-  return rows.map((r) => r.monster_id);
-}
-
-interface QuestNpcRow {
-  npc_id: string;
-}
-
-/**
- * Query NPC IDs associated with a specific quest (givers and turn-ins).
- * Quest-NPC relationships are stored as JSON in npcs.quests_offered and npcs.quests_completed_here.
- */
 async function queryQuestNpcs(questId: string): Promise<string[]> {
-  const rows = await query<QuestNpcRow>(
-    `
-    SELECT DISTINCT n.id as npc_id
-    FROM npcs n
-    WHERE EXISTS (
-      SELECT 1 FROM json_each(n.quests_offered) q
-      WHERE json_extract(q.value, '$.id') = ?
-    )
-    OR EXISTS (
-      SELECT 1 FROM json_each(n.quests_completed_here) q
-      WHERE json_extract(q.value, '$.id') = ?
-    )
-  `,
-    [questId, questId],
+  const rows = await query<{ npc_id: string }>(
+    `SELECT DISTINCT m.npc_id FROM npc_quest_memberships m
+     JOIN npc_spawns ns ON ns.npc_id=m.npc_id
+     WHERE m.quest_id=? AND ns.position_x IS NOT NULL AND ns.position_y IS NOT NULL
+     ORDER BY m.npc_id`,
+    [questId],
   );
-
-  return rows.map((r) => r.npc_id);
-}
-
-interface VendorRow {
-  npc_id: string;
-}
-
-/**
- * Query NPC IDs that sell a specific item.
- * Vendor relationships are stored in the item_sources_vendor table.
- */
-async function queryItemVendors(itemId: string): Promise<string[]> {
-  const rows = await query<VendorRow>(
-    `
-    SELECT DISTINCT npc_id
-    FROM item_sources_vendor
-    WHERE item_id = ?
-  `,
-    [itemId],
-  );
-
-  return rows.map((r) => r.npc_id);
-}
-
-interface GatheringRow {
-  resource_id: string;
-}
-
-/**
- * Query gathering resource IDs that yield a specific item.
- * Gathering relationships are stored in the item_sources_gather junction table.
- */
-async function queryItemGatheringSources(itemId: string): Promise<string[]> {
-  const rows = await query<GatheringRow>(
-    `
-    SELECT DISTINCT resource_id
-    FROM item_sources_gather
-    WHERE item_id = ?
-  `,
-    [itemId],
-  );
-
-  return rows.map((r) => r.resource_id);
-}
-
-interface ChestRow {
-  chest_id: string;
-}
-
-/**
- * Query physical chest IDs (gatherable chests on the map) that yield a specific item.
- * These are stored in the item_sources_chest junction table.
- */
-async function queryItemChestSources(itemId: string): Promise<string[]> {
-  const rows = await query<ChestRow>(
-    `
-    SELECT DISTINCT chest_id
-    FROM item_sources_chest
-    WHERE item_id = ?
-  `,
-    [itemId],
-  );
-
-  return rows.map((r) => r.chest_id);
-}
-
-interface AltarRow {
-  altar_id: string;
-}
-
-/**
- * Query altar IDs where the item is a tier reward.
- * Altars are physical entities that can be highlighted on the map.
- */
-async function queryItemAltarSources(itemId: string): Promise<string[]> {
-  const rows = await query<AltarRow>(
-    `
-    SELECT a.id as altar_id
-    FROM altars a
-    WHERE a.reward_common_id = ?
-       OR a.reward_magic_id = ?
-       OR a.reward_epic_id = ?
-       OR a.reward_legendary_id = ?
-  `,
-    [itemId, itemId, itemId, itemId],
-  );
-
-  return rows.map((r) => r.altar_id);
-}
-
-interface TreasureRow {
-  treasure_location_id: string;
-}
-
-/**
- * Query treasure location IDs where the item is either:
- * - The reward from digging
- * - The required treasure map item
- */
-async function queryItemTreasureSources(itemId: string): Promise<string[]> {
-  const rows = await query<TreasureRow>(
-    `
-    SELECT tl.id as treasure_location_id
-    FROM treasure_locations tl
-    WHERE tl.reward_id = ? OR tl.required_map_id = ?
-  `,
-    [itemId, itemId],
-  );
-
-  return rows.map((r) => r.treasure_location_id);
+  return rows.map((row) => row.npc_id);
 }

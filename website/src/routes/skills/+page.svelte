@@ -149,8 +149,8 @@
       imageAvailable={row.original.visual_public_path}
       fallback={Sparkles}
       size={28}
-      class="flex truncate"
-      nameClass="truncate"
+      class="flex min-w-0"
+      nameClass="whitespace-normal break-words"
     />
   {:else if cell.column.id === "skill_type"}
     <span class="text-muted-foreground truncate block"
@@ -159,7 +159,7 @@
   {:else if cell.column.id === "effect"}
     {@const s = row.original}
     <SkillEffect
-      class="text-sm whitespace-normal min-w-48 max-w-xl"
+      class="block text-sm whitespace-normal min-w-0 max-w-xl"
       effect={s.effect}
       entityName={s.summoned_monster_name ?? s.pet_name}
       entityHref={s.summoned_monster_id

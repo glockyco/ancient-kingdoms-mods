@@ -1,4 +1,5 @@
-import type { ObtainabilityNode } from "./recipes";
+import type { MethodView, RequirementRoot } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
 
 // Quest reward item
 export interface QuestRewardItem {
@@ -6,6 +7,7 @@ export interface QuestRewardItem {
   item_name: string;
   class_specific: string | null;
   tooltip_html: string | null;
+  amount: number;
 }
 
 // Quest rewards container
@@ -84,17 +86,15 @@ export interface QuestItemTarget {
   tooltip_html: string | null;
 }
 
-// Zone reference
-export interface QuestZone {
+export interface QuestLocationTarget {
   id: string;
-  name: string;
-}
-
-// Position in game world
-export interface QuestPosition {
-  x: number;
-  y: number;
-  z: number;
+  role: "location_visit" | "tracking_location";
+  withheld: boolean;
+  zone_id: string | null;
+  zone_name: string | null;
+  sub_zone_name: string | null;
+  discovered_location: string | null;
+  tracking_quest_location: string | null;
 }
 
 // Full quest info for detail page
@@ -119,12 +119,6 @@ export interface QuestInfo {
   // Per-class HTML tooltips: {"_default": "..."} or {"Warrior": "...", "Cleric": "...", etc.}
   tooltip_html: Record<string, string> | null;
   tooltip_complete_html: Record<string, string> | null;
-  // Location quest fields
-  discovered_location: string | null;
-  discovered_location_zone: QuestZone | null;
-  discovered_location_sub_zone: QuestZone | null;
-  discovered_location_position: QuestPosition | null;
-  tracking_quest_location: string | null;
   is_find_npc_quest: boolean;
   // Gather inventory quest fields
   remove_items_on_complete: boolean;
@@ -139,21 +133,24 @@ export interface QuestDetailPageData {
   /** Faction display name to route id, for linking out to `/factions/[id]`. */
   factionIds: Record<string, string>;
   description: string;
-  startNpc: QuestNpc | null;
-  endNpc: QuestNpc | null;
-  adventurerNpcs: QuestNpc[];
+  startNpcs: QuestNpc[];
+  endNpcs: QuestNpc[];
+  requirements: readonly RequirementRoot[];
   chainGraph: QuestChainGraph | null;
   predecessors: QuestChainQuest[];
   successors: QuestChainQuest[];
   killTargets: QuestMonsterTarget[];
+  locationTargets: QuestLocationTarget[];
   gatherItems: QuestItemTarget[];
   gatherInventoryItems: QuestItemTarget[];
   requiredItems: QuestItemTarget[];
   equipItems: QuestItemTarget[];
   potionItem: QuestItemTarget | null;
-  givenItemOnStart: QuestItemTarget | null;
+  givenItemsOnStart: QuestItemTarget[];
   itemIconPaths: Record<string, string | null>;
-  itemObtainabilityTrees: ObtainabilityNode[];
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
+  methods: readonly MethodView[];
 }
 
 // List page types
@@ -169,9 +166,7 @@ export interface QuestListView {
   is_adventurer_quest: boolean;
   is_repeatable: boolean;
   class_requirements: string[];
-  quest_giver_id: string | null;
-  quest_giver_name: string | null;
-  quest_giver_count: number;
+  quest_givers: Array<{ id: string; name: string }>;
 }
 
 export interface QuestsPageData {

@@ -10,6 +10,8 @@ import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
 import type { IndexedDoc } from "$lib/search/engine";
 import { FILTERED_LISTS, listHref, listTableLabel } from "$lib/search/lists";
 import { nameKey } from "$lib/search/normalize";
+import { loadAcquisition } from "$lib/server/acquisition";
+import type { AcquisitionQuery } from "$lib/acquisition/types";
 
 /** Text of one entity before its destination and artwork are resolved. */
 interface EntityText {
@@ -22,7 +24,7 @@ interface EntityText {
 }
 
 type RawRow = Record<string, unknown>;
-type Builder = (db: Database.Database) => EntityText[];
+type Builder = (db: Database.Database) => EntityText[] | Promise<EntityText[]>;
 
 const tableColumnsCache = new Map<string, Set<string>>();
 
@@ -185,38 +187,97 @@ const builders: Record<SearchableEntityId, Builder> = {
         )
         .all() as RawRow[],
     ),
-  gathering_resource: (db) =>
-    rowsToText(
-      db
-        .prepare(
-          `
-    SELECT r.id, r.name, r.keywords, r.description AS content,
-      (SELECT group_concat(location, ', ') FROM (
-        SELECT DISTINCT ${LOCATION_SQL} AS location
-        FROM gathering_resource_spawns s JOIN zones z ON z.id = s.zone_id
-        LEFT JOIN zone_triggers t ON t.id = s.sub_zone_id
-        WHERE s.resource_id = r.id ORDER BY location
-      )) AS detail,
-      (SELECT group_concat(name, ', ') FROM (
-        SELECT DISTINCT i.name FROM item_sources_gather g
-        JOIN items i ON i.id = g.item_id
-        WHERE g.resource_id = r.id AND r.is_fishing_spot = 1
-        ORDER BY g.actual_drop_chance DESC, i.name LIMIT 3
-      )) AS catches
-    FROM gathering_resources r ORDER BY r.id
-  `,
-        )
-        .all()
-        .map((raw) => {
-          const row = raw as RawRow;
-          return {
-            ...row,
-            detail: [row.detail, row.catches ? `Catches: ${row.catches}` : null]
-              .filter(Boolean)
-              .join(". "),
-          };
-        }),
-    ),
+  gathering_resource: async (db) => {
+    const rows = db
+      .prepare(
+        `
+      SELECT r.id, r.name, r.keywords, r.description AS content, r.is_fishing_spot,
+        (SELECT group_concat(location, ', ') FROM (
+          SELECT DISTINCT ${LOCATION_SQL} AS location
+          FROM gathering_resource_spawns s JOIN zones z ON z.id = s.zone_id
+          LEFT JOIN zone_triggers t ON t.id = s.sub_zone_id
+          WHERE s.resource_id = r.id ORDER BY location
+        )) AS detail
+      FROM gathering_resources r ORDER BY r.id
+    `,
+      )
+      .all() as RawRow[];
+    const spawns = db
+      .prepare(
+        `
+      SELECT s.id, s.resource_id FROM gathering_resource_spawns s
+      JOIN gathering_resources r ON r.id = s.resource_id
+      WHERE r.is_fishing_spot = 1 ORDER BY s.id
+    `,
+      )
+      .all() as { id: string; resource_id: string }[];
+    const execute: AcquisitionQuery = async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[];
+    const model = await loadAcquisition(execute, {
+      kind: "providers",
+      providers: spawns.map((spawn) => ({
+        kind: "resource_spawns",
+        id: spawn.id,
+      })),
+    });
+    const resourceBySpawn = new Map(
+      spawns.map((spawn) => [spawn.id, spawn.resource_id]),
+    );
+    const catches = new Map<string, Map<string, number>>();
+    for (const method of model.methodViews.values()) {
+      if (method.ruleId !== "fishing" || !method.rooted) continue;
+      const binding = model.rows.facts.acquisition_method_fishing_rules.find(
+        (row) => row.method_id === method.methodId,
+      );
+      const fishingRule = model.rows.facts.loot_fishing_rules.find(
+        (row) => row.id === binding?.fishing_rule_id,
+      );
+      if (!fishingRule)
+        throw new Error(`Missing fishing rule for ${method.methodId}`);
+      const primary =
+        model.entriesByPool.get(String(fishingRule.primary_pool_id)) ?? [];
+      for (const provider of method.providers) {
+        if (provider.ref.kind !== "resource_spawns") continue;
+        const resourceId = resourceBySpawn.get(provider.ref.id);
+        if (!resourceId) continue;
+        const outcomes = catches.get(resourceId) ?? new Map<string, number>();
+        catches.set(resourceId, outcomes);
+        for (const entry of primary) {
+          if (!entry.item_id || entry.withheld || entry.probability <= 0)
+            continue;
+          outcomes.set(
+            entry.item_id,
+            Math.max(outcomes.get(entry.item_id) ?? 0, entry.probability),
+          );
+        }
+      }
+    }
+    return rowsToText(
+      rows.map((row) => {
+        const outcomes = catches.get(String(row.id));
+        const names = [...(outcomes ?? [])]
+          .map(([id, probability]) => ({
+            name: String(model.entities.get("items")?.get(id)?.name ?? id),
+            probability,
+          }))
+          .sort(
+            (a, b) =>
+              b.probability - a.probability || a.name.localeCompare(b.name),
+          )
+          .slice(0, 3)
+          .map((item) => item.name);
+        return {
+          ...row,
+          detail: [
+            row.detail,
+            names.length ? `Catches: ${names.join(", ")}` : null,
+          ]
+            .filter(Boolean)
+            .join(". "),
+        };
+      }),
+    );
+  },
   skill: (db) => {
     const columns = tableColumns(db, "skills");
     const keywordExpr = columns.has("keywords")
@@ -264,10 +325,16 @@ const builders: Record<SearchableEntityId, Builder> = {
           `
         SELECT
           p.id,
-          COALESCE(NULLIF(fs.name, ''), NULLIF(fz.name, ''), p.from_sub_zone_id, p.from_zone_id)
-            || ' → ' ||
-          COALESCE(NULLIF(ts.name, ''), NULLIF(tz.name, ''), p.to_sub_zone_id, p.to_zone_id) AS name,
-          p.keywords
+          COALESCE(NULLIF(fs.name, ''), NULLIF(fz.name, ''), 'Unknown origin')
+            || ' to ' ||
+          CASE WHEN p.destination_withheld = 1 THEN 'Unpublished destination'
+            ELSE COALESCE(NULLIF(ts.name, ''), NULLIF(tz.name, ''), 'Unknown destination')
+          END AS name,
+          p.keywords,
+          trim(COALESCE(fz.name, '') || ' ' || COALESCE(fs.name, '') || ' ' ||
+            CASE WHEN p.destination_withheld = 1 THEN ''
+              ELSE COALESCE(tz.name, '') || ' ' || COALESCE(ts.name, '')
+            END) AS content
         FROM portals p
         LEFT JOIN zone_triggers fs ON fs.id = p.from_sub_zone_id
         LEFT JOIN zone_triggers ts ON ts.id = p.to_sub_zone_id
@@ -359,7 +426,7 @@ const builders: Record<SearchableEntityId, Builder> = {
     ),
 };
 
-function entityDocs(db: Database.Database): IndexedDoc[] {
+async function entityDocs(db: Database.Database): Promise<IndexedDoc[]> {
   const imagePath = db.prepare(
     `SELECT public_path FROM visual_assets
      WHERE domain = ? AND entity_id = ? AND kind = ?`,
@@ -374,7 +441,7 @@ function entityDocs(db: Database.Database): IndexedDoc[] {
   const docs: IndexedDoc[] = [];
   for (const kind of searchableEntities) {
     const def = entityRegistry[kind];
-    for (const text of builders[kind](db)) {
+    for (const text of await builders[kind](db)) {
       docs.push({
         kind,
         id: text.entityId,
@@ -499,7 +566,12 @@ function listDocs(): IndexedDoc[] {
 }
 
 /** Every document of the search index, in a stable order. */
-export function buildSearchDocuments(db: Database.Database): IndexedDoc[] {
+export async function buildSearchDocuments(
+  db: Database.Database,
+): Promise<IndexedDoc[]> {
   tableColumnsCache.clear();
-  return [...withSections([...entityDocs(db), ...pageDocs()]), ...listDocs()];
+  return [
+    ...withSections([...(await entityDocs(db)), ...pageDocs()]),
+    ...listDocs(),
+  ];
 }

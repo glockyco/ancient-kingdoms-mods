@@ -1,4 +1,3 @@
-import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -109,61 +108,39 @@ class PositionSuppressionTests(unittest.TestCase):
         ).fetchone()
         self.assertEqual(row, (None, None, 7.0, 8.0))
 
-    def test_a_position_inside_json_is_removed_and_the_entry_survives(self):
-        objectives = [
-            {
-                "type": "location",
-                "zone_id": SUPPRESSED,
-                "amount": 1,
-                "position": {"x": 1.0, "y": 2.0, "z": 0.0},
-            },
-            {
-                "type": "location",
-                "zone_id": PUBLISHED,
-                "amount": 1,
-                "position": {"x": 3.0, "y": 4.0, "z": 0.0},
-            },
-        ]
+    def test_normalized_location_objectives_keep_order_and_public_geometry(self):
         self.conn.execute(
-            "INSERT INTO quests (id, name, quest_type, objectives) "
-            "VALUES ('q1', 'Quest', 'normal', ?)",
-            (json.dumps(objectives),),
+            "INSERT INTO quests(id,name,quest_type) VALUES ('q1','Quest','location')"
         )
+        for ordinal, zone, x, y in (
+            (0, SUPPRESSED, 1.0, 2.0),
+            (1, PUBLISHED, 3.0, 4.0),
+        ):
+            identity = f"location_{ordinal}"
+            self.conn.execute(
+                "INSERT INTO quest_objectives(id,quest_id,ordinal,kind,role,amount) VALUES (?,'q1',?,'location','location_visit',NULL)",
+                (identity, ordinal),
+            )
+            self.conn.execute(
+                "INSERT INTO quest_objective_locations(id,zone_id,position_x,position_y,min_x,max_y) VALUES (?,?,?,?,?,?)",
+                (identity, zone, x, y, x - 1, y + 1),
+            )
         self.conn.commit()
 
         geometry.run(self.conn, self.config)
 
-        stored = json.loads(
+        rows = list(
             self.conn.execute(
-                "SELECT objectives FROM quests WHERE id = 'q1'"
-            ).fetchone()[0]
+                "SELECT d.zone_id,d.position_x,d.position_y,d.min_x,d.max_y,o.ordinal,o.amount FROM quest_objective_locations d JOIN quest_objectives o ON o.id=d.id ORDER BY o.ordinal"
+            )
         )
-        self.assertIsNone(stored[0]["position"])
-        self.assertEqual(stored[0]["zone_id"], SUPPRESSED)
-        self.assertEqual(stored[0]["amount"], 1)
-        self.assertEqual(stored[1]["position"], {"x": 3.0, "y": 4.0, "z": 0.0})
-
-    def test_a_position_inside_json_keyed_numerically_is_removed(self):
-        locations = [
-            {"zone_id": 23, "position": {"x": 1.0, "y": 2.0, "z": 0.0}},
-            {"zone_id": 22, "position": {"x": 3.0, "y": 4.0, "z": 0.0}},
-        ]
-        self.conn.execute(
-            "INSERT INTO quests (id, name, quest_type, finish_quest_locations) "
-            "VALUES ('q2', 'Quest', 'normal', ?)",
-            (json.dumps(locations),),
+        self.assertEqual(
+            rows,
+            [
+                (SUPPRESSED, None, None, None, None, 0, None),
+                (PUBLISHED, 3.0, 4.0, 2.0, 5.0, 1, None),
+            ],
         )
-        self.conn.commit()
-
-        geometry.run(self.conn, self.config)
-
-        stored = json.loads(
-            self.conn.execute(
-                "SELECT finish_quest_locations FROM quests WHERE id = 'q2'"
-            ).fetchone()[0]
-        )
-        self.assertIsNone(stored[0]["position"])
-        self.assertEqual(stored[1]["position"], {"x": 3.0, "y": 4.0, "z": 0.0})
 
     def test_no_configured_zone_changes_nothing(self):
         geometry.run(self.conn, RedactionConfig())

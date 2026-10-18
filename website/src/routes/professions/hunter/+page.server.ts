@@ -54,7 +54,8 @@ export const load: PageServerLoad = (): HunterPageData => {
       m.level_min,
       m.level_max
     FROM monsters m
-    WHERE m.is_hunt = 1 AND m.is_dummy = 0
+    JOIN acquisition_kill_details context ON context.monster_id = m.id
+    WHERE context.is_hunt = 1 AND m.is_dummy = 0
     ORDER BY m.level_min, m.name
   `,
     )

@@ -12,7 +12,7 @@
 
 The manifest SHALL include every prerendered, indexable, self-canonical page URL and the canonical home URL. It SHALL omit fishing-family aliases whose canonical tag points to a placement. The generated sitemap SHALL list URLs in sorted order. Hashed entries SHALL publish their stored `lastmod`, and bare entries SHALL omit it. Equal semantic fingerprints SHALL preserve dates, changed or new fingerprints SHALL receive the generation day's UTC date, and removed URLs SHALL disappear.
 
-Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-v2"`. Old or mixed schemes SHALL fail without replacing the prior manifest. The one-time private conversion SHALL preserve a published date only when its old hash reconciles with the published manifest and old/new public semantics match. It SHALL NOT become a production compatibility path.
+Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-v2"`. Old or mixed schemes SHALL fail without replacing the prior manifest.
 
 #### Scenario: One page changes while another does not
 

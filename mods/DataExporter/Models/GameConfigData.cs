@@ -18,6 +18,10 @@ public class GameConfigData
     public List<string> mounts { get; set; } = new();
     public SeasonalItemsData seasonal_items { get; set; } = new();
     public SpecialItemsData special_items { get; set; } = new();
+    public string lockpicks_item_id { get; set; }
+    public List<string> journal_fish_item_ids { get; set; } = new();
+    public List<string> trash_fish_item_ids { get; set; } = new();
+    public List<HousingCatalogData> housing_catalog { get; set; } = new();
 }
 
 public class SeasonalItemsData

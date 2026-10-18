@@ -9,15 +9,14 @@ Removal is therefore a subtraction:
 - The redaction removes ``R_all`` minus ``R_kept``, and the excluded content
   itself.
 
-The closure supplies the transitive part, so this module contains no loop.
-
+The closure is computed before required targets are anonymized. Destructive
+dependency removal only adds identities to that original decision.
 Content that is reachable from nothing is absent from both results. The
 subtraction therefore keeps items that have no source.
 
-A row with its own identifier is a node. A junction row is an edge. In a
-junction row, the reference that reaches names the target, and the reference
-that mentions names the source. ``monster_skills`` gives an edge from a monster
-to a skill. ``item_sources_monster`` gives an edge from a monster to an item.
+A row with its own identifier is a node. A junction row is an edge. Canonical
+providers reach identified memberships, then methods. Mentioned costs and gates
+never act as providers.
 """
 
 import json
@@ -39,6 +38,7 @@ from compendium.redactions.discovery import (
 )
 from compendium.redactions.placement import placements
 from compendium.redactions.references import Reference, resolve
+from compendium.redactions.semantics import EQUAL_PARENTS, apply_semantic_withholding
 
 console = Console()
 
@@ -184,6 +184,14 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
                         group, row, index, reference, numeric_to_zone
                     ):
                         graph.add(parent, child)
+    # Carried definitions initiate actions without turning their costs into
+    # providing references. The method still owns its typed detail.
+    if node_tables.get("acquisition_item_details"):
+        for (identity,) in conn.execute("SELECT id FROM acquisition_item_details"):
+            graph.add(
+                ("acquisition_item_details", identity),
+                ("acquisition_methods", identity),
+            )
     return graph
 
 
@@ -353,6 +361,17 @@ def decide(
     zones = {row[0] for row in conn.execute(f"SELECT id FROM {ZONE_TABLE}")}
     all_roots = {(ZONE_TABLE, zone) for zone in zones}
     kept_roots = {(ZONE_TABLE, zone) for zone in zones - redactions.exclude_zone_ids}
+    present = {
+        row[0]
+        for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }
+    if "acquisition_global_roots" in present:
+        global_roots = {
+            ("acquisition_global_roots", row[0])
+            for row in conn.execute("SELECT id FROM acquisition_global_roots")
+        }
+        all_roots |= global_roots
+        kept_roots |= global_roots
 
     seeds = _seeds(conn, redactions)
     seed_nodes = {(seed.table, seed.entity_id) for seed in seeds}
@@ -409,7 +428,7 @@ def decide(
                 )
             )
 
-    identify(conn, removals)
+    _expand_dependencies(conn, removals, references)
     return removals, references
 
 
@@ -434,6 +453,16 @@ def apply(
     conn: sqlite3.Connection, removals: list[Removal], references: list[Reference]
 ) -> None:
     """Delete the removed rows, and clear references to them from survivors."""
+    if not conn.in_transaction:
+        conn.execute("BEGIN")
+    # Deferral must outlive read statements before the first destructive write.
+    conn.execute("PRAGMA defer_foreign_keys = ON")
+    # NOT NULL dependencies and equality-linked details are removed before
+    # scrubbing, not silently deleted as a side effect. Union preserves every
+    # original identity and reason even after its references are anonymized.
+    _expand_dependencies(conn, removals, references)
+    removed_nodes = {(removal.table, removal.entity_id) for removal in removals}
+    apply_semantic_withholding(conn, removed_nodes)
     by_table: dict[str, set[str]] = {}
     for removal in removals:
         by_table.setdefault(removal.table, set()).add(removal.entity_id)
@@ -444,14 +473,42 @@ def apply(
         for number, zone in numeric_to_zone.items()
         if zone in by_table.get(ZONE_TABLE, set())
     }
-
-    # Clear every reference to a removed row before you delete any row. This
-    # order prevents a reference to a row that no longer exists.
+    lookup_targets: dict[Reference, set[Any]] = {}
     for reference in references:
-        removed = by_table.get(reference.target_table, set())
-        if not removed:
+        removed_ids = by_table.get(reference.target_table, set())
+        if removed_ids and not reference.numeric and reference.target_column != "id":
+            marks = ",".join("?" * len(removed_ids))
+            lookup_targets[reference] = {
+                row[0]
+                for row in conn.execute(
+                    f"SELECT {reference.target_column} FROM {reference.target_table} WHERE id IN ({marks})",
+                    tuple(sorted(removed_ids)),
+                )
+            }
+
+    # Remove decided rows first inside the deferred transaction. Scrubbing a
+    # doomed detail could violate its local CHECK before its eventual deletion.
+    # Asset reconciliation still owns visual_assets and their published files.
+    for table, identifiers in sorted(by_table.items()):
+        placeholders = ",".join("?" * len(identifiers))
+        conn.execute(
+            f"DELETE FROM {table} WHERE id IN ({placeholders})",
+            tuple(sorted(identifiers)),
+        )
+
+    # Semantic operands were retained above. Clear remaining optional boundaries
+    # and remove non-identified junctions that cannot survive their target.
+    for reference in references:
+        removed_ids = by_table.get(reference.target_table, set())
+        if not removed_ids:
             continue
-        wanted = zone_numeric if reference.numeric else removed
+        wanted = (
+            zone_numeric
+            if reference.numeric
+            else lookup_targets.get(reference, removed_ids)
+        )
+        if not wanted:
+            continue
 
         if reference.embedded:
             _scrub_embedded(conn, reference, wanted)
@@ -485,8 +542,10 @@ def apply(
         # A row with its own identifier keeps the row and loses the reference.
         # Delete the row in two other conditions. A junction row is the
         # reference. A required column cannot hold NULL.
-        survives = has_identifier(conn, reference.table) and not is_required(
-            conn, reference.table, reference.column
+        survives = (
+            reference.column != "id"
+            and has_identifier(conn, reference.table)
+            and not is_required(conn, reference.table, reference.column)
         )
         statement = (
             f"UPDATE {reference.table} SET {reference.column} = NULL"
@@ -498,21 +557,7 @@ def apply(
             parameters,
         )
 
-    # A removed row can reference another removed row. A sub-zone references its
-    # zone. Defer the constraints so the order of these deletions does not
-    # matter.
-    # The rows in visual_assets stay. `visual_assets.reconcile` finds an asset
-    # whose entity is absent, deletes the row, and deletes the published file.
-    # Deleting the row here would hide the asset from that step and leave the
-    # file in website/static/images.
-    cursor = conn.cursor()
-    cursor.execute("PRAGMA defer_foreign_keys = ON")
-    for table, identifiers in sorted(by_table.items()):
-        placeholders = ",".join("?" * len(identifiers))
-        parameters = tuple(sorted(identifiers))
-        cursor.execute(f"DELETE FROM {table} WHERE id IN ({placeholders})", parameters)
-
-    conn.commit()
+    # The build owns the transaction. Do not commit a partially redacted model.
 
 
 def _scrub_embedded(
@@ -552,6 +597,98 @@ def _drop(value: object, keys: tuple[str, ...], removed: set[str]) -> object:
     if isinstance(value, dict):
         return {key: _drop(inner, keys, removed) for key, inner in value.items()}
     return value
+
+
+def _expand_dependencies(
+    conn: sqlite3.Connection, removals: list[Removal], references: list[Reference]
+) -> None:
+    """Monotonically add rows that cannot survive a removed required parent."""
+    removed = {(removal.table, removal.entity_id) for removal in removals}
+    graph = build_graph(conn, references)
+    roots = {("zones", row[0]) for row in conn.execute("SELECT id FROM zones")}
+    if any(reference.table == "acquisition_global_roots" for reference in references):
+        roots |= {
+            ("acquisition_global_roots", row[0])
+            for row in conn.execute("SELECT id FROM acquisition_global_roots")
+        }
+    originally_reached = graph.reach(roots, set())
+    parents = graph.parents()
+    conditional_parents = {
+        ("acquisition_methods", "setup_method_id"),
+        ("acquisition_kill_details", "altar_id"),
+        ("acquisition_kill_details", "parent_monster_spawn_id"),
+        ("acquisition_recipe_details", "crafting_recipe_id"),
+        ("acquisition_recipe_details", "alchemy_recipe_id"),
+        ("acquisition_recipe_details", "scribing_recipe_id"),
+    }
+    while True:
+        additions: dict[Node, Node] = {}
+        for reference in references:
+            if reference.embedded or reference.numeric:
+                continue
+            if not has_identifier(conn, reference.table):
+                continue
+            if (
+                reference.column != "id"
+                and not is_required(conn, reference.table, reference.column)
+                and (reference.table, reference.column) not in conditional_parents
+            ):
+                continue
+            targets = {
+                identity
+                for table, identity in removed
+                if table == reference.target_table
+            }
+            if not targets:
+                continue
+            marks = ",".join("?" for _ in targets)
+            covered = ""
+            parameters = tuple(sorted(targets))
+            if reference.condition is not None:
+                covered = f" AND {reference.condition[0]}=?"
+                parameters += (reference.condition[1],)
+            for identity, parent_id in conn.execute(
+                f"SELECT id,{reference.column} FROM {reference.table} WHERE {reference.column} IN ({marks}){covered}",
+                parameters,
+            ):
+                node = (reference.table, str(identity))
+                if node not in removed:
+                    additions[node] = (reference.target_table, str(parent_id))
+        # Losing an indispensable typed detail cannot leave a damaged method
+        # with fewer costs/gates. Provider memberships are not typed details.
+        for table, identity in removed | set(additions):
+            parent_table = EQUAL_PARENTS.get(table)
+            if parent_table and (parent_table, identity) not in removed:
+                additions[(parent_table, identity)] = (table, identity)
+            if table == "acquisition_method_pools":
+                row = conn.execute(
+                    "SELECT method_id FROM acquisition_method_pools WHERE id=?",
+                    (identity,),
+                ).fetchone()
+                if row and ("acquisition_methods", row[0]) not in removed:
+                    additions[("acquisition_methods", row[0])] = (table, identity)
+        reached = graph.reach(roots, removed | set(additions))
+        lost = set(originally_reached) - set(reached) - removed - set(additions)
+        blocked = removed | set(additions) | lost
+        for node in sorted(lost):
+            parent_node = next(
+                iter(sorted(parents.get(node, set()) & blocked - {node})), node
+            )
+            additions[node] = parent_node
+        if not additions:
+            break
+        for node, parent_node in sorted(additions.items()):
+            removed.add(node)
+            removals.append(
+                Removal(
+                    node[0],
+                    node[1],
+                    MECHANISM_CASCADE,
+                    "required definition parent was removed",
+                    via=[f"{parent_node[0]}:{parent_node[1]}"],
+                )
+            )
+    identify(conn, removals)
 
 
 def run(conn: sqlite3.Connection, redactions: RedactionConfig) -> list[Removal]:

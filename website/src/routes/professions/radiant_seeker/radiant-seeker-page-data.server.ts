@@ -1,5 +1,14 @@
 import Database from "better-sqlite3";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import type { MethodView } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
+import {
+  summarizePrimaryRewards,
+  type PrimaryReward,
+} from "$lib/utils/primary-rewards";
 
 interface SparkZone {
   zone_id: string;
@@ -11,11 +20,8 @@ interface RadiantSparkResource {
   id: string;
   name: string;
   description: string;
-  gathering_exp: number;
-  reward_item_id: string;
-  reward_item_name: string;
-  reward_tooltip_html: string | null;
-  reward_visual_public_path: string | null;
+  gathering_exp: number | null;
+  primaryRewards: readonly PrimaryReward[];
   node_count: number;
   zones: SparkZone[];
 }
@@ -32,11 +38,14 @@ export interface RadiantSeekerPageData {
   };
   resource: RadiantSparkResource;
   recipe_count: number;
+  acquisitionMethods: readonly MethodView[];
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
 }
 
-export function getRadiantSeekerPageData(
+export async function getRadiantSeekerPageData(
   dbPath = DB_SOURCE_PATH,
-): RadiantSeekerPageData {
+): Promise<RadiantSeekerPageData> {
   const db = new Database(dbPath, { readonly: true });
 
   const profession = db
@@ -63,19 +72,15 @@ export function getRadiantSeekerPageData(
         gr.id,
         gr.name,
         gr.description,
-        gr.gathering_exp,
-        gr.item_reward_id AS reward_item_id,
-        reward.name AS reward_item_name,
-        reward.tooltip_html AS reward_tooltip_html,
-        va.public_path AS reward_visual_public_path
+        gr.gathering_exp
       FROM gathering_resources gr
-      JOIN items reward ON reward.id = gr.item_reward_id
-      LEFT JOIN visual_assets va
-        ON va.domain = 'item' AND va.entity_id = reward.id AND va.kind = 'icon'
       WHERE gr.is_radiant_spark = 1
     `,
     )
-    .get() as Omit<RadiantSparkResource, "node_count" | "zones">;
+    .get() as Omit<
+    RadiantSparkResource,
+    "node_count" | "zones" | "primaryRewards"
+  >;
 
   const zones = db
     .prepare(
@@ -93,15 +98,41 @@ export function getRadiantSeekerPageData(
     )
     .all(rawResource.id) as SparkZone[];
 
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const spawns = db
+    .prepare("SELECT id FROM gathering_resource_spawns WHERE resource_id = ?")
+    .all(rawResource.id) as { id: string }[];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "providers",
+    providers: spawns.map(({ id }) => ({ kind: "resource_spawns", id })),
+  });
+  const acquisitionMethods = [...acquisition.methodViews.values()];
+  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
+  const primaryRewards = summarizePrimaryRewards(
+    acquisitionMethods,
+    acquisitionItems,
+  );
+  const rewardIds = [
+    ...new Set(
+      primaryRewards.flatMap((reward) =>
+        reward.itemId ? [reward.itemId] : [],
+      ),
+    ),
+  ];
   const recipeCount = db
     .prepare(
       `
-      SELECT COUNT(DISTINCT recipe_id) AS count
-      FROM item_usages_recipe
-      WHERE item_id = ?
-    `,
+    SELECT COUNT(DISTINCT detail.id) AS count
+    FROM acquisition_inputs input
+    JOIN acquisition_cost_groups cost ON cost.id = input.cost_group_id
+    JOIN acquisition_recipe_details detail ON detail.id = cost.method_id
+    WHERE input.item_id IN (SELECT value FROM json_each(?)) AND input.withheld = 0
+  `,
     )
-    .get(rawResource.reward_item_id) as { count: number };
+    .get(JSON.stringify(rewardIds)) as { count: number };
 
   db.close();
 
@@ -109,9 +140,13 @@ export function getRadiantSeekerPageData(
     profession,
     resource: {
       ...rawResource,
+      primaryRewards,
       zones,
       node_count: zones.reduce((total, zone) => total + zone.node_count, 0),
     },
     recipe_count: recipeCount.count,
+    acquisitionMethods,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(acquisition),
   };
 }

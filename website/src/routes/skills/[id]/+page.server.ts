@@ -31,6 +31,10 @@ import {
 import { skillMechanicsSpec } from "$lib/utils/skillMechanics";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { getSkillCategoryKey } from "$lib/utils/skill-category";
+import { skillLearningAtRank } from "$lib/acquisition/conditions";
+import { loadAcquisition } from "$lib/server/acquisition";
+import type { RequirementRoot } from "$lib/acquisition/types";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -56,6 +60,11 @@ export interface SkillDetailPageData {
   categorySkills: { id: string; name: string; mercenaryAreaBuff: boolean }[];
   familiarSkills: { id: string; name: string; max_level: number }[];
   usedByMonsters: SkillMonster[];
+  usedByNpcs: { id: string; name: string }[];
+  learningRanks: { rank: number; requiredLevel: number; pointCost: number }[];
+  requirements: readonly RequirementRoot[];
+  acquisitionNames: Readonly<Record<string, string>>;
+  weaponClassRestrictionsWithheld: boolean;
   usedByPets: SkillPet[];
   appliedByTraps: SkillTrapUsage[];
   description: string;
@@ -91,6 +100,30 @@ function roundTooltipInteger(value: number): number {
     : Math.round(value);
 }
 
+const tooltipPercentFields: Readonly<Record<string, true>> = {
+  damage_percent: true,
+  lifetap_percent: true,
+  knockback_chance: true,
+  stun_chance: true,
+  fear_chance: true,
+  health_cost_percent: true,
+  mana_restored_percent: true,
+  healing_percent: true,
+  charmed_damage_percent: true,
+  lifetap_healing_percent_bonus: true,
+  damage_over_time_execute_bonus: true,
+};
+const tooltipTokenDependencies: Readonly<Record<string, string>> = {
+  MANACOSTS: "MANACOST",
+  ENERGYCOSTS: "ENERGYCOST",
+  FEARRESISTBONUS: "FEARRESISTCHANCEBONUS",
+  COOLDOWNREDUCTION: "COOLDOWNREDUCTIONPERCENT",
+  LIFETAPHEALINGBONUS: "LIFETAPHEALINGPERCENTBONUS",
+  DOTEXECUTEBONUS: "DAMAGEOVERTIMEEXECUTEBONUS",
+  CADENCEDAMAGE: "DAMAGE",
+  CADENCEHEAL: "HEALSHEALTH",
+};
+
 // Source: server-scripts/ScriptableSkill.cs:387-402 — name, level, costs, range, cast time and cooldown use the selected skill level.
 // Source: server-scripts/DamageSkill.cs:69-98 — damage and aggro use base values plus player-specific bonuses, while crowd control uses the skill level.
 // Source: server-scripts/BonusSkill.cs:85-116 — bonus tokens use signed attributes and absolute stat magnitudes.
@@ -99,19 +132,16 @@ function roundTooltipInteger(value: number): number {
 // Source: server-scripts/NecromancerBloodPactSkill.cs:64-66 — health and mana percentages take their percent sign from the template.
 // Source: server-scripts/NecromancerDeathBloomSkill.cs:61-82 — health and healing percentage tokens supply their own percent sign.
 export function _fillSkillTooltip(skill: SkillDetailView): string {
-  const percentFields = new Set([
-    "damage_percent",
-    "lifetap_percent",
-    "knockback_chance",
-    "stun_chance",
-    "fear_chance",
-    "health_cost_percent",
-    "mana_restored_percent",
-    "healing_percent",
-    "charmed_damage_percent",
-    "lifetap_healing_percent_bonus",
-    "damage_over_time_execute_bonus",
-  ]);
+  const template = skill.tooltip_template ?? "";
+  if (!template) return "";
+  // Only format the values this template displays, including native token aliases.
+  const tokens = new Set<string>();
+  for (const match of template.matchAll(/\{([A-Z0-9_]+)\}/g))
+    tokens.add(match[1]);
+  for (const token of tokens) {
+    const dependency = tooltipTokenDependencies[token];
+    if (dependency) tokens.add(dependency);
+  }
   const values: Record<string, string> = {
     NAME: skill.name,
     LEVEL: "1",
@@ -119,8 +149,10 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
   };
   for (const [field, value] of Object.entries(skill)) {
     if (value && typeof value === "object" && "base_value" in value) {
+      const token = field.replaceAll("_", "").toUpperCase();
+      if (!tokens.has(token)) continue;
       let number = value.base_value as number;
-      if (percentFields.has(field)) number *= 100;
+      if (tooltipPercentFields[field]) number *= 100;
       if (
         [
           "damage_percent",
@@ -147,7 +179,7 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
         number = Math.abs(number);
       }
       const mapped = skillStatFields.get(field);
-      values[field.replaceAll("_", "").toUpperCase()] = mapped
+      values[token] = mapped
         ? formatStatField(mapped, number).replace("%", "")
         : formatNumber(number, {
             decimals: 2,
@@ -194,7 +226,7 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
   const castTime = skill.cast_time?.base_value ?? 0;
   const castText =
     castTime <= 0.001 ? "Instant cast" : `${prettySeconds(castTime)} cast`;
-  let text = (skill.tooltip_template ?? "")
+  let text = template
     .replaceAll("{CASTTIME} cast", castText)
     .replaceAll("{CASTTIME}", castText);
   // Source: server-scripts/ScriptableSkill.cs:336-344 — resource-cost tooltips pad the range token.
@@ -216,7 +248,9 @@ export function _fillSkillTooltip(skill: SkillDetailView): string {
     .join("\n");
 }
 
-export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
+export const load: PageServerLoad = async ({
+  params,
+}): Promise<SkillDetailPageData> => {
   const skillRaw = queryOne<Record<string, unknown>>(
     `SELECT ${SKILL_DETAIL_COLUMNS}
     FROM skills s
@@ -228,6 +262,10 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   if (!skillRaw) {
     throw error(404, `Skill not found: ${params.id}`);
   }
+  const acquisition = await loadAcquisition(
+    async (sql, values) => query<Record<string, unknown>>(sql, [...values]),
+    { kind: "requirements", entities: [{ kind: "skill", id: params.id }] },
+  );
 
   const visualAsset = queryOne<EntityVisualAsset>(
     `SELECT public_path, width, height, source_field, source_type
@@ -237,7 +275,8 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   );
 
   const casters = skillCastersFromRow(skillRaw);
-  const playerClasses = skillDetailFromRow(skillRaw).player_classes;
+  const detail = skillDetailFromRow(skillRaw);
+  const playerClasses = detail.player_classes;
 
   // Parse granted_by_items and fetch item names
   const grantedByItemsRaw: Array<{
@@ -276,28 +315,43 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
           `SELECT id, name, cooldown, cooldown_category FROM items WHERE id IN (${scrollItemIds.map(() => "?").join(",")}) ORDER BY name`,
           scrollItemIds,
         );
+  const categoryPositions = playerClasses.length
+    ? query<{
+        class_id: string;
+        class_skill_position: number;
+        last_tier_position: number | null;
+      }>(
+        `SELECT membership.value AS class_id,
+          json_extract(?, '$.' || membership.value) AS class_skill_position,
+          MAX(CASE WHEN s.tier > 0 AND NOT s.is_veteran
+            THEN coalesce(json_extract(s.class_skill_positions, '$.' || membership.value), 0)
+          END) AS last_tier_position
+        FROM skills s JOIN json_each(s.player_classes) membership
+        WHERE membership.value IN (${playerClasses.map(() => "?").join(",")})
+        GROUP BY membership.value`,
+        [skillRaw.class_skill_positions as string, ...playerClasses],
+      )
+    : [];
+  const positionsByClass = new Map(
+    categoryPositions.map((position) => [position.class_id, position]),
+  );
   const skillCategories = [
     ...new Set(
       playerClasses.map((classId) => {
-        const classSkills = query<{
-          id: string;
-          base_skill: number;
-          is_veteran: number;
-          tier: number;
-          class_skill_position: number;
-        }>(
-          `SELECT id, base_skill, is_veteran, tier,
-        json_extract(class_skill_positions, '$.' || ?) AS class_skill_position
-       FROM skills WHERE EXISTS (SELECT 1 FROM json_each(player_classes) WHERE value = ?)`,
-          [classId, classId],
+        const position = positionsByClass.get(classId);
+        if (!position)
+          throw new Error(
+            `Missing skill category position for ${params.id} in ${classId}`,
+          );
+        return getSkillCategoryKey(
+          {
+            base_skill: detail.base_skill,
+            is_veteran: detail.is_veteran,
+            tier: detail.tier,
+            class_skill_position: position.class_skill_position,
+          },
+          position.last_tier_position ?? -Infinity,
         );
-        const subject = classSkills.find((entry) => entry.id === params.id)!;
-        const lastTierPosition = Math.max(
-          ...classSkills
-            .filter((entry) => entry.tier > 0 && !entry.is_veteran)
-            .map((entry) => entry.class_skill_position),
-        );
-        return getSkillCategoryKey(subject, lastTierPosition);
       }),
     ),
   ];
@@ -312,7 +366,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     : [];
 
   const skill: SkillDetailView = {
-    ...skillDetailFromRow(skillRaw),
+    ...detail,
     // Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — a dispel tests each TargetBuffSkill or AreaBuffSkill buff on a monster against its probIgnoreCleanse.
     ...(skillRaw.is_dispel
       ? {
@@ -342,6 +396,43 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     ORDER BY m.is_boss DESC, m.is_elite DESC, m.level_min DESC, m.name`,
     [params.id],
   );
+  const usedByNpcs = query<{ id: string; name: string }>(
+    `SELECT DISTINCT n.id, n.name FROM npc_skills ns
+     JOIN npcs n ON n.id = ns.npc_id
+     WHERE ns.skill_id = ? ORDER BY n.name, n.id`,
+    [params.id],
+  );
+  const learningCurve = (field: "level_requirement" | "skill_point_cost") => {
+    const raw = skillRaw[field];
+    if (typeof raw !== "string")
+      throw new Error(`Missing ${field} for ${skill.id}`);
+    const value = JSON.parse(raw) as {
+      base_value: number;
+      bonus_per_level: number;
+    };
+    if (
+      !Number.isFinite(value.base_value) ||
+      !Number.isFinite(value.bonus_per_level)
+    ) {
+      throw new Error(`Invalid ${field} for ${skill.id}`);
+    }
+    return value;
+  };
+  const learningDefinition = {
+    maxRank: skill.max_level,
+    levelRequirement: learningCurve("level_requirement"),
+    skillPointCost: learningCurve("skill_point_cost"),
+  };
+  const firstLearningRank = skill.learn_default ? 2 : 1;
+  const learningRanks = playerClasses.length
+    ? Array.from(
+        { length: Math.max(0, skill.max_level - firstLearningRank + 1) },
+        (_, index) => {
+          const rank = firstLearningRank + index;
+          return { rank, ...skillLearningAtRank(learningDefinition, rank) };
+        },
+      )
+    : [];
 
   // Get pets/mercenaries that use this skill. A familiar takes its rank from the skill that
   // summons it.
@@ -459,6 +550,13 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     skillCategories,
     familiarSkills,
     usedByMonsters,
+    usedByNpcs,
+    learningRanks,
+    requirements: acquisition.requirements.get(`skill:${params.id}`) ?? [],
+    acquisitionNames: projectAcquisitionNames(acquisition),
+    weaponClassRestrictionsWithheld: casters.weaponProcs.some(
+      (proc) => proc.classRestrictionsWithheld,
+    ),
     usedByPets,
     appliedByTraps,
     description,

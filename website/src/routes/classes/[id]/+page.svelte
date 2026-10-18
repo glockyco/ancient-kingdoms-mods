@@ -20,10 +20,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
-  import {
-    SOURCE_TYPE_CONFIG,
-    type ItemSourceType,
-  } from "$lib/constants/source-types";
+  import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import {
     getClassConfig,
     getRaceDisplayName,
@@ -305,8 +302,8 @@
       header: "Prerequisites",
       enableSorting: false,
       accessorFn: (row) =>
-        [row.prerequisite_skill_name, row.prerequisite2_skill_name]
-          .filter(Boolean)
+        row.prerequisites
+          .map((requirement) => requirement.name ?? "Unpublished prerequisite")
           .join(", "),
     },
     {
@@ -359,7 +356,7 @@
     { accessorKey: "item_level", header: "Item Level" },
     {
       accessorKey: "level_required",
-      header: "Level",
+      header: "Required level",
       filterFn: (
         row,
         columnId,
@@ -509,31 +506,11 @@
           return true;
         },
       },
-      { accessorKey: "level_recommended", header: "Rec Lvl" },
+      { accessorKey: "level_recommended", header: "Recommended level" },
     );
 
     return cols;
   });
-
-  // --- Source display helpers ---
-
-  function getSourceTypeCounts(
-    sources: ClassItem["sources"],
-  ): [string, number][] {
-    const counts: Record<string, number> = {};
-    for (const s of sources) {
-      counts[s.type] = (counts[s.type] ?? 0) + 1;
-    }
-    return Object.entries(counts);
-  }
-
-  function getDistinctTypeCount(sources: ClassItem["sources"]): number {
-    const types: Record<string, boolean> = {};
-    for (const s of sources) {
-      types[s.type] = true;
-    }
-    return Object.keys(types).length;
-  }
 </script>
 
 {#snippet renderSkillCell({
@@ -569,36 +546,22 @@
       {/if}
     </span>
   {:else if cell.column.id === "prerequisites"}
-    <span class="space-y-1 whitespace-nowrap">
-      {#if row.original.prerequisite_skill_id}
-        <a
-          href="/skills/{row.original.prerequisite_skill_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          {row.original.prerequisite_skill_name ??
-            row.original.prerequisite_skill_id}
-        </a>
-        <span class="text-muted-foreground"
-          >rank {row.original.prerequisite_level}</span
-        >
-      {/if}
-      {#if row.original.prerequisite2_skill_id}
-        {#if row.original.prerequisite_skill_id}<span
-            class="text-muted-foreground"
-            >,
-          </span>{/if}
-        <a
-          href="/skills/{row.original.prerequisite2_skill_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          {row.original.prerequisite2_skill_name ??
-            row.original.prerequisite2_skill_id}
-        </a>
-        <span class="text-muted-foreground"
-          >rank {row.original.prerequisite2_level}</span
-        >
-      {/if}
-      {#if !row.original.prerequisite_skill_id && !row.original.prerequisite2_skill_id}
+    <span class="space-y-1">
+      {#each row.original.prerequisites as requirement, index (requirement.id)}
+        {#if index > 0}<span class="text-muted-foreground">, </span>{/if}
+        {#if requirement.withheld}
+          <span class="text-muted-foreground">Unpublished prerequisite</span>
+        {:else if requirement.skill_id}
+          <a
+            href="/skills/{requirement.skill_id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {requirement.name ?? requirement.skill_id}
+          </a>
+        {/if}
+        <span class="text-muted-foreground">rank {requirement.rank}</span>
+      {/each}
+      {#if row.original.prerequisites.length === 0}
         <span class="text-muted-foreground">—</span>
       {/if}
     </span>
@@ -695,66 +658,13 @@
       imageAvailable={row.original.visual_public_path}
       fallback={Gem}
       variant={row.original.visual_public_path ? "reference" : "text"}
-      maxWidth="185px"
     />
   {:else if cell.column.id === "sources"}
-    {@const sources = row.original.sources}
-    {#if sources.length === 0}
-      <span class="text-muted-foreground">—</span>
-    {:else if sources.length === 1}
-      {@const source = sources[0]}
-      {@const sourceConfig = SOURCE_TYPE_CONFIG[source.type as ItemSourceType]}
-      {#if sourceConfig}
-        <div class="flex items-center gap-1.5 max-w-[185px]">
-          <sourceConfig.icon class="h-4 w-4 shrink-0 {sourceConfig.color}" />
-          <a
-            href="{sourceConfig.linkPrefix}{source.id}"
-            class="truncate text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {source.name}
-          </a>
-        </div>
-      {/if}
-    {:else if getDistinctTypeCount(sources) === 1}
-      {@const source = sources[0]}
-      {@const sourceConfig = SOURCE_TYPE_CONFIG[source.type as ItemSourceType]}
-      {#if sourceConfig}
-        <div class="flex items-center gap-1.5 max-w-[185px]">
-          <sourceConfig.icon class="h-4 w-4 shrink-0 {sourceConfig.color}" />
-          <a
-            href="{sourceConfig.linkPrefix}{source.id}"
-            class="truncate text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {source.name}
-          </a>
-          <a
-            href="/items/{row.original.id}"
-            class="shrink-0 text-muted-foreground hover:underline text-xs"
-          >
-            +{sources.length - 1} more
-          </a>
-        </div>
-      {/if}
-    {:else}
-      {@const typeCounts = getSourceTypeCounts(sources)}
-      <div class="flex items-center gap-2 flex-wrap">
-        {#each [...typeCounts] as [type, count] (type)}
-          {@const sourceConfig = SOURCE_TYPE_CONFIG[type as ItemSourceType]}
-          {#if sourceConfig}
-            <span
-              class="flex items-center gap-0.5 text-sm"
-              title={`${sourceConfig.label}: ${count}`}
-              aria-label={`${sourceConfig.label}: ${count}`}
-            >
-              <sourceConfig.icon
-                class="h-4 w-4 shrink-0 {sourceConfig.color}"
-              />
-              <span class="text-muted-foreground">×{count}</span>
-            </span>
-          {/if}
-        {/each}
-      </div>
-    {/if}
+    <ItemSourceLinks
+      sources={row.original.sources}
+      itemId={row.original.id}
+      names={data.acquisitionNames}
+    />
   {:else if cell.column.id === "item_level"}
     <span class="ml-auto">
       {#if row.original.item_level}
@@ -816,7 +726,7 @@
     />
   {/if}
   {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Level" />
+    <DataTableRangeFilter column={levelCol} title="Required level" />
   {/if}
   {#if slotCol}
     <DataTableFacetedFilter
@@ -867,7 +777,7 @@
   {:else if cell.column.id === "name"}
     <a
       href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
     >
       {row.original.name}
     </a>
@@ -1075,8 +985,8 @@
         Equipment ({data.items.length})
       </h2>
       <p class="mb-4 text-sm text-muted-foreground">
-        Source level is the lowest level among an item's sources. It does not
-        limit who can equip the item.
+        Source level is the lowest known level among complete acquisition paths.
+        It is not an equipment requirement.
       </p>
 
       <DataTable

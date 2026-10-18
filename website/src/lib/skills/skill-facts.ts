@@ -161,14 +161,16 @@ export function weaponProcClasses(
   items: {
     classes: string[] | null;
     weaponCategory: string | null;
+    classRestrictionsWithheld?: boolean;
   }[],
 ): string[] {
   const eligible = new Set<string>();
   for (const item of items) {
     const classes =
-      !item.classes?.length || item.classes.includes("all")
+      (!item.classes?.length || item.classes.includes("all")) &&
+      !item.classRestrictionsWithheld
         ? ALL_CLASS_IDS
-        : item.classes;
+        : (item.classes ?? []);
     for (const classId of classes) {
       if (item.weaponCategory !== "Bow" || classId === "ranger")
         eligible.add(classId);

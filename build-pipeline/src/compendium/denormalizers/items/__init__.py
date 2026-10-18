@@ -1,46 +1,21 @@
 """Item denormalizations - updates to the items table."""
 
-from __future__ import annotations
-
 import sqlite3
-from typing import TYPE_CHECKING
 
 from compendium.denormalizers.items import (
     calculations,
     equipment,
-    sources,
     special_types,
     tooltips,
-    usages,
-    zones,
 )
 
-if TYPE_CHECKING:
-    from compendium.redactions.config import RedactionConfig
 
-
-def run_all(
-    conn: sqlite3.Connection, redactions: RedactionConfig | None = None
-) -> None:
-    """Run all item denormalizations in dependency order.
-
-    Args:
-        conn: Database connection with all base data loaded
-        redactions: Optional redaction config for filtering crafting info
-    """
-    # Phase 1: Where items come from
-    sources.run(conn, redactions)
-
-    # Phase 2: What items are used for
-    usages.run(conn, redactions)
-
-    # Phase 3: Zone relationships (depends on sources and usages)
-    zones.run(conn)
-
-    # Phase 4: Equipment-specific (armor sets, buff names)
+def run_all(conn: sqlite3.Connection) -> None:
+    """Update item display fields from published canonical facts."""
+    # Equipment-specific display metadata is independent of acquisition.
     equipment.run(conn)
 
-    # Phase 5: Special item types (packs, random, merge, treasure maps, luck tokens)
+    # Fatecharm display metadata.
     special_types.run(conn)
 
     # Phase 6: Calculated values (depends on other data)

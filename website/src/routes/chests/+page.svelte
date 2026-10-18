@@ -27,7 +27,8 @@
     formatPercent,
     formatNumber,
   } from "$lib/utils/format";
-  import { chestRewardChance } from "$lib/utils/chest-reward";
+  import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
+  import { quantityText } from "$lib/components/acquisition/display";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { base } from "$app/paths";
 
@@ -78,9 +79,13 @@
   const uniqueKeys = $derived(
     Array.from(
       new Map(
-        data.chests
-          .filter((c) => c.tool_or_key_id && c.tool_or_key_name)
-          .map((c) => [c.tool_or_key_id, c.tool_or_key_name] as const),
+        data.chests.flatMap((chest) =>
+          chest.keys.flatMap((key) =>
+            key.itemId && key.itemName
+              ? [[key.itemId, key.itemName] as const]
+              : [],
+          ),
+        ),
       ).entries(),
     ).sort((a, b) => a[1]!.localeCompare(b[1]!)),
   );
@@ -96,39 +101,42 @@
       id: "key",
       header: "Key",
       size: 230,
-      accessorFn: (row) => row.tool_or_key_name || "",
+      accessorFn: (row) =>
+        row.keys.map((key) => key.itemName ?? "Unpublished key").join(" "),
       getUniqueValues: (row) =>
-        row.tool_or_key_id ? [row.tool_or_key_id] : [],
+        row.keys.flatMap((key) => (key.itemId ? [key.itemId] : [])),
       filterFn: (row, columnId, filterValue: string[]) => {
-        const keyId = row.original.tool_or_key_id;
         if (!filterValue || filterValue.length === 0) return true;
-        return keyId != null && filterValue.includes(keyId);
+        return row.original.keys.some(
+          (key) => key.itemId !== null && filterValue.includes(key.itemId),
+        );
       },
     },
     {
       id: "gold",
       header: "Gold",
       size: 130,
-      accessorFn: (row) => {
-        if (row.gold_min > 0 || row.gold_max > 0) {
-          return row.gold_min === row.gold_max
-            ? row.gold_min
-            : (row.gold_min + row.gold_max) / 2;
-        }
-        return 0;
-      },
+      accessorFn: (row) =>
+        row.primaryRewards
+          .filter((reward) => reward.resourceKind === "gold")
+          .map((reward) => quantityText(reward.quantity))
+          .join(" "),
     },
     {
       id: "item",
-      header: "Item",
+      header: "Potential Items",
       minSize: 180,
-      accessorFn: (row) => row.item_reward_name || "",
+      accessorFn: (row) =>
+        row.primaryRewards
+          .filter((reward) => reward.resourceKind === "item")
+          .map((reward) => reward.itemName ?? "Unpublished item")
+          .join(" "),
     },
     {
       id: "chance",
-      header: "Reward Chance",
-      size: 170,
-      accessorFn: (row) => chestRewardChance(row),
+      header: "Reward chance per opening",
+      size: 220,
+      accessorFn: (row) => row.openingChance,
     },
     {
       id: "drops",
@@ -169,7 +177,7 @@
     gold: "Gold",
     item: "Item",
     drops: "Random Drops",
-    chance: "Reward Chance",
+    chance: "Reward chance per opening",
   };
 </script>
 
@@ -199,7 +207,13 @@
 {/snippet}
 
 {#snippet renderHeader({ header }: { header: Header<ChestWithDrops, unknown> })}
-  {columnLabels[header.id] ?? header.id}
+  {#if header.id === "chance"}
+    <span class="ml-auto whitespace-normal text-right"
+      >{columnLabels[header.id] ?? header.id}</span
+    >
+  {:else}
+    {columnLabels[header.id] ?? header.id}
+  {/if}
 {/snippet}
 
 {#snippet renderCell({
@@ -242,58 +256,44 @@
   {:else if cell.column.id === "respawn_time"}
     {formatDuration(row.original.respawn_time)}
   {:else if cell.column.id === "key"}
-    {#if row.original.tool_or_key_id && row.original.tool_or_key_name}
-      <a
-        href="/items/{row.original.tool_or_key_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.tool_or_key_name}
-      </a>
+    {#each row.original.keys as key (JSON.stringify( [key.itemId, key.withheld] ))}
+      <div>
+        {#if key.itemId}
+          <a
+            href="/items/{key.itemId}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >{key.itemName}</a
+          >
+        {:else}
+          <span>Unpublished key</span>
+        {/if}
+      </div>
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/if}
+    {/each}
   {:else if cell.column.id === "gold"}
-    {#if row.original.gold_min > 0 || row.original.gold_max > 0}
-      <span class="text-yellow-600 dark:text-yellow-400">
-        {#if row.original.gold_min >= row.original.gold_max - 1}
-          {formatNumber(row.original.gold_min, { groupSeparator: "\u202F" })}
-        {:else}
-          {formatNumber(row.original.gold_min, {
-            groupSeparator: "\u202F",
-          })} to {formatNumber(
-            Math.max(row.original.gold_min, row.original.gold_max - 1),
-            {
-              groupSeparator: "\u202F",
-            },
-          )}
-        {/if}
+    <PrimaryRewards
+      rewards={row.original.primaryRewards.filter(
+        (reward) => reward.resourceKind === "gold",
+      )}
+    />
+  {:else if cell.column.id === "item"}
+    <PrimaryRewards
+      rewards={row.original.primaryRewards.filter(
+        (reward) => reward.resourceKind === "item",
+      )}
+    />
+  {:else if cell.column.id === "chance"}
+    {#if row.original.openingChance !== null}
+      <span class="ml-auto">
+        {formatPercent(row.original.openingChance, {
+          decimals: 1,
+          trailingZeros: false,
+        })}
       </span>
     {:else}
-      <span class="text-muted-foreground">-</span>
+      <span class="text-muted-foreground">Varies by method</span>
     {/if}
-  {:else if cell.column.id === "item"}
-    {#if row.original.item_reward_id && row.original.item_reward_name}
-      <a
-        href="/items/{row.original.item_reward_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.item_reward_name}
-      </a>
-      {#if row.original.item_reward_amount > 1}
-        <span class="text-muted-foreground"
-          >&nbsp;×1–{row.original.item_reward_amount}</span
-        >
-      {:else}
-        <span class="text-muted-foreground">&nbsp;×1</span>
-      {/if}
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "chance"}
-    {formatPercent(chestRewardChance(row.original), {
-      decimals: 1,
-      trailingZeros: false,
-    })}
   {:else if cell.column.id === "drops"}
     {@const drops = row.original.drops}
     {#if drops.length > 0}

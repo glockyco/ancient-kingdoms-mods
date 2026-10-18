@@ -54,36 +54,49 @@ Each page SHALL use the absolute URL of `/og-default.png` for both Open Graph an
 
 ### Requirement: A sitemap manifest supplies the sitemap
 
-The manifest SHALL include every prerendered, indexable, self-canonical page URL and the canonical home URL. It SHALL omit prerendered fishing-family aliases whose canonical tag points to a placement. The generated sitemap SHALL list each manifest URL in sorted order. A hashed entry SHALL publish its stored `lastmod`; an un-hashed entry SHALL omit `lastmod`. Unchanged hashed entries SHALL keep their earlier date, changed hashed entries SHALL receive the current date, and removed entries SHALL disappear.
+The manifest SHALL include every prerendered, indexable, self-canonical page URL and the canonical home URL. It SHALL omit fishing-family aliases whose canonical tag points to a placement. The generated sitemap SHALL list URLs in sorted order. Hashed entries SHALL publish their stored `lastmod`, and bare entries SHALL omit it. Equal semantic fingerprints SHALL preserve dates, changed or new fingerprints SHALL receive the generation day's UTC date, and removed URLs SHALL disappear.
+
+Production SHALL use only manifest version 2 with `hash_scheme:"compendium-page-v2"`. Old or mixed schemes SHALL fail without replacing the prior manifest.
 
 #### Scenario: One page changes while another does not
 
-- **WHEN** the manifest is rebuilt after only one hashed page changes
-- **THEN** the changed page receives the current `lastmod` and the unchanged page retains its prior date
+- **WHEN** only one page's public cost changes
+- **THEN** that page receives the generation date
+- **AND** an unchanged page retains its earlier date
+
+#### Scenario: Recipe teaching items change
+
+- **WHEN** a recipe's displayed teaching-item membership, name, tooltip or icon changes
+- **THEN** its semantic fingerprint changes and it receives the generation date
+- **AND** the page and fingerprint consume the same teaching-item projection
+
+#### Scenario: Storage layout changes
+
+- **WHEN** normalized storage changes without changing a page's public facts
+- **THEN** its semantic fingerprint and reconciled date remain unchanged
+
+#### Scenario: Shared representation does not expand the hash workload
+
+- **WHEN** equivalent page-facing values use shared immutable subtrees or independent copies
+- **THEN** their fingerprints agree without expanding repeated subtrees into page-sized strings
+- **AND** object insertion order does not affect the result
+- **AND** changed scalar values, ordered array positions and duplicate multiplicity remain distinguishable
 
 #### Scenario: A page cannot have a meaningful content hash
 
-- **WHEN** an un-hashed URL appears in the manifest
-- **THEN** the sitemap contains that URL without `lastmod`
+- **WHEN** a bare URL appears in the manifest
+- **THEN** the sitemap lists it without `lastmod`
 
 #### Scenario: A fishing landing alias points to its first placement
 
-- **WHEN** a fishing family's unsuffixed page canonicalizes to a suffixed spot URL
-- **THEN** the sitemap lists the canonical placement URL and omits the alias URL
+- **WHEN** a family's unsuffixed page canonicalizes to a suffixed spot URL
+- **THEN** the sitemap lists the placement and omits the alias
 
-### Requirement: IndexNow reports changed hashed URLs
+#### Scenario: The baseline scheme is obsolete
 
-After deployment, the IndexNow ping SHALL compare the previous live manifest with the current manifest. It SHALL submit new, changed, and removed hashed URLs. It SHALL omit unchanged URLs and un-hashed entries. Without a previous live manifest or any changed URLs, it SHALL send no ping. A failed request SHALL report an error.
-
-#### Scenario: A hashed page is removed
-
-- **WHEN** the former manifest contains that URL and the new manifest does not
-- **THEN** the removed URL appears in the IndexNow payload
-
-#### Scenario: The live baseline cannot be fetched
-
-- **WHEN** no prior manifest is available
-- **THEN** the ping is skipped rather than presenting all current URLs as changed
+- **WHEN** production encounters a version-1 or mixed-scheme baseline
+- **THEN** generation fails rather than resetting all dates or using an old reader
+- **AND** the previous manifest bytes remain intact
 
 ### Requirement: Shared site identity uses JSON-LD
 

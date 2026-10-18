@@ -19,7 +19,7 @@ const root = resolve(import.meta.dirname, "..");
 const source = new Database(resolve(root, "data/compendium.db"), {
   readonly: true,
 });
-const docs = buildSearchDocuments(source);
+const docs = await buildSearchDocuments(source);
 source.close();
 
 // A six-digit hex term is a rich-text colour code that survived markup removal.

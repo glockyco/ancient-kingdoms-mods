@@ -7,7 +7,6 @@ import type {
   NpcRoles,
   NpcQuestOffered,
   NpcItemSold,
-  NpcDrop,
   NpcSpawnLocation,
   NpcSkill,
 } from "$lib/types/npcs";
@@ -20,6 +19,9 @@ import { npcKillReputation } from "$lib/utils/killReputation";
 import { formatNumber } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -56,7 +58,9 @@ const defaultRoles: NpcRoles = {
   is_villager: false,
 };
 
-export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
+export const load: PageServerLoad = async ({
+  params,
+}): Promise<NpcDetailPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const npcRaw = db
@@ -73,56 +77,100 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     ? JSON.parse(npcRaw.roles as string)
     : defaultRoles;
 
-  // Quests offered - denormalized with quest names/levels
-  const questsOffered: NpcQuestOffered[] = npcRaw.quests_offered
-    ? JSON.parse(npcRaw.quests_offered as string)
-    : [];
-
-  // Quests completed here - denormalized
-  const questsCompletedHere: NpcQuestOffered[] = npcRaw.quests_completed_here
-    ? JSON.parse(npcRaw.quests_completed_here as string)
-    : [];
-
-  // Items sold and drops are denormalized with item names; artwork remains
-  // canonical in visual_assets, so attach the published path in one query.
-  const itemsSoldRaw: Array<Omit<NpcItemSold, "visual_public_path">> =
-    npcRaw.items_sold ? JSON.parse(npcRaw.items_sold as string) : [];
-
-  const dropsRaw: Array<Omit<NpcDrop, "visual_public_path">> = npcRaw.drops
-    ? JSON.parse(npcRaw.drops as string)
-    : [];
-
-  const itemIds = [
-    ...new Set([...itemsSoldRaw, ...dropsRaw].map((item) => item.item_id)),
-  ];
-  const itemVisuals = new Map<string, string | null>();
-  if (itemIds.length > 0) {
-    const placeholders = itemIds.map(() => "?").join(", ");
-    const visualRows = db
-      .prepare(
-        `SELECT i.id, va.public_path
-         FROM items i
-         LEFT JOIN visual_assets va
-           ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
-         WHERE i.id IN (${placeholders})`,
-      )
-      .all(...itemIds) as Array<{ id: string; public_path: string | null }>;
-    for (const row of visualRows) itemVisuals.set(row.id, row.public_path);
+  const questMemberships = db
+    .prepare(
+      `
+    SELECT q.*, m.role, m.ordinal FROM npc_quest_memberships m
+    JOIN quests q ON q.id = m.quest_id WHERE m.npc_id = ?
+    ORDER BY m.role, m.ordinal
+  `,
+    )
+    .all(params.id) as Array<NpcQuestOffered & { role: string }>;
+  const classRequirements = db
+    .prepare(
+      `
+    SELECT r.quest_id, c.name FROM quest_class_requirements r
+    JOIN classes c ON c.id = r.class_id
+    WHERE EXISTS (SELECT 1 FROM npc_quest_memberships m WHERE m.quest_id = r.quest_id AND m.npc_id = ?)
+    ORDER BY r.ordinal
+  `,
+    )
+    .all(params.id) as Array<{ quest_id: string; name: string }>;
+  for (const quest of questMemberships) {
+    quest.class_requirements = classRequirements
+      .filter((row) => row.quest_id === quest.id)
+      .map((row) => row.name);
   }
-
-  const itemsSold: NpcItemSold[] = itemsSoldRaw.map((item) => ({
-    ...item,
-    visual_public_path: itemVisuals.get(item.item_id) ?? null,
-  }));
-  const drops: NpcDrop[] = dropsRaw.map((item) => ({
-    ...item,
-    visual_public_path: itemVisuals.get(item.item_id) ?? null,
-  }));
-
-  // Skills - denormalized with skill names
-  const skills: NpcSkill[] = npcRaw.skill_ids
-    ? JSON.parse(npcRaw.skill_ids as string)
-    : [];
+  const questsOffered = questMemberships.filter((row) => row.role === "offer");
+  const questsCompletedHere = questMemberships.filter(
+    (row) => row.role === "complete",
+  );
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "providers",
+    providers: [{ kind: "npcs", id: params.id }],
+  });
+  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
+  for (const quest of questMemberships)
+    quest.requirements =
+      acquisition.requirements.get(`quest:${quest.id}`) ?? [];
+  const vendorMethods = [...acquisition.methodViews.values()].filter(
+    (method) =>
+      method.kind === "vendor" &&
+      method.providers.some(
+        (provider) =>
+          provider.ref.kind === "npcs" && provider.ref.id === params.id,
+      ),
+  );
+  const itemsSold: NpcItemSold[] = vendorMethods.map((method) => {
+    const itemId = String(method.detail.offered_item_id);
+    const item = db
+      .prepare(
+        `
+      SELECT i.*, va.public_path AS visual_public_path FROM items i
+      LEFT JOIN visual_assets va ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+      WHERE i.id = ?
+    `,
+      )
+      .get(itemId) as {
+      name: string;
+      quality: number;
+      tooltip_html: string | null;
+      visual_public_path: string | null;
+    };
+    const costs = method.costGroups.flatMap((group) => group.inputs);
+    const currency = costs.find((input) => input.resource_kind === "item");
+    const gold = costs.find((input) => input.resource_kind === "gold");
+    const currencyName = currency?.item_id
+      ? (
+          db
+            .prepare("SELECT name FROM items WHERE id = ?")
+            .get(currency.item_id) as { name: string }
+        ).name
+      : null;
+    return {
+      item_id: itemId,
+      item_name: item.name,
+      quality: item.quality,
+      tooltip_html: item.tooltip_html,
+      visual_public_path: item.visual_public_path,
+      price: currency?.amount ?? gold?.amount ?? 0,
+      currency_item_id: currency?.item_id ?? null,
+      currency_item_name: currencyName,
+      method,
+    };
+  });
+  const skills = db
+    .prepare(
+      `
+    SELECT s.id, s.name FROM npc_skills ns JOIN skills s ON s.id = ns.skill_id
+    WHERE ns.npc_id = ? ORDER BY ns.skill_index
+  `,
+    )
+    .all(params.id) as NpcSkill[];
 
   const welcomeMessages: string[] = npcRaw.welcome_messages
     ? JSON.parse(npcRaw.welcome_messages as string)
@@ -332,11 +380,12 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     SELECT st.id AS trigger_id, z.id AS zone_id, z.name AS zone_name,
       m.id AS monster_id, m.name AS monster_name, COUNT(*) AS count
     FROM summon_triggers st
+    JOIN npc_spawns target ON target.id = st.summoned_npc_spawn_id
     JOIN zones z ON z.id = st.zone_id
     JOIN summon_trigger_placeholders p ON p.trigger_id = st.id
     JOIN monster_spawns ms ON ms.id = p.spawn_id
     JOIN monsters m ON m.id = ms.monster_id
-    WHERE st.summoned_entity_type = 'Npc' AND st.summoned_entity_id = ?
+    WHERE target.npc_id = ?
     GROUP BY st.id, m.id
     ORDER BY z.name, m.name
   `,
@@ -371,9 +420,10 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     questsOffered,
     questsCompletedHere,
     itemsSold,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(acquisition),
     spawns,
     summonTriggers,
-    drops,
     skills,
     respawnDungeonName,
     respawnDungeonZoneId,

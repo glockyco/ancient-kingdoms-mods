@@ -218,14 +218,14 @@
       {/if}
     </div>
   {:else if cell.column.id === "faction"}
-    <span class="whitespace-nowrap">{row.original.faction || "-"}</span>
+    <span>{row.original.faction || "-"}</span>
   {:else if cell.column.id === "race"}
-    <span class="whitespace-nowrap">{row.original.race || "-"}</span>
+    <span>{row.original.race || "-"}</span>
   {:else if cell.column.id === "roles"}
     <RoleBadges roles={row.original.roles} />
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
-    <div class="flex gap-1 whitespace-nowrap">
+    <div class="flex flex-wrap gap-1">
       {#if zones.length > 0}
         <IconBadge
           href="/zones/{zones[0].zone_id}"

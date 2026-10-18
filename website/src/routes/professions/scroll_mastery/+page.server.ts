@@ -1,9 +1,14 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import type { ObtainabilityNode } from "$lib/types/recipes";
-import { buildObtainabilityTree } from "$lib/server/obtainability";
+import type { AcquisitionQuery, MethodView } from "$lib/acquisition/types";
+import { loadAcquisition } from "$lib/server/acquisition";
+import {
+  loadAcquisitionItems,
+  type AcquisitionItem,
+} from "$lib/acquisition/items";
 import { statField, statFieldName } from "$lib/stats";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -21,8 +26,9 @@ interface ScrollEffect {
 }
 
 interface ScribingRecipe extends ScrollEffect {
+  id: string;
   recipe_id: string;
-  obtainabilityTree: ObtainabilityNode;
+  methods: readonly MethodView[];
 }
 
 interface StationLocation {
@@ -43,6 +49,8 @@ interface ScrollMasteryPageData {
     achievement_name: string;
   };
   recipes: ScribingRecipe[];
+  acquisitionItems: Record<string, AcquisitionItem>;
+  acquisitionNames: Readonly<Record<string, string>>;
   locations: StationLocation[];
   stats: {
     craftable_scroll_count: number;
@@ -58,6 +66,8 @@ interface RawScrollEffect {
   tooltip_html: string | null;
   quality: number;
   recipe_id: string | null;
+  definition_id: string | null;
+  result_amount: number | null;
   skill_id: string;
   skill_name: string;
   skill_type: string;
@@ -190,12 +200,15 @@ function toScrollEffect(row: RawScrollEffect): ScrollEffect {
   };
 }
 
-export const load: PageServerLoad = (): ScrollMasteryPageData => {
-  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+export const load: PageServerLoad =
+  async (): Promise<ScrollMasteryPageData> => {
+    const db = new Database(DB_SOURCE_PATH, { readonly: true });
+    const execute: AcquisitionQuery = async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[];
 
-  const profession = db
-    .prepare(
-      `
+    const profession = db
+      .prepare(
+        `
     SELECT
       id,
       name,
@@ -207,18 +220,20 @@ export const load: PageServerLoad = (): ScrollMasteryPageData => {
     FROM professions
     WHERE id = 'scroll_mastery'
   `,
-    )
-    .get() as ScrollMasteryPageData["profession"];
+      )
+      .get() as ScrollMasteryPageData["profession"];
 
-  const rawScrollEffects = db
-    .prepare(
-      `
+    const rawScrollEffects = db
+      .prepare(
+        `
     SELECT
       i.id AS item_id,
       i.name AS item_name,
       i.tooltip_html,
       i.quality,
       sr.id AS recipe_id,
+      d.id AS definition_id,
+      d.result_amount,
       s.id AS skill_id,
       s.name AS skill_name,
       s.skill_type,
@@ -249,58 +264,64 @@ export const load: PageServerLoad = (): ScrollMasteryPageData => {
     FROM items i
     JOIN skills s ON s.id = i.scroll_skill_id
     LEFT JOIN scribing_recipes sr ON sr.result_item_id = i.id
+    LEFT JOIN acquisition_recipe_details d ON d.scribing_recipe_id = sr.id
     WHERE i.item_type = 'scroll'
       AND i.scroll_skill_id IS NOT NULL
     ORDER BY sr.id IS NULL, i.name
   `,
-    )
-    .all() as RawScrollEffect[];
+      )
+      .all() as RawScrollEffect[];
 
-  const recipes: ScribingRecipe[] = rawScrollEffects
-    .filter((row) => row.recipe_id !== null)
-    .map((row) => {
-      const visited = new Set<string>();
-      const obtainabilityTree = buildObtainabilityTree(
-        db,
-        row.item_id,
-        1,
-        0,
-        visited,
-        true,
-      );
-
-      return {
-        ...toScrollEffect(row),
-        recipe_id: row.recipe_id as string,
-        obtainabilityTree,
-      };
+    const recipeModel = await loadAcquisition(execute, {
+      kind: "recipes",
+      recipeIds: rawScrollEffects.flatMap((row) =>
+        row.recipe_id ? [row.recipe_id] : [],
+      ),
     });
+    const recipes: ScribingRecipe[] = rawScrollEffects
+      .filter((row) => row.definition_id !== null)
+      .map((row) => {
+        const method = recipeModel.methodViews.get(row.definition_id as string);
+        if (!method)
+          throw new Error(`Missing scribing method ${row.definition_id}`);
+        return {
+          ...toScrollEffect(row),
+          id: row.definition_id as string,
+          recipe_id: row.recipe_id as string,
+          methods: [method],
+        };
+      });
+    const acquisitionItems = await loadAcquisitionItems(execute, recipeModel);
 
-  const locations = db
-    .prepare(
-      `
-    SELECT id, zone_id, zone_name, sub_zone_name
-    FROM scribing_tables
-    ORDER BY zone_name, sub_zone_name
+    const locations = db
+      .prepare(
+        `
+    SELECT DISTINCT s.id, s.zone_id, s.zone_name, s.sub_zone_name
+    FROM scribing_tables s
+    JOIN acquisition_providers_scribing_tables p ON p.scribing_table_id = s.id
+    JOIN acquisition_recipe_details d ON d.id = p.method_id
+    ORDER BY s.zone_name, s.sub_zone_name
   `,
-    )
-    .all() as StationLocation[];
+      )
+      .all() as StationLocation[];
 
-  db.close();
+    db.close();
 
-  return {
-    profession,
-    recipes,
-    locations,
-    stats: {
-      craftable_scroll_count: recipes.length,
-      scaling_scroll_count: recipes.filter(
-        (recipe) => recipe.skill_max_level > 1,
-      ).length,
-      fixed_rank_scroll_count: recipes.filter(
-        (recipe) => recipe.skill_max_level <= 1,
-      ).length,
-      scribing_table_count: locations.length,
-    },
+    return {
+      profession,
+      recipes,
+      acquisitionItems,
+      acquisitionNames: projectAcquisitionNames(recipeModel),
+      locations,
+      stats: {
+        craftable_scroll_count: recipes.length,
+        scaling_scroll_count: recipes.filter(
+          (recipe) => recipe.skill_max_level > 1,
+        ).length,
+        fixed_rank_scroll_count: recipes.filter(
+          (recipe) => recipe.skill_max_level <= 1,
+        ).length,
+        scribing_table_count: locations.length,
+      },
+    };
   };
-};

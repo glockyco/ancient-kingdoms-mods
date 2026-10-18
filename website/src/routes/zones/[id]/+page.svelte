@@ -1,4 +1,7 @@
 <script lang="ts">
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import { quantityText } from "$lib/components/acquisition/display";
   import { SvelteMap } from "svelte/reactivity";
   import type {
     ZoneNpc,
@@ -53,7 +56,6 @@
     formatNumber,
   } from "$lib/utils/format";
   import { statName, formatStat } from "$lib/stats";
-  import { chestRewardChance } from "$lib/utils/chest-reward";
   import { base } from "$app/paths";
   import Seo from "$lib/components/Seo.svelte";
   import { detailTitle } from "$lib/seo/title";
@@ -191,13 +193,20 @@
       id: "key",
       header: "Key",
       minSize: 200,
-      accessorFn: (row) => row.key_required_name || "",
+      accessorFn: (row) =>
+        row.requiredKeys
+          .map((key) =>
+            key.withheld
+              ? "Unpublished key"
+              : (key.itemName ?? key.itemId ?? ""),
+          )
+          .join(" or "),
       sortingFn: (rowA, rowB) => {
-        const a = rowA.original.key_required_name;
-        const b = rowB.original.key_required_name;
-        if (a === null && b === null) return 0;
-        if (a === null) return 1;
-        if (b === null) return -1;
+        const a = rowA.getValue<string>("key");
+        const b = rowB.getValue<string>("key");
+        if (!a && !b) return 0;
+        if (!a) return 1;
+        if (!b) return -1;
         return a.localeCompare(b);
       },
     },
@@ -205,13 +214,28 @@
       id: "item",
       header: "Item",
       minSize: 150,
-      accessorFn: (row) => row.item_reward_name || "",
+      accessorFn: (row) =>
+        row.primaryRewards
+          .filter((reward) => reward.resourceKind === "item")
+          .map((reward) =>
+            reward.withheld
+              ? "Unpublished item"
+              : (reward.itemName ?? reward.itemId ?? ""),
+          )
+          .join(", "),
     },
     {
       id: "chance",
       header: "Item or gold chance",
       size: 170,
-      accessorFn: (row) => chestRewardChance(row),
+      accessorFn: (row) =>
+        row.rewardProbabilities
+          .map((chance) =>
+            chance === null
+              ? "Unknown"
+              : formatPercent(chance, { decimals: 1, trailingZeros: true }),
+          )
+          .join(", "),
     },
     {
       id: "drops",
@@ -223,7 +247,11 @@
       id: "gold",
       header: "Gold",
       size: 140,
-      accessorFn: (row) => row.gold_max,
+      accessorFn: (row) =>
+        row.primaryRewards
+          .filter((reward) => reward.resourceKind === "gold")
+          .map((reward) => quantityText(reward.quantity))
+          .join(", "),
     },
     {
       id: "location",
@@ -482,39 +510,59 @@
       />
     </a>
   {:else if cell.column.id === "key"}
-    {#if row.original.key_required_id && row.original.key_required_name}
-      <a
-        href="/items/{row.original.key_required_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.key_required_name}
-      </a>
+    {#each row.original.requiredKeys as key, index (JSON.stringify( [key.itemId, key.withheld] ))}
+      <div>
+        {#if index > 0}<span class="text-muted-foreground">or </span>{/if}
+        {#if key.withheld}
+          <span class="text-muted-foreground">Unpublished key</span>
+        {:else if key.itemId}
+          <a
+            href="/items/{key.itemId}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {key.itemName ?? key.itemId}
+          </a>
+        {/if}
+      </div>
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/if}
+    {/each}
   {:else if cell.column.id === "item"}
-    {#if row.original.item_reward_id && row.original.item_reward_name}
-      <a
-        href="/items/{row.original.item_reward_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.item_reward_name}
-      </a>
-      {#if row.original.item_reward_amount > 1}
+    {#each row.original.primaryRewards.filter((reward) => reward.resourceKind === "item") as reward (JSON.stringify( [reward.resourceKind, reward.itemId, reward.delivery, reward.withheld] ))}
+      <div>
+        {#if reward.withheld}
+          <span class="text-muted-foreground">Unpublished item</span>
+        {:else if reward.itemId}
+          <a
+            href="/items/{reward.itemId}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {reward.itemName ?? reward.itemId}
+          </a>
+        {/if}
         <span class="text-muted-foreground"
-          >&nbsp;×1–{row.original.item_reward_amount}</span
+          >&nbsp;{quantityText(reward.quantity)}</span
         >
-      {:else}
-        <span class="text-muted-foreground">&nbsp;×1</span>
-      {/if}
+        {#if reward.delivery !== "inventory"}
+          <span class="text-muted-foreground">
+            ({reward.delivery.replaceAll("_", " ")})</span
+          >
+        {/if}
+      </div>
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/if}
+    {/each}
   {:else if cell.column.id === "chance"}
-    {formatPercent(chestRewardChance(row.original), {
-      decimals: 1,
-      trailingZeros: true,
-    })}
+    {#each row.original.rewardProbabilities as chance (chance)}
+      <div>
+        {chance === null
+          ? "Unknown"
+          : formatPercent(chance, {
+              decimals: 1,
+              trailingZeros: true,
+            })}
+      </div>
+    {/each}
   {:else if cell.column.id === "drops"}
     {#if row.original.drop_count > 0}
       <span class="text-muted-foreground">{row.original.drop_count} items</span>
@@ -522,15 +570,18 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "gold"}
-    {#if row.original.gold_max > 0}
-      {formatNumber(
-        row.original.gold_min,
-      )}{#if row.original.gold_min !== row.original.gold_max}
-        to {formatNumber(row.original.gold_max)}
-      {/if}
+    {#each row.original.primaryRewards.filter((reward) => reward.resourceKind === "gold") as reward (JSON.stringify( [reward.resourceKind, reward.itemId, reward.delivery, reward.withheld] ))}
+      <div>
+        {quantityText(reward.quantity)}
+        {#if reward.delivery !== "inventory"}
+          <span class="text-muted-foreground">
+            ({reward.delivery.replaceAll("_", " ")})</span
+          >
+        {/if}
+      </div>
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/if}
+    {/each}
   {:else if cell.column.id === "location"}
     <MapLink entityId={row.original.id} entityType="chest" compact />
   {:else if cell.column.id === "respawn_time"}
@@ -850,6 +901,18 @@
         zebraStripe={true}
         class="bg-muted/30"
       />
+      <details class="mt-4 rounded-md border bg-muted/30 p-4">
+        <summary class="cursor-pointer font-medium"
+          >Chest requirements, costs and outcomes</summary
+        >
+        <div class="mt-4">
+          <MethodList
+            methods={data.chests.flatMap((chest) => chest.methods)}
+            items={data.acquisitionItems}
+            names={data.acquisitionNames}
+          />
+        </div>
+      </details>
     </section>
   {/if}
 
@@ -1076,7 +1139,7 @@
   {/if}
 
   <!-- Zone Connections Section -->
-  {#if data.connectedZones.length > 0}
+  {#if data.connectedZones.length > 0 || data.portals.length > 0}
     <section class="mb-8">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <MapPin class="h-5 w-5 text-emerald-500" />
@@ -1108,6 +1171,32 @@
           </a>
         {/each}
       </div>
+      {#if data.portals.length > 0}
+        <div class="mt-4 space-y-3">
+          {#each data.portals as portal (portal.id)}
+            <div class="rounded-md border bg-muted/30 p-4 space-y-2">
+              <div class="flex items-center gap-2">
+                {#if portal.to_zone_id && portal.name}<a
+                    href="/zones/{portal.to_zone_id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{portal.name}</a
+                  >{:else}<span
+                    >{portal.destination_withheld
+                      ? "Unpublished destination"
+                      : "Portal"}</span
+                  >{/if}
+                {#if portal.is_closed}<span
+                    class="text-sm text-muted-foreground">Closed</span
+                  >{/if}
+              </div>
+              <Requirements
+                roots={portal.requirements}
+                names={data.acquisitionNames}
+              />
+            </div>
+          {/each}
+        </div>
+      {/if}
     </section>
   {/if}
 </div>

@@ -1,16 +1,13 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import PopupCard from "$lib/components/map/PopupCard.svelte";
-  import MapItemLink from "$lib/components/map/MapItemLink.svelte";
   import MapEntityLink from "$lib/components/map/MapEntityLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
-  import { formatAltarRequirement } from "$lib/calculation/altar";
   import {
     toRomanNumeral,
     formatDuration,
     formatPercent,
     formatSpawnTimeWindow,
-    getQualityTextColorClass,
     formatGatheringRespawn,
     formatNumber,
   } from "$lib/utils/format";
@@ -24,7 +21,6 @@
     type NpcMapEntity,
     type PortalMapEntity,
     type ChestMapEntity,
-    type TreasureMapEntity,
     type AltarMapEntity,
     type TrapMapEntity,
     type GatheringMapEntity,
@@ -33,22 +29,25 @@
   } from "$lib/types/map";
   import {
     loadMonsterPopupDetails,
-    loadMapItemIconPaths,
     loadNpcPopupDetails,
     loadChestPopupDetails,
     loadGatheringPopupDetails,
     loadAltarPopupDetails,
     loadAltarBasicInfo,
+    loadProviderPopupDetails,
+    loadRequirementPopupDetails,
+    type PopupAcquisition,
     type MonsterPopupDetails,
     type NpcPopupDetails,
     type ChestPopupDetails,
     type GatheringPopupDetails,
     type AltarPopupDetails,
   } from "$lib/queries/popup";
-  import type { PopupDropItem } from "$lib/queries/popup";
+  import AcquisitionMethods from "./AcquisitionMethods.svelte";
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import type { LocationRef } from "$lib/acquisition/types";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
   import { markerRegistry, resolveMarker } from "$lib/map/marker-registry";
-  import { FISHING_RANGE_ASSUMPTIONS } from "$lib/utils/fishing";
   import {
     reputationTierName,
     type ReputationTier,
@@ -64,6 +63,7 @@
     onSelectItem: (itemId: string) => void;
     onSelectQuest: (questId: string) => void;
     onSelectZone: (zoneId: string) => void;
+    onSelectLocation: (provider: LocationRef) => void;
     onHoverMonster?: (monsterId: string | null) => void;
     onHoverNpc?: (npcId: string | null) => void;
     onHoverAltar?: (altarId: string | null) => void;
@@ -82,6 +82,7 @@
     onSelectItem,
     onSelectQuest,
     onSelectZone,
+    onSelectLocation,
     onHoverMonster,
     onHoverNpc,
     onHoverAltar,
@@ -97,14 +98,22 @@
       name: string;
       zoneId: string;
       zoneName: string;
-      details: AltarPopupDetails;
     }>
   >([]);
   let npcDetails = $state<NpcPopupDetails | null>(null);
   let chestDetails = $state<ChestPopupDetails | null>(null);
   let gatheringDetails = $state<GatheringPopupDetails | null>(null);
   let altarDetails = $state<AltarPopupDetails | null>(null);
-  let itemIconPaths = $state<Record<string, string | null> | null>(null);
+  let providerDetails = $state<PopupAcquisition | null>(null);
+  let loadError = $state<string | null>(null);
+  const acquisition = $derived(
+    monsterDetails ??
+      npcDetails ??
+      chestDetails ??
+      gatheringDetails ??
+      altarDetails ??
+      providerDetails,
+  );
   let isLoading = $state(false);
 
   // Load details after the selection shell has had a chance to paint.
@@ -118,55 +127,29 @@
     chestDetails = null;
     gatheringDetails = null;
     altarDetails = null;
-    itemIconPaths = null;
+    providerDetails = null;
+    loadError = null;
     isLoading = true;
 
     async function loadDetails() {
       try {
         if (isMonster(currentEntity)) {
-          const isBossOrElite = currentEntity.isBoss || currentEntity.isElite;
           const details = await loadMonsterPopupDetails(
             currentEntity.monsterId,
             currentEntity.level,
             currentEntity.id,
-            isBossOrElite,
             currentEntity.isWorldBoss,
           );
           if (cancelled) return;
           monsterDetails = details;
 
-          // Load altar info if monster spawns in altars
-          if (currentEntity.altarIds && currentEntity.altarIds.length > 0) {
-            const altarPromises = currentEntity.altarIds.map(
-              async (altarId) => {
-                const [info, details] = await Promise.all([
-                  loadAltarBasicInfo(altarId),
-                  loadAltarPopupDetails(altarId),
-                ]);
-                if (info) {
-                  return {
-                    id: info.id,
-                    name: info.name,
-                    zoneId: info.zoneId,
-                    zoneName: info.zoneName,
-                    details,
-                  };
-                }
-                return null;
-              },
+          if (currentEntity.altarIds?.length) {
+            const results = await Promise.all(
+              currentEntity.altarIds.map(loadAltarBasicInfo),
             );
-            const results = await Promise.all(altarPromises);
             if (cancelled) return;
             monsterAltarDetails = results.filter(
-              (
-                r,
-              ): r is {
-                id: string;
-                name: string;
-                zoneId: string;
-                zoneName: string;
-                details: AltarPopupDetails;
-              } => r !== null,
+              (value): value is NonNullable<typeof value> => value !== null,
             );
           }
         } else if (currentEntity.type === "npc") {
@@ -189,35 +172,42 @@
           const details = await loadAltarPopupDetails(currentEntity.id);
           if (cancelled) return;
           altarDetails = details;
+        } else if (currentEntity.type === "portal") {
+          const details = await loadRequirementPopupDetails(
+            "portal",
+            currentEntity.id,
+          );
+          if (cancelled) return;
+          providerDetails = details;
+        } else if (currentEntity.type === "treasure") {
+          const details = await loadProviderPopupDetails({
+            kind: "treasure_locations",
+            id: currentEntity.id,
+          });
+          if (cancelled) return;
+          providerDetails = details;
+        } else if (
+          ["crafting_station", "alchemy_table", "scribing_table"].includes(
+            currentEntity.type,
+          )
+        ) {
+          const kind =
+            currentEntity.type === "alchemy_table"
+              ? "alchemy_tables"
+              : currentEntity.type === "scribing_table"
+                ? "scribing_tables"
+                : "crafting_stations";
+          const details = await loadProviderPopupDetails({
+            kind,
+            id: currentEntity.id,
+          });
+          if (cancelled) return;
+          providerDetails = details;
         }
-        const altarSources = [
-          ...(altarDetails ? [altarDetails] : []),
-          ...monsterAltarDetails.map((altar) => altar.details),
-        ];
-        const itemIds = [
-          ...(monsterDetails?.drops.map((drop) => drop.itemId) ?? []),
-          ...(npcDetails?.itemsSold.map((item) => item.itemId) ?? []),
-          ...(chestDetails?.drops.map((drop) => drop.itemId) ?? []),
-          ...(gatheringDetails?.drops.map((drop) => drop.itemId) ?? []),
-          ...(gatheringDetails?.fishingOutcomes?.flatMap((outcome) =>
-            outcome.itemId ? [outcome.itemId] : [],
-          ) ?? []),
-          ...altarSources.flatMap((altar) => [
-            ...altar.rewards.map((reward) => reward.itemId),
-            ...altar.bossDrops.flatMap((boss) =>
-              boss.drops.map((drop) => drop.itemId),
-            ),
-          ]),
-          ...(currentEntity.type === "treasure"
-            ? [
-                currentEntity.requiredMapId,
-                ...(currentEntity.rewardId ? [currentEntity.rewardId] : []),
-              ]
-            : []),
-        ];
-        const paths = await loadMapItemIconPaths(itemIds);
-        if (cancelled) return;
-        itemIconPaths = paths;
+      } catch (error) {
+        console.error("Failed to load map entity details", error);
+        if (!cancelled)
+          loadError = "Could not load details. Refresh the page to try again.";
       } finally {
         if (!cancelled) {
           isLoading = false;
@@ -234,8 +224,6 @@
       cancelDeferredLoad();
     };
   });
-
-  const filteredMonsterDrops = $derived(monsterDetails?.drops ?? []);
 
   // Get display zone name and ID for altar-only monsters
   let displayZoneName = $derived.by(() => {
@@ -282,45 +270,12 @@
     ].includes(e.type);
   }
 
-  function getFishingSpotDetailId(id: string): string {
-    return id.replace(/_[0-9a-f]{8}$/u, "");
-  }
-
-  function getFishingOutcomeTotal(kind: "fallback_fish" | "trash" | "escape"): {
-    min: number;
-    max: number;
-  } {
-    const outcomes =
-      gatheringDetails?.fishingOutcomes?.filter(
-        (outcome) => outcome.kind === kind,
-      ) ?? [];
-    return {
-      min: outcomes.reduce((sum, outcome) => sum + outcome.dropRateMin, 0),
-      max: outcomes.reduce((sum, outcome) => sum + outcome.dropRateMax, 0),
-    };
-  }
-
-  function formatChanceRange(min: number, max: number): string {
-    if (Math.abs(min - max) < 0.000001)
-      return formatPercent(min, { decimals: 1, trailingZeros: true });
-    return `${formatPercent(min, { decimals: 1, trailingZeros: true })}–${formatPercent(max, { decimals: 1, trailingZeros: true })}`;
-  }
-
-  function getFallbackFishLabel(level: number): string {
-    if (level <= 2) return "Any lower-tier fish (Tier I)";
-    return `Any lower-tier fish (Tier I to ${toRomanNumeral(level - 1)})`;
-  }
-
   function getEntityUrl(entity: AnyMapEntity): string | null {
     if (isMonster(entity)) {
       return `/monsters/${entity.monsterId}`;
     }
     if (isGathering(entity)) {
-      return `/gather-items/${
-        entity.type === "gathering_fish"
-          ? getFishingSpotDetailId(entity.id)
-          : entity.id
-      }`;
+      return `/gather-items/${entity.resourceId}`;
     }
     switch (entity.type) {
       case "npc":
@@ -376,26 +331,6 @@
 
   const url = $derived(getEntityUrl(entity));
 </script>
-
-{#snippet lootChance(drop: PopupDropItem)}
-  <span class="text-right text-muted-foreground">
-    {formatPercent(drop.dropRate, { decimals: 1, trailingZeros: true })}
-    {drop.isDistributionRoll ? "to drop one item from this pool" : "per kill"}
-    {#if drop.fatecharmDropRate !== undefined}
-      <span>without Fatecharm</span>
-      <span class="block text-xs">
-        {formatPercent(drop.fatecharmDropRate, {
-          decimals: 1,
-          trailingZeros: true,
-        })}
-        with matching dungeon Fatecharm (consumed)
-      </span>
-    {/if}
-    {#if drop.requiresQuest}
-      <span class="block text-xs">While needed for a gather quest</span>
-    {/if}
-  </span>
-{/snippet}
 
 <PopupCard
   title={getDisplayName(entity)}
@@ -671,72 +606,6 @@
           {/each}
         </div>
       </div>
-
-      <!-- Altar tier rewards -->
-      {#each monsterAltarDetails as altar (altar.id)}
-        {#if altar.details.rewards.length > 0 && altar.details.finalMonsterIds.includes(monster.monsterId)}
-          <div class="border-t pt-2">
-            <div class="mb-1 text-xs font-medium text-muted-foreground">
-              {altar.name} Rewards
-            </div>
-            <div class="space-y-1.5">
-              {#each altar.details.rewards as reward (reward.tier)}
-                <div>
-                  <MapItemLink
-                    itemId={reward.itemId}
-                    itemName={reward.itemName}
-                    tooltipHtml={itemIconPaths ? reward.tooltipHtml : null}
-                    imageAvailable={itemIconPaths?.[reward.itemId]}
-                    colorClass={getQualityTextColorClass(reward.quality)}
-                    class="truncate"
-                    onSelect={onSelectItem}
-                  />
-                  <div class="text-xs text-muted-foreground">
-                    {formatAltarRequirement(
-                      reward.tier,
-                      reward,
-                      reward.maxLevel,
-                    )}
-                    {#if reward.dropRate !== null}
-                      · {formatPercent(reward.dropRate, {
-                        decimals: 1,
-                        trailingZeros: true,
-                      })}
-                    {/if}
-                  </div>
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-      {/each}
-    {/if}
-
-    <!-- Drops (lazy-loaded, excluding altar rewards) -->
-    {#if isLoading}
-      <div class="py-2 text-center text-xs text-muted-foreground">
-        Loading...
-      </div>
-    {:else if filteredMonsterDrops.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">Drops</div>
-        <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
-          {#each filteredMonsterDrops as drop, i (i)}
-            <div class="flex justify-between gap-2">
-              <MapItemLink
-                itemId={drop.itemId}
-                itemName={drop.itemName}
-                tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
-                imageAvailable={itemIconPaths?.[drop.itemId]}
-                colorClass={getQualityTextColorClass(drop.quality)}
-                class="truncate"
-                onSelect={onSelectItem}
-              />
-              {@render lootChance(drop)}
-            </div>
-          {/each}
-        </div>
-      </div>
     {/if}
 
     <!-- Renewal Sage for world bosses -->
@@ -892,7 +761,7 @@
                 {quest.name}
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground"
-                >Lv {quest.levelRecommended}</span
+                >{quest.role === "offer" ? "Start" : "Complete"}, Lv {quest.levelRecommended}</span
               >
             </div>
           {/each}
@@ -900,29 +769,14 @@
       </div>
     {/if}
 
-    <!-- Items sold (lazy-loaded) -->
-    {#if isLoading && npc.itemsSoldCount > 0}
-      <div class="py-2 text-center text-xs text-muted-foreground">
-        Loading...
-      </div>
-    {:else if npcDetails && npcDetails.itemsSold.length > 0}
+    {#if npcDetails?.skills.length}
       <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Items for sale
-        </div>
-        <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
-          {#each npcDetails.itemsSold as item, i (i)}
-            <div>
-              <MapItemLink
-                itemId={item.itemId}
-                itemName={item.itemName}
-                tooltipHtml={itemIconPaths ? item.tooltipHtml : null}
-                imageAvailable={itemIconPaths?.[item.itemId]}
-                colorClass={getQualityTextColorClass(item.quality)}
-                class="truncate"
-                onSelect={onSelectItem}
-              />
-            </div>
+        <h3 class="font-medium">Skills</h3>
+        <div class="max-h-48 space-y-1 overflow-y-auto pr-2 text-sm">
+          {#each npcDetails.skills as skill (skill.index)}
+            <a href={`/skills/${skill.id}`} class="text-blue-400 underline"
+              >{skill.name}</a
+            >
           {/each}
         </div>
       </div>
@@ -956,196 +810,20 @@
         </div>
       {/if}
 
-      <!-- Requirements section -->
-      {@const hasRequirements =
-        portal.requiredLevel > 0 ||
-        portal.requiredItemLevel > 0 ||
-        portal.requiredItemName ||
-        portal.needMonsterDeadName}
-      {#if hasRequirements}
-        <div class="border-t pt-2">
-          <div class="mb-1 text-xs font-medium text-muted-foreground">
-            Requirements
-          </div>
-          <div class="space-y-1">
-            {#if portal.requiredLevel > 0}
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Level</span>
-                <span>{portal.requiredLevel}+</span>
-              </div>
-            {/if}
-            {#if portal.requiredItemLevel > 0}
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Total item level</span>
-                <span>{formatNumber(portal.requiredItemLevel)}+</span>
-              </div>
-            {/if}
-            {#if portal.requiredItemName && portal.requiredItemId}
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Key</span>
-                <MapItemLink
-                  itemId={portal.requiredItemId}
-                  itemName={portal.requiredItemName}
-                  tooltipHtml={null}
-                  onSelect={onSelectItem}
-                />
-              </div>
-            {:else if portal.requiredItemName}
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Key</span>
-                <span>{portal.requiredItemName}</span>
-              </div>
-            {/if}
-            {#if portal.requiredItemName}
-              <!-- Source: server-scripts/Portal.cs:47 — each player needs their own key only when requiresEveryoneKey is set; otherwise any online party member's key admits the player. -->
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Who needs the key</span>
-                <a
-                  href="/mechanics/world#portals"
-                  class="text-blue-600 hover:underline dark:text-blue-400"
-                  >{portal.requiresEveryoneKey
-                    ? "Each player"
-                    : "Any online party member"}</a
-                >
-              </div>
-            {/if}
-            {#if portal.needMonsterDeadName}
-              <div class="rounded bg-red-500/20 px-2 py-1 text-red-300">
-                <span class="text-red-400">Blocked while</span>
-                {#if portal.needMonsterDeadId}
-                  <button
-                    type="button"
-                    class="cursor-pointer text-red-200 underline hover:opacity-80"
-                    onclick={() => onSelectMonster(portal.needMonsterDeadId!)}
-                    onmouseenter={() =>
-                      onHoverMonster?.(portal.needMonsterDeadId!)}
-                    onmouseleave={() => onHoverMonster?.(null)}
-                  >
-                    {portal.needMonsterDeadName}
-                  </button>
-                {:else}
-                  <span class="text-red-200">{portal.needMonsterDeadName}</span>
-                {/if}
-                <span class="text-red-400">is alive</span>
-              </div>
-            {/if}
-          </div>
-        </div>
-      {/if}
+      {#if providerDetails}<Requirements
+          roots={providerDetails.requirements}
+          names={providerDetails.names}
+        />{/if}
     {/if}
   {/if}
 
   <!-- Chest Section -->
   {#if entity.type === "chest"}
     {@const chest = entity as ChestMapEntity}
-    {#if chest.keyRequiredName && chest.keyRequiredId}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Key</span>
-        <MapItemLink
-          itemId={chest.keyRequiredId}
-          itemName={chest.keyRequiredName}
-          tooltipHtml={null}
-          onSelect={onSelectItem}
-        />
-      </div>
-    {:else if chest.keyRequiredName}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Key</span>
-        <span>{chest.keyRequiredName}</span>
-      </div>
-    {/if}
     <div class="flex justify-between">
       <span class="text-muted-foreground">Respawn</span>
       <span>{formatDuration(chest.respawnTime)}</span>
     </div>
-
-    <!-- Drops (lazy-loaded) -->
-    {#if isLoading}
-      <div class="py-2 text-center text-xs text-muted-foreground">
-        Loading...
-      </div>
-    {:else if chestDetails && chestDetails.drops.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">Drops</div>
-        <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
-          {#each chestDetails.drops as drop, i (i)}
-            <div>
-              <div class="flex justify-between gap-2">
-                <MapItemLink
-                  itemId={drop.itemId}
-                  itemName={drop.itemName}
-                  tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
-                  imageAvailable={itemIconPaths?.[drop.itemId]}
-                  colorClass={getQualityTextColorClass(drop.quality)}
-                  class="truncate"
-                  onSelect={onSelectItem}
-                />
-                <span class="shrink-0 text-muted-foreground"
-                  >{formatPercent(drop.dropRate, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}</span
-                >
-              </div>
-              {#if drop.isRandomItem && drop.randomItemOutcomes}
-                <div class="ml-2 truncate text-muted-foreground">
-                  <span>One of:</span>
-                  {#each drop.randomItemOutcomes.slice(0, 3) as outcome, j (j)}
-                    <button
-                      type="button"
-                      onclick={() => onSelectItem(outcome.itemId)}
-                      class="cursor-pointer text-blue-400 underline hover:opacity-80"
-                      >{outcome.itemName}{j <
-                      Math.min(drop.randomItemOutcomes.length, 3) - 1
-                        ? ","
-                        : ""}</button
-                    >
-                  {/each}
-                  {#if drop.randomItemOutcomes.length > 3}and {drop
-                      .randomItemOutcomes.length - 3} more{/if}
-                </div>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
-  {/if}
-
-  <!-- Treasure Section -->
-  {#if entity.type === "treasure"}
-    {@const treasure = entity as TreasureMapEntity}
-    <div class="flex justify-between">
-      <span class="text-muted-foreground">Map</span>
-      <MapItemLink
-        itemId={treasure.requiredMapId}
-        itemName={treasure.requiredMapName}
-        tooltipHtml={itemIconPaths ? treasure.requiredMapTooltipHtml : null}
-        imageAvailable={itemIconPaths?.[treasure.requiredMapId]}
-        onSelect={onSelectItem}
-      />
-    </div>
-    <div class="flex justify-between">
-      <span class="text-muted-foreground">Tool</span>
-      <MapItemLink
-        itemId="shovel"
-        itemName="Shovel"
-        tooltipHtml={null}
-        onSelect={onSelectItem}
-      />
-    </div>
-    {#if treasure.rewardId && treasure.rewardName}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Reward</span>
-        <MapItemLink
-          itemId={treasure.rewardId}
-          itemName={treasure.rewardName}
-          tooltipHtml={itemIconPaths ? treasure.rewardTooltipHtml : null}
-          imageAvailable={itemIconPaths?.[treasure.rewardId]}
-          onSelect={onSelectItem}
-        />
-      </div>
-    {/if}
   {/if}
 
   <!-- Trap Section -->
@@ -1193,6 +871,15 @@
   <!-- Altar Section -->
   {#if entity.type === "altar"}
     {@const altar = entity as AltarMapEntity}
+    {@const bosses = [
+      ...new Map(
+        altar.finalBossNames.map((name, index) => {
+          const id = altar.finalBossIds[index];
+          const key = id || `unpublished:${index}`;
+          return [key, { id, name, key }];
+        }),
+      ).values(),
+    ]}
     {#if altar.minLevel > 0}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Level</span>
@@ -1203,41 +890,25 @@
       <span class="text-muted-foreground">Waves</span>
       <span>{altar.totalWaves}</span>
     </div>
-    {#if altar.activationItemName && altar.activationItemId}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Requires</span>
-        <MapItemLink
-          itemId={altar.activationItemId}
-          itemName={altar.activationItemName}
-          tooltipHtml={null}
-          onSelect={onSelectItem}
-        />
-      </div>
-    {:else if altar.activationItemName}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Requires</span>
-        <span>{altar.activationItemName}</span>
-      </div>
-    {/if}
 
     <!-- Boss names prominently -->
-    {#if altar.finalBossNames.length > 0}
+    {#if bosses.length > 0}
       <div class="mt-1 rounded bg-red-500/20 px-2 py-1">
         <span class="text-red-400">Boss: </span>
-        {#each altar.finalBossNames as bossName, i (i)}
-          {#if altar.finalBossIds[i]}
+        {#each bosses as boss, i (boss.key)}
+          {#if boss.id}
             <button
               type="button"
-              onclick={() => onSelectMonster(altar.finalBossIds[i])}
-              onmouseenter={() => onHoverMonster?.(altar.finalBossIds[i])}
+              onclick={() => onSelectMonster(boss.id)}
+              onmouseenter={() => onHoverMonster?.(boss.id)}
               onmouseleave={() => onHoverMonster?.(null)}
               class="cursor-pointer text-red-200 underline hover:opacity-80"
-              >{bossName}</button
+              >{boss.name}</button
             >
           {:else}
-            <span class="text-red-200">{bossName}</span>
+            <span class="text-red-200">{boss.name}</span>
           {/if}
-          {#if i < altar.finalBossNames.length - 1},
+          {#if i < bosses.length - 1},
           {/if}
         {/each}
       </div>
@@ -1253,79 +924,6 @@
         >
       </div>
     {/if}
-
-    <!-- Rewards by tier (lazy-loaded) -->
-    {#if isLoading}
-      <div class="py-2 text-center text-xs text-muted-foreground">
-        Loading...
-      </div>
-    {:else if altarDetails && altarDetails.rewards.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Rewards
-        </div>
-        <div class="space-y-2">
-          {#each altarDetails.rewards as reward (reward.tier)}
-            <div>
-              <MapItemLink
-                itemId={reward.itemId}
-                itemName={reward.itemName}
-                tooltipHtml={itemIconPaths ? reward.tooltipHtml : null}
-                imageAvailable={itemIconPaths?.[reward.itemId]}
-                colorClass={getQualityTextColorClass(reward.quality)}
-                class="truncate"
-                onSelect={onSelectItem}
-              />
-              <div class="text-xs text-muted-foreground">
-                {formatAltarRequirement(reward.tier, reward, reward.maxLevel)}
-                {#if reward.dropRate !== null}
-                  · {formatPercent(reward.dropRate, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}
-                {/if}
-              </div>
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- Boss bestiary drops (lazy-loaded) -->
-    {#if altarDetails && altarDetails.bossDrops.length > 0}
-      {#each altarDetails.bossDrops as bossDrop (bossDrop.monsterId)}
-        <div class="border-t pt-2">
-          <div class="mb-1 text-xs font-medium text-muted-foreground">
-            <button
-              type="button"
-              onclick={() => onSelectMonster(bossDrop.monsterId)}
-              onmouseenter={() => onHoverMonster?.(bossDrop.monsterId)}
-              onmouseleave={() => onHoverMonster?.(null)}
-              class="cursor-pointer underline hover:opacity-80"
-            >
-              {bossDrop.monsterName}
-            </button>
-            Drops
-          </div>
-          <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
-            {#each bossDrop.drops as drop, i (i)}
-              <div class="flex justify-between gap-2">
-                <MapItemLink
-                  itemId={drop.itemId}
-                  itemName={drop.itemName}
-                  tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
-                  imageAvailable={itemIconPaths?.[drop.itemId]}
-                  colorClass={getQualityTextColorClass(drop.quality)}
-                  class="truncate"
-                  onSelect={onSelectItem}
-                />
-                {@render lootChance(drop)}
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/each}
-    {/if}
   {/if}
 
   <!-- Gathering Section -->
@@ -1337,131 +935,26 @@
         <span>{toRomanNumeral(gathering.level)}</span>
       </div>
     {/if}
-    {#if entity.type === "gathering_fish"}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Tool</span>
-        <span>Any Fishing Rod</span>
-      </div>
-    {:else}
-      {#if gathering.toolRequiredName && gathering.toolRequiredId}
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Tool</span>
-          <MapItemLink
-            itemId={gathering.toolRequiredId}
-            itemName={gathering.toolRequiredName}
-            tooltipHtml={null}
-            onSelect={onSelectItem}
-          />
-        </div>
-      {:else if gathering.toolRequiredName}
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Tool</span>
-          <span>{gathering.toolRequiredName}</span>
-        </div>
-      {/if}
+    {#if entity.type !== "gathering_fish"}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Respawn</span>
         <span>{formatGatheringRespawn(entity.type, gathering.respawnTime)}</span
         >
       </div>
     {/if}
-
-    <!-- Drops (lazy-loaded) -->
-    {#if isLoading}
-      <div class="py-2 text-center text-xs text-muted-foreground">
-        Loading...
-      </div>
-    {:else if entity.type === "gathering_fish" && gatheringDetails?.fishingOutcomes?.length}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Per cast
-        </div>
-        <div class="space-y-1 text-sm">
-          {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "primary_fish") as outcome (outcome.itemId)}
-            <div class="flex items-center justify-between gap-3">
-              {#if outcome.itemId && outcome.itemName}
-                <MapItemLink
-                  itemId={outcome.itemId}
-                  itemName={outcome.itemName}
-                  tooltipHtml={itemIconPaths ? outcome.tooltipHtml : null}
-                  imageAvailable={itemIconPaths?.[outcome.itemId]}
-                  colorClass={getQualityTextColorClass(outcome.quality ?? 0)}
-                  class="min-w-0 truncate"
-                  onSelect={onSelectItem}
-                />
-              {/if}
-              <span class="shrink-0 whitespace-nowrap text-muted-foreground">
-                {formatChanceRange(outcome.dropRateMin, outcome.dropRateMax)}
-              </span>
-            </div>
-          {/each}
-          {#if getFishingOutcomeTotal("fallback_fish").max > 0}
-            {@const fallback = getFishingOutcomeTotal("fallback_fish")}
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground">
-                {getFallbackFishLabel(gathering.level)}
-              </span>
-              <span class="shrink-0 whitespace-nowrap text-muted-foreground">
-                {formatChanceRange(fallback.min, fallback.max)}
-              </span>
-            </div>
-          {/if}
-          {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "trash" || outcome.kind === "escape" || outcome.kind === "no_catch") as outcome (outcome.kind)}
-            <div class="flex justify-between gap-3">
-              <span class="text-muted-foreground">{outcome.label}</span>
-              <span class="shrink-0 whitespace-nowrap text-muted-foreground">
-                {formatChanceRange(outcome.dropRateMin, outcome.dropRateMax)}
-              </span>
-            </div>
-          {/each}
-        </div>
-      </div>
-      <p class="text-sm text-muted-foreground">{FISHING_RANGE_ASSUMPTIONS}</p>
-    {:else if gatheringDetails && gatheringDetails.drops.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">Drops</div>
-        <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
-          {#each gatheringDetails.drops as drop, i (i)}
-            <div class="flex justify-between gap-2">
-              <MapItemLink
-                itemId={drop.itemId}
-                itemName={drop.itemName}
-                tooltipHtml={itemIconPaths ? drop.tooltipHtml : null}
-                imageAvailable={itemIconPaths?.[drop.itemId]}
-                colorClass={getQualityTextColorClass(drop.quality)}
-                class="truncate"
-                onSelect={onSelectItem}
-              />
-              <span class="shrink-0 text-muted-foreground">
-                {#if drop.amountMin !== undefined && drop.amountMax !== undefined}
-                  <span class="mr-1">
-                    ×{drop.amountMin}{#if drop.amountMax !== drop.amountMin}–{drop.amountMax}{/if}
-                  </span>
-                {/if}
-                {#if drop.dropRateMax !== undefined}
-                  {formatPercent(drop.dropRate, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })} to {formatPercent(drop.dropRateMax, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}
-                {:else}
-                  {formatPercent(drop.dropRate, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}
-                {/if}
-              </span>
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
   {/if}
 
-  <!-- Crafting Station Section -->
-  {#if entity.type === "alchemy_table" || entity.type === "crafting_station" || entity.type === "scribing_table"}
-    <!-- Nothing extra needed - name and zone shown in header -->
+  {#if loadError}<p class="text-destructive">{loadError}</p>{/if}
+  {#if isLoading}<p class="text-sm text-muted-foreground">
+      Loading details...
+    </p>{/if}
+  {#if acquisition}
+    <AcquisitionMethods
+      data={acquisition}
+      {onSelectItem}
+      selectedProviderId={entity.id}
+      onSelectProvider={(provider) => onSelectLocation(provider.ref)}
+      showRequirements={entity.type !== "portal"}
+    />
   {/if}
 </PopupCard>

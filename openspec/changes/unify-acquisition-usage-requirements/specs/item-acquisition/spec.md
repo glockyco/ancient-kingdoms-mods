@@ -130,6 +130,13 @@ A deterministic acquisition expansion SHALL use actual output quantity and whole
 - **THEN** each method keeps its own quantity and cost explanation
 - **AND** materials for all alternatives are not summed into one guaranteed shopping requirement
 
+#### Scenario: Inspecting a particular recipe
+
+- **WHEN** a reader opens an existing recipe detail page
+- **THEN** ingredient expansion starts with that recipe and its declared batch size
+- **AND** another method of obtaining the result is not substituted for the recipe's ingredients
+- **AND** a recipe whose result expands immediately retains its ingredient tree without claiming the unexpanded result is delivered to inventory
+
 #### Scenario: Method is not freely repeatable
 
 - **WHEN** the selected method has a once-only or state-dependent execution limit
@@ -167,6 +174,36 @@ Forward item sources, provider outputs, summaries, graphs and source-location re
 - **WHEN** an ingredient occurs on several branches or an expansion encounters a cycle or limit
 - **THEN** each relevant edge remains represented
 - **AND** stopped expansion is explicit rather than being mistaken for no known source
+
+#### Scenario: Common altar outcomes recur across score tiers
+
+- **WHEN** the same boss and equivalent outcomes occur across a complete set of event score tiers
+- **THEN** presentation may consolidate those outcomes while retaining every canonical variant and its exact conditions
+- **AND** distinct tier rewards and cross-zone variants remain distinguishable
+
+### Requirement: Interactive source inspection stays bounded
+
+Interactive ingredient and required-item source inspection SHALL load recursive expansions on request and keep opened source collections within a bounded scrollable area. Deeper material chains SHALL remain independently inspectable without rendering every descendant at once. Deferral SHALL preserve requested quantities, method alternatives, costs and conditions.
+
+#### Scenario: Inspecting a large material plan
+
+- **WHEN** a reader opens a recipe material's sources
+- **THEN** the selected recipe's direct costs and requirements remain available
+- **AND** ordinary source alternatives and deeper material plans remain inspectable without an unbounded page or a pre-rendered copy of every descendant
+- **AND** opened nested sources keep names, quantities and map controls readable within the viewport
+- **AND** nested source groups use the inspector's enclosing scroll area instead of adding scroll boxes within it
+
+#### Scenario: Opening a disclosure before client startup
+
+- **WHEN** a reader opens a native source disclosure before the browser application starts
+- **THEN** it remains open and loads its sources after startup
+- **AND** the reader does not need to close and reopen it
+
+#### Scenario: Deferred inspection has not produced a result
+
+- **WHEN** source loading is pending or has failed
+- **THEN** the inspector distinguishes that state from no known source
+- **AND** closing or changing the inspector prevents a stale result from replacing its current contents
 
 ### Requirement: Acquisition inputs are complete and attributable
 

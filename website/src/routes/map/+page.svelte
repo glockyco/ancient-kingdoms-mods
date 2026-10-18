@@ -67,6 +67,8 @@
     MonsterMapEntity,
   } from "$lib/types/map";
   import type { MapSearchResult } from "$lib/queries/map-search";
+  import type { LocationRef } from "$lib/acquisition/types";
+  import { MAP_PROVIDER_CATEGORY } from "$lib/map/acquisition";
   import {
     resolvePhysicalSelection,
     resolveVirtualSelection,
@@ -213,9 +215,9 @@
       switch (resolved.popup.type) {
         case "entity": {
           selectedEntity = resolved.popup.entity;
-          // Extract entity ID/type for URL state (works even without highlight)
+          // Keep an explicitly selected placement distinct from its template.
           const entity = resolved.popup.entity;
-          newEntityId = getSelectionId(entity);
+          newEntityId = resolved.selectionId ?? getSelectionId(entity);
           // Normalize monster subtypes to "monster" for URL
           newEntityType =
             entity.type === "fabled" ||
@@ -252,7 +254,7 @@
 
     // Set highlight state (for map highlighting, separate from URL state)
     if (resolved.highlight) {
-      selectedEntityId = resolved.highlight.entityId;
+      selectedEntityId = resolved.selectionId ?? resolved.highlight.entityId;
       selectedEntityType = resolved.highlight.entityType;
 
       if (resolved.highlight.overrideGroups) {
@@ -605,20 +607,15 @@
     applySelection(resolved);
   }
 
-  function handleSelectChest(chestId: string) {
-    if (!entityData) return;
-    const resolved = resolvePhysicalSelection("chest", chestId, entityData);
-    applySelection(resolved);
-  }
-
-  function handleSelectGathering(resourceId: string) {
-    if (!entityData) return;
-    const resolved = resolvePhysicalSelection(
-      "resource",
-      resourceId,
-      entityData,
-    );
-    applySelection(resolved);
+  function handleSelectLocation(provider: LocationRef) {
+    const category = MAP_PROVIDER_CATEGORY[provider.kind];
+    if (category === "item") {
+      void handleSelectItem(provider.id);
+    } else if (category && entityData) {
+      applySelection(
+        resolvePhysicalSelection(category, provider.id, entityData),
+      );
+    }
   }
 
   // Hover handlers (for popup link preview highlights)
@@ -668,20 +665,6 @@
     hoverOverrideCategory = null;
     hoverEntityId = zoneId;
     hoverEntityCategory = zoneId ? "zone" : null;
-  }
-
-  function handleHoverChest(chestId: string | null) {
-    hoverOverrideIds = null;
-    hoverOverrideCategory = null;
-    hoverEntityId = chestId;
-    hoverEntityCategory = chestId ? "chest" : null;
-  }
-
-  function handleHoverGathering(resourceId: string | null) {
-    hoverEntityId = resourceId;
-    hoverEntityCategory = null;
-    hoverOverrideIds = resourceId ? [resourceId] : null;
-    hoverOverrideCategory = resourceId ? "resource" : null;
   }
 
   // Keyboard handlers
@@ -1230,7 +1213,7 @@
     />
     <details
       bind:open={markerListOpen}
-      class="absolute bottom-4 left-4 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg md:left-[calc(var(--sidebar-width)+1rem)]"
+      class="absolute bottom-20 left-4 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg md:bottom-4 md:left-[calc(var(--sidebar-width)+1rem)]"
       style="--sidebar-width: {sidebarWidth}px"
     >
       <summary
@@ -1310,6 +1293,7 @@
           onSelectItem={handleSelectItem}
           onSelectQuest={handleSelectQuest}
           onSelectZone={handleSelectZone}
+          onSelectLocation={handleSelectLocation}
           onHoverMonster={handleHoverMonster}
           onHoverNpc={handleHoverNpc}
           onHoverAltar={handleHoverAltar}
@@ -1322,18 +1306,7 @@
           onFocusClick={hasHighlightPositions
             ? handleFocusHighlighted
             : undefined}
-          onSelectMonster={handleSelectMonster}
-          onHoverMonster={handleHoverMonster}
-          onSelectAltar={handleSelectAltar}
-          onHoverAltar={handleHoverAltar}
-          onSelectNpc={handleSelectNpc}
-          onHoverNpc={handleHoverNpc}
-          onSelectChest={handleSelectChest}
-          onHoverChest={handleHoverChest}
-          onSelectGathering={handleSelectGathering}
-          onHoverGathering={handleHoverGathering}
-          onSelectZone={handleSelectZone}
-          onHoverZone={handleHoverZone}
+          onSelectLocation={handleSelectLocation}
           onSelectQuest={handleSelectQuest}
           onSelectItem={handleSelectItem}
         />
@@ -1391,6 +1364,7 @@
                 onSelectItem={handleSelectItem}
                 onSelectQuest={handleSelectQuest}
                 onSelectZone={handleSelectZone}
+                onSelectLocation={handleSelectLocation}
                 onHoverMonster={handleHoverMonster}
                 onHoverNpc={handleHoverNpc}
                 onHoverAltar={handleHoverAltar}
@@ -1407,18 +1381,7 @@
                 onFocusClick={hasHighlightPositions
                   ? handleFocusHighlighted
                   : undefined}
-                onSelectMonster={handleSelectMonster}
-                onHoverMonster={handleHoverMonster}
-                onSelectAltar={handleSelectAltar}
-                onHoverAltar={handleHoverAltar}
-                onSelectNpc={handleSelectNpc}
-                onHoverNpc={handleHoverNpc}
-                onSelectChest={handleSelectChest}
-                onHoverChest={handleHoverChest}
-                onSelectGathering={handleSelectGathering}
-                onHoverGathering={handleHoverGathering}
-                onSelectZone={handleSelectZone}
-                onHoverZone={handleHoverZone}
+                onSelectLocation={handleSelectLocation}
                 onSelectQuest={handleSelectQuest}
                 onSelectItem={handleSelectItem}
                 mode="drawer"

@@ -46,6 +46,14 @@ Item use SHALL distinguish consumed, retained and modified inputs, their possess
 
 Quest item relationships SHALL distinguish acquisition counters, inventory fulfillment, secondary possession alternatives, equipped objectives and successful-brew counters. Acceptance, fulfillment and completion consumption SHALL remain separate. Zero-amount requirements that require and consume nothing SHALL NOT become positive uses.
 
+A detailed objective SHALL subsume its same-quest, same-phase generic condition in reverse uses, retaining the complete requirement expression.
+
+#### Scenario: An objective also appears in the fulfillment condition
+
+- **WHEN** an item has both a detailed quest objective and its corresponding fulfillment condition
+- **THEN** the reverse view presents one objective with its complete quantities, alternatives and conjunctions
+- **AND** completion consumption and requirements at other phases remain distinct
+
 #### Scenario: An item must be gathered while the quest is active
 
 - **WHEN** fulfillment reads an acquisition counter
@@ -84,6 +92,12 @@ Merge components, service batches, recipe materials and activation inputs SHALL 
 - **WHEN** the normal service converts all matching carried items
 - **THEN** its use identifies the batch and corresponding resource cost
 - **AND** a per-unit estimate is not presented as a selectable single-item operation
+
+#### Scenario: One ingredient serves different professions
+
+- **WHEN** an item is used in recipes from multiple professions
+- **THEN** profession-specific groups contain only matching recipes
+- **AND** a mixed-role entity group is not labeled using only its first role
 
 ### Requirement: Compatibility is distinct from possession and creation
 

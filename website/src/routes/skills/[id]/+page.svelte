@@ -3,6 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import {
@@ -125,7 +126,7 @@
       data.usedByPets,
       data.mechanicsSpec,
       data.grantedByItems,
-      data.usedByMonsters.length > 0,
+      data.usedByMonsters.length + data.usedByNpcs.length > 0,
     ),
   );
   const {
@@ -183,7 +184,14 @@
         label: "Description",
         show: Boolean(data.effectSummary || skill.tooltip_template),
       },
-      { id: "requirements", label: "Requirements", show: hasRequirements },
+      {
+        id: "requirements",
+        label: "Requirements",
+        show:
+          hasRequirements ||
+          data.requirements.length > 0 ||
+          skill.player_classes.length > 0,
+      },
       {
         id: "cost-timing",
         label: "Cost & Timing",
@@ -242,6 +250,11 @@
         label: "Used by Monsters",
         show: data.usedByMonsters.length > 0,
       },
+      {
+        id: "used-by-npcs",
+        label: "Used by NPCs",
+        show: data.usedByNpcs.length > 0,
+      },
     ].filter((section) => section.show),
   );
 </script>
@@ -257,7 +270,8 @@
       ? null
       : (data.usedByPets[0]?.name ??
         data.grantedByItems[0]?.item_name ??
-        data.usedByMonsters[0]?.name),
+        data.usedByMonsters[0]?.name ??
+        data.usedByNpcs[0]?.name),
   })}
   description={data.description}
   path={`/skills/${skill.id}`}
@@ -350,6 +364,12 @@
 
   <!-- Page Anchor Navigation -->
   <PageSections {sections} />
+  {#if data.weaponClassRestrictionsWithheld}
+    <p class="text-sm text-muted-foreground">
+      Some weapon class restrictions are unpublished. Class-specific examples
+      are available only for known eligible classes.
+    </p>
+  {/if}
 
   <!-- Appearance -->
   {#if data.visualAsset}
@@ -474,7 +494,7 @@
   {/if}
 
   <!-- Requirements -->
-  {#if hasRequirements}
+  {#if hasRequirements || data.requirements.length > 0 || skill.player_classes.length > 0}
     <Card.Root id="requirements" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
@@ -483,6 +503,43 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
+        <Requirements roots={data.requirements} names={data.acquisitionNames} />
+        {#if skill.player_classes.length > 0 && skill.learn_default}
+          <p class="mb-4 text-sm text-muted-foreground">
+            Rank 1 is learned automatically.
+            {#if data.learningRanks.length === 0}This skill cannot be upgraded.{/if}
+          </p>
+        {/if}
+        {#if data.learningRanks.length > 0}
+          <div class="mb-4 overflow-x-auto">
+            <table class="w-full text-sm">
+              <caption class="mb-2 text-left text-muted-foreground"
+                >Learning requirements by base rank</caption
+              >
+              <thead
+                ><tr
+                  ><th class="p-2 text-right">Rank</th><th
+                    class="p-2 text-right">Level</th
+                  ><th class="p-2 text-right"
+                    >{skill.is_veteran ? "Veteran points" : "Skill points"}</th
+                  ></tr
+                ></thead
+              >
+              <tbody>
+                {#each data.learningRanks as learning (learning.rank)}
+                  <tr class="even:bg-muted/40"
+                    ><td class="p-2 text-right tabular-nums">{learning.rank}</td
+                    ><td class="p-2 text-right tabular-nums"
+                      >{learning.requiredLevel}</td
+                    ><td class="p-2 text-right tabular-nums"
+                      >{learning.pointCost}</td
+                    ></tr
+                  >
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        {/if}
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.player_classes.length > 0 && skill.tier >= 1 && skill.tier <= 4}
             <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill — tiers 1 and 3 allow two distinct skills; tiers 2 and 4 allow one. -->
@@ -497,22 +554,6 @@
                   {skill.tier}
                   {skill.tier === 1 || skill.tier === 3 ? "skills" : "skill"}
                 </a>
-              </dd>
-            </div>
-          {/if}
-          {#if skill.level_required > 1}
-            <div>
-              <dt class="text-muted-foreground">Level Required</dt>
-              <dd class="font-medium">{skill.level_required}</dd>
-            </div>
-          {/if}
-          {#if skill.required_skill_points > 1}
-            <div>
-              <!-- Source: server-scripts/PlayerSkills.cs:CmdUpgrade,CmdUpgradeVeteran — each rank pays the skill's required points from the corresponding pool. -->
-              <dt class="text-muted-foreground">Cost per Rank</dt>
-              <dd class="font-medium">
-                {skill.required_skill_points}
-                {skill.is_veteran ? "veteran points" : "skill points"}
               </dd>
             </div>
           {/if}
@@ -1383,6 +1424,28 @@
             </div>
           {/each}
         </div>
+      </Card.Content>
+    </Card.Root>
+  {/if}
+  {#if data.usedByNpcs.length > 0}
+    <Card.Root id="used-by-npcs" class="bg-muted/30">
+      <Card.Header
+        ><Card.Title level={2}
+          >Used by NPCs ({data.usedByNpcs.length})</Card.Title
+        ></Card.Header
+      >
+      <Card.Content>
+        <ul class="space-y-2">
+          {#each data.usedByNpcs as npc (npc.id)}
+            <li>
+              <a
+                href="/npcs/{npc.id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >{npc.name}</a
+              >
+            </li>
+          {/each}
+        </ul>
       </Card.Content>
     </Card.Root>
   {/if}

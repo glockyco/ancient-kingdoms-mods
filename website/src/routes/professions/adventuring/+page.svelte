@@ -1,4 +1,5 @@
 <script lang="ts">
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import { formatPercent } from "$lib/utils/format";
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
@@ -545,7 +546,7 @@
           </thead>
           <tbody>
             {#each displayedQuests as quest (quest.id)}
-              <tr class="border-t hover:bg-muted/25">
+              <tr class="border-t odd:bg-muted/20 hover:bg-muted/25">
                 <td class="p-3 text-right text-muted-foreground">
                   {queueRank.get(quest.id) ?? "—"}
                 </td>
@@ -796,4 +797,14 @@
       </div>
     {/if}
   </section>
+  <details class="space-y-4">
+    <summary class="cursor-pointer text-xl font-semibold"
+      >Quest and vendor methods</summary
+    >
+    <MethodList
+      methods={data.acquisitionMethods}
+      items={data.acquisitionItems}
+      names={data.acquisitionNames}
+    />
+  </details>
 </div>

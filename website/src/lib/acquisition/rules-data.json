@@ -1,0 +1,64 @@
+{
+  "creation": {
+    "inventory": [
+      { "name": "Minor Potion of Healing", "amount": 5 },
+      { "name": "Gate Scroll", "amount": 1 },
+      { "name": "Worn Backpack", "amount": 1 }
+    ],
+    "equipment": [
+      { "name": "Wanderer Clothes", "slot": 2, "amount": 1 },
+      { "name": "Wanderer Pants", "slot": 3, "amount": 1 }
+    ],
+    "durability": 10,
+    "weaponSlot": 12,
+    "classWeapons": {
+      "Warrior": "Rusty Sword",
+      "Ranger": "Rusty Sword",
+      "Bard": "Rusty Sword",
+      "Wizard": "Rusty Staff",
+      "Druid": "Rusty Staff",
+      "Necromancer": "Rusty Staff",
+      "Cleric": "Rusty Hammer",
+      "Rogue": "Rusty Dagger"
+    },
+    "classExtras": {
+      "Warrior": [{ "name": "Rusty Shield", "slot": 13, "amount": 1 }],
+      "Bard": [{ "name": "Wooden Flute", "slot": 13, "amount": 1 }]
+    }
+  },
+  "blessing": {
+    "goldPerRune": 75,
+    "quantityRule": "all_carried",
+    "cursedRuneName": "Cursed Rune"
+  },
+  "worldChest": {
+    "lockpickingSkillName": "Lockpicking",
+    "lockpickSuccess": 0.2
+  },
+  "altar": { "goldPerLevel": 20, "goldPerVeteranPoint": 5 },
+  "quest": { "classBowAmmoAmount": 50 },
+  "augment": {
+    "defensiveCategories": [
+      "Head",
+      "Chest",
+      "Legs",
+      "Feet",
+      "Hands",
+      "Bracers",
+      "Belt",
+      "Shield"
+    ],
+    "excludedItemTypes": ["augment", "ammo"],
+    "recoveryGoldByQuality": { "2": 10000, "3": 15000 },
+    "defaultRecoveryGold": 5000
+  },
+  "capXp": { "minimumTotalVeteranPoints": 200, "cycleAtBoundary": 5000000 },
+  "sources": {
+    "creation": "Database.CharacterCreate",
+    "blessing": "Player.UserCode_CmdBlessRunes",
+    "essence": "Player.UserCode_CmdPrimalEssence",
+    "capXp": "Experience.current",
+    "altar": "DefaultEvent.SummonMonsters",
+    "questClassAmmo": "PlayerQuests.UserCode_CmdComplete__NetworkIdentity__Int32"
+  }
+}

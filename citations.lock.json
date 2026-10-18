@@ -432,10 +432,6 @@
       "sha256": "a67003eaff157b5f061ebd170f476eae4e1b753b9100ff6eebdeade5ee91da0c",
       "span": 1
     },
-    "ChestItem.cs:61-64": {
-      "sha256": "466cf9d6c7cd19f9515b19e343eadb0ca72eb37f3ba0a2626040c383b4a9e073",
-      "span": 4
-    },
     "ChestItem.cs:61-66": {
       "sha256": "ddcca4005fec6d51f11f01807b17417f5e8b7eb33b2f77f4a25dc305b5dfb242",
       "span": 6
@@ -1034,10 +1030,6 @@
       "sha256": "93c445b327dda059e248fbefe034b1e302f5e567ee6d2203c1c590fd248e5e69",
       "span": 7
     },
-    "DefaultEvent.cs:200-213": {
-      "sha256": "2d8cf06bd6f913da7341ebd0d8f957ad6c04c095b4d5579fe33f645e31adae63",
-      "span": 14
-    },
     "DefaultEvent.cs:209-217": {
       "sha256": "b9e244dc75e373948e027e4c286de1a10402716ff945d491f39bf68374664a2c",
       "span": 9
@@ -1045,10 +1037,6 @@
     "DefaultEvent.cs:209-237": {
       "sha256": "0de3355d6f08212bad0ef3112fd9e68970de03932fc49e903652f03b42cb5084",
       "span": 29
-    },
-    "DefaultEvent.cs:223-226": {
-      "sha256": "cc07feccb8dcfd8c8e34fd8a3baad76e6a21929796c35e758c9439da0946de22",
-      "span": 4
     },
     "DefaultEvent.cs:229-239": {
       "sha256": "c3094b6a3d2d89aac1bd8764f0fff83e9c18e2de2018e2353be74b6b5969cc82",
@@ -1212,10 +1200,6 @@
     },
     "EquipmentItem.cs:ToolTip": {
       "span": 0
-    },
-    "EventAltar.cs:201-213": {
-      "sha256": "a72c88f5dbaa5c08a3c363f37797157575967b308a3ae683c02d5d88df5ed16e",
-      "span": 13
     },
     "EventAltar.cs:UserCode_CmdStartEvent__NetworkIdentity": {
       "span": 0
@@ -1451,20 +1435,9 @@
       "sha256": "14d68a0d5abaa7a9c18e4b4fd536a651c127680ef56b918698adc4c030d08cb1",
       "span": 1
     },
-    "GatherInventoryQuest.cs:33": {
-      "sha256": "9384e2b4a3438452a0c2dfbf0e55c4153f077b1f78cb6b3ee9ecd01ba0d9db58",
-      "span": 1
-    },
     "GatherInventoryQuest.cs:47": {
       "sha256": "c9c3a14131184f4302211992badd2aa2cee796fed5ed3ced8e436b0d44d27602",
       "span": 1
-    },
-    "GatherInventoryQuest.cs:83-86": {
-      "sha256": "3e862275c08e1f3126e71f57feb0033a607e7a8548b5d3d5489a980f13c392c7",
-      "span": 4
-    },
-    "GatherInventoryQuest.cs:IsFulfilled": {
-      "span": 0
     },
     "GatherInventoryQuest.cs:OnCompleted": {
       "span": 0
@@ -1532,25 +1505,17 @@
       "sha256": "a36fb402e3f0c517d0927f6b200e6dbadba7638932dc135eac505d05ca91a664",
       "span": 22
     },
-    "GatherItem.cs:431": {
-      "sha256": "dc6b7f3b0f17fcb2821f869ee399de4b4b88dd1120e27ad6fa0db56182efe838",
-      "span": 1
-    },
     "GatherItem.cs:444-455": {
       "sha256": "e2c764504127d3004e203ed423cec9d5c5389fd13cc255e422fdb75c11c70665",
       "span": 12
     },
-    "GatherItem.cs:446-451": {
-      "sha256": "68d18237bded5e0a94412d38449e23b3de2e581bb6574ea3e367f8eb13c3708e",
-      "span": 6
+    "GatherItem.cs:446-454": {
+      "sha256": "3dc409e8dc71e8970b260f7d843ec0b1889703325d5b72dd1949668a159d2721",
+      "span": 9
     },
     "GatherItem.cs:547-563": {
       "sha256": "7a9be68a766ca334cf505384f739aa80ffa90c9c055dc7ffb5581ccd834620b2",
       "span": 17
-    },
-    "GatherItem.cs:549-552": {
-      "sha256": "7033286101d2dc245623f546b6de70b5e240038ad56f8dbc119cb1dfbdc9d34f",
-      "span": 4
     },
     "GatherItem.cs:567-575": {
       "sha256": "c70560ccbb95596e87213408cb7981d66b42bfdea48747180942ef083fcbfa18",
@@ -1907,9 +1872,6 @@
       "sha256": "fd1031866193f57a490dd20d219984ce4602d8f78f304aa2d5ea257841cdfaf9",
       "span": 14
     },
-    "LocationQuest.cs:OnLocation": {
-      "span": 0
-    },
     "Mana.cs:28-41": {
       "sha256": "bbbcca7b98f80b0b7af9d1527e363ddb49d29389b47162a845dab84bf02cda4e",
       "span": 14
@@ -2033,10 +1995,6 @@
       "sha256": "8c4477daf55efcd3dcf0f01695c7ea54ca9ed1411b2cb3e87fbadc4fe4d8e260",
       "span": 11
     },
-    "Monster.cs:2905-2914": {
-      "sha256": "6f14a051741867e59ce793c2696b8a19f789ad2676ae42623d21eda1c51094de",
-      "span": 10
-    },
     "Monster.cs:2916-2932": {
       "sha256": "ee53544fdfadb4205775fac9b73ce59652e4c939771f410199c4d035ca2e15ce",
       "span": 17
@@ -2089,10 +2047,6 @@
       "sha256": "18da1830749bbd993d9cf9d28ac2440f909ee89a0b79c1d2c625ddeca7184659",
       "span": 19
     },
-    "Monster.cs:4106-4112": {
-      "sha256": "f40feddd3a37f8ea373e94158f9fffb6102ad463e07f6623638d3cb255cf5cac",
-      "span": 7
-    },
     "Monster.cs:4176-4285": {
       "sha256": "3b20de3751a8a55a39e04af1559e95a2a077d82b9a7d0651a27fec74b2113940",
       "span": 110
@@ -2116,10 +2070,6 @@
     "Monster.cs:574-604": {
       "sha256": "953c990e988177fe3436f6d2ad9d8af29e5da82750e6dba072e58a6d20139151",
       "span": 31
-    },
-    "Monster.cs:695-706": {
-      "sha256": "52f9a369a1429e23c62f101e86b11090d42fdbc9dfe81337e136e2b54fda1a66",
-      "span": 12
     },
     "Monster.cs:698-705": {
       "sha256": "64f7810d481bb0c8886b9caaef6379c49084550ac5bf7900b6b9abb3f292ac72",
@@ -2420,21 +2370,9 @@
       "sha256": "acc1a20acf5567fe7946dae66dcfa60c71f9bbdd322661639ce2d35fe11fbaae",
       "span": 12
     },
-    "Npc.cs:1952-1960": {
-      "sha256": "7a2e4d17187aa55df046faf9db31cfb53df1fac9a5114948e12cf4248ca66e4f",
-      "span": 9
-    },
-    "Npc.cs:1980-1982": {
-      "sha256": "b496031e7f1a47c4063dcb5b57a93cf8910eae4a74aaeeabd030db024d485a76",
-      "span": 3
-    },
     "Npc.cs:331-345": {
       "sha256": "4cd7bb4f89c2dcb76a710fba369684a8dfe2021805071e2d61f41bc235c3593b",
       "span": 15
-    },
-    "Npc.cs:52-54": {
-      "sha256": "079db2f85f6f63bc33ee488b6690f65e1c2978837172e5b5b9e13adaad85ce76",
-      "span": 3
     },
     "Npc.cs:666": {
       "sha256": "2b60aee24def2a704ca0494b5716ad3d6b885d5898497f2b1d45342c656da065",
@@ -2954,6 +2892,10 @@
       "sha256": "aec1bdad5b5487fe3953eb887bf4679d3322ca7fe522284987f4e147b725a0c1",
       "span": 12
     },
+    "Player.cs:13563-13604": {
+      "sha256": "ccaaf885b46dcf63a33f7cba33f95b289dc89bbe3b8119ea19cf75ef25c2e617",
+      "span": 42
+    },
     "Player.cs:13587-13607": {
       "sha256": "6253b7821443f7271289f9e44398b3a1a47b65b0f3467a6f53200e41208ebaf9",
       "span": 21
@@ -3274,9 +3216,6 @@
       "span": 0
     },
     "Player.cs:CanAttack": {
-      "span": 0
-    },
-    "Player.cs:CmdBlessRunes": {
       "span": 0
     },
     "Player.cs:CmdBuyMercenary": {
@@ -3816,9 +3755,6 @@
     "PlayerNpcTrading.cs:CalculateSellItemPrice": {
       "span": 0
     },
-    "PlayerNpcTrading.cs:CmdTradeEssence": {
-      "span": 0
-    },
     "PlayerNpcTrading.cs:UserCode_CmdRepairItem__Int32__Int64__Boolean": {
       "span": 0
     },
@@ -3859,6 +3795,10 @@
       "sha256": "ae406ef040f907c6573dec1f3d45560a34925bde9d819962e4b683b49a017c6a",
       "span": 13
     },
+    "PlayerQuests.cs:220-253": {
+      "sha256": "a967aae639bd23b3a323433d596fe69375afe833e905fbaed0b0a4e9e7609e0c",
+      "span": 34
+    },
     "PlayerQuests.cs:227": {
       "sha256": "67809006d7f2583c4d2354fdfb52aac8820c223297604f292f21b078a3b59d39",
       "span": 1
@@ -3879,6 +3819,10 @@
       "sha256": "db6a6a026cfb263e39cd9e8580e4a4dfc2341f59889a5fac316f0648b439f2f2",
       "span": 17
     },
+    "PlayerQuests.cs:338-339": {
+      "sha256": "f3d868431edb10d1903320bb896598962ad0e3720a9bf959ebfc22fcf6d628f7",
+      "span": 2
+    },
     "PlayerQuests.cs:390-391": {
       "sha256": "4de1048bb3c2f004e9124e10445b47006f64cb941b7b67c924abc2f08bfa38df",
       "span": 2
@@ -3886,10 +3830,6 @@
     "PlayerQuests.cs:394-396": {
       "sha256": "72c22f045342371d34749dcaf9727bf9ccd61e0a413106531ac92cb6ef426dd4",
       "span": 3
-    },
-    "PlayerQuests.cs:403-418": {
-      "sha256": "05eec55c15a58f91e780499e44d635b1d681e8cbb42b81cdeca01b6e60f273a9",
-      "span": 16
     },
     "PlayerQuests.cs:440-443": {
       "sha256": "f3077a44ae6458a3c9d44cc57e4e42ed6352405f41d2d956cdeeaa8b6f8b744c",
@@ -4138,9 +4078,6 @@
     "PlayerSkills.cs:CastTarget": {
       "span": 0
     },
-    "PlayerSkills.cs:CmdUpgrade": {
-      "span": 0
-    },
     "PlayerSkills.cs:CmdUse": {
       "span": 0
     },
@@ -4283,14 +4220,6 @@
     "ScriptableItem.cs:ToolTip": {
       "span": 0
     },
-    "ScriptableQuest.cs:111-113": {
-      "sha256": "d38c54c055354e48b41906b022ef4f69bb50ed75f7bb9f6367da43c09342df50",
-      "span": 3
-    },
-    "ScriptableQuest.cs:124-126": {
-      "sha256": "d38c54c055354e48b41906b022ef4f69bb50ed75f7bb9f6367da43c09342df50",
-      "span": 3
-    },
     "ScriptableQuest.cs:130-164": {
       "sha256": "28c31b713d4a956aa34a5cf281ec21fd61d81a4db7eb074f6333384ff4d0bbf4",
       "span": 35
@@ -4298,12 +4227,6 @@
     "ScriptableQuest.cs:43": {
       "sha256": "c65796fc7331ddabfbc3a5584afe697085b93f52fdfd1b2c5985366454fb3d68",
       "span": 1
-    },
-    "ScriptableQuest.cs:finishQuestNPC": {
-      "span": 0
-    },
-    "ScriptableQuest.cs:startQuestNPC": {
-      "span": 0
     },
     "ScriptableSkill.cs": {
       "span": 0
@@ -4621,9 +4544,6 @@
       "sha256": "f31bc5c5fcf570bf2fd42f772eb7997ba6879d1dfe4d841ebc73be34ae2e62ee",
       "span": 11
     },
-    "StrucItemUi.cs:SetPreviewId": {
-      "span": 0
-    },
     "Structure.cs:154-161": {
       "sha256": "577ac4f2ddfef6ce747451cd52cf2f4ce15f23f0c2c8ce1eea415dbe3256a0a7",
       "span": 8
@@ -4678,15 +4598,15 @@
     "SummonSkillMonsters.cs": {
       "span": 0
     },
-    "SummonSkillMonsters.cs:106-116": {
-      "sha256": "52509eb3f512a4c5f9a505b7205e63f31d1fa64726b7c71e206ee1490513cbff",
-      "span": 11
-    },
     "SummonSkillMonsters.cs:Apply": {
       "span": 0
     },
     "TableUI.cs": {
       "span": 0
+    },
+    "TableUI.cs:71-98": {
+      "sha256": "42d57a7301a749a1973fd88650995b9f6d4fbdeacb0864ce0e243b199cb56b64",
+      "span": 28
     },
     "TableUI.cs:90": {
       "sha256": "ac6dad5acd6a507de3a53c258bd0d220dd91cd2a3729f2226ed7ada942e734cc",
@@ -5332,10 +5252,6 @@
       "sha256": "890c3f5ed4a7dabc89c5c3c66ded3379b9c8ffe6045092d17d72a2202d09a6a0",
       "span": 6
     },
-    "UINpcTrading.cs:261-265": {
-      "sha256": "078aba7cc43fd6a0fe565b1267048a623437d43c2e4f0b9dc6f6953ffd7b8017",
-      "span": 5
-    },
     "UINpcTrading.cs:314-331": {
       "sha256": "0482b6307fe5f7bbfd32270c36678d3a6331510158f9d40cec0cc3aaf546c478",
       "span": 18
@@ -5344,33 +5260,13 @@
       "sha256": "87a79a95ecb592825372009ef5f9939cb68f37effb624ff1a0f52fac8b8455c0",
       "span": 6
     },
-    "UINpcTrading.cs:400-411": {
-      "sha256": "2532d91068b26d12d1d3d1eec5b70bd1e1e415426c3f6bf1e285042106c73583",
-      "span": 12
-    },
     "UINpcTrading.cs:427-431": {
       "sha256": "3e4b1f461a2b1736fb19b2cc02f9b82a63258b8ab73df0625dee6bf970813bf5",
       "span": 5
     },
-    "UINpcTrading.cs:556-564": {
-      "sha256": "3379f884917f58314711b1eada08e1c3d335e6c1b6a8ef4a81954323f1b94a80",
-      "span": 9
-    },
     "UINpcTrading.cs:556-565": {
       "sha256": "dce747628e897e32a5a3de3788ef55dca4d612b48c6aaf7a9ff570da74316b23",
       "span": 10
-    },
-    "UINpcTrading.cs:562-580": {
-      "sha256": "c75b722bf2f22199e5fab31dd4928c755fde4d6d2a7498f3b10937fbc74a5386",
-      "span": 19
-    },
-    "UINpcTrading.cs:567-574": {
-      "sha256": "c3580f1811db16ae13529ec52309a3e721516a6dad9def79dc676f6177fd91a1",
-      "span": 8
-    },
-    "UINpcTrading.cs:591-604": {
-      "sha256": "2696a8b5adab685704ad1fb94319a9149d8a11f9eadf00e25f82dd0b8ca754ec",
-      "span": 14
     },
     "UINpcTrading.cs:870-877": {
       "sha256": "24e56e21fddf789f66c37d4edbc80b08b48ab59613d323894dc1cf8ad944e251",
@@ -5495,10 +5391,6 @@
       "sha256": "aede1b32af6cdbeb6e8b972509f0ca39f18e3564d4f3c73f88129055b6959ea7",
       "span": 20
     },
-    "Utils.cs:520-526": {
-      "sha256": "87157de66c503c29f69f88b9c8dc2436550335646d215ec433ec86357a86f1a8",
-      "span": 7
-    },
     "Utils.cs:539-549": {
       "sha256": "e763bedbefcb7e48f4cf10f602af6e1236e34bd9e4d3f0c96bba0e25a36ee848",
       "span": 11
@@ -5546,9 +5438,6 @@
       "span": 0
     },
     "Utils.cs:GetSuccessProbMining": {
-      "span": 0
-    },
-    "Utils.cs:getPrimalEssenceAmount": {
       "span": 0
     },
     "Utils.cs:priceResetVeteranSkills": {
@@ -5648,9 +5537,6 @@
     "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48": {
       "sha256": "7c6b83cd92a51305c5555c1a2e39f5b071d6cb21e2d51b7846c44499397bdaa5",
       "span": 34
-    },
-    "uMMORPG.Scripts.ScriptableItems/MergeItem.cs:Use": {
-      "span": 0
     },
     "uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27": {
       "sha256": "d1d53edf95ee4216614bce9c2c9a58b12ffcb17b6143e3b16998dfe4b246a91f",

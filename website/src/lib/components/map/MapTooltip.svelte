@@ -143,8 +143,15 @@
     {/if}
   {:else if entity.type === "chest"}
     {@const chest = entity as ChestMapEntity}
-    {#if chest.keyRequiredName}
-      <div class="text-sm text-amber-400">Key: {chest.keyRequiredName}</div>
+    {#if chest.requiredKeys.length}
+      <div class="text-sm text-amber-400">
+        {chest.requiredKeys.length === 1 ? "Key" : "Key alternatives"}:
+        {chest.requiredKeys
+          .map((key) =>
+            key.withheld ? "Unpublished key" : (key.itemName ?? key.itemId),
+          )
+          .join(" or ")}
+      </div>
     {/if}
   {:else if entity.type === "altar"}
     {@const altar = entity as AltarMapEntity}

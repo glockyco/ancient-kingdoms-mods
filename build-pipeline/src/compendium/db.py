@@ -3,10 +3,18 @@
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from pydantic import BaseModel
 from rich.console import Console
+
+if TYPE_CHECKING:
+    from compendium.models import QuestData
+
+
+class _IdentifiedInput(Protocol):
+    id: str
+
 
 console = Console()
 
@@ -40,23 +48,14 @@ def serialize_value(value: Any) -> Any:
 def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
     """Insert a Pydantic model into a database table using dynamic field mapping.
 
-    Handles special cases like Position objects (split into x/y/z columns),
-    NpcRoles, QuestRewards, and faction fields.
-
-    Skips fields that are used only for junction table population:
-    - pack_final_item_id, pack_final_amount
-    - random_items
-    - merge_items_needed_ids, merge_result_item_id
-    - treasure_map_reward_id
-    - level_requirement, skill_point_cost
 
     Args:
         cursor: Database cursor
         table: Target table name
         model: Pydantic model instance to insert
     """
-    # Fields that exist in Pydantic models but not in their table schema.
-    # These are used by loaders to populate junction tables instead.
+    # Private relationship fields are normalized after ingestion, not published
+    # as a second JSON authority.
     JUNCTION_ONLY_FIELDS: dict[str, set[str]] = {
         "items": {
             "pack_final_item_id",
@@ -65,13 +64,21 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
             "merge_items_needed_ids",
             "merge_result_item_id",
             "treasure_map_reward_id",
+            "chest_rewards",
+            "chest_num_items",
+            "class_required",
         },
         "skills": {
-            "level_requirement",
-            "skill_point_cost",
+            "prerequisite_skill_id",
+            "prerequisite_level",
+            "prerequisite2_skill_id",
+            "prerequisite2_level",
         },
         "monsters": {
             "skill_ids",
+            "drops",
+            "loot_zone_number",
+            "is_summoned_pet",
         },
         "pets": {
             "skill_ids",
@@ -81,7 +88,67 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
             "unlocked_icon_path",
             "locked_icon_path",
         },
+        "monster_spawns": {
+            "loot_zone_number",
+            "loot_respawn",
+            "loot_exp_multiplier",
+            "loot_is_boss",
+            "loot_is_elite",
+            "loot_is_hunt",
+            "loot_is_summoned_pet",
+            "loot_event_kind",
+            "loot_drops",
+            "loot_gold_min",
+            "loot_gold_max",
+            "loot_gold_probability",
+        },
+        "npcs": {"quest_offers", "items_sold", "skill_ids"},
+        "quests": {
+            "race_requirements",
+            "class_requirements",
+            "faction_requirements",
+            "finish_quest_locations",
+            "objectives",
+            "rewards",
+            "start_npc_id",
+            "end_npc_id",
+            "predecessor_ids",
+            "kill_target_1_id",
+            "kill_target_2_id",
+            "kill_amount_1",
+            "kill_amount_2",
+            "gather_item_1_id",
+            "gather_item_2_id",
+            "gather_item_3_id",
+            "gather_amount_1",
+            "gather_amount_2",
+            "gather_amount_3",
+            "gather_items",
+            "required_items",
+            "equip_items",
+            "given_item_on_start_id",
+            "potions_amount",
+            "potion_item_id",
+            "discovered_location",
+            "discovered_location_zone_id",
+            "discovered_location_sub_zone_id",
+            "discovered_location_position",
+            "discovered_location_bounds",
+            "tracking_quest_location",
+            "zone_id_final_npc",
+            "zone_id_quest_action",
+        },
     }
+    staging_families = {
+        "items",
+        "skills",
+        "monsters",
+        "monster_spawns",
+        "npcs",
+        "quests",
+    }
+    if table in staging_families:
+        insert_acquisition_input(cursor, table, model)
 
     values = {}
     skip_fields = JUNCTION_ONLY_FIELDS.get(table, set())
@@ -147,19 +214,37 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
         # Handle NpcRoles object
         elif field_name == "roles" and value is not None:
             values["roles"] = json.dumps(value.model_dump())
-        # Handle QuestRewards object
-        elif field_name == "rewards" and value is not None:
-            values["rewards"] = json.dumps(value.model_dump())
         # Handle faction field - convert empty string to NULL for FK constraint
         elif field_name == "faction":
             values[field_name] = value if value else None
         else:
             values[field_name] = serialize_value(value)
+    if table == "quests":
+        rewards = cast("QuestData", model).rewards
+        values["reward_gold"] = rewards.gold
+        values["reward_experience"] = rewards.exp
 
     columns = ", ".join(values.keys())
     placeholders = ", ".join(["?"] * len(values))
     sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
     cursor.execute(sql, tuple(values.values()))
+
+
+def insert_acquisition_input(
+    cursor: sqlite3.Cursor,
+    family: str,
+    model: BaseModel,
+    *,
+    identity: str | None = None,
+) -> None:
+    """Retain validated immutable source facts until acquisition normalization."""
+    cursor.execute(
+        f"INSERT INTO _acquisition_input_{family} (id,payload) VALUES (?,?)",
+        (
+            identity if identity is not None else cast(_IdentifiedInput, model).id,
+            model.model_dump_json(),
+        ),
+    )
 
 
 def create_database(db_path: Path, schema_path: Path) -> sqlite3.Connection:

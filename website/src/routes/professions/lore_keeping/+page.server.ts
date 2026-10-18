@@ -1,9 +1,9 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import type { ObtainabilityNode } from "$lib/types/recipes";
-import { buildObtainabilityTree } from "$lib/server/obtainability";
-import { getMonsterSources, getQuestSources } from "$lib/server/item-sources";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { projectItemSources } from "$lib/acquisition/projections";
+import { methodLabel } from "$lib/components/acquisition/display";
 
 export const prerender = true;
 
@@ -19,7 +19,7 @@ interface LoreBook {
   tooltip_html: string | null;
   visual_public_path: string | null;
   book_text: string;
-  obtainabilityTree: ObtainabilityNode;
+  hasObtainabilityInfo: boolean;
   sourceSummary: SourceSummary;
   statGains: {
     strength: number;
@@ -59,7 +59,7 @@ interface RawBook {
   book_charisma_gain: number;
 }
 
-export const load: PageServerLoad = (): LoreKeepingPageData => {
+export const load: PageServerLoad = async () => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const profession = db
@@ -104,19 +104,30 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
     )
     .all() as RawBook[];
 
-  // Build obtainability trees and source summaries for each book
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const model = await loadAcquisition(execute, {
+    kind: "items",
+    itemIds: rawBooks.map((book) => book.id),
+  });
   const books: LoreBook[] = rawBooks.map((raw) => {
-    const visited = new Set<string>();
-    const obtainabilityTree = buildObtainabilityTree(
-      db,
-      raw.id,
-      1,
-      0,
-      visited,
-      true,
-    );
-
-    const sourceSummary = getSourceSummary(db, raw.id, obtainabilityTree);
+    const sources = projectItemSources(model, raw.id);
+    const method = sources.methods[0];
+    const sourceSummary: SourceSummary = method
+      ? {
+          type:
+            method.kind === "merge"
+              ? "merge"
+              : method.kind === "kill"
+                ? "drop"
+                : method.kind === "quest_complete"
+                  ? "quest"
+                  : "unknown",
+          label: methodLabel(method),
+        }
+      : { type: "unknown", label: "Unknown" };
 
     return {
       id: raw.id,
@@ -124,7 +135,7 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       tooltip_html: raw.tooltip_html,
       visual_public_path: raw.visual_public_path,
       book_text: raw.book_text,
-      obtainabilityTree,
+      hasObtainabilityInfo: sources.methods.length > 0,
       sourceSummary,
       statGains: {
         strength: raw.book_strength_gain,
@@ -139,74 +150,8 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
 
   db.close();
 
-  return { profession, books };
-};
-
-function getSourceSummary(
-  db: Database.Database,
-  bookId: string,
-  tree: ObtainabilityNode,
-): SourceSummary {
-  // Check for merge first (from obtainability tree)
-  if (tree.merge && tree.merge.materials.length > 0) {
-    const materials = tree.merge.materials;
-    const firstName = materials[0].item_name;
-    const moreCount = materials.length - 1;
-    return {
-      type: "merge",
-      label:
-        moreCount > 0
-          ? `Merge: ${firstName} + ${moreCount} more`
-          : `Merge: ${firstName}`,
-    };
-  }
-
-  // Check for monster drops using junction table
-  const monsterSources = getMonsterSources(db, bookId);
-  if (monsterSources.length > 0) {
-    const monster = monsterSources[0];
-    const zoneName = getMonsterZone(db, monster.monster_id);
-    return {
-      type: "drop",
-      label: zoneName
-        ? `Drop: ${monster.monster_name} (${zoneName})`
-        : `Drop: ${monster.monster_name}`,
-      linkHref: `/monsters/${monster.monster_id}`,
-    };
-  }
-
-  // Check for quest rewards using junction table
-  const questSources = getQuestSources(db, bookId);
-  // Filter to just rewards, not provided items
-  const rewardQuests = questSources.filter((q) => q.source_type === "reward");
-  if (rewardQuests.length > 0) {
-    const quest = rewardQuests[0];
-    return {
-      type: "quest",
-      label: `Quest: ${quest.quest_name}`,
-      linkHref: `/quests/${quest.quest_id}`,
-    };
-  }
-
   return {
-    type: "unknown",
-    label: "Unknown",
+    profession,
+    books,
   };
-}
-
-function getMonsterZone(
-  db: Database.Database,
-  monsterId: string,
-): string | null {
-  const result = db
-    .prepare(
-      `
-    SELECT zone_bestiary
-    FROM monsters
-    WHERE id = ?
-  `,
-    )
-    .get(monsterId) as { zone_bestiary: string | null } | undefined;
-
-  return result?.zone_bestiary || null;
-}
+};

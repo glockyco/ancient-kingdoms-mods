@@ -7,4 +7,5 @@ public class ScribingTableData
     public string zone_id { get; set; }
     public string sub_zone_id { get; set; }
     public Position position { get; set; }
+    public System.Collections.Generic.List<RecipeOfferData> recipe_offers { get; set; } = new();
 }

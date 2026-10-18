@@ -1,10 +1,9 @@
 import type Database from "better-sqlite3";
-import {
-  getItemSourceSummaries,
-  getMinimumSourceLevel,
-  groupItemSourceSummaries,
-  type ItemSourceSummary,
-} from "$lib/server/item-source-summary";
+import { loadItemAcquisition, loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import type { AcquisitionRows, MethodView } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 interface FishingSpot {
   id: string;
@@ -51,7 +50,7 @@ interface FishingEquipmentItem {
 }
 
 interface FishingRodItem extends FishingEquipmentItem {
-  sources: ItemSourceSummary[];
+  sources: readonly MethodView[];
   min_source_level: number | null;
 }
 
@@ -106,6 +105,10 @@ export interface FishingPageData {
   costumePieces: FishingEquipmentItem[];
   foods: FishRecipe[];
   potions: FishRecipe[];
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
+  spotMethods: readonly MethodView[];
+  spotAcquisitionRows: AcquisitionRows;
   stats: {
     spot_count: number;
     fish_count: number;
@@ -115,7 +118,9 @@ export interface FishingPageData {
   };
 }
 
-export function loadFishingPageData(db: Database.Database): FishingPageData {
+export async function loadFishingPageData(
+  db: Database.Database,
+): Promise<FishingPageData> {
   const profession = db
     .prepare(
       `
@@ -154,22 +159,37 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     }
   >;
 
+  const spotAcquisition = await loadAcquisition(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    {
+      kind: "providers",
+      providers: spotRows.map((spot) => ({
+        kind: "resource_spawns",
+        id: spot.id,
+      })),
+    },
+  );
+
   const dropRows = db
     .prepare(
       `
       SELECT
-        isg.resource_id,
+        DISTINCT detail.resource_id,
         i.id AS item_id,
         i.name AS item_name,
         i.quality,
         i.tooltip_html,
-        isg.drop_rate AS configured_drop_rate,
-        isg.actual_drop_chance
-      FROM item_sources_gather isg
-      JOIN gathering_resources gr ON gr.id = isg.resource_id
-      JOIN items i ON i.id = isg.item_id
-      WHERE gr.is_fishing_spot = 1
-      ORDER BY gr.level, isg.actual_drop_chance DESC, i.name
+        entry.probability AS configured_drop_rate,
+        NULL AS actual_drop_chance
+      FROM acquisition_resource_details detail
+      JOIN acquisition_method_pools membership ON membership.method_id = detail.id
+      JOIN loot_pools pool ON pool.id = membership.pool_id AND pool.kind = 'fishing_primary'
+      JOIN loot_pool_entries entry ON entry.pool_id = pool.id
+      JOIN gathering_resources gr ON gr.id = detail.resource_id
+      JOIN items i ON i.id = entry.item_id
+      WHERE gr.is_fishing_spot = 1 AND entry.withheld = 0
+      ORDER BY gr.level, configured_drop_rate DESC, i.name
     `,
     )
     .all() as Array<FishDrop & { resource_id: string }>;
@@ -178,13 +198,14 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     .prepare(
       `
       SELECT
-        f.item_id,
+        entry.item_id,
         i.name AS item_name,
         i.quality,
         i.tooltip_html
-      FROM fish f
-      JOIN items i ON i.id = f.item_id
-      WHERE f.is_trash = 1
+      FROM loot_pool_entries entry
+      JOIN loot_pools pool ON pool.id = entry.pool_id AND pool.kind = 'fishing_trash'
+      JOIN items i ON i.id = entry.item_id
+      WHERE entry.withheld = 0
       ORDER BY i.quality, i.name
     `,
     )
@@ -194,13 +215,14 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     .prepare(
       `
       SELECT
-        f.item_id,
+        entry.item_id,
         i.name AS item_name,
         i.quality,
         i.tooltip_html
-      FROM fish f
-      JOIN items i ON i.id = f.item_id
-      WHERE f.is_trash = 0
+      FROM loot_pool_entries entry
+      JOIN loot_pools pool ON pool.id = entry.pool_id AND pool.kind = 'fishing_fallback'
+      JOIN items i ON i.id = entry.item_id
+      WHERE entry.withheld = 0
       ORDER BY i.quality, i.name
     `,
     )
@@ -227,20 +249,29 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     )
     .all() as FishingEquipmentItem[];
 
-  const sourcesByRodId = groupItemSourceSummaries(
-    getItemSourceSummaries(
-      db,
-      rodRows.map((rod) => rod.item_id),
+  const acquisition = await loadItemAcquisition(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    rodRows.map((rod) => rod.item_id),
+  );
+  const rods = rodRows.map((rod) => ({
+    ...rod,
+    min_source_level: acquisition.sources[rod.item_id].sourceLevelHint,
+    sources: acquisition.sources[rod.item_id].methods,
+  }));
+  const acquisitionItems = await loadAcquisitionItems(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    acquisition.model,
+  );
+  Object.assign(
+    acquisitionItems,
+    await loadAcquisitionItems(
+      async (sql, params) =>
+        db.prepare(sql).all(...params) as Record<string, unknown>[],
+      spotAcquisition,
     ),
   );
-  const rods = rodRows.map((rod) => {
-    const sources = sourcesByRodId.get(rod.item_id) ?? [];
-    return {
-      ...rod,
-      min_source_level: getMinimumSourceLevel(sources),
-      sources,
-    };
-  });
 
   const costumePieces = db
     .prepare(
@@ -271,16 +302,17 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
         ingredient.name AS ingredient_item_name,
         ingredient.tooltip_html AS ingredient_tooltip_html,
         ingredient.quality AS ingredient_quality,
-        iur.amount AS ingredient_amount,
+        input.amount AS ingredient_amount,
         result.food_buff_id AS effect_skill_id,
         result.food_buff_name AS effect_skill_name
-      FROM item_usages_recipe iur
-      JOIN fish f ON f.item_id = iur.item_id
-      JOIN crafting_recipes cr ON cr.id = iur.recipe_id
-      JOIN items result ON result.id = cr.result_item_id
-      JOIN items ingredient ON ingredient.id = iur.item_id
-      WHERE iur.recipe_type = 'crafting'
-        AND cr.station_type = 'cooking'
+      FROM acquisition_inputs input
+      JOIN acquisition_cost_groups cost ON cost.id = input.cost_group_id
+      JOIN acquisition_recipe_details detail ON detail.id = cost.method_id
+      JOIN fish f ON f.item_id = input.item_id
+      JOIN crafting_recipes cr ON cr.id = detail.crafting_recipe_id
+      JOIN items result ON result.id = detail.declared_result_item_id
+      JOIN items ingredient ON ingredient.id = input.item_id
+      WHERE detail.display_kind = 'cooking' AND input.withheld = 0
       ORDER BY result.quality, result.name, ingredient.name
     `,
     )
@@ -299,15 +331,17 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
         ingredient.name AS ingredient_item_name,
         ingredient.tooltip_html AS ingredient_tooltip_html,
         ingredient.quality AS ingredient_quality,
-        iur.amount AS ingredient_amount,
+        input.amount AS ingredient_amount,
         result.potion_buff_id AS effect_skill_id,
         result.potion_buff_name AS effect_skill_name
-      FROM item_usages_recipe iur
-      JOIN fish f ON f.item_id = iur.item_id
-      JOIN alchemy_recipes ar ON ar.id = iur.recipe_id
-      JOIN items result ON result.id = ar.result_item_id
-      JOIN items ingredient ON ingredient.id = iur.item_id
-      WHERE iur.recipe_type = 'alchemy'
+      FROM acquisition_inputs input
+      JOIN acquisition_cost_groups cost ON cost.id = input.cost_group_id
+      JOIN acquisition_recipe_details detail ON detail.id = cost.method_id
+      JOIN fish f ON f.item_id = input.item_id
+      JOIN alchemy_recipes ar ON ar.id = detail.alchemy_recipe_id
+      JOIN items result ON result.id = detail.declared_result_item_id
+      JOIN items ingredient ON ingredient.id = input.item_id
+      WHERE detail.display_kind = 'alchemy' AND input.withheld = 0
       ORDER BY result.quality, result.name, ingredient.name
     `,
     )
@@ -352,6 +386,13 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     costumePieces,
     foods,
     potions,
+    acquisitionItems,
+    acquisitionNames: {
+      ...projectAcquisitionNames(spotAcquisition),
+      ...projectAcquisitionNames(acquisition.model),
+    },
+    spotMethods: [...spotAcquisition.methodViews.values()],
+    spotAcquisitionRows: spotAcquisition.rows,
     stats: {
       spot_count: spots.reduce((total, spot) => total + spot.spawn_count, 0),
       fish_count: fishStats.fish_count,

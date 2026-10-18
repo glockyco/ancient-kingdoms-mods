@@ -1,6 +1,9 @@
 import type { RespawnInfo } from "./respawn";
 import type { NpcRoles } from "./npcs";
 import type { TrapType } from "$lib/constants/traps";
+import type { MethodView, RequirementRoot } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
+import type { PrimaryReward } from "$lib/utils/primary-rewards";
 
 /**
  * Zone data as displayed in the zones overview table
@@ -125,15 +128,14 @@ export interface ZoneChest {
   id: string;
   visual_public_path: string | null;
   respawn_time: number;
-  key_required_id: string | null;
-  key_required_name: string | null;
-  item_reward_id: string | null;
-  item_reward_name: string | null;
-  item_reward_amount: number;
-  gold_min: number;
-  gold_max: number;
-  /** The chest's reward probability. `chestRewardChance` says when it applies. */
-  chest_reward_probability: number;
+  requiredKeys: readonly {
+    itemId: string | null;
+    itemName: string | null;
+    withheld: boolean;
+  }[];
+  primaryRewards: readonly PrimaryReward[];
+  rewardProbabilities: readonly (number | null)[];
+  methods: readonly MethodView[];
   drop_count: number;
   position_x: number | null;
   position_y: number | null;
@@ -177,9 +179,19 @@ export interface ZoneDetailData {
   npcs: ZoneNpc[];
   gatherResources: ZoneGatherResource[];
   chests: ZoneChest[];
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
   traps: ZoneTrap[];
   altars: ZoneAltar[];
   connectedZones: ZoneConnection[];
+  portals: Array<{
+    id: string;
+    to_zone_id: string | null;
+    name: string | null;
+    is_closed: number;
+    destination_withheld: number;
+    requirements: readonly RequirementRoot[];
+  }>;
   subZones: ZoneSubZone[];
   renewalSage: ZoneRenewalSage | null;
 }

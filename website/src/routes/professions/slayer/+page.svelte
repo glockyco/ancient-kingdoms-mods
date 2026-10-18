@@ -9,6 +9,7 @@
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
   import Calculation from "$lib/components/Calculation.svelte";
   import { slayerMasteryCalculation } from "$lib/calculation/slayer";
   import {
@@ -69,7 +70,7 @@
     data.targets.map((target) => ({
       ...target,
       classification: getClassification(target),
-      zone_ids: [target.zone_id],
+      zone_ids: target.zone_id ? [target.zone_id] : [],
       requirement: requirementText(target),
     })),
   );
@@ -78,35 +79,31 @@
 
   const uniqueZones = $derived(
     Array.from(
-      new Map(data.targets.map((target) => [target.zone_id, target])).values(),
+      new Map(
+        data.targets
+          .filter((target) => target.zone_id !== null)
+          .map((target) => [target.zone_id, target]),
+      ).values(),
     ).sort((a, b) => a.zone_name.localeCompare(b.zone_name)),
   );
 
-  // Source: server-scripts/EventAltar.cs:201-213; server-scripts/DefaultEvent.cs:200-213 — altar activation starts the event that spawns each wave.
-  // Source: server-scripts/Monster.cs:695-706,2214-2234 — summonable monsters start hidden and wait for readiness.
-  // Source: server-scripts/Monster.cs:2905-2914 — a slain monster can spawn its configured placeholder.
   function requirementText(target: SlayerTarget): string {
-    if (target.spawn_type === "altar") {
-      const wave =
-        target.source_altar_wave !== null
-          ? `, wave ${target.source_altar_wave + 1}`
+    if (target.altar)
+      return `${target.altar.name}${target.altar.wave === null ? "" : `, wave ${target.altar.wave + 1}`}`;
+    if (target.parent) {
+      const chance =
+        target.parent.probability !== null && target.parent.probability < 1
+          ? ` (${formatPercent(target.parent.probability, { decimals: 0, trailingZeros: true })} chance)`
           : "";
-      return `${target.source_altar_name ?? "Altar"}${wave}`;
+      return `Appears near ${target.parent.name} after it is killed${chance}`;
     }
     if (target.spawn_type === "summon") {
-      const count = target.source_summon_kill_count ?? 1;
-      const plural = count > 1 ? "s" : "";
-      return count === 1
-        ? `Cannot spawn until ${target.source_summon_kill_monster_name} is dead`
-        : `Cannot spawn until its ${count} ${target.source_summon_kill_monster_name}${plural} are dead`;
-    }
-    if (target.spawn_type === "placeholder") {
-      const chance =
-        target.source_spawn_probability !== null &&
-        target.source_spawn_probability < 1
-          ? ` (${formatPercent(target.source_spawn_probability, { decimals: 0, trailingZeros: true })} chance)`
-          : "";
-      return `Appears after killing ${target.source_monster_name}${chance}`;
+      const names = target.guards.map((guard) =>
+        guard.withheld ? "an unpublished guard" : (guard.name ?? "a guard"),
+      );
+      return names.length
+        ? `Cannot spawn until the relevant group is dead: ${names.join(", ")}`
+        : "Requires the current summon event to be ready";
     }
     return "";
   }
@@ -244,7 +241,7 @@
       size={32}
       title={target.name}
       class="flex min-w-0 max-w-full"
-      nameClass="truncate"
+      nameClass="whitespace-normal break-words"
     />
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = target.level_min !== target.level_max}
@@ -254,55 +251,108 @@
     >
   {:else if cell.column.id === "map"}
     {#if target.position_x !== null && target.position_y !== null}
-      <MapLink entityId={target.id} entityType="monster" compact />
+      <MapLink
+        entityId={target.altar?.id ?? target.id}
+        entityType={target.altar ? "altar" : "monster"}
+        compact
+      />
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "zones"}
-    <a
-      href="/zones/{target.zone_id}"
-      class="block truncate text-blue-600 hover:underline dark:text-blue-400"
-      title={target.zone_name}
-    >
-      {target.zone_name}
-    </a>
+    {#if target.zone_id}
+      <a
+        href="/zones/{target.zone_id}"
+        class="block truncate text-blue-600 hover:underline dark:text-blue-400"
+        title={target.zone_name}>{target.zone_name}</a
+      >
+    {:else}
+      <span class="text-muted-foreground">{target.zone_name}</span>
+    {/if}
   {:else if cell.column.id === "requirement"}
-    <span class="block truncate" title={target.requirement}>
-      {#if target.spawn_type === "altar"}
+    <div class="space-y-1">
+      {#if target.altar}
         <a
-          href="/altars/{target.source_altar_id}"
+          href="/altars/{target.altar.id}"
           class="text-blue-600 hover:underline dark:text-blue-400"
-          >{target.source_altar_name}</a
-        >{#if target.source_altar_wave !== null}, wave {target.source_altar_wave +
-            1}{/if}
-      {:else if target.spawn_type === "summon"}
-        Cannot spawn until {(target.source_summon_kill_count ?? 1) > 1
-          ? `its ${target.source_summon_kill_count}`
-          : ""}
-        <a
-          href="/monsters/{target.source_summon_kill_monster_id}"
+          >{target.altar.name}</a
+        >{#if target.altar.wave !== null}, wave {target.altar.wave + 1}{/if}
+      {:else if target.parent}
+        Appears near <a
+          href="/monsters/{target.parent.id}"
           class="text-blue-600 hover:underline dark:text-blue-400"
-          >{target.source_summon_kill_monster_name}{(target.source_summon_kill_count ??
-            1) > 1
-            ? "s"
-            : ""}</a
+          >{target.parent.name}</a
         >
-        {(target.source_summon_kill_count ?? 1) > 1 ? "are" : "is"} dead
-      {:else if target.spawn_type === "placeholder"}
-        Appears after killing
-        <a
-          href="/monsters/{target.source_monster_id}"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >{target.source_monster_name}</a
-        >{#if target.source_spawn_probability !== null && target.source_spawn_probability < 1}
-          ({formatPercent(target.source_spawn_probability, {
+        after it is killed{#if target.parent.probability !== null && target.parent.probability < 1}
+          ({formatPercent(target.parent.probability, {
             decimals: 0,
             trailingZeros: true,
           })} chance){/if}
-      {:else}
-        <span class="text-muted-foreground">-</span>
+      {:else if target.spawn_type === "summon"}
+        {@const guardGroups = [
+          ...Map.groupBy(
+            target.guards,
+            (guard) => guard.monsterId ?? guard.name,
+          ).values(),
+        ]}
+        <span>
+          The event must be ready. These guards must be dead in the current
+          world:
+        </span>
+        <ul class="list-inside list-disc">
+          {#each guardGroups as guards (guards[0].id)}
+            {@const guard = guards[0]}
+            <li>
+              {#if guard.monsterId}<a
+                  href="/monsters/{guard.monsterId}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{guard.name}</a
+                >{:else}Unpublished guard{/if}{#if guards.length > 1}
+                ×{guards.length}{/if}
+            </li>
+          {/each}
+        </ul>
       {/if}
-    </span>
+      {#if target.spawn_type !== "summon"}
+        <Requirements
+          roots={target.requirements}
+          names={data.acquisitionNames}
+        />
+      {/if}
+      {#if target.altarVariants.length > 1}
+        <details class="pt-2 whitespace-normal">
+          <summary class="cursor-pointer text-sm">Altar tiers</summary>
+          <p class="mt-2 text-sm text-muted-foreground">
+            Activating player's level plus total veteran points:
+          </p>
+          <ul class="mt-2 space-y-1 text-sm">
+            {#each target.altarVariants as method (method.methodId)}
+              {@const tierRoot = method.requirements.find(
+                (root) =>
+                  root.expression.kind === "predicate" &&
+                  root.expression.predicate.kind === "altar_tier",
+              )}
+              {#if tierRoot?.expression.kind === "predicate" && tierRoot.expression.predicate.kind === "altar_tier"}
+                {@const tier = tierRoot.expression.predicate}
+                <li>
+                  Tier {tier.tier + 1}: {tier.maximumScore === null
+                    ? `${tier.minimumScore} or more`
+                    : `${tier.minimumScore} to ${tier.maximumScore}`}
+                </li>
+              {/if}
+            {/each}
+          </ul>
+          <a
+            href="/monsters/{target.id}"
+            class="mt-2 block text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >Full loot</a
+          >
+        </details>
+      {/if}
+      {#if !target.requirement && !target.requirements.length}<span
+          class="text-muted-foreground">-</span
+        >{/if}
+    </div>
   {:else if isRespawnColumn(cell.column.id)}
     <RespawnCells columnId={cell.column.id} row={target} />
   {:else if cell.column.id === "classification" || cell.column.id === "zone_ids"}
@@ -332,10 +382,9 @@
     <DataTableFacetedFilter
       column={zoneIdsCol}
       title="Zone"
-      options={uniqueZones.map((zone) => ({
-        label: zone.zone_name,
-        value: zone.zone_id,
-      }))}
+      options={uniqueZones.flatMap((zone) =>
+        zone.zone_id ? [{ label: zone.zone_name, value: zone.zone_id }] : [],
+      )}
     />
   {/if}
   {#if levelCol}
@@ -345,7 +394,7 @@
 
 <Seo
   title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`Slayer reduces the damage that bosses and elites deal to you, up to 10% at full mastery. All ${data.targets.length} Slayer targets with levels, zones, spawn requirements, and respawn times.`}
+  description={`Slayer reduces the damage that bosses and elites deal to you, up to 10% at full mastery. All ${new Set(data.targets.map((target) => target.id)).size} Slayer targets with levels, zones, spawn requirements, and respawn times.`}
   path="/professions/slayer"
 />
 

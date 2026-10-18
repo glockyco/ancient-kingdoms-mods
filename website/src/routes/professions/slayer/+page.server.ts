@@ -6,4 +6,5 @@ import {
 
 export const prerender = true;
 
-export const load: PageServerLoad = (): SlayerPageData => getSlayerPageData();
+export const load: PageServerLoad = async (): Promise<SlayerPageData> =>
+  getSlayerPageData();

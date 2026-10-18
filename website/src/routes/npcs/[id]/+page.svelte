@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import {
     formatPercent,
     formatNumber,
@@ -26,7 +28,6 @@
   import type {
     NpcQuestOffered,
     NpcItemSold,
-    NpcDrop,
     NpcSpawnLocation,
   } from "$lib/types/npcs";
   import {
@@ -144,9 +145,14 @@
   const showRespawnColumn = $derived(data.npc.respawn_time > 0);
   const showChanceColumn = $derived(data.npc.respawn_probability < 1);
 
-  // Check if any items have faction requirements
   const hasItemFactionRequirements = $derived(
-    data.itemsSold.some((item) => item.faction_required > 0),
+    data.itemsSold.some(
+      (item) =>
+        item.method.requirements.length > 0 ||
+        item.method.providers.some(
+          (provider) => provider.requirements.length > 0,
+        ),
+    ),
   );
 
   // Check if any quests have class requirements (for conditional column)
@@ -240,9 +246,9 @@
     if (hasItemFactionRequirements) {
       cols.push({
         id: "reputation",
-        header: "Reputation",
-        size: 180,
-        accessorFn: (row) => row.faction_required,
+        header: "Requirements",
+        size: 260,
+        accessorFn: (row) => row.method.requirements.length,
       });
     }
 
@@ -263,20 +269,6 @@
 
     return cols;
   });
-
-  // Drop columns
-  const dropColumns: ColumnDef<NpcDrop>[] = [
-    {
-      accessorKey: "item_name",
-      header: "Item",
-      minSize: 300,
-    },
-    {
-      accessorKey: "rate",
-      header: "Drop Rate",
-      size: 120,
-    },
-  ];
 
   // Spawn columns (dynamic based on NPC properties)
   const spawnColumns = $derived.by(() => {
@@ -328,6 +320,10 @@
     >
       {row.original.name}
     </a>
+    <Requirements
+      roots={row.original.requirements}
+      names={data.acquisitionNames}
+    />
   {:else if cell.column.id === "class"}
     <ClassPills
       classes={(row.original.class_requirements || []).map((c) =>
@@ -393,16 +389,15 @@
       <span class="text-yellow-600 dark:text-yellow-400">Gold</span>
     {/if}
   {:else if cell.column.id === "reputation"}
-    {#if row.original.faction_required > 0}
-      <span class="text-purple-600 dark:text-purple-400">
-        {row.original.faction_tier_name ?? "Required"}
-        <span class="text-muted-foreground font-normal"
-          >({formatNumber(row.original.faction_required)})</span
-        >
-      </span>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
+    <Requirements
+      roots={[
+        ...row.original.method.requirements,
+        ...row.original.method.providers.flatMap(
+          (provider) => provider.requirements,
+        ),
+      ]}
+      names={data.acquisitionNames}
+    />
   {:else}
     {cell.getValue()}
   {/if}
@@ -414,42 +409,6 @@
   header: Header<NpcItemSold, unknown>;
 })}
   {#if header.id === "price"}
-    <span class="ml-auto">{header.column.columnDef.header}</span>
-  {:else}
-    {header.column.columnDef.header}
-  {/if}
-{/snippet}
-
-{#snippet renderDropCell({
-  cell,
-  row,
-}: {
-  cell: Cell<NpcDrop, unknown>;
-  row: Row<NpcDrop>;
-})}
-  {#if cell.column.id === "item_name"}
-    <ItemLink
-      itemId={row.original.item_id}
-      itemName={row.original.item_name}
-      tooltipHtml={row.original.tooltip_html}
-      imageAvailable={row.original.visual_public_path}
-      variant="reference"
-      fallback={Package}
-    />
-  {:else if cell.column.id === "rate"}
-    <span class="ml-auto"
-      >{formatPercent(row.original.rate, {
-        decimals: 1,
-        trailingZeros: true,
-      })}</span
-    >
-  {:else}
-    {cell.getValue()}
-  {/if}
-{/snippet}
-
-{#snippet renderDropHeader({ header }: { header: Header<NpcDrop, unknown> })}
-  {#if header.id === "rate"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -865,46 +824,28 @@
     </section>
   {/if}
 
-  <!-- Item Drops Section -->
-  {#if data.drops.length > 0 || data.npc.gold_max > 0}
+  <!-- Gold Drops Section -->
+  {#if data.npc.gold_max > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
         Loot
       </h2>
-      <!-- Gold Drop (if any) -->
-      {#if data.npc.gold_max > 0}
-        <div class="mt-4 pt-4 border-t">
-          <div class="text-sm text-muted-foreground mb-1">Gold drop</div>
-          <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {formatNumber(data.npc.gold_min)} - {formatNumber(
-              data.npc.gold_max,
-            )}
-            gold
-            {#if data.npc.probability_drop_gold < 1}
-              <span class="text-muted-foreground font-normal">
-                ({formatPercent(data.npc.probability_drop_gold, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })} chance)
-              </span>
-            {/if}
-          </div>
+      <div class="mt-4 pt-4 border-t">
+        <div class="text-sm text-muted-foreground mb-1">Gold drop</div>
+        <div class="font-medium text-yellow-600 dark:text-yellow-400">
+          {formatNumber(data.npc.gold_min)} - {formatNumber(data.npc.gold_max)}
+          gold
+          {#if data.npc.probability_drop_gold < 1}
+            <span class="text-muted-foreground font-normal">
+              ({formatPercent(data.npc.probability_drop_gold, {
+                decimals: 1,
+                trailingZeros: true,
+              })} chance)
+            </span>
+          {/if}
         </div>
-      {/if}
-      {#if data.drops.length > 0}
-        <DataTable
-          data={data.drops}
-          columns={dropColumns}
-          renderCell={renderDropCell}
-          renderHeader={renderDropHeader}
-          initialSorting={[{ id: "rate", desc: true }]}
-          urlKey="npc-{data.npc.id}-drops"
-          pageSize={10}
-          zebraStripe={true}
-          class="bg-muted/30"
-        />
-      {/if}
+      </div>
     </section>
   {/if}
 
@@ -950,6 +891,18 @@
         zebraStripe={true}
         class="bg-muted/30"
       />
+      <details class="mt-4 rounded-md border bg-muted/30 p-4">
+        <summary class="cursor-pointer font-medium"
+          >Purchase requirements, costs and delivery</summary
+        >
+        <div class="mt-4">
+          <MethodList
+            methods={data.itemsSold.map((item) => item.method)}
+            items={data.acquisitionItems}
+            names={data.acquisitionNames}
+          />
+        </div>
+      </details>
     </section>
   {/if}
 

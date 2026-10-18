@@ -98,7 +98,7 @@
       id: "quest_giver",
       header: "Quest Giver",
       size: 220,
-      accessorFn: (row) => row.quest_giver_name || "",
+      accessorFn: (row) => row.quest_givers.map((npc) => npc.name).join(", "),
     },
     {
       id: "class",
@@ -203,7 +203,7 @@
   {#if cell.column.id === "name"}
     <a
       href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
     >
       {row.original.name}
     </a>
@@ -228,21 +228,15 @@
       classes={row.original.class_requirements.map((c) => c.toLowerCase())}
     />
   {:else if cell.column.id === "quest_giver"}
-    {#if row.original.quest_giver_id}
+    {#each row.original.quest_givers as npc, index (npc.id)}
+      {#if index > 0}<span class="text-muted-foreground">, </span>{/if}
       <a
-        href="/npcs/{row.original.quest_giver_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+        href="/npcs/{npc.id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline">{npc.name}</a
       >
-        {row.original.quest_giver_name}
-      </a>
-      {#if row.original.quest_giver_count > 1}
-        <span class="text-muted-foreground ml-1"
-          >+{row.original.quest_giver_count - 1} more</span
-        >
-      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/if}
+    {/each}
   {:else if cell.column.id === "display_type_filter" || cell.column.id === "flags_filter"}
     <!-- Hidden filter columns -->
   {:else}

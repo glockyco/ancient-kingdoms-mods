@@ -18,8 +18,8 @@
 
 ## 4. Verification prerequisites
 
-- [ ] 4.1 Coordinate acquisition's remaining boss-loot/fragment acceptance with `ancient-kingdoms-sim` and the later D6 stat-sheet contract separately. Reuse source-bound acquisition and archived altar evidence where applicable. Acquisition acceptance does not complete D6 verification.
-- [ ] 4.2 Confirm new or changed published game-behavior claims through D15 and record evidence in their owning follow-up change. Use acquisition's implementation checkpoint for its completed observations and open acceptance gates. Preserve valid earlier evidence for unchanged rules without treating implementation as accepted completion.
+- [x] 4.1 Accept acquisition's source-bound independent analytic adapter evidence after integration-owner review through its task 4.1. Native placement/fragment observations are complete. Equal SQLite results remain a different proof. The later D6 stat-sheet contract remains separate.
+- [ ] 4.2 Accept acquisition's production publication cutover through its owning tasks. Native, analytic, quest-role, pipeline and reviewed UI units retain their source boundaries. The successful build pair does not accept later source repairs. Acquisition owns the final header/overscroll verification, renewed publication seed and deployable builds, built preview, recovery and atomic commits. Future changed claims still require D15 evidence in their own change.
 - [ ] 4.3 Triage the unconfirmed suspected game defects with the game-defect-reports skill.
 
 ## 5. Spikes
@@ -34,7 +34,7 @@ Each follow-up change cites this design by decision number and lists the facts i
 
 - [x] 6.1 Stat vocabulary (D2): `unify-stat-vocabulary`, with the item list fix. Archived as `2026-10-17-unify-stat-vocabulary`.
 - [x] 6.2 Game rules (D5): `unify-game-rules`, with the altar tier, primal essence, item level and chest fixes. Archived as `2026-10-17-unify-game-rules`.
-- [x] 6.3 Propose acquisition, usage and requirements (D3, D4) as `unify-acquisition-usage-requirements`, reconciling landed fixes, input gaps, NPC membership and inherited popup scope. Its approved implementation and verification are tracked in that change's `tasks.md`.
+- [x] 6.3 Propose acquisition, usage and requirements (D3, D4) as `unify-acquisition-usage-requirements`, reconciling input gaps, NPC membership and inherited popup scope. Proposal completion is not implementation acceptance. Its tasks own the accepted development corrections and remaining production-build, preview and publication gates.
 - [ ] 6.4 Propose and implement the remaining shared read models and relation components (D7) after acquisition acceptance. Consume its canonical relation boundary and transfer the uncompleted altar domain and architecture-boundary work from `consolidate-server-read-models`.
 - [ ] 6.5 Character model, store and share links (D6, D13, D14).
 - [ ] 6.6 Propose reference kinds: stats, effects with full applier/parameter coverage and mechanic definitions, armor sets, races and crafting stations (D2, D3, D9).

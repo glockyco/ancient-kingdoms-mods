@@ -12,12 +12,15 @@ from pathlib import Path
 
 from rich.console import Console
 
-from compendium.db import insert_model, serialize_value
+from compendium.db import insert_acquisition_input, insert_model, serialize_value
 from compendium.models import (
     AchievementData,
+    AlchemyRecipeData,
     AlchemyTableData,
     ClassData,
+    CraftingRecipeData,
     CraftingStationData,
+    GameConfigData,
     GatherItemData,
     HouseData,
     ItemData,
@@ -26,6 +29,7 @@ from compendium.models import (
     ProfessionData,
     ProgressionExportData,
     QuestData,
+    ScribingRecipeData,
     ScribingTableData,
     SkillData,
     StatCatalogData,
@@ -672,127 +676,13 @@ def load_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
 
 
 def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load items into database.
-
-    Also populates junction tables for item container relationships:
-    - item_sources_pack (pack contents)
-    - item_sources_random (random item pools)
-    - chest_item_rewards (ordered chest rolls)
-    - item_sources_merge (merge recipe components)
-    - item_sources_treasure_map (treasure map rewards)
-    """
-    console.print("Loading items...")
-
-    filepath = export_dir / "items.json"
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    items = [ItemData(**item) for item in data]
-
+    """Load item definitions and preserve ordered private acquisition inputs."""
+    with open(export_dir / "items.json", encoding="utf-8") as f:
+        items = [ItemData.model_validate(item) for item in json.load(f)]
     cursor = conn.cursor()
-    # Defer FK checks for self-referential item foreign keys
     cursor.execute("PRAGMA defer_foreign_keys = ON")
-
-    # Clear junction tables that will be repopulated
-    cursor.execute("DELETE FROM item_sources_pack")
-    cursor.execute("DELETE FROM item_sources_random")
-    cursor.execute("DELETE FROM item_sources_merge")
-    cursor.execute("DELETE FROM chest_item_rewards")
-
-    # Track items with treasure map rewards for later processing
-    # (treasure_locations table doesn't exist yet at this point)
-    treasure_map_items: list[tuple[str, str]] = []
-
-    # Track counts for logging
-    pack_count = 0
-    random_count = 0
-    merge_count = 0
-
-    # Track seen merge recipes to avoid duplicates
-    # (multiple component items may reference the same merge result)
-    seen_merge_recipes: set[str] = set()
-
     for item in items:
-        # Normalize class names to lowercase for consistent querying
-        item.class_required = [c.lower() for c in item.class_required]
-        # Insert main item record (insert_model only inserts fields that match schema)
         insert_model(cursor, "items", item)
-
-        for roll_order, reward in enumerate(item.chest_rewards):
-            cursor.execute(
-                """
-                INSERT INTO chest_item_rewards (
-                    chest_item_id, item_id, roll_order, roll_chance,
-                    scales_with_treasure_hunter
-                ) VALUES (?, ?, ?, ?, ?)
-                """,
-                (
-                    item.id,
-                    reward.item_id,
-                    roll_order,
-                    reward.probability,
-                    reward.scales_with_treasure_hunter,
-                ),
-            )
-
-        # Populate junction tables from forward relationships
-        # These fields exist in ItemData model but not in items table schema
-
-        # 1. Pack contents: item.pack_final_item_id → item_sources_pack
-        if item.pack_final_item_id:
-            cursor.execute(
-                "INSERT INTO item_sources_pack (item_id, pack_item_id, amount) VALUES (?, ?, ?)",
-                (item.pack_final_item_id, item.id, item.pack_final_amount),
-            )
-            pack_count += 1
-
-        # 2. Random item pools: item.random_items[] → item_sources_random
-        if item.random_items:
-            item_count = len(item.random_items)
-            probability = 1.0 / item_count if item_count > 0 else 0.0
-            for random_item_id in item.random_items:
-                cursor.execute(
-                    "INSERT INTO item_sources_random (item_id, random_item_id, probability) VALUES (?, ?, ?)",
-                    (random_item_id, item.id, probability),
-                )
-            random_count += 1
-
-        # 3. Merge recipes: item.merge_items_needed_ids[] → item_sources_merge
-        #    Track merge recipes by their result item ID to avoid duplicates
-        #    (multiple component items may reference the same merge recipe)
-        if (
-            item.merge_items_needed_ids
-            and item.merge_result_item_id
-            and item.merge_result_item_id not in seen_merge_recipes
-        ):
-            seen_merge_recipes.add(item.merge_result_item_id)
-            for component_id in item.merge_items_needed_ids:
-                cursor.execute(
-                    "INSERT INTO item_sources_merge (item_id, component_item_id) VALUES (?, ?)",
-                    (item.merge_result_item_id, component_id),
-                )
-            merge_count += 1
-
-        # 4. Treasure maps: defer until treasure_locations table is loaded
-        if item.treasure_map_reward_id:
-            treasure_map_items.append((item.id, item.treasure_map_reward_id))
-
-    conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(items)} items")
-    if pack_count > 0 or random_count > 0 or merge_count > 0:
-        console.print(
-            f"  [green]OK[/green] Populated junction tables: {pack_count} packs, {random_count} random, {merge_count} merge"
-        )
-
-    # Store treasure map data for later processing
-    # Will be populated by load_treasure_locations() after that table exists
-    cursor.execute(
-        "CREATE TEMP TABLE IF NOT EXISTS pending_treasure_maps (map_id TEXT, reward_id TEXT)"
-    )
-    for map_id, reward_id in treasure_map_items:
-        cursor.execute(
-            "INSERT INTO pending_treasure_maps VALUES (?, ?)", (map_id, reward_id)
-        )
     conn.commit()
 
 
@@ -925,12 +815,7 @@ def load_quests(conn: sqlite3.Connection, export_dir: Path) -> None:
     quests = [QuestData(**item) for item in data]
 
     cursor = conn.cursor()
-    # Defer FK checks for self-referential predecessor_id
-    cursor.execute("PRAGMA defer_foreign_keys = ON")
-
     for quest in quests:
-        # Normalize class names to lowercase for consistent querying
-        quest.class_requirements = [c.lower() for c in quest.class_requirements]
         insert_model(cursor, "quests", quest)
 
     conn.commit()
@@ -953,34 +838,15 @@ def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
     for loc in locations:
         insert_model(cursor, "treasure_locations", loc)
 
-    # Process pending treasure map items now that treasure_locations exists
-    # Build lookup dict: required_map_id -> treasure_location.id
-    treasure_location_lookup: dict[str, str] = {}
-    for loc in locations:
-        if loc.required_map_id:
-            treasure_location_lookup[loc.required_map_id] = loc.id
-
-    # Populate item_sources_treasure_map from pending items
-    pending = cursor.execute(
-        "SELECT map_id, reward_id FROM pending_treasure_maps"
-    ).fetchall()
-    for map_id, reward_id in pending:
-        location_id = treasure_location_lookup.get(map_id)
-        cursor.execute(
-            "INSERT INTO item_sources_treasure_map (item_id, map_item_id, treasure_location_id) VALUES (?, ?, ?)",
-            (reward_id, map_id, location_id),
-        )
-
-    # Clean up temp table
-    cursor.execute("DROP TABLE IF EXISTS pending_treasure_maps")
+    # Acquisition normalization resolves every configured map/location association.
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(locations)} treasure locations")
 
 
 def _gather_drop_pool(resource: GatherItemData) -> tuple[tuple[str, float], ...]:
-    """Return the sorted exported drop pool used for resource consistency checks."""
-    return tuple(sorted((drop.item_id, drop.rate) for drop in resource.random_drops))
+    """Preserve authored pool order in complete-definition consistency checks."""
+    return tuple((drop.item_id, drop.rate) for drop in resource.random_drops)
 
 
 def _validate_exported_resource_ids(gather_items: list[GatherItemData]) -> None:
@@ -1037,10 +903,8 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     cursor = conn.cursor()
 
-    # Clear junction tables that will be repopulated
-    # (random drops from this loader + guaranteed drops from denormalizer)
-    cursor.execute("DELETE FROM item_sources_gather")
-    cursor.execute("DELETE FROM item_sources_chest")
+    for gather_item in gather_items:
+        insert_acquisition_input(cursor, "gathering", gather_item)
 
     # Deduplicate only by the canonical resource_id assigned by the exporter.
     chests = []
@@ -1088,8 +952,6 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             "respawn_time": resource.respawn_time,
             "spawn_ready": resource.spawn_ready,
             "prob_despawn": resource.prob_despawn,
-            "item_reward_id": resource.item_reward_id,
-            "item_reward_amount": resource.item_reward_amount,
             "decrease_faction": resource.decrease_faction,
             "description": resource.description,
         }
@@ -1098,13 +960,6 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         placeholders = ", ".join(["?"] * len(values))
         sql = f"INSERT INTO gathering_resources ({columns}) VALUES ({placeholders})"
         cursor.execute(sql, tuple(values.values()))
-
-        # Insert random drops into junction table
-        for drop in resource.random_drops:
-            cursor.execute(
-                "INSERT INTO item_sources_gather (item_id, resource_id, drop_rate) VALUES (?, ?, ?)",
-                (drop.item_id, resource_id, drop.rate),
-            )
 
     # Insert gathering resource spawns using the exported canonical ID directly.
     for spawn in resource_spawns:
@@ -1133,16 +988,6 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             "name": chest.name,
             "zone_id": chest.zone_id,
             "sub_zone_id": chest.sub_zone_id,
-            "key_required_id": chest.tool_required_id,  # tool_required_id is the key for chests
-            "gold_min": chest.gold_min,
-            "gold_max": chest.gold_max,
-            "item_reward_id": chest.item_reward_id,
-            "item_reward_amount": chest.item_reward_amount,
-            # Game uses 0 = guaranteed (100%), >0 = actual probability
-            # Convert to standard: 0 = 0%, 1 = 100%
-            "chest_reward_probability": 1.0
-            if chest.chest_reward_probability == 0
-            else chest.chest_reward_probability,
             "respawn_time": chest.respawn_time,
             "decrease_faction": chest.decrease_faction,
         }
@@ -1157,53 +1002,6 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         placeholders = ", ".join(["?"] * len(values))
         sql = f"INSERT INTO chests ({columns}) VALUES ({placeholders})"
         cursor.execute(sql, tuple(values.values()))
-
-        # Insert random drops into junction table
-        for drop in chest.random_drops:
-            cursor.execute(
-                "INSERT INTO item_sources_chest (item_id, chest_id, drop_rate) VALUES (?, ?, ?)",
-                (drop.item_id, chest.id, drop.rate),
-            )
-
-    # Calculate actual drop chances for gathering resource drops
-    # Game logic: picks ONE random drop uniformly, then rolls its probability
-    # Actual drop chance = (1 / num_drops) * drop_rate
-    console.print("  Calculating actual drop chances for gathering resources...")
-    cursor.execute("""
-        SELECT resource_id, COUNT(*) as num_drops
-        FROM item_sources_gather
-        GROUP BY resource_id
-    """)
-
-    for resource_id, num_drops in cursor.fetchall():
-        selection_probability = 1.0 / num_drops
-        cursor.execute(
-            """
-            UPDATE item_sources_gather
-            SET actual_drop_chance = drop_rate * ?
-            WHERE resource_id = ?
-        """,
-            (selection_probability, resource_id),
-        )
-
-    # Calculate actual drop chances for chest drops using same logic
-    console.print("  Calculating actual drop chances for chests...")
-    cursor.execute("""
-        SELECT chest_id, COUNT(*) as num_drops
-        FROM item_sources_chest
-        GROUP BY chest_id
-    """)
-
-    for chest_id, num_drops in cursor.fetchall():
-        selection_probability = 1.0 / num_drops
-        cursor.execute(
-            """
-            UPDATE item_sources_chest
-            SET actual_drop_chance = drop_rate * ?
-            WHERE chest_id = ?
-        """,
-            (selection_probability, chest_id),
-        )
 
     conn.commit()
     console.print(
@@ -1229,12 +1027,26 @@ def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
     placeholder_count = 0
 
     for trigger in triggers:
+        if trigger.summoned_entity_type == "Monster":
+            target = cursor.execute(
+                "SELECT monster_id FROM monster_spawns WHERE id=?",
+                (trigger.summoned_monster_spawn_id,),
+            ).fetchone()
+        else:
+            target = cursor.execute(
+                "SELECT npc_id FROM npc_spawns WHERE id=?",
+                (trigger.summoned_npc_spawn_id,),
+            ).fetchone()
+        if target is None or target[0] != trigger.summoned_entity_id:
+            raise ValueError(
+                f"Summon trigger {trigger.id} has a missing or mismatched configured spawn target"
+            )
         # Extract placeholder_monster_ids before inserting main record
         placeholder_ids = trigger.placeholder_monster_ids
 
         # Insert main summon_triggers record (excluding placeholder_monster_ids)
         values = {}
-        for field_name in trigger.model_fields:
+        for field_name in type(trigger).model_fields:
             if field_name == "placeholder_monster_ids":
                 continue  # Skip - handled by junction table
 
@@ -1257,8 +1069,9 @@ def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
         # Insert placeholder relationships into junction table
         for order, spawn_id in enumerate(placeholder_ids):
             cursor.execute(
-                "INSERT INTO summon_trigger_placeholders (trigger_id, spawn_id, placeholder_order) VALUES (?, ?, ?)",
-                (trigger.id, spawn_id, order),
+                "INSERT INTO summon_trigger_placeholders "
+                "(id,trigger_id,spawn_id,placeholder_order) VALUES (?,?,?,?)",
+                (f"{trigger.id}:guard:{order}", trigger.id, spawn_id, order),
             )
             placeholder_count += 1
 
@@ -1280,6 +1093,8 @@ def load_alchemy_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
         data = json.load(f)
 
     tables = [AlchemyTableData(**item) for item in data]
+    for table in tables:
+        insert_acquisition_input(conn.cursor(), "alchemy_tables", table)
 
     # Build lookup maps for zone/sub-zone names
     cursor = conn.cursor()
@@ -1373,6 +1188,8 @@ def load_scribing_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
         data = json.load(f)
 
     tables = [ScribingTableData(**item) for item in data]
+    for table in tables:
+        insert_acquisition_input(conn.cursor(), "scribing_tables", table)
 
     # Build lookup maps for zone/sub-zone names
     cursor = conn.cursor()
@@ -1415,6 +1232,8 @@ def load_crafting_stations(conn: sqlite3.Connection, export_dir: Path) -> None:
         data = json.load(f)
 
     stations = [CraftingStationData(**item) for item in data]
+    for station in stations:
+        insert_acquisition_input(conn.cursor(), "crafting_stations", station)
 
     # Build lookup maps for zone/sub-zone names
     cursor = conn.cursor()
@@ -1447,3 +1266,47 @@ def load_crafting_stations(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(stations)} crafting stations")
+
+
+def load_recipe_family(conn: sqlite3.Connection, export_dir: Path, family: str) -> None:
+    """Insert route anchors separately from immutable complete recipe variants."""
+    models: dict[
+        str, type[CraftingRecipeData | AlchemyRecipeData | ScribingRecipeData]
+    ] = {
+        "crafting_recipes": CraftingRecipeData,
+        "alchemy_recipes": AlchemyRecipeData,
+        "scribing_recipes": ScribingRecipeData,
+    }
+    model_type = models[family]
+    with open(export_dir / f"{family}.json", encoding="utf-8") as f:
+        recipes = [model_type.model_validate(row) for row in json.load(f)]
+    anchors: dict[str, str] = {}
+    definitions: dict[str, dict] = {}
+    cursor = conn.cursor()
+    for recipe in recipes:
+        result = anchors.setdefault(recipe.id, recipe.result_item_id)
+        if result != recipe.result_item_id:
+            raise ValueError(f"{family} route {recipe.id} has conflicting results")
+        payload = recipe.model_dump()
+        # Route identity is not part of a complete native definition.
+        definition = {key: value for key, value in payload.items() if key != "id"}
+        previous = definitions.get(recipe.definition_key)
+        if previous is not None:
+            if previous != definition:
+                raise ValueError(
+                    f"{family} definition key {recipe.definition_key} has conflicting content"
+                )
+            continue
+        definitions[recipe.definition_key] = definition
+        insert_acquisition_input(cursor, family, recipe, identity=recipe.definition_key)
+    cursor.executemany(
+        f"INSERT INTO {family} (id,result_item_id) VALUES (?,?)", anchors.items()
+    )
+    conn.commit()
+
+
+def load_game_config(conn: sqlite3.Connection, export_dir: Path) -> None:
+    with open(export_dir / "game_config.json", encoding="utf-8") as f:
+        config = GameConfigData.model_validate(json.load(f))
+    insert_acquisition_input(conn.cursor(), "game_config", config, identity="config")
+    conn.commit()

@@ -1,10 +1,5 @@
 import Database from "better-sqlite3";
-import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
-import { query, queryScalar } from "$lib/db";
-import {
-  calculateBossLootChance,
-  type BossLootDrop,
-} from "$lib/calculation/boss-loot";
+import { afterAll, describe, expect, test, vi } from "vitest";
 import {
   loadAltarPopupDetails,
   loadMonsterPopupDetails,
@@ -13,379 +8,334 @@ import {
   loadItemPopupDetails,
   loadNpcPopupDetails,
   loadQuestPopupDetails,
+  loadQuestPopupDetailsBatch,
+  loadProviderPopupDetails,
+  loadRequirementPopupDetails,
 } from "./popup";
+import { loadBrowserAcquisition, itemMapLocations } from "$lib/map/acquisition";
+import { getItemMapBounds } from "./map-search";
+import { resolveVirtualSelection } from "$lib/map/resolve-selection";
+import type { MethodView } from "$lib/acquisition/types";
+import { projectItemSources } from "$lib/acquisition/projections";
 
-vi.mock("$lib/db", () => ({ query: vi.fn(), queryScalar: vi.fn() }));
-
-const db = new Database("data/compendium.db", { readonly: true });
-
-beforeAll(() => {
-  vi.mocked(query).mockImplementation(async (sql, params = []) =>
+// The real SQL adapter needs no spy that retains every result graph.
+vi.mock("$lib/db", () => ({
+  query: async (sql: string, params: unknown[] = []) =>
     db.prepare(sql).all(...params),
-  );
-  vi.mocked(queryScalar).mockImplementation(async (sql, params = []) => {
-    const row = db.prepare(sql).get(...params) as
-      Record<string, unknown> | undefined;
-    return row ? Object.values(row)[0] : null;
-  });
-});
-
+}));
+const db = new Database("data/compendium.db", { readonly: true });
 afterAll(() => db.close());
 
-describe("map popup detail parity", () => {
-  test("does not quest-gate ordinary items from non-bosses", async () => {
-    const source = db
-      .prepare(
-        `
-      SELECT m.id, m.level, ism.item_id
-      FROM item_sources_monster ism
-      JOIN monsters m ON m.id = ism.monster_id
-      JOIN items i ON i.id = ism.item_id
-      WHERE m.is_boss = 0 AND i.has_gather_quest = 1 AND i.is_quest_item = 0
-      ORDER BY m.id, i.id LIMIT 1
-    `,
-      )
-      .get() as { id: string; level: number; item_id: string };
-    expect(source).toBeDefined();
-    const monster = await loadMonsterPopupDetails(source.id, source.level);
-    const item = await loadItemPopupDetails(source.item_id);
-    expect(
-      monster.drops.find((drop) => drop.itemId === source.item_id)
-        ?.requiresQuest,
-    ).toBe(false);
-    expect(
-      item?.droppers.find((drop) => drop.monsterId === source.id)
-        ?.requiresQuest,
-    ).toBe(false);
-  });
+function itemTargets(method: MethodView): string[] {
+  return [
+    ...new Set([
+      ...method.outputs.flatMap((output) =>
+        output.item_id ? [output.item_id] : [],
+      ),
+      ...method.probabilityResults.flatMap((result) =>
+        result.target.kind === "item" ? [result.target.itemId] : [],
+      ),
+    ]),
+  ];
+}
 
-  test("keeps RandomItem distribution rolls distinct from inventory awards", async () => {
-    const sources = db
-      .prepare(
-        `
-      SELECT DISTINCT m.id, m.level, ism.item_id, ism.drop_rate
-      FROM monsters m, json_each(m.loot_inputs) roll
-      JOIN item_sources_monster ism
-        ON ism.monster_id = m.id AND ism.item_id = json_extract(roll.value, '$.item_id')
-      WHERE json_type(roll.value, '$.random_items') = 'array'
-        AND json_extract(roll.value, '$.requires_quest') = 0
-        AND EXISTS (
-          SELECT 1 FROM monster_spawns ms WHERE ms.monster_id = m.id
-          AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
-        )
-      ORDER BY m.id, ism.item_id LIMIT 3
-    `,
-      )
-      .all() as Array<{
-      id: string;
-      level: number;
-      item_id: string;
-      drop_rate: number;
-    }>;
-    expect(sources.length).toBeGreaterThan(0);
-    for (const source of sources) {
-      const monster = await loadMonsterPopupDetails(source.id, source.level);
-      const item = await loadItemPopupDetails(source.item_id);
+describe("canonical browser popup acquisition", () => {
+  test("arrow-pack offers retain inspection without inventing carried-pack delivery", async () => {
+    const details = await loadItemPopupDetails("pack_25_arrows");
+    expect(details).not.toBeNull();
+    expect(details!.sources.inspection.offeredAssets.length).toBeGreaterThan(0);
+    const offers = details!.sources.inspection.offeredAssets.filter(
+      (method) => method.kind === "vendor",
+    );
+    expect(offers.length).toBeGreaterThan(0);
+    for (const offer of offers) {
       expect(
-        monster.drops.find((drop) => drop.itemId === source.item_id),
-      ).toMatchObject({
-        isDistributionRoll: true,
-        dropRate: source.drop_rate,
-      });
-      expect(
-        item?.droppers.find((drop) => drop.monsterId === source.id),
-      ).toMatchObject({
-        isDistributionRoll: true,
-        dropRate: source.drop_rate,
-      });
-    }
-  });
-
-  test("matches boss per-kill probabilities across monster and item popups", async () => {
-    const bosses = db
-      .prepare(
-        `
-      SELECT m.id, m.level, m.loot_inputs,
-        EXISTS (
-          SELECT 1 FROM monster_spawns ms
-          JOIN zones z ON z.id = ms.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
-          JOIN items charm ON charm.luck_token_zone_id = ms.zone_id AND charm.luck_token_bonus > 0
-          WHERE ms.monster_id = m.id
-        ) AS has_fatecharm
-      FROM monsters m
-      WHERE m.is_boss = 1 AND EXISTS (
-        SELECT 1 FROM monster_spawns ms WHERE ms.monster_id = m.id
-        AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
-      )
-      ORDER BY has_fatecharm DESC, m.id
-    `,
-      )
-      .all() as Array<{
-      id: string;
-      level: number;
-      loot_inputs: string;
-      has_fatecharm: number;
-    }>;
-    let checked = 0;
-    for (const boss of bosses) {
-      const inputs = JSON.parse(boss.loot_inputs) as BossLootDrop[];
-      const target = inputs.find(
-        (drop) =>
-          drop.counts_as_equipment &&
-          !drop.requires_quest &&
-          drop.probability > 0 &&
-          drop.probability < 1,
-      );
-      if (!target) continue;
-      const expected = calculateBossLootChance(inputs, target.item_id);
-      if (Math.abs(expected - target.probability) < 0.000001) continue;
-      const monster = await loadMonsterPopupDetails(boss.id, boss.level);
-      const item = await loadItemPopupDetails(target.item_id);
-      const drop = monster.drops.find((row) => row.itemId === target.item_id);
-      const source = item?.droppers.find((row) => row.monsterId === boss.id);
-      expect(drop?.dropRate).toBeCloseTo(expected);
-      expect(source?.dropRate).toBeCloseTo(expected);
-      if (boss.has_fatecharm) {
-        const enhanced = calculateBossLootChance(inputs, target.item_id, {
-          fatecharm: true,
-        });
-        expect(drop?.fatecharmDropRate).toBeCloseTo(enhanced);
-        expect(source?.fatecharmDropRate).toBeCloseTo(enhanced);
-      } else {
-        expect(drop?.fatecharmDropRate).toBeUndefined();
-        expect(source?.fatecharmDropRate).toBeUndefined();
-      }
-      if (++checked === 2) break;
-    }
-    expect(checked).toBeGreaterThan(0);
-  });
-
-  test("does not restore template loot for nonfinal-only altar monsters", async () => {
-    const monsters = db
-      .prepare(
-        `
-      SELECT m.id, m.level FROM monsters m
-      WHERE json_array_length(m.loot_inputs) > 0
-        AND EXISTS (
-          SELECT 1 FROM altars a, json_each(a.waves) w, json_each(w.value, '$.monsters') member
-          WHERE json_extract(member.value, '$.monster_id') = m.id
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM altars a, json_each(a.waves) w, json_each(w.value, '$.monsters') member
-          WHERE json_extract(member.value, '$.monster_id') = m.id
-            AND CAST(w.key AS INTEGER) = json_array_length(a.waves) - 1
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM monster_spawns ms WHERE ms.monster_id = m.id AND ms.spawn_type != 'altar'
-        )
-        AND NOT EXISTS (
-          SELECT 1 FROM skills s WHERE s.summoned_monster_id = m.id AND s.summon_count_per_cast != 0
-        )
-    `,
-      )
-      .all() as Array<{ id: string; level: number }>;
-    expect(monsters.length).toBeGreaterThan(0);
-    for (const monster of monsters) {
-      expect(
-        (await loadMonsterPopupDetails(monster.id, monster.level)).drops,
-      ).toEqual([]);
-    }
-  });
-
-  test("retains final-wave template sources separately from earned altar rewards", async () => {
-    const sources = db
-      .prepare(
-        `
-      SELECT DISTINCT a.id AS altar_id, m.id AS monster_id, ism.item_id
-      FROM altars a, json_each(a.waves) w, json_each(w.value, '$.monsters') member
-      JOIN monsters m ON m.id = json_extract(member.value, '$.monster_id')
-      JOIN item_sources_monster ism ON ism.monster_id = m.id
-      JOIN items i ON i.id = ism.item_id AND i.is_bestiary_drop = 1
-      WHERE CAST(w.key AS INTEGER) = json_array_length(a.waves) - 1
-        AND (m.is_boss = 1 OR m.is_elite = 1)
-      ORDER BY a.id, m.id, ism.item_id LIMIT 3
-    `,
-      )
-      .all() as Array<{
-      altar_id: string;
-      monster_id: string;
-      item_id: string;
-    }>;
-    expect(sources.length).toBeGreaterThan(0);
-    for (const source of sources) {
-      const item = await loadItemPopupDetails(source.item_id);
-      expect(
-        item?.altarSources.some(
-          (row) => row.altarId === source.altar_id && row.tier === null,
+        offer.outputs.some(
+          (output) => output.item_id === "arrow" && output.amount_min === 25,
         ),
       ).toBe(true);
-      const altar = await loadAltarPopupDetails(source.altar_id);
-      expect(altar.finalMonsterIds).toContain(source.monster_id);
       expect(
-        altar.bossDrops
-          .find((row) => row.monsterId === source.monster_id)
-          ?.drops.some((drop) => drop.itemId === source.item_id),
+        offer.outputs.some((output) => output.item_id === "pack_25_arrows"),
+      ).toBe(false);
+    }
+    expect(
+      details!.sources.inspection.fixedContents.some(
+        (outcome) =>
+          outcome.itemId === "arrow" &&
+          outcome.amount.kind === "exact" &&
+          outcome.amount.value === 25,
+      ),
+    ).toBe(true);
+    expect(
+      details!.locations.some((location) => location.purpose === "offer"),
+    ).toBe(true);
+    expect(
+      details!.locations.some((location) => location.purpose === "award"),
+    ).toBe(false);
+  });
+
+  test("provider and item popups retain the same outcome-associated probabilities", async () => {
+    const sources = db
+      .prepare(
+        `SELECT d.id method_id,d.chest_id,o.item_id FROM acquisition_world_chest_details d JOIN acquisition_outputs o ON o.method_id=d.id WHERE o.item_id IS NOT NULL ORDER BY d.id,o.ordinal LIMIT 8`,
+      )
+      .all() as { method_id: string; chest_id: string; item_id: string }[];
+    expect(sources.length).toBeGreaterThan(0);
+    for (const source of sources) {
+      const chest = await loadChestPopupDetails(source.chest_id);
+      const item = await loadItemPopupDetails(source.item_id);
+      const method = chest.methods.find(
+        (m) => m.methodId === source.method_id,
+      )!;
+      expect(method).toBeDefined();
+      expect(
+        item!.sources.methods.find((m) => m.methodId === method.methodId)
+          ?.probabilityResults,
+      ).toEqual(method.probabilityResults);
+      expect(
+        method.costGroups.every(
+          (group) =>
+            group.selection_rule !== "always" ||
+            group.inputs.every((input) => input.role !== "key"),
+        ),
       ).toBe(true);
     }
   });
 
-  test("uses the same per-opening chest chance from either popup", async () => {
-    const sources = db
-      .prepare(
-        `SELECT item_id, chest_id, drop_rate, actual_drop_chance
-         FROM item_sources_chest`,
-      )
-      .all() as Array<{
-      item_id: string;
-      chest_id: string;
-      drop_rate: number;
-      actual_drop_chance: number | null;
-    }>;
-    expect(sources.length).toBeGreaterThan(0);
-    expect(
-      sources.filter(
-        (source) =>
-          source.actual_drop_chance != null &&
-          source.actual_drop_chance !== source.drop_rate,
-      ).length,
-    ).toBeGreaterThan(0);
-    for (const source of sources) {
-      const item = await loadItemPopupDetails(source.item_id);
-      const chest = await loadChestPopupDetails(source.chest_id);
-      const chance = source.actual_drop_chance ?? source.drop_rate;
+  test("every popup provider family loads complete methods rather than grouped source summaries", async () => {
+    for (const [table, kind] of [
+      ["acquisition_providers_resource_spawns", "resource_spawns"],
+      ["acquisition_providers_crafting_stations", "crafting_stations"],
+      ["acquisition_providers_alchemy_tables", "alchemy_tables"],
+      ["acquisition_providers_scribing_tables", "scribing_tables"],
+      ["acquisition_providers_altars", "altars"],
+    ] as const) {
+      const column = {
+        resource_spawns: "resource_spawn_id",
+        crafting_stations: "crafting_station_id",
+        alchemy_tables: "alchemy_table_id",
+        scribing_tables: "scribing_table_id",
+        altars: "altar_id",
+      }[kind];
+      const row = db
+        .prepare(
+          `SELECT ${column} id,method_id FROM ${table} ORDER BY id LIMIT 1`,
+        )
+        .get() as { id: string; method_id: string } | undefined;
+      expect(row, kind).toBeDefined();
+      const details =
+        kind === "resource_spawns"
+          ? await loadGatheringPopupDetails(row!.id)
+          : kind === "altars"
+            ? await loadAltarPopupDetails(row!.id)
+            : await loadProviderPopupDetails({ kind, id: row!.id });
       expect(
-        item?.chestSources.find((row) => row.chestId === source.chest_id)?.rate,
-      ).toBe(chance);
-      expect(
-        chest.drops.find((row) => row.itemId === source.item_id)?.dropRate,
-      ).toBe(chance);
+        details.methods.some((method) => method.methodId === row!.method_id),
+      ).toBe(true);
     }
   });
 
-  test("keeps real secondary inventory requirements and omits zero-amount records", async () => {
-    const quests = db
+  test("an authored monster popup does not combine other placement contexts", async () => {
+    const row = db
       .prepare(
-        "SELECT id, gather_items, required_items FROM quests WHERE json_array_length(required_items) > 0",
+        `SELECT p.monster_spawn_id,d.monster_id,ms.level FROM acquisition_providers_monster_spawns p JOIN acquisition_kill_details d ON d.id=p.method_id JOIN monster_spawns ms ON ms.id=p.monster_spawn_id WHERE d.event_kind='authored' ORDER BY p.id LIMIT 1`,
       )
-      .all() as Array<{
-      id: string;
-      gather_items: string;
-      required_items: string;
-    }>;
-    expect(quests.length).toBeGreaterThan(0);
-    for (const quest of quests) {
-      const required = JSON.parse(quest.required_items) as Array<{
-        item_id: string;
-        amount: number;
-      }>;
-      const details = await loadQuestPopupDetails(quest.id);
-      for (const item of required) {
-        if (item.amount > 0) {
-          expect(details?.objectives).toContainEqual(
-            expect.objectContaining({
-              targetId: item.item_id,
-              amount: item.amount,
-            }),
-          );
-        } else {
+      .get() as { monster_spawn_id: string; monster_id: string; level: number };
+    expect(row).toBeDefined();
+    const details = await loadMonsterPopupDetails(
+      row.monster_id,
+      row.level,
+      row.monster_spawn_id,
+    );
+    expect(details.methods.length).toBeGreaterThan(0);
+    expect(
+      details.methods.every((method) =>
+        method.providers.some(
+          (provider) =>
+            provider.ref.kind === "monster_spawns" &&
+            provider.ref.id === row.monster_spawn_id,
+        ),
+      ),
+    ).toBe(true);
+    const itemIds = [...new Set(details.methods.flatMap(itemTargets))];
+    const model = await loadBrowserAcquisition({ kind: "items", itemIds });
+    for (const method of details.methods) {
+      const targets = itemTargets(method);
+      for (const id of targets)
+        if (method.rooted)
           expect(
-            details?.objectives.some(
-              (objective) =>
-                objective.targetId === item.item_id && objective.amount === 0,
+            projectItemSources(model, id).methods.some(
+              (source) => source.methodId === method.methodId,
             ),
-          ).toBe(false);
-        }
+          ).toBe(true);
+      if (method.rooted && targets.length) {
+        const item = await loadItemPopupDetails(targets[0]);
+        expect(
+          item!.sources.methods.some(
+            (source) => source.methodId === method.methodId,
+          ),
+        ).toBe(true);
       }
     }
   });
 
-  test("uses discovery place and map coordinates rather than the notification", async () => {
-    const quest = db
+  test("a placeholder event marker retains only its own context", async () => {
+    const row = db
       .prepare(
-        `
-      SELECT q.id, zt.name, q.discovered_location_position
-      FROM quests q JOIN zone_triggers zt ON zt.id = q.discovered_location_sub_zone_id
-      WHERE q.discovered_location_position IS NOT NULL LIMIT 1
-    `,
+        `SELECT d.id,d.monster_id,m.level FROM acquisition_kill_details d JOIN monsters m ON m.id=d.monster_id WHERE d.event_kind='placeholder' ORDER BY d.id LIMIT 1`,
       )
       .get() as {
       id: string;
-      name: string;
-      discovered_location_position: string;
+      monster_id: string;
+      level: number;
     };
-    const position = JSON.parse(quest.discovered_location_position) as {
-      x: number;
-      y: number;
-    };
-    const details = await loadQuestPopupDetails(quest.id);
-    expect(
-      details?.objectives.find((objective) => objective.type === "discover"),
-    ).toMatchObject({
-      targetName: quest.name,
-      position: [position.x, -position.y],
-    });
-  });
-
-  test("includes known NPC sub-zones", async () => {
-    const npc = db
-      .prepare(
-        `
-      SELECT ns.npc_id, zt.name FROM npc_spawns ns
-      JOIN zone_triggers zt ON zt.id = ns.sub_zone_id LIMIT 1
-    `,
-      )
-      .get() as { npc_id: string; name: string };
-    expect((await loadNpcPopupDetails(npc.npc_id)).subZones).toContain(
-      npc.name,
+    expect(row).toBeDefined();
+    const details = await loadMonsterPopupDetails(
+      row.monster_id,
+      row.level,
+      row.id,
     );
+    expect(details.methods.map((method) => method.methodId)).toEqual([row.id]);
+    expect(details.methods[0].detail.event_kind).toBe("placeholder");
   });
 
-  test("includes the primary yield range and single-item secondary yields", async () => {
-    const resource = db
+  test("quest objectives preserve counter, inventory, equipment and non-counting location facts", async () => {
+    const rows = db
       .prepare(
-        `
-      SELECT id, item_reward_id, item_reward_amount FROM gathering_resources
-      WHERE is_plant = 1 AND item_reward_amount > 1 LIMIT 1
-    `,
+        `SELECT id,quest_id,kind,role,amount,withheld FROM quest_objectives ORDER BY quest_id,ordinal`,
       )
-      .get() as {
+      .all() as {
       id: string;
-      item_reward_id: string;
-      item_reward_amount: number;
-    };
-    const details = await loadGatheringPopupDetails(resource.id);
+      quest_id: string;
+      kind: string;
+      role: string;
+      amount: number | null;
+      withheld: number;
+    }[];
+    expect(rows.length).toBeGreaterThan(0);
     expect(
-      details.drops.find((drop) => drop.itemId === resource.item_reward_id),
-    ).toMatchObject({ amountMin: 1, amountMax: resource.item_reward_amount });
-    for (const drop of details.drops.filter(
-      (drop) => drop.itemId !== resource.item_reward_id,
-    )) {
-      expect(drop).toMatchObject({ amountMin: 1, amountMax: 1 });
+      rows.some((row) => row.kind === "location" && row.amount === null),
+    ).toBe(true);
+    const ids = [...new Set(rows.map((row) => row.quest_id))];
+    const popups = await loadQuestPopupDetailsBatch(ids);
+    for (const id of ids) {
+      const details = popups.get(id);
+      for (const objective of rows.filter((row) => row.quest_id === id))
+        expect(details!.objectives).toContainEqual(
+          expect.objectContaining({
+            id: objective.id,
+            kind: objective.kind,
+            role: objective.role,
+            amount: objective.amount,
+            withheld: Boolean(objective.withheld),
+          }),
+        );
     }
   });
 
-  test("uses the same per-cast fishing range as the item source", async () => {
-    const source = db
+  test("quest discovery geometry converts to map coordinates only at the popup boundary", async () => {
+    const row = db
       .prepare(
-        `
-      SELECT isg.item_id, isg.resource_id FROM item_sources_gather isg
-      JOIN gathering_resources gr ON gr.id = isg.resource_id
-      WHERE gr.is_fishing_spot = 1 AND isg.drop_rate != isg.actual_drop_chance
-      ORDER BY isg.resource_id, isg.item_id LIMIT 1
-    `,
+        `SELECT o.quest_id,l.id,l.position_x,l.position_y FROM quest_objective_locations l JOIN quest_objectives o ON o.id=l.id WHERE o.withheld=0 AND l.position_x IS NOT NULL AND l.position_y IS NOT NULL LIMIT 1`,
       )
-      .get() as { item_id: string; resource_id: string };
-    const spot = await loadGatheringPopupDetails(source.resource_id);
-    const item = await loadItemPopupDetails(source.item_id);
-    const outcome = spot.fishingOutcomes?.find(
-      (row) => row.itemId === source.item_id,
+      .get() as {
+      quest_id: string;
+      id: string;
+      position_x: number;
+      position_y: number;
+    };
+    expect(row).toBeDefined();
+    const details = await loadQuestPopupDetails(row.quest_id);
+    expect(details!.objectives.find((o) => o.id === row.id)?.position).toEqual([
+      row.position_x,
+      -row.position_y,
+    ]);
+  });
+
+  test("NPC skills preserve authored order and all exact quest memberships", async () => {
+    const row = db
+      .prepare(`SELECT npc_id FROM npc_skills ORDER BY npc_id LIMIT 1`)
+      .get() as { npc_id: string };
+    expect(row).toBeDefined();
+    const details = await loadNpcPopupDetails(row.npc_id);
+    const skills = db
+      .prepare(
+        `SELECT skill_id id,skill_index 'index' FROM npc_skills WHERE npc_id=? ORDER BY skill_index`,
+      )
+      .all(row.npc_id);
+    expect(details.skills.map(({ id, index }) => ({ id, index }))).toEqual(
+      skills,
     );
-    const gatherSource = item?.gatheringSources.find(
-      (row) => row.resourceId === source.resource_id,
+    const memberships = db
+      .prepare(
+        `SELECT quest_id id,role FROM npc_quest_memberships WHERE npc_id=? ORDER BY role,ordinal`,
+      )
+      .all(row.npc_id);
+    expect(details.quests.map(({ id, role }) => ({ id, role }))).toEqual(
+      memberships,
     );
-    expect(outcome).toBeDefined();
-    expect(gatherSource).toBeDefined();
-    expect(outcome?.dropRateMin).toBeCloseTo(gatherSource!.fishingChanceMin!);
-    expect(outcome?.dropRateMax).toBeCloseTo(gatherSource!.fishingChanceMax!);
+  });
+
+  test("withheld portal destinations retain their origin even without an access gate", async () => {
+    const id = "iportal_northern_wastes_to_old_valorath_620_1272";
+    const native = db
+      .prepare(
+        `SELECT id,required_item_id,from_zone_id,position_x,position_y,destination_withheld,to_zone_id FROM portals WHERE id=?`,
+      )
+      .get(id) as {
+      id: string;
+      required_item_id: string | null;
+      from_zone_id: string;
+      position_x: number;
+      position_y: number;
+      destination_withheld: number;
+      to_zone_id: null;
+    };
+    const popup = await loadRequirementPopupDetails("portal", id);
+    const portal = popup.model.entities.get("portals")?.get(id);
+    expect(portal).toMatchObject(native);
+    expect(portal?.destination_withheld).toBe(1);
+    expect(portal?.to_zone_id).toBeNull();
+    expect(typeof portal?.position_x).toBe("number");
+    expect(typeof portal?.position_y).toBe("number");
+    expect(typeof portal?.from_zone_id).toBe("string");
+  });
+
+  test("treasure-map destinations remain use geometry, never map awards", async () => {
+    const row = db
+      .prepare(
+        `SELECT map_item_id FROM acquisition_treasure_details WHERE map_item_id IS NOT NULL LIMIT 1`,
+      )
+      .get() as { map_item_id: string };
+    expect(row).toBeDefined();
+    const map = await loadItemPopupDetails(row.map_item_id);
+    expect(map!.usages.some((use) => use.useLocations.length > 0)).toBe(true);
+    expect(
+      map!.sources.methods.every((method) => method.kind !== "treasure_dig"),
+    ).toBe(true);
+    const model = await loadBrowserAcquisition({
+      kind: "items",
+      itemIds: [row.map_item_id],
+    });
+    const positions = itemMapLocations(model, row.map_item_id).map(
+      (location) => location.position!,
+    );
+    const bounds = await getItemMapBounds(row.map_item_id);
+    if (positions.length)
+      expect(bounds).toEqual({
+        minX: Math.min(...positions.map((p) => p.x)),
+        maxX: Math.max(...positions.map((p) => p.x)),
+        minY: Math.min(...positions.map((p) => p.y)),
+        maxY: Math.max(...positions.map((p) => p.y)),
+      });
+  });
+
+  test("virtual-only and unknown items have no map focus", async () => {
+    expect(await getItemMapBounds("__unknown_public_item__")).toBeNull();
+    expect(
+      (await resolveVirtualSelection("item", "__unknown_public_item__"))
+        .highlight,
+    ).toBeNull();
+    expect(await loadItemPopupDetails("__unknown_public_item__")).toBeNull();
   });
 });

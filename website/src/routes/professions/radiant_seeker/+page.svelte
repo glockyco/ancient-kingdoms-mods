@@ -5,6 +5,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
   import {
@@ -75,12 +76,21 @@
     <!-- Source: server-scripts/GatherItem.cs:OnInteractServer -->
     <p>
       Gather Radiant Sparks to find
-      <ItemLink
-        itemId={data.resource.reward_item_id}
-        itemName={data.resource.reward_item_name}
-        tooltipHtml={data.resource.reward_tooltip_html}
-        imageAvailable={data.resource.reward_visual_public_path}
-      />.
+      {#each data.resource.primaryRewards as reward, index (JSON.stringify( [reward.resourceKind, reward.itemId, reward.delivery, reward.withheld] ))}
+        {#if index > 0},
+        {/if}
+        {#if reward.itemId}
+          <ItemLink
+            itemId={reward.itemId}
+            itemName={reward.itemName ?? reward.itemId}
+            imageAvailable={data.acquisitionItems[reward.itemId]?.icon_path}
+          />
+        {:else}
+          {reward.withheld ? "an unpublished reward" : "gold"}
+        {/if}
+        {#if reward.delivery === "quest_progress"}
+          as quest progress{/if}
+      {/each}.
       <strong class="font-semibold text-foreground"
         >Your chance of Radiant Aether rises from 5% at 0% Radiant Seeker to 25%
         at 100%.</strong
@@ -106,8 +116,10 @@
         <div>
           <p class="font-medium">Gather the spark.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Gathering a spark always succeeds. Each gather gives {data.resource
-              .gathering_exp} XP and can raise Radiant Seeker.
+            Gathering a spark always succeeds and can raise Radiant Seeker.
+            {#if data.resource.gathering_exp !== null}Each gather gives {data
+                .resource.gathering_exp} XP.{:else}The XP amount varies by
+              source or is unpublished.{/if}
           </p>
         </div>
       </li>
@@ -330,4 +342,14 @@
       </div>
     </div>
   </section>
+  <details class="space-y-4">
+    <summary class="cursor-pointer text-xl font-semibold"
+      >Gathering methods and rewards</summary
+    >
+    <MethodList
+      methods={data.acquisitionMethods}
+      items={data.acquisitionItems}
+      names={data.acquisitionNames}
+    />
+  </details>
 </div>

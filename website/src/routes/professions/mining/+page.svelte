@@ -6,7 +6,7 @@
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import {
@@ -17,13 +17,51 @@
   import {
     DWARF_STARTING_MINING_PERCENT,
     MINING_SUCCESS_FLOOR,
-    isMineable,
     isMiningEffortless,
     miningSkillGainChancePercent,
     miningSkillGainRange,
-    miningSuccessPercent,
-    rawMiningSuccessChance,
   } from "$lib/utils/mining";
+  import { professionAttempt } from "$lib/acquisition/rules";
+  import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
+  import {
+    deliveryText,
+    quantityText,
+    useRoleLabel,
+  } from "$lib/components/acquisition/display";
+
+  function probabilityAlternatives(values: readonly (number | null)[]): string {
+    return values.length
+      ? values
+          .map((value) =>
+            value === null
+              ? "unknown"
+              : formatPercent(value, { decimals: 1, trailingZeros: true }),
+          )
+          .join(" or ")
+      : "unknown";
+  }
+
+  function rawMiningSuccessChance(
+    tier: number,
+    quality: number,
+    percent: number,
+  ): number {
+    return professionAttempt("mining", tier, percent / 100, quality).raw;
+  }
+
+  function isMineable(tier: number, quality: number, percent: number): boolean {
+    return professionAttempt("mining", tier, percent / 100, quality).qualified;
+  }
+
+  function miningSuccessPercent(
+    tier: number,
+    quality: number,
+    percent: number,
+  ): number {
+    return (
+      professionAttempt("mining", tier, percent / 100, quality).displayed * 100
+    );
+  }
 
   let { data } = $props();
 
@@ -206,11 +244,20 @@
                 )}</td
               >
               <td class="p-3">
-                <ItemSourceLinks
-                  groups={pickaxe.source_groups}
-                  itemId={pickaxe.id}
-                  limit={2}
-                />
+                <details>
+                  <summary
+                    class="cursor-pointer text-blue-600 dark:text-blue-400"
+                    >Acquisition methods</summary
+                  >
+                  <div class="mt-2">
+                    <MethodList
+                      methods={pickaxe.sources}
+                      items={data.acquisitionItems}
+                      names={data.acquisitionNames}
+                      selectedItemId={pickaxe.id}
+                    />
+                  </div>
+                </details>
               </td>
             </tr>
           {/each}
@@ -347,6 +394,27 @@
                   class="text-blue-600 hover:underline dark:text-blue-400"
                   >{ore.name}</a
                 >
+                {#each ore.primaryRewards.filter((reward) => reward.resourceKind === "item" && reward.itemName === ore.name) as reward (`${reward.itemId}:${reward.delivery}`)}
+                  {#if reward.quantity.kind !== "unknown"}
+                    <span class="text-muted-foreground"
+                      >×{quantityText(reward.quantity)}</span
+                    >
+                  {/if}
+                  {#if reward.delivery !== "inventory"}
+                    <span class="text-muted-foreground"
+                      >{deliveryText(reward.delivery)}</span
+                    >
+                  {/if}
+                {/each}
+                <div class="mt-1 space-y-1 text-muted-foreground">
+                  <PrimaryRewards
+                    rewards={ore.primaryRewards.filter(
+                      (reward) =>
+                        reward.resourceKind !== "item" ||
+                        reward.itemName !== ore.name,
+                    )}
+                  />
+                </div>
               </td>
               <td class="p-3 text-right tabular-nums">
                 {#if success === 0}
@@ -377,7 +445,9 @@
                 {/if}
               </td>
               <td class="p-3 text-right tabular-nums"
-                >{formatNumber(ore.gathering_exp)}</td
+                >{ore.gathering_exp === null
+                  ? "Varies or unpublished"
+                  : formatNumber(ore.gathering_exp)}</td
               >
               <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — depleted minerals respawn between half and the full wait. -->
               <td class="p-3 text-right tabular-nums text-muted-foreground">
@@ -450,13 +520,8 @@
               {ore.name}
             </h3>
             <p class="text-sm text-muted-foreground">
-              {formatPercent(
-                ore.gems.reduce((total, gem) => total + gem.chance, 0),
-                {
-                  decimals: 1,
-                  trailingZeros: true,
-                },
-              )} chance of any gem per successful mine
+              {probabilityAlternatives(ore.gemProbabilities)} chance of any listed
+              gem per mine at 100% Mining with a tier V pickaxe.
             </p>
             {#each ore.gems as gem (gem.item_id)}
               <div class="flex items-baseline justify-between gap-3 text-sm">
@@ -467,10 +532,7 @@
                   imageAvailable={data.itemIconPaths[gem.item_id]}
                 />
                 <span class="tabular-nums text-muted-foreground"
-                  >{formatPercent(gem.chance, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}</span
+                  >{probabilityAlternatives(gem.probabilities)}</span
                 >
               </div>
             {/each}
@@ -485,7 +547,11 @@
     <ul class="flex flex-wrap gap-x-6 gap-y-1.5 text-sm">
       {#each data.ores as ore (ore.id)}
         <li>
-          <span class="text-muted-foreground">{ore.reward_item_name}</span>
+          <span class="text-muted-foreground"
+            >{ore.primaryRewards
+              .flatMap((reward) => (reward.itemName ? [reward.itemName] : []))
+              .join(", ") || "Unpublished reward"}</span
+          >
           {#if ore.recipe_count > 0}
             <a
               href="/recipes"
@@ -524,7 +590,7 @@
                 </td>
                 <td class="p-3 text-muted-foreground">{quest.ore_name}</td>
                 <td class="p-3 text-right tabular-nums"
-                  >{quest.purpose} {quest.amount}</td
+                  >{useRoleLabel(quest.purpose)} {quest.amount}</td
                 >
                 <td class="p-3 text-right tabular-nums text-muted-foreground"
                   >{quest.level_recommended}</td
@@ -557,4 +623,14 @@
       recipes and at other crafting stations.
     </p>
   </section>
+  <details class="space-y-4">
+    <summary class="cursor-pointer text-xl font-semibold"
+      >Gathering methods and requirements</summary
+    >
+    <MethodList
+      methods={data.oreMethods}
+      items={data.acquisitionItems}
+      names={data.acquisitionNames}
+    />
+  </details>
 </div>

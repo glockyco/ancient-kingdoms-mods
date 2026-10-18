@@ -8,24 +8,24 @@ Defines how the compendium presents a game formula so a reader can follow it wit
 
 ### Requirement: Formulas are worded steps
 
-A rule that takes more than one operation SHALL be presented as named steps. A rule that takes one operation SHALL be stated as a sentence with a worked number, such as "drains 5% of your maximum Health each second, rounded, so 2,000 maximum Health loses 100". Each step SHALL name the quantity it produces in game terms and state how the game computes it in words, naming real stats and earlier steps. Visible text SHALL NOT use single-letter variables, code identifiers, or function notation such as `round()`, `clamp()`, `min()`, or `max()`. Operators SHALL be written as ×, ÷, +, and −.
+A rule that takes more than one operation SHALL use named steps when those steps help explain the outcome. A one-operation rule MAY be a sentence without a redundant worked example. Each step SHALL name its result in game terms and state the computation using real stats and earlier steps. Visible explanations SHALL NOT use code identifiers or single-letter variables.
 
 #### Scenario: A one-operation rule
 
-- **WHEN** a skill's rule multiplies one value by one percentage, such as Wild Strike's bonus on the next auto attack
-- **THEN** the page states it as a sentence with a worked number
-- **AND** it shows no calculation block
+- **WHEN** a skill multiplies one value by one percentage
+- **THEN** the page states the amount and relevant condition plainly
+- **AND** an obvious example is not required solely to repeat that operation
 
 #### Scenario: A formula has an intermediate quantity
 
-- **WHEN** a formula uses an intermediate result, such as the Health a skill spends
-- **THEN** a step names that result in words, such as "Health spent"
-- **AND** later steps refer to it by that name, not by a letter
+- **WHEN** a formula uses an intermediate quantity such as Health spent
+- **THEN** a step names that quantity in words
+- **AND** later steps use that name rather than a letter
 
 #### Scenario: A formula has a bound
 
 - **WHEN** the game limits a value
-- **THEN** the step states the limit in words, such as "at most 90%" or "between 0% and 90%"
+- **THEN** the explanation states the limit in words
 
 ### Requirement: Units are the reader's units
 
@@ -53,22 +53,34 @@ A page SHALL call a character stat by the name the game's character window shows
 
 ### Requirement: Rounding is stated where it happens
 
-Each step or sentence that produces a whole number SHALL say how it rounds, as "rounded", "rounded down", or "rounded up". A page that rounds to the nearest whole number SHALL state once, at the first such use, that exact halves round to the even number.
+Detailed calculations SHALL preserve the game's rounding and state how displayed whole-number results are rounded. A nearest-integer calculator SHALL explain its exact-halves rule once. Compact summaries MAY leave intermediate rounding detail in the calculator when they retain the meaningful cost, benefit and conditions.
+
+#### Scenario: A compact resource trade
+
+- **WHEN** a summary describes spending one resource to restore another
+- **THEN** it retains the cost and benefit scaling
+- **AND** detailed rounding may remain in its linked calculator
 
 #### Scenario: A page rounds in several places
 
-- **WHEN** a page contains several calculations or sentences that round to the nearest integer
-- **THEN** each says "rounded"
-- **AND** the page states the exact-halves rule once, at the first of them
+- **WHEN** a detailed calculator rounds several intermediate results
+- **THEN** each affected step states its rounding
+- **AND** its first nearest-integer explanation states the exact-halves rule
 
 ### Requirement: Worked examples use the game's arithmetic
 
-A calculation whose outcome depends on numbers SHALL show a worked example. The example SHALL state its inputs, give the outcome first, and then show the substituted arithmetic. A skill's example SHALL use its highest rank unless the reader chooses another. It SHALL be computed from the published data with the game's arithmetic, including single-precision intermediate values and the game's rounding, and SHALL NOT be typed by hand.
+A worked example SHALL state its inputs and computed outcome using published data and the game's applicable precision and rounding, including single-precision intermediates where used. Numeric outcomes SHALL be computed rather than typed by hand. Effect examples SHALL use a valid caster scenario through the existing fixed-caster and rank-input rules rather than a blanket highest-rank default. Learning requirements SHALL use the described or next base rank separately from effect examples.
+
+#### Scenario: A companion effect example
+
+- **WHEN** the caster's valid ranks start at one
+- **THEN** its example does not use rank zero
+- **AND** the selected rank does not replace the skill's actual learning requirements
 
 #### Scenario: The data changes
 
-- **WHEN** a game update changes a coefficient the example uses
-- **THEN** the rebuilt page shows an example computed with the new coefficient
+- **WHEN** a game update changes a coefficient
+- **THEN** the rebuilt example computes its result from the new coefficient
 
 ### Requirement: Readers can rerun an example with their own numbers
 
@@ -86,19 +98,25 @@ A calculation whose result depends on the reader's character or choices SHALL of
 
 ### Requirement: A general rule is stated once
 
-A page that applies a general combat rule SHALL link to the section that states it, instead of restating its formula. The damage pipeline, resistance and mitigation, combat advantage, cast and attack timing, lifetap, and Wild Strike rules SHALL be stated on the combat page. A skill page SHALL state only the skill's own values, such as its cast time or lifetap percentage, with a worked number.
+Shared combat calculations SHALL live on the combat page. Skill pages SHALL link to them while retaining local quantitative rules needed to understand the skill. Resistance explanations SHALL retain the rate, Accuracy interaction and chance limit. Partial-cleanse explanations SHALL retain the guaranteed layer, two independent extra-layer chances, skill-specific base chance, Accuracy scaling and limits.
+
+#### Scenario: A skill can be resisted or partly cleansed
+
+- **WHEN** its card identifies resistance or partial cleansing
+- **THEN** the local explanation retains the quantitative mechanics
+- **AND** a shared-calculation link does not replace them with a generic possibility
 
 #### Scenario: A damage skill page
 
-- **WHEN** a damage skill page describes what happens to its hits
-- **THEN** it names the stat its damage meets and links to the combat page sections for the pipeline and resistance
-- **AND** it does not repeat their formulas
+- **WHEN** a page describes what happens to its hits
+- **THEN** it names the relevant defenses and links to shared combat calculations
+- **AND** it retains applicable local resistance rates, Accuracy scaling and limits
 
 #### Scenario: A spell page
 
-- **WHEN** a spell page describes its cast time
-- **THEN** it gives the skill's cast time and one worked number for spell haste
-- **AND** it links to the combat page's timing calculation
+- **WHEN** a page describes casting time
+- **THEN** it gives the skill's casting time and relevant haste effect
+- **AND** it links to the shared timing calculation without requiring a redundant example
 
 ### Requirement: Formulas are readable
 

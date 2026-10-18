@@ -9,8 +9,11 @@ namespace DataExporter.Exporters;
 
 public class MonsterExporter : BaseExporter
 {
-    public MonsterExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
+    private readonly ConfiguredWorldSnapshot _snapshot;
+    public MonsterExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets,
+        ConfiguredWorldSnapshot snapshot) : base(logger, exportPath, visualAssets)
     {
+        _snapshot = snapshot;
     }
 
     public override void Export()
@@ -25,12 +28,17 @@ public class MonsterExporter : BaseExporter
         // Group monsters by name to identify canonical entities
         var monstersByName = new Dictionary<string, List<Il2Cpp.Monster>>();
         var templateCount = 0;
-        var spawnCount = 0;
+        var capturedDefinitions = new Dictionary<string, MonsterData>(System.StringComparer.Ordinal);
+        foreach (var definition in _snapshot.Read<List<MonsterData>>("monster_definitions"))
+            capturedDefinitions.Add(definition.id, definition);
 
         foreach (var obj in monsters)
         {
             var monster = obj.TryCast<Il2Cpp.Monster>();
             if (monster == null || string.IsNullOrEmpty(monster.name))
+                continue;
+            // Live instances can supply artwork, never definition facts or placement membership.
+            if (!capturedDefinitions.ContainsKey(SanitizeId(monster.name)))
                 continue;
 
             var sanitizedName = SanitizeId(monster.name);
@@ -40,30 +48,68 @@ public class MonsterExporter : BaseExporter
             }
             monstersByName[sanitizedName].Add(monster);
 
-            var isTemplate = monster.gameObject == null || !monster.gameObject.scene.IsValid();
-            if (isTemplate)
+            if (monster.gameObject == null || !monster.gameObject.scene.IsValid())
                 templateCount++;
-            else
-                spawnCount++;
         }
 
-        Logger.Msg($"Found {monstersByName.Count} unique monsters ({templateCount} templates, {spawnCount} spawns)");
+        Logger.Msg($"Found {monstersByName.Count} unique configured monsters ({templateCount} templates)");
 
         var monsterList = new List<MonsterData>();
-        var spawnList = new List<MonsterSpawnData>();
+        var spawnList = _snapshot.Read<List<MonsterSpawnData>>("monster_spawns");
 
         // Process each monster group
         foreach (var (name, group) in monstersByName)
         {
-            // Find canonical monster (prefer template)
-            Il2Cpp.Monster canonical = group.FirstOrDefault(m => m.gameObject == null || !m.gameObject.scene.IsValid())
-                                     ?? group.First();
+            var template = group.FirstOrDefault(m => m.gameObject == null || !m.gameObject.scene.IsValid());
+            var canonical = template ?? group.First();
+            var monsterData = capturedDefinitions[name];
 
+
+            var sceneVisualSource = group.FirstOrDefault(m =>
+                m.gameObject != null && m.gameObject.scene.IsValid());
+            var visualSource = SelectEntityVisualSource(
+                canonical.gameObject,
+                sceneVisualSource?.gameObject);
+            ExportEntitySprite("monster", name, "Monster.gameObject", visualSource);
+            VisualAssets?.ExportSprite(
+                "monster",
+                name,
+                "portrait",
+                "Monster.portraitBoss",
+                canonical.portraitBoss != null ? canonical.portraitBoss.GetType().FullName : "UnityEngine.Sprite",
+                canonical.portraitBoss != null ? canonical.portraitBoss.name : null,
+                canonical.portraitBoss);
+            VisualAssets?.ExportSprite(
+                "monster",
+                name,
+                "bestiary",
+                "Monster.imageBossBestiary",
+                canonical.imageBossBestiary != null ? canonical.imageBossBestiary.GetType().FullName : "UnityEngine.Sprite",
+                canonical.imageBossBestiary != null ? canonical.imageBossBestiary.name : null,
+                canonical.imageBossBestiary);
+
+
+            monsterList.Add(monsterData);
+
+        }
+        foreach (var definition in capturedDefinitions.Values)
+            if (!monstersByName.ContainsKey(definition.id))
+                monsterList.Add(definition);
+
+        WriteJson(monsterList, "monsters.json");
+        WriteJson(spawnList, "monster_spawns.json");
+        Logger.Msg($"✓ Exported {monsterList.Count} canonical monsters and {spawnList.Count} spawn points");
+    }
+
+    internal static MonsterData BuildDefinition(Il2Cpp.Monster canonical, string name)
+    {
             var monsterData = new MonsterData
             {
                 // Identity
                 id = name,  // canonical ID (sanitized name)
                 name = canonical.name,
+                loot_zone_number = canonical.idZone,
+                is_summoned_pet = canonical.isSummonedPet,
 
                 // Base stats
                 level = canonical.level.current,
@@ -213,20 +259,17 @@ public class MonsterExporter : BaseExporter
                 }
             }
 
-            // Export drops
-            if (canonical.dropChances != null && canonical.dropChances.Count > 0)
+            if (canonical.dropChances == null)
+                throw new System.InvalidOperationException($"{name}: missing template drop array. Reload World.");
+            foreach (var drop in canonical.dropChances)
             {
-                foreach (var drop in canonical.dropChances)
+                if (drop == null || drop.item == null || string.IsNullOrEmpty(drop.item.name))
+                    throw new System.InvalidOperationException($"{name}: missing template drop item. Reload World.");
+                monsterData.drops.Add(new ItemDrop
                 {
-                    if (drop.item != null)
-                    {
-                        monsterData.drops.Add(new ItemDrop
-                        {
-                            item_id = SanitizeId(drop.item.name),
-                            rate = drop.probability
-                        });
-                    }
-                }
+                    item_id = SanitizeId(drop.item.name),
+                    rate = drop.probability
+                });
             }
 
             // Export skill IDs (skill_ids[0] is default attack, [1+] are special abilities)
@@ -240,81 +283,6 @@ public class MonsterExporter : BaseExporter
                     }
                 }
             }
-
-            var sceneVisualSource = group.FirstOrDefault(m =>
-                m.gameObject != null && m.gameObject.scene.IsValid());
-            var visualSource = SelectEntityVisualSource(
-                canonical.gameObject,
-                sceneVisualSource?.gameObject);
-            ExportEntitySprite("monster", name, "Monster.gameObject", visualSource);
-            VisualAssets?.ExportSprite(
-                "monster",
-                name,
-                "portrait",
-                "Monster.portraitBoss",
-                canonical.portraitBoss != null ? canonical.portraitBoss.GetType().FullName : "UnityEngine.Sprite",
-                canonical.portraitBoss != null ? canonical.portraitBoss.name : null,
-                canonical.portraitBoss);
-            VisualAssets?.ExportSprite(
-                "monster",
-                name,
-                "bestiary",
-                "Monster.imageBossBestiary",
-                canonical.imageBossBestiary != null ? canonical.imageBossBestiary.GetType().FullName : "UnityEngine.Sprite",
-                canonical.imageBossBestiary != null ? canonical.imageBossBestiary.name : null,
-                canonical.imageBossBestiary);
-
-
-            monsterList.Add(monsterData);
-
-            // Export spawn points for all instances (including non-templates)
-            foreach (var monster in group)
-            {
-                var isTemplate = monster.gameObject == null || !monster.gameObject.scene.IsValid();
-                if (isTemplate)
-                    continue;  // Skip templates - they don't have spawn locations
-
-                // The zone comes from the same point as the position. Two points
-                // give a patrolling monster a zone that contradicts its coordinates.
-                var placed = PlacedPosition(monster.startPosition, monster.transform.position);
-                var zoneInfo = GetZoneInfoFromPosition(placed);
-                var spawnData = new MonsterSpawnData
-                {
-                    id = PlacementId($"{name}_{zoneInfo.ZoneId}", placed),
-                    monster_id = name,  // reference to canonical monster
-                    zone_id = zoneInfo.ZoneId,
-                    sub_zone_id = zoneInfo.SubZoneId,
-                    position = new Position(placed.x, placed.y, placed.z),
-                    level = monster.level.current,
-                    health = monster.health?.max ?? 0,
-                    damage = monster.combat?.damage ?? 0,
-                    magic_damage = monster.combat?.magicDamage ?? 0,
-                    defense = monster.combat?.defense ?? 0,
-                    magic_resist = monster.combat?.magicResist ?? 0,
-                    poison_resist = monster.combat?.poisonResist ?? 0,
-                    fire_resist = monster.combat?.fireResist ?? 0,
-                    cold_resist = monster.combat?.coldResist ?? 0,
-                    disease_resist = monster.combat?.diseaseResist ?? 0,
-                    move_probability = monster.moveProbability,
-                    move_distance = monster.moveDistance,
-                    is_patrolling = monster.isPatrolling
-                };
-
-                // Export patrol waypoints for this spawn
-                if (monster.waypointsPatrol != null && monster.waypointsPatrol.Length > 0)
-                {
-                    foreach (var waypoint in monster.waypointsPatrol)
-                    {
-                        spawnData.patrol_waypoints.Add(new Position(waypoint.x, waypoint.y, 0));
-                    }
-                }
-
-                spawnList.Add(spawnData);
-            }
-        }
-
-        WriteJson(monsterList, "monsters.json");
-        WriteJson(spawnList, "monster_spawns.json");
-        Logger.Msg($"✓ Exported {monsterList.Count} canonical monsters and {spawnList.Count} spawn points");
+        return monsterData;
     }
 }

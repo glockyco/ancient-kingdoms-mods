@@ -10,8 +10,11 @@ namespace DataExporter.Exporters;
 
 public class NpcExporter : BaseExporter
 {
-    public NpcExporter(MelonLoader.MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
+    private readonly ConfiguredWorldSnapshot _snapshot;
+    public NpcExporter(MelonLoader.MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets,
+        ConfiguredWorldSnapshot snapshot) : base(logger, exportPath, visualAssets)
     {
+        _snapshot = snapshot;
     }
 
     public override void Export()
@@ -51,7 +54,7 @@ public class NpcExporter : BaseExporter
         Logger.Msg($"Found {npcsByName.Count} unique NPCs ({templateCount} templates, {spawnCount} spawns)");
 
         var npcList = new List<NpcData>();
-        var spawnList = new List<NpcSpawnData>();
+        var spawnList = _snapshot.Read<List<NpcSpawnData>>("npc_spawns");
 
         // Process each NPC group
         foreach (var (name, group) in npcsByName)
@@ -196,15 +199,21 @@ public class NpcExporter : BaseExporter
                 }
             }
 
-            // Export quests offered
-            if (canonical.quests != null && canonical.quests.quests != null)
+            if (canonical.quests != null)
             {
+                if (canonical.quests.quests == null)
+                    throw new InvalidOperationException($"{name}: missing configured NPC quest offers.");
                 foreach (var questOffer in canonical.quests.quests)
                 {
-                    if (questOffer != null && questOffer.quest != null && !string.IsNullOrEmpty(questOffer.quest.name))
+                    if (questOffer == null || questOffer.quest == null || string.IsNullOrEmpty(questOffer.quest.name))
+                        throw new InvalidOperationException($"{name}: missing quest at offer index {npcData.quest_offers.Count}.");
+                    npcData.quest_offers.Add(new NpcQuestOfferData
                     {
-                        npcData.quests_offered.Add(SanitizeId(questOffer.quest.name));
-                    }
+                        quest_id = SanitizeId(questOffer.quest.name),
+                        offer_index = npcData.quest_offers.Count,
+                        accept_here = questOffer.acceptHere,
+                        complete_here = questOffer.completeHere
+                    });
                 }
             }
 
@@ -286,62 +295,6 @@ public class NpcExporter : BaseExporter
 
             npcList.Add(npcData);
 
-            // Export spawn points for all instances (excluding templates)
-            foreach (var npc in group)
-            {
-                var isTemplate = npc.gameObject == null || !npc.gameObject.scene.IsValid();
-                if (isTemplate)
-                    continue;  // Skip templates - they don't have spawn locations
-
-                // The zone comes from the same point as the position.
-                var placed = PlacedPosition(npc.startPosition, npc.transform.position);
-                var zoneInfo = GetZoneInfoFromPosition(placed);
-
-                // Npc.Start fills an unset origin from the start position. Publish
-                // the value the game settles on, not the zero it holds before that.
-                var followOrigin = npc.originFollowPosition == Vector2.zero
-                    ? new Vector2(placed.x, placed.y)
-                    : npc.originFollowPosition;
-                var spawnData = new NpcSpawnData
-                {
-                    id = PlacementId($"{name}_{zoneInfo.ZoneId}", placed),
-                    npc_id = name,  // reference to canonical NPC
-                    zone_id = zoneInfo.ZoneId,
-                    sub_zone_id = zoneInfo.SubZoneId,
-                    position = new Position(placed.x, placed.y, placed.z),
-                    origin_follow_position = new Position(followOrigin.x, followOrigin.y, 0),
-                    follow_distance = npc.followDistance,
-                    move_distance = npc.moveDistance,
-                    move_probability = npc.moveProbability
-                };
-
-                // Export patrol waypoints for this spawn
-                if (npc.waypointsPatrol != null && npc.waypointsPatrol.Length > 0)
-                {
-                    foreach (var waypoint in npc.waypointsPatrol)
-                    {
-                        spawnData.patrol_waypoints.Add(new Position(waypoint.x, waypoint.y, 0));
-                    }
-                }
-
-                // Export teleport data for this spawn
-                if (npc.teleport != null && npc.teleport.destinationPosition != UnityEngine.Vector2.zero)
-                {
-                    var destPos = npc.teleport.destinationPosition;
-                    var teleportZoneInfo = GetZoneInfoFromPosition(new Vector3(destPos.x, destPos.y, 0));
-                    if (teleportZoneInfo.ZoneId != "unknown")
-                    {
-                        spawnData.teleport_zone_id = teleportZoneInfo.ZoneId;
-                        spawnData.teleport_destination = new Position(destPos.x, destPos.y, 0);
-                        spawnData.teleport_price = npc.teleport.priceTravel;
-                        spawnData.teleport_message = string.IsNullOrEmpty(npc.teleport.messageText)
-                            ? null
-                            : npc.teleport.messageText;
-                    }
-                }
-
-                spawnList.Add(spawnData);
-            }
         }
 
         WriteJson(npcList, "npcs.json");

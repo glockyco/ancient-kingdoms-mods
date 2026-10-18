@@ -113,7 +113,7 @@
     <div
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-3"
     >
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3">
         <label for="skill-slider" class="shrink-0">Hunting skill</label>
         <input
           id="skill-slider"
@@ -124,9 +124,9 @@
           bind:value={skillLevel}
           class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
         />
-        <span class="font-mono w-12">{skillLevel}%</span>
+        <span class="font-mono w-12 shrink-0">{skillLevel}%</span>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-3">
         <label for="level-slider" class="shrink-0">Monster Level:</label>
         <input
           id="level-slider"
@@ -137,7 +137,7 @@
           bind:value={monsterLevel}
           class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
         />
-        <span class="font-mono w-8">{monsterLevel}</span>
+        <span class="font-mono w-8 shrink-0">{monsterLevel}</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
@@ -190,7 +190,7 @@
               monster.level_min,
               monster.level_max,
             )}
-            <tr class="border-t hover:bg-muted/30">
+            <tr class="border-t odd:bg-muted/20 hover:bg-muted/30">
               <td class="p-3">
                 <a
                   href="/monsters/{monster.id}"

@@ -235,21 +235,39 @@
       id: "giver",
       header: "Quest giver",
       minSize: 180,
-      accessorFn: (row) => row.giver_name ?? "",
+      accessorFn: (row) => row.givers.map((giver) => giver.name).join(", "),
     },
     { accessorKey: "required_value", header: "Requires", size: 200 },
   ];
 </script>
 
+{#snippet renderHeader({
+  header,
+}: {
+  header: { id: string; column: { columnDef: { header?: unknown } } };
+})}
+  {@const label =
+    typeof header.column.columnDef.header === "string"
+      ? header.column.columnDef.header
+      : header.id}
+  {#if ["level", "level_recommended", "amount", "gain", "base_price"].includes(header.id)}
+    <span class="ml-auto">{label}</span>
+  {:else}
+    {label}
+  {/if}
+{/snippet}
+
 {#snippet reputationValue(value: number, positive: boolean)}
-  <span class={positive ? GAIN_CLASS : LOSS_CLASS}>
+  <span class="ml-auto {positive ? GAIN_CLASS : LOSS_CLASS}">
     {positive ? "+" : "−"}{formatNumber(Math.abs(value))}
   </span>
 {/snippet}
 
 {#snippet requirementValue(value: number)}
-  <span>{tierFor(value)}</span>
-  <span class="text-muted-foreground">&nbsp;({formatNumber(value)})</span>
+  <span
+    >{tierFor(value)}
+    <span class="text-muted-foreground">({formatNumber(value)})</span></span
+  >
 {/snippet}
 
 {#snippet monsterCell(
@@ -270,11 +288,11 @@
       size={28}
     />
   {:else if cell.column.id === "level"}
-    {monsterLevel(row.original)}
+    <span class="ml-auto">{monsterLevel(row.original)}</span>
   {:else if cell.column.id === "rank"}
     {monsterRank(row.original)}
   {:else if cell.column.id === "amount"}
-    <span class={direction === "improve" ? GAIN_CLASS : LOSS_CLASS}>
+    <span class="ml-auto {direction === 'improve' ? GAIN_CLASS : LOSS_CLASS}">
       {monsterEffect(row.original, direction)?.amount ?? "-"}
     </span>
   {:else if cell.column.id === "location"}
@@ -322,9 +340,11 @@
       size={28}
     />
   {:else if cell.column.id === "amount"}
-    <span class={direction === "improve" ? GAIN_CLASS : LOSS_CLASS}>
+    <span class="ml-auto {direction === 'improve' ? GAIN_CLASS : LOSS_CLASS}">
       {npcEffect(row.original, direction)?.amount ?? "-"}
     </span>
+  {:else if cell.column.id === "level"}
+    <span class="ml-auto">{cell.getValue()}</span>
   {:else if cell.column.id === "location"}
     <MapLink entityId={row.original.id} entityType="npc" compact />
   {:else}
@@ -413,6 +433,8 @@
     >
   {:else if cell.column.id === "gain"}
     {@render reputationValue(row.original.gain, true)}
+  {:else if cell.column.id === "level_recommended"}
+    <span class="ml-auto">{cell.getValue()}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -437,6 +459,8 @@
       fallback={Users}
       size={28}
     />
+  {:else if cell.column.id === "level"}
+    <span class="ml-auto">{cell.getValue()}</span>
   {:else if cell.column.id === "roles"}
     <RoleBadges roles={row.original.roles} />
   {:else if cell.column.id === "location"}
@@ -535,7 +559,7 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "base_price"}
-    {formatNumber(row.original.base_price)} gold
+    <span class="ml-auto">{formatNumber(row.original.base_price)} gold</span>
   {:else if cell.column.id === "faction_required"}
     {@render requirementValue(row.original.faction_required)}
   {:else if cell.column.id === "location"}
@@ -559,12 +583,16 @@
       >{row.original.name}</a
     >
   {:else if cell.column.id === "giver"}
-    {#if row.original.giver_id && row.original.giver_name}
-      <a
-        href="/npcs/{row.original.giver_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-        >{row.original.giver_name}</a
-      >
+    {#if row.original.givers.length}
+      {#each row.original.givers as giver, index (giver.id)}
+        {#if index > 0},
+        {/if}
+        <a
+          href="/npcs/{giver.id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{giver.name}</a
+        >
+      {/each}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -648,6 +676,7 @@
             data={data.faction.vendors}
             columns={vendorColumns}
             renderCell={renderVendorCell}
+            {renderHeader}
             initialSorting={[{ id: "name", desc: false }]}
             urlKey="faction-{data.faction.id}-vendors"
             pageSize={10}
@@ -666,6 +695,7 @@
             data={data.faction.gatedItems}
             columns={gatedItemColumns}
             renderCell={renderGatedItemCell}
+            {renderHeader}
             initialSorting={[
               { id: "faction_required_to_buy", desc: true },
               { id: "name", desc: false },
@@ -687,6 +717,7 @@
             data={data.faction.houses}
             columns={houseColumns}
             renderCell={renderHouseCell}
+            {renderHeader}
             initialSorting={[{ id: "base_price", desc: false }]}
             urlKey="faction-{data.faction.id}-houses"
             pageSize={10}
@@ -705,6 +736,7 @@
             data={data.faction.questRequirements}
             columns={questRequirementColumns}
             renderCell={renderQuestRequirementCell}
+            {renderHeader}
             initialSorting={[
               { id: "required_value", desc: true },
               { id: "name", desc: false },
@@ -729,6 +761,7 @@
         data={data.faction.members}
         columns={memberColumns}
         renderCell={renderMemberCell}
+        {renderHeader}
         initialSorting={[{ id: "name", desc: false }]}
         urlKey="faction-{data.faction.id}-members"
         pageSize={10}
@@ -749,6 +782,7 @@
         data={data.faction.monstersImprove}
         columns={monsterImproveColumns}
         renderCell={renderMonsterImproveCell}
+        {renderHeader}
         initialSorting={[
           { id: "amount", desc: true },
           { id: "name", desc: false },
@@ -772,6 +806,7 @@
         data={data.faction.questGrants}
         columns={questGrantColumns}
         renderCell={renderQuestGrantCell}
+        {renderHeader}
         initialSorting={[
           { id: "level_recommended", desc: false },
           { id: "name", desc: false },
@@ -795,6 +830,7 @@
         data={data.faction.npcKillsImprove}
         columns={npcKillImproveColumns}
         renderCell={renderNpcKillImproveCell}
+        {renderHeader}
         initialSorting={[
           { id: "amount", desc: true },
           { id: "name", desc: false },
@@ -818,6 +854,7 @@
         data={data.faction.monstersDecrease}
         columns={monsterDecreaseColumns}
         renderCell={renderMonsterDecreaseCell}
+        {renderHeader}
         initialSorting={[
           { id: "amount", desc: true },
           { id: "name", desc: false },
@@ -840,6 +877,7 @@
         data={data.faction.npcKillsDecrease}
         columns={npcKillDecreaseColumns}
         renderCell={renderNpcKillDecreaseCell}
+        {renderHeader}
         initialSorting={[
           { id: "amount", desc: true },
           { id: "name", desc: false },
@@ -868,6 +906,7 @@
         data={data.faction.chests}
         columns={chestColumns}
         renderCell={renderChestCell}
+        {renderHeader}
         initialSorting={[{ id: "zone", desc: false }]}
         urlKey="faction-{data.faction.id}-chests"
         pageSize={10}

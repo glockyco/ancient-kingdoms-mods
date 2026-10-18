@@ -63,18 +63,24 @@ export const FISHING_RANGE_QUERIES = {
     LEFT JOIN items rod ON rod.id = gr.tool_required_id
     WHERE gr.is_fishing_spot = 1`,
   dropRates: `
-    SELECT isg.resource_id AS resourceId, isg.drop_rate AS dropRate
-    FROM item_sources_gather isg
-    JOIN gathering_resources gr ON gr.id = isg.resource_id
-    WHERE gr.is_fishing_spot = 1`,
+    SELECT DISTINCT ard.resource_id AS resourceId, entry.id,
+           entry.probability AS dropRate
+    FROM acquisition_resource_details ard
+    JOIN acquisition_method_pools membership ON membership.method_id = ard.id
+    JOIN loot_pools pool ON pool.id = membership.pool_id AND pool.kind = 'fishing_primary'
+    JOIN loot_pool_entries entry ON entry.pool_id = pool.id
+    ORDER BY ard.resource_id, entry.id`,
   bestRodQuality: `
     SELECT COALESCE(MAX(quality), 0) AS value
     FROM items WHERE weapon_category = 'Fishing Rod'`,
-  trashCount: `SELECT COUNT(*) AS value FROM fish WHERE is_trash = 1`,
+  trashCount: `
+    SELECT COUNT(*) AS value FROM loot_pool_entries entry
+    JOIN loot_pools pool ON pool.id = entry.pool_id
+    WHERE pool.kind = 'fishing_trash'`,
   fishQualities: `
-    SELECT i.quality AS quality
-    FROM fish f JOIN items i ON i.id = f.item_id
-    WHERE f.is_trash = 0`,
+    SELECT entry.quality AS quality FROM loot_pool_entries entry
+    JOIN loot_pools pool ON pool.id = entry.pool_id
+    WHERE pool.kind = 'fishing_fallback' AND entry.quality IS NOT NULL`,
 } as const;
 
 /** Builds the lookup structure from the raw rows returned by the loaders. */

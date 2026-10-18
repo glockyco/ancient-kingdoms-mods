@@ -13,7 +13,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import { untrack } from "svelte";
   import { SvelteSet } from "svelte/reactivity";
-  import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import {
     fishFallbackPoolForSpotTier,
     fishOutcomeRowsForSpot,
@@ -22,15 +22,17 @@
     fishingExperienceForTier,
     fishingMasteryGainChance,
     fishingMasteryGainRange,
-    fishingSpotSuccessChance,
     type FishingOutcomeRow,
     type FishPoolItem,
   } from "$lib/utils/fishing";
   import { getQualityTextColorClass, toRomanNumeral } from "$lib/utils/format";
   import type { PageData } from "./$types";
+  import {
+    professionAttempt,
+    calculateMethodProbabilities,
+  } from "$lib/acquisition/rules";
 
   let { data }: { data: PageData } = $props();
-  const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
 
   let skillLevel = $state(0);
   let selectedCostumeIds = new SvelteSet<string>();
@@ -50,13 +52,22 @@
   const trashFish = $derived(data.trashFish);
   const fishPoolsByQuality = $derived.by(() => {
     const pools: Record<number, FishPoolItem[]> = {};
-    for (const [quality, fish] of Object.entries(data.fishPoolsByQuality)) {
-      pools[Number(quality)] = fish.map((entry) => ({
-        itemId: entry.item_id,
-        itemName: entry.item_name,
+    const fallbackPools = new Set(
+      data.spotAcquisitionRows.pools
+        .filter((pool) => pool.kind === "fishing_fallback")
+        .map((pool) => pool.id),
+    );
+    for (const entry of data.spotAcquisitionRows.poolEntries) {
+      if (!fallbackPools.has(entry.pool_id) || entry.quality === null) continue;
+      const publicFish = data.fishPoolsByQuality[entry.quality]?.find(
+        (fish) => fish.item_id === entry.item_id,
+      );
+      (pools[entry.quality] ??= []).push({
+        itemId: entry.item_id ?? entry.id,
+        itemName: publicFish?.item_name ?? "Unpublished fish",
         quality: entry.quality,
-        tooltipHtml: entry.tooltip_html,
-      }));
+        tooltipHtml: publicFish?.tooltip_html ?? null,
+      });
     }
     return pools;
   });
@@ -75,12 +86,45 @@
   const selectedRodQuality = $derived(selectedRod?.quality ?? 0);
   const selectedSpotSuccessChance = $derived(
     selectedSpot
-      ? fishingSpotSuccessChance({
-          rodQuality: selectedRodQuality,
-          fishingPercent: skillLevel,
-          spotTier: selectedSpot.level,
-        })
+      ? professionAttempt(
+          "fishing",
+          selectedSpot.level,
+          skillLevel / 100,
+          selectedRod ? selectedRodQuality : null,
+        ).displayed
       : 0,
+  );
+
+  const selectedMethods = $derived(
+    data.spotMethods
+      .filter((method) =>
+        method.providers.some(
+          (provider) =>
+            provider.ref.kind === "resource_spawns" &&
+            provider.ref.id === selectedSpot?.id,
+        ),
+      )
+      .map((method) => ({
+        ...method,
+        probabilityResults: calculateMethodProbabilities(
+          data.spotAcquisitionRows,
+          data.spotAcquisitionRows.methods.find(
+            (row) => row.id === method.methodId,
+          )!,
+          method.detail,
+          {
+            assumptions: {
+              scenario: "entered",
+              questNeed: "none",
+              fatecharm: false,
+              treasureHunter: 0,
+              professionFraction: skillLevel / 100,
+              toolQuality: selectedRod ? selectedRodQuality : null,
+              costumePieces: fishermanCostumePieces,
+            },
+          },
+        ),
+      })),
   );
 
   const masteryGainChance = $derived(
@@ -108,13 +152,28 @@
   const outcomeRows = $derived.by(() => {
     if (!selectedSpot) return [];
 
-    const spotDrops = selectedSpot.drops.map((drop) => ({
-      itemId: drop.item_id,
-      itemName: drop.item_name,
-      quality: drop.quality,
-      tooltipHtml: drop.tooltip_html,
-      probability: drop.configured_drop_rate,
-    }));
+    const method = selectedMethods[0];
+    const binding =
+      data.spotAcquisitionRows.facts.acquisition_method_fishing_rules?.find(
+        (row) => row.method_id === method?.methodId,
+      );
+    const fishingRule = data.spotAcquisitionRows.facts.loot_fishing_rules?.find(
+      (row) => row.id === binding?.fishing_rule_id,
+    );
+    const spotDrops = data.spotAcquisitionRows.poolEntries
+      .filter((entry) => entry.pool_id === fishingRule?.primary_pool_id)
+      .map((entry) => {
+        const publicFish = selectedSpot.drops.find(
+          (drop) => drop.item_id === entry.item_id,
+        );
+        return {
+          itemId: entry.item_id ?? entry.id,
+          itemName: publicFish?.item_name ?? "Unpublished fish",
+          quality: entry.quality ?? 0,
+          tooltipHtml: publicFish?.tooltip_html ?? null,
+          probability: entry.probability,
+        };
+      });
 
     return [
       ...fishOutcomeRowsForSpot({
@@ -136,7 +195,7 @@
         }
         return {
           label: row.itemName,
-          itemId: row.itemId,
+          itemId: data.acquisitionItems[row.itemId] ? row.itemId : null,
           tooltipHtml: row.tooltipHtml,
           quality: row.quality,
           note:
@@ -208,33 +267,6 @@
 
   function getFishPoolByTier(tier: number): FishPoolItem[] {
     return fishPoolsByQuality[tier - 1] ?? [];
-  }
-
-  function getSourcesByType(
-    sources: PageData["rods"][number]["sources"],
-  ): [
-    PageData["rods"][number]["sources"][number]["type"],
-    PageData["rods"][number]["sources"],
-  ][] {
-    const grouped: [
-      PageData["rods"][number]["sources"][number]["type"],
-      PageData["rods"][number]["sources"],
-    ][] = [];
-
-    for (const source of sources) {
-      const group = grouped.find(([type]) => type === source.type);
-      if (group) {
-        group[1].push(source);
-      } else {
-        grouped.push([source.type, [source]]);
-      }
-    }
-
-    return grouped;
-  }
-
-  function visibleSources<T>(sources: T[]): T[] {
-    return sources.slice(0, MAX_VISIBLE_SOURCES_PER_TYPE);
   }
 
   function selectSpot(index: number): void {
@@ -759,6 +791,18 @@
           </div>
         </div>
       {/if}
+      <details class="mt-4">
+        <summary class="cursor-pointer text-blue-600 dark:text-blue-400"
+          >Gathering methods and requirements</summary
+        >
+        <div class="mt-3">
+          <MethodList
+            methods={selectedMethods}
+            items={data.acquisitionItems}
+            names={data.acquisitionNames}
+          />
+        </div>
+      </details>
     {:else}
       <p class="mt-4 text-sm text-muted-foreground">
         No fishing spots are listed.
@@ -804,46 +848,20 @@
                 </td>
                 <td class="p-3">
                   {#if rod.sources.length > 0}
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      {#each getSourcesByType(rod.sources) as [type, sources] (type)}
-                        {@const sourceConfig = SOURCE_TYPE_CONFIG[type]}
-                        <div class="flex flex-wrap items-center gap-1.5">
-                          <sourceConfig.icon
-                            class="h-4 w-4 shrink-0 {sourceConfig.color}"
-                            aria-hidden="true"
-                          />
-                          {#if type !== "crafting"}
-                            <span class="text-sm text-muted-foreground"
-                              >{sourceConfig.label}:</span
-                            >
-                          {/if}
-                          {#each visibleSources(sources) as source, i (source.id)}
-                            <span>
-                              <a
-                                href="{sourceConfig.linkPrefix}{source.id}"
-                                class="text-blue-600 hover:underline dark:text-blue-400"
-                              >
-                                {type === "crafting"
-                                  ? sourceConfig.label
-                                  : source.name}
-                              </a>
-                              {#if i < visibleSources(sources).length - 1}<span
-                                  class="text-muted-foreground">,</span
-                                >{/if}
-                            </span>
-                          {/each}
-                          {#if sources.length > MAX_VISIBLE_SOURCES_PER_TYPE}
-                            <a
-                              href="/items/{rod.item_id}"
-                              class="text-sm text-muted-foreground hover:underline"
-                            >
-                              +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE}
-                              more
-                            </a>
-                          {/if}
-                        </div>
-                      {/each}
-                    </div>
+                    <details>
+                      <summary
+                        class="cursor-pointer text-blue-600 dark:text-blue-400"
+                        >Acquisition methods</summary
+                      >
+                      <div class="mt-2">
+                        <MethodList
+                          methods={rod.sources}
+                          items={data.acquisitionItems}
+                          names={data.acquisitionNames}
+                          selectedItemId={rod.item_id}
+                        />
+                      </div>
+                    </details>
                   {:else}
                     <span class="text-muted-foreground">—</span>
                   {/if}
@@ -945,13 +963,17 @@
           </div>
           <div class="flex flex-wrap gap-x-3 gap-y-1">
             {#each pool as fish (fish.itemId)}
-              <ItemLink
-                itemId={fish.itemId}
-                itemName={fish.itemName}
-                tooltipHtml={fish.tooltipHtml}
-                imageAvailable={data.itemIconPaths[fish.itemId]}
-                colorClass={getQualityTextColorClass(fish.quality)}
-              />
+              {#if data.acquisitionItems[fish.itemId]}
+                <ItemLink
+                  itemId={fish.itemId}
+                  itemName={fish.itemName}
+                  tooltipHtml={fish.tooltipHtml}
+                  imageAvailable={data.itemIconPaths[fish.itemId]}
+                  colorClass={getQualityTextColorClass(fish.quality)}
+                />
+              {:else}
+                <span class="text-muted-foreground">Unpublished fish</span>
+              {/if}
             {/each}
           </div>
         </div>
@@ -975,7 +997,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each trashFish as item (item.item_id)}
+            {#each trashFish as item, index (index)}
               <tr class="border-t hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink

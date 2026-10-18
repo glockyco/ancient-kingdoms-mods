@@ -24,6 +24,14 @@
     <Compile Include="..\..\build-tool\Game\SteamAppManifest.cs" Link="Sessions\SteamAppManifest.cs" />
     <Compile Include="..\..\mods\DataExporter\GameIds.cs" Link="GameIds.cs" />
     <Compile Include="..\..\mods\DataExporter\PlacementIds.cs" Link="PlacementIds.cs" />
+    <Compile Include="..\..\mods\DataExporter\RecipeDefinitionKeys.cs" Link="RecipeDefinitionKeys.cs" />
+    <Compile Include="..\..\mods\DataExporter\ConfiguredValues.cs" Link="ConfiguredValues.cs" />
+    <Compile Include="..\..\mods\DataExporter\ZoneBoundary.cs" Link="ZoneBoundary.cs" />
+    <Compile Include="..\..\mods\DataExporter\Models\RecipeOfferData.cs" Link="Models\RecipeOfferData.cs" />
+    <Compile Include="..\..\mods\DataExporter\Models\MonsterData.cs" Link="Models\MonsterData.cs" />
+    <Compile Include="..\..\mods\DataExporter\Models\PortalData.cs" Link="Models\PortalData.cs" />
+    <Compile Include="..\..\mods\DataExporter\Models\SummonTriggerData.cs" Link="Models\SummonTriggerData.cs" />
+    <Compile Include="..\..\mods\DataExporter\Models\NpcData.cs" Link="Models\NpcData.cs" />
     <Compile Include="..\..\mods\DataExporter\Exporters\EquipmentSlotRows.cs" Link="Exporters\EquipmentSlotRows.cs" />
     <Compile Include="..\..\mods\DataExporter\Exporters\ProgressionRows.cs" Link="Exporters\ProgressionRows.cs" />
     <Compile Include="..\..\mods\DataExporter\Exporters\TooltipNormalizer.cs" Link="Exporters\TooltipNormalizer.cs" />

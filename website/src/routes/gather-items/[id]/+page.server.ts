@@ -7,15 +7,17 @@ import {
   getGatheringResourceSpawnsFromDb,
 } from "$lib/queries/gather-items.server";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import type { ObtainabilityNode } from "$lib/types/recipes";
 import { gatheringResourceDescription } from "$lib/server/meta-description";
 import { gatheringResourcePageIds } from "../../../../scripts/gathering-resource-ids.mjs";
 import {
   PROFESSION_MECHANICS,
   linearProcChance,
 } from "$lib/data/professions/mechanics";
+import { commonItemProbability } from "$lib/utils/primary-rewards";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -29,9 +31,9 @@ export const entries: EntryGenerator = () => {
   return gatheringResourcePageIds(resources).map((id) => ({ id }));
 };
 
-export const load: PageServerLoad = ({ params }) => {
+export const load: PageServerLoad = async ({ params }) => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
-  const resource = getGatheringResourceByIdFromDb(db, params.id);
+  const resource = await getGatheringResourceByIdFromDb(db, params.id);
 
   if (!resource) {
     db.close();
@@ -39,7 +41,7 @@ export const load: PageServerLoad = ({ params }) => {
   }
 
   const fishingSpotVariants = resource.is_fishing_spot
-    ? getFishingSpotVariantDetails(db, resource)
+    ? await getFishingSpotVariantDetails(db, resource)
     : [];
   const rods = resource.is_fishing_spot
     ? (db
@@ -62,10 +64,11 @@ export const load: PageServerLoad = ({ params }) => {
     ? (db
         .prepare(
           `
-          SELECT f.item_id, i.name AS item_name, i.quality, i.tooltip_html
-          FROM fish f
-          JOIN items i ON i.id = f.item_id
-          WHERE f.is_trash = 0
+          SELECT entry.item_id, i.name AS item_name, i.quality, i.tooltip_html
+          FROM loot_pool_entries entry
+          JOIN loot_pools pool ON pool.id = entry.pool_id AND pool.kind = 'fishing_fallback'
+          JOIN items i ON i.id = entry.item_id
+          WHERE entry.withheld = 0
           ORDER BY i.quality, i.name
         `,
         )
@@ -102,19 +105,35 @@ export const load: PageServerLoad = ({ params }) => {
   const spawns =
     selectedVariant?.spawns ??
     getGatheringResourceSpawnsFromDb(db, resource.id);
-  // Build obtainability tree for tool if one is required
-  let toolObtainabilityTree: ObtainabilityNode | null = null;
-  if (selectedResource.tool_required_id) {
-    const visited = new Set<string>();
-    toolObtainabilityTree = buildObtainabilityTree(
-      db,
-      selectedResource.tool_required_id,
-      1,
-      0,
-      visited,
-      true,
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const resourceIds = fishingSpotVariants.length
+    ? fishingSpotVariants.map((variant) => variant.resource.id)
+    : [resource.id];
+  const providerRows = db
+    .prepare(
+      `SELECT id FROM gathering_resource_spawns WHERE resource_id IN (${resourceIds.map(() => "?").join(",")})`,
+    )
+    .all(...resourceIds) as { id: string }[];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "providers",
+    providers: providerRows.map(({ id }) => ({ kind: "resource_spawns", id })),
+  });
+  const acquisitionMethods = [...acquisition.methodViews.values()];
+  for (const drop of drops) {
+    drop.actual_drop_chance = commonItemProbability(
+      acquisitionMethods.filter(
+        (method) =>
+          method.kind === "gather" &&
+          method.detail.resource_id === selectedResource.id,
+      ),
+      drop.item_id,
+      selectedResource.is_fishing_spot ? "cast" : "attempt",
     );
   }
+  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
 
   const zoneNames = [
     ...new Set(
@@ -134,9 +153,7 @@ export const load: PageServerLoad = ({ params }) => {
       level: selectedResource.level,
       tool_required_name: selectedResource.tool_required_name,
       gathering_exp: selectedResource.gathering_exp,
-      item_reward_name: selectedResource.item_reward_name,
-      item_reward_amount: selectedResource.item_reward_amount,
-      item_reward_amount_min: 1,
+      primaryRewards: selectedResource.primaryRewards,
       catches: [
         ...new Set(
           drops
@@ -164,9 +181,12 @@ export const load: PageServerLoad = ({ params }) => {
     spawns,
     rods,
     fishPoolsByQuality,
-    toolObtainabilityTree,
     description,
     fishingSpotVariants,
     selectedFishingSpotVariantIndex,
+    acquisitionMethods,
+    acquisitionRows: acquisition.rows,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(acquisition),
   };
 };

@@ -254,31 +254,32 @@ if (worldBosses.length === 0) throw new Error("No world bosses");
  * Recipe types as the recipe list names them (routes/recipes/+page.server.ts),
  * each shown with the icon of the game skill that performs the craft.
  */
-const recipeCount = (sql) => db.prepare(sql).get().count;
+const recipeCount = (kind) =>
+  db
+    .prepare(
+      "SELECT COUNT(*) AS count FROM acquisition_recipe_details WHERE display_kind = ?",
+    )
+    .get(kind).count;
 const crafting = [
   {
     type: "Crafting",
     skill: "crafting",
-    count: recipeCount(
-      "SELECT COUNT(*) AS count FROM crafting_recipes WHERE station_type IS NOT 'cooking'",
-    ),
+    count: recipeCount("crafting"),
   },
   {
     type: "Alchemy",
     skill: "alchemy",
-    count: recipeCount("SELECT COUNT(*) AS count FROM alchemy_recipes"),
+    count: recipeCount("alchemy"),
   },
   {
     type: "Cooking",
     skill: "baking",
-    count: recipeCount(
-      "SELECT COUNT(*) AS count FROM crafting_recipes WHERE station_type = 'cooking'",
-    ),
+    count: recipeCount("cooking"),
   },
   {
     type: "Scribing",
     skill: "crafting_scroll",
-    count: recipeCount("SELECT COUNT(*) AS count FROM scribing_recipes"),
+    count: recipeCount("scribing"),
   },
 ].map(({ type, skill, count }) => {
   if (count === 0) throw new Error(`No ${type} recipes`);

@@ -1,7 +1,3 @@
-import {
-  formatAltarRequirement,
-  type AltarThresholds,
-} from "$lib/calculation/altar";
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
@@ -13,7 +9,6 @@ import {
 import type {
   MonsterDetailData,
   MonsterInfo,
-  MonsterDrop,
   MonsterSkill,
   MonsterSpawnZone,
   MonsterSpawnData,
@@ -30,10 +25,22 @@ import { getFactionIdsByName } from "$lib/queries/factions.server";
 import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { statAtLevel } from "$lib/utils/monster-stats";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
 import {
-  calculateBossLootChance,
-  type BossLootDrop,
-} from "$lib/calculation/boss-loot";
+  projectAcquisitionNames,
+  projectMonsterLoot,
+} from "$lib/acquisition/projections";
+import { contextualMonsterDrops } from "$lib/server/world-acquisition";
+import {
+  formatAltarRequirement,
+  type AltarThresholds,
+} from "$lib/calculation/altar";
+import {
+  altarOutcomeSemantics,
+  consolidateAltarTiers,
+  isAltarTierRoot,
+} from "$lib/server/altar-tier-summaries";
 
 export const prerender = true;
 
@@ -47,7 +54,9 @@ export const entries: EntryGenerator = () => {
   return monsters.map((monster) => ({ id: monster.id }));
 };
 
-export const load: PageServerLoad = ({ params }): MonsterDetailData => {
+export const load: PageServerLoad = async ({
+  params,
+}): Promise<MonsterDetailData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   // Get monster basic data with placeholder name
@@ -87,34 +96,149 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         ? "nowhere"
         : "outside_dungeons";
 
-  // Parse JSON fields
-  const drops: MonsterDrop[] = monsterRaw.drops
-    ? JSON.parse(monsterRaw.drops as string)
-    : [];
-  const progression = db
-    .prepare("SELECT max_level FROM progression_rules WHERE id = 1")
-    .get() as { max_level: number } | undefined;
-  if (!progression) throw new Error("Missing progression_rules.max_level");
-  for (const drop of drops) {
-    if (drop.altar_id) {
-      if (!drop.altar_reward_tier)
-        throw new Error(
-          `Missing monsters.drops.altar_reward_tier for ${params.id}`,
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "monsters",
+    monsterIds: [params.id],
+  });
+  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
+  const loot = projectMonsterLoot(acquisition, params.id);
+  const locationName = (domain: string, id: string | null | undefined) => {
+    const name = id ? acquisition.entities.get(domain)?.get(id)?.name : null;
+    return typeof name === "string" ? name : null;
+  };
+  const respawnVaries =
+    new Set(loot.contexts.map((method) => method.detail.respawn)).size > 1;
+  const experienceVaries =
+    new Set(loot.contexts.map((method) => method.detail.exp_multiplier)).size >
+    1;
+  const lootContextLabels = Object.fromEntries(
+    loot.contexts.map((method) => {
+      const zones = [
+        ...new Set(
+          method.providers.flatMap((provider) => {
+            const name = locationName("zones", provider.location?.zoneId);
+            return name ? [name] : [];
+          }),
+        ),
+      ];
+      const labels = [...zones];
+      if (method.ruleId === "altar_final_loot") {
+        const altarName =
+          typeof method.detail.altar_id === "string"
+            ? locationName("altars", method.detail.altar_id)
+            : null;
+        labels.push(
+          altarName ? `${altarName}, final wave` : "Final altar wave",
         );
+      } else if (method.ruleId === "placeholder_loot") {
+        labels.push("After the parent monster dies");
+      } else if (method.ruleId === "lootless") {
+        labels.push("No loot");
+      }
+      if (respawnVaries)
+        labels.push(
+          method.detail.respawn === 1 ? "Respawning" : "Does not respawn",
+        );
+      if (experienceVaries)
+        labels.push(
+          `${Number(method.detail.exp_multiplier) * 100}% experience`,
+        );
+      return [method.methodId, labels.join(" · ")];
+    }),
+  );
+  const methodsById = new Map(
+    loot.contexts.map((method) => [method.methodId, method]),
+  );
+  const contextLabels = [...new Set(Object.values(lootContextLabels))];
+  const lootCommonContext =
+    contextLabels.length === 1 ? contextLabels[0] : null;
+  const contextualDrops = contextualMonsterDrops(
+    db,
+    loot.contexts,
+    acquisition,
+  ).map((drop) => {
+    const method = methodsById.get(drop.method_id)!;
+    const result = method.probabilityResults.find(
+      (result) =>
+        result.target.kind === "item" && result.target.itemId === drop.item_id,
+    );
+    const labels = lootCommonContext
+      ? []
+      : [lootContextLabels[method.methodId]];
+    const conditional = method.outputs.find(
+      (output) =>
+        output.item_id === drop.item_id && output.condition_slot !== null,
+    );
+    if (conditional && typeof method.detail.altar_id === "string") {
+      const tier = (["common", "magic", "epic", "legendary"] as const)[
+        conditional.condition_slot!
+      ];
       const altar = db
         .prepare(
           "SELECT magic_reward_threshold, epic_reward_threshold, legendary_reward_threshold FROM altars WHERE id = ?",
         )
-        .get(drop.altar_id) as AltarThresholds | undefined;
-      if (!altar)
-        throw new Error(`Missing monsters.drops.altar_id: ${drop.altar_id}`);
-      drop.note = formatAltarRequirement(
-        drop.altar_reward_tier,
-        altar,
-        progression.max_level,
-      );
+        .get(method.detail.altar_id) as AltarThresholds;
+      const progression = db
+        .prepare("SELECT max_level FROM progression_rules WHERE id = 1")
+        .get() as { max_level: number };
+      labels.push(formatAltarRequirement(tier, altar, progression.max_level));
     }
-  }
+    return {
+      ...drop,
+      note: labels.filter(Boolean).join(" · ") || null,
+      chance_event: result?.event ?? "eligible_kill",
+    };
+  });
+  const drops = consolidateAltarTiers(
+    contextualDrops,
+    (drop) => methodsById.get(drop.method_id)!,
+    (drop) => {
+      const method = methodsById.get(drop.method_id)!;
+      return {
+        outcome: altarOutcomeSemantics(
+          method,
+          method.outputs.filter((output) => output.item_id === drop.item_id),
+          method.probabilityResults.filter(
+            (result) =>
+              result.target.kind === "item" &&
+              result.target.itemId === drop.item_id,
+          ),
+        ),
+        item: drop.item_id,
+        chance: drop.rate,
+        fatecharmChance: drop.per_kill_chance_with_fatecharm,
+        event: drop.chance_event,
+        note: drop.note,
+      };
+    },
+  ).map(({ value }) => value);
+  const goldMethods = consolidateAltarTiers(
+    loot.contexts.filter((method) =>
+      method.outputs.some((output) => output.resource_kind === "gold"),
+    ),
+    (method) => method,
+    (method) =>
+      altarOutcomeSemantics(
+        method,
+        method.outputs.filter((output) => output.resource_kind === "gold"),
+        method.probabilityResults.filter(
+          (result) => result.target.kind === "gold",
+        ),
+      ),
+  ).map(({ value, acrossTiers }) =>
+    acrossTiers
+      ? {
+          ...value,
+          requirements: value.requirements.filter(
+            (root) => !isAltarTierRoot(root),
+          ),
+        }
+      : value,
+  );
   const aggroMessages: string[] = monsterRaw.aggro_messages
     ? JSON.parse(monsterRaw.aggro_messages as string)
     : [];
@@ -124,43 +248,6 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   const decreaseFaction: string[] = monsterRaw.decrease_faction
     ? JSON.parse(monsterRaw.decrease_faction as string)
     : [];
-
-  // Resolve drop item names, bestiary flag, and tooltip from items table
-  if (drops.length > 0) {
-    const itemIds = drops.map((d) => d.item_id);
-    const placeholders = itemIds.map(() => "?").join(",");
-    const itemInfo = db
-      .prepare(
-        `SELECT
-          i.id,
-          i.name,
-          i.is_bestiary_drop,
-          i.tooltip_html,
-          va.public_path AS visual_public_path
-        FROM items i
-        LEFT JOIN visual_assets va
-          ON va.domain = 'item'
-         AND va.entity_id = i.id
-         AND va.kind = 'icon'
-        WHERE i.id IN (${placeholders})`,
-      )
-      .all(...itemIds) as Array<{
-      id: string;
-      name: string;
-      is_bestiary_drop: boolean;
-      tooltip_html: string | null;
-      visual_public_path: string | null;
-    }>;
-    const infoMap = new Map(itemInfo.map((i) => [i.id, i]));
-
-    for (const drop of drops) {
-      const info = infoMap.get(drop.item_id);
-      drop.item_name = info?.name || drop.item_id;
-      drop.is_bestiary = info?.is_bestiary_drop ?? false;
-      drop.tooltip_html = info?.tooltip_html ?? null;
-      drop.visual_public_path = info?.visual_public_path ?? null;
-    }
-  }
 
   const monster: MonsterInfo = {
     id: monsterRaw.id as string,
@@ -262,40 +349,56 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   const spawnsRaw = db
     .prepare(
       `
-    SELECT
-      z.id as zone_id,
-      z.name as zone_name,
-      ms.level,
-      ms.health,
-      ms.damage,
-      ms.magic_damage,
-      ms.defense,
-      ms.magic_resist,
-      ms.poison_resist,
-      ms.fire_resist,
-      ms.cold_resist,
-      ms.disease_resist,
-      ms.sub_zone_id,
-      zt.name as sub_zone_name,
-      ms.spawn_type,
-      ms.source_monster_id,
-      ms.source_monster_name,
-      ms.source_spawn_probability,
-      ms.source_altar_id,
-      ms.source_altar_name,
-      ms.source_altar_wave,
-      ms.source_altar_activation_item_id,
-      ms.source_altar_activation_item_name,
-      ms.source_summon_kill_monster_id,
-      ms.source_summon_kill_monster_name,
-      ms.source_summon_kill_count
-    FROM monster_spawns ms
-    JOIN zones z ON z.id = ms.zone_id
+    WITH summon_guards AS (
+      SELECT st.id, st.summoned_monster_spawn_id, guard.monster_id,
+        monster.name AS monster_name, COUNT(*) AS kill_count
+      FROM summon_triggers st
+      JOIN summon_trigger_placeholders p ON p.trigger_id = st.id
+      JOIN monster_spawns guard ON guard.id = p.spawn_id
+      JOIN monsters monster ON monster.id = guard.monster_id
+      GROUP BY st.id, guard.monster_id
+    )
+    SELECT z.id AS zone_id, z.name AS zone_name, ms.level,
+      ms.health, ms.damage, ms.magic_damage, ms.defense, ms.magic_resist,
+      ms.poison_resist, ms.fire_resist, ms.cold_resist, ms.disease_resist,
+      ms.sub_zone_id, zt.name AS sub_zone_name,
+      CASE WHEN st.id IS NULL THEN 'regular' ELSE 'summon' END AS spawn_type,
+      NULL AS source_monster_id, NULL AS source_monster_name, NULL AS source_spawn_probability,
+      NULL AS source_altar_id, NULL AS source_altar_name, NULL AS source_altar_wave,
+      NULL AS source_altar_activation_item_id, NULL AS source_altar_activation_item_name,
+      sg.monster_id AS source_summon_kill_monster_id,
+      sg.monster_name AS source_summon_kill_monster_name,
+      sg.kill_count AS source_summon_kill_count
+    FROM monster_spawns ms JOIN zones z ON z.id = ms.zone_id
     LEFT JOIN zone_triggers zt ON zt.id = ms.sub_zone_id
+    LEFT JOIN summon_triggers st ON st.summoned_monster_spawn_id = ms.id
+    LEFT JOIN summon_guards sg ON sg.id = st.id
     WHERE ms.monster_id = ?
+    UNION ALL
+    SELECT DISTINCT z.id, z.name, json_extract(member.value, '$.base_level'),
+      0, 0, 0, 0, 0, 0, 0, 0, 0, a.sub_zone_id, zt.name, 'altar',
+      NULL, NULL, NULL, a.id, a.name, k.wave_number,
+      a.required_activation_item_id, a.required_activation_item_name,
+      NULL, NULL, NULL
+    FROM acquisition_kill_details k JOIN altars a ON a.id = k.altar_id
+    JOIN zones z ON z.id = a.zone_id LEFT JOIN zone_triggers zt ON zt.id = a.sub_zone_id
+    JOIN json_each(a.waves) wave ON CAST(wave.key AS INTEGER) = k.wave_number
+    JOIN json_each(wave.value, '$.monsters') member ON CAST(member.key AS INTEGER) = k.wave_member_index
+    WHERE k.monster_id = ?
+    UNION ALL
+    SELECT DISTINCT z.id, z.name, target.level,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, parent.sub_zone_id, zt.name, 'placeholder',
+      origin.id, origin.name, origin.placeholder_spawn_probability,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    FROM acquisition_kill_details k
+    JOIN monster_spawns parent ON parent.id = k.parent_monster_spawn_id
+    JOIN monsters origin ON origin.id = parent.monster_id
+    JOIN monsters target ON target.id = k.monster_id
+    JOIN zones z ON z.id = parent.zone_id LEFT JOIN zone_triggers zt ON zt.id = parent.sub_zone_id
+    WHERE k.monster_id = ? AND k.event_kind = 'placeholder'
   `,
     )
-    .all(params.id) as Array<{
+    .all(params.id, params.id, params.id) as Array<{
     zone_id: string;
     zone_name: string;
     level: number | null;
@@ -487,8 +590,9 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       spawn.spawn_type === "summon" &&
       spawn.source_summon_kill_monster_id
     ) {
-      if (!summonByZone.has(spawn.zone_id)) {
-        summonByZone.set(spawn.zone_id, {
+      const summonKey = `${spawn.zone_id}:${spawn.source_summon_kill_monster_id}:${spawn.source_summon_kill_count}`;
+      if (!summonByZone.has(summonKey)) {
+        summonByZone.set(summonKey, {
           zone_id: spawn.zone_id,
           zone_name: spawn.zone_name,
           sub_zone_id: spawn.sub_zone_id,
@@ -581,58 +685,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     altar.waves.sort((a, b) => a - b);
   }
   spawns.placeholder = placeholderInfo;
-  // Sources: server-scripts/DefaultEvent.cs:SummonMonsters;
-  // server-scripts/AvatarEvent.cs:SummonMonsters. Classify actual wave placements,
-  // not monster names, since the same template can also appear outside an altar.
-  if (typeof monsterRaw.loot_inputs !== "string") {
-    throw new Error(`Missing monsters.loot_inputs for ${params.id}`);
-  }
-  const lootInputs = JSON.parse(monsterRaw.loot_inputs) as BossLootDrop[];
-  const templateHasDrops = lootInputs.length > 0;
-  if (monster.is_boss) {
-    const fatecharmContext = db
-      .prepare(
-        `
-      SELECT EXISTS (
-        SELECT 1 FROM monster_spawns ms
-        JOIN zones z ON z.id = ms.zone_id AND z.is_dungeon = 1 AND z.zone_id > 0
-        JOIN items charm ON charm.luck_token_zone_id = ms.zone_id AND charm.luck_token_bonus > 0
-        WHERE ms.monster_id = ?
-      ) AS eligible
-    `,
-      )
-      .get(params.id) as { eligible: number };
-    const hasFatecharm = Boolean(fatecharmContext.eligible);
-    const isLootOutcome = (itemId: string) =>
-      lootInputs.some(
-        (input) =>
-          (input.item_id === itemId && input.random_items === undefined) ||
-          input.random_items?.some((item) => item.item_id === itemId),
-      );
-    const seen = new Set<string>();
-    const groupedDrops = drops.filter((drop) => {
-      if (drop.altar_id || drop.note || !isLootOutcome(drop.item_id))
-        return true;
-      if (seen.has(drop.item_id)) return false;
-      seen.add(drop.item_id);
-      return true;
-    });
-    for (const drop of groupedDrops) {
-      if (drop.altar_id || !isLootOutcome(drop.item_id)) continue;
-      const neededQuestItemIds = new Set([drop.item_id]);
-      drop.per_kill_chance = calculateBossLootChance(lootInputs, drop.item_id, {
-        neededQuestItemIds,
-      });
-      if (hasFatecharm) {
-        drop.per_kill_chance_with_fatecharm = calculateBossLootChance(
-          lootInputs,
-          drop.item_id,
-          { neededQuestItemIds, fatecharm: true },
-        );
-      }
-    }
-    drops.splice(0, drops.length, ...groupedDrops);
-  }
+  const templateHasDrops = (loot.definitionPool?.entries.length ?? 0) > 0;
   const altarPlacements = db
     .prepare(
       `
@@ -709,195 +762,49 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         a.level - b.level || a.zone_names[0].localeCompare(b.zone_names[0]),
     );
 
-  // Get quests that require killing this monster
-  const killQuestsRaw = db
+  const quests = db
     .prepare(
       `
-    SELECT
-      id,
-      name,
-      level_required,
-      level_recommended,
-      is_main_quest,
-      is_epic_quest,
-      is_adventurer_quest,
-      is_repeatable,
-      kill_target_1_id,
-      kill_amount_1,
-      kill_target_2_id,
-      kill_amount_2
-    FROM quests
-    WHERE kill_target_1_id = ? OR kill_target_2_id = ?
-    ORDER BY level_recommended
+    SELECT q.id, q.name, q.level_required, q.level_recommended,
+      q.is_main_quest, q.is_epic_quest, q.is_adventurer_quest, q.is_repeatable,
+      'Kill' AS display_type, o.amount, NULL AS item_id, NULL AS item_name
+    FROM quest_objectives o JOIN quest_objective_monsters target ON target.id = o.id
+    JOIN quests q ON q.id = o.quest_id WHERE target.monster_id = ?
+    UNION ALL
+    SELECT q.id, q.name, q.level_required, q.level_recommended,
+      q.is_main_quest, q.is_epic_quest, q.is_adventurer_quest, q.is_repeatable,
+      q.display_type, o.amount, i.id AS item_id, i.name AS item_name
+    FROM quest_objectives o JOIN quest_objective_items target ON target.id = o.id
+    JOIN items i ON i.id = target.item_id JOIN quests q ON q.id = o.quest_id
+    WHERE target.item_id IN (SELECT DISTINCT value FROM json_each(?))
+    ORDER BY level_recommended, name
   `,
     )
-    .all(params.id, params.id) as Array<{
-    id: string;
-    name: string;
-    level_required: number;
-    level_recommended: number;
-    is_main_quest: number;
-    is_epic_quest: number;
-    is_adventurer_quest: number;
-    is_repeatable: number;
-    kill_target_1_id: string | null;
-    kill_amount_1: number;
-    kill_target_2_id: string | null;
-    kill_amount_2: number;
-  }>;
-
-  const quests: MonsterQuest[] = killQuestsRaw.map((q) => ({
-    id: q.id,
-    name: q.name,
-    level_required: q.level_required,
-    level_recommended: q.level_recommended,
-    display_type: "Kill",
-    amount:
-      q.kill_target_1_id === params.id ? q.kill_amount_1 : q.kill_amount_2,
-    is_main_quest: Boolean(q.is_main_quest),
-    is_epic_quest: Boolean(q.is_epic_quest),
-    is_adventurer_quest: Boolean(q.is_adventurer_quest),
-    is_repeatable: Boolean(q.is_repeatable),
-  }));
-
-  // Get quests that require items dropped by this monster
-  // item_usages_quest already tracks every quest-item relationship
-  const dropItemIds = drops.map((d) => d.item_id);
-  const questIdsSeen = new Set(quests.map((q) => q.id));
-
-  if (dropItemIds.length > 0) {
-    const placeholders = dropItemIds.map(() => "?").join(",");
-    const itemsWithQuests = db
-      .prepare(
-        `
-      SELECT DISTINCT i.id, i.name,
-        (SELECT json_group_array(json_object('quest_id', iuq.quest_id, 'quest_name', q.name, 'purpose', iuq.purpose, 'amount', iuq.amount))
-         FROM item_usages_quest iuq
-         JOIN quests q ON iuq.quest_id = q.id
-         WHERE iuq.item_id = i.id) as needed_for_quests
-      FROM items i
-      WHERE i.id IN (${placeholders})
-        AND EXISTS (SELECT 1 FROM item_usages_quest WHERE item_id = i.id)
-    `,
-      )
-      .all(...dropItemIds) as Array<{
-      id: string;
-      name: string;
-      needed_for_quests: string;
-    }>;
-
-    // Collect all quest IDs we need to fetch
-    const questIdsToFetch = new Set<string>();
-    const questInfoMap = new Map<
-      string,
-      { itemId: string; itemName: string; amount: number; purpose: string }
-    >();
-
-    for (const item of itemsWithQuests) {
-      const neededFor = JSON.parse(item.needed_for_quests) as Array<{
-        quest_id: string;
-        quest_name: string;
-        level_required: number;
-        level_recommended: number;
-        purpose: string;
-        amount: number;
-        is_repeatable: boolean;
-        class_restrictions: string[] | null;
-      }>;
-
-      for (const questRef of neededFor) {
-        if (!questIdsSeen.has(questRef.quest_id)) {
-          questIdsToFetch.add(questRef.quest_id);
-          // Store item info for this quest (first item wins if multiple drops needed)
-          if (!questInfoMap.has(questRef.quest_id)) {
-            questInfoMap.set(questRef.quest_id, {
-              itemId: item.id,
-              itemName: item.name,
-              amount: questRef.amount,
-              purpose: questRef.purpose,
-            });
-          }
-        }
-      }
-    }
-
-    // Fetch full quest data for quests we found
-    if (questIdsToFetch.size > 0) {
-      const questPlaceholders = Array.from(questIdsToFetch)
-        .map(() => "?")
-        .join(",");
-      const itemQuestsRaw = db
-        .prepare(
-          `
-        SELECT
-          id,
-          name,
-          level_required,
-          level_recommended,
-          display_type,
-          is_main_quest,
-          is_epic_quest,
-          is_adventurer_quest,
-          is_repeatable
-        FROM quests
-        WHERE id IN (${questPlaceholders})
-        ORDER BY level_recommended
-      `,
-        )
-        .all(...questIdsToFetch) as Array<{
-        id: string;
-        name: string;
-        level_required: number;
-        level_recommended: number;
-        display_type: string;
-        is_main_quest: number;
-        is_epic_quest: number;
-        is_adventurer_quest: number;
-        is_repeatable: number;
-      }>;
-
-      for (const q of itemQuestsRaw) {
-        const itemInfo = questInfoMap.get(q.id);
-        if (!itemInfo) continue;
-
-        questIdsSeen.add(q.id);
-        quests.push({
-          id: q.id,
-          name: q.name,
-          level_required: q.level_required,
-          level_recommended: q.level_recommended,
-          display_type: itemInfo.purpose,
-          amount: itemInfo.amount,
-          item_id: itemInfo.itemId,
-          item_name: itemInfo.itemName,
-          is_main_quest: Boolean(q.is_main_quest),
-          is_epic_quest: Boolean(q.is_epic_quest),
-          is_adventurer_quest: Boolean(q.is_adventurer_quest),
-          is_repeatable: Boolean(q.is_repeatable),
-        });
-      }
-
-      // Sort by level_recommended after combining
-      quests.sort((a, b) => a.level_recommended - b.level_recommended);
-    }
-  }
+    .all(
+      params.id,
+      JSON.stringify([...new Set(drops.map((drop) => drop.item_id))]),
+    ) as MonsterQuest[];
 
   // Get what killing this monster can summon (reverse lookup)
   const summons = db
     .prepare(
       `
     SELECT
-      st.summoned_entity_id AS summoned_monster_id,
-      st.summoned_entity_name AS summoned_monster_name,
+      COALESCE(target_monster.id, target_npc.id) AS summoned_monster_id,
+      COALESCE(target_monster.name, target_npc.name) AS summoned_monster_name,
       st.summoned_entity_type,
       COUNT(*) AS kill_count,
       z.id AS zone_id, z.name AS zone_name,
       NULL AS sub_zone_id, NULL AS sub_zone_name
     FROM summon_triggers st
+    LEFT JOIN monster_spawns target_ms ON target_ms.id = st.summoned_monster_spawn_id
+    LEFT JOIN monsters target_monster ON target_monster.id = target_ms.monster_id
+    LEFT JOIN npc_spawns target_ns ON target_ns.id = st.summoned_npc_spawn_id
+    LEFT JOIN npcs target_npc ON target_npc.id = target_ns.npc_id
     JOIN summon_trigger_placeholders p ON p.trigger_id = st.id
     JOIN monster_spawns guard ON guard.id = p.spawn_id
     JOIN zones z ON z.id = st.zone_id
-    WHERE guard.monster_id = ?
+    WHERE guard.monster_id = ? AND st.summoned_target_withheld = 0
     GROUP BY st.id
   `,
     )
@@ -1035,6 +942,12 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     factionIds: getFactionIdsByName(),
     description,
     drops,
+    loot,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(acquisition),
+    lootContextLabels,
+    lootCommonContext,
+    goldMethods,
     combatSummoners,
     altarContext,
     spawns,

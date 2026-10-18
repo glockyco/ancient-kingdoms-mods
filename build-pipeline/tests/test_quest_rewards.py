@@ -1,4 +1,4 @@
-"""Shared class rewards retain their quantity and original tooltip placement."""
+"""Quest tooltips consume canonical slots, counters and withheld targets."""
 
 import json
 from pathlib import Path
@@ -6,9 +6,7 @@ from pathlib import Path
 import pytest
 
 from compendium.db import create_database
-from compendium.denormalizers.items.sources import _denormalize_quest_reward_sources
-from compendium.denormalizers.items.usages import _denormalize_quest_usages
-from compendium.denormalizers.quests import rewards, tooltips
+from compendium.denormalizers.quests import tooltips
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 CLASS_NAMES = (
@@ -39,149 +37,176 @@ def add_classes(conn, names=CLASS_NAMES):
     )
 
 
-def add_quest(conn, items):
+def add_quest(conn, *, quest_type="general", tooltip="{REWARDITEM}\n{REWARDITEMCLASS}"):
     conn.execute(
-        """INSERT INTO quests (id, name, quest_type, rewards, tooltip, tooltip_complete)
-        VALUES ('quest', 'Quest', 'general', ?, ?, ?)""",
+        """INSERT INTO quests
+        (id, name, quest_type, reward_gold, reward_experience, tooltip, tooltip_complete)
+        VALUES ('quest', 'Quest', ?, 5, 10, ?, ?)""",
+        (quest_type, tooltip, tooltip),
+    )
+
+
+def add_reward(
+    conn, ordinal, item_id, *, class_id=None, withheld_class=False, amount=1
+):
+    conn.execute(
+        """INSERT INTO quest_reward_slots
+        (id, quest_id, ordinal, slot_kind, class_id, item_id,
+         class_withheld, item_withheld, amount)
+        VALUES (?, 'quest', ?, ?, ?, ?, ?, ?, ?)""",
         (
-            json.dumps({"gold": 5, "exp": 10, "items": items}),
-            "{REWARDITEM}\n{REWARDITEMCLASS}",
-            "{REWARDITEM}\n{REWARDITEMCLASS}",
+            f"reward:{ordinal}",
+            ordinal,
+            "class" if class_id or withheld_class else "shared",
+            class_id,
+            item_id,
+            int(withheld_class),
+            int(item_id is None),
+            amount,
         ),
     )
 
 
-def reward_items(conn):
-    return json.loads(conn.execute("SELECT rewards FROM quests").fetchone()[0])["items"]
-
-
-def class_rewards(names=CLASS_NAMES):
-    return [{"item_id": "essence", "class_specific": name} for name in names]
+def tooltips_for(conn):
+    return tuple(
+        json.loads(value)
+        for value in conn.execute(
+            "SELECT tooltip_html, tooltip_complete_html FROM quests"
+        ).fetchone()
+    )
 
 
 @pytest.mark.parametrize("names", [CLASS_NAMES[:2], CLASS_NAMES])
-def test_shared_rewards_use_the_classes_table_and_keep_tooltip_slot(conn, names):
+def test_shared_and_class_slots_keep_distinct_native_placeholders(conn, names):
     add_classes(conn, names)
     conn.executemany(
         "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
         [("rune", "Rune"), ("essence", "Essence")],
     )
-    generic = {"item_id": "rune", "class_specific": None}
-    add_quest(conn, [generic, *class_rewards(names)])
-
-    rewards.run(conn)
-    assert reward_items(conn) == [
-        generic,
-        {
-            "item_id": "essence",
-            "class_specific": None,
-            "tooltip_placeholder": "REWARDITEMCLASS",
-        },
-    ]
-    rewards.run(conn)
-    assert len(reward_items(conn)) == 2
+    add_quest(conn)
+    add_reward(conn, 0, "rune")
+    for ordinal, name in enumerate(names, 1):
+        add_reward(conn, ordinal, "essence", class_id=name.lower())
 
     tooltips.run(conn)
-    start, complete = conn.execute(
-        "SELECT tooltip_html, tooltip_complete_html FROM quests"
-    ).fetchone()
-    assert json.loads(start) == {"_default": "Rune\nEssence"}
-    assert json.loads(complete) == {"_default": "Rune\nEssence"}
-    _denormalize_quest_reward_sources(conn)
-    assert (
-        conn.execute(
-            "SELECT class_restriction FROM item_sources_quest WHERE item_id = 'essence'"
-        ).fetchone()[0]
-        is None
+
+    expected = {name: "Rune\nEssence" for name in names}
+    assert tooltips_for(conn) == (expected, expected)
+    assert conn.execute(
+        "SELECT COUNT(*) FROM quest_reward_slots WHERE slot_kind = 'class'"
+    ).fetchone()[0] == len(names)
+
+
+def test_different_class_reward_does_not_leak_into_other_class_tooltip(conn):
+    add_classes(conn, ("Warrior", "Wizard"))
+    conn.executemany(
+        "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
+        [("sword", "Sword"), ("staff", "Staff")],
     )
+    add_quest(conn)
+    add_reward(conn, 0, "sword", class_id="warrior")
+    add_reward(conn, 1, "staff", class_id="wizard")
+
+    tooltips.run(conn)
+
+    expected = {"Warrior": "\nSword", "Wizard": "\nStaff"}
+    assert tooltips_for(conn) == (expected, expected)
 
 
-@pytest.mark.parametrize(
-    "difference", ["missing", "duplicate", "amount", "item", "unknown_class"]
-)
-def test_distinct_or_incomplete_rewards_keep_class_restrictions(conn, difference):
-    add_classes(conn)
-    items = class_rewards()
-    if difference == "missing":
-        items.pop()
-    elif difference == "duplicate":
-        items[-1] = dict(items[0])
-    elif difference == "amount":
-        items[-1]["amount"] = 2
-    elif difference == "item":
-        items[-1]["item_id"] = "other"
-    else:
-        items[-1]["class_specific"] = "Unknown"
-    add_quest(conn, items)
+def test_withheld_class_reward_is_never_rendered_as_shared(conn):
+    add_classes(conn, ("Warrior", "Wizard"))
+    conn.execute(
+        "INSERT INTO items (id, name, travel_zone_id) VALUES ('reward', 'Reward', NULL)"
+    )
+    add_quest(conn)
+    add_reward(conn, 0, "reward", withheld_class=True)
 
-    rewards.run(conn)
-    assert reward_items(conn) == items
+    tooltips.run(conn)
+
+    assert tooltips_for(conn) == ({"Warrior": "\n", "Wizard": "\n"},) * 2
+    assert conn.execute(
+        "SELECT slot_kind, class_id, class_withheld FROM quest_reward_slots"
+    ).fetchone() == ("class", None, 1)
 
 
-def test_explicit_and_implicit_one_are_the_same_amount(conn):
-    add_classes(conn)
-    items = class_rewards()
-    items[0]["amount"] = 1
-    add_quest(conn, items)
-    rewards.run(conn)
-    assert len(reward_items(conn)) == 1
-    assert reward_items(conn)[0]["amount"] == 1
+def test_withheld_shared_reward_keeps_unknown_target_visible(conn):
+    add_classes(conn, ("Wizard",))
+    add_quest(conn)
+    add_reward(conn, 0, None)
+
+    tooltips.run(conn)
+
+    assert tooltips_for(conn) == ({"_default": "Unpublished item\n"},) * 2
 
 
-def test_empty_classes_cannot_publish_unrestricted_rewards(conn):
-    add_quest(conn, class_rewards())
+def test_empty_classes_cannot_render_quest_tooltips(conn):
+    add_quest(conn)
     with pytest.raises(ValueError, match="requires playable classes"):
-        rewards.run(conn)
+        tooltips.run(conn)
 
 
 def test_tooltip_resolves_player_context_and_formats_reward_numbers(conn):
     quest = {
+        "quest_type": "general",
         "tooltip": "{PLAYER}|{RACE}|{CLASS}|{REWARDGOLD}|{REWARDEXPERIENCE}",
-        "rewards": json.dumps({"gold": 1200, "exp": 180000}),
+        "reward_gold": 1200,
+        "reward_experience": 180000,
+        "reward_slots": (),
     }
-    parsed = tooltips._parse_quest_tooltip(conn, quest, "Wizard")
-    fields = parsed.split("|")
+    fields = tooltips._parse_quest_tooltip(quest, "Wizard").split("|")
     assert all("{" not in field and "}" not in field for field in fields)
     assert fields[2] == "Wizard"
     assert fields[3:] == ["1,200", "180,000"]
 
 
-def test_zero_amount_inventory_requirements_produce_no_usage(conn):
-    conn.executemany(
-        "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
-        [("unused", "Unused"), ("needed", "Needed")],
+def test_objective_gap_keeps_second_native_counter_placeholder(conn):
+    add_classes(conn, ("Wizard",))
+    conn.execute("INSERT INTO monsters (id, name) VALUES ('wolf', 'Wolf')")
+    add_quest(
+        conn,
+        quest_type="kill",
+        tooltip="{KILLTARGET}|{KILLTARGET2}|{KILLAMOUNT2}|{KILLED2}",
     )
     conn.execute(
-        """INSERT INTO quests
-        (id, name, quest_type, display_type, required_items, gather_items, tooltip)
-        VALUES ('quest', 'Quest', 'gather_inventory', 'Have', ?, ?, '{GATHERSTATUS}')""",
-        (
-            json.dumps(
-                [{"item_id": "unused", "amount": 0}, {"item_id": "needed", "amount": 2}]
-            ),
-            json.dumps([{"item_id": "unused", "amount": 0}]),
-        ),
+        """INSERT INTO quest_objectives
+        (id, quest_id, ordinal, kind, role, amount, withheld)
+        VALUES ('objective', 'quest', 1, 'monster', 'kill_counter', 3, 0)"""
     )
-    _denormalize_quest_usages(conn)
-    assert conn.execute(
-        "SELECT item_id, amount FROM item_usages_quest ORDER BY item_id"
-    ).fetchall() == [("needed", 2)]
-    quest = {
-        "quest_type": "gather_inventory",
-        "tooltip": "{GATHERSTATUS}",
-        "gather_items": json.dumps([{"item_id": "unused", "amount": 0}]),
-    }
-    assert tooltips._parse_quest_tooltip(conn, quest, "Wizard") == ""
+    conn.execute(
+        "INSERT INTO quest_objective_monsters (id, monster_id) VALUES ('objective', 'wolf')"
+    )
+
+    tooltips.run(conn)
+
+    assert tooltips_for(conn) == ({"_default": "|Wolf|3|0"},) * 2
+
+
+def test_brew_tooltip_reads_brew_objective_not_owned_potions(conn):
+    add_classes(conn, ("Wizard",))
+    conn.execute(
+        "INSERT INTO items (id, name, travel_zone_id) VALUES ('potion', 'Potion', NULL)"
+    )
+    add_quest(conn, quest_type="alchemy", tooltip="{POTIONITEM}|{REWARDALCHEMYSKILL}")
+    conn.execute("UPDATE quests SET increase_alchemy_skill = 0.03")
+    conn.execute(
+        """INSERT INTO quest_objectives
+        (id, quest_id, ordinal, kind, role, amount, withheld)
+        VALUES ('brew', 'quest', 0, 'brew', 'brew_counter', 3, 0)"""
+    )
+    conn.execute(
+        "INSERT INTO quest_objective_brews (id, item_id) VALUES ('brew', 'potion')"
+    )
+
+    tooltips.run(conn)
+
+    assert tooltips_for(conn) == ({"_default": "Potion|3.0"},) * 2
 
 
 def test_class_placeholder_generates_variants_without_class_rewards(conn):
     add_classes(conn, ("Warrior", "Wizard"))
-    add_quest(conn, [])
-    conn.execute("UPDATE quests SET tooltip = '{CLASS}', tooltip_complete = '{CLASS}'")
+    add_quest(conn, tooltip="{CLASS}")
+
     tooltips.run(conn)
-    start, complete = conn.execute(
-        "SELECT tooltip_html, tooltip_complete_html FROM quests"
-    ).fetchone()
+
     expected = {"Warrior": "Warrior", "Wizard": "Wizard"}
-    assert json.loads(start) == expected
-    assert json.loads(complete) == expected
+    assert tooltips_for(conn) == (expected, expected)

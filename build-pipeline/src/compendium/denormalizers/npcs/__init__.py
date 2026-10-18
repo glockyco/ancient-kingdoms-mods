@@ -1,10 +1,4 @@
-"""NPC denormalizations.
-
-This module denormalizes NPC data by:
-1. Adding item/quest/skill names to JSON fields
-2. Adding quests_completed_here (quests that end at this NPC)
-3. Computing role bitmasks for NPC spawns (GPU filtering)
-"""
+"""NPC service flags and map role bitmasks."""
 
 import sqlite3
 

@@ -60,7 +60,7 @@ class VerifyTests(unittest.TestCase):
 
     def test_a_reference_inside_json_is_found(self):
         self._add_item(
-            "chest", "Chest", chest_rewards=f'[{{"item_id": "{REMOVED_ITEM}"}}]'
+            "set", "Set", augment_armor_set_members=f'[{{"item_id": "{REMOVED_ITEM}"}}]'
         )
 
         with self.assertRaises(verify.SurvivingReference):
@@ -85,19 +85,16 @@ class VerifyTests(unittest.TestCase):
         self._check()
 
     def test_a_zone_reference_written_as_a_number_is_found(self):
-        # `quests.zone_id_final_npc` uses -1 for "no zone", so it cannot carry a
-        # foreign key. No constraint catches this value. The scan must.
         self.conn.execute(
-            "INSERT INTO quests (id, name, quest_type, zone_id_final_npc) "
-            "VALUES ('errand', 'Errand', 'normal', ?)",
+            "INSERT INTO zones(id,zone_id,name) VALUES ('unexpected_survivor',?,'Survivor')",
             (REMOVED_ZONE_NUMBER,),
         )
-        self.conn.commit()
+        self._add_item("travel_scroll", "Scroll", travel_zone_id=REMOVED_ZONE_NUMBER)
 
         with self.assertRaises(verify.SurvivingReference) as raised:
             self._check()
 
-        self.assertIn("zone_id_final_npc", str(raised.exception))
+        self.assertIn("travel_zone_id", str(raised.exception))
 
     def test_a_published_file_for_a_removed_entity_is_found(self):
         root = Path(self.tmp.name) / "images"

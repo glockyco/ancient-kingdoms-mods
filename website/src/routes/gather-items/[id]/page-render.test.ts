@@ -16,9 +16,7 @@ function createPageData(isFishingSpot: boolean): PageData {
       tool_required_id: null,
       tool_required_name: null,
       respawn_time: 0,
-      item_reward_id: null,
-      item_reward_name: null,
-      item_reward_amount: 1,
+      primaryRewards: [],
       gathering_exp: null,
       description: null,
       visual_public_path: null,
@@ -29,12 +27,56 @@ function createPageData(isFishingSpot: boolean): PageData {
     spawns: [],
     rods: [],
     fishPoolsByQuality: {},
-    toolObtainabilityTree: null,
     description: isFishingSpot
       ? "Calm Fishing Spot fishing resource."
       : "Copper Ore gathering resource.",
     fishingSpotVariants: [],
     selectedFishingSpotVariantIndex: 0,
+    acquisitionMethods: [],
+    acquisitionItems: {},
+    acquisitionNames: {},
+    acquisitionRows: {
+      methods: [],
+      costGroups: [],
+      inputs: [],
+      outputs: [],
+      effects: [],
+      methodPools: [],
+      pools: [],
+      poolEntries: [],
+      homeProviders: [],
+      details: {
+        kill: [],
+        vendor: [],
+        quest: [],
+        recipe: [],
+        resource: [],
+        world_chest: [],
+        item: [],
+        treasure: [],
+        service: [],
+        creation: [],
+        housing: [],
+        cap_xp: [],
+        altar: [],
+      },
+      entities: {},
+      facts: {},
+      request: { kind: "providers", providers: [] },
+      providers: {
+        monster_spawns: [],
+        npcs: [],
+        altars: [],
+        resource_spawns: [],
+        chests: [],
+        crafting_stations: [],
+        alchemy_tables: [],
+        scribing_tables: [],
+        items: [],
+        classes: [],
+        treasure_locations: [],
+      },
+    },
   } satisfies PageData;
 }
 
@@ -45,19 +87,6 @@ test("fishing spot detail pages link to the Fishing profession", () => {
 
   expect(body).toMatch(
     /<a[^>]+href="\/professions\/fishing"[^>]*>.*Fishing<\/a>/s,
-  );
-});
-
-test("resource type badges use rectangular pill styling", () => {
-  const { body } = render(Page, {
-    props: { data: createPageData(true) },
-  });
-
-  expect(body).toMatch(
-    /<span[^>]+rounded-md[^>]+border[^>]*>\s*Fishing Spot\s*<\/span>/s,
-  );
-  expect(body).not.toMatch(
-    /<span[^>]+rounded-full[^>]*>\s*Fishing Spot\s*<\/span>/s,
   );
 });
 

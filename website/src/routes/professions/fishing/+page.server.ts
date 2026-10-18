@@ -5,10 +5,10 @@ import { loadFishingPageData } from "./fishing-page-data.server";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 export const prerender = true;
 
-export const load: PageServerLoad = () => {
+export const load: PageServerLoad = async () => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
   try {
-    const data = loadFishingPageData(db);
+    const data = await loadFishingPageData(db);
     const itemIconPaths = getItemIconPaths(db, [
       ...data.costumePieces.map((item) => item.item_id),
       ...data.rods.map((item) => item.item_id),

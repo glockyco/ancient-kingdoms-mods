@@ -2,12 +2,13 @@ import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import { getChestById, getChestDrops } from "$lib/queries/gather-items.server";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import type { ObtainabilityNode } from "$lib/types/recipes";
 import { chestDescription } from "$lib/server/meta-description";
-import { chestRewardChance } from "$lib/utils/chest-reward";
 import { queryOne } from "$lib/db.server";
+import { commonItemProbability } from "$lib/utils/primary-rewards";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -18,8 +19,8 @@ export const entries: EntryGenerator = () => {
   return chests.map((c) => ({ id: c.id }));
 };
 
-export const load: PageServerLoad = ({ params }) => {
-  const chest = getChestById(params.id);
+export const load: PageServerLoad = async ({ params }) => {
+  const chest = await getChestById(params.id);
 
   if (!chest) {
     throw error(404, "Chest not found");
@@ -28,30 +29,34 @@ export const load: PageServerLoad = ({ params }) => {
   // Get chest drops
   const drops = getChestDrops(params.id);
 
-  // Build obtainability tree for key if one is required
-  let keyObtainabilityTree: ObtainabilityNode | null = null;
-  if (chest.key_required_id) {
-    const db = new Database(DB_SOURCE_PATH, { readonly: true });
-    const visited = new Set<string>();
-    keyObtainabilityTree = buildObtainabilityTree(
-      db,
-      chest.key_required_id,
-      1,
-      0,
-      visited,
-      true,
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "providers",
+    providers: [{ kind: "chests", id: params.id }],
+  });
+  const acquisitionMethods = [...acquisition.methodViews.values()];
+  for (const drop of drops) {
+    drop.actual_drop_chance = commonItemProbability(
+      acquisitionMethods.filter(
+        (method) =>
+          method.kind === "world_chest" && method.detail.chest_id === chest.id,
+      ),
+      drop.item_id,
+      "successful_opening",
     );
-    db.close();
   }
+  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
+  db.close();
 
   const description = chestDescription({
     zone_name: chest.zone_name,
-    key_required_name: chest.key_required_name,
-    gold_min: chest.gold_min,
-    gold_max: chest.gold_max,
-    item_reward_name: chest.item_reward_name,
+    keys: chest.keys,
+    primaryRewards: chest.primaryRewards,
     respawn_time: chest.respawn_time,
-    chest_reward_probability: chestRewardChance(chest),
     decrease_faction: queryOne<{ decrease_faction: string }>(
       "SELECT decrease_faction FROM chests WHERE id = ?",
       [params.id],
@@ -59,5 +64,12 @@ export const load: PageServerLoad = ({ params }) => {
     reputation_loss: 200,
   });
 
-  return { chest, drops, keyObtainabilityTree, description };
+  return {
+    chest,
+    drops,
+    description,
+    acquisitionMethods,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(acquisition),
+  };
 };

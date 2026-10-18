@@ -8,7 +8,7 @@
     "predev": "pnpm publish:mods && pnpm clean:workerd && pnpm exec tsx scripts/build-search-index.ts && node scripts/compress-databases.mjs",
     "dev": "vite dev",
     "build": "vite build && node scripts/check-deployment-assets.mjs",
-    "prebuild": "pnpm publish:mods && node scripts/generate-og-image.mjs && pnpm gen:home-counts && pnpm gen:stat-vocabulary && pnpm gen:home-showcase && node scripts/build-sitemap-manifest.mjs && pnpm exec tsx scripts/build-search-index.ts && node scripts/compress-databases.mjs",
+    "prebuild": "pnpm publish:mods && node scripts/generate-og-image.mjs && pnpm gen:home-counts && pnpm gen:stat-vocabulary && pnpm gen:home-showcase && node --import tsx scripts/build-sitemap-manifest.mjs && pnpm exec tsx scripts/build-search-index.ts && node scripts/compress-databases.mjs",
     "publish:mods": "dotnet run --project ../build-tool publish-mods",
     "generate-og": "node scripts/generate-og-image.mjs",
     "preview": "vite preview",

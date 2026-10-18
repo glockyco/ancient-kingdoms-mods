@@ -32,6 +32,7 @@ function gatheringSpot(
     type: "gathering_fish",
     name: "Fishing Spot",
     resourceName: "Fishing Spot",
+    resourceId: "fishing_spot",
     selectionGroupId: "fishing_spot",
     position,
     zoneId: "zone",

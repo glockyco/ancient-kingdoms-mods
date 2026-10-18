@@ -2,12 +2,19 @@ import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
+import { loadItemAcquisition, loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import type { MethodView } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
 import {
-  getItemSourceSummaries,
-  getMinimumSourceLevel,
-  groupItemSourceSummaries,
-  type ItemSourceSummary,
-} from "$lib/server/item-source-summary";
+  summarizePrimaryRewards,
+  type PrimaryReward,
+} from "$lib/utils/primary-rewards";
+import {
+  BASELINE_ASSUMPTIONS,
+  calculateMethodProbabilities,
+} from "$lib/acquisition/rules";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -21,7 +28,7 @@ interface OreGem {
   item_id: string;
   item_name: string;
   tooltip_html: string | null;
-  chance: number;
+  probabilities: readonly (number | null)[];
 }
 
 interface MiningOre {
@@ -29,19 +36,13 @@ interface MiningOre {
   name: string;
   tier: number;
   respawn_time: number;
-  gathering_exp: number;
-  reward_item_id: string;
-  reward_item_name: string;
-  reward_amount: number;
+  gathering_exp: number | null;
+  primaryRewards: readonly PrimaryReward[];
   node_count: number;
   zones: OreZone[];
   gems: OreGem[];
+  gemProbabilities: readonly (number | null)[];
   recipe_count: number;
-}
-
-interface PickaxeSourceGroup {
-  type: ItemSourceSummary["type"];
-  sources: ItemSourceSummary[];
 }
 
 interface Pickaxe {
@@ -49,7 +50,7 @@ interface Pickaxe {
   name: string;
   quality: number;
   tooltip_html: string | null;
-  source_groups: PickaxeSourceGroup[];
+  sources: readonly MethodView[];
   min_source_level: number | null;
 }
 
@@ -84,6 +85,9 @@ interface MiningPageData {
   quests: OreQuest[];
   vendors: OreVendor[];
   itemIconPaths: Record<string, string | null>;
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
+  oreMethods: readonly MethodView[];
   totalNodes: number;
 }
 
@@ -92,13 +96,10 @@ interface RawOre {
   name: string;
   tier: number;
   respawn_time: number;
-  gathering_exp: number;
-  reward_item_id: string;
-  reward_item_name: string;
-  reward_amount: number;
+  gathering_exp: number | null;
 }
 
-export const load: PageServerLoad = (): MiningPageData => {
+export const load: PageServerLoad = async (): Promise<MiningPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const profession = db
@@ -126,17 +127,29 @@ export const load: PageServerLoad = (): MiningPageData => {
       gr.name,
       gr.level AS tier,
       gr.respawn_time,
-      gr.gathering_exp,
-      gr.item_reward_id AS reward_item_id,
-      reward.name AS reward_item_name,
-      gr.item_reward_amount AS reward_amount
+      gr.gathering_exp
     FROM gathering_resources gr
-    JOIN items reward ON reward.id = gr.item_reward_id
     WHERE gr.is_mineral = 1
     ORDER BY gr.level
   `,
     )
     .all() as RawOre[];
+  const mineralSpawns = db
+    .prepare(
+      "SELECT spawn.id FROM gathering_resource_spawns spawn JOIN gathering_resources resource ON resource.id = spawn.resource_id WHERE resource.is_mineral = 1",
+    )
+    .all() as { id: string }[];
+  const oreAcquisition = await loadAcquisition(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    {
+      kind: "providers",
+      providers: mineralSpawns.map(({ id }) => ({
+        kind: "resource_spawns",
+        id,
+      })),
+    },
+  );
 
   const zoneStatement = db.prepare(
     `
@@ -152,40 +165,113 @@ export const load: PageServerLoad = (): MiningPageData => {
   `,
   );
 
-  // The guaranteed ore is stored in the same junction as the bonus gems, so it is
-  // excluded by id rather than by rate: a future gem could also sit at 1.0.
-  const gemStatement = db.prepare(
-    `
-    SELECT
-      g.item_id,
-      i.name AS item_name,
-      i.tooltip_html,
-      g.actual_drop_chance AS chance
-    FROM item_sources_gather g
-    JOIN items i ON i.id = g.item_id
-    WHERE g.resource_id = ? AND g.item_id != ?
-    ORDER BY g.actual_drop_chance DESC, i.name
-  `,
-  );
-
   const recipeCountStatement = db.prepare(
     `
-    SELECT COUNT(DISTINCT recipe_id) AS count
-    FROM item_usages_recipe
-    WHERE item_id = ?
+    SELECT COUNT(DISTINCT detail.id) AS count
+    FROM acquisition_inputs input
+    JOIN acquisition_cost_groups cost ON cost.id = input.cost_group_id
+    JOIN acquisition_recipe_details detail ON detail.id = cost.method_id
+    WHERE input.item_id IN (SELECT value FROM json_each(?)) AND input.withheld = 0
   `,
   );
 
+  const oreItems = await loadAcquisitionItems(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    oreAcquisition,
+  );
+  const methodsByResource = new Map<string, MethodView[]>();
+  for (const method of oreAcquisition.methodViews.values()) {
+    if (
+      method.kind !== "gather" ||
+      typeof method.detail.resource_id !== "string"
+    )
+      continue;
+    const list = methodsByResource.get(method.detail.resource_id) ?? [];
+    list.push(method);
+    methodsByResource.set(method.detail.resource_id, list);
+  }
+  const gemOutcomesByMethod = new Map(
+    [...oreAcquisition.methodViews.values()].map((method) => {
+      const row = oreAcquisition.methods.get(method.methodId);
+      if (!row) throw new Error(`Missing mineral method ${method.methodId}`);
+      return [
+        method.methodId,
+        calculateMethodProbabilities(oreAcquisition.rows, row, method.detail, {
+          assumptions: {
+            ...BASELINE_ASSUMPTIONS,
+            scenario: "entered",
+            professionFraction: 1,
+            toolQuality: 4,
+          },
+        }),
+      ] as const;
+    }),
+  );
   const ores: MiningOre[] = rawOres.map((ore) => {
+    const methods = methodsByResource.get(ore.id) ?? [];
+    const primaryRewards = summarizePrimaryRewards(methods, oreItems);
+    const primaryIds = new Set(
+      primaryRewards.flatMap((reward) =>
+        reward.itemId ? [reward.itemId] : [],
+      ),
+    );
     const zones = zoneStatement.all(ore.id) as OreZone[];
-    const recipeCount = recipeCountStatement.get(ore.reward_item_id) as {
-      count: number;
+    const recipeCount = recipeCountStatement.get(
+      JSON.stringify([...primaryIds]),
+    ) as { count: number };
+    const gemIds = new Set(
+      methods.flatMap((method) =>
+        (gemOutcomesByMethod.get(method.methodId) ?? []).flatMap((result) =>
+          result.target.kind === "item" && !primaryIds.has(result.target.itemId)
+            ? [result.target.itemId]
+            : [],
+        ),
+      ),
+    );
+    const probability = (method: MethodView, itemId: string) => {
+      const outcomes = (gemOutcomesByMethod.get(method.methodId) ?? []).filter(
+        (result) =>
+          result.target.kind === "item" &&
+          result.target.itemId === itemId &&
+          result.event === "attempt",
+      );
+      if (!outcomes.length) return 0;
+      return outcomes.some((result) => result.probability === null)
+        ? null
+        : outcomes.reduce((sum, result) => sum + result.probability!, 0);
     };
+    const gems: OreGem[] = [...gemIds]
+      .map((itemId) => {
+        const item = oreItems[itemId];
+        if (!item) throw new Error(`Missing mineral outcome item ${itemId}`);
+        return {
+          item_id: itemId,
+          item_name: item.name,
+          tooltip_html: item.tooltip_html,
+          probabilities: [
+            ...new Set(methods.map((method) => probability(method, itemId))),
+          ],
+        };
+      })
+      .sort((a, b) => a.item_name.localeCompare(b.item_name));
+    const gemProbabilities = [
+      ...new Set(
+        methods.map((method) => {
+          const values = gems.map((gem) => probability(method, gem.item_id));
+          return values.some((value) => value === null)
+            ? null
+            : values.reduce<number>((sum, value) => sum + value!, 0);
+        }),
+      ),
+    ];
     return {
       ...ore,
+      primaryRewards,
       zones,
       node_count: zones.reduce((total, zone) => total + zone.node_count, 0),
-      gems: gemStatement.all(ore.id, ore.reward_item_id) as OreGem[],
+      gems,
+      gemProbabilities,
       recipe_count: recipeCount.count,
     };
   });
@@ -199,50 +285,49 @@ export const load: PageServerLoad = (): MiningPageData => {
     ORDER BY quality
   `,
     )
-    .all() as Omit<Pickaxe, "source_groups" | "min_source_level">[];
+    .all() as Omit<Pickaxe, "sources" | "min_source_level">[];
 
-  const pickaxeSources = groupItemSourceSummaries(
-    getItemSourceSummaries(
-      db,
-      rawPickaxes.map((pickaxe) => pickaxe.id),
+  const pickaxeAcquisition = await loadItemAcquisition(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    rawPickaxes.map((pickaxe) => pickaxe.id),
+  );
+  const pickaxes: Pickaxe[] = rawPickaxes.map((pickaxe) => ({
+    ...pickaxe,
+    sources: pickaxeAcquisition.sources[pickaxe.id].methods,
+    min_source_level: pickaxeAcquisition.sources[pickaxe.id].sourceLevelHint,
+  }));
+  const acquisitionItems = await loadAcquisitionItems(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    pickaxeAcquisition.model,
+  );
+  Object.assign(
+    acquisitionItems,
+    await loadAcquisitionItems(
+      async (sql, params) =>
+        db.prepare(sql).all(...params) as Record<string, unknown>[],
+      oreAcquisition,
     ),
   );
-
-  const pickaxes: Pickaxe[] = rawPickaxes.map((pickaxe) => {
-    const sources = pickaxeSources.get(pickaxe.id) ?? [];
-    // One icon heads each run of links, so the page needs the sources grouped by
-    // type rather than flat.
-    const byType = new Map<ItemSourceSummary["type"], ItemSourceSummary[]>();
-    for (const source of sources) {
-      const existing = byType.get(source.type);
-      if (existing) existing.push(source);
-      else byType.set(source.type, [source]);
-    }
-    return {
-      ...pickaxe,
-      source_groups: [...byType].map(([type, grouped]) => ({
-        type,
-        sources: grouped,
-      })),
-      min_source_level: getMinimumSourceLevel(sources),
-    };
-  });
 
   const quests = db
     .prepare(
       `
     SELECT
-      u.quest_id,
+      objective.quest_id,
       q.name AS quest_name,
-      u.item_id AS ore_id,
+      item.item_id AS ore_id,
       i.name AS ore_name,
-      u.amount,
-      u.purpose,
+      objective.amount,
+      objective.role AS purpose,
       q.level_recommended
-    FROM item_usages_quest u
-    JOIN quests q ON q.id = u.quest_id
-    JOIN items i ON i.id = u.item_id
-    WHERE u.item_id IN (SELECT item_reward_id FROM gathering_resources WHERE is_mineral = 1)
+    FROM quest_objectives objective
+    JOIN quest_objective_items item ON item.id = objective.id
+    JOIN quests q ON q.id = objective.quest_id
+    JOIN items i ON i.id = item.item_id
+    WHERE objective.withheld = 0
+      AND item.item_id IN (SELECT output.item_id FROM acquisition_outputs output JOIN acquisition_resource_details d ON d.id = output.method_id JOIN gathering_resources gr ON gr.id = d.resource_id WHERE gr.is_mineral = 1 AND output.yield_rule != 'pool' AND output.withheld = 0)
     ORDER BY q.level_recommended, q.name
   `,
     )
@@ -255,9 +340,11 @@ export const load: PageServerLoad = (): MiningPageData => {
       n.id AS npc_id,
       n.name AS npc_name,
       i.name AS ore_name
-    FROM npcs n
-    JOIN items i ON n.items_sold LIKE '%"' || i.id || '"%'
-    WHERE i.id IN (SELECT item_reward_id FROM gathering_resources WHERE is_mineral = 1)
+    FROM acquisition_vendor_details detail
+    JOIN acquisition_providers_npcs provider ON provider.method_id = detail.id
+    JOIN npcs n ON n.id = provider.npc_id
+    JOIN items i ON i.id = detail.offered_item_id
+    WHERE i.id IN (SELECT output.item_id FROM acquisition_outputs output JOIN acquisition_resource_details d ON d.id = output.method_id JOIN gathering_resources gr ON gr.id = d.resource_id WHERE gr.is_mineral = 1 AND output.yield_rule != 'pool' AND output.withheld = 0)
     ORDER BY n.name, i.name
   `,
     )
@@ -273,6 +360,12 @@ export const load: PageServerLoad = (): MiningPageData => {
     profession,
     ores,
     pickaxes,
+    acquisitionItems,
+    acquisitionNames: {
+      ...projectAcquisitionNames(oreAcquisition),
+      ...projectAcquisitionNames(pickaxeAcquisition.model),
+    },
+    oreMethods: [...oreAcquisition.methodViews.values()],
     itemIconPaths,
     quests,
     vendors,

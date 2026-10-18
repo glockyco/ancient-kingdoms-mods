@@ -1,4 +1,8 @@
 <script lang="ts">
+  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import { quantityText } from "$lib/components/acquisition/display";
+  import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import { CODE_DEFINED_RULES } from "$lib/acquisition/rules";
   import { base } from "$app/paths";
   import {
     DataTable,
@@ -22,7 +26,7 @@
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import type {
-    MonsterDrop,
+    MonsterLootDrop as MonsterDrop,
     MonsterSkill,
     MonsterSpawnZone,
     MonsterQuest,
@@ -347,10 +351,20 @@
     ].filter((a) => a.flag),
   );
 
-  // Check if any drop has a note
-  const hasDropNotes = $derived(data.drops.some((d) => d.note));
+  const hasDropNotes = $derived(
+    new Set(data.drops.map((drop) => drop.note)).size > 1,
+  );
+  const commonDropEvent = $derived(
+    new Set(data.drops.map((drop) => drop.chance_event)).size === 1
+      ? data.drops[0]?.chance_event
+      : null,
+  );
+  const chanceEventLabels: Record<string, string> = {
+    corpse_generation: "Per corpse",
+    eligible_kill: "Per eligible kill",
+    parent_award: "Per award",
+  };
 
-  // Drop columns (bestiary column only for bosses/elites, note column if any drops have notes)
   const dropColumns = $derived.by(() => {
     const cols: ColumnDef<MonsterDrop>[] = [];
 
@@ -358,7 +372,7 @@
       cols.push({
         accessorKey: "is_bestiary",
         header: "Bestiary",
-        size: 50,
+        size: 72,
         enableSorting: true,
       });
     }
@@ -366,18 +380,14 @@
     cols.push({
       accessorKey: "item_name",
       header: "Item",
-      minSize: 350,
+      minSize: 280,
     });
 
     if (hasDropNotes) {
       cols.push({
         accessorKey: "note",
-        header: data.drops
-          .filter((drop) => drop.note)
-          .every((drop) => drop.altar_id)
-          ? "Required level"
-          : "Note",
-        size: 230,
+        header: "Loot context",
+        size: 240,
       });
     }
 
@@ -385,8 +395,10 @@
       {
         id: "rate",
         accessorFn: (drop) => drop.per_kill_chance ?? drop.rate,
-        header: "Drop chance",
-        size: 140,
+        header: commonDropEvent
+          ? (chanceEventLabels[commonDropEvent] ?? "Drop chance")
+          : "Drop chance",
+        size: 160,
       },
       {
         accessorKey: "quality",
@@ -402,7 +414,7 @@
       cols.push({
         accessorKey: "per_kill_chance_with_fatecharm",
         header: "With Fatecharm",
-        size: 170,
+        size: 180,
       });
     }
 
@@ -550,32 +562,42 @@
       >
     {/if}
   {:else if cell.column.id === "item_name"}
-    <ItemLink
-      itemId={row.original.item_id}
-      itemName={row.original.item_name}
-      tooltipHtml={row.original.tooltip_html}
-      imageAvailable={row.original.visual_public_path}
-      fallback={Package}
-      variant={row.original.visual_public_path ? "reference" : "text"}
-      imageKind="icon"
-    />
+    <div class="min-w-0 whitespace-normal break-words">
+      <ItemLink
+        itemId={row.original.item_id}
+        itemName={row.original.item_name}
+        tooltipHtml={row.original.tooltip_html}
+        imageAvailable={row.original.visual_public_path}
+        fallback={Package}
+        variant={row.original.visual_public_path ? "reference" : "text"}
+        imageKind="icon"
+      />
+    </div>
   {:else if cell.column.id === "note"}
-    <span class="text-muted-foreground">{row.original.note ?? ""}</span>
-  {:else if cell.column.id === "rate"}
-    <span class="ml-auto"
-      >{formatPercent(row.original.per_kill_chance ?? row.original.rate, {
-        decimals: 1,
-        trailingZeros: true,
-      })}{row.original.per_kill_chance !== undefined
-        ? " per kill"
-        : row.original.altar_id
-          ? ""
-          : " per roll"}</span
+    <span class="block whitespace-normal break-words text-muted-foreground"
+      >{row.original.note ?? ""}</span
     >
+  {:else if cell.column.id === "rate"}
+    <span class="block w-full text-right tabular-nums">
+      {row.original.rate === null
+        ? "Unknown"
+        : formatPercent(row.original.per_kill_chance ?? row.original.rate, {
+            decimals: 1,
+            trailingZeros: true,
+          })}
+      {#if !commonDropEvent}
+        <span class="block whitespace-normal text-sm text-muted-foreground">
+          {chanceEventLabels[row.original.chance_event] ?? "Per kill"}
+        </span>
+      {/if}
+    </span>
   {:else if cell.column.id === "per_kill_chance_with_fatecharm"}
-    <span class="ml-auto">
+    <span class="block w-full text-right tabular-nums">
       {row.original.per_kill_chance_with_fatecharm !== undefined
-        ? `${formatPercent(row.original.per_kill_chance_with_fatecharm, { decimals: 1, trailingZeros: true })} per kill`
+        ? formatPercent(row.original.per_kill_chance_with_fatecharm, {
+            decimals: 1,
+            trailingZeros: true,
+          })
         : "-"}
     </span>
   {:else if cell.column.id === "quality"}
@@ -590,8 +612,20 @@
 }: {
   header: Header<MonsterDrop, unknown>;
 })}
-  {#if header.id === "rate" || header.id === "per_kill_chance_with_fatecharm"}
-    <span class="ml-auto">{header.column.columnDef.header}</span>
+  {#if header.id === "is_bestiary"}
+    <span title="Shown in the Bestiary loot list">
+      <BookOpen class="h-4 w-4 text-amber-500" />
+      <span class="sr-only">Bestiary</span>
+    </span>
+  {:else if header.id === "rate" || header.id === "per_kill_chance_with_fatecharm"}
+    <span class="ml-auto whitespace-normal text-right">
+      {header.column.columnDef.header}
+      {#if header.id === "per_kill_chance_with_fatecharm" && commonDropEvent}
+        <span class="block text-sm font-normal text-muted-foreground">
+          {chanceEventLabels[commonDropEvent] ?? "Per kill"}
+        </span>
+      {/if}
+    </span>
   {:else}
     {header.column.columnDef.header}
   {/if}
@@ -1370,7 +1404,7 @@
   {/if}
 
   <!-- Loot Section -->
-  {#if data.altarContext.only_lootless_spawns || data.altarContext.has_scaled_final_gold || (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
+  {#if data.loot.contexts.length > 0 || data.loot.definitionPool !== null || data.altarContext.only_lootless_spawns || data.altarContext.has_scaled_final_gold || (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
@@ -1384,13 +1418,8 @@
       {:else}
         {#if data.drops.some((drop) => drop.per_kill_chance !== undefined)}
           <p class="mb-4 text-sm text-muted-foreground">
-            Chances are per kill without Fatecharm. Quest items assume an
-            unfinished gathering quest. Other drops assume no quest.
-          </p>
-        {/if}
-        {#if data.drops.some((drop) => drop.per_kill_chance_with_fatecharm !== undefined)}
-          <p class="mb-4 text-sm text-muted-foreground">
-            A matching dungeon Fatecharm is consumed for the boosted chance.
+            Base chances exclude Fatecharm. Quest items assume an unfinished
+            gathering quest. Other drops assume no quest.
           </p>
         {/if}
         {#if data.altarContext.has_nonfinal_waves}
@@ -1399,35 +1428,48 @@
             gold.
           </p>
         {/if}
-
-        {#if data.altarContext.has_scaled_final_gold || (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0)}
-          <div class="mb-4 bg-muted/30 rounded-md border p-4">
-            <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              {#if data.altarContext.only_altar_spawns && data.altarContext.has_scaled_final_gold}
-                20 gold per level plus 5 gold per total veteran point of the
-                player who activated the altar.
-              {:else if data.monster.gold_min !== null && data.monster.gold_max !== null}
-                {formatNumber(data.monster.gold_min)} - {formatNumber(
-                  data.monster.gold_max,
-                )}
-                gold
-              {/if}
-              {#if data.monster.probability_drop_gold < 1}
-                <span class="text-muted-foreground font-normal">
-                  ({formatPercent(data.monster.probability_drop_gold, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })} chance)
-                </span>
-              {/if}
-            </div>
-          </div>
+        {#if data.lootCommonContext}
+          <h3 class="mb-3 font-medium">{data.lootCommonContext}</h3>
         {/if}
-        {#if data.altarContext.has_scaled_final_gold && !data.altarContext.only_altar_spawns}
+
+        {#each data.goldMethods as method (method.methodId)}
+          <div class="mb-4 bg-muted/30 rounded-md border p-4 space-y-2">
+            {#if !data.lootCommonContext && data.lootContextLabels[method.methodId]}
+              <p class="font-medium">
+                {data.lootContextLabels[method.methodId]}
+              </p>
+            {/if}
+            {#each method.outputs.filter((output) => output.resource_kind === "gold") as output (output.id)}
+              {@const chance = method.probabilityResults.find(
+                (result) => result.target.kind === "gold",
+              )}
+              <div class="font-medium text-yellow-600 dark:text-yellow-400">
+                {#if method.ruleId === "altar_final_loot" && output.quantity.kind === "unknown"}
+                  {`Gold: ${CODE_DEFINED_RULES.altar.goldPerLevel} × the activating player's level + ${CODE_DEFINED_RULES.altar.goldPerVeteranPoint} × their total veteran points`}
+                {:else}
+                  {quantityText(output.quantity)} gold
+                {/if}
+                {#if chance?.probability != null && chance.probability !== 1}
+                  <span class="text-muted-foreground font-normal"
+                    >({formatPercent(chance.probability, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}
+                    {chanceEventLabels[chance.event]?.toLowerCase() ??
+                      "per kill"})</span
+                  >
+                {/if}
+              </div>
+            {/each}
+            <Requirements
+              roots={method.requirements}
+              names={data.acquisitionNames}
+            />
+          </div>
+        {/each}
+        {#if data.drops.some((drop) => drop.per_kill_chance_with_fatecharm !== undefined)}
           <p class="mb-4 text-sm text-muted-foreground">
-            In the final wave of a Forgotten Altar event, gold is 20 per level
-            plus 5 per total veteran point of the player who activated the
-            altar.
+            A matching dungeon Fatecharm is consumed for the boosted chance.
           </p>
         {/if}
 
@@ -1453,9 +1495,48 @@
             pageSize={10}
             zebraStripe={true}
             class="bg-muted/30"
-            initialColumnVisibility={{ quality: false }}
+            initialColumnVisibility={{ quality: false, note: hasDropNotes }}
           />
         {/if}
+      {/if}
+      {#if data.loot.contexts.length > 0}
+        <details class="mt-4 rounded-md border bg-muted/30 p-4">
+          <summary class="cursor-pointer font-medium"
+            >Loot contexts, requirements and delivery</summary
+          >
+          <div class="mt-4">
+            <MethodList
+              methods={data.loot.contexts}
+              items={data.acquisitionItems}
+              names={data.acquisitionNames}
+            />
+          </div>
+        </details>
+      {/if}
+      {#if data.loot.definitionPool}
+        <details class="mt-4 rounded-md border bg-muted/30 p-4">
+          <summary class="cursor-pointer font-medium"
+            >Authored loot definition</summary
+          >
+          <p class="my-3 text-sm text-muted-foreground">
+            Configured pool entries are not per-kill chances. Actual loot
+            depends on the spawn context above.
+          </p>
+          <ul class="space-y-2">
+            {#each data.loot.definitionPool.entries as entry (entry.id)}
+              <li>
+                {#if entry.item_id}<a
+                    href="/items/{entry.item_id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >{data.acquisitionItems[entry.item_id]?.name ??
+                      entry.item_id.replaceAll("_", " ")}</a
+                  >{:else if entry.withheld}Unpublished item{:else}Random item
+                  pool{/if}: {formatPercent(entry.probability, { decimals: 2 })} configured
+                roll{#if entry.quest_gate !== "none"}, requires quest need{/if}
+              </li>
+            {/each}
+          </ul>
+        </details>
       {/if}
     </section>
   {/if}

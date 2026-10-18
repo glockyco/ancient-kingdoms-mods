@@ -2,6 +2,11 @@ import { describe, expect, test } from "vitest";
 import { query } from "$lib/db.server";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 import { skillEffectInputs, skillEffectSummaries } from "./skillEffects.server";
+import {
+  SKILL_DETAIL_COLUMNS,
+  SKILL_DETAIL_JOINS,
+  skillCastersFromRow,
+} from "./skillDetail";
 
 function summary(id: string): string {
   const [effect] = skillEffectSummaries([id]);
@@ -17,6 +22,33 @@ function playerClasses(id: string): string[] {
 }
 
 describe("skill effect summaries", () => {
+  test("preserve every configured non-Bandages potion caster rank", () => {
+    const potions = query<{ skill_id: string; rank: number }>(
+      `SELECT DISTINCT potion_buff_id AS skill_id, potion_buff_level AS rank
+       FROM items WHERE potion_buff_id IS NOT NULL
+         AND coalesce(cooldown_category, '') != 'Bandages'`,
+    );
+    expect(potions.length).toBeGreaterThan(0);
+    const ids = [...new Set(potions.map((potion) => potion.skill_id))];
+    const rows = query<Record<string, unknown>>(
+      `SELECT ${SKILL_DETAIL_COLUMNS} FROM skills s ${SKILL_DETAIL_JOINS}
+       WHERE s.id IN (${ids.map(() => "?").join(",")})`,
+      ids,
+    );
+    expect(rows.length).toBe(ids.length);
+    for (const row of rows) {
+      expect(
+        skillCastersFromRow(row).potionBuffLevels.sort((a, b) => a - b),
+        String(row.id),
+      ).toEqual(
+        potions
+          .filter((potion) => potion.skill_id === row.id)
+          .map((potion) => potion.rank)
+          .sort((a, b) => a - b),
+      );
+    }
+  });
+
   test("resolve a skill only monsters cast at their fixed rank", () => {
     expect(
       query<{ runtime_level: number }>(

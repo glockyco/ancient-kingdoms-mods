@@ -4,7 +4,7 @@ import {
   rawTierSuccessChance,
   skillFraction,
   skillGainChance,
-} from "$lib/data/professions/mechanics";
+} from "../data/professions/mechanics";
 
 const mechanics = PROFESSION_MECHANICS.fishing;
 

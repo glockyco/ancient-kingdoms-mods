@@ -200,6 +200,35 @@ describe("skill page facts", () => {
       ["ranger"],
     );
   });
+  test("withheld weapon classes never imply unrestricted proc examples", () => {
+    expect(
+      weaponProcClasses([
+        {
+          classes: [],
+          weaponCategory: "WeaponSword",
+          classRestrictionsWithheld: true,
+        },
+      ]),
+    ).toEqual([]);
+    expect(
+      weaponProcClasses([
+        {
+          classes: ["ranger"],
+          weaponCategory: "Bow",
+          classRestrictionsWithheld: true,
+        },
+      ]),
+    ).toEqual(["ranger"]);
+    expect(
+      weaponProcClasses([
+        {
+          classes: ["warrior"],
+          weaponCategory: "Bow",
+          classRestrictionsWithheld: true,
+        },
+      ]),
+    ).toEqual([]);
+  });
   test("monster usage is independent of pet and timing contexts", () => {
     expect(facts().usedByMonster).toBe(false);
     expect(facts({}, [], [], true).usedByMonster).toBe(true);

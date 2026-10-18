@@ -1,49 +1,10 @@
-"""Special item type denormalizations.
+"""Fatecharm display metadata."""
 
-This module handles denormalizations for special item types:
-- Chest-type reward display names
-- Pack items
-- Random items (including random_items_with_names)
-- Merge items
-- Treasure maps
-- Luck tokens
-"""
-
-import json
 import sqlite3
 
 from rich.console import Console
 
 console = Console()
-
-
-def _denormalize_chest_rewards(conn: sqlite3.Connection) -> int:
-    """Attach item names to the exported chest roll inputs."""
-    cursor = conn.cursor()
-    rows = cursor.execute("""
-        SELECT r.chest_item_id, r.item_id, i.name, r.roll_order,
-               r.roll_chance, r.scales_with_treasure_hunter
-        FROM chest_item_rewards r
-        JOIN items i ON i.id = r.item_id
-        ORDER BY r.chest_item_id, r.roll_order
-    """).fetchall()
-    rewards_by_chest: dict[str, list[dict]] = {}
-    for chest_id, item_id, name, order, chance, scales in rows:
-        rewards_by_chest.setdefault(chest_id, []).append(
-            {
-                "item_id": item_id,
-                "item_name": name,
-                "roll_order": order,
-                "probability": chance,
-                "scales_with_treasure_hunter": bool(scales),
-            }
-        )
-    for chest_id, rewards in rewards_by_chest.items():
-        cursor.execute(
-            "UPDATE items SET chest_rewards = ? WHERE id = ?",
-            (json.dumps(rewards), chest_id),
-        )
-    return len(rewards_by_chest)
 
 
 def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
@@ -73,9 +34,7 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
         boss_bonus,
     ) in cursor.fetchall():
         if fragment_token_id:
-            # Update luck token metadata only - the drop relationship is handled
-            # by monsters/drops.py adding fragments to monster drops, then
-            # items/sources.py building item_sources_monster from those drops
+            # Loot methods own the native placement-specific fragment roll.
             update_fragment_cursor = conn.cursor()
             update_fragment_cursor.execute(
                 """
@@ -134,27 +93,14 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
 
 
 def run(conn: sqlite3.Connection) -> None:
-    """Run all special item type denormalizations.
-
-    Updates items table with:
-    - Chest reward inputs with item names
-    - Luck token data
-
-    Note: Pack/random/merge/treasure_map data now populated by loader into junction tables.
-    """
+    """Attach Fatecharm metadata without copying acquisition definitions."""
     console.print("Denormalizing special item types...")
-
-    chest_rewards_updated = _denormalize_chest_rewards(conn)
 
     # Luck tokens
     fragment_count, boss_token_count = _denormalize_luck_tokens(conn)
 
     conn.commit()
 
-    # Print summary
-    console.print(
-        f"  [green]OK[/green] Denormalized item names in {chest_rewards_updated} chest reward lists"
-    )
     console.print(
         f"  [green]OK[/green] Updated {fragment_count} fragment luck tokens, "
         f"{boss_token_count} boss luck tokens with zone data"

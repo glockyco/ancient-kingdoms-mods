@@ -17,6 +17,34 @@ namespace DataExporter
         private static readonly string ExportPath = OperatingSystem.IsWindows() && ExportConfig.ExportPath.StartsWith("/")
             ? "Z:" + ExportConfig.ExportPath
             : ExportConfig.ExportPath;
+        private ConfiguredWorldSnapshot _worldSnapshot;
+        private string _worldCaptureError;
+
+        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        {
+            if (sceneName != "World") return;
+            _worldSnapshot?.Invalidate();
+            _worldSnapshot = null;
+            _worldCaptureError = null;
+            try
+            {
+                _worldSnapshot = ConfiguredWorldSnapshot.Capture(LoggerInstance);
+            }
+            catch (Exception error)
+            {
+                _worldCaptureError = error.Message;
+                LoggerInstance.Error($"Configured World capture failed: {error}. Reload World before exporting.");
+            }
+        }
+
+        public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
+        {
+            if (sceneName != "World") return;
+            _worldSnapshot?.Invalidate();
+            _worldSnapshot = null;
+            _worldCaptureError = "World was unloaded";
+            BaseExporter.ResetZoneTriggers();
+        }
 
         public override void OnInitializeMelon()
         {
@@ -68,25 +96,28 @@ namespace DataExporter
             return result;
         }
 
-        private IReadOnlyList<ExporterDescriptor> CreateCatalog(string path, VisualAssetRegistry visuals) =>
-            new ExporterDescriptor[]
+        private IReadOnlyList<ExporterDescriptor> CreateCatalog(string path, VisualAssetRegistry visuals)
+        {
+            var snapshot = _worldSnapshot ?? throw new InvalidOperationException(
+                $"Configured World snapshot is unavailable ({_worldCaptureError ?? "World has not loaded"}). Reload World before exporting.");
+            return new ExporterDescriptor[]
             {
-                new("monsters", new[] { "monsters.json", "monster_spawns.json" }, () => new MonsterExporter(LoggerInstance, path, visuals).Export()),
-                new("npcs", new[] { "npcs.json", "npc_spawns.json" }, () => new NpcExporter(LoggerInstance, path, visuals).Export()),
+                new("monsters", new[] { "monsters.json", "monster_spawns.json" }, () => new MonsterExporter(LoggerInstance, path, visuals, snapshot).Export()),
+                new("npcs", new[] { "npcs.json", "npc_spawns.json" }, () => new NpcExporter(LoggerInstance, path, visuals, snapshot).Export()),
                 new("items", new[] { "items.json" }, () => new ItemExporter(LoggerInstance, path, visuals).Export()),
                 new("fish", new[] { "fish.json" }, () => new FishExporter(LoggerInstance, path).Export()),
                 new("quests", new[] { "quests.json" }, () => new QuestExporter(LoggerInstance, path).Export()),
                 new("skills", new[] { "skills.json" }, () => new SkillExporter(LoggerInstance, path, visuals).Export()),
                 new("stats", new[] { "stats.json" }, () => new StatExporter(LoggerInstance, path).Export()),
-                new("portals", new[] { "portals.json" }, () => new PortalExporter(LoggerInstance, path).Export()),
+                new("portals", new[] { "portals.json" }, () => new PortalExporter(LoggerInstance, path, snapshot).Export()),
                 new("zoneInfo", new[] { "zone_info.json" }, () => new ZoneInfoExporter(LoggerInstance, path).Export()),
                 new("zoneTriggers", new[] { "zone_triggers.json" }, () => new ZoneTriggerExporter(LoggerInstance, path).Export()),
                 new("houses", new[] { "houses.json" }, () => new HouseExporter(LoggerInstance, path).Export()),
                 new("gatherItems", new[] { "gather_items.json" }, () => new GatherItemExporter(LoggerInstance, path, visuals).Export()),
-                new("craftingRecipes", new[] { "crafting_recipes.json" }, () => new CraftingRecipeExporter(LoggerInstance, path).Export()),
-                new("alchemyRecipes", new[] { "alchemy_recipes.json" }, () => new AlchemyRecipeExporter(LoggerInstance, path).Export()),
-                new("scribingRecipes", new[] { "scribing_recipes.json" }, () => new ScribingRecipeExporter(LoggerInstance, path).Export()),
-                new("summonTriggers", new[] { "summon_triggers.json" }, () => new SummonTriggerExporter(LoggerInstance, path).Export()),
+                new("craftingRecipes", new[] { "crafting_recipes.json" }, () => new CraftingRecipeExporter(LoggerInstance, path, snapshot).Export()),
+                new("alchemyRecipes", new[] { "alchemy_recipes.json" }, () => new AlchemyRecipeExporter(LoggerInstance, path, snapshot).Export()),
+                new("scribingRecipes", new[] { "scribing_recipes.json" }, () => new ScribingRecipeExporter(LoggerInstance, path, snapshot).Export()),
+                new("summonTriggers", new[] { "summon_triggers.json" }, () => new SummonTriggerExporter(LoggerInstance, path, snapshot).Export()),
                 new("luckTokens", new[] { "luck_tokens.json" }, () => new LuckTokenExporter(LoggerInstance, path).Export()),
                 new("altars", new[] { "altars.json" }, () => new AltarExporter(LoggerInstance, path).Export()),
                 new("treasureLocations", new[] { "treasure_locations.json" }, () => new TreasureLocationExporter(LoggerInstance, path).Export()),
@@ -95,11 +126,11 @@ namespace DataExporter
                     new ImageReferences("achievements.json", "achievements",
                         json => ImageReferences.ReadFields(json, "unlocked_icon_path", "locked_icon_path"))),
                 new("professions", new[] { "professions.json" }, () => new ProfessionExporter(LoggerInstance, path, visuals).Export()),
-                new("craftingStations", new[] { "crafting_stations.json" }, () => new CraftingStationExporter(LoggerInstance, path).Export()),
-                new("alchemyTables", new[] { "alchemy_tables.json" }, () => new AlchemyTableExporter(LoggerInstance, path).Export()),
-                new("scribingTables", new[] { "scribing_tables.json" }, () => new ScribingTableExporter(LoggerInstance, path).Export()),
+                new("craftingStations", new[] { "crafting_stations.json" }, () => new CraftingStationExporter(LoggerInstance, path, snapshot).Export()),
+                new("alchemyTables", new[] { "alchemy_tables.json" }, () => new AlchemyTableExporter(LoggerInstance, path, snapshot).Export()),
+                new("scribingTables", new[] { "scribing_tables.json" }, () => new ScribingTableExporter(LoggerInstance, path, snapshot).Export()),
                 new("traps", new[] { "traps.json" }, () => new TrapExporter(LoggerInstance, path).Export()),
-                new("gameConfig", new[] { "game_config.json" }, () => new GameConfigExporter(LoggerInstance, path).Export()),
+                new("gameConfig", new[] { "game_config.json" }, () => new GameConfigExporter(LoggerInstance, path, snapshot).Export()),
                 new("classes", new[] { "classes_combat.json" }, () => new ClassExporter(LoggerInstance, path, visuals).Export()),
                 new("equipmentSlots", new[] { "equipment_slots.json" }, () => new EquipmentSlotExporter(LoggerInstance, path).Export()),
                 new("progression", new[] { "progression.json" }, () => new ProgressionExporter(LoggerInstance, path).Export()),
@@ -109,5 +140,6 @@ namespace DataExporter
                     new ImageReferences("visual_assets.json", "visualAssets",
                         json => ImageReferences.ReadFields(json, "export_path"))),
             };
+        }
     }
 }

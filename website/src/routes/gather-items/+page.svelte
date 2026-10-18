@@ -20,6 +20,7 @@
   } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
   import { formatGatheringRespawn, formatNumber } from "$lib/utils/format";
+  import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
 
   let { data } = $props();
 
@@ -134,9 +135,16 @@
     },
     {
       id: "item",
-      header: "Item",
+      header: "Potential Rewards",
       minSize: 180,
-      accessorFn: (row) => row.item_reward_name || "",
+      accessorFn: (row) =>
+        row.primaryRewards
+          .map(
+            (reward) =>
+              reward.itemName ??
+              (reward.resourceKind === "gold" ? "Gold" : "Unpublished item"),
+          )
+          .join(" "),
     },
     {
       id: "drops",
@@ -215,7 +223,7 @@
   {:else if cell.column.id === "name"}
     <a
       href="/gather-items/{row.original.id}"
-      class="whitespace-nowrap text-blue-600 hover:underline dark:text-blue-400"
+      class="text-blue-600 hover:underline dark:text-blue-400"
     >
       {row.original.name}
     </a>
@@ -231,23 +239,8 @@
       {/if}
     </span>
   {:else if cell.column.id === "item"}
-    {#if row.original.item_reward_id && row.original.item_reward_name}
-      <a
-        href="/items/{row.original.item_reward_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.item_reward_name}
-      </a>
-      {#if row.original.item_reward_amount > 1}
-        <span class="text-muted-foreground"
-          >&nbsp;×1–{row.original.item_reward_amount}</span
-        >
-      {:else}
-        <span class="text-muted-foreground">&nbsp;×1</span>
-      {/if}
-      {#if row.original.type === "Radiant Spark"}
-        <span class="text-muted-foreground">, 5% to 25% chance</span>
-      {/if}
+    {#if row.original.primaryRewards.length}
+      <PrimaryRewards rewards={row.original.primaryRewards} />
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -264,7 +257,7 @@
     {formatGatheringRespawn(row.original.type, row.original.respawn_time)}
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
-    <div class="flex gap-1 whitespace-nowrap">
+    <div class="flex flex-wrap gap-1">
       {#if zones.length > 0}
         <a
           href="/zones/{zones[0].zone_id}"

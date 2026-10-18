@@ -289,7 +289,7 @@
     <RespawnCells columnId={cell.column.id} row={row.original} />
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
-    <div class="flex gap-1 whitespace-nowrap">
+    <div class="flex flex-wrap gap-1">
       {#if zones.length > 0}
         <IconBadge
           href="/zones/{zones[0].zone_id}"

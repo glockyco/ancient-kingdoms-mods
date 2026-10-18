@@ -135,6 +135,18 @@ class MonsterSpawnData(BaseModel):
     """Monster spawn point from monster_spawns.json"""
 
     id: str
+    loot_zone_number: int = Field(ge=0)
+    loot_respawn: bool
+    loot_exp_multiplier: float
+    loot_is_boss: bool
+    loot_is_elite: bool
+    loot_is_hunt: bool
+    loot_is_summoned_pet: bool
+    loot_event_kind: Literal["authored"]
+    loot_drops: list[MonsterDrop]
+    loot_gold_min: int = Field(ge=0)
+    loot_gold_max: int = Field(ge=0)
+    loot_gold_probability: float = Field(ge=0, le=1)
     monster_id: str
     zone_id: str
     sub_zone_id: str | None = None
@@ -168,6 +180,8 @@ class MonsterData(BaseModel):
     # Identity
     id: str
     name: str
+    loot_zone_number: int = Field(ge=0)
+    is_summoned_pet: bool
 
     # Base stats
     level: int
@@ -359,7 +373,7 @@ class ChestReward(BaseModel):
     """Reward from opening a chest."""
 
     item_id: str
-    probability: float
+    probability: float = Field(ge=0, le=1)
     scales_with_treasure_hunter: bool
 
 
@@ -547,6 +561,15 @@ class NpcSpawnData(BaseModel):
     teleport_message: str | None = None
 
 
+class NpcQuestOffer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    quest_id: str = Field(min_length=1)
+    offer_index: int = Field(ge=0)
+    accept_here: bool
+    complete_here: bool
+
+
 class NpcData(BaseModel):
     """NPC data from npcs.json"""
 
@@ -563,7 +586,7 @@ class NpcData(BaseModel):
     preferred_mercenary_race: str = ""
 
     # What they offer
-    quests_offered: list[str] = []
+    quest_offers: list[NpcQuestOffer]
     items_sold: list[NpcItemSale] = []
 
     # Base stats
@@ -639,18 +662,15 @@ class NpcData(BaseModel):
     # Skills (for guards and hostile NPCs)
     skill_ids: list[str] = []
 
-    @field_validator("items_sold")
+    @field_validator("quest_offers")
     @classmethod
-    def one_row_per_offer(cls, sales: list[NpcItemSale]) -> list[NpcItemSale]:
-        """Drop repeated identical offers.
-
-        Some shops list the same item at the same price in several slots of
-        NpcTrading.saleItems, which is still one offer.
-        """
-        offers: dict[tuple[str, int, str | None], NpcItemSale] = {}
-        for sale in sales:
-            offers.setdefault((sale.item_id, sale.price, sale.currency_item_id), sale)
-        return list(offers.values())
+    def unique_native_quest_offer_indices(
+        cls, offers: list[NpcQuestOffer]
+    ) -> list[NpcQuestOffer]:
+        indices = [offer.offer_index for offer in offers]
+        if len(indices) != len(set(indices)):
+            raise ValueError("NPC quest offer indices must be unique")
+        return offers
 
 
 # =============================================================================
@@ -1159,9 +1179,7 @@ class PortalData(BaseModel):
     # True when every traveler needs their own key. When false, an online
     # party member's key admits the whole party (Portal.cs OnTriggerEnter2D).
     requires_everyone_key: bool
-    need_monster_dead_id: str | None = (
-        None  # Monster that must be dead to activate (e.g., "thalassor")
-    )
+    need_monster_dead_spawn_id: str | None
     level_required: int = 0
     item_level_required: int = 0
     is_closed: bool = False
@@ -1312,17 +1330,58 @@ class CraftingMaterial(BaseModel):
     """Material needed for crafting."""
 
     item_id: str
-    amount: int = 1
+    amount: int = Field(gt=0)
+
+
+class RecipeOffer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    definition_key: str = Field(min_length=1)
+    offer_index: int = Field(ge=0)
+
+
+class HousingWorkstation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    component_path: str = Field(min_length=1)
+    kind: Literal["crafting", "alchemy", "scribing"]
+    recipe_offers: list[RecipeOffer]
+
+
+class HousingCatalogEntry(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    item_id: str
+    workstations: list[HousingWorkstation]
+
+
+class GameConfigData(BaseModel):
+    """Configured catalog inputs retained privately until normalization."""
+
+    model_config = ConfigDict(extra="allow")
+
+    lockpicks_item_id: str
+    housing_catalog: list[HousingCatalogEntry]
+    journal_fish_item_ids: list[str]
+    trash_fish_item_ids: list[str]
+    special_items: dict[str, str | None]
 
 
 class CraftingRecipeData(BaseModel):
     """Crafting recipe data from crafting_recipes.json"""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
+    definition_key: str = Field(min_length=1)
+    tier: int = Field(ge=0)
+    experience: int | None
+    is_cooking_oven: bool
+    is_scribing_table: bool
     result_item_id: str
-    result_amount: int = 1
-    materials: list[CraftingMaterial] = []
-    station_type: str
+    result_amount: int = Field(gt=0)
+    materials: list[CraftingMaterial]
+    station_type: Literal["crafting", "cooking"]
 
 
 # =============================================================================
@@ -1334,16 +1393,24 @@ class AlchemyMaterial(BaseModel):
     """Material needed for alchemy."""
 
     item_id: str
-    amount: int = 1
+    amount: int = Field(gt=0)
 
 
 class AlchemyRecipeData(BaseModel):
     """Alchemy recipe data from alchemy_recipes.json"""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
+    definition_key: str = Field(min_length=1)
+    result_amount: int = Field(gt=0)
+    tier: int = Field(ge=0)
+    experience: int | None
+    is_cooking_oven: bool
+    is_scribing_table: bool
     result_item_id: str
-    level_required: int = 0
-    materials: list[AlchemyMaterial] = []
+    level_required: int = Field(ge=0)
+    materials: list[AlchemyMaterial]
 
 
 # =============================================================================
@@ -1354,11 +1421,14 @@ class AlchemyRecipeData(BaseModel):
 class AlchemyTableData(BaseModel):
     """Alchemy table world location from alchemy_tables.json"""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
     zone_id: str
     sub_zone_id: str | None = None
     position: Position
+    recipe_offers: list[RecipeOffer]
 
 
 class HouseData(BaseModel):
@@ -1384,26 +1454,37 @@ class ScribingMaterial(BaseModel):
     """Material needed for scribing."""
 
     item_id: str
-    amount: int = 1
+    amount: int = Field(gt=0)
 
 
 class ScribingRecipeData(BaseModel):
     """Scribing recipe data from scribing_recipes.json"""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
+    definition_key: str = Field(min_length=1)
+    result_amount: int = Field(gt=0)
+    tier: int = Field(ge=0)
+    experience: int | None
+    is_cooking_oven: bool
+    is_scribing_table: bool
     result_item_id: str
-    level_required: int = 0
-    materials: list[ScribingMaterial] = []
+    level_required: int = Field(ge=0)
+    materials: list[ScribingMaterial]
 
 
 class ScribingTableData(BaseModel):
     """Scribing table world location from scribing_tables.json"""
+
+    model_config = ConfigDict(extra="forbid")
 
     id: str
     name: str
     zone_id: str
     sub_zone_id: str | None = None
     position: Position
+    recipe_offers: list[RecipeOffer]
 
 
 # =============================================================================
@@ -1414,12 +1495,15 @@ class ScribingTableData(BaseModel):
 class CraftingStationData(BaseModel):
     """Crafting station world location from crafting_stations.json"""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
     zone_id: str
     sub_zone_id: str | None = None
     position: Position
     is_cooking_oven: bool = False
+    recipe_offers: list[RecipeOffer]
 
 
 # =============================================================================
@@ -1431,9 +1515,11 @@ class SummonTriggerData(BaseModel):
     """Summon trigger data from summon_triggers.json"""
 
     id: str
-    summoned_entity_type: str  # "Monster" or "Npc"
+    summoned_entity_type: Literal["Monster", "Npc"]
     summoned_entity_id: str
     summoned_entity_name: str
+    summoned_monster_spawn_id: str | None
+    summoned_npc_spawn_id: str | None
     summon_message: str = ""
     spawn_position: Position | None = None
     zone_id: str | None = None
@@ -1444,6 +1530,24 @@ class SummonTriggerData(BaseModel):
     summoned_respawn_probability: float
     # Monster.deathTime; None for an Npc, whose corpse time is a code constant.
     summoned_death_time: float | None
+
+    @model_validator(mode="after")
+    def require_exact_summoned_target(self) -> "SummonTriggerData":
+        if self.summoned_entity_type == "Monster":
+            valid = (
+                bool(self.summoned_monster_spawn_id)
+                and self.summoned_npc_spawn_id is None
+            )
+        else:
+            valid = (
+                bool(self.summoned_npc_spawn_id)
+                and self.summoned_monster_spawn_id is None
+            )
+        if not valid:
+            raise ValueError(
+                "summon trigger requires exactly one matching configured spawn target"
+            )
+        return self
 
 
 class LuckTokenData(BaseModel):

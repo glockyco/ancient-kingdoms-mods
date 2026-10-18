@@ -4,6 +4,9 @@ import type { PageServerLoad, EntryGenerator } from "./$types";
 import { altarDescription } from "$lib/server/meta-description";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { contextualMonsterDrops } from "$lib/server/world-acquisition";
+import { evaluateOutputQuantity } from "$lib/acquisition/rules";
 import type {
   AltarDetailPageData,
   AltarInfo,
@@ -25,7 +28,9 @@ export const entries: EntryGenerator = () => {
   return altars.map((altar) => ({ id: altar.id }));
 };
 
-export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
+export const load: PageServerLoad = async ({
+  params,
+}): Promise<AltarDetailPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const altarRaw = db
@@ -52,6 +57,23 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
   const waves: AltarWave[] = altarRaw.waves
     ? JSON.parse(altarRaw.waves as string)
     : [];
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "providers",
+    providers: [{ kind: "altars", id: params.id }],
+  });
+  const methods = [...acquisition.methodViews.values()].filter(
+    (method) =>
+      (method.kind !== "kill" || method.ruleId !== "lootless") &&
+      (method.providers.some(
+        (provider) =>
+          provider.ref.kind === "altars" && provider.ref.id === params.id,
+      ) ||
+        method.detail.altar_id === params.id),
+  );
 
   // Get activation item tooltip
   let activationItemTooltipHtml: string | null = null;
@@ -100,50 +122,56 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
           }
         | undefined;
 
-      // Get drop rates for reward items and full drops list
-      const dropsRaw = db
-        .prepare(
-          `
-          SELECT
-            json_extract(d.value, '$.item_id') as item_id,
-            json_extract(d.value, '$.rate') as rate,
-            json_extract(d.value, '$.quantity') as quantity
-          FROM monsters m, json_each(m.drops) d
-          WHERE m.id = ?
-        `,
-        )
-        .all(monsterId) as Array<{
-        item_id: string;
-        rate: number;
-        quantity: number;
-      }>;
-
-      // Build boss drops with item info
-      const bossDrops: AltarBossDrop[] = [];
+      const dropsRaw = contextualMonsterDrops(
+        db,
+        methods.filter(
+          (method) =>
+            method.kind === "kill" &&
+            method.detail.monster_id === monsterId &&
+            method.detail.altar_id === params.id,
+        ),
+        acquisition,
+      );
+      const bossDrops: AltarBossDrop[] = [
+        ...new Map(
+          dropsRaw
+            .filter(
+              (drop) =>
+                !rewardTiers.some(
+                  (tier) => altarRaw[`reward_${tier}_id`] === drop.item_id,
+                ),
+            )
+            .map((drop) => [
+              drop.item_id,
+              {
+                itemId: drop.item_id,
+                itemName: drop.item_name,
+                rate: drop.rate,
+                tooltipHtml: drop.tooltip_html,
+              },
+            ]),
+        ).values(),
+      ];
+      const bossMethod = methods.find(
+        (method) =>
+          method.kind === "kill" &&
+          method.detail.monster_id === monsterId &&
+          method.detail.altar_id === params.id,
+      );
+      const goldOutput = bossMethod?.outputs.find(
+        (output) => output.resource_kind === "gold",
+      );
+      const goldResult = bossMethod?.probabilityResults.find(
+        (result) => result.target.kind === "gold",
+      );
+      const goldQuantity = goldOutput
+        ? evaluateOutputQuantity(goldOutput)
+        : null;
       for (const drop of dropsRaw) {
-        const itemInfo = db
-          .prepare("SELECT name, tooltip_html FROM items WHERE id = ?")
-          .get(drop.item_id) as
-          | {
-              name: string;
-              tooltip_html: string | null;
-            }
-          | undefined;
-
-        if (itemInfo) {
-          bossDrops.push({
-            itemId: drop.item_id,
-            itemName: itemInfo.name,
-            rate: drop.rate,
-            quantity: drop.quantity,
-            tooltipHtml: itemInfo.tooltip_html,
-          });
-        }
-
-        // Track for reward tier drop rates
-        const existing = bossMonsterDrops.get(drop.item_id);
-        if (!existing || drop.rate > existing) {
-          bossMonsterDrops.set(drop.item_id, drop.rate);
+        if (drop.rate !== null) {
+          const existing = bossMonsterDrops.get(drop.item_id);
+          if (existing === undefined || drop.rate > existing)
+            bossMonsterDrops.set(drop.item_id, drop.rate);
         }
       }
 
@@ -157,6 +185,13 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
           damage: monsterInfo.damage,
           magicDamage: monsterInfo.magic_damage,
           drops: bossDrops,
+          gold:
+            goldQuantity && goldQuantity.kind !== "unknown"
+              ? {
+                  quantity: goldQuantity,
+                  probability: goldResult?.probability ?? null,
+                }
+              : null,
         });
       }
     }
@@ -221,6 +256,7 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
   const itemIconPaths = getItemIconPaths(db, [
     ...rewards.flatMap((reward) => (reward.itemId ? [reward.itemId] : [])),
     ...(altar.requiredActivationItemId ? [altar.requiredActivationItemId] : []),
+    ...bosses.flatMap((boss) => boss.drops.map((drop) => drop.itemId)),
   ]);
   db.close();
 
@@ -247,6 +283,12 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
 
   return {
     altar,
+    activationCost:
+      methods
+        .find((method) => method.kind === "altar_activate")
+        ?.costGroups.flatMap((group) => group.inputs)
+        .find((input) => input.item_id === altar.requiredActivationItemId)
+        ?.amount ?? null,
     maxLevel: progression.max_level,
     description,
     rewards,

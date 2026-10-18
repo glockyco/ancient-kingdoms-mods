@@ -81,14 +81,16 @@
       open={isOpen}
       onOpenChange={handleOpenChange}
     >
-      <HoverCard.Trigger>
-        <a
-          {href}
-          onclick={handleClick}
-          class="inline-block max-w-full cursor-pointer text-left underline decoration-dotted hover:decoration-solid {effectiveColorClass} {className}"
-        >
-          {itemName}
-        </a>
+      <HoverCard.Trigger {href} onclick={handleClick}>
+        {#snippet child({ props })}
+          <a
+            {...props}
+            role="link"
+            class="inline-block max-w-full cursor-pointer text-left underline decoration-dotted hover:decoration-solid {effectiveColorClass} {className}"
+          >
+            {itemName}
+          </a>
+        {/snippet}
       </HoverCard.Trigger>
       <HoverCard.Content
         class="w-80 border-0 p-0 overflow-hidden shadow-lg"

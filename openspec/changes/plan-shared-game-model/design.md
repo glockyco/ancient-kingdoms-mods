@@ -211,7 +211,7 @@ Adopted as they are: relation tables that plan their columns from their rows, un
 
 The foundational altar, primal-essence, item-level and chest corrections are implemented in the [game-rules archive](../archive/2026-10-17-unify-game-rules/design.md). The vocabulary cutover is implemented in the [stat-vocabulary archive](../archive/2026-10-17-unify-stat-vocabulary/design.md). The [prose cleanup](../archive/2026-10-17-clarify-compendium-prose/design.md) also implemented theoretical boss per-kill odds, zero-amount quest filtering and several special-source displays.
 
-The [acquisition implementation checkpoint](../unify-acquisition-usage-requirements/design.md#implementation-checkpoint) owns the scoped findings, source-bound evidence and remaining acceptance gates. The following boundaries describe the implemented cutover, not accepted completion or instructions to repeat exporter repairs. New or changed game-behavior claims still require D15 verification.
+The [acquisition implementation checkpoint](../unify-acquisition-usage-requirements/design.md#implementation-checkpoint) owns source-bound evidence and remaining acceptance gates. Native, analytic, quest-role and pipeline units remain accepted. Complete publication builds passed for their recorded source. Later built-browser findings reopened presentation and final-source publication gates. Acquisition must finish the repaired UI's verification, source-bound publication, recovery and atomic commits before acceptance. Existing mathematics, complete alternatives and ingredient/plan accounting remain required. Later milestones consume this boundary rather than repeat exporter repairs.
 
 | Area | Acquisition ownership and remaining boundary |
 | --- | --- |
@@ -219,7 +219,7 @@ The [acquisition implementation checkpoint](../unify-acquisition-usage-requireme
 | Fragment loot | Captured placement context and event overrides determine eligible sources. Final integrated acceptance belongs to acquisition. |
 | Fatecharm conversion and services | Shared grouped methods and costs replace virtual definitions. Do not add duplicate result/quantity exports. |
 | Boss loot | Existing mathematics consumes original pools, eligible placements and explicit assumptions. Acquisition retains process-preservation acceptance. |
-| Recipes and stations | Complete variants and exact world/home memberships supply current consumers. Profession layout work consumes this boundary. New station reference routes remain later. |
+| Recipes and stations | Complete variants and exact world/home memberships supply current consumers. Acquisition also owns selected-definition ingredient expansion and its final browser acceptance. Independent profession presentation and new station reference routes remain later. |
 | Vendor access | Canonical offers combine existing item thresholds, provider access and costs. Do not recreate raw sale-list readers. |
 | Radiant Spark | Canonical inputs feed the existing skill-dependent rule. Do not restore a guaranteed raw source row. |
 
@@ -248,11 +248,11 @@ Later changes retain their own input work:
 | `simplify-pipeline-loader-registration` | Archived prerequisite. New relation datasets use its catalog. |
 | `harden-export-sessions` | Archived prerequisite. Added fields use complete immutable sessions. |
 | `prune-unread-database-data` | Retains the independent dead-column audit and progression data. Acquisition owns the semantic sitemap cutover and private one-time date reconciliation, without a shipped old-schema bridge. |
-| `unify-acquisition-usage-requirements` | Approved current D3/D4 implementation slice. Its reviewed page matrix and runtime/publication gates govern completion. |
+| `unify-acquisition-usage-requirements` | Approved current D3/D4 cutover. Core and reviewed development-UI units remain accepted. Oversized deployment output reopens affected source-bound/seed gates. Its tasks own lossless output-size repair, two deployable builds, production-preview and rollback/commit acceptance. No release or archival is implied. |
 | `consolidate-server-read-models` | Superseded and not independently executable. Transfer its remaining altar domain projections and route/import-boundary checks into the later D7 change before removing it. Acquisition does not complete that transfer. |
 | `add-security-headers` | Allow WebAssembly through `'wasm-unsafe-eval'` in every policy that governs a context compiling it. A policy with `default-src` or `script-src` blocks WebAssembly without it, and a worker takes its policy from its own script response, not from the page |
 | `consolidate-website-design-system` | Independent readability, contrast, tokens and primitive work precedes new pages. It does not block the approved existing-route acquisition correction and must consume the new boundary. |
-| `complete-profession-page-system` | Consume acquisition's canonical yields, complete recipe variants and exact world/home providers. Denominator repair is implemented. Static completeness, layout, metadata and profession navigation remain independent. |
+| `complete-profession-page-system` | Consume acquisition's canonical yields, selected-definition ingredient expansion and exact world/home providers. Denominator repair is implemented. Acquisition's shared-consumer readability repairs do not accept this change's independent completeness, layout, metadata, navigation or no-JavaScript criteria. |
 
 The other in-flight changes are independent of this plan.
 

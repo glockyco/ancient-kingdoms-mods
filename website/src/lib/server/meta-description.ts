@@ -29,6 +29,7 @@ import { ITEM_STAT_FIELDS } from "$lib/constants/items";
 import type { StatId } from "$lib/generated/stat-vocabulary";
 import { detailTitle, type DetailTitleContext } from "$lib/seo/title";
 import { getRoleLabel } from "$lib/utils/roles";
+import type { PrimaryReward } from "$lib/utils/primary-rewards";
 
 // =============================================================================
 // Items
@@ -41,19 +42,22 @@ import { getRoleLabel } from "$lib/utils/roles";
 // =============================================================================
 
 import type { Item } from "$lib/queries/items";
-import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
+import type {
+  ItemSourceView,
+  ItemUseView,
+  RequirementRoot,
+} from "$lib/acquisition/types";
+import { describeRequirement } from "$lib/acquisition/conditions";
 
 /** Optional pre-loaded data the description may incorporate. */
 export interface ItemMetaContext {
-  /** Aggregated usages from getItemUsages(). Used for general-item routing. */
-  usages?: ItemUsages;
+  usages?: readonly ItemUseView[];
+  requirements?: readonly RequirementRoot[];
   /** Pack contents pre-joined with item names. */
   packContents?: Array<{ item_name: string; amount: number }>;
   /** Random-container outcomes pre-joined with item names. */
   randomOutcomes?: Array<{ item_name: string }>;
-  /** Chest-key targets, computed once from the chests table. */
-  chestKeyOpens?: { chestCount: number; zoneCount: number };
-  /** Merge result item name (lookup from item_sources_merge). */
+  /** Actual merge output name. */
   mergeResultName?: string | null;
   /**
    * Base duration of the linked buff in seconds, if the item applies one
@@ -73,9 +77,9 @@ export interface ItemMetaContext {
   buffEffect?: string | null;
   /** Loaded treasure_locations row for this map. */
   treasureLocation?: { zone_name: string; reward_name: string | null } | null;
-  sources?: ItemSources;
+  sources?: ItemSourceView;
   /** Ingredients of the representative crafting recipe loaded for the item. */
-  recipeIngredients?: RecipeIngredient[];
+  recipeIngredients?: readonly { item_name: string; amount: number }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -98,41 +102,17 @@ const ARMOR_SLOTS = new Set([
 ]);
 const JEWELRY_SLOTS = new Set(["Ring", "Neck", "Ear", "Charm", "Artifact"]);
 
-/**
- * Capitalize-and-join class-required JSON. The DB stores lowercase class ids
- * (e.g. ["warrior", "rogue"]); the game's UI displays them title-cased and
- * pluralised.
- */
-function classListPhrase(classRequiredJson: string | null | undefined): string {
-  if (!classRequiredJson) return "";
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(classRequiredJson);
-  } catch {
-    return "";
-  }
-  if (!Array.isArray(parsed) || parsed.length === 0) return "";
-  const names = (parsed as unknown[])
-    .filter((x): x is string => typeof x === "string")
-    .filter((c) => c !== "all")
-    .sort()
-    .map((c) => c.charAt(0).toUpperCase() + c.slice(1) + "s");
-  if (names.length === 0) return "";
-  if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} and ${names[1]}`;
-  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
-}
-
 function levelGate(level: number): string {
   return level > 1 ? ` Requires level ${level}.` : "";
 }
 
-/** Returns " for {classListPhrase}" or empty string. */
-function classRestrictionPhrase(
-  classRequiredJson: string | null | undefined,
-): string {
-  const classes = classListPhrase(classRequiredJson);
-  return classes ? ` for ${classes}` : "";
+function requirementPhrase(ctx: ItemMetaContext): string {
+  const descriptions = (ctx.requirements ?? [])
+    .flatMap((root) => describeRequirement(root))
+    .map((description) => description.text.replace(/[.]$/, ""));
+  return descriptions.length
+    ? ` Requirements: ${descriptions.join(". ")}.`
+    : "";
 }
 
 // ---------------------------------------------------------------------------
@@ -149,6 +129,10 @@ export function itemTitle(item: Item, context?: DetailTitleContext): string {
 // ---------------------------------------------------------------------------
 
 export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
+  return itemDescriptionText(item, ctx) + requirementPhrase(ctx);
+}
+
+function itemDescriptionText(item: Item, ctx: ItemMetaContext): string {
   switch (item.item_type) {
     case "weapon":
       return weaponDescription(item) + sourcePhrase(ctx);
@@ -208,31 +192,29 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
 function weaponDescription(item: Item): string {
   const q = quality(item);
   const cat = equipmentNoun(item.weapon_category, "weapon");
-  const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
   // Source: server-scripts/WeaponItem.cs — weapon_proc_effect_id triggers on hit
   const proc = item.weapon_proc_effect_name
     ? ` Procs ${item.weapon_proc_effect_name} on hit.`
     : "";
-  return `${q} ${cat}${classes}.${level}${itemStatPhrase(item)}${proc}`;
+  return `${q} ${cat}.${level}${itemStatPhrase(item)}${proc}`;
 }
 
 function equipmentDescription(item: Item): string {
   const q = quality(item);
   const slot = item.slot ?? "";
   const displaySlot = equipmentNoun(slot, "equipment");
-  const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
   if (ARMOR_SLOTS.has(slot)) {
     const noun = ["Shield", "Bracers", "Belt"].includes(slot)
       ? displaySlot
       : `${displaySlot} armor`;
-    return `${q} ${noun}${classes}.${level}${itemStatPhrase(item)}`;
+    return `${q} ${noun}.${level}${itemStatPhrase(item)}`;
   }
   if (JEWELRY_SLOTS.has(slot)) {
-    return `${q} ${displaySlot}${classes}.${level}${itemStatPhrase(item)}`;
+    return `${q} ${displaySlot}.${level}${itemStatPhrase(item)}`;
   }
-  return `${q} ${displaySlot}${classes}.${level}${itemStatPhrase(item)}`;
+  return `${q} ${displaySlot}.${level}${itemStatPhrase(item)}`;
 }
 
 function ammoDescription(item: Item): string {
@@ -276,19 +258,30 @@ function sourcePhrase(ctx: ItemMetaContext): string {
   }
   const sources = ctx.sources;
   if (!sources) return "";
-  if (sources.vendors.length) {
-    const vendor = sources.vendors[0];
-    return ` Sold by ${vendor.npc_name} for ${formatNumber(vendor.price)} ${vendor.currency_item_name || "gold"}.`;
+  const vendor = sources.methods.find((method) => method.kind === "vendor");
+  if (vendor) {
+    const costs = vendor.costGroups.flatMap((group) => group.inputs);
+    const gold = costs.find((input) => input.resource_kind === "gold");
+    const providers = vendor.providers.map((provider) => provider.name);
+    return ` Sold by ${joinList(providers)}${gold ? ` for ${formatNumber(gold.amount)} gold` : ""}.`;
   }
   const phrases: string[] = [];
-  const monsters = new Set(sources.monsters.map((m) => m.monster_id)).size;
-  const gathers = new Set(sources.gathers.map((g) => g.resource_id)).size;
-  const containers = new Set([
-    ...sources.chests.map((c) => `chest:${c.chest_id}`),
-    ...sources.packs.map((p) => `pack:${p.pack_item_id}`),
-    ...sources.randoms.map((r) => `random:${r.random_item_id}`),
-    ...sources.chestItems.map((c) => `item:${c.chest_item_id}`),
-  ]).size;
+  const monsters = new Set(
+    sources.methods
+      .filter((method) => method.kind === "kill")
+      .flatMap((method) => method.providers.map((provider) => provider.ref.id)),
+  ).size;
+  const gathers = new Set(
+    sources.methods
+      .filter((method) => method.kind === "gather")
+      .flatMap((method) => method.providers.map((provider) => provider.ref.id)),
+  ).size;
+  const containers = sources.methods.filter(
+    (method) =>
+      method.kind === "world_chest" ||
+      method.kind === "portable_chest" ||
+      method.kind === "pack_use",
+  ).length;
   if (monsters)
     phrases.push(`dropped by ${plural(monsters, "monster", "monsters")}`);
   if (gathers)
@@ -526,9 +519,7 @@ function randomDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function augmentDescription(item: Item): string {
-  // Source: server-scripts/AugmentItem.cs, website/src/routes/items/[id]/+page.svelte:975-1031
-  // — set augments grant set bonuses; socketable augments are consumed at a crafting
-  // station and can be removed by Augmenter NPCs (5,000g/10,000g/15,000g per quality).
+  // Source: server-scripts/AugmentItem.cs. Set augments grant set bonuses.
   const q = quality(item);
   if (item.augment_armor_set_name) {
     const attributes = JSON.parse(
@@ -544,10 +535,9 @@ function augmentDescription(item: Item): string {
     const skillPhrase = skills.length
       ? ` 5 pieces: ${joinList(skills.map((b) => `${b.skill_name} +${b.level_bonus} ${b.level_bonus === 1 ? "rank" : "ranks"}`))}.`
       : "";
-    return `${item.augment_armor_set_name} set bonuses${classRestrictionPhrase(item.class_required)}.${attributePhrase}${skillPhrase}`;
+    return `${item.augment_armor_set_name} set bonuses.${attributePhrase}${skillPhrase}`;
   }
-  const target = item.augment_is_defensive ? "armor piece" : "weapon";
-  return `${q} ${item.augment_is_defensive ? "armor" : "weapon"} augment.${itemStatPhrase(item)} Socket it into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station. An Augmenter can remove it.`;
+  return `${q} equipment augment.${itemStatPhrase(item)} Socket it into compatible equipment at a crafting station. An Augmenter can remove it.`;
 }
 
 function fragmentDescription(item: Item): string {
@@ -596,22 +586,32 @@ function structureDescription(item: Item): string {
 }
 
 function generalDescription(item: Item, ctx: ItemMetaContext): string {
-  if (item.is_chest_key) return chestKeyDescription(item, ctx);
+  if (item.is_chest_key) return chestKeyDescription(ctx);
   if (item.is_key) return keyDescription(ctx);
   if (item.is_quest_item) return questItemDescription(item, ctx);
   return generalUsageDescription(item, ctx);
 }
 
-function chestKeyDescription(item: Item, ctx: ItemMetaContext): string {
-  const opens = ctx.chestKeyOpens;
-  if (opens && opens.chestCount > 0) {
-    const chestPhrase =
-      opens.chestCount === 1 ? "1 chest" : `${opens.chestCount} chests`;
-    const zonePhrase =
-      opens.zoneCount === 1 ? "1 zone" : `${opens.zoneCount} zones`;
-    return `Chest key. Opens ${chestPhrase} across ${zonePhrase}.`;
+function chestKeyDescription(ctx: ItemMetaContext): string {
+  const chests = new Set<string>();
+  const zones = new Set<string>();
+  let zonesKnown = true;
+  for (const use of ctx.usages ?? []) {
+    if (use.method?.kind !== "world_chest") continue;
+    for (const provider of use.method.providers) {
+      if (provider.ref.kind !== "chests") continue;
+      chests.add(provider.ref.id);
+      if (provider.location?.zoneId) zones.add(provider.location.zoneId);
+      else zonesKnown = false;
+    }
   }
-  return `Chest key.`;
+  if (!chests.size) return "Chest key.";
+  const chestPhrase = chests.size === 1 ? "1 chest" : `${chests.size} chests`;
+  const zonePhrase =
+    zonesKnown && zones.size
+      ? ` across ${zones.size === 1 ? "1 zone" : `${zones.size} zones`}`
+      : "";
+  return `Chest key. Opens ${chestPhrase}${zonePhrase}.`;
 }
 
 function keyDescription(ctx: ItemMetaContext): string {
@@ -623,22 +623,23 @@ function keyDescription(ctx: ItemMetaContext): string {
   // GatherItem.cs:455, …) instead of taking an inventory slot.
   // Source: server-scripts/GatherInventoryQuest.cs:21,47 — the keyring also
   // counts as inventory for gather-inventory quest gates that name a key.
-  const portals = ctx.usages?.portals ?? [];
-  if (portals.length === 0) {
-    return `Keyring item.`;
-  }
-  const portalPhrase =
-    portals.length === 1 ? "1 portal" : `${portals.length} portals`;
-  const destinations = new Set(portals.map((p) => p.to_zone_id));
-  if (destinations.size === 1) {
-    return `Unlocks ${portalPhrase} to ${portals[0].to_zone_name}.`;
-  }
-  return `Unlocks ${portalPhrase} across ${destinations.size} zones.`;
+  const portals = new Set(
+    ctx.usages
+      ?.filter((use) => use.entity?.kind === "portal")
+      .map((use) => use.entity!.id) ?? [],
+  );
+  return portals.size
+    ? `Keyring item required by ${plural(portals.size, "portal", "portals")}.`
+    : "Keyring item.";
 }
 
 function questItemDescription(item: Item, ctx: ItemMetaContext): string {
   const quests = [
-    ...new Set(ctx.usages?.quests.map((q) => q.quest_name) ?? []),
+    ...new Set(
+      ctx.usages
+        ?.filter((use) => use.entity?.kind === "quest")
+        .map((use) => use.entity!.id.replaceAll("_", " ")) ?? [],
+    ),
   ];
   const flags: string[] = [];
   if (!item.sellable) flags.push("sold");
@@ -658,16 +659,67 @@ function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
     return `${q} item.${sell}${sourcePhrase(ctx)}`;
   }
   const counts: Array<{ category: string; count: number }> = [
-    { category: "recipe", count: usages.recipes.length },
-    { category: "quest", count: usages.quests.length },
+    {
+      category: "recipe",
+      count: new Set(
+        usages
+          .filter((use) => use.method?.kind === "recipe")
+          .map((use) => use.method!.methodId),
+      ).size,
+    },
+    {
+      category: "quest",
+      count: new Set(
+        usages
+          .filter((use) => use.entity?.kind === "quest")
+          .map((use) => use.entity!.id),
+      ).size,
+    },
     {
       category: "exchange",
-      count: new Set(usages.currency.map((c) => c.purchasable_item_id)).size,
+      count: new Set(
+        usages
+          .filter(
+            (use) =>
+              use.method?.kind === "vendor" ||
+              use.method?.kind === "essence" ||
+              use.method?.kind === "blessing",
+          )
+          .map((use) => use.method!.methodId),
+      ).size,
     },
-    { category: "altar", count: usages.altars.length },
-    { category: "portal", count: usages.portals.length },
-    { category: "chest", count: usages.chests.length },
-    { category: "merge", count: usages.merges.length },
+    {
+      category: "altar",
+      count: new Set(
+        usages
+          .filter((use) => use.method?.kind === "altar_activate")
+          .map((use) => use.method!.methodId),
+      ).size,
+    },
+    {
+      category: "portal",
+      count: new Set(
+        usages
+          .filter((use) => use.entity?.kind === "portal")
+          .map((use) => use.entity!.id),
+      ).size,
+    },
+    {
+      category: "chest",
+      count: new Set(
+        usages
+          .filter((use) => use.method?.kind === "world_chest")
+          .map((use) => use.method!.methodId),
+      ).size,
+    },
+    {
+      category: "merge",
+      count: new Set(
+        usages
+          .filter((use) => use.method?.kind === "merge")
+          .map((use) => use.method!.methodId),
+      ).size,
+    },
   ].filter((c) => c.count > 0);
   counts.sort((a, b) => b.count - a.count);
   if (counts.length === 0) {
@@ -1180,128 +1232,31 @@ export function questDescription(
 }
 
 // =============================================================================
-// Recipes
-// =============================================================================
-
-interface RecipeIngredient {
-  item_name: string;
-  amount: number;
-}
-
-interface RecipeDescriptionInput {
-  result_item_name: string;
-  /** UI label for the recipe family. */
-  type: "Alchemy" | "Cooking" | "Crafting" | "Scribing";
-  /** Number of result items produced per craft (crafting only). */
-  result_amount?: number;
-  /** Crafting station required (e.g. "forge"). null for scribing. */
-  station_type?: string | null;
-  /** Alchemy stores its zero-based tier here. Scribing stores its skill gate. */
-  level_required?: number | null;
-  /** Zero-based crafting or cooking tier from the loaded recipe. */
-  tier?: number | null;
-  /** XP awarded per craft (crafting/alchemy). 0 for scribing. */
-  xp?: number;
-}
-
-function humanizeStation(station: string | null | undefined): string | null {
-  if (!station || station === "unknown") return null;
-  switch (station) {
-    case "alchemy_table":
-      return "alchemy table";
-    case "scribing_table":
-      return "scribing table";
-    case "cooking":
-      return "cooking oven";
-    case "forge":
-      return "forge";
-    case "workbench":
-      return "workbench";
-    case "loom":
-      return "loom";
-    case "sawmill":
-      return "sawmill";
-    default:
-      return station.replace(/_/g, " ");
-  }
-}
-
-function indefiniteArticle(phrase: string): "a" | "an" {
-  return /^[aeiou]/i.test(phrase) ? "an" : "a";
-}
-
-export function recipeDescription(
-  recipe: RecipeDescriptionInput,
-  ingredients: RecipeIngredient[],
-): string {
-  const family = recipe.type.toLowerCase();
-  const tier = recipe.type === "Alchemy" ? recipe.level_required : recipe.tier;
-  const tierPhrase = tier != null ? `Tier ${toRomanNumeral(tier)} ` : "";
-  const levelPhrase =
-    recipe.type === "Scribing" && (recipe.level_required ?? 0) > 0
-      ? ` requiring ${recipe.level_required}% Scroll Mastery`
-      : "";
-
-  const station = humanizeStation(recipe.station_type);
-  const stationPhrase = station
-    ? ` at ${indefiniteArticle(station)} ${station}`
-    : "";
-
-  // Top 2 materials by amount, then "and N more" if there are more.
-  const sorted = [...ingredients].sort((a, b) => b.amount - a.amount);
-  const topMaterials = sorted
-    .slice(0, 2)
-    .map((i) =>
-      i.amount > 1 ? `${formatNumber(i.amount)} ${i.item_name}` : i.item_name,
-    );
-  const remaining = Math.max(0, ingredients.length - 2);
-  let materialsPhrase = "";
-  if (topMaterials.length > 0) {
-    if (remaining > 0)
-      topMaterials.push(
-        `${remaining} more ${remaining === 1 ? "ingredient" : "ingredients"}`,
-      );
-    materialsPhrase = ` Requires ${joinList(topMaterials)}.`;
-  }
-
-  return `${tierPhrase}${tierPhrase ? family : capitalizeFirst(family)} recipe${levelPhrase}${stationPhrase}.${materialsPhrase}`;
-}
-
-// =============================================================================
 // Chests
 // =============================================================================
 
 interface ChestDescriptionInput {
   zone_name: string;
-  key_required_name: string | null;
-  gold_min: number;
-  gold_max: number;
-  item_reward_name: string | null;
+  keys: readonly { itemName: string | null; withheld: boolean }[];
+  primaryRewards: readonly PrimaryReward[];
   respawn_time: number;
-  /** Effective per-opening probability returned by chestRewardChance(). */
-  chest_reward_probability?: number;
   /** Resolved faction display name. Empty means no reputation loss. */
   decrease_faction?: string | null;
   reputation_loss?: number;
 }
 
 export function chestDescription(chest: ChestDescriptionInput): string {
-  const keyPhrase = chest.key_required_name
-    ? ` Requires ${chest.key_required_name} to open.`
+  const keyNames = [
+    ...new Set(
+      chest.keys
+        .map((key) => (key.withheld ? "an unpublished key" : key.itemName))
+        .filter((name): name is string => name !== null),
+    ),
+  ];
+  const keyPhrase = keyNames.length
+    ? ` Key options include ${joinList(keyNames)}.`
     : "";
-
-  // Source: server-scripts/GatherItem.cs:431 uses integer Random.Range.
-  const goldMax =
-    chest.gold_max > chest.gold_min ? chest.gold_max - 1 : chest.gold_min;
-  const rewards: string[] = [];
-  if (goldMax > 0) {
-    rewards.push(
-      chest.gold_min === goldMax
-        ? `${formatNumber(goldMax)} gold`
-        : `${formatNumber(chest.gold_min)}-${formatNumber(goldMax)} gold`,
-    );
-  }
-  if (chest.item_reward_name) rewards.push(chest.item_reward_name);
+  const rewards = chest.primaryRewards.map(primaryRewardDescription);
 
   // Source: schema chests.respawn_time — seconds between server-side resets.
   const respawnPhrase =
@@ -1309,19 +1264,38 @@ export function chestDescription(chest: ChestDescriptionInput): string {
       ? ` Respawns every ${formatDuration(chest.respawn_time)}.`
       : "";
 
-  const probability = chest.chest_reward_probability;
   const yieldsPhrase = rewards.length
-    ? probability == null
-      ? ` Rewards include ${joinList(rewards)}.`
-      : probability < 1
-        ? ` Each opening has a ${formatPercent(probability, { decimals: 2 })} chance to yield ${joinList(rewards)}.`
-        : ` Yields ${joinList(rewards)}.`
+    ? ` Potential rewards include ${joinList(rewards)}.`
     : "";
   const reputation =
     chest.decrease_faction && chest.reputation_loss
       ? ` Opening it costs ${formatNumber(chest.reputation_loss)} ${chest.decrease_faction} reputation.`
       : "";
   return `Chest in ${chest.zone_name}.${keyPhrase}${yieldsPhrase}${reputation}${respawnPhrase}`;
+}
+
+function primaryRewardDescription(reward: PrimaryReward): string {
+  const name = reward.withheld
+    ? "an unpublished reward"
+    : reward.resourceKind === "gold"
+      ? "gold"
+      : (reward.itemName ?? "an unidentified reward");
+  const quantity = reward.quantity;
+  const amount =
+    quantity.kind === "exact"
+      ? formatNumber(quantity.value)
+      : quantity.kind === "range"
+        ? quantity.max === null
+          ? `at least ${formatNumber(quantity.min)}`
+          : `${formatNumber(quantity.min)}-${formatNumber(quantity.max)}`
+        : "an unknown amount of";
+  const delivery =
+    reward.delivery === "quest_progress"
+      ? " as quest progress"
+      : reward.delivery === "keyring"
+        ? " in the key ring"
+        : "";
+  return `${amount} ${name}${delivery}`;
 }
 
 // =============================================================================
@@ -1337,9 +1311,7 @@ interface GatheringResourceDescriptionInput {
   level: number | null;
   tool_required_name?: string | null;
   gathering_exp?: number | null;
-  item_reward_name?: string | null;
-  item_reward_amount?: number | null;
-  item_reward_amount_min?: number | null;
+  primaryRewards: readonly PrimaryReward[];
   catches?: string[];
   /** Base and maximum Radiant Seeker chances from the shared gathering model. */
   radiant_chance_min?: number;
@@ -1368,25 +1340,26 @@ export function gatheringResourceDescription(
     ? ` Requires ${resource.tool_required_name} to gather.`
     : "";
 
-  const rewardName = resource.item_reward_name;
-  const rewardAmount = resource.item_reward_amount ?? 1;
-  const rewardMin = resource.item_reward_amount_min ?? 1;
-  const amount =
-    rewardAmount > rewardMin
-      ? `${rewardMin}-${rewardAmount}`
-      : `${rewardAmount}`;
+  const rewards = resource.primaryRewards.map(primaryRewardDescription);
+  const rewardNames = [
+    ...new Set(
+      resource.primaryRewards.flatMap((reward) =>
+        reward.itemName ? [reward.itemName] : [],
+      ),
+    ),
+  ];
   const rewardPhrase = resource.is_radiant_spark
-    ? rewardName &&
+    ? rewardNames.length &&
       resource.radiant_chance_min != null &&
       resource.radiant_chance_max != null
-      ? ` ${formatPercent(resource.radiant_chance_min, { decimals: 2 })} chance to gather ${rewardName} at 0% Radiant Seeker, rising to ${formatPercent(resource.radiant_chance_max, { decimals: 2 })} at 100%.`
+      ? ` ${formatPercent(resource.radiant_chance_min, { decimals: 2 })} chance to gather ${joinList(rewardNames)} at 0% Radiant Seeker, rising to ${formatPercent(resource.radiant_chance_max, { decimals: 2 })} at 100%.`
       : ""
     : resource.is_fishing_spot
       ? resource.catches?.length
         ? ` Catches ${joinList(resource.catches)}.`
         : ""
-      : rewardName
-        ? ` Yields ${amount} ${rewardName} per harvest.`
+      : rewards.length
+        ? ` Harvest rewards include ${joinList(rewards)}.`
         : "";
 
   let locationPhrase = "";

@@ -3,6 +3,11 @@ import type { PageServerLoad } from "./$types";
 
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { adventuringSkillGain } from "$lib/calculation/adventuring";
+import { loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisitionItems } from "$lib/acquisition/items";
+import type { MethodView } from "$lib/acquisition/types";
+import type { DisplayItems } from "$lib/components/acquisition/display";
+import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -78,9 +83,12 @@ interface AdventuringPageData {
   quests: AdventurerQuest[];
   questPoolOrder: string[];
   vendorUnlocks: VendorUnlock[];
+  acquisitionMethods: readonly MethodView[];
+  acquisitionItems: DisplayItems;
+  acquisitionNames: Readonly<Record<string, string>>;
 }
 
-export const load = ((): AdventuringPageData => {
+export const load = (async (): Promise<AdventuringPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const profession = db
@@ -154,13 +162,7 @@ export const load = ((): AdventuringPageData => {
     is_epic_quest: number;
     is_adventurer_quest: number;
     is_repeatable: number;
-    quest_type: string;
-    kill_target_1_id: string | null;
-    kill_amount_1: number;
-    gather_item_1_id: string | null;
-    gather_amount_1: number;
-    gather_items: string | null;
-    rewards: string | null;
+    reward_experience: number;
   }
 
   const rawQuests = db
@@ -177,13 +179,7 @@ export const load = ((): AdventuringPageData => {
       is_epic_quest,
       is_adventurer_quest,
       is_repeatable,
-      quest_type,
-      kill_target_1_id,
-      kill_amount_1,
-      gather_item_1_id,
-      gather_amount_1,
-      gather_items,
-      rewards
+      reward_experience
     FROM quests
     WHERE is_adventurer_quest = 1
     ORDER BY level_recommended, name
@@ -191,110 +187,53 @@ export const load = ((): AdventuringPageData => {
     )
     .all() as RawQuest[];
 
-  // Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list.
-  const questPoolOrder = (() => {
-    const row = db
+  const questPoolOrder = (
+    db
       .prepare(
         `
-      SELECT quests_offered
-      FROM npcs
-      WHERE json_extract(roles, '$.is_taskgiver_adventurer') = 1
-        AND quests_offered IS NOT NULL
-      ORDER BY id
-      LIMIT 1
-    `,
+    SELECT membership.quest_id
+    FROM npc_quest_memberships membership
+    JOIN npcs npc ON npc.id = membership.npc_id
+    WHERE membership.role = 'offer'
+      AND json_extract(npc.roles, '$.is_taskgiver_adventurer') = 1
+    GROUP BY membership.quest_id
+    ORDER BY MIN(membership.ordinal), membership.quest_id
+  `,
       )
-      .get() as { quests_offered: string | null } | undefined;
+      .all() as { quest_id: string }[]
+  ).map(({ quest_id }) => quest_id);
 
-    if (!row?.quests_offered) {
-      return rawQuests.map((quest) => quest.id);
-    }
-
-    return (JSON.parse(row.quests_offered) as { id: string }[]).map(
-      (quest) => quest.id,
-    );
-  })();
-
-  // Lookup helpers
-  const getMonster = db.prepare(`SELECT id, name FROM monsters WHERE id = ?`);
-  const getItem = db.prepare(
-    `SELECT id, name, tooltip_html FROM items WHERE id = ?`,
-  );
-
+  const objectiveStatement = db.prepare(`
+    SELECT CASE WHEN objective.kind = 'monster' THEN 'kill' ELSE 'gather' END AS type,
+      COALESCE(monster.monster_id, item.item_id) AS target_id,
+      COALESCE(m.name, i.name) AS target_name,
+      objective.amount
+    FROM quest_objectives objective
+    LEFT JOIN quest_objective_monsters monster ON monster.id = objective.id
+    LEFT JOIN quest_objective_items item ON item.id = objective.id
+    LEFT JOIN monsters m ON m.id = monster.monster_id
+    LEFT JOIN items i ON i.id = item.item_id
+    WHERE objective.quest_id = ? AND objective.withheld = 0
+      AND objective.kind IN ('monster', 'item')
+    ORDER BY objective.ordinal
+  `);
+  const rewardStatement = db.prepare(`
+    SELECT item.id AS item_id, item.name AS item_name, item.tooltip_html,
+      class.name AS class_specific
+    FROM quest_reward_slots slot
+    JOIN items item ON item.id = slot.item_id
+    LEFT JOIN classes class ON class.id = slot.class_id
+    WHERE slot.quest_id = ? AND slot.item_withheld = 0
+    ORDER BY slot.ordinal
+  `);
   const quests: AdventurerQuest[] = rawQuests.map((raw) => {
-    const objectives: QuestObjective[] = [];
-    if (raw.quest_type === "kill" && raw.kill_target_1_id) {
-      const monster = getMonster.get(raw.kill_target_1_id) as {
-        id: string;
-        name: string;
-      } | null;
-      if (monster) {
-        objectives.push({
-          type: "kill",
-          target_id: monster.id,
-          target_name: monster.name,
-          amount: raw.kill_amount_1,
-        });
-      }
-    } else {
-      const gatherItems = raw.gather_items
-        ? (JSON.parse(raw.gather_items) as {
-            item_id: string;
-            amount: number;
-          }[])
-        : raw.gather_item_1_id
-          ? [{ item_id: raw.gather_item_1_id, amount: raw.gather_amount_1 }]
-          : [];
-      for (const required of gatherItems) {
-        const item = getItem.get(required.item_id) as
-          | {
-              id: string;
-              name: string;
-            }
-          | undefined;
-        if (item) {
-          objectives.push({
-            type: "gather",
-            target_id: item.id,
-            target_name: item.name,
-            amount: required.amount,
-          });
-        }
-      }
-    }
-
-    // Parse rewards (include all items, both universal and class-specific)
-    const rewards = raw.rewards
-      ? (JSON.parse(raw.rewards) as {
-          exp?: number;
-          gold?: number;
-          items?: { item_id: string; class_specific: string | null }[];
-        })
-      : {};
-    const rewardItems: QuestRewardItem[] = (rewards.items ?? [])
-      .map((ri) => {
-        const item = getItem.get(ri.item_id) as {
-          id: string;
-          name: string;
-          tooltip_html: string | null;
-        } | null;
-        if (!item) return null;
-        return {
-          item_id: item.id,
-          item_name: item.name,
-          tooltip_html: item.tooltip_html,
-          class_specific: ri.class_specific,
-        };
-      })
-      .filter(
-        (item: QuestRewardItem | null): item is QuestRewardItem =>
-          item !== null,
-      );
+    const objectives = objectiveStatement.all(raw.id) as QuestObjective[];
+    const rewardItems = rewardStatement.all(raw.id) as QuestRewardItem[];
 
     // Source: server-scripts/PlayerQuests.cs:394-396.
     const adventuringSkillIncrease = Math.min(
       1,
-      adventuringSkillGain(rewards.exp ?? 0),
+      adventuringSkillGain(raw.reward_experience),
     );
 
     return {
@@ -325,14 +264,16 @@ export const load = ((): AdventuringPageData => {
       i.adventuring_level_needed,
       n.id as npc_id,
       n.name as npc_name,
-      json_extract(sold.value, '$.currency_item_id') as currency_item_id,
-      json_extract(sold.value, '$.currency_item_name') as currency_item_name,
-      json_extract(sold.value, '$.price') as price
-    FROM items i
-    JOIN npcs n
-      ON n.items_sold IS NOT NULL
-    JOIN json_each(n.items_sold) sold
-      ON json_extract(sold.value, '$.item_id') = i.id
+      input.item_id as currency_item_id,
+      currency.name as currency_item_name,
+      input.amount as price
+    FROM acquisition_vendor_details detail
+    JOIN items i ON i.id = detail.offered_item_id
+    JOIN acquisition_providers_npcs provider ON provider.method_id = detail.id
+    JOIN npcs n ON n.id = provider.npc_id
+    JOIN acquisition_cost_groups cost ON cost.method_id = detail.id
+    JOIN acquisition_inputs input ON input.cost_group_id = cost.id
+    LEFT JOIN items currency ON currency.id = input.item_id
     LEFT JOIN visual_assets va
       ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
     WHERE i.adventuring_level_needed > 0
@@ -388,6 +329,19 @@ export const load = ((): AdventuringPageData => {
   }
 
   const vendorUnlocks = Array.from(vendorUnlockMap.values());
+  const execute = async (
+    sql: string,
+    values: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
+  const providerIds = [
+    ...new Set([...questGivers, ...merchants].map((npc) => npc.npc_id)),
+  ];
+  const acquisition = await loadAcquisition(execute, {
+    kind: "providers",
+    providers: providerIds.map((id) => ({ kind: "npcs", id })),
+  });
+  const acquisitionMethods = [...acquisition.methodViews.values()];
+  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
 
   db.close();
 
@@ -398,5 +352,8 @@ export const load = ((): AdventuringPageData => {
     quests,
     questPoolOrder,
     vendorUnlocks,
+    acquisitionMethods,
+    acquisitionItems,
+    acquisitionNames: projectAcquisitionNames(acquisition),
   };
 }) satisfies PageServerLoad;
