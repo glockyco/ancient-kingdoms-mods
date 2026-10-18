@@ -898,6 +898,10 @@
       grid-template-columns: var(--mobile-grid-template-columns) !important;
     }
 
+    .data-table-container :global(.icon-badge) {
+      padding-inline: 0.375rem;
+    }
+
     .data-table-container :global(th:has(.ml-auto)) {
       padding-inline-start: 0;
       font-size: 0.875rem;
