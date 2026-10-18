@@ -4,7 +4,7 @@ Superseded and not independently executable. [The parent D7 milestone](../plan-s
 
 ## Current ownership
 
-[Acquisition](../unify-acquisition-usage-requirements/design.md) supplies canonical activation, setup, final-wave reward and provider facts to the scoped consumers. Its own acceptance remains open. The altar overview still maps domain rows and waves locally, and the detail loader combines domain reads with canonical acquisition methods. Consolidating the rest of those projections is D7 work.
+[Acquisition](../archive/2026-10-18-unify-acquisition-usage-requirements/design.md) supplies canonical activation, setup, final-wave reward and provider facts to the scoped consumers. The altar overview still maps domain rows and waves locally, and the detail loader combines domain reads with canonical acquisition methods. Consolidating the rest of those projections is D7 work.
 
 ## Remaining work to transfer
 

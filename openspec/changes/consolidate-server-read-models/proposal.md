@@ -1,4 +1,4 @@
-> Superseded. Do not implement this change independently. The later D7 change in [plan-shared-game-model](../plan-shared-game-model/design.md#order-of-work) must take over the remaining altar domain projections and website boundary checks before this standalone change is removed. That transfer is still open. [Acquisition](../unify-acquisition-usage-requirements/design.md) owns the migrated acquisition/setup/reward facts and scoped consumers, not the whole altar domain or route-registry audit.
+> Superseded. Do not implement this change independently. The later D7 change in [plan-shared-game-model](../plan-shared-game-model/design.md#order-of-work) must take over the remaining altar domain projections and website boundary checks before this standalone change is removed. That transfer is still open. [Acquisition](../archive/2026-10-18-unify-acquisition-usage-requirements/design.md) owns the migrated acquisition/setup/reward facts and scoped consumers, not the whole altar domain or route-registry audit.
 
 ## Why
 
