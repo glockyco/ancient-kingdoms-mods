@@ -567,34 +567,27 @@
         return visibleColumnIds.has(id as string);
       })
       .map((col) => {
-        if (col.size) return `${col.size}px`;
+        if (col.size) return `minmax(min-content, ${col.size}px)`;
         if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
         return "auto";
       })
       .join(" "),
   );
 
-  const mobileLayout = $derived.by(() => {
+  const mobileGridTemplateColumns = $derived.by(() => {
     let tracks = "";
-    let totalWidth = "";
     for (const column of columns) {
       const id = "accessorKey" in column ? column.accessorKey : column.id;
       if (!visibleColumnIds.has(id as string)) continue;
       const identifier = id === identifierColumnId;
-      const width = identifier
-        ? "var(--mobile-identifier-width)"
-        : `min(${Math.max(96, column.size ?? column.minSize ?? 150)}px, calc(100cqw - var(--mobile-identifier-width)))`;
-      tracks += `${tracks ? " " : ""}${identifier ? `minmax(${width}, 1fr)` : width}`;
-      totalWidth += `${totalWidth ? " + " : ""}${width}`;
+      const width = `min(${Math.max(96, column.size ?? column.minSize ?? 150)}px, 100cqw)`;
+      tracks += `${tracks ? " " : ""}${identifier ? "minmax(min-content, 1fr)" : `minmax(min-content, ${width})`}`;
     }
-    return {
-      tracks,
-      width: totalWidth ? `max(100cqw, calc(${totalWidth}))` : "100cqw",
-    };
+    return tracks;
   });
 </script>
 
-<div class:zebra-stripe={zebraStripe}>
+<div>
   {#if !isHydrated}
     <div
       class="loading-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
@@ -674,7 +667,7 @@
   >
     <Table.Root
       class="data-table-grid min-w-full w-max grid"
-      style="grid-template-columns: {gridTemplateColumns}; --mobile-grid-template-columns: {mobileLayout.tracks}; --mobile-grid-width: {mobileLayout.width}"
+      style="grid-template-columns: {gridTemplateColumns}; --mobile-grid-template-columns: {mobileGridTemplateColumns}"
     >
       <Table.Header class="contents">
         {#each headerGroups as headerGroup (headerGroup.id)}
@@ -834,10 +827,7 @@
   .data-table-container {
     scroll-margin-top: 6rem;
     container-type: inline-size;
-    --mobile-identifier-width: min(16rem, 54cqw);
-    --table-surface-tint: linear-gradient(
-      color-mix(in oklab, var(--muted) 30%, transparent) 0 0
-    );
+    overscroll-behavior-x: none;
   }
 
   .data-table-container :global(th) {
@@ -849,11 +839,15 @@
   .data-table-container :global(td) {
     min-width: 0;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
   }
 
   .data-table-container :global(th > button) {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+  }
+
+  .data-table-container :global(th > button > svg) {
+    flex-shrink: 0;
   }
 
   .data-table-container :global(th > button:has(> .ml-auto)) {
@@ -863,38 +857,20 @@
   .data-table-container :global(th > button > .ml-auto) {
     order: 1;
     max-width: 100%;
+    margin-left: 0;
     white-space: normal;
     text-align: right;
     line-height: 1.25;
-    overflow-wrap: anywhere;
-  }
-
-  .data-table-container :global(.identifier-cell) {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    min-width: 0;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    background-color: var(--background);
-    /* Match the translucent container over an opaque base during scrolling. */
-    background-image: var(--table-surface-tint);
-    box-shadow: 1px 0 var(--border);
+    overflow-wrap: normal;
   }
 
   .data-table-container :global(.identifier-cell .whitespace-nowrap) {
     white-space: normal;
   }
 
-  .zebra-stripe
-    .data-table-container
-    :global(tr:nth-child(even) > .identifier-cell) {
-    background-image: var(--table-surface-tint), var(--table-surface-tint);
-  }
-
   @media (max-width: 639px) {
     .data-table-container :global(.data-table-grid) {
-      width: var(--mobile-grid-width);
+      width: fit-content;
       grid-template-columns: var(--mobile-grid-template-columns) !important;
     }
 
@@ -905,11 +881,6 @@
     .data-table-container :global(th:has(.ml-auto)) {
       padding-inline-start: 0;
       font-size: 0.875rem;
-    }
-
-    .data-table-container :global(th > button > .ml-auto) {
-      order: 0;
-      flex-basis: 100%;
     }
 
     .data-table-container :global(.identifier-cell) {
