@@ -1,6 +1,8 @@
 import { getDb, query, queryOne } from "$lib/db.server";
 import { ITEM_DETAIL_SELECT, type Item } from "./items";
 import type { ItemListView, ItemZoneInfo } from "$lib/types/items";
+import { itemListType } from "$lib/utils/format";
+import type { ItemListPayload } from "$lib/utils/item-list";
 import { loadAcquisition } from "$lib/server/acquisition";
 import type { AcquisitionQuery } from "$lib/acquisition/types";
 import { projectDirectGeometry } from "$lib/acquisition/projections";
@@ -58,8 +60,64 @@ export function getItems(): ItemListView[] {
   );
 }
 
+/** The item overview's complete row data, with JSON fields parsed once on the server. */
+export async function getItemListPayload(): Promise<ItemListPayload> {
+  const rawItems = getItems();
+  const itemStatKeys: Record<string, string[]> = {};
+  const itemStatValues: Record<string, Record<string, number>> = {};
+  const itemClassKeys: Record<string, string[]> = {};
+  for (const item of rawItems) {
+    itemStatKeys[item.id] = JSON.parse(item.stat_keys) as string[];
+    itemStatValues[item.id] = Object.fromEntries(
+      Object.entries(
+        JSON.parse(item.stats || "{}") as Record<string, unknown>,
+      ).filter(
+        (entry): entry is [string, number] => typeof entry[1] === "number",
+      ),
+    );
+    try {
+      const classes = JSON.parse(item.class_required);
+      itemClassKeys[item.id] = Array.isArray(classes) ? classes : [];
+    } catch {
+      itemClassKeys[item.id] = [];
+    }
+  }
+  const items = rawItems.map((item) => ({
+    id: item.id,
+    name: item.name,
+    visual_public_path: item.visual_public_path,
+    item_type: itemListType(item),
+    quality: item.quality,
+    level_required: item.level_required,
+    item_level: item.item_level,
+    slot: item.slot,
+    backpack_slots: item.backpack_slots,
+    backpack_is_unique: item.backpack_is_unique,
+    stat_count: item.stat_count,
+    alchemy_recipe_level_required: item.alchemy_recipe_level_required,
+    mount_speed: item.mount_speed,
+    augment_is_defensive: item.augment_is_defensive,
+    augment_armor_set_name: item.augment_armor_set_name,
+  }));
+  return {
+    items,
+    itemStatKeys,
+    itemStatValues,
+    itemClassKeys,
+    itemZones: await getItemZones(),
+  };
+}
+
+// getDb() keeps one connection per process, so its zone attribution is fixed for that process.
+let itemZones: Promise<ItemZoneInfo[]> | null = null;
+
 /** Get direct award locations for the item overview's zone filter. */
-export async function getItemZones(): Promise<ItemZoneInfo[]> {
+export function getItemZones(): Promise<ItemZoneInfo[]> {
+  itemZones ??= computeItemZones();
+  return itemZones;
+}
+
+async function computeItemZones(): Promise<ItemZoneInfo[]> {
   const db = getDb();
   const execute: AcquisitionQuery = async (sql, params) =>
     db.prepare(sql).all(...params) as Record<string, unknown>[];

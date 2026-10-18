@@ -1,5 +1,7 @@
 <script lang="ts">
   import Package from "@lucide/svelte/icons/package";
+  import { onMount } from "svelte";
+  import { base } from "$app/paths";
   import { SvelteMap } from "svelte/reactivity";
   import { createStatPanelState } from "$lib/utils/stat-panel-state.svelte";
   import {
@@ -27,19 +29,31 @@
   } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
   import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
+  import { ITEMS_PAGE_SIZE, type ItemListPayload } from "$lib/utils/item-list";
   import { getItemTooltips } from "$lib/queries/items";
   import { formatStatField, statField, statFieldName } from "$lib/stats";
 
   let { data } = $props();
 
-  const list = $derived(data);
+  // The page ships only the first page's rows; the complete list follows after first paint.
+  let full = $state<ItemListPayload | null>(null);
+  onMount(() => {
+    fetch(`${base}/items/list.json`)
+      .then((response) => {
+        if (!response.ok)
+          throw new Error(`Item list returned ${response.status}`);
+        return response.json() as Promise<ItemListPayload>;
+      })
+      .then((payload) => (full = payload));
+  });
+  const list = $derived(full ?? data.initial);
 
   const collectionNode = $derived(
     buildCollectionPage({
       path: "/items",
       name: "Items — Ancient Kingdoms Compendium",
-      description: `Find ${formatNumber(data.items.length)} items by quality, level, slot, class, and zone.`,
-      items: data.items.map((item) => ({
+      description: `Find ${formatNumber(data.total)} items by quality, level, slot, class, and zone.`,
+      items: data.collection.map((item) => ({
         name: item.name,
         path: `/items/${item.id}`,
       })),
@@ -86,7 +100,6 @@
     fetchTooltipsForRows(visibleRows, adjacentRows);
   }
 
-  const PAGE_SIZE = 20;
   const statPanel = createStatPanelState("items-stats-panel-open");
 
   const itemStatKeys = $derived(list.itemStatKeys);
@@ -142,12 +155,9 @@
     ).sort() as string[],
   );
 
+  // Every class the complete list restricts to, sent with the first page so it is stable.
   // Items with no restriction are stored as ["all"] and expand to every class.
-  const allClasses = $derived(
-    Array.from(new Set(Object.values(list.itemClassKeys).flat()))
-      .filter((name) => name !== "all")
-      .sort(),
-  );
+  const allClasses = $derived(data.allClasses);
   const itemClassKeys = $derived.by(() => {
     const expanded: Record<string, string[]> = {};
     for (const [id, classes] of Object.entries(list.itemClassKeys)) {
@@ -505,7 +515,7 @@
 
 <Seo
   title="Items - Ancient Kingdoms"
-  description={`Browse ${formatNumber(data.items.length)} weapons, armor, consumables, and quest items by quality and level. Check each item's drop sources, vendors, and recipes.`}
+  description={`Browse ${formatNumber(data.total)} weapons, armor, consumables, and quest items by quality and level. Check each item's drop sources, vendors, and recipes.`}
   path="/items"
 />
 
@@ -529,7 +539,7 @@
     {renderCell}
     {renderHeader}
     {renderToolbar}
-    pageSize={PAGE_SIZE}
+    pageSize={ITEMS_PAGE_SIZE}
     initialSorting={[
       { id: "item_level", desc: true },
       { id: "name", desc: false },
@@ -545,6 +555,7 @@
     showColumnToggle={true}
     zebraStripe={true}
     paginateStaticHtml={true}
+    complete={full !== null}
     searchPlaceholder="Search items..."
     class="bg-muted/30"
     onVisibleRowsChange={handleVisibleRowsChange}

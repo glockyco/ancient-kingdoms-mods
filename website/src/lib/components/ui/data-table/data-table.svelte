@@ -54,6 +54,8 @@
     columnLabels?: Record<string, string>;
     zebraStripe?: boolean;
     paginateStaticHtml?: boolean;
+    /** False while `data` holds only the first page; keeps the static first-page view until the rest arrives. */
+    complete?: boolean;
     persistentScrollbar?: boolean;
     class?: string;
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
@@ -77,6 +79,7 @@
     columnLabels = {},
     zebraStripe = false,
     paginateStaticHtml = false,
+    complete = true,
     persistentScrollbar = false,
     class: className,
     renderCell,
@@ -502,9 +505,16 @@
     syncStateToUrl();
   }
 
+  // Controls and paging need every row; until then show the static first page.
+  const ready = $derived(isHydrated && complete);
+  // The first-page rows only answer the default view; a restored filter, sort or page waits for every row.
+  const waitingForRows = $derived(
+    !complete && (hasActiveFilters || pagination.pageIndex > 0),
+  );
+
   // For no-JS support: render all rows by default, or just first page if paginateStaticHtml is true
   const displayRows = $derived(
-    isHydrated
+    ready
       ? rowModel.rows
       : paginateStaticHtml
         ? allRowModel.rows.slice(0, pageSize)
@@ -591,7 +601,7 @@
 </script>
 
 <div class:zebra-stripe={zebraStripe}>
-  {#if !isHydrated}
+  {#if !isHydrated || waitingForRows}
     <div
       class="loading-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
     >
@@ -604,8 +614,13 @@
     </div>
   {/if}
 
+  <!-- The toolbar appears at hydration so the page does not shift; it stays inert until every row is present. -->
   {#if isHydrated && (renderToolbar || showSearch || showColumnToggle)}
-    <div class="flex flex-wrap items-stretch gap-2 pb-4">
+    <div
+      class="flex flex-wrap items-stretch gap-2 pb-4"
+      inert={!complete}
+      aria-busy={!complete}
+    >
       {#if showSearch}
         <Input
           placeholder={searchPlaceholder}
@@ -654,7 +669,7 @@
     </div>
   {/if}
 
-  {#if isHydrated && allRowModel.rows.length < data.length}
+  {#if ready && allRowModel.rows.length < data.length}
     <p role="status" class="pb-3 text-sm text-muted-foreground">
       {allRowModel.rows.length.toLocaleString()} of {data.length.toLocaleString()}
       results
@@ -757,7 +772,7 @@
               {/each}
             </Table.Row>
           {/each}
-          {#if isHydrated && displayRows.length < targetTableHeight && displayRows.length < data.length}
+          {#if ready && displayRows.length < targetTableHeight && displayRows.length < data.length}
             {#each Array.from({ length: targetTableHeight - displayRows.length }, (_, i) => i) as i (i)}
               <Table.Row class="contents pointer-events-none">
                 {#each table.getVisibleLeafColumns() as col (col.id)}
@@ -775,7 +790,7 @@
               No results.
             </Table.Cell>
           </Table.Row>
-          {#if isHydrated && targetTableHeight > 1}
+          {#if ready && targetTableHeight > 1}
             {#each Array.from({ length: targetTableHeight - 1 }, (_, i) => i) as i (i)}
               <Table.Row class="contents pointer-events-none">
                 {#each table.getVisibleLeafColumns() as col (col.id)}
@@ -789,9 +804,9 @@
     </Table.Root>
   </div>
 
-  {#if isHydrated && showPagination && data.length > pageSize}
+  {#if isHydrated && showPagination && (!complete || data.length > pageSize)}
     <div class="h-10 pt-4">
-      {#if pageCount > 1}
+      {#if ready && pageCount > 1}
         <Pagination.Root
           count={table.getFilteredRowModel().rows.length}
           perPage={pageSize}
