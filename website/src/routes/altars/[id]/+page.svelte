@@ -1,7 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import { calculateAltarGold } from "$lib/acquisition/rules";
   import { quantityText } from "$lib/components/acquisition/display";
@@ -246,7 +245,6 @@
             Monster levels scale with the activating player's level and total
             veteran points. Preview the level adjustment below.
           </p>
-          <RoundingDefinition />
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
               <label for="player-level" class="flex justify-between mb-2">
