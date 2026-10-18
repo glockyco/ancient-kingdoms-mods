@@ -120,20 +120,27 @@ export const load: PageServerLoad = async ({
           provider.ref.kind === "npcs" && provider.ref.id === params.id,
       ),
   );
-  const itemsSold: NpcItemSold[] = vendorMethods.flatMap((method) => {
-    const offeredId = String(method.detail.offered_item_id);
-    const offered = db
+  // A vendor row is the offered item, as the trade window shows it. A pack's page lists the contents a purchase delivers.
+  const offers: NpcItemSold[] = vendorMethods.map((method) => {
+    const itemId = String(method.detail.offered_item_id);
+    const item = db
       .prepare(
-        "SELECT faction_required_to_buy, faction_required_tier_name FROM items WHERE id = ?",
+        `
+      SELECT i.name, i.quality, i.tooltip_html, i.faction_required_to_buy,
+             i.faction_required_tier_name, va.public_path AS visual_public_path
+      FROM items i LEFT JOIN visual_assets va
+        ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+      WHERE i.id = ?
+    `,
       )
-      .get(offeredId) as {
+      .get(itemId) as {
+      name: string;
+      quality: number;
+      tooltip_html: string | null;
       faction_required_to_buy: number;
       faction_required_tier_name: string | null;
+      visual_public_path: string | null;
     };
-    const outputs = method.outputs.filter(
-      (output) =>
-        output.item_id && !output.withheld && output.delivery === "inventory",
-    );
     const costs = method.costGroups.flatMap((group) => group.inputs);
     const currency = costs.find((input) => input.resource_kind === "item");
     const gold = costs.find((input) => input.resource_kind === "gold");
@@ -144,37 +151,28 @@ export const load: PageServerLoad = async ({
             .get(currency.item_id) as { name: string }
         ).name
       : null;
-    return outputs.map((output) => {
-      const itemId = output.item_id!;
-      const item = db
-        .prepare(
-          `
-        SELECT i.name, i.quality, i.tooltip_html, va.public_path AS visual_public_path
-        FROM items i LEFT JOIN visual_assets va
-          ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
-        WHERE i.id = ?
-      `,
-        )
-        .get(itemId) as {
-        name: string;
-        quality: number;
-        tooltip_html: string | null;
-        visual_public_path: string | null;
-      };
-      return {
-        item_id: itemId,
-        item_name: item.name,
-        quality: item.quality,
-        tooltip_html: item.tooltip_html,
-        visual_public_path: item.visual_public_path,
-        price: currency?.amount ?? gold?.amount ?? 0,
-        currency_item_id: currency?.item_id ?? null,
-        currency_item_name: currencyName,
-        faction_required: offered.faction_required_to_buy,
-        faction_tier_name: offered.faction_required_tier_name,
-      };
-    });
+    return {
+      item_id: itemId,
+      item_name: item.name,
+      quality: item.quality,
+      tooltip_html: item.tooltip_html,
+      visual_public_path: item.visual_public_path,
+      price: currency?.amount ?? gold?.amount ?? 0,
+      currency_item_id: currency?.item_id ?? null,
+      currency_item_name: currencyName,
+      faction_required: item.faction_required_to_buy,
+      faction_tier_name: item.faction_required_tier_name,
+    };
   });
+  // The game's sale list can repeat an identical offer, which the page lists once.
+  const itemsSold = [
+    ...new Map(
+      offers.map((offer) => [
+        `${offer.item_id}:${offer.currency_item_id}:${offer.price}`,
+        offer,
+      ]),
+    ).values(),
+  ];
   const skills = db
     .prepare(
       `

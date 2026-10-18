@@ -183,9 +183,16 @@ export const load: PageServerLoad = async ({
     );
   }
   const sourceView = projectItemSources(model, params.id);
-  // A distribution item is never delivered itself, but its parent awards are listed as drops.
+  // A distribution item or a pack is never delivered itself, but the page lists the
+  // awards that roll it and the vendors and recipes that offer it.
   const hasKnownSource =
-    sourceView.hasKnownSource || sourceView.inspection.parentAwards.length > 0;
+    sourceView.hasKnownSource ||
+    sourceView.inspection.parentAwards.length > 0 ||
+    sourceView.inspection.offeredAssets.some(
+      (method) =>
+        method.rooted &&
+        (method.kind !== "vendor" || method.detail.season === "none"),
+    );
   const hasMapLocation =
     (await getItemMapBounds(
       params.id,

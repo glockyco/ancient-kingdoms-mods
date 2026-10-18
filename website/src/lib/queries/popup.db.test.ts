@@ -27,7 +27,7 @@ const db = new Database("data/compendium.db", { readonly: true });
 afterAll(() => db.close());
 
 describe("compact map popups on canonical acquisition", () => {
-  test("pack vendors advertise delivered arrows instead of a carried pack", async () => {
+  test("pack vendors deliver arrows while NPC and pack popups list the offered pack", async () => {
     const arrows = await loadItemPopupDetails("arrow");
     const pack = await loadItemPopupDetails("pack_25_arrows");
     expect(arrows).not.toBeNull();
@@ -42,12 +42,17 @@ describe("compact map popups on canonical acquisition", () => {
       expect(arrows!.vendors).toContainEqual(
         expect.objectContaining({ npcId: offer.npc_id, resultAmount: 25 }),
       );
+      expect(pack!.vendors).toContainEqual(
+        expect.objectContaining({ npcId: offer.npc_id, resultAmount: null }),
+      );
       const npc = await loadNpcPopupDetails(offer.npc_id);
       expect(npc.itemsSold).toContainEqual(
+        expect.objectContaining({ itemId: "pack_25_arrows" }),
+      );
+      expect(npc.itemsSold).not.toContainEqual(
         expect.objectContaining({ itemId: "arrow" }),
       );
     }
-    expect(pack!.vendors).toEqual([]);
   });
 
   test("the Northern Wastes mummy cannot advertise a dungeon fragment", async () => {

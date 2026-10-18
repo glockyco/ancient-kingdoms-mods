@@ -680,20 +680,26 @@ export async function loadNpcPopupDetails(
      WHERE m.npc_id=? AND m.role='offer' ORDER BY q.level_recommended,q.name`,
     [npcId],
   );
-  const itemsSold = methods
-    .filter((method) => method.kind === "vendor")
-    .flatMap((method) => {
-      const gold = method.costGroups
-        .flatMap((group) => group.inputs)
-        .find((input) => input.resource_kind === "gold");
-      return popupDrops(model, [method]).map((drop) => ({
-        ...drop,
-        price: gold?.amount ?? 0,
-      }));
-    })
-    .sort(
-      (a, b) => b.quality - a.quality || a.itemName.localeCompare(b.itemName),
-    );
+  // A vendor row is the offered item, as the trade window shows it. The game's
+  // sale list can repeat an identical offer, which the popup lists once.
+  const offers = new Map<string, PopupDropItem & { price: number }>();
+  for (const method of methods) {
+    if (method.kind !== "vendor") continue;
+    const offeredId = String(method.detail.offered_item_id);
+    const gold = method.costGroups
+      .flatMap((group) => group.inputs)
+      .find((input) => input.resource_kind === "gold");
+    const price = gold?.amount ?? 0;
+    offers.set(`${offeredId}:${price}`, {
+      ...itemFields(model, offeredId),
+      dropRate: 1,
+      isBestiary: Boolean(entity(model, "items", offeredId)?.is_bestiary_drop),
+      price,
+    });
+  }
+  const itemsSold = [...offers.values()].sort(
+    (a, b) => b.quality - a.quality || a.itemName.localeCompare(b.itemName),
+  );
   const subZones = await query<{ name: string }>(
     `SELECT DISTINCT zt.name FROM npc_spawns ns JOIN zone_triggers zt ON zt.id=ns.sub_zone_id WHERE ns.npc_id=? ORDER BY zt.name`,
     [npcId],
@@ -986,8 +992,21 @@ export async function loadItemPopupDetails(
   const mergeSources: ItemPopupMergeSource[] = [];
   const treasureMapSources: ItemPopupTreasureMapSource[] = [];
   let level: number | null = null;
+  // A distribution item is never an award output: list the parent awards that roll it.
+  const wrapperAwards = source.inspection.parentAwards.filter(
+    (method) =>
+      mapMethodIsVisible(method) &&
+      !methods.some((other) => other.methodId === method.methodId),
+  );
+  // A pack is offered rather than delivered: list the vendors and recipes that offer it, as its page does.
+  const offers = source.inspection.offeredAssets.filter(
+    (method) =>
+      method.rooted &&
+      mapMethodIsVisible(method) &&
+      !methods.some((other) => other.methodId === method.methodId),
+  );
   const recipeVariants = new Map<string, number>();
-  for (const method of methods) {
+  for (const method of [...methods, ...offers]) {
     if (method.kind !== "recipe") continue;
     const routeId =
       method.detail.crafting_recipe_id ??
@@ -996,13 +1015,7 @@ export async function loadItemPopupDetails(
     if (typeof routeId === "string")
       recipeVariants.set(routeId, (recipeVariants.get(routeId) ?? 0) + 1);
   }
-  // A distribution item is never an award output: list the parent awards that roll it.
-  const wrapperAwards = source.inspection.parentAwards.filter(
-    (method) =>
-      mapMethodIsVisible(method) &&
-      !methods.some((other) => other.methodId === method.methodId),
-  );
-  for (const method of [...methods, ...wrapperAwards]) {
+  for (const method of [...methods, ...wrapperAwards, ...offers]) {
     const rates = wrapperAwards.includes(method)
       ? wrapperChance(model, method, itemId)
       : chance(model, method, itemId);
