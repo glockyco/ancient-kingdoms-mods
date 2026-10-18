@@ -1,7 +1,10 @@
 <script lang="ts">
   import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import { quantityText } from "$lib/components/acquisition/display";
+  import {
+    minimumGoldQuantity,
+    quantityText,
+  } from "$lib/components/acquisition/display";
   import { SvelteMap } from "svelte/reactivity";
   import type {
     ZoneNpc,
@@ -228,14 +231,16 @@
       id: "chance",
       header: "Item or gold chance",
       size: 170,
-      accessorFn: (row) =>
-        row.rewardProbabilities
-          .map((chance) =>
-            chance === null
-              ? "Unknown"
-              : formatPercent(chance, { decimals: 1, trailingZeros: true }),
-          )
-          .join(", "),
+      accessorFn: (row) => {
+        let minimum = Infinity;
+        for (const chance of row.rewardProbabilities) {
+          if (chance === null) return undefined;
+          minimum = Math.min(minimum, chance);
+        }
+        return minimum === Infinity ? undefined : minimum;
+      },
+      sortingFn: "basic",
+      sortUndefined: "last",
     },
     {
       id: "drops",
@@ -247,11 +252,9 @@
       id: "gold",
       header: "Gold",
       size: 140,
-      accessorFn: (row) =>
-        row.primaryRewards
-          .filter((reward) => reward.resourceKind === "gold")
-          .map((reward) => quantityText(reward.quantity))
-          .join(", "),
+      accessorFn: (row) => minimumGoldQuantity(row.primaryRewards),
+      sortingFn: "basic",
+      sortUndefined: "last",
     },
     {
       id: "location",

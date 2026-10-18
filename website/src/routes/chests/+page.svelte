@@ -28,7 +28,7 @@
     formatNumber,
   } from "$lib/utils/format";
   import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
-  import { quantityText } from "$lib/components/acquisition/display";
+  import { minimumGoldQuantity } from "$lib/components/acquisition/display";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { base } from "$app/paths";
 
@@ -116,11 +116,9 @@
       id: "gold",
       header: "Gold",
       size: 130,
-      accessorFn: (row) =>
-        row.primaryRewards
-          .filter((reward) => reward.resourceKind === "gold")
-          .map((reward) => quantityText(reward.quantity))
-          .join(" "),
+      accessorFn: (row) => minimumGoldQuantity(row.primaryRewards),
+      sortingFn: "basic",
+      sortUndefined: "last",
     },
     {
       id: "item",

@@ -18,6 +18,7 @@ import type {
   RequirementRoot,
   RequirementEntityRef,
 } from "../../acquisition/types";
+import type { PrimaryReward } from "../../utils/primary-rewards";
 
 export interface DisplayItem {
   name: string;
@@ -366,6 +367,23 @@ export function quantityText(quantity: EvaluatedQuantity): string {
       return "quantity depends on the batch or outcome";
   }
 }
+
+export function minimumGoldQuantity(
+  rewards: readonly PrimaryReward[],
+): number | undefined {
+  let minimum = Infinity;
+  for (const reward of rewards) {
+    if (reward.resourceKind !== "gold") continue;
+    const quantity = reward.quantity;
+    if (quantity.kind === "unknown") return undefined;
+    minimum = Math.min(
+      minimum,
+      quantity.kind === "exact" ? quantity.value : quantity.min,
+    );
+  }
+  return minimum === Infinity ? 0 : minimum;
+}
+
 export function lifecycleText(repeatability: Repeatability): string {
   switch (repeatability.kind) {
     case "repeatable":
