@@ -578,15 +578,15 @@ function describePredicate(
         case "level":
           return `Level ${p.amount} or higher`;
         case "total_veteran_points":
-          return `At least ${p.amount} total veteran points`;
+          return `At least ${p.amount} total veteran ${p.amount === 1 ? "point" : "points"}`;
         case "available_skill_points":
-          return `At least ${p.amount} available skill points`;
+          return `At least ${p.amount} available skill ${p.amount === 1 ? "point" : "points"}`;
         case "available_veteran_points":
-          return `At least ${p.amount} available veteran points`;
+          return `At least ${p.amount} available veteran ${p.amount === 1 ? "point" : "points"}`;
         case "spent_skill_points":
-          return `At least ${p.amount} skill points spent`;
+          return `At least ${p.amount} skill ${p.amount === 1 ? "point" : "points"} spent`;
         case "spent_veteran_points":
-          return `At least ${p.amount} veteran skill points spent`;
+          return `At least ${p.amount} veteran ${p.amount === 1 ? "point" : "points"} spent`;
         case "equipped_item_level":
           return `Total equipped item level ${p.amount} or higher`;
         case "adventuring_fraction":

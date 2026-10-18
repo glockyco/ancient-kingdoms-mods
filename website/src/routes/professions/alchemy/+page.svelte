@@ -9,6 +9,7 @@
   import RecipeIngredients from "$lib/components/RecipeIngredients.svelte";
   import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import { questPresentationRequirements } from "$lib/components/acquisition/display";
   import {
     describeRequirement,
     evaluateRequirement,
@@ -316,6 +317,11 @@
           </thead>
           <tbody>
             {#each data.quests as quest, i (quest.id)}
+              {@const visibleConditions = questPresentationRequirements(
+                quest.conditions,
+                quest.id,
+                {},
+              )}
               <tr class="border-t align-top hover:bg-muted/30">
                 <td class="p-3 text-muted-foreground">{i + 1}</td>
                 <td class="p-3">
@@ -330,7 +336,7 @@
                       {quest.name}
                     </a>
                     <QuestFlagBadges {quest} />
-                    {#if quest.conditions.length}
+                    {#if visibleConditions.length}
                       <details class="mt-2">
                         <summary
                           class="cursor-pointer text-sm text-blue-600 dark:text-blue-400"
@@ -338,7 +344,7 @@
                         >
                         <div class="mt-2">
                           <Requirements
-                            roots={quest.conditions}
+                            roots={visibleConditions}
                             names={data.acquisitionNames}
                           />
                         </div>

@@ -19,6 +19,7 @@ import type {
   RequirementEntityRef,
 } from "../../acquisition/types";
 import type { PrimaryReward } from "../../utils/primary-rewards";
+import type { SkillDetailView } from "../../types/skills";
 
 export interface DisplayItem {
   name: string;
@@ -123,15 +124,25 @@ function withoutShownConjuncts(
   expression: RequirementExpression,
   root: RequirementRoot,
   shown: (predicate: RequirementPredicate, root: RequirementRoot) => boolean,
+  shownAlternative?: (
+    expression: RequirementExpression,
+    root: RequirementRoot,
+  ) => boolean,
 ): RequirementExpression | null {
   if (expression.kind === "predicate")
     return shown(expression.predicate, root) ? null : expression;
-  // A displayed cost cannot replace just one alternative of an OR requirement.
-  if (expression.kind === "any") return expression;
+  // Never remove only part of an alternative. Its complete equivalent must be visible.
+  if (expression.kind === "any")
+    return shownAlternative?.(expression, root) ? null : expression;
   const operands: RequirementExpression[] = [];
   let changed = false;
   for (const operand of expression.operands) {
-    const remaining = withoutShownConjuncts(operand, root, shown);
+    const remaining = withoutShownConjuncts(
+      operand,
+      root,
+      shown,
+      shownAlternative,
+    );
     if (remaining !== operand) changed = true;
     if (remaining) operands.push(remaining);
   }
@@ -143,13 +154,22 @@ function withoutShownConjuncts(
 function requirementsWithoutShownConjuncts(
   roots: readonly RequirementRoot[],
   shown: (predicate: RequirementPredicate, root: RequirementRoot) => boolean,
+  shownAlternative?: (
+    expression: RequirementExpression,
+    root: RequirementRoot,
+  ) => boolean,
 ): readonly RequirementRoot[] {
   const result: RequirementRoot[] = [];
   const seen = new Set<RequirementRoot>();
   for (const root of roots) {
     if (seen.has(root)) continue;
     seen.add(root);
-    const expression = withoutShownConjuncts(root.expression, root, shown);
+    const expression = withoutShownConjuncts(
+      root.expression,
+      root,
+      shown,
+      shownAlternative,
+    );
     if (expression)
       result.push(
         expression === root.expression ? root : { ...root, expression },
@@ -172,6 +192,112 @@ export function itemPresentationRequirements(
   );
 }
 
+function isShownIdentityAlternative(
+  expression: RequirementExpression,
+  identityKind: "class" | "race",
+  ids: readonly string[],
+): boolean {
+  if (
+    expression.kind !== "any" ||
+    !ids.length ||
+    expression.operands.length !== ids.length
+  )
+    return false;
+  return (
+    expression.operands.every(
+      (operand) =>
+        operand.kind === "predicate" &&
+        operand.predicate.kind === "identity_is" &&
+        operand.predicate.subject === "player" &&
+        operand.predicate.identityKind === identityKind &&
+        ids.includes(operand.predicate.id),
+    ) &&
+    ids.every((id) =>
+      expression.operands.some(
+        (operand) =>
+          operand.kind === "predicate" &&
+          operand.predicate.kind === "identity_is" &&
+          operand.predicate.id === id,
+      ),
+    )
+  );
+}
+
+export function skillPresentationRequirements(
+  roots: readonly RequirementRoot[],
+  skill: Pick<
+    SkillDetailView,
+    | "id"
+    | "player_classes"
+    | "is_veteran"
+    | "required_spent_points"
+    | "prerequisite_skill_id"
+    | "prerequisite_level"
+    | "prerequisite2_skill_id"
+    | "prerequisite2_level"
+    | "tier"
+    | "learn_default"
+  >,
+  learning: { requiredLevel: number; pointCost: number } | undefined,
+): readonly RequirementRoot[] {
+  return requirementsWithoutShownConjuncts(
+    roots,
+    (predicate, root) => {
+      if (
+        root.phase !== "learn" ||
+        root.subject !== "player" ||
+        predicate.subject !== "player"
+      )
+        return false;
+      switch (predicate.kind) {
+        case "identity_is":
+          return (
+            predicate.identityKind === "class" &&
+            skill.player_classes.length === 1 &&
+            predicate.id === skill.player_classes[0]
+          );
+        case "metric_at_least":
+          return (
+            (predicate.metric === "level" &&
+              predicate.amount === learning?.requiredLevel) ||
+            (predicate.metric ===
+              (skill.is_veteran
+                ? "available_veteran_points"
+                : "available_skill_points") &&
+              predicate.amount === learning?.pointCost) ||
+            (skill.required_spent_points > 0 &&
+              predicate.metric ===
+                (skill.is_veteran
+                  ? "spent_veteran_points"
+                  : "spent_skill_points") &&
+              predicate.amount === skill.required_spent_points)
+          );
+        case "skill_base_rank":
+          return (
+            (predicate.skillId === skill.prerequisite_skill_id &&
+              predicate.rank === skill.prerequisite_level) ||
+            (predicate.skillId === skill.prerequisite2_skill_id &&
+              predicate.rank === skill.prerequisite2_level)
+          );
+        case "skill_tier_choice":
+          return (
+            skill.tier >= 1 &&
+            skill.tier <= 4 &&
+            predicate.skillId === skill.id &&
+            predicate.tier === skill.tier &&
+            predicate.defaultRank === (skill.learn_default ? 1 : 0)
+          );
+        default:
+          return false;
+      }
+    },
+    (expression, root) =>
+      root.phase === "learn" &&
+      root.subject === "player" &&
+      isShownIdentityAlternative(expression, "class", skill.player_classes),
+  );
+}
+
 function isQuestSelfState(
   predicate: RequirementPredicate,
   root: RequirementRoot,
@@ -191,27 +317,53 @@ function isQuestSelfState(
 export function questPresentationRequirements(
   roots: readonly RequirementRoot[],
   questId: string,
-  shown: { requiredLevel?: number; restrictions?: boolean },
+  shown: {
+    requiredLevel?: number;
+    restrictions?: boolean;
+    classes?: readonly string[];
+    races?: readonly string[];
+    objectives?: boolean;
+  },
 ): readonly RequirementRoot[] {
-  const result = requirementsWithoutShownConjuncts(roots, (predicate, root) => {
-    if (root.subject !== "player") return false;
-    if (isQuestSelfState(predicate, root, questId)) return true;
-    if (root.phase === "fulfill" || root.phase === "complete")
+  const result = requirementsWithoutShownConjuncts(
+    roots,
+    (predicate, root) => {
+      if (root.subject !== "player" || predicate.subject !== "player")
+        return false;
+      if (isQuestSelfState(predicate, root, questId)) return true;
+      if (root.phase === "fulfill" || root.phase === "complete")
+        return (
+          shown.objectives !== false &&
+          predicate.kind === "quest_progress" &&
+          predicate.questId === questId
+        );
       return (
-        predicate.kind === "quest_progress" && predicate.questId === questId
+        root.phase === "accept" &&
+        ((predicate.kind === "metric_at_least" &&
+          predicate.metric === "level" &&
+          predicate.amount === shown.requiredLevel) ||
+          (predicate.kind === "identity_is" &&
+            ((predicate.identityKind === "class" &&
+              shown.classes?.length === 1 &&
+              predicate.id === shown.classes[0]) ||
+              (predicate.identityKind === "race" &&
+                shown.races?.length === 1 &&
+                predicate.id === shown.races[0]))) ||
+          (shown.restrictions === true &&
+            ((predicate.kind === "identity_is" &&
+              (predicate.identityKind === "class" ||
+                predicate.identityKind === "race")) ||
+              predicate.kind === "faction_at_least")))
       );
-    return (
+    },
+    (expression, root) =>
       root.phase === "accept" &&
-      ((predicate.kind === "metric_at_least" &&
-        predicate.metric === "level" &&
-        predicate.amount === shown.requiredLevel) ||
-        (shown.restrictions === true &&
-          ((predicate.kind === "identity_is" &&
-            (predicate.identityKind === "class" ||
-              predicate.identityKind === "race")) ||
-            predicate.kind === "faction_at_least")))
-    );
-  });
+      root.subject === "player" &&
+      ((shown.classes !== undefined &&
+        isShownIdentityAlternative(expression, "class", shown.classes)) ||
+        (shown.races !== undefined &&
+          isShownIdentityAlternative(expression, "race", shown.races))),
+  );
   const fulfillment = new Set(
     result
       .filter((root) => root.phase === "fulfill")
@@ -427,7 +579,7 @@ export const REQUIREMENT_PHASE_LABELS: Record<Phase, string> = {
   offer: "To see this offer",
   purchase: "To buy",
   accept: "To accept",
-  fulfill: "To fulfill",
+  fulfill: "Objective",
   complete: "To complete",
   activate: "To activate",
   attempt: "To attempt",

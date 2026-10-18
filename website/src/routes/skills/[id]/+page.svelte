@@ -4,6 +4,7 @@
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import Requirements from "$lib/components/acquisition/Requirements.svelte";
+  import { skillPresentationRequirements } from "$lib/components/acquisition/display";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import {
@@ -144,6 +145,13 @@
     timingModels,
     hasteCooldownCasters,
   } = $derived(facts);
+  const additionalRequirements = $derived(
+    skillPresentationRequirements(
+      data.requirements,
+      skill,
+      data.learningRanks[0],
+    ),
+  );
   const scalingColumns = $derived(getScalingColumns(skill, scrollOnly));
   const showLevelScaling = $derived(
     getShowLevelScaling(skill, scalingColumns, hasScrollMasteryScaling),
@@ -189,7 +197,7 @@
         label: "Requirements",
         show:
           hasRequirements ||
-          data.requirements.length > 0 ||
+          additionalRequirements.length > 0 ||
           skill.player_classes.length > 0,
       },
       {
@@ -494,7 +502,7 @@
   {/if}
 
   <!-- Requirements -->
-  {#if hasRequirements || data.requirements.length > 0 || skill.player_classes.length > 0}
+  {#if hasRequirements || additionalRequirements.length > 0 || skill.player_classes.length > 0}
     <Card.Root id="requirements" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
@@ -503,7 +511,10 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <Requirements roots={data.requirements} names={data.acquisitionNames} />
+        <Requirements
+          roots={additionalRequirements}
+          names={data.acquisitionNames}
+        />
         {#if skill.player_classes.length > 0 && skill.learn_default}
           <p class="mb-4 text-sm text-muted-foreground">
             Rank 1 is learned automatically.

@@ -6,6 +6,7 @@ import type {
   MethodView,
   ProbabilityResult,
   RequirementRoot,
+  RequirementFacts,
 } from "$lib/acquisition/types";
 import MethodList from "./MethodList.svelte";
 import Inspection from "./Inspection.svelte";
@@ -13,6 +14,7 @@ import UseList from "./UseList.svelte";
 import {
   probabilityScenarioText,
   questPresentationRequirements,
+  skillPresentationRequirements,
 } from "./display";
 import { BASELINE_ASSUMPTIONS } from "$lib/acquisition/rules";
 import {
@@ -88,6 +90,18 @@ function recipe(methodId: string, amount: number): MethodView {
   };
 }
 const items = { arrows: { name: "Arrows" }, wood: { name: "Wood" } };
+const learningSkill = {
+  id: "skill",
+  player_classes: ["druid", "cleric"],
+  is_veteran: true,
+  required_spent_points: 20,
+  prerequisite_skill_id: "predecessor",
+  prerequisite_level: 2,
+  prerequisite2_skill_id: null,
+  prerequisite2_level: 0,
+  tier: 2,
+  learn_default: false,
+} satisfies Parameters<typeof skillPresentationRequirements>[1];
 
 describe("canonical acquisition presentation", () => {
   test("preserves quest alternatives and item quantities without weakening canonical availability", () => {
@@ -143,6 +157,230 @@ describe("canonical acquisition presentation", () => {
     expect(
       evaluateRequirement(visibleAlternative, facts(false, 4)).status,
     ).toBe("met");
+  });
+  test("omits only represented learning gates without mutating canonical availability", () => {
+    const hidden = predicate({
+      kind: "withheld",
+      reason: "unpublished_target",
+    });
+    const root: RequirementRoot = {
+      phase: "learn",
+      subject: "player",
+      enforcement: "server",
+      expression: combine("all", [
+        combine(
+          "any",
+          learningSkill.player_classes.map((id) =>
+            predicate({ kind: "identity_is", identityKind: "class", id }),
+          ),
+        ),
+        predicate({
+          kind: "metric_at_least",
+          metric: "level",
+          amount: 10,
+          unit: "levels",
+        }),
+        predicate({
+          kind: "metric_at_least",
+          metric: "available_veteran_points",
+          amount: 3,
+          unit: "points",
+        }),
+        predicate({
+          kind: "metric_at_least",
+          metric: "spent_veteran_points",
+          amount: 20,
+          unit: "points",
+        }),
+        predicate({
+          kind: "skill_base_rank",
+          skillId: "predecessor",
+          rank: 2,
+        }),
+        hidden,
+      ]),
+    };
+    const facts: RequirementFacts = {
+      subjects: {
+        player: {
+          identities: {
+            class: { known: true, value: "rogue", provenance: "entered" },
+          },
+          metrics: {
+            level: { known: true, value: 0, provenance: "entered" },
+            available_veteran_points: {
+              known: true,
+              value: 0,
+              provenance: "entered",
+            },
+            spent_veteran_points: {
+              known: true,
+              value: 0,
+              provenance: "entered",
+            },
+          },
+          skills: { complete: true, entries: [] },
+        },
+      },
+    };
+    const learning = { requiredLevel: 10, pointCost: 3 };
+    const displayed = skillPresentationRequirements(
+      [root],
+      learningSkill,
+      learning,
+    )[0];
+    expect(evaluateRequirement(displayed, facts).status).toBe("unknown");
+    expect(evaluateRequirement(root, facts).status).toBe("unmet");
+    const additionalLevel: RequirementRoot = {
+      ...root,
+      expression: combine("all", [
+        root.expression,
+        predicate({
+          kind: "metric_at_least",
+          metric: "level",
+          amount: 11,
+          unit: "levels",
+        }),
+      ]),
+    };
+    expect(
+      evaluateRequirement(
+        skillPresentationRequirements(
+          [additionalLevel],
+          learningSkill,
+          learning,
+        )[0],
+        facts,
+      ).status,
+    ).toBe("unmet");
+  });
+
+  test("preserves mixed alternatives and class sets not represented by the page", () => {
+    const level = predicate({
+      kind: "metric_at_least",
+      metric: "level",
+      amount: 10,
+      unit: "levels",
+    });
+    const root: RequirementRoot = {
+      phase: "learn",
+      subject: "player",
+      enforcement: "server",
+      expression: combine("any", [
+        level,
+        predicate({ kind: "withheld", reason: "unpublished_target" }),
+      ]),
+    };
+    const learning = { requiredLevel: 10, pointCost: 3 };
+    const displayed = skillPresentationRequirements(
+      [root],
+      learningSkill,
+      learning,
+    )[0];
+    const levelFacts = (value: number): RequirementFacts => ({
+      subjects: {
+        player: {
+          metrics: {
+            level: { known: true, value, provenance: "entered" },
+          },
+        },
+      },
+    });
+    expect(evaluateRequirement(displayed, levelFacts(9)).status).toBe(
+      "unknown",
+    );
+    expect(evaluateRequirement(displayed, levelFacts(10)).status).toBe("met");
+    const classes: RequirementRoot = {
+      ...root,
+      expression: combine(
+        "any",
+        ["druid", "ranger"].map((id) =>
+          predicate({ kind: "identity_is", identityKind: "class", id }),
+        ),
+      ),
+    };
+    const classFacts: RequirementFacts = {
+      subjects: {
+        player: {
+          identities: {
+            class: { known: true, value: "cleric", provenance: "entered" },
+          },
+        },
+      },
+    };
+    expect(
+      evaluateRequirement(
+        skillPresentationRequirements([classes], learningSkill, learning)[0],
+        classFacts,
+      ).status,
+    ).toBe("unmet");
+    expect(
+      skillPresentationRequirements(
+        [
+          {
+            ...classes,
+            expression: combine("any", [
+              predicate({
+                kind: "identity_is",
+                identityKind: "class",
+                id: "cleric",
+              }),
+              predicate({
+                kind: "identity_is",
+                identityKind: "class",
+                id: "druid",
+              }),
+            ]),
+          },
+        ],
+        learningSkill,
+        learning,
+      ),
+    ).toEqual([]);
+  });
+
+  test("retains one quest objective preview when no separate objective view is shown", () => {
+    const progress = predicate({
+      kind: "quest_progress",
+      questId: "quest",
+      objectiveId: "objective",
+      counterKind: "kill",
+      amount: 15,
+    });
+    const fulfill: RequirementRoot = {
+      phase: "fulfill",
+      subject: "player",
+      enforcement: "server",
+      expression: progress,
+    };
+    const complete: RequirementRoot = {
+      ...fulfill,
+      phase: "complete",
+      expression: combine("all", [
+        predicate({ kind: "quest_state", questId: "quest", state: "active" }),
+        progress,
+      ]),
+    };
+    const displayed = questPresentationRequirements(
+      [fulfill, complete],
+      "quest",
+      { objectives: false },
+    );
+    expect(displayed.map((root) => root.phase)).toEqual(["fulfill"]);
+    const facts = (amount: number): RequirementFacts => ({
+      subjects: {
+        player: {
+          questProgress: {
+            complete: true,
+            entries: [{ questId: "quest", objectiveId: "objective", amount }],
+          },
+          quests: { complete: true, entries: [] },
+        },
+      },
+    });
+    expect(evaluateRequirement(displayed[0], facts(14)).status).toBe("unmet");
+    expect(evaluateRequirement(displayed[0], facts(15)).status).toBe("met");
+    expect(evaluateRequirement(complete, facts(15)).status).toBe("unmet");
   });
 
   test("keeps complete alternatives and consumed material amounts visible", () => {

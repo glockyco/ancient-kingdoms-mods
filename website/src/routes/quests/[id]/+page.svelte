@@ -48,6 +48,8 @@
     questPresentationRequirements(data.requirements, data.quest.id, {
       requiredLevel: data.quest.level_required,
       restrictions: true,
+      classes: data.quest.class_requirements.map((name) => name.toLowerCase()),
+      races: data.quest.race_requirements,
     }),
   );
   const hasRequirements = $derived(

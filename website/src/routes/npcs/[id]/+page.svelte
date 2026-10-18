@@ -2,6 +2,10 @@
   import Requirements from "$lib/components/acquisition/Requirements.svelte";
   import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import {
+    methodPresentationRequirements,
+    questPresentationRequirements,
+  } from "$lib/components/acquisition/display";
+  import {
     distinctSubzoneName,
     formatPercent,
     formatNumber,
@@ -146,10 +150,10 @@
   const showRespawnColumn = $derived(data.npc.respawn_time > 0);
   const showChanceColumn = $derived(data.npc.respawn_probability < 1);
 
-  const hasItemFactionRequirements = $derived(
+  const hasItemRequirements = $derived(
     data.itemsSold.some(
       (item) =>
-        item.method.requirements.length > 0 ||
+        methodPresentationRequirements(item.method).length > 0 ||
         item.method.providers.some(
           (provider) => provider.requirements.length > 0,
         ),
@@ -234,7 +238,7 @@
     return cols;
   });
 
-  // Items sold columns - dynamic based on faction requirements
+  // Price and currency already show affordability, so omit an otherwise empty column.
   const itemsSoldColumns = $derived.by(() => {
     const cols: ColumnDef<NpcItemSold>[] = [
       {
@@ -244,12 +248,12 @@
       },
     ];
 
-    if (hasItemFactionRequirements) {
+    if (hasItemRequirements) {
       cols.push({
         id: "reputation",
         header: "Requirements",
         size: 260,
-        accessorFn: (row) => row.method.requirements.length,
+        enableSorting: false,
       });
     }
 
@@ -322,7 +326,17 @@
       {row.original.name}
     </a>
     <Requirements
-      roots={row.original.requirements}
+      roots={questPresentationRequirements(
+        row.original.requirements,
+        row.original.id,
+        {
+          requiredLevel: row.original.level_required,
+          classes: row.original.class_requirements?.map((name) =>
+            name.toLowerCase(),
+          ),
+          objectives: false,
+        },
+      )}
       names={data.acquisitionNames}
     />
   {:else if cell.column.id === "class"}
@@ -392,7 +406,7 @@
   {:else if cell.column.id === "reputation"}
     <Requirements
       roots={[
-        ...row.original.method.requirements,
+        ...methodPresentationRequirements(row.original.method),
         ...row.original.method.providers.flatMap(
           (provider) => provider.requirements,
         ),
