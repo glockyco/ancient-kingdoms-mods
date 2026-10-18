@@ -453,6 +453,142 @@ test("boss source rows retain configured rolls alongside the per-kill process re
   }
 });
 
+test("an altar boss's own loot and a distribution it rolls are drops, while tier rewards stay altar rows", async () => {
+  const f = fixture();
+  try {
+    f.insert("zones", { id: "zone", zone_id: 1, name: "Zone" });
+    for (const [id, item_type] of [
+      ["aegis", "equipment"],
+      ["ring", "equipment"],
+      ["random_map", "random"],
+      ["old_map", "treasure_map"],
+    ])
+      f.insert("items", { id, name: id, item_type, quality: 1 });
+    f.insert("altars", {
+      id: "altar",
+      name: "Altar",
+      type: "forgotten",
+      zone_id: "zone",
+      magic_reward_threshold: 40,
+      epic_reward_threshold: 50,
+      legendary_reward_threshold: 150,
+    });
+    f.insert("monsters", {
+      id: "avatar",
+      name: "Avatar",
+      level: 58,
+      level_min: 58,
+      level_max: 58,
+      is_boss: 1,
+    });
+    f.insert("loot_pools", { id: "boss_pool", kind: "monster" });
+    f.insert("loot_pools", { id: "maps", kind: "random" });
+    f.insert("item_pool_definitions", {
+      id: "random_map_definition",
+      item_id: "random_map",
+      pool_id: "maps",
+      role: "random",
+    });
+    const entry = (
+      id: string,
+      pool_id: string,
+      ordinal: number,
+      item_id: string,
+      probability: number,
+      child_pool_id: string | null = null,
+    ) =>
+      f.insert("loot_pool_entries", {
+        id,
+        pool_id,
+        ordinal,
+        item_id,
+        child_pool_id,
+        resolution: child_pool_id ? "uniform_child" : "direct",
+        probability,
+        duplicate_group: ordinal,
+        counts_equipment: 0,
+        guaranteed_equipment_candidate: 0,
+        quest_gate: "none",
+        scales_with_treasure_hunter: 0,
+        quality: 1,
+      });
+    entry("aegis_entry", "boss_pool", 0, "aegis", 0.05);
+    entry("wrapper_entry", "boss_pool", 1, "random_map", 0.01, "maps");
+    entry("old_map_entry", "maps", 0, "old_map", 1);
+    f.method("final", "kill", "altar_final_loot");
+    f.insert("acquisition_kill_details", {
+      id: "final",
+      monster_id: "avatar",
+      loot_pool_id: "boss_pool",
+      loot_zone_number: 1,
+      loot_zone_id: "zone",
+      loot_zone_withheld: 0,
+      respawn: 0,
+      exp_multiplier: 1,
+      is_boss: 1,
+      is_elite: 0,
+      is_hunt: 0,
+      is_summoned_pet: 0,
+      altar_id: "altar",
+      wave_number: 2,
+      wave_member_index: 0,
+      event_kind: "altar_final",
+      gold_min: 0,
+      gold_max: 0,
+      gold_probability: 0,
+    });
+    f.insert("acquisition_providers_altars", {
+      id: "provider",
+      method_id: "final",
+      altar_id: "altar",
+    });
+    f.insert("acquisition_method_pools", {
+      id: "binding",
+      method_id: "final",
+      pool_id: "boss_pool",
+      ordinal: 0,
+      event: "eligible_kill",
+    });
+    for (const [ordinal, item_id, condition_slot] of [
+      [0, "aegis", null],
+      [1, "old_map", null],
+      [2, "ring", 1],
+    ] as const)
+      f.insert("acquisition_outputs", {
+        id: `output_${item_id}`,
+        method_id: "final",
+        ordinal,
+        resource_kind: "item",
+        item_id,
+        yield_rule: condition_slot === null ? "pool" : "fixed",
+        amount_min: condition_slot === null ? null : 1,
+        amount_max: condition_slot === null ? null : 1,
+        condition_slot,
+        delivery: "corpse",
+      });
+
+    const aegis = await getItemSources(f.db, "aegis");
+    expect(aegis.altars).toEqual([]);
+    expect(aegis.monsters).toMatchObject([
+      { monster_id: "avatar", drop_rate: 0.05 },
+    ]);
+
+    const ring = await getItemSources(f.db, "ring");
+    expect(ring.monsters).toEqual([]);
+    expect(ring.altars).toMatchObject([
+      { altar_id: "altar", reward_tier: "magic" },
+    ]);
+
+    const wrapper = await getItemSources(f.db, "random_map");
+    expect(wrapper.altars).toEqual([]);
+    expect(wrapper.monsters).toMatchObject([
+      { monster_id: "avatar", drop_rate: 0.01 },
+    ]);
+  } finally {
+    f.db.close();
+  }
+});
+
 test("merge sources and reverse uses retain every component including a withheld conjunct", async () => {
   const f = fixture();
   try {

@@ -2,7 +2,11 @@ import type Database from "better-sqlite3";
 import type { ItemSourceType } from "$lib/constants/source-types";
 import type { AcquisitionModel, MethodView } from "$lib/acquisition/types";
 import { projectItemSources } from "$lib/acquisition/projections";
-import { loadItemSourceModel, sourceEntity } from "./item-sources";
+import {
+  isAltarTierReward,
+  loadItemSourceModel,
+  sourceEntity,
+} from "./item-sources";
 
 export interface ItemSourceSummary {
   item_id: string;
@@ -44,7 +48,7 @@ export function itemSourceSummariesFromModel(
       const d = method.detail;
       switch (method.kind) {
         case "kill":
-          if (d.event_kind === "altar_final")
+          if (isAltarTierReward(method, itemId))
             add(
               method,
               "altar",
@@ -134,6 +138,13 @@ export function itemSourceSummariesFromModel(
           break;
       }
     }
+    for (const method of view.inspection.parentAwards)
+      add(
+        method,
+        "drop",
+        String(method.detail.monster_id),
+        name("monsters", method.detail.monster_id),
+      );
   }
   const summaries = new Map<string, ItemSourceSummary>();
   for (const row of rows) {

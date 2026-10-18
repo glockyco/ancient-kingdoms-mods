@@ -218,7 +218,9 @@ These presentation changes are approved additions to the published layout:
 
 Compact cells keep the published labels and abbreviations. A label or number format that only lengthens a compact cell does not replace the published one.
 
-No new seasonal presentation is included. A renderer must not turn an internal distribution label into a claim that the player can carry or open that pool.
+No new seasonal presentation is included. A renderer must not turn an internal distribution label into a claim that the player can carry or open that pool. A distribution item's own page keeps its published "Dropped by" list and map link. They show the awards that roll the distribution and the configured chance of that roll, beside the outcomes it resolves to.
+
+An altar boss's own loot is listed as a monster drop. Only an altar's tiered rewards appear as altar rows.
 
 ## Migration Plan
 

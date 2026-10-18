@@ -82,6 +82,7 @@ interface ProjectionIndex {
   initiators: Map<string, MethodView[]>;
   providers: Map<string, MethodView[]>;
   uses: Map<string, MethodView[]>;
+  parentAwards: Map<string, MethodView[]>;
   monsters: Map<string, MethodView[]>;
   sources: Map<string, ItemSourceView>;
   inspections: Map<string, DefinitionInspection>;
@@ -106,6 +107,7 @@ function projectionIndex(model: AcquisitionModel): ProjectionIndex {
     initiators: new Map(),
     providers: new Map(),
     uses: new Map(),
+    parentAwards: new Map(),
     monsters: new Map(),
     sources: new Map(),
     inspections: new Map(),
@@ -169,6 +171,13 @@ function projectionIndex(model: AcquisitionModel): ProjectionIndex {
           add(index.uses, e.predicate.itemId, method);
       }
     }
+  }
+  for (const binding of model.rows.methodPools) {
+    const method = model.methodViews.get(String(binding.method_id));
+    if (!method?.rooted) continue;
+    for (const entry of model.entriesByPool.get(String(binding.pool_id)) ?? [])
+      if (entry.resolution === "uniform_child" && entry.item_id)
+        add(index.parentAwards, entry.item_id, method);
   }
   for (const [key, roots] of model.requirements) {
     const split = key.indexOf(":"),
@@ -407,6 +416,7 @@ export function projectDefinitionInspection(
     fixedContents: Object.freeze(fixedContents),
     randomOutcomes: Object.freeze(randomOutcomes),
     portableChestOutcomes: Object.freeze(portableChestOutcomes),
+    parentAwards: Object.freeze(index.parentAwards.get(itemId) ?? []),
     offerLocations: locations(offeredAssets, "offer"),
   });
   index.inspections.set(itemId, inspection);
@@ -431,17 +441,21 @@ export function projectDirectGeometry(
   const cached = index.geometry.get(itemId);
   if (cached) return cached;
   const geometry = locations(
-    (index.awards.get(itemId) ?? []).filter(
-      (method) =>
-        ![
-          "portable_chest",
-          "pack_use",
-          "merge",
-          "fragment",
-          "blessing",
-          "essence",
-        ].includes(method.kind),
-    ),
+    [
+      ...(index.awards.get(itemId) ?? []).filter(
+        (method) =>
+          ![
+            "portable_chest",
+            "pack_use",
+            "merge",
+            "fragment",
+            "blessing",
+            "essence",
+          ].includes(method.kind),
+      ),
+      // A distribution item is rolled where its parent award happens.
+      ...(index.parentAwards.get(itemId) ?? []),
+    ],
     "award",
   );
   index.geometry.set(itemId, geometry);

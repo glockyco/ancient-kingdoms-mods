@@ -106,6 +106,58 @@ function configuredRate(
   return itemProbability(method.probabilityResults, itemId) ?? 1;
 }
 
+/**
+ * Whether a kill awards the item as an altar's tiered reward. An altar boss's own
+ * loot pool has no reward tier and is listed like any other monster drop.
+ */
+export function isAltarTierReward(method: MethodView, itemId: string): boolean {
+  return (
+    method.kind === "kill" &&
+    method.detail.event_kind === "altar_final" &&
+    method.outputs.some(
+      (output) => output.item_id === itemId && output.condition_slot !== null,
+    )
+  );
+}
+
+function monsterRow(
+  model: AcquisitionModel,
+  method: MethodView,
+  itemId: string,
+  rate: number,
+): ItemSources["monsters"][number] | null {
+  const detail = method.detail;
+  const monster = sourceEntity(model, "monsters", detail.monster_id);
+  if (!monster) return null;
+  const levels =
+    detail.event_kind === "authored"
+      ? method.providers.flatMap((provider) => {
+          const spawn =
+            provider.ref.kind === "monster_spawns"
+              ? sourceEntity(model, "monster_spawns", provider.ref.id)
+              : undefined;
+          return typeof spawn?.level === "number" ? [spawn.level] : [];
+        })
+      : [];
+  const row: ItemSources["monsters"][number] = {
+    item_id: itemId,
+    monster_id: monster.id,
+    monster_name: str(monster, "name"),
+    monster_level: num(monster, "level"),
+    monster_level_min: num(monster, "level_min"),
+    monster_level_max: num(monster, "level_max"),
+    is_boss: Boolean(detail.is_boss),
+    is_fabled: Boolean(monster.is_fabled),
+    is_elite: Boolean(detail.is_elite),
+    drop_rate: rate,
+  };
+  if (levels.length) {
+    row.monster_level_min = Math.min(...levels);
+    row.monster_level_max = Math.max(...levels);
+  }
+  return row;
+}
+
 /** Adapt the canonical methods to the existing item tables without introducing new sections. */
 export function itemSourcesFromModel(
   model: AcquisitionModel,
@@ -139,35 +191,9 @@ export function itemSourcesFromModel(
     const rate = configuredRate(model, method, itemId);
     const output = method.outputs.find((output) => output.item_id === itemId);
     const inputs = method.costGroups.flatMap((group) => group.inputs);
-    if (method.kind === "kill" && detail.event_kind !== "altar_final") {
-      const monster = sourceEntity(model, "monsters", detail.monster_id);
-      if (!monster) continue;
-      const levels =
-        detail.event_kind === "authored"
-          ? method.providers.flatMap((provider) => {
-              const spawn =
-                provider.ref.kind === "monster_spawns"
-                  ? sourceEntity(model, "monster_spawns", provider.ref.id)
-                  : undefined;
-              return typeof spawn?.level === "number" ? [spawn.level] : [];
-            })
-          : [];
-      const row: ItemSources["monsters"][number] = {
-        item_id: itemId,
-        monster_id: monster.id,
-        monster_name: str(monster, "name"),
-        monster_level: num(monster, "level"),
-        monster_level_min: num(monster, "level_min"),
-        monster_level_max: num(monster, "level_max"),
-        is_boss: Boolean(detail.is_boss),
-        is_fabled: Boolean(monster.is_fabled),
-        is_elite: Boolean(detail.is_elite),
-        drop_rate: rate,
-      };
-      if (levels.length) {
-        row.monster_level_min = Math.min(...levels);
-        row.monster_level_max = Math.max(...levels);
-      }
+    if (method.kind === "kill" && !isAltarTierReward(method, itemId)) {
+      const row = monsterRow(model, method, itemId, rate);
+      if (!row) continue;
       const targetChance = itemProbability(
         calculateMethodProbabilities(
           model.rows,
@@ -502,12 +528,15 @@ export function itemSourcesFromModel(
         position_x: provider.location.position?.x ?? null,
         position_y: provider.location.position?.y ?? null,
       });
-    } else if (method.kind === "kill" && detail.event_kind === "altar_final") {
+    } else if (method.kind === "kill") {
       const altar = sourceEntity(model, "altars", detail.altar_id);
       if (!altar) continue;
       const tiers = method.outputs
-        .filter((output) => output.item_id === itemId)
-        .map((output) => output.condition_slot ?? 0);
+        .filter(
+          (output) =>
+            output.item_id === itemId && output.condition_slot !== null,
+        )
+        .map((output) => output.condition_slot!);
       for (const tier of new Set(tiers)) {
         const tierNames = ["common", "magic", "epic", "legendary"] as const;
         const thresholds = [
@@ -539,6 +568,20 @@ export function itemSourcesFromModel(
         });
       }
     }
+  }
+  for (const method of view.inspection.parentAwards) {
+    if (method.kind !== "kill")
+      throw new Error(
+        `Unsupported ${method.kind} award ${method.methodId} rolling ${itemId}`,
+      );
+    // The configured roll of the distribution itself, as the drop tables list it.
+    const row = monsterRow(
+      model,
+      method,
+      itemId,
+      configuredRate(model, method, itemId),
+    );
+    if (row) result.monsters.push(row);
   }
   const awardPools = new Set<string>();
   const pendingPools: string[] = view.methods.flatMap((method) => [

@@ -603,6 +603,8 @@ export interface DefinitionInspection {
   readonly fixedContents: readonly InspectedOutcome[];
   readonly randomOutcomes: readonly InspectedOutcome[];
   readonly portableChestOutcomes: readonly InspectedOutcome[];
+  /** Rooted awards whose pool rolls this distribution item, which then resolves to one of its outcomes. */
+  readonly parentAwards: readonly MethodView[];
   readonly offerLocations: readonly DirectLocation[];
 }
 export interface ItemSourceView {

@@ -257,6 +257,18 @@ export async function queryAcquisitionRows(
   }
   if (initialItems.length) {
     addMethods(await select("acquisition_outputs", "item_id", initialItems));
+    // A distribution item is never an output: its parent award rolls it and resolves it.
+    for (let i = 0; i < initialItems.length; i += 200) {
+      const batch = initialItems.slice(i, i + 200);
+      for (const row of await execute(
+        `SELECT DISTINCT binding.method_id FROM acquisition_method_pools binding
+         JOIN loot_pool_entries entry ON entry.pool_id = binding.pool_id
+         WHERE entry.resolution = 'uniform_child'
+           AND entry.item_id IN (${batch.map(() => "?").join(",")})`,
+        batch,
+      ))
+        methodIds.add(text(row, "method_id", "wrapper award"));
+    }
     const ins = await select("acquisition_inputs", "item_id", initialItems);
     const groups = await select(
       "acquisition_cost_groups",

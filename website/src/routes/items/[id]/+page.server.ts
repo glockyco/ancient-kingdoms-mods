@@ -182,7 +182,10 @@ export const load: PageServerLoad = async ({
       `Buy and place this furniture through the house panel for ${item.structure_price.toLocaleString("en-US")} gold while at a house owned by your account.`,
     );
   }
-  const hasKnownSource = projectItemSources(model, params.id).hasKnownSource;
+  const sourceView = projectItemSources(model, params.id);
+  // A distribution item is never delivered itself, but its parent awards are listed as drops.
+  const hasKnownSource =
+    sourceView.hasKnownSource || sourceView.inspection.parentAwards.length > 0;
   const hasMapLocation =
     (await getItemMapBounds(
       params.id,

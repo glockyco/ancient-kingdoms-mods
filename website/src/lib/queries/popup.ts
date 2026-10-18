@@ -465,6 +465,29 @@ function chance(model: AcquisitionModel, method: MethodView, itemId: string) {
     requiresQuest,
   };
 }
+/** The configured roll of a distribution item in its parent award's pool. */
+function wrapperChance(
+  model: AcquisitionModel,
+  method: MethodView,
+  itemId: string,
+) {
+  for (const binding of model.rows.methodPools) {
+    if (binding.method_id !== method.methodId) continue;
+    const entry = model.entriesByPool
+      .get(String(binding.pool_id))
+      ?.find(
+        (entry) =>
+          entry.item_id === itemId && entry.resolution === "uniform_child",
+      );
+    if (entry)
+      return {
+        dropRate: entry.probability,
+        fatecharmDropRate: undefined,
+        requiresQuest: entry.quest_gate !== "none",
+      };
+  }
+  throw new Error(`Missing ${itemId} roll in ${method.methodId}`);
+}
 function popupDrops(
   model: AcquisitionModel,
   methods: readonly MethodView[],
@@ -973,8 +996,16 @@ export async function loadItemPopupDetails(
     if (typeof routeId === "string")
       recipeVariants.set(routeId, (recipeVariants.get(routeId) ?? 0) + 1);
   }
-  for (const method of methods) {
-    const rates = chance(model, method, itemId);
+  // A distribution item is never an award output: list the parent awards that roll it.
+  const wrapperAwards = source.inspection.parentAwards.filter(
+    (method) =>
+      mapMethodIsVisible(method) &&
+      !methods.some((other) => other.methodId === method.methodId),
+  );
+  for (const method of [...methods, ...wrapperAwards]) {
+    const rates = wrapperAwards.includes(method)
+      ? wrapperChance(model, method, itemId)
+      : chance(model, method, itemId);
     if (rates.requiresQuest) continue;
     if (method.kind === "kill") {
       const monster = entity(model, "monsters", method.detail.monster_id);

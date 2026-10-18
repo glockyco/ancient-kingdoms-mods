@@ -578,6 +578,7 @@ function createProjector(
       fixedContents: outcomes(inspected.fixedContents),
       randomOutcomes: outcomes(inspected.randomOutcomes),
       portableChestOutcomes: outcomes(inspected.portableChestOutcomes),
+      parentAwards: sorted(inspected.parentAwards.map(method)),
       definitionPools: sorted(
         (model.rows.facts.item_pool_definitions ?? [])
           .filter((row) => row.item_id === itemId)
