@@ -452,8 +452,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "scroll_mastery",
           name: "Scroll Mastery",
-          description:
-            "Craft scrolls at Scribing Tables and use them to cast their skills.",
+          description: "Craft scrolls and cast their skills.",
           href: "/professions/scroll_mastery",
           icon: {
             src: "/images/professions/scroll_mastery/icon.webp",
@@ -469,7 +468,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "adventuring",
           name: "Adventuring",
-          description: "Complete Adventurers' Guild quests.",
+          description: "Complete Adventurer quests.",
           href: "/professions/adventuring",
           icon: {
             src: "/images/professions/adventuring/icon.webp",
@@ -529,7 +528,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
         {
           id: "treasure_hunter",
           name: "Treasure Hunter",
-          description: "Dig up buried treasure with treasure maps.",
+          description: "Dig up buried treasure with maps.",
           href: "/professions/treasure_hunter",
           icon: {
             src: "/images/professions/treasure_hunter/icon.webp",

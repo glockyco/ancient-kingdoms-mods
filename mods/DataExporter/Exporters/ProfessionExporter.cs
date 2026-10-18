@@ -84,7 +84,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "adventuring",
                 name = "Adventuring",
-                description = "Complete Adventurers' Guild quests.",
+                description = "Complete Adventurer quests.",
                 category = "combat",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "ADVENTURING_MASTER",
@@ -134,7 +134,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "treasure_hunter",
                 name = "Treasure Hunter",
-                description = "Dig up buried treasure with treasure maps.",
+                description = "Dig up buried treasure with maps.",
                 category = "exploration",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "TREASURE_HUNTER_MASTER",
@@ -170,7 +170,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "scroll_mastery",
                 name = "Scroll Mastery",
-                description = "Craft scrolls at Scribing Tables and use them to cast their skills.",
+                description = "Craft scrolls and cast their skills.",
                 category = "crafting",
                 icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "SCROLL_MASTERY_MASTER",
