@@ -1,37 +1,37 @@
 import { describe, expect, test } from "vitest";
-import { hasLinearValue, convertTooltip } from "./skill-format";
-import { formatLinearStat } from "$lib/utils/formatSkillEffect";
+import {
+  formatMasteryNeeded,
+  formatPercent,
+  hasLinearValue,
+  isNegativeLinear,
+  convertTooltip,
+} from "./skill-format";
 
 describe("skill display formatting", () => {
-  test("a level-only value is present", () => {
+  test.each([
+    [1, "at least 0.0%"],
+    [2, "at least 7.5%"],
+    [3, "above 12.5%"],
+    [4, "at least 17.5%"],
+    [5, "above 22.5%"],
+  ])(
+    "mastery threshold for rank %s reflects even rounding",
+    (rank, expected) => {
+      expect(formatMasteryNeeded(Number(rank))).toBe(expected);
+    },
+  );
+  test("page percentages retain two decimal places and nonzero small chances", () => {
+    expect(formatPercent(0.12345)).toBe("12.35%");
+    expect(formatPercent(-0.0225)).toBe("−2.25%");
+    expect(formatPercent(0.00001)).toBe("0.001%");
+  });
+  test("a level-only value is present but its sign is decided by its base", () => {
     expect(hasLinearValue(null)).toBe(false);
     expect(hasLinearValue({ base_value: 0, bonus_per_level: -1 })).toBe(true);
-  });
-  test("stat fields use signed catalogue formats and preserve negative regeneration", () => {
-    expect(
-      formatLinearStat("health_max_bonus", {
-        base_value: 2000,
-        bonus_per_level: 0,
-      }),
-    ).toBe("+2,000");
-    expect(
-      formatLinearStat("critical_chance_bonus", {
-        base_value: 0.05833,
-        bonus_per_level: 0,
-      }),
-    ).toBe("+5.83%");
-    expect(
-      formatLinearStat("healing_per_second_bonus", {
-        base_value: -1.25,
-        bonus_per_level: 0,
-      }),
-    ).toBe("−1.25");
-    expect(
-      formatLinearStat("health_max_bonus", {
-        base_value: 20,
-        bonus_per_level: 5,
-      }),
-    ).toBe("+20 + 5 × (rank − 1)");
+    expect(isNegativeLinear({ base_value: 0, bonus_per_level: -1 })).toBe(
+      false,
+    );
+    expect(isNegativeLinear({ base_value: -1, bonus_per_level: 1 })).toBe(true);
   });
   test("tooltip color survives while layout tags are removed", () => {
     expect(

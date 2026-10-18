@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
-  import { statName, formatStat } from "$lib/stats";
-  import type { StatId } from "$lib/generated/stat-vocabulary";
   import Skull from "@lucide/svelte/icons/skull";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import { SvelteMap } from "svelte/reactivity";
@@ -36,7 +33,7 @@
     buildCollectionPage({
       path: "/monsters",
       name: "Monsters — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${formatNumber(data.monsters.length)} monsters in Ancient Kingdoms.`,
+      description: `Searchable database of ${data.monsters.length.toLocaleString()} monsters in Ancient Kingdoms.`,
       items: data.monsters.map((monster) => ({
         name: monster.name,
         path: `/monsters/${monster.id}`,
@@ -86,17 +83,6 @@
   );
 
   type MonsterRow = (typeof dataWithVirtual)[number];
-  const columnStats: Record<string, StatId> = {
-    health: "health",
-    damage: "attack_power",
-    magic_damage: "spell_power",
-    defense: "armor_class",
-    magic_resist: "magic_resist",
-    poison_resist: "poison_resist",
-    fire_resist: "fire_resist",
-    cold_resist: "cold_resist",
-    disease_resist: "disease_resist",
-  };
 
   const columns: ColumnDef<MonsterRow>[] = [
     {
@@ -132,47 +118,47 @@
     },
     {
       accessorKey: "health",
-      header: statName(columnStats.health),
+      header: "Health",
       size: 150,
     },
     {
       accessorKey: "damage",
-      header: statName(columnStats.damage),
+      header: "Attack Power",
       size: 150,
     },
     {
       accessorKey: "magic_damage",
-      header: statName(columnStats.magic_damage),
+      header: "Spell Power",
       size: 180,
     },
     {
       accessorKey: "defense",
-      header: statName(columnStats.defense),
+      header: "Armor Class",
       size: 150,
     },
     {
       accessorKey: "magic_resist",
-      header: statName(columnStats.magic_resist),
+      header: "Magic Res",
       size: 150,
     },
     {
       accessorKey: "poison_resist",
-      header: statName(columnStats.poison_resist),
+      header: "Poison Res",
       size: 150,
     },
     {
       accessorKey: "fire_resist",
-      header: statName(columnStats.fire_resist),
+      header: "Fire Res",
       size: 150,
     },
     {
       accessorKey: "cold_resist",
-      header: statName(columnStats.cold_resist),
+      header: "Cold Res",
       size: 150,
     },
     {
       accessorKey: "disease_resist",
-      header: statName(columnStats.disease_resist),
+      header: "Disease Res",
       size: 150,
     },
     ...createRespawnColumns<MonsterRow>(),
@@ -212,16 +198,26 @@
     icon: "",
     name: "Name",
     level_min: "Level",
-    ...Object.fromEntries(
-      Object.entries(columnStats).map(([key, id]) => [key, statName(id)]),
-    ),
+    health: "Health",
+    damage: "Attack Power",
+    magic_damage: "Spell Power",
+    defense: "Armor Class",
+    magic_resist: "Magic Resist",
+    poison_resist: "Poison Resist",
+    fire_resist: "Fire Resist",
+    cold_resist: "Cold Resist",
+    disease_resist: "Disease Resist",
     respawn_time: "Respawn",
-    respawn_chance: "Spawn chance",
-    special: "Spawn condition",
+    respawn_chance: "Chance",
+    special: "Special",
     zones: "Zones",
     classification: "Classification",
     zone_ids: "Zone Filter",
   };
+
+  function formatNumber(n: number): string {
+    return n.toLocaleString();
+  }
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<MonsterRow, unknown> })}
@@ -265,8 +261,9 @@
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = row.original.level_min !== row.original.level_max}
     <span class="ml-auto"
-      >{row.original.level_min}{#if hasVariance}
-        to {row.original.level_max}{/if}</span
+      >{row.original.level_min}<span class={hasVariance ? "" : "invisible"}
+        >+</span
+      ></span
     >
   {:else if cell.column.id === "health"}
     {@const hasVariance = row.original.level_min !== row.original.level_max}
@@ -274,22 +271,17 @@
       row.original.health_base +
       row.original.health_per_level * (row.original.level_min - 1)}
     <span class="ml-auto"
-      >{formatStat("health", minHealth)}<span
-        class={hasVariance ? "" : "invisible"}>+</span
+      >{formatNumber(minHealth)}<span class={hasVariance ? "" : "invisible"}
+        >+</span
       ></span
     >
   {:else if cell.column.id === "damage" || cell.column.id === "magic_damage" || cell.column.id === "defense" || cell.column.id === "magic_resist" || cell.column.id === "poison_resist" || cell.column.id === "fire_resist" || cell.column.id === "cold_resist" || cell.column.id === "disease_resist"}
-    <span class="ml-auto"
-      >{formatStat(
-        columnStats[cell.column.id],
-        cell.getValue() as number,
-      )}</span
-    >
+    <span class="ml-auto">{formatNumber(cell.getValue() as number)}</span>
   {:else if isRespawnColumn(cell.column.id)}
     <RespawnCells columnId={cell.column.id} row={row.original} />
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
-    <div class="flex flex-wrap gap-1">
+    <div class="flex gap-1 whitespace-nowrap">
       {#if zones.length > 0}
         <IconBadge
           href="/zones/{zones[0].zone_id}"
@@ -347,7 +339,7 @@
 
 <Seo
   title="Monsters - Ancient Kingdoms"
-  description={`${formatNumber(data.monsters.length)} monsters across Eratiath, from regular spawns to elites, bosses and hunts. Filter by level, classification, or zone, then see drops, abilities, and respawn timers.`}
+  description={`${data.monsters.length.toLocaleString()} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
   path="/monsters"
 />
 

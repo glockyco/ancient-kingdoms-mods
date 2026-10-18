@@ -11,7 +11,7 @@ describe("formatSkillEffect movement debuffs", () => {
 
   it("treats -10 speed as root but -9 speed as a slow", () => {
     expect(debuff(-9)).not.toContain("root");
-    expect(debuff(-9)).toContain("Movement Speed");
+    expect(debuff(-9)).toContain("speed");
     expect(debuff(-10)).toContain("root");
   });
 
@@ -31,7 +31,7 @@ describe("formatSkillEffect damage", () => {
         damage_percent: { base_value: 2, bonus_per_level: 0 },
         damage_terms: ["spell_power"],
       }),
-    ).toMatch(/^\(Spell Power \+ 400\) × 200%/);
+    ).toBe("(spell power + 400) × 200% magic dmg");
   });
 
   it("subtracts weapon Base Damage inside the sum the multiplier covers", () => {
@@ -43,8 +43,8 @@ describe("formatSkillEffect damage", () => {
         damage_percent: { base_value: 2, bonus_per_level: 0.25 },
         damage_terms: ["attack_power", "ranged_dexterity", "main_hand"],
       }),
-    ).toMatch(
-      /^\(Attack Power \+ 150% of Dexterity − main-hand Base Damage \+ 1\) × \(200% \+ 25% × \(rank − 1\)\)/,
+    ).toBe(
+      "(attack power + 150% of DEX − main-hand base dmg + 1) × (200% + 25% × (rank − 1)) physical dmg",
     );
   });
 
@@ -62,7 +62,7 @@ describe("formatSkillEffect damage", () => {
         // (1 Spell Power + 3 Attack Power + 1) × 50% = 2.5, which rounds to even.
         { monster: { damage: 3, magicDamage: 1 } },
       ),
-    ).toMatch(/^2\b/);
+    ).toBe("2 magic dmg");
   });
 });
 
@@ -74,7 +74,7 @@ describe("formatSkillEffect caster notes", () => {
   };
 
   it("qualifies the value an attribute scales", () => {
-    expect(formatSkillEffect(heal)).toContain("Hit Points (0.4% more per WIS)");
+    expect(formatSkillEffect(heal)).toContain("hp (0.4% more per WIS)");
   });
 
   it("drops the reader's attribute notes from a monster's cast", () => {
@@ -95,8 +95,8 @@ describe("formatSkillEffect caster notes", () => {
         disease_resist_bonus: "+0.15 per WIS",
       },
     });
-    expect(summary.match(/\+0.15 per WIS/g)).toHaveLength(1);
-    expect(summary).toContain("+10 Fire Resist");
+    expect(summary).toContain("+10 poison & disease res (+0.15 per WIS)");
+    expect(summary).toContain("+10 fire res");
   });
 });
 
@@ -119,7 +119,7 @@ describe("formatSkillEffect Bard summaries", () => {
       magic_damage_percent_bonus: { base_value: 0.2, bonus_per_level: 0 },
     });
     expect(summary.indexOf("3+ active songs")).toBeLessThan(
-      summary.indexOf("Attack Power"),
+      summary.indexOf("attack power"),
     );
   });
 
@@ -158,9 +158,7 @@ describe("formatSkillEffect Bard summaries", () => {
       notes: { damage: "song note" },
     });
     expect(summary.match(/song note/g)).toHaveLength(1);
-    expect(summary.indexOf("Hit Points")).toBeLessThan(
-      summary.indexOf("song note"),
-    );
+    expect(summary.indexOf("hp")).toBeLessThan(summary.indexOf("song note"));
   });
 });
 
@@ -219,7 +217,7 @@ describe("formatSkillEffect Necromancer mechanics", () => {
     expect(summary).toContain("0.1%");
   });
 
-  it("does not append a duration to a permanent form", () => {
+  it("identifies Reaper Form's toggle and max-health drain", () => {
     const summary = formatSkillEffect({
       skill_type: "target_buff",
       is_necromancer_reaper_form: true,
@@ -230,6 +228,8 @@ describe("formatSkillEffect Necromancer mechanics", () => {
         bonus_per_level: 0,
       },
     });
+    expect(summary).toContain("toggle form");
+    expect(summary).toContain("max hp drain/s");
     expect(summary).not.toContain("10s");
   });
 
@@ -267,13 +267,46 @@ describe("formatSkillEffect Necromancer mechanics", () => {
     expect(summary).not.toContain("yd");
   });
 
+  it("shows DoT execute and lifetap-healing bonuses without implying direct damage bonuses", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "passive",
+        damage_over_time_execute_bonus: {
+          base_value: 0.05,
+          bonus_per_level: 0.05,
+        },
+      }),
+    ).toContain("DoT dmg vs targets below 30% hp");
+    expect(
+      formatSkillEffect({
+        skill_type: "target_buff",
+        lifetap_healing_percent_bonus: {
+          base_value: 0.2,
+          bonus_per_level: 0.05,
+        },
+      }),
+    ).toContain("lifetap healing");
+  });
+
+  it("identifies damage as distributed over channel pulses", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "target_damage",
+        damage_type: "Magic",
+        damage: { base_value: 20, bonus_per_level: 20 },
+        damage_terms: ["spell_power"],
+        channel_pulses: 3,
+      }),
+    ).toContain("channeled over 3 pulses");
+  });
+
   it("assigns an owner's pet passive max-health bonus to the companion", () => {
     const skill = {
       skill_type: "passive",
       is_pet_skill: true,
       health_max_percent_bonus: { base_value: 0.02, bonus_per_level: 0.02 },
     };
-    expect(formatSkillEffect(skill)).toContain("companion");
+    expect(formatSkillEffect(skill)).toContain("companion max hp");
     expect(formatSkillEffect({ ...skill, is_pet_skill: false })).not.toContain(
       "companion",
     );
@@ -288,6 +321,6 @@ describe("formatSkillEffect damage shields", () => {
         damage_shield_type: "Fire",
         damage_shield: { base_value: 120, bonus_per_level: 0 },
       }),
-    ).toContain("Damage Shield on its target");
+    ).toContain("dmg shield on its target");
   });
 });

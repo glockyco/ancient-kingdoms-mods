@@ -1,11 +1,4 @@
 <script lang="ts">
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
-  import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import {
-    minimumGoldQuantity,
-    quantityText,
-  } from "$lib/components/acquisition/display";
-  import { SvelteMap } from "svelte/reactivity";
   import type {
     ZoneNpc,
     ZoneMonster,
@@ -55,16 +48,13 @@
   import BookOpen from "@lucide/svelte/icons/book-open";
   import {
     formatDuration,
-    formatPercent,
-    formatNumber,
+    formatPercent as formatFraction,
   } from "$lib/utils/format";
-  import { statName, formatStat } from "$lib/stats";
+  import { chestRewardChance } from "$lib/utils/chest-reward";
   import { base } from "$app/paths";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import TrapMechanics from "$lib/components/TrapMechanics.svelte";
   import TrapEffect from "$lib/components/TrapEffect.svelte";
-  import { fishingSpotBaseId } from "../../../../scripts/gathering-resource-ids.mjs";
 
   let { data } = $props();
 
@@ -87,34 +77,10 @@
     data.monsters.filter((m) => !m.is_boss && !m.is_elite && !isCritter(m)),
   );
 
-  const weatherNames: Record<string, string> = {
-    Rain: "Rain",
-    Snow: "Snow",
-    Ashes: "Falling ash",
-    SandStorm: "Sandstorm",
-    FireEmber: "Fire embers",
-  };
-  const weather = $derived(weatherNames[data.zone.weather_type ?? ""]);
-
-  type TrapRow = ZoneTrap & { count: number };
-  const trapRows = $derived.by(() => {
-    const groups = new SvelteMap<string, TrapRow>();
-    for (const trap of data.traps) {
-      // Teleports may land at different positions within the same zone.
-      const key = trap.teleport_zone_id
-        ? trap.id
-        : JSON.stringify([
-            trap.name,
-            trap.type,
-            trap.effect_skill_id,
-            trap.fire_interval,
-          ]);
-      const group = groups.get(key);
-      if (group) group.count++;
-      else groups.set(key, { ...trap, count: 1 });
-    }
-    return [...groups.values()];
-  });
+  // Check if ANY monster in this zone has level variance (for consistent column alignment)
+  const anyMonsterHasVariance = $derived(
+    data.monsters.some((m) => m.level_min !== m.level_max),
+  );
 
   // Monster column definitions
   const monsterColumns: ColumnDef<ZoneMonster>[] = [
@@ -126,12 +92,12 @@
     {
       accessorKey: "level",
       header: "Level",
-      size: 150,
+      size: 100,
     },
     {
       accessorKey: "health",
-      header: statName("health"),
-      size: 210,
+      header: "Health",
+      size: 120,
     },
     {
       accessorKey: "spawn_count",
@@ -189,27 +155,20 @@
   const chestColumns: ColumnDef<ZoneChest>[] = [
     {
       id: "name",
-      header: "Chest",
+      header: "Icon",
       size: 80,
     },
     {
       id: "key",
       header: "Key",
       minSize: 200,
-      accessorFn: (row) =>
-        row.requiredKeys
-          .map((key) =>
-            key.withheld
-              ? "Unpublished key"
-              : (key.itemName ?? key.itemId ?? ""),
-          )
-          .join(" or "),
+      accessorFn: (row) => row.key_required_name || "",
       sortingFn: (rowA, rowB) => {
-        const a = rowA.getValue<string>("key");
-        const b = rowB.getValue<string>("key");
-        if (!a && !b) return 0;
-        if (!a) return 1;
-        if (!b) return -1;
+        const a = rowA.original.key_required_name;
+        const b = rowB.original.key_required_name;
+        if (a === null && b === null) return 0;
+        if (a === null) return 1;
+        if (b === null) return -1;
         return a.localeCompare(b);
       },
     },
@@ -217,30 +176,14 @@
       id: "item",
       header: "Item",
       minSize: 150,
-      accessorFn: (row) =>
-        row.primaryRewards
-          .filter((reward) => reward.resourceKind === "item")
-          .map((reward) =>
-            reward.withheld
-              ? "Unpublished item"
-              : (reward.itemName ?? reward.itemId ?? ""),
-          )
-          .join(", "),
+      accessorFn: (row) => row.item_reward_name || "",
     },
     {
       id: "chance",
-      header: "Item or gold chance",
+      header: "Reward Chance",
       size: 170,
-      accessorFn: (row) => {
-        let minimum = Infinity;
-        for (const chance of row.rewardProbabilities) {
-          if (chance === null) return undefined;
-          minimum = Math.min(minimum, chance);
-        }
-        return minimum === Infinity ? undefined : minimum;
-      },
+      accessorFn: (row) => chestRewardChance(row),
       sortingFn: "basic",
-      sortUndefined: "last",
     },
     {
       id: "drops",
@@ -249,27 +192,13 @@
       accessorFn: (row) => row.drop_count,
     },
     {
-      id: "gold",
-      header: "Gold",
-      size: 140,
-      accessorFn: (row) => minimumGoldQuantity(row.primaryRewards),
-      sortingFn: "basic",
-      sortUndefined: "last",
-    },
-    {
-      id: "location",
-      header: "Location",
-      size: 100,
-      enableSorting: false,
-    },
-    {
       accessorKey: "respawn_time",
       header: "Respawn",
       size: 100,
     },
   ];
 
-  const trapColumns: ColumnDef<TrapRow>[] = [
+  const trapColumns: ColumnDef<ZoneTrap>[] = [
     {
       id: "effect",
       header: "Effect",
@@ -283,7 +212,6 @@
       minSize: 280,
       accessorFn: (row) => row.name,
     },
-    { accessorKey: "count", header: "Traps", size: 100 },
   ];
 
   // Derive unique roles from the NPCs in this zone for filtering
@@ -307,34 +235,9 @@
   const radiantSparks = $derived(
     data.gatherResources.filter((r) => r.is_radiant_spark),
   );
-  const fishingSpots = $derived.by(() => {
-    const groups = new SvelteMap<
-      string,
-      {
-        id: string;
-        name: string;
-        spawn_count: number;
-        variants: number;
-      }
-    >();
-    for (const resource of data.gatherResources) {
-      if (!resource.is_fishing_spot) continue;
-      const id = fishingSpotBaseId(resource.id);
-      const group = groups.get(id);
-      if (group) {
-        group.spawn_count += resource.spawn_count;
-        group.variants++;
-      } else {
-        groups.set(id, {
-          id,
-          name: resource.name,
-          spawn_count: resource.spawn_count,
-          variants: 1,
-        });
-      }
-    }
-    return [...groups.values()];
-  });
+  const fishingSpots = $derived(
+    data.gatherResources.filter((r) => r.is_fishing_spot),
+  );
   const otherResources = $derived(
     data.gatherResources.filter(
       (r) =>
@@ -344,6 +247,15 @@
         !r.is_fishing_spot,
     ),
   );
+  function formatPercent(
+    value: number,
+    options: Parameters<typeof formatFraction>[1] = {
+      decimals: 1,
+      trailingZeros: true,
+    },
+  ): string {
+    return formatFraction(value, options);
+  }
 </script>
 
 {#snippet renderMonsterCell({
@@ -369,21 +281,27 @@
       nameClass="truncate"
     />
   {:else if cell.column.id === "level"}
-    <span class="ml-auto">
-      {row.original.level_min}{#if hasVariance}
-        to {row.original.level_max}{/if}
-    </span>
+    <span class="ml-auto"
+      >{row.original.level_min}<span
+        class={anyMonsterHasVariance
+          ? hasVariance
+            ? ""
+            : "invisible"
+          : "hidden"}>+</span
+      ></span
+    >
   {:else if cell.column.id === "health"}
     {@const minHealth =
       row.original.health_base +
       row.original.health_per_level * (row.original.level_min - 1)}
-    {@const maxHealth =
-      row.original.health_base +
-      row.original.health_per_level * (row.original.level_max - 1)}
     <span class="ml-auto">
-      {formatStat("health", minHealth)}{#if hasVariance}
-        to {formatStat("health", maxHealth)}
-      {/if}
+      {minHealth.toLocaleString()}<span
+        class={anyMonsterHasVariance
+          ? hasVariance
+            ? ""
+            : "invisible"
+          : "hidden"}>+</span
+      >
     </span>
   {:else if cell.column.id === "spawn_count"}
     <span class="ml-auto">{row.original.spawn_count}</span>
@@ -499,94 +417,56 @@
   {#if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      aria-label={`Chest in ${data.zone.name}`}
-      title={`Chest in ${data.zone.name}`}
+      aria-label={`Chest ${row.original.id}`}
+      title={`Chest ${row.original.id}`}
       class="inline-flex"
     >
       <EntityIcon
         src={row.original.visual_public_path
           ? `${base}/${row.original.visual_public_path}`
           : null}
-        alt=""
+        alt={`Chest ${row.original.id} icon`}
         fallback={Box}
         size={32}
       />
     </a>
   {:else if cell.column.id === "key"}
-    {#each row.original.requiredKeys as key, index (JSON.stringify( [key.itemId, key.withheld] ))}
-      <div>
-        {#if index > 0}<span class="text-muted-foreground">or </span>{/if}
-        {#if key.withheld}
-          <span class="text-muted-foreground">Unpublished key</span>
-        {:else if key.itemId}
-          <a
-            href="/items/{key.itemId}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {key.itemName ?? key.itemId}
-          </a>
-        {/if}
-      </div>
+    {#if row.original.key_required_id && row.original.key_required_name}
+      <a
+        href="/items/{row.original.key_required_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.key_required_name}
+      </a>
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/each}
+    {/if}
   {:else if cell.column.id === "item"}
-    {#each row.original.primaryRewards.filter((reward) => reward.resourceKind === "item") as reward (JSON.stringify( [reward.resourceKind, reward.itemId, reward.delivery, reward.withheld] ))}
-      <div>
-        {#if reward.withheld}
-          <span class="text-muted-foreground">Unpublished item</span>
-        {:else if reward.itemId}
-          <a
-            href="/items/{reward.itemId}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {reward.itemName ?? reward.itemId}
-          </a>
-        {/if}
+    {#if row.original.item_reward_id && row.original.item_reward_name}
+      <a
+        href="/items/{row.original.item_reward_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.item_reward_name}
+      </a>
+      {#if row.original.item_reward_amount > 1}
         <span class="text-muted-foreground"
-          >&nbsp;{quantityText(reward.quantity)}</span
+          >&nbsp;×1–{row.original.item_reward_amount}</span
         >
-        {#if reward.delivery !== "inventory"}
-          <span class="text-muted-foreground">
-            ({reward.delivery.replaceAll("_", " ")})</span
-          >
-        {/if}
-      </div>
+      {:else}
+        <span class="text-muted-foreground">&nbsp;×1</span>
+      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/each}
+    {/if}
   {:else if cell.column.id === "chance"}
-    {#each row.original.rewardProbabilities as chance (chance)}
-      <div>
-        {chance === null
-          ? "Unknown"
-          : formatPercent(chance, {
-              decimals: 1,
-              trailingZeros: true,
-            })}
-      </div>
-    {/each}
+    {formatPercent(chestRewardChance(row.original))}
   {:else if cell.column.id === "drops"}
     {#if row.original.drop_count > 0}
       <span class="text-muted-foreground">{row.original.drop_count} items</span>
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
-  {:else if cell.column.id === "gold"}
-    {#each row.original.primaryRewards.filter((reward) => reward.resourceKind === "gold") as reward (JSON.stringify( [reward.resourceKind, reward.itemId, reward.delivery, reward.withheld] ))}
-      <div>
-        {quantityText(reward.quantity)}
-        {#if reward.delivery !== "inventory"}
-          <span class="text-muted-foreground">
-            ({reward.delivery.replaceAll("_", " ")})</span
-          >
-        {/if}
-      </div>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/each}
-  {:else if cell.column.id === "location"}
-    <MapLink entityId={row.original.id} entityType="chest" compact />
   {:else if cell.column.id === "respawn_time"}
     <span class="ml-auto">{formatDuration(row.original.respawn_time)}</span>
   {:else}
@@ -606,8 +486,8 @@
   cell,
   row,
 }: {
-  cell: Cell<TrapRow, unknown>;
-  row: Row<TrapRow>;
+  cell: Cell<ZoneTrap, unknown>;
+  row: Row<ZoneTrap>;
 })}
   {#if cell.column.id === "effect"}
     <TrapEffect
@@ -626,14 +506,12 @@
   {/if}
 {/snippet}
 
-{#snippet renderTrapHeader({ header }: { header: Header<TrapRow, unknown> })}
+{#snippet renderTrapHeader({ header }: { header: Header<ZoneTrap, unknown> })}
   {header.column.columnDef.header}
 {/snippet}
 
 <Seo
-  title={detailTitle(data.zone.name, {
-    family: data.zone.is_dungeon ? "Dungeon" : "Zone",
-  })}
+  title={`${data.zone.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/zones/${data.zone.id}`}
 />
@@ -673,10 +551,10 @@
     <div class="mt-2 flex gap-4 text-sm text-muted-foreground">
       {#if data.zone.level_min !== null || data.zone.level_max !== null}
         <span>
-          Monster levels: {#if data.zone.level_min === data.zone.level_max}
+          Level: {#if data.zone.level_min === data.zone.level_max}
             {data.zone.level_min}
           {:else}
-            {data.zone.level_min ?? "?"} to {data.zone.level_max ?? "?"}
+            {data.zone.level_min ?? "?"} – {data.zone.level_max ?? "?"}
             {#if data.zone.level_median !== null}
               (median {data.zone.level_median})
             {/if}
@@ -686,20 +564,19 @@
       {#if data.zone.discovery_exp > 0}
         <span
           >Discovery XP: <MechanicsLink section="experience"
-            >{formatNumber(data.zone.discovery_exp)}</MechanicsLink
+            >{data.zone.discovery_exp.toLocaleString()}</MechanicsLink
           ></span
         >
       {/if}
-      {#if weather}
-        <span>Weather: {weather}</span>
+      {#if data.zone.weather_type}
+        <span>Weather: {data.zone.weather_type}</span>
       {/if}
     </div>
   </div>
-  <!-- Source: server-scripts/UIMap.cs:Update. Temple of Valaark replaces the live map with an illustration. -->
   {#if !data.zone.has_map_bounds}
     <p class="rounded-md border bg-muted/30 p-4 text-muted-foreground">
-      The game shows no live map inside {data.zone.name}, so nothing in this
-      zone appears on the map.
+      The game withholds positions in {data.zone.name}, so nothing in this zone
+      has a map position.
     </p>
   {/if}
 
@@ -827,12 +704,12 @@
             {data.renewalSage.zone_name}
           </a>
           <span>
-            makes this dungeon's dead monsters ready to respawn.
+            can reset respawn timers for monsters in this dungeon.
             {#if data.renewalSage.gold_cost > 0}
-              The fee is <span
+              The base fee is <span
                 class="whitespace-nowrap text-yellow-600 dark:text-yellow-400"
-                >{formatNumber(data.renewalSage.gold_cost)} gold</span
-              >, less your Charisma discount of up to 25%.
+                >{data.renewalSage.gold_cost.toLocaleString()} gold</span
+              > before your Charisma discount (up to 25%).
             {/if}
           </span>
         </p>
@@ -904,18 +781,6 @@
         zebraStripe={true}
         class="bg-muted/30"
       />
-      <details class="mt-4 rounded-md border bg-muted/30 p-4">
-        <summary class="cursor-pointer font-medium"
-          >Chest requirements, costs and outcomes</summary
-        >
-        <div class="mt-4">
-          <MethodList
-            methods={data.chests.flatMap((chest) => chest.methods)}
-            items={data.acquisitionItems}
-            names={data.acquisitionNames}
-          />
-        </div>
-      </details>
     </section>
   {/if}
 
@@ -927,7 +792,7 @@
         Traps ({data.traps.length})
       </h2>
       <DataTable
-        data={trapRows}
+        data={data.traps}
         columns={trapColumns}
         renderCell={renderTrapCell}
         renderHeader={renderTrapHeader}
@@ -945,11 +810,7 @@
     <section class="mb-8">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
-        Resources ({plants.length +
-          minerals.length +
-          radiantSparks.length +
-          fishingSpots.length +
-          otherResources.length})
+        Resources ({data.gatherResources.length})
       </h2>
 
       <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -971,8 +832,7 @@
                     {resource.name}
                   </a>
                   <span class="text-muted-foreground">
-                    {resource.spawn_count}
-                    {resource.spawn_count === 1 ? "spawn" : "spawns"}
+                    x{resource.spawn_count}
                   </span>
                 </li>
               {/each}
@@ -998,8 +858,7 @@
                     {resource.name}
                   </a>
                   <span class="text-muted-foreground">
-                    {resource.spawn_count}
-                    {resource.spawn_count === 1 ? "spawn" : "spawns"}
+                    x{resource.spawn_count}
                   </span>
                 </li>
               {/each}
@@ -1025,8 +884,7 @@
                     {resource.name}
                   </a>
                   <span class="text-muted-foreground">
-                    {resource.spawn_count}
-                    {resource.spawn_count === 1 ? "spawn" : "spawns"}
+                    x{resource.spawn_count}
                   </span>
                 </li>
               {/each}
@@ -1044,19 +902,18 @@
             </h3>
             <ul class="space-y-1">
               {#each fishingSpots as resource (resource.id)}
-                <li class="flex justify-between gap-3">
+                <li class="flex justify-between">
                   <a
-                    href="/gather-items/{resource.id}"
+                    href="/gather-items/{resource.id.replace(
+                      /_[0-9a-f]{8}$/u,
+                      '',
+                    )}"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     {resource.name}
                   </a>
                   <span class="text-muted-foreground">
-                    {resource.spawn_count}
-                    {resource.spawn_count === 1 ? "spawn" : "spawns"}
-                    {#if resource.variants > 1}
-                      across {resource.variants} variants
-                    {/if}
+                    x{resource.spawn_count}
                   </span>
                 </li>
               {/each}
@@ -1081,8 +938,7 @@
                     {resource.name}
                   </a>
                   <span class="text-muted-foreground">
-                    {resource.spawn_count}
-                    {resource.spawn_count === 1 ? "spawn" : "spawns"}
+                    x{resource.spawn_count}
                   </span>
                 </li>
               {/each}
@@ -1117,22 +973,11 @@
         {#each data.subZones as subZone (subZone.id)}
           <span
             class="inline-flex items-center gap-1.5 rounded-md bg-muted/40 px-3 py-1.5 text-sm"
-            title={subZone.is_outdoor ? "Outdoor" : "Indoor"}
           >
             {#if subZone.is_outdoor}
-              <Trees
-                class="h-3.5 w-3.5 text-green-500"
-                role="img"
-                aria-label="Outdoor"
-                aria-hidden="false"
-              />
+              <Trees class="h-3.5 w-3.5 text-green-500" />
             {:else}
-              <Castle
-                class="h-3.5 w-3.5 text-purple-500"
-                role="img"
-                aria-label="Indoor"
-                aria-hidden="false"
-              />
+              <Castle class="h-3.5 w-3.5 text-purple-500" />
             {/if}
             {subZone.name}
           </span>
@@ -1142,7 +987,7 @@
   {/if}
 
   <!-- Zone Connections Section -->
-  {#if data.connectedZones.length > 0 || data.portals.length > 0}
+  {#if data.connectedZones.length > 0}
     <section class="mb-8">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <MapPin class="h-5 w-5 text-emerald-500" />
@@ -1153,53 +998,16 @@
           <a
             href="/zones/{zone.id}"
             class="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
-            title={zone.is_dungeon ? "Dungeon" : "Overworld"}
           >
             {#if zone.is_dungeon}
-              <Castle
-                class="h-3.5 w-3.5 text-purple-500"
-                role="img"
-                aria-label="Dungeon"
-                aria-hidden="false"
-              />
+              <Castle class="h-3.5 w-3.5 text-purple-500" />
             {:else}
-              <Trees
-                class="h-3.5 w-3.5 text-green-500"
-                role="img"
-                aria-label="Overworld"
-                aria-hidden="false"
-              />
+              <Trees class="h-3.5 w-3.5 text-green-500" />
             {/if}
             {zone.name}
           </a>
         {/each}
       </div>
-      {#if data.portals.length > 0}
-        <div class="mt-4 space-y-3">
-          {#each data.portals as portal (portal.id)}
-            <div class="rounded-md border bg-muted/30 p-4 space-y-2">
-              <div class="flex items-center gap-2">
-                {#if portal.to_zone_id && portal.name}<a
-                    href="/zones/{portal.to_zone_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >{portal.name}</a
-                  >{:else}<span
-                    >{portal.destination_withheld
-                      ? "Unpublished destination"
-                      : "Portal"}</span
-                  >{/if}
-                {#if portal.is_closed}<span
-                    class="text-sm text-muted-foreground">Closed</span
-                  >{/if}
-              </div>
-              <Requirements
-                roots={portal.requirements}
-                names={data.acquisitionNames}
-              />
-            </div>
-          {/each}
-        </div>
-      {/if}
     </section>
   {/if}
 </div>

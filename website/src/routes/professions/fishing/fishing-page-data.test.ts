@@ -100,11 +100,11 @@ describe("loadFishingPageData", () => {
       ]);
       expect(data.rods[0]).toMatchObject({
         min_source_level: 1,
-        sources: [{ kind: "vendor", methodId: "rod_offer" }],
+        sources: [{ type: "vendor", id: "rod_vendor" }],
       });
       expect(data.rods[1]).toMatchObject({
         min_source_level: 35,
-        sources: [{ kind: "recipe", methodId: "rod_recipe" }],
+        sources: [{ type: "crafting", id: "crafted_fishing_rod_recipe" }],
       });
       expect(data.stats.spot_count).toBe(2);
       expect(data.spots.map((spot) => spot.id)).toEqual(["spawn_1", "spawn_2"]);

@@ -1,13 +1,10 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/utils/format";
   import { iround } from "$lib/calculation/unity-math";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import RecipeIngredients from "$lib/components/RecipeIngredients.svelte";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Scroll from "@lucide/svelte/icons/scroll";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -50,8 +47,9 @@
   }
 
   function hasIngredients(recipe: (typeof data.recipes)[number]): boolean {
-    return recipe.methods.some((method) =>
-      method.costGroups.some((group) => group.inputs.length > 0),
+    return (
+      !!recipe.obtainabilityTree.recipe &&
+      recipe.obtainabilityTree.recipe.materials.length > 0
     );
   }
 
@@ -81,7 +79,7 @@
   function formatSkillType(skillType: string): string {
     const labels: Record<string, string> = {
       area_damage: "Area damage",
-      target_projectile: "Single-target projectile",
+      target_projectile: "Targeted projectile",
       target_buff: "Targeted buff",
       target_debuff: "Targeted debuff",
       target_heal: "Targeted heal",
@@ -103,7 +101,7 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View scroll recipes, Scribing Table locations, rank scaling, and Scroll Mastery gains.`}
   path="/professions/scroll_mastery"
 />
@@ -178,7 +176,7 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            You do not need to learn scroll recipes first.
+            Craft scrolls from recipes at a Scribing Table.
           </p>
         </div>
       </div>
@@ -189,10 +187,11 @@
           <div>Craft scrolls.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <!-- Source: server-scripts/Player.cs:13587-13607,13646-13651; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
-            All current scroll recipes succeed. Crafting grants
+            All current scroll recipes have 100% crafting success chance. Crafting
+            grants
             <MechanicsLink section="experience#scribing-xp"
-              >100 XP per character level</MechanicsLink
-            >. Double XP doubles it.
+              >Player Level × 100 XP</MechanicsLink
+            >. A double-XP effect doubles this crafting XP.
           </p>
         </div>
       </div>
@@ -204,11 +203,13 @@
           <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast — a valid scroll casts its skill at rank RoundToInt(scrollMasteryLevel × 20), clamped between 1 and the skill's maximum rank, and consumes one charge unless infiniteCharges is set. -->
           <!-- Source: server-scripts/ScrollItem.cs:125 — RoundToInt rounds an exact half to the even rank. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Cast a scroll's skill in 1 second without learning it. Scaling
-            scrolls cast at one rank per 5 percentage points of Scroll Mastery,
-            rounded to the nearest rank, with a minimum of 1 and the skill's own
-            maximum. Fixed-rank scrolls stay at rank 1. Each completed cast uses
-            one charge unless the scroll has infinite charges.
+            A scroll takes 1 second to cast its skill without teaching it.
+            Scaling scrolls cast at one rank per 5 percentage points of Scroll
+            Mastery, rounded, from rank 1 up to the skill's highest rank. At 37%
+            Scroll Mastery, they cast at rank 7. Exact halves go to the even
+            rank, so 12.5% Scroll Mastery casts at rank 2. Fixed scrolls cast at
+            rank 1. Successful completion consumes one charge unless the scroll
+            has infinite charges. Mastery gains also occur on completion.
           </p>
           <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, a lost start target, another active skill, or an empty or changed slot. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
@@ -225,9 +226,8 @@
         <div>
           <div>Gain Scroll Mastery.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Crafting and using scrolls have the same chance to raise Scroll
-            Mastery. Using them grants larger increases. Check the calculator
-            below for your rank and skill gains.
+            Crafting a scroll or using a scroll can raise Scroll Mastery. Both
+            use the same gain chance, but using a scroll grants more mastery.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
@@ -278,36 +278,27 @@
             Gain chance per craft/use
           </div>
           <div class="text-xl font-semibold">
-            {formatPercent(getMasteryGainChance() / 100, {
-              decimals: 0,
-              trailingZeros: true,
-            })}
+            {getMasteryGainChance().toFixed(0)}%
           </div>
         </div>
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">Scroll Mastery gained</div>
+          <div class="text-sm text-muted-foreground">
+            Gain amount per increase
+          </div>
           <div class="text-sm leading-6">
             <!-- Source: server-scripts/Player.cs:13610; server-scripts/ScrollItem.cs:108 — crafting and use stop granting Scroll Mastery at the cap. -->
             {#if skillLevel >= 100}
               <div>No further skill gain</div>
             {:else}
               <div>
-                Craft: {formatPercent(CRAFT_MASTERY_GAIN_MIN / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}–{formatPercent(CRAFT_MASTERY_GAIN_MAX / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}
+                Craft: {CRAFT_MASTERY_GAIN_MIN.toFixed(
+                  2,
+                )}%–{CRAFT_MASTERY_GAIN_MAX.toFixed(2)}%
               </div>
               <div>
-                Use: {formatPercent(USE_MASTERY_GAIN_MIN / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}–{formatPercent(USE_MASTERY_GAIN_MAX / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}
+                Use: {USE_MASTERY_GAIN_MIN.toFixed(
+                  2,
+                )}%–{USE_MASTERY_GAIN_MAX.toFixed(2)}%
               </div>
             {/if}
           </div>
@@ -332,26 +323,26 @@
               <th class="p-3 text-left font-medium">Scroll</th>
               <th class="p-3 text-left font-medium">Ingredients</th>
               <th class="p-3 text-left font-medium">Casts</th>
-              <th class="p-3 text-left font-medium">Improves with rank</th>
+              <th class="p-3 text-left font-medium">Scaling</th>
             </tr>
           </thead>
           <tbody>
-            {#each data.recipes as recipe (recipe.id)}
+            {#each data.recipes as recipe (recipe.recipe_id)}
               {@const canExpand = hasIngredients(recipe)}
-              {@const isExpanded = expandedRecipes.has(recipe.id)}
+              {@const isExpanded = expandedRecipes.has(recipe.recipe_id)}
               <tr
-                class="border-t odd:bg-muted/20 hover:bg-muted/25 {canExpand
+                class="border-t hover:bg-muted/25 {canExpand
                   ? 'cursor-pointer'
                   : ''}"
                 role={canExpand ? "button" : undefined}
                 tabindex={canExpand ? 0 : undefined}
                 onclick={(e) => {
                   if (!canExpand || isInteractiveEvent(e)) return;
-                  toggleRecipe(recipe.id);
+                  toggleRecipe(recipe.recipe_id);
                 }}
                 onkeydown={(e) => {
                   if (!canExpand || isInteractiveEvent(e)) return;
-                  handleRecipeKeydown(e, recipe.id);
+                  handleRecipeKeydown(e, recipe.recipe_id);
                 }}
               >
                 <td class="p-3">
@@ -365,7 +356,7 @@
                           : "Expand ingredients"}
                         onclick={(e) => {
                           e.stopPropagation();
-                          toggleRecipe(recipe.id);
+                          toggleRecipe(recipe.recipe_id);
                         }}
                       >
                         {#if isExpanded}
@@ -381,39 +372,35 @@
                       itemId={recipe.item_id}
                       itemName={recipe.item_name}
                       tooltipHtml={recipe.tooltip_html}
+                      imageAvailable={recipe.obtainabilityTree
+                        .visual_public_path}
+                      quality={recipe.quality}
                     />
                   </div>
                 </td>
                 <td class="p-3">
-                  {#each recipe.methods as method, alternative (method.methodId)}
-                    <div class="space-y-1">
-                      {#if recipe.methods.length > 1}
-                        <div class="text-sm text-muted-foreground">
-                          Alternative {alternative + 1}
-                        </div>
-                      {/if}
-                      {#each method.costGroups as group (group.id)}
-                        {#each group.inputs as input (input.id)}
-                          <div class="flex items-center gap-1">
-                            {#if input.item_id}
-                              <ItemLink
-                                itemId={input.item_id}
-                                itemName={data.acquisitionItems[input.item_id]
-                                  .name}
-                              />
-                            {:else}
-                              <span
-                                >{input.resource_kind === "gold"
-                                  ? "Gold"
-                                  : "Unpublished required item"}</span
-                              >
-                            {/if}
-                            <span>×{input.amount}</span>
-                          </div>
-                        {/each}
+                  {#if recipe.obtainabilityTree.recipe?.materials}
+                    <div
+                      class="flex flex-col gap-1 2xl:flex-row 2xl:flex-wrap 2xl:gap-x-3 2xl:gap-y-1"
+                    >
+                      {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
+                        <span>
+                          <ItemLink
+                            itemId={mat.item_id}
+                            itemName={mat.item_name}
+                            tooltipHtml={mat.tooltip_html}
+                            imageAvailable={mat.visual_public_path}
+                            quality={mat.quality}
+                          />
+                          <span class="text-muted-foreground"
+                            >×{mat.amount}</span
+                          >
+                        </span>
                       {/each}
                     </div>
-                  {/each}
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
+                  {/if}
                 </td>
                 <td class="p-3">
                   <a
@@ -430,29 +417,23 @@
                   {#if formatScalingSummary(recipe)}
                     {formatScalingSummary(recipe)}
                   {:else}
-                    <span class="text-muted-foreground">Fixed at rank 1</span>
+                    <span class="text-muted-foreground">—</span>
                   {/if}
                 </td>
               </tr>
               {#if isExpanded && canExpand}
                 <tr class="border-t bg-muted/20">
                   <td class="p-4" colspan="4">
-                    <MethodList
-                      methods={recipe.methods}
-                      items={data.acquisitionItems}
-                      names={data.acquisitionNames}
-                      selectedItemId={recipe.item_id}
-                    />
                     <div class="mb-2 text-muted-foreground">
                       How to obtain ingredients:
                     </div>
                     <div
-                      class="w-[calc(100vw-6rem-2px)] max-w-5xl whitespace-normal overflow-x-auto rounded-md border bg-background p-3"
+                      class="overflow-x-auto rounded-md border bg-background p-3"
                     >
-                      <RecipeIngredients
-                        methods={recipe.methods}
-                        items={data.acquisitionItems}
-                        names={data.acquisitionNames}
+                      <ObtainabilityTree
+                        node={recipe.obtainabilityTree}
+                        defaultExpanded={true}
+                        hideRootLink={true}
                       />
                     </div>
                   </td>
@@ -482,7 +463,7 @@
           </thead>
           <tbody>
             {#each data.locations as location (location.id)}
-              <tr class="border-t odd:bg-muted/20 hover:bg-muted/30">
+              <tr class="border-t hover:bg-muted/30">
                 <td class="p-3">
                   <a
                     href="/zones/{location.zone_id}"

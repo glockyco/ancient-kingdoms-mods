@@ -185,6 +185,7 @@ export function skillFacts(
   mechanicsSpec: SkillMechanicsSpec,
   grantedByItems: SkillItemSource[],
   usedByMonster = false,
+  usedByNpc = false,
 ): SkillFacts {
   const isWildStrike = skill.id === "wild_strike";
   const losesVeteranPoints =
@@ -199,6 +200,7 @@ export function skillFacts(
     skill.player_classes.length === 0 &&
     usedByPets.length === 0 &&
     !usedByMonster &&
+    !usedByNpc &&
     grantedByItems.every((item) => item.type === "scroll");
   // Source: server-scripts/TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — a cleanse spell removes debuffs and never applies its own buff fields.
   const appliesBuffFields = !skill.is_cleanse;
@@ -339,7 +341,7 @@ export function skillFacts(
   const hasRequirements =
     (skill.player_classes.length > 0 && skill.tier >= 1 && skill.tier <= 4) ||
     skill.level_required > 1 ||
-    skill.required_skill_points > 1 ||
+    (skill.player_classes.length > 0 && skill.required_skill_points !== 1) ||
     skill.required_spent_points > 0 ||
     !!skill.prerequisite_skill_id ||
     !!skill.prerequisite2_skill_id ||

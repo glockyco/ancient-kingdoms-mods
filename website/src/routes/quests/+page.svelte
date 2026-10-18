@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -26,7 +25,7 @@
     buildCollectionPage({
       path: "/quests",
       name: "Quests — Ancient Kingdoms Compendium",
-      description: `${formatNumber(data.quests.length)} quests in Ancient Kingdoms, with objectives, requirements, rewards, and prerequisite chains.`,
+      description: `Searchable database of ${data.quests.length.toLocaleString()} quests in Ancient Kingdoms.`,
       items: data.quests.map((quest) => ({
         name: quest.name,
         path: `/quests/${quest.id}`,
@@ -83,7 +82,7 @@
         const flags: string[] = [];
         if (row.is_main_quest) flags.push("Main");
         if (row.is_epic_quest) flags.push("Epic");
-        if (row.is_adventurer_quest) flags.push("Adventurer");
+        if (row.is_adventurer_quest) flags.push("Daily");
         if (row.is_repeatable) flags.push("Repeatable");
         return flags.join(" ");
       },
@@ -98,7 +97,7 @@
       id: "quest_giver",
       header: "Quest Giver",
       size: 220,
-      accessorFn: (row) => row.quest_givers.map((npc) => npc.name).join(", "),
+      accessorFn: (row) => row.quest_giver_name || "",
     },
     {
       id: "class",
@@ -115,8 +114,8 @@
     },
     {
       accessorKey: "level_required",
-      header: "Required level",
-      size: 170,
+      header: "Req. Level",
+      size: 140,
       filterFn: (
         row,
         _columnId,
@@ -142,8 +141,8 @@
     },
     {
       accessorKey: "level_recommended",
-      header: "Recommended level",
-      size: 200,
+      header: "Rec. Level",
+      size: 140,
     },
     {
       id: "display_type_filter",
@@ -173,8 +172,8 @@
   const columnLabels: Record<string, string> = {
     name: "Name",
     display_type: "Type",
-    level_required: "Required level",
-    level_recommended: "Recommended level",
+    level_required: "Req. Level",
+    level_recommended: "Rec. Level",
     flags: "Categories",
     class: "Class",
     quest_giver: "Quest Giver",
@@ -203,7 +202,7 @@
   {#if cell.column.id === "name"}
     <a
       href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
+      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
     >
       {row.original.name}
     </a>
@@ -228,15 +227,21 @@
       classes={row.original.class_requirements.map((c) => c.toLowerCase())}
     />
   {:else if cell.column.id === "quest_giver"}
-    {#each row.original.quest_givers as npc, index (npc.id)}
-      {#if index > 0}<span class="text-muted-foreground">, </span>{/if}
+    {#if row.original.quest_giver_id}
       <a
-        href="/npcs/{npc.id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline">{npc.name}</a
+        href="/npcs/{row.original.quest_giver_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
       >
+        {row.original.quest_giver_name}
+      </a>
+      {#if row.original.quest_giver_count > 1}
+        <span class="text-muted-foreground ml-1"
+          >+{row.original.quest_giver_count - 1}</span
+        >
+      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/each}
+    {/if}
   {:else if cell.column.id === "display_type_filter" || cell.column.id === "flags_filter"}
     <!-- Hidden filter columns -->
   {:else}
@@ -286,7 +291,7 @@
 
 <Seo
   title="Quests - Ancient Kingdoms"
-  description={`${formatNumber(data.quests.length)} quests: main story, epic, Adventurer, and repeatable. Browse objectives, level requirements, rewards, and prerequisite chains.`}
+  description={`${data.quests.length.toLocaleString()} quests — main story, epic, adventurer, and repeatable. Browse objectives, level gates, rewards, and prerequisite chains.`}
   path="/quests"
 />
 
@@ -331,7 +336,8 @@
           <div>
             <p class="font-medium">Accept the quest.</p>
             <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-              Complete any one of the listed prerequisite quests.
+              If it lists several prerequisite quests, completing any one of
+              them is enough.
             </p>
           </div>
         </li>
@@ -352,16 +358,8 @@
           <div>
             <p class="font-medium">Complete the objective.</p>
             <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-              Abandoning a quest deletes its progress.
-            </p>
-          </div>
-        </li>
-        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
-          <span class="text-sm tabular-nums text-muted-foreground">4</span>
-          <div>
-            <p class="font-medium">Turn in the quest.</p>
-            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-              Talk to the completion NPC to collect your rewards.
+              What counts depends on the quest type. Abandoning a quest deletes
+              its progress.
             </p>
           </div>
         </li>
@@ -401,35 +399,33 @@
           <!-- Source: server-scripts/PlayerQuests.cs:333-349; server-scripts/LocationQuest.cs:13-26 — Find quests start fulfilled on acceptance. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Find" /></td>
-            <td class="px-4 py-2">Talking to the completion NPC</td>
-            <td class="px-4 py-2 text-muted-foreground">Nothing is taken</td>
+            <td class="px-4 py-2">Done as soon as you accept</td>
+            <td class="px-4 py-2 text-muted-foreground"
+              >Talk to the completion NPC</td
+            >
           </tr>
           <!-- Source: server-scripts/GatherQuest.cs:21-26,63-74; server-scripts/PlayerQuests.cs:100-108 — Gather quests record items collected after acceptance. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Gather" /></td>
             <td class="px-4 py-2">Items you gather after you accept</td>
             <td class="px-4 py-2 text-muted-foreground"
-              >Nothing is taken. You do not need to keep the items.</td
+              >You need not keep the items</td
             >
           </tr>
           <!-- Source: server-scripts/GatherInventoryQuest.cs:15-96 — Have checks current items without removal; Deliver removes them, taking an equipped required item when inventory has too few, and keeps stored keys. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Have" /></td>
             <td class="px-4 py-2"
-              >Items in your inventory or keys you hold, including ones you had
-              before you accepted. Equipped items do not count.</td
+              >Items, keys, or equipped items you hold, even from before</td
             >
             <td class="px-4 py-2 text-muted-foreground">You keep the items</td>
           </tr>
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Deliver" /></td>
-            <td class="px-4 py-2">
-              Items in your inventory or keys you hold, including ones you had
-              before you accepted. Some quests also accept worn items.
-            </td>
+            <td class="px-4 py-2">Items you hold, even from before</td>
             <td class="px-4 py-2 text-muted-foreground"
-              >Items are taken, including accepted worn items if needed. Keys
-              are kept.</td
+              >The items are taken. An equipped required item is taken if
+              inventory has too few. Keys stay.</td
             >
           </tr>
           <!-- Source: server-scripts/EquipItemQuest.cs:9-19 — fulfilled while every listed item is equipped. -->

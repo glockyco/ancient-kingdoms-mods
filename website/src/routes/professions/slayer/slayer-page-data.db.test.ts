@@ -24,58 +24,45 @@ describe("Slayer page data", () => {
       expect(
         [...new Set(data.targets.map((target) => target.id))].sort(),
       ).toEqual(expected.map((row) => row.id));
-      expect(new Set(data.targets.map((target) => target.contextId)).size).toBe(
-        data.targets.length,
-      );
+      expect(
+        data.targets.every(
+          (target) =>
+            target.zone_id !== null ||
+            (target.position_x === null && target.position_y === null),
+        ),
+      ).toBe(true);
     } finally {
       db.close();
     }
   });
 
-  test("summarizes complete altar tiers without losing their methods or gates", async () => {
+  test("shows each altar target once across reward tiers", async () => {
     const data = await getSlayerPageData();
     const targets = data.targets.filter(
       (target) => target.id === "thalgrim_iceblood",
     );
     expect(targets).toHaveLength(1);
-    const target = targets[0];
-    expect(target.altar).toMatchObject({
-      id: "altar_forgotten_altar_everfrost_-94_802",
-      wave: 11,
+    expect(targets[0]).toMatchObject({
+      source_altar_id: "altar_forgotten_altar_everfrost_-94_802",
+      source_altar_wave: 11,
+      no_respawn: true,
     });
-    expect(target.altarVariants).toHaveLength(4);
-    expect(
-      target.altarVariants
-        .flatMap((method) =>
-          method.requirements.flatMap((root) =>
-            root.expression.kind === "predicate" &&
-            root.expression.predicate.kind === "altar_tier"
-              ? [root.expression.predicate.tier]
-              : [],
-          ),
-        )
-        .sort(),
-    ).toEqual([0, 1, 2, 3]);
-    expect(
-      target.altarVariants.every((method) =>
-        method.probabilityResults.some(
-          (result) =>
-            result.target.kind === "item" &&
-            result.probability === 0.75 &&
-            result.target.delivery === "corpse",
-        ),
-      ),
-    ).toBe(true);
     const db = new Database(DB_SOURCE_PATH, { readonly: true });
     try {
-      const methods = db
+      const contexts = db
         .prepare(
-          "SELECT id FROM acquisition_kill_details WHERE monster_id = ? ORDER BY id",
+          `
+        SELECT DISTINCT altar_id, wave_number FROM acquisition_kill_details
+        WHERE monster_id = ? ORDER BY altar_id, wave_number
+      `,
         )
-        .all(target.id) as { id: string }[];
-      expect(
-        target.altarVariants.map((method) => method.methodId).sort(),
-      ).toEqual(methods.map((method) => method.id));
+        .all(targets[0].id);
+      expect(contexts).toEqual([
+        {
+          altar_id: targets[0].source_altar_id,
+          wave_number: targets[0].source_altar_wave,
+        },
+      ]);
     } finally {
       db.close();
     }
@@ -93,22 +80,23 @@ describe("Slayer page data", () => {
         target.id === "ancient_elemental" && target.spawn_type === "summon",
     );
     expect(elemental).toBeDefined();
-    expect(
-      elemental?.guards.filter((guard) => guard.name === "Water Elemental"),
-    ).toHaveLength(8);
-    expect(elemental?.requirements.length).toBeGreaterThan(0);
+    expect(elemental).toMatchObject({
+      source_summon_kill_monster_name: "Water Elemental",
+      source_summon_kill_count: 8,
+    });
     expect(
       data.targets.some(
-        (target) => target.id === "avatar_of_war" && target.altar?.wave === 2,
+        (target) =>
+          target.id === "avatar_of_war" && target.source_altar_wave === 2,
       ),
     ).toBe(true);
     const remnant = data.targets.find(
       (target) =>
         target.id === "keeper_remnant" && target.spawn_type === "placeholder",
     );
-    expect(remnant?.parent).toMatchObject({
-      name: "Large Shade Beast",
-      probability: 1,
+    expect(remnant).toMatchObject({
+      source_monster_name: "Large Shade Beast",
+      source_spawn_probability: 1,
     });
     expect(remnant?.no_respawn).toBe(true);
   });

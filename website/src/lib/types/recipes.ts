@@ -1,30 +1,127 @@
-import type { MethodView } from "../acquisition/types";
-import type { AcquisitionItem } from "../acquisition/items";
-
-export type RecipeType = "Alchemy" | "Cooking" | "Crafting" | "Scribing";
+/**
+ * Ingredient in a recipe
+ */
 export interface RecipeIngredient {
-  item_id: string | null;
+  item_id: string;
   item_name: string;
   visual_public_path: string | null;
   amount: number;
+  quality: number;
 }
+
+export interface RecipeResult {
+  item_id: string;
+  item_name: string;
+  visual_public_path: string | null;
+  tooltip_html: string | null;
+  amount: number | null;
+  quality: number;
+}
+
+/**
+ * Recipe list view for overview page
+ */
 export interface RecipeListView {
   id: string;
-  methodId: string;
   result_item_id: string;
   result_item_name: string;
   result_visual_public_path: string | null;
   result_quality: number;
   result_amount: number;
   ingredients: RecipeIngredient[];
-  type: RecipeType;
+  type: "Alchemy" | "Cooking" | "Crafting" | "Scribing";
   tier: number;
-  method: MethodView;
 }
+
+/**
+ * Recipes overview page data
+ */
 export interface RecipesPageData {
   recipes: RecipeListView[];
-  acquisitionItems: Record<string, AcquisitionItem>;
 }
+
+// ============================================================================
+// Recipe Detail Page Types
+// ============================================================================
+
+export type RecipeType = "Alchemy" | "Cooking" | "Crafting" | "Scribing";
+
+/**
+ * Types of sources where items can be obtained
+ */
+export type ObtainabilitySourceType =
+  | "drop"
+  | "vendor"
+  | "quest"
+  | "altar"
+  | "recipe"
+  | "gather"
+  | "chest"
+  | "pack"
+  | "random"
+  | "merge"
+  | "treasure_map"
+  | "special";
+
+/**
+ * Summary of a source for an item (for linking to source pages)
+ */
+export interface SourceSummary {
+  type: ObtainabilitySourceType;
+  id: string;
+  name: string;
+}
+
+/**
+ * Service transformation (e.g., priestess blessing cursed runes)
+ */
+export type ServiceType = "blessing";
+
+/**
+ * Learning requirement for crafting (e.g., alchemy recipe items).
+ * The obtainability node contains the recipe item details.
+ */
+export type LearningRequirement = ObtainabilityNode;
+
+/**
+ * Node in the obtainability tree (recursive)
+ */
+export interface ObtainabilityNode {
+  item_id: string;
+  item_name: string;
+  tooltip_html: string | null;
+  visual_public_path: string | null;
+  quality: number;
+  amount: number;
+  produced_amount?: number;
+  depth: number;
+  isRoot?: boolean;
+  /** If this item is craftable, contains sub-recipe info */
+  recipe?: {
+    recipe_id: string;
+    recipe_type: RecipeType;
+    materials: ObtainabilityNode[];
+    /** If this is an alchemy recipe, shows how to obtain the recipe item */
+    learningRequirement?: LearningRequirement;
+  };
+  /** If this item is obtained via a service (e.g., priestess blessing) */
+  service?: {
+    service_type: ServiceType;
+    materials: ObtainabilityNode[];
+  };
+  /** If this item is created by merging other items */
+  merge?: {
+    materials: ObtainabilityNode[];
+  };
+  /** Sources for obtaining this item (for leaf nodes or alternative sources) */
+  sources: SourceSummary[];
+  /** Total count of sources per type (before limiting) */
+  sourceCountsByType: Record<string, number>;
+}
+
+/**
+ * Recipe detail information
+ */
 export interface RecipeDetailInfo {
   id: string;
   result_item_id: string;
@@ -32,17 +129,26 @@ export interface RecipeDetailInfo {
   result_visual_public_path: string | null;
   result_tooltip_html: string | null;
   result_quality: number;
+  result_amount: number;
+  outputs: RecipeResult[];
+  type: RecipeType;
+  tier: number;
+  station_type: string | null;
+  xp: number;
+  /** For alchemy recipes: the recipe item that teaches this recipe */
+  taught_by_recipe_id: string | null;
+  taught_by_recipe_name: string | null;
+  taught_by_recipe_visual_public_path: string | null;
+  taught_by_recipe_tooltip_html: string | null;
+  taught_by_recipe_quality: number | null;
 }
+
+/**
+ * Recipe detail page data
+ */
 export interface RecipeDetailPageData {
   recipe: RecipeDetailInfo;
-  variants: readonly MethodView[];
-  teachers: readonly {
-    id: string;
-    name: string;
-    icon_path: string | null;
-    tooltip_html: string | null;
-  }[];
+  providers: Array<{ id: string; name: string }>;
   description: string;
-  acquisitionItems: Record<string, AcquisitionItem>;
-  acquisitionNames: Readonly<Record<string, string>>;
+  obtainabilityTree: ObtainabilityNode;
 }

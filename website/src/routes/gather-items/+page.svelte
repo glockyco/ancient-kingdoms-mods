@@ -19,8 +19,7 @@
     ResourceDropListView,
   } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
-  import { formatGatheringRespawn, formatNumber } from "$lib/utils/format";
-  import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
+  import { formatGatheringRespawn } from "$lib/utils/format";
 
   let { data } = $props();
 
@@ -28,7 +27,7 @@
     buildCollectionPage({
       path: "/gather-items",
       name: "Gathering Resources — Ancient Kingdoms Compendium",
-      description: `Find ${formatNumber(data.resources.length)} plants, minerals, fishing spots, and radiant sparks by tier and zone.`,
+      description: `Find ${data.resources.length.toLocaleString()} plants, minerals, fishing spots, and radiant sparks by tier and zone.`,
       items: data.resources.map((resource) => ({
         name: resource.name,
         path: `/gather-items/${resource.id}`,
@@ -82,7 +81,7 @@
     Mineral: "bg-gray-500",
     "Radiant Spark": "bg-purple-600",
     "Fishing Spot": "bg-sky-600",
-    Other: "bg-gray-400",
+    Resource: "bg-gray-400",
   };
 
   // Get unique types for filter
@@ -135,16 +134,9 @@
     },
     {
       id: "item",
-      header: "Potential Rewards",
+      header: "Item",
       minSize: 180,
-      accessorFn: (row) =>
-        row.primaryRewards
-          .map(
-            (reward) =>
-              reward.itemName ??
-              (reward.resourceKind === "gold" ? "Gold" : "Unpublished item"),
-          )
-          .join(" "),
+      accessorFn: (row) => row.item_reward_name || "",
     },
     {
       id: "drops",
@@ -223,7 +215,7 @@
   {:else if cell.column.id === "name"}
     <a
       href="/gather-items/{row.original.id}"
-      class="text-blue-600 hover:underline dark:text-blue-400"
+      class="whitespace-nowrap text-blue-600 hover:underline dark:text-blue-400"
     >
       {row.original.name}
     </a>
@@ -239,17 +231,27 @@
       {/if}
     </span>
   {:else if cell.column.id === "item"}
-    {#if row.original.primaryRewards.length}
-      <PrimaryRewards rewards={row.original.primaryRewards} />
+    {#if row.original.item_reward_id && row.original.item_reward_name}
+      <a
+        href="/items/{row.original.item_reward_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.item_reward_name}
+      </a>
+      {#if row.original.item_reward_amount > 1}
+        <span class="text-muted-foreground"
+          >&nbsp;×1–{row.original.item_reward_amount}</span
+        >
+      {:else}
+        <span class="text-muted-foreground">&nbsp;×1</span>
+      {/if}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "drops"}
     {@const drops = row.original.drops}
     {#if drops.length > 0}
-      <span class="text-muted-foreground"
-        >{drops.length} {drops.length === 1 ? "item" : "items"}</span
-      >
+      <span class="text-muted-foreground">{drops.length} items</span>
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -257,7 +259,7 @@
     {formatGatheringRespawn(row.original.type, row.original.respawn_time)}
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
-    <div class="flex flex-wrap gap-1">
+    <div class="flex gap-1 whitespace-nowrap">
       {#if zones.length > 0}
         <a
           href="/zones/{zones[0].zone_id}"
@@ -314,7 +316,7 @@
 
 <Seo
   title="Gathering Resources - Ancient Kingdoms"
-  description="Find plants, minerals, fishing spots, and radiant sparks across Eratiath by tier, zone, and reward."
+  description="Find plants, minerals, fishing spots, and radiant sparks across Eratiath by tier, gathering XP, spawn zone, and rewards."
   path="/gather-items"
 />
 

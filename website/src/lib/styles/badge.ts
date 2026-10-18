@@ -5,7 +5,7 @@
 
 export const ICON_BADGE = {
   /** Shared base styles for all icon badges */
-  base: "icon-badge inline-flex max-w-full flex-wrap items-center gap-1 rounded-md px-2 py-0.5 text-xs",
+  base: "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs",
   /** Styles for non-interactive badges (span) */
   static: "bg-muted/40",
   /** Styles for interactive badges (links) */

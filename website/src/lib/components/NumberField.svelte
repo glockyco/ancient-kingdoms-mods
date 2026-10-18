@@ -29,7 +29,7 @@
     <button
       type="button"
       class="stepbtn"
-      aria-label={`Decrease ${label}`}
+      aria-label={`Decrease ${label.toLowerCase()}`}
       onclick={() => onchange(value - 1)}>−</button
     >
     <input
@@ -58,7 +58,7 @@
     <button
       type="button"
       class="stepbtn"
-      aria-label={`Increase ${label}`}
+      aria-label={`Increase ${label.toLowerCase()}`}
       onclick={() => onchange(value + 1)}>+</button
     >
   </div>

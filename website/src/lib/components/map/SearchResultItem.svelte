@@ -114,7 +114,7 @@
           ? "Cooking Oven"
           : result.subcategory === "scribing"
             ? "Scribing Table"
-            : "Craft Station"
+            : "Forge"
       : result.name,
   );
   const isResourceTier = $derived(
@@ -143,7 +143,7 @@
       class="flex shrink-0 items-center gap-1 text-xs text-amber-600 dark:text-amber-400"
     >
       <Sparkles size={14} />
-      Notable NPC
+      Notable
     </span>
   {/if}
   {#if roleCategories.length > 0}

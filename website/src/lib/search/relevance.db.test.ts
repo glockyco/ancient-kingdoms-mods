@@ -382,7 +382,7 @@ describe("indexed content", () => {
       expect(found("Twisted Haunt")).toEqual(visible);
       expect(found("Twilight Forest")).toEqual(visible);
       expect(portalDocs.find((doc) => doc.id === "portal_withheld")?.name).toBe(
-        "Milldenn to Unpublished destination",
+        "Milldenn → Unpublished destination",
       );
     } finally {
       fixture.close();

@@ -1,14 +1,12 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import type { AcquisitionQuery, MethodView } from "$lib/acquisition/types";
-import { loadAcquisition } from "$lib/server/acquisition";
+import type { ObtainabilityNode } from "$lib/types/recipes";
 import {
-  loadAcquisitionItems,
-  type AcquisitionItem,
-} from "$lib/acquisition/items";
+  getRecipeDefinitions,
+  buildRecipeObtainabilityTree,
+} from "$lib/server/obtainability";
 import { statField, statFieldName } from "$lib/stats";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -26,9 +24,8 @@ interface ScrollEffect {
 }
 
 interface ScribingRecipe extends ScrollEffect {
-  id: string;
   recipe_id: string;
-  methods: readonly MethodView[];
+  obtainabilityTree: ObtainabilityNode;
 }
 
 interface StationLocation {
@@ -49,8 +46,6 @@ interface ScrollMasteryPageData {
     achievement_name: string;
   };
   recipes: ScribingRecipe[];
-  acquisitionItems: Record<string, AcquisitionItem>;
-  acquisitionNames: Readonly<Record<string, string>>;
   locations: StationLocation[];
   stats: {
     craftable_scroll_count: number;
@@ -66,8 +61,6 @@ interface RawScrollEffect {
   tooltip_html: string | null;
   quality: number;
   recipe_id: string | null;
-  definition_id: string | null;
-  result_amount: number | null;
   skill_id: string;
   skill_name: string;
   skill_type: string;
@@ -203,8 +196,6 @@ function toScrollEffect(row: RawScrollEffect): ScrollEffect {
 export const load: PageServerLoad =
   async (): Promise<ScrollMasteryPageData> => {
     const db = new Database(DB_SOURCE_PATH, { readonly: true });
-    const execute: AcquisitionQuery = async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[];
 
     const profession = db
       .prepare(
@@ -232,8 +223,6 @@ export const load: PageServerLoad =
       i.tooltip_html,
       i.quality,
       sr.id AS recipe_id,
-      d.id AS definition_id,
-      d.result_amount,
       s.id AS skill_id,
       s.name AS skill_name,
       s.skill_type,
@@ -264,7 +253,6 @@ export const load: PageServerLoad =
     FROM items i
     JOIN skills s ON s.id = i.scroll_skill_id
     LEFT JOIN scribing_recipes sr ON sr.result_item_id = i.id
-    LEFT JOIN acquisition_recipe_details d ON d.scribing_recipe_id = sr.id
     WHERE i.item_type = 'scroll'
       AND i.scroll_skill_id IS NOT NULL
     ORDER BY sr.id IS NULL, i.name
@@ -272,34 +260,32 @@ export const load: PageServerLoad =
       )
       .all() as RawScrollEffect[];
 
-    const recipeModel = await loadAcquisition(execute, {
-      kind: "recipes",
-      recipeIds: rawScrollEffects.flatMap((row) =>
-        row.recipe_id ? [row.recipe_id] : [],
-      ),
-    });
-    const recipes: ScribingRecipe[] = rawScrollEffects
-      .filter((row) => row.definition_id !== null)
-      .map((row) => {
-        const method = recipeModel.methodViews.get(row.definition_id as string);
-        if (!method)
-          throw new Error(`Missing scribing method ${row.definition_id}`);
-        return {
+    const definitions = await getRecipeDefinitions(
+      db,
+      rawScrollEffects.flatMap((row) => (row.recipe_id ? [row.recipe_id] : [])),
+    );
+    const recipes: ScribingRecipe[] = [];
+    for (const row of rawScrollEffects) {
+      for (const definition of definitions.filter(
+        (definition) =>
+          definition.id === row.recipe_id && definition.type === "Scribing",
+      )) {
+        recipes.push({
           ...toScrollEffect(row),
-          id: row.definition_id as string,
-          recipe_id: row.recipe_id as string,
-          methods: [method],
-        };
-      });
-    const acquisitionItems = await loadAcquisitionItems(execute, recipeModel);
+          recipe_id: definition.method_id,
+          obtainabilityTree: await buildRecipeObtainabilityTree(db, definition),
+        });
+      }
+    }
 
     const locations = db
       .prepare(
         `
     SELECT DISTINCT s.id, s.zone_id, s.zone_name, s.sub_zone_name
     FROM scribing_tables s
-    JOIN acquisition_providers_scribing_tables p ON p.scribing_table_id = s.id
-    JOIN acquisition_recipe_details d ON d.id = p.method_id
+    JOIN acquisition_providers_scribing_tables p ON p.scribing_table_id=s.id
+    JOIN acquisition_recipe_details d ON d.id=p.method_id
+    WHERE d.display_kind='scribing'
     ORDER BY s.zone_name, s.sub_zone_name
   `,
       )
@@ -310,8 +296,6 @@ export const load: PageServerLoad =
     return {
       profession,
       recipes,
-      acquisitionItems,
-      acquisitionNames: projectAcquisitionNames(recipeModel),
       locations,
       stats: {
         craftable_scroll_count: recipes.length,

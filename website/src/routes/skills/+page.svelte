@@ -16,7 +16,7 @@
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import { getClassConfig } from "$lib/utils/classes";
   import { petHref } from "$lib/utils/pets";
-  import { formatSkillType, formatNumber } from "$lib/utils/format";
+  import { formatSkillType } from "$lib/utils/format";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
 
   let { data } = $props();
@@ -25,7 +25,7 @@
     buildCollectionPage({
       path: "/skills",
       name: "Skills — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${formatNumber(data.skills.length)} skills in Ancient Kingdoms.`,
+      description: `Searchable database of ${data.skills.length.toLocaleString()} skills in Ancient Kingdoms.`,
       items: data.skills.map((skill) => ({
         name: skill.name,
         path: `/skills/${skill.id}`,
@@ -149,8 +149,8 @@
       imageAvailable={row.original.visual_public_path}
       fallback={Sparkles}
       size={28}
-      class="flex min-w-0"
-      nameClass="whitespace-normal break-words"
+      class="flex truncate"
+      nameClass="truncate"
     />
   {:else if cell.column.id === "skill_type"}
     <span class="text-muted-foreground truncate block"
@@ -159,7 +159,7 @@
   {:else if cell.column.id === "effect"}
     {@const s = row.original}
     <SkillEffect
-      class="block text-sm whitespace-normal min-w-0 max-w-xl"
+      class="text-sm whitespace-normal min-w-48 max-w-xl"
       effect={s.effect}
       entityName={s.summoned_monster_name ?? s.pet_name}
       entityHref={s.summoned_monster_id
@@ -207,7 +207,7 @@
         { label: "Spell", value: "spell" },
         { label: "Veteran", value: "veteran" },
         { label: "Targets Mercenaries", value: "targets_mercenaries" },
-        { label: "Targets Pets", value: "targets_pet" },
+        { label: "Targets Pet", value: "targets_pet" },
         { label: "Used by Mercenaries", value: "used_by_mercenaries" },
         { label: "Used by Pets", value: "used_by_pets" },
       ]}
@@ -217,7 +217,7 @@
 
 <Seo
   title="Skills - Ancient Kingdoms"
-  description={`${formatNumber(data.skills.length)} skills from every class, plus monster and pet abilities, with each skill's type and effect.`}
+  description={`${data.skills.length.toLocaleString()} skills covering every class, plus monster and pet abilities — damage spells, heals, buffs, debuffs, and summons, with mana costs and tiers.`}
   path="/skills"
 />
 

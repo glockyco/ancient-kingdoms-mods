@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -24,7 +23,7 @@
     buildCollectionPage({
       path: "/recipes",
       name: "Recipes — Ancient Kingdoms Compendium",
-      description: `Find ${formatNumber(data.recipes.length)} recipes for crafting, alchemy, cooking, and scribing.`,
+      description: `Find ${data.recipes.length.toLocaleString()} recipes for crafting, alchemy, cooking, and scribing.`,
       items: data.recipes.map((recipe) => ({
         name: recipe.result_item_name,
         path: `/recipes/${recipe.id}`,
@@ -76,7 +75,9 @@
 
   const PAGE_SIZE = 20;
 
-  // Scribing recipes do not have a Scroll Mastery requirement.
+  // Tier rendering: Crafting/Cooking/Alchemy use Roman numerals (I-V).
+  // Scribing 'tier' is a Scroll Mastery % threshold, so render it as 'N%'
+  // when set and '-' when the scroll has no mastery requirement.
   const romanNumerals = ["I", "II", "III", "IV", "V"];
 
   function formatTier(
@@ -84,7 +85,7 @@
     tier: number,
   ): string {
     if (type === "Scribing") {
-      return "-";
+      return tier > 0 ? `${tier}%` : "-";
     }
     return romanNumerals[tier] ?? "-";
   }
@@ -117,7 +118,7 @@
     {
       accessorKey: "type",
       header: "Type",
-      size: 120,
+      size: 90,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
         if (!filterValue || filterValue.length === 0) return true;
@@ -154,7 +155,7 @@
     },
     {
       id: "ingredient3",
-      header: "Other ingredients",
+      header: "Ingredient 3",
       minSize: 220,
       enableSorting: false,
       accessorFn: (row) => row.ingredients[2]?.item_name ?? "",
@@ -168,16 +169,12 @@
     result_item_name: "Output",
     ingredient1: "Ingredient 1",
     ingredient2: "Ingredient 2",
-    ingredient3: "Other ingredients",
+    ingredient3: "Ingredient 3",
   };
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<RecipeRow, unknown> })}
-  {#if header.id === "tier"}
-    <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
-  {:else}
-    {columnLabels[header.id] ?? header.id}
-  {/if}
+  {columnLabels[header.id] ?? header.id}
 {/snippet}
 
 {#snippet renderCell({
@@ -198,7 +195,7 @@
   {:else if cell.column.id === "type"}
     {row.original.type}
   {:else if cell.column.id === "tier"}
-    <span class="ml-auto font-medium"
+    <span class="font-medium"
       >{formatTier(row.original.type, row.original.tier)}</span
     >
   {:else if cell.column.id === "result_item_name"}
@@ -207,34 +204,75 @@
       itemName={row.original.result_item_name}
       tooltipHtml={tooltips.get(row.original.result_item_id) ?? null}
       imageAvailable={row.original.result_visual_public_path}
+      quality={row.original.result_quality}
       fallback={Package}
       variant="reference"
     />
     {#if row.original.result_amount > 1}
       <span class="text-muted-foreground ml-1"
-        >×{row.original.result_amount}</span
+        >x{row.original.result_amount}</span
       >
     {/if}
-  {:else if cell.column.id.startsWith("ingredient")}
-    {@const index = Number(cell.column.id.slice(-1)) - 1}
-    {@const ingredients =
-      index === 2
-        ? row.original.ingredients.slice(2)
-        : row.original.ingredients.slice(index, index + 1)}
-    <div class="space-y-1">
-      {#each ingredients as ingredient (ingredient)}
-        <div class="flex flex-wrap items-baseline gap-1">
-          {#if ingredient.item_id}
-            <ItemLink
-              itemId={ingredient.item_id}
-              itemName={ingredient.item_name}
-              imageAvailable={ingredient.visual_public_path}
-            />
-          {:else}<span>{ingredient.item_name}</span>{/if}
-          <span class="text-muted-foreground">×{ingredient.amount}</span>
-        </div>
-      {:else}<span class="text-muted-foreground">-</span>{/each}
-    </div>
+  {:else if cell.column.id === "ingredient1"}
+    {#if row.original.ingredients[0]}
+      <span class="whitespace-nowrap">
+        {#if row.original.ingredients[0].item_id}
+          <ItemLink
+            itemId={row.original.ingredients[0].item_id}
+            itemName={row.original.ingredients[0].item_name}
+            imageAvailable={row.original.ingredients[0].visual_public_path}
+            quality={row.original.ingredients[0].quality}
+          />
+        {:else}
+          <span>{row.original.ingredients[0].item_name}</span>
+        {/if}
+        <span class="text-muted-foreground">
+          x{row.original.ingredients[0].amount}</span
+        >
+      </span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "ingredient2"}
+    {#if row.original.ingredients[1]}
+      <span class="whitespace-nowrap">
+        {#if row.original.ingredients[1].item_id}
+          <ItemLink
+            itemId={row.original.ingredients[1].item_id}
+            itemName={row.original.ingredients[1].item_name}
+            imageAvailable={row.original.ingredients[1].visual_public_path}
+            quality={row.original.ingredients[1].quality}
+          />
+        {:else}
+          <span>{row.original.ingredients[1].item_name}</span>
+        {/if}
+        <span class="text-muted-foreground">
+          x{row.original.ingredients[1].amount}</span
+        >
+      </span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "ingredient3"}
+    {#if row.original.ingredients[2]}
+      <span class="whitespace-nowrap">
+        {#if row.original.ingredients[2].item_id}
+          <ItemLink
+            itemId={row.original.ingredients[2].item_id}
+            itemName={row.original.ingredients[2].item_name}
+            imageAvailable={row.original.ingredients[2].visual_public_path}
+            quality={row.original.ingredients[2].quality}
+          />
+        {:else}
+          <span>{row.original.ingredients[2].item_name}</span>
+        {/if}
+        <span class="text-muted-foreground">
+          x{row.original.ingredients[2].amount}</span
+        >
+      </span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
   {:else}
     {cell.getValue()}
   {/if}
@@ -258,16 +296,18 @@
 
 <Seo
   title="Recipes - Ancient Kingdoms"
-  description={`Find ${formatNumber(data.recipes.length)} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
+  description={`Find ${data.recipes.length.toLocaleString()} crafting, alchemy, cooking, and scribing recipes with ingredients, stations, tiers, and results.`}
   path="/recipes"
 />
 
 <JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
-  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Recipes" }]} />
+  <Breadcrumb
+    items={[{ label: "Home", href: "/" }, { label: "Crafting Recipes" }]}
+  />
 
-  <h1 class="text-3xl font-bold">Recipes</h1>
+  <h1 class="text-3xl font-bold">Crafting Recipes</h1>
 
   <DataTable
     data={dataWithVirtual}

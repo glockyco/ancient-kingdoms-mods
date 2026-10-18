@@ -1,11 +1,8 @@
 <script lang="ts">
-  import { statName } from "$lib/stats";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import LazyObtainabilityTree from "$lib/components/LazyObtainabilityTree.svelte";
-  import ScrollRegion from "$lib/components/acquisition/ScrollRegion.svelte";
+  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
@@ -50,21 +47,26 @@
     unknown: "text-muted-foreground",
   } as const;
 
+  function hasObtainabilityInfo(book: (typeof data.books)[0]): boolean {
+    const tree = book.obtainabilityTree;
+    return (
+      (tree.sources && tree.sources.length > 0) ||
+      !!tree.recipe ||
+      !!tree.service ||
+      !!tree.merge
+    );
+  }
+
   function formatStatGains(
     stats: (typeof data.books)[0]["statGains"],
   ): string[] {
     const gains: string[] = [];
-    if (stats.strength > 0)
-      gains.push(`+${stats.strength} ${statName("strength")}`);
-    if (stats.dexterity > 0)
-      gains.push(`+${stats.dexterity} ${statName("dexterity")}`);
-    if (stats.constitution > 0)
-      gains.push(`+${stats.constitution} ${statName("constitution")}`);
-    if (stats.intelligence > 0)
-      gains.push(`+${stats.intelligence} ${statName("intelligence")}`);
-    if (stats.wisdom > 0) gains.push(`+${stats.wisdom} ${statName("wisdom")}`);
-    if (stats.charisma > 0)
-      gains.push(`+${stats.charisma} ${statName("charisma")}`);
+    if (stats.strength > 0) gains.push(`+${stats.strength} STR`);
+    if (stats.dexterity > 0) gains.push(`+${stats.dexterity} DEX`);
+    if (stats.constitution > 0) gains.push(`+${stats.constitution} CON`);
+    if (stats.intelligence > 0) gains.push(`+${stats.intelligence} INT`);
+    if (stats.wisdom > 0) gains.push(`+${stats.wisdom} WIS`);
+    if (stats.charisma > 0) gains.push(`+${stats.charisma} CHA`);
     return gains;
   }
 
@@ -81,8 +83,8 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`${data.profession.description} Where to find all ${data.books.length} books and the attributes each grants.`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
+  description={`${data.profession.description} View all books to collect.`}
   path="/professions/lore_keeping"
 />
 
@@ -114,6 +116,7 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
+        <span class="whitespace-nowrap">Books: {data.books.length}</span>
         {#if data.profession.achievement_id}
           <AchievementLink
             achievementId={data.profession.achievement_id}
@@ -130,12 +133,6 @@
       <BookOpen class="h-5 w-5 text-indigo-500" />
       Books ({data.books.length})
     </h2>
-    <p class="text-muted-foreground">
-      Reading a book for the first time uses it up and permanently raises its
-      listed attributes. Each book counts toward the {data.profession
-        .tracking_denominator}
-      books needed for 100% Lore Keeping.
-    </p>
     <div class="rounded-lg border overflow-x-auto">
       <table class="w-full min-w-[1200px] table-fixed">
         <colgroup>
@@ -148,9 +145,7 @@
           <tr>
             <th class="p-3"></th>
             <th class="text-left p-3 font-medium whitespace-nowrap">Name</th>
-            <th class="text-left p-3 font-medium whitespace-nowrap"
-              >Attributes gained</th
-            >
+            <th class="text-left p-3 font-medium whitespace-nowrap">Stats</th>
             <th class="text-left p-3 font-medium whitespace-nowrap">Source</th>
           </tr>
         </thead>
@@ -188,6 +183,7 @@
                     itemName={book.name}
                     tooltipHtml={book.tooltip_html}
                     imageAvailable={book.visual_public_path}
+                    quality={book.quality}
                     variant="reference"
                     fallback={Package}
                   />
@@ -233,26 +229,24 @@
             {#if isExpanded}
               <tr class="border-t bg-muted/20">
                 <td colspan="4" class="p-4">
-                  <div
-                    class="w-[calc(100vw-6rem-2px)] max-w-[calc(72rem-6rem-2px)] space-y-4 whitespace-normal"
-                  >
+                  <div class="space-y-4">
                     <!-- Obtainability Section -->
-                    {#if book.hasObtainabilityInfo}
+                    {#if hasObtainabilityInfo(book)}
                       <div>
                         <h4
                           class="text-sm font-semibold text-muted-foreground mb-2"
                         >
                           How to Obtain
                         </h4>
-                        <ScrollRegion
-                          label="Sources for {book.name}"
-                          className="bg-background rounded-md p-3 border max-h-[32rem] overflow-auto overscroll-contain"
+                        <div
+                          class="bg-background rounded-md p-3 border overflow-x-auto"
                         >
-                          <LazyObtainabilityTree
-                            itemId={book.id}
+                          <ObtainabilityTree
+                            node={book.obtainabilityTree}
+                            defaultExpanded={true}
                             hideRootLink={true}
                           />
-                        </ScrollRegion>
+                        </div>
                       </div>
                     {/if}
 

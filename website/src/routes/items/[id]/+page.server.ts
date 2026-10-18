@@ -4,15 +4,31 @@ import type { PageServerLoad, EntryGenerator } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ItemDetailPageData } from "$lib/types/items";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
-import type { Item } from "$lib/queries/items";
-import { itemDescription, itemTitle } from "$lib/server/meta-description";
-import { loadItemAcquisition, loadAcquisition } from "$lib/server/acquisition";
+import { ITEM_DETAIL_SELECT, type Item } from "$lib/queries/items";
+import {
+  loadItemSourceModel,
+  aggregateChestRewards,
+  getItemSourcesFromModel,
+} from "$lib/server/item-sources";
+import {
+  projectDefinitionInspection,
+  projectItemSources,
+} from "$lib/acquisition/projections";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
+import { itemDescription, itemTitle } from "$lib/server/meta-description";
+import { itemUsagesFromModel } from "$lib/server/item-usages";
+import { getRecipeDefinitions } from "$lib/server/obtainability";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { getItemMapBounds } from "$lib/queries/map-search";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+
+import { calculateChestRewards } from "$lib/calculation/chest-rewards";
+import {
+  CHEST_REWARDS_QUERY,
+  assembleChests,
+  type ChestRewardRow,
+} from "$lib/queries/chest-rewards";
 
 const FISHERMAN_COSTUME_IDS = new Set([
   "fishermans_hat",
@@ -41,6 +57,7 @@ export const load: PageServerLoad = async ({
   ItemDetailPageData & {
     hasMapLocation: boolean;
     hasKnownSource: boolean;
+    acquisitionNotes: string[];
     foodBuffUsesTavernSpirit: boolean;
     /** Effect summary of the potion or food buff at the rank the item applies. */
     consumableBuffEffect: string | null;
@@ -48,13 +65,35 @@ export const load: PageServerLoad = async ({
 > => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
-  const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as
-    Item | undefined;
+  const item = db
+    .prepare(`${ITEM_DETAIL_SELECT} WHERE i.id = ?`)
+    .get(params.id) as Item | undefined;
 
   if (!item) {
     db.close();
     throw error(404, `Item not found: ${params.id}`);
   }
+  const execute = async (
+    sql: string,
+    bindings: readonly (string | number | null)[],
+  ) => db.prepare(sql).all(...bindings) as Record<string, unknown>[];
+  const model = await loadItemSourceModel(db, [params.id]);
+
+  const serviceNpcs = (kind: "essence" | "blessing") =>
+    [
+      ...new Map(
+        [...model.methodViews.values()]
+          .filter((method) => method.rooted && method.kind === kind)
+          .flatMap((method) => method.providers)
+          .filter((provider) => provider.ref.kind === "npcs")
+          .map((provider) => [
+            provider.ref.id,
+            { id: provider.ref.id, name: provider.name },
+          ]),
+      ).values(),
+    ].sort((a, b) => a.name.localeCompare(b.name));
+  const essenceTraders =
+    params.id === "primal_essence" ? serviceNpcs("essence") : [];
 
   // For token of redemption, get all veteran master NPCs
   let veteranMasters: Array<{ id: string; name: string }> = [];
@@ -75,6 +114,11 @@ export const load: PageServerLoad = async ({
       )
       .all() as Array<{ id: string; name: string }>;
   }
+
+  const priestesses =
+    params.id === "cursed_rune" || params.id === "blessed_rune"
+      ? serviceNpcs("blessing")
+      : [];
 
   const fishingRole: FishingRole = (() => {
     if (FISHERMAN_COSTUME_IDS.has(item.id)) return "costume";
@@ -101,21 +145,136 @@ export const load: PageServerLoad = async ({
     .prepare("SELECT max_level FROM progression_rules WHERE id = 1")
     .get() as { max_level: number } | undefined;
   if (!progression) throw new Error("Missing progression_rules.max_level");
+  const chestRows = db
+    .prepare(
+      `${CHEST_REWARDS_QUERY} WHERE definition.item_id = ? ORDER BY entry.ordinal`,
+    )
+    .all(params.id) as ChestRewardRow[];
+  const [chest] = assembleChests(chestRows);
+  const chestRewards = chest
+    ? aggregateChestRewards(calculateChestRewards(chest, 0))
+    : [];
 
-  const execute = async (
-    sql: string,
-    bindings: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...bindings) as Record<string, unknown>[];
-  const acquisition = await loadItemAcquisition(execute, [params.id]);
-  const sources = acquisition.sources[params.id];
-  const usages = acquisition.usages[params.id];
-  const acquisitionItems = await loadAcquisitionItems(
-    execute,
-    acquisition.model,
+  // Preserve the item tables using the canonical acquisition model.
+  const sources = await getItemSourcesFromModel(db, model, params.id);
+  const usages = itemUsagesFromModel(model, params.id);
+  const acquisitionNotes: string[] = [];
+  const starters = new Set(
+    projectItemSources(model, params.id)
+      .methods.filter((method) => method.kind === "creation")
+      .map((method) => String(method.detail.class_id)),
   );
-  const hasKnownSource = sources.hasKnownSource;
-  const hasMapLocation = (await getItemMapBounds(params.id, execute)) !== null;
-  const packContents = sources.inspection.fixedContents.flatMap((outcome) =>
+  const classCount = db
+    .prepare("SELECT COUNT(*) AS count FROM classes")
+    .get() as { count: number };
+  if (starters.size === classCount.count && starters.size > 0) {
+    acquisitionNotes.push("Every new character starts with this item.");
+  } else if (starters.size > 0) {
+    const names = [...starters]
+      .map((id) => String(model.entities.get("classes")?.get(id)?.name ?? id))
+      .sort();
+    acquisitionNotes.push(
+      `New ${names.join(", ")} characters start with this item.`,
+    );
+  }
+  if (item.item_type === "structure") {
+    acquisitionNotes.push(
+      `Buy and place this furniture through the house panel for ${item.structure_price.toLocaleString("en-US")} gold while at a house owned by your account.`,
+    );
+  }
+  const hasKnownSource = projectItemSources(model, params.id).hasKnownSource;
+  const hasMapLocation =
+    (await getItemMapBounds(
+      params.id,
+      async (sql, bindings) =>
+        db.prepare(sql).all(...bindings) as Record<string, unknown>[],
+    )) !== null;
+
+  const recipeMaterials: ItemDetailPageData["recipeMaterials"] = {};
+  for (const recipe of sources.recipes) {
+    recipeMaterials[recipe.variant_id ?? recipe.recipe_id] =
+      recipe.materials ?? [];
+  }
+  let taughtRecipes: ItemDetailPageData["taughtRecipes"] = [];
+  if (item.recipe_potion_learned_id) {
+    const taughtRecipe = db
+      .prepare("SELECT id FROM alchemy_recipes WHERE result_item_id = ?")
+      .get(item.recipe_potion_learned_id) as { id: string } | undefined;
+    if (!taughtRecipe) {
+      throw new Error(
+        `Missing alchemy recipe for ${item.recipe_potion_learned_id}`,
+      );
+    }
+    taughtRecipes = (await getRecipeDefinitions(db, [taughtRecipe.id])).map(
+      (recipe) => ({
+        variant_id: recipe.method_id,
+        tier: recipe.tier,
+        materials: recipe.materials,
+      }),
+    );
+    recipeMaterials[item.recipe_potion_learned_id] =
+      taughtRecipes[0]?.materials ?? [];
+  }
+
+  const inspection = projectDefinitionInspection(model, params.id);
+  const acquisitionItems = await loadAcquisitionItems(execute, model);
+  const hasWithheldRandomOutcomes = (
+    model.rows.facts.item_pool_definitions ?? []
+  ).some(
+    (binding) =>
+      binding.item_id === params.id &&
+      binding.role === "random" &&
+      model.entriesByPool
+        .get(String(binding.pool_id))
+        ?.some((entry) => entry.withheld),
+  );
+  const randomOutcomes = inspection.randomOutcomes.flatMap((outcome) =>
+    outcome.itemId && outcome.probability !== null
+      ? [
+          {
+            item_id: outcome.itemId,
+            item_name: acquisitionItems[outcome.itemId]?.name ?? outcome.itemId,
+            quality: acquisitionItems[outcome.itemId]?.quality ?? 0,
+            probability: outcome.probability,
+          },
+        ]
+      : [],
+  );
+
+  // Load treasure location for treasure map items
+  let treasureLocation: {
+    location_id: string;
+    zone_id: string;
+    zone_name: string;
+    reward_id: string | null;
+    reward_name: string | null;
+    position_x: number;
+    position_y: number;
+  } | null = null;
+
+  if (item.item_type === "treasure_map") {
+    treasureLocation =
+      (db
+        .prepare(
+          `
+        SELECT
+          tl.id as location_id,
+          tl.zone_id,
+          z.name as zone_name,
+          tl.reward_id,
+          reward.name as reward_name,
+          tl.position_x,
+          tl.position_y
+        FROM treasure_locations tl
+        JOIN zones z ON z.id = tl.zone_id
+        LEFT JOIN items reward ON reward.id = tl.reward_id
+        WHERE tl.required_map_id = ?
+      `,
+        )
+        .get(params.id) as typeof treasureLocation) || null;
+  }
+
+  const packContents = inspection.fixedContents.flatMap((outcome) =>
     outcome.itemId && outcome.amount.kind === "exact"
       ? [
           {
@@ -127,76 +286,29 @@ export const load: PageServerLoad = async ({
         ]
       : [],
   );
-  const randomOutcomes = sources.inspection.randomOutcomes.flatMap((outcome) =>
-    outcome.itemId
-      ? [
-          {
-            item_id: outcome.itemId,
-            item_name: acquisitionItems[outcome.itemId]?.name ?? outcome.itemId,
-          },
-        ]
-      : [],
-  );
-  const recipeMethods = sources.methods.filter(
-    (method) => method.kind === "recipe",
-  );
-  const recipeIngredients =
-    recipeMethods.length === 1
-      ? recipeMethods[0].costGroups
-          .flatMap((group) => group.inputs)
-          .flatMap((input) =>
-            input.item_id
-              ? [
-                  {
-                    item_name:
-                      acquisitionItems[input.item_id]?.name ?? input.item_id,
-                    amount: input.amount,
-                  },
-                ]
-              : [],
-          )
-      : undefined;
 
-  const requirementModel = await loadAcquisition(execute, {
-    kind: "requirements",
-    entities: [{ kind: "item", id: params.id }],
-  });
-  const itemRequirements =
-    requirementModel.requirements.get(`item:${params.id}`) ?? [];
-  const taughtRecipeId = item.recipe_potion_learned_id
-    ? ((
-        db
-          .prepare("SELECT id FROM alchemy_recipes WHERE result_item_id = ?")
-          .get(item.recipe_potion_learned_id) as { id: string } | undefined
-      )?.id ?? null)
-    : null;
-  const recipeTeachers = db
-    .prepare(
-      `SELECT i.id,i.name,v.public_path AS icon_path FROM items i
-    LEFT JOIN visual_assets v ON v.domain='item' AND v.entity_id=i.id AND v.kind='icon'
-    WHERE i.recipe_potion_learned_id=? ORDER BY i.name,i.id`,
-    )
-    .all(params.id) as ItemDetailPageData["recipeTeachers"];
-  const digUse = usages.find((use) => use.method?.kind === "treasure_dig");
-  const digLocation = digUse?.useLocations[0];
-  const digRewardId = digUse?.method?.outputs.find(
-    (output) => output.item_id,
-  )?.item_id;
-  const treasureLocation = digLocation
-    ? {
-        zone_name: digLocation.name,
-        reward_name: digRewardId
-          ? (acquisitionItems[digRewardId]?.name ?? null)
-          : null,
-      }
-    : null;
+  // Chest-key open count: how many chests this key opens, across how many zones.
+  let chestKeyOpens: { chestCount: number; zoneCount: number } | undefined;
+  if (item.is_chest_key) {
+    const chests = new Map(
+      model.rows.details.world_chest
+        .filter((detail) => detail.key_item_id === params.id)
+        .map((detail) => [
+          detail.chest_id,
+          model.entities.get("chests")?.get(detail.chest_id),
+        ]),
+    );
+    chestKeyOpens = {
+      chestCount: chests.size,
+      zoneCount: new Set(
+        [...chests.values()].flatMap((chest) =>
+          chest?.zone_id ? [chest.zone_id] : [],
+        ),
+      ).size,
+    };
+  }
 
-  const mergeOutputId = usages
-    .find((use) => use.method?.kind === "merge")
-    ?.method?.outputs.find((output) => output.item_id)?.item_id;
-  const mergeResultName = mergeOutputId
-    ? (acquisitionItems[mergeOutputId]?.name ?? null)
-    : null;
+  const mergeResultName = usages.merges[0]?.result_item_name ?? null;
   // Source: server-scripts/BuffSkill.cs:7-12 — buffTime is a LinearFloat with
   // baseValue = duration_base. Potion buff level is resolved at use time by
   // GetBuffLevelWithElixirEndurance (server-scripts/PotionItem.cs:24-39,
@@ -260,6 +372,28 @@ export const load: PageServerLoad = async ({
       )
       .get(params.id) as EntityVisualAsset | undefined) ?? null;
 
+  const setMembers = JSON.parse(
+    item.augment_armor_set_members ?? "[]",
+  ) as Array<{ item_id: string }>;
+  if (setMembers.length) {
+    const qualities = new Map(
+      (
+        db
+          .prepare(
+            "SELECT id, quality FROM items WHERE id IN (SELECT value FROM json_each(?))",
+          )
+          .all(
+            JSON.stringify(setMembers.map((member) => member.item_id)),
+          ) as Array<{ id: string; quality: number }>
+      ).map((member) => [member.id, member.quality]),
+    );
+    item.augment_armor_set_members = JSON.stringify(
+      setMembers.map((member) => ({
+        ...member,
+        quality: qualities.get(member.item_id),
+      })),
+    );
+  }
   const itemIconPaths = getItemIconPaths(
     db,
     item.augment_armor_set_members
@@ -275,38 +409,46 @@ export const load: PageServerLoad = async ({
   const description = itemDescription(item, {
     usages,
     packContents,
-    randomOutcomes,
-    requirements: itemRequirements,
+    randomOutcomes: hasWithheldRandomOutcomes ? undefined : randomOutcomes,
+    chestKeyOpens,
     mergeResultName,
     buffDurationSeconds,
     relicIsCleanse,
     sources,
     treasureLocation,
     buffEffect: consumableBuffEffect,
-    recipeIngredients,
+    recipeIngredients: sources.recipes[0]
+      ? recipeMaterials[
+          sources.recipes[0].variant_id ?? sources.recipes[0].recipe_id
+        ]
+      : undefined,
   });
-  const title = itemTitle(item, { family: "Item" });
+  const title = itemTitle(item);
 
   return {
     item,
     maxLevel: progression.max_level,
+    chestRewards,
     consumableBuffEffect,
     description,
     title,
     sources,
     usages,
     hasKnownSource,
+    acquisitionNotes,
     foodBuffUsesTavernSpirit,
     hasMapLocation,
     fishing_role: fishingRole,
     fishing_effect: fishingEffect,
-    acquisitionItems,
-    acquisitionNames: projectAcquisitionNames(acquisition.model),
-    itemRequirements,
-    taughtRecipeId,
-    recipeTeachers,
+    recipeMaterials,
+    taughtRecipes,
+    randomOutcomes,
+    packContents,
+    treasureLocation,
+    essenceTraders,
     veteranMasters,
     augmenters,
+    priestesses,
     visualAsset,
     itemIconPaths,
     petVisualAsset,

@@ -16,12 +16,10 @@ import {
 } from "$lib/constants/constants";
 import { npcDescription } from "$lib/server/meta-description";
 import { npcKillReputation } from "$lib/utils/killReputation";
-import { formatNumber } from "$lib/utils/format";
+import { distinctSubzoneName, formatNumber } from "$lib/utils/format";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { loadAcquisition } from "$lib/server/acquisition";
-import { loadAcquisitionItems } from "$lib/acquisition/items";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -113,34 +111,29 @@ export const load: PageServerLoad = async ({
     kind: "providers",
     providers: [{ kind: "npcs", id: params.id }],
   });
-  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
-  for (const quest of questMemberships)
-    quest.requirements =
-      acquisition.requirements.get(`quest:${quest.id}`) ?? [];
   const vendorMethods = [...acquisition.methodViews.values()].filter(
     (method) =>
       method.kind === "vendor" &&
+      method.detail.season === "none" &&
       method.providers.some(
         (provider) =>
           provider.ref.kind === "npcs" && provider.ref.id === params.id,
       ),
   );
-  const itemsSold: NpcItemSold[] = vendorMethods.map((method) => {
-    const itemId = String(method.detail.offered_item_id);
-    const item = db
+  const itemsSold: NpcItemSold[] = vendorMethods.flatMap((method) => {
+    const offeredId = String(method.detail.offered_item_id);
+    const offered = db
       .prepare(
-        `
-      SELECT i.*, va.public_path AS visual_public_path FROM items i
-      LEFT JOIN visual_assets va ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
-      WHERE i.id = ?
-    `,
+        "SELECT faction_required_to_buy, faction_required_tier_name FROM items WHERE id = ?",
       )
-      .get(itemId) as {
-      name: string;
-      quality: number;
-      tooltip_html: string | null;
-      visual_public_path: string | null;
+      .get(offeredId) as {
+      faction_required_to_buy: number;
+      faction_required_tier_name: string | null;
     };
+    const outputs = method.outputs.filter(
+      (output) =>
+        output.item_id && !output.withheld && output.delivery === "inventory",
+    );
     const costs = method.costGroups.flatMap((group) => group.inputs);
     const currency = costs.find((input) => input.resource_kind === "item");
     const gold = costs.find((input) => input.resource_kind === "gold");
@@ -151,23 +144,42 @@ export const load: PageServerLoad = async ({
             .get(currency.item_id) as { name: string }
         ).name
       : null;
-    return {
-      item_id: itemId,
-      item_name: item.name,
-      quality: item.quality,
-      tooltip_html: item.tooltip_html,
-      visual_public_path: item.visual_public_path,
-      price: currency?.amount ?? gold?.amount ?? 0,
-      currency_item_id: currency?.item_id ?? null,
-      currency_item_name: currencyName,
-      method,
-    };
+    return outputs.map((output) => {
+      const itemId = output.item_id!;
+      const item = db
+        .prepare(
+          `
+        SELECT i.name, i.quality, i.tooltip_html, va.public_path AS visual_public_path
+        FROM items i LEFT JOIN visual_assets va
+          ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+        WHERE i.id = ?
+      `,
+        )
+        .get(itemId) as {
+        name: string;
+        quality: number;
+        tooltip_html: string | null;
+        visual_public_path: string | null;
+      };
+      return {
+        item_id: itemId,
+        item_name: item.name,
+        quality: item.quality,
+        tooltip_html: item.tooltip_html,
+        visual_public_path: item.visual_public_path,
+        price: currency?.amount ?? gold?.amount ?? 0,
+        currency_item_id: currency?.item_id ?? null,
+        currency_item_name: currencyName,
+        faction_required: offered.faction_required_to_buy,
+        faction_tier_name: offered.faction_required_tier_name,
+      };
+    });
   });
   const skills = db
     .prepare(
       `
     SELECT s.id, s.name FROM npc_skills ns JOIN skills s ON s.id = ns.skill_id
-    WHERE ns.npc_id = ? ORDER BY ns.skill_index
+    WHERE ns.npc_id = ? GROUP BY s.id ORDER BY MIN(ns.skill_index)
   `,
     )
     .all(params.id) as NpcSkill[];
@@ -209,6 +221,9 @@ export const load: PageServerLoad = async ({
   `,
     )
     .all(params.id) as NpcSpawnLocation[];
+  for (const spawn of spawns)
+    spawn.sub_zone_name =
+      distinctSubzoneName(spawn.zone_name, spawn.sub_zone_name) ?? null;
 
   // Get respawn dungeon info if applicable
   let respawnDungeonName: string | null = null;
@@ -420,8 +435,7 @@ export const load: PageServerLoad = async ({
     questsOffered,
     questsCompletedHere,
     itemsSold,
-    acquisitionItems,
-    acquisitionNames: projectAcquisitionNames(acquisition),
+    drops: [],
     spawns,
     summonTriggers,
     skills,

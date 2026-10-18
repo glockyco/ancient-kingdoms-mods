@@ -160,6 +160,41 @@ describe("map selection", () => {
     ).toEqual(["rough_fishing_spot_b"]);
   });
 
+  test("source hover uses the definition group while item focus uses exact providers", () => {
+    const a = fishingSpot("a", [1, 1]);
+    const b = fishingSpot("b", [2, 2]);
+    const index = createEntityIndex(mapData([a, b]));
+    expect(
+      computeSelectionFromGroups(index, [
+        { category: "resource", ids: ["rough_fishing_spot"] },
+      ]).map((entity) => entity.id),
+    ).toEqual(["a", "b"]);
+    expect(
+      computeSelectionFromGroups(index, [
+        { category: "resource", ids: ["b"], exactPlacement: true },
+      ]).map((entity) => entity.id),
+    ).toEqual(["b"]);
+  });
+
+  test("group selection prefers visible providers without exposing suppressed positions", () => {
+    const hidden = fishingSpot("hidden", null);
+    const visible = fishingSpot("visible", [1, 1]);
+    const data = mapData([hidden, visible]);
+    const selection = resolvePhysicalSelection(
+      "resource",
+      "rough_fishing_spot",
+      data,
+    );
+    expect(selection.popup).toEqual({ type: "entity", entity: visible });
+    expect(
+      computeSelectionData(
+        createEntityIndex(data),
+        "resource",
+        "rough_fishing_spot",
+      ).map((entity) => entity.id),
+    ).toEqual(["visible"]);
+  });
+
   test("excluded-zone fishing spots show a popup without a highlight", () => {
     const entity = fishingSpot("ancient_fishing_spot_temple", null);
     const resolved = resolvePhysicalSelection(

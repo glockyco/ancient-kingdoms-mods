@@ -20,7 +20,10 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
-  import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
+  import {
+    SOURCE_TYPE_CONFIG,
+    type ItemSourceType,
+  } from "$lib/constants/source-types";
   import {
     getClassConfig,
     getRaceDisplayName,
@@ -29,7 +32,6 @@
   } from "$lib/utils/classes";
   import { QUALITY_NAMES } from "$lib/constants/quality";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import {
     formatEquipmentCategory,
     formatSkillType,
@@ -201,7 +203,7 @@
       const maxPicks = TIER_MAX_PICKS[skill.tier];
       const available = tierSkillCounts[skill.tier] ?? 0;
       if (maxPicks && available > 0) {
-        return `${key} (choose ${maxPicks} of ${available})`;
+        return `${key} (${maxPicks} of ${available})`;
       }
     }
     return key;
@@ -294,16 +296,16 @@
     },
     {
       accessorKey: "required_spent_points",
-      header: "Points already spent",
+      header: "Req Points",
     },
-    { accessorKey: "level_required", header: "Required level" },
+    { accessorKey: "level_required", header: "Req Lvl" },
     {
       id: "prerequisites",
       header: "Prerequisites",
       enableSorting: false,
       accessorFn: (row) =>
-        row.prerequisites
-          .map((requirement) => requirement.name ?? "Unpublished prerequisite")
+        [row.prerequisite_skill_name, row.prerequisite2_skill_name]
+          .filter(Boolean)
           .join(", "),
     },
     {
@@ -356,7 +358,7 @@
     { accessorKey: "item_level", header: "Item Level" },
     {
       accessorKey: "level_required",
-      header: "Required level",
+      header: "Level",
       filterFn: (
         row,
         columnId,
@@ -473,7 +475,7 @@
     if (hasQuestFlags) {
       cols.push({
         id: "flags",
-        header: "Categories",
+        header: "Quest labels",
         enableSorting: false,
         accessorFn: (row) => {
           const flags: string[] = [];
@@ -490,7 +492,7 @@
       { accessorKey: "name", header: "Name" },
       {
         accessorKey: "level_required",
-        header: "Required level",
+        header: "Req Lvl",
         filterFn: (
           row,
           columnId,
@@ -506,11 +508,31 @@
           return true;
         },
       },
-      { accessorKey: "level_recommended", header: "Recommended level" },
+      { accessorKey: "level_recommended", header: "Rec Lvl" },
     );
 
     return cols;
   });
+
+  // --- Source display helpers ---
+
+  function getSourceTypeCounts(
+    sources: ClassItem["sources"],
+  ): [string, number][] {
+    const counts: Record<string, number> = {};
+    for (const s of sources) {
+      counts[s.type] = (counts[s.type] ?? 0) + 1;
+    }
+    return Object.entries(counts);
+  }
+
+  function getDistinctTypeCount(sources: ClassItem["sources"]): number {
+    const types: Record<string, boolean> = {};
+    for (const s of sources) {
+      types[s.type] = true;
+    }
+    return Object.keys(types).length;
+  }
 </script>
 
 {#snippet renderSkillCell({
@@ -546,22 +568,36 @@
       {/if}
     </span>
   {:else if cell.column.id === "prerequisites"}
-    <span class="space-y-1">
-      {#each row.original.prerequisites as requirement, index (requirement.id)}
-        {#if index > 0}<span class="text-muted-foreground">, </span>{/if}
-        {#if requirement.withheld}
-          <span class="text-muted-foreground">Unpublished prerequisite</span>
-        {:else if requirement.skill_id}
-          <a
-            href="/skills/{requirement.skill_id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {requirement.name ?? requirement.skill_id}
-          </a>
-        {/if}
-        <span class="text-muted-foreground">rank {requirement.rank}</span>
-      {/each}
-      {#if row.original.prerequisites.length === 0}
+    <span class="space-y-1 whitespace-nowrap">
+      {#if row.original.prerequisite_skill_id}
+        <a
+          href="/skills/{row.original.prerequisite_skill_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {row.original.prerequisite_skill_name ??
+            row.original.prerequisite_skill_id}
+        </a>
+        <span class="text-muted-foreground"
+          >rank {row.original.prerequisite_level}</span
+        >
+      {/if}
+      {#if row.original.prerequisite2_skill_id}
+        {#if row.original.prerequisite_skill_id}<span
+            class="text-muted-foreground"
+            >,
+          </span>{/if}
+        <a
+          href="/skills/{row.original.prerequisite2_skill_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {row.original.prerequisite2_skill_name ??
+            row.original.prerequisite2_skill_id}
+        </a>
+        <span class="text-muted-foreground"
+          >rank {row.original.prerequisite2_level}</span
+        >
+      {/if}
+      {#if !row.original.prerequisite_skill_id && !row.original.prerequisite2_skill_id}
         <span class="text-muted-foreground">—</span>
       {/if}
     </span>
@@ -653,18 +689,68 @@
     <ItemLink
       itemId={row.original.id}
       itemName={row.original.name}
+      quality={row.original.quality}
       tooltipHtml={tooltips.get(row.original.id)}
       colorClass={getQualityTextColorClass(row.original.quality)}
       imageAvailable={row.original.visual_public_path}
       fallback={Gem}
       variant={row.original.visual_public_path ? "reference" : "text"}
+      maxWidth="185px"
     />
   {:else if cell.column.id === "sources"}
-    <ItemSourceLinks
-      sources={row.original.sources}
-      itemId={row.original.id}
-      names={data.acquisitionNames}
-    />
+    {@const sources = row.original.sources}
+    {#if sources.length === 0}
+      <span class="text-muted-foreground">—</span>
+    {:else if sources.length === 1}
+      {@const source = sources[0]}
+      {@const sourceConfig = SOURCE_TYPE_CONFIG[source.type as ItemSourceType]}
+      {#if sourceConfig}
+        <div class="flex items-center gap-1.5 max-w-[185px]">
+          <sourceConfig.icon class="h-4 w-4 shrink-0 {sourceConfig.color}" />
+          <a
+            href="{sourceConfig.linkPrefix}{source.id}"
+            class="truncate text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {source.name}
+          </a>
+        </div>
+      {/if}
+    {:else if getDistinctTypeCount(sources) === 1}
+      {@const source = sources[0]}
+      {@const sourceConfig = SOURCE_TYPE_CONFIG[source.type as ItemSourceType]}
+      {#if sourceConfig}
+        <div class="flex items-center gap-1.5 max-w-[185px]">
+          <sourceConfig.icon class="h-4 w-4 shrink-0 {sourceConfig.color}" />
+          <a
+            href="{sourceConfig.linkPrefix}{source.id}"
+            class="truncate text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {source.name}
+          </a>
+          <a
+            href="/items/{row.original.id}"
+            class="shrink-0 text-muted-foreground hover:underline text-xs"
+          >
+            +{sources.length - 1} more
+          </a>
+        </div>
+      {/if}
+    {:else}
+      {@const typeCounts = getSourceTypeCounts(sources)}
+      <div class="flex items-center gap-2 flex-wrap">
+        {#each [...typeCounts] as [type, count] (type)}
+          {@const sourceConfig = SOURCE_TYPE_CONFIG[type as ItemSourceType]}
+          {#if sourceConfig}
+            <span class="flex items-center gap-0.5 text-sm">
+              <sourceConfig.icon
+                class="h-4 w-4 shrink-0 {sourceConfig.color}"
+              />
+              <span class="text-muted-foreground">×{count}</span>
+            </span>
+          {/if}
+        {/each}
+      </div>
+    {/if}
   {:else if cell.column.id === "item_level"}
     <span class="ml-auto">
       {#if row.original.item_level}
@@ -726,7 +812,7 @@
     />
   {/if}
   {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Required level" />
+    <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
   {#if slotCol}
     <DataTableFacetedFilter
@@ -756,6 +842,8 @@
       <DataTableStatPanel
         column={statsCol}
         bind:open={statPanel.open}
+        totalRows={data.items.length}
+        filteredRows={table.getFilteredRowModel().rows.length}
         {facetedItemIds}
         showDeltas={false}
       />
@@ -777,7 +865,7 @@
   {:else if cell.column.id === "name"}
     <a
       href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
+      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
     >
       {row.original.name}
     </a>
@@ -816,7 +904,7 @@
 {/snippet}
 
 <Seo
-  title={detailTitle(data.class.name, { family: "Class" })}
+  title={`${data.class.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/classes/${data.class.id}`}
 />
@@ -880,12 +968,12 @@
 
     {#if ["warrior", "rogue", "cleric", "druid", "ranger", "wizard", "bard", "necromancer"].includes(data.class.id)}
       <p class="mt-3 text-muted-foreground">
-        You can also hire a
+        See the
         <a
           href="/mercenaries/{data.class.id}_mercenary"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >{data.class.name} Mercenary</a
-        >.
+        > page.
       </p>
     {/if}
   </div>
@@ -950,16 +1038,8 @@
           {#each data.guide.rules as rule, index (rule.text)}
             <li>
               {#if data.class.id === "rogue" && index === 0}
-                {#each lightWeaponSkills as skill, skillIndex (skill.id)}{skillIndex >
-                  0
-                    ? ", "
-                    : ""}<a
-                    href="/skills/{skill.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >{skill.name}</a
-                  >{/each}
-                need a light one-handed weapon, such as a dagger or spear, in your
-                main hand.
+                {lightWeaponSkills.length} skills need a light one-handed weapon,
+                such as a dagger or spear, in your main hand.
               {:else}
                 {rule.text}
               {/if}
@@ -982,12 +1062,8 @@
     <section id="equipment" class="scroll-mt-4">
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
-        Equipment ({data.items.length})
+        Armor & Weapons ({data.items.length})
       </h2>
-      <p class="mb-4 text-sm text-muted-foreground">
-        Source level is the lowest known level among complete acquisition paths.
-        It is not an equipment requirement.
-      </p>
 
       <DataTable
         data={data.items}

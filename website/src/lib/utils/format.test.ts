@@ -127,6 +127,6 @@ describe("duration precision", () => {
   });
 
   test("keeps a mineral's fractional half-time boundary", () => {
-    expect(formatGatheringRespawn("Mineral", 301)).toBe("2m 30.5s to 5m 1s");
+    expect(formatGatheringRespawn("Mineral", 301)).toBe("2m 30.5s – 5m 1s");
   });
 });

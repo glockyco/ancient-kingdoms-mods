@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -24,7 +23,7 @@
     buildCollectionPage({
       path: "/altars",
       name: "Altars — Ancient Kingdoms Compendium",
-      description: `Find ${formatNumber(data.altars.length)} Forgotten and Avatar altars by zone, boss, and level.`,
+      description: `Find ${data.altars.length.toLocaleString()} Forgotten and Avatar altars by zone, boss, and level.`,
       items: data.altars.map((altar) => ({
         name: altar.name,
         path: `/altars/${altar.id}`,
@@ -79,8 +78,8 @@
     },
     {
       accessorKey: "minLevelRequired",
-      header: "Required level",
-      size: 140,
+      header: "Level",
+      size: 100,
     },
     {
       id: "scaling",
@@ -100,7 +99,7 @@
     name: "Name",
     type: "Type",
     zone: "Zone",
-    minLevelRequired: "Required level",
+    minLevelRequired: "Level",
     boss: "Boss",
     totalEnemies: "Enemies",
     totalWaves: "Waves",
@@ -109,13 +108,7 @@
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<AltarRow, unknown> })}
-  {#if ["totalEnemies", "totalWaves", "minLevelRequired"].includes(header.id)}
-    <span class="ml-auto whitespace-normal text-right"
-      >{columnLabels[header.id] ?? header.id}</span
-    >
-  {:else}
-    {columnLabels[header.id] ?? header.id}
-  {/if}
+  {columnLabels[header.id] ?? header.id}
 {/snippet}
 
 {#snippet renderCell({
@@ -143,19 +136,17 @@
       {row.original.zoneName}
     </IconBadge>
   {:else if cell.column.id === "minLevelRequired"}
-    <span class="ml-auto">
-      {#if row.original.minLevelRequired > 0}
-        {row.original.minLevelRequired}+
-      {:else}
-        <span class="text-muted-foreground">None</span>
-      {/if}
-    </span>
+    {#if row.original.minLevelRequired > 0}
+      {row.original.minLevelRequired}+
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
   {:else if cell.column.id === "boss"}
     {#if row.original.bossIds.length > 0}
       {#each row.original.bossIds as bossId, i (bossId)}
         <a
           href="/monsters/{bossId}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
+          class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
         >
           {row.original.bossNames[i]}
         </a>{#if i < row.original.bossIds.length - 1},
@@ -166,12 +157,10 @@
     {/if}
   {:else if cell.column.id === "scaling"}
     {#if row.original.usesVeteranScaling}
-      <Check class="h-4 w-4 text-green-500" /><span class="sr-only">Yes</span>
+      <Check class="h-4 w-4 text-green-500" />
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
-  {:else if cell.column.id === "totalEnemies" || cell.column.id === "totalWaves"}
-    <span class="ml-auto">{cell.getValue()}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -204,7 +193,7 @@
 
 <Seo
   title="Altars - Ancient Kingdoms"
-  description={`Find ${formatNumber(data.altars.length)} Forgotten and Avatar altars with wave counts, bosses, level requirements, and rewards from common to legendary.`}
+  description={`Find ${data.altars.length.toLocaleString()} Forgotten and Avatar altars with wave counts, bosses, level requirements, and rewards from common to legendary.`}
   path="/altars"
 />
 

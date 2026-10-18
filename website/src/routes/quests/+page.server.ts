@@ -24,7 +24,13 @@ export const load: PageServerLoad = (): QuestsPageData => {
     )
     .all() as Array<{ quest_id: string; name: string }>;
   const rows = db.prepare("SELECT * FROM quests ORDER BY name").all() as Array<
-    Omit<QuestListView, "class_requirements" | "quest_givers">
+    Omit<
+      QuestListView,
+      | "class_requirements"
+      | "quest_giver_id"
+      | "quest_giver_name"
+      | "quest_giver_count"
+    >
   >;
   const quests: QuestListView[] = rows.map((q) => ({
     ...q,
@@ -36,9 +42,13 @@ export const load: PageServerLoad = (): QuestsPageData => {
     class_requirements: classes
       .filter((row) => row.quest_id === q.id)
       .map((row) => row.name),
-    quest_givers: memberships
-      .filter((row) => row.quest_id === q.id)
-      .map(({ id, name }) => ({ id, name })),
+    quest_giver_id:
+      memberships.find((row) => row.quest_id === q.id)?.id ?? null,
+    quest_giver_name:
+      memberships.find((row) => row.quest_id === q.id)?.name ?? null,
+    quest_giver_count: new Set(
+      memberships.filter((row) => row.quest_id === q.id).map((row) => row.id),
+    ).size,
   }));
   db.close();
   return { quests };

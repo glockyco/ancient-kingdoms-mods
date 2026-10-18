@@ -2,15 +2,11 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
-  import { calculateAltarGold } from "$lib/acquisition/rules";
-  import { quantityText } from "$lib/components/acquisition/display";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import * as Card from "$lib/components/ui/card";
   import {
-    distinctSubzoneName,
     formatDuration,
-    formatPercent,
+    formatPercent as formatFraction,
   } from "$lib/utils/format";
   import type { AltarWave } from "$lib/types/altars";
   import {
@@ -31,11 +27,6 @@
 
   // Determine if this is a forgotten altar (has tiered rewards)
   const isForgotten = $derived(data.altar.type === "forgotten");
-  const pageName = $derived(
-    isForgotten
-      ? `${data.altar.name} in ${data.altar.zoneName}`
-      : data.altar.name,
-  );
 
   // Veteran scaling state (only used for Forgotten Altars)
   // Start at the altar's minimum level requirement (capture initial value only)
@@ -45,9 +36,6 @@
   const veteranBonus = $derived(altarVeteranLevelBonus(veteranPoints));
   const effectiveLevel = $derived(playerLevel + veteranBonus);
   const levelAdjustment = $derived(effectiveLevel - 30);
-  const forgottenGold = $derived(
-    calculateAltarGold(playerLevel, veteranPoints),
-  );
 
   // Calculate scaled monster level
   function getScaledLevel(baseLevel: number): number {
@@ -96,14 +84,12 @@
 
     if (isLastWave) {
       return {
-        label: `${formatDuration(wave.seconds_to_complete_wave)} to defeat the ${isForgotten ? "elite" : "boss"}`,
+        label: `${formatDuration(wave.seconds_to_complete_wave)} to defeat boss`,
         icon: Timer,
       };
     } else if (wave.require_all_monsters_cleared) {
-      return {
-        label: `Next wave after ${formatDuration(wave.seconds_to_complete_wave)}, once every event monster is dead`,
-        icon: Timer,
-      };
+      // Don't show timing - "Must clear all monsters" already indicates the requirement
+      return null;
     } else {
       return {
         label: `${formatDuration(wave.seconds_to_complete_wave)} until next wave`,
@@ -111,10 +97,30 @@
       };
     }
   }
+  function compactRewardTier(
+    tier: (typeof data.rewards)[number]["tier"],
+  ): string {
+    return formatAltarRequirement(tier, data.altar, data.maxLevel)
+      .replace("Below level ", "Lv < ")
+      .replaceAll("Level ", "Lv ")
+      .replaceAll(" to ", "–")
+      .replace(" or more veteran points", "+")
+      .replace(" veteran points", "")
+      .replace(", ", ", Vet ");
+  }
+  function formatPercent(
+    value: number,
+    options: Parameters<typeof formatFraction>[1] = {
+      decimals: 1,
+      trailingZeros: true,
+    },
+  ): string {
+    return formatFraction(value, options);
+  }
 </script>
 
 <Seo
-  title={detailTitle(data.altar.name, { zone: data.altar.zoneName })}
+  title={`${data.altar.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/altars/${data.altar.id}`}
 />
@@ -124,13 +130,13 @@
     items={[
       { label: "Home", href: "/" },
       { label: "Altars", href: "/altars" },
-      { label: pageName },
+      { label: data.altar.name },
     ]}
   />
 
   <!-- Header -->
   <div class="flex items-center gap-3 flex-wrap">
-    <h1 class="text-3xl font-bold">{pageName}</h1>
+    <h1 class="text-3xl font-bold">{data.altar.name}</h1>
     <MapLink entityId={data.altar.id} entityType="altar" />
     <span
       class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {isForgotten
@@ -163,10 +169,6 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-3">
-        {@const subZoneName = distinctSubzoneName(
-          data.altar.zoneName,
-          data.altar.subZoneName,
-        )}
         <!-- Zone -->
         <div class="flex justify-between">
           <span class="text-muted-foreground">Zone</span>
@@ -175,29 +177,27 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
           >
             {data.altar.zoneName}
-            {#if subZoneName}
-              <span class="text-muted-foreground">({subZoneName})</span>
+            {#if data.altar.subZoneName}
+              <span class="text-muted-foreground"
+                >({data.altar.subZoneName})</span
+              >
             {/if}
           </a>
         </div>
 
         <!-- Activation Item -->
         {#if data.altar.requiredActivationItemId && data.altar.requiredActivationItemName}
-          <div class="flex flex-wrap justify-between items-center gap-2">
-            <span class="text-muted-foreground">Activation cost</span>
-            <span class="inline-flex flex-wrap items-center gap-1">
-              <ItemLink
-                itemId={data.altar.requiredActivationItemId}
-                itemName={data.altar.requiredActivationItemName}
-                tooltipHtml={data.altar.activationItemTooltipHtml}
-                imageAvailable={data.itemIconPaths[
-                  data.altar.requiredActivationItemId
-                ]}
-              />
-              {#if data.activationCost !== null}
-                <span class="tabular-nums">×{data.activationCost}</span>
-              {/if}
-            </span>
+          <div class="flex justify-between items-center">
+            <span class="text-muted-foreground">Activation Item</span>
+            <ItemLink
+              itemId={data.altar.requiredActivationItemId}
+              itemName={data.altar.requiredActivationItemName}
+              quality={data.altar.activationItemQuality}
+              tooltipHtml={data.altar.activationItemTooltipHtml}
+              imageAvailable={data.itemIconPaths[
+                data.altar.requiredActivationItemId
+              ]}
+            />
           </div>
         {/if}
 
@@ -212,11 +212,6 @@
           <span class="text-muted-foreground">Event Radius</span>
           <span>{data.altar.radiusEvent} yd</span>
         </div>
-        <!-- Sources: server-scripts/DefaultEvent.cs:CheckPlayersUp,MainCoroutineEvent. server-scripts/AvatarEvent.cs:CheckPlayersUp,MainCoroutineEvent. -->
-        <p class="text-sm text-muted-foreground">
-          The event ends if the player who activated the altar dies or moves
-          more than {data.altar.radiusEvent} yd from it.
-        </p>
 
         <!-- Init Message -->
         {#if data.altar.initEventMessage}
@@ -242,8 +237,9 @@
         <Card.Content class="space-y-4">
           <!-- Source: server-scripts/DefaultEvent.cs:209-217 — each monster level is its base level + player level + Mathf.RoundToInt(total veteran points / 40) - 30 -->
           <p class="text-muted-foreground">
-            Monster levels scale with the activating player's level and total
-            veteran points. Preview the level adjustment below.
+            Each monster's level is its base level plus your level, plus one
+            level for every 40 veteran points you have earned, rounded, minus
+            30.
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
@@ -282,6 +278,14 @@
               <span class="text-muted-foreground">Veteran Bonus:</span>
               <span class="font-medium ml-1">+{veteranBonus}</span>
             </div>
+            <div class="text-muted-foreground">→</div>
+            <div>
+              <span class="text-muted-foreground">Effective Level:</span>
+              <span class="font-medium ml-1 text-green-400"
+                >{effectiveLevel}</span
+              >
+            </div>
+            <div class="text-muted-foreground">→</div>
             <div>
               <span class="text-muted-foreground">Level Adjustment:</span>
               <span
@@ -309,41 +313,31 @@
         <Card.Content>
           <!-- Source: server-scripts/DefaultEvent.cs:229-239 — reward quality uses player level plus total veteran points, with thresholds at 40, 50, and 150 -->
           <p class="text-muted-foreground mb-4">
-            Each eligible final-wave kill can drop the reward for the activating
-            player's level plus total veteran points. The reward is not
-            guaranteed.
+            Your level plus your total veteran points determines the reward:
+            below 40 gives common, 40–49 magic, 50–149 epic, and 150 or more
+            legendary.
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             {#each data.rewards as reward (reward.tier)}
               <div class="rounded-lg border p-4 bg-background/50">
-                <div
-                  class="flex flex-wrap items-center justify-between gap-2 mb-2"
-                >
+                <div class="flex items-center justify-between mb-2">
                   <span class="font-medium capitalize">{reward.tier}</span>
                   <span class="text-sm text-muted-foreground">
-                    {formatAltarRequirement(
-                      reward.tier,
-                      data.altar,
-                      data.maxLevel,
-                    )}
+                    {compactRewardTier(reward.tier)}
                   </span>
                 </div>
                 {#if reward.itemId && reward.itemName}
-                  <div
-                    class="flex flex-wrap items-center justify-between gap-2"
-                  >
+                  <div class="flex items-center justify-between">
                     <ItemLink
                       itemId={reward.itemId}
                       itemName={reward.itemName}
+                      quality={reward.quality}
                       tooltipHtml={reward.tooltipHtml}
                       imageAvailable={data.itemIconPaths[reward.itemId]}
                     />
                     {#if reward.dropRate !== null}
                       <span class="text-sm text-muted-foreground">
-                        {formatPercent(reward.dropRate, {
-                          decimals: 1,
-                          trailingZeros: true,
-                        })} per eligible final-wave kill
+                        {formatPercent(reward.dropRate)}
                       </span>
                     {/if}
                   </div>
@@ -365,84 +359,28 @@
         {:else}
           <Crown class="h-5 w-5 text-cyan-500" />
         {/if}
-        {isForgotten ? "Elite" : "Boss"}
+        Boss
       </h2>
       <Card.Root class="bg-muted/30">
         <Card.Content>
           <div class="space-y-2">
             {#each data.bosses as boss (boss.monsterId)}
-              <div class="space-y-4">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <a
-                    href="/monsters/{boss.monsterId}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                  >
-                    {boss.monsterName}
-                  </a>
-                  <span class="text-muted-foreground">
-                    {#if isForgotten && data.altar.usesVeteranScaling}
-                      Base level {boss.level}, scaled level {getScaledLevel(
-                        boss.level,
-                      )}
-                    {:else}
-                      Level {boss.level}
-                    {/if}
-                  </span>
-                </div>
-                {#if boss.drops.length > 0 || boss.gold || isForgotten}
-                  <p class="text-sm text-muted-foreground">
-                    {isForgotten ? "Additional loot" : "Loot"} per eligible final-wave
-                    kill. Item chances use the baseline without Treasure Hunter or
-                    other loot bonuses.
-                  </p>
-                  <div class="divide-y">
-                    {#if isForgotten}
-                      <div
-                        class="flex flex-wrap items-center justify-between gap-2 py-2"
-                      >
-                        <span>Gold</span>
-                        <span class="tabular-nums text-right"
-                          >{forgottenGold}</span
-                        >
-                      </div>
-                    {:else if boss.gold}
-                      <div
-                        class="flex flex-wrap items-center justify-between gap-2 py-2"
-                      >
-                        <span>Gold</span>
-                        <span class="tabular-nums text-right">
-                          {quantityText(boss.gold.quantity)}
-                          {#if boss.gold.probability !== null && boss.gold.probability < 1}
-                            ({formatPercent(boss.gold.probability, {
-                              decimals: 4,
-                              preserveNonzero: true,
-                            })} chance)
-                          {/if}
-                        </span>
-                      </div>
-                    {/if}
-                    {#each boss.drops as drop (drop.itemId)}
-                      <div
-                        class="flex flex-wrap items-center justify-between gap-2 py-2"
-                      >
-                        <ItemLink
-                          itemId={drop.itemId}
-                          itemName={drop.itemName}
-                          tooltipHtml={drop.tooltipHtml}
-                          imageAvailable={data.itemIconPaths[drop.itemId]}
-                        />
-                        {#if drop.rate !== null}
-                          <span class="tabular-nums text-right"
-                            >{formatPercent(drop.rate, {
-                              decimals: 4,
-                              preserveNonzero: true,
-                            })}</span
-                          >
-                        {/if}
-                      </div>
-                    {/each}
-                  </div>
-                {/if}
+              <div class="flex items-center justify-between">
+                <a
+                  href="/monsters/{boss.monsterId}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                >
+                  {boss.monsterName}
+                </a>
+                <span class="text-muted-foreground">
+                  {#if isForgotten && data.altar.usesVeteranScaling}
+                    Base Lv {boss.level} → Scaled Lv {getScaledLevel(
+                      boss.level,
+                    )}
+                  {:else}
+                    Level {boss.level}
+                  {/if}
+                </span>
               </div>
             {/each}
           </div>
@@ -466,28 +404,23 @@
             {@const timingInfo = getWaveTimingInfo(wave, isLastWave)}
             <div class="rounded-lg border p-4 bg-background/50">
               <!-- Wave Header -->
-              <div
-                class="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-              >
-                <h3
-                  class="font-semibold flex shrink-0 items-center gap-2 whitespace-nowrap"
-                >
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold flex items-center gap-2">
                   Wave {wave.wave_number + 1}
                   {#if isLastWave}
                     <span
                       class="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400"
                     >
                       <Skull class="mr-1 h-3 w-3" />
-                      {isForgotten ? "Final wave" : "Boss wave"}
+                      Boss Wave
                     </span>
                   {/if}
                 </h3>
-                <div class="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                <div class="flex gap-3 text-sm text-muted-foreground">
                   {#if index > 0 && wave.seconds_before_start > 0}
                     <span class="flex items-center gap-1">
                       <Timer class="h-4 w-4" />
-                      Starts {formatDuration(wave.seconds_before_start)} after the
-                      previous wave ends
+                      Starts after {formatDuration(wave.seconds_before_start)}
                     </span>
                   {/if}
                   {#if timingInfo}
@@ -498,7 +431,7 @@
                     </span>
                   {:else if wave.require_all_monsters_cleared && !isLastWave}
                     <span
-                      >The next wave waits until every event monster is dead</span
+                      >The next wave waits until you defeat every monster</span
                     >
                   {/if}
                 </div>
@@ -508,9 +441,7 @@
               {#if monsterCounts.length > 0}
                 <div class="space-y-1">
                   {#each monsterCounts as monster (monster.monsterId)}
-                    <div
-                      class="flex flex-col items-start gap-x-4 gap-y-1 sm:flex-row sm:items-center sm:justify-between"
-                    >
+                    <div class="flex items-center justify-between">
                       <a
                         href="/monsters/{monster.monsterId}"
                         class="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 hover:underline"
@@ -527,7 +458,7 @@
                       </a>
                       <span class="text-muted-foreground">
                         {#if isForgotten && data.altar.usesVeteranScaling}
-                          Base level {monster.baseLevel}, scaled level {getScaledLevel(
+                          Base Lv {monster.baseLevel} → Scaled Lv {getScaledLevel(
                             monster.baseLevel,
                           )}
                         {:else}

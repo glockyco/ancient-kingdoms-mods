@@ -1,12 +1,3 @@
-import type { PrimaryReward } from "$lib/utils/primary-rewards";
-
-export interface ChestKey {
-  itemId: string | null;
-  itemName: string | null;
-  withheld: boolean;
-  methodIds: readonly string[];
-}
-
 /**
  * Minimal gather item data for list view
  */
@@ -16,10 +7,12 @@ export interface GatherItemListView {
   type: string; // "Plant" | "Mineral" | "Radiant Spark" | "Chest"
   level: number | null;
   respawn_time: number;
-  tool_required_id: string | null;
-  tool_required_name: string | null;
+  tool_or_key_id: string | null;
+  tool_or_key_name: string | null;
   zone_count: number;
-  primaryRewards: PrimaryReward[];
+  item_reward_id: string | null;
+  item_reward_name: string | null;
+  item_reward_amount: number;
   visual_public_path: string | null;
   visual_width: number | null;
   visual_height: number | null;
@@ -46,7 +39,9 @@ export interface GatheringResource {
   tool_required_id: string | null;
   tool_required_name: string | null;
   respawn_time: number;
-  primaryRewards: PrimaryReward[];
+  item_reward_id: string | null;
+  item_reward_name: string | null;
+  item_reward_amount: number;
   gathering_exp: number | null;
   description: string | null;
   visual_public_path: string | null;
@@ -61,6 +56,7 @@ export interface GatheringResourceDrop {
   item_id: string;
   item_name: string;
   quality?: number;
+  drop_rate: number;
   actual_drop_chance: number | null;
   is_fishing_trash?: boolean;
   is_fallback_fish?: boolean;
@@ -94,9 +90,15 @@ export interface Chest {
   zone_name: string;
   position_x: number | null;
   position_y: number | null;
-  keys: ChestKey[];
-  primaryRewards: PrimaryReward[];
-  openingChance: number | null;
+  key_required_id: string | null;
+  key_required_name: string | null;
+  gold_min: number;
+  gold_max: number;
+  item_reward_id: string | null;
+  item_reward_name: string | null;
+  item_reward_amount: number;
+  /** The chest's reward probability. `chestRewardChance` says when it applies. */
+  chest_reward_probability: number;
   respawn_time: number;
   visual_public_path: string | null;
   visual_width: number | null;

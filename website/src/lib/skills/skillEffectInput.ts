@@ -39,7 +39,6 @@ import {
   type EffectScaling,
 } from "./effect-calculations";
 import type { SkillCasters } from "./skillDetail";
-import { statName } from "$lib/stats";
 
 /** Whose attribute a note refers to. */
 type NoteOwner = "any" | "ranger" | "mercenary";
@@ -66,10 +65,10 @@ function attributeSource(
   switch (source) {
     case "player_wis":
     case "merc_wis":
-      return { attribute: statName("wisdom"), multiplier: 1, song: false };
+      return { attribute: "WIS", multiplier: 1, song: false };
     case "player_ranger_wis":
       return {
-        attribute: statName("wisdom"),
+        attribute: "WIS",
         multiplier: RANGER_ATTRIBUTE_MULTIPLIER,
         song: false,
       };
@@ -77,38 +76,39 @@ function attributeSource(
     case "merc_int":
     case "int":
       return {
-        attribute: statName("intelligence"),
+        attribute: "INT",
         multiplier: 1,
         song: false,
       };
     case "player_ranger_int":
       return {
-        attribute: statName("intelligence"),
+        attribute: "INT",
         multiplier: RANGER_ATTRIBUTE_MULTIPLIER,
         song: false,
       };
     case "player_cha":
     case "merc_cha":
     case "cha":
-      return { attribute: statName("charisma"), multiplier: 1, song: true };
+      return { attribute: "CHA", multiplier: 1, song: true };
     case "player_wis_con_avg":
       return {
-        attribute: `${statName("wisdom")} and ${statName("constitution")} combined`,
+        // The game adds both attributes before halving; "or" would misstate it.
+        attribute: "WIS + CON",
         multiplier: 0.5,
         song: false,
       };
     case "player_wis_con_cha_half":
       return {
-        attribute: `${statName("wisdom")}, ${statName("constitution")} and ${statName("charisma")} combined`,
+        attribute: "WIS + CON + CHA",
         multiplier: 0.5,
         song: false,
       };
     case "player_level":
-      return { attribute: "character level", multiplier: 10, song: false };
+      return { attribute: "level", multiplier: 10, song: false };
     case "str":
-      return { attribute: statName("strength"), multiplier: 1, song: false };
+      return { attribute: "STR", multiplier: 1, song: false };
     case "dex":
-      return { attribute: statName("dexterity"), multiplier: 1, song: false };
+      return { attribute: "DEX", multiplier: 1, song: false };
     case "none":
       return null;
   }
@@ -167,11 +167,11 @@ function contextOwner(
 function renderNote(note: Note, owned = false): string {
   const attribute =
     note.owner === "mercenary" && owned
-      ? `the mercenary's ${note.attribute}`
+      ? `mercenary ${note.attribute}`
       : note.attribute;
   return note.lead.endsWith(" of")
     ? `${note.lead} ${attribute}`
-    : `${note.lead} per ${note.owner === "mercenary" && owned ? "point of " : ""}${attribute}`;
+    : `${note.lead} per ${attribute}`;
 }
 /** One note per value from each caster group's notes. */
 function renderNotes(entries: Map<NotedField, Note[]>): SummaryNotes {
@@ -279,11 +279,11 @@ function damageTerms(
 // Source: server-scripts/BardFinalCadenceSkill.cs:Apply; PlayerSkills.cs:GetFinalCadenceSongBonus — song power scales the listed damage and healing, then a player's Melody adds 15%, 25% or 30% for 4, 5 or 6+ active songs.
 function cadenceNote(mercenary: boolean): string {
   const songPower = `${percent(SONG_POWER_PER_CHARISMA, { decimals: 2, preserveNonzero: true })} more per`;
-  if (mercenary) return `${songPower} mercenary ${statName("charisma")}`;
+  if (mercenary) return `${songPower} mercenary CHA`;
   const melody = [4, 5, 6].map((songs) =>
     percent(melodyBonus(songs), { decimals: 2, preserveNonzero: true }),
   );
-  return `${songPower} ${statName("charisma")}, then ${melody[0]}, ${melody[1]} or ${melody[2]} more with 4, 5 or 6+ songs`;
+  return `${songPower} CHA, then ${melody[0]}, ${melody[1]} or ${melody[2]} more with 4, 5 or 6+ songs`;
 }
 
 // Source: server-scripts/Buff.cs:47-292; BardSongSkill.cs:28; BardCharmSongSkill.cs:GetCharmedDamageMultiplier — song power scales a song's values, but not speed, attributes or an additive Charisma damage over time.
@@ -358,7 +358,7 @@ function summaryNotes(
     addNote(entries, "heals_health", {
       owner: contextOwner(context.casters, context.bonusKind),
       lead: `${percent(share, { decimals: 2, preserveNonzero: true })} more`,
-      attribute: statName("wisdom"),
+      attribute: "WIS",
     });
   }
 
@@ -398,7 +398,7 @@ function summaryNotes(
     addNote(entries, "charmed_damage_percent", {
       owner: "any",
       lead: SONG_POWER_LEAD,
-      attribute: statName("charisma"),
+      attribute: "CHA",
     });
   }
 

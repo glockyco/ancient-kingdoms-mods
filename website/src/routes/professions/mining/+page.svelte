@@ -1,67 +1,24 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import {
-    formatGatheringRespawn,
-    formatNumber,
-    formatPercent,
-  } from "$lib/utils/format";
+  import { formatGatheringRespawn } from "$lib/utils/format";
   import {
     DWARF_STARTING_MINING_PERCENT,
     MINING_SUCCESS_FLOOR,
+    isMineable,
     isMiningEffortless,
     miningSkillGainChancePercent,
     miningSkillGainRange,
+    miningSuccessPercent,
+    rawMiningSuccessChance,
   } from "$lib/utils/mining";
-  import { professionAttempt } from "$lib/acquisition/rules";
-  import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
-  import {
-    deliveryText,
-    quantityText,
-    useRoleLabel,
-  } from "$lib/components/acquisition/display";
-
-  function probabilityAlternatives(values: readonly (number | null)[]): string {
-    return values.length
-      ? values
-          .map((value) =>
-            value === null
-              ? "unknown"
-              : formatPercent(value, { decimals: 1, trailingZeros: true }),
-          )
-          .join(" or ")
-      : "unknown";
-  }
-
-  function rawMiningSuccessChance(
-    tier: number,
-    quality: number,
-    percent: number,
-  ): number {
-    return professionAttempt("mining", tier, percent / 100, quality).raw;
-  }
-
-  function isMineable(tier: number, quality: number, percent: number): boolean {
-    return professionAttempt("mining", tier, percent / 100, quality).qualified;
-  }
-
-  function miningSuccessPercent(
-    tier: number,
-    quality: number,
-    percent: number,
-  ): number {
-    return (
-      professionAttempt("mining", tier, percent / 100, quality).displayed * 100
-    );
-  }
 
   let { data } = $props();
 
@@ -122,7 +79,7 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`Mining raises your success chance on higher-tier ore. ${data.ores.length} ores across ${data.totalNodes} nodes, with success odds, respawn timers, bonus gems, and what each ore is used for.`}
   path="/professions/mining"
 />
@@ -143,15 +100,21 @@
     iconBackgroundClass="bg-amber-500/10"
     {sections}
   >
-    <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — success depends on pickaxe quality and Mining skill. -->
+    <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — tier V is 0.05 per
+         pickaxe quality plus 0.5 per skill, so a Draconium pickaxe alone gives 20%
+         and full Mining adds the other 50 points. -->
     <p>
-      Gather ore and gems with a pickaxe. Better pickaxes and higher Mining
-      skill improve your success chance.
+      Mine ore from nodes across the world. Your skill and your pickaxe together
+      control your chance to get ore from a node.
+      <strong class="font-semibold text-foreground"
+        >A Draconium node with a Draconium pickaxe gives 20% at 0 Mining and 70%
+        at 100.</strong
+      >
     </p>
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Mining works</h2>
+    <h2 class="text-xl font-semibold">How Mining and Pickaxes work</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:TryGetSelectedPickaxe — the gather needs a
            Pickaxe-category weapon that is not broken. -->
@@ -160,19 +123,17 @@
         <div>
           <p class="font-medium">Carry a pickaxe.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            A better <a
+            On nodes where your success chance is below 100%, a higher-quality
+            <a
               href="#pickaxes"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >pickaxe</a
-            > adds 20 percentage points of success per quality step on Tier II, 15
-            on Tier III, 10 on Tier IV and 5 on Tier V, up to 100%. Any pickaxe above
-            Rusty always succeeds on Tier I. Broken pickaxes cannot be used.
+            > can improve it. A broken pickaxe does not work.
           </p>
           <!-- Source: server-scripts/Player.cs:10105-10110; server-scripts/PlayerInventory.cs:277-291 — invalid selection falls back to the highest-quality working inventory pickaxe. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Use a pickaxe from your inventory to select it. If the selected
-            pickaxe is missing or broken, the game uses your highest-quality
-            working pickaxe.
+            If no usable pickaxe is selected, the game selects the best one in
+            your inventory.
           </p>
         </div>
       </li>
@@ -185,9 +146,9 @@
         <div>
           <p class="font-medium">Click a node.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Hover over a node to see your Mining Probability. Below
-            {MINING_SUCCESS_FLOOR * 100}%, you cannot mine it. Each try costs 1
-            pickaxe durability, even when it fails.
+            If your chance is less than {MINING_SUCCESS_FLOOR * 100}%, you
+            cannot mine the node. Each try costs 1 durability. This includes the
+            tries that fail.
           </p>
         </div>
       </li>
@@ -197,10 +158,11 @@
           <p class="font-medium">Collect the ore.</p>
           <!-- Source: server-scripts/GatherItem.cs:383-405,444-455,547-563 — success depletes the node and can give ore and a separate random drop. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Collect ore and possibly a <a
+            A successful mine gives ore and a separate chance at a <a
               href="#gems"
               class="text-blue-600 hover:underline dark:text-blue-400">gem</a
-            >. Failed attempts leave the node ready to try again.
+            >. Only a successful attempt depletes the node. A failure leaves it
+            ready.
           </p>
         </div>
       </li>
@@ -219,7 +181,7 @@
           <tr class="border-b bg-muted/50 text-left text-xs">
             <th class="whitespace-nowrap p-3 font-medium">Pickaxe</th>
             <th class="whitespace-nowrap p-3 text-right font-medium"
-              >Tier V success at 100% Mining</th
+              >Tier V at 100 Mining</th
             >
             <th class="p-3 font-medium">Where to get it</th>
           </tr>
@@ -231,6 +193,7 @@
                 <ItemLink
                   itemId={pickaxe.id}
                   itemName={pickaxe.name}
+                  quality={pickaxe.quality}
                   tooltipHtml={pickaxe.tooltip_html}
                   imageAvailable={data.itemIconPaths[pickaxe.id]}
                 />
@@ -238,26 +201,14 @@
               <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — on tier 4 the
                    chance is quality × 0.05 plus skill × 0.5. -->
               <td class="p-3 text-right tabular-nums"
-                >{formatPercent(
-                  miningSuccessPercent(4, pickaxe.quality, 100) / 100,
-                  { decimals: 0, trailingZeros: true },
-                )}</td
+                >{miningSuccessPercent(4, pickaxe.quality, 100).toFixed(0)}%</td
               >
               <td class="p-3">
-                <details>
-                  <summary
-                    class="cursor-pointer text-blue-600 dark:text-blue-400"
-                    >Acquisition methods</summary
-                  >
-                  <div class="mt-2">
-                    <MethodList
-                      methods={pickaxe.sources}
-                      items={data.acquisitionItems}
-                      names={data.acquisitionNames}
-                      selectedItemId={pickaxe.id}
-                    />
-                  </div>
-                </details>
+                <ItemSourceLinks
+                  groups={pickaxe.source_groups}
+                  itemId={pickaxe.id}
+                  limit={2}
+                />
               </td>
             </tr>
           {/each}
@@ -269,8 +220,9 @@
   <section id="calculator" class="space-y-4">
     <h2 class="text-xl font-semibold">Success by skill</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Each 10% Mining adds 5 percentage points of success on Tier V. In the
-      shaded bands, nodes still give ore and <MechanicsLink
+      On Tier V ore, each pickaxe quality adds 5 percentage points to your
+      success chance. Each 1% Mining adds another 0.5 points. In the shaded
+      bands, the node still gives ore and <MechanicsLink
         section="experience#gathering-xp">experience</MechanicsLink
       >, but no more Mining skill.
     </p>
@@ -314,6 +266,7 @@
               <ItemLink
                 itemId={bestPickaxe.id}
                 itemName={bestPickaxe.name}
+                quality={bestPickaxe.quality}
                 tooltipHtml={bestPickaxe.tooltip_html}
                 imageAvailable={data.itemIconPaths[bestPickaxe.id]}
               />
@@ -343,17 +296,20 @@
         {:else}
           {payingTiers.length}
           of them still {payingTiers.length === 1 ? "gives" : "give"} Mining skill,
-          with a {formatPercent(gainChance / 100, {
-            decimals: 0,
-            trailingZeros: true,
-          })} chance per success.
+          at {gainChance.toFixed(0)}% for each success.
         {/if}
         The dashed lines show what you cannot mine.
       </p>
 
       <!-- Source: server-scripts/GatherItem.cs:588-597 — successful mines can increase skill below the cap; gain chance is 0.95 − 0.6 × miningLevel², and the amount is Random.Range(1, 4) divided by success chance × 1000. -->
       <p class="text-pretty text-sm text-muted-foreground">
-        Mining stops increasing at 100%. Dwarves start at
+        Mining is a value from 0% to 100% and has no experience bar. When mining
+        can increase skill, the chance is {miningSkillGainChancePercent(
+          0,
+        ).toFixed(0)}% at 0% Mining and {miningSkillGainChancePercent(
+          50,
+        ).toFixed(0)}% at 50%. At 100%, Mining cannot increase further. Dwarves
+        start at
         {DWARF_STARTING_MINING_PERCENT}%. Every other race starts at 0%.
       </p>
     </div>
@@ -394,27 +350,6 @@
                   class="text-blue-600 hover:underline dark:text-blue-400"
                   >{ore.name}</a
                 >
-                {#each ore.primaryRewards.filter((reward) => reward.resourceKind === "item" && reward.itemName === ore.name) as reward (`${reward.itemId}:${reward.delivery}`)}
-                  {#if reward.quantity.kind !== "unknown"}
-                    <span class="text-muted-foreground"
-                      >×{quantityText(reward.quantity)}</span
-                    >
-                  {/if}
-                  {#if reward.delivery !== "inventory"}
-                    <span class="text-muted-foreground"
-                      >{deliveryText(reward.delivery)}</span
-                    >
-                  {/if}
-                {/each}
-                <div class="mt-1 space-y-1 text-muted-foreground">
-                  <PrimaryRewards
-                    rewards={ore.primaryRewards.filter(
-                      (reward) =>
-                        reward.resourceKind !== "item" ||
-                        reward.itemName !== ore.name,
-                    )}
-                  />
-                </div>
               </td>
               <td class="p-3 text-right tabular-nums">
                 {#if success === 0}
@@ -424,30 +359,18 @@
                       100}%">cannot mine</span
                   >
                 {:else}
-                  {formatPercent(success / 100, {
-                    decimals: 0,
-                    trailingZeros: true,
-                  })}
+                  {success.toFixed(0)}%
                 {/if}
               </td>
               <td class="p-3 text-right tabular-nums text-muted-foreground">
                 {#if gain}
-                  {formatNumber(gain.min, {
-                    decimals: 2,
-                    trailingZeros: true,
-                    grouping: false,
-                  })}–{formatPercent(gain.max / 100, {
-                    decimals: 2,
-                    trailingZeros: true,
-                  })}
+                  {gain.min.toFixed(2)}–{gain.max.toFixed(2)}%
                 {:else}
                   —
                 {/if}
               </td>
               <td class="p-3 text-right tabular-nums"
-                >{ore.gathering_exp === null
-                  ? "Varies or unpublished"
-                  : formatNumber(ore.gathering_exp)}</td
+                >{ore.gathering_exp.toLocaleString()}</td
               >
               <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — depleted minerals respawn between half and the full wait. -->
               <td class="p-3 text-right tabular-nums text-muted-foreground">
@@ -504,13 +427,13 @@
   <section id="gems" class="space-y-4">
     <h2 class="text-xl font-semibold">Bonus gems</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Successful mines can also give gems. The chance depends on the ore, not
-      your Mining skill.
+      Every success makes one more roll for a gem. The chance is between 0.8%
+      and 2.5%. Mining skill does not change it.
     </p>
     <details class="group">
       <summary
         class="cursor-pointer text-sm text-blue-600 hover:underline dark:text-blue-400"
-        >Gems by ore</summary
+        >Every gem pool</summary
       >
       <div class="mt-4 grid gap-4 sm:grid-cols-2">
         {#each data.ores.filter((ore) => ore.gems.length > 0) as ore (ore.id)}
@@ -519,20 +442,17 @@
               <span class="text-muted-foreground">{ROMAN[ore.tier]}</span>
               {ore.name}
             </h3>
-            <p class="text-sm text-muted-foreground">
-              {probabilityAlternatives(ore.gemProbabilities)} chance of any listed
-              gem per mine at 100% Mining with a tier V pickaxe.
-            </p>
-            {#each ore.gems as gem (gem.item_id)}
+            {#each ore.gems.filter((gem) => gem.chance !== null) as gem (gem.item_id)}
               <div class="flex items-baseline justify-between gap-3 text-sm">
                 <ItemLink
                   itemId={gem.item_id}
                   itemName={gem.item_name}
+                  quality={gem.quality}
                   tooltipHtml={gem.tooltip_html}
                   imageAvailable={data.itemIconPaths[gem.item_id]}
                 />
                 <span class="tabular-nums text-muted-foreground"
-                  >{probabilityAlternatives(gem.probabilities)}</span
+                  >{((gem.chance ?? 0) * 100).toFixed(1)}%</span
                 >
               </div>
             {/each}
@@ -547,11 +467,7 @@
     <ul class="flex flex-wrap gap-x-6 gap-y-1.5 text-sm">
       {#each data.ores as ore (ore.id)}
         <li>
-          <span class="text-muted-foreground"
-            >{ore.primaryRewards
-              .flatMap((reward) => (reward.itemName ? [reward.itemName] : []))
-              .join(", ") || "Unpublished reward"}</span
-          >
+          <span class="text-muted-foreground">{ore.reward_item_name}</span>
           {#if ore.recipe_count > 0}
             <a
               href="/recipes"
@@ -590,7 +506,10 @@
                 </td>
                 <td class="p-3 text-muted-foreground">{quest.ore_name}</td>
                 <td class="p-3 text-right tabular-nums"
-                  >{useRoleLabel(quest.purpose)} {quest.amount}</td
+                  >{quest.amount}
+                  <span class="text-xs text-muted-foreground"
+                    >{quest.purpose.toLowerCase()}</span
+                  ></td
                 >
                 <td class="p-3 text-right tabular-nums text-muted-foreground"
                   >{quest.level_recommended}</td
@@ -620,17 +539,11 @@
         href="/professions/alchemy"
         class="text-blue-600 hover:underline dark:text-blue-400">Alchemy</a
       >
-      recipes and at other crafting stations.
+      recipes and other crafting stations. Ore follows the same experience rules as
+      other gathering. See
+      <MechanicsLink section="experience#gathering-xp">Experience</MechanicsLink
+      >
+      for the rule.
     </p>
   </section>
-  <details class="space-y-4">
-    <summary class="cursor-pointer text-xl font-semibold"
-      >Gathering methods and requirements</summary
-    >
-    <MethodList
-      methods={data.oreMethods}
-      items={data.acquisitionItems}
-      names={data.acquisitionNames}
-    />
-  </details>
 </div>

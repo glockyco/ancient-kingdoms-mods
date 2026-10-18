@@ -2,13 +2,7 @@ import Database from "better-sqlite3";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
-import type { MethodView } from "$lib/acquisition/types";
-import type { DisplayItems } from "$lib/components/acquisition/display";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
-import {
-  summarizePrimaryRewards,
-  type PrimaryReward,
-} from "$lib/utils/primary-rewards";
+import { summarizePrimaryRewards } from "$lib/utils/primary-rewards";
 
 interface SparkZone {
   zone_id: string;
@@ -21,7 +15,11 @@ interface RadiantSparkResource {
   name: string;
   description: string;
   gathering_exp: number | null;
-  primaryRewards: readonly PrimaryReward[];
+  reward_item_id: string;
+  reward_item_name: string;
+  reward_quality: number;
+  reward_tooltip_html: string | null;
+  reward_visual_public_path: string | null;
   node_count: number;
   zones: SparkZone[];
 }
@@ -38,9 +36,6 @@ export interface RadiantSeekerPageData {
   };
   resource: RadiantSparkResource;
   recipe_count: number;
-  acquisitionMethods: readonly MethodView[];
-  acquisitionItems: DisplayItems;
-  acquisitionNames: Readonly<Record<string, string>>;
 }
 
 export async function getRadiantSeekerPageData(
@@ -79,7 +74,13 @@ export async function getRadiantSeekerPageData(
     )
     .get() as Omit<
     RadiantSparkResource,
-    "node_count" | "zones" | "primaryRewards"
+    | "node_count"
+    | "zones"
+    | "reward_item_id"
+    | "reward_item_name"
+    | "reward_quality"
+    | "reward_tooltip_html"
+    | "reward_visual_public_path"
   >;
 
   const zones = db
@@ -122,6 +123,17 @@ export async function getRadiantSeekerPageData(
       ),
     ),
   ];
+  const rewardId = rewardIds[0] ?? null;
+  const reward = rewardId ? acquisitionItems[rewardId] : undefined;
+  if (!rewardId || !reward)
+    throw new Error(`Missing Radiant Spark reward for ${rawResource.id}`);
+  const rewardVisual = rewardId
+    ? (db
+        .prepare(
+          "SELECT public_path FROM visual_assets WHERE domain = 'item' AND entity_id = ? AND kind = 'icon'",
+        )
+        .get(rewardId) as { public_path: string } | undefined)
+    : undefined;
   const recipeCount = db
     .prepare(
       `
@@ -140,13 +152,14 @@ export async function getRadiantSeekerPageData(
     profession,
     resource: {
       ...rawResource,
-      primaryRewards,
+      reward_item_id: rewardId,
+      reward_item_name: reward?.name ?? "Unpublished reward",
+      reward_quality: reward.quality,
+      reward_tooltip_html: reward?.tooltip_html ?? null,
+      reward_visual_public_path: rewardVisual?.public_path ?? null,
       zones,
       node_count: zones.reduce((total, zone) => total + zone.node_count, 0),
     },
     recipe_count: recipeCount.count,
-    acquisitionMethods,
-    acquisitionItems,
-    acquisitionNames: projectAcquisitionNames(acquisition),
   };
 }

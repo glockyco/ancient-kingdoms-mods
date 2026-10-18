@@ -3,11 +3,6 @@ import type { PageServerLoad } from "./$types";
 
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { adventuringSkillGain } from "$lib/calculation/adventuring";
-import { loadAcquisition } from "$lib/server/acquisition";
-import { loadAcquisitionItems } from "$lib/acquisition/items";
-import type { MethodView } from "$lib/acquisition/types";
-import type { DisplayItems } from "$lib/components/acquisition/display";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -44,6 +39,7 @@ interface AdventurerQuest {
 interface VendorUnlock {
   item_id: string;
   item_name: string;
+  quality: number;
   tooltip_html: string | null;
   visual_public_path: string | null;
   adventuring_level_needed: number;
@@ -83,9 +79,6 @@ interface AdventuringPageData {
   quests: AdventurerQuest[];
   questPoolOrder: string[];
   vendorUnlocks: VendorUnlock[];
-  acquisitionMethods: readonly MethodView[];
-  acquisitionItems: DisplayItems;
-  acquisitionNames: Readonly<Record<string, string>>;
 }
 
 export const load = (async (): Promise<AdventuringPageData> => {
@@ -218,13 +211,21 @@ export const load = (async (): Promise<AdventuringPageData> => {
     ORDER BY objective.ordinal
   `);
   const rewardStatement = db.prepare(`
-    SELECT item.id AS item_id, item.name AS item_name, item.tooltip_html,
-      class.name AS class_specific
-    FROM quest_reward_slots slot
-    JOIN items item ON item.id = slot.item_id
-    LEFT JOIN classes class ON class.id = slot.class_id
-    WHERE slot.quest_id = ? AND slot.item_withheld = 0
-    ORDER BY slot.ordinal
+    WITH rewards AS (
+      SELECT item.id AS item_id, item.name AS item_name, item.tooltip_html,
+        class.name AS class_specific, slot.amount
+      FROM quest_reward_slots slot
+      JOIN items item ON item.id = slot.item_id
+      LEFT JOIN classes class ON class.id = slot.class_id
+      WHERE slot.quest_id = ? AND slot.item_withheld = 0 AND slot.class_withheld = 0
+    ), common_rewards AS (
+      SELECT item_id, amount FROM rewards GROUP BY item_id, amount
+      HAVING COUNT(DISTINCT class_specific) = (SELECT COUNT(*) FROM classes)
+    )
+    SELECT DISTINCT reward.item_id, reward.item_name, reward.tooltip_html,
+      CASE WHEN common.item_id IS NOT NULL THEN NULL ELSE reward.class_specific END AS class_specific
+    FROM rewards reward LEFT JOIN common_rewards common
+      ON common.item_id = reward.item_id AND common.amount = reward.amount
   `);
   const quests: AdventurerQuest[] = rawQuests.map((raw) => {
     const objectives = objectiveStatement.all(raw.id) as QuestObjective[];
@@ -259,6 +260,7 @@ export const load = (async (): Promise<AdventuringPageData> => {
     SELECT
       i.id as item_id,
       i.name as item_name,
+      i.quality,
       i.tooltip_html,
       va.public_path AS visual_public_path,
       i.adventuring_level_needed,
@@ -284,6 +286,7 @@ export const load = (async (): Promise<AdventuringPageData> => {
     .all() as {
     item_id: string;
     item_name: string;
+    quality: number;
     tooltip_html: string | null;
     visual_public_path: string | null;
     adventuring_level_needed: number;
@@ -299,6 +302,7 @@ export const load = (async (): Promise<AdventuringPageData> => {
     const unlock = vendorUnlockMap.get(row.item_id) ?? {
       item_id: row.item_id,
       item_name: row.item_name,
+      quality: row.quality,
       tooltip_html: row.tooltip_html,
       visual_public_path: row.visual_public_path,
       adventuring_level_needed: row.adventuring_level_needed,
@@ -329,19 +333,6 @@ export const load = (async (): Promise<AdventuringPageData> => {
   }
 
   const vendorUnlocks = Array.from(vendorUnlockMap.values());
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const providerIds = [
-    ...new Set([...questGivers, ...merchants].map((npc) => npc.npc_id)),
-  ];
-  const acquisition = await loadAcquisition(execute, {
-    kind: "providers",
-    providers: providerIds.map((id) => ({ kind: "npcs", id })),
-  });
-  const acquisitionMethods = [...acquisition.methodViews.values()];
-  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
 
   db.close();
 
@@ -352,8 +343,5 @@ export const load = (async (): Promise<AdventuringPageData> => {
     quests,
     questPoolOrder,
     vendorUnlocks,
-    acquisitionMethods,
-    acquisitionItems,
-    acquisitionNames: projectAcquisitionNames(acquisition),
   };
 }) satisfies PageServerLoad;

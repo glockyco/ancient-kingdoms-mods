@@ -1,9 +1,16 @@
 import type Database from "better-sqlite3";
-import { loadItemAcquisition, loadAcquisition } from "$lib/server/acquisition";
-import { loadAcquisitionItems } from "$lib/acquisition/items";
+import { loadAcquisition } from "$lib/server/acquisition";
+import {
+  getItemSourceSummaries,
+  getMinimumSourceLevel,
+  groupItemSourceSummaries,
+  type ItemSourceSummary,
+} from "$lib/server/item-source-summary";
+import {
+  loadAcquisitionItems,
+  type AcquisitionItem,
+} from "$lib/acquisition/items";
 import type { AcquisitionRows, MethodView } from "$lib/acquisition/types";
-import type { DisplayItems } from "$lib/components/acquisition/display";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 interface FishingSpot {
   id: string;
@@ -50,7 +57,7 @@ interface FishingEquipmentItem {
 }
 
 interface FishingRodItem extends FishingEquipmentItem {
-  sources: readonly MethodView[];
+  sources: ItemSourceSummary[];
   min_source_level: number | null;
 }
 
@@ -105,8 +112,7 @@ export interface FishingPageData {
   costumePieces: FishingEquipmentItem[];
   foods: FishRecipe[];
   potions: FishRecipe[];
-  acquisitionItems: DisplayItems;
-  acquisitionNames: Readonly<Record<string, string>>;
+  acquisitionItems: Record<string, AcquisitionItem>;
   spotMethods: readonly MethodView[];
   spotAcquisitionRows: AcquisitionRows;
   stats: {
@@ -249,28 +255,24 @@ export async function loadFishingPageData(
     )
     .all() as FishingEquipmentItem[];
 
-  const acquisition = await loadItemAcquisition(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    rodRows.map((rod) => rod.item_id),
+  const sourcesByRodId = groupItemSourceSummaries(
+    await getItemSourceSummaries(
+      db,
+      rodRows.map((rod) => rod.item_id),
+    ),
   );
-  const rods = rodRows.map((rod) => ({
-    ...rod,
-    min_source_level: acquisition.sources[rod.item_id].sourceLevelHint,
-    sources: acquisition.sources[rod.item_id].methods,
-  }));
+  const rods = rodRows.map((rod) => {
+    const sources = sourcesByRodId.get(rod.item_id) ?? [];
+    return {
+      ...rod,
+      sources,
+      min_source_level: getMinimumSourceLevel(sources),
+    };
+  });
   const acquisitionItems = await loadAcquisitionItems(
     async (sql, params) =>
       db.prepare(sql).all(...params) as Record<string, unknown>[],
-    acquisition.model,
-  );
-  Object.assign(
-    acquisitionItems,
-    await loadAcquisitionItems(
-      async (sql, params) =>
-        db.prepare(sql).all(...params) as Record<string, unknown>[],
-      spotAcquisition,
-    ),
+    spotAcquisition,
   );
 
   const costumePieces = db
@@ -387,10 +389,6 @@ export async function loadFishingPageData(
     foods,
     potions,
     acquisitionItems,
-    acquisitionNames: {
-      ...projectAcquisitionNames(spotAcquisition),
-      ...projectAcquisitionNames(acquisition.model),
-    },
     spotMethods: [...spotAcquisition.methodViews.values()],
     spotAcquisitionRows: spotAcquisition.rows,
     stats: {

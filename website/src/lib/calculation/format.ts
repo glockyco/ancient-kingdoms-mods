@@ -1,7 +1,26 @@
 import { addF32, multiplyF32 } from "$lib/calculation/unity-math";
 import type { CalculationInput } from "$lib/types/calculation";
 import type { LinearValue } from "$lib/types/skills";
-import { formatNumber, formatPercent } from "$lib/utils/format";
+
+/** "1,234" */
+export const formatNumber = (value: number): string =>
+  value.toLocaleString("en-US").replace(/^-/, "−");
+
+/**
+ * 0.125 → "12.5%". Two decimals, trailing zeros dropped. A nonzero value too
+ * small for two decimals keeps two significant digits (0.0000123 → "0.0012%")
+ * so a real chance never reads as 0%.
+ */
+export function formatPercent(value: number): string {
+  const percent = value * 100;
+  if (percent !== 0 && Math.abs(percent) < 0.005) {
+    const digits = percent.toLocaleString("en-US", {
+      maximumSignificantDigits: 2,
+    });
+    return `${digits.replace(/^-/, "−")}%`;
+  }
+  return `${String(Number(percent.toFixed(2))).replace(/^-/, "−")}%`;
+}
 
 /**
  * 2.4 → "2.4s", 90 → "1m 30s", 12000 → "3h 20m". Under a minute keeps two
@@ -88,7 +107,7 @@ export function describeInput(input: CalculationInput, value: number): string {
   if (input.options) return `${noun} ${formatNumber(value)}`;
   const amount =
     input.unit === "%"
-      ? formatPercent(value, { decimals: 2, preserveNonzero: true })
+      ? formatPercent(value)
       : input.unit === "s"
         ? formatSeconds(value)
         : formatNumber(value);

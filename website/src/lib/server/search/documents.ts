@@ -326,7 +326,7 @@ const builders: Record<SearchableEntityId, Builder> = {
         SELECT
           p.id,
           COALESCE(NULLIF(fs.name, ''), NULLIF(fz.name, ''), 'Unknown origin')
-            || ' to ' ||
+            || ' → ' ||
           CASE WHEN p.destination_withheld = 1 THEN 'Unpublished destination'
             ELSE COALESCE(NULLIF(ts.name, ''), NULLIF(tz.name, ''), 'Unknown destination')
           END AS name,

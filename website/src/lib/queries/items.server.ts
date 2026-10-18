@@ -1,5 +1,5 @@
 import { getDb, query, queryOne } from "$lib/db.server";
-import type { Item } from "./items";
+import { ITEM_DETAIL_SELECT, type Item } from "./items";
 import type { ItemListView, ItemZoneInfo } from "$lib/types/items";
 import { loadAcquisition } from "$lib/server/acquisition";
 import type { AcquisitionQuery } from "$lib/acquisition/types";
@@ -10,11 +10,7 @@ import { projectDirectGeometry } from "$lib/acquisition/projections";
  * Includes stats JSON for client-side filtering.
  */
 export function getItems(): ItemListView[] {
-  return query<
-    Omit<ItemListView, "alchemy_recipe_tiers"> & {
-      alchemy_recipe_tiers: string;
-    }
-  >(
+  return query<ItemListView>(
     `SELECT
       i.id,
       i.name,
@@ -29,12 +25,10 @@ export function getItems(): ItemListView[] {
       (SELECT json_group_array(CASE WHEN cr.withheld = 1 THEN 'withheld' ELSE cr.class_id END)
        FROM item_class_requirements cr
        WHERE cr.item_id = i.id) AS class_required,
-      (SELECT json_group_array(tier) FROM (
-        SELECT DISTINCT d.tier FROM acquisition_recipe_details d
-        WHERE d.display_kind = 'alchemy'
-          AND (d.declared_result_item_id = i.id OR d.declared_result_item_id = i.recipe_potion_learned_id)
-        ORDER BY d.tier
-      )) AS alchemy_recipe_tiers,
+      (SELECT MIN(d.tier) FROM acquisition_recipe_details d
+       WHERE d.display_kind = 'alchemy'
+         AND (d.declared_result_item_id = i.id OR d.declared_result_item_id = i.recipe_potion_learned_id)
+      ) AS alchemy_recipe_level_required,
       mount_speed,
       augment_is_defensive,
       augment_armor_set_name,
@@ -61,10 +55,7 @@ export function getItems(): ItemListView[] {
      AND va.entity_id = i.id
      AND va.kind = 'icon'
     ORDER BY i.name`,
-  ).map((item) => ({
-    ...item,
-    alchemy_recipe_tiers: JSON.parse(item.alchemy_recipe_tiers) as number[],
-  }));
+  );
 }
 
 /** Get direct award locations for the item overview's zone filter. */
@@ -110,5 +101,5 @@ export async function getItemZones(): Promise<ItemZoneInfo[]> {
  * Get a single item by ID (server-side, for prerendering).
  */
 export function getItemById(id: string): Item | null {
-  return queryOne<Item>("SELECT * FROM items WHERE id = ?", [id]);
+  return queryOne<Item>(`${ITEM_DETAIL_SELECT} WHERE i.id = ?`, [id]);
 }

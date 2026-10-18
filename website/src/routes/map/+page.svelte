@@ -67,8 +67,6 @@
     MonsterMapEntity,
   } from "$lib/types/map";
   import type { MapSearchResult } from "$lib/queries/map-search";
-  import type { LocationRef } from "$lib/acquisition/types";
-  import { MAP_PROVIDER_CATEGORY } from "$lib/map/acquisition";
   import {
     resolvePhysicalSelection,
     resolveVirtualSelection,
@@ -215,9 +213,9 @@
       switch (resolved.popup.type) {
         case "entity": {
           selectedEntity = resolved.popup.entity;
-          // Keep an explicitly selected placement distinct from its template.
+          // Extract entity ID/type for URL state (works even without highlight)
           const entity = resolved.popup.entity;
-          newEntityId = resolved.selectionId ?? getSelectionId(entity);
+          newEntityId = getSelectionId(entity);
           // Normalize monster subtypes to "monster" for URL
           newEntityType =
             entity.type === "fabled" ||
@@ -254,7 +252,7 @@
 
     // Set highlight state (for map highlighting, separate from URL state)
     if (resolved.highlight) {
-      selectedEntityId = resolved.selectionId ?? resolved.highlight.entityId;
+      selectedEntityId = resolved.highlight.entityId;
       selectedEntityType = resolved.highlight.entityType;
 
       if (resolved.highlight.overrideGroups) {
@@ -543,7 +541,7 @@
     ) {
       return (entity as MonsterMapEntity).monsterId;
     }
-    if (entity.type === "gathering_fish") {
+    if (entity.type.startsWith("gathering_")) {
       return (entity as GatheringMapEntity).selectionGroupId;
     }
     return entity.id;
@@ -607,15 +605,20 @@
     applySelection(resolved);
   }
 
-  function handleSelectLocation(provider: LocationRef) {
-    const category = MAP_PROVIDER_CATEGORY[provider.kind];
-    if (category === "item") {
-      void handleSelectItem(provider.id);
-    } else if (category && entityData) {
-      applySelection(
-        resolvePhysicalSelection(category, provider.id, entityData),
-      );
-    }
+  function handleSelectChest(chestId: string) {
+    if (!entityData) return;
+    const resolved = resolvePhysicalSelection("chest", chestId, entityData);
+    applySelection(resolved);
+  }
+
+  function handleSelectGathering(resourceId: string) {
+    if (!entityData) return;
+    const resolved = resolvePhysicalSelection(
+      "resource",
+      resourceId,
+      entityData,
+    );
+    applySelection(resolved);
   }
 
   // Hover handlers (for popup link preview highlights)
@@ -665,6 +668,20 @@
     hoverOverrideCategory = null;
     hoverEntityId = zoneId;
     hoverEntityCategory = zoneId ? "zone" : null;
+  }
+
+  function handleHoverChest(chestId: string | null) {
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
+    hoverEntityId = chestId;
+    hoverEntityCategory = chestId ? "chest" : null;
+  }
+
+  function handleHoverGathering(resourceId: string | null) {
+    hoverEntityId = resourceId;
+    hoverEntityCategory = null;
+    hoverOverrideIds = resourceId ? [resourceId] : null;
+    hoverOverrideCategory = resourceId ? "resource" : null;
   }
 
   // Keyboard handlers
@@ -1149,17 +1166,16 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <Seo
-  title="Interactive World Map - Ancient Kingdoms"
-  description="Interactive map of Eratiath with monster spawns, NPCs and their services, gathering resources, chests, treasure dig sites, and altars. Select a marker for respawn timers and drops."
+  title="Ancient Kingdoms Map — Interactive World Map of Eratiath"
+  description="Click any marker to see monster spawns, NPC services, gathering nodes, treasure chests, and altar locations across Eratiath, with respawn timers and drop tables."
   path="/map"
 />
 
 <div class="dark relative h-screen w-full bg-background text-foreground">
   <h1 class="sr-only">Ancient Kingdoms Interactive Map</h1>
   <p id="map-keyboard-help" class="sr-only">
-    Use the arrow keys to pan and the plus and minus keys to zoom. Open the
-    "Markers in view" list to browse and select visible markers with the
-    keyboard.
+    Use arrow keys to pan and plus or minus to zoom. Open Markers in view to
+    browse and select visible markers with the keyboard.
   </p>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
@@ -1190,9 +1206,9 @@
       class="absolute inset-0 flex items-center justify-center bg-background/80"
     >
       <div class="text-center">
-        <p class="text-destructive">The map could not load.</p>
+        <p class="text-destructive">Error: {loadError}</p>
         <p class="mt-2 text-sm text-muted-foreground">
-          Refresh the page to try again.
+          Please try refreshing the page.
         </p>
       </div>
     </div>
@@ -1213,7 +1229,7 @@
     />
     <details
       bind:open={markerListOpen}
-      class="absolute bottom-20 left-4 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg md:bottom-4 md:left-[calc(var(--sidebar-width)+1rem)]"
+      class="absolute bottom-4 left-4 z-20 w-64 max-w-[calc(100vw-2rem)] rounded-lg border bg-card text-card-foreground shadow-lg md:left-[calc(var(--sidebar-width)+1rem)]"
       style="--sidebar-width: {sidebarWidth}px"
     >
       <summary
@@ -1224,11 +1240,10 @@
       <div class="border-t p-2">
         <p class="px-1 pb-2 text-sm text-muted-foreground">
           {#if viewportMarkers.total > 0}
-            Showing {viewportMarkers.markers.length} of {viewportMarkers.total} markers,
-            nearest to the center first.
+            {viewportMarkers.markers.length} of {viewportMarkers.total} markers. Nearest
+            to the view centre first.
           {:else}
-            No markers in view. Zoom out, move the map or turn on more marker
-            types.
+            No markers in view for the enabled layers.
           {/if}
         </p>
         <ul
@@ -1282,7 +1297,6 @@
       {:else if selectedEntity}
         <EntityPopup
           entity={selectedEntity}
-          reputationTiers={data.reputationTiers}
           onClose={handleClosePopup}
           onFocusClick={hasHighlightPositions
             ? handleFocusHighlighted
@@ -1293,7 +1307,6 @@
           onSelectItem={handleSelectItem}
           onSelectQuest={handleSelectQuest}
           onSelectZone={handleSelectZone}
-          onSelectLocation={handleSelectLocation}
           onHoverMonster={handleHoverMonster}
           onHoverNpc={handleHoverNpc}
           onHoverAltar={handleHoverAltar}
@@ -1306,7 +1319,18 @@
           onFocusClick={hasHighlightPositions
             ? handleFocusHighlighted
             : undefined}
-          onSelectLocation={handleSelectLocation}
+          onSelectMonster={handleSelectMonster}
+          onHoverMonster={handleHoverMonster}
+          onSelectAltar={handleSelectAltar}
+          onHoverAltar={handleHoverAltar}
+          onSelectNpc={handleSelectNpc}
+          onHoverNpc={handleHoverNpc}
+          onSelectChest={handleSelectChest}
+          onHoverChest={handleHoverChest}
+          onSelectGathering={handleSelectGathering}
+          onHoverGathering={handleHoverGathering}
+          onSelectZone={handleSelectZone}
+          onHoverZone={handleHoverZone}
           onSelectQuest={handleSelectQuest}
           onSelectItem={handleSelectItem}
         />
@@ -1350,7 +1374,6 @@
             {:else if selectedEntity}
               <EntityPopup
                 entity={selectedEntity}
-                reputationTiers={data.reputationTiers}
                 onClose={() => {
                   mobileDrawerOpen = false;
                   handleClosePopup();
@@ -1364,7 +1387,6 @@
                 onSelectItem={handleSelectItem}
                 onSelectQuest={handleSelectQuest}
                 onSelectZone={handleSelectZone}
-                onSelectLocation={handleSelectLocation}
                 onHoverMonster={handleHoverMonster}
                 onHoverNpc={handleHoverNpc}
                 onHoverAltar={handleHoverAltar}
@@ -1381,7 +1403,18 @@
                 onFocusClick={hasHighlightPositions
                   ? handleFocusHighlighted
                   : undefined}
-                onSelectLocation={handleSelectLocation}
+                onSelectMonster={handleSelectMonster}
+                onHoverMonster={handleHoverMonster}
+                onSelectAltar={handleSelectAltar}
+                onHoverAltar={handleHoverAltar}
+                onSelectNpc={handleSelectNpc}
+                onHoverNpc={handleHoverNpc}
+                onSelectChest={handleSelectChest}
+                onHoverChest={handleHoverChest}
+                onSelectGathering={handleSelectGathering}
+                onHoverGathering={handleHoverGathering}
+                onSelectZone={handleSelectZone}
+                onHoverZone={handleHoverZone}
                 onSelectQuest={handleSelectQuest}
                 onSelectItem={handleSelectItem}
                 mode="drawer"

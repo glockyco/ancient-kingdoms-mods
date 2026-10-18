@@ -234,6 +234,24 @@
   .text-quality-text-mythic {
     color: var(--quality-text-mythic);
   }
+  .border-quality-common {
+    border-color: var(--quality-common);
+  }
+  .border-quality-uncommon {
+    border-color: var(--quality-uncommon);
+  }
+  .border-quality-magic {
+    border-color: var(--quality-magic);
+  }
+  .border-quality-epic {
+    border-color: var(--quality-epic);
+  }
+  .border-quality-legendary {
+    border-color: var(--quality-legendary);
+  }
+  .border-quality-mythic {
+    border-color: var(--quality-mythic);
+  }
 }
 
 /* Map container - offset by sidebar width on desktop */

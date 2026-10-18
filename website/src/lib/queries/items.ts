@@ -117,24 +117,42 @@ export interface Item {
   // Alchemy recipe (for recipe items)
   recipe_potion_learned_id: string | null;
   recipe_potion_learned_name: string | null;
+  alchemy_recipe_level_required: number | null;
+  taught_by_recipe_id: string | null;
+  taught_by_recipe_name: string | null;
+  alchemy_exp: number;
   // Relic buff
   relic_buff_id: string | null;
   relic_buff_name: string | null;
   is_ornamentation_token: boolean;
 }
 
+export const ITEM_DETAIL_SELECT = `SELECT i.*,
+  (SELECT json_group_array(CASE WHEN r.withheld = 1 THEN 'withheld' ELSE r.class_id END)
+   FROM item_class_requirements r WHERE r.item_id = i.id ORDER BY r.ordinal) AS class_required,
+  (SELECT MIN(d.tier) FROM acquisition_recipe_details d
+   WHERE d.display_kind = 'alchemy' AND (d.declared_result_item_id = i.id OR d.declared_result_item_id = i.recipe_potion_learned_id)) AS alchemy_recipe_level_required,
+  (SELECT t.id FROM items t WHERE t.recipe_potion_learned_id = i.id ORDER BY t.name, t.id LIMIT 1) AS taught_by_recipe_id,
+  (SELECT t.name FROM items t WHERE t.recipe_potion_learned_id = i.id ORDER BY t.name, t.id LIMIT 1) AS taught_by_recipe_name,
+  (SELECT MAX(d.experience) FROM acquisition_recipe_details d WHERE d.display_kind = 'alchemy' AND d.declared_result_item_id = i.id) AS alchemy_exp,
+  (SELECT MAX(r.num_items) FROM item_pool_definitions p JOIN loot_chest_rules r ON r.pool_id = p.pool_id WHERE p.item_id = i.id) AS chest_num_items,
+  (SELECT json_group_array(json_object('probability', e.probability, 'duplicate_group', e.duplicate_group, 'resolution', e.resolution))
+   FROM item_pool_definitions p JOIN loot_pool_entries e ON e.pool_id = p.pool_id
+   WHERE p.item_id = i.id AND p.role = 'portable_chest') AS chest_rewards
+FROM items i`;
+
 /**
  * Get all items.
  */
 export async function getItems(): Promise<Item[]> {
-  return query<Item>("SELECT * FROM items ORDER BY name");
+  return query<Item>(`${ITEM_DETAIL_SELECT} ORDER BY i.name`);
 }
 
 /**
  * Get a single item by ID.
  */
 export async function getItemById(id: string): Promise<Item | null> {
-  return queryOne<Item>("SELECT * FROM items WHERE id = ?", [id]);
+  return queryOne<Item>(`${ITEM_DETAIL_SELECT} WHERE i.id = ?`, [id]);
 }
 
 /**

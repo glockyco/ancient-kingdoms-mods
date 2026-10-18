@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { formatNumber } from "$lib/utils/format";
   import Users from "@lucide/svelte/icons/users";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import { SvelteMap } from "svelte/reactivity";
@@ -34,7 +33,7 @@
     buildCollectionPage({
       path: "/npcs",
       name: "NPCs — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${formatNumber(data.npcs.length)} NPCs in Ancient Kingdoms.`,
+      description: `Searchable database of ${data.npcs.length.toLocaleString()} NPCs in Ancient Kingdoms.`,
       items: data.npcs.map((npc) => ({
         name: npc.name,
         path: `/npcs/${npc.id}`,
@@ -218,14 +217,14 @@
       {/if}
     </div>
   {:else if cell.column.id === "faction"}
-    <span>{row.original.faction || "-"}</span>
+    <span class="whitespace-nowrap">{row.original.faction || "-"}</span>
   {:else if cell.column.id === "race"}
-    <span>{row.original.race || "-"}</span>
+    <span class="whitespace-nowrap">{row.original.race || "-"}</span>
   {:else if cell.column.id === "roles"}
     <RoleBadges roles={row.original.roles} />
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
-    <div class="flex flex-wrap gap-1">
+    <div class="flex gap-1 whitespace-nowrap">
       {#if zones.length > 0}
         <IconBadge
           href="/zones/{zones[0].zone_id}"
@@ -299,7 +298,7 @@
 
 <Seo
   title="NPCs - Ancient Kingdoms"
-  description={`${formatNumber(data.npcs.length)} NPCs you can filter by zone, faction, and role, including Merchants, Quest Givers, Skill Masters, Bankers, and innkeepers.`}
+  description={`${data.npcs.length.toLocaleString()} NPCs sortable by zone, faction, and role — merchants, quest givers, skill masters, faction vendors, bankers, and innkeepers.`}
   path="/npcs"
 />
 

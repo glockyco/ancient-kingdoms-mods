@@ -1,452 +1,550 @@
 <script lang="ts">
   import PopupCard from "./PopupCard.svelte";
-  import MapItemLink from "./MapItemLink.svelte";
+  import ItemTooltip from "$lib/components/ItemTooltip.svelte";
+  import DropChance from "$lib/components/DropChance.svelte";
   import MapEntityLink from "./MapEntityLink.svelte";
-  import AcquisitionMethods from "./AcquisitionMethods.svelte";
-  import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import {
-    quantityText,
-    useRoleLabel,
-    additionalInspection,
-    methodLabel,
-    providerHref,
-    recipeHref,
-    expectedQuantityText,
-    probabilityScenarioText,
-    PROBABILITY_EVENT_LABELS,
-    lifecycleText,
-    acquisitionPlanNotes,
-    ingredientQuantityText,
-  } from "$lib/components/acquisition/display";
+  import MapItemLink from "./MapItemLink.svelte";
+  import { buildEntityUrl } from "$lib/map/url-state";
+  import { formatAltarRewardTier } from "$lib/calculation/altar";
+  import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import {
     loadItemPopupDetails,
-    loadMapItems,
+    loadMapItemIconPaths,
     type ItemPopupDetails,
-    type PopupItem,
   } from "$lib/queries/popup";
   import {
-    MAP_PROVIDER_CATEGORY,
-    mapMethodIsVisible,
-  } from "$lib/map/acquisition";
-  import { browserAcquisitionQuery } from "$lib/acquisition/browser";
-  import { expandAcquisition } from "$lib/acquisition/expand";
-  import type {
-    AcquisitionTree,
-    InspectedOutcome,
-    ProviderView,
-    LocationRef,
-  } from "$lib/acquisition/types";
-  import type { MethodView } from "$lib/acquisition/types";
-  import { getQualityTextColorClass, formatPercent } from "$lib/utils/format";
-  import { buildEntityUrl } from "$lib/map/url-state";
+    getQualityTextColorClass,
+    formatPercent,
+    formatNumber,
+  } from "$lib/utils/format";
 
   interface Props {
     itemId: string;
     onClose: () => void;
     onFocusClick?: () => void;
-    onSelectLocation: (provider: LocationRef) => void;
-    onSelectQuest: (id: string) => void;
-    onSelectItem: (id: string) => void;
+    onSelectMonster: (monsterId: string) => void;
+    onHoverMonster?: (monsterId: string | null) => void;
+    onSelectAltar: (altarId: string) => void;
+    onHoverAltar?: (altarId: string | null) => void;
+    onSelectNpc: (npcId: string) => void;
+    onHoverNpc?: (npcId: string | null) => void;
+    onSelectChest: (chestId: string) => void;
+    onHoverChest?: (chestId: string | null) => void;
+    onSelectGathering: (resourceId: string) => void;
+    onHoverGathering?: (resourceId: string | null) => void;
+    onSelectZone: (zoneId: string) => void;
+    onHoverZone?: (zoneId: string | null) => void;
+    onSelectQuest: (questId: string) => void;
+    onSelectItem: (itemId: string) => void;
     mode?: "card" | "drawer";
   }
+
   let {
     itemId,
     onClose,
     onFocusClick,
-    onSelectLocation,
+    onSelectMonster,
+    onHoverMonster,
+    onSelectAltar,
+    onHoverAltar,
+    onSelectNpc,
+    onHoverNpc,
+    onSelectChest,
+    onHoverChest,
+    onSelectGathering,
+    onHoverGathering,
+    onSelectZone,
+    onHoverZone,
     onSelectQuest,
     onSelectItem,
     mode = "card",
   }: Props = $props();
+
+  function formatFishingChanceRange(
+    minChance: number | null,
+    maxChance: number | null,
+  ): string | null {
+    if (minChance == null || maxChance == null) return null;
+    if (Math.abs(minChance - maxChance) < 0.000001) {
+      return `${formatPercent(minChance, { decimals: 1, trailingZeros: true })} per cast`;
+    }
+    return `${formatPercent(minChance, { decimals: 1, trailingZeros: true })}–${formatPercent(maxChance, { decimals: 1, trailingZeros: true })} per cast`;
+  }
+
+  function formatFishingSourceLabel(
+    minChance: number | null,
+    maxChance: number | null,
+  ): string | null {
+    return formatFishingChanceRange(minChance, maxChance);
+  }
+
   let details = $state<ItemPopupDetails | null>(null);
-  let loading = $state(true);
+  let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let requested = $state(1);
-  let expansion = $state<AcquisitionTree | null>(null);
-  let expanding = $state(false);
-  let expansionError = $state<string | null>(null);
-  let expandedItems = $state<Readonly<Record<string, PopupItem>>>({});
-  const inspection = $derived(
-    details ? additionalInspection(details.sources, details.usages) : null,
-  );
-  const isPack = $derived(
-    details?.model.entities.get("items")?.get(itemId)?.item_type === "pack",
-  );
-  function expansionProviderLabel(
-    provider: ProviderView,
-    names: Readonly<Record<string, string>>,
-  ): string {
-    const zoneId = provider.location?.zoneId;
-    const zone = zoneId ? names[`zones:${zoneId}`] : undefined;
-    return zone ? `${provider.name} (${zone})` : provider.name;
-  }
-  function branchLabel(
-    method: MethodView,
-    names: Readonly<Record<string, string>>,
-  ): string {
-    const providers = method.providers;
-    const locationLabel =
-      providers.length === 1
-        ? `: ${expansionProviderLabel(providers[0], names)}`
-        : providers.length
-          ? ` (${providers.length} locations)`
-          : "";
-    return `${methodLabel(method)}${locationLabel}${method.homeProviders.length ? " (at home)" : ""}`;
-  }
+  let itemIconPaths = $state<Record<string, string | null> | null>(null);
+
   $effect(() => {
-    const id = itemId;
-    let cancelled = false;
-    loading = true;
+    isLoading = true;
     error = null;
     details = null;
-    expansion = null;
-    requested = 1;
-    expansionError = null;
-    expandedItems = {};
-    expanding = false;
-    loadItemPopupDetails(id)
-      .then((value) => {
-        if (!cancelled) {
-          details = value;
-          if (!value) error = "Item not found";
-        }
+    itemIconPaths = null;
+
+    loadItemPopupDetails(itemId)
+      .then(async (d) => {
+        const paths = await loadMapItemIconPaths(
+          d
+            ? [
+                ...d.treasureMapSources.map((source) => source.mapItemId),
+                ...(d.treasureDestination?.rewardItemId
+                  ? [d.treasureDestination.rewardItemId]
+                  : []),
+              ]
+            : [],
+        );
+        itemIconPaths = paths;
+        details = d;
+        if (!d) error = "Item not found";
       })
-      .catch(() => {
-        if (!cancelled) error = "Refresh the page to try again.";
+      .catch((e) => {
+        error = e instanceof Error ? e.message : "Failed to load item";
       })
       .finally(() => {
-        if (!cancelled) loading = false;
+        isLoading = false;
       });
-    return () => {
-      cancelled = true;
-    };
   });
-  function selectProvider(provider: ProviderView) {
-    onSelectLocation(provider.ref);
-  }
-  async function loadExpansion() {
-    if (!Number.isInteger(requested) || requested < 1) return;
-    const id = itemId;
-    expanding = true;
-    expansionError = null;
-    try {
-      const value = await expandAcquisition(browserAcquisitionQuery, {
-        itemId: id,
-        amount: requested,
-        maxDepth: 8,
-        maxNodes: 200,
-      });
-      const ids: string[] = [];
-      const pending = [value];
-      while (pending.length) {
-        const node = pending.pop()!;
-        ids.push(node.itemId);
-        for (const branch of node.branches) {
-          for (const home of branch.method.homeProviders)
-            ids.push(home.structure_item_id);
-          for (const ingredient of branch.ingredients) {
-            if (ingredient.input.item_id) ids.push(ingredient.input.item_id);
-            if (ingredient.acquisition) pending.push(ingredient.acquisition);
-          }
-        }
-      }
-      const items = await loadMapItems(ids);
-      if (id === itemId) {
-        expandedItems = items;
-        expansion = value;
-      }
-    } catch {
-      if (id === itemId)
-        expansionError =
-          "Could not load ingredients. Refresh the page to try again.";
-    } finally {
-      if (id === itemId) expanding = false;
-    }
-  }
 </script>
 
-{#snippet outcomes(title: string, values: readonly InspectedOutcome[])}
-  {#if values.length && details}
-    <section class="border-t pt-2">
-      <h3 class="font-medium">{title}</h3>
-      <div class="max-h-48 space-y-1 overflow-y-auto overscroll-contain pr-2">
-        {#each values as outcome, index (index)}
-          <div class="flex flex-wrap gap-x-2 text-sm">
-            {#if outcome.itemId}<MapItemLink
-                itemId={outcome.itemId}
-                itemName={details.items[outcome.itemId]?.name ??
-                  details.names[outcome.itemId] ??
-                  "Item"}
-                tooltipHtml={details.items[outcome.itemId]?.tooltipHtml}
-                imageAvailable={details.items[outcome.itemId]?.iconPath}
-                onSelect={onSelectItem}
-              />{:else}<span>Unpublished outcome</span>{/if}
-            {#if outcome.amount.kind === "exact"}<span
-                >{outcome.amount.value} x</span
-              >{:else if outcome.amount.kind === "range"}<span
-                >{quantityText(outcome.amount)} units</span
-              >{/if}
-            {#if outcome.probability !== null && !(outcome.probability === 1 && outcome.amount.kind === "exact")}<span
-                class="text-muted-foreground"
-                >{formatPercent(outcome.probability, { decimals: 2 })}</span
-              >{/if}
-          </div>
-        {/each}
-      </div>
-    </section>
-  {/if}
-{/snippet}
-
-{#snippet tree(node: AcquisitionTree)}
-  <div class="space-y-2 border-l pl-2 text-sm">
-    <MapItemLink
-      itemId={node.itemId}
-      itemName={expandedItems[node.itemId]?.name ??
-        node.names[node.itemId] ??
-        "Item"}
-      tooltipHtml={expandedItems[node.itemId]?.tooltipHtml}
-      imageAvailable={expandedItems[node.itemId]?.iconPath}
-      onSelect={onSelectItem}
-    /><span> x {node.amount}</span>
-    {#if node.reason}<p class="text-muted-foreground">
-        {node.reason === "cycle"
-          ? "This ingredient leads back to an earlier item."
-          : "Further ingredients are not expanded here."}
-        <a href={node.inspectionLink} class="text-blue-400 underline"
-          >Inspect item sources</a
-        >.
-      </p>{/if}
-    {#each node.branches.filter( (branch) => mapMethodIsVisible(branch.method) ) as branch (branch.method.methodId)}
-      {@const lifecycle = lifecycleText(branch.repeatability)}
-      <details class="space-y-1">
-        <summary class="cursor-pointer font-medium">
-          {branchLabel(branch.method, node.names)}
-        </summary>
-        <div class="max-h-40 space-y-1 overflow-y-auto overscroll-contain">
-          {#each branch.method.providers as provider (provider)}
-            {@const category = MAP_PROVIDER_CATEGORY[provider.ref.kind]}
-            <div>
-              {#if category}<MapEntityLink
-                  href={buildEntityUrl(provider.ref.id, category)}
-                  onSelect={() => onSelectLocation(provider.ref)}
-                  >{expansionProviderLabel(provider, node.names)}</MapEntityLink
-                >{:else if providerHref(provider.ref)}<a
-                  href={providerHref(provider.ref)}
-                  class="text-blue-400 underline"
-                  >{expansionProviderLabel(provider, node.names)}</a
-                >{:else}<p>
-                  {expansionProviderLabel(provider, node.names)}
-                </p>{/if}
-            </div>
-          {/each}
-          {#each branch.method.homeProviders as home (home)}
-            <p>
-              {branch.method.providers.length ? "Or use" : "Use"}
-              <MapItemLink
-                itemId={home.structure_item_id}
-                itemName={expandedItems[home.structure_item_id]?.name ??
-                  home.structure_item_id}
-                tooltipHtml={expandedItems[home.structure_item_id]?.tooltipHtml}
-                imageAvailable={expandedItems[home.structure_item_id]?.iconPath}
-                onSelect={onSelectItem}
-              /> in your house.
-            </p>
-          {/each}
-        </div>
-        {#if recipeHref(branch.method)}<a
-            href={recipeHref(branch.method)}
-            class="text-blue-400 underline">View recipe</a
-          >{/if}
-        {#each branch.method.probabilityResults.filter((result) => result.target.kind === "item" && result.target.itemId === node.itemId) as result (result)}
-          {@const average = expectedQuantityText(result)}
-          {@const showChance =
-            result.probability !== null &&
-            !(
-              result.probability === 1 && branch.yieldedAmount.kind === "exact"
-            )}
-          {#if showChance || average}
-            <p>
-              {showChance
-                ? `${formatPercent(result.probability!, {
-                    decimals: 2,
-                    preserveNonzero: true,
-                  })} per ${PROBABILITY_EVENT_LABELS[result.event]}.${average ? ` ${average}` : ""}`
-                : (average ?? "")}
-            </p>
-          {/if}
-        {/each}
-        {#each [...new Set(branch.method.probabilityResults
-              .map( (result) => probabilityScenarioText(result, branch.method.probabilityFactors) )
-              .filter(Boolean))] as note (note)}
-          <p class="text-muted-foreground">{note}</p>
-        {/each}
-        {#if lifecycle}<p>{lifecycle}</p>{/if}
-        {#each acquisitionPlanNotes(branch) as note (note)}
-          <p>{note}</p>
-        {/each}
-        {#each branch.ingredients as ingredient (ingredient.input.id)}
-          {#if ingredient.acquisition}{@render tree(
-              ingredient.acquisition,
-            )}{:else}
-            {@const amount = ingredientQuantityText(branch, ingredient)}
-            <p>
-              {ingredient.input.withheld
-                ? "Unpublished required item"
-                : ingredient.input.resource_kind === "gold"
-                  ? "Gold"
-                  : (expandedItems[ingredient.input.item_id ?? ""]?.name ??
-                    node.names[ingredient.input.item_id ?? ""] ??
-                    "Item")}{#if amount}: {amount}{/if}
-            </p>{/if}
-        {/each}
-      </details>
-    {/each}
-  </div>
-{/snippet}
-
-{#if loading}<PopupCard title="Loading..." {onClose} {mode}
-    ><p>Loading item...</p></PopupCard
-  >
-{:else if error}<PopupCard title="Could not load item" {onClose} {mode}
-    ><p class="text-destructive">{error}</p></PopupCard
-  >
+{#if isLoading}
+  <PopupCard title="Loading..." {onClose} {mode}>
+    <div class="flex items-center justify-center py-4">
+      <div
+        class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
+      ></div>
+    </div>
+  </PopupCard>
+{:else if error}
+  <PopupCard title="Error" {onClose} {mode}>
+    <p class="text-destructive">{error}</p>
+  </PopupCard>
 {:else if details}
   <PopupCard
     title={details.name}
     subtitle="Item"
     titleClass={getQualityTextColorClass(details.quality)}
-    detailsUrl={`/items/${details.id}`}
+    detailsUrl="/items/{details.id}"
     {onClose}
+    onFocusClick={details.canFocus ? onFocusClick : undefined}
     {mode}
-    onFocusClick={details.locations.length ? onFocusClick : undefined}
   >
-    <h3 class="font-medium">Acquisition</h3>
-    {#if !details.sources.hasKnownSource}<p
-        class="text-sm text-muted-foreground"
-      >
-        {isPack && details.sources.inspection.offeredAssets.length
-          ? "You receive the items inside, not the pack itself."
-          : "No known source."}
-      </p>{/if}
-    <AcquisitionMethods
-      data={details}
-      {onSelectItem}
-      onSelectProvider={selectProvider}
-      selectedItemId={itemId}
-    />
-    {#if inspection?.offeredAssets.length}
-      <h3 class="border-t pt-2 font-medium">Offers</h3>
-      <AcquisitionMethods
-        data={{
-          ...details,
-          methods: inspection.offeredAssets,
-          requirements: [],
-        }}
-        {onSelectItem}
-        onSelectProvider={selectProvider}
-      />
-    {/if}
-    {#if inspection?.initiatingMemberships.length}
-      <h3 class="border-t pt-2 font-medium">Using this carried item</h3>
-      <AcquisitionMethods
-        data={{
-          ...details,
-          methods: inspection.initiatingMemberships,
-          requirements: [],
-        }}
-        {onSelectItem}
-        onSelectProvider={selectProvider}
-      />
-    {/if}
-    {@render outcomes("Fixed contents", inspection?.fixedContents ?? [])}
-    {@render outcomes("Random rewards", inspection?.randomOutcomes ?? [])}
-    {@render outcomes(
-      "Portable chest outcomes",
-      inspection?.portableChestOutcomes ?? [],
-    )}
-    {#if inspection?.randomOutcomes.length}<p
-        class="text-sm text-muted-foreground"
-      >
-        One of these items is chosen for each reward.
-      </p>{/if}
-    {#if details.usages.length}
-      <section class="space-y-2 border-t pt-2">
-        <h3 class="font-medium">Used for</h3>
-        <div class="max-h-64 space-y-2 overflow-y-auto overscroll-contain pr-2">
-          {#each details.usages as use (use)}
-            <div class="space-y-1 text-sm">
-              {#if !use.method}
-                <p>
-                  {useRoleLabel(
-                    use.role,
-                    use.method,
-                  )}{#if use.amount.kind !== "unknown"}
-                    &#32;×{quantityText(use.amount)}{/if}
-                </p>
-              {/if}
-              {#if !use.method && use.entity?.kind === "quest"}<MapEntityLink
-                  href={buildEntityUrl(use.entity.id, "quest")}
-                  onSelect={() => onSelectQuest(use.entity!.id)}
-                  >{details.names[use.entity.id] ?? "Quest"}</MapEntityLink
-                >{/if}
-              <Requirements
-                roots={use.requirements.filter(
-                  (root) =>
-                    !use.method?.requirements.some(
-                      (methodRoot) =>
-                        JSON.stringify(methodRoot) === JSON.stringify(root),
-                    ),
-                )}
-                names={details.names}
-              />
-              {#if !use.method}
-                {#each use.useLocations as location (location)}
-                  {@const category =
-                    MAP_PROVIDER_CATEGORY[location.provider.kind]}
-                  {#if category}<MapEntityLink
-                      href={buildEntityUrl(location.provider.id, category)}
-                      onSelect={() => onSelectLocation(location.provider)}
-                      >Use at {location.name}</MapEntityLink
-                    >{:else}<p>Use at {location.name}</p>{/if}
-                {/each}
-              {/if}
-              {#if use.method}<AcquisitionMethods
-                  data={{ ...details, methods: [use.method], requirements: [] }}
-                  {onSelectItem}
-                  onSelectProvider={selectProvider}
-                />{/if}
+    <!-- Dropped by -->
+    {#if details.droppers.length > 0}
+      <div>
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Dropped by
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.droppers as dropper (dropper.monsterId)}
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1 min-w-0">
+                <MonsterTypeIcon
+                  isBoss={dropper.isBoss}
+                  isFabled={dropper.isFabled}
+                  isElite={dropper.isElite}
+                  class="h-3.5 w-3.5 shrink-0"
+                />
+                <MapEntityLink
+                  href={buildEntityUrl(dropper.monsterId, "monster")}
+                  onSelect={() => onSelectMonster(dropper.monsterId)}
+                  onHoverStart={() => onHoverMonster?.(dropper.monsterId)}
+                  onHoverEnd={() => onHoverMonster?.(null)}
+                  class={dropper.isBoss
+                    ? "text-cyan-400"
+                    : dropper.isElite
+                      ? "text-purple-400"
+                      : "text-red-400"}
+                >
+                  <span class="truncate">{dropper.monsterName}</span>
+                </MapEntityLink>
+              </div>
+              <div
+                class="flex items-center gap-2 shrink-0 text-xs text-muted-foreground"
+              >
+                <span>Lv {dropper.level}</span>
+                <span>
+                  <DropChance
+                    chance={dropper.dropRate}
+                    fatecharmChance={dropper.fatecharmDropRate}
+                    fatecharm={dropper.fatecharm}
+                    {onSelectItem}
+                  />
+                </span>
+              </div>
             </div>
           {/each}
         </div>
-      </section>
+      </div>
     {/if}
-    {#if details.sources.methods.length}
-      <section class="space-y-2 border-t pt-2">
-        <label class="flex items-center justify-between gap-2 text-sm"
-          >Requested amount <input
-            class="w-24 rounded border bg-background px-2 py-1"
-            type="number"
-            min="1"
-            step="1"
-            bind:value={requested}
-          /></label
+
+    <!-- Sold by -->
+    {#if details.vendors.length > 0}
+      <div class={details.droppers.length > 0 ? "border-t pt-2" : ""}>
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Sold by
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.vendors as vendor, i (i)}
+            <div class="flex items-center justify-between gap-2">
+              <MapEntityLink
+                href={buildEntityUrl(vendor.npcId, "npc")}
+                onSelect={() => onSelectNpc(vendor.npcId)}
+                onHoverStart={() => onHoverNpc?.(vendor.npcId)}
+                onHoverEnd={() => onHoverNpc?.(null)}
+              >
+                <span class="truncate">{vendor.npcName}</span>
+              </MapEntityLink>
+              <span class="shrink-0 text-xs text-muted-foreground">
+                {#if vendor.currencyItemName !== null}
+                  {formatNumber(vendor.price)}x {vendor.currencyItemName}
+                {:else}
+                  {formatNumber(vendor.price)}g
+                {/if}
+                {#if vendor.resultAmount && vendor.resultAmount > 1}
+                  ({vendor.resultAmount}×)
+                {/if}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Gathered from -->
+    {#if details.gatheringSources.length > 0}
+      <div
+        class={details.droppers.length > 0 || details.vendors.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Gathered from
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.gatheringSources as source (source.resourceId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapEntityLink
+                href={buildEntityUrl(
+                  source.resourceId,
+                  source.resourceType === "chest" ? "chest" : "gathering",
+                )}
+                onSelect={() =>
+                  source.resourceType === "chest"
+                    ? onSelectChest(source.resourceId)
+                    : onSelectGathering(source.resourceId)}
+                onHoverStart={() =>
+                  source.resourceType === "chest"
+                    ? onHoverChest?.(source.resourceId)
+                    : onHoverGathering?.(source.resourceId)}
+                onHoverEnd={() =>
+                  source.resourceType === "chest"
+                    ? onHoverChest?.(null)
+                    : onHoverGathering?.(null)}
+              >
+                <span class="truncate">
+                  {source.resourceType === "chest"
+                    ? "Chest"
+                    : source.resourceName}
+                </span>
+              </MapEntityLink>
+              <span
+                class="shrink-0 whitespace-nowrap text-xs text-muted-foreground"
+              >
+                {#if source.rateNote}
+                  {source.rateNote}
+                {:else if formatFishingSourceLabel(source.fishingChanceMin, source.fishingChanceMax)}
+                  {formatFishingSourceLabel(
+                    source.fishingChanceMin,
+                    source.fishingChanceMax,
+                  )}
+                {:else}
+                  {formatPercent(source.rate, {
+                    decimals: 1,
+                    trailingZeros: true,
+                  })}
+                {/if}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Altar Rewards -->
+    {#if details.altarSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Altar Rewards
+        </div>
+        <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
+          {#each details.altarSources as altar, i (i)}
+            <div>
+              <MapEntityLink
+                href={buildEntityUrl(altar.altarId, "altar")}
+                onSelect={() => onSelectAltar(altar.altarId)}
+                onHoverStart={() => onHoverAltar?.(altar.altarId)}
+                onHoverEnd={() => onHoverAltar?.(null)}
+                class="text-orange-400"
+              >
+                <span class="truncate">{altar.altarName}</span>
+              </MapEntityLink>
+              <div class="text-xs text-muted-foreground">
+                {#if altar.tier}
+                  {formatAltarRewardTier(altar.tier, altar, altar.maxLevel)}
+                {/if}
+                {#if altar.dropRate > 0 || altar.tier === null}
+                  {#if altar.tier !== null}·{/if}
+                  {#if altar.tier !== null || altar.isDistributionRoll}
+                    {formatPercent(altar.dropRate, {
+                      decimals: 1,
+                      trailingZeros: true,
+                    })}
+                  {:else}
+                    <DropChance
+                      chance={altar.dropRate}
+                      fatecharmChance={altar.fatecharmDropRate}
+                      fatecharm={altar.fatecharm}
+                      {onSelectItem}
+                    />
+                  {/if}
+                {/if}
+              </div>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Found in Chests -->
+    {#if details.chestSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Found in Chests
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.chestSources as chest (chest.chestId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapEntityLink
+                href={buildEntityUrl(chest.chestId, "chest")}
+                onSelect={() => onSelectChest(chest.chestId)}
+                onHoverStart={() => onHoverChest?.(chest.chestId)}
+                onHoverEnd={() => onHoverChest?.(null)}
+              >
+                {chest.chestName}
+              </MapEntityLink>
+              <span class="shrink-0 text-xs text-muted-foreground">
+                {formatPercent(chest.rate, {
+                  decimals: 1,
+                  trailingZeros: true,
+                })}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Quest Rewards -->
+    {#if details.questRewards.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Quest Rewards
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.questRewards as quest (quest.questId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapEntityLink
+                href={buildEntityUrl(quest.questId, "quest")}
+                onSelect={() => onSelectQuest(quest.questId)}
+              >
+                <span class="truncate">{quest.questName}</span>
+              </MapEntityLink>
+              <span class="shrink-0 text-xs text-muted-foreground">
+                Lv {quest.levelRecommended}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Crafted from -->
+    {#if details.craftingSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Crafted from
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.craftingSources as recipe, recipeIndex (recipeIndex)}
+            {#each recipe.materials as material, materialIndex (materialIndex)}
+              <div class="flex items-center gap-1">
+                <span class="text-muted-foreground">{material.amount}x</span>
+                <MapItemLink
+                  itemId={material.itemId}
+                  itemName={material.itemName}
+                  onSelect={onSelectItem}
+                />
+              </div>
+            {/each}
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Merged from -->
+    {#if details.mergeSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0 ||
+        details.craftingSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Merged from
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.mergeSources as source, i (i)}
+            <div>
+              <MapItemLink
+                itemId={source.itemId}
+                itemName={source.itemName}
+                onSelect={onSelectItem}
+              />
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- From Treasure (for items that are rewards from treasure maps) -->
+    {#if details.treasureMapSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0 ||
+        details.craftingSources.length > 0 ||
+        details.mergeSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          From Treasure
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.treasureMapSources as source (source.mapItemId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapItemLink
+                itemId={source.mapItemId}
+                itemName={source.mapItemName}
+                tooltipHtml={source.mapItemTooltipHtml}
+                imageAvailable={itemIconPaths?.[source.mapItemId]}
+                onSelect={onSelectItem}
+              />
+              <span class="shrink-0 text-xs text-muted-foreground">
+                {source.zoneName}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Treasure Destination (for items that ARE treasure maps) -->
+    {#if details.treasureDestination}
+      {@const dest = details.treasureDestination}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Zone</span>
+        <MapEntityLink
+          href={buildEntityUrl(dest.zoneId, "zone")}
+          onSelect={() => onSelectZone(dest.zoneId)}
+          onHoverStart={() => onHoverZone?.(dest.zoneId)}
+          onHoverEnd={() => onHoverZone?.(null)}
+          class="text-blue-400"
         >
-        <button
-          type="button"
-          class="text-sm text-blue-400 underline disabled:opacity-50"
-          disabled={expanding || !Number.isInteger(requested) || requested < 1}
-          onclick={loadExpansion}
-          >{expanding
-            ? "Loading ingredients..."
-            : "Expand ingredient alternatives"}</button
-        >
-        {#if expansionError}<p class="text-destructive">
-            {expansionError}
-          </p>{/if}
-        {#if expansion}<div class="max-h-64 overflow-y-auto overscroll-contain">
-            {@render tree(expansion)}
-          </div>{/if}
-      </section>
+          {dest.zoneName}
+        </MapEntityLink>
+      </div>
+      {#if dest.rewardItemId && dest.rewardItemName}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Reward</span>
+          <MapItemLink
+            itemId={dest.rewardItemId}
+            itemName={dest.rewardItemName}
+            tooltipHtml={dest.rewardItemTooltipHtml}
+            imageAvailable={itemIconPaths?.[dest.rewardItemId]}
+            onSelect={onSelectItem}
+          />
+        </div>
+      {/if}
+    {/if}
+
+    <!-- Tooltip -->
+    {#if details.tooltipHtml}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0 ||
+        details.craftingSources.length > 0 ||
+        details.mergeSources.length > 0 ||
+        details.treasureMapSources.length > 0 ||
+        details.treasureDestination !== null
+          ? "border-t pt-2"
+          : ""}
+      >
+        <ItemTooltip
+          tooltipHtml={details.tooltipHtml}
+          visualAsset={details.visualAsset}
+        />
+      </div>
     {/if}
   </PopupCard>
 {/if}

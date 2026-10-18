@@ -1,9 +1,6 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import { loadAcquisition } from "$lib/server/acquisition";
-import { loadAcquisitionItems } from "$lib/acquisition/items";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -40,7 +37,7 @@ interface HerbalismPageData {
   xpByTier: TierXp[];
 }
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = (): HerbalismPageData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const profession = db
@@ -102,21 +99,6 @@ export const load: PageServerLoad = async () => {
   `,
     )
     .all() as TierXp[];
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const spawns = db
-    .prepare(
-      "SELECT spawn.id FROM gathering_resource_spawns spawn JOIN gathering_resources resource ON resource.id = spawn.resource_id WHERE resource.is_plant = 1",
-    )
-    .all() as { id: string }[];
-  const acquisition = await loadAcquisition(execute, {
-    kind: "providers",
-    providers: spawns.map(({ id }) => ({ kind: "resource_spawns", id })),
-  });
-  const acquisitionMethods = [...acquisition.methodViews.values()];
-  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
 
   db.close();
 
@@ -125,8 +107,5 @@ export const load: PageServerLoad = async () => {
     resources,
     resourceCounts,
     xpByTier,
-    acquisitionMethods,
-    acquisitionItems,
-    acquisitionNames: projectAcquisitionNames(acquisition),
   };
 };

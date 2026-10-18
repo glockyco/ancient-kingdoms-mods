@@ -169,11 +169,8 @@ export interface PortalMapEntity extends MapEntity {
  */
 export interface ChestMapEntity extends MapEntity {
   type: "chest";
-  requiredKeys: readonly {
-    itemId: string | null;
-    itemName: string | null;
-    withheld: boolean;
-  }[];
+  keyRequiredId: string | null;
+  keyRequiredName: string | null;
   // Popup fields
   respawnTime: number;
   dropCount: number;

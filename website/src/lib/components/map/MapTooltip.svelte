@@ -10,11 +10,7 @@
     GatheringMapEntity,
     CraftingMapEntity,
   } from "$lib/types/map";
-  import {
-    toRomanNumeral,
-    formatNumber,
-    formatPercent,
-  } from "$lib/utils/format";
+  import { toRomanNumeral } from "$lib/utils/format";
   import {
     calculateTooltipPosition,
     getNpcRoles,
@@ -65,7 +61,7 @@
     if (entity.type === "scribing_table") return "Scribing Table";
     if (entity.type === "crafting_station") {
       const crafting = entity as CraftingMapEntity;
-      return crafting.isCookingOven ? "Cooking Oven" : "Craft Station";
+      return crafting.isCookingOven ? "Cooking Oven" : "Forge";
     }
     if (entity.type === "trap") {
       return trapDisplayName(entity as TrapMapEntity);
@@ -106,8 +102,8 @@
         -->{@const monster =
           entity as MonsterMapEntity}<!--
         -->{#if typeName}<span
-            class="ml-1">Lv {monster.level}</span
-          >{:else}Lv {monster.level}{/if}<!--
+            class="ml-1">Lv. {monster.level}</span
+          >{:else}Lv. {monster.level}{/if}<!--
       -->{:else if entity.type === "gathering_plant" || entity.type === "gathering_mineral" || entity.type === "gathering_fish"}<!--
         -->{@const gathering =
           entity as GatheringMapEntity}<!--
@@ -143,15 +139,8 @@
     {/if}
   {:else if entity.type === "chest"}
     {@const chest = entity as ChestMapEntity}
-    {#if chest.requiredKeys.length}
-      <div class="text-sm text-amber-400">
-        {chest.requiredKeys.length === 1 ? "Key" : "Key alternatives"}:
-        {chest.requiredKeys
-          .map((key) =>
-            key.withheld ? "Unpublished key" : (key.itemName ?? key.itemId),
-          )
-          .join(" or ")}
-      </div>
+    {#if chest.keyRequiredName}
+      <div class="text-sm text-amber-400">Key: {chest.keyRequiredName}</div>
     {/if}
   {:else if entity.type === "altar"}
     {@const altar = entity as AltarMapEntity}
@@ -161,17 +150,13 @@
       </div>
     {/if}
     {#if altar.minLevel > 0}
-      <div class="text-xs text-muted-foreground">Lv {altar.minLevel}+</div>
+      <div class="text-xs text-muted-foreground">Lv. {altar.minLevel}+</div>
     {/if}
   {:else if entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
     {@const monster = entity as MonsterMapEntity}
     {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
       <div class="text-sm text-cyan-400">
-        {#if monster.sourceSpawnProbability != null && monster.sourceSpawnProbability < 1}{formatPercent(
-            monster.sourceSpawnProbability,
-            { decimals: 1, trailingZeros: true },
-          )} chance to spawn when you kill{:else}Spawns when you kill{/if}
-        {monster.sourceMonsterName}
+        Spawns after killing {monster.sourceMonsterName}
       </div>
     {/if}
     {#if monster.isPatrolling}
@@ -187,22 +172,22 @@
         <div class="text-sm text-amber-400">
           Key: {portal.requiredItemName}{portal.requiresEveryoneKey
             ? " (each player needs their own)"
-            : " (any online party member can carry it)"}
+            : " (any online party member's key)"}
         </div>
       {/if}
       {#if portal.needMonsterDeadName}
         <div class="text-sm text-amber-400">
-          Blocked while {portal.needMonsterDeadName} is alive
+          Kill {portal.needMonsterDeadName} to enter
         </div>
       {/if}
       {#if portal.requiredLevel > 0}
         <div class="text-xs text-muted-foreground">
-          Lv {portal.requiredLevel}+
+          Lv. {portal.requiredLevel}+
         </div>
       {/if}
       {#if portal.requiredItemLevel > 0}
         <div class="text-xs text-muted-foreground">
-          Total item level {formatNumber(portal.requiredItemLevel)}+
+          Item Lv. {portal.requiredItemLevel}+
         </div>
       {/if}
     {/if}

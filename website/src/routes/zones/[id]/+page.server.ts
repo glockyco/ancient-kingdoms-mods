@@ -19,11 +19,8 @@ import { zoneDescription } from "$lib/server/meta-description";
 import { fishingSpotBaseId } from "../../../../scripts/gathering-resource-ids.mjs";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
-import {
-  projectAcquisitionNames,
-  projectProviderMethods,
-} from "$lib/acquisition/projections";
-import { summarizePrimaryRewards } from "$lib/utils/primary-rewards";
+import { projectProviderMethods } from "$lib/acquisition/projections";
+import { chestRewardFields } from "$lib/server/world-acquisition";
 
 export const prerender = true;
 
@@ -316,30 +313,6 @@ export const load: PageServerLoad = async ({
     }).filter((method) => method.kind === "world_chest");
     if (methods.length === 0)
       throw new Error(`Missing world chest acquisition ${chest.id}`);
-    const requiredKeys = [
-      ...new Map(
-        methods.flatMap((method) => {
-          const itemId =
-            typeof method.detail.key_item_id === "string"
-              ? method.detail.key_item_id
-              : null;
-          const withheld = Boolean(method.detail.key_item_withheld);
-          if (!itemId && !withheld) return [];
-          return [
-            [
-              `${itemId ?? ""}:${withheld}`,
-              {
-                itemId,
-                itemName: itemId
-                  ? (acquisitionItems[itemId]?.name ?? null)
-                  : null,
-                withheld,
-              },
-            ] as const,
-          ];
-        }),
-      ).values(),
-    ];
     const randomItems = new Set<string>();
     for (const method of methods) {
       const fixedItems = new Set<string>();
@@ -364,18 +337,7 @@ export const load: PageServerLoad = async ({
     }
     return {
       ...chest,
-      methods,
-      requiredKeys,
-      primaryRewards: summarizePrimaryRewards(methods, acquisitionItems),
-      rewardProbabilities: [
-        ...new Set(
-          methods.map((method) =>
-            typeof method.detail.outer_success === "number"
-              ? method.detail.outer_success
-              : null,
-          ),
-        ),
-      ],
+      ...chestRewardFields(methods, acquisitionItems),
       drop_count: randomItems.size,
     };
   });
@@ -441,30 +403,6 @@ export const load: PageServerLoad = async ({
   `,
     )
     .all(params.id, params.id) as ZoneConnection[];
-  const portalRows = db
-    .prepare(
-      `
-    SELECT p.id, p.to_zone_id, z.name, p.is_closed, p.destination_withheld FROM portals p
-    LEFT JOIN zones z ON z.id = p.to_zone_id
-    WHERE p.from_zone_id = ? ORDER BY p.id
-  `,
-    )
-    .all(params.id) as Array<{
-    id: string;
-    to_zone_id: string | null;
-    name: string | null;
-    is_closed: number;
-    destination_withheld: number;
-  }>;
-  const portalAcquisition = await loadAcquisition(execute, {
-    kind: "requirements",
-    entities: portalRows.map((portal) => ({ kind: "portal", id: portal.id })),
-  });
-  const portals = portalRows.map((portal) => ({
-    ...portal,
-    requirements:
-      portalAcquisition.requirements.get(`portal:${portal.id}`) ?? [],
-  }));
 
   // Get sub-zones (zone triggers) for this zone
   const subZones = db
@@ -554,12 +492,6 @@ export const load: PageServerLoad = async ({
     traps,
     altars,
     connectedZones,
-    portals,
-    acquisitionItems,
-    acquisitionNames: {
-      ...projectAcquisitionNames(chestAcquisition),
-      ...projectAcquisitionNames(portalAcquisition),
-    },
     subZones,
     renewalSage: renewalSage ?? null,
   };

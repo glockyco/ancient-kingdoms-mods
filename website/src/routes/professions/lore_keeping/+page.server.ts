@@ -1,9 +1,11 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
+import type { ObtainabilityNode } from "$lib/types/recipes";
+import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { getMonsterSources, getQuestSources } from "$lib/server/item-sources";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { projectItemSources } from "$lib/acquisition/projections";
-import { methodLabel } from "$lib/components/acquisition/display";
 
 export const prerender = true;
 
@@ -19,7 +21,8 @@ interface LoreBook {
   tooltip_html: string | null;
   visual_public_path: string | null;
   book_text: string;
-  hasObtainabilityInfo: boolean;
+  quality: number;
+  obtainabilityTree: ObtainabilityNode;
   sourceSummary: SourceSummary;
   statGains: {
     strength: number;
@@ -51,6 +54,7 @@ interface RawBook {
   tooltip_html: string | null;
   visual_public_path: string | null;
   book_text: string;
+  quality: number;
   book_strength_gain: number;
   book_dexterity_gain: number;
   book_constitution_gain: number;
@@ -59,7 +63,7 @@ interface RawBook {
   book_charisma_gain: number;
 }
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async (): Promise<LoreKeepingPageData> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const profession = db
@@ -87,6 +91,7 @@ export const load: PageServerLoad = async () => {
       i.id,
       i.name,
       i.tooltip_html,
+      i.quality,
       va.public_path AS visual_public_path,
       i.book_text,
       book_strength_gain,
@@ -104,54 +109,126 @@ export const load: PageServerLoad = async () => {
     )
     .all() as RawBook[];
 
-  const execute = async (
-    sql: string,
-    values: readonly (string | number | null)[],
-  ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-  const model = await loadAcquisition(execute, {
-    kind: "items",
-    itemIds: rawBooks.map((book) => book.id),
-  });
-  const books: LoreBook[] = rawBooks.map((raw) => {
-    const sources = projectItemSources(model, raw.id);
-    const method = sources.methods[0];
-    const sourceSummary: SourceSummary = method
-      ? {
-          type:
-            method.kind === "merge"
-              ? "merge"
-              : method.kind === "kill"
-                ? "drop"
-                : method.kind === "quest_complete"
-                  ? "quest"
-                  : "unknown",
-          label: methodLabel(method),
-        }
-      : { type: "unknown", label: "Unknown" };
+  // Build obtainability trees and source summaries for each book
+  const books: LoreBook[] = await Promise.all(
+    rawBooks.map(async (raw) => {
+      const visited = new Set<string>();
+      const obtainabilityTree = await buildObtainabilityTree(
+        db,
+        raw.id,
+        1,
+        0,
+        visited,
+        true,
+      );
 
-    return {
-      id: raw.id,
-      name: raw.name,
-      tooltip_html: raw.tooltip_html,
-      visual_public_path: raw.visual_public_path,
-      book_text: raw.book_text,
-      hasObtainabilityInfo: sources.methods.length > 0,
-      sourceSummary,
-      statGains: {
-        strength: raw.book_strength_gain,
-        dexterity: raw.book_dexterity_gain,
-        constitution: raw.book_constitution_gain,
-        intelligence: raw.book_intelligence_gain,
-        wisdom: raw.book_wisdom_gain,
-        charisma: raw.book_charisma_gain,
-      },
-    };
-  });
+      const sourceSummary = await getSourceSummary(
+        db,
+        raw.id,
+        obtainabilityTree,
+      );
+
+      return {
+        id: raw.id,
+        name: raw.name,
+        tooltip_html: raw.tooltip_html,
+        visual_public_path: raw.visual_public_path,
+        book_text: raw.book_text,
+        quality: raw.quality,
+        obtainabilityTree,
+        sourceSummary,
+        statGains: {
+          strength: raw.book_strength_gain,
+          dexterity: raw.book_dexterity_gain,
+          constitution: raw.book_constitution_gain,
+          intelligence: raw.book_intelligence_gain,
+          wisdom: raw.book_wisdom_gain,
+          charisma: raw.book_charisma_gain,
+        },
+      };
+    }),
+  );
 
   db.close();
 
-  return {
-    profession,
-    books,
-  };
+  return { profession, books };
 };
+
+async function getSourceSummary(
+  db: Database.Database,
+  bookId: string,
+  tree: ObtainabilityNode,
+): Promise<SourceSummary> {
+  // Check for merge first (from obtainability tree)
+  if (tree.merge && tree.merge.materials.length > 0) {
+    const materials = tree.merge.materials;
+    const firstName = materials[0].item_name;
+    const moreCount = materials.length - 1;
+    return {
+      type: "merge",
+      label: moreCount > 0 ? `${firstName} + ${moreCount} more` : firstName,
+    };
+  }
+
+  const monsterSources = await getMonsterSources(db, bookId);
+  if (monsterSources.length > 0) {
+    const monster = monsterSources[0];
+    const zoneName = await getMonsterZone(db, bookId, monster.monster_id);
+    return {
+      type: "drop",
+      label: zoneName
+        ? `${monster.monster_name} (${zoneName})`
+        : monster.monster_name,
+      linkHref: `/monsters/${monster.monster_id}`,
+    };
+  }
+
+  const questSources = await getQuestSources(db, bookId);
+  // Filter to just rewards, not provided items
+  const rewardQuests = questSources.filter((q) => q.source_type === "reward");
+  if (rewardQuests.length > 0) {
+    const quest = rewardQuests[0];
+    return {
+      type: "quest",
+      label: quest.quest_name,
+      linkHref: `/quests/${quest.quest_id}`,
+    };
+  }
+
+  return {
+    type: "unknown",
+    label: "Unknown",
+  };
+}
+
+async function getMonsterZone(
+  db: Database.Database,
+  itemId: string,
+  monsterId: string,
+): Promise<string | null> {
+  const model = await loadAcquisition(
+    async (sql, params) =>
+      db.prepare(sql).all(...params) as Record<string, unknown>[],
+    { kind: "items", itemIds: [itemId] },
+  );
+  const zoneIds = new Set(
+    projectItemSources(model, itemId)
+      .methods.filter(
+        (method) =>
+          method.kind === "kill" && method.detail.monster_id === monsterId,
+      )
+      .flatMap((method) =>
+        method.providers.flatMap((provider) =>
+          provider.location?.zoneId ? [provider.location.zoneId] : [],
+        ),
+      ),
+  );
+  return (
+    [...zoneIds]
+      .flatMap((id) => {
+        const zone = model.entities.get("zones")?.get(id);
+        return typeof zone?.name === "string" ? [zone.name] : [];
+      })
+      .join(", ") || null
+  );
+}

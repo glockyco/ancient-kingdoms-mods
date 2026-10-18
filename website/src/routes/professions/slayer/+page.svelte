@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
-  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
-  import Requirements from "$lib/components/acquisition/Requirements.svelte";
   import Calculation from "$lib/components/Calculation.svelte";
   import { slayerMasteryCalculation } from "$lib/calculation/slayer";
   import {
@@ -82,28 +78,39 @@
       new Map(
         data.targets
           .filter((target) => target.zone_id !== null)
-          .map((target) => [target.zone_id, target]),
+          .map((target) => [target.zone_id!, target]),
       ).values(),
     ).sort((a, b) => a.zone_name.localeCompare(b.zone_name)),
   );
 
+  // Source: server-scripts/EventAltar.cs:201-213; server-scripts/DefaultEvent.cs:200-213 — altar activation starts the event that spawns each wave.
+  // Source: server-scripts/Monster.cs:695-706,2214-2234 — summonable monsters start hidden and wait for readiness.
+  // Source: server-scripts/Monster.cs:2905-2914 — a slain monster can spawn its configured placeholder.
   function requirementText(target: SlayerTarget): string {
-    if (target.altar)
-      return `${target.altar.name}${target.altar.wave === null ? "" : `, wave ${target.altar.wave + 1}`}`;
-    if (target.parent) {
-      const chance =
-        target.parent.probability !== null && target.parent.probability < 1
-          ? ` (${formatPercent(target.parent.probability, { decimals: 0, trailingZeros: true })} chance)`
+    if (target.spawn_type === "altar") {
+      const wave =
+        target.source_altar_wave !== null
+          ? `, wave ${target.source_altar_wave + 1}`
           : "";
-      return `Appears near ${target.parent.name} after it is killed${chance}`;
+      return `${target.source_altar_name ?? "Altar"}${wave}`;
     }
     if (target.spawn_type === "summon") {
-      const names = target.guards.map((guard) =>
-        guard.withheld ? "an unpublished guard" : (guard.name ?? "a guard"),
-      );
-      return names.length
-        ? `Cannot spawn until the relevant group is dead: ${names.join(", ")}`
-        : "Requires the current summon event to be ready";
+      if (
+        !target.source_summon_kill_monster_id ||
+        !target.source_summon_kill_count
+      )
+        return "-";
+      const count = target.source_summon_kill_count ?? 1;
+      const plural = count > 1 ? "s" : "";
+      return `Blocked while ${count} ${target.source_summon_kill_monster_name}${plural} alive`;
+    }
+    if (target.spawn_type === "placeholder") {
+      const chance =
+        target.source_spawn_probability !== null &&
+        target.source_spawn_probability < 1
+          ? ` (${(target.source_spawn_probability * 100).toFixed(0)}% chance)`
+          : "";
+      return `Appears after killing ${target.source_monster_name}${chance}`;
     }
     return "";
   }
@@ -241,7 +248,7 @@
       size={32}
       title={target.name}
       class="flex min-w-0 max-w-full"
-      nameClass="whitespace-normal break-words"
+      nameClass="truncate"
     />
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = target.level_min !== target.level_max}
@@ -251,11 +258,7 @@
     >
   {:else if cell.column.id === "map"}
     {#if target.position_x !== null && target.position_y !== null}
-      <MapLink
-        entityId={target.altar?.id ?? target.id}
-        entityType={target.altar ? "altar" : "monster"}
-        compact
-      />
+      <MapLink entityId={target.id} entityType="monster" compact />
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -264,95 +267,44 @@
       <a
         href="/zones/{target.zone_id}"
         class="block truncate text-blue-600 hover:underline dark:text-blue-400"
-        title={target.zone_name}>{target.zone_name}</a
+        title={target.zone_name}
       >
+        {target.zone_name}
+      </a>
     {:else}
-      <span class="text-muted-foreground">{target.zone_name}</span>
+      <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "requirement"}
-    <div class="space-y-1">
-      {#if target.altar}
+    <span class="block truncate" title={target.requirement}>
+      {#if target.spawn_type === "altar"}
         <a
-          href="/altars/{target.altar.id}"
+          href="/altars/{target.source_altar_id}"
           class="text-blue-600 hover:underline dark:text-blue-400"
-          >{target.altar.name}</a
-        >{#if target.altar.wave !== null}, wave {target.altar.wave + 1}{/if}
-      {:else if target.parent}
-        Appears near <a
-          href="/monsters/{target.parent.id}"
+          >{target.source_altar_name}</a
+        >{#if target.source_altar_wave !== null}, wave {target.source_altar_wave +
+            1}{/if}
+      {:else if target.spawn_type === "summon" && target.source_summon_kill_monster_id && (target.source_summon_kill_count ?? 0) > 0}
+        Blocked while {target.source_summon_kill_count}
+        <a
+          href="/monsters/{target.source_summon_kill_monster_id}"
           class="text-blue-600 hover:underline dark:text-blue-400"
-          >{target.parent.name}</a
-        >
-        after it is killed{#if target.parent.probability !== null && target.parent.probability < 1}
-          ({formatPercent(target.parent.probability, {
-            decimals: 0,
-            trailingZeros: true,
-          })} chance){/if}
-      {:else if target.spawn_type === "summon"}
-        {@const guardGroups = [
-          ...Map.groupBy(
-            target.guards,
-            (guard) => guard.monsterId ?? guard.name,
-          ).values(),
-        ]}
-        <span>
-          The event must be ready. These guards must be dead in the current
-          world:
-        </span>
-        <ul class="list-inside list-disc">
-          {#each guardGroups as guards (guards[0].id)}
-            {@const guard = guards[0]}
-            <li>
-              {#if guard.monsterId}<a
-                  href="/monsters/{guard.monsterId}"
-                  class="text-blue-600 hover:underline dark:text-blue-400"
-                  >{guard.name}</a
-                >{:else}Unpublished guard{/if}{#if guards.length > 1}
-                ×{guards.length}{/if}
-            </li>
-          {/each}
-        </ul>
+          >{target.source_summon_kill_monster_name}{(target.source_summon_kill_count ??
+            1) > 1
+            ? "s"
+            : ""}</a
+        > alive
+      {:else if target.spawn_type === "placeholder"}
+        Appears after killing
+        <a
+          href="/monsters/{target.source_monster_id}"
+          class="text-blue-600 hover:underline dark:text-blue-400"
+          >{target.source_monster_name}</a
+        >{#if target.source_spawn_probability !== null && target.source_spawn_probability < 1}
+          ({(target.source_spawn_probability * 100).toFixed(0)}% chance){/if}
+      {:else}
+        <span class="text-muted-foreground">-</span>
       {/if}
-      {#if target.spawn_type !== "summon"}
-        <Requirements
-          roots={target.requirements}
-          names={data.acquisitionNames}
-        />
-      {/if}
-      {#if target.altarVariants.length > 1}
-        <details class="pt-2 whitespace-normal">
-          <summary class="cursor-pointer text-sm">Altar tiers</summary>
-          <p class="mt-2 text-sm text-muted-foreground">
-            Activating player's level plus total veteran points:
-          </p>
-          <ul class="mt-2 space-y-1 text-sm">
-            {#each target.altarVariants as method (method.methodId)}
-              {@const tierRoot = method.requirements.find(
-                (root) =>
-                  root.expression.kind === "predicate" &&
-                  root.expression.predicate.kind === "altar_tier",
-              )}
-              {#if tierRoot?.expression.kind === "predicate" && tierRoot.expression.predicate.kind === "altar_tier"}
-                {@const tier = tierRoot.expression.predicate}
-                <li>
-                  Tier {tier.tier + 1}: {tier.maximumScore === null
-                    ? `${tier.minimumScore} or more`
-                    : `${tier.minimumScore} to ${tier.maximumScore}`}
-                </li>
-              {/if}
-            {/each}
-          </ul>
-          <a
-            href="/monsters/{target.id}"
-            class="mt-2 block text-sm text-blue-600 hover:underline dark:text-blue-400"
-            >Full loot</a
-          >
-        </details>
-      {/if}
-      {#if !target.requirement && !target.requirements.length}<span
-          class="text-muted-foreground">-</span
-        >{/if}
-    </div>
+    </span>
   {:else if isRespawnColumn(cell.column.id)}
     <RespawnCells columnId={cell.column.id} row={target} />
   {:else if cell.column.id === "classification" || cell.column.id === "zone_ids"}
@@ -383,7 +335,9 @@
       column={zoneIdsCol}
       title="Zone"
       options={uniqueZones.flatMap((zone) =>
-        zone.zone_id ? [{ label: zone.zone_name, value: zone.zone_id }] : [],
+        zone.zone_id === null
+          ? []
+          : [{ label: zone.zone_name, value: zone.zone_id }],
       )}
     />
   {/if}
@@ -393,8 +347,8 @@
 {/snippet}
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`Slayer reduces the damage that bosses and elites deal to you, up to 10% at full mastery. All ${new Set(data.targets.map((target) => target.id)).size} Slayer targets with levels, zones, spawn requirements, and respawn times.`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
+  description={`Slayer reduces the damage that bosses and elites deal to you, up to 10% at full mastery. All ${data.targets.length} Slayer targets with levels, zones, spawn requirements, and respawn times.`}
   path="/professions/slayer"
 />
 
@@ -425,7 +379,7 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How Slayer works</h2>
+    <h2 class="text-xl font-semibold">Bestiary Discoveries and Slayer</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity -->
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
@@ -433,12 +387,13 @@
         <div>
           <p class="font-medium">Find a boss or an elite.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Approach any target listed below to add it to your Bestiary.
+            Only these {data.targets.length} targets give Slayer mastery. When you
+            come near one, your Bestiary adds it with zero kills.
           </p>
           <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity; server-scripts/Player.cs:13992-13999; server-scripts/UIBestiaryDetail.cs:150-154 — approach discovery and loot discovery are separate records. -->
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Finding a target does not reveal its drops. Each drop appears in the
-            Bestiary once a corpse holding it is looted.
+            Finding a boss does not reveal its drops. You discover loot
+            separately.
           </p>
         </div>
       </li>
@@ -448,8 +403,8 @@
         <div>
           <p class="font-medium">Kill the target.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            The player with the most threat on the monster gets kill credit. In
-            a party, each member within 40 yd of that player also gets
+            The player who drew the most of the monster's attention gets kill
+            credit. In a party, each nearby member also gets
             <a
               href="#mastery"
               class="text-blue-600 hover:underline dark:text-blue-400">credit</a
@@ -461,7 +416,7 @@
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
         <span class="text-sm tabular-nums text-muted-foreground">3</span>
         <div>
-          <p class="font-medium">Gain Slayer mastery.</p>
+          <p class="font-medium">Collect the mastery.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
             Each credited kill adds 0.02 percentage points to
             <a
@@ -479,11 +434,13 @@
         <div>
           <p class="font-medium">Take less damage.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Bosses and elites deal <a
+            From {mechanics.damageReduction.thresholdPercent}% mastery, every
+            boss and elite deals
+            <a
               href="#payoff"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >less damage</a
-            > to you, your mercenaries and your summons.
+            > to you. The reduction grows to 10% at full mastery.
           </p>
         </div>
       </li>
@@ -493,10 +450,9 @@
   <section id="payoff" class="space-y-4">
     <h2 class="text-xl font-semibold">Damage reduction</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      Slayer reduction applies before
-      <MechanicsLink section="combat#damage"
-        >Armor Class or the matching resist</MechanicsLink
-      >.
+      Below 10% Slayer, boss and elite hits deal full damage. At 10% Slayer, a
+      100-damage hit loses 1 damage. At 100%, it loses 10. Armor Class and
+      elemental resistance reduce the remaining damage.
     </p>
 
     <div class="space-y-5 rounded-lg border p-4 md:p-5">
@@ -535,10 +491,7 @@
         {:else}
           At {slayerLevel}% mastery, a boss or elite deals
           <strong class="font-semibold text-foreground"
-            >{formatPercent(damageReduction, {
-              decimals: 1,
-              trailingZeros: true,
-            })} less damage</strong
+            >{(damageReduction * 100).toFixed(1)}% less damage</strong
           > to you.
         {/if}
       </p>
@@ -550,9 +503,11 @@
         <!-- Source: server-scripts/Combat.cs:DealDamageAt -->
         <div class="mt-2 space-y-2 text-pretty text-muted-foreground">
           <p>
-            Damage reduction rounds up, so even a 10-damage hit loses 1 damage.
+            At 10% Slayer, a boss or elite hit loses 1% of its damage, rounded
+            up. Each additional 10 percentage points of Slayer adds another 1%
+            reduction, up to 10%. Even a 10-damage hit loses 1 damage.
           </p>
-          <p>Your mercenary or summon uses your Slayer mastery.</p>
+          <p>A mercenary or summon uses the Slayer mastery of its owner.</p>
         </div>
       </details>
     </div>
@@ -562,8 +517,9 @@
     <h2 class="text-xl font-semibold">Account-wide mastery</h2>
     <!-- Source: server-scripts/Database.cs:CalculateSlayerLevelForAccount -->
     <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      Slayer mastery is shared by every character on your account. Only the
-      first 50 kills of each target count toward the 100% cap.
+      The game adds the capped kills of every character on the account, then
+      stops Slayer at 100%. One target adds a maximum of 1 percentage point, so
+      100% needs kills from a minimum of 100 targets.
     </p>
 
     <!-- Source: server-scripts/Database.cs:3428-3436 — each target adds 0.02% per account kill up to 50 kills, and the total stops at 100%. -->
@@ -572,11 +528,14 @@
     <div class="max-w-2xl space-y-3 text-pretty text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:OnDeath -->
       <!-- Source: server-scripts/Player.cs:UserCode_TargetRpcUpdateKillsBestiary__String -->
-      <p>Threat from your mercenary or summon counts for you.</p>
       <p>
-        Bestiary counts belong to each character and keep increasing after the
-        account's 50-kill mastery limit. New characters share your Slayer
-        mastery. No race has a starting Slayer bonus.
+        A mercenary or summon that draws the most attention gives kill credit to
+        its owner. In a party, each nearby member gets the same credit.
+      </p>
+      <p>
+        The Bestiary count stays with one character. Slayer mastery is the total
+        for the account, and every race starts at 0%. A kill after the 50-kill
+        limit still increases the Bestiary count, but not Slayer mastery.
       </p>
     </div>
   </section>

@@ -150,14 +150,14 @@ export const ROLE_DESCRIPTIONS: Partial<
   Record<keyof NpcRoles, RoleDescription>
 > = {
   is_quest_giver: {
-    description: "",
+    description: "Offers quests.",
   },
   is_taskgiver_adventurer: {
     description: "Offers adventurer quests with a daily cooldown.",
     details: ["You must reach level 40."],
   },
   is_merchant: {
-    description: "",
+    description: "Sells items.",
   },
   is_merchant_adventurer: {
     description: "Sells adventurer items and rewards.",

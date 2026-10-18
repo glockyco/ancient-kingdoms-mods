@@ -24,6 +24,7 @@ function facts(
   models: TimingModel[] = [],
   usedByMonster = false,
   items: SkillItemSource[] = [],
+  usedByNpc = false,
 ) {
   const spec: SkillMechanicsSpec = {
     damageContexts: [],
@@ -32,7 +33,14 @@ function facts(
     debuffContexts: [],
     timingContexts: models.map((model) => ({ model, casters: [] })),
   };
-  return skillFacts(skill(overrides), pets, spec, items, usedByMonster);
+  return skillFacts(
+    skill(overrides),
+    pets,
+    spec,
+    items,
+    usedByMonster,
+    usedByNpc,
+  );
 }
 function pet(overrides: Partial<SkillPet> = {}): SkillPet {
   return {
@@ -162,6 +170,9 @@ describe("skill page facts", () => {
     ).toBe(false);
     expect(facts({}, [pet()], [], false, [scroll]).scrollOnly).toBe(false);
     expect(facts({}, [], [], true, [scroll]).scrollOnly).toBe(false);
+    const npc = facts({}, [], [], false, [scroll], true);
+    expect(npc.scrollOnly).toBe(false);
+    expect(npc.usedByMonster).toBe(false);
     expect(
       facts({}, [], [], false, [scroll, { ...scroll, type: "weapon_proc" }])
         .scrollOnly,
@@ -176,6 +187,13 @@ describe("skill page facts", () => {
     expect(facts({ player_classes: ["bard"], tier: 0 }).hasRequirements).toBe(
       false,
     );
+  });
+  test("zero-point skills retain their displayed learning cost", () => {
+    expect(
+      facts({ player_classes: ["bard"], required_skill_points: 0 })
+        .hasRequirements,
+    ).toBe(true);
+    expect(facts({ required_skill_points: 0 }).hasRequirements).toBe(false);
   });
   test("weapon procs use the union of equippable classes, with bows restricted to Rangers", () => {
     expect(

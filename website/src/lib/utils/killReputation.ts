@@ -11,7 +11,7 @@ export type KillReputationDirection = "improve" | "decrease";
  */
 export interface KillReputationEffect {
   direction: KillReputationDirection;
-  /** Signed amount or range, ready to display. */
+  /** Unsigned amount or level range, e.g. "174" or "15-21"; the caller adds the sign. */
   amount: string;
   /** Unsigned bounds for sorting without parsing display text. */
   amount_min: number;
@@ -69,13 +69,11 @@ function monsterReputationAmount(
     min = monster.level_min * multiplier;
     max = monster.level_max * multiplier;
   }
-  const sign = direction === "improve" ? "+" : "−";
-  const first = `${sign}${formatNumber(min, { decimals: 2 })}`;
   return {
     amount:
       min === max
-        ? first
-        : `${first} to ${sign}${formatNumber(max, { decimals: 2 })}`,
+        ? formatNumber(min, { decimals: 2 })
+        : `${formatNumber(min, { decimals: 2 })}-${formatNumber(max, { decimals: 2 })}`,
     amount_min: min,
     amount_max: max,
   };
@@ -118,7 +116,7 @@ export function npcKillReputation(
   if (npc.improve_faction.length > 0) {
     effects.push({
       direction: "improve",
-      amount: `+${formatNumber(gain, { decimals: 2 })}`,
+      amount: formatNumber(gain, { decimals: 2 }),
       amount_min: gain,
       amount_max: gain,
       factions: npc.improve_faction,
@@ -127,7 +125,7 @@ export function npcKillReputation(
   if (npc.decrease_faction.length > 0) {
     effects.push({
       direction: "decrease",
-      amount: `−${formatNumber(loss, { decimals: 2 })}`,
+      amount: formatNumber(loss, { decimals: 2 }),
       amount_min: loss,
       amount_max: loss,
       factions: npc.decrease_faction,

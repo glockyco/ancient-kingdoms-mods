@@ -13,7 +13,6 @@
     formatLinearValue,
   } from "$lib/utils/formatSkillEffect";
   import type { ClassSkill } from "$lib/queries/classes.server";
-  import { formatSkillType } from "$lib/utils/format";
 
   let { skills, urlKey }: { skills: ClassSkill[]; urlKey: string } = $props();
 
@@ -46,7 +45,7 @@
   const columns: ColumnDef<ClassSkill>[] = [
     { accessorKey: "name", header: "Skill", enableHiding: false },
     { accessorKey: "skill_type", header: "Type" },
-    { accessorKey: "max_level", header: "Max rank" },
+    { accessorKey: "max_level", header: "Max Rank" },
     {
       accessorKey: "effect",
       header: "Effect",
@@ -66,7 +65,7 @@
     },
     {
       id: "cast_time",
-      header: "Cast time",
+      header: "Cast Time",
       enableSorting: false,
       accessorFn: (row) => formatDuration(row.cast_time),
     },
@@ -103,8 +102,8 @@
       size={28}
     />
   {:else if cell.column.id === "skill_type"}
-    <span class="text-muted-foreground">
-      {formatSkillType(String(cell.getValue()))}
+    <span class="text-muted-foreground capitalize">
+      {String(cell.getValue()).replace(/_/g, " ")}
     </span>
   {:else if cell.column.id === "effect"}
     <span class="text-sm">{cell.getValue()}</span>

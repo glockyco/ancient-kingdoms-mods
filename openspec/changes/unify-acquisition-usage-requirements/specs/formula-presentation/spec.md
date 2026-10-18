@@ -73,3 +73,19 @@ Shared combat calculations SHALL live on the combat page. Skill pages SHALL link
 - **WHEN** a page describes casting time
 - **THEN** it gives the skill's casting time and relevant haste effect
 - **AND** it links to the shared timing calculation without requiring a redundant example
+
+### Requirement: Stats use the game's names
+
+A page SHALL call a character stat by the name the game's character window shows: Attack Power, Spell Power, Armor Class, Spell Casting Haste and Critical Strike. An item stat list MAY use the item tooltip's own names, such as AC and Critical Chance. A compact one-line effect summary in a table cell or an in-game tooltip MAY use the established abbreviations, such as AC, crit, max hp, dmg and attribute short names such as WIS, so the summary stays on one line.
+
+#### Scenario: A skill adds the caster's magic damage stat
+
+- **WHEN** a skill's damage adds the caster's magic damage stat
+- **THEN** the page names Spell Power
+- **AND** it tells the reader to read Spell Power in the character window
+
+#### Scenario: A compact ability summary
+
+- **WHEN** a monster's abilities table summarizes a skill's effect in one cell
+- **THEN** the summary may abbreviate stat and damage names
+- **AND** the skill's detail page still names each stat as the character window does

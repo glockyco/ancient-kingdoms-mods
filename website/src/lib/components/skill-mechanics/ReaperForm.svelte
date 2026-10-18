@@ -1,7 +1,7 @@
 <script lang="ts">
   import { statField, formatStatField } from "$lib/stats";
   import RoundingDefinition from "$lib/components/RoundingDefinition.svelte";
-  import { formatLinearStat } from "$lib/utils/formatSkillEffect";
+  import { formatLinearPercent } from "$lib/skills/skill-format";
   import { drainMagnitude } from "$lib/skills/worked-examples";
   import * as fmt from "$lib/calculation/format";
   import { getMechanicsContext } from "./context";
@@ -18,8 +18,7 @@
   <!-- Source: server-scripts/Combat.cs:DealDamageAt — lifetap healing is a share of direct damage dealt. -->
   <p class="text-muted-foreground">
     While the form is active, your Spell Power and your damage-over-time ticks
-    on other targets each gain {formatLinearStat(
-      "magic_damage_percent_bonus",
+    on other targets each gain {formatLinearPercent(
       skill.magic_damage_percent_bonus,
     )}. Your magic lifetaps also heal more.
   </p>

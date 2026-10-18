@@ -28,7 +28,7 @@
   {#if selectedCount > 0}
     <Separator orientation="vertical" class="mx-2 h-4" />
     <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-      {selectedCount} (match {mode})
+      {selectedCount} ({mode})
     </Badge>
   {/if}
   <ChevronDownIcon

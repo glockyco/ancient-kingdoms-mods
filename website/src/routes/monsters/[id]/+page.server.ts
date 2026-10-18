@@ -26,12 +26,10 @@ import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { statAtLevel } from "$lib/utils/monster-stats";
 import { loadAcquisition } from "$lib/server/acquisition";
-import { loadAcquisitionItems } from "$lib/acquisition/items";
-import {
-  projectAcquisitionNames,
-  projectMonsterLoot,
-} from "$lib/acquisition/projections";
+import { evaluateOutputQuantity } from "$lib/acquisition/rules";
+import { projectMonsterLoot } from "$lib/acquisition/projections";
 import { contextualMonsterDrops } from "$lib/server/world-acquisition";
+import { monsterFatecharm } from "$lib/utils/fatecharm";
 import {
   formatAltarRequirement,
   type AltarThresholds,
@@ -39,7 +37,6 @@ import {
 import {
   altarOutcomeSemantics,
   consolidateAltarTiers,
-  isAltarTierRoot,
 } from "$lib/server/altar-tier-summaries";
 
 export const prerender = true;
@@ -104,7 +101,6 @@ export const load: PageServerLoad = async ({
     kind: "monsters",
     monsterIds: [params.id],
   });
-  const acquisitionItems = await loadAcquisitionItems(execute, acquisition);
   const loot = projectMonsterLoot(acquisition, params.id);
   const locationName = (domain: string, id: string | null | undefined) => {
     const name = id ? acquisition.entities.get(domain)?.get(id)?.name : null;
@@ -216,29 +212,6 @@ export const load: PageServerLoad = async ({
       };
     },
   ).map(({ value }) => value);
-  const goldMethods = consolidateAltarTiers(
-    loot.contexts.filter((method) =>
-      method.outputs.some((output) => output.resource_kind === "gold"),
-    ),
-    (method) => method,
-    (method) =>
-      altarOutcomeSemantics(
-        method,
-        method.outputs.filter((output) => output.resource_kind === "gold"),
-        method.probabilityResults.filter(
-          (result) => result.target.kind === "gold",
-        ),
-      ),
-  ).map(({ value, acrossTiers }) =>
-    acrossTiers
-      ? {
-          ...value,
-          requirements: value.requirements.filter(
-            (root) => !isAltarTierRoot(root),
-          ),
-        }
-      : value,
-  );
   const aggroMessages: string[] = monsterRaw.aggro_messages
     ? JSON.parse(monsterRaw.aggro_messages as string)
     : [];
@@ -344,6 +317,24 @@ export const load: PageServerLoad = async ({
     improve_faction: improveFaction,
     decrease_faction: decreaseFaction,
   };
+  const goldQuantities = loot.contexts.flatMap((method) =>
+    method.outputs
+      .filter((output) => output.resource_kind === "gold")
+      .flatMap((output) => {
+        const quantity = evaluateOutputQuantity(output);
+        return quantity.kind === "exact"
+          ? [{ min: quantity.value, max: quantity.value }]
+          : quantity.kind === "range" && quantity.max !== null
+            ? [{ min: quantity.min, max: quantity.max }]
+            : [];
+      }),
+  );
+  monster.gold_min = goldQuantities.length
+    ? Math.min(...goldQuantities.map((quantity) => quantity.min))
+    : 0;
+  monster.gold_max = goldQuantities.length
+    ? Math.max(...goldQuantities.map((quantity) => quantity.max))
+    : 0;
 
   // Get all spawn locations with source info
   const spawnsRaw = db
@@ -767,13 +758,13 @@ export const load: PageServerLoad = async ({
       `
     SELECT q.id, q.name, q.level_required, q.level_recommended,
       q.is_main_quest, q.is_epic_quest, q.is_adventurer_quest, q.is_repeatable,
-      'Kill' AS display_type, o.amount, NULL AS item_id, NULL AS item_name
+      'Kill' AS display_type, o.amount, NULL AS item_id, NULL AS item_name, NULL AS quality
     FROM quest_objectives o JOIN quest_objective_monsters target ON target.id = o.id
     JOIN quests q ON q.id = o.quest_id WHERE target.monster_id = ?
     UNION ALL
     SELECT q.id, q.name, q.level_required, q.level_recommended,
       q.is_main_quest, q.is_epic_quest, q.is_adventurer_quest, q.is_repeatable,
-      q.display_type, o.amount, i.id AS item_id, i.name AS item_name
+      q.display_type, o.amount, i.id AS item_id, i.name AS item_name, i.quality
     FROM quest_objectives o JOIN quest_objective_items target ON target.id = o.id
     JOIN items i ON i.id = target.item_id JOIN quests q ON q.id = o.quest_id
     WHERE target.item_id IN (SELECT DISTINCT value FROM json_each(?))
@@ -942,12 +933,14 @@ export const load: PageServerLoad = async ({
     factionIds: getFactionIdsByName(),
     description,
     drops,
-    loot,
-    acquisitionItems,
-    acquisitionNames: projectAcquisitionNames(acquisition),
-    lootContextLabels,
-    lootCommonContext,
-    goldMethods,
+    fatecharms: [
+      ...new Map(
+        loot.contexts.flatMap((method) => {
+          const item = monsterFatecharm(acquisition, method);
+          return item ? [[item.id, item] as const] : [];
+        }),
+      ).values(),
+    ].sort((a, b) => a.name.localeCompare(b.name)),
     combatSummoners,
     altarContext,
     spawns,

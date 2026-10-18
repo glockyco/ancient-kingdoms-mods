@@ -87,29 +87,29 @@ export function formatDuration(seconds: number): string {
  * Maps internal item type identifiers to display names.
  */
 const itemTypeDisplayNames: Record<string, string> = {
-  ammo: "Ammunition",
-  armor_set_bonus: "Armor set bonus",
+  ammo: "Ammo",
+  armor_set_bonus: "Armor Set Bonus",
   augment: "Augment",
   backpack: "Backpack",
   book: "Book",
-  chest: "Loot container",
+  chest: "Chest",
   equipment: "Equipment",
   costume: "Costume",
   food: "Food",
   fragment: "Fragment",
   general: "General",
-  merge: "Combinable item",
+  merge: "Merge",
   mount: "Mount",
   pack: "Pack",
-  pet: "Pet whistle",
+  pet: "Pet",
   potion: "Potion",
-  random: "Mystery container",
+  random: "Random",
   recipe: "Recipe",
   relic: "Relic",
   scroll: "Scroll",
-  structure: "Furniture",
+  structure: "Structure",
   travel: "Travel",
-  treasure_map: "Treasure map",
+  treasure_map: "Treasure Map",
   weapon: "Weapon",
 };
 
@@ -215,7 +215,7 @@ export function formatSpawnTimeWindow(
   // 0-0 or both same means no restriction (24h spawn)
   if ((start === 0 && end === 0) || start === end) return null;
   const formatHour = (h: number) => `${h.toString().padStart(2, "0")}:00`;
-  return `${formatHour(start)} to ${formatHour(end)}`;
+  return `${formatHour(start)}-${formatHour(end)}`;
 }
 
 /**
@@ -242,9 +242,14 @@ export function getQualityTextColorClass(quality: number): string {
   return "text-quality-text-common";
 }
 
+/** Get the border class that frames an item icon in its quality color. */
+export function getQualityBorderClass(quality: number): string {
+  return `border-quality-${QUALITY_IDS[quality] ?? "common"}`;
+}
+
 /**
  * Format gathering resource respawn time with type-specific logic:
- * - Radiant Sparks: Fixed range from 1m 40s to 1h
+ * - Radiant Sparks: Fixed "1m40s – 1h" range
  * - Minerals: Range from half respawn to full respawn
  * - Plants/Other: Single value
  *
@@ -257,13 +262,13 @@ export function formatGatheringRespawn(
 ): string {
   // Source: server-scripts/GatherItem.cs:286-289,379-382 — Random.Range(100f, 3600f)
   if (type === "gathering_spark" || type === "Radiant Spark") {
-    return "1m 40s to 1h";
+    return "1m40s – 1h";
   }
   // Source: server-scripts/GatherItem.cs:864-872 — mineral and plant readiness uses Random.Range with half and full timeToWaitReady
   if ((type === "gathering_mineral" || type === "Mineral") && respawnTime > 0) {
     const min = formatDuration(respawnTime / 2);
     const max = formatDuration(respawnTime);
-    return `${min} to ${max}`;
+    return `${min} – ${max}`;
   }
   return formatDuration(respawnTime);
 }

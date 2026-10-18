@@ -8,6 +8,7 @@
     type EntityImageDomain,
   } from "$lib/utils/entityImage";
   import { cn } from "$lib/utils.js";
+  import { getQualityBorderClass } from "$lib/utils/format";
 
   /**
    * A link to an entity with an explicit presentation contract.
@@ -37,6 +38,8 @@
     variant?: "text" | "reference";
     colorClass?: string;
     qualityClass?: string;
+    /** Item quality; frames the icon in that quality's color. */
+    quality?: number | null;
     nameClass?: string;
     maxWidth?: string;
     trailing?: Snippet;
@@ -58,6 +61,7 @@
     variant = "text",
     colorClass = "text-blue-600 dark:text-blue-400",
     qualityClass,
+    quality = null,
     class: className,
     nameClass,
     maxWidth,
@@ -109,6 +113,7 @@
       width={imageWidth ?? size}
       height={imageHeight ?? size}
       class="shrink-0"
+      borderClass={quality == null ? undefined : getQualityBorderClass(quality)}
     />
   {/if}
   <span class={cn("min-w-0", maxWidth && "truncate", qualityClass, nameClass)}

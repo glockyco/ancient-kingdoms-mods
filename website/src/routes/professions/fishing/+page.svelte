@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { formatPercent, formatNumber } from "$lib/utils/format";
+  function formatPercent(value: number, digits = 1): string {
+    return `${(value * 100).toFixed(digits)}%`;
+  }
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -13,7 +14,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import { untrack } from "svelte";
   import { SvelteSet } from "svelte/reactivity";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import {
     fishFallbackPoolForSpotTier,
     fishOutcomeRowsForSpot,
@@ -22,17 +23,15 @@
     fishingExperienceForTier,
     fishingMasteryGainChance,
     fishingMasteryGainRange,
+    fishingSpotSuccessChance,
     type FishingOutcomeRow,
     type FishPoolItem,
   } from "$lib/utils/fishing";
   import { getQualityTextColorClass, toRomanNumeral } from "$lib/utils/format";
   import type { PageData } from "./$types";
-  import {
-    professionAttempt,
-    calculateMethodProbabilities,
-  } from "$lib/acquisition/rules";
 
   let { data }: { data: PageData } = $props();
+  const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
 
   let skillLevel = $state(0);
   let selectedCostumeIds = new SvelteSet<string>();
@@ -52,21 +51,22 @@
   const trashFish = $derived(data.trashFish);
   const fishPoolsByQuality = $derived.by(() => {
     const pools: Record<number, FishPoolItem[]> = {};
-    const fallbackPools = new Set(
+    const fallbackPoolIds = new Set(
       data.spotAcquisitionRows.pools
         .filter((pool) => pool.kind === "fishing_fallback")
         .map((pool) => pool.id),
     );
     for (const entry of data.spotAcquisitionRows.poolEntries) {
-      if (!fallbackPools.has(entry.pool_id) || entry.quality === null) continue;
-      const publicFish = data.fishPoolsByQuality[entry.quality]?.find(
+      if (!fallbackPoolIds.has(entry.pool_id) || entry.quality === null)
+        continue;
+      const fish = data.fishPoolsByQuality[entry.quality]?.find(
         (fish) => fish.item_id === entry.item_id,
       );
       (pools[entry.quality] ??= []).push({
         itemId: entry.item_id ?? entry.id,
-        itemName: publicFish?.item_name ?? "Unpublished fish",
+        itemName: fish?.item_name ?? "",
         quality: entry.quality,
-        tooltipHtml: publicFish?.tooltip_html ?? null,
+        tooltipHtml: fish?.tooltip_html ?? null,
       });
     }
     return pools;
@@ -86,45 +86,12 @@
   const selectedRodQuality = $derived(selectedRod?.quality ?? 0);
   const selectedSpotSuccessChance = $derived(
     selectedSpot
-      ? professionAttempt(
-          "fishing",
-          selectedSpot.level,
-          skillLevel / 100,
-          selectedRod ? selectedRodQuality : null,
-        ).displayed
+      ? fishingSpotSuccessChance({
+          rodQuality: selectedRodQuality,
+          fishingPercent: skillLevel,
+          spotTier: selectedSpot.level,
+        })
       : 0,
-  );
-
-  const selectedMethods = $derived(
-    data.spotMethods
-      .filter((method) =>
-        method.providers.some(
-          (provider) =>
-            provider.ref.kind === "resource_spawns" &&
-            provider.ref.id === selectedSpot?.id,
-        ),
-      )
-      .map((method) => ({
-        ...method,
-        probabilityResults: calculateMethodProbabilities(
-          data.spotAcquisitionRows,
-          data.spotAcquisitionRows.methods.find(
-            (row) => row.id === method.methodId,
-          )!,
-          method.detail,
-          {
-            assumptions: {
-              scenario: "entered",
-              questNeed: "none",
-              fatecharm: false,
-              treasureHunter: 0,
-              professionFraction: skillLevel / 100,
-              toolQuality: selectedRod ? selectedRodQuality : null,
-              costumePieces: fishermanCostumePieces,
-            },
-          },
-        ),
-      })),
   );
 
   const masteryGainChance = $derived(
@@ -152,25 +119,31 @@
   const outcomeRows = $derived.by(() => {
     if (!selectedSpot) return [];
 
-    const method = selectedMethods[0];
+    const method = data.spotMethods.find((method) =>
+      method.providers.some(
+        (provider) =>
+          provider.ref.kind === "resource_spawns" &&
+          provider.ref.id === selectedSpot.id,
+      ),
+    );
     const binding =
       data.spotAcquisitionRows.facts.acquisition_method_fishing_rules?.find(
         (row) => row.method_id === method?.methodId,
       );
-    const fishingRule = data.spotAcquisitionRows.facts.loot_fishing_rules?.find(
+    const rule = data.spotAcquisitionRows.facts.loot_fishing_rules?.find(
       (row) => row.id === binding?.fishing_rule_id,
     );
     const spotDrops = data.spotAcquisitionRows.poolEntries
-      .filter((entry) => entry.pool_id === fishingRule?.primary_pool_id)
+      .filter((entry) => entry.pool_id === rule?.primary_pool_id)
       .map((entry) => {
-        const publicFish = selectedSpot.drops.find(
+        const fish = selectedSpot.drops.find(
           (drop) => drop.item_id === entry.item_id,
         );
         return {
           itemId: entry.item_id ?? entry.id,
-          itemName: publicFish?.item_name ?? "Unpublished fish",
+          itemName: fish?.item_name ?? "",
           quality: entry.quality ?? 0,
-          tooltipHtml: publicFish?.tooltip_html ?? null,
+          tooltipHtml: fish?.tooltip_html ?? null,
           probability: entry.probability,
         };
       });
@@ -266,7 +239,36 @@
   }
 
   function getFishPoolByTier(tier: number): FishPoolItem[] {
-    return fishPoolsByQuality[tier - 1] ?? [];
+    return (fishPoolsByQuality[tier - 1] ?? []).filter(
+      (fish) => data.acquisitionItems[fish.itemId],
+    );
+  }
+
+  function getSourcesByType(
+    sources: PageData["rods"][number]["sources"],
+  ): [
+    PageData["rods"][number]["sources"][number]["type"],
+    PageData["rods"][number]["sources"],
+  ][] {
+    const grouped: [
+      PageData["rods"][number]["sources"][number]["type"],
+      PageData["rods"][number]["sources"],
+    ][] = [];
+
+    for (const source of sources) {
+      const group = grouped.find(([type]) => type === source.type);
+      if (group) {
+        group[1].push(source);
+      } else {
+        grouped.push([source.type, [source]]);
+      }
+    }
+
+    return grouped;
+  }
+
+  function visibleSources<T>(sources: T[]): T[] {
+    return sources.slice(0, MAX_VISIBLE_SOURCES_PER_TYPE);
   }
 
   function selectSpot(index: number): void {
@@ -310,8 +312,8 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`${data.profession.description} Fishing spot tiers, bite timing, fish catch odds, Fisherman costume bonuses, foods and potions.`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
+  description={`${data.profession.description} Fishing spot tiers, bite timing, fish catch odds, Fisherman set bonuses, foods, and potions.`}
   path="/professions/fishing"
 />
 
@@ -385,8 +387,8 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Use a rod from your inventory to select it. If the selected rod is
-            missing or invalid, the game uses your highest-quality Fishing Rod.
+            If your selected rod is missing or invalid, the game selects the
+            highest-quality Fishing Rod in your inventory.
           </p>
         </div>
       </div>
@@ -412,12 +414,12 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
-          <div>Click the spot again when !!! appears.</div>
+          <div>Interact with the spot when the fish bites.</div>
           <!-- Source: server-scripts/GatherItem.cs:1098-1116 — the second interaction must fall inside the tier's bite window. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
-              !!! appears above your character after {castDelay.min} to {castDelay.max}
-              seconds.
+              After the {castDelay.min}–{castDelay.max} second cast delay, interact
+              with the spot again.
             </span>
             <span class="block">
               The response window lasts 2 seconds at Tier I, 1.5 at Tier II, 1
@@ -431,12 +433,11 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">4</div>
         <div>
-          <div>Check your bite chance.</div>
+          <div>Wait for a bite.</div>
           <!-- Source: server-scripts/GatherItem.cs:698-708 — rod quality, Fishing skill, and spot tier determine a separate success roll. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Better rods and higher Fishing skill improve your bite chance. Hover
-            over a spot to see its Fishing Probability. You need at least 20% to
-            fish there.
+            Rod quality, Fishing skill, and spot tier decide whether the attempt
+            succeeds.
           </p>
         </div>
       </div>
@@ -447,19 +448,29 @@
           <div>Catch a fish, trash, or nothing.</div>
           <!-- Source: server-scripts/GatherItem.cs:708-797 — after a bite, the spot's fish gets the first chance. On failure, lower-tier fish, trash, or escape can follow. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            After a bite, each 10% Fishing adds 5 percentage points to the catch
-            chance for the spot's randomly selected fish, up to 100%. If you
-            miss that fish, higher-tier spots can instead give <a
-              href="#fishing-fallback-pools"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >fish from lower tiers</a
-            >. Trash and escapes are also possible. Keep inventory space for
-            your catch. The
+            <span class="block">
+              When a fish bites, the game first tries to catch one of the fish
+              listed for that spot.
+            </span>
+            <span class="block">
+              If the first attempt does not catch a fish, higher-tier spots can
+              instead catch a random <a
+                href="#fishing-fallback-pools"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >fish from lower tiers</a
+              >.
+            </span>
+            <span class="block">
+              Tier II spots can catch Tier I fish, Tier III spots can catch Tier
+              I–II fish, and Tier IV spots can catch Tier I–III fish.
+            </span>
+          </p>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            If you catch no fish from the spot or a lower tier, you either catch
             <a
-              href="#calculator"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >calculator</a
-            > shows each outcome's chance for your rod, skill and spot.
+              href="#fishing-trash"
+              class="text-blue-600 hover:underline dark:text-blue-400">trash</a
+            > or the fish gets away.
           </p>
         </div>
       </div>
@@ -469,14 +480,13 @@
         <div>
           <div>Gain experience and possibly Fishing skill.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A bite gives XP even if you catch nothing. Double XP doubles this
-            reward. Tier I stops raising Fishing above 25%, Tier II above 50%
-            and Tier III above 75%.
+            A bite gives experience based on the spot's tier and can improve
+            Fishing until you pass that tier's skill limit.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
           >
-            <span>Achievement at {data.profession.max_level}%:</span>
+            <span>Max Level: {data.profession.max_level}%</span>
             {#if data.profession.achievement_id}
               <AchievementLink
                 achievementId={data.profession.achievement_id}
@@ -615,10 +625,6 @@
           </p>
         {/if}
         <div>
-          <p class="mb-2 text-sm text-muted-foreground">
-            Fisherman costume pieces worn. Each adds 2 percentage points to the
-            chance to catch the spot's selected fish.
-          </p>
           <div
             class="grid gap-2 rounded-md border bg-background p-2 sm:grid-cols-3"
           >
@@ -639,6 +645,7 @@
                 <ItemLink
                   itemId={piece.item_id}
                   itemName={piece.item_name}
+                  quality={piece.quality}
                   tooltipHtml={piece.tooltip_html}
                   imageAvailable={data.itemIconPaths[piece.item_id]}
                   colorClass={getQualityTextColorClass(piece.quality)}
@@ -653,16 +660,15 @@
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">Bite chance per cast</div>
           <div class="text-2xl font-semibold">
-            {formatPercent(selectedSpotSuccessChance, {
-              decimals: 1,
-              trailingZeros: true,
-            })}
+            {formatPercent(selectedSpotSuccessChance)}
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">Base XP per bite</div>
+          <div class="text-sm text-muted-foreground">
+            XP per successful cast
+          </div>
           <div class="text-2xl font-semibold">
-            {formatNumber(fishingExperienceForTier(selectedSpot.level))}
+            {fishingExperienceForTier(selectedSpot.level).toLocaleString()}
           </div>
         </div>
         <div class="rounded-lg border p-4">
@@ -670,25 +676,18 @@
             Fishing gain chance per cast
           </div>
           <div class="text-2xl font-semibold">
-            {formatPercent(selectedSpotSuccessChance * masteryGainChance, {
-              decimals: 1,
-              trailingZeros: true,
-            })}
+            {formatPercent(selectedSpotSuccessChance * masteryGainChance)}
           </div>
         </div>
         <div class="rounded-lg border p-4">
-          <div class="text-sm text-muted-foreground">Each Fishing increase</div>
+          <div class="text-sm text-muted-foreground">
+            Fishing gain per increase
+          </div>
           <div class="text-2xl font-semibold">
-            {#if selectedSpotSuccessChance === 0}
-              <span class="text-base">Fishing skill too low to fish here</span>
-            {:else if masteryGainChance > 0}
-              {formatPercent(masteryGainRange.min / 100, {
-                decimals: 2,
-                trailingZeros: true,
-              })} – {formatPercent(masteryGainRange.max / 100, {
-                decimals: 2,
-                trailingZeros: true,
-              })}
+            {#if masteryGainChance > 0}
+              {masteryGainRange.min.toFixed(2)}% – {masteryGainRange.max.toFixed(
+                2,
+              )}%
             {:else if skillLevel >= 100}
               <span class="text-base">No further skill gain</span>
             {:else}
@@ -699,11 +698,7 @@
         <div class="rounded-lg border p-4">
           <div class="text-sm text-muted-foreground">Click window</div>
           <div class="text-2xl font-semibold">
-            {formatNumber(fishingClickWindowSeconds(selectedSpot.level), {
-              decimals: 2,
-              trailingZeros: false,
-              grouping: false,
-            })}s
+            {fishingClickWindowSeconds(selectedSpot.level).toFixed(2)}s
           </div>
         </div>
         <div class="rounded-lg border p-4">
@@ -728,10 +723,7 @@
                 <tr class="border-t hover:bg-muted/25">
                   <td class="p-3">{row.label}</td>
                   <td class="p-3 text-right font-mono">
-                    {formatPercent(row.chance, {
-                      decimals: 1,
-                      trailingZeros: true,
-                    })}
+                    {formatPercent(row.chance)}
                   </td>
                 </tr>
               {/each}
@@ -768,6 +760,7 @@
                       <ItemLink
                         itemId={row.itemId ?? ""}
                         itemName={row.label}
+                        quality={row.quality ?? undefined}
                         tooltipHtml={row.tooltipHtml}
                         imageAvailable={row.itemId
                           ? data.itemIconPaths[row.itemId]
@@ -779,10 +772,7 @@
                       {row.note}
                     </td>
                     <td class="p-3 text-right font-mono">
-                      {formatPercent(row.chance, {
-                        decimals: 1,
-                        trailingZeros: true,
-                      })}
+                      {formatPercent(row.chance)}
                     </td>
                   </tr>
                 {/each}
@@ -791,18 +781,6 @@
           </div>
         </div>
       {/if}
-      <details class="mt-4">
-        <summary class="cursor-pointer text-blue-600 dark:text-blue-400"
-          >Gathering methods and requirements</summary
-        >
-        <div class="mt-3">
-          <MethodList
-            methods={selectedMethods}
-            items={data.acquisitionItems}
-            names={data.acquisitionNames}
-          />
-        </div>
-      </details>
     {:else}
       <p class="mt-4 text-sm text-muted-foreground">
         No fishing spots are listed.
@@ -813,10 +791,6 @@
     <div class="flex items-center gap-2">
       <h2 class="text-xl font-semibold">Fishing Rods ({data.rods.length})</h2>
     </div>
-    <p class="mt-2 text-sm text-muted-foreground">
-      Source level estimates where a rod can be obtained. It is not a
-      character-level requirement to use it.
-    </p>
     <div class="mt-4 overflow-hidden rounded-lg border">
       <div class="overflow-x-auto">
         <table class="w-full whitespace-nowrap">
@@ -834,6 +808,7 @@
                   <ItemLink
                     itemId={rod.item_id}
                     itemName={rod.item_name}
+                    quality={rod.quality}
                     tooltipHtml={rod.tooltip_html}
                     imageAvailable={data.itemIconPaths[rod.item_id]}
                     colorClass={getQualityTextColorClass(rod.quality)}
@@ -848,20 +823,40 @@
                 </td>
                 <td class="p-3">
                   {#if rod.sources.length > 0}
-                    <details>
-                      <summary
-                        class="cursor-pointer text-blue-600 dark:text-blue-400"
-                        >Acquisition methods</summary
-                      >
-                      <div class="mt-2">
-                        <MethodList
-                          methods={rod.sources}
-                          items={data.acquisitionItems}
-                          names={data.acquisitionNames}
-                          selectedItemId={rod.item_id}
-                        />
-                      </div>
-                    </details>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {#each getSourcesByType(rod.sources) as [type, sources] (type)}
+                        {@const sourceConfig = SOURCE_TYPE_CONFIG[type]}
+                        <div class="flex flex-wrap items-center gap-1.5">
+                          <sourceConfig.icon
+                            class="h-4 w-4 shrink-0 {sourceConfig.color}"
+                            aria-hidden="true"
+                          />
+                          <span class="text-sm text-muted-foreground">
+                            {sourceConfig.label}:
+                          </span>
+                          {#each visibleSources(sources) as source, i (source.id)}
+                            <a
+                              href="{sourceConfig.linkPrefix}{source.id}"
+                              class="text-blue-600 hover:underline dark:text-blue-400"
+                            >
+                              {source.name}
+                            </a>
+                            {#if i < visibleSources(sources).length - 1}<span
+                                class="text-muted-foreground">,</span
+                              >{/if}
+                          {/each}
+                          {#if sources.length > MAX_VISIBLE_SOURCES_PER_TYPE}
+                            <a
+                              href="/items/{rod.item_id}"
+                              class="text-sm text-muted-foreground hover:underline"
+                            >
+                              +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE}
+                              more
+                            </a>
+                          {/if}
+                        </div>
+                      {/each}
+                    </div>
                   {:else}
                     <span class="text-muted-foreground">—</span>
                   {/if}
@@ -912,6 +907,7 @@
                       <ItemLink
                         itemId={drop.item_id}
                         itemName={drop.item_name}
+                        quality={drop.quality}
                         tooltipHtml={drop.tooltip_html}
                         imageAvailable={data.itemIconPaths[drop.item_id]}
                         colorClass={getQualityTextColorClass(drop.quality)}
@@ -963,17 +959,14 @@
           </div>
           <div class="flex flex-wrap gap-x-3 gap-y-1">
             {#each pool as fish (fish.itemId)}
-              {#if data.acquisitionItems[fish.itemId]}
-                <ItemLink
-                  itemId={fish.itemId}
-                  itemName={fish.itemName}
-                  tooltipHtml={fish.tooltipHtml}
-                  imageAvailable={data.itemIconPaths[fish.itemId]}
-                  colorClass={getQualityTextColorClass(fish.quality)}
-                />
-              {:else}
-                <span class="text-muted-foreground">Unpublished fish</span>
-              {/if}
+              <ItemLink
+                itemId={fish.itemId}
+                itemName={fish.itemName}
+                quality={fish.quality}
+                tooltipHtml={fish.tooltipHtml}
+                imageAvailable={data.itemIconPaths[fish.itemId]}
+                colorClass={getQualityTextColorClass(fish.quality)}
+              />
             {/each}
           </div>
         </div>
@@ -997,12 +990,13 @@
             </tr>
           </thead>
           <tbody>
-            {#each trashFish as item, index (index)}
+            {#each trashFish as item (item.item_id)}
               <tr class="border-t hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink
                     itemId={item.item_id}
                     itemName={item.item_name}
+                    quality={item.quality}
                     tooltipHtml={item.tooltip_html}
                     imageAvailable={data.itemIconPaths[item.item_id]}
                     colorClass={getQualityTextColorClass(item.quality)}
@@ -1037,6 +1031,7 @@
                   <ItemLink
                     itemId={recipe.result_item_id}
                     itemName={recipe.result_item_name}
+                    quality={recipe.result_quality}
                     tooltipHtml={recipe.result_tooltip_html}
                     imageAvailable={data.itemIconPaths[recipe.result_item_id]}
                     colorClass={getQualityTextColorClass(recipe.result_quality)}
@@ -1049,6 +1044,7 @@
                         <ItemLink
                           itemId={ingredient.item_id}
                           itemName={ingredient.item_name}
+                          quality={ingredient.quality}
                           tooltipHtml={ingredient.tooltip_html}
                           imageAvailable={data.itemIconPaths[
                             ingredient.item_id
@@ -1098,6 +1094,7 @@
                     <ItemLink
                       itemId={recipe.result_item_id}
                       itemName={recipe.result_item_name}
+                      quality={recipe.result_quality}
                       tooltipHtml={recipe.result_tooltip_html}
                       imageAvailable={data.itemIconPaths[recipe.result_item_id]}
                       colorClass={getQualityTextColorClass(
@@ -1112,6 +1109,7 @@
                           <ItemLink
                             itemId={ingredient.item_id}
                             itemName={ingredient.item_name}
+                            quality={ingredient.quality}
                             tooltipHtml={ingredient.tooltip_html}
                             imageAvailable={data.itemIconPaths[
                               ingredient.item_id

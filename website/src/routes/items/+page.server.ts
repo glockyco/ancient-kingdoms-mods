@@ -42,7 +42,7 @@ export const load: PageServerLoad = async () => {
     backpack_slots: item.backpack_slots,
     backpack_is_unique: item.backpack_is_unique,
     stat_count: item.stat_count,
-    alchemy_recipe_tiers: item.alchemy_recipe_tiers,
+    alchemy_recipe_level_required: item.alchemy_recipe_level_required,
     mount_speed: item.mount_speed,
     augment_is_defensive: item.augment_is_defensive,
     augment_armor_set_name: item.augment_armor_set_name,

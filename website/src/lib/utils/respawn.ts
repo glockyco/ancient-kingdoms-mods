@@ -1,4 +1,3 @@
-import { formatPercent } from "$lib/utils/format";
 import type { RespawnInfo } from "$lib/types/respawn";
 import { formatDuration } from "./format";
 
@@ -7,8 +6,8 @@ import { formatDuration } from "./format";
  */
 export const SPAWN_TYPE_DISPLAY: Record<string, string> = {
   altar: "Altar",
-  summon: "Guards must die",
-  placeholder: "Spawned by another monster's death",
+  summon: "Blocked",
+  placeholder: "On Death",
 };
 
 /**
@@ -24,7 +23,8 @@ export function formatRespawnTime(info: RespawnInfo): string {
  */
 export function formatRespawnChance(info: RespawnInfo): string {
   if (info.no_respawn) return "-";
-  return formatPercent(info.respawn_probability, { decimals: 0 });
+  if (info.respawn_probability === 1) return "-";
+  return `${Math.round(info.respawn_probability * 100)}%`;
 }
 
 /**
@@ -32,7 +32,7 @@ export function formatRespawnChance(info: RespawnInfo): string {
  */
 export function formatSpecialSpawn(info: RespawnInfo): string {
   if (info.spawn_time_start !== 0 || info.spawn_time_end !== 0) {
-    return `${info.spawn_time_start}:00 to ${info.spawn_time_end}:00 game time`;
+    return `${info.spawn_time_start}:00-${info.spawn_time_end}:00`;
   }
   if (info.special_spawn_type) {
     return (

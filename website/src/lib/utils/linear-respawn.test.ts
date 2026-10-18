@@ -55,7 +55,7 @@ describe("linear progression and respawn boundaries", () => {
     expect(
       formatRespawnTime({ ...spawn, no_respawn: true, respawn_time: 90 }),
     ).toBe("-");
-    expect(formatRespawnChance(spawn)).toBe("100%");
+    expect(formatRespawnChance(spawn)).toBe("-");
     expect(formatRespawnChance({ ...spawn, respawn_probability: 0 })).toBe(
       "0%",
     );

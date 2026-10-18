@@ -82,6 +82,8 @@ describe("faction chest reputation sources", () => {
         id: "quest",
         name: "Shared quest",
         required_value: 1000,
+        giver_id: "giver_a",
+        giver_name: "First giver",
         givers: [
           { id: "giver_a", name: "First giver" },
           { id: "giver_b", name: "Second giver" },

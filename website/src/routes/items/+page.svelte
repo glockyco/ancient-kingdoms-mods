@@ -1,6 +1,5 @@
 <script lang="ts">
   import Package from "@lucide/svelte/icons/package";
-  import { untrack } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import { createStatPanelState } from "$lib/utils/stat-panel-state.svelte";
   import {
@@ -32,6 +31,8 @@
   import { formatStatField, statField, statFieldName } from "$lib/stats";
 
   let { data } = $props();
+
+  const list = $derived(data);
 
   const collectionNode = $derived(
     buildCollectionPage({
@@ -88,9 +89,7 @@
   const PAGE_SIZE = 20;
   const statPanel = createStatPanelState("items-stats-panel-open");
 
-  // Precomputed at build time - no JSON parsing needed on client
-  // Use untrack to capture constants without reactive tracking
-  const { itemStatKeys, itemClassKeys } = untrack(() => data);
+  const itemStatKeys = $derived(list.itemStatKeys);
 
   import { QUALITY_NAMES, QUALITY_IDS } from "$lib/constants/quality";
 
@@ -103,7 +102,7 @@
 
     // Equipment/weapons: show stat count (pre-computed in SQL)
     if (type === "equipment" || type === "weapon") {
-      if (item.stat_count > 0) return `${item.stat_count} stat bonuses`;
+      if (item.stat_count > 0) return `${item.stat_count} stats`;
       return "-";
     }
 
@@ -112,8 +111,9 @@
       return `${item.mount_speed} speed`;
     }
 
-    if (type === "potion" && item.alchemy_recipe_tiers.length) {
-      return `Tier ${item.alchemy_recipe_tiers.map((tier) => ["I", "II", "III", "IV", "V"][tier] ?? tier).join(" / ")}`;
+    // Potions: show tier from alchemy recipe level
+    if (type === "potion" && item.alchemy_recipe_level_required != null) {
+      return `Tier ${item.alchemy_recipe_level_required + 1}`;
     }
 
     // Backpacks: show capacity
@@ -132,35 +132,37 @@
 
   // Get unique item types for filter
   const uniqueTypes = $derived(
-    Array.from(new Set(data.items.map((item) => item.item_type))).sort(),
+    Array.from(new Set(list.items.map((item) => item.item_type))).sort(),
   );
 
   // Get unique slots for filter
   const uniqueSlots = $derived(
     Array.from(
-      new Set(data.items.map((item) => item.slot).filter((s) => Boolean(s))),
+      new Set(list.items.map((item) => item.slot).filter((s) => Boolean(s))),
     ).sort() as string[],
   );
 
-  // Get unique classes for filter (using precomputed data)
-  const allClasses = Array.from(new Set(Object.values(itemClassKeys).flat()))
-    .filter((c) => c !== "all" && c !== "withheld")
-    .sort();
-
-  // Expand items with no class restriction to include all classes (for correct filtering/faceting)
-  for (const id of Object.keys(itemClassKeys)) {
-    if (
-      itemClassKeys[id].length === 0 ||
-      (itemClassKeys[id].length === 1 && itemClassKeys[id][0] === "all")
-    ) {
-      itemClassKeys[id] = allClasses;
+  // Items with no restriction are stored as ["all"] and expand to every class.
+  const allClasses = $derived(
+    Array.from(new Set(Object.values(list.itemClassKeys).flat()))
+      .filter((name) => name !== "all")
+      .sort(),
+  );
+  const itemClassKeys = $derived.by(() => {
+    const expanded: Record<string, string[]> = {};
+    for (const [id, classes] of Object.entries(list.itemClassKeys)) {
+      expanded[id] =
+        classes.length === 0 || (classes.length === 1 && classes[0] === "all")
+          ? allClasses
+          : classes;
     }
-  }
+    return expanded;
+  });
 
   // Build zone lookup for each item (computed once)
   const itemZoneMap = $derived.by(() => {
     const map = new SvelteMap<string, ItemZoneInfo[]>();
-    for (const iz of data.itemZones) {
+    for (const iz of list.itemZones) {
       if (!map.has(iz.item_id)) {
         map.set(iz.item_id, []);
       }
@@ -172,13 +174,13 @@
   // Get unique zones for filter options
   const uniqueZones = $derived(
     Array.from(
-      new Map(data.itemZones.map((iz) => [iz.zone_id, iz])).values(),
+      new Map(list.itemZones.map((iz) => [iz.zone_id, iz])).values(),
     ).sort((a, b) => a.zone_name.localeCompare(b.zone_name)),
   );
 
   // Add virtual columns for zone filtering
   const dataWithVirtual = $derived(
-    data.items.map((item) => ({
+    list.items.map((item) => ({
       ...item,
       zone_ids: Array.from(
         new Set((itemZoneMap.get(item.id) ?? []).map((z) => z.zone_id)),
@@ -192,7 +194,7 @@
     selectedStats.map((stat) => ({
       id: `stat_${stat}`,
       header: statFieldName(statField("item", stat), "item"),
-      accessorFn: (row) => data.itemStatValues[row.id]?.[stat] ?? 0,
+      accessorFn: (row) => list.itemStatValues[row.id]?.[stat] ?? 0,
       sortDescFirst: true,
       size: 120,
     })),
@@ -224,7 +226,7 @@
     },
     {
       accessorKey: "level_required",
-      header: "Required level",
+      header: "Level",
       size: 100,
       filterFn: (
         row,
@@ -326,7 +328,7 @@
     quality: "Quality",
     name: "Name",
     item_level: "Item Level",
-    level_required: "Required level",
+    level_required: "Level",
     slot: "Slot",
     class: "Class",
     notes: "Notes",
@@ -372,6 +374,7 @@
     <ItemLink
       itemId={row.original.id}
       itemName={row.original.name}
+      quality={row.original.quality}
       tooltipHtml={tooltips.get(row.original.id)}
       imageAvailable={row.original.visual_public_path}
       fallback={Package}
@@ -391,14 +394,7 @@
     >
   {:else if cell.column.id === "class"}
     {@const classes = itemClassKeys[row.original.id] ?? []}
-    {#if classes.includes("withheld")}
-      <ClassPills
-        classes={classes
-          .filter((c) => c !== "withheld")
-          .map((c) => c.toLowerCase())}
-      />
-      <span class="text-muted-foreground">Unpublished restriction</span>
-    {:else if classes.length === allClasses.length}
+    {#if classes.length === allClasses.length}
       <span class="text-muted-foreground">-</span>
     {:else}
       <ClassPills classes={classes.map((c) => c.toLowerCase())} />
@@ -452,7 +448,7 @@
     />
   {/if}
   {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Required level" />
+    <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
   {#if slotCol}
     <DataTableFacetedFilter
@@ -499,6 +495,8 @@
       <DataTableStatPanel
         column={statsCol}
         bind:open={statPanel.open}
+        totalRows={dataWithVirtual.length}
+        filteredRows={table.getFilteredRowModel().rows.length}
         {facetedItemIds}
       />
     {/if}

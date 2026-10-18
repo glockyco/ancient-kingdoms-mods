@@ -2,110 +2,210 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
-  import RecipeIngredients from "$lib/components/RecipeIngredients.svelte";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
+  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import Hammer from "@lucide/svelte/icons/hammer";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
+  import Package from "@lucide/svelte/icons/package";
   import Scroll from "@lucide/svelte/icons/scroll";
   import ListTree from "@lucide/svelte/icons/list-tree";
-  import type { PageData } from "./$types";
-  import type { MethodView } from "$lib/acquisition/types";
-  let { data }: { data: PageData } = $props();
-  const kind = $derived(String(data.variants[0].detail.display_kind));
-  const RecipeIcon = $derived(
-    kind === "alchemy"
-      ? FlaskConical
-      : kind === "cooking"
-        ? ChefHat
-        : kind === "scribing"
-          ? Scroll
-          : Hammer,
-  );
-  function ingredientLabel(method: MethodView): string {
-    return method.costGroups
-      .flatMap((group) => group.inputs)
-      .map((input) => {
-        const name =
-          input.resource_kind === "gold"
-            ? "Gold"
-            : input.withheld
-              ? "Unpublished required item"
-              : data.acquisitionItems[input.item_id ?? ""]?.name;
-        return `${name} ×${input.amount}`;
-      })
-      .join(" + ");
+  let { data } = $props();
+
+  function getRecipeIcon(type: string) {
+    switch (type) {
+      case "Alchemy":
+        return FlaskConical;
+      case "Cooking":
+        return ChefHat;
+      case "Scribing":
+        return Scroll;
+      default:
+        return Hammer;
+    }
   }
+
+  function getTypeColor(type: string) {
+    switch (type) {
+      case "Alchemy":
+        return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200";
+      case "Cooking":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
+      case "Scribing":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+      default:
+        return "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200";
+    }
+  }
+
+  function formatStationType(station: string | null): string {
+    if (!station) return "Unknown";
+    const mapping: Record<string, string> = {
+      cooking: "Cooking Oven",
+      alchemy_table: "Alchemy Table",
+      scribing_table: "Scribing Table",
+      unknown: "Crafting Station",
+    };
+    return mapping[station] ?? station;
+  }
+
+  function formatTier(type: string, tier: number): string {
+    if (type === "Scribing") {
+      return `Mastery ${tier}%`;
+    }
+    const romanNumerals = ["I", "II", "III", "IV", "V"];
+    return `Tier ${romanNumerals[tier] ?? tier}`;
+  }
+
+  const showTier = $derived(
+    data.recipe.type !== "Scribing" || data.recipe.tier > 0,
+  );
+
+  const hasIngredients = $derived(
+    data.obtainabilityTree.recipe &&
+      data.obtainabilityTree.recipe.materials.length > 0,
+  );
+
+  const RecipeIcon = $derived(getRecipeIcon(data.recipe.type));
+  const output = $derived(
+    data.recipe.outputs.find((item) => item.item_id && item.amount !== null),
+  );
 </script>
 
 <Seo
-  title={detailTitle(data.recipe.result_item_name, { family: "Recipe" })}
+  title={`${data.recipe.result_item_name} ${data.recipe.type} Recipe - Ancient Kingdoms`}
   description={data.description}
   path={`/recipes/${data.recipe.id}`}
 />
+
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      { label: "Recipes", href: "/recipes" },
+      { label: "Crafting Recipes", href: "/recipes" },
       { label: data.recipe.result_item_name },
     ]}
   />
-  <div class="flex items-center gap-3 flex-wrap">
-    <RecipeIcon class="h-8 w-8 text-muted-foreground" />
-    <h1 class="text-3xl font-bold">{data.recipe.result_item_name}</h1>
-    <span class="px-2 py-1 rounded text-sm font-medium bg-muted capitalize"
-      >{kind}</span
-    >
+
+  <div>
+    <div class="flex items-center gap-3 flex-wrap">
+      <RecipeIcon class="h-8 w-8 text-muted-foreground" />
+      <h1 class="text-3xl font-bold">{data.recipe.result_item_name}</h1>
+      <span
+        class="px-2 py-1 rounded text-sm font-medium {getTypeColor(
+          data.recipe.type,
+        )}"
+      >
+        {data.recipe.type}
+      </span>
+      {#if showTier}
+        <span class="px-2 py-1 rounded text-sm font-medium bg-muted">
+          {formatTier(data.recipe.type, data.recipe.tier)}
+        </span>
+      {/if}
+    </div>
+    <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
+      <span
+        >Crafted at: {data.providers.length
+          ? [...new Set(data.providers.map((provider) => provider.name))].join(
+              ", ",
+            )
+          : formatStationType(data.recipe.station_type)}</span
+      >
+      {#if data.recipe.xp > 0}
+        <span
+          >XP: <MechanicsLink section="experience"
+            >{data.recipe.xp.toLocaleString()}</MechanicsLink
+          ></span
+        >
+      {/if}
+    </div>
   </div>
-  <section class="bg-muted/30 rounded-md border p-4 space-y-4">
-    <h2 class="text-lg font-semibold">Recipe</h2>
-    {#if data.teachers.length}
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="text-muted-foreground">Taught by</span
-        >{#each data.teachers as teacher (teacher.id)}<ItemLink
-            itemId={teacher.id}
-            itemName={teacher.name}
-            imageAvailable={teacher.icon_path}
-            tooltipHtml={teacher.tooltip_html}
-            variant="reference"
-          />{/each}
-      </div>
-    {/if}
-    {#each data.variants as variant, index (variant.methodId)}
-      <div class="space-y-2">
-        {#if data.variants.length > 1}<h3 class="font-semibold">
-            Alternative {index + 1}: {ingredientLabel(variant)}
-          </h3>{/if}
-        <div class="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          {#if variant.detail.display_kind !== "scribing"}<span
-              >Tier {["I", "II", "III", "IV", "V"][
-                Number(variant.detail.tier)
-              ] ?? String(variant.detail.tier)}</span
-            >{/if}{#if variant.detail.experience !== null}<span
-              >XP: {Number(variant.detail.experience).toLocaleString(
-                "en-US",
-              )}</span
-            >{/if}
-        </div>
-        <MethodList
-          methods={[variant]}
-          items={data.acquisitionItems}
-          names={data.acquisitionNames}
-        />
-      </div>
-    {/each}
-  </section>
+
   <section class="bg-muted/30 rounded-md border p-4 space-y-4">
     <h2 class="text-lg font-semibold flex items-center gap-2">
-      <ListTree class="h-5 w-5 text-muted-foreground" />How to obtain
-      ingredients
+      <Package class="h-5 w-5 text-muted-foreground" />
+      Recipe
     </h2>
-    <RecipeIngredients
-      methods={data.variants}
-      items={data.acquisitionItems}
-      names={data.acquisitionNames}
-    />
+
+    <div class="grid gap-4 lg:grid-cols-3">
+      {#if data.recipe.taught_by_recipe_id && data.recipe.taught_by_recipe_name}
+        <div>
+          <div class="text-sm text-muted-foreground mb-1">Taught by</div>
+          <ItemLink
+            itemId={data.recipe.taught_by_recipe_id}
+            itemName={data.recipe.taught_by_recipe_name}
+            tooltipHtml={data.recipe.taught_by_recipe_tooltip_html}
+            imageAvailable={data.recipe.taught_by_recipe_visual_public_path}
+            quality={data.recipe.taught_by_recipe_quality}
+            variant={data.recipe.taught_by_recipe_visual_public_path
+              ? "reference"
+              : "text"}
+            fallback={Package}
+          />
+        </div>
+      {/if}
+
+      {#if hasIngredients}
+        <div>
+          <div class="text-sm text-muted-foreground mb-1">Requires</div>
+          <div class="space-y-1">
+            {#each data.obtainabilityTree.recipe?.materials ?? [] as mat, index (`${mat.item_id}_${index}`)}
+              <div class="flex items-center gap-2">
+                {#if mat.item_id}
+                  <ItemLink
+                    itemId={mat.item_id}
+                    itemName={mat.item_name}
+                    tooltipHtml={mat.tooltip_html}
+                    imageAvailable={mat.visual_public_path}
+                    quality={mat.quality}
+                    variant="reference"
+                    fallback={Package}
+                  />
+                {:else}
+                  <span>{mat.item_name}</span>
+                {/if}
+                <span class="text-muted-foreground">x{mat.amount}</span>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      {#if output}
+        <div>
+          <div class="text-sm text-muted-foreground mb-1">Creates</div>
+          <div class="flex items-center gap-2">
+            <ItemLink
+              itemId={output.item_id}
+              itemName={output.item_name}
+              tooltipHtml={output.tooltip_html}
+              imageAvailable={output.visual_public_path}
+              quality={output.quality}
+              variant={output.visual_public_path ? "reference" : "text"}
+              fallback={Package}
+            />
+            {#if output.amount !== null && output.amount > 1}
+              <span class="text-muted-foreground">x{output.amount}</span>
+            {/if}
+          </div>
+        </div>
+      {/if}
+    </div>
   </section>
+
+  {#if hasIngredients}
+    <section class="bg-muted/30 rounded-md border p-4">
+      <h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
+        <ListTree class="h-5 w-5 text-muted-foreground" />
+        How to Obtain Ingredients
+      </h2>
+
+      <div class="bg-background rounded-md p-4 border overflow-x-auto">
+        <div class="w-fit pr-2">
+          <ObtainabilityTree node={data.obtainabilityTree} />
+        </div>
+      </div>
+    </section>
+  {/if}
 </div>

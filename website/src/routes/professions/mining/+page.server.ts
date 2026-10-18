@@ -2,19 +2,20 @@ import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
-import { loadItemAcquisition, loadAcquisition } from "$lib/server/acquisition";
+import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
 import type { MethodView } from "$lib/acquisition/types";
-import type { DisplayItems } from "$lib/components/acquisition/display";
 import {
-  summarizePrimaryRewards,
-  type PrimaryReward,
-} from "$lib/utils/primary-rewards";
+  getItemSourceSummaries,
+  getMinimumSourceLevel,
+  groupItemSourceSummaries,
+  type ItemSourceSummary,
+} from "$lib/server/item-source-summary";
+import { summarizePrimaryRewards } from "$lib/utils/primary-rewards";
 import {
   BASELINE_ASSUMPTIONS,
   calculateMethodProbabilities,
 } from "$lib/acquisition/rules";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -27,8 +28,9 @@ interface OreZone {
 interface OreGem {
   item_id: string;
   item_name: string;
+  quality: number;
   tooltip_html: string | null;
-  probabilities: readonly (number | null)[];
+  chance: number | null;
 }
 
 interface MiningOre {
@@ -36,12 +38,13 @@ interface MiningOre {
   name: string;
   tier: number;
   respawn_time: number;
-  gathering_exp: number | null;
-  primaryRewards: readonly PrimaryReward[];
+  gathering_exp: number;
+  reward_item_id: string | null;
+  reward_item_name: string | null;
+  reward_amount: number | null;
   node_count: number;
   zones: OreZone[];
   gems: OreGem[];
-  gemProbabilities: readonly (number | null)[];
   recipe_count: number;
 }
 
@@ -50,7 +53,10 @@ interface Pickaxe {
   name: string;
   quality: number;
   tooltip_html: string | null;
-  sources: readonly MethodView[];
+  source_groups: {
+    type: ItemSourceSummary["type"];
+    sources: ItemSourceSummary[];
+  }[];
   min_source_level: number | null;
 }
 
@@ -85,9 +91,6 @@ interface MiningPageData {
   quests: OreQuest[];
   vendors: OreVendor[];
   itemIconPaths: Record<string, string | null>;
-  acquisitionItems: DisplayItems;
-  acquisitionNames: Readonly<Record<string, string>>;
-  oreMethods: readonly MethodView[];
   totalNodes: number;
 }
 
@@ -96,7 +99,7 @@ interface RawOre {
   name: string;
   tier: number;
   respawn_time: number;
-  gathering_exp: number | null;
+  gathering_exp: number;
 }
 
 export const load: PageServerLoad = async (): Promise<MiningPageData> => {
@@ -248,30 +251,28 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
         return {
           item_id: itemId,
           item_name: item.name,
+          quality: item.quality,
           tooltip_html: item.tooltip_html,
-          probabilities: [
-            ...new Set(methods.map((method) => probability(method, itemId))),
-          ],
+          chance: (() => {
+            const values = [
+              ...new Set(methods.map((method) => probability(method, itemId))),
+            ];
+            return values.length === 1 ? values[0] : null;
+          })(),
         };
       })
       .sort((a, b) => a.item_name.localeCompare(b.item_name));
-    const gemProbabilities = [
-      ...new Set(
-        methods.map((method) => {
-          const values = gems.map((gem) => probability(method, gem.item_id));
-          return values.some((value) => value === null)
-            ? null
-            : values.reduce<number>((sum, value) => sum + value!, 0);
-        }),
-      ),
-    ];
     return {
       ...ore,
-      primaryRewards,
+      reward_item_id: primaryRewards[0]?.itemId ?? null,
+      reward_item_name: primaryRewards[0]?.itemName ?? null,
+      reward_amount:
+        primaryRewards[0]?.quantity.kind === "exact"
+          ? primaryRewards[0].quantity.value
+          : null,
       zones,
       node_count: zones.reduce((total, zone) => total + zone.node_count, 0),
       gems,
-      gemProbabilities,
       recipe_count: recipeCount.count,
     };
   });
@@ -285,31 +286,28 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
     ORDER BY quality
   `,
     )
-    .all() as Omit<Pickaxe, "sources" | "min_source_level">[];
+    .all() as Omit<Pickaxe, "source_groups" | "min_source_level">[];
 
-  const pickaxeAcquisition = await loadItemAcquisition(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    rawPickaxes.map((pickaxe) => pickaxe.id),
-  );
-  const pickaxes: Pickaxe[] = rawPickaxes.map((pickaxe) => ({
-    ...pickaxe,
-    sources: pickaxeAcquisition.sources[pickaxe.id].methods,
-    min_source_level: pickaxeAcquisition.sources[pickaxe.id].sourceLevelHint,
-  }));
-  const acquisitionItems = await loadAcquisitionItems(
-    async (sql, params) =>
-      db.prepare(sql).all(...params) as Record<string, unknown>[],
-    pickaxeAcquisition.model,
-  );
-  Object.assign(
-    acquisitionItems,
-    await loadAcquisitionItems(
-      async (sql, params) =>
-        db.prepare(sql).all(...params) as Record<string, unknown>[],
-      oreAcquisition,
+  const pickaxeSources = groupItemSourceSummaries(
+    await getItemSourceSummaries(
+      db,
+      rawPickaxes.map((pickaxe) => pickaxe.id),
     ),
   );
+  const pickaxes: Pickaxe[] = rawPickaxes.map((pickaxe) => {
+    const sources = pickaxeSources.get(pickaxe.id) ?? [];
+    const byType = new Map<ItemSourceSummary["type"], ItemSourceSummary[]>();
+    for (const source of sources) {
+      const group = byType.get(source.type) ?? [];
+      group.push(source);
+      byType.set(source.type, group);
+    }
+    return {
+      ...pickaxe,
+      source_groups: [...byType].map(([type, sources]) => ({ type, sources })),
+      min_source_level: getMinimumSourceLevel(sources),
+    };
+  });
 
   const quests = db
     .prepare(
@@ -320,7 +318,11 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
       item.item_id AS ore_id,
       i.name AS ore_name,
       objective.amount,
-      objective.role AS purpose,
+      CASE objective.role
+        WHEN 'gather_counter' THEN 'Gather'
+        WHEN 'equipped' THEN 'Equip'
+        ELSE CASE WHEN q.remove_items_on_complete THEN 'Deliver' ELSE 'Have' END
+      END AS purpose,
       q.level_recommended
     FROM quest_objectives objective
     JOIN quest_objective_items item ON item.id = objective.id
@@ -360,12 +362,6 @@ export const load: PageServerLoad = async (): Promise<MiningPageData> => {
     profession,
     ores,
     pickaxes,
-    acquisitionItems,
-    acquisitionNames: {
-      ...projectAcquisitionNames(oreAcquisition),
-      ...projectAcquisitionNames(pickaxeAcquisition.model),
-    },
-    oreMethods: [...oreAcquisition.methodViews.values()],
     itemIconPaths,
     quests,
     vendors,

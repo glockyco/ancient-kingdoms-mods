@@ -1,10 +1,7 @@
 <script lang="ts">
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
-  import { formatPercent } from "$lib/utils/format";
   import { onMount } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -129,10 +126,7 @@
     ...Array.from(
       new Set(
         data.vendorUnlocks.map((unlock) =>
-          formatPercent(unlock.adventuring_level_needed, {
-            decimals: 0,
-            trailingZeros: true,
-          }),
+          formatPercent(unlock.adventuring_level_needed),
         ),
       ),
     ).sort((a, b) => Number.parseFloat(a) - Number.parseFloat(b)),
@@ -190,10 +184,8 @@
       ? data.vendorUnlocks
       : data.vendorUnlocks.filter(
           (unlock) =>
-            formatPercent(unlock.adventuring_level_needed, {
-              decimals: 0,
-              trailingZeros: true,
-            }) === selectedUnlockRequirement,
+            formatPercent(unlock.adventuring_level_needed) ===
+            selectedUnlockRequirement,
         ),
   );
 
@@ -201,10 +193,7 @@
     const groups = new SvelteMap<string, typeof data.vendorUnlocks>();
 
     for (const unlock of filteredVendorUnlocks) {
-      const requirement = formatPercent(unlock.adventuring_level_needed, {
-        decimals: 0,
-        trailingZeros: true,
-      });
+      const requirement = formatPercent(unlock.adventuring_level_needed);
       groups.set(requirement, [...(groups.get(requirement) ?? []), unlock]);
     }
 
@@ -265,9 +254,13 @@
     }).format(date);
   }
 
+  function formatPercent(value: number): string {
+    return `${(value * 100).toFixed(0)}%`;
+  }
+
   function sellerLabel(sellerCount: number): string | null {
     return sellerCount === data.merchants.length
-      ? "All Adventurer Merchants"
+      ? "All Adventurer Vendors"
       : null;
   }
 
@@ -288,7 +281,7 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View the daily Adventurer quest queue, taskgivers, rewards, cooldown rules, and vendor unlocks.`}
   path="/professions/adventuring"
 />
@@ -314,8 +307,8 @@
           </h1>
         </div>
         <p class="mt-2 max-w-3xl text-muted-foreground">
-          Complete Adventurers' Guild quests to raise Adventuring and unlock
-          items sold by Adventurer Merchants.
+          Complete Adventurer's Guild tasks to raise Adventuring progress and
+          unlock special vendor purchases.
         </p>
       </div>
     </div>
@@ -341,7 +334,7 @@
   </section>
 
   <section id="how-it-works" class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How Adventuring works</h2>
+    <h2 class="text-xl font-semibold">Adventurers' Guild Assignments</h2>
 
     <div class="mt-4 divide-y">
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
@@ -357,7 +350,8 @@
           </div>
           <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Every taskgiver offers the same quests.
+            Every taskgiver offers the same quest pool. Available quests depend
+            on your character level and total Veteran Points.
           </p>
         </div>
       </div>
@@ -375,7 +369,7 @@
             resets daily.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Resets at {queueResetTime}.
+            A new quest queue begins at {queueResetTime} each day.
             {#if mounted}
               Next reset: {timeUntilReset}, at {localResetTime}.
             {/if}
@@ -393,10 +387,26 @@
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <!-- Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — the daily offer requires recommendedLevel <= level.current, recommendedVeteranLevel <= GetTotalVeteranPoints(), and !HasCompletedToday. -->
-            The taskgiver offers the first quest in today's queue that you qualify
-            for by level and total veteran points (spent plus unspent), skipping quests
-            on cooldown. After completion, you get the next eligible quest. The daily
-            reset does not end your character's quest cooldowns.
+            The taskgiver offers the first quest in today's queue that meets all three
+            requirements:
+          </p>
+          <ul
+            class="mt-1 list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground"
+          >
+            <li>
+              Its recommended level is at or below your character's level.
+            </li>
+            <li>
+              Its veteran requirement is at or below your total Veteran Points
+              (spent plus unspent). A requirement of 0 requires no Veteran
+              Points.
+            </li>
+            <li>Your character has not completed it in the last 24 hours.</li>
+          </ul>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Completing a quest starts its 24-hour cooldown. The taskgiver then
+            offers the next quest in today's queue that meets all three
+            requirements.
           </p>
         </div>
       </div>
@@ -409,9 +419,9 @@
             <a
               href="#adventurer-vendor-unlocks"
               class="text-blue-600 hover:underline dark:text-blue-400"
-              >Merchant purchases</a
+              >vendor purchases</a
             >
-            unlock at {unlockRequirementOptions.slice(1).join(", ")} Adventuring.
+            unlock by Adventuring percentage.
           </div>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
@@ -495,7 +505,7 @@
               bind:value={selectedSort}
               class="rounded-md border bg-background px-2 py-1"
             >
-              <option value="queue">Queue order</option>
+              <option value="queue">Selected Queue Order</option>
               <option value="level">Level</option>
               <option value="name">Name</option>
               <option value="adventuring">Adventuring Gain</option>
@@ -518,9 +528,9 @@
         <div
           class="text-sm text-muted-foreground 2xl:justify-self-end 2xl:text-right"
         >
-          Resets at {queueResetTime}{#if mounted}
-            ({localResetTime}), in {timeUntilReset}
-          {/if}
+          Resets daily at {queueResetTime}{#if mounted}<span class="ml-1"
+              >· next reset in {timeUntilReset} · local time {localResetTime}</span
+            >{/if}
         </div>
       </div>
     </div>
@@ -546,7 +556,7 @@
           </thead>
           <tbody>
             {#each displayedQuests as quest (quest.id)}
-              <tr class="border-t odd:bg-muted/20 hover:bg-muted/25">
+              <tr class="border-t hover:bg-muted/25">
                 <td class="p-3 text-right text-muted-foreground">
                   {queueRank.get(quest.id) ?? "—"}
                 </td>
@@ -613,10 +623,7 @@
                     <span
                       class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-600 dark:text-emerald-300"
                     >
-                      +{formatPercent(quest.reward_adventuring_skill, {
-                        decimals: 2,
-                        trailingZeros: true,
-                      })}
+                      +{(quest.reward_adventuring_skill * 100).toFixed(2)}%
                     </span>
                   {:else}
                     <span class="text-muted-foreground">—</span>
@@ -674,6 +681,7 @@
                 <ItemLink
                   itemId={unlock.item_id}
                   itemName={unlock.item_name}
+                  quality={unlock.quality}
                   tooltipHtml={unlock.tooltip_html}
                   imageAvailable={unlock.visual_public_path}
                 />
@@ -691,20 +699,18 @@
                   </div>
                 {/if}
                 <div class="mt-2 flex flex-wrap gap-1.5">
-                  {#each unlock.currencies as currency (`${currency.item_id ?? currency.item_name}:${currency.price}`)}
+                  {#each unlock.currencies as currency (currency.item_id ?? currency.item_name)}
                     {#if currency.item_id}
                       <a
                         href="/items/{currency.item_id}"
                         class="rounded-full border bg-muted/40 px-2 py-0.5 text-xs text-blue-600 transition-colors hover:bg-muted hover:underline dark:text-blue-400"
                       >
-                        {currency.price}
                         {currency.item_name}
                       </a>
                     {:else}
                       <span
                         class="rounded-full border bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground"
                       >
-                        {currency.price}
                         {currency.item_name}
                       </span>
                     {/if}
@@ -745,9 +751,7 @@
                     >
                       {giver.zone_name}
                     </a>
-                    {#if giver.sub_zone_name && giver.sub_zone_name.toLowerCase() !== giver.zone_name.toLowerCase()}
-                      <span> / {giver.sub_zone_name}</span>
-                    {/if}
+                    <span> / {giver.sub_zone_name ?? "Unknown area"}</span>
                   </div>
                 </div>
                 <MapLink entityId={giver.npc_id} entityType="npc" compact />
@@ -762,7 +766,7 @@
       <div id="adventurer-vendors" class="space-y-4">
         <h2 class="flex items-center gap-2 text-xl font-semibold">
           <Store class="h-5 w-5 text-amber-500" />
-          Adventurer Merchants ({data.merchants.length})
+          Adventurer Vendors ({data.merchants.length})
         </h2>
         <div class="grid gap-3">
           {#each data.merchants as merchant (merchant.npc_id)}
@@ -784,9 +788,7 @@
                     >
                       {merchant.zone_name}
                     </a>
-                    {#if merchant.sub_zone_name && merchant.sub_zone_name.toLowerCase() !== merchant.zone_name.toLowerCase()}
-                      <span> / {merchant.sub_zone_name}</span>
-                    {/if}
+                    <span> / {merchant.sub_zone_name ?? "Unknown area"}</span>
                   </div>
                 </div>
                 <MapLink entityId={merchant.npc_id} entityType="npc" compact />
@@ -797,14 +799,4 @@
       </div>
     {/if}
   </section>
-  <details class="space-y-4">
-    <summary class="cursor-pointer text-xl font-semibold"
-      >Quest and vendor methods</summary
-    >
-    <MethodList
-      methods={data.acquisitionMethods}
-      items={data.acquisitionItems}
-      names={data.acquisitionNames}
-    />
-  </details>
 </div>

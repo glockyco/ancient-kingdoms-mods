@@ -78,7 +78,7 @@
     <Popover.Content class="w-[250px] p-0" align="start">
       <Command.Root>
         <Command.Input
-          placeholder="Search options"
+          placeholder="Search {title.toLowerCase()} options"
           aria-label="{title} filter"
         />
         <Command.List>
@@ -132,7 +132,7 @@
                 onSelect={() => column?.setFilterValue(undefined)}
                 class="justify-center text-center"
               >
-                Clear selection
+                Clear filters
               </Command.Item>
             </Command.Group>
           {/if}

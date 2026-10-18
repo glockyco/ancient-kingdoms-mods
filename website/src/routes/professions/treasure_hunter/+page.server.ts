@@ -8,11 +8,6 @@ import {
   type ChestRewardRow,
 } from "$lib/queries/chest-rewards";
 import type { ChestDefinition } from "$lib/calculation/chest-rewards";
-import { loadItemAcquisition } from "$lib/server/acquisition";
-import { loadAcquisitionItems } from "$lib/acquisition/items";
-import type { MethodView } from "$lib/acquisition/types";
-import type { DisplayItems } from "$lib/components/acquisition/display";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -30,6 +25,7 @@ interface TreasureMapRow {
   position_y: number;
   reward_item_id: string;
   reward_item_name: string;
+  reward_quality: number;
   reward_item_type: string | null;
   reward_item_tooltip: string | null;
 }
@@ -44,6 +40,7 @@ interface TreasureHunterStats {
 interface KeyItem {
   id: string;
   name: string;
+  quality: number;
   tooltip_html: string | null;
 }
 
@@ -64,9 +61,6 @@ interface TreasureHunterPageData {
   buriedChest: ChestDefinition<ChestRewardRow>;
   keyItems: Record<"random_map" | "buried_treasure_chest" | "shovel", KeyItem>;
   itemIconPaths: Record<string, string | null>;
-  acquisitionMethods: readonly MethodView[];
-  acquisitionItems: DisplayItems;
-  acquisitionNames: Readonly<Record<string, string>>;
 }
 
 interface RawTreasureMap {
@@ -78,6 +72,7 @@ interface RawTreasureMap {
   treasure_location_id: string;
   reward_id: string;
   reward_name: string | null;
+  reward_quality: number;
   reward_item_type: string | null;
   reward_tooltip: string | null;
   zone_id: string;
@@ -125,6 +120,7 @@ export const load: PageServerLoad =
       tl.position_x,
       tl.position_y,
       reward.name as reward_name,
+      reward.quality AS reward_quality,
       reward.item_type as reward_item_type,
       reward.tooltip_html as reward_tooltip
     FROM items i
@@ -152,6 +148,7 @@ export const load: PageServerLoad =
       position_y: map.position_y,
       reward_item_id: map.reward_id,
       reward_item_name: map.reward_name ?? "Unknown",
+      reward_quality: map.reward_quality,
       reward_item_type: map.reward_item_type,
       reward_item_tooltip: map.reward_tooltip,
     }));
@@ -186,7 +183,7 @@ export const load: PageServerLoad =
     const keyItemRows = db
       .prepare(
         `
-    SELECT id, name, tooltip_html
+    SELECT id, name, quality, tooltip_html
     FROM items
     WHERE id IN ('random_map', 'buried_treasure_chest', 'shovel')
   `,
@@ -214,28 +211,6 @@ export const load: PageServerLoad =
       shovel: keyItemsById.shovel!,
     };
 
-    const execute = async (
-      sql: string,
-      values: readonly (string | number | null)[],
-    ) => db.prepare(sql).all(...values) as Record<string, unknown>[];
-    const acquisition = await loadItemAcquisition(execute, [
-      ...requiredKeyItemIds,
-      ...treasureMaps.map((map) => map.id),
-    ]);
-    const acquisitionMethods = [
-      ...new Map(
-        Object.values(acquisition.sources)
-          .flatMap((source) => [
-            ...source.methods,
-            ...source.inspection.initiatingMemberships,
-          ])
-          .map((method) => [method.methodId, method]),
-      ).values(),
-    ];
-    const acquisitionItems = await loadAcquisitionItems(
-      execute,
-      acquisition.model,
-    );
     const itemIconPaths = getItemIconPaths(db, [
       ...requiredKeyItemIds,
       ...treasureMaps.flatMap((map) => [map.id, map.reward_item_id]),
@@ -252,8 +227,5 @@ export const load: PageServerLoad =
       buriedChest,
       keyItems,
       itemIconPaths,
-      acquisitionMethods,
-      acquisitionItems,
-      acquisitionNames: projectAcquisitionNames(acquisition.model),
     };
   };

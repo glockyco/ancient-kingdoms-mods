@@ -24,11 +24,9 @@
   import Castle from "@lucide/svelte/icons/castle";
   import {
     formatDuration,
-    formatPercent,
-    formatNumber,
+    formatPercent as formatFraction,
   } from "$lib/utils/format";
-  import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
-  import { minimumGoldQuantity } from "$lib/components/acquisition/display";
+  import { chestRewardChance } from "$lib/utils/chest-reward";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import { base } from "$app/paths";
 
@@ -38,7 +36,7 @@
     buildCollectionPage({
       path: "/chests",
       name: "Chests — Ancient Kingdoms Compendium",
-      description: `Find ${formatNumber(data.chests.length)} chests by zone, key, reward, and respawn time.`,
+      description: `Find ${data.chests.length.toLocaleString()} chests by zone, key, reward, and respawn time.`,
       items: data.chests.map((chest) => ({
         name: chest.name,
         path: `/chests/${chest.id}`,
@@ -68,6 +66,11 @@
     })),
   );
 
+  // Format gold amounts with narrow space thousands separator
+  function formatGold(amount: number): string {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
+  }
+
   // Get unique zones for filter
   const uniqueZones = $derived(
     Array.from(new Map(data.chests.map((c) => [c.zone_id, c])).values()).sort(
@@ -79,13 +82,9 @@
   const uniqueKeys = $derived(
     Array.from(
       new Map(
-        data.chests.flatMap((chest) =>
-          chest.keys.flatMap((key) =>
-            key.itemId && key.itemName
-              ? [[key.itemId, key.itemName] as const]
-              : [],
-          ),
-        ),
+        data.chests
+          .filter((c) => c.tool_or_key_id && c.tool_or_key_name)
+          .map((c) => [c.tool_or_key_id, c.tool_or_key_name] as const),
       ).entries(),
     ).sort((a, b) => a[1]!.localeCompare(b[1]!)),
   );
@@ -93,7 +92,7 @@
   const columns: ColumnDef<ChestWithDrops>[] = [
     {
       id: "name",
-      header: "Chest",
+      header: "Icon",
       enableHiding: false,
       size: 80,
     },
@@ -101,40 +100,41 @@
       id: "key",
       header: "Key",
       size: 230,
-      accessorFn: (row) =>
-        row.keys.map((key) => key.itemName ?? "Unpublished key").join(" "),
+      accessorFn: (row) => row.tool_or_key_name || "",
       getUniqueValues: (row) =>
-        row.keys.flatMap((key) => (key.itemId ? [key.itemId] : [])),
+        row.tool_or_key_id ? [row.tool_or_key_id] : [],
       filterFn: (row, columnId, filterValue: string[]) => {
+        const keyId = row.original.tool_or_key_id;
         if (!filterValue || filterValue.length === 0) return true;
-        return row.original.keys.some(
-          (key) => key.itemId !== null && filterValue.includes(key.itemId),
-        );
+        return keyId != null && filterValue.includes(keyId);
       },
     },
     {
       id: "gold",
       header: "Gold",
       size: 130,
-      accessorFn: (row) => minimumGoldQuantity(row.primaryRewards),
+      accessorFn: (row) => {
+        if (row.gold_min > 0 || row.gold_max > 0) {
+          return row.gold_min === row.gold_max
+            ? row.gold_min
+            : (row.gold_min + row.gold_max) / 2;
+        }
+        return 0;
+      },
       sortingFn: "basic",
-      sortUndefined: "last",
     },
     {
       id: "item",
-      header: "Potential Items",
+      header: "Item",
       minSize: 180,
-      accessorFn: (row) =>
-        row.primaryRewards
-          .filter((reward) => reward.resourceKind === "item")
-          .map((reward) => reward.itemName ?? "Unpublished item")
-          .join(" "),
+      accessorFn: (row) => row.item_reward_name || "",
     },
     {
       id: "chance",
-      header: "Reward chance per opening",
-      size: 220,
-      accessorFn: (row) => row.openingChance,
+      header: "Reward Chance",
+      size: 170,
+      accessorFn: (row) => chestRewardChance(row),
+      sortingFn: "basic",
     },
     {
       id: "drops",
@@ -169,14 +169,23 @@
   const columnLabels: Record<string, string> = {
     zone: "Zone",
     location: "Location",
-    name: "Chest",
+    name: "Icon",
     respawn_time: "Respawn",
     key: "Key",
     gold: "Gold",
     item: "Item",
     drops: "Random Drops",
-    chance: "Reward chance per opening",
+    chance: "Reward Chance",
   };
+  function formatPercent(
+    value: number,
+    options: Parameters<typeof formatFraction>[1] = {
+      decimals: 1,
+      trailingZeros: true,
+    },
+  ): string {
+    return formatFraction(value, options);
+  }
 </script>
 
 {#snippet renderToolbar({ table }: { table: TanstackTable<ChestWithDrops> })}
@@ -205,13 +214,7 @@
 {/snippet}
 
 {#snippet renderHeader({ header }: { header: Header<ChestWithDrops, unknown> })}
-  {#if header.id === "chance"}
-    <span class="ml-auto whitespace-normal text-right"
-      >{columnLabels[header.id] ?? header.id}</span
-    >
-  {:else}
-    {columnLabels[header.id] ?? header.id}
-  {/if}
+  {columnLabels[header.id] ?? header.id}
 {/snippet}
 
 {#snippet renderCell({
@@ -238,15 +241,15 @@
   {:else if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      aria-label={`Chest in ${row.original.zone_name}`}
-      title={`Chest in ${row.original.zone_name}`}
+      aria-label={`Chest ${row.original.id}`}
+      title={`Chest ${row.original.id}`}
       class="inline-flex"
     >
       <EntityIcon
         src={row.original.visual_public_path
           ? `${base}/${row.original.visual_public_path}`
           : null}
-        alt=""
+        alt={`Chest ${row.original.id} icon`}
         fallback={Box}
         size={32}
       />
@@ -254,50 +257,54 @@
   {:else if cell.column.id === "respawn_time"}
     {formatDuration(row.original.respawn_time)}
   {:else if cell.column.id === "key"}
-    {#each row.original.keys as key (JSON.stringify( [key.itemId, key.withheld] ))}
-      <div>
-        {#if key.itemId}
-          <a
-            href="/items/{key.itemId}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-            >{key.itemName}</a
-          >
-        {:else}
-          <span>Unpublished key</span>
-        {/if}
-      </div>
+    {#if row.original.tool_or_key_id && row.original.tool_or_key_name}
+      <a
+        href="/items/{row.original.tool_or_key_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.tool_or_key_name}
+      </a>
     {:else}
       <span class="text-muted-foreground">-</span>
-    {/each}
+    {/if}
   {:else if cell.column.id === "gold"}
-    <PrimaryRewards
-      rewards={row.original.primaryRewards.filter(
-        (reward) => reward.resourceKind === "gold",
-      )}
-    />
-  {:else if cell.column.id === "item"}
-    <PrimaryRewards
-      rewards={row.original.primaryRewards.filter(
-        (reward) => reward.resourceKind === "item",
-      )}
-    />
-  {:else if cell.column.id === "chance"}
-    {#if row.original.openingChance !== null}
-      <span class="ml-auto">
-        {formatPercent(row.original.openingChance, {
-          decimals: 1,
-          trailingZeros: false,
-        })}
+    {#if row.original.gold_min > 0 || row.original.gold_max > 0}
+      <span class="text-yellow-600 dark:text-yellow-400">
+        {#if row.original.gold_min === row.original.gold_max}
+          {formatGold(row.original.gold_min)}
+        {:else}
+          {formatGold(row.original.gold_min)}–{formatGold(
+            row.original.gold_max,
+          )}
+        {/if}
       </span>
     {:else}
-      <span class="text-muted-foreground">Varies by method</span>
+      <span class="text-muted-foreground">-</span>
     {/if}
+  {:else if cell.column.id === "item"}
+    {#if row.original.item_reward_id && row.original.item_reward_name}
+      <a
+        href="/items/{row.original.item_reward_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.item_reward_name}
+      </a>
+      {#if row.original.item_reward_amount > 1}
+        <span class="text-muted-foreground"
+          >&nbsp;×1–{row.original.item_reward_amount}</span
+        >
+      {:else}
+        <span class="text-muted-foreground">&nbsp;×1</span>
+      {/if}
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "chance"}
+    {formatPercent(chestRewardChance(row.original))}
   {:else if cell.column.id === "drops"}
     {@const drops = row.original.drops}
     {#if drops.length > 0}
-      <span class="text-muted-foreground"
-        >{drops.length} {drops.length === 1 ? "item" : "items"}</span
-      >
+      <span class="text-muted-foreground">{drops.length} items</span>
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -308,7 +315,7 @@
 
 <Seo
   title="Chests - Ancient Kingdoms"
-  description={`Find ${formatNumber(data.chests.length)} chests on the world map, with required keys, gold ranges, item rewards, and respawn times.`}
+  description={`Find ${data.chests.length.toLocaleString()} chests on the world map, with required keys, gold ranges, item rewards, and respawn times.`}
   path="/chests"
 />
 

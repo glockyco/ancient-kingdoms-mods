@@ -1,8 +1,12 @@
 import type Database from "better-sqlite3";
 import { getDb, query } from "$lib/db.server";
 import { loadAcquisition } from "$lib/server/acquisition";
-import type { MethodView, ProviderRef } from "$lib/acquisition/types";
-import { summarizePrimaryRewards } from "$lib/utils/primary-rewards";
+import type { ProviderRef } from "$lib/acquisition/types";
+import {
+  chestRewardFields,
+  primaryRewardFields,
+} from "$lib/server/world-acquisition";
+import { commonItemProbability } from "$lib/utils/primary-rewards";
 import type {
   GatherItemListView,
   GatheringResource,
@@ -11,7 +15,6 @@ import type {
   Chest,
   GatherItemDetail,
   ResourceDropListView,
-  ChestKey,
 } from "$lib/types/gather-items";
 
 function hasVisualAssetsTable(db: Database.Database): boolean {
@@ -58,43 +61,10 @@ async function canonicalMethods(
     items: Object.fromEntries(
       [...(model.entities.get("items") ?? [])].map(([id, item]) => [
         id,
-        { name: String(item.name) },
+        { name: String(item.name), quality: Number(item.quality) },
       ]),
     ),
   };
-}
-
-function chestKeys(
-  methods: readonly MethodView[],
-  items: Readonly<Record<string, { name: string }>>,
-): ChestKey[] {
-  const keys = new Map<string, ChestKey>();
-  for (const method of methods) {
-    const itemId =
-      typeof method.detail.key_item_id === "string"
-        ? method.detail.key_item_id
-        : null;
-    const withheld = !!method.detail.key_item_withheld;
-    if (!itemId && !withheld) continue;
-    const identity = JSON.stringify([itemId, withheld]);
-    const key = keys.get(identity);
-    if (key) key.methodIds = [...key.methodIds, method.methodId];
-    else
-      keys.set(identity, {
-        itemId,
-        itemName: itemId ? (items[itemId]?.name ?? null) : null,
-        withheld,
-        methodIds: [method.methodId],
-      });
-  }
-  return [...keys.values()];
-}
-
-function openingChance(methods: readonly MethodView[]): number | null {
-  const values = new Set(methods.map((method) => method.detail.outer_success));
-  if (values.size !== 1) return null;
-  const [value] = values;
-  return typeof value === "number" ? value : null;
 }
 
 /**
@@ -195,7 +165,7 @@ export async function getGatherItemsFromDb(
     )
     ORDER BY type, name`,
     )
-    .all() as Omit<GatherItemListView, "primaryRewards">[];
+    .all() as GatherItemListView[];
   const providers = db
     .prepare("SELECT id FROM gathering_resource_spawns")
     .all() as { id: string }[];
@@ -204,21 +174,29 @@ export async function getGatherItemsFromDb(
     ...providers.map(({ id }) => ({ kind: "resource_spawns" as const, id })),
     ...chests.map(({ id }) => ({ kind: "chests" as const, id })),
   ]);
-  return rows.map((row) => ({
-    ...row,
-    primaryRewards: summarizePrimaryRewards(
-      methods.filter((method) =>
-        row.type === "Chest"
-          ? method.kind === "world_chest" && method.detail.chest_id === row.id
-          : method.kind === "gather" &&
-            (method.detail.resource_id === row.id ||
-              (row.type === "Fishing Spot" &&
-                fishingSpotBaseId(String(method.detail.resource_id)) ===
-                  row.id)),
-      ),
-      items,
-    ),
-  }));
+  return rows.map((row) => {
+    const exact = methods.filter((method) =>
+      row.type === "Chest"
+        ? method.kind === "world_chest" && method.detail.chest_id === row.id
+        : method.kind === "gather" &&
+          (method.detail.resource_id === row.id ||
+            (row.type === "Fishing Spot" &&
+              fishingSpotBaseId(String(method.detail.resource_id)) === row.id)),
+    );
+    const chest = row.type === "Chest" ? chestRewardFields(exact, items) : null;
+    const tool = row as unknown as {
+      tool_required_id: string | null;
+      tool_required_name: string | null;
+    };
+    return {
+      ...row,
+      ...primaryRewardFields(exact, items),
+      tool_or_key_id: chest ? chest.key_required_id : tool.tool_required_id,
+      tool_or_key_name: chest
+        ? chest.key_required_name
+        : tool.tool_required_name,
+    };
+  });
 }
 
 export function getGatherItems(): Promise<GatherItemListView[]> {
@@ -232,14 +210,19 @@ export interface ChestListView {
   id: string;
   name: string;
   respawn_time: number;
-  keys: ChestKey[];
+  tool_or_key_id: string | null;
+  tool_or_key_name: string | null;
   zone_id: string;
   zone_name: string;
   is_dungeon: boolean;
   position_x: number | null;
   position_y: number | null;
-  primaryRewards: Chest["primaryRewards"];
-  openingChance: number | null;
+  gold_min: number;
+  gold_max: number;
+  item_reward_id: string | null;
+  item_reward_name: string | null;
+  item_reward_amount: number;
+  chest_reward_probability: number;
   visual_public_path: string | null;
   visual_width: number | null;
   visual_height: number | null;
@@ -269,10 +252,7 @@ export async function getChestsListFromDb(
     ${visualAssetJoin(assetsEnabled, "chest", "c.id", "primary")}
     ORDER BY z.name, c.name`,
     )
-    .all() as Omit<
-    ChestListView,
-    "keys" | "primaryRewards" | "openingChance"
-  >[];
+    .all() as ChestListView[];
   const { methods, items } = await canonicalMethods(
     db,
     rows.map(({ id }) => ({ kind: "chests", id })),
@@ -282,11 +262,12 @@ export async function getChestsListFromDb(
       (method) =>
         method.kind === "world_chest" && method.detail.chest_id === row.id,
     );
+    const rewards = chestRewardFields(exact, items);
     return {
       ...row,
-      keys: chestKeys(exact, items),
-      primaryRewards: summarizePrimaryRewards(exact, items),
-      openingChance: openingChance(exact),
+      ...rewards,
+      tool_or_key_id: rewards.key_required_id,
+      tool_or_key_name: rewards.key_required_name,
     };
   });
 }
@@ -363,7 +344,7 @@ async function attachResourceRewards(
   );
   return {
     ...resource,
-    primaryRewards: summarizePrimaryRewards(
+    ...primaryRewardFields(
       methods.filter(
         (method) =>
           method.kind === "gather" && method.detail.resource_id === resource.id,
@@ -391,6 +372,7 @@ export function getGatheringResourceDropsFromDb(
         DISTINCT entry.item_id,
         i.name as item_name,
         i.quality,
+        entry.probability as drop_rate,
         NULL as actual_drop_chance,
         0 as is_fishing_trash
       FROM acquisition_resource_details detail
@@ -413,6 +395,7 @@ export function getGatheringResourceDropsFromDb(
         entry.item_id,
         i.name as item_name,
         i.quality,
+        entry.probability as drop_rate,
         NULL as actual_drop_chance,
         1 as is_fishing_trash
       FROM loot_pool_entries entry
@@ -574,25 +557,51 @@ export function getResourceZones(): ResourceZoneInfo[] {
 export interface ChestDrop {
   item_id: string;
   item_name: string;
+  quality: number;
   actual_drop_chance: number | null;
+  drop_rate: number | null;
 }
 
 /** Get canonical random chest pool outcomes. */
-export function getChestDrops(chestId: string): ChestDrop[] {
-  return query<ChestDrop>(
-    `SELECT
-      DISTINCT entry.item_id,
-      i.name as item_name,
-      NULL as actual_drop_chance
-    FROM acquisition_world_chest_details detail
-    JOIN acquisition_method_pools membership ON membership.method_id = detail.id
-    JOIN loot_pool_entries entry ON entry.pool_id = membership.pool_id
-    JOIN items i ON entry.item_id = i.id
-    WHERE detail.chest_id = ?
-      AND entry.withheld = 0
-    ORDER BY i.name`,
-    [chestId],
+export async function getChestDrops(chestId: string): Promise<ChestDrop[]> {
+  const { methods, items } = await canonicalMethods(getDb(), [
+    { kind: "chests", id: chestId },
+  ]);
+  const exact = methods.filter(
+    (method) =>
+      method.kind === "world_chest" && method.detail.chest_id === chestId,
   );
+  const itemIds = new Set(
+    exact.flatMap((method) => {
+      const fixed = new Set(
+        method.outputs
+          .filter((output) => output.yield_rule !== "pool")
+          .map((output) => output.item_id),
+      );
+      const pooled = new Set(
+        method.outputs
+          .filter((output) => output.yield_rule === "pool")
+          .map((output) => output.item_id),
+      );
+      return method.probabilityResults.flatMap((result) =>
+        result.target.kind === "item" &&
+        (!fixed.has(result.target.itemId) || pooled.has(result.target.itemId))
+          ? [result.target.itemId]
+          : [],
+      );
+    }),
+  );
+  return [...itemIds].map((itemId) => ({
+    item_id: itemId,
+    item_name: items[itemId]?.name ?? itemId,
+    quality: items[itemId].quality,
+    drop_rate: commonItemProbability(exact, itemId, "successful_opening"),
+    actual_drop_chance: commonItemProbability(
+      exact,
+      itemId,
+      "successful_opening",
+    ),
+  }));
 }
 
 /**
@@ -646,8 +655,7 @@ export async function getChestByIdFromDb(
     ${visualAssetJoin(assetsEnabled, "chest", "c.id", "primary")}
     WHERE c.id = ?`,
     )
-    .get(id) as
-    Omit<Chest, "keys" | "primaryRewards" | "openingChance"> | undefined;
+    .get(id) as Chest | undefined;
   if (!chest) return null;
   const { methods, items } = await canonicalMethods(db, [
     { kind: "chests", id },
@@ -657,9 +665,7 @@ export async function getChestByIdFromDb(
   );
   return {
     ...chest,
-    keys: chestKeys(exact, items),
-    primaryRewards: summarizePrimaryRewards(exact, items),
-    openingChance: openingChance(exact),
+    ...chestRewardFields(exact, items),
   };
 }
 

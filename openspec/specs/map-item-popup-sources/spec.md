@@ -2,102 +2,56 @@
 
 ## Purpose
 
-Let readers inspect every supported source of a selected map item, including item containers and virtual distribution methods, without confusing those methods with physical map locations or inventory awards.
+Show a selected map item's sources in the item popup's established compact lists, with values from the shared acquisition reader and focus limited to eligible provider geometry.
 
 ## Requirements
 
-### Requirement: Pack sources expose their actual yield
+### Requirement: Popup source rows use the shared reader
 
-The item popup SHALL show each supported pack source with its name, selected-item quantity and method context, and allow inspection of that pack. It SHALL distinguish using a carried pack from a purchase or recipe that delivers its contents immediately.
+The item popup SHALL fill its established source lists (dropped by, sold by, gathered from, altar rewards, found in chests, quest rewards, crafted from, merged from and dug up with) from the shared acquisition reader. A row SHALL appear only for an eligible, published source, with the same identity, quantity and probability as the item detail page.
 
-#### Scenario: An item comes from a pack
+#### Scenario: Same source on page and map
 
-- **WHEN** the selected item occurs in one or more available pack methods
-- **THEN** the popup shows every relevant pack and its item quantity
-- **AND** selecting a pack opens its item selection
+- **WHEN** an item detail page and the map popup show the same source
+- **THEN** the provider, delivered quantity and chance agree
 
-#### Scenario: No pack source
+#### Scenario: Ineligible placement
 
-- **WHEN** the selected item has no supported pack methods
-- **THEN** the popup does not show an empty pack-source section
+- **WHEN** a monster template has a placement whose loot context cannot award the item
+- **THEN** that placement does not create a dropped-by row or focus location
 
-### Requirement: Random and portable-container sources retain their event
+#### Scenario: Pack delivered by purchase
 
-The popup SHALL show supported random/distribution and portable-chest sources with names and correctly qualified result probabilities. It SHALL use the same method and rule results as item detail pages. A virtual pool SHALL NOT be described as a carryable container merely because it has an item-like definition.
+- **WHEN** buying a pack delivers several units of the selected item directly
+- **THEN** the sold-by row shows the vendor's price and the delivered quantity
+- **AND** the popup does not describe a carried pack that must be opened
 
-#### Scenario: Portable chest source
+### Requirement: Drop chances name their Fatecharm
 
-- **WHEN** the selected item has a portable-chest source
-- **THEN** its probability describes the item outcome per stated opening event
-- **AND** duplicate input rows do not create misleading duplicate source percentages
+A dropped-by row SHALL show the chance without a Fatecharm. When a matching dungeon Fatecharm changes the chance, hovering, tapping or focusing the chance SHALL show the boosted chance and name and link the Fatecharm item that is consumed.
 
-#### Scenario: Distribution source
+#### Scenario: Boss with a dungeon Fatecharm
 
-- **WHEN** a parent award resolves a virtual pool containing the selected item
-- **THEN** the popup identifies the pool and parent context without inventing an inventory-opening action
-- **AND** the pool remains inspectable through its existing selection identity
+- **WHEN** the reader opens the chance of a boss drop whose loot zone has a Fatecharm
+- **THEN** the boosted chance and that Fatecharm item are shown
+- **AND** selecting the Fatecharm opens its item selection on the map
 
-#### Scenario: No random source
+### Requirement: Focus follows eligible geometry only
 
-- **WHEN** the selected item has no applicable random or portable-container source
-- **THEN** the popup does not show an empty section for that family
+The popup SHALL offer a focus action only for direct provider geometry that is published and eligible. A source whose provider position is suppressed or whose method is nonspatial SHALL keep its row without coordinates or a focus action for that source.
 
-### Requirement: Known virtual sources do not promise a location
+#### Scenario: Source in a position-suppressed zone
 
-The popup SHALL retain known nonspatial sources even when they are the item's only methods. A virtual container, merge, fragment conversion or other nonspatial method alone SHALL NOT enable a physical-source focus action. Available geometry SHALL come from eligible direct provider context.
+- **WHEN** an item's only source lies in a zone whose positions are suppressed
+- **THEN** its row remains available
+- **AND** no coordinates, bounds or focus action are reconstructed
 
-#### Scenario: Container-only item
+### Requirement: Source links keep map navigation
 
-- **WHEN** an item has a container source but no qualifying physical source of its own
-- **THEN** the popup shows the container source and its inspection link
-- **AND** it does not offer physical focus solely because the container exists
-
-#### Scenario: Known source in a position-suppressed zone
-
-- **WHEN** the method remains published but its provider geometry is suppressed
-- **THEN** its non-geometric source information remains available
-- **AND** no coordinates or misleading focus action are reconstructed
-
-### Requirement: Source inspection preserves map navigation
-
-Selecting a source SHALL inspect its existing entity or virtual-item selection without changing unrelated search, marker or camera contracts. Source rows, quantities, requirements and locations SHALL come from the shared acquisition reader rather than another map-only interpretation.
-
-#### Scenario: Inspect a source container
-
-- **WHEN** a reader selects a container source
-- **THEN** its own selection and supported sources are inspectable
-- **AND** any focus action uses that selection's real geometry, not a fabricated location for the previous virtual method
-
-#### Scenario: Offered pack has no carried-pack output
-
-- **WHEN** a selected pack definition is offered by a real provider but its purchase directly delivers the contents
-- **THEN** the selection retains that offer, provider and actual yield
-- **AND** it does not require a fictional carried-pack source before the offer can be inspected
+An ordinary click on a source link SHALL select that entity within the map. A modifier click SHALL follow its URL. Keyboard access and the popup's bounded scrolling SHALL remain available.
 
 #### Scenario: Source link uses a navigation modifier
 
 - **WHEN** a reader modifier-clicks a source link
-- **THEN** its existing URL navigation remains available
+- **THEN** its URL navigation remains available
 - **AND** ordinary selection still opens the source within the map
-
-#### Scenario: Same method on page and map
-
-- **WHEN** an item detail page and map popup show the same source under the same assumptions
-- **THEN** quantity, requirement, probability meaning and provider identity agree
-
-### Requirement: Source lists remain usable within the popup
-
-Long method lists SHALL retain the established bounded scrolling and mobile-drawer behavior without hiding source inspection or trapping keyboard navigation. Presentation limits SHALL retain access to the omitted methods rather than truncate the authoritative result.
-
-#### Scenario: Many source methods
-
-- **WHEN** a selected item has more methods than fit in the visible popup or drawer
-- **THEN** readers can reach the remaining methods and source links with pointer, touch and keyboard
-- **AND** source-list scrolling does not disable the existing popup close and navigation controls
-
-#### Scenario: Several encounters grant tiered rewards
-
-- **WHEN** a selected item can be obtained from several encounters with tiered rewards
-- **THEN** each encounter identifies its shared activation requirements and cost once
-- **AND** all configured reward-tier methods remain independently inspectable with their own tier bounds, rewards and event-qualified chances
-- **AND** different altars, bosses and waves remain distinct encounters

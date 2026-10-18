@@ -1,328 +1,198 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import type {
-  AcquisitionQuery,
-  RequirementRoot,
-  MethodView,
-  AcquisitionRows,
-} from "$lib/acquisition/types";
-import { loadAcquisition } from "$lib/server/acquisition";
 import {
-  loadAcquisitionItems,
-  type AcquisitionItem,
-} from "$lib/acquisition/items";
+  getRecipeDefinitions,
+  buildRecipeObtainabilityTree,
+} from "$lib/server/obtainability";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
-import { combine } from "$lib/acquisition/conditions";
 
 export const prerender = true;
-
-interface AlchemyRecipe {
-  id: string;
-  recipe_id: string;
-  result_item_id: string;
-  result_amount: number;
-  result_item_name: string;
-  result_tooltip_html: string | null;
-  result_quality: number;
-  level_required: number;
-  alchemy_exp: number;
-  methods: readonly MethodView[];
-}
-
-interface StationLocation {
-  id: string;
-  zone_id: string;
-  zone_name: string;
-  sub_zone_name: string | null;
-}
 
 interface QuestItem {
   item_id: string;
   item_name: string;
   tooltip_html: string | null;
   amount: number;
+  quality: number | null;
 }
 
-interface QuestNpc {
-  npc_id: string;
-  npc_name: string;
-}
-
-interface AlchemyQuest {
-  id: string;
-  name: string;
-  display_type: string;
-  level_required: number;
-  level_recommended: number;
-  is_main_quest: boolean;
-  is_epic_quest: boolean;
-  is_adventurer_quest: boolean;
-  is_repeatable: boolean;
-  objectives: readonly RequirementRoot[];
-  conditions: readonly RequirementRoot[];
-  completion_npcs: QuestNpc[];
-  reward_items: QuestItem[];
-  reward_exp: number;
-  reward_gold: number;
-  reward_alchemy_skill: number;
-}
-
-function questRequirementSections(
-  questId: string,
-  roots: readonly RequirementRoot[],
-): Pick<AlchemyQuest, "objectives" | "conditions"> {
-  const objectives = roots.filter((root) => root.phase === "fulfill");
-  const fulfilled = new Set(
-    objectives.flatMap((root) =>
-      (root.expression.kind === "all"
-        ? root.expression.operands
-        : [root.expression]
-      ).map((expression) => JSON.stringify(expression)),
-    ),
-  );
-  const conditions: RequirementRoot[] = [];
-  for (const root of roots) {
-    if (root.phase === "fulfill") continue;
-    const operands =
-      root.expression.kind === "all"
-        ? root.expression.operands
-        : [root.expression];
-    const distinct = operands.filter(
-      (expression) =>
-        !fulfilled.has(JSON.stringify(expression)) &&
-        !(
-          expression.kind === "predicate" &&
-          expression.predicate.kind === "quest_state" &&
-          expression.predicate.questId === questId
-        ),
-    );
-    if (distinct.length) {
-      conditions.push({ ...root, expression: combine("all", distinct) });
-    }
-  }
-  return { objectives, conditions };
-}
-
-interface TierCount {
-  tier: number;
-  count: number;
-}
-
-interface TierXp {
-  tier: number;
-  xp: number;
-}
-
-interface AlchemyPageData {
-  profession: {
-    id: string;
-    name: string;
-    description: string;
-    category: string;
-    max_level: number;
-    achievement_id: string;
-    achievement_name: string;
-  };
-  recipes: AlchemyRecipe[];
-  locations: StationLocation[];
-  acquisitionItems: Record<string, AcquisitionItem>;
-  acquisitionRows: AcquisitionRows;
-  acquisitionNames: Readonly<Record<string, string>>;
-  quests: AlchemyQuest[];
-  itemIconPaths: Record<string, string | null>;
-  recipeCounts: TierCount[];
-  xpByTier: TierXp[];
-}
-
-export const load: PageServerLoad = async (): Promise<AlchemyPageData> => {
+export const load: PageServerLoad = async () => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
-  const execute: AcquisitionQuery = async (sql, params) =>
-    db.prepare(sql).all(...params) as Record<string, unknown>[];
-
-  const profession = db
-    .prepare(
-      `
-    SELECT
-      id,
-      name,
-      description,
-      category,
-      max_level,
-      achievement_id,
-      (SELECT name FROM achievements WHERE id = achievement_id) AS achievement_name
-    FROM professions
-    WHERE id = 'alchemy'
-  `,
-    )
-    .get() as AlchemyPageData["profession"];
-
-  const rawRecipes = db
-    .prepare(
-      `
-    SELECT
-      d.id,
-      ar.id as recipe_id,
-      ar.result_item_id,
-      d.result_amount,
-      i.name as result_item_name,
-      i.tooltip_html as result_tooltip_html,
-      i.quality as result_quality,
-      d.tier as level_required,
-      d.experience as alchemy_exp
-    FROM alchemy_recipes ar
-    JOIN acquisition_recipe_details d ON d.alchemy_recipe_id = ar.id
-    JOIN items i ON i.id = ar.result_item_id
-    ORDER BY level_required, i.name
-  `,
-    )
-    .all() as Omit<AlchemyRecipe, "methods">[];
-
-  const recipeModel = await loadAcquisition(execute, {
-    kind: "recipes",
-    recipeIds: rawRecipes.map((recipe) => recipe.recipe_id),
-  });
-  const recipes: AlchemyRecipe[] = rawRecipes.map((recipe) => {
-    const method = recipeModel.methodViews.get(recipe.id);
-    if (!method) throw new Error(`Missing alchemy method ${recipe.id}`);
-    return { ...recipe, methods: [method] };
-  });
-  const acquisitionItems = await loadAcquisitionItems(execute, recipeModel);
-
-  const locations = db
-    .prepare(
-      `
-    SELECT DISTINCT s.id, s.zone_id, s.zone_name, s.sub_zone_name
-    FROM alchemy_tables s
-    JOIN acquisition_providers_alchemy_tables p ON p.alchemy_table_id = s.id
-    JOIN acquisition_recipe_details d ON d.id = p.method_id
-    ORDER BY s.zone_name, s.sub_zone_name
-  `,
-    )
-    .all() as StationLocation[];
-
-  const questRows = db
-    .prepare(
-      `
-    WITH RECURSIVE chain(id) AS (
-      SELECT id FROM quests WHERE id = 'the_alchemist_apprentice_i'
-      UNION
-      SELECT p.quest_id FROM quest_predecessors p JOIN chain c ON p.predecessor_quest_id = c.id
-    )
-    SELECT q.* FROM quests q JOIN chain c ON c.id = q.id
-    ORDER BY q.level_recommended, q.name, q.id
-  `,
-    )
-    .all() as Record<string, unknown>[];
-  const questModel = await loadAcquisition(execute, {
-    kind: "requirements",
-    entities: questRows.map((q) => ({ kind: "quest", id: String(q.id) })),
-  });
-  const questRowsById = new Map(
-    questRows.map((quest) => [String(quest.id), quest]),
-  );
-  const predecessors = new Map<string, string[]>();
-  for (const edge of questModel.rows.facts.quest_predecessors ?? []) {
-    if (typeof edge.predecessor_quest_id !== "string") continue;
-    const questId = String(edge.quest_id);
-    const targets = predecessors.get(questId) ?? [];
-    targets.push(edge.predecessor_quest_id);
-    predecessors.set(questId, targets);
-  }
-  const orderedQuestRows: Record<string, unknown>[] = [];
-  const visited = new Set<string>();
-  const visiting = new Set<string>();
-  function visitQuest(quest: Record<string, unknown>): void {
-    const id = String(quest.id);
-    if (visited.has(id)) return;
-    if (visiting.has(id))
-      throw new Error(`Cyclic alchemy quest chain at ${id}`);
-    visiting.add(id);
-    for (const predecessorId of predecessors.get(id) ?? []) {
-      const predecessor = questRowsById.get(predecessorId);
-      if (predecessor) visitQuest(predecessor);
+  try {
+    const profession = db
+      .prepare(
+        `SELECT p.*, a.name AS achievement_name FROM professions p
+      LEFT JOIN achievements a ON a.id=p.achievement_id WHERE p.id='alchemy'`,
+      )
+      .get() as {
+      id: string;
+      name: string;
+      description: string;
+      category: string;
+      max_level: number;
+      achievement_id: string;
+      achievement_name: string;
+    };
+    const routes = db.prepare("SELECT id FROM alchemy_recipes").all() as {
+      id: string;
+    }[];
+    const definitions = (
+      await getRecipeDefinitions(
+        db,
+        routes.map((r) => r.id),
+      )
+    ).filter((d) => d.type === "Alchemy");
+    const recipes = [];
+    for (const definition of definitions) {
+      recipes.push({
+        id: definition.method_id,
+        result_item_id: definition.result_item_id,
+        result_item_name: definition.result_item_name,
+        result_tooltip_html: definition.result_tooltip_html,
+        result_quality: definition.result_quality,
+        level_required: definition.tier,
+        alchemy_exp: definition.xp,
+        obtainabilityTree: await buildRecipeObtainabilityTree(db, definition),
+      });
     }
-    visiting.delete(id);
-    visited.add(id);
-    orderedQuestRows.push(quest);
+    recipes.sort(
+      (a, b) =>
+        a.level_required - b.level_required ||
+        a.result_item_name.localeCompare(b.result_item_name),
+    );
+    const locations = db
+      .prepare(
+        `SELECT DISTINCT s.id, s.zone_id, s.zone_name, s.sub_zone_name
+      FROM alchemy_tables s JOIN acquisition_providers_alchemy_tables p ON p.alchemy_table_id=s.id
+      JOIN acquisition_recipe_details d ON d.id=p.method_id WHERE d.display_kind='alchemy'
+      ORDER BY s.zone_name, s.sub_zone_name`,
+      )
+      .all() as {
+      id: string;
+      zone_id: string;
+      zone_name: string;
+      sub_zone_name: string | null;
+    }[];
+    const questRows = db
+      .prepare(
+        `WITH RECURSIVE chain(id) AS (
+      SELECT id FROM quests WHERE id='the_alchemist_apprentice_i'
+      UNION SELECT p.quest_id FROM quest_predecessors p JOIN chain c ON p.predecessor_quest_id=c.id
+    ) SELECT q.* FROM quests q JOIN chain c ON c.id=q.id ORDER BY q.level_recommended, q.name, q.id`,
+      )
+      .all() as {
+      id: string;
+      name: string;
+      display_type: string;
+      level_required: number;
+      level_recommended: number;
+      is_main_quest: number;
+      is_epic_quest: number;
+      is_adventurer_quest: number;
+      is_repeatable: number;
+      reward_experience: number;
+      reward_gold: number;
+      increase_alchemy_skill: number;
+    }[];
+    const predecessorRows = db
+      .prepare(
+        `SELECT quest_id, predecessor_quest_id FROM quest_predecessors WHERE predecessor_quest_id IS NOT NULL`,
+      )
+      .all() as { quest_id: string; predecessor_quest_id: string }[];
+    const byId = new Map(questRows.map((q) => [q.id, q]));
+    const ordered: typeof questRows = [];
+    const visited = new Set<string>();
+    const visiting = new Set<string>();
+    function visit(quest: (typeof questRows)[number]) {
+      if (visited.has(quest.id)) return;
+      if (visiting.has(quest.id))
+        throw new Error(`Cyclic alchemy quest chain at ${quest.id}`);
+      visiting.add(quest.id);
+      for (const edge of predecessorRows) {
+        const predecessor =
+          edge.quest_id === quest.id
+            ? byId.get(edge.predecessor_quest_id)
+            : undefined;
+        if (predecessor) visit(predecessor);
+      }
+      visiting.delete(quest.id);
+      visited.add(quest.id);
+      ordered.push(quest);
+    }
+    questRows.forEach(visit);
+    const objectiveItems = db.prepare(`SELECT COALESCE(i.id,'') AS item_id,
+      COALESCE(i.name,'Unpublished item') AS item_name, i.tooltip_html, i.quality, o.amount
+      FROM quest_objectives o JOIN quest_objective_items t ON t.id=o.id
+      LEFT JOIN items i ON i.id=t.item_id WHERE o.quest_id=? ORDER BY o.ordinal`);
+    const brewItems = db.prepare(`SELECT COALESCE(i.id,'') AS item_id,
+      COALESCE(i.name,'Unpublished item') AS item_name, i.tooltip_html, i.quality, o.amount
+      FROM quest_objectives o JOIN quest_objective_brews t ON t.id=o.id
+      LEFT JOIN items i ON i.id=t.item_id WHERE o.quest_id=? ORDER BY o.ordinal`);
+    const rewardItems = db.prepare(`SELECT COALESCE(i.id,'') AS item_id,
+      COALESCE(i.name,'Unpublished item') AS item_name, i.tooltip_html, i.quality, r.amount
+      FROM quest_reward_slots r LEFT JOIN items i ON i.id=r.item_id
+      WHERE r.quest_id=? ORDER BY r.ordinal`);
+    const completionNpcs = db.prepare(`SELECT n.id AS npc_id, n.name AS npc_name
+      FROM npc_quest_memberships m JOIN npcs n ON n.id=m.npc_id
+      WHERE m.quest_id=? AND m.role='complete' ORDER BY m.ordinal, n.id`);
+    const quests = ordered.map((q) => ({
+      id: q.id,
+      name: q.name,
+      display_type: q.display_type,
+      level_required: q.level_required,
+      level_recommended: q.level_recommended,
+      is_main_quest: Boolean(q.is_main_quest),
+      is_epic_quest: Boolean(q.is_epic_quest),
+      is_adventurer_quest: Boolean(q.is_adventurer_quest),
+      is_repeatable: Boolean(q.is_repeatable),
+      objective_items: objectiveItems.all(q.id) as QuestItem[],
+      potion_to_brew: (brewItems.all(q.id) as QuestItem[])[0] ?? null,
+      npc_to_find:
+        (
+          completionNpcs.all(q.id) as { npc_id: string; npc_name: string }[]
+        )[0] ?? null,
+      reward_items: (rewardItems.all(q.id) as QuestItem[]).filter(
+        (item) => item.item_id,
+      ),
+      reward_exp: q.reward_experience,
+      reward_gold: q.reward_gold,
+      reward_alchemy_skill: q.increase_alchemy_skill,
+    }));
+    const recipeCounts = db
+      .prepare(
+        `SELECT tier, COUNT(*) AS count FROM acquisition_recipe_details
+      WHERE display_kind='alchemy' GROUP BY tier ORDER BY tier`,
+      )
+      .all() as { tier: number; count: number }[];
+    const xpByTier = db
+      .prepare(
+        `SELECT tier, MAX(experience) AS xp FROM acquisition_recipe_details
+      WHERE display_kind='alchemy' GROUP BY tier ORDER BY tier`,
+      )
+      .all() as { tier: number; xp: number }[];
+    const itemIconPaths = getItemIconPaths(
+      db,
+      quests.flatMap((q) =>
+        [
+          ...q.objective_items,
+          ...(q.potion_to_brew ? [q.potion_to_brew] : []),
+          ...q.reward_items,
+        ]
+          .map((i) => i.item_id)
+          .filter(Boolean),
+      ),
+    );
+    return {
+      profession,
+      recipes,
+      locations,
+      quests,
+      itemIconPaths,
+      recipeCounts,
+      xpByTier,
+    };
+  } finally {
+    db.close();
   }
-  for (const quest of questRows) visitQuest(quest);
-  const rewardItems = db.prepare(`
-    SELECT i.id as item_id, i.name as item_name, i.tooltip_html, r.amount
-    FROM quest_reward_slots r JOIN items i ON i.id = r.item_id
-    WHERE r.quest_id = ? ORDER BY r.ordinal
-  `);
-  const completionNpcs = db.prepare(`
-    SELECT n.id as npc_id, n.name as npc_name FROM npc_quest_memberships m
-    JOIN npcs n ON n.id = m.npc_id WHERE m.quest_id = ? AND m.role = 'complete'
-    ORDER BY m.ordinal, n.id
-  `);
-  const quests: AlchemyQuest[] = orderedQuestRows.map((q) => ({
-    id: String(q.id),
-    name: String(q.name),
-    display_type: String(q.display_type),
-    level_required: Number(q.level_required),
-    level_recommended: Number(q.level_recommended),
-    is_main_quest: Boolean(q.is_main_quest),
-    is_epic_quest: Boolean(q.is_epic_quest),
-    is_adventurer_quest: Boolean(q.is_adventurer_quest),
-    is_repeatable: Boolean(q.is_repeatable),
-    completion_npcs: completionNpcs.all(q.id) as QuestNpc[],
-    reward_items: rewardItems.all(q.id) as QuestItem[],
-    reward_exp: Number(q.reward_experience),
-    reward_gold: Number(q.reward_gold),
-    reward_alchemy_skill: Number(q.increase_alchemy_skill),
-    ...questRequirementSections(
-      String(q.id),
-      questModel.requirements.get(`quest:${String(q.id)}`) ?? [],
-    ),
-  }));
-
-  // Get recipe counts per tier
-  const recipeCounts = db
-    .prepare(
-      `
-    SELECT tier, COUNT(*) as count
-    FROM acquisition_recipe_details WHERE display_kind = 'alchemy'
-    GROUP BY tier ORDER BY tier
-  `,
-    )
-    .all() as TierCount[];
-
-  // Get XP per tier (all recipes in a tier share the same alchemy_exp)
-  const xpByTier = db
-    .prepare(
-      `
-    SELECT tier, MAX(experience) as xp
-    FROM acquisition_recipe_details WHERE display_kind = 'alchemy'
-    GROUP BY tier ORDER BY tier
-  `,
-    )
-    .all() as TierXp[];
-
-  const itemIconPaths = getItemIconPaths(
-    db,
-    quests.flatMap((quest) => [
-      ...quest.reward_items.map((item) => item.item_id),
-    ]),
-  );
-  db.close();
-
-  return {
-    profession,
-    recipes,
-    locations,
-    acquisitionItems,
-    acquisitionRows: recipeModel.rows,
-    acquisitionNames: Object.assign(
-      {},
-      projectAcquisitionNames(recipeModel),
-      projectAcquisitionNames(questModel),
-    ),
-    quests,
-    itemIconPaths,
-    recipeCounts,
-    xpByTier,
-  };
 };

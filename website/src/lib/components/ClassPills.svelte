@@ -25,13 +25,11 @@
       <span
         class="px-1.5 py-0.5 rounded text-xs font-medium text-white text-center min-w-10"
         style="background-color: {config.color}"
-        title={config.name}
-        aria-label={config.name}
       >
-        {abbreviated && displayClasses.length > 1 ? config.abbrev : config.name}
+        {abbreviated ? config.abbrev : config.name}
       </span>
     {/each}
   </span>
 {:else}
-  <span class="text-muted-foreground">Any</span>
+  <span class="text-muted-foreground">-</span>
 {/if}

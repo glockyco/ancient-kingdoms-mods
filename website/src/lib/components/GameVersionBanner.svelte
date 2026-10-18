@@ -35,8 +35,8 @@
           ? "text-amber-600 dark:text-amber-400 hover:underline inline-flex items-center gap-1"
           : "hover:underline inline-flex items-center gap-1"}
         aria-label={isBehind
-          ? `Game at v${live.version}, newer than the compendium. Open the Steam announcement.`
-          : `Game at v${live.version}. Open the Steam announcement.`}
+          ? "Compendium is behind the live game version. Open Steam announcement."
+          : "Open Steam announcement"}
       >
         Game at v{live.version}
         {#if isBehind}

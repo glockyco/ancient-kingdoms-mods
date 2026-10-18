@@ -1,31 +1,40 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
-  import LazyObtainabilityTree from "$lib/components/LazyObtainabilityTree.svelte";
-  import DeferredDetails from "$lib/components/DeferredDetails.svelte";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
-  import ScrollRegion from "$lib/components/acquisition/ScrollRegion.svelte";
+  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import { formatDuration, formatPercent } from "$lib/utils/format";
+  import {
+    formatDuration,
+    formatPercent as formatFraction,
+  } from "$lib/utils/format";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
+  import Gem from "@lucide/svelte/icons/gem";
   import Dices from "@lucide/svelte/icons/dices";
+  import { chestRewardChance } from "$lib/utils/chest-reward";
   import type { PageData } from "./$types";
-  import { detailTitle } from "$lib/seo/title";
 
   let { data }: { data: PageData } = $props();
-  const chestName = $derived(`Chest in ${data.chest.zone_name}`);
+  const rewardChance = $derived(chestRewardChance(data.chest));
+
+  // Format gold amounts with narrow space thousands separator
+  function formatGold(amount: number): string {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
+  }
+  function formatPercent(
+    value: number,
+    options: Parameters<typeof formatFraction>[1] = {
+      decimals: 1,
+      trailingZeros: true,
+    },
+  ): string {
+    return formatFraction(value, options);
+  }
 </script>
 
 <Seo
-  title={detailTitle("Chest", {
-    zone: data.chest.zone_name,
-    source:
-      data.chest.keys
-        .map((key) => key.itemName ?? "Unpublished key")
-        .join(", ") || undefined,
-  })}
+  title={`Chest - ${data.chest.zone_name} - Ancient Kingdoms`}
   description={data.description}
   path={`/chests/${data.chest.id}`}
 />
@@ -36,15 +45,20 @@
     items={[
       { label: "Home", href: "/" },
       { label: "Chests", href: "/chests" },
-      { label: chestName },
+      { label: data.chest.zone_name },
     ]}
   />
 
   <!-- Header -->
   <div>
     <div class="flex items-center gap-3 flex-wrap">
-      <h1 class="text-3xl font-bold">{chestName}</h1>
+      <h1 class="text-3xl font-bold">Chest</h1>
       <MapLink entityId={data.chest.id} entityType="chest" />
+      <span
+        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      >
+        Chest
+      </span>
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -62,66 +76,114 @@
     </div>
   </div>
 
-  <section class="space-y-4">
-    <h2 class="text-xl font-semibold">Opening and rewards</h2>
-    {#if data.chest.openingChance !== null && data.chest.openingChance < 1}
-      <p>An unsuccessful opening leaves the chest empty until it respawns.</p>
-    {/if}
-    <MethodList
-      methods={data.acquisitionMethods}
-      items={data.acquisitionItems}
-      names={data.acquisitionNames}
-    />
-  </section>
-
   <!-- Requirements -->
-  {#if data.chest.keys.length}
+  {#if data.chest.key_required_id}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Key class="h-5 w-5 text-yellow-500" />
-        Lockpicking alternative
+        Key
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        <!-- Source: server-scripts/GatherItem.cs:OnInteractServer -->
-        <p>
-          Without a matching key, learned
+        <a
+          href="/items/{data.chest.key_required_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+        >
+          {data.chest.key_required_name}
+        </a>
+        <!-- The chest's outer reward roll precedes key or lockpick consumption. -->
+        <p class="mt-3">
+          Without the key, a character who has learned
           <a
             href="/skills/lockpicking"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Lockpicking</a
           >
-          gives each lockpick attempt a 20% success chance. A failed lockpick attempt
-          leaves the chest empty until it respawns.
+          can use
+          <a
+            href="/items/lockpicks"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Lockpicks</a
+          >
+          instead. After the chest's reward roll succeeds, each attempt uses one and
+          succeeds 20% of the time. A failed attempt still starts the chest's respawn
+          timer.
         </p>
       </div>
     </section>
 
     <!-- How to Obtain Key -->
-    {#if data.chest.keys.some((key) => key.itemId)}
+    {#if data.keyObtainabilityTree}
       <section>
         <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
           <ListTree class="h-5 w-5 text-muted-foreground" />
           How to Obtain Key
         </h2>
-        <DeferredDetails
-          summary="Show sources"
-          className="bg-muted/30 rounded-md border p-4"
-        >
-          <ScrollRegion
-            label="Chest key sources"
-            className="mt-4 max-h-[32rem] overflow-auto overscroll-contain pr-2"
-          >
-            <div class="space-y-4 min-w-0">
-              {#each data.chest.keys as key, index (index)}
-                {#if key.itemId}
-                  <LazyObtainabilityTree itemId={key.itemId} />
-                {/if}
-              {/each}
+        <div class="bg-muted/30 rounded-md border p-4">
+          <div class="bg-background rounded-md p-4 border overflow-x-auto">
+            <div class="w-fit pr-2">
+              <ObtainabilityTree
+                node={data.keyObtainabilityTree}
+                hideRootLink={true}
+              />
             </div>
-          </ScrollRegion>
-        </DeferredDetails>
+          </div>
+        </div>
       </section>
     {/if}
+  {/if}
+
+  <!-- Rewards -->
+  {#if data.chest.gold_min > 0 || data.chest.gold_max > 0 || data.chest.item_reward_id}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Gem class="h-5 w-5 text-amber-500" />
+        Rewards
+      </h2>
+      <div class="bg-muted/30 rounded-md border p-4 space-y-4">
+        <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — a failed reward roll shows an empty chest, and the respawn timer starts before the roll. -->
+        {#if rewardChance < 1}
+          <p>
+            Each opening has a {formatPercent(rewardChance)} chance to give anything.
+            Otherwise the chest is empty until it respawns.
+          </p>
+        {/if}
+        {#if data.chest.gold_min > 0 || data.chest.gold_max > 0}
+          <div>
+            <div class="text-sm text-muted-foreground mb-1">Gold</div>
+            <div class="font-medium text-yellow-600 dark:text-yellow-400">
+              {#if data.chest.gold_min === data.chest.gold_max}
+                {formatGold(data.chest.gold_min)} gold
+              {:else}
+                {formatGold(data.chest.gold_min)} - {formatGold(
+                  data.chest.gold_max,
+                )} gold
+              {/if}
+            </div>
+          </div>
+        {/if}
+
+        {#if data.chest.item_reward_id}
+          <div>
+            <div class="text-sm text-muted-foreground mb-1">Item Reward</div>
+            <div class="font-medium">
+              <a
+                href="/items/{data.chest.item_reward_id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {data.chest.item_reward_name}
+              </a>
+              {#if data.chest.item_reward_amount > 1}
+                <span class="text-muted-foreground">
+                  ×1–{data.chest.item_reward_amount}
+                </span>
+              {:else}
+                <span class="text-muted-foreground"> ×1 </span>
+              {/if}
+            </div>
+          </div>
+        {/if}
+      </div>
+    </section>
   {/if}
 
   <!-- Random Drops -->
@@ -136,25 +198,26 @@
           <thead>
             <tr class="border-b bg-muted/50">
               <th class="text-left font-medium p-3">Item</th>
-              <th class="text-right font-medium p-3 w-28"
-                >Chance per successful opening</th
-              >
+              <th class="text-right font-medium p-3 w-28">Drop Rate</th>
             </tr>
           </thead>
           <tbody>
             {#each data.drops as drop (drop.item_id)}
               <tr class="border-b last:border-b-0 hover:bg-muted/30">
                 <td class="p-3">
-                  <ItemLink itemId={drop.item_id} itemName={drop.item_name} />
+                  <ItemLink
+                    itemId={drop.item_id}
+                    itemName={drop.item_name}
+                    quality={drop.quality}
+                  />
                 </td>
                 <td class="p-3 text-right font-mono">
                   {#if drop.actual_drop_chance != null}
-                    {formatPercent(drop.actual_drop_chance, {
-                      decimals: 1,
-                      trailingZeros: true,
-                    })}
+                    {formatPercent(drop.actual_drop_chance)}
+                  {:else if drop.drop_rate != null}
+                    {formatPercent(drop.drop_rate)}
                   {:else}
-                    Unknown
+                    -
                   {/if}
                 </td>
               </tr>

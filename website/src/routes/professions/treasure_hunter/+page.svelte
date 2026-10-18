@@ -1,12 +1,10 @@
 <script lang="ts">
-  import { formatPercent, formatNumber } from "$lib/utils/format";
+  import { formatNumber } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import { calculateChestRewards } from "$lib/calculation/chest-rewards";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapIcon from "@lucide/svelte/icons/map";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -28,8 +26,8 @@
     calculateChestRewards(data.buriedChest, skillFraction).map(
       (reward, index) => ({
         ...reward,
-        item_name: reward.display_name,
-        baseline_chance: baselineChestRewards[index].open_chance,
+        baseline_open_chance: baselineChestRewards[index].open_chance,
+        adjusted_open_chance: reward.open_chance,
         change_from_baseline:
           reward.open_chance - baselineChestRewards[index].open_chance,
       }),
@@ -40,16 +38,20 @@
       .filter(
         (reward) => reward.scales_with_treasure_hunter && !reward.withheld,
       )
-      .sort((a, b) => a.item_name.localeCompare(b.item_name)),
+      .sort((a, b) => a.display_name.localeCompare(b.display_name)),
   );
 
+  function formatPercent(value: number, digits = 1): string {
+    return `${(value * 100).toFixed(digits)}%`;
+  }
+
   function formatPercentagePoints(value: number, digits = 1): string {
-    return `${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} percentage points`;
+    return `${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} pp`;
   }
 
   function formatSignedPercentagePoints(value: number, digits = 1): string {
     const sign = value > 0 ? "+" : "";
-    return `${sign}${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} percentage points`;
+    return `${sign}${formatNumber(value * 100, { decimals: digits, trailingZeros: true, grouping: false })} pp`;
   }
 
   function sameDestination(zone: string, subZone: string): boolean {
@@ -60,7 +62,7 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View treasure map sources, dig-site destinations, Buried Treasure Chest rewards, and Treasure Hunter relic odds.`}
   path="/professions/treasure_hunter"
 />
@@ -86,8 +88,8 @@
           </h1>
         </div>
         <p class="mt-2 max-w-3xl text-muted-foreground">
-          Find treasure maps, follow their clues, dig up Buried Treasure Chests,
-          and raise your chance of relics inside them.
+          Find treasure maps, follow their clues, dig up buried rewards, and
+          increase your chance of finding relics in treasure chests.
         </p>
       </div>
     </div>
@@ -109,10 +111,7 @@
       </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">
-          +{formatPercent(data.stats.skill_gain_percent / 100, {
-            decimals: 1,
-            trailingZeros: true,
-          })}
+          +{data.stats.skill_gain_percent.toFixed(1)}%
         </div>
         <div class="text-sm text-muted-foreground">Skill per treasure</div>
       </div>
@@ -120,7 +119,7 @@
   </section>
 
   <section class="rounded-lg border p-5">
-    <h2 class="text-xl font-semibold">How Treasure Hunter works</h2>
+    <h2 class="text-xl font-semibold">How It Works</h2>
 
     <div class="mt-4 divide-y">
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
@@ -131,19 +130,20 @@
               Find <ItemLink
                 itemId={data.keyItems.random_map.id}
                 itemName={data.keyItems.random_map.name}
+                quality={data.keyItems.random_map.quality}
                 tooltipHtml={data.keyItems.random_map.tooltip_html}
                 imageAvailable={data.itemIconPaths[data.keyItems.random_map.id]}
-              /> from monster drops.
+              /> drops.
             </span>
             <MapLink entityId="random_map" entityType="item" compact />
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Each random map drop gives one of
+            Each drop gives one of
             <a
               href="#treasure-maps"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >{data.treasureMaps.length} treasure maps</a
-            >.
+            >, and each treasure map leads to a Buried Treasure Chest.
           </p>
         </div>
       </div>
@@ -172,8 +172,8 @@
           </div>
           <!-- Source: server-scripts/TreasureLocation.cs:13-18,31-37 — treasure locations require the matching map in inventory. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Each treasure map points to one dig site. Use the clue or the Map
-            link in the Treasure maps table to find it.
+            Each treasure map points to one dig site. Use the clue or the map
+            links on this page to find it.
           </p>
         </div>
       </div>
@@ -185,26 +185,15 @@
             Dig with a <ItemLink
               itemId={data.keyItems.shovel.id}
               itemName={data.keyItems.shovel.name}
+              quality={data.keyItems.shovel.quality}
               tooltipHtml={data.keyItems.shovel.tooltip_html}
               imageAvailable={data.itemIconPaths[data.keyItems.shovel.id]}
             />.
           </div>
           <!-- Source: server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — digging requires a matching map, a shovel, and room for the reward; success consumes the map and grants 0.5% skill until the 100% cap. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Bring a Shovel and keep one inventory slot free. Digging uses up the
-            map, gives you a Buried Treasure Chest and adds 0.5% Treasure Hunter
-            until 100%.
-          </p>
-          <p
-            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
-          >
-            <span>Achievement at {data.profession.max_level}%:</span>
-            {#if data.profession.achievement_id}
-              <AchievementLink
-                achievementId={data.profession.achievement_id}
-                achievementName={data.profession.achievement_name}
-              />
-            {/if}
+            Bring a Shovel and at least one free inventory slot. A successful
+            dig awards the treasure and gives +0.5% Treasure Hunter until 100%.
           </p>
         </div>
       </div>
@@ -216,6 +205,7 @@
             Open the <ItemLink
               itemId={data.keyItems.buried_treasure_chest.id}
               itemName={data.keyItems.buried_treasure_chest.name}
+              quality={data.keyItems.buried_treasure_chest.quality}
               tooltipHtml={data.keyItems.buried_treasure_chest.tooltip_html}
               imageAvailable={data.itemIconPaths[
                 data.keyItems.buried_treasure_chest.id
@@ -225,18 +215,29 @@
           <!-- Source: server-scripts/ChestItem.cs:24-31 — Buried Treasure Chest grants unique rewards and applies Treasure Hunter bonus to relic rolls only. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Each chest gives up to {data.buriedChestRewardLimit} unique rewards. Treasure
-            Hunter adds
+            Hunter
             <a
               href="#calculator"
               class="text-blue-600 hover:underline dark:text-blue-400"
-              >1 percentage point per 10% skill</a
-            > to each relic roll, up to 10 percentage points at 100% skill.
+              >improves the chance</a
+            > that those rewards include relics.
           </p>
           <!-- Source: server-scripts/ChestItem.cs:16-20 — opening needs as many free inventory slots as the reward limit, or one fewer if this is the last chest in its stack. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Opening the chest requires {data.buriedChestRewardLimit} free inventory
             slots, or {data.buriedChestRewardLimit - 1} if it is the last chest in
             its stack.
+          </p>
+          <p
+            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
+          >
+            <span>Max Level: {data.profession.max_level}%</span>
+            {#if data.profession.achievement_id}
+              <AchievementLink
+                achievementId={data.profession.achievement_id}
+                achievementName={data.profession.achievement_name}
+              />
+            {/if}
           </p>
         </div>
       </div>
@@ -263,15 +264,10 @@
           bind:value={skillLevel}
           class="h-2 w-48 cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
         />
-        <span class="w-16 font-mono"
-          >{formatPercent(skillLevel / 100, {
-            decimals: 1,
-            trailingZeros: true,
-          })}</span
-        >
+        <span class="w-16 font-mono">{skillLevel.toFixed(1)}%</span>
       </div>
 
-      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      <div class="mt-4 grid gap-3 sm:grid-cols-3">
         <div class="rounded-lg border bg-background p-3">
           <div class="text-sm text-muted-foreground">Relic chance bonus</div>
           <div class="text-xl font-semibold">
@@ -279,8 +275,13 @@
           </div>
         </div>
         <div class="rounded-lg border bg-background p-3">
-          <div class="text-sm text-muted-foreground">Digs to reach 100%</div>
+          <div class="text-sm text-muted-foreground">Treasures to cap</div>
           <div class="text-xl font-semibold">{successfulDigsToCap}</div>
+        </div>
+        <div class="rounded-lg border bg-background p-3">
+          <div class="text-sm text-muted-foreground">Skill gain</div>
+          <!-- Source: server-scripts/TreasureLocation.cs:87-90 — successful digs grant +0.5% Treasure Hunter until the 100% cap. -->
+          <div class="text-xl font-semibold">+0.5% per treasure until 100%</div>
         </div>
       </div>
     </div>
@@ -292,7 +293,7 @@
             <tr>
               <th class="p-3 text-left font-medium">Reward</th>
               <th class="p-3 text-left font-medium">Effect</th>
-              <th class="p-3 text-right font-medium">Chance per chest at 0%</th>
+              <th class="p-3 text-right font-medium">Baseline</th>
               <th class="p-3 text-right font-medium">At selected skill</th>
               <th class="p-3 text-right font-medium">
                 Change<sup class="ml-0.5 font-normal text-muted-foreground"
@@ -303,11 +304,12 @@
           </thead>
           <tbody>
             {#each displayedChestRewards as reward (reward.item_id)}
-              <tr class="border-t odd:bg-muted/20 hover:bg-muted/25">
+              <tr class="border-t hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink
                     itemId={reward.item_id}
-                    itemName={reward.item_name}
+                    itemName={reward.display_name}
+                    quality={reward.quality}
                     tooltipHtml={reward.tooltip_html}
                     imageAvailable={data.itemIconPaths[reward.item_id]}
                   />
@@ -326,16 +328,10 @@
                   {/if}
                 </td>
                 <td class="p-3 text-right font-mono">
-                  {formatPercent(reward.baseline_chance, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}
+                  {formatPercent(reward.baseline_open_chance)}
                 </td>
                 <td class="p-3 text-right font-mono">
-                  {formatPercent(reward.open_chance, {
-                    decimals: 1,
-                    trailingZeros: true,
-                  })}
+                  {formatPercent(reward.adjusted_open_chance)}
                 </td>
                 <td class="p-3 text-right font-mono">
                   {#if Math.abs(reward.change_from_baseline) < 0.0005}
@@ -359,8 +355,9 @@
       </div>
       <!-- Source: server-scripts/ChestItem.cs:24,61 — chest reward selection loop runs up to 10 passes until the slot count is filled. -->
       <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-        <span aria-hidden="true">*</span> Change is per chest, not per reward roll.
-        Repeated relic rolls can make it larger than the per-roll bonus.
+        <span aria-hidden="true">*</span> The chest checks its rewards up to 10 times
+        until it fills the available reward slots. Each check gives relics another
+        chance, so the bonus shown above can have a larger effect per chest.
       </p>
     </div>
   </section>
@@ -377,16 +374,18 @@
             <tr>
               <th class="p-3 text-left font-medium">Map</th>
               <th class="p-3 text-left font-medium">Destination</th>
-              <th class="p-3 text-left font-medium">Map</th>
+              <th class="p-3 text-left font-medium">Reward</th>
+              <th class="p-3 text-left font-medium">Location</th>
             </tr>
           </thead>
           <tbody>
             {#each data.treasureMaps as map (map.id)}
-              <tr class="border-t odd:bg-muted/20 hover:bg-muted/25">
+              <tr class="border-t hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink
                     itemId={map.id}
                     itemName={map.name}
+                    quality={map.quality}
                     tooltipHtml={map.tooltip_html}
                     imageAvailable={data.itemIconPaths[map.id]}
                   />
@@ -405,6 +404,15 @@
                   {/if}
                 </td>
                 <td class="p-3">
+                  <ItemLink
+                    itemId={map.reward_item_id}
+                    itemName={map.reward_item_name}
+                    quality={map.reward_quality}
+                    tooltipHtml={map.reward_item_tooltip}
+                    imageAvailable={data.itemIconPaths[map.reward_item_id]}
+                  />
+                </td>
+                <td class="p-3">
                   <MapLink
                     entityId={map.treasure_location_id}
                     entityType="treasure"
@@ -417,13 +425,5 @@
         </table>
       </div>
     </div>
-  </section>
-  <section class="space-y-4">
-    <h2 class="text-xl font-semibold">Acquisition methods</h2>
-    <MethodList
-      methods={data.acquisitionMethods}
-      items={data.acquisitionItems}
-      names={data.acquisitionNames}
-    />
   </section>
 </div>

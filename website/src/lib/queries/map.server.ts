@@ -1,6 +1,6 @@
 /**
  * Server-side map queries using better-sqlite3 for prerendering.
- * This is the synchronous counterpart to map.ts which uses sql.js-httpvfs.
+ * Acquisition-backed counts are assembled before serializing the map entities.
  */
 import Database from "better-sqlite3";
 import { resolve } from "path";
@@ -180,29 +180,15 @@ function applyAcquisitionCounts(
     const counts = methodDropCounts(model, methods);
     chest.dropCount = counts.dropCount;
     chest.randomDropCount = counts.randomDropCount;
-    chest.requiredKeys = [
-      ...new Map(
-        methods.flatMap((method) => {
-          const itemId =
-            typeof method.detail.key_item_id === "string"
-              ? method.detail.key_item_id
-              : null;
-          const withheld = Boolean(method.detail.key_item_withheld);
-          if (!itemId && !withheld) return [];
-          const item = itemId ? model.entities.get("items")?.get(itemId) : null;
-          return [
-            [
-              `${itemId ?? ""}:${withheld}`,
-              {
-                itemId,
-                itemName: item ? String(item.name) : null,
-                withheld,
-              },
-            ] as const,
-          ];
-        }),
-      ).values(),
-    ];
+    const keyMethod = methods.find(
+      (method) => method.detail.key_item_id || method.detail.key_item_withheld,
+    );
+    const keyId = keyMethod?.detail.key_item_id;
+    chest.keyRequiredId = typeof keyId === "string" ? keyId : null;
+    chest.keyRequiredName =
+      typeof keyId === "string"
+        ? String(model.entities.get("items")?.get(keyId)?.name)
+        : null;
   }
 }
 
@@ -736,20 +722,20 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       p.from_zone_id,
       fz.name as from_zone_name,
       fsz.name as from_sub_zone_name,
-      p.destination_x,
-      p.destination_y,
-      p.to_zone_id,
-      tz.name as to_zone_name,
-      tsz.name as to_sub_zone_name,
+      CASE WHEN p.destination_withheld=0 THEN p.destination_x END AS destination_x,
+      CASE WHEN p.destination_withheld=0 THEN p.destination_y END AS destination_y,
+      CASE WHEN p.destination_withheld=0 THEN p.to_zone_id END AS to_zone_id,
+      CASE WHEN p.destination_withheld=0 THEN tz.name END AS to_zone_name,
+      CASE WHEN p.destination_withheld=0 THEN tsz.name END AS to_sub_zone_name,
       p.is_closed,
-      p.required_item_id,
-      i.name as required_item_name,
+      CASE WHEN p.required_item_withheld=0 THEN p.required_item_id END AS required_item_id,
+      CASE WHEN p.required_item_withheld=0 THEN i.name END as required_item_name,
       p.requires_everyone_key,
       COALESCE(p.level_required, 0) as required_level,
       COALESCE(p.item_level_required, 0) as required_item_level,
-      dead_spawn.monster_id AS need_monster_dead_id,
-      m.name as need_monster_dead_name,
-      CASE WHEN dead_spawn.id IS NOT NULL THEN json_array(dead_spawn.id) END as kill_requirement_spawn_ids
+      CASE WHEN p.need_monster_dead_withheld=0 THEN dead_spawn.id END AS need_monster_dead_id,
+      CASE WHEN p.need_monster_dead_withheld=0 THEN m.name END as need_monster_dead_name,
+      CASE WHEN p.need_monster_dead_withheld=0 AND dead_spawn.id IS NOT NULL THEN json_array(dead_spawn.id) END as kill_requirement_spawn_ids
     FROM portals p
     JOIN zones fz ON fz.id = p.from_zone_id
     LEFT JOIN zone_triggers fsz ON fsz.id = p.from_sub_zone_id
@@ -844,7 +830,8 @@ function loadChestsServer(db: Database.Database): ChestMapEntity[] {
         : null,
     zoneId: r.zone_id,
     zoneName: r.zone_name,
-    requiredKeys: [],
+    keyRequiredId: null,
+    keyRequiredName: null,
     respawnTime: r.respawn_time,
     dropCount: r.drop_count,
     randomDropCount: r.random_drop_count,
@@ -947,7 +934,7 @@ function loadAltarsServer(db: Database.Database): AltarMapEntity[] {
       a.reward_epic_name,
       a.reward_legendary_name,
       (
-        SELECT json_group_array(json_object('id', m.id, 'name', m.name))
+        SELECT json_group_array(DISTINCT json_object('id', m.id, 'name', m.name))
         FROM acquisition_kill_details d
         JOIN acquisition_methods am ON am.id = d.id AND am.rooted = 1
         JOIN monsters m ON m.id = d.monster_id

@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
@@ -9,11 +7,10 @@
   import Leaf from "@lucide/svelte/icons/leaf";
   import {
     PROFESSION_MECHANICS,
+    rawTierSuccessChance,
     isEffortlessAtTier,
     skillGainChance,
   } from "$lib/data/professions/mechanics";
-  import { professionAttempt } from "$lib/acquisition/rules";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
 
   let { data } = $props();
 
@@ -35,8 +32,11 @@
 
   function getSuccessChance(resourceLevel: number): number {
     return (
-      professionAttempt("herbalism", resourceLevel, skillLevel / 100, null)
-        .raw * 100
+      rawTierSuccessChance(
+        PROFESSION_MECHANICS.herbalism.success,
+        resourceLevel,
+        skillLevel,
+      ) * 100
     );
   }
 
@@ -86,8 +86,8 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`${data.profession.description} Success chances, skill gains and XP for every plant tier at your Herbalism skill.`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
+  description={`${data.profession.description} View plants and herbs you can gather with the Herbalism skill.`}
   path="/professions/herbalism"
 />
 
@@ -101,7 +101,7 @@
   />
 
   <!-- Header -->
-  <div class="flex flex-wrap items-start gap-4 sm:flex-nowrap">
+  <div class="flex items-start gap-4">
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
@@ -131,17 +131,19 @@
   </div>
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Herbalism works</h2>
+    <h2 class="text-xl font-semibold">How Gathering Plants works</h2>
     <!-- Source: server-scripts/GatherItem.cs:208-250,327-350 — a growing plant is not ready and a low-skill attempt is refused. -->
     <p class="text-muted-foreground">
-      Harvest fully grown plants with at least a 10% success chance and
-      inventory space.
+      <span class="block">A growing plant cannot be gathered.</span>
+      <span class="block"
+        >You need at least a 10% success chance to harvest a plant.</span
+      >
     </p>
     <!-- Source: server-scripts/GatherItem.cs:379-400 — an allowed harvest starts regrowth before the success roll. -->
     <p class="text-muted-foreground">
-      Even a failed harvest makes the plant regrow before you can try again.
-      Tier I plants stop raising Herbalism above 25%, Tier II above 50% and Tier
-      III above 75%.
+      A ready plant starts regrowing when you attempt to harvest it with enough
+      inventory space and at least a 10% success chance, even if you gather
+      nothing.
     </p>
   </section>
 
@@ -154,7 +156,7 @@
     <div
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
     >
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-3">
         <label for="skill-slider" class="shrink-0">Herbalism Skill:</label>
         <input
           id="skill-slider"
@@ -170,22 +172,19 @@
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{formatPercent(getSkillGainChance() / 100, {
-            decimals: 0,
-            trailingZeros: true,
-          })}</span
+          >{getSkillGainChance().toFixed(0)}%</span
         >
         <span class="text-xs">(per success)</span>
       </div>
     </div>
     <div class="rounded-lg border overflow-x-auto">
       <div
-        class="grid w-full min-w-[36rem] whitespace-nowrap"
-        style="grid-template-columns: 4rem minmax(9rem, 1fr) minmax(11rem, 1fr) minmax(6rem, 1fr) minmax(6rem, 1fr);"
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: repeat(5, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">Success</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">Skill Gain</div>
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
         <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
         <div class="bg-muted/50 p-3 font-medium text-right">Plants</div>
         {#each [0, 1, 2, 3, 4] as tier (tier)}
@@ -194,50 +193,35 @@
           {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
           {@const resourceCount = resourceCountMap.get(tier) ?? 0}
           {@const xp = xpByTierMap.get(tier)}
-          <div
-            class="col-span-full grid grid-cols-subgrid {tier % 2 === 0
-              ? 'bg-muted/20'
-              : ''}"
-          >
-            <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
-            <div class="p-3 border-t text-right">
-              {#if successChance < successFloorPercent}
-                <span class="text-muted-foreground">cannot gather</span>
-              {:else}
-                <span class="font-mono {getSuccessChanceColor(successChance)}">
-                  {formatPercent(successChance / 100, {
-                    decimals: 0,
-                    trailingZeros: true,
-                  })}
-                </span>
-              {/if}
-            </div>
-            <div class="p-3 border-t text-right">
-              {#if effortless || successChance < successFloorPercent}
-                <span class="text-muted-foreground">—</span>
-              {:else}
-                <span class="font-mono"
-                  >{formatPercent(minGain / 100, {
-                    decimals: 2,
-                    trailingZeros: true,
-                  })} – {formatPercent(maxGain / 100, {
-                    decimals: 2,
-                    trailingZeros: true,
-                  })}</span
-                >
-              {/if}
-            </div>
-            <div class="p-3 text-right border-t">
-              {#if xp}
-                <MechanicsLink section="experience"
-                  >{formatNumber(xp)}</MechanicsLink
-                >
-              {:else}
-                <span class="text-muted-foreground">—</span>
-              {/if}
-            </div>
-            <div class="p-3 text-right border-t">{resourceCount}</div>
+          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
+          <div class="p-3 border-t">
+            {#if successChance < successFloorPercent}
+              <span class="text-muted-foreground">cannot gather</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
           </div>
+          <div class="p-3 border-t">
+            {#if effortless || successChance < successFloorPercent}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono"
+                >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+              >
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">
+            {#if xp}
+              <MechanicsLink section="experience"
+                >{xp.toLocaleString()}</MechanicsLink
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">{resourceCount}</div>
         {/each}
       </div>
     </div>
@@ -251,73 +235,48 @@
     </h2>
     <div class="rounded-lg border overflow-x-auto">
       <div
-        class="grid w-full min-w-[36rem] whitespace-nowrap"
-        style="grid-template-columns: 4rem minmax(12rem, 2fr) minmax(9rem, 1fr) minmax(11rem, 1fr);"
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: repeat(4, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Name</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">Success</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">Skill Gain</div>
-        {#each data.resources as resource, index (resource.id)}
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        {#each data.resources as resource (resource.id)}
           {@const successChance = getSuccessChance(resource.level)}
           {@const effortless = isEffortless(resource.level)}
           {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
-          <div
-            class="col-span-full grid grid-cols-subgrid {index % 2 === 0
-              ? 'bg-muted/20'
-              : ''}"
-          >
-            <div class="p-3 font-medium border-t">
-              {romanNumerals[resource.level] ?? resource.level}
-            </div>
-            <div class="p-3 border-t">
-              <a
-                href="/gather-items/{resource.id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {resource.name}
-              </a>
-            </div>
-            <div class="p-3 border-t text-right">
-              {#if successChance < successFloorPercent}
-                <span class="text-muted-foreground">cannot gather</span>
-              {:else}
-                <span class="font-mono {getSuccessChanceColor(successChance)}">
-                  {formatPercent(successChance / 100, {
-                    decimals: 0,
-                    trailingZeros: true,
-                  })}
-                </span>
-              {/if}
-            </div>
-            <div class="p-3 border-t text-right">
-              {#if effortless || successChance < successFloorPercent}
-                <span class="text-muted-foreground">—</span>
-              {:else}
-                <span class="font-mono">
-                  {formatPercent(minGain / 100, {
-                    decimals: 2,
-                    trailingZeros: true,
-                  })} – {formatPercent(maxGain / 100, {
-                    decimals: 2,
-                    trailingZeros: true,
-                  })}
-                </span>
-              {/if}
-            </div>
+          <div class="p-3 font-medium border-t">
+            {romanNumerals[resource.level] ?? resource.level}
+          </div>
+          <div class="p-3 border-t">
+            <a
+              href="/gather-items/{resource.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {resource.name}
+            </a>
+          </div>
+          <div class="p-3 border-t">
+            {#if successChance < successFloorPercent}
+              <span class="text-muted-foreground">cannot gather</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
+          </div>
+          <div class="p-3 border-t">
+            {#if effortless || successChance < successFloorPercent}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono">
+                {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
+              </span>
+            {/if}
           </div>
         {/each}
       </div>
     </div>
   </section>
-  <details class="space-y-4">
-    <summary class="cursor-pointer text-xl font-semibold"
-      >Gathering methods and requirements</summary
-    >
-    <MethodList
-      methods={data.acquisitionMethods}
-      items={data.acquisitionItems}
-      names={data.acquisitionNames}
-    />
-  </details>
 </div>

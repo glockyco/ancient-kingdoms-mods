@@ -10,22 +10,17 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
-  import LazyObtainabilityTree from "$lib/components/LazyObtainabilityTree.svelte";
-  import DeferredDetails from "$lib/components/DeferredDetails.svelte";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
-  import PrimaryRewards from "$lib/components/acquisition/PrimaryRewards.svelte";
-  import ScrollRegion from "$lib/components/acquisition/ScrollRegion.svelte";
+  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import { calculateMethodProbabilities } from "$lib/acquisition/rules";
   import { commonItemProbability } from "$lib/utils/primary-rewards";
   import type {
     GatheringResourceDrop,
     GatheringResourceSpawn,
   } from "$lib/types/gather-items";
   import {
-    formatPercent,
+    formatPercent as formatFraction,
     formatDuration,
-    formatNumber,
     getQualityTextColorClass,
   } from "$lib/utils/format";
   import {
@@ -39,12 +34,10 @@
     PROFESSION_MECHANICS,
     isEffortlessAtTier,
     linearProcChance,
+    rawTierSuccessChance,
     skillGainChance,
   } from "$lib/data/professions/mechanics";
-  import {
-    professionAttempt,
-    calculateMethodProbabilities,
-  } from "$lib/acquisition/rules";
+  import { QUALITY_NAMES } from "$lib/constants/quality";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
   import Gem from "@lucide/svelte/icons/gem";
@@ -101,15 +94,13 @@
     return spawns.map((spawn) => spawn.zone_name).join(", ");
   }
 
-  function formatFishingSpotVariant(variant: FishingSpotVariant): string {
-    const zone = formatZoneList(variant.spawns);
-    const sameZone = data.fishingSpotVariants.filter(
-      (candidate) => formatZoneList(candidate.spawns) === zone,
-    );
-    const position = sameZone.indexOf(variant) + 1;
-    return sameZone.length > 1
-      ? `${zone} (${position} of ${sameZone.length})`
-      : zone;
+  function formatFishingSpotVariant(
+    variant: FishingSpotVariant,
+    index: number,
+  ): string {
+    return `Spot ${index + 1}: ${variant.resource.name} (Tier ${
+      romanNumerals[variant.resource.level] ?? variant.resource.level
+    }) — ${formatZoneList(variant.spawns)}`;
   }
   // Type colors for badges
 
@@ -201,26 +192,35 @@
     return "text-red-500";
   }
 
-  const attemptScenario = $derived(
-    resource.is_plant
-      ? professionAttempt("herbalism", resource.level, skillLevel / 100, null)
-      : resource.is_mineral
-        ? professionAttempt(
-            "mining",
-            resource.level,
-            skillLevel / 100,
-            pickaxeQuality,
-          )
-        : resource.is_fishing_spot
-          ? professionAttempt(
-              "fishing",
-              resource.level,
-              skillLevel / 100,
-              selectedRod ? selectedRodQuality : null,
-            )
-          : null,
-  );
-  const successChance = $derived((attemptScenario?.raw ?? 0) * 100);
+  const successChance = $derived.by(() => {
+    if (resource.is_plant) {
+      return (
+        rawTierSuccessChance(
+          PROFESSION_MECHANICS.herbalism.success,
+          resource.level,
+          skillLevel,
+        ) * 100
+      );
+    } else if (resource.is_mineral) {
+      return (
+        rawTierSuccessChance(
+          PROFESSION_MECHANICS.mining.success,
+          resource.level,
+          skillLevel,
+          pickaxeQuality,
+        ) * 100
+      );
+    } else if (resource.is_fishing_spot) {
+      return (
+        fishingSpotSuccessChance({
+          rodQuality: selectedRodQuality,
+          fishingPercent: skillLevel,
+          spotTier: resource.level,
+        }) * 100
+      );
+    }
+    return 0;
+  });
 
   // Source: server-scripts/GatherItem.cs:343-365,698-705 — the game refuses attempts below these success floors.
   const attemptFloor = $derived(
@@ -232,7 +232,7 @@
           ? PROFESSION_MECHANICS.fishing.success.floor
           : 0,
   );
-  const canAttempt = $derived(attemptScenario?.qualified ?? true);
+  const canAttempt = $derived(successChance >= attemptFloor * 100);
 
   const effortless = $derived.by(() => {
     if (resource.is_radiant_spark) return false;
@@ -322,58 +322,34 @@
   const enteredAcquisitionMethods = $derived(
     data.acquisitionMethods
       .filter((method) => method.detail.resource_id === resource.id)
-      .map((method) => {
-        const definition = data.acquisitionRows.methods.find(
-          (row) => row.id === method.methodId,
-        )!;
-        return {
-          ...method,
-          probabilityResults: calculateMethodProbabilities(
-            data.acquisitionRows,
-            definition,
-            method.detail,
-            {
-              assumptions: {
-                scenario: "entered",
-                questNeed: "none",
-                fatecharm: false,
-                treasureHunter: 0,
-                professionFraction: skillLevel / 100,
-                toolQuality: resource.is_fishing_spot
-                  ? selectedRod
-                    ? selectedRodQuality
-                    : null
-                  : resource.is_mineral
-                    ? pickaxeQuality
-                    : null,
-                costumePieces: fishermanCostumePieces,
-              },
+      .map((method) => ({
+        ...method,
+        probabilityResults: calculateMethodProbabilities(
+          data.acquisitionRows,
+          data.acquisitionRows.methods.find(
+            (row) => row.id === method.methodId,
+          )!,
+          method.detail,
+          {
+            assumptions: {
+              scenario: "entered",
+              questNeed: "none",
+              fatecharm: false,
+              treasureHunter: 0,
+              professionFraction: skillLevel / 100,
+              toolQuality: resource.is_fishing_spot
+                ? selectedRod
+                  ? selectedRodQuality
+                  : null
+                : resource.is_mineral
+                  ? pickaxeQuality
+                  : null,
+              costumePieces: fishermanCostumePieces,
             },
-          ),
-        };
-      }),
-  );
-
-  const enteredItemChances = $derived.by(() => {
-    const chances: Record<string, number | null> = Object.create(null);
-    const itemIds = new Set(
-      enteredAcquisitionMethods.flatMap((method) =>
-        method.probabilityResults.flatMap((result) =>
-          result.target.kind === "item" ? [result.target.itemId] : [],
+          },
         ),
-      ),
-    );
-    for (const itemId of itemIds) {
-      chances[itemId] = commonItemProbability(
-        enteredAcquisitionMethods,
-        itemId,
-        resource.is_fishing_spot ? "cast" : "attempt",
-      );
-    }
-    return chances;
-  });
-
-  // Canonical per-item chances include every primary and fallback membership.
+      })),
+  );
   const rewardDrops = $derived.by(() => {
     if (!resource.is_fishing_spot || fallbackFish.length === 0) return drops;
     const fallbackRows: GatheringResourceDrop[] = fallbackFish
@@ -385,6 +361,7 @@
         item_id: fish.itemId,
         item_name: fish.itemName,
         quality: fish.quality,
+        drop_rate: 0,
         actual_drop_chance: null,
         is_fishing_trash: false,
         is_fallback_fish: true,
@@ -397,7 +374,11 @@
   });
 
   function getDisplayedDropChance(drop: GatheringResourceDrop): number | null {
-    return enteredItemChances[drop.item_id] ?? null;
+    return commonItemProbability(
+      enteredAcquisitionMethods,
+      drop.item_id,
+      resource.is_fishing_spot ? "cast" : "attempt",
+    );
   }
 
   const dropColumns = $derived([
@@ -409,10 +390,9 @@
     {
       id: "drop_rate",
       accessorFn: (drop) => getDisplayedDropChance(drop),
-      header: resource.is_fishing_spot
-        ? "Chance per cast"
-        : "Chance per attempt",
-      size: 160,
+      sortingFn: "basic",
+      header: resource.is_fishing_spot ? "Chance / Cast" : "Drop Rate",
+      size: 140,
     },
   ] satisfies ColumnDef<GatheringResourceDrop>[]);
 
@@ -434,6 +414,15 @@
     if (checked) selectedCostumeIds.add(itemId);
     else selectedCostumeIds.delete(itemId);
   }
+  function formatPercent(
+    value: number,
+    options: Parameters<typeof formatFraction>[1] = {
+      decimals: 1,
+      trailingZeros: true,
+    },
+  ): string {
+    return formatFraction(value, options);
+  }
 </script>
 
 {#snippet renderDropCell({
@@ -447,16 +436,14 @@
     <ItemLink
       itemId={row.original.item_id}
       itemName={row.original.item_name}
+      quality={row.original.quality}
       colorClass={getQualityTextColorClass(row.original.quality ?? 0)}
     />
   {:else if cell.column.id === "drop_rate"}
-    {@const chance = getDisplayedDropChance(row.original)}
     <span class="ml-auto">
-      {#if chance === null}
-        Unknown
-      {:else}
-        {formatPercent(chance, { decimals: 1, trailingZeros: true })}
-      {/if}
+      {#if getDisplayedDropChance(row.original) === null}-{:else}{formatPercent(
+          getDisplayedDropChance(row.original)!,
+        )}{/if}
     </span>
   {:else}
     {cell.getValue()}
@@ -469,9 +456,7 @@
   header: Header<GatheringResourceDrop, unknown>;
 })}
   {#if header.id === "drop_rate"}
-    <span class="order-1 ml-auto whitespace-normal text-right leading-tight"
-      >{header.column.columnDef.header}</span
-    >
+    <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
   {/if}
@@ -504,23 +489,14 @@
   header: Header<GatheringResourceSpawn, unknown>;
 })}
   {#if header.id === "spawn_count"}
-    <span class="order-1 ml-auto">{header.column.columnDef.header}</span>
+    <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
   {/if}
 {/snippet}
 
 <Seo
-  title={detailTitle(resource.name, {
-    family: "Gathering",
-    zone:
-      data.fishingSpotVariants.length === 0 && data.spawns.length === 1
-        ? data.spawns[0].zone_name
-        : null,
-    source: resource.is_fishing_spot
-      ? data.drops.find((drop) => !drop.is_fishing_trash)?.item_name
-      : null,
-  })}
+  title={`${resource.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/gather-items/${resource.id}`}
 />
@@ -564,7 +540,7 @@
         <span>Tier {resource.level}</span>
       {/if}
       {#if resource.is_radiant_spark}
-        <span>Respawn: 1m 40s to 1h (random)</span>
+        <span>Respawn: 1m40s – 1h (random)</span>
       {:else if resource.is_mineral && resource.respawn_time > 0}
         <span>
           Respawn: {formatDuration(Math.floor(resource.respawn_time / 2))} –
@@ -576,7 +552,7 @@
       {#if resource.gathering_exp && resource.gathering_exp > 0}
         <span
           >Gathering XP: <MechanicsLink section="experience"
-            >{formatNumber(resource.gathering_exp)}</MechanicsLink
+            >{resource.gathering_exp}</MechanicsLink
           ></span
         >
       {/if}
@@ -620,11 +596,9 @@
       </h2>
       <div class="bg-muted/30 rounded-md border p-4 space-y-4">
         <div class="space-y-3">
-          <div
-            class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 sm:flex sm:gap-4"
-          >
-            <label for="skill-slider" class="sm:w-40 sm:shrink-0">
-              {skillName}:
+          <div class="flex items-center gap-4">
+            <label for="skill-slider" class="w-40 shrink-0">
+              {skillName} Skill:
             </label>
             <input
               id="skill-slider"
@@ -633,19 +607,15 @@
               max="100"
               step="1"
               bind:value={skillLevel}
-              class="col-span-2 row-start-2 min-w-0 w-full sm:w-auto sm:flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+              class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
             />
-            <span class="col-start-2 row-start-1 font-mono text-right sm:w-24"
-              >{skillLevel}%</span
-            >
+            <span class="font-mono w-24 text-right">{skillLevel}%</span>
           </div>
 
           {#if resource.is_mineral}
-            <div
-              class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 sm:flex sm:gap-4"
-            >
-              <label for="pickaxe-slider" class="sm:w-40 sm:shrink-0">
-                Pickaxe:
+            <div class="flex items-center gap-4">
+              <label for="pickaxe-slider" class="w-40 shrink-0">
+                Pickaxe Quality:
               </label>
               <input
                 id="pickaxe-slider"
@@ -654,88 +624,11 @@
                 max="4"
                 step="1"
                 bind:value={pickaxeQuality}
-                class="col-span-2 row-start-2 min-w-0 w-full sm:w-auto sm:flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
               />
-              <span class="col-start-2 row-start-1 text-right sm:w-40">
-                {[
-                  "Rusty Pickaxe",
-                  "Steel Pickaxe",
-                  "Gold Pickaxe",
-                  "Beryllium Pickaxe",
-                  "Draconium Pickaxe",
-                ][pickaxeQuality]}
+              <span class="font-mono w-24 text-right">
+                {QUALITY_NAMES[pickaxeQuality]}
               </span>
-            </div>
-          {/if}
-          {#if resource.is_fishing_spot}
-            {#if data.rods.length > 0}
-              <label for="fishing-rod">Fishing rod:</label>
-              <div
-                class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
-              >
-                <div
-                  class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1"
-                >
-                  <select
-                    id="fishing-rod"
-                    bind:value={selectedRodId}
-                    aria-label="Fishing rod"
-                    class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  >
-                    {#each data.rods as rod (rod.item_id)}
-                      <option value={rod.item_id}>{rod.item_name}</option>
-                    {/each}
-                  </select>
-                  <ChevronDown
-                    class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                </div>
-                <button
-                  type="button"
-                  class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
-                  disabled={selectedRodIndex === 0}
-                  onclick={selectPreviousRod}
-                  aria-label="Previous fishing rod"
-                >
-                  Prev
-                </button>
-                <button
-                  type="button"
-                  class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
-                  disabled={selectedRodIndex === data.rods.length - 1}
-                  onclick={selectNextRod}
-                  aria-label="Next fishing rod"
-                >
-                  Next
-                </button>
-              </div>
-            {/if}
-
-            <p>Fisherman's costume pieces worn:</p>
-            <div class="grid gap-2 sm:grid-cols-3">
-              {#each fishermanSetPieces as piece (piece.itemId)}
-                <label
-                  class="flex items-center gap-2 rounded-md border bg-background p-2"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCostumeIds.has(piece.itemId)}
-                    onchange={(event) =>
-                      toggleCostume(
-                        piece.itemId,
-                        (event.currentTarget as HTMLInputElement).checked,
-                      )}
-                    class="h-4 w-4 rounded border-border accent-primary"
-                  />
-                  <a
-                    href="/items/{piece.itemId}"
-                    class="text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {piece.itemName}
-                  </a>
-                </label>
-              {/each}
             </div>
           {/if}
         </div>
@@ -744,17 +637,14 @@
           {#if resource.is_radiant_spark}
             <div>
               <div class="text-sm text-muted-foreground">
-                Radiant Aether chance
+                Radiant Aether Chance
               </div>
               <div
                 class="font-mono font-medium {getSuccessChanceColor(
                   radiantAetherChance,
                 )}"
               >
-                {formatPercent(radiantAetherChance / 100, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })}
+                {radiantAetherChance.toFixed(1)}%
               </div>
             </div>
           {:else}
@@ -763,7 +653,7 @@
               <div class="text-sm text-muted-foreground">
                 {resource.is_fishing_spot
                   ? "Bite chance per cast"
-                  : "Success chance"}
+                  : "Success Chance"}
               </div>
               <div
                 class="font-mono font-medium {getSuccessChanceColor(
@@ -771,21 +661,12 @@
                 )}"
               >
                 {#if canAttempt}
-                  {formatPercent(successChance / 100, {
-                    decimals: 0,
-                    trailingZeros: true,
-                  })}
+                  {successChance.toFixed(0)}%
                 {:else}
                   <span class="text-sm">
-                    Too low to {resource.is_fishing_spot
-                      ? "fish here"
-                      : resource.is_mineral
-                        ? "mine"
-                        : "gather"}. You need at least a {formatPercent(
-                      attemptFloor,
-                      { decimals: 0, trailingZeros: false },
-                    )}
-                    {resource.is_fishing_spot ? "bite" : "success"} chance.
+                    Cannot attempt yet. Need at least {(
+                      attemptFloor * 100
+                    ).toFixed(0)}% success.
                   </span>
                 {/if}
               </div>
@@ -795,42 +676,28 @@
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
                 ? "Fishing gain chance per cast"
-                : `${skillName} gain chance per successful gather`}
+                : "Skill gain chance after gathering"}
             </div>
             <div class="font-mono font-medium">
-              {formatPercent(
-                (resource.is_fishing_spot
-                  ? fishingMasteryProcChance
-                  : gatheringSkillGainChance) / 100,
-                { decimals: 0, trailingZeros: true },
-              )}
+              {resource.is_fishing_spot
+                ? fishingMasteryProcChance.toFixed(0)
+                : gatheringSkillGainChance.toFixed(0)}%
             </div>
           </div>
           <div>
             <div class="text-sm text-muted-foreground">
               {resource.is_fishing_spot
                 ? "Fishing gain per increase"
-                : `${skillName} gain per increase`}
+                : "Skill Gain Amount"}
             </div>
             <div class="font-mono">
               {#if !canAttempt || effortless || skillLevel >= 100}
                 <span class="text-muted-foreground">—</span>
               {:else if resource.is_radiant_spark}
-                {formatPercent(skillGain[0] / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} – {formatPercent(skillGain[1] / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}
+                {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%
+                <span class="text-muted-foreground text-xs">(fixed)</span>
               {:else if successChance > 0}
-                {formatPercent(skillGain[0] / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} – {formatPercent(skillGain[1] / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}
+                {skillGain[0].toFixed(2)}% – {skillGain[1].toFixed(2)}%
               {:else}
                 <span class="text-muted-foreground">—</span>
               {/if}
@@ -843,7 +710,6 @@
 
   <!-- Requirements -->
   {#if resource.tool_required_id}
-    {@const requiredItemId = resource.tool_required_id}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Key class="h-5 w-5 text-yellow-500" />
@@ -859,37 +725,29 @@
       </div>
     </section>
 
-    <section class="space-y-4">
-      <h2 class="text-xl font-semibold">Gathering and rewards</h2>
-      <MethodList
-        methods={enteredAcquisitionMethods}
-        items={data.acquisitionItems}
-        names={data.acquisitionNames}
-      />
-    </section>
-
     <!-- How to Obtain Requirement -->
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <ListTree class="h-5 w-5 text-muted-foreground" />
-        How to Obtain Key
-      </h2>
-      <DeferredDetails
-        summary="Show sources"
-        className="bg-muted/30 rounded-md border p-4"
-      >
-        <ScrollRegion
-          label="Required item sources"
-          className="mt-4 max-h-[32rem] overflow-auto overscroll-contain pr-2"
-        >
-          <LazyObtainabilityTree itemId={requiredItemId} hideRootLink={true} />
-        </ScrollRegion>
-      </DeferredDetails>
-    </section>
+    {#if data.toolObtainabilityTree}
+      <section>
+        <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+          <ListTree class="h-5 w-5 text-muted-foreground" />
+          How to Obtain Key
+        </h2>
+        <div class="bg-muted/30 rounded-md border p-4">
+          <div class="bg-background rounded-md p-4 border overflow-x-auto">
+            <div class="w-fit pr-2">
+              <ObtainabilityTree
+                node={data.toolObtainabilityTree}
+                hideRootLink={true}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+    {/if}
   {/if}
 
   <!-- Rewards -->
-  {#if resource.primaryRewards.length || drops.length > 0}
+  {#if resource.item_reward_id || drops.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
@@ -898,10 +756,6 @@
 
       {#if resource.is_fishing_spot}
         <div class="mb-4 space-y-3 rounded-md border bg-muted/30 p-4">
-          <div class="flex items-center gap-3">
-            <label for="fishing-spot-variant">Fishing spot:</label>
-            <MapLink entityId={resource.id} entityType="resource" compact />
-          </div>
           {#if data.fishingSpotVariants.length > 1}
             <div
               class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
@@ -915,7 +769,7 @@
                 >
                   {#each data.fishingSpotVariants as variant, index (variant.resource.id)}
                     <option value={index}>
-                      {formatFishingSpotVariant(variant)}
+                      {formatFishingSpotVariant(variant, index)}
                     </option>
                   {/each}
                 </select>
@@ -945,18 +799,87 @@
               </button>
             </div>
           {/if}
+
+          {#if data.rods.length > 0}
+            <div
+              class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+            >
+              <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
+                <select
+                  bind:value={selectedRodId}
+                  aria-label="Fishing rod"
+                  class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  {#each data.rods as rod (rod.item_id)}
+                    <option value={rod.item_id}>{rod.item_name}</option>
+                  {/each}
+                </select>
+                <ChevronDown
+                  class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+                disabled={selectedRodIndex === 0}
+                onclick={selectPreviousRod}
+                aria-label="Previous fishing rod"
+              >
+                Prev
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+                disabled={selectedRodIndex === data.rods.length - 1}
+                onclick={selectNextRod}
+                aria-label="Next fishing rod"
+              >
+                Next
+              </button>
+            </div>
+          {/if}
+
+          <div class="grid gap-2 sm:grid-cols-3">
+            {#each fishermanSetPieces as piece (piece.itemId)}
+              <label
+                class="flex items-center gap-2 rounded-md border bg-background p-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedCostumeIds.has(piece.itemId)}
+                  onchange={(event) =>
+                    toggleCostume(
+                      piece.itemId,
+                      (event.currentTarget as HTMLInputElement).checked,
+                    )}
+                  class="h-4 w-4 rounded border-border accent-primary"
+                />
+                <a
+                  href="/items/{piece.itemId}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  {piece.itemName}
+                </a>
+              </label>
+            {/each}
+          </div>
         </div>
       {/if}
-      {#if resource.primaryRewards.length}
-        <div class="mb-4 bg-muted/30 rounded-md border p-4 space-y-2">
-          <PrimaryRewards rewards={resource.primaryRewards} />
-          {#if resource.is_radiant_spark}
-            <p class="text-muted-foreground">
-              {formatPercent(radiantAetherChance / 100, {
-                decimals: 1,
-                trailingZeros: false,
-              })} chance at the selected skill level
-            </p>
+      {#if resource.item_reward_id}
+        <div class="mb-4 bg-muted/30 rounded-md border p-4">
+          <a
+            href="/items/{resource.item_reward_id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
+            {resource.item_reward_name}
+          </a>
+          {#if resource.item_reward_amount > 1}
+            <span class="text-muted-foreground">
+              ×1–{resource.item_reward_amount}
+            </span>
+          {:else}
+            <span class="text-muted-foreground"> ×1 </span>
           {/if}
         </div>
       {/if}

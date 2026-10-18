@@ -1,5 +1,4 @@
 <script lang="ts" generics="TData">
-  import { formatNumber } from "$lib/utils/format";
   import { onMount, tick, untrack } from "svelte";
   import { afterNavigate } from "$app/navigation";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
@@ -567,27 +566,31 @@
         return visibleColumnIds.has(id as string);
       })
       .map((col) => {
-        if (col.size) return `minmax(min-content, ${col.size}px)`;
+        if (col.size) return `${col.size}px`;
         if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
         return "auto";
       })
       .join(" "),
   );
 
-  const mobileGridTemplateColumns = $derived.by(() => {
-    let tracks = "";
-    for (const column of columns) {
-      const id = "accessorKey" in column ? column.accessorKey : column.id;
-      if (!visibleColumnIds.has(id as string)) continue;
-      const identifier = id === identifierColumnId;
-      const width = `min(${Math.max(96, column.size ?? column.minSize ?? 150)}px, 100cqw)`;
-      tracks += `${tracks ? " " : ""}${identifier ? "minmax(min-content, 1fr)" : `minmax(min-content, ${width})`}`;
-    }
-    return tracks;
-  });
+  const mobileGridTemplateColumns = $derived(
+    columns
+      .filter((col) => {
+        const id = "accessorKey" in col ? col.accessorKey : col.id;
+        return visibleColumnIds.has(id as string);
+      })
+      .map((col) => {
+        const id = "accessorKey" in col ? col.accessorKey : col.id;
+        if (id === identifierColumnId) return "min(16rem, 55vw)";
+        if (col.size) return `${col.size}px`;
+        if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
+        return "auto";
+      })
+      .join(" "),
+  );
 </script>
 
-<div>
+<div class:zebra-stripe={zebraStripe}>
   {#if !isHydrated}
     <div
       class="loading-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
@@ -653,7 +656,7 @@
 
   {#if isHydrated && allRowModel.rows.length < data.length}
     <p role="status" class="pb-3 text-sm text-muted-foreground">
-      {formatNumber(allRowModel.rows.length)} of {formatNumber(data.length)}
+      {allRowModel.rows.length.toLocaleString()} of {data.length.toLocaleString()}
       results
     </p>
   {/if}
@@ -737,9 +740,10 @@
             >
               {#each row.getVisibleCells() as cell (cell.id)}
                 <Table.Cell
-                  class={cell.column.id === identifierColumnId
-                    ? "identifier-cell"
-                    : ""}
+                  class="whitespace-nowrap {cell.column.id ===
+                  identifierColumnId
+                    ? 'identifier-cell'
+                    : ''}"
                 >
                   {#if renderCell}
                     {@render renderCell({ cell, row })}
@@ -786,7 +790,7 @@
   </div>
 
   {#if isHydrated && showPagination && data.length > pageSize}
-    <div class="min-h-10 pt-4">
+    <div class="h-10 pt-4">
       {#if pageCount > 1}
         <Pagination.Root
           count={table.getFilteredRowModel().rows.length}
@@ -794,7 +798,7 @@
           bind:page={() => pagination.pageIndex + 1, changePage}
         >
           {#snippet children({ pages })}
-            <Pagination.Content class="flex-wrap justify-center">
+            <Pagination.Content>
               <Pagination.Item>
                 <Pagination.PrevButton />
               </Pagination.Item>
@@ -826,65 +830,37 @@
 <style>
   .data-table-container {
     scroll-margin-top: 6rem;
-    container-type: inline-size;
+    /* Keep boundary scrolling inside the table so the page does not shift sideways. */
     overscroll-behavior-x: none;
-  }
-
-  .data-table-container :global(th) {
-    height: auto;
-    min-height: 2.5rem;
-    white-space: normal;
-  }
-
-  .data-table-container :global(td) {
-    min-width: 0;
-    white-space: normal;
-    overflow-wrap: normal;
-  }
-
-  .data-table-container :global(th > button) {
-    flex-wrap: nowrap;
-  }
-
-  .data-table-container :global(th > button > svg) {
-    flex-shrink: 0;
-  }
-
-  .data-table-container :global(th > button:has(> .ml-auto)) {
-    justify-content: flex-end;
-  }
-
-  .data-table-container :global(th > button > .ml-auto) {
-    order: 1;
-    max-width: 100%;
-    margin-left: 0;
-    white-space: normal;
-    text-align: right;
-    line-height: 1.25;
-    overflow-wrap: normal;
-  }
-
-  .data-table-container :global(.identifier-cell .whitespace-nowrap) {
-    white-space: normal;
   }
 
   @media (max-width: 639px) {
     .data-table-container :global(.data-table-grid) {
-      width: fit-content;
       grid-template-columns: var(--mobile-grid-template-columns) !important;
     }
 
-    .data-table-container :global(.icon-badge) {
-      padding-inline: 0.375rem;
-    }
-
-    .data-table-container :global(th:has(.ml-auto)) {
-      padding-inline-start: 0;
-      font-size: 0.875rem;
-    }
-
     .data-table-container :global(.identifier-cell) {
-      padding-inline: 0.5rem;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      background-color: var(--background);
+      box-shadow: 1px 0 var(--border);
+    }
+
+    .data-table-container :global(.identifier-cell .whitespace-nowrap) {
+      white-space: normal;
+    }
+
+    .zebra-stripe
+      .data-table-container
+      :global(tr:nth-child(even) > .identifier-cell) {
+      background-image: linear-gradient(
+        color-mix(in oklab, var(--muted) 30%, transparent),
+        color-mix(in oklab, var(--muted) 30%, transparent)
+      );
     }
   }
 </style>

@@ -435,11 +435,13 @@ function resolveGatheringSelection(
   const exactResource = entityData.gathering.find(
     (g) => g.id === resourceId,
   ) as GatheringMapEntity | undefined;
+  const candidates = entityData.gathering.filter(
+    (g) => g.selectionGroupId === resourceId || g.resourceId === resourceId,
+  );
   const resource =
     exactResource ??
-    (entityData.gathering.find(
-      (g) => g.selectionGroupId === resourceId || g.resourceId === resourceId,
-    ) as GatheringMapEntity | undefined);
+    candidates.find((g) => g.position !== null) ??
+    candidates[0];
 
   if (!resource) {
     return { popup: null, highlight: null };

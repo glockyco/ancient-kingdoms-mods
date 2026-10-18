@@ -22,9 +22,7 @@ export const load: PageServerLoad = async ({ params }) => {
     throw error(404, `Class not found: ${className}`);
   }
 
-  const { items: rawItems, acquisitionNames } = await getClassItemsWithSources(
-    classData.id,
-  );
+  const rawItems = await getClassItemsWithSources(classData.id);
 
   // Precompute parsed stat key arrays at build time (avoids JSON.parse on client)
   const itemStatKeys: Record<string, string[]> = {};
@@ -53,7 +51,6 @@ export const load: PageServerLoad = async ({ params }) => {
     skills,
     items,
     itemStatKeys,
-    acquisitionNames,
     quests: getClassQuests(classData.id),
     classIcon: getClassVisualAsset(classData.id),
     description,

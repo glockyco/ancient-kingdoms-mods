@@ -40,7 +40,7 @@
     {#each activeFlags as flag (flag.key)}
       <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
         {@render flagIcon(flag.key, flag.iconColor)}
-        <span class="whitespace-nowrap">{flag.label}</span>
+        {flag.label}
       </span>
     {/each}
   </div>

@@ -7,9 +7,12 @@ import {
 } from "$lib/skills/skillsListQuery";
 import { skillEffectSummaries } from "$lib/skills/skillEffects.server";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
-import { loadItemAcquisition } from "$lib/server/acquisition";
-import type { AcquisitionQuery, MethodView } from "$lib/acquisition/types";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
+import {
+  getItemSourceSummaries,
+  getMinimumSourceLevel,
+  groupItemSourceSummaries,
+  type ItemSourceSummary,
+} from "$lib/server/item-source-summary";
 
 /**
  * Get all player classes (server-side, for prerendering)
@@ -77,13 +80,12 @@ export interface ClassSkill extends SkillListRow {
   visual_height: number | null;
   visual_source_field: string | null;
   visual_source_type: string | null;
-  prerequisites: {
-    id: string;
-    skill_id: string | null;
-    name: string | null;
-    rank: number;
-    withheld: boolean;
-  }[];
+  prerequisite_skill_id: string | null;
+  prerequisite_skill_name: string | null;
+  prerequisite_level: number;
+  prerequisite2_skill_id: string | null;
+  prerequisite2_skill_name: string | null;
+  prerequisite2_level: number;
   required_weapon_category: string;
   is_innate?: boolean;
   mana_cost: string | null;
@@ -102,7 +104,18 @@ export interface ClassSkill extends SkillListRow {
  * Uses universal class-filtered query pattern
  */
 export function getClassSkills(classId: string): ClassSkill[] {
-  const rows = query<Omit<ClassSkill, "effect" | "prerequisites">>(
+  const rows = query<
+    Omit<
+      ClassSkill,
+      | "effect"
+      | "prerequisite_skill_id"
+      | "prerequisite_skill_name"
+      | "prerequisite_level"
+      | "prerequisite2_skill_id"
+      | "prerequisite2_skill_name"
+      | "prerequisite2_level"
+    >
+  >(
     `SELECT
       ${SKILL_LIST_COLUMNS},
       va.width AS visual_width,
@@ -127,9 +140,14 @@ export function getClassSkills(classId: string): ClassSkill[] {
     [classId, classId],
   );
   const effects = skillEffectSummaries(rows.map((row) => row.id));
-  const prerequisites = query<
-    ClassSkill["prerequisites"][number] & { owner_skill_id: string }
-  >(
+  const prerequisites = query<{
+    id: string;
+    skill_id: string | null;
+    name: string | null;
+    rank: number;
+    withheld: boolean;
+    owner_skill_id: string;
+  }>(
     `SELECT p.id, p.skill_id AS owner_skill_id, p.predecessor_skill_id AS skill_id,
             s.name, p.rank, p.withheld
      FROM skill_predecessors p
@@ -138,7 +156,10 @@ export function getClassSkills(classId: string): ClassSkill[] {
      ORDER BY p.skill_id, p.ordinal`,
     [JSON.stringify(rows.map((row) => row.id))],
   );
-  const prerequisitesBySkill = new Map<string, ClassSkill["prerequisites"]>();
+  const prerequisitesBySkill = new Map<
+    string,
+    Omit<(typeof prerequisites)[number], "owner_skill_id">[]
+  >();
   for (const { owner_skill_id, ...requirement } of prerequisites) {
     const list = prerequisitesBySkill.get(owner_skill_id) ?? [];
     list.push({ ...requirement, withheld: Boolean(requirement.withheld) });
@@ -147,9 +168,26 @@ export function getClassSkills(classId: string): ClassSkill[] {
   return rows.map((row, index) => ({
     ...row,
     effect: effects[index],
-    prerequisites: prerequisitesBySkill.get(row.id) ?? [],
+    prerequisite_skill_id:
+      prerequisitesBySkill.get(row.id)?.[0]?.skill_id ?? null,
+    prerequisite_skill_name:
+      prerequisitesBySkill.get(row.id)?.[0]?.name ??
+      (prerequisitesBySkill.get(row.id)?.[0]?.withheld
+        ? "Unpublished skill"
+        : null),
+    prerequisite_level: prerequisitesBySkill.get(row.id)?.[0]?.rank ?? 0,
+    prerequisite2_skill_id:
+      prerequisitesBySkill.get(row.id)?.[1]?.skill_id ?? null,
+    prerequisite2_skill_name:
+      prerequisitesBySkill.get(row.id)?.[1]?.name ??
+      (prerequisitesBySkill.get(row.id)?.[1]?.withheld
+        ? "Unpublished skill"
+        : null),
+    prerequisite2_level: prerequisitesBySkill.get(row.id)?.[1]?.rank ?? 0,
   }));
 }
+
+export type ClassItemSource = Omit<ItemSourceSummary, "item_id">;
 
 /**
  * Item for class detail page with aggregated sources
@@ -167,17 +205,16 @@ export interface ClassItem {
   level_required: number;
   quality: number;
   item_type: string;
-  sources: readonly MethodView[];
+  sources: ClassItemSource[];
   min_source_level: number | null;
 }
 
 /**
  * Get all equipment and weapons for a class with aggregated sources.
  */
-export async function getClassItemsWithSources(classId: string): Promise<{
-  items: (ClassItem & { stat_keys: string })[];
-  acquisitionNames: Readonly<Record<string, string>>;
-}> {
+export async function getClassItemsWithSources(
+  classId: string,
+): Promise<(ClassItem & { stat_keys: string })[]> {
   const items = query<
     Omit<ClassItem, "sources" | "min_source_level"> & { stat_keys: string }
   >(
@@ -220,25 +257,19 @@ export async function getClassItemsWithSources(classId: string): Promise<{
     [classId],
   );
 
-  const db = getDb();
-  const execute: AcquisitionQuery = async (sql, params) =>
-    db.prepare(sql).all(...params) as Record<string, unknown>[];
-  const { model, sources } = await loadItemAcquisition(
-    execute,
+  const sourceRows = await getItemSourceSummaries(
+    getDb(),
     items.map((item) => item.id),
   );
-
-  return {
-    items: items.map((item) => {
-      const source = sources[item.id];
-      return {
-        ...item,
-        sources: source.methods,
-        min_source_level: source.sourceLevelHint,
-      };
-    }),
-    acquisitionNames: projectAcquisitionNames(model),
-  };
+  const sourcesByItemId = groupItemSourceSummaries(sourceRows);
+  return items.map((item) => {
+    const sources = sourcesByItemId.get(item.id) ?? [];
+    return {
+      ...item,
+      sources,
+      min_source_level: getMinimumSourceLevel(sources),
+    };
+  });
 }
 
 /**
@@ -276,8 +307,6 @@ export function getClassQuests(classId: string): ClassQuest[] {
     WHERE EXISTS (
       SELECT 1 FROM quest_class_requirements cr
       WHERE cr.quest_id = quests.id AND cr.class_id = ?
-    ) OR NOT EXISTS (
-      SELECT 1 FROM quest_class_requirements cr WHERE cr.quest_id = quests.id
     )
     ORDER BY level_required, name`,
     [classId],

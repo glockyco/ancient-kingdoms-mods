@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import AchievementLink from "$lib/components/AchievementLink.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
@@ -43,8 +41,8 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`${data.profession.description} All ${data.monsters.length} Hunting-journal creatures, skill gains and the bonus to above-Normal item drops.`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
+  description={`${data.profession.description} View all hunt targets for the Hunter profession.`}
   path="/professions/hunter"
 />
 
@@ -91,15 +89,17 @@
     <h2 class="text-xl font-semibold">How Hunting works</h2>
     <!-- Source: server-scripts/Monster.cs:2967-2981 — only isHunt kills record Hunting and can improve the skill. -->
     <p class="text-muted-foreground">
-      <span class="block"
-        >Only kills of creatures in the Hunting journal can raise Hunting skill.</span
-      >
+      <span class="block">Only creatures in the Hunting journal count.</span>
+      <span class="block">Their kills can improve Hunting skill.</span>
     </p>
     <!-- Source: server-scripts/Monster.cs:2997-2998,3064-3069 — non-boss isHunt monsters add half the player's Hunting fraction to above-Normal item drop chances. -->
     <p class="text-muted-foreground">
       <span class="block"
-        >Each 10% Hunting adds 5 percentage points to above-Normal item drop
-        chances from non-boss creatures in the Hunting journal.</span
+        >Against non-boss Hunting-journal creatures, each 10% Hunting adds 5
+        percentage points to the drop chance of items above Normal quality.</span
+      >
+      <span class="block"
+        >Other creatures and Normal-quality drops get no bonus.</span
       >
     </p>
   </section>
@@ -113,8 +113,8 @@
     <div
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-3"
     >
-      <div class="flex flex-wrap items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Hunting skill</label>
+      <div class="flex items-center gap-3">
+        <label for="skill-slider" class="shrink-0">Hunting Skill:</label>
         <input
           id="skill-slider"
           type="range"
@@ -124,9 +124,9 @@
           bind:value={skillLevel}
           class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
         />
-        <span class="font-mono w-12 shrink-0">{skillLevel}%</span>
+        <span class="font-mono w-12">{skillLevel}%</span>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-3">
         <label for="level-slider" class="shrink-0">Monster Level:</label>
         <input
           id="level-slider"
@@ -137,15 +137,12 @@
           bind:value={monsterLevel}
           class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
         />
-        <span class="font-mono w-8 shrink-0">{monsterLevel}</span>
+        <span class="font-mono w-8">{monsterLevel}</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{formatPercent(getSkillGainChance() / 100, {
-            decimals: 0,
-            trailingZeros: true,
-          })}</span
+          >{getSkillGainChance().toFixed(0)}%</span
         >
         <span class="text-xs">(per kill)</span>
       </div>
@@ -153,13 +150,9 @@
         <span>Skill gain:</span>
         <span class="font-mono text-foreground">
           {#if getSkillGainChance() > 0}
-            {formatPercent(getSkillGainAmount(monsterLevel)[0] / 100, {
-              decimals: 3,
-              trailingZeros: true,
-            })} – {formatPercent(getSkillGainAmount(monsterLevel)[1] / 100, {
-              decimals: 3,
-              trailingZeros: true,
-            })}
+            {getSkillGainAmount(monsterLevel)[0].toFixed(3)}% – {getSkillGainAmount(
+              monsterLevel,
+            )[1].toFixed(3)}%
           {:else}
             —
           {/if}
@@ -179,8 +172,8 @@
         <thead class="bg-muted/50">
           <tr>
             <th class="text-left p-3 font-medium">Name</th>
-            <th class="text-right p-3 font-medium">Min level</th>
-            <th class="text-right p-3 font-medium">Max level</th>
+            <th class="text-right p-3 font-medium">Min Lv</th>
+            <th class="text-right p-3 font-medium">Max Lv</th>
             <th class="text-right p-3 font-medium">Skill Gain</th>
           </tr>
         </thead>
@@ -190,7 +183,7 @@
               monster.level_min,
               monster.level_max,
             )}
-            <tr class="border-t odd:bg-muted/20 hover:bg-muted/30">
+            <tr class="border-t hover:bg-muted/30">
               <td class="p-3">
                 <a
                   href="/monsters/{monster.id}"
@@ -204,13 +197,7 @@
               <td class="p-3 text-right">
                 <span class="font-mono">
                   {#if maxGain > 0}
-                    {formatPercent(minGain / 100, {
-                      decimals: 3,
-                      trailingZeros: true,
-                    })} – {formatPercent(maxGain / 100, {
-                      decimals: 3,
-                      trailingZeros: true,
-                    })}
+                    {minGain.toFixed(3)}% – {maxGain.toFixed(3)}%
                   {:else}
                     —
                   {/if}

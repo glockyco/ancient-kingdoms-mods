@@ -142,7 +142,7 @@ describe("gather item overview queries", () => {
       ]);
       expect(
         fishingSpots.find((spot) => spot.id === "calm_fishing_spot"),
-      ).toMatchObject({ zone_count: 2, primaryRewards: [] });
+      ).toMatchObject({ zone_count: 2, item_reward_id: null });
       expect(
         getResourceZonesFromDb(db)
           .filter((zone) => zone.resource_id === "calm_fishing_spot")
@@ -168,31 +168,18 @@ describe("gather item overview queries", () => {
       );
       const detail = await getGatheringResourceByIdFromDb(db, "lily");
       for (const resource of [overview, detail]) {
-        expect(resource?.primaryRewards).toHaveLength(1);
-        expect(resource?.primaryRewards[0]).toMatchObject({
-          itemId: "lily_item",
-          itemName: "Lily",
-          delivery: "inventory",
-          quantity: { kind: "range", min: 1, max: 4 },
-          methodIds: ["lily_1", "lily_2", "lily_3", "lily_4"],
+        expect(resource).toMatchObject({
+          item_reward_id: "lily_item",
+          item_reward_name: "Lily",
+          item_reward_amount: 4,
         });
-        expect(
-          resource?.primaryRewards[0].variants.map(
-            (variant) => variant.quantity,
-          ),
-        ).toEqual([
-          { kind: "exact", value: 1 },
-          { kind: "range", min: 1, max: 2 },
-          { kind: "range", min: 1, max: 3 },
-          { kind: "range", min: 1, max: 4 },
-        ]);
       }
     } finally {
       db.close();
     }
   });
 
-  test("keeps alternative items, delivery targets, and canonical gold bounds", async () => {
+  test("does not confuse quest progress or key-ring delivery with a carried primary reward", async () => {
     const db = createDb();
     try {
       db.exec(`INSERT INTO acquisition_outputs
@@ -201,29 +188,11 @@ describe("gather item overview queries", () => {
         ('gem_output', 'lily_4', 2, 'item', 'gem', 2, 2, 'fixed', 'keyring'),
         ('gold_output', 'lily_4', 3, 'gold', NULL, 10, 15, 'uniform_upper_exclusive', 'inventory')`);
       const detail = await getGatheringResourceByIdFromDb(db, "lily");
-      expect(detail?.primaryRewards).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            itemId: "lily_item",
-            delivery: "inventory",
-            quantity: { kind: "range", min: 1, max: 4 },
-          }),
-          expect.objectContaining({
-            itemId: "lily_item",
-            delivery: "quest_progress",
-            quantity: { kind: "range", min: 0, max: 4 },
-          }),
-          expect.objectContaining({
-            itemId: "gem",
-            delivery: "keyring",
-            quantity: { kind: "range", min: 0, max: 2 },
-          }),
-          expect.objectContaining({
-            resourceKind: "gold",
-            quantity: { kind: "range", min: 0, max: 14 },
-          }),
-        ]),
-      );
+      expect(detail).toMatchObject({
+        item_reward_id: "lily_item",
+        item_reward_name: "Lily",
+        item_reward_amount: 4,
+      });
     } finally {
       db.close();
     }
@@ -253,7 +222,7 @@ describe("gather item overview queries", () => {
     }
   });
 
-  test("chest summaries preserve canonical keys, all outputs, and evaluated gold ranges", async () => {
+  test("chest fields preserve evaluated gold bounds and reject conflicting opening chances", async () => {
     const db = createDb();
     try {
       db.exec(`
@@ -273,43 +242,24 @@ describe("gather item overview queries", () => {
           ('chest_lily', 'chest_a', 1, 'item', 'lily_item', 2, 4, 'uniform_inclusive', 'inventory'),
           ('chest_gem', 'chest_a', 2, 'item', 'gem', 2, 2, 'fixed', 'keyring');
       `);
+      await expect(getChestByIdFromDb(db, "chest")).rejects.toThrow(
+        "Conflicting chest opening chances",
+      );
+      db.exec(
+        "UPDATE acquisition_world_chest_details SET outer_success = 0.75",
+      );
       const detail = await getChestByIdFromDb(db, "chest");
       const overview = (await getChestsListFromDb(db)).find(
         (chest) => chest.id === "chest",
       );
       for (const chest of [detail, overview]) {
-        expect(chest?.keys).toEqual([
-          {
-            itemId: "key_a",
-            itemName: "Key A",
-            withheld: false,
-            methodIds: ["chest_a"],
-          },
-          {
-            itemId: null,
-            itemName: null,
-            withheld: true,
-            methodIds: ["chest_b"],
-          },
-        ]);
-        expect(chest?.openingChance).toBeNull();
-        expect(chest?.primaryRewards).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              resourceKind: "gold",
-              quantity: { kind: "range", min: 10, max: 20 },
-            }),
-            expect.objectContaining({
-              itemId: "lily_item",
-              quantity: { kind: "range", min: 0, max: 4 },
-            }),
-            expect.objectContaining({
-              itemId: "gem",
-              delivery: "keyring",
-              quantity: { kind: "range", min: 0, max: 2 },
-            }),
-          ]),
-        );
+        expect(chest).toMatchObject({
+          gold_min: 10,
+          gold_max: 20,
+          item_reward_id: "lily_item",
+          item_reward_amount: 4,
+          chest_reward_probability: 0.75,
+        });
       }
     } finally {
       db.close();

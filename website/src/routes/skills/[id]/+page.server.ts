@@ -32,9 +32,6 @@ import { skillMechanicsSpec } from "$lib/utils/skillMechanics";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import { getSkillCategoryKey } from "$lib/utils/skill-category";
 import { skillLearningAtRank } from "$lib/acquisition/conditions";
-import { loadAcquisition } from "$lib/server/acquisition";
-import type { RequirementRoot } from "$lib/acquisition/types";
-import { projectAcquisitionNames } from "$lib/acquisition/projections";
 
 export const prerender = true;
 
@@ -62,9 +59,6 @@ export interface SkillDetailPageData {
   usedByMonsters: SkillMonster[];
   usedByNpcs: { id: string; name: string }[];
   learningRanks: { rank: number; requiredLevel: number; pointCost: number }[];
-  requirements: readonly RequirementRoot[];
-  acquisitionNames: Readonly<Record<string, string>>;
-  weaponClassRestrictionsWithheld: boolean;
   usedByPets: SkillPet[];
   appliedByTraps: SkillTrapUsage[];
   description: string;
@@ -262,10 +256,6 @@ export const load: PageServerLoad = async ({
   if (!skillRaw) {
     throw error(404, `Skill not found: ${params.id}`);
   }
-  const acquisition = await loadAcquisition(
-    async (sql, values) => query<Record<string, unknown>>(sql, [...values]),
-    { kind: "requirements", entities: [{ kind: "skill", id: params.id }] },
-  );
 
   const visualAsset = queryOne<EntityVisualAsset>(
     `SELECT public_path, width, height, source_field, source_type
@@ -433,6 +423,10 @@ export const load: PageServerLoad = async ({
         },
       )
     : [];
+  if (learningRanks.length > 0) {
+    skill.level_required = learningRanks[0].requiredLevel;
+    skill.required_skill_points = learningRanks[0].pointCost;
+  }
 
   // Get pets/mercenaries that use this skill. A familiar takes its rank from the skill that
   // summons it.
@@ -508,6 +502,8 @@ export const load: PageServerLoad = async ({
       .filter((pet) => !pet.is_mercenary)
       .map((pet) => pet.name),
     monster_names: usedByMonsters.map((monster) => monster.name),
+    npc_names: usedByNpcs.map((npc) => npc.name),
+    npc_count: usedByNpcs.length,
     granting_item_names: grantedByItems.map((item) => item.item_name),
     effect_summary: effectSummary,
     monster_count: usedByMonsters.length,
@@ -552,11 +548,6 @@ export const load: PageServerLoad = async ({
     usedByMonsters,
     usedByNpcs,
     learningRanks,
-    requirements: acquisition.requirements.get(`skill:${params.id}`) ?? [],
-    acquisitionNames: projectAcquisitionNames(acquisition),
-    weaponClassRestrictionsWithheld: casters.weaponProcs.some(
-      (proc) => proc.classRestrictionsWithheld,
-    ),
     usedByPets,
     appliedByTraps,
     description,

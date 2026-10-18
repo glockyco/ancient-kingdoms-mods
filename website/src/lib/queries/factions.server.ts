@@ -70,6 +70,7 @@ export interface FactionVendorRow {
 export interface FactionGatedItemRow {
   id: string;
   name: string;
+  quality: number;
   visual_public_path: string | null;
   tooltip_html: string | null;
   vendor_visual_public_path: string | null;
@@ -92,6 +93,8 @@ export interface FactionQuestRequirementRow {
   id: string;
   name: string;
   required_value: number;
+  giver_id: string | null;
+  giver_name: string | null;
   givers: { id: string; name: string }[];
 }
 
@@ -317,7 +320,7 @@ export function getFactionDetail(id: string): FactionDetail | null {
   );
 
   const gatedItems = query<FactionGatedItemRow>(
-    `SELECT DISTINCT i.id, i.name, iva.public_path AS visual_public_path,
+    `SELECT DISTINCT i.id, i.name, i.quality, iva.public_path AS visual_public_path,
             i.tooltip_html, i.faction_required_to_buy,
             i.faction_required_tier_name, n.id AS vendor_id,
             n.name AS vendor_name, nva.public_path AS vendor_visual_public_path
@@ -346,10 +349,7 @@ export function getFactionDetail(id: string): FactionDetail | null {
   );
 
   const questRequirementRows = query<
-    Omit<FactionQuestRequirementRow, "givers"> & {
-      giver_id: string | null;
-      giver_name: string | null;
-    }
+    Omit<FactionQuestRequirementRow, "givers">
   >(
     `SELECT q.id, q.name,
             req.standing AS required_value,
@@ -366,7 +366,12 @@ export function getFactionDetail(id: string): FactionDetail | null {
   const requirementsByQuest = new Map<string, FactionQuestRequirementRow>();
   for (const { giver_id, giver_name, ...row } of questRequirementRows) {
     const key = JSON.stringify([row.id, row.required_value]);
-    const requirement = requirementsByQuest.get(key) ?? { ...row, givers: [] };
+    const requirement = requirementsByQuest.get(key) ?? {
+      ...row,
+      giver_id,
+      giver_name,
+      givers: [],
+    };
     if (
       giver_id &&
       giver_name &&

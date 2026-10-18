@@ -14,6 +14,8 @@
     height?: number;
     class?: string;
     bordered?: boolean;
+    /** Replaces the neutral frame color, for example with an item quality. */
+    borderClass?: string;
   }
 
   let {
@@ -26,6 +28,7 @@
     height = size,
     class: className = "",
     bordered = true,
+    borderClass = "border-border/60",
   }: Props = $props();
 
   let imageFailed = $state(false);
@@ -43,7 +46,7 @@
 
 <span
   class="inline-flex shrink-0 items-center justify-center overflow-hidden {bordered
-    ? 'rounded-md border border-border/60 bg-muted/30'
+    ? `rounded-md border ${borderClass} bg-muted/30`
     : ''} {className}"
   style:width={`${width}px`}
   style:height={`${height}px`}

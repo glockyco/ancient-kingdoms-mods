@@ -176,11 +176,14 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
   ): Map<string, AnyMapEntity[]> {
     const index = new Map<string, AnyMapEntity[]>();
     for (const entity of gathering) {
-      const existing = index.get(entity.selectionGroupId);
-      if (existing) {
-        existing.push(entity);
-      } else {
-        index.set(entity.selectionGroupId, [entity]);
+      for (const key of new Set([
+        entity.id,
+        entity.resourceId,
+        entity.selectionGroupId,
+      ])) {
+        const existing = index.get(key);
+        if (existing) existing.push(entity);
+        else index.set(key, [entity]);
       }
     }
     return index;
@@ -276,7 +279,11 @@ export function computeSelectionData(
     return EMPTY_SELECTION;
   }
 
-  const entities = entityIndex.get(entityId);
+  const spawn =
+    resolveMapEntityType(entityType) === "monster"
+      ? index.monstersBySpawnId.get(entityId)
+      : undefined;
+  const entities = entityIndex.get(entityId) ?? (spawn ? [spawn] : undefined);
   if (!entities) {
     return EMPTY_SELECTION;
   }
@@ -313,7 +320,10 @@ export function computeSelectionFromGroups(
       }
       continue;
     }
-    const entityIndex = getIndexForCategory(index, group.category);
+    const entityIndex =
+      group.category === "resource" && !group.exactPlacement
+        ? index.gathering
+        : getIndexForCategory(index, group.category);
     if (!entityIndex) continue;
 
     for (const id of group.ids) {

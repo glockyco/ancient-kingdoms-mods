@@ -1,13 +1,24 @@
 import Database from "better-sqlite3";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
-import type { MethodView } from "$lib/acquisition/types";
+import type { ItemSourceType } from "$lib/constants/source-types";
 import { HOUSE_CHEST_SLOT_RANGES } from "$lib/inventory/house-chests";
 import type { ReputationTier } from "$lib/utils/reputation";
-import { loadItemAcquisition } from "$lib/server/acquisition";
+import {
+  getItemSourceSummaries,
+  getMinimumSourceLevel,
+  groupItemSourceSummaries,
+} from "$lib/server/item-source-summary";
 import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
+
+export interface BackpackSource {
+  type: ItemSourceType;
+  id: string;
+  name: string;
+  source_level: number | null;
+}
 
 export interface BackpackListItem {
   id: string;
@@ -17,7 +28,7 @@ export interface BackpackListItem {
   backpack_is_unique: boolean;
   tooltip_html: string | null;
   min_source_level: number | null;
-  sources: readonly MethodView[];
+  sources: BackpackSource[];
 }
 
 export interface HouseStorageLocation {
@@ -34,6 +45,7 @@ export interface HouseStorageLocation {
 export interface HouseChestStructure {
   id: string;
   name: string;
+  quality: number;
   structure_price: number;
   tooltip_html: string | null;
   slot_start: number;
@@ -104,7 +116,7 @@ function getHouseChests(db: Database.Database): HouseChestStructure[] {
   const rows = db
     .prepare(
       `
-      SELECT id, name, structure_price, tooltip_html
+      SELECT id, name, quality, structure_price, tooltip_html
       FROM items
       WHERE item_type = 'structure'
         AND id IN (${placeholders})
@@ -114,6 +126,7 @@ function getHouseChests(db: Database.Database): HouseChestStructure[] {
     .all(...ids) as Array<{
     id: string;
     name: string;
+    quality: number;
     structure_price: number;
     tooltip_html: string | null;
   }>;
@@ -146,20 +159,21 @@ export const load: PageServerLoad =
 
     try {
       const rows = getBackpackRows(db);
-      const acquisition = await loadItemAcquisition(
-        async (sql, params) =>
-          db.prepare(sql).all(...params) as Record<string, unknown>[],
-        rows.map((row) => row.id),
+      const sourcesByItemId = groupItemSourceSummaries(
+        await getItemSourceSummaries(
+          db,
+          rows.map((row) => row.id),
+        ),
       );
 
       const backpacks = rows
         .map((row) => {
-          const source = acquisition.sources[row.id];
+          const sources = sourcesByItemId.get(row.id) ?? [];
 
           return {
             ...row,
-            min_source_level: source.sourceLevelHint,
-            sources: source.methods,
+            min_source_level: getMinimumSourceLevel(sources),
+            sources,
           };
         })
         .sort(compareBackpacks);

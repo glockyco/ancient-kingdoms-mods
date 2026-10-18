@@ -27,6 +27,23 @@ describe("skill effect categories", () => {
       false,
     );
   });
+  it("lists distinct NPC casters with their real NPC-only mechanics context", async () => {
+    const data = await loadSkill("npc_attack");
+    const expected = query<{ id: string; name: string }>(
+      `SELECT DISTINCT n.id, n.name FROM npc_skills ns
+       JOIN npcs n ON n.id = ns.npc_id
+       WHERE ns.skill_id = ? ORDER BY n.name, n.id`,
+      ["npc_attack"],
+    );
+    expect(expected.length).toBeGreaterThan(0);
+    expect(data.usedByNpcs).toEqual(expected);
+    expect(data.usedByMonsters).toEqual([]);
+    expect(data.learningRanks).toEqual([]);
+    expect(data.mechanicsSpec.damageContexts).toContainEqual({
+      casters: [{ kind: "monster" }],
+      formula: "monster_melee",
+    });
+  });
 });
 
 describe("skill game tooltips", () => {
@@ -73,6 +90,14 @@ describe("skill game tooltips", () => {
           };
         }),
       );
+      if (data.learningRanks.length > 0) {
+        expect(data.skill.level_required).toBe(
+          data.learningRanks[0].requiredLevel,
+        );
+        expect(data.skill.required_skill_points).toBe(
+          data.learningRanks[0].pointCost,
+        );
+      }
     },
   );
   it("loads granting scroll cooldowns rather than unused skill timers", async () => {

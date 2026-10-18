@@ -4,9 +4,9 @@ import type { PageServerLoad, EntryGenerator } from "./$types";
 import { altarDescription } from "$lib/server/meta-description";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { getItemIconPaths } from "$lib/server/item-icon-paths";
+import { distinctSubzoneName } from "$lib/utils/format";
 import { loadAcquisition } from "$lib/server/acquisition";
 import { contextualMonsterDrops } from "$lib/server/world-acquisition";
-import { evaluateOutputQuantity } from "$lib/acquisition/rules";
 import type {
   AltarDetailPageData,
   AltarInfo,
@@ -77,15 +77,18 @@ export const load: PageServerLoad = async ({
 
   // Get activation item tooltip
   let activationItemTooltipHtml: string | null = null;
+  let activationItemQuality: number | null = null;
   if (altarRaw.required_activation_item_id) {
     const itemInfo = db
-      .prepare("SELECT tooltip_html FROM items WHERE id = ?")
+      .prepare("SELECT tooltip_html, quality FROM items WHERE id = ?")
       .get(altarRaw.required_activation_item_id) as
       | {
           tooltip_html: string | null;
+          quality: number;
         }
       | undefined;
     activationItemTooltipHtml = itemInfo?.tooltip_html ?? null;
+    activationItemQuality = itemInfo?.quality ?? null;
   }
 
   // Build rewards array with tooltip lookups (for forgotten altars)
@@ -147,26 +150,12 @@ export const load: PageServerLoad = async ({
                 itemId: drop.item_id,
                 itemName: drop.item_name,
                 rate: drop.rate,
+                quantity: 1,
                 tooltipHtml: drop.tooltip_html,
               },
             ]),
         ).values(),
       ];
-      const bossMethod = methods.find(
-        (method) =>
-          method.kind === "kill" &&
-          method.detail.monster_id === monsterId &&
-          method.detail.altar_id === params.id,
-      );
-      const goldOutput = bossMethod?.outputs.find(
-        (output) => output.resource_kind === "gold",
-      );
-      const goldResult = bossMethod?.probabilityResults.find(
-        (result) => result.target.kind === "gold",
-      );
-      const goldQuantity = goldOutput
-        ? evaluateOutputQuantity(goldOutput)
-        : null;
       for (const drop of dropsRaw) {
         if (drop.rate !== null) {
           const existing = bossMonsterDrops.get(drop.item_id);
@@ -185,13 +174,6 @@ export const load: PageServerLoad = async ({
           damage: monsterInfo.damage,
           magicDamage: monsterInfo.magic_damage,
           drops: bossDrops,
-          gold:
-            goldQuantity && goldQuantity.kind !== "unknown"
-              ? {
-                  quantity: goldQuantity,
-                  probability: goldResult?.probability ?? null,
-                }
-              : null,
         });
       }
     }
@@ -236,7 +218,11 @@ export const load: PageServerLoad = async ({
     zoneId: altarRaw.zone_id as string,
     zoneName: altarRaw.zone_name as string,
     subZoneId: altarRaw.sub_zone_id as string | null,
-    subZoneName: altarRaw.sub_zone_name as string | null,
+    subZoneName:
+      distinctSubzoneName(
+        altarRaw.zone_name as string,
+        altarRaw.sub_zone_name as string | null,
+      ) ?? null,
     positionX: altarRaw.position_x as number,
     positionY: altarRaw.position_y as number,
     positionZ: altarRaw.position_z as number,
@@ -246,6 +232,7 @@ export const load: PageServerLoad = async ({
     requiredActivationItemName: altarRaw.required_activation_item_name as
       string | null,
     activationItemTooltipHtml,
+    activationItemQuality,
     initEventMessage: altarRaw.init_event_message as string | null,
     radiusEvent: altarRaw.radius_event as number,
     usesVeteranScaling: Boolean(altarRaw.uses_veteran_scaling),
@@ -283,12 +270,6 @@ export const load: PageServerLoad = async ({
 
   return {
     altar,
-    activationCost:
-      methods
-        .find((method) => method.kind === "altar_activate")
-        ?.costGroups.flatMap((group) => group.inputs)
-        .find((input) => input.item_id === altar.requiredActivationItemId)
-        ?.amount ?? null,
     maxLevel: progression.max_level,
     description,
     rewards,

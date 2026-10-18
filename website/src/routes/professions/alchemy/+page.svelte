@@ -1,25 +1,10 @@
 <script lang="ts">
-  import { formatNumber, formatPercent } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
-  import RecipeIngredients from "$lib/components/RecipeIngredients.svelte";
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
-  import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import { questPresentationRequirements } from "$lib/components/acquisition/display";
-  import {
-    describeRequirement,
-    evaluateRequirement,
-  } from "$lib/acquisition/conditions";
-  import {
-    BASELINE_ASSUMPTIONS,
-    calculateMethodProbabilities,
-  } from "$lib/acquisition/rules";
-  import type { MethodView } from "$lib/acquisition/types";
-  import type { PageData } from "./$types";
+  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
@@ -37,7 +22,7 @@
   } from "$lib/utils/alchemy";
   import { Input } from "$lib/components/ui/input";
 
-  let { data }: { data: PageData } = $props();
+  let { data } = $props();
 
   let expandedRecipes = new SvelteSet<string>();
 
@@ -68,65 +53,15 @@
     };
   }
 
-  const methodDefinitions = $derived(
-    new Map(data.acquisitionRows.methods.map((method) => [method.id, method])),
-  );
-
-  function enteredMethods(
-    methods: readonly MethodView[],
-  ): readonly MethodView[] {
-    return methods.map((method) => ({
-      ...method,
-      probabilityResults: calculateMethodProbabilities(
-        data.acquisitionRows,
-        methodDefinitions.get(method.methodId)!,
-        method.detail,
-        {
-          assumptions: {
-            ...BASELINE_ASSUMPTIONS,
-            scenario: "entered",
-            professionFraction: skillLevel / 100,
-          },
-        },
-      ),
-    }));
+  function hasIngredients(recipe: (typeof data.recipes)[0]): boolean {
+    return (
+      !!recipe.obtainabilityTree.recipe &&
+      recipe.obtainabilityTree.recipe.materials.length > 0
+    );
   }
 
   // Skill level state (0-100%)
   let skillLevel = $state(0);
-  function qualifies(tier: number): boolean {
-    return (
-      evaluateRequirement(
-        {
-          phase: "attempt",
-          subject: "player",
-          enforcement: "both",
-          expression: {
-            kind: "predicate",
-            predicate: {
-              kind: "profession_floor",
-              subject: "player",
-              profession: "alchemy",
-              tier,
-            },
-          },
-        },
-        {
-          subjects: {
-            player: {
-              professions: {
-                alchemy: {
-                  known: true,
-                  value: skillLevel / 100,
-                  provenance: "entered",
-                },
-              },
-            },
-          },
-        },
-      ).status === "met"
-    );
-  }
 
   // Recipe list filters
   let nameFilter = $state("");
@@ -186,8 +121,8 @@
 </script>
 
 <Seo
-  title={detailTitle(data.profession.name, { family: "Profession" })}
-  description={`${data.profession.description} Recipe ingredients, success chances, skill gains, Alchemy Table locations and the Alchemy quest line.`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
+  description={`${data.profession.description} View all potions and elixirs you can craft with the Alchemy skill.`}
   path="/professions/alchemy"
 />
 
@@ -231,23 +166,26 @@
   </div>
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
-    <h2 class="text-xl font-semibold">How Alchemy works</h2>
+    <h2 class="text-xl font-semibold">How Alchemy and Recipe Learning works</h2>
     <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 — a known recipe cannot be learned again; learning consumes one recipe item. -->
     <p class="text-muted-foreground">
-      Learn a potion recipe by using its recipe item. This consumes the item.
-      Recipes you already know cannot be learned again.
+      <span class="block"
+        >Learning a new potion recipe consumes one recipe item.</span
+      >
+      <span class="block"
+        >A recipe you already know cannot be learned again.</span
+      >
     </p>
     <!-- Source: server-scripts/Player.cs:13563-13574,13587-13607 — brewing requires a learned recipe, output space, and at least 10% success chance; ingredients are consumed before the roll. -->
     <p class="text-muted-foreground">
       <span class="block"
-        >Brewing requires a learned recipe, inventory space for the potion, and
-        at least a 10% success chance.</span
+        >Brewing requires a learned recipe, room for the potion, and at least a
+        10% success chance.</span
       >
-      <span class="block">A failed brew still uses up the ingredients.</span>
-    </p>
-    <p class="text-muted-foreground">
-      Tier I recipes stop raising Alchemy above 25%, Tier II above 50% and Tier
-      III above 75%.
+      <span class="block"
+        >You spend ingredients before you know whether the brew succeeds.</span
+      >
+      <span class="block">A failed brew does not return them.</span>
     </p>
   </section>
 
@@ -263,7 +201,7 @@
           <thead class="bg-muted/50">
             <tr>
               <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Area</th>
+              <th class="text-left p-3 font-medium">Sub-zone</th>
               <th class="text-left p-3 font-medium">Map</th>
             </tr>
           </thead>
@@ -304,25 +242,20 @@
         Quest Line ({data.quests.length})
       </h2>
       <div class="rounded-lg border overflow-x-auto">
-        <table class="w-full min-w-[56rem] table-fixed">
+        <table class="w-full whitespace-nowrap">
           <thead class="bg-muted/50">
             <tr>
-              <th class="text-left p-3 font-medium w-10">#</th>
-              <th class="text-left p-3 font-medium w-20">Type</th>
-              <th class="text-left p-3 font-medium w-52">Quest</th>
-              <th class="text-left p-3 font-medium w-72">Objective</th>
-              <th class="text-left p-3 font-medium w-40">Rewards</th>
-              <th class="text-right p-3 font-medium w-28">Recommended level</th>
+              <th class="text-left p-3 font-medium w-12">#</th>
+              <th class="text-left p-3 font-medium">Type</th>
+              <th class="text-left p-3 font-medium">Quest</th>
+              <th class="text-left p-3 font-medium">Objective</th>
+              <th class="text-left p-3 font-medium">Rewards</th>
+              <th class="text-right p-3 font-medium">Level</th>
             </tr>
           </thead>
           <tbody>
             {#each data.quests as quest, i (quest.id)}
-              {@const visibleConditions = questPresentationRequirements(
-                quest.conditions,
-                quest.id,
-                {},
-              )}
-              <tr class="border-t align-top hover:bg-muted/30">
+              <tr class="border-t hover:bg-muted/30">
                 <td class="p-3 text-muted-foreground">{i + 1}</td>
                 <td class="p-3">
                   <QuestTypeBadge type={quest.display_type} />
@@ -336,45 +269,61 @@
                       {quest.name}
                     </a>
                     <QuestFlagBadges {quest} />
-                    {#if visibleConditions.length}
-                      <details class="mt-2">
-                        <summary
-                          class="cursor-pointer text-sm text-blue-600 dark:text-blue-400"
-                          >Access requirements</summary
-                        >
-                        <div class="mt-2">
-                          <Requirements
-                            roots={visibleConditions}
-                            names={data.acquisitionNames}
-                          />
-                        </div>
-                      </details>
-                    {/if}
                   </div>
                 </td>
                 <td class="p-3">
-                  <div class="space-y-2 leading-6">
-                    {#each quest.objectives as root, rootIndex (rootIndex)}
-                      {#each describeRequirement(root, data.acquisitionNames) as objective, objectiveIndex (objectiveIndex)}
-                        <p>{objective.text}</p>
+                  {#if quest.objective_items.length > 0}
+                    <div class="flex flex-wrap gap-x-3 gap-y-1">
+                      {#each quest.objective_items as item, index (`${item.item_id}_${index}`)}
+                        <span class="whitespace-nowrap">
+                          {#if item.item_id}
+                            <ItemLink
+                              itemId={item.item_id}
+                              itemName={item.item_name}
+                              tooltipHtml={item.tooltip_html}
+                              imageAvailable={data.itemIconPaths[item.item_id]}
+                              quality={item.quality}
+                            />
+                          {:else}
+                            <span>{item.item_name}</span>
+                          {/if}
+                          <span class="text-muted-foreground"
+                            >×{item.amount}</span
+                          >
+                        </span>
                       {/each}
-                    {/each}
-                  </div>
-                  {#if quest.display_type === "Find"}
-                    {#each quest.completion_npcs as npc (npc.npc_id)}
-                      <a
-                        href="/npcs/{npc.npc_id}"
-                        class="block text-blue-600 dark:text-blue-400 hover:underline"
-                        >{npc.npc_name}</a
+                    </div>
+                  {:else if quest.potion_to_brew}
+                    <span class="whitespace-nowrap">
+                      <ItemLink
+                        itemId={quest.potion_to_brew.item_id}
+                        itemName={quest.potion_to_brew.item_name}
+                        tooltipHtml={quest.potion_to_brew.tooltip_html}
+                        imageAvailable={data.itemIconPaths[
+                          quest.potion_to_brew.item_id
+                        ]}
+                        quality={quest.potion_to_brew.quality}
+                      />
+                      <span class="text-muted-foreground"
+                        >×{quest.potion_to_brew.amount}</span
                       >
-                    {/each}
+                    </span>
+                  {:else if quest.display_type === "Find" && quest.npc_to_find}
+                    <a
+                      href="/npcs/{quest.npc_to_find.npc_id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      {quest.npc_to_find.npc_name}
+                    </a>
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
                   {/if}
                 </td>
                 <td class="p-3">
                   <div class="flex flex-col gap-1">
                     {#if quest.reward_gold > 0}
                       <span class="text-amber-600 dark:text-amber-400"
-                        >{formatNumber(quest.reward_gold)} Gold</span
+                        >{quest.reward_gold.toLocaleString()} Gold</span
                       >
                     {/if}
                     {#each quest.reward_items as item (item.item_id)}
@@ -383,13 +332,12 @@
                         itemName={item.item_name}
                         tooltipHtml={item.tooltip_html}
                         imageAvailable={data.itemIconPaths[item.item_id]}
+                        quality={item.quality}
                       />
                     {/each}
                     {#if quest.reward_alchemy_skill > 0}
                       <span class="text-green-600 dark:text-green-400"
-                        >+{formatPercent(quest.reward_alchemy_skill, {
-                          decimals: 0,
-                        })}
+                        >+{Math.round(quest.reward_alchemy_skill * 100)}%
                         Alchemy</span
                       >
                     {/if}
@@ -417,7 +365,7 @@
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
     >
       <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Alchemy skill</label>
+        <label for="skill-slider" class="shrink-0">Alchemy Skill:</label>
         <input
           id="skill-slider"
           type="range"
@@ -432,10 +380,7 @@
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{formatPercent(alchemySkillGainChancePercent(skillLevel) / 100, {
-            decimals: 0,
-            trailingZeros: true,
-          })}</span
+          >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
         >
         <span class="text-xs">(per success)</span>
       </div>
@@ -457,36 +402,27 @@
           {@const xp = xpByTierMap.get(tier)}
           <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
           <div class="p-3 border-t">
-            {#if !qualifies(tier)}
-              <span class="text-muted-foreground">Below attempt floor</span>
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {formatPercent(successChance / 100, {
-                  decimals: 0,
-                  trailingZeros: true,
-                })}
+                {successChance.toFixed(0)}%
               </span>
             {/if}
           </div>
           <div class="p-3 border-t">
             {#if skillGain}
               <span class="font-mono"
-                >{formatNumber(skillGain.min, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} to {formatPercent(skillGain.max / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}</span
+                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
               >
             {:else}
-              <span class="text-muted-foreground">No skill gain</span>
+              <span class="text-muted-foreground">—</span>
             {/if}
           </div>
           <div class="p-3 text-right border-t">
             {#if xp}
               <MechanicsLink section="experience"
-                >{formatNumber(xp)}</MechanicsLink
+                >{xp.toLocaleString()}</MechanicsLink
               >
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -550,7 +486,7 @@
             skillLevel,
           )}
           {@const isExpanded = expandedRecipes.has(recipe.id)}
-          {@const canExpand = recipe.methods.length > 0}
+          {@const canExpand = hasIngredients(recipe)}
           <div {...cellProps(canExpand, recipe.id, "font-medium")}>
             <div class="flex items-center gap-1">
               {#if canExpand}
@@ -575,82 +511,58 @@
               itemId={recipe.result_item_id}
               itemName={recipe.result_item_name}
               tooltipHtml={recipe.result_tooltip_html}
+              imageAvailable={recipe.obtainabilityTree.visual_public_path}
+              quality={recipe.obtainabilityTree.quality}
             />
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            <div class="flex flex-col gap-1">
-              {#each recipe.methods as method (method.methodId)}
-                {#each method.costGroups as group (group.id)}
-                  <div class="flex flex-col gap-1">
-                    {#each group.inputs as input (input.id)}
-                      <span class="inline-flex items-baseline gap-1">
-                        {#if input.resource_kind === "gold"}
-                          Gold
-                        {:else if input.item_id}
-                          <ItemLink
-                            itemId={input.item_id}
-                            itemName={data.acquisitionItems[input.item_id]
-                              ?.name}
-                          />
-                        {:else}
-                          Unpublished required item
-                        {/if}
-                        <span class="text-muted-foreground"
-                          >×{formatNumber(input.amount)}</span
-                        >
-                      </span>
-                    {/each}
-                  </div>
+            {#if recipe.obtainabilityTree.recipe?.materials}
+              <div class="flex gap-3">
+                {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
+                  <span>
+                    <ItemLink
+                      itemId={mat.item_id}
+                      itemName={mat.item_name}
+                      tooltipHtml={mat.tooltip_html}
+                      imageAvailable={mat.visual_public_path}
+                      quality={mat.quality}
+                    />
+                    <span class="text-muted-foreground">×{mat.amount}</span>
+                  </span>
                 {/each}
-              {/each}
-            </div>
+              </div>
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            {#if !qualifies(recipe.level_required)}
-              <span class="text-muted-foreground">Below attempt floor</span>
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
             {:else}
               <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {formatPercent(successChance / 100, {
-                  decimals: 0,
-                  trailingZeros: true,
-                })}
+                {successChance.toFixed(0)}%
               </span>
             {/if}
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            {#if qualifies(recipe.level_required) && skillGain}
+            {#if skillGain}
               <span class="font-mono">
-                {formatPercent(skillGain.min / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })} – {formatPercent(skillGain.max / 100, {
-                  decimals: 2,
-                  trailingZeros: true,
-                })}
+                {skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%
               </span>
             {:else}
               <span class="text-muted-foreground">—</span>
             {/if}
           </div>
           {#if isExpanded && canExpand}
-            <div
-              class="bg-muted/20 p-4 space-y-4 whitespace-normal"
-              style="grid-column: 1 / -1;"
-            >
-              <div class="max-w-[calc(100vw-6rem-2px)] space-y-4">
-                <MethodList
-                  methods={enteredMethods(recipe.methods)}
-                  items={data.acquisitionItems}
-                  names={data.acquisitionNames}
-                  selectedItemId={recipe.result_item_id}
-                />
-                <div class="text-muted-foreground">
-                  How to obtain ingredients:
-                </div>
-                <RecipeIngredients
-                  methods={recipe.methods}
-                  items={data.acquisitionItems}
-                  names={data.acquisitionNames}
+            <div class="bg-muted/20 p-4" style="grid-column: 1 / -1;">
+              <div class="text-muted-foreground mb-2">
+                How to obtain ingredients:
+              </div>
+              <div class="bg-background rounded-md p-3 border overflow-x-auto">
+                <ObtainabilityTree
+                  node={recipe.obtainabilityTree}
+                  defaultExpanded={true}
+                  hideRootLink={true}
                 />
               </div>
             </div>

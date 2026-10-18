@@ -1,8 +1,4 @@
 <script lang="ts">
-  import MethodList from "$lib/components/acquisition/MethodList.svelte";
-  import { quantityText } from "$lib/components/acquisition/display";
-  import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import { CODE_DEFINED_RULES } from "$lib/acquisition/rules";
   import { base } from "$app/paths";
   import {
     DataTable,
@@ -12,31 +8,29 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import { effectiveBlockChance, statAtLevel } from "$lib/utils/monster-stats";
-  import { statName, formatStat } from "$lib/stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityCombatSummary from "$lib/components/EntityCombatSummary.svelte";
+  import { distinctSubzoneName } from "$lib/utils/format";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import { detailTitle } from "$lib/seo/title";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import type {
-    MonsterLootDrop as MonsterDrop,
+    MonsterDrop,
     MonsterSkill,
     MonsterSpawnZone,
     MonsterQuest,
   } from "$lib/types/monsters";
   import type { LinearValue } from "$lib/types/skills";
   import {
-    formatPercent,
+    formatPercent as formatFraction,
     formatDuration,
     formatSkillType,
-    formatNumber,
   } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
@@ -78,8 +72,7 @@
       data.spawns.altar.length > 0 ||
       data.spawns.placeholder !== null ||
       data.summons.length > 0 ||
-      hasSpawnsOnDeath ||
-      data.combatSummoners.length > 0,
+      hasSpawnsOnDeath,
   );
 
   // Combine regular and summon spawns for the table
@@ -136,19 +129,20 @@
     ),
   );
 
+  function resistanceBadgeClass(value: number): string {
+    if (value > 0) {
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    }
+
+    if (value < 0) {
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    }
+
+    return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200";
+  }
+
   function formatZoneList(zoneNames: string[]): string {
     return zoneNames.join(", ");
-  }
-  function spawnSubZone(
-    zoneName: string,
-    subZoneName: string | null | undefined,
-  ): string | null {
-    if (!subZoneName || subZoneName.toLowerCase() === zoneName.toLowerCase())
-      return null;
-    const prefix = `${zoneName}:`;
-    return subZoneName.toLowerCase().startsWith(prefix.toLowerCase())
-      ? subZoneName.slice(prefix.length).trim()
-      : subZoneName;
   }
 
   function selectSpawnCombatStats(index: number): void {
@@ -339,40 +333,33 @@
         label: "Immune to Fear",
       },
       { flag: data.monster.yell_friends, label: "Calls for Help" },
-      {
-        flag: data.monster.flee_on_low_hp,
-        label: "Can flee below 15% Hit Points",
-      },
-      {
-        flag: data.monster.has_aura,
-        label: "Aura reapplied every second (see Abilities)",
-      },
+      { flag: data.monster.flee_on_low_hp, label: "Flees on Low HP" },
+      { flag: data.monster.has_aura, label: "Has Aura" },
       { flag: data.monster.no_aggro_monster, label: "Non-Aggressive" },
     ].filter((a) => a.flag),
   );
 
-  const hasDropNotes = $derived(
-    new Set(data.drops.map((drop) => drop.note)).size > 1,
-  );
-  const commonDropEvent = $derived(
-    new Set(data.drops.map((drop) => drop.chance_event)).size === 1
-      ? data.drops[0]?.chance_event
-      : null,
-  );
-  const chanceEventLabels: Record<string, string> = {
-    corpse_generation: "Per corpse",
-    eligible_kill: "Per eligible kill",
-    parent_award: "Per award",
-  };
+  // Combat resistances always render so zero values remain visible.
+  const resistances = $derived([
+    { name: "Magic", value: displayMagicResist },
+    { name: "Poison", value: displayPoisonResist },
+    { name: "Fire", value: displayFireResist },
+    { name: "Cold", value: displayColdResist },
+    { name: "Disease", value: displayDiseaseResist },
+  ]);
 
+  // Check if any drop has a note
+  const hasDropNotes = $derived(data.drops.some((d) => d.note));
+
+  // Drop columns (bestiary column only for bosses/elites, note column if any drops have notes)
   const dropColumns = $derived.by(() => {
     const cols: ColumnDef<MonsterDrop>[] = [];
 
     if (data.monster.is_boss || data.monster.is_elite) {
       cols.push({
         accessorKey: "is_bestiary",
-        header: "Bestiary",
-        size: 72,
+        header: "",
+        size: 50,
         enableSorting: true,
       });
     }
@@ -380,43 +367,35 @@
     cols.push({
       accessorKey: "item_name",
       header: "Item",
-      minSize: 280,
+      minSize: 350,
     });
 
     if (hasDropNotes) {
       cols.push({
         accessorKey: "note",
-        header: "Loot context",
-        size: 240,
+        header: "Note",
+        size: 230,
       });
     }
 
-    cols.push(
-      {
-        id: "rate",
-        accessorFn: (drop) => drop.per_kill_chance ?? drop.rate,
-        header: commonDropEvent
-          ? (chanceEventLabels[commonDropEvent] ?? "Drop chance")
-          : "Drop chance",
-        size: 160,
-      },
-      {
-        accessorKey: "quality",
-        header: "Quality",
-        enableHiding: false,
-      },
-    );
-    if (
-      data.drops.some(
-        (drop) => drop.per_kill_chance_with_fatecharm !== undefined,
-      )
-    ) {
+    cols.push({
+      id: "rate",
+      accessorFn: (drop) => drop.per_kill_chance ?? drop.rate,
+      header: "Drop chance",
+      size: 160,
+    });
+    if (hasFatecharmChances) {
       cols.push({
         accessorKey: "per_kill_chance_with_fatecharm",
         header: "With Fatecharm",
-        size: 180,
+        size: 190,
       });
     }
+    cols.push({
+      accessorKey: "quality",
+      header: "Quality",
+      enableHiding: false,
+    });
 
     return cols;
   });
@@ -462,7 +441,7 @@
     if (showChanceColumn) {
       cols.push({
         id: "chance",
-        header: "Spawn chance",
+        header: "Chance",
         size: 120,
       });
     }
@@ -470,7 +449,7 @@
     if (showActiveColumn) {
       cols.push({
         id: "active",
-        header: "Window (game time)",
+        header: "Active",
         size: 150,
       });
     }
@@ -531,7 +510,7 @@
       },
       {
         accessorKey: "level_recommended",
-        header: "Recommended level",
+        header: "Level",
         size: 100,
       },
       {
@@ -544,6 +523,21 @@
 
     return cols;
   });
+  const hasFatecharmChances = $derived(
+    data.fatecharms.length > 0 &&
+      data.drops.some(
+        (drop) => drop.per_kill_chance_with_fatecharm !== undefined,
+      ),
+  );
+  function formatPercent(
+    value: number,
+    options: Parameters<typeof formatFraction>[1] = {
+      decimals: 1,
+      trailingZeros: true,
+    },
+  ): string {
+    return formatFraction(value, options);
+  }
 </script>
 
 {#snippet renderDropCell({
@@ -555,50 +549,36 @@
 })}
   {#if cell.column.id === "is_bestiary"}
     {#if row.original.is_bestiary}
-      <span title="Shown in the Bestiary loot list"
-        ><BookOpen class="h-4 w-4 text-amber-500" /><span class="sr-only"
-          >Shown in the Bestiary loot list</span
-        ></span
-      >
+      <BookOpen class="h-4 w-4 text-amber-500" />
     {/if}
   {:else if cell.column.id === "item_name"}
-    <div class="min-w-0 whitespace-normal break-words">
-      <ItemLink
-        itemId={row.original.item_id}
-        itemName={row.original.item_name}
-        tooltipHtml={row.original.tooltip_html}
-        imageAvailable={row.original.visual_public_path}
-        fallback={Package}
-        variant={row.original.visual_public_path ? "reference" : "text"}
-        imageKind="icon"
-      />
-    </div>
+    <ItemLink
+      itemId={row.original.item_id}
+      itemName={row.original.item_name}
+      quality={row.original.quality}
+      tooltipHtml={row.original.tooltip_html}
+      imageAvailable={row.original.visual_public_path}
+      fallback={Package}
+      variant={row.original.visual_public_path ? "reference" : "text"}
+      imageKind="icon"
+    />
   {:else if cell.column.id === "note"}
-    <span class="block whitespace-normal break-words text-muted-foreground"
-      >{row.original.note ?? ""}</span
-    >
+    <span class="text-muted-foreground">{row.original.note ?? ""}</span>
   {:else if cell.column.id === "rate"}
-    <span class="block w-full text-right tabular-nums">
-      {row.original.rate === null
-        ? "Unknown"
-        : formatPercent(row.original.per_kill_chance ?? row.original.rate, {
-            decimals: 1,
-            trailingZeros: true,
-          })}
-      {#if !commonDropEvent}
-        <span class="block whitespace-normal text-sm text-muted-foreground">
-          {chanceEventLabels[row.original.chance_event] ?? "Per kill"}
-        </span>
+    <span class="ml-auto">
+      {#if row.original.per_kill_chance == null && row.original.rate === null}
+        -
+      {:else}
+        {formatPercent((row.original.per_kill_chance ?? row.original.rate)!)}
       {/if}
     </span>
   {:else if cell.column.id === "per_kill_chance_with_fatecharm"}
-    <span class="block w-full text-right tabular-nums">
-      {row.original.per_kill_chance_with_fatecharm !== undefined
-        ? formatPercent(row.original.per_kill_chance_with_fatecharm, {
-            decimals: 1,
-            trailingZeros: true,
-          })
-        : "-"}
+    <span class="ml-auto">
+      {#if row.original.per_kill_chance_with_fatecharm !== undefined}
+        {formatPercent(row.original.per_kill_chance_with_fatecharm)}
+      {:else}
+        -
+      {/if}
     </span>
   {:else if cell.column.id === "quality"}
     <!-- Hidden column used for sorting -->
@@ -612,20 +592,8 @@
 }: {
   header: Header<MonsterDrop, unknown>;
 })}
-  {#if header.id === "is_bestiary"}
-    <span title="Shown in the Bestiary loot list">
-      <BookOpen class="h-4 w-4 text-amber-500" />
-      <span class="sr-only">Bestiary</span>
-    </span>
-  {:else if header.id === "rate" || header.id === "per_kill_chance_with_fatecharm"}
-    <span class="ml-auto whitespace-normal text-right">
-      {header.column.columnDef.header}
-      {#if header.id === "per_kill_chance_with_fatecharm" && commonDropEvent}
-        <span class="block text-sm font-normal text-muted-foreground">
-          {chanceEventLabels[commonDropEvent] ?? "Per kill"}
-        </span>
-      {/if}
-    </span>
+  {#if header.id === "rate" || header.id === "per_kill_chance_with_fatecharm"}
+    <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
   {/if}
@@ -644,12 +612,8 @@
       class="text-blue-600 dark:text-blue-400 hover:underline"
     >
       {row.original.zone_name}
-    </a>{#if spawnSubZone(row.original.zone_name, row.original.sub_zone_name)}<span
-        class="text-muted-foreground"
-        >&nbsp;({spawnSubZone(
-          row.original.zone_name,
-          row.original.sub_zone_name,
-        )})</span
+    </a>{#if distinctSubzoneName(row.original.zone_name, row.original.sub_zone_name)}<span
+        class="text-muted-foreground">&nbsp;({row.original.sub_zone_name})</span
       >{/if}
   {:else if cell.column.id === "level_min"}
     <span class="ml-auto">{row.original.level_min}</span>
@@ -659,13 +623,11 @@
     <span class="ml-auto">{formatDuration(respawnTime)}</span>
   {:else if cell.column.id === "chance"}
     <span class="ml-auto"
-      >{formatPercent(data.monster.respawn_probability, {
-        decimals: 0,
-      })}</span
+      >{formatPercent(data.monster.respawn_probability)}</span
     >
   {:else if cell.column.id === "active"}
     <span class="ml-auto">
-      {data.monster.spawn_time_start}:00 to {data.monster.spawn_time_end}:00
+      {data.monster.spawn_time_start}:00-{data.monster.spawn_time_end}:00
     </span>
   {:else if cell.column.id === "spawn_count"}
     <span class="ml-auto">{row.original.spawn_count}</span>
@@ -717,6 +679,7 @@
         ><ItemLink
           itemId={row.original.item_id}
           itemName={row.original.item_name}
+          quality={row.original.quality}
         />{#if row.original.amount > 0}&nbsp;×{row.original.amount}{/if}</span
       >
     {:else if row.original.amount > 0}
@@ -761,13 +724,13 @@
       nameClass="truncate"
     />
     {#if row.original.skill_index === 0}
-      <span class="ml-1 text-xs text-muted-foreground">(basic attack)</span>
+      <span class="ml-1 text-xs text-muted-foreground">(Default)</span>
     {/if}
   {:else if cell.column.id === "skill_type"}
     <span class="text-muted-foreground">
       {row.original.skill_type === "summon_monsters" &&
       row.original.summon_count_per_cast === 0
-        ? "Single-target teleport"
+        ? "Teleports target to this monster"
         : formatSkillType(row.original.skill_type)}
     </span>
   {:else if cell.column.id === "effect"}
@@ -796,14 +759,7 @@
 {/snippet}
 
 <Seo
-  title={detailTitle(data.monster.name, {
-    family: "Monster",
-    zone:
-      data.spawns.regular[0]?.zone_name ??
-      data.spawns.summon[0]?.zone_name ??
-      data.spawns.placeholder?.zone_name ??
-      data.spawns.altar[0]?.zone_name,
-  })}
+  title={`${data.monster.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/monsters/${data.monster.id}`}
 />
@@ -852,13 +808,11 @@
         </span>
       {/if}
       {#if data.monster.is_hunt}
-        <a
-          href="/professions/hunter"
-          title="Counts toward the Hunter profession"
-          class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200 hover:underline"
+        <span
+          class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
         >
           Hunt
-        </a>
+        </span>
       {/if}
     </div>
 
@@ -871,7 +825,7 @@
       {#if data.monster.base_exp > 0}
         <span
           >Base XP: <MechanicsLink section="experience"
-            >{formatNumber(data.monster.base_exp)}</MechanicsLink
+            >{data.monster.base_exp.toLocaleString()}</MechanicsLink
           ></span
         >
       {/if}
@@ -887,7 +841,7 @@
     titleId="monster-summary-title"
     title="Monster summary"
     imageSrc={monsterImageSrc}
-    imageAlt={data.monster.name}
+    imageAlt={`${data.monster.name} monster sprite`}
     imageWidth={data.visualAsset?.width}
     imageHeight={data.visualAsset?.height}
     health={displayHealth}
@@ -976,12 +930,7 @@
             {#each data.spawns.altar as altar (altar.altar_id)}
               <div class="bg-muted/30 rounded-md border p-3">
                 <div>
-                  Appears in the <a
-                    href="/altars/{altar.altar_id}"
-                    class="font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                    >{altar.altar_name}</a
-                  >
-                  event
+                  <span class="font-medium">{altar.altar_name}</span>
                   <span class="text-muted-foreground"> in </span>
                   <a
                     href="/zones/{altar.zone_id}"
@@ -999,9 +948,7 @@
                 {/if}
                 {#if altar.activation_item_id && altar.activation_item_name}
                   <div class="text-sm mt-1">
-                    <span class="text-muted-foreground"
-                      >Start the event with
-                    </span>
+                    <span class="text-muted-foreground">Requires: </span>
                     <a
                       href="/items/{altar.activation_item_id}"
                       class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1021,32 +968,25 @@
             {#each data.spawns.summon as summon (summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
                 <span>
-                  This monster cannot spawn until {summon.kill_count > 1
-                    ? `all ${summon.kill_count} of its `
-                    : "its "}</span
+                  This monster cannot respawn while {summon.kill_count > 1
+                    ? `${summon.kill_count} copies of `
+                    : ""}</span
                 >
                 <a
                   href="/monsters/{summon.kill_monster_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   >{summon.kill_monster_name}</a
                 >
-                <span
-                  >{summon.kill_count > 1 ? " guards are" : " guard is"} dead at the
-                  same time in
-                </span>
+                <span>{summon.kill_count > 1 ? " are" : " is"} alive in </span>
                 <a
                   href="/zones/{summon.zone_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   {summon.zone_name}
-                </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
+                </a>{#if distinctSubzoneName(summon.zone_name, summon.sub_zone_name)}<span
                     class="text-muted-foreground"
                     >&nbsp;({summon.sub_zone_name})</span
                   >{/if}
-                <p class="mt-2 text-sm text-muted-foreground">
-                  After this monster dies, kill its guards again. Its respawn
-                  timer must also finish.
-                </p>
               </div>
             {/each}
           </div>
@@ -1057,6 +997,7 @@
           <div class="space-y-2">
             {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
+                <span>This monster prevents </span>
                 <a
                   href="/{summon.summoned_entity_type === 'Npc'
                     ? 'npcs'
@@ -1066,23 +1007,19 @@
                   {summon.summoned_monster_name}
                 </a>
                 <span>
-                  cannot spawn until {summon.kill_count > 1
-                    ? `all ${summon.kill_count} of its ${data.monster.name} guards are`
-                    : `its ${data.monster.name} guard is`} dead at the same time in
+                  from respawning while {summon.kill_count > 1
+                    ? `${summon.kill_count} copies of this monster are`
+                    : "this monster is"} alive in
                 </span>
                 <a
                   href="/zones/{summon.zone_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   {summon.zone_name}
-                </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
+                </a>{#if distinctSubzoneName(summon.zone_name, summon.sub_zone_name)}<span
                     class="text-muted-foreground"
                     >&nbsp;({summon.sub_zone_name})</span
                   >{/if}
-                <p class="mt-2 text-sm text-muted-foreground">
-                  After {summon.summoned_monster_name} dies, kill its guards again.
-                  Its respawn timer must also finish.
-                </p>
               </div>
             {/each}
           </div>
@@ -1094,7 +1031,7 @@
             <span
               >This monster {data.spawns.placeholder.spawn_probability < 1
                 ? "can appear"
-                : "appears"} where
+                : "appears"} after you kill
             </span>
             <a
               href="/monsters/{data.spawns.placeholder.source_monster_id}"
@@ -1102,7 +1039,7 @@
             >
               {data.spawns.placeholder.source_monster_name}
             </a>
-            <span class="text-muted-foreground"> dies in </span>
+            <span class="text-muted-foreground"> in </span>
             <a
               href="/zones/{data.spawns.placeholder.zone_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -1111,13 +1048,9 @@
             </a>
             {#if data.spawns.placeholder.spawn_probability < 1}
               <span class="text-muted-foreground">
-                ({formatPercent(data.spawns.placeholder.spawn_probability, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })} chance)
+                ({formatPercent(data.spawns.placeholder.spawn_probability)} chance)
               </span>
             {/if}
-            <span>. It does not respawn.</span>
           </div>
         {/if}
 
@@ -1138,36 +1071,13 @@
               {data.monster.placeholder_monster_name ||
                 data.monster.placeholder_monster_id}
             </a>
-            <span> where this monster dies</span>
             {#if data.monster.placeholder_spawn_probability > 0 && data.monster.placeholder_spawn_probability < 1}
               <span class="text-muted-foreground">
-                ({formatPercent(data.monster.placeholder_spawn_probability, {
-                  decimals: 1,
-                  trailingZeros: true,
-                })} chance)
+                ({formatPercent(data.monster.placeholder_spawn_probability)} chance)
               </span>
             {/if}
-            <span>.</span>
           </div>
         {/if}
-        {#each data.combatSummoners as summoner (summoner.monster_id + summoner.skill_id)}
-          <div class="bg-muted/30 rounded-md border p-3">
-            Summoned in combat by
-            <a
-              href="/monsters/{summoner.monster_id}"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
-              >{summoner.monster_name}</a
-            >
-            using
-            <a
-              href="/skills/{summoner.skill_id}"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
-              >{summoner.skill_name}</a
-            >{#if summoner.count_per_cast > 0}, {summoner.count_per_cast} per cast{/if}{#if summoner.max_active > 0},
-              at most {summoner.max_active} active{/if}. Combat summons carry no
-            items or gold.
-          </div>
-        {/each}
 
         <!-- Renewal Sages (for world bosses) -->
         {#if data.renewalSages.length > 0}
@@ -1191,11 +1101,11 @@
                     {sage.zoneName}
                   </a>
                 {/if}
-                <span> to make this dead monster ready to respawn</span>
+                <span> to reset this monster's respawn timer</span>
                 {#if sage.cost > 0}
                   <span> for </span>
                   <span class="text-yellow-600 dark:text-yellow-400"
-                    >{formatNumber(sage.cost)} gold</span
+                    >{sage.cost.toLocaleString()} gold</span
                   >
                 {/if}
                 <span>.</span>
@@ -1211,7 +1121,7 @@
   <section>
     <h2 class="mb-2 text-xl font-semibold flex items-center gap-2">
       <Sword class="h-5 w-5 text-red-500" />
-      Combat stats
+      Combat Stats
     </h2>
     <div class="bg-muted/30 rounded-md border p-4">
       {#if selectedSpawnCombatStats && data.spawnCombatStats.length > 1}
@@ -1240,8 +1150,8 @@
               >
                 {#each data.spawnCombatStats as stats, index (`variant-${stats.level}-${index}`)}
                   <option value={index}>
-                    Level {stats.level}: {stats.spawn_count}
-                    {stats.spawn_count === 1 ? "spawn" : "spawns"} in {formatZoneList(
+                    Variant {index + 1}: Level {stats.level}, {stats.spawn_count}
+                    {stats.spawn_count === 1 ? "spawn" : "spawns"} — {formatZoneList(
                       stats.zone_names,
                     )}
                   </option>
@@ -1302,35 +1212,51 @@
 
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
-          <div class="text-sm text-muted-foreground">
-            {statName("accuracy")}
-          </div>
+          <div class="text-sm text-muted-foreground">Attack Power</div>
           <div class="font-medium">
-            {formatStat("accuracy", displayAccuracy, { signed: true })}
+            {displayDamage.toLocaleString()}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">
-            {statName("critical_chance")}
-          </div>
+          <div class="text-sm text-muted-foreground">Spell Power</div>
           <div class="font-medium">
-            {formatStat("critical_chance", displayCriticalChance)}
+            {displayMagicDamage.toLocaleString()}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">
-            {statName("health_regen")}
-          </div>
+          <div class="text-sm text-muted-foreground">Accuracy Bonus</div>
           <div class="font-medium">
-            {formatStat("health_regen", data.monster.health_regen_base)} per second
+            {formatPercent(displayAccuracy)}
           </div>
         </div>
         <div>
-          <div class="text-sm text-muted-foreground">
-            {statName("block_chance")}
-          </div>
+          <div class="text-sm text-muted-foreground">Critical Strike</div>
           <div class="font-medium">
-            {formatStat("block_chance", displayBlockChance)}
+            {formatPercent(displayCriticalChance)}
+          </div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Health</div>
+          <div class="font-medium">
+            {displayHealth.toLocaleString()}
+          </div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Health Recovery</div>
+          <div class="font-medium">
+            {data.monster.health_regen_base.toLocaleString()} / sec
+          </div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Armor Class</div>
+          <div class="font-medium">
+            {displayDefense.toLocaleString()}
+          </div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Block Chance</div>
+          <div class="font-medium">
+            {formatPercent(displayBlockChance)}
           </div>
         </div>
         {#if data.monster.follow_distance > 0}
@@ -1343,23 +1269,32 @@
               >
             </div>
             <div class="font-medium">
-              {data.altarContext.only_avatar_altars
-                ? "90 yd from the altar"
-                : data.monster.chase_limit_scope === "nowhere"
-                  ? "None in dungeons"
-                  : `${formatNumber(data.monster.follow_distance)} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
+              {data.monster.chase_limit_scope === "nowhere"
+                ? "None"
+                : `${data.monster.follow_distance.toLocaleString()} yd${data.monster.chase_limit_scope === "outside_dungeons" ? " outside dungeons" : ""}`}
             </div>
           </div>
         {/if}
       </div>
-      {#if data.altarContext.has_avatar_altars && !data.altarContext.only_avatar_altars}
-        <p class="mt-3 text-sm text-muted-foreground">
-          In Avatar altar events, the chase limit is 90 yd from the altar.
-        </p>
-      {/if}
 
-      {#if abilities.length > 0}
+      {#if resistances.length > 0 || abilities.length > 0}
         <div class="mt-4 pt-4 border-t flex flex-col md:flex-row gap-4">
+          {#if resistances.length > 0}
+            <div class="md:w-[500px] shrink-0">
+              <div class="text-sm text-muted-foreground mb-2">Resistances</div>
+              <div class="flex flex-wrap gap-2">
+                {#each resistances as resist (resist.name)}
+                  <span
+                    class="inline-flex items-center rounded-md px-2 py-1 text-sm {resistanceBadgeClass(
+                      resist.value,
+                    )}"
+                  >
+                    {resist.name}: {resist.value}
+                  </span>
+                {/each}
+              </div>
+            </div>
+          {/if}
           {#if abilities.length > 0}
             <div class="flex-1">
               <div class="text-sm text-muted-foreground mb-2">Special</div>
@@ -1367,9 +1302,6 @@
                 {#each abilities as ability (ability.label)}
                   <span
                     class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                    title={ability.label === "Can flee below 15% Hit Points"
-                      ? "When it engages, it has a 70% chance to flee below 15% of maximum Hit Points, while its target is above 50% of maximum Hit Points and has more than twice this monster's current Hit Points."
-                      : undefined}
                   >
                     {ability.label}
                   </span>
@@ -1404,137 +1336,72 @@
   {/if}
 
   <!-- Loot Section -->
-  {#if data.loot.contexts.length > 0 || data.loot.definitionPool !== null || data.altarContext.only_lootless_spawns || data.altarContext.has_scaled_final_gold || (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
+  {#if (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Gem class="h-5 w-5 text-amber-500" />
         Loot
       </h2>
-      {#if data.altarContext.only_lootless_spawns}
-        <p class="rounded-md border bg-muted/30 p-4">
-          Drops nothing. Combat summons and monsters in altar waves before the
-          final wave carry no items or gold.
+      {#if data.drops.some((drop) => drop.per_kill_chance !== undefined)}
+        <p class="mb-4 text-sm text-muted-foreground">
+          The Drop chance column is per kill{hasFatecharmChances
+            ? " without a Fatecharm"
+            : ""}. Quest items assume an unfinished gathering quest. Other drops
+          assume no quest.
         </p>
-      {:else}
-        {#if data.drops.some((drop) => drop.per_kill_chance !== undefined)}
-          <p class="mb-4 text-sm text-muted-foreground">
-            Base chances exclude Fatecharm. Quest items assume an unfinished
-            gathering quest. Other drops assume no quest.
-          </p>
-        {/if}
-        {#if data.altarContext.has_nonfinal_waves}
-          <p class="mb-4 text-sm text-muted-foreground">
-            Monsters in altar waves before the final wave carry no items or
-            gold.
-          </p>
-        {/if}
-        {#if data.lootCommonContext}
-          <h3 class="mb-3 font-medium">{data.lootCommonContext}</h3>
-        {/if}
+      {/if}
+      {#if hasFatecharmChances}
+        <p class="mb-4 text-sm text-muted-foreground">
+          The With Fatecharm column consumes one
+          {#each data.fatecharms as item, index (item.id)}
+            {#if index > 0}
+              or
+            {/if}<a
+              href="/items/{item.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{item.name}</a
+            >{/each}.
+        </p>
+      {/if}
 
-        {#each data.goldMethods as method (method.methodId)}
-          <div class="mb-4 bg-muted/30 rounded-md border p-4 space-y-2">
-            {#if !data.lootCommonContext && data.lootContextLabels[method.methodId]}
-              <p class="font-medium">
-                {data.lootContextLabels[method.methodId]}
-              </p>
+      {#if data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0}
+        <div class="mb-4 bg-muted/30 rounded-md border p-4">
+          <div class="font-medium text-yellow-600 dark:text-yellow-400">
+            {data.monster.gold_min.toLocaleString()} - {data.monster.gold_max.toLocaleString()}
+            gold
+            {#if data.monster.probability_drop_gold < 1}
+              <span class="text-muted-foreground font-normal">
+                ({formatPercent(data.monster.probability_drop_gold)} chance)
+              </span>
             {/if}
-            {#each method.outputs.filter((output) => output.resource_kind === "gold") as output (output.id)}
-              {@const chance = method.probabilityResults.find(
-                (result) => result.target.kind === "gold",
-              )}
-              <div class="font-medium text-yellow-600 dark:text-yellow-400">
-                {#if method.ruleId === "altar_final_loot" && output.quantity.kind === "unknown"}
-                  {`Gold: ${CODE_DEFINED_RULES.altar.goldPerLevel} × the activating player's level + ${CODE_DEFINED_RULES.altar.goldPerVeteranPoint} × their total veteran points`}
-                {:else}
-                  {quantityText(output.quantity)} gold
-                {/if}
-                {#if chance?.probability != null && chance.probability !== 1}
-                  <span class="text-muted-foreground font-normal"
-                    >({formatPercent(chance.probability, {
-                      decimals: 1,
-                      trailingZeros: true,
-                    })}
-                    {chanceEventLabels[chance.event]?.toLowerCase() ??
-                      "per kill"})</span
-                  >
-                {/if}
-              </div>
-            {/each}
-            <Requirements
-              roots={method.requirements}
-              names={data.acquisitionNames}
-            />
           </div>
-        {/each}
-        {#if data.drops.some((drop) => drop.per_kill_chance_with_fatecharm !== undefined)}
-          <p class="mb-4 text-sm text-muted-foreground">
-            A matching dungeon Fatecharm is consumed for the boosted chance.
-          </p>
-        {/if}
+        </div>
+      {/if}
 
-        {#if data.drops.length > 0}
-          <DataTable
-            data={data.drops}
-            columns={dropColumns}
-            renderCell={renderDropCell}
-            renderHeader={renderDropHeader}
-            initialSorting={data.monster.is_boss || data.monster.is_elite
-              ? [
-                  { id: "is_bestiary", desc: true },
-                  { id: "rate", desc: true },
-                  { id: "quality", desc: true },
-                  { id: "item_name", desc: false },
-                ]
-              : [
-                  { id: "rate", desc: true },
-                  { id: "quality", desc: true },
-                  { id: "item_name", desc: false },
-                ]}
-            urlKey="monster-{data.monster.id}-drops"
-            pageSize={10}
-            zebraStripe={true}
-            class="bg-muted/30"
-            initialColumnVisibility={{ quality: false, note: hasDropNotes }}
-          />
-        {/if}
-      {/if}
-      {#if data.loot.contexts.length > 0}
-        <details class="mt-4 rounded-md border bg-muted/30 p-4">
-          <summary class="cursor-pointer font-medium">Loot details</summary>
-          <div class="mt-4">
-            <MethodList
-              methods={data.loot.contexts}
-              items={data.acquisitionItems}
-              names={data.acquisitionNames}
-            />
-          </div>
-        </details>
-      {/if}
-      {#if data.loot.definitionPool}
-        <details class="mt-4 rounded-md border bg-muted/30 p-4">
-          <summary class="cursor-pointer font-medium"
-            >Authored loot definition</summary
-          >
-          <p class="my-3 text-sm text-muted-foreground">
-            Configured pool entries are not per-kill chances. Actual loot
-            depends on the spawn context above.
-          </p>
-          <ul class="space-y-2">
-            {#each data.loot.definitionPool.entries as entry (entry.id)}
-              <li>
-                {#if entry.item_id}<a
-                    href="/items/{entry.item_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >{data.acquisitionItems[entry.item_id]?.name ??
-                      entry.item_id.replaceAll("_", " ")}</a
-                  >{:else if entry.withheld}Unpublished item{:else}Random item
-                  pool{/if}: {formatPercent(entry.probability, { decimals: 2 })} configured
-                roll{#if entry.quest_gate !== "none"}, requires quest need{/if}
-              </li>
-            {/each}
-          </ul>
-        </details>
+      {#if data.drops.length > 0}
+        <DataTable
+          data={data.drops}
+          columns={dropColumns}
+          renderCell={renderDropCell}
+          renderHeader={renderDropHeader}
+          initialSorting={data.monster.is_boss || data.monster.is_elite
+            ? [
+                { id: "is_bestiary", desc: true },
+                { id: "rate", desc: true },
+                { id: "quality", desc: true },
+                { id: "item_name", desc: false },
+              ]
+            : [
+                { id: "rate", desc: true },
+                { id: "quality", desc: true },
+                { id: "item_name", desc: false },
+              ]}
+          urlKey="monster-{data.monster.id}-drops"
+          pageSize={10}
+          zebraStripe={true}
+          class="bg-muted/30"
+          initialColumnVisibility={{ quality: false }}
+        />
       {/if}
     </section>
   {/if}
@@ -1592,7 +1459,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <BookOpen class="h-5 w-5 text-cyan-500" />
-        {data.monster.lore_boss ? "Lore" : "Combat messages"}
+        Lore
       </h2>
       <div class="bg-muted/30 rounded-md border p-4 space-y-4">
         {#if data.monster.lore_boss}
@@ -1600,9 +1467,6 @@
         {/if}
         {#if data.monster.aggro_messages.length > 0}
           <div class="space-y-1">
-            {#if data.monster.lore_boss}<h3 class="font-medium">
-                Combat messages
-              </h3>{/if}
             {#each data.monster.aggro_messages as message, i (i)}
               <div class="italic text-muted-foreground">"{message}"</div>
             {/each}

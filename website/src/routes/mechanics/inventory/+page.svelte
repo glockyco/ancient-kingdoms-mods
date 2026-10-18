@@ -8,18 +8,19 @@
   import * as Card from "$lib/components/ui/card";
   import Calculation from "$lib/components/Calculation.svelte";
   import { repairCost, merchantPrice } from "$lib/calculation/inventory";
-  import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import {
-    getQualityTextColorClass,
-    formatNumber,
-    formatPercent,
-  } from "$lib/utils/format";
+    SOURCE_TYPE_CONFIG,
+    type ItemSourceType,
+  } from "$lib/constants/source-types";
+  import { getQualityTextColorClass } from "$lib/utils/format";
   import { reputationTierName } from "$lib/utils/reputation";
   import type {
+    BackpackSource,
     HouseStorageLocation,
     InventoryMechanicsPageData,
   } from "./+page.server";
 
+  const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
   const BANK_TAB_COSTS = [
     0, 200, 1000, 2000, 5000, 10000, 15000, 20000, 50000, 100000,
   ];
@@ -39,27 +40,46 @@
   let { data }: { data: InventoryMechanicsPageData } = $props();
 
   function formatGold(value: number): string {
-    return value === 0 ? "Free" : formatNumber(value);
+    return value === 0 ? "Free" : value.toLocaleString();
   }
 
   function getHouseRequirement(house: HouseStorageLocation): string {
     if (house.faction_id && house.faction_required > 0) {
-      return `${reputationTierName(data.reputationTiers, house.faction_required)} (${formatNumber(house.faction_required)})`;
+      return `${reputationTierName(data.reputationTiers, house.faction_required)} (${house.faction_required.toLocaleString()})`;
     }
     if (house.faction_id) return "No reputation requirement";
     return "None recorded";
   }
+
+  function getSourcesByType(
+    sources: BackpackSource[],
+  ): [ItemSourceType, BackpackSource[]][] {
+    const grouped: [ItemSourceType, BackpackSource[]][] = [];
+
+    for (const source of sources) {
+      const group = grouped.find(([type]) => type === source.type);
+      if (group) {
+        group[1].push(source);
+      } else {
+        grouped.push([source.type, [source]]);
+      }
+    }
+
+    return grouped;
+  }
+
+  function visibleSources(sources: BackpackSource[]): BackpackSource[] {
+    return sources.slice(0, MAX_VISIBLE_SOURCES_PER_TYPE);
+  }
 </script>
 
 <Seo
-  title="Inventory - Ancient Kingdoms"
+  title="Inventory Mechanics - Ancient Kingdoms"
   description="Inventory, the Combined Backpack, bank tabs, account-shared house chests, merchants, equipment, and consumables in Ancient Kingdoms."
   path="/mechanics/inventory"
 />
 
-<div
-  class="container mx-auto max-w-5xl space-y-8 p-8 [&_tbody_tr:nth-child(odd)]:bg-muted/20"
->
+<div class="container mx-auto max-w-5xl space-y-8 p-8">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -68,13 +88,13 @@
     ]}
   />
 
-  <h1 class="text-4xl font-bold">Inventory</h1>
+  <h1 class="text-4xl font-bold">Inventory Mechanics</h1>
 
   <PageSections sections={MECHANICS_SECTIONS["/mechanics/inventory"]} />
 
   <Card.Root id="overview" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Storage at a glance</Card.Title>
+      <Card.Title>Storage at a Glance</Card.Title>
       <Card.Description>
         Compare storage capacity for one character with storage shared across
         your account.
@@ -82,7 +102,7 @@
     </Card.Header>
     <Card.Content class="space-y-6">
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[38rem] border-collapse text-sm">
+        <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-4 text-left font-medium">Storage</th>
@@ -93,8 +113,7 @@
           </thead>
           <tbody>
             <!-- Source: server-scripts/UIHousing.cs:Start — online houses are bound to the server on which they were purchased. -->
-            <!-- Source: server-scripts/Player.cs:AddKey -->
-            {#each [["Inventory", "Character", "24 base inventory slots plus backpack storage", "Equip backpacks"], ["Backpack slots", "Character", "9 dedicated bag slots", "Fixed"], ["Bank item storage", "Character", "300 slots, 30 per tab", "Unlock bank tabs with gold"], ["House chests", "Account (on the server where you bought the house)", "560 slots, 8 chest sections", "Buy a house, then buy chests"], ["Banked gold", "Account", "Separate gold vault", "Fixed"], ["Equipment", "Character", "16 equipped slots", "Fixed"], ["Keys", "Character", "One of each key", "Not needed"]] as row (row[0])}
+            {#each [["Inventory", "Character", "24 base inventory slots plus backpack storage", "Equip backpacks"], ["Backpack slots", "Character", "9 dedicated bag slots", "Fixed"], ["Bank item storage", "Character", "300 slots, 30 per tab", "Unlock bank tabs with gold"], ["House chests", "Account (on the server where you bought the house)", "560 slots, 8 chest sections", "Buy a house, then buy chests"], ["Banked gold", "Account", "Separate gold vault", "Fixed"], ["Equipment", "Character", "16 equipped slots", "Fixed"], ["Keys", "Character", "Separate key storage", "Fixed"]] as row (row[0])}
               <tr class="border-b border-border/50 hover:bg-muted/30">
                 <td class="py-2 pr-4 font-medium">{row[0]}</td>
                 <td class="py-2 pr-4">{row[1]}</td>
@@ -133,11 +152,9 @@
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:604-618 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
+          <span class="block">Unique backpacks can only be equipped once.</span>
           <span class="block"
-            >You can equip only one copy of each unique backpack at a time.</span
-          >
-          <span class="block"
-            >You can equip multiple copies of other backpacks.</span
+            >Other backpacks can occupy multiple backpack slots.</span
           >
         </li>
         <li>
@@ -150,7 +167,9 @@
             >You cannot move an equipped bag directly to the bank or a house
             chest.</span
           >
-          <span class="block">Drag it to a base inventory slot first.</span>
+          <span class="block"
+            >Move an equipped bag into base inventory before changing it.</span
+          >
           <span class="block"
             ><!-- Source: server-scripts/PlayerInventory.cs:OnDragAndDrop_InventorySlot_InventorySlot; docs/game-bugs/moving-the-only-backpack-into-its-first-storage-slot-hides-it.md — observed defect hides the only bag after dropping it in extension slot 24. -->
             Because of a game defect, dropping your only equipped bag onto the first
@@ -161,13 +180,13 @@
       </ul>
 
       <p class="text-sm text-muted-foreground">
-        Source level is the lowest known level among a bag's sources. It does
-        not limit who can equip the bag.
+        Source Level estimates where you can obtain the bag. It does not
+        restrict which characters can equip it.
       </p>
 
       {#if data.backpacks.length > 0}
         <div class="overflow-x-auto">
-          <table class="w-full min-w-[48rem] border-collapse text-sm">
+          <table class="w-full border-collapse text-sm">
             <thead>
               <tr class="border-b border-border">
                 <th class="py-2 pr-4 text-left font-medium">Bag</th>
@@ -186,6 +205,7 @@
                     <ItemLink
                       itemId={backpack.id}
                       itemName={backpack.name}
+                      quality={backpack.quality}
                       colorClass={getQualityTextColorClass(backpack.quality)}
                       tooltipHtml={backpack.tooltip_html}
                       imageAvailable={data.itemIconPaths[backpack.id]}
@@ -205,11 +225,52 @@
                       <span class="text-muted-foreground">—</span>
                     {/if}
                   </td>
-                  <td class="min-w-64 py-2">
-                    <ItemSourceLinks
-                      sources={backpack.sources}
-                      emptyLabel="No known source"
-                    />
+                  <td class="py-2">
+                    {#if backpack.sources.length === 0}
+                      <span class="text-muted-foreground">No known source</span>
+                    {:else}
+                      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        {#each getSourcesByType(backpack.sources) as [type, sources] (type)}
+                          {@const sourceConfig = SOURCE_TYPE_CONFIG[type]}
+                          <div class="flex flex-wrap items-center gap-1.5">
+                            <sourceConfig.icon
+                              class="h-4 w-4 shrink-0 {sourceConfig.color}"
+                            />
+                            {#if type !== "fishing"}
+                              <span class="text-muted-foreground"
+                                >{type === "random"
+                                  ? "Opened from"
+                                  : sourceConfig.label}{type === "crafting"
+                                  ? ":"
+                                  : ""}</span
+                              >
+                            {/if}
+                            {#each visibleSources(sources) as source, i (source.id)}
+                              <span>
+                                <a
+                                  href="{sourceConfig.linkPrefix}{source.id}"
+                                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                                  >{type === "crafting"
+                                    ? `${backpack.name} recipe`
+                                    : source.name}</a
+                                >{i < visibleSources(sources).length - 1
+                                  ? ","
+                                  : ""}
+                              </span>
+                            {/each}
+                            {#if sources.length > MAX_VISIBLE_SOURCES_PER_TYPE}
+                              <a
+                                href="/items/{backpack.id}"
+                                class="text-sm text-muted-foreground hover:underline"
+                              >
+                                +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE}
+                                more
+                              </a>
+                            {/if}
+                          </div>
+                        {/each}
+                      </div>
+                    {/if}
                   </td>
                 </tr>
               {/each}
@@ -217,36 +278,52 @@
           </table>
         </div>
       {:else}
-        <p class="text-sm text-muted-foreground">No backpacks found.</p>
+        <p class="text-sm text-muted-foreground">No backpack data found.</p>
       {/if}
     </Card.Content>
   </Card.Root>
 
   <Card.Root id="bank" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Bank tabs and gold</Card.Title>
+      <Card.Title>Bank Tabs and Gold</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:405 — characters start with one bank tab unlocked. -->
         <!-- Source: server-scripts/Player.cs:13685-13710 and 13720-13748 — bank gold withdraw and deposit commands. -->
-        You start with bank tab 1. Unlock additional tabs in order. Deposit gold to
-        share it across your account, or withdraw it to carry it.
+        <span class="block">New characters start with bank tab 1 unlocked.</span
+        >
+        <span class="block">Unlock additional tabs in order.</span>
+        <span class="block"
+          >Depositing transfers carried gold to your account's vault.</span
+        >
+        <span class="block"
+          >Withdrawing transfers vault gold back to your character.</span
+        >
       </p>
       <!-- Source: server-scripts/Npc.cs:1727-1755 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
       <p class="text-sm text-muted-foreground">
-        Open the bank at a Banker while alive and out of combat.
+        Open the bank at a banker while alive and out of combat.
       </p>
       <!-- Source: server-scripts/UIBank.cs:83-99 — bank closes without a living, out-of-combat player targeting a nearby banker within 2 units. -->
       <p class="text-sm text-muted-foreground">
-        It closes if you die, enter combat, target something else, or move more
-        than 2 yd from the Banker.
+        <span class="block"
+          >The bank stays open only while you are alive, out of combat, and
+          within 2 yd of the selected banker.</span
+        >
+        <span class="block">Moving away or entering combat closes it.</span>
       </p>
       <!-- Source: server-scripts/PlayerBank.cs:390-449 — Auto Stack moves carried stackable items only when the selected tab already contains that item, filling existing stacks before empty slots. -->
       <p class="text-sm text-muted-foreground">
-        Auto Stack banks carried stackable items already found in the selected
-        tab. It fills existing stacks before empty slots. Other items stay in
-        your inventory.
+        <span class="block">Auto Stack checks the selected tab only.</span>
+        <span class="block"
+          >It moves stackable carried items already present there.</span
+        >
+        <span class="block"
+          >It fills matching stacks, then uses empty slots in that tab for any
+          remainder.</span
+        >
+        <span class="block">New item types and equipment stay carried.</span>
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
@@ -277,24 +354,26 @@
 
   <Card.Root id="house-chests" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>House chests and shared storage</Card.Title>
+      <Card.Title>House Chests and Shared Storage</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-6">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Housing.cs:33-49 — entering an unowned house area opens the house purchase flow. -->
         <!-- Source: server-scripts/ChestHouse.cs:OnInteractClient and UserCode_CmdOpenChestHouse__NetworkIdentity__String — only the owning account can open house chest UI. -->
         <!-- Source: server-scripts/UIChest.cs:42-56; server-scripts/PlayerChest.cs:259-290,309-318 — chest type selects a shared section and fixed 70-slot range. -->
+        <span class="block">Your account can own a house.</span>
         <span class="block"
-          >A house belongs to the account that bought it. A house owned by
-          another account cannot be bought.</span
-        >
-        <!-- Source: server-scripts/UIHousing.cs:Start -->
-        <span class="block"
-          >An online house stays on the server where you bought it.</span
+          >A house claimed by another account cannot be purchased.</span
         >
         <span class="block"
-          >Each chest type opens one account-wide 70-slot section. Every chest
-          of that type opens the same section.</span
+          >Each chest type opens one account-wide section with 70 slots.</span
+        >
+        <!-- Source: server-scripts/UIHousing.cs:Start — houses bought online are bound to that server. -->
+        <span class="block"
+          >Online houses are bound to the server where you buy them.</span
+        >
+        <span class="block"
+          >Additional chests of the same type open the same shared section.</span
         >
       </p>
       <!-- Source: server-scripts/Housing.cs:33-49 and server-scripts/ChestHouse.cs:83-98,167-175 — the house claim and chest access compare account identity. -->
@@ -342,7 +421,9 @@
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 261-279 — remove mode destroys a selected structure. -->
           <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10547-10580 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
-          <span class="block">Destroying a chest refunds nothing.</span>
+          <span class="block"
+            >You can destroy an individual chest without receiving gold back.</span
+          >
           <span class="block"
             >Selling the house removes its <a
               href="/mechanics/housing#furniture"
@@ -361,7 +442,7 @@
         <h3 class="font-semibold">House locations</h3>
         {#if data.houses.length > 0}
           <div class="overflow-x-auto">
-            <table class="w-full min-w-[40rem] border-collapse text-sm">
+            <table class="w-full border-collapse text-sm">
               <thead>
                 <tr class="border-b border-border">
                   <th class="py-2 pr-4 text-left font-medium">House</th>
@@ -383,7 +464,7 @@
                         >{:else}Unknown{/if}
                     </td>
                     <td class="py-2 pr-4 text-right font-mono"
-                      >{formatNumber(house.base_price)}</td
+                      >{house.base_price.toLocaleString()}</td
                     >
                     <td class="py-2 pr-4">
                       <!-- Source: server-scripts/Player.cs:TargetRpcHouse; Utils.cs:GetFactionRankName — the purchase panel names the required reputation rank. -->
@@ -407,15 +488,17 @@
             </table>
           </div>
         {:else}
-          <p class="text-sm text-muted-foreground">No houses found.</p>
+          <p class="text-sm text-muted-foreground">
+            No house purchase data found.
+          </p>
         {/if}
       </div>
       <!-- Source: server-scripts/Housing.cs:OnTriggerEnter2D; Player.cs:UserCode_CmdSpawnStruc__Int32__String__Vector3__Quaternion__Boolean — house purchase applies Charisma; placed structures charge their catalog price. -->
       <p class="text-sm text-muted-foreground">
-        Base price is before your Charisma discount of up to 25%. See <a
+        House prices are before the Charisma discount of up to 25% (<a
           href="#merchants"
           class="text-blue-600 dark:text-blue-400 hover:underline">Merchants</a
-        >. Chest and furniture prices get no discount.
+        >). Chest and furniture prices are not discounted.
       </p>
 
       <div class="space-y-2">
@@ -437,6 +520,7 @@
                       <ItemLink
                         itemId={chest.id}
                         itemName={chest.name}
+                        quality={chest.quality}
                         tooltipHtml={chest.tooltip_html}
                         imageAvailable={data.itemIconPaths[chest.id]}
                       />
@@ -445,7 +529,7 @@
                       >{chest.slot_end - chest.slot_start + 1} slots</td
                     >
                     <td class="py-2 pr-4 text-right font-mono"
-                      >{formatNumber(chest.structure_price)}</td
+                      >{chest.structure_price.toLocaleString()}</td
                     >
                   </tr>
                 {/each}
@@ -453,7 +537,9 @@
             </table>
           </div>
         {:else}
-          <p class="text-sm text-muted-foreground">No house chests found.</p>
+          <p class="text-sm text-muted-foreground">
+            No house chest item data found.
+          </p>
         {/if}
       </div>
     </Card.Content>
@@ -461,7 +547,7 @@
 
   <Card.Root id="item-movement" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Item movement and stacks</Card.Title>
+      <Card.Title>Item Movement and Stacks</Card.Title>
       <Card.Description>
         Items fill base inventory slots before backpack storage slots. You can
         split stacks or move items between storage locations.
@@ -470,13 +556,18 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
+          <!-- Source: server-scripts/PlayerInventory.cs:239-265 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
+          items try base inventory slots first, then unlocked backpack storage
+          slots.
+        </li>
+        <li>
           <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1992-2006 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:621-626,670-683,1717-1729 — Shift-drag to an empty slot offers a quantity picker. -->
-          Hold Shift and drag a stack onto an empty slot to choose how many items
-          to move.
+          <!-- Source: server-scripts/PlayerInventory.cs:621-626 and 670-683 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
+          Shift while you drag a stack onto an empty slot. An amount picker
+          opens and moves the chosen amount into that slot.
         </li>
         <!-- Source: server-scripts/PlayerInventory.cs:701-757,795-853,1914-1976 and server-scripts/PlayerBank.cs:53-72 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
         <li>
@@ -489,8 +580,8 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:OnDragAndDrop_InventorySlot_InventorySlot -->
-          Dragging an item onto a slot that holds a different item swaps the two.
+          <!-- Source: server-scripts/PlayerInventory.cs:685-688 — non-split, non-merge inventory drag swaps slots. -->Other
+          carried-item drags swap source and destination slots.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:OnDragAndClear_InventorySlot; ScriptableItem.cs:ToolTip — destruction checks destroyable; the tooltip tag is No-Destroy. -->
@@ -501,21 +592,18 @@
   </Card.Root>
   <Card.Root id="merchants" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Merchants, buyback, and repairs</Card.Title>
+      <Card.Title>Merchants, Buyback, and Repairs</Card.Title>
       <Card.Description>
-        Buy or sell at a Merchant, repair at an NPC offering Repairs, and buy
-        back recently sold items.
+        Buy, sell, or repair gear at a merchant. Buy back recently sold items.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerNpcTrading.cs:170-226 — trading requires an idle player near a merchant; purchases check token or gold cost and storage for the full delivered quantity, including pack contents. -->
       <p>
         <span class="block"
-          >To buy, stand still within 2.4 yd of a Merchant without casting.</span
+          >Buying requires an idle character within 2.4 yd of a merchant.</span
         >
-        <span class="block"
-          >Selling and buyback work the same way within 2 yd.</span
-        >
+        <span class="block">Selling and buyback work within 2 yd.</span>
         <span class="block">Purchases cost gold or the specified token.</span>
         <span class="block">The full quantity must fit in inventory.</span>
         <span class="block"
@@ -524,33 +612,47 @@
       </p>
       <!-- Source: server-scripts/PlayerNpcTrading.cs:250-318,52-60 — only sellable items are accepted; damaged equipment loses sale value; Charisma adds at most 25% to the sale price. -->
       <p>Damaged equipment sells for less.</p>
+      <!-- Source: server-scripts/UINpcTrading.cs:CalculatePurchaseItemPrice; website/src/routes/items/[id]/+page.svelte — item pages expose Buy Price; the merchant displays the discounted result. -->
+      <p>
+        Find your item through the <a
+          href="/items"
+          class="text-blue-600 dark:text-blue-400 hover:underline">item list</a
+        > and use its item page's Buy Price for the purchase calculation.
+      </p>
       <Calculation calculation={merchantPrice(false)} />
       <Calculation calculation={merchantPrice(true)} />
       <!-- Source: server-scripts/UINpcTrading.cs:143-159 and server-scripts/PlayerNpcTrading.cs:377-397 — the sale dialog warns about attached augments; removal returns an augment when there is carried space. -->
       <p>
-        Remove an augment you want to keep before selling the equipment. See <a
-          href="/mechanics/crafting#augments"
-          class="text-blue-600 hover:underline dark:text-blue-400"
-          >augment removal</a
-        >.
+        <span class="block">Selling augmented gear triggers a warning.</span>
+        <span class="block"
+          >Remove an augment you want to keep before selling the equipment.</span
+        >
+        <span class="block"
+          ><a
+            href="/mechanics/crafting#augments"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >Augment removal</a
+          > needs carried space for the recovered item.</span
+        >
       </p>
       <!-- Source: server-scripts/PlayerNpcTrading.cs:17,295-317,495-526 — sales enter a 20-stack player buyback list for 600 seconds; any trading NPC can sell the full stack back for the recorded payout if it fits. -->
       <p>
         <span class="block"
-          >Buyback keeps your last 20 sold stacks for 10 minutes.</span
+          >Buyback holds up to 20 recent sold stacks for 10 minutes.</span
         >
         <span class="block"
-          >Any Merchant sells a stack back for the gold you received for it.</span
+          >Any trading merchant can return a stack for its recorded sale total.</span
         >
         <span class="block">The entire stack must fit in inventory.</span>
         <span class="block">New sales push out the oldest entries.</span>
       </p>
       <!-- Source: server-scripts/PlayerNpcTrading.cs:19-49,413-479 — only repair-enabled merchants repair damaged gear; price uses half the sell value times missing durability fraction, less a capped Charisma discount, at least 1 gold. -->
       <p>
-        <span class="block">Not every Merchant repairs.</span>
         <span class="block"
-          >An NPC offering Repairs fixes your equipped and carried gear and your
-          active mercenaries' equipment.</span
+          >Only repair merchants restore damaged equipment.</span
+        >
+        <span class="block"
+          >They repair equipped and carried gear and active mercenary equipment.</span
         >
       </p>
       <Calculation calculation={repairCost()} />
@@ -559,10 +661,10 @@
 
   <Card.Root id="loot" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Loot pickup</Card.Title>
+      <Card.Title>Loot Pickup</Card.Title>
       <Card.Description>
-        Gold, keys, and quest items each go to their own place when you loot
-        them. Some drops go to a group roll when more than one player can loot.
+        Gold, keys, quest items, and rolled drops enter different storage
+        locations when you collect them.
       </Card.Description>
     </Card.Header>
     <Card.Content>
@@ -600,28 +702,22 @@
           it in.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 -->
-          If your inventory is full, the item stays in the loot window.
+          <!-- Source: server-scripts/PlayerLooting.cs:UserCode_CmdTakeItem__Entity__Int32 — a failed inventory add keeps the loot slot and sends "Your inventory is full". -->When
+          the inventory is full, the item stays in the loot window and the game
+          reports that the inventory is full.
         </li>
         <li>
           <!-- Source: server-scripts/ChestLoot.cs:323-340 and Npc.cs:UserCode_CmdLootMonster — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
-          <!-- Source: server-scripts/Monster.cs:UserCode_CmdLootMonster -->
-          When more than one player can loot the same enemy, NPC, or world loot chest,
-          these go to a
+          <!-- Source: server-scripts/Monster.cs:UserCode_CmdLootMonster — monster loot also rolls MergeItem and ScrollItem drops. -->When
+          more than one player can loot the same enemy, NPC, or world loot
+          chest, uncommon-or-better items, keys, chest keys, items worth more
+          than 200 gold, and XP potions go to a
           <a
             href="/mechanics/party#loot-rolls"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >group roll</a
-          >
-          instead of direct pickup:
-          <ul class="list-disc space-y-1 pl-5">
-            <li>Uncommon or better items</li>
-            <li>Keys and chest keys</li>
-            <li>Items worth more than 200 gold</li>
-            <li>XP potions</li>
-            <li>From enemies, also Merge items and scrolls</li>
-          </ul>
-          Quest-only items never roll.
+          > instead of direct pickup. Enemy loot also rolls monster merge drops and
+          scrolls. Quest-only items do not roll.
         </li>
       </ul>
     </Card.Content>
@@ -629,7 +725,7 @@
 
   <Card.Root id="equipment-templates" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Equipment templates</Card.Title>
+      <Card.Title>Equipment Templates</Card.Title>
       <Card.Description>
         <!-- Source: server-scripts/PlayerEquipment.cs:32,42-47,396-398,1669-1691 — each character can use up to five equipment templates and switch between stored loadouts. -->
         Store up to five gear loadouts per character and swap between them.
@@ -637,15 +733,13 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerEquipment.cs:485-494 — template 2 through 5 unlock prices. -->
-      <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
         {#each EQUIPMENT_TEMPLATE_ROWS as row (row.template)}
           <div
             class="min-w-0 rounded border border-border bg-muted/50 px-2 py-2 text-center"
           >
-            <span class="block whitespace-normal text-sm"
-              >Template {row.template}</span
-            >
-            <span class="block whitespace-normal font-mono text-foreground"
+            <span class="block truncate text-sm">Template {row.template}</span>
+            <span class="block truncate font-mono text-foreground"
               >{row.cost === 0 ? "Free" : `${formatGold(row.cost)} gold`}</span
             >
           </div>
@@ -690,8 +784,12 @@
         </li>
         <!-- Source: server-scripts/PlayerEquipment.cs:568-579,622-676 — incompatible two-handed and off-hand combinations or insufficient carried space for removed gear refuse the entire switch. -->
         <li>
-          A switch fails if it would pair a two-handed weapon with an off-hand
-          item, or if the gear it removes does not fit in your inventory.
+          A switch fails if the final weapon combination conflicts or removed
+          gear cannot fit in inventory.
+        </li>
+        <li>
+          <!-- Source: server-scripts/Database.cs:425-435,803-804,2711-2735 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
+          Templates belong to one character and do not carry across your other characters.
         </li>
       </ul>
     </Card.Content>
@@ -699,7 +797,7 @@
 
   <Card.Root id="durability-and-repair" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Equipment durability and repair</Card.Title>
+      <Card.Title>Equipment Durability and Repair</Card.Title>
       <Card.Description>
         Broken equipment loses its bonuses until repaired.
       </Card.Description>
@@ -713,8 +811,7 @@
       <!-- Source: server-scripts/Player.cs:OnDeath — each equipped item loses one durability point. -->
       <p>
         <span class="block"
-          >Each death costs every equipped item 1 durability point, which is 10%
-          on most gear.</span
+          >Each death costs 1 durability point: 10% on most gear.</span
         >
         <span class="block"
           ><a
@@ -739,7 +836,7 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >{skill.name}</a
           >
-          ({formatPercent(skill.break_armor_prob, { decimals: 0 })})
+          ({Math.round(skill.break_armor_prob * 100)}%)
         {/each}.
       </p>
       <!-- Source: server-scripts/Equipment.cs:6-58 and server-scripts/PlayerEquipment.cs:194-319,1614-1625 — gear at zero durability gives no equipment or attached augment attribute bonuses and no longer counts toward its armor set. -->
@@ -797,7 +894,7 @@
             href="/professions/mining"
             class="text-blue-600 dark:text-blue-400 hover:underline">mine</a
           >
-          until you repair it at an NPC offering Repairs.</span
+          until you repair it at a repair merchant.</span
         >
       </p>
       <p>
@@ -813,10 +910,9 @@
 
   <Card.Root id="armor-sets" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Armor sets</Card.Title>
+      <Card.Title>Armor Sets</Card.Title>
       <Card.Description
-        >Set bonuses count only equipped pieces of the same set with durability
-        left.</Card.Description
+        >Only working pieces of the same set count.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -825,8 +921,7 @@
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
-              <th class="py-2 pr-4 text-left font-medium"
-                >Equipped set pieces</th
+              <th class="py-2 pr-4 text-left font-medium">Working set pieces</th
               >
               <th class="py-2 text-left font-medium">Bonus</th>
             </tr>
@@ -838,11 +933,20 @@
             </tr>
             <tr>
               <td class="py-2 pr-4">5 equipped</td>
-              <td class="py-2">The set's skill rank bonuses</td>
+              <td class="py-2"
+                >The set's skill-level bonuses, for players only</td
+              >
             </tr>
           </tbody>
         </table>
       </div>
+      <!-- Source: server-scripts/PlayerEquipment.cs:1580-1595,1614-1625 and server-scripts/EquipmentItem.cs:485-527 — set membership is by set name and durability must remain above zero. -->
+      <p>
+        <span class="block">The pieces must belong to the same named set.</span>
+        <span class="block"
+          >A broken or unequipped piece can remove a threshold bonus.</span
+        >
+      </p>
       <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241 and server-scripts/EquipmentItem.cs:525-527 — mercenary set processing has the three-piece attribute threshold but no five-piece skill threshold. -->
       <p>
         <span class="block"
@@ -861,7 +965,7 @@
 
   <Card.Root id="consumables" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Consumables and item types</Card.Title>
+      <Card.Title>Consumables and Item Types</Card.Title>
       <Card.Description
         >Use potions and food for buffs, or scrolls to activate skills without
         learning them.</Card.Description
@@ -870,13 +974,10 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PotionItem.cs:77-85,119-144, server-scripts/FoodItem.cs:14-35 and server-scripts/ScrollItem.cs:93-128 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
       <p>
-        <span class="block"
-          >Potions restore Hit Points, Mana, or Rage, grant experience, or apply
-          buffs.</span
-        >
+        <span class="block">Potions restore resources or apply buffs.</span>
         <span class="block">Food and drink apply buffs.</span>
         <span class="block"
-          >Skill scrolls cast a skill without teaching it.</span
+          >Spell scrolls activate a skill without teaching it.</span
         >
       </p>
       <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast — successful skill scrolls can increase mastery, then cast at round(mastery × 20), clamped to 1 and the skill's maximum. -->
@@ -891,17 +992,48 @@
       </p>
       <!-- Source: server-scripts/ScrollItem.cs:7,13-35,91-136; PlayerInventory.cs:StartScrollCast,UpdateScrollCast — ScrollItem casts for 1 second; UseAfterCast applies the effect, item cooldown and charge consumption only after successful completion. -->
       <p id="scroll-casting">
-        Skill scrolls, the Scroll of Binding, and repair kits take 1 second to
-        cast. Starting one cancels your current and queued skills. Completing it
-        uses a charge, starts its cooldown, and ends invisibility. Items with
-        infinite charges are not consumed.
+        All skill scrolls, the Scroll of Binding, and repair kits take 1 second
+        to cast. The effect, item cooldown, invisibility removal, and charge
+        consumption occur only when the cast completes successfully. Interrupted
+        or failed casts use no charge and start no item cooldown.
+        Infinite-charge scrolls do not consume a charge.
+        <!-- Source: server-scripts/PlayerInventory.cs:108-113 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
+        Starting a scroll cast cancels your current skill cast and clears queued skills.
       </p>
       <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3166-3224 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
-        Moving, using a skill, losing your target, changing or removing the
-        casting item, stun, fear, death, trading, or cancelling interrupts the
-        cast. Changing selection does not redirect it. A skill scroll's original
-        target must remain valid until the cast finishes.
+        Moving, losing your target, starting a skill, changing or removing the
+        casting item, stun, fear, death, trading, or cancelling the action
+        interrupts the cast. Selecting another target does not: the scroll still
+        lands on the target you had when the cast began. A skill scroll needs a
+        valid target at both the start and completion.
+        <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget; PlayerSkills.cs:TryUse — bind scrolls and bind spells are refused in dungeon zones. -->
+        The
+        <a
+          href="/items/scroll_of_binding"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Scroll of Binding</a
+        >
+        and bind spells such as
+        <a
+          href="/skills/bind_affinity"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Bind Affinity</a
+        >
+        cannot be used in dungeons.
+        <!-- Source: server-scripts/TravelItem.cs:Use — Gate Scroll uses travel, not scroll casting, and blocks only zone 23. -->
+        The
+        <a
+          href="/items/gate_scroll"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Gate Scroll</a
+        >
+        works in dungeons except the
+        <a
+          href="/zones/temple_of_valaark"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Temple of Valaark</a
+        >.
       </p>
       <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/RecipeItem.cs:10-27 and server-scripts/CraftingStation.cs:8-10,50-58 — recipe items teach a potion recipe once; station crafting uses its configured material combinations. -->
       <p>
@@ -922,16 +1054,16 @@
       <!-- Source: server-scripts/UsableItem.cs:14-26,30-56 — items with the same cooldown category share a cooldown; an unset category defaults to the item name, and use removes invisibility. -->
       <p>
         <span class="block"
-          >Some items share a cooldown, so using one starts it for all of them.</span
+          >Items that share a cooldown cannot be used until that cooldown ends.</span
         >
-        <span class="block">Other items have their own cooldown.</span>
+        <span class="block">Otherwise, each item has its own cooldown.</span>
         <span class="block">Using an item removes invisibility.</span>
       </p>
       <!-- Source: server-scripts/PotionItem.cs:Use; FoodItem.cs:Use; website/data/compendium.db:skills.buff_category — ordinary Food and Drink replace their respective categories, and attribute/resistance potions replace matching potion buffs. -->
       <p>
-        Food and drink replace buffs in their respective categories. An
-        attribute or resistance potion replaces the potion buff for that same
-        attribute or resistance.
+        Ordinary food replaces your current ordinary food buff, and a drink buff
+        replaces your current drink buff. An attribute or resistance potion
+        replaces the potion buff for that same attribute or resistance.
       </p>
       {#if data.dungeonRefusedPotions.length > 0}
         <!-- Source: server-scripts/PotionItem.cs:Use; UsableItem.cs:Use — the refusal comes after invisibility ends. -->
@@ -958,8 +1090,7 @@
           trading with players, selling to merchants, and destroying an item.</span
         >
         <span class="block"
-          >A No-Trade item can still be sold to a Merchant unless it is also
-          Cannot sell.</span
+          >A merchant might buy an item that you cannot trade to another player.</span
         >
       </p>
     </Card.Content>

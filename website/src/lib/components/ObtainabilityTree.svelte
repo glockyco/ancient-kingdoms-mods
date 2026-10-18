@@ -1,136 +1,193 @@
 <script lang="ts">
-  import type { AcquisitionTree, MethodView } from "$lib/acquisition/types";
-  import ItemLink from "./ItemLink.svelte";
+  import type { ObtainabilityNode } from "$lib/types/recipes";
+  import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import ObtainabilityTree from "./ObtainabilityTree.svelte";
-  import MethodList from "./acquisition/MethodList.svelte";
-  import DeferredDetails from "./DeferredDetails.svelte";
-  import {
-    acquisitionPlanNotes,
-    ingredientQuantityText,
-    type DisplayItems,
-  } from "./acquisition/display";
-  let {
-    node,
-    hideRootLink = false,
-    hideHeading = false,
-    items = {},
-    names: suppliedNames = {},
-  }: {
-    node: AcquisitionTree;
+  import ItemLink from "./ItemLink.svelte";
+  import Gem from "@lucide/svelte/icons/gem";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import Combine from "@lucide/svelte/icons/combine";
+  import BookOpen from "@lucide/svelte/icons/book-open";
+
+  interface Props {
+    node: ObtainabilityNode;
+    defaultExpanded?: boolean;
     hideRootLink?: boolean;
-    hideHeading?: boolean;
-    items?: DisplayItems;
-    names?: Readonly<Record<string, string>>;
-  } = $props();
-  const names = $derived({ ...suppliedNames, ...node.names });
-  const presentation = $derived.by(() => {
-    const methods: MethodView[] = [];
-    const plans: {
-      branch: AcquisitionTree["branches"][number];
-      notes: readonly string[];
-    }[] = [];
-    for (const branch of node.branches) {
-      const notes = acquisitionPlanNotes(branch);
-      if (branch.ingredients.length || branch.reason || notes.length) {
-        plans.push({ branch, notes });
-      } else {
-        methods.push(branch.method);
-      }
-    }
-    return { methods, plans };
-  });
+  }
+
+  let { node, defaultExpanded = true, hideRootLink = false }: Props = $props();
+  // Capture initial prop value only - user controls toggle after mount
+  let isExpanded = $state((() => defaultExpanded)());
+  let isServiceExpanded = $state((() => defaultExpanded)());
+  const displayAmount = $derived(node.produced_amount ?? node.amount);
+
+  const hasRecipeChildren = $derived(
+    !!node.recipe && node.recipe.materials.length > 0,
+  );
+  const hasServiceChildren = $derived(
+    !!node.service && node.service.materials.length > 0,
+  );
+  const hasMergeChildren = $derived(
+    !!node.merge && node.merge.materials.length > 0,
+  );
+  const hasLearningRequirement = $derived(!!node.recipe?.learningRequirement);
+  const hasSources = $derived(node.sources.length > 0);
+  const hasChildren = $derived(
+    hasRecipeChildren ||
+      hasServiceChildren ||
+      hasMergeChildren ||
+      hasLearningRequirement ||
+      hasSources,
+  );
+
+  // Group sources by type
+  const sourcesByType = $derived(
+    Map.groupBy(node.sources, (source) => source.type),
+  );
 </script>
 
-<div class="space-y-3 min-w-0">
-  {#if !hideHeading}
-    <div class="flex flex-wrap items-baseline gap-2 font-medium">
-      {#if hideRootLink}<span
-          >{items[node.itemId]?.name ?? node.itemId.replaceAll("_", " ")}</span
-        >{:else}<ItemLink
-          itemId={node.itemId}
-          itemName={items[node.itemId]?.name ??
-            node.itemId.replaceAll("_", " ")}
-        />{/if}
-      <span class="text-muted-foreground">×{node.amount}</span>
-    </div>
-  {/if}
-  {#if node.reason}
-    <p class="text-sm text-muted-foreground">
-      {#if node.reason === "cycle"}
-        This ingredient leads back to an earlier item.&#32;
-      {/if}
-      <a
-        class="text-blue-600 hover:underline dark:text-blue-400"
-        href={node.inspectionLink}>View this item's sources</a
-      >.
-    </p>
-  {/if}
-  {#if presentation.methods.length}
-    <MethodList
-      methods={presentation.methods}
-      {items}
-      {names}
-      selectedItemId={node.itemId}
-      parentScroll
-    />
-  {/if}
-  {#each presentation.plans as plan (plan.branch.method.methodId)}
-    {@const branch = plan.branch}
-    <div class="space-y-2 sm:border-l-2 sm:pl-3">
-      <MethodList
-        methods={[branch.method]}
-        {items}
-        {names}
-        selectedItemId={node.itemId}
-        parentScroll
-      />
-      {#if branch.reason === "cycle"}
-        <p class="text-sm text-muted-foreground">
-          This source depends on an earlier item in this chain. <a
-            class="text-blue-600 hover:underline dark:text-blue-400"
-            href={node.inspectionLink}>Inspect this item</a
-          >.
-        </p>
-      {/if}
-      {#each plan.notes as note (note)}
-        <p class="text-sm text-muted-foreground">{note}</p>
-      {/each}
-      {#each branch.ingredients as ingredient (ingredient.input.id)}
-        {#if ingredient.acquisition}
-          {@const child = ingredient.acquisition}
-          {@const itemName =
-            items[child.itemId]?.name ??
-            names[child.itemId] ??
-            child.itemId.replaceAll("_", " ")}
-          <DeferredDetails
-            summary={`${itemName} ×${child.amount}`}
-            summaryClassName="cursor-pointer font-medium text-blue-600 dark:text-blue-400"
+{#snippet sourceList()}
+  {#each sourcesByType as [type, sources] (type)}
+    {@const config = SOURCE_TYPE_CONFIG[type]}
+    {@const totalForType = node.sourceCountsByType[type] || sources.length}
+    {@const moreCount = totalForType - sources.length}
+    <div class="flex items-center gap-1.5 py-1 pl-4 whitespace-nowrap">
+      <config.icon class="h-4 w-4 shrink-0 {config.color}" />
+      <span class="text-muted-foreground">{config.label}:</span>
+      <div class="flex items-center gap-1">
+        {#each sources as source, i (`${source.id}_${i}`)}
+          <a
+            href="{config.linkPrefix}{source.id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
           >
-            <div class="mt-3">
-              <ObtainabilityTree node={child} {items} {names} hideHeading />
-            </div>
-          </DeferredDetails>
-        {:else}
-          {@const amount = ingredientQuantityText(branch, ingredient)}
-          {#if amount && (ingredient.amount.kind !== "exact" || ingredient.amount.value !== ingredient.input.amount)}
-            <p>
-              {ingredient.input.resource_kind === "gold"
-                ? ingredient.amount.kind === "unknown"
-                  ? "Gold"
-                  : "Total gold"
-                : ingredient.input.withheld
-                  ? "Unpublished required item"
-                  : (items[ingredient.input.item_id ?? ""]?.name ??
-                    ingredient.input.item_id?.replaceAll("_", " "))}: {amount}
-            </p>
+            {source.name}
+          </a>
+          {#if i < sources.length - 1 || moreCount > 0}
+            <span class="text-muted-foreground">,</span>
           {/if}
+        {/each}
+        {#if moreCount > 0}
+          <span class="text-muted-foreground">
+            +{moreCount} more
+          </span>
         {/if}
-      {/each}
+      </div>
     </div>
   {/each}
-  {#if !node.branches.length && !node.reason}<p
-      class="text-sm text-muted-foreground"
-    >
-      No known source.
-    </p>{/if}
+{/snippet}
+
+<div class={node.depth > 0 ? "ml-6" : ""}>
+  <div class="flex items-center gap-2 py-1.5">
+    {#if hasChildren}
+      <button
+        onclick={() => (isExpanded = !isExpanded)}
+        class="p-0.5 rounded hover:bg-muted transition-colors"
+        aria-label={isExpanded ? "Collapse" : "Expand"}
+      >
+        {#if isExpanded}
+          <ChevronDown class="h-4 w-4 text-muted-foreground" />
+        {:else}
+          <ChevronRight class="h-4 w-4 text-muted-foreground" />
+        {/if}
+      </button>
+    {:else}
+      <span class="w-5"></span>
+    {/if}
+
+    {#if !node.item_id || (hideRootLink && node.isRoot)}
+      <span>{node.item_name}</span>
+    {:else}
+      <ItemLink
+        itemId={node.item_id}
+        itemName={node.item_name}
+        tooltipHtml={node.tooltip_html}
+        imageAvailable={node.visual_public_path}
+        quality={node.quality}
+        fallback={Gem}
+        variant={node.visual_public_path ? "reference" : "text"}
+      />
+    {/if}
+
+    {#if displayAmount > 1}
+      <span class="text-muted-foreground text-sm">x{displayAmount}</span>
+    {/if}
+
+    {#if !hasChildren}
+      <span class="text-sm text-muted-foreground ml-2">Source unknown</span>
+    {/if}
+  </div>
+
+  {#if hasChildren && isExpanded}
+    <div class="border-l-2 border-muted ml-2.5">
+      {#if hasRecipeChildren || hasLearningRequirement}
+        {#each node.recipe?.materials ?? [] as child, index (`${child.item_id}_${index}`)}
+          <ObtainabilityTree node={child} />
+        {/each}
+        {#if node.recipe?.learningRequirement}
+          <div class="ml-6 py-1.5 flex items-center gap-1.5">
+            <BookOpen class="h-4 w-4 shrink-0 text-orange-500" />
+            <span class="text-muted-foreground text-sm">Requires recipe:</span>
+          </div>
+          <ObtainabilityTree node={node.recipe.learningRequirement} />
+        {/if}
+      {:else if hasServiceChildren}
+        {#each sourcesByType as [type, sources] (type)}
+          {@const config = SOURCE_TYPE_CONFIG[type]}
+          {@const totalForType =
+            node.sourceCountsByType[type] || sources.length}
+          {@const moreCount = totalForType - sources.length}
+          <div class="ml-6">
+            <div class="flex items-center gap-1.5 py-1.5">
+              <button
+                onclick={() => (isServiceExpanded = !isServiceExpanded)}
+                class="p-0.5 rounded hover:bg-muted transition-colors"
+                aria-label={isServiceExpanded ? "Collapse" : "Expand"}
+              >
+                {#if isServiceExpanded}
+                  <ChevronDown class="h-4 w-4 text-muted-foreground" />
+                {:else}
+                  <ChevronRight class="h-4 w-4 text-muted-foreground" />
+                {/if}
+              </button>
+              <config.icon class="h-4 w-4 shrink-0 {config.color}" />
+              <span class="text-muted-foreground">{config.label}:</span>
+              <div class="flex items-center gap-1">
+                {#each sources as source, i (`${source.id}_${i}`)}
+                  <a
+                    href="{config.linkPrefix}{source.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {source.name}
+                  </a>
+                  {#if i < sources.length - 1 || moreCount > 0}
+                    <span class="text-muted-foreground">,</span>
+                  {/if}
+                {/each}
+                {#if moreCount > 0}
+                  <span class="text-muted-foreground">+{moreCount} more</span>
+                {/if}
+              </div>
+            </div>
+            {#if isServiceExpanded}
+              <div class="border-l-2 border-muted ml-2.5">
+                {#each node.service?.materials ?? [] as child (child.item_id)}
+                  <ObtainabilityTree node={child} />
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/each}
+      {:else if hasMergeChildren}
+        <div class="ml-6 py-1.5 flex items-center gap-1.5">
+          <Combine class="h-4 w-4 shrink-0 text-purple-500" />
+          <span class="text-muted-foreground text-sm">Merge components:</span>
+        </div>
+        {#each node.merge?.materials ?? [] as child, index (`${child.item_id}_${index}`)}
+          <ObtainabilityTree node={child} />
+        {/each}
+      {:else if hasSources}
+        {@render sourceList()}
+      {/if}
+    </div>
+  {/if}
 </div>

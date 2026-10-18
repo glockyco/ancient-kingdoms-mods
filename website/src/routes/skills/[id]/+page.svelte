@@ -3,8 +3,6 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
-  import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import { skillPresentationRequirements } from "$lib/components/acquisition/display";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import {
@@ -16,52 +14,7 @@
     convertTooltip,
   } from "$lib/skills/skill-format";
   import { formatPercent } from "$lib/utils/format";
-  import { detailTitle } from "$lib/seo/title";
-  import { statField, statFieldName, formatStatField } from "$lib/stats";
-  import { formatLinearStat } from "$lib/utils/formatSkillEffect";
-  import type { LinearSkillField } from "$lib/types/skills";
-
-  const statKeys = [
-    "health_max_bonus",
-    "health_max_percent_bonus",
-    "mana_max_bonus",
-    "mana_max_percent_bonus",
-    "energy_max_bonus",
-    "speed_bonus",
-    "damage_bonus",
-    "damage_percent_bonus",
-    "magic_damage_bonus",
-    "magic_damage_percent_bonus",
-    "defense_bonus",
-    "ward_bonus",
-    "magic_resist_bonus",
-    "poison_resist_bonus",
-    "fire_resist_bonus",
-    "cold_resist_bonus",
-    "disease_resist_bonus",
-    "haste_bonus",
-    "spell_haste_bonus",
-    "critical_chance_bonus",
-    "critical_resist_bonus",
-    "accuracy_bonus",
-    "block_chance_bonus",
-    "fear_resist_chance_bonus",
-    "cooldown_reduction_percent",
-    "damage_shield",
-    "heal_on_hit_percent",
-    "healing_per_second_bonus",
-    "health_percent_per_second_bonus",
-    "mana_per_second_bonus",
-    "mana_percent_per_second_bonus",
-    "energy_per_second_bonus",
-    "energy_percent_per_second_bonus",
-    "strength_bonus",
-    "intelligence_bonus",
-    "dexterity_bonus",
-    "constitution_bonus",
-    "wisdom_bonus",
-    "charisma_bonus",
-  ] satisfies LinearSkillField[];
+  import { spellInterval } from "$lib/calculation/combat";
   import { skillFacts } from "$lib/skills/skill-facts";
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
   import MechanicsCard from "$lib/components/skill-mechanics/MechanicsCard.svelte";
@@ -99,25 +52,6 @@
   let { data }: { data: PageData } = $props();
 
   const skill = $derived(data.skill);
-  const petUsageLabel = $derived(
-    data.usedByPets.some((pet) => pet.is_mercenary)
-      ? data.usedByPets.some((pet) => !pet.is_mercenary)
-        ? "Used by pets and mercenaries"
-        : "Used by mercenaries"
-      : "Used by pets",
-  );
-  const grantLabels: Record<string, string> = {
-    food_buff: "food",
-    potion_buff: "potion",
-    relic_buff: "relic",
-    scroll: "scroll",
-    weapon_proc: "weapon on-hit effect",
-  };
-  const tickDamageType = $derived(
-    skill.damage_over_time_type && skill.damage_over_time_type !== "Unknown"
-      ? skill.damage_over_time_type
-      : undefined,
-  );
   const skillIconSrc = $derived(
     data.visualAsset ? `${base}/${data.visualAsset.public_path}` : null,
   );
@@ -127,7 +61,8 @@
       data.usedByPets,
       data.mechanicsSpec,
       data.grantedByItems,
-      data.usedByMonsters.length + data.usedByNpcs.length > 0,
+      data.usedByMonsters.length > 0,
+      data.usedByNpcs.length > 0,
     ),
   );
   const {
@@ -145,13 +80,6 @@
     timingModels,
     hasteCooldownCasters,
   } = $derived(facts);
-  const additionalRequirements = $derived(
-    skillPresentationRequirements(
-      data.requirements,
-      skill,
-      data.learningRanks[0],
-    ),
-  );
   const scalingColumns = $derived(getScalingColumns(skill, scrollOnly));
   const showLevelScaling = $derived(
     getShowLevelScaling(skill, scalingColumns, hasScrollMasteryScaling),
@@ -192,14 +120,7 @@
         label: "Description",
         show: Boolean(data.effectSummary || skill.tooltip_template),
       },
-      {
-        id: "requirements",
-        label: "Requirements",
-        show:
-          hasRequirements ||
-          additionalRequirements.length > 0 ||
-          skill.player_classes.length > 0,
-      },
+      { id: "requirements", label: "Requirements", show: hasRequirements },
       {
         id: "cost-timing",
         label: "Cost & Timing",
@@ -211,7 +132,8 @@
         label: "Healing",
         show:
           (hasLinearValue(skill.heals_health) ||
-            hasLinearValue(skill.heals_mana)) &&
+            hasLinearValue(skill.heals_mana) ||
+            skill.is_balance_health) &&
           !skill.is_resurrect_skill,
       },
       { id: "crowd-control", label: "Crowd Control", show: hasCrowdControl },
@@ -250,7 +172,7 @@
       },
       {
         id: "used-by-pets",
-        label: petUsageLabel,
+        label: "Used by Pets",
         show: data.usedByPets.length > 0,
       },
       {
@@ -258,29 +180,12 @@
         label: "Used by Monsters",
         show: data.usedByMonsters.length > 0,
       },
-      {
-        id: "used-by-npcs",
-        label: "Used by NPCs",
-        show: data.usedByNpcs.length > 0,
-      },
     ].filter((section) => section.show),
   );
 </script>
 
 <Seo
-  title={detailTitle(skill.name, {
-    family: "Skill",
-    className:
-      skill.player_classes.length === 1
-        ? formatClassName(skill.player_classes[0])
-        : null,
-    source: skill.player_classes.length
-      ? null
-      : (data.usedByPets[0]?.name ??
-        data.grantedByItems[0]?.item_name ??
-        data.usedByMonsters[0]?.name ??
-        data.usedByNpcs[0]?.name),
-  })}
+  title={`${skill.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/skills/${skill.id}`}
 />
@@ -331,14 +236,14 @@
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
         >
-          Auto attack
+          Weapon Strike
         </span>
       {/if}
       {#if skill.is_decrease_resists_skill}
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
         >
-          Bypasses debuff immunity except on bosses
+          Bypasses Debuff Immunity
         </span>
       {/if}
       {#if skill.is_teleport}
@@ -359,25 +264,17 @@
         </span>
       {/if}
       <span>Max Rank {skill.max_level}</span>
-      {#if skill.player_classes.length > 0}
-        <a
-          class="underline underline-offset-4 hover:text-foreground"
-          href="{base}/mechanics/character#skills-and-specializations"
-        >
-          How ranks are learned
-        </a>
-      {/if}
+      <a
+        class="underline underline-offset-4 hover:text-foreground"
+        href="{base}/mechanics/character#skills-and-specializations"
+      >
+        How ranks are learned
+      </a>
     </div>
   </div>
 
   <!-- Page Anchor Navigation -->
   <PageSections {sections} />
-  {#if data.weaponClassRestrictionsWithheld}
-    <p class="text-sm text-muted-foreground">
-      Some weapon class restrictions are unpublished. Class-specific examples
-      are available only for known eligible classes.
-    </p>
-  {/if}
 
   <!-- Appearance -->
   {#if data.visualAsset}
@@ -488,21 +385,12 @@
             {@html convertTooltip(data.gameTooltip)}
           </div>
         {/if}
-        {#if skill.is_resurrect_skill}
-          <p class="mt-3 text-muted-foreground">
-            See <a
-              href="/mechanics/death#death"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
-              >Resurrection recovery</a
-            > for restored Hit Points, Mana and lost XP.
-          </p>
-        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
 
   <!-- Requirements -->
-  {#if hasRequirements || additionalRequirements.length > 0 || skill.player_classes.length > 0}
+  {#if hasRequirements}
     <Card.Root id="requirements" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
@@ -511,46 +399,6 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <Requirements
-          roots={additionalRequirements}
-          names={data.acquisitionNames}
-        />
-        {#if skill.player_classes.length > 0 && skill.learn_default}
-          <p class="mb-4 text-sm text-muted-foreground">
-            Rank 1 is learned automatically.
-            {#if data.learningRanks.length === 0}This skill cannot be upgraded.{/if}
-          </p>
-        {/if}
-        {#if data.learningRanks.length > 0}
-          <div class="mb-4 overflow-x-auto">
-            <table class="w-full text-sm">
-              <caption class="mb-2 text-left text-muted-foreground"
-                >Learning requirements by base rank</caption
-              >
-              <thead
-                ><tr
-                  ><th class="p-2 text-right">Rank</th><th
-                    class="p-2 text-right">Level</th
-                  ><th class="p-2 text-right"
-                    >{skill.is_veteran ? "Veteran points" : "Skill points"}</th
-                  ></tr
-                ></thead
-              >
-              <tbody>
-                {#each data.learningRanks as learning (learning.rank)}
-                  <tr class="even:bg-muted/40"
-                    ><td class="p-2 text-right tabular-nums">{learning.rank}</td
-                    ><td class="p-2 text-right tabular-nums"
-                      >{learning.requiredLevel}</td
-                    ><td class="p-2 text-right tabular-nums"
-                      >{learning.pointCost}</td
-                    ></tr
-                  >
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        {/if}
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.player_classes.length > 0 && skill.tier >= 1 && skill.tier <= 4}
             <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill — tiers 1 and 3 allow two distinct skills; tiers 2 and 4 allow one. -->
@@ -561,10 +409,25 @@
                   href="/mechanics/character#skills-and-specializations"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  {skill.tier === 1 || skill.tier === 3 ? "Up to 2" : "Only 1"} Tier
-                  {skill.tier}
+                  {skill.tier === 1 || skill.tier === 3 ? 2 : 1} Tier {skill.tier}
                   {skill.tier === 1 || skill.tier === 3 ? "skills" : "skill"}
                 </a>
+              </dd>
+            </div>
+          {/if}
+          {#if skill.level_required > 1}
+            <div>
+              <dt class="text-muted-foreground">Level Required</dt>
+              <dd class="font-medium">{skill.level_required}</dd>
+            </div>
+          {/if}
+          {#if skill.player_classes.length > 0 && skill.required_skill_points !== 1}
+            <div>
+              <!-- Source: server-scripts/PlayerSkills.cs:CmdUpgrade,CmdUpgradeVeteran — each rank pays the skill's required points from the corresponding pool. -->
+              <dt class="text-muted-foreground">Cost per Rank</dt>
+              <dd class="font-medium">
+                {skill.required_skill_points}
+                {skill.is_veteran ? "veteran points" : "skill points"}
               </dd>
             </div>
           {/if}
@@ -572,8 +435,8 @@
             <div>
               <dt class="text-muted-foreground">
                 {skill.is_veteran
-                  ? "Veteran points already spent"
-                  : "Class skill points already spent"}
+                  ? "Veteran Points Already Spent"
+                  : "Class Skill Points Already Spent"}
               </dt>
               <dd class="font-medium">{skill.required_spent_points}</dd>
             </div>
@@ -631,10 +494,9 @@
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
           >
             Each rank costs {skill.required_skill_points} veteran points, but a game
-            defect counts it as 1 point toward your total veteran points and the experience
-            your next veteran point costs. Resetting your veteran skills with a Token
-            of Redemption refunds 1 point per rank, so each reset loses {skill.required_skill_points -
-              1}
+            defect counts it as 1 point toward your Veteran Level and the next veteran
+            point's experience cost. A token reset refunds 1 point per rank, so each
+            reset loses {skill.required_skill_points - 1}
             {skill.required_skill_points - 1 === 1 ? "point" : "points"} per rank.
           </p>
         {/if}
@@ -667,12 +529,12 @@
               <div>
                 <dt class="text-muted-foreground">Scroll Cooldown</dt>
                 <dd class="font-medium">
-                  {fmt.formatSeconds(item.cooldown)} (
+                  {fmt.formatSeconds(item.cooldown)}
                   <a
                     href="/items/{item.id}"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >{item.name}</a
-                  >)
+                  >
                 </dd>
               </div>
             {/each}
@@ -698,12 +560,7 @@
           {#if !scrollOnly && skill.cooldown}
             <div>
               <dt class="text-muted-foreground">Cooldown</dt>
-              <dd class="font-medium">
-                {formatDuration(
-                  skill.cooldown.base_value,
-                  skill.cooldown.bonus_per_level,
-                )}
-              </dd>
+              <dd class="font-medium">{formatLinear(skill.cooldown, "s")}</dd>
             </div>
           {/if}
           {#if skill.cast_range}
@@ -727,7 +584,18 @@
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                   href="/mechanics/combat#cast-speed">Spell Casting Haste</a
                 >
-                shortens this skill's cast.
+                shortens the cast by its percentage, so 20% Spell Casting Haste turns
+                the
+                {fmt.formatSeconds(
+                  fmt.atRank(skill.cast_time, skill.max_level),
+                )} cast{fmt.scalesWithRank(skill.cast_time, skill.max_level)
+                  ? ` at rank ${skill.max_level}`
+                  : ""} into {fmt.formatSeconds(
+                  spellInterval(
+                    fmt.atRank(skill.cast_time, skill.max_level),
+                    0.2,
+                  ).casting,
+                )}.
               </p>
             {/if}
             {#if timingModels.has("player_auto")}
@@ -808,7 +676,7 @@
           {/if}
           {#if skill.aggro}
             <div>
-              <dt class="text-muted-foreground">Threat</dt>
+              <dt class="text-muted-foreground">Aggro</dt>
               <dd class="font-medium">{formatLinear(skill.aggro)}</dd>
             </div>
           {/if}
@@ -816,22 +684,28 @@
             <div>
               <dt class="text-muted-foreground">Break Armor</dt>
               <dd class="font-medium">
-                {formatPercent(skill.break_armor_prob, {
-                  decimals: 2,
-                  preserveNonzero: true,
-                })}
+                {formatPercent(skill.break_armor_prob, { decimals: 1 })}
               </dd>
             </div>
           {/if}
         </dl>
-        {#if skill.is_manaburn_skill}
+        {#if skill.is_assassination_skill || skill.is_manaburn_skill}
           <div class="mt-3 space-y-1 text-sm">
-            <!-- Source: server-scripts/TargetDamageSkill.cs:132-160, TargetProjectileSkill.cs:211-220 — Rageblow spends all rage for double damage; Mana Burn spends all mana for triple damage. -->
-            <p class="text-purple-600 dark:text-purple-400">
-              {skill.skill_type === "target_projectile"
-                ? "Mana Burn spends all your Mana to deal three times that amount as damage."
-                : "Rageblow spends all your Rage to deal twice that amount as damage."}
-            </p>
+            {#if skill.is_assassination_skill}
+              <!-- Source: server-scripts/PlayerSkills.cs:TryUse — cast is permitted at or below RoundToInt(target maximum Health / 4). -->
+              <p class="text-amber-600 dark:text-amber-400">
+                Assassination requires the target's Health to be at most 25% of
+                its maximum Health, rounded to the nearest whole point.
+              </p>
+            {/if}
+            {#if skill.is_manaburn_skill}
+              <!-- Source: server-scripts/TargetDamageSkill.cs:132-160, TargetProjectileSkill.cs:211-220 — Rageblow spends all rage for double damage; Mana Burn spends all mana for triple damage. -->
+              <p class="text-purple-600 dark:text-purple-400">
+                {skill.skill_type === "target_projectile"
+                  ? "Mana Burn spends all your mana to deal three times that amount as damage."
+                  : "Rageblow spends all your rage to deal twice that amount as damage."}
+              </p>
+            {/if}
           </div>
         {/if}
       </Card.Content>
@@ -839,7 +713,7 @@
   {/if}
 
   <!-- Healing -->
-  {#if (hasLinearValue(skill.heals_health) || hasLinearValue(skill.heals_mana)) && !skill.is_resurrect_skill}
+  {#if (hasLinearValue(skill.heals_health) || hasLinearValue(skill.heals_mana) || skill.is_balance_health) && !skill.is_resurrect_skill}
     <Card.Root id="healing" class="bg-muted/30">
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
@@ -851,7 +725,7 @@
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.heals_health}
             <div>
-              <dt class="text-muted-foreground">Heals Hit Points</dt>
+              <dt class="text-muted-foreground">Heals Health</dt>
               <dd class="font-medium">
                 {formatLinear(skill.heals_health)}
               </dd>
@@ -880,6 +754,15 @@
             </div>
           {/if}
         </dl>
+        {#if skill.is_balance_health}
+          <div class="mt-3 space-y-1 text-sm">
+            <p class="text-green-600 dark:text-green-400">
+              <!-- Source: server-scripts/AreaHealSkill.cs:Apply — isBalanceHealth averages the health percentages of the caster and living, visible players and pets in range without a party restriction. -->
+              Sets you and every living, visible player, companion and mercenary within
+              range to their average health percentage, whether in your party or not.
+            </p>
+          </div>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
@@ -1080,7 +963,7 @@
               Shares the {skill.buff_category} overwrite group with {data
                 .categorySkills.length} other effects.
             {/if}
-            A new effect from the group replaces the others on the character it reaches.
+            A new effect of the group replaces the others on that character.
             {#if groupHasMercenaryAreaBuff}
               A mercenary's area buff is the exception. It skips characters who
               already have another effect of the group.
@@ -1106,49 +989,348 @@
                 </dd>
               </div>
             {/if}
-            {#each statKeys as key (key)}
-              {@const value = skill[key]}
-              {@const field = statField("skill", key)}
-              {#if value}
-                {@const damageTick =
-                  (key === "healing_per_second_bonus" ||
-                    key === "health_percent_per_second_bonus") &&
-                  value.base_value < 0}
-                <div>
-                  <dt class="text-muted-foreground">
-                    {statFieldName(
-                      field,
-                      "character",
-                      damageTick
-                        ? skill.skill_type === "target_debuff" ||
-                          skill.skill_type === "area_debuff"
-                          ? { damageType: tickDamageType }
-                          : { drain: true }
-                        : undefined,
-                    )}
-                  </dt>
-                  <dd class="font-medium">
-                    {formatLinearStat(
-                      key,
-                      damageTick
-                        ? {
-                            base_value: -value.base_value,
-                            bonus_per_level: -value.bonus_per_level,
-                          }
-                        : value,
-                      undefined,
-                      !damageTick,
-                    )}
-                    {#if key === "fear_resist_chance_bonus" && skill.fear_resist_chance_bonus_cap > 0}
-                      (max {formatStatField(
-                        field,
-                        skill.fear_resist_chance_bonus_cap,
-                      )})
-                    {/if}
-                  </dd>
-                </div>
-              {/if}
-            {/each}
+            <!-- 2. Resource pools -->
+            {#if skill.health_max_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Health</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.health_max_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.health_max_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Health %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.health_max_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_max_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Mana</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.mana_max_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_max_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Mana %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.mana_max_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.energy_max_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Rage</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.energy_max_bonus)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 2. Movement -->
+            {#if skill.speed_bonus}
+              <div>
+                <dt class="text-muted-foreground">Movement Speed</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.speed_bonus)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 3. Offense -->
+            {#if skill.damage_bonus}
+              <div>
+                <dt class="text-muted-foreground">Attack Power</dt>
+                <dd class="font-medium">{formatLinear(skill.damage_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.damage_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Attack Power %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.damage_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.magic_damage_bonus}
+              <div>
+                <dt class="text-muted-foreground">Spell Power</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.magic_damage_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.magic_damage_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Spell Power %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.magic_damage_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 4. Defense (mitigation grouped together) -->
+            {#if skill.defense_bonus}
+              <div>
+                <dt class="text-muted-foreground">Armor Class</dt>
+                <dd class="font-medium">{formatLinear(skill.defense_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.ward_bonus}
+              <div>
+                <dt class="text-muted-foreground">Ward</dt>
+                <dd class="font-medium">{formatLinear(skill.ward_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.magic_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Magic Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.magic_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.poison_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Poison Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.poison_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.fire_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Fire Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.fire_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.cold_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Cold Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.cold_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.disease_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Disease Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.disease_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 5. Attack speed -->
+            {#if skill.haste_bonus}
+              <div>
+                <dt class="text-muted-foreground">Haste</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.haste_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.spell_haste_bonus}
+              <div>
+                <dt class="text-muted-foreground">Spell Casting Haste</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.spell_haste_bonus)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 6. Hit/chance modifiers -->
+            {#if skill.critical_chance_bonus}
+              <div>
+                <dt class="text-muted-foreground">Critical Strike</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.critical_chance_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.critical_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Critical Resist</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.critical_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.accuracy_bonus}
+              <div>
+                <dt class="text-muted-foreground">Accuracy</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.accuracy_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.block_chance_bonus}
+              <div>
+                <dt class="text-muted-foreground">Block Chance</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.block_chance_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.fear_resist_chance_bonus}
+              <div>
+                <dt class="text-muted-foreground">Fear Resist</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.fear_resist_chance_bonus)}
+                  {#if skill.fear_resist_chance_bonus_cap > 0}
+                    (max {formatPercent(skill.fear_resist_chance_bonus_cap, {
+                      decimals: 1,
+                    })})
+                  {/if}
+                </dd>
+              </div>
+            {/if}
+            <!-- 8. Cooldown reduction -->
+            {#if skill.cooldown_reduction_percent}
+              <div>
+                <dt class="text-muted-foreground">Cooldown Reduction</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.cooldown_reduction_percent)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 9. On-hit proc effects -->
+            {#if skill.damage_shield}
+              <div>
+                <dt class="text-muted-foreground">Damage Shield</dt>
+                <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
+              </div>
+            {/if}
+            {#if skill.heal_on_hit_percent}
+              <div>
+                <dt class="text-muted-foreground">Heal on Hit</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.heal_on_hit_percent)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 10. Regen / DoT -->
+            {#if skill.healing_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">
+                  {skill.healing_per_second_bonus.base_value < 0
+                    ? "Damage/sec"
+                    : "Health/sec"}
+                </dt>
+                <dd class="font-medium">
+                  {formatLinear({
+                    base_value: Math.abs(
+                      skill.healing_per_second_bonus.base_value,
+                    ),
+                    bonus_per_level: Math.abs(
+                      skill.healing_per_second_bonus.bonus_per_level,
+                    ),
+                  })}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.health_percent_per_second_bonus}
+              <div>
+                <!-- Source: server-scripts/Skills.cs:1617-1623 — Reaper Form drains the caster's maximum Health each second. -->
+                <dt class="text-muted-foreground">
+                  {skill.is_necromancer_reaper_form
+                    ? "Self Health drain %/sec"
+                    : skill.health_percent_per_second_bonus.base_value < 0
+                      ? "Damage %/sec"
+                      : "Health %/sec"}
+                </dt>
+                <dd class="font-medium">
+                  {formatLinearPercent({
+                    base_value: Math.abs(
+                      skill.health_percent_per_second_bonus.base_value,
+                    ),
+                    bonus_per_level: Math.abs(
+                      skill.health_percent_per_second_bonus.bonus_per_level,
+                    ),
+                  })}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Mana/sec</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.mana_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_percent_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Mana %/sec</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.mana_percent_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.energy_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Rage/sec</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.energy_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.energy_percent_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Rage %/sec</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.energy_percent_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 11. Primary stats -->
+            {#if skill.strength_bonus}
+              <div>
+                <dt class="text-muted-foreground">Strength</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.strength_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.intelligence_bonus}
+              <div>
+                <dt class="text-muted-foreground">Intelligence</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.intelligence_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.dexterity_bonus}
+              <div>
+                <dt class="text-muted-foreground">Dexterity</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.dexterity_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.constitution_bonus}
+              <div>
+                <dt class="text-muted-foreground">Constitution</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.constitution_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.wisdom_bonus}
+              <div>
+                <dt class="text-muted-foreground">Wisdom</dt>
+                <dd class="font-medium">{formatLinear(skill.wisdom_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.charisma_bonus}
+              <div>
+                <dt class="text-muted-foreground">Charisma</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.charisma_bonus)}
+                </dd>
+              </div>
+            {/if}
           </dl>
         {/if}
 
@@ -1157,7 +1339,7 @@
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
-                Enraged monsters with less than 10% Hit Points deal 50–75% more
+                Enraged monsters with less than 10% health deal 50–75% more
                 damage with non-spell skills.
               </p>
             {/if}
@@ -1176,7 +1358,7 @@
             {/if}
             {#if skill.is_mana_shield}
               <p class="text-blue-600 dark:text-blue-400">
-                Mana Shield spends Mana to absorb direct hits.
+                Mana Shield uses mana to absorb incoming damage.
               </p>
             {/if}
 
@@ -1297,15 +1479,10 @@
               >
                 {item.item_name}
               </a>
-              <span class="text-sm text-muted-foreground"
-                >({grantLabels[item.type]})</span
-              >
+              <span class="text-xs text-muted-foreground">({item.type})</span>
               {#if item.probability !== undefined && item.probability < 1}
                 <span class="text-xs text-muted-foreground">
-                  {formatPercent(item.probability, {
-                    decimals: 2,
-                    preserveNonzero: true,
-                  })} chance{item.type === "weapon_proc" ? " on hit" : ""}
+                  {formatPercent(item.probability, { decimals: 1 })} chance
                 </span>
               {/if}
             </div>
@@ -1383,7 +1560,7 @@
       <Card.Header>
         <Card.Title level={2} class="flex items-center gap-2">
           <Cat class="h-5 w-5 text-teal-500" />
-          {petUsageLabel}
+          Used by Pets
         </Card.Title>
       </Card.Header>
       <Card.Content>
@@ -1435,28 +1612,6 @@
             </div>
           {/each}
         </div>
-      </Card.Content>
-    </Card.Root>
-  {/if}
-  {#if data.usedByNpcs.length > 0}
-    <Card.Root id="used-by-npcs" class="bg-muted/30">
-      <Card.Header
-        ><Card.Title level={2}
-          >Used by NPCs ({data.usedByNpcs.length})</Card.Title
-        ></Card.Header
-      >
-      <Card.Content>
-        <ul class="space-y-2">
-          {#each data.usedByNpcs as npc (npc.id)}
-            <li>
-              <a
-                href="/npcs/{npc.id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-                >{npc.name}</a
-              >
-            </li>
-          {/each}
-        </ul>
       </Card.Content>
     </Card.Root>
   {/if}

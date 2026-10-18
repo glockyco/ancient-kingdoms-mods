@@ -27,6 +27,8 @@
     variant?: "text" | "reference";
     imageKind?: string;
     fallback?: Component<{ class?: string }>;
+    /** Item quality; frames the icon in that quality's color. */
+    quality?: number | null;
   }
 
   let {
@@ -42,6 +44,7 @@
     variant = "text",
     imageKind = "icon",
     fallback,
+    quality = null,
   }: Props = $props();
 
   const instanceId = crypto.randomUUID();
@@ -107,6 +110,7 @@
             {imageWidth}
             {imageHeight}
             {fallback}
+            {quality}
             {variant}
             size={28}
             colorClass={effectiveColorClass}
@@ -137,6 +141,7 @@
       {imageWidth}
       {imageHeight}
       {fallback}
+      {quality}
       {variant}
       size={28}
       colorClass={effectiveColorClass}

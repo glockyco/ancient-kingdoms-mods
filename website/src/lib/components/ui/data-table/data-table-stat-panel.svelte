@@ -20,11 +20,15 @@
   let {
     column,
     open = $bindable(false),
+    totalRows,
+    filteredRows,
     facetedItemIds,
     showDeltas = true,
   }: {
     column: Column<TData, TValue>;
     open?: boolean;
+    totalRows: number;
+    filteredRows: number;
     facetedItemIds: string[];
     showDeltas?: boolean;
   } = $props();
@@ -112,23 +116,32 @@
   function clearFilter() {
     column?.setFilterValue(undefined);
   }
+
+  function getStatLabel(stat: string): string {
+    return statFieldName(statField("item", stat), "item");
+  }
 </script>
 
 {#if open}
   <div class="border-border bg-muted/30 mt-2 rounded-lg border p-4">
-    <!-- Match mode and selected stats -->
+    <!-- Header: Mode toggle + Summary -->
     <div class="mb-4 flex items-center justify-between gap-4">
       <Tabs.Root
         value={matchMode}
         onValueChange={(v) => setMode(v as "any" | "all")}
       >
         <Tabs.List>
-          <Tabs.Trigger value="all">Match all</Tabs.Trigger>
-          <Tabs.Trigger value="any">Match any</Tabs.Trigger>
+          <Tabs.Trigger value="all">All</Tabs.Trigger>
+          <Tabs.Trigger value="any">Any</Tabs.Trigger>
         </Tabs.List>
       </Tabs.Root>
 
       <div class="text-muted-foreground flex items-center gap-4 text-sm">
+        <span>
+          Showing <span class="text-foreground font-medium">{filteredRows}</span
+          >
+          of {totalRows} items
+        </span>
         {#if selectedStats.size > 0}
           <Button
             variant="ghost"
@@ -136,7 +149,7 @@
             class="h-7 px-2"
             onclick={clearFilter}
           >
-            Clear stats
+            Clear filters
           </Button>
         {/if}
       </div>
@@ -172,9 +185,7 @@
                   isDisabled && "pointer-events-none opacity-40",
                 )}
               >
-                <span class="truncate"
-                  >{statFieldName(statField("item", stat), "item")}</span
-                >
+                <span class="truncate">{getStatLabel(stat)}</span>
                 <span
                   class={cn(
                     "ml-2 shrink-0 tabular-nums",
