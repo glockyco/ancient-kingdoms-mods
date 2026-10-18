@@ -9,9 +9,22 @@ export const prerender = true;
 export const load: PageServerLoad = (): ZonesPageData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
+  // Bosses and elites count world placements, altar wave members and placeholder spawns
+  // near their parent placement, as the zone page lists them. Zone levels and medians
+  // come from world placements only.
   const zones = db
     .prepare(
       `
+    WITH zone_monsters AS (
+      SELECT zone_id, monster_id FROM monster_spawns
+      UNION
+      SELECT a.zone_id, k.monster_id FROM acquisition_kill_details k
+      JOIN altars a ON a.id = k.altar_id
+      UNION
+      SELECT parent.zone_id, k.monster_id FROM acquisition_kill_details k
+      JOIN monster_spawns parent ON parent.id = k.parent_monster_spawn_id
+      WHERE k.event_kind = 'placeholder'
+    )
     SELECT
       z.id,
       z.name,
@@ -20,13 +33,12 @@ export const load: PageServerLoad = (): ZonesPageData => {
       z.level_min,
       z.level_max,
       z.level_median,
-      -- Monster counts by type
-      (SELECT COUNT(DISTINCT ms.monster_id) FROM monster_spawns ms
-       JOIN monsters m ON m.id = ms.monster_id
-       WHERE ms.zone_id = z.id AND m.is_boss = 1) as boss_count,
-      (SELECT COUNT(DISTINCT ms.monster_id) FROM monster_spawns ms
-       JOIN monsters m ON m.id = ms.monster_id
-       WHERE ms.zone_id = z.id AND m.is_elite = 1 AND m.is_boss = 0) as elite_count,
+      (SELECT COUNT(*) FROM zone_monsters zm
+       JOIN monsters m ON m.id = zm.monster_id
+       WHERE zm.zone_id = z.id AND m.is_boss = 1) as boss_count,
+      (SELECT COUNT(*) FROM zone_monsters zm
+       JOIN monsters m ON m.id = zm.monster_id
+       WHERE zm.zone_id = z.id AND m.is_elite = 1 AND m.is_boss = 0) as elite_count,
       (SELECT COUNT(*) FROM altars a WHERE a.zone_id = z.id) as altar_count,
       (SELECT COUNT(DISTINCT ns.npc_id) FROM npc_spawns ns WHERE ns.zone_id = z.id) as npc_count,
       0 as gather_count,
