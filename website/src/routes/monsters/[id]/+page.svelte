@@ -1501,9 +1501,7 @@
       {/if}
       {#if data.loot.contexts.length > 0}
         <details class="mt-4 rounded-md border bg-muted/30 p-4">
-          <summary class="cursor-pointer font-medium"
-            >Loot contexts, requirements and delivery</summary
-          >
+          <summary class="cursor-pointer font-medium">Loot details</summary>
           <div class="mt-4">
             <MethodList
               methods={data.loot.contexts}
