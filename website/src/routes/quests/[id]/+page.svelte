@@ -1,6 +1,10 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import { formatNumber, formatPercent } from "$lib/utils/format";
+  import {
+    distinctSubzoneName,
+    formatNumber,
+    formatPercent,
+  } from "$lib/utils/format";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -18,10 +22,7 @@
   import LazyObtainabilityTree from "$lib/components/LazyObtainabilityTree.svelte";
   import DeferredDetails from "$lib/components/DeferredDetails.svelte";
   import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import {
-    distinctSubzoneName,
-    questPresentationRequirements,
-  } from "$lib/components/acquisition/display";
+  import { questPresentationRequirements } from "$lib/components/acquisition/display";
   import type { QuestLocationTarget } from "$lib/types/quests";
   import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import ScrollRegion from "$lib/components/acquisition/ScrollRegion.svelte";

@@ -4,16 +4,17 @@
   import MapItemLink from "./MapItemLink.svelte";
   import AcquisitionMethods from "./AcquisitionMethods.svelte";
   import Requirements from "$lib/components/acquisition/Requirements.svelte";
-  import {
-    distinctSubzoneName,
-    questPresentationRequirements,
-  } from "$lib/components/acquisition/display";
+  import { questPresentationRequirements } from "$lib/components/acquisition/display";
   import { buildEntityUrl } from "$lib/map/url-state";
   import {
     loadQuestPopupDetails,
     type QuestPopupDetails,
   } from "$lib/queries/popup";
-  import { formatNumber, getQualityTextColorClass } from "$lib/utils/format";
+  import {
+    distinctSubzoneName,
+    formatNumber,
+    getQualityTextColorClass,
+  } from "$lib/utils/format";
   interface Props {
     questId: string;
     onClose: () => void;

@@ -3,7 +3,8 @@
   import MapLink from "../MapLink.svelte";
   import Requirements from "./Requirements.svelte";
   import ScrollRegion from "./ScrollRegion.svelte";
-  import { providerHref, distinctSubzoneName } from "./display";
+  import { providerHref } from "./display";
+  import { distinctSubzoneName } from "$lib/utils/format";
   let {
     providers,
     names = {},

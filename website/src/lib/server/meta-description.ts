@@ -7,6 +7,7 @@
  */
 
 import {
+  distinctSubzoneName,
   toRomanNumeral,
   formatItemType,
   formatEquipmentCategory,
@@ -962,8 +963,15 @@ export function npcDescription(
   } else if (zoneNames.length > 3) {
     location = ` across ${zoneNames.length} zones`;
   }
-  if (npc.sub_zone_name && !zoneNames.includes(npc.sub_zone_name)) {
-    location = ` in ${npc.sub_zone_name}${location.replace(/^ in /, ", ")}`;
+  let subZoneName = npc.sub_zone_name;
+  for (const zoneName of zoneNames) {
+    if (!distinctSubzoneName(zoneName, subZoneName)) {
+      subZoneName = undefined;
+      break;
+    }
+  }
+  if (subZoneName) {
+    location = ` in ${subZoneName}${location.replace(/^ in /, ", ")}`;
   }
 
   const factionPhrase = npc.faction ? ` Member of the ${npc.faction}.` : "";

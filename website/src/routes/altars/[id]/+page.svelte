@@ -8,7 +8,11 @@
   import Seo from "$lib/components/Seo.svelte";
   import { detailTitle } from "$lib/seo/title";
   import * as Card from "$lib/components/ui/card";
-  import { formatDuration, formatPercent } from "$lib/utils/format";
+  import {
+    distinctSubzoneName,
+    formatDuration,
+    formatPercent,
+  } from "$lib/utils/format";
   import type { AltarWave } from "$lib/types/altars";
   import {
     altarVeteranLevelBonus,
@@ -160,6 +164,10 @@
     </h2>
     <Card.Root class="bg-muted/30">
       <Card.Content class="space-y-3">
+        {@const subZoneName = distinctSubzoneName(
+          data.altar.zoneName,
+          data.altar.subZoneName,
+        )}
         <!-- Zone -->
         <div class="flex justify-between">
           <span class="text-muted-foreground">Zone</span>
@@ -168,10 +176,8 @@
             class="text-blue-600 dark:text-blue-400 hover:underline"
           >
             {data.altar.zoneName}
-            {#if data.altar.subZoneName && data.altar.subZoneName !== data.altar.zoneName}
-              <span class="text-muted-foreground"
-                >({data.altar.subZoneName})</span
-              >
+            {#if subZoneName}
+              <span class="text-muted-foreground">({subZoneName})</span>
             {/if}
           </a>
         </div>

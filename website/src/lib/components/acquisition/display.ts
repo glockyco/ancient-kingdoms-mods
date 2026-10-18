@@ -591,17 +591,6 @@ export function useRoleLabel(role: string, method?: MethodView | null): string {
   return USE_ROLE_LABELS[role] ?? role.replaceAll("_", " ");
 }
 
-export function distinctSubzoneName(
-  zoneName: string | null | undefined,
-  subZoneName: string | null | undefined,
-): string | undefined {
-  if (!subZoneName) return undefined;
-  return zoneName?.toLowerCase().replace(/^the /, "") ===
-    subZoneName.toLowerCase().replace(/^the /, "")
-    ? undefined
-    : subZoneName;
-}
-
 const EXECUTION_UNITS: Partial<Record<MethodKind, string>> = {
   recipe: "batches",
   vendor: "purchases",

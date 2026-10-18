@@ -1,5 +1,16 @@
 import { QUALITY_IDS } from "../constants/quality";
 
+export function distinctSubzoneName(
+  zoneName: string | null | undefined,
+  subZoneName: string | null | undefined,
+): string | undefined {
+  if (!subZoneName) return undefined;
+  return zoneName?.toLowerCase().replace(/^the /, "") ===
+    subZoneName.toLowerCase().replace(/^the /, "")
+    ? undefined
+    : subZoneName;
+}
+
 /** Format a fraction at the caller's displayed precision. */
 export function formatPercent(
   value: number,

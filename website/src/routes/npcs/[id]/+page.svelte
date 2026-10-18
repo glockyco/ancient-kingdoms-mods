@@ -2,6 +2,7 @@
   import Requirements from "$lib/components/acquisition/Requirements.svelte";
   import MethodList from "$lib/components/acquisition/MethodList.svelte";
   import {
+    distinctSubzoneName,
     formatPercent,
     formatNumber,
     formatDuration,
@@ -423,13 +424,17 @@
   row: Row<NpcSpawnLocation>;
 })}
   {#if cell.column.id === "zone_name"}
+    {@const subZoneName = distinctSubzoneName(
+      row.original.zone_name,
+      row.original.sub_zone_name,
+    )}
     <a
       href="/zones/{row.original.zone_id}"
       class="text-blue-600 dark:text-blue-400 hover:underline"
     >
       {row.original.zone_name}
-    </a>{#if row.original.sub_zone_name}<span class="text-muted-foreground"
-        >&nbsp;({row.original.sub_zone_name})</span
+    </a>{#if subZoneName}<span class="text-muted-foreground"
+        >&nbsp;({subZoneName})</span
       >{/if}
   {:else if cell.column.id === "respawn"}
     <span class="ml-auto">{formatTime(data.npc.respawn_time)}</span>

@@ -13,6 +13,7 @@
   import MapEntityLink from "./MapEntityLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
   import {
+    distinctSubzoneName,
     formatPercent,
     formatNumber,
     getQualityTextColorClass,
@@ -34,7 +35,6 @@
     methodPresentationRequirements,
     costTimingText,
     costLabel,
-    distinctSubzoneName,
   } from "$lib/components/acquisition/display";
 
   let {
