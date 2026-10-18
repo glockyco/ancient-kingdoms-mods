@@ -54,9 +54,9 @@
   <h2 id={titleId} class="sr-only">{title}</h2>
   <div class="bg-muted/30 rounded-md border p-4">
     <div
-      class="grid grid-cols-2 items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,1.5fr)_minmax(0,1fr)] md:gap-6"
+      class="flex flex-wrap items-center gap-4 md:grid md:grid-cols-[minmax(min-content,1fr)_minmax(20rem,1.5fr)_minmax(min-content,1fr)] md:gap-6"
     >
-      <div class="order-2 space-y-2 text-sm md:order-none">
+      <div class="order-2 min-w-min flex-1 space-y-2 text-sm md:order-none">
         <div class="flex items-center gap-3" title={statName("magic_resist")}>
           <span
             class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-teal-700 text-teal-50 shadow-sm"
@@ -120,7 +120,7 @@
       </div>
 
       <div
-        class="order-1 col-span-2 flex flex-col items-center gap-3 md:order-none md:col-span-1"
+        class="order-1 flex basis-full flex-col items-center gap-3 md:order-none"
       >
         {#if imageSrc}
           <div class="flex h-56 w-full items-center justify-center md:h-64">
@@ -144,7 +144,7 @@
         </div>
       </div>
 
-      <div class="order-3 min-w-0 space-y-2 text-sm md:order-none">
+      <div class="order-3 min-w-min flex-1 space-y-2 text-sm md:order-none">
         <div
           class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
           title={statName("attack_power")}
