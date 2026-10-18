@@ -56,6 +56,7 @@ function createDb() {
       ('cook', 'primary', 0, 'cooking_fish', 'direct', 0.2, 0, 1, 0, 0, 'none', 0, 0),
       ('alchemy', 'primary', 1, 'alchemy_fish', 'direct', 0.2, 1, 1, 0, 0, 'none', 0, 1),
       ('trash_entry', 'trash', 0, 'trash_fish', 'direct', 1, 0, 1, 0, 0, 'none', 0, 0),
+      ('trash_entry_repeat', 'trash', 1, 'trash_fish', 'direct', 1, 0, 1, 0, 0, 'none', 0, 0),
       ('fallback_cook', 'fallback', 0, 'cooking_fish', 'direct', 1, 0, 1, 0, 0, 'none', 0, 0),
       ('fallback_alchemy', 'fallback', 1, 'alchemy_fish', 'direct', 1, 1, 1, 0, 0, 'none', 0, 1),
       ('fallback_prawn', 'fallback', 2, 'ember_prawn', 'direct', 1, 2, 1, 0, 0, 'none', 0, 3),

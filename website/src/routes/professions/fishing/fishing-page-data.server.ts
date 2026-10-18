@@ -203,7 +203,8 @@ export async function loadFishingPageData(
   const trashFish = db
     .prepare(
       `
-      SELECT
+      -- The pool repeats an item to weight it, and the list names each item once.
+      SELECT DISTINCT
         entry.item_id,
         i.name AS item_name,
         i.quality,
