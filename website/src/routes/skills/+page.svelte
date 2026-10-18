@@ -159,7 +159,7 @@
   {:else if cell.column.id === "effect"}
     {@const s = row.original}
     <SkillEffect
-      class="text-sm whitespace-normal min-w-48 max-w-xl"
+      class="text-sm whitespace-normal min-w-48 max-w-[max(23rem,calc(100cqw-30rem))]"
       effect={s.effect}
       entityName={s.summoned_monster_name ?? s.pet_name}
       entityHref={s.summoned_monster_id
@@ -231,27 +231,30 @@
     Skills ({data.skills.length})
   </h1>
 
-  <DataTable
-    data={dataWithVirtual}
-    {columns}
-    {columnLabels}
-    {renderCell}
-    {renderHeader}
-    {renderToolbar}
-    pageSize={PAGE_SIZE}
-    initialSorting={[{ id: "name", desc: false }]}
-    initialColumnVisibility={{
-      class_ids: false,
-      skill_categories: false,
-    }}
-    urlKey="skills"
-    showPagination={true}
-    showSearch={true}
-    showColumnToggle={true}
-    zebraStripe={true}
-    paginateStaticHtml={true}
-    persistentScrollbar={true}
-    searchPlaceholder="Search skills..."
-    class="bg-muted/30"
-  />
+  <!-- A size container lets the Effect cell wrap at the column's width: the table sizes its columns to their content. -->
+  <div class="@container">
+    <DataTable
+      data={dataWithVirtual}
+      {columns}
+      {columnLabels}
+      {renderCell}
+      {renderHeader}
+      {renderToolbar}
+      pageSize={PAGE_SIZE}
+      initialSorting={[{ id: "name", desc: false }]}
+      initialColumnVisibility={{
+        class_ids: false,
+        skill_categories: false,
+      }}
+      urlKey="skills"
+      showPagination={true}
+      showSearch={true}
+      showColumnToggle={true}
+      zebraStripe={true}
+      paginateStaticHtml={true}
+      persistentScrollbar={true}
+      searchPlaceholder="Search skills..."
+      class="bg-muted/30"
+    />
+  </div>
 </div>
