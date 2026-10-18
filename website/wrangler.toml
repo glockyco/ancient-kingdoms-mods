@@ -12,11 +12,9 @@ workers_dev = false
 pattern = "ancient-kingdoms.compendiums.org"
 custom_domain = true
 
-# adapter-cloudflare emits both the Worker entry and the static asset bundle
-# into .svelte-kit/cloudflare. Files prefixed with `_` (`_worker.js`,
-# `_routes.json`, `_headers`, `_redirects`) are excluded from the asset
-# manifest by Cloudflare automatically; the rest are served as static assets
-# without invoking the Worker.
+# adapter-cloudflare emits the Worker and static assets into the same directory.
+# Its generated .assetsignore excludes Worker and routing control files.
+# Other files, including _app, remain static assets.
 [assets]
 directory = ".svelte-kit/cloudflare"
 binding = "ASSETS"
