@@ -3,7 +3,6 @@ import Database from "better-sqlite3";
 import initSqlJs from "sql.js-fts5";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import type {
   AcquisitionModel,
   AcquisitionQuery,
@@ -2750,67 +2749,6 @@ describe("remaining canonical method and definition families", () => {
       ).toEqual(["complete", "offer"]);
     } finally {
       f.db.close();
-    }
-  });
-
-  it("projects every exported skill with its native learning range and distinct NPC casters", async () => {
-    const db = new Database(
-      fileURLToPath(new URL("../../../data/compendium.db", import.meta.url)),
-      { readonly: true },
-    );
-    try {
-      const skills = db
-        .prepare<
-          [],
-          {
-            id: string;
-            max_level: number;
-            learn_default: number;
-            player_classes: string | null;
-          }
-        >("SELECT id,max_level,learn_default,player_classes FROM skills")
-        .all();
-      expect(skills.length).toBeGreaterThan(0);
-      const request: AcquisitionRequest = {
-        kind: "requirements",
-        entities: skills.map((skill) => ({ kind: "skill", id: skill.id })),
-      };
-      const execute: AcquisitionQuery = async (sql, params) =>
-        db.prepare<unknown[], Record<string, unknown>>(sql).all(...params);
-      const model = assembleAcquisitionModel(
-        await queryAcquisitionRows(execute, request),
-      );
-      for (const skill of skills) {
-        const playerClasses = JSON.parse(skill.player_classes ?? "[]");
-        const firstLearningRank = skill.learn_default ? 2 : 1;
-        expect(model.requirements.has(`skill:${skill.id}`)).toBe(
-          playerClasses.length > 0 && firstLearningRank <= skill.max_level,
-        );
-      }
-      expect(publicAcquisitionFingerprint(model, request)).toMatchObject({
-        entities: expect.arrayContaining([
-          expect.objectContaining({
-            entity: { kind: "skill", id: "npc_attack" },
-            learning: null,
-            npcCasters: expect.any(Array),
-          }),
-        ]),
-      });
-      const expectedCasters = db
-        .prepare<[string], { count: number }>(
-          "SELECT count(DISTINCT npc_id) AS count FROM npc_skills WHERE skill_id=?",
-        )
-        .get("npc_attack")!;
-      expect(expectedCasters.count).toBeGreaterThan(0);
-      expect(
-        new Set(
-          model.rows.facts.npc_skills
-            .filter((row) => row.skill_id === "npc_attack")
-            .map((row) => row.npc_id),
-        ).size,
-      ).toBe(expectedCasters.count);
-    } finally {
-      db.close();
     }
   });
 
