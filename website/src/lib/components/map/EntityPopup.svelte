@@ -969,33 +969,29 @@
                 <span>{portal.requiredItemLevel}+</span>
               </div>
             {/if}
-            {#if portal.requiredItemName && portal.requiredItemId}
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Key</span>
-                <MapItemLink
-                  itemId={portal.requiredItemId}
-                  itemName={portal.requiredItemName}
-                  tooltipHtml={null}
-                  onSelect={onSelectItem}
-                />
-              </div>
-            {:else if portal.requiredItemName}
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Key</span>
-                <span>{portal.requiredItemName}</span>
-              </div>
-            {/if}
             {#if portal.requiredItemName}
-              <!-- Source: server-scripts/Portal.cs:47 — each player needs their own key only when requiresEveryoneKey is set; otherwise any online party member's key admits the player. -->
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">Who needs the key</span>
-                <a
-                  href="/mechanics/world#portals"
-                  class="text-blue-600 hover:underline dark:text-blue-400"
-                  >{portal.requiresEveryoneKey
-                    ? "Each player needs their own"
-                    : "Any online party member's key"}</a
-                >
+              <div class="flex justify-between gap-4">
+                <span class="text-muted-foreground">Key</span>
+                <div class="text-right">
+                  {#if portal.requiredItemId}
+                    <MapItemLink
+                      itemId={portal.requiredItemId}
+                      itemName={portal.requiredItemName}
+                      tooltipHtml={null}
+                      onSelect={onSelectItem}
+                    />
+                  {:else}
+                    <span>{portal.requiredItemName}</span>
+                  {/if}
+                  <!-- Source: server-scripts/Portal.cs:47 — each player needs their own key only when requiresEveryoneKey is set; otherwise any online party member's key admits the player. -->
+                  <a
+                    href="/mechanics/world#portals"
+                    class="block text-muted-foreground hover:underline"
+                    >{portal.requiresEveryoneKey
+                      ? "Each player needs their own"
+                      : "Any online party member's works"}</a
+                  >
+                </div>
               </div>
             {/if}
             {#if portal.needMonsterDeadName}
