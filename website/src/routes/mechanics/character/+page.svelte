@@ -245,12 +245,12 @@
         >
       </p>
       <!-- Source: server-scripts/PlayerEquipment.cs:190-221,259-285 — equipment and augments apply attribute bonuses. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:1839-1861 — passive skills apply attribute bonuses. -->
-      <!-- Source: server-scripts/Skills.cs:1484-1516 — active buffs can change attribute values. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:1843-1865 — passive skills apply attribute bonuses. -->
+      <!-- Source: server-scripts/Skills.cs:1514-1546 — active buffs can change attribute values. -->
       <p>
         Equipment, augments, passive skills, and buffs can also change your
         attributes.
-        <!-- Source: server-scripts/Player.cs:12477-12512 — reading attribute books permanently raises their listed attributes. -->
+        <!-- Source: server-scripts/Player.cs:12486-12521 — reading attribute books permanently raises their listed attributes. -->
         Reading certain
         <a
           href="/professions/lore_keeping"
@@ -300,7 +300,7 @@
           <tbody>
             <!-- Source: server-scripts/Mana.cs:28-54 — max mana and mana recovery have distinct calculations. -->
             <!-- Source: server-scripts/Intelligence.cs:21-28,96-99 and server-scripts/Wisdom.cs:27-35,102-105 — Intelligence adds pool but neither attribute adds recovery. -->
-            <!-- Source: server-scripts/Player.cs:1477-1488 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
+            <!-- Source: server-scripts/Player.cs:1481-1492 — Cleric, Druid, Ranger, Wizard and Necromancer use Mana. -->
             <tr class="border-b">
               <th class="p-2 font-medium text-foreground">Mana</th>
               <td class="p-2">Cleric, Druid, Necromancer, Ranger, Wizard</td>
@@ -403,14 +403,14 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Learning skills</h3>
         <!-- Source: server-scripts/ScriptableSkill.cs:53-70 — requirements include spent points, up to two ranked predecessors, level, and tier. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1962-2020 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1966-2024 — each upgrade checks rank limit, level, unspent and spent points, predecessors, and tier choices. -->
         <p>
           Skill ranks may require a level, enough points, earlier spending in
           the same skill tree, and up to two prerequisite skills. Armor-set
           bonuses do not count toward prerequisite ranks.
         </p>
-        <!-- Source: server-scripts/PlayerSkills.cs:1807-1816 — prerequisite checks exclude armor-set bonus levels. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1988-2020 — new choices are limited by tier, but existing choices can be upgraded. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1811-1820 — prerequisite checks exclude armor-set bonus levels. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1992-2024 — new choices are limited by tier, but existing choices can be upgraded. -->
         <p>
           <span class="block"
             >You can choose up to two different skills in tiers 1 and 3.</span
@@ -424,7 +424,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Veteran skills</h3>
         <!-- Source: server-scripts/Experience.cs:38-38,45-53,366-408 — at the level cap filled XP bars grant Veteran Points with a separate maximum. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:59-64,1975-1986,2521-2538 — veteran upgrades spend Veteran Points, not class skill points. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:59-64,1979-1990,2525-2542 — veteran upgrades spend Veteran Points, not class skill points. -->
         <!-- Source: server-scripts/PlayerSkills.cs:CanLearnTierSkill; website/data/compendium.db skills.tier — all veteran skills have tier 0, which allows every choice. -->
         <p>
           <span class="block"
@@ -457,7 +457,7 @@
           <span class="block">You must wait 10 minutes between switches.</span>
         </p>
         <!-- Source: server-scripts/Player.cs:UserCode_CmdSetCurrentSpec__Int32__List_00601__List_00601 — switching loads the chosen class-skill ranks and its skillbar, removes the pet, and leaves veteran ranks untouched. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1832-1880 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1836-1884 — specialization changes reset class skills, stop Bard songs, and preserve veteran skills. -->
         <p>
           Each specialization has its own class skills and skillbar, but both
           share veteran skills. Switching removes your pet and stops Bard songs.
@@ -480,7 +480,7 @@
             >Veteran point counting and reset losses</a
           > explains how the game miscounts ranks that cost 2 veteran points.
         </p>
-        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:15297-15300 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
+        <!-- Source: server-scripts/Player.cs:InitializeAttributeSpecs; Player.cs:15306-15309 — an allocation that cannot be inferred is preserved until switching, when ResetAssignedAttributes runs for free. -->
         <p>
           On some saved characters, the first specialization switch resets
           assigned attributes for free.
@@ -515,8 +515,8 @@
           resets your assigned attribute points for the same price, but not while
           a debuff is on you.
         </p>
-        <!-- Source: server-scripts/Player.cs:11091-11097,11123-11157 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
-        <!-- Source: server-scripts/PlayerSkills.cs:1832-1925 — each reset returns points only for its own skill pool. -->
+        <!-- Source: server-scripts/Player.cs:11100-11106,11132-11166 — class and veteran resets use separate commands and prices, with a Token of Redemption required for veteran reset. -->
+        <!-- Source: server-scripts/PlayerSkills.cs:1836-1929 — each reset returns points only for its own skill pool. -->
         <p>
           <span class="block"
             >Resetting class skills refunds class skill points but leaves

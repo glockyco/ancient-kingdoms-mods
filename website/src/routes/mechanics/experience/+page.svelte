@@ -693,7 +693,7 @@
           1 of its 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:11123-11158; server-scripts/Npc.cs:1822-1840; server-scripts/PlayerSkills.cs:1883-1910 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
+          <!-- Source: server-scripts/Player.cs:11132-11167; server-scripts/Npc.cs:1824-1842; server-scripts/PlayerSkills.cs:1887-1914 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
           {#if data.veteranMaster}
             <a
               href="/npcs/{data.veteranMaster.id}"
@@ -967,8 +967,8 @@
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,825 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:13638-13651 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:13646-13651 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:13647-13660 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:13655-13660 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
@@ -987,7 +987,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:3117-3145 — party kill XP award loop -->
+        <!-- Source: server-scripts/Monster.cs:3120-3148 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
@@ -1035,7 +1035,7 @@
             </tbody>
           </table>
         </div>
-        <!-- Source: server-scripts/Monster.cs:3117-3145 — the award loop counts and pays party players in proximity, not their mercenaries. -->
+        <!-- Source: server-scripts/Monster.cs:3120-3148 — the award loop counts and pays party players in proximity, not their mercenaries. -->
         <p class="text-sm text-muted-foreground">
           Mercenaries do not count as nearby party players, so they take no
           share.
@@ -1214,7 +1214,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13638-13645 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:13647-13654 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1279,8 +1279,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13877-13883 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:13893-13925 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:13886-13892 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:13902-13934 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1319,7 +1319,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13877-13883 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:13886-13892 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

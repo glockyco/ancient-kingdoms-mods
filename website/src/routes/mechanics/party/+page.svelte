@@ -86,13 +86,13 @@
   <Card.Root id="shared-rewards" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Shared Rewards</Card.Title>
-      <!-- Source: server-scripts/Monster.cs:2945-2957,3117-3144 — nearby party members receive loot access and experience on a credited kill. -->
+      <!-- Source: server-scripts/Monster.cs:2948-2960,3120-3147 — nearby party members receive loot access and experience on a credited kill. -->
       <Card.Description
         >Nearby party players can share loot and XP from a monster kill.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:2916-2932,2945-2957 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
+      <!-- Source: server-scripts/Monster.cs:2919-2935,2948-2960 — maximum threat determines credited player; pet and charmed-monster threat resolves to owner; party proximity grants loot access at death. -->
       <!-- Source: server-scripts/PlayerParty.cs:74-88 — party proximity checks network observers and strictly less than 40 world units from the relevant player. -->
       <!-- Mirror.dll and Mirror.Components.dll in the server build of Steam build 25863605: NetworkServer.RebuildObserversCustom adds a player's own connection to its observers, so the credited player always shares. SpatialHashingInterestManagement (visRange 96 at runtime, 48-unit cells, 3×3 neighbourhood) makes every player closer than 40 yd an observer, rebuilt once per second, and ignores invisibility. -->
       <p>
@@ -106,7 +106,7 @@
           them get loot access. Living players receive a share of the kill XP.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:3117-3144 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
+      <!-- Source: server-scripts/Monster.cs:3120-3147 — kill XP uses nearby players around the credited player, their highest level and living recipients; mercenaries are not separate recipients. -->
       <p>
         See <MechanicsLink section="experience#kill-xp"
           >Experience</MechanicsLink
@@ -125,7 +125,7 @@
         nearby member's matching unfinished quest. The drop is used up rather
         than added to anyone's inventory.
       </p>
-      <!-- Source: server-scripts/PlayerLooting.cs:177-203 and server-scripts/Monster.cs:4570-4609 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
+      <!-- Source: server-scripts/PlayerLooting.cs:177-203 and server-scripts/Monster.cs:4574-4613 — ordinary loot goes into the collector's inventory; qualifying shared drops enter group rolls. -->
       <p>
         <span class="block"
           >Items that do not require a roll go to the collector.</span
@@ -157,7 +157,7 @@
         You have 2 minutes to answer. The roll resolves when everyone answers or
         time runs out. No answer counts as Pass.
       </p>
-      <!-- Source: server-scripts/Player.cs:14030-14036 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
+      <!-- Source: server-scripts/Player.cs:14039-14045 and server-scripts/ItemsRollSystem.cs:53-79,175-182 — Need rolls exceed Greed rolls; highest result wins, and all-pass awards nobody. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -229,7 +229,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UIChat.cs:78-82 and server-scripts/PlayerChat.cs:24-90,437-545 — command prefixes and local, online whisper, party, guild and who recipients. -->
+      <!-- Source: server-scripts/UIChat.cs:78-82 and server-scripts/PlayerChat.cs:24-90,445-553 — command prefixes and local, online whisper, party, guild and who recipients. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -271,18 +271,18 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/PlayerChat.cs:439,459,487,542 — all four chat channels discard messages exceeding 120 characters. -->
+      <!-- Source: server-scripts/PlayerChat.cs:447,467,495,550 — all four chat channels discard messages exceeding 120 characters. -->
       <p>
         Local, party, guild, and whisper messages longer than 120 characters are
         not sent.
       </p>
-      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:3930-3950,4013-4034 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
+      <!-- Source: server-scripts/PlayerChat.cs:35-38 and server-scripts/Player.cs:3934-3954,4017-4038 — /follow selects another living player in the same zone and only moves the follower within 1 unit; no party check or attack action. -->
       <p>
         Select a living player in your zone and enter <code>/follow</code>. You
         follow within 1 yd, without attacking. You do not need to be in their
         party.
       </p>
-      <!-- Source: server-scripts/Player.cs:3953-3976,3980-4012 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
+      <!-- Source: server-scripts/Player.cs:3957-3980,3984-4016 — movement and skill input, either death, missing or hidden target, zone change, and a target move over 8 units cancel follow. -->
       <p>
         Moving or using a skill cancels follow. It also ends if either player
         dies, the target disappears or changes zone, or they move more than 8 yd

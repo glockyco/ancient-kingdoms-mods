@@ -198,7 +198,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
     ],
   },
-  // Source: server-scripts/Player.cs:5174-5189,11208-11226 — reset clears the current specialization allocation and refuses curses or debuffs.
+  // Source: server-scripts/Player.cs:5178-5193,11217-11235 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
     description: "Resets attribute points for your current specialization.",
     details: [
@@ -210,7 +210,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_soul_binder: {
     description: "Sets your bind point to your current position.",
   },
-  // Source: server-scripts/Npc.cs:1757-1780 — the innkeeper offers a drink for 25 gold.
+  // Source: server-scripts/Npc.cs:1759-1782 — the innkeeper offers a drink for 25 gold.
   is_inkeeper: {
     description: "Serves you a random drink from its stock for 25 gold.",
   },
@@ -220,8 +220,8 @@ export const ROLE_DESCRIPTIONS: Partial<
     details: ["The change costs 100 gold."],
   },
   // Source: server-scripts/Npc.cs:InteractNpc — the mercenary recruiter opens at level 10.
-  // Source: server-scripts/UIMercenaries.cs:299-301,366-379,739-741 — active mercenary limits follow level thresholds 20, 30, and 40.
-  // Source: server-scripts/UIMercenaries.cs:45,387 — the roster holds ten mercenaries.
+  // Source: server-scripts/UIMercenaries.cs:494-496,570-583,968-970 — active mercenary limits follow level thresholds 20, 30, and 40.
+  // Source: server-scripts/UIMercenaries.cs:46,596 — the roster holds ten mercenaries.
   is_recruiter_mercenaries: {
     description: "You can hire and manage up to 10 mercenaries here.",
     details: [
@@ -229,7 +229,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       "You can have 1 active mercenary at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+.",
     ],
   },
-  // Source: server-scripts/Npc.cs:1866-1880
+  // Source: server-scripts/Npc.cs:1868-1882
   is_priestess: {
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',

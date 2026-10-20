@@ -3,7 +3,7 @@ import { addF32, f32, iround, multiplyF32 } from "$lib/calculation/unity-math";
 import { formatNumber, formatPercent } from "$lib/utils/format";
 import { CHARISMA, situational } from "./inputs";
 
-// Source: server-scripts/BardFinalCadenceSkill.cs:67-70; server-scripts/PlayerSkills.cs:1638-1655 — Melody multiplies each already rounded Charisma-scaled amount and rounds again.
+// Source: server-scripts/BardFinalCadenceSkill.cs:67-70; server-scripts/PlayerSkills.cs:1642-1659 — Melody multiplies each already rounded Charisma-scaled amount and rounds again.
 export function melodyBonus(songs: number): number {
   return songs >= 6 ? 0.3 : songs === 5 ? 0.25 : songs === 4 ? 0.15 : 0;
 }

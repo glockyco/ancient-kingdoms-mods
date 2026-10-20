@@ -36,7 +36,7 @@ export function drainMagnitude(value: LinearValue): LinearValue {
   };
 }
 
-// Source: server-scripts/Skills.cs:1617-1623 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
+// Source: server-scripts/Skills.cs:1647-1653 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
 export function reaperDrain(rate: LinearValue, rank: number): number {
   const share = Math.max(0, -atRank(rate, rank));
   return iround(multiplyF32(MAX_HEALTH.value, share));
@@ -67,7 +67,7 @@ export function wildStrikeHit(rank: number): number {
   return wildStrikeDamage(EXAMPLE_HIT, rank);
 }
 
-// Source: server-scripts/PlayerSkills.cs:1334,1675-1685 — learned song-duration bonuses add, then multiply the base duration.
+// Source: server-scripts/PlayerSkills.cs:1338,1679-1689 — learned song-duration bonuses add, then multiply the base duration.
 export function songDuration(baseSeconds: number, bonus: number): number {
   return multiplyF32(baseSeconds, addF32(1, bonus));
 }

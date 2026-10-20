@@ -72,7 +72,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:810-815,1048-1051; server-scripts/Player.cs:11309-11315 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:814-819,1052-1055; server-scripts/Player.cs:11318-11324 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -176,7 +176,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:773-776; server-scripts/Skills.cs:1592-1609 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:773-776; server-scripts/Skills.cs:1622-1639 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -195,14 +195,14 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You can keep two songs active at once. Polyphony removes this limit.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1658-1673 — base two-song limit plus passive slots, removed by an unlimited passive",
+          "Source: server-scripts/PlayerSkills.cs:1662-1677 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
         linkText: "Song rules",
       },
       {
         text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1341-1375 — active songs refresh or displace the oldest while a limit applies",
+          "Source: server-scripts/PlayerSkills.cs:1345-1379 — active songs refresh or displace the oldest while a limit applies",
       },
       {
         text: "Virtuosity and Final Cadence need at least three active songs, so they require Polyphony.",

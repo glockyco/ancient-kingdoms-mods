@@ -1095,7 +1095,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1820-1827 -->
+                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1822-1829 -->
                 <div class={styles.value}>
                   {formatGold(10000)}g + Token of Redemption
                 </div>
@@ -1831,7 +1831,7 @@
           <Card.Title level={2}>Mechanics</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-3 text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:4210-4240 — using the item summons the pet, or dismisses the one it already summoned. -->
+          <!-- Source: server-scripts/Player.cs:4214-4244 — using the item summons the pet, or dismisses the one it already summoned. -->
           <p>
             Use the whistle to summon the pet. Using it again dismisses that
             pet. Three pets can follow you at once.

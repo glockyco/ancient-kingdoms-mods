@@ -238,7 +238,7 @@
         toward the next tier, not your total reputation. It rounds down to whole
         points. A total of 15,000 reads Friendly 14,000 / 20,000.
       </p>
-      <!-- Source: server-scripts/Npc.cs:1732-1738; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
+      <!-- Source: server-scripts/Npc.cs:1734-1740; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
         Quests may require reputation with a faction other than their quest
         giver's. See <a
@@ -330,7 +330,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1582-1614 and 1629-1661 — party and solo faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1584-1616 and 1631-1663 — party and solo faction changes on an NPC death. -->
       <!-- Source: server-scripts/Npc.cs:OnDeath; website/data/compendium.db npcs.is_notable — Notable NPC kill changes use each NPC's faction lists. -->
       <ul class="list-disc space-y-2 pl-5">
         {#each data.notableNpcs as npc (npc.id)}
@@ -435,7 +435,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:13513-13517 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:13522-13526 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Click an animal within 3 yd to pet it. The same animal can grant
         reputation only once every 30 seconds.
@@ -483,7 +483,7 @@
           the quest up.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1732-1738 — faction values below -500 select the lowFactionMessages branch instead of services. -->
+          <!-- Source: server-scripts/Npc.cs:1734-1740 — faction values below -500 select the lowFactionMessages branch instead of services. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
           that faction refuse to talk to you, so you cannot shop, take quests, or
           use their services.
@@ -510,7 +510,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:13513-13517, Monster.cs:3186-3198, Npc.cs:1636-1646, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:13522-13526, Monster.cs:3189-3201, Npc.cs:1638-1648, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         Your reputation can keep rising above Exalted or falling below Hated.

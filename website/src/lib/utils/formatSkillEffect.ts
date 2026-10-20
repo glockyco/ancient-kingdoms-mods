@@ -805,7 +805,7 @@ function formatBuffDebuffStats(
   }
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:illusionRace,86-96 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6883-6893 (ReSkinPlayer picks the illusion race)
+  // server-scripts/Player.cs:6887-6897 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
   // Source: server-scripts/BuffSkill.cs:HasAppearanceIllusion; Skills.cs — undeadIlussion redraws a player as undead.
@@ -980,7 +980,7 @@ function formatBuffDebuffStats(
     }
   }
 
-  // Source: server-scripts/Skills.cs:1617-1623,1754-1755 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
+  // Source: server-scripts/Skills.cs:1647-1653,1841-1842 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second, after resists and DoT bonuses.
   const hpPct = parseLinearValue(skill.health_percent_per_second_bonus);
   if (hpPct && hpPct.base_value !== 0) {
     if (hpPct.base_value > 0) {
@@ -1112,7 +1112,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/Player.cs:HasDetectTraps; server-scripts/Trap.cs:142-146,182-194,199-209;
   // server-scripts/TrapDetection.cs:Update — Detect Traps lets Rogue players disarm traps. Active Rogue and Bard mercenaries detect and disarm them.
   detect_traps: "reveal and disarm traps",
-  // Source: server-scripts/Player.cs:9015-9032 — Sharp Senses uses the same trap-detection gate.
+  // Source: server-scripts/Player.cs:9019-9036 — Sharp Senses uses the same trap-detection gate.
   sharp_senses: "reveal and disarm traps",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event:
@@ -1301,7 +1301,7 @@ export function formatSkillEffect(
       `${formatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item`,
     );
   }
-  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2102-2113 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
+  // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2122-2133 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
   if (skill.food_and_drink_buff_duration_bonus_per_level) {
     parts.push(
       `+${formatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food`,

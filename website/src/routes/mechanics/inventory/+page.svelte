@@ -290,7 +290,7 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:405 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13685-13710 and 13720-13748 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:13694-13719 and 13729-13757 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -301,7 +301,7 @@
           >Withdrawing transfers vault gold back to your character.</span
         >
       </p>
-      <!-- Source: server-scripts/Npc.cs:1727-1755 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
+      <!-- Source: server-scripts/Npc.cs:1729-1757 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
       <p class="text-sm text-muted-foreground">
         Open the bank at a banker while alive and out of combat.
       </p>
@@ -404,7 +404,7 @@
         <p>
           <span class="block"
             ><!-- Source: server-scripts/CustomStrucUI.cs:204-227 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 330-349 and Player.cs:13436-13448 — move mode hides the structure, then repositions the same one without charging gold. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 330-349 and Player.cs:13445-13457 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -420,7 +420,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 261-279 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10547-10580 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10556-10589 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -881,7 +881,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4598-4601 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4602-4605 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
@@ -1000,7 +1000,7 @@
         <!-- Source: server-scripts/PlayerInventory.cs:108-113 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
         Starting a scroll cast cancels your current skill cast and clears queued skills.
       </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3166-3224 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3170-3228 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
         Moving, losing your target, starting a skill, changing or removing the
         casting item, stun, fear, death, trading, or cancelling the action

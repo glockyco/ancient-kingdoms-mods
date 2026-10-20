@@ -77,7 +77,7 @@
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4139-4146,9929-9932 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4143-4150,9938-9941 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -113,7 +113,7 @@
           XP.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:268-334 — the game switches between its local and world maps. -->
+      <!-- Source: server-scripts/UIMap.cs:changeMap — the game switches between its local and world maps. -->
       <p>
         <span class="block">The in-game map has local and world views.</span>
         <span class="block"
@@ -124,7 +124,7 @@
           > shows mapped places and entrances.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:1195-1201,2225-2228 — some monsters only spawn within their configured in-game hour window. -->
+      <!-- Source: server-scripts/Monster.cs:1198-1204,2228-2231 — some monsters only spawn within their configured in-game hour window. -->
       <p>
         <span class="block"
           >Some monsters appear only during specific in-game hours.</span
@@ -135,7 +135,7 @@
           > for their timing rules.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:140-163,337-352 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
+      <!-- Source: server-scripts/UIMap.cs:176-192,454-471 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
       <p>
         <span class="block"
           ><a
@@ -156,12 +156,12 @@
       <Card.Title>Personal map notes</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UIMapNotesController.cs:47-51,427-437,464-469,522-552 — note text is limited to 80 characters, empty notes cannot be saved, and a zone accepts at most 50 notes. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:47-51,430-440,467-472,526-556 — note text is limited to 80 characters, empty notes cannot be saved, and a zone accepts at most 50 notes. -->
       <p>
         <span class="block">Each map note holds up to 80 characters.</span>
         <span class="block">Each zone holds up to 50 notes.</span>
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:200-250,253-268 — notes persist in a single local PlayerPrefs key and render on the local map for their zone. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:203-253,256-271 — notes persist in a single local PlayerPrefs key and render on the local map for their zone. -->
       <p>
         <span class="block"
           >Map notes are saved on your computer, and every character you play on
@@ -171,7 +171,7 @@
           >Your notes appear on that zone's local map, not the world map.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:121-140 and server-scripts/UIMap.cs:148-163 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:123-142 and server-scripts/UIMap.cs:176-192 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
       <p>Temple of Valaark has no map notes.</p>
     </Card.Content>
   </Card.Root>
@@ -213,7 +213,7 @@
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: the export's items.json — scroll_of_binding has level_required 30. -->
       <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:809-813 — a bind spell is refused in a dungeon. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:813-817 — a bind spell is refused in a dungeon. -->
       <p>
         <span class="block"
           ><a
@@ -242,7 +242,7 @@
           Travel scrolls work in every other dungeon.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14277-14289 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14286-14298 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A <a
@@ -320,7 +320,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Player.cs:11302-11316,3615-3617, server-scripts/Skills.cs:1408-1428, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:11311-11325,3619-3621, server-scripts/Skills.cs:1438-1458, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >Passing through a portal ends invisibility, including Resurrection
@@ -337,7 +337,7 @@
       <Card.Title>Seasonal events</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2214-2224 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
+      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2217-2227 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
       <p>
         <span class="font-medium text-foreground"
           >Halloween: October 19 through November 1, inclusive (UTC).</span
@@ -347,7 +347,7 @@
           >seasonal monster spawns</MechanicsLink
         >.
       </p>
-      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Npc.cs:331-345,790-797,1431-1437 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
+      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Npc.cs:331-345,792-799,1433-1439 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
       <p>
         <span class="font-medium text-foreground"
           >Winter Festival: December 19 through January 6, inclusive (UTC).</span

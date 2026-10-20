@@ -341,7 +341,7 @@
             </p>
           </div>
         </li>
-        <!-- Source: server-scripts/UINpcQuests.cs:170-174; server-scripts/UIQuests.cs:124-140 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
+        <!-- Source: server-scripts/UINpcQuests.cs:214-217; server-scripts/UIQuests.cs:137-153 — the quest log permits 15 active quests; tracking a fourth removes the oldest from tracking only. -->
         <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
           <span class="text-sm tabular-nums text-muted-foreground">2</span>
           <div>
@@ -434,7 +434,7 @@
             <td class="px-4 py-2">Every listed item equipped at once</td>
             <td class="px-4 py-2 text-muted-foreground">You keep the items</td>
           </tr>
-          <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13654-13669 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
+          <!-- Source: server-scripts/AlchemyQuest.cs:13-16; server-scripts/Player.cs:13663-13678 — brewing a matching potion advances only active, incomplete quests, and the quest is fulfilled at the target count. -->
           <tr class="border-b last:border-0">
             <td class="px-4 py-2"><QuestTypeBadge type="Brew" /></td>
             <td class="px-4 py-2">Potions you brew after you accept</td>

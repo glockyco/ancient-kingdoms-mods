@@ -176,7 +176,7 @@
         >A recipe you already know cannot be learned again.</span
       >
     </p>
-    <!-- Source: server-scripts/Player.cs:13563-13574,13587-13607 — brewing requires a learned recipe, output space, and at least 10% success chance; ingredients are consumed before the roll. -->
+    <!-- Source: server-scripts/Player.cs:13572-13583,13596-13616 — brewing requires a learned recipe, output space, and at least 10% success chance; ingredients are consumed before the roll. -->
     <p class="text-muted-foreground">
       <span class="block"
         >Brewing requires a learned recipe, room for the potion, and at least a

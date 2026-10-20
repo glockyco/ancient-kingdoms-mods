@@ -377,7 +377,7 @@ export function skillFacts(
   const timingModels = new Set(
     mechanicsSpec.timingContexts.map((ctx) => ctx.model),
   );
-  // Source: server-scripts/Skills.cs:1141-1169 — Haste shortens the cooldown of mercenary auto attacks, a companion's first non-spell skill and monster or NPC non-spell attacks.
+  // Source: server-scripts/Skills.cs:1141-1173 — Haste shortens the cooldown of mercenary auto attacks, a companion's first non-spell skill and monster or NPC non-spell attacks.
   const hasteCooldownCasters = new Intl.ListFormat("en", {
     type: "conjunction",
   }).format(

@@ -119,7 +119,7 @@ const tooltipTokenDependencies: Readonly<Record<string, string>> = {
 };
 
 // Source: server-scripts/ScriptableSkill.cs:387-402 — name, level, costs, range, cast time and cooldown use the selected skill level.
-// Source: server-scripts/DamageSkill.cs:69-98 — damage and aggro use base values plus player-specific bonuses, while crowd control uses the skill level.
+// Source: server-scripts/DamageSkill.cs:69-91 — damage and aggro use base values plus player-specific bonuses, while crowd control uses the skill level.
 // Source: server-scripts/BonusSkill.cs:85-116 — bonus tokens use signed attributes and absolute stat magnitudes.
 // Source: server-scripts/BuffSkill.cs:249-283 — Charisma-scaled buff tooltips include player-specific bonuses.
 // Source: server-scripts/PassiveSkill.cs:65-90 — passive percentage tokens use percentage points.

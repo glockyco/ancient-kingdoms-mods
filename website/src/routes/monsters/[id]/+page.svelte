@@ -1083,7 +1083,7 @@
         {#if data.renewalSages.length > 0}
           <div class="space-y-2">
             {#each data.renewalSages as sage (sage.id)}
-              <!-- Source: server-scripts/Npc.cs:1738-1744; server-scripts/Player.cs:14585-14612 — priced World Boss renewal costs gold and resets respawn timers in zone 100. -->
+              <!-- Source: server-scripts/Npc.cs:1740-1746; server-scripts/Player.cs:14594-14621 — priced World Boss renewal costs gold and resets respawn timers in zone 100. -->
               <div class="bg-muted/30 rounded-md border p-3">
                 <span>You can ask </span>
                 <a

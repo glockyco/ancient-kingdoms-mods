@@ -54,7 +54,7 @@ export function reputationExample(
   };
 }
 
-// Source: server-scripts/Npc.cs:1582-1583,1608-1618,1641-1651 — factionGain is level × 1.5, × 60 when isNotableNPC, while losses subtract level × 5.
+// Source: server-scripts/Npc.cs:1584-1585,1610-1620,1643-1653 — factionGain is level × 1.5, × 60 when isNotableNPC, while losses subtract level × 5.
 // Source: website/data/compendium.db npcs table — King Darin's level is 60.
 export function npcReputation(level = 60, notable = true): Calculation {
   const baseGain = multiplyF32(level, 1.5);

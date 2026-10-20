@@ -13,14 +13,14 @@
   // Monster level for calculator (1-60)
   let monsterLevel = $state(1);
 
-  // Source: server-scripts/Monster.cs:2970-2974 — Hunting gains stop at 100%.
+  // Source: server-scripts/Monster.cs:2973-2977 — Hunting gains stop at 100%.
   function getSkillGainChance(): number {
     if (skillLevel >= 100) return 0;
     const skill = skillLevel / 100;
     return Math.max(0, (0.7 - skill / 2) * 100);
   }
 
-  // Source: server-scripts/Monster.cs:2970-2974 — Random(1-2) / 10000 + level / 100000, below the cap only.
+  // Source: server-scripts/Monster.cs:2973-2977 — Random(1-2) / 10000 + level / 100000, below the cap only.
   function getSkillGainAmount(level: number): [number, number] {
     if (skillLevel >= 100) return [0, 0];
     const baseMin = 1 / 10000;
@@ -87,12 +87,12 @@
 
   <section id="how-it-works" class="rounded-lg border p-5 space-y-3">
     <h2 class="text-xl font-semibold">How Hunting works</h2>
-    <!-- Source: server-scripts/Monster.cs:2967-2981 — only isHunt kills record Hunting and can improve the skill. -->
+    <!-- Source: server-scripts/Monster.cs:2970-2984 — only isHunt kills record Hunting and can improve the skill. -->
     <p class="text-muted-foreground">
       <span class="block">Only creatures in the Hunting journal count.</span>
       <span class="block">Their kills can improve Hunting skill.</span>
     </p>
-    <!-- Source: server-scripts/Monster.cs:2997-2998,3064-3069 — non-boss isHunt monsters add half the player's Hunting fraction to above-Normal item drop chances. -->
+    <!-- Source: server-scripts/Monster.cs:3000-3001,3067-3072 — non-boss isHunt monsters add half the player's Hunting fraction to above-Normal item drop chances. -->
     <p class="text-muted-foreground">
       <span class="block"
         >Against non-boss Hunting-journal creatures, each 10% Hunting adds 5

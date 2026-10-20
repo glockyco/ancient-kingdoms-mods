@@ -200,7 +200,7 @@
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
-        <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD; Player.cs:11276,13372; NetworkManagerMMO.cs:DoServerDisconnect — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection and on disconnect. -->
+        <!-- Source: server-scripts/Player.cs:UpdateServer_DEAD; Player.cs:11285,13381; NetworkManagerMMO.cs:DoServerDisconnect — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection and on disconnect. -->
         The zone switches off about 5 seconds after the last player leaves, or at
         once when the last player logs out.
       </p>
@@ -222,7 +222,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:940-947 and Entity.cs:225-233 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
+          <!-- Source: server-scripts/Monster.cs:943-950 and Entity.cs:225-233 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
           Respawn timers keep running while the zone is empty. Monsters whose timers
           have ended return when someone enters.
         </li>
@@ -332,7 +332,7 @@
           </tr>
         </thead>
         <tbody class="text-muted-foreground">
-          <!-- Source: server-scripts/Monster.cs:2867-2877,769-779 — a dead boss waits for its saved respawn deadline. -->
+          <!-- Source: server-scripts/Monster.cs:2870-2880,769-779 — a dead boss waits for its saved respawn deadline. -->
           <tr class="border-b border-border/50">
             <td class="py-2 pr-4">Its respawn timer has not ended.</td>
             <td class="py-2"
@@ -341,7 +341,7 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:2226-2229 — respawn waits for the configured in-game time window. -->
+          <!-- Source: server-scripts/Monster.cs:2229-2232 — respawn waits for the configured in-game time window. -->
           <tr class="border-b border-border/50">
             <td class="py-2 pr-4">Its spawn window is closed.</td>
             <td class="py-2"
@@ -350,7 +350,7 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:2214-2220 — a failed appearance roll hides the monster and re-arms the timer. -->
+          <!-- Source: server-scripts/Monster.cs:2217-2223 — a failed appearance roll hides the monster and re-arms the timer. -->
           <tr class="border-b border-border/50">
             <td class="py-2 pr-4">Its rare-spawn roll failed.</td>
             <td class="py-2"
@@ -382,7 +382,7 @@
               ></td
             >
           </tr>
-          <!-- Source: server-scripts/Monster.cs:1613-1627,1770-1787 — a monster can return home and reset health rather than die. -->
+          <!-- Source: server-scripts/Monster.cs:1616-1630,1773-1790 — a monster can return home and reset health rather than die. -->
           <tr>
             <td class="py-2 pr-4"
               >It chased too far, returned home, and reset to full Hit Points.</td
@@ -408,7 +408,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2216-2221 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
+        <!-- Source: server-scripts/Monster.cs:2219-2224 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
         <!-- Source: server-scripts/Monster.cs:Start,SetRespawnBosses — regular rares can roll at server start; rare bosses and elites instead wait for a timer. -->
         A failed roll means another full interval of waiting. If the zone is empty
         when a roll is due, it waits for someone to enter. Missed rolls do not accumulate.
@@ -643,34 +643,34 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Player.cs:14600-14612 — the renewal zeroes every respawn-enabled monster deadline in the dungeon and persists cleared boss and elite deadlines. -->
+          <!-- Source: server-scripts/Player.cs:14609-14621 — the renewal zeroes every respawn-enabled monster deadline in the dungeon and persists cleared boss and elite deadlines. -->
           Renewal ends the wait for dead regular monsters, elites, and bosses that
           can respawn in the dungeon.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:14601-14613 — the renewal only changes respawn deadlines, leaving living monsters untouched. -->
+          <!-- Source: server-scripts/Player.cs:14610-14622 — the renewal only changes respawn deadlines, leaving living monsters untouched. -->
           Living monsters are unaffected, including bosses and rares.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:14585-14598 — renewal checks every online player in the dungeon and refuses while any is inside, regardless of party; it also refuses insufficient gold. -->
+          <!-- Source: server-scripts/Player.cs:14594-14607 — renewal checks every online player in the dungeon and refuses while any is inside, regardless of party; it also refuses insufficient gold. -->
           Every player must leave before renewal, including anyone outside your party.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:14600-14613; Portal.cs:33-63 — renewal changes monster deadlines only, while portal keys, level and item-level requirements remain checked on entry. -->
+      <!-- Source: server-scripts/Player.cs:14609-14622; Portal.cs:33-63 — renewal changes monster deadlines only, while portal keys, level and item-level requirements remain checked on entry. -->
       <p class="text-sm text-muted-foreground">
         Renewal does not remove a portal's key, level, or item-level
         requirements. See <MechanicsLink section="world#portals"
           >Portals and Entry Requirements</MechanicsLink
         >.
       </p>
-      <!-- Source: server-scripts/Player.cs:14601-14613; Monster.cs:2214-2234 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
+      <!-- Source: server-scripts/Player.cs:14610-14622; Monster.cs:2217-2237 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
       <p class="text-sm text-muted-foreground">
         Guard groups, spawn chances, seasonal events, and spawn windows still
         decide whether a monster appears after renewal.
       </p>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:14601-14613 and Monster.cs:2216-2221 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:14610-14622 and Monster.cs:2219-2224 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         <span class="block"
           >Buy renewal once, then enter the dungeon to trigger one rare-spawn
           roll.</span
@@ -866,8 +866,8 @@
           >One in-game day lasts exactly one real hour, so each game hour is 2.5
           real minutes.</span
         >
-        <!-- Source: server-scripts/Monster.cs:2226-2229 — respawn is held while outside the spawn window. -->
-        <!-- Source: server-scripts/Monster.cs:EventTimeDespawn; Monster.cs:1680-1684 — outside its window a monster with no aggro is hidden and warped home. -->
+        <!-- Source: server-scripts/Monster.cs:2229-2232 — respawn is held while outside the spawn window. -->
+        <!-- Source: server-scripts/Monster.cs:EventTimeDespawn; Monster.cs:1683-1687 — outside its window a monster with no aggro is hidden and warped home. -->
         <span class="block"
           >These monsters respawn only during their listed hours.</span
         >
@@ -929,7 +929,7 @@
         </table>
       </div>
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2222-2225 — Halloween monsters additionally only respawn while the Halloween event is active. -->
+        <!-- Source: server-scripts/Monster.cs:2225-2228 — Halloween monsters additionally only respawn while the Halloween event is active. -->
         <a
           href="/monsters/pumpkin_head"
           class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -965,7 +965,7 @@
         arrival to the zone.
       </p>
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2216-2221 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
+        <!-- Source: server-scripts/Monster.cs:2219-2224 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
         A failed spawn roll means another full interval of waiting, then another chance
         when all guards are dead together.
       </p>
@@ -1275,7 +1275,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:1770-1787 — on arriving home the monster heals to full, restores mana, clears aggro and debuffs, and destroys its summoned pets. -->
+          <!-- Source: server-scripts/Monster.cs:1773-1790 — on arriving home the monster heals to full, restores mana, clears aggro and debuffs, and destroys its summoned pets. -->
           <span class="block"
             >On returning home, a monster recovers full Hit Points and Mana,
             forgets enemies, loses harmful effects, and dismisses its summoned

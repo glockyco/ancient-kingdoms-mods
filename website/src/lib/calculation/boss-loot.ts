@@ -29,7 +29,7 @@ interface Outcome {
   register: boolean;
 }
 
-// Source: server-scripts/Monster.cs:2997-3062,3418-3436,4176-4285,4343-4373 -
+// Source: server-scripts/Monster.cs:3000-3065,3421-3439,4180-4289,4347-4377 -
 // independent template rolls precede up to 100 weighted equipment top-up attempts.
 // Returns the chance of at least one copy, not an expected item count. Supply
 // monsters.loot_inputs, never the altar-expanded display drops. The baseline

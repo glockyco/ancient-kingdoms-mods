@@ -484,7 +484,7 @@ export function computeMechanicsSpec(
   // ---------- timing ----------
   // Populated for follow-up attacks and non-spell combat-pet skill 0.
   // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:341-347 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
-  // Source: server-scripts/Player.cs:3439-3476 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Player.cs:3443-3480 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 
@@ -522,11 +522,11 @@ export function computeMechanicsSpec(
       });
     }
     if (hasMonsters) {
-      // Source: server-scripts/Monster.cs:2048-2054; Npc.cs:1302-1308 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
+      // Source: server-scripts/Monster.cs:2051-2057; Npc.cs:1304-1310 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
       const model: TimingModel = isSpell ? "monster_spell" : "monster";
       timingPairs.push({ caster: { kind: "monster" }, model });
     }
-    // Source: server-scripts/Skills.cs:1141-1169 — only non-familiar combat-pet non-spell skillIndex 0 receives haste-reduced cooldown.
+    // Source: server-scripts/Skills.cs:1141-1173 — only non-familiar combat-pet non-spell skillIndex 0 receives haste-reduced cooldown.
     for (const pet of usedByPets.filter((p) => !p.is_mercenary)) {
       timingPairs.push({
         caster: { kind: pet.is_familiar ? "familiar" : "companion" },

@@ -101,7 +101,7 @@ internal static class SkillEffectFormatter
             parts.Add($"+{FormatPercent(skill.bard_song_duration_bonus_per_level)} song duration per rank");
         if (skill.extra_gather_item_chance != 0)
             parts.Add($"{FormatPercent(skill.extra_gather_item_chance)} chance for an extra gathered item");
-        // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2102-2113 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
+        // Source: server-scripts/FoodItem.cs:Use; Pet.cs:2122-2133 — the bonus lengthens a player's Food and Drink buffs and a mercenary's Food buffs. Festive Event Food keeps its duration.
         if (skill.food_and_drink_buff_duration_bonus_per_level != 0)
             parts.Add($"+{FormatPercent(skill.food_and_drink_buff_duration_bonus_per_level)} duration per rank for your food & drink buffs and your mercenaries' food buffs, not festive food");
         if (skill.is_necromancer_reaper_form)
@@ -442,7 +442,7 @@ internal static class SkillEffectFormatter
             parts.Add(skill.ignores_see_invisibility ? "grants invis, even vs see invis" : "grants invis");
         // A buff carrying illusionRace redraws the wearer as that race until it ends.
         // Source: server-scripts/BuffSkill.cs:illusionRace,86-96 (illusionRace, HasAppearanceIllusion),
-        // server-scripts/Player.cs:6883-6893 (ReSkinPlayer picks the illusion race)
+        // server-scripts/Player.cs:6887-6897 (ReSkinPlayer picks the illusion race)
         if (!string.IsNullOrWhiteSpace(skill.illusion_race))
             parts.Add($"{skill.illusion_race} illusion");
         if (skill.is_mana_shield)
@@ -582,7 +582,7 @@ internal static class SkillEffectFormatter
             }
         }
 
-        // Source: server-scripts/Skills.cs:1617-1623,1754-1755 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second.
+        // Source: server-scripts/Skills.cs:1647-1653,1841-1842 — a negative healthPercentPerSecondBonus removes that share of maximum Health each second.
         var hpPct = ParseLinearValue(skill.health_percent_per_second_bonus);
         if (hpPct != null && hpPct.base_value != 0)
         {

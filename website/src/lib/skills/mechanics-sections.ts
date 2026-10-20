@@ -196,7 +196,7 @@ const MECHANICS_SECTIONS = [
     id: "knockback",
     shows: ({ skill }) => hasLinearValue(skill.knockback_chance),
   },
-  // Source: server-scripts/Monster.cs (root threshold speed <= -10f); Skills.cs:1592-1597
+  // Source: server-scripts/Monster.cs (root threshold speed <= -10f); Skills.cs:1622-1627
   // (BreakMezz, entity.speed <= -50f) — a slow from -10 roots, one from -50 is sleep.
   {
     id: "root",
