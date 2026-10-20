@@ -134,6 +134,8 @@ export interface PetDetailView {
   /** Pet.hasBuffs: the pet AI checks for allies to buff. */
   has_buffs: boolean;
   has_necromancer_pet_stats: boolean;
+  /** Whether owner veteran points raise this pet's stats, so withVeteran differs from atCap. */
+  veteran_stats: boolean;
   fear_immune: boolean;
   /** Familiar summon skill's maximum rank, otherwise Level.max. */
   effective_max_level: number;

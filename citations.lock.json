@@ -2243,6 +2243,9 @@
     "NecromancerMercenaryPet.cs:CanAttack": {
       "span": 0
     },
+    "NecromancerMercenaryPet.cs:GetDamageBonus": {
+      "span": 0
+    },
     "NecromancerMercenaryPet.cs:RefreshFromSummoner": {
       "span": 0
     },

@@ -600,13 +600,18 @@
               {/each}
             </tbody>
           </table>
-          <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,CanAttack; NecromancerMercenarySummons.cs:LateUpdate — the companion takes the player's level, gains 10% of the mercenary's Spell Power, attacks the mercenary's target, and leaves when either dies. -->
+          <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,GetVeteranResistanceBonus,CanAttack; NecromancerMercenarySummons.cs:LateUpdate — the companion takes the player's level, gains 10% of the mercenary's Spell Power and up to 200 veteran points of bonuses, attacks the mercenary's target, and leaves when either dies. -->
           <ul class="list-disc space-y-1 pl-5">
             <li>
               Its level matches yours. It gains {formatPercent(
                 MERCENARY_COMPANION_SPELL_POWER_SHARE,
                 { decimals: 0 },
               )} of the mercenary's Spell Power as Attack Power and as Spell Power.
+            </li>
+            <li>
+              Up to 200 of your total veteran points, each point adds 1% of its
+              base Attack Power and Spell Power and 0.25% of each base
+              resistance.
             </li>
             <li>
               It attacks only the mercenary's target while the companion and

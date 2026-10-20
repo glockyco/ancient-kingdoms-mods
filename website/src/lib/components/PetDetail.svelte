@@ -169,7 +169,7 @@
     <h2 id="pet-stats-title" class="text-xl font-semibold">Base stats</h2>
     <!-- Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13; SummonSkill.cs:99 — stats scale from their base values with level, companions stop at Level.max, and familiars use the summoning skill rank. -->
     <!-- Source: server-scripts/Health.cs:34; NecromancerPetStats.cs:50 — Health applies its exported multiplier before rounding, and the veteran Health bonus rounds separately from the unrounded multiplied base. -->
-    <!-- Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances, not block or critical chance. -->
+    <!-- Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus; NecromancerMercenaryPet.cs:GetDamageBonus,GetMagicDamageBonus,GetVeteranResistanceBonus — up to 200 veteran points add rounded bonuses to Health, damage, defense, and resistances for undead companions, and to damage and resistances for mercenary companions, not block or critical chance. -->
     <div class="overflow-x-auto rounded-md border bg-muted/30">
       <Table.Root class="text-base">
         <Table.Header>
@@ -185,7 +185,7 @@
             {:else}
               <Table.Head class="table-cell text-right">All levels</Table.Head>
             {/if}
-            {#if pet.has_necromancer_pet_stats}
+            {#if pet.veteran_stats}
               <Table.Head class="table-cell text-right">
                 Level {pet.level_max}, 200 total veteran points
               </Table.Head>
@@ -206,7 +206,7 @@
                   {formatStat(stat.id, stat.atCap)}
                 </Table.Cell>
               {/if}
-              {#if pet.has_necromancer_pet_stats}
+              {#if pet.veteran_stats}
                 <Table.Cell class="table-cell text-right tabular-nums">
                   {formatStat(stat.id, stat.withVeteran)}
                 </Table.Cell>
@@ -273,19 +273,25 @@
                 {/if}
               </dd>
             </div>
-            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus — Attack Power and Spell Power each gain RoundToInt(10% of the mercenary's Spell Power), and no veteran bonus applies. -->
+            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus — Attack Power and Spell Power each gain RoundToInt(10% of the mercenary's Spell Power). -->
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">
                 {statName("attack_power")} and {statName("spell_power")}
               </dt>
-              <dd class="space-y-1">
-                <p>
-                  Each gains {formatPercent(
-                    MERCENARY_COMPANION_SPELL_POWER_SHARE,
-                    { decimals: 0 },
-                  )} of its mercenary's Spell Power. It has no separate veteran stat
-                  bonus.
-                </p>
+              <dd>
+                Each gains {formatPercent(
+                  MERCENARY_COMPANION_SPELL_POWER_SHARE,
+                  { decimals: 0 },
+                )} of its mercenary's Spell Power.
+              </dd>
+            </div>
+            <!-- Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,GetVeteranResistanceBonus — up to 200 of the owner's total veteran points add 0.01 per point to base damage and magic damage and 0.0025 per point to each base resistance. -->
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">Veteran bonus</dt>
+              <dd>
+                Up to 200 of your total veteran points, each point adds 1% of
+                base Attack Power and Spell Power and 0.25% of each base
+                resistance. The table above shows the stats at 200 points.
               </dd>
             </div>
             <!-- Source: server-scripts/PetSkills.cs:RefreshSkillLevels — a NecromancerMercenaryPet ranks its skills like a mercenary, with a minimum of 1. -->

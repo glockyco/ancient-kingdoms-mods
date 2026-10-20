@@ -48,10 +48,37 @@ const PET_STAT_COLUMNS = PET_STATS.flatMap((field) => [
   `${field}_per_level`,
 ]).join(", ");
 
+const RESISTS = [
+  "magic_resist",
+  "poison_resist",
+  "fire_resist",
+  "cold_resist",
+  "disease_resist",
+] as const;
+
+/** The share of a base stat each total veteran point adds, for one kind of pet. */
+export type PetVeteranRates = Partial<Record<PetStatId, number>>;
+
+// Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — each veteran point adds 1% of base Attack Power and Spell Power and 0.25% of base Health, Armor Class and resistances, rounded. Block and critical chance gain nothing.
+export const UNDEAD_VETERAN_RATES: PetVeteranRates = {
+  attack_power: 0.01,
+  spell_power: 0.01,
+  health: 0.0025,
+  armor_class: 0.0025,
+  ...Object.fromEntries(RESISTS.map((id) => [id, 0.0025])),
+};
+
+// Source: server-scripts/NecromancerMercenaryPet.cs:RefreshFromSummoner,GetDamageBonus,GetMagicDamageBonus,GetVeteranResistanceBonus — each of the owner's veteran points adds 1% of base Attack Power and Spell Power and 0.25% of each base resistance, rounded. Health and Armor Class gain nothing.
+export const MERCENARY_COMPANION_VETERAN_RATES: PetVeteranRates = {
+  attack_power: 0.01,
+  spell_power: 0.01,
+  ...Object.fromEntries(RESISTS.map((id) => [id, 0.0025])),
+};
+
 export function getPetStatSnapshots(
   curves: PetStatCurves,
   maxLevel: number,
-  hasVeteranBonus: boolean,
+  veteranRates: PetVeteranRates,
 ): PetStatSnapshot[] {
   // Source: server-scripts/LinearInt.cs:10-13; LinearFloat.cs:10-13 — base plus growth for each level after 1.
   return PET_STATS.flatMap((field) => {
@@ -72,10 +99,10 @@ export function getPetStatSnapshots(
       veteranBase = multiplyF32(atCap, curves.health_multiplier);
       atCap = iround(veteranBase);
     }
-    // Source: server-scripts/NecromancerPetStats.cs:GetVeteranBonus,GetDamageBonus,GetMagicDamageBonus,GetHealthBonus — each veteran point adds 1% of base Attack Power and Spell Power and 0.25% of base Health, Armor Class and resistances, rounded. Block and critical chance gain nothing.
-    const rate = id === "attack_power" || id === "spell_power" ? 0.01 : 0.0025;
+    // The game multiplies the integer base by the 200 capped points before the float rate.
+    const rate = veteranRates[id];
     const bonus =
-      hasVeteranBonus && !isPercent
+      rate !== undefined && !isPercent
         ? iround(
             multiplyF32(
               id === "health" ? multiplyF32(veteranBase, 200) : atCap * 200,
@@ -409,6 +436,12 @@ export function getPetById(petId: string): PetDetailView | null {
 
   const skills = getPetSkills(petId);
   const recruiters = row.is_mercenary ? getMercenaryRecruiters() : [];
+  const veteranRates =
+    row.has_necromancer_pet_stats === 1
+      ? UNDEAD_VETERAN_RATES
+      : classLink.mercenary
+        ? MERCENARY_COMPANION_VETERAN_RATES
+        : {};
 
   return {
     id: row.id,
@@ -417,14 +450,11 @@ export function getPetById(petId: string): PetDetailView | null {
     type_monster: row.type_monster,
     level: row.level,
     level_max: row.level_max,
-    stats: getPetStatSnapshots(
-      row,
-      effective_max_level,
-      row.has_necromancer_pet_stats === 1,
-    ),
+    stats: getPetStatSnapshots(row, effective_max_level, veteranRates),
     has_heals: row.has_heals === 1,
     has_buffs: row.has_buffs === 1,
     has_necromancer_pet_stats: row.has_necromancer_pet_stats === 1,
+    veteran_stats: Object.keys(veteranRates).length > 0,
     fear_immune: row.fear_immune === 1,
     effective_max_level,
     classLink,

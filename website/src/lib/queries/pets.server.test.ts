@@ -5,7 +5,13 @@ import {
   petDescription,
   type PetDescriptionInput,
 } from "$lib/server/meta-description";
-import { getPetById, getPetStatSnapshots } from "./pets.server";
+import {
+  getPetById,
+  getPetStatSnapshots,
+  MERCENARY_COMPANION_VETERAN_RATES,
+  UNDEAD_VETERAN_RATES,
+  type PetVeteranRates,
+} from "./pets.server";
 
 vi.mock("$lib/db.server", () => ({
   query: vi.fn(() => []),
@@ -42,7 +48,7 @@ const stat = (
   values: PetStatCurves,
   cap: number,
   id: PetStatId,
-  veteran = false,
+  veteran: PetVeteranRates = {},
 ) =>
   getPetStatSnapshots(values, cap, veteran).find((entry) => entry.id === id)!;
 
@@ -59,7 +65,7 @@ test("zero-growth stats stay fixed at every level, including float chances", () 
   const values = curves({ health_base: 40, block_chance_base: 0.2 });
   for (const cap of [1, 4, 19]) {
     expect(
-      getPetStatSnapshots(values, cap, false).every(
+      getPetStatSnapshots(values, cap, {}).every(
         (entry) => entry.level1 === entry.atCap,
       ),
     ).toBe(true);
@@ -74,13 +80,33 @@ test("200-point veteran bonuses round half values to even and exclude chances", 
     block_chance_base: 0.2,
     critical_chance_base: 0.1,
   });
-  expect(stat(values, 1, "attack_power", true).withVeteran).toBe(3);
-  expect(stat(values, 1, "armor_class", true).withVeteran).toBe(1);
-  expect(stat(values, 1, "magic_resist", true).withVeteran).toBe(5);
+  expect(
+    stat(values, 1, "attack_power", UNDEAD_VETERAN_RATES).withVeteran,
+  ).toBe(3);
+  expect(stat(values, 1, "armor_class", UNDEAD_VETERAN_RATES).withVeteran).toBe(
+    1,
+  );
+  expect(
+    stat(values, 1, "magic_resist", UNDEAD_VETERAN_RATES).withVeteran,
+  ).toBe(5);
   for (const id of ["block_chance", "critical_chance"] as const) {
-    const chance = stat(values, 1, id, true);
+    const chance = stat(values, 1, id, UNDEAD_VETERAN_RATES);
     expect(chance.withVeteran).toBe(chance.atCap);
   }
+});
+
+test("a mercenary companion's veteran bonus raises Attack Power and resists but not Armor Class or Hit Points", () => {
+  const values = curves({
+    health_base: 400,
+    damage_base: 50,
+    defense_base: 200,
+    fire_resist_base: 30,
+  });
+  const rates = MERCENARY_COMPANION_VETERAN_RATES;
+  expect(stat(values, 1, "attack_power", rates).withVeteran).toBe(150);
+  expect(stat(values, 1, "fire_resist", rates).withVeteran).toBe(45);
+  expect(stat(values, 1, "armor_class", rates).withVeteran).toBe(200);
+  expect(stat(values, 1, "health", rates).withVeteran).toBe(400);
 });
 
 test("Hit Points round their multiplier separately from the veteran bonus", () => {
@@ -89,7 +115,7 @@ test("Hit Points round their multiplier separately from the veteran bonus", () =
     health_per_level: 2,
     health_multiplier: 1.3,
   });
-  expect(stat(values, 1, "health", true)).toMatchObject({
+  expect(stat(values, 1, "health", UNDEAD_VETERAN_RATES)).toMatchObject({
     level1: 5,
     atCap: 5,
     withVeteran: 8,
