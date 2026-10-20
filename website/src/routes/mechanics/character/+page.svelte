@@ -580,11 +580,14 @@
           skillbar to drag it between slots. Macros are saved locally with your
           skillbar, separately for each character and specialization.
         </p>
-        <!-- Source: server-scripts/UISkillbarMacros.cs:RefreshCompletions,Tick,AcceptCompletion; server-scripts/SkillbarMacroCompletion.cs:GetSuggestions — the editor suggests commands, learned active skills and carried usable items, and Tab accepts the first suggestion. -->
+        <!-- Source: server-scripts/UISkillbarMacros.cs:RefreshCompletions,MoveCompletion,AcceptCompletion,SelectNextCommand,TryCloseFromInput; server-scripts/UIMacroCommandInput.cs:OnUpdateSelected; server-scripts/SkillbarMacroCompletion.cs:GetSuggestions — the editor suggests commands, learned active skills, carried usable items, companion orders and living active mercenary names; arrow keys move the highlight, Enter or Tab accepts it, Tab without suggestions moves to the next line, and Cancel closes the suggestions first. -->
         <p>
-          The editor suggests commands, learned active skills, and carried
-          usable items as you type. Click a suggestion to select it, or press
-          Tab to accept the first one.
+          The editor suggests commands, learned active skills, carried usable
+          items, companion orders, and the names of your living active
+          mercenaries as you type. Use the Up and Down arrows to highlight a
+          suggestion, then press Enter or Tab, or click it. With no suggestions
+          showing, Tab moves to the next command line. Cancel closes the
+          suggestions before it closes the editor.
         </p>
       </div>
 
@@ -614,6 +617,25 @@
               <tr class="border-b">
                 <td class="p-2"><code>/useitem item name</code></td>
                 <td class="p-2">Use an item in your inventory or backpacks.</td>
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse,TryParseCompanionOrder; server-scripts/UISkillbar.cs:ExecuteCompanionMacro — mercenary orders name one active mercenary, quoted when the name has a space, or all of them. -->
+              <tr class="border-b">
+                <td class="p-2"
+                  ><code>/mercenary name order</code> or
+                  <code>/mercenary all order</code></td
+                >
+                <td class="p-2"
+                  >Give an order to one of your active mercenaries, or to all of
+                  them. Put a name that contains a space in double quotes.</td
+                >
+              </tr>
+              <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse,TryParseCompanionOrder; server-scripts/UISkillbar.cs:ExecuteCompanionMacro — pet orders go to the active combat pet, never a familiar. -->
+              <tr class="border-b">
+                <td class="p-2"><code>/pet order</code></td>
+                <td class="p-2"
+                  >Give an order to your combat companion. Familiars do not take
+                  orders.</td
+                >
               </tr>
               <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParse; server-scripts/UISkillbar.cs:ExecuteMacroCommand — say and s send local chat. -->
               <tr class="border-b">
@@ -668,6 +690,20 @@
           when that line runs. It becomes empty text if you have no target. For
           example: <code>/p Attacking %t</code>.
         </p>
+        <!-- Source: server-scripts/UISkillbar.cs:ExecuteCompanionMacro; server-scripts/Pet.cs:SetIndividualHoldPosition,ComeHereNow,UserCode_CmdAttackTarget__NetworkIdentity__NetworkConnectionToClient,UserCode_CmdSetAggresiveStance__Boolean__NetworkConnectionToClient; server-scripts/Player.cs:UserCode_CmdSetHoldPositionPets__Boolean — attack needs an attackable target within 15 units; hold and follow change only the ordered companion until a group hold order resets them. -->
+        <p>
+          The orders are <code>attack</code>, <code>aggressive</code>,
+          <code>defensive</code>, <code>hold</code> and <code>follow</code>, in
+          any letter case. <code>attack</code> sends the companion at your
+          target, which must be attackable and within 15 yd. <code>hold</code>
+          and <code>follow</code> work like
+          <a
+            href="/mercenaries#commands"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Hold Position and Come Here</a
+          >, but only for the companions you name. The group Hold Position and
+          Follow orders replace them.
+        </p>
       </div>
 
       <div class="space-y-2">
@@ -687,12 +723,14 @@
           rules still apply. Normal skill use can still queue a skill behind a
           current cast or move you into range.
         </p>
-        <!-- Source: server-scripts/UISkillbar.cs:ExecuteMacroCommand; server-scripts/SkillbarMacroSequence.cs:Tick — unknown, unlearned or passive skills and missing usable items stop the sequence, but cooldown warnings and unsuccessful ordinary actions do not. -->
+        <!-- Source: server-scripts/UISkillbar.cs:ExecuteMacroCommand,ExecuteCompanionMacro; server-scripts/SkillbarMacroSequence.cs:Tick — unknown, unlearned or passive skills, missing usable items and companion orders that no companion receives stop the sequence, but cooldown warnings and unsuccessful ordinary actions do not. -->
         <p>
           An unknown, unlearned, or passive skill, or a missing usable item,
-          stops the remaining commands. A cooldown warning does not stop the
-          sequence. Failed target, range, or resource checks and an invalid
-          follow target do not stop the remaining commands either.
+          stops the remaining commands. So does a companion order with no living
+          active companion to take it, or an attack order without an attackable
+          target in reach. A cooldown warning does not stop the sequence. Failed
+          target, range, or resource checks and an invalid follow target do not
+          stop the remaining commands either.
         </p>
       </div>
 

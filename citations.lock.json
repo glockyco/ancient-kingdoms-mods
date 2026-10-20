@@ -2595,6 +2595,9 @@
     "Pet.cs:OnDeath": {
       "span": 0
     },
+    "Pet.cs:SetIndividualHoldPosition": {
+      "span": 0
+    },
     "Pet.cs:TryQueueHealSkill": {
       "span": 0
     },
@@ -4357,6 +4360,9 @@
     "SkillbarMacroCommand.cs:TryParse": {
       "span": 0
     },
+    "SkillbarMacroCommand.cs:TryParseCompanionOrder": {
+      "span": 0
+    },
     "SkillbarMacroCompletion.cs:GetSuggestions": {
       "span": 0
     },
@@ -5125,6 +5131,9 @@
       "sha256": "055fefedfb3ba091676aa38343d2f8e858c05a910096ebefff7bac7f18009c74",
       "span": 8
     },
+    "UIMacroCommandInput.cs:OnUpdateSelected": {
+      "span": 0
+    },
     "UIMap.cs:176-192": {
       "sha256": "59f2b111f915f05e5c4d06ae2f0365ba20931cbdb45fe98a291ca2a82182926c",
       "span": 17
@@ -5284,6 +5293,9 @@
       "span": 0
     },
     "UISkillbar.cs:Awake": {
+      "span": 0
+    },
+    "UISkillbar.cs:ExecuteCompanionMacro": {
       "span": 0
     },
     "UISkillbar.cs:ExecuteMacroCommand": {

@@ -557,6 +557,14 @@
               </tbody>
             </table>
           </div>
+          <!-- Source: server-scripts/SkillbarMacroCommand.cs:TryParseCompanionOrder; server-scripts/UISkillbar.cs:ExecuteCompanionMacro — macros send attack, stance, hold and follow orders to named mercenaries, all of them, or the combat pet. -->
+          <p class="text-sm leading-6 text-muted-foreground">
+            <a href="/mechanics/character#macros" class={link}
+              >Skillbar macros</a
+            >
+            can give these orders to one mercenary by name, to all of them, or to
+            your companion.
+          </p>
         </div>
       </div>
 
