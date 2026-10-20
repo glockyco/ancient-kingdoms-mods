@@ -271,3 +271,42 @@ def test_home_capability_roots_recipe_without_turning_structure_into_carried_ite
         ).fetchone()[0]
         == 0
     )
+
+
+@pytest.mark.parametrize(
+    ("altar_type", "gate", "expected"),
+    [("avatar", 0, 58), ("forgotten", 30, 30)],
+)
+def test_altar_kill_hint_uses_authored_wave_level_only_for_avatar_altars(
+    conn, altar_type, gate, expected
+):
+    waves = [
+        {"wave_number": 0, "monsters": [{"monster_id": "add", "base_level": 53}]},
+        {"wave_number": 2, "monsters": [{"monster_id": "boss", "base_level": 58}]},
+    ]
+    item(conn, "boss_loot")
+    conn.execute("INSERT INTO monsters (id, name, level) VALUES ('boss', 'Boss', 1)")
+    conn.execute(
+        """INSERT INTO altars (id, name, type, min_level_required, waves)
+        VALUES ('altar', 'Altar', ?, ?, ?)""",
+        (altar_type, gate, json.dumps(waves)),
+    )
+    conn.execute("INSERT INTO loot_pools (id, kind) VALUES ('boss_pool', 'monster')")
+    method(conn, "boss_kill", "kill", "altar_final_loot")
+    conn.execute(
+        """INSERT INTO acquisition_kill_details
+        (id, monster_id, loot_pool_id, loot_zone_number, respawn, exp_multiplier, is_boss,
+         is_elite, is_hunt, is_summoned_pet, altar_id, wave_number, wave_member_index,
+         event_kind, gold_min, gold_max, gold_probability)
+        VALUES ('boss_kill', 'boss', 'boss_pool', 0, 0, 1, 1, 0, 0, 0, 'altar', 2, 0,
+                'altar_final', 0, 0, 0)"""
+    )
+    conn.execute(
+        """INSERT INTO acquisition_providers_altars (id, method_id, altar_id)
+        VALUES ('boss_kill:provider', 'boss_kill', 'altar')"""
+    )
+    output(conn, "boss_kill", "boss_loot", delivery="corpse")
+
+    derive(conn)
+
+    assert state(conn, "boss_kill") == (1, expected)

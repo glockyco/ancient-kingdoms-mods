@@ -1656,11 +1656,25 @@ def _physical_seeds(conn: sqlite3.Connection) -> tuple[set[str], dict[str, int]]
     for row in _rows(
         conn,
         """
-        SELECT p.method_id,a.min_level_required FROM acquisition_providers_altars p
-        JOIN altars a ON a.id=p.altar_id
+        SELECT p.method_id,a.type,a.min_level_required,a.waves,
+               d.wave_number,d.wave_member_index
+        FROM acquisition_providers_altars p JOIN altars a ON a.id=p.altar_id
+        LEFT JOIN acquisition_kill_details d ON d.id=p.method_id AND d.altar_id=a.id
     """,
     ):
-        add(row["method_id"], row["min_level_required"])
+        hint = row["min_level_required"]
+        # Source: server-scripts/AvatarEvent.cs:SummonMonsters; DefaultEvent.cs:SummonMonsters — an
+        # avatar altar spawns each wave member at its authored level, while a Forgotten Altar scales
+        # it to the activating player, whom its level gate already describes.
+        if row["type"] == "avatar" and row["wave_number"] is not None:
+            wave = next(
+                wave
+                for wave in json.loads(row["waves"])
+                if wave["wave_number"] == row["wave_number"]
+            )
+            member = wave["monsters"][row["wave_member_index"]]
+            hint = max(hint, member["base_level"])
+        add(row["method_id"], hint)
     for row in _rows(
         conn,
         """
