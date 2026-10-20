@@ -888,7 +888,12 @@
                 <div
                   class="flex justify-between items-center p-2 rounded bg-muted col-span-2"
                 >
-                  <span class="text-sm font-medium">On-Hit Effect</span>
+                  <!-- Source: server-scripts/WeaponItem.cs:procOnSpellCast; Skills.cs:TrySpellCastWeaponProc — a flagged weapon rolls after damaging spells instead of on hits. -->
+                  <span class="text-sm font-medium"
+                    >{data.item.weapon_proc_on_spell_cast
+                      ? "Spell-Cast Effect"
+                      : "On-Hit Effect"}</span
+                  >
                   <span class="text-sm">
                     <a
                       href="/skills/{data.item.weapon_proc_effect_id}"

@@ -209,9 +209,9 @@ function weaponDescription(item: Item): string {
   const cat = equipmentNoun(item.weapon_category, "weapon");
   const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
-  // Source: server-scripts/WeaponItem.cs — weapon_proc_effect_id triggers on hit
+  // Source: server-scripts/WeaponItem.cs:procOnSpellCast; Skills.cs:TrySpellCastWeaponProc — weapon_proc_effect_id triggers on hit, or after damaging spells when the weapon is flagged
   const proc = item.weapon_proc_effect_name
-    ? ` Procs ${item.weapon_proc_effect_name} on hit.`
+    ? ` Procs ${item.weapon_proc_effect_name} ${item.weapon_proc_on_spell_cast ? "after damaging spells" : "on hit"}.`
     : "";
   return `${q} ${cat}${classes}.${level}${itemStatPhrase(item)}${proc}`;
 }

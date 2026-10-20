@@ -107,13 +107,6 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         href: "/mechanics/combat#wild-strike",
         linkText: "Wild Strike damage",
       },
-      {
-        text: "Game defect: A broken bow adds no Attack Power, but melee attacks still subtract its Base Damage. Repair or unequip the bow before melee combat.",
-        source:
-          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:223-227; server-scripts/FrontalDamageSkill.cs:88-92 — broken bows are still subtracted",
-        href: "/mechanics/combat#damage-formulas",
-        linkText: "Broken bow damage",
-      },
     ],
   },
   rogue: {
@@ -139,13 +132,6 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
           "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1183-1197,1386-1410 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
-      },
-      {
-        text: "Game defect: A broken off-hand weapon adds no Attack Power, but melee attacks still subtract half its Base Damage, rounded up. Repair or unequip it before melee combat.",
-        source:
-          "Source: server-scripts/Equipment.cs:230-247; server-scripts/TargetDamageSkill.cs:228-232 — broken off-hand weapons are still subtracted",
-        href: "/mechanics/combat#damage-formulas",
-        linkText: "Broken-weapon damage and defect note",
       },
     ],
   },

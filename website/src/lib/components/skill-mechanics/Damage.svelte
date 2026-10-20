@@ -63,10 +63,10 @@
         </p>
       {/if}
       {#if block.calculation.inputs?.some((input) => input.key === "bowDamage" || input.key === "offhandDamage")}
-        <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage — the bow and off-hand deductions use weapon Base Damage even when the weapon is broken. -->
+        <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; FrontalDamageSkill.cs:Apply — the bow and off-hand deductions apply only while the weapon has durability. -->
         <p class="text-muted-foreground">
-          Enter Base Damage from the weapon's tooltip, even if the weapon is
-          broken. Enter 0 if no weapon is equipped in the named slot.
+          Enter Base Damage from the weapon's tooltip. Enter 0 if the weapon is
+          broken or no weapon is equipped in the named slot.
         </p>
       {/if}
       {#if block.calculation.inputs?.some((input) => input.key === "meleeDamage")}

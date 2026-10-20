@@ -1151,10 +1151,6 @@
       "sha256": "d4d02cf5cadd5589ab5d45803bbf837660ef4d229cb4b06a4e3469204c4cc61a",
       "span": 11
     },
-    "Equipment.cs:230-247": {
-      "sha256": "109e58a359a60963e30e02eaddf6ad926ce9ed4f998d35a6e2e330a4cf3e7454",
-      "span": 18
-    },
     "Equipment.cs:6-58": {
       "sha256": "e9b79de110336cb6a64e5b7cdc153f5e694dfec2a592170a7c6c8c062622961a",
       "span": 53
@@ -1368,10 +1364,6 @@
     "FrontalDamageSkill.cs:72-80": {
       "sha256": "c1a810d6f7ac3c869365138f98629cd52c102d800cf5b58fdcf9556c799f0ebf",
       "span": 9
-    },
-    "FrontalDamageSkill.cs:88-92": {
-      "sha256": "053dac7139d9f7028c899ad9749d0c6ecab3d59ba13e95b3cdbbdec34258afb2",
-      "span": 5
     },
     "FrontalDamageSkill.cs:Apply": {
       "span": 0
@@ -2252,6 +2244,9 @@
       "span": 0
     },
     "NecromancerMercenaryPet.cs:RefreshFromSummoner": {
+      "span": 0
+    },
+    "NecromancerMercenarySkills.cs:UpdateCast": {
       "span": 0
     },
     "NecromancerMercenarySummons.cs:LateUpdate": {
@@ -4119,6 +4114,9 @@
     "PlayerSkills.cs:TryUse": {
       "span": 0
     },
+    "PlayerSkills.cs:UpdateChannel": {
+      "span": 0
+    },
     "PlayerSkills.cs:UserCode_CmdStopBardSong__Int32": {
       "span": 0
     },
@@ -4511,6 +4509,9 @@
     "Skills.cs:StartCast": {
       "span": 0
     },
+    "Skills.cs:TrySpellCastWeaponProc": {
+      "span": 0
+    },
     "Skills.cs:hasDoubleExp": {
       "span": 0
     },
@@ -4682,10 +4683,6 @@
       "sha256": "21e8a8d8f03dd674bfc9fcb60124fb24d24f686fcd209de376100e963be67489",
       "span": 16
     },
-    "TargetDamageSkill.cs:223-227": {
-      "sha256": "6ab533cc5eba19d4ba9c13984f4ed9329e19a133b236fc7b581acb100142c1ab",
-      "span": 5
-    },
     "TargetDamageSkill.cs:223-232": {
       "sha256": "09c442664d39d452c75a8d5bdbb8d5d176ea31ad35d878760a6d487e678b6a33",
       "span": 10
@@ -4693,10 +4690,6 @@
     "TargetDamageSkill.cs:228-231": {
       "sha256": "07e369d766e76f096ec6a173d05e7c8880ad2dd8e7927bf1016adebd29b5520c",
       "span": 4
-    },
-    "TargetDamageSkill.cs:228-232": {
-      "sha256": "f7c9b502c1d7c2e13c6f56d0d3afb0886bd3c281e3eae9217e752e24461ddd43",
-      "span": 5
     },
     "TargetDamageSkill.cs:244": {
       "sha256": "558733c5ec920748d1cb5453c6c9754a3b012725a9197b83e5b41f314c95680d",
@@ -5450,7 +5443,7 @@
       "sha256": "b4a7445beb9e3fe6521be6bd170aa00fa690cb1052098c9191709ef500291573",
       "span": 1
     },
-    "WeaponItem.cs": {
+    "WeaponItem.cs:procOnSpellCast": {
       "span": 0
     },
     "Wisdom.cs:102-105": {

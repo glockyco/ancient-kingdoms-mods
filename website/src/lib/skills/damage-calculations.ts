@@ -248,7 +248,7 @@ export function cadenceCalculation(
   };
 }
 
-// Source: server-scripts/TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:60-93; TargetProjectileSkill.cs:Apply — a Ranger's single-target and frontal melee lose the bow's Base Damage, a Rogue's single-target melee half the off-hand's (rounded up), and a player's bow shot the main-hand weapon's while it has durability.
+// Source: server-scripts/TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:60-93; TargetProjectileSkill.cs:Apply — a Ranger's single-target and frontal melee lose the bow's Base Damage, a Rogue's single-target melee half the off-hand's (rounded up), and a player's bow shot the main-hand weapon's, each only while that weapon has durability.
 /** The Base Damage deductions a damage formula applies for these casters. */
 export function damageDeductions(
   skill: Pick<SkillDetailView, "skill_type" | "is_scroll">,

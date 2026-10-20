@@ -3,7 +3,6 @@
   import RoundedTerm from "$lib/components/RoundedTerm.svelte";
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
-  import GameBug from "$lib/components/reference/GameBug.svelte";
   import RefTable from "$lib/components/reference/RefTable.svelte";
   import Topic from "$lib/components/reference/Topic.svelte";
   import {
@@ -250,7 +249,7 @@
     </p>
 
     <h4>Weapon deductions</h4>
-    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; EquipmentItem.cs:ToolTip — player Ranger targeted and frontal damage subtract bow Base Damage, player Rogue targeted damage subtracts half off-hand Base Damage rounded up, player bow attacks subtract the Base Damage of a main-hand weapon with durability left, and mercenaries and Ranger frontal projectiles retain weapon damage. -->
+    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; TargetProjectileSkill.cs:Apply; FrontalDamageSkill.cs:Apply; FrontalProjectilesSkill.cs:Apply; EquipmentItem.cs:ToolTip — player Ranger targeted and frontal damage subtract bow Base Damage, player Rogue targeted damage subtracts half off-hand Base Damage rounded up, player bow attacks subtract the Base Damage of a main-hand weapon, each only while the weapon has durability left, and mercenaries and Ranger frontal projectiles retain weapon damage. -->
     <!-- Source: website/data/compendium.db skills.skill_type — Swift Slash is a Ranger target_damage skill and Forest Guardians Aid a Ranger frontal_projectiles skill. -->
     <RefTable caption="Weapon damage deducted from starting damage">
       <thead>
@@ -265,13 +264,16 @@
             Player Ranger targeted and frontal damage skills, such as
             <a href="/skills/swift_slash">Swift Slash</a>
           </th>
-          <td>Bow's Base Damage</td>
+          <td>Bow's Base Damage, unless it is broken</td>
         </tr>
         <tr>
           <th scope="row"
             >Player Rogue targeted damage skills of any damage type</th
           >
-          <td>50% of off-hand weapon's Base Damage, rounded up</td>
+          <td>
+            50% of off-hand weapon's Base Damage, rounded up, unless it is
+            broken
+          </td>
         </tr>
         <tr>
           <th scope="row">Player targeted bow attacks</th>
@@ -290,13 +292,6 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Equipment.cs:230-247; TargetDamageSkill.cs:223-232; FrontalDamageSkill.cs:88-92 — broken slot 13 equipment adds no damage but is still subtracted from melee damage. -->
-    <GameBug>
-      A broken bow adds no Base Damage to Attack Power but still subtracts its
-      full Base Damage from Ranger melee attacks. A broken off-hand weapon also
-      adds nothing but still subtracts half its Base Damage, rounded up, from
-      Rogue melee attacks. Repair or unequip the broken item.
-    </GameBug>
     <h4>Character window Attack Power and Spell Power</h4>
     <!-- Source: server-scripts/Combat.cs:damage,magicDamage; Strength.cs:GetDamageBonus; Intelligence.cs:GetMagicDamageBonus — percentage damage applies to the full flat stat; only the Intelligence addition and percentage addition round, not the flat-stat sum. -->
     <Formula calculation={characterDamageCalculation} />
@@ -363,16 +358,21 @@
   </Topic>
 
   <Topic id="weapon-on-hit-effects">
-    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; ProjectileSkillEffect.cs:FixedUpdate — weapon effects roll before the hit; broken melee weapons are excluded, and Rogue off-hand chance is halved. -->
+    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; ProjectileSkillEffect.cs:FixedUpdate — weapon effects roll before the hit; broken weapons and spell-cast effects are excluded, and Rogue off-hand chance is halved. -->
     <p>
       Each melee or bow auto attack rolls the weapon's listed on-hit chance,
       even when the attack then misses.
     </p>
-    <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; ProjectileSkillEffect.cs:FixedUpdate — broken melee weapons are excluded from on-hit rolls, and Rogue off-hand chance is halved. -->
     <ul>
-      <li>A broken melee weapon never triggers its effect.</li>
+      <li>A broken weapon never triggers its effect.</li>
       <li>
         A Rogue's off-hand weapon triggers its effect at half the listed chance.
+      </li>
+      <!-- Source: server-scripts/Skills.cs:ApplyFinishedCast,TrySpellCastWeaponProc; PlayerSkills.cs:UpdateChannel; NecromancerMercenarySkills.cs:UpdateCast — a main-hand weapon flagged procOnSpellCast rolls once after a damage spell or damage-over-time debuff spell finishes, or after a channel's last pulse, and never on auto attacks. -->
+      <li>
+        A main-hand weapon with a spell-cast effect rolls its chance once when
+        you finish a damaging spell or the last pulse of a channel, and never on
+        auto attacks.
       </li>
     </ul>
   </Topic>
