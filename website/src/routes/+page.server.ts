@@ -34,16 +34,13 @@ export const load: PageServerLoad = async ({
   // viewer's locale.
   const checkedAt = new Date().toISOString().slice(0, 10);
 
-  // Edge-cache the rendered HTML. s-maxage matches the Steam upstream cache
-  // TTL so we don't render the page more often than the data changes; the
-  // shorter max-age keeps the user-agent's local copy snappy without showing
-  // truly stale data on back-forward navigations. On upstream failure we
-  // shorten both windows so the next visitor recovers quickly.
-  setHeaders({
-    "cache-control": live.ok
-      ? "public, s-maxage=600, max-age=120"
-      : "public, s-maxage=60, max-age=30",
-  });
+  // Edge-cache the rendered HTML for one minute, like every other document in
+  // _headers. A deploy deletes the hashed bundles the previous HTML references,
+  // so a longer window serves a home page that fails to load its scripts. The
+  // Steam response keeps its own 10-minute subrequest cache, so a render costs
+  // no extra Steam request. max-age=0 also stops the zone's browser cache TTL
+  // from raising the browser copy to hours.
+  setHeaders({ "cache-control": "public, max-age=0, s-maxage=60" });
 
   return { live, checkedAt };
 };
