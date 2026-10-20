@@ -1,7 +1,6 @@
 <script lang="ts">
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
-  import GameBug from "$lib/components/reference/GameBug.svelte";
   import RefTable from "$lib/components/reference/RefTable.svelte";
   import SeeAlso from "$lib/components/reference/SeeAlso.svelte";
   import Topic from "$lib/components/reference/Topic.svelte";
@@ -81,13 +80,6 @@
       Debuffs without a damage type cannot be resisted, and their damage over
       time is reduced by Magic Resist.
     </p>
-    <!-- Source: server-scripts/Skills.cs:GetFinalDamageDoT — the poison-or-disease branch that does not scale with Intelligence subtracts Poison Resist. -->
-    <!-- Runtime verification: docs/game-bugs/dexterity-scaled-disease-ticks-use-poison-resist.md -->
-    <GameBug>
-      Disease damage over time that scales with Dexterity, such as
-      <a href="/skills/virulent_slash">Virulent Slash</a>, is reduced by Poison
-      Resist instead of Disease Resist.
-    </GameBug>
     <SeeAlso
       links={[
         { href: "#avoidance", label: "Block, Miss and Resist" },
