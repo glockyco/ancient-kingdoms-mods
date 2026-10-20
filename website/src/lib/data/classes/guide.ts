@@ -235,9 +235,9 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
         linkText: "Blood Pact costs by rank",
       },
       {
-        text: "Death Bloom spends 50% of your maximum Hit Points, rounded up, to heal another player, companion or mercenary. You must have more Hit Points than the cost. It cannot heal you or a familiar.",
+        text: "Death Bloom spends 50% of your maximum Hit Points, rounded up, to heal another player, companion or mercenary. With a monster selected, it heals the one that monster is attacking. You must have more Hit Points than the cost. It cannot heal you or a familiar.",
         source:
-          "Source: server-scripts/NecromancerDeathBloomSkill.cs:7-17,28-45,52-59 — healthCostPercent is 0.5; GetHealthCost rounds up; CheckSelf requires health above cost; CorrectedTarget excludes self and familiars",
+          "Source: server-scripts/NecromancerDeathBloomSkill.cs:7-17,28-45,52-59; server-scripts/TargetHealSkill.cs:CorrectedTarget — healthCostPercent is 0.5; GetHealthCost rounds up; CheckSelf requires health above cost; CorrectedTarget follows a selected monster's target and excludes self and familiars",
         href: "/skills/death_bloom",
         linkText: "Death Bloom healing",
       },

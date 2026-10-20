@@ -13,7 +13,7 @@
   <Calculation calculation={deathBloomCalculation(skill)} />
   <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:GetIntelligenceBonus,GetHealingAmount — Max(0, intelligence.value) feeds the heal, and the override adds no Wisdom bonus. -->
   <p class="text-muted-foreground">Wisdom does not increase this heal.</p>
-  <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:CheckSelf,CorrectedTarget,Apply; server-scripts/TargetHealSkill.cs:CheckDistance — another living Player or non-familiar Pet within cast range; current Health must exceed the cost, which is paid in full. -->
+  <!-- Source: server-scripts/NecromancerDeathBloomSkill.cs:CheckSelf,CorrectedTarget,Apply; server-scripts/TargetHealSkill.cs:CorrectedTarget,CheckDistance — another living Player or non-familiar Pet within cast range, or the one a targeted monster is attacking; current Health must exceed the cost, which is paid in full. -->
   <p class="text-muted-foreground">
     Targets another living player, or a living
     <a
@@ -23,9 +23,10 @@
     or
     <a href="/summons" class="text-blue-600 dark:text-blue-400 hover:underline"
       >companion</a
-    >, including your own, within {formatLinear(skill.cast_range, " yd")}. It
-    cannot heal you or a familiar. You must have more Hit Points than the cost,
-    and you pay it in full even if the target is already at maximum Hit Points.
+    >, including your own, within {formatLinear(skill.cast_range, " yd")}. With
+    a monster selected, it heals the one that monster is attacking. It cannot
+    heal you or a familiar. You must have more Hit Points than the cost, and you
+    pay it in full even if the target is already at maximum Hit Points.
   </p>
   <!-- Source: server-scripts/TargetHealSkill.cs:Apply — critical healing multiplies by 3 in 10% of critical heals, otherwise by 2, and is capped by missing Health. -->
   <p class="text-muted-foreground">

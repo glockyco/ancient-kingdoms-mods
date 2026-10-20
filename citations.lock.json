@@ -4761,9 +4761,6 @@
     "TargetHealSkill.cs:Apply": {
       "span": 0
     },
-    "TargetHealSkill.cs:CheckDistance": {
-      "span": 0
-    },
     "TargetHealSkill.cs:CorrectedTarget": {
       "span": 0
     },
