@@ -264,20 +264,17 @@
             Player Ranger targeted and frontal damage skills, such as
             <a href="/skills/swift_slash">Swift Slash</a>
           </th>
-          <td>Bow's Base Damage, unless it is broken</td>
+          <td>Bow's Base Damage</td>
         </tr>
         <tr>
           <th scope="row"
             >Player Rogue targeted damage skills of any damage type</th
           >
-          <td>
-            50% of off-hand weapon's Base Damage, rounded up, unless it is
-            broken
-          </td>
+          <td>50% of off-hand weapon's Base Damage, rounded up</td>
         </tr>
         <tr>
           <th scope="row">Player targeted bow attacks</th>
-          <td>Main-hand weapon's Base Damage, unless it is broken</td>
+          <td>Main-hand weapon's Base Damage</td>
         </tr>
         <tr>
           <th scope="row">

@@ -580,14 +580,11 @@
           skillbar to drag it between slots. Macros are saved locally with your
           skillbar, separately for each character and specialization.
         </p>
-        <!-- Source: server-scripts/UISkillbarMacros.cs:RefreshCompletions,MoveCompletion,AcceptCompletion,SelectNextCommand,TryCloseFromInput; server-scripts/UIMacroCommandInput.cs:OnUpdateSelected; server-scripts/SkillbarMacroCompletion.cs:GetSuggestions — the editor suggests commands, learned active skills, carried usable items, companion orders and living active mercenary names; arrow keys move the highlight, Enter or Tab accepts it, Tab without suggestions moves to the next line, and Cancel closes the suggestions first. -->
+        <!-- Source: server-scripts/UISkillbarMacros.cs:RefreshCompletions,MoveCompletion,AcceptCompletion; server-scripts/UIMacroCommandInput.cs:OnUpdateSelected; server-scripts/SkillbarMacroCompletion.cs:GetSuggestions — the editor suggests commands, learned active skills, carried usable items, companion orders and living active mercenary names; arrow keys move the highlight and Enter or Tab accepts it. -->
         <p>
           The editor suggests commands, learned active skills, carried usable
-          items, companion orders, and the names of your living active
-          mercenaries as you type. Use the Up and Down arrows to highlight a
-          suggestion, then press Enter or Tab, or click it. With no suggestions
-          showing, Tab moves to the next command line. Cancel closes the
-          suggestions before it closes the editor.
+          items, companion orders, and your mercenaries' names as you type. Pick
+          one with the arrow keys and Enter or Tab, or click it.
         </p>
       </div>
 
@@ -693,16 +690,14 @@
         <!-- Source: server-scripts/UISkillbar.cs:ExecuteCompanionMacro; server-scripts/Pet.cs:SetIndividualHoldPosition,ComeHereNow,UserCode_CmdAttackTarget__NetworkIdentity__NetworkConnectionToClient,UserCode_CmdSetAggresiveStance__Boolean__NetworkConnectionToClient; server-scripts/Player.cs:UserCode_CmdSetHoldPositionPets__Boolean — attack needs an attackable target within 15 units; hold and follow change only the ordered companion until a group hold order resets them. -->
         <p>
           The orders are <code>attack</code>, <code>aggressive</code>,
-          <code>defensive</code>, <code>hold</code> and <code>follow</code>, in
-          any letter case. <code>attack</code> sends the companion at your
-          target, which must be attackable and within 15 yd. <code>hold</code>
+          <code>defensive</code>, <code>hold</code> and <code>follow</code>.
+          <code>attack</code> needs a target within 15 yd. <code>hold</code>
           and <code>follow</code> work like
           <a
             href="/mercenaries#commands"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Hold Position and Come Here</a
-          >, but only for the companions you name. The group Hold Position and
-          Follow orders replace them.
+          >, but only for the companions you name.
         </p>
       </div>
 

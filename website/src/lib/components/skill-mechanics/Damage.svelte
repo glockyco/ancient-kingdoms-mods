@@ -63,17 +63,15 @@
         </p>
       {/if}
       {#if block.calculation.inputs?.some((input) => input.key === "bowDamage" || input.key === "offhandDamage")}
-        <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; FrontalDamageSkill.cs:Apply — the bow and off-hand deductions apply only while the weapon has durability. -->
+        <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; FrontalDamageSkill.cs:Apply — the bow and off-hand deductions use the weapon's Base Damage. -->
         <p class="text-muted-foreground">
-          Enter Base Damage from the weapon's tooltip. Enter 0 if the weapon is
-          broken or no weapon is equipped in the named slot.
+          Enter Base Damage from the weapon's tooltip.
         </p>
       {/if}
       {#if block.calculation.inputs?.some((input) => input.key === "meleeDamage")}
-        <!-- Source: server-scripts/TargetProjectileSkill.cs:Apply — a bow shot deducts the main-hand weapon only while it has durability. -->
+        <!-- Source: server-scripts/TargetProjectileSkill.cs:Apply — a bow shot deducts the main-hand weapon's Base Damage. -->
         <p class="text-muted-foreground">
-          Enter your main-hand weapon's Base Damage from its tooltip. Enter 0 if
-          it is broken or your main hand is empty.
+          Enter your main-hand weapon's Base Damage from its tooltip.
         </p>
       {/if}
       {#if skill.is_scroll}
