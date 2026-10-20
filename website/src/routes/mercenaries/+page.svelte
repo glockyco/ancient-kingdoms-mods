@@ -358,7 +358,7 @@
           </div>
         </div>
       </div>
-      <!-- Source: server-scripts/UITarget.cs:467-498; UIMercenaries.cs:OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:11064-11086 — combat prevents target-panel dismissal, recall rejects dead mercenaries, and deletion checks equipped gear. -->
+      <!-- Source: server-scripts/UITarget.cs:467-498; UIEquipmentMercenary.cs:CanDisband; UIMercenaries.cs:CanUseRecruiter,OnRecallClicked,OnRenameClicked,OnDeleteClicked; Player.cs:11064-11086 — combat prevents dismissal and every recruiter action, recall rejects dead mercenaries, and deletion checks equipped gear. -->
       <div class="grid grid-cols-1 gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
@@ -367,7 +367,9 @@
             <span class="block"
               >Dismissing a mercenary sends it back to your roster.</span
             >
-            <span class="block">You cannot dismiss a mercenary in combat.</span>
+            <span class="block"
+              >You cannot dismiss a mercenary or use a recruiter in combat.</span
+            >
             <span class="block"
               >A dead mercenary must be resurrected before you can summon it
               again.</span

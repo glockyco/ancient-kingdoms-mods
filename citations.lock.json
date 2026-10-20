@@ -5023,6 +5023,9 @@
       "sha256": "fa5e1ed0ea117341a2c33bd106b17e617c2ea806866ebbffa01c9ae7f3799aa6",
       "span": 15
     },
+    "UIEquipmentMercenary.cs:CanDisband": {
+      "span": 0
+    },
     "UIEquipmentMercenary.cs:Update": {
       "span": 0
     },
@@ -5207,7 +5210,7 @@
     "UIMercenaries.cs:CalculatePriceMercenaryLevel": {
       "span": 0
     },
-    "UIMercenaries.cs:OnRecallClicked": {
+    "UIMercenaries.cs:CanUseRecruiter": {
       "span": 0
     },
     "UIMercenaries.cs:OnResurrectClicked": {
