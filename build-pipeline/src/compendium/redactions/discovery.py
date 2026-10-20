@@ -68,6 +68,7 @@ ENTITY_JSON_CARRIERS: tuple[tuple[str, str, tuple[str, ...], str], ...] = (
     ("items", "augment_skill_bonuses_with_names", ("skill_id",), "skills"),
     ("npcs", "drops", ("item_id",), "items"),
     ("skills", "granted_by_items", ("item_id",), "items"),
+    ("skills", "player_classes", ("*",), "classes"),
 )
 
 # Keys holding a coordinate inside a JSON value.

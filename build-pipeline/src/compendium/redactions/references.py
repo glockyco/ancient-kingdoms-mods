@@ -137,10 +137,12 @@ PROVIDED_BY: frozenset[tuple[str, str]] = frozenset()
 
 # An armour set bonus is reached by wearing its pieces, so the pieces provide it.
 # A set whose every piece is removed is unobtainable.
+# A class skill is reached by playing a class that lists it.
 JSON_PROVIDED_BY: frozenset[tuple[str, str]] = frozenset(
     {
         ("items", "augment_armor_set_item_ids"),
         ("items", "augment_armor_set_members"),
+        ("skills", "player_classes"),
     }
 )
 

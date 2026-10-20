@@ -351,6 +351,22 @@ def _seeds(conn: sqlite3.Connection, redactions: RedactionConfig) -> list[Remova
     return seeds
 
 
+def _global_roots(conn: sqlite3.Connection) -> set[Node]:
+    """Roots that no zone contains. A class is played everywhere, so it reaches
+    the skills it lists whatever zones are removed."""
+    present = {
+        row[0]
+        for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    }
+    roots = {("classes", row[0]) for row in conn.execute("SELECT id FROM classes")}
+    if "acquisition_global_roots" in present:
+        roots |= {
+            ("acquisition_global_roots", row[0])
+            for row in conn.execute("SELECT id FROM acquisition_global_roots")
+        }
+    return roots
+
+
 def decide(
     conn: sqlite3.Connection, redactions: RedactionConfig
 ) -> tuple[list[Removal], list[Reference]]:
@@ -359,19 +375,11 @@ def decide(
     graph = build_graph(conn, references)
 
     zones = {row[0] for row in conn.execute(f"SELECT id FROM {ZONE_TABLE}")}
-    all_roots = {(ZONE_TABLE, zone) for zone in zones}
-    kept_roots = {(ZONE_TABLE, zone) for zone in zones - redactions.exclude_zone_ids}
-    present = {
-        row[0]
-        for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    }
-    if "acquisition_global_roots" in present:
-        global_roots = {
-            ("acquisition_global_roots", row[0])
-            for row in conn.execute("SELECT id FROM acquisition_global_roots")
-        }
-        all_roots |= global_roots
-        kept_roots |= global_roots
+    global_roots = _global_roots(conn)
+    all_roots = {(ZONE_TABLE, zone) for zone in zones} | global_roots
+    kept_roots = {
+        (ZONE_TABLE, zone) for zone in zones - redactions.exclude_zone_ids
+    } | global_roots
 
     seeds = _seeds(conn, redactions)
     seed_nodes = {(seed.table, seed.entity_id) for seed in seeds}
@@ -606,11 +614,7 @@ def _expand_dependencies(
     removed = {(removal.table, removal.entity_id) for removal in removals}
     graph = build_graph(conn, references)
     roots = {("zones", row[0]) for row in conn.execute("SELECT id FROM zones")}
-    if any(reference.table == "acquisition_global_roots" for reference in references):
-        roots |= {
-            ("acquisition_global_roots", row[0])
-            for row in conn.execute("SELECT id FROM acquisition_global_roots")
-        }
+    roots |= _global_roots(conn)
     originally_reached = graph.reach(roots, set())
     parents = graph.parents()
     conditional_parents = {

@@ -346,6 +346,31 @@ class ReferenceKindTests(ReachabilityTestCase):
 
         self.assertTrue(self._present("skills", "blessing"))
 
+    def test_a_class_skill_survives_when_only_a_removed_monster_also_casts_it(self):
+        # A player of the class learns the skill wherever the class is played,
+        # so the class list keeps it although its only monster caster is gone.
+        self.conn.execute(
+            "INSERT INTO classes (id, name, description, primary_role, difficulty, "
+            "resource_type, compatible_races) VALUES "
+            "('druid', 'Druid', '', 'healer', 1, 'mana', '[]')"
+        )
+        self._skill("fireball")
+        self.conn.execute(
+            "UPDATE skills SET player_classes = '[\"druid\"]' WHERE id = 'fireball'"
+        )
+        self._monster("adventurer", REDACTED)
+        self.conn.execute(
+            "INSERT INTO monster_skills "
+            "(monster_id, skill_id, skill_index, runtime_level) VALUES (?, ?, 0, 1)",
+            ("adventurer", "fireball"),
+        )
+        self.conn.commit()
+
+        self._run()
+
+        self.assertFalse(self._present("monsters", "adventurer"))
+        self.assertTrue(self._present("skills", "fireball"))
+
 
 class ProseTests(ReachabilityTestCase):
     """Prose that names an excluded zone is not a reference."""
