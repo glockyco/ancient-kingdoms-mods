@@ -55,6 +55,8 @@ RULES = {
         )
     },
 }
+# Cost groups a chest attempt chooses between: its key first, otherwise lockpicks.
+CHEST_COST_ALTERNATIVES = frozenset({"chest_key_first", "chest_lockpick_fallback"})
 PROVIDERS = {
     "monster_spawns": "monster_spawn_id",
     "npcs": "npc_id",
@@ -1626,12 +1628,16 @@ def _physical_seeds(conn: sqlite3.Connection) -> tuple[set[str], dict[str, int]]
     for row in _rows(
         conn,
         """
-        SELECT p.method_id,n.roles FROM acquisition_providers_npcs p JOIN npcs n ON n.id=p.npc_id
-        WHERE EXISTS(SELECT 1 FROM npc_spawns s WHERE s.npc_id=n.id)
+        SELECT p.method_id,m.kind,n.roles,z.level_median FROM acquisition_providers_npcs p
+        JOIN acquisition_methods m ON m.id=p.method_id JOIN npcs n ON n.id=p.npc_id
+        JOIN npc_spawns s ON s.npc_id=n.id LEFT JOIN zones z ON z.id=s.zone_id
     """,
     ):
         roles = json.loads(row["roles"] or "{}")
-        add(row["method_id"], 40 if roles.get("is_merchant_adventurer") else 1)
+        base = 40 if roles.get("is_merchant_adventurer") else 1
+        # A shop is reached where its vendor stands, like a chest or a gathering spot.
+        zone = row["level_median"] if row["kind"] == "vendor" else None
+        add(row["method_id"], max(base, zone or 0))
     for family, target, target_column, zone_column in (
         (
             "resource_spawns",
@@ -1714,11 +1720,13 @@ def _physical_seeds(conn: sqlite3.Connection) -> tuple[set[str], dict[str, int]]
     for row in _rows(
         conn,
         """
-        SELECT d.id,q.level_required FROM acquisition_quest_details d JOIN quests q ON q.id=d.quest_id
+        SELECT d.id,q.level_required,q.level_recommended FROM acquisition_quest_details d
+        JOIN quests q ON q.id=d.quest_id
     """,
     ):
+        # A quest is done at the level it recommends. Its acceptance gate is a requirement.
         if row["id"] in rooted:
-            hints[row["id"]] = row["level_required"]
+            hints[row["id"]] = max(row["level_required"], row["level_recommended"] or 0)
     return rooted, hints
 
 
@@ -1734,7 +1742,7 @@ def _derived_state(conn: sqlite3.Connection) -> dict[str, tuple[int, int | None]
     for row in _rows(
         conn,
         """
-        SELECT g.method_id,i.* FROM acquisition_cost_groups g
+        SELECT g.method_id,g.selection_rule,i.* FROM acquisition_cost_groups g
         JOIN acquisition_inputs i ON i.cost_group_id=g.id WHERE i.resource_kind='item'
     """,
     ):
@@ -1753,93 +1761,117 @@ def _derived_state(conn: sqlite3.Connection) -> dict[str, tuple[int, int | None]
     carried_hints: dict[str, int] = {}
     structures: set[str] = set()
     structure_hints: dict[str, int] = {}
-    changed = True
-    while changed:
-        changed = False
-        for method, definition in methods.items():
-            if method not in rooted and (
-                (inventory_providers[method] & carried)
-                or (home_providers[method] & structures)
-            ):
-                rooted.add(method)
-                changed = True
-            if method not in rooted:
-                continue
-            setup = definition["setup_method_id"]
-            if setup is not None and setup not in rooted:
-                continue
-            required = costs[method]
-            complete = all(
-                not row["withheld"] and row["item_id"] in carried_hints
-                for row in required
+
+    def cost_level(method: str) -> tuple[bool, int | None]:
+        """Whether every cost can be carried, and the hardest one to obtain.
+
+        A chest's key and its lockpick fallback are alternatives, so the easier one counts.
+        """
+        groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for row in costs[method]:
+            groups[row["cost_group_id"]].append(row)
+        levels: list[int] = []
+        alternatives: list[int] = []
+        has_alternatives = False
+        for rows in groups.values():
+            known = all(
+                not row["withheld"] and row["item_id"] in carried_hints for row in rows
             )
-            candidates: list[int] = []
-            if method in seed_hints:
-                candidates.append(seed_hints[method])
-            candidates.extend(
-                carried_hints[item]
-                for item in inventory_providers[method]
-                if item in carried_hints
+            level = (
+                max(carried_hints[row["item_id"]] for row in rows) if known else None
             )
-            candidates.extend(
-                structure_hints[item]
-                for item in home_providers[method]
-                if item in structure_hints
-            )
-            # Crafting and carried transformations need a complete AND branch.
-            needs_inputs = definition["kind"] in {
-                "recipe",
-                "pack_use",
-                "portable_chest",
-                "merge",
-                "fragment",
-                "essence",
-                "blessing",
-            }
-            hint = (
-                max(
-                    [
-                        min(candidates),
-                        *(carried_hints[row["item_id"]] for row in required),
-                    ]
-                )
-                if complete and candidates
-                else None
-            )
-            if definition["kind"] == "recipe" and required:
-                hint = (
-                    max(carried_hints[row["item_id"]] for row in required)
-                    if complete
-                    else None
-                )
-            if not needs_inputs and candidates:
-                hint = min(candidates)
-            if hint is not None and (method not in hints or hint < hints[method]):
-                hints[method] = hint
-                changed = True
-            for output in outputs[method]:
-                item = output["item_id"]
-                if item is None or output["withheld"]:
-                    continue
-                delivery = output["delivery"]
-                target = (
-                    carried
-                    if delivery in {"inventory", "corpse"}
-                    else structures
-                    if delivery == "placed_structure"
-                    else None
-                )
-                target_hints = carried_hints if target is carried else structure_hints
-                if target is None:
-                    continue
-                if item not in target:
-                    target.add(item)
-                    changed = True
-                if hint is not None and (
-                    item not in target_hints or hint < target_hints[item]
+            if rows[0]["selection_rule"] in CHEST_COST_ALTERNATIVES:
+                has_alternatives = True
+                if level is not None:
+                    alternatives.append(level)
+            elif level is None:
+                return False, None
+            else:
+                levels.append(level)
+        if has_alternatives:
+            if not alternatives:
+                return False, None
+            levels.append(min(alternatives))
+        return True, max(levels) if levels else None
+
+    # Purchases, quests and chests whose item costs no source reaches still keep their own
+    # level, but only once every reachable cost has had the chance to raise it.
+    for allow_unpaid in (False, True):
+        changed = True
+        while changed:
+            changed = False
+            for method, definition in methods.items():
+                if method not in rooted and (
+                    (inventory_providers[method] & carried)
+                    or (home_providers[method] & structures)
                 ):
-                    target_hints[item] = hint
+                    rooted.add(method)
                     changed = True
+                if method not in rooted:
+                    continue
+                setup = definition["setup_method_id"]
+                if setup is not None and setup not in rooted:
+                    continue
+                candidates: list[int] = []
+                if method in seed_hints:
+                    candidates.append(seed_hints[method])
+                candidates.extend(
+                    carried_hints[item]
+                    for item in inventory_providers[method]
+                    if item in carried_hints
+                )
+                candidates.extend(
+                    structure_hints[item]
+                    for item in home_providers[method]
+                    if item in structure_hints
+                )
+                base = min(candidates) if candidates else None
+                complete, cost = cost_level(method)
+                # Crafting and carried transformations need a complete AND branch.
+                needs_inputs = definition["kind"] in {
+                    "recipe",
+                    "pack_use",
+                    "portable_chest",
+                    "merge",
+                    "fragment",
+                    "essence",
+                    "blessing",
+                }
+                hint: int | None = None
+                if definition["kind"] == "recipe" and costs[method]:
+                    hint = cost if complete else None
+                elif complete and base is not None:
+                    hint = base if cost is None else max(base, cost)
+                elif allow_unpaid and not needs_inputs:
+                    hint = base
+                if hint is not None and (method not in hints or hint < hints[method]):
+                    hints[method] = hint
+                    changed = True
+                for output in outputs[method]:
+                    item = output["item_id"]
+                    if item is None or output["withheld"]:
+                        continue
+                    delivery = output["delivery"]
+                    target = (
+                        carried
+                        if delivery in {"inventory", "corpse"}
+                        else structures
+                        if delivery == "placed_structure"
+                        else None
+                    )
+                    target_hints = (
+                        carried_hints if target is carried else structure_hints
+                    )
+                    if target is None:
+                        continue
+                    if item not in target:
+                        target.add(item)
+                        changed = True
+                    if hint is not None and (
+                        item not in target_hints or hint < target_hints[item]
+                    ):
+                        target_hints[item] = hint
+                        changed = True
     return {method: (int(method in rooted), hints.get(method)) for method in methods}
 
 

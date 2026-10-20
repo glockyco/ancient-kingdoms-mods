@@ -16,7 +16,7 @@ def conn(tmp_path):
     connection = create_database(tmp_path / "acquisition.db", SCHEMA_PATH)
     connection.executescript("""
         INSERT INTO zones (id, zone_id, name, level_median)
-        VALUES ('town', 1, 'Town', 7);
+        VALUES ('town', 1, 'Town', 1), ('frontier', 2, 'Frontier', 30);
         INSERT INTO npcs (id, name, roles)
         VALUES ('merchant', 'Merchant', '{"is_merchant":true}');
         INSERT INTO npc_spawns (id, npc_id, zone_id)
@@ -105,9 +105,15 @@ def state(conn, method_id):
     ).fetchone()
 
 
-def test_vendor_hints_keep_regular_and_adventurer_meanings(conn):
+def test_vendor_hints_use_the_vendor_zone_and_the_adventurer_cutoff(conn):
     for item_id in ("ordinary", "adventurer"):
         item(conn, item_id)
+    conn.executescript("""
+        INSERT INTO npcs (id, name, roles)
+        VALUES ('frontier_merchant', 'Frontier Merchant', '{"is_merchant":true}');
+        INSERT INTO npc_spawns (id, npc_id, zone_id)
+        VALUES ('frontier_spawn', 'frontier_merchant', 'frontier');
+    """)
     conn.execute(
         "INSERT INTO npcs (id, name, roles) VALUES ('adventurer_vendor', 'Adventurer Vendor', ?)",
         (json.dumps({"is_merchant_adventurer": True}),),
@@ -115,13 +121,46 @@ def test_vendor_hints_keep_regular_and_adventurer_meanings(conn):
     conn.execute(
         "INSERT INTO npc_spawns (id, npc_id, zone_id) VALUES ('adventurer_spawn', 'adventurer_vendor', 'town')"
     )
-    vendor(conn, "ordinary_sale", "ordinary")
+    vendor(conn, "ordinary_sale", "ordinary", npc="frontier_merchant")
     vendor(conn, "adventurer_sale", "adventurer", npc="adventurer_vendor")
 
     derive(conn)
 
-    assert state(conn, "ordinary_sale") == (1, 1)
+    assert state(conn, "ordinary_sale") == (1, 30)
     assert state(conn, "adventurer_sale") == (1, 40)
+
+
+def test_a_purchase_takes_the_level_of_the_token_it_costs(conn):
+    for item_id in ("token", "armor"):
+        item(conn, item_id)
+    conn.execute(
+        "INSERT INTO monsters (id, name, level) VALUES ('guardian', 'Guardian', 55)"
+    )
+    conn.execute(
+        "INSERT INTO loot_pools (id, kind) VALUES ('guardian_pool', 'monster')"
+    )
+    method(conn, "guardian_kill", "kill", "monster_loot")
+    conn.execute(
+        """INSERT INTO acquisition_kill_details
+        (id, monster_id, loot_pool_id, loot_zone_number, respawn, exp_multiplier, is_boss,
+         is_elite, is_hunt, is_summoned_pet, event_kind, gold_min, gold_max, gold_probability)
+        VALUES ('guardian_kill', 'guardian', 'guardian_pool', 1, 1, 1, 0, 0, 0, 0,
+                'authored', 0, 0, 0)"""
+    )
+    conn.execute(
+        "INSERT INTO monster_spawns (id, monster_id, zone_id, level) VALUES ('guardian_spawn', 'guardian', 'town', 55)"
+    )
+    conn.execute(
+        """INSERT INTO acquisition_providers_monster_spawns (id, method_id, monster_spawn_id)
+        VALUES ('guardian_kill:provider', 'guardian_kill', 'guardian_spawn')"""
+    )
+    output(conn, "guardian_kill", "token", delivery="corpse")
+    vendor(conn, "token_sale", "armor")
+    inputs(conn, "token_sale", ["token"])
+
+    derive(conn)
+
+    assert state(conn, "token_sale") == (1, 55)
 
 
 def test_npc_definition_without_placement_does_not_root_sale(conn):
@@ -310,3 +349,24 @@ def test_altar_kill_hint_uses_authored_wave_level_only_for_avatar_altars(
     derive(conn)
 
     assert state(conn, "boss_kill") == (1, expected)
+
+
+def test_quest_reward_takes_the_recommended_level_not_the_acceptance_gate(conn):
+    item(conn, "roast")
+    conn.execute(
+        """INSERT INTO quests (id, name, quest_type, level_required, level_recommended)
+        VALUES ('bison_hunt', 'Bison Hunt', 'kill', 15, 40)"""
+    )
+    method(conn, "hunt_reward", "quest_complete")
+    conn.execute(
+        "INSERT INTO acquisition_quest_details (id, quest_id, phase) VALUES ('hunt_reward', 'bison_hunt', 'complete')"
+    )
+    conn.execute(
+        """INSERT INTO acquisition_providers_npcs (id, method_id, npc_id, offer_index)
+        VALUES ('hunt_reward:provider', 'hunt_reward', 'merchant', 0)"""
+    )
+    output(conn, "hunt_reward", "roast")
+
+    derive(conn)
+
+    assert state(conn, "hunt_reward") == (1, 40)
