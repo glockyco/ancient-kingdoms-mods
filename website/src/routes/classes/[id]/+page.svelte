@@ -1095,14 +1095,6 @@
         <Zap class="h-5 w-5 text-purple-500" />
         Skills ({data.skills.length})
       </h2>
-      <p class="mb-4 text-sm text-muted-foreground">
-        Base skills are your auto attacks. Core and Mastery skills have no tier
-        limit. Each tier allows only the stated number of skills. Utility skills
-        include Fishing, Mining and Teleport. Veteran skills cost veteran
-        points. Points already spent are a learning prerequisite, not a rank's
-        cost.
-      </p>
-
       <DataTable
         data={data.skills}
         columns={skillColumns}
