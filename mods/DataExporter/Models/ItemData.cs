@@ -114,6 +114,7 @@ public class ItemData
     public string weapon_required_ammo_id { get; set; }
     public string weapon_proc_effect_id { get; set; }
     public float weapon_proc_effect_probability { get; set; }
+    public bool weapon_proc_on_spell_cast { get; set; }
     public int weapon_delay { get; set; }
 
     // === AugmentItem fields (when item_type = augment) ===

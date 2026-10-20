@@ -508,6 +508,7 @@ public class ItemExporter : BaseExporter
             itemData.weapon_proc_effect_id = SanitizeId(weaponItem.procEffect.name);
         }
         itemData.weapon_proc_effect_probability = weaponItem.procEffectProbability;
+        itemData.weapon_proc_on_spell_cast = weaponItem.procOnSpellCast;
         itemData.weapon_delay = weaponItem.delay;
     }
 

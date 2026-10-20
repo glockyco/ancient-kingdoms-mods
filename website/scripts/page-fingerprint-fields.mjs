@@ -279,6 +279,7 @@ export const PAGE_FINGERPRINT_FIELDS = Object.freeze({
     "weapon_proc_effect_id",
     "weapon_proc_effect_name",
     "weapon_proc_effect_probability",
+    "weapon_proc_on_spell_cast",
     "weapon_required_ammo_id",
   ],
   monster_skills: ["monster_id", "runtime_level", "skill_id", "skill_index"],

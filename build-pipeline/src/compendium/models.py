@@ -439,6 +439,7 @@ class ItemData(BaseModel):
     structure_price: int = 0
     weapon_delay: int = 0
     weapon_proc_effect_probability: float = 0.0
+    weapon_proc_on_spell_cast: bool = False
     fragment_amount_needed: int = 0
 
     # Equipment properties (continued)

@@ -427,6 +427,7 @@ CREATE TABLE items (
     weapon_proc_effect_probability REAL DEFAULT 0.0,
     weapon_proc_effect_id TEXT REFERENCES skills(id),
     weapon_proc_effect_name TEXT,
+    weapon_proc_on_spell_cast INTEGER NOT NULL DEFAULT 0 CHECK (weapon_proc_on_spell_cast IN (0,1)),
     weapon_delay INTEGER DEFAULT 0,
     weapon_required_ammo_id TEXT REFERENCES items(id),
     weapon_required_ammo_withheld INTEGER NOT NULL DEFAULT 0 CHECK (weapon_required_ammo_withheld IN (0,1)),
