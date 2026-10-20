@@ -500,7 +500,7 @@ describe("healing and effect calculations", () => {
     expect(calculation.inputs?.map((input) => input.key)).not.toContain(
       "hitDamage",
     );
-    expect(resultNumbers(calculation, { maxHealth: 100 })[0]).toBe(311);
+    expect(resultNumbers(calculation, { maxHealth: 100 })[0]).toBe(244);
     expect(
       resultNumbers(
         aggroCalculation({ ...aggro, skill_type: "target_projectile" }),
@@ -519,7 +519,7 @@ describe("healing and effect calculations", () => {
     expect(calculation.inputs?.map((input) => input.key)).toEqual([
       "maxHealth",
     ]);
-    expect(resultNumbers(calculation, { maxHealth: 1000 })).toEqual([4000]);
+    expect(resultNumbers(calculation, { maxHealth: 1000 })).toEqual([3333]);
   });
   test("player pet-restoration scrolls retain Wisdom, ordinary scrolls and mercenary casts do not", () => {
     const restore = skill({
@@ -613,7 +613,7 @@ describe("healing and effect calculations", () => {
     ).toBe(12);
     const fixed = aggroCalculation({ ...threat, max_level: 1 }, "player");
     expect(fixed.inputs?.map((input) => input.key)).toEqual(["maxHealth"]);
-    expect(resultNumbers(fixed, { maxHealth: 100 })).toEqual([110]);
+    expect(resultNumbers(fixed, { maxHealth: 100 })).toEqual([43]);
   });
 });
 

@@ -928,9 +928,6 @@
       "sha256": "1d2ce2516ad376e484b10d9eac4d4d2e8d6743cee74d89e78a6b1cd79910b5f9",
       "span": 23
     },
-    "DamageSkill.cs:ToolTip": {
-      "span": 0
-    },
     "DamageSkill.cs:TryConsumeWildStrike": {
       "span": 0
     },

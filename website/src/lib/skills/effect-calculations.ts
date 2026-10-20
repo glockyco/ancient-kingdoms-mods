@@ -803,7 +803,7 @@ export function effectScalingCalculation(
 /** The hit the threat example adds, standing in for the skill's damage before defenses. */
 const EXAMPLE_HIT_DAMAGE = 200;
 
-// Source: server-scripts/Combat.cs:DealDamageAt; TargetDamageSkill.cs:ApplyDamage — positive explicit threat adds the caster's maximum Health, hit damage and separately rounded control terms, capped at target current Health.
+// Source: server-scripts/Combat.cs:DealDamageAt; TargetDamageSkill.cs:ApplyDamage — positive explicit threat adds one third of the caster's maximum Health, rounded, plus hit damage and separately rounded control terms, capped at target current Health.
 // Source: server-scripts/AreaDamageSkill.cs:Apply — projectile delivery omits the Health contribution.
 export function aggroCalculation(
   skill: SkillDetailView,
@@ -883,7 +883,8 @@ export function aggroCalculation(
         ? [
             {
               name: `${statName("health")} contribution`,
-              expression: `${owner} maximum Hit Points`,
+              expression: `${owner} maximum Hit Points ÷ 3`,
+              rounding: "nearest" as const,
             },
           ]
         : []),
@@ -910,7 +911,7 @@ export function aggroCalculation(
       const stunTime = atRank(skill.stun_time ?? zero, rank);
       const fearChance = atRank(skill.fear_chance ?? zero, rank);
       const fearTime = atRank(skill.fear_time ?? zero, rank);
-      const health = direct && aggro > 0 ? values.maxHealth : 0;
+      const health = direct ? values.maxHealth : 0;
       const damage = dealsDamage ? EXAMPLE_HIT_DAMAGE : 0;
       const threat = hitThreat(
         aggro,
@@ -924,7 +925,7 @@ export function aggroCalculation(
       );
       const amounts = [
         aggro,
-        ...(direct ? [health] : []),
+        ...(direct ? [threat.health] : []),
         ...(dealsDamage ? [damage] : []),
         ...(stuns ? [threat.stun] : []),
         ...(fears ? [threat.fear] : []),
@@ -962,6 +963,13 @@ export function aggroCalculation(
           ...(fears
             ? [
                 `Fear threat: ${percent(fearChance, { decimals: 2, preserveNonzero: true })} × ${seconds(fearTime)} × 10 = ${number(threat.fear)}, rounded`,
+              ]
+            : []),
+          ...(direct
+            ? [
+                aggro > 0
+                  ? `${statName("health")} contribution: ${number(health)} ÷ 3 = ${number(threat.health)}, rounded`
+                  : `${statName("health")} contribution: 0, because the skill threat is not positive`,
               ]
             : []),
           `Threat added: ${amounts.map((value) => number(value)).join(" + ")} = ${number(threat.total)}`,

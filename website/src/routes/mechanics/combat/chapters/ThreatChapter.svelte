@@ -1,7 +1,6 @@
 <script lang="ts">
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
-  import GameBug from "$lib/components/reference/GameBug.svelte";
   import { threatCalculation } from "$lib/calculation/combat-rules";
 </script>
 
@@ -16,12 +15,8 @@
     Blocked, missed and resisted hits generate just as much threat as hits that
     land.
   </p>
-  <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; AreaDamageSkill.cs:Apply; Combat.cs:DealDamageAt — eligible targeted and direct area hits add maximum Health to positive listed threat before the hit's damage and control threat. -->
+  <!-- Source: server-scripts/TargetDamageSkill.cs:ApplyDamage; AreaDamageSkill.cs:Apply; Combat.cs:DealDamageAt — eligible targeted and direct area hits add one third of maximum Health, rounded, to positive listed threat before the hit's damage and control threat. -->
   <Formula calculation={threatCalculation} />
-  <!-- Source: server-scripts/DamageSkill.cs:ToolTip; TargetDamageSkill.cs:ApplyDamage; AreaDamageSkill.cs:Apply — threat tooltips show one third of maximum Health where eligible hits add it all. -->
-  <GameBug>
-    The in-game tooltip understates how much threat these skills generate.
-  </GameBug>
   <!-- Source: server-scripts/Combat.cs:DealDamageAt — negative listed threat reduces existing monster threat to at least 1. -->
   <p>
     A skill with negative listed threat lowers the attacker's threat on the

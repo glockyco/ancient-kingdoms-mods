@@ -11,13 +11,6 @@
   const negativeThreat = $derived(
     skill.aggro !== null && atRank(skill.aggro, 1) < 0,
   );
-  // Source: server-scripts/AreaDamageSkill.cs:Apply — projectile hits add no maximum Health to threat.
-  const damageThreat = $derived(
-    skill.skill_type === "target_damage" ||
-      (skill.skill_type === "area_damage" &&
-        !skill.is_bard_final_cadence &&
-        !skill.area_projectile),
-  );
 </script>
 
 <div class="space-y-2">
@@ -51,13 +44,6 @@
             : "other",
       )}
     />
-  {/if}
-  {#if !negativeThreat && damageThreat && skill.tooltip_template?.includes("{AGGRO}")}
-    <!-- Source: server-scripts/DamageSkill.cs:ToolTip; TargetDamageSkill.cs:ApplyDamage; AreaDamageSkill.cs:Apply — direct damage adds caster maximum Health; the tooltip uses the local player's maximum Health divided by three. -->
-    <!-- Runtime verification: docs/game-bugs/threat-tooltip-understates-health-bonus.md -->
-    <p class="text-muted-foreground">
-      This skill generates more threat than its in-game tooltip shows.
-    </p>
   {/if}
   <p class="text-muted-foreground">
     See <a

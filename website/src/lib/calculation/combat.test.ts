@@ -268,13 +268,15 @@ describe("combat calculations", () => {
     });
   });
 
-  it("rounds control threat independently and caps the total at victim Hit Points", () => {
+  it("adds a rounded third of maximum Hit Points only for positive skill threat, rounds control threat independently and caps the total", () => {
     expect(hitThreat(10, 2000, 201, 0.5, 3, 0.1, 5, 5000)).toEqual({
+      health: 667,
       stun: 15,
       fear: 5,
-      total: 2231,
+      total: 898,
     });
     expect(hitThreat(0, 2000, 201, 0.25, 1, 0, 0, 1000)).toEqual({
+      health: 0,
       stun: 2,
       fear: 0,
       total: 203,
