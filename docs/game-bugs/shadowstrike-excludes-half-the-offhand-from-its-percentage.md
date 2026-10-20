@@ -61,9 +61,7 @@ The percentage uses the attack power shown to the player, or the tooltip explici
 
 `server-scripts/Equipment.cs:GetDamageBonus` includes the damage bonus of each equipped, usable item. `server-scripts/UICharacterInfo.cs:Update` displays `player.combat.damage` as attack power.
 
-`server-scripts/TargetDamageSkill.cs:ApplyDamage` starts physical damage from `combat.damage`. For a Rogue with an item in equipment slot 13, it subtracts `CeilToInt(offhandWeapon.damageBonus * 0.5f)`. It then adds the skill's `damage.Get(skillLevel)` and multiplies by `damagePercent.Get(skillLevel)`.
-
-The subtraction checks only that the offhand slot holds an item, so it also runs for an offhand at zero durability, whose damage the character sheet no longer counts. [A bow or offhand weapon at zero durability removes damage it no longer provides](broken-offhand-subtracts-damage-it-never-gave.md) reports that case.
+`server-scripts/TargetDamageSkill.cs:ApplyDamage` starts physical damage from `combat.damage`. For a Rogue with an item in equipment slot 13 that has durability left, it subtracts `CeilToInt(offhandWeapon.damageBonus * 0.5f)`. It then adds the skill's `damage.Get(skillLevel)` and multiplies by `damagePercent.Get(skillLevel)`.
 
 The running rank-1 Shadowstrike asset supplied `damage=1` and `damagePercent=2`. Its tooltip only advertises the percentage of attack power.
 
