@@ -576,7 +576,7 @@
           <!-- Source: server-scripts/Skills.cs:924-933,1141-1173; Player.cs:3443-3480 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
-              <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast — mercenary casts use its own equipment and buff spell haste. -->
+              <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast; Combat.cs:spellHaste — mercenary casts use the mercenary's own spell haste, bounded to −50%–50%. -->
               <p>
                 {#if skill.player_classes.length === 0 && facts.usedByMercenary}The
                   mercenary's{/if}

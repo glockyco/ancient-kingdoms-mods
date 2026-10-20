@@ -38,7 +38,7 @@ import {
   dispelCalculation,
   dealtRageCalculation,
 } from "./combat-rules";
-import { DEFENSE, FIRE_RESIST, SPELL_HASTE } from "./inputs";
+import { DEFENSE, FIRE_RESIST } from "./inputs";
 
 describe("combat calculations", () => {
   it("rounds mitigation up and bounds the stat percentage", () => {
@@ -147,11 +147,6 @@ describe("combat calculations", () => {
     expect(attackInterval(1, 30, 0.2).wait).toBeCloseTo(0.96);
     expect(attackInterval(1, 30, 2).wait).toBe(0.25);
     expect(attackInterval(1, 100, -2).wait).toBe(2);
-  });
-
-  it("uses full Spell Haste rather than the displayed 50% cap", () => {
-    expect(spellInterval(2, 0.75)).toEqual({ casting: 0.5, total: 1.25 });
-    expect(timingCalculation(true).inputs?.[1]).toBe(SPELL_HASTE);
   });
 
   it("adds independent float durations without narrowing the double interval", () => {

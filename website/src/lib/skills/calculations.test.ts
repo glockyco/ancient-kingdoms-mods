@@ -67,19 +67,18 @@ describe("Hit Points conversion calculations", () => {
 
 describe("channel pulse timing", () => {
   test.each([
-    [0, [1, 2, 3]],
-    [0.75, [0.25, 0.5, 0.75]],
-    [-0.75, [1.75, 3.5, 5.25]],
-    [1, [0.02, 0.03, 0.05]],
-    [1.5, [0.02, 0.03, 0.05]],
-  ] as [number, number[]][])(
-    "uses the full haste sum %s and the channel minimum",
-    (spellHaste, times) => {
+    [0, 3, [1, 2, 3]],
+    [0.5, 3, [0.5, 1, 1.5]],
+    [-0.5, 3, [1.5, 3, 4.5]],
+    [0.5, 0.06, [0.02, 0.03, 0.05]],
+  ] as [number, number, number[]][])(
+    "shortens a %s-haste channel of %ss and keeps the channel minimum",
+    (spellHaste, castTime, times) => {
       const calculation = channelCalculation(
         skill({
           is_spell: true,
           channel_pulses: 3,
-          cast_time: { base_value: 3, bonus_per_level: 0 },
+          cast_time: { base_value: castTime, bonus_per_level: 0 },
         }),
       );
       expect(

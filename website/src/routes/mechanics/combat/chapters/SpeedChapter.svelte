@@ -1,7 +1,6 @@
 <script lang="ts">
   import Chapter from "$lib/components/reference/Chapter.svelte";
   import Formula from "$lib/components/reference/Formula.svelte";
-  import GameBug from "$lib/components/reference/GameBug.svelte";
   import RefTable from "$lib/components/reference/RefTable.svelte";
   import Topic from "$lib/components/reference/Topic.svelte";
   import { timingCalculation } from "$lib/calculation/combat";
@@ -34,7 +33,7 @@
           <td>Shortens weapon wait</td>
           <td>No effect</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:924-933; Player.cs:2905-2906,GetSkillRefractoryPeriod — player spell casts subtract the equipment and skill spell haste total, followed by a fixed auto-attack wait. -->
+        <!-- Source: server-scripts/Skills.cs:924-933; Player.cs:2905-2906,GetSkillRefractoryPeriod — player spell casts subtract the bounded spell haste, followed by a fixed auto-attack wait. -->
         <tr>
           <th scope="row">
             Player spell auto attack, such as
@@ -72,7 +71,7 @@
           <td>Shortens cooldown</td>
           <td>No effect</td>
         </tr>
-        <!-- Source: server-scripts/Skills.cs:924-933,1141-1173; Pet.cs:2259-2264 — mercenary spells use the equipment and skill spell haste total for casts and keep their cooldowns. -->
+        <!-- Source: server-scripts/Skills.cs:924-933,1141-1173; Pet.cs:2259-2264 — mercenary spells use the bounded spell haste for casts and keep their cooldowns. -->
         <tr>
           <th scope="row">Mercenary spell</th>
           <td><a href="#cast-speed">Shortened cast</a> + cooldown</td>
@@ -125,12 +124,8 @@
       Spell Casting Haste shortens player and mercenary spell casts without
       changing cooldowns.
     </p>
-    <!-- Source: server-scripts/Combat.cs:351-361; Skills.cs:924-933; Player.cs:2905-2906; Pet.cs:2259-2264 — the displayed spell haste is bounded to −50%–50%, but player and mercenary spell casts subtract the unclamped equipment and skill bonus total. -->
-    <GameBug>
-      The character window shows Spell Casting Haste between −50% and 50%, but
-      player and mercenary spells use the full total. Enter your full equipment
-      and skill total in the calculator.
-    </GameBug>
+    <!-- Source: server-scripts/Combat.cs:351-361; Player.cs:2905-2906; Pet.cs:2259-2264 — player and mercenary spell casts use the summed spell haste bounded to −50%–50%, the value the character window shows. -->
+    <p>Spell Casting Haste above 50% counts as 50%, and below −50% as −50%.</p>
     <!-- Source: server-scripts/Skills.cs:924-933; Player.cs:GetSkillRefractoryPeriod — spell auto attacks use the shortened cast plus a fixed 0.75-second wait. -->
     <Formula calculation={timingCalculation(true)} />
   </Topic>

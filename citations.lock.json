@@ -3294,9 +3294,6 @@
     "Player.cs:UpdateServer_DEAD": {
       "span": 0
     },
-    "Player.cs:UpdateServer_IDLE": {
-      "span": 0
-    },
     "Player.cs:UserCode_CmdBindPlayer": {
       "span": 0
     },
@@ -4495,9 +4492,6 @@
       "span": 0
     },
     "Skills.cs:GetPassiveHealthRecoveryBonus": {
-      "span": 0
-    },
-    "Skills.cs:GetSpellHasteBonus": {
       "span": 0
     },
     "Skills.cs:HasInvisibilityIgnoringDetection": {

@@ -480,7 +480,7 @@ export function attackInterval(castTime: number, delay: number, haste: number) {
   const wait = clamp(rawWait, 0.25, 2);
   return { effective, rawWait, wait, total: f32(castTime) + wait };
 }
-// Source: server-scripts/Player.cs:EventRefractoryPeriod,GetSkillRefractoryPeriod; Skills.cs:StartCast — spell haste shortens casting, followed by a fixed 0.75-second delay for the next auto attack only.
+// Source: server-scripts/Player.cs:EventRefractoryPeriod,GetSkillRefractoryPeriod; Skills.cs:StartCast; Combat.cs:spellHaste — spell haste, bounded to −50%–50%, shortens casting, followed by a fixed 0.75-second delay for the next auto attack only.
 export function spellInterval(castTime: number, haste: number) {
   const casting = addF32(castTime, -multiplyF32(haste, castTime));
   return { casting, total: casting + 0.75 };
@@ -495,8 +495,7 @@ export function timingCalculation(spell = false): Calculation {
       ? [
           {
             name: "Cast time",
-            expression:
-              "Base cast time − base cast time × your full Spell Casting Haste bonus",
+            expression: "Base cast time − base cast time × Spell Casting Haste",
           },
           {
             name: "Auto-attack interval",
@@ -526,7 +525,7 @@ export function timingCalculation(spell = false): Calculation {
         return {
           given: [
             `${seconds(values.castTime)} base cast time`,
-            `${formatStat("spell_haste", values.spellHaste)} full ${statName("spell_haste")}`,
+            `${formatStat("spell_haste", values.spellHaste)} ${statName("spell_haste")}`,
           ],
           result: `${seconds(result.total)} spell auto-attack interval`,
           working: [

@@ -260,8 +260,7 @@ export function channelCalculation(skill: SkillDetailView): Calculation {
       },
     ],
     ...(inputs.length > 0 ? { inputs } : {}),
-    // Source: server-scripts/Player.cs:UpdateServer_IDLE; Skills.cs:GetSpellHasteBonus; Combat.cs:spellHaste; UICharacterInfo.cs:Update - casts use the full source sum, not the character-window clamp.
-    note: `The first pulse lands one interval after the channel starts, and the last when it ends.${skill.is_spell ? " The character window limits Spell Casting Haste to -50% through 50%. Enter the full sum from equipment, passive skills and buffs, even outside that range." : ""}`,
+    note: "The first pulse lands one interval after the channel starts, and the last when it ends.",
     example: ({ rank = skill.max_level, spellHaste = 0 }) => {
       const baseCast = atRank(castTime, rank);
       const rawChannelTime = skill.is_spell
