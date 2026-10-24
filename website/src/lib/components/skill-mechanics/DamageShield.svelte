@@ -2,6 +2,7 @@
   import { mechanicsSections } from "$lib/skills/mechanics-sections";
   import { getMechanicsContext } from "./context";
   import { statName } from "$lib/stats";
+  import { DEFENSE_RATES } from "$lib/calculation/combat";
   import type { StatId } from "$lib/generated/stat-vocabulary";
 
   const mitigationStats: Record<string, StatId> = {
@@ -41,7 +42,8 @@
     {#if skill.damage_shield_type && skill.damage_shield_type !== "Unknown"}
       <span class="block">
         The attacker's {statName(mitigationStats[skill.damage_shield_type])}
-        reduces this shield's damage by 0.05% per point, up to 90%.
+        reduces this shield's damage by {DEFENSE_RATES.reductionPerPoint} per point,
+        up to {DEFENSE_RATES.maxReduction}.
       </span>
     {:else}
       <span class="block"

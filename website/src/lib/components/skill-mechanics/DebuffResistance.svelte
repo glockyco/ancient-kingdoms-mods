@@ -2,6 +2,8 @@
   import { immuneDebuffBypass } from "$lib/skills/skill-facts";
   import { getMechanicsContext } from "./context";
   import { statName } from "$lib/stats";
+  import { DEFENSE_RATES } from "$lib/calculation/combat";
+  import ResistChance from "./ResistChance.svelte";
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
@@ -30,16 +32,16 @@
   const bypass = $derived(immuneDebuffBypass(skill, skill.max_level || 1));
 </script>
 
-<!-- Source: server-scripts/Combat.cs:GetProbResistMeleeDebuff,GetProbResistMagic,GetProbResistPoison,GetProbResistFire,GetProbResistCold,GetProbResistDisease; TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — typed debuffs add 0.0005 per matching resistance point; untyped debuffs skip this roll. -->
+<!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply — typed debuffs roll the matching resist; untyped debuffs skip this roll. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Resist Chance</h3>
   <p class="text-muted-foreground">
     {#if debuffResistance}
-      Each point of the target's {debuffResistance} adds 0.05 percentage points to
-      its chance to resist this {skill.is_dispel ? "skill" : "debuff"}. Each 1%
-      of the caster's Accuracy subtracts 1 percentage point. A higher-level
-      target gains 0.5 percentage points per level and a lower-level one loses
-      0.5, up to 10 either way. The chance stays between 0% and 90%. See
+      <ResistChance
+        stat={debuffResistance}
+        resists="this {skill.is_dispel ? 'skill' : 'debuff'}"
+      />
+      See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#avoidance">resistance and avoidance</a
@@ -50,8 +52,8 @@
   </p>
   {#if (skill.healing_per_second_bonus?.base_value ?? 0) < 0}
     <p class="text-muted-foreground">
-      The target's {tickStat} reduces each damage tick by 0.05% per point, up to 90%.
-      See
+      The target's {tickStat} reduces each damage tick by {DEFENSE_RATES.reductionPerPoint}
+      per point, up to {DEFENSE_RATES.maxReduction}. See
       <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#damage-over-time"

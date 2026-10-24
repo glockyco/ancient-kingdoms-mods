@@ -1,3 +1,7 @@
+<script lang="ts">
+  import { DEFENSE_RATES } from "$lib/calculation/combat";
+</script>
+
 <!-- Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike) -->
 <!-- Source: server-scripts/TargetDamageSkill.cs:244,291 (ApplyDamage) -->
 <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 (Apply) -->
@@ -8,7 +12,8 @@
     Your next melee auto attack (Swift Slash) or bow auto attack (Archer Shot)
     consumes the buff, deals 10% more damage per Wild Strike rank and becomes
     Magic damage. The target's Magic Resist reduces the converted damage by
-    0.05% per point, up to 90%. See
+    {DEFENSE_RATES.reductionPerPoint} per point, up to {DEFENSE_RATES.maxReduction}.
+    See
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#wild-strike">Wild Strike</a

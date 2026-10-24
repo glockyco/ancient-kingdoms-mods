@@ -2,6 +2,8 @@
   import Calculation from "$lib/components/Calculation.svelte";
   import { cadenceCalculation } from "$lib/skills/damage-calculations";
   import { getMechanicsContext } from "./context";
+  import { DEFENSE_RATES } from "$lib/calculation/combat";
+  import ResistChance from "./ResistChance.svelte";
 
   const mechanics = getMechanicsContext();
   const { skill } = $derived(mechanics);
@@ -66,12 +68,10 @@
   </p>
   <!-- Source: server-scripts/Combat.cs:665-672,855-872,1550-1591 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">
-    The target's Magic Resist reduces this damage by 0.05% per point, up to 90%.
-    Each point also adds 0.05 percentage points to the target's chance to resist
-    it outright. Each 1% of the caster's Accuracy subtracts 1 percentage point.
-    A higher-level target gains 0.5 percentage points per level and a
-    lower-level one loses 0.5, up to 10 either way. The chance stays between 0%
-    and 90%. See the
+    The target's Magic Resist reduces this damage by {DEFENSE_RATES.reductionPerPoint}
+    per point, up to {DEFENSE_RATES.maxReduction}.
+    <ResistChance stat="Magic Resist" resists="it outright" />
+    See the
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#damage-pipeline">damage steps</a
