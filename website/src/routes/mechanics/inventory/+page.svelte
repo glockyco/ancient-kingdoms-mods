@@ -762,7 +762,7 @@
         <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1640-1655 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
         <li>
           <span class="block"
-            >Changing gear updates the saved items of your active template.</span
+            >Changing gear updates your active template automatically.</span
           >
           <span class="block"
             >Unlocking another template copies your current gear and activates
@@ -788,8 +788,9 @@
         </li>
         <!-- Source: server-scripts/PlayerEquipment.cs:568-579,622-676 — incompatible two-handed and off-hand combinations or insufficient carried space for removed gear refuse the entire switch. -->
         <li>
-          A switch fails if the final weapon combination conflicts or removed
-          gear cannot fit in inventory.
+          You cannot switch to a template that pairs a two-handed weapon with an
+          off-hand item, or if the gear you take off will not fit in your
+          inventory.
         </li>
         <li>
           <!-- Source: server-scripts/Database.cs:425-435,803-804,2711-2735 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
