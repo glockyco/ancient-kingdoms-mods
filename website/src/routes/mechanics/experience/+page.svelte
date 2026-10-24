@@ -1040,8 +1040,8 @@
         </div>
         <!-- Source: server-scripts/Monster.cs:3120-3148 — the award loop counts and pays party players in proximity, not their mercenaries. -->
         <p class="text-sm text-muted-foreground">
-          Mercenaries do not count as nearby party players, so they take no
-          share.
+          Mercenaries take none of your kill XP and do not count toward party
+          sharing.
         </p>
       </div>
     </Card.Content>
