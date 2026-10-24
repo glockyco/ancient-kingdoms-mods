@@ -38,8 +38,8 @@
 <Chapter id="defense">
   <Topic id="resistance">
     <p>
-      Physical damage has its own defenses. Every other damage type uses the
-      matching resist instead: Magic Resist against magic, Fire Resist against
+      Armor Class and Block Chance defend against physical damage. Each other
+      damage type has a resist: Magic Resist against magic, Fire Resist against
       fire, and so on.
     </p>
     <!-- Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage,GetProbResistMagic,DealDamageAt — physical hits roll Block Chance, other hits their matching resist, and the matching stat reduces the damage. -->
@@ -92,9 +92,9 @@
   <Topic id="avoidance">
     <!-- Source: server-scripts/Combat.cs:DealDamageAt: any avoided hit skips damage, stun, fear and knockback. -->
     <p>
-      Each hit gets one roll to miss entirely: a block or miss against physical
-      hits, a resist against every other type. An avoided hit also causes no
-      stun, fear or knockback.
+      Block Chance lets you block or avoid physical hits. Magic Resist, Fire
+      Resist and the other resists let you avoid hits of their damage type. Each
+      hit gets one roll. Avoiding it also prevents its stun, fear and knockback.
     </p>
     <VariantPicker
       label="Hit type"
@@ -109,8 +109,8 @@
     {/key}
     <!-- Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage,GetProbResistMagic — the roll reads the target's Block Chance or matching resist, so a player's own hits face the monster's values. -->
     <p>
-      Your own hits face the target's Block Chance and resists, which each
-      monster's page lists.
+      Your hits roll against the monster's Block Chance and resists, listed on
+      its page.
     </p>
     <!-- Source: server-scripts/Combat.cs:684-703 — the from-behind and moving-player adjustments apply after the 0–90% bounds. -->
     <p>

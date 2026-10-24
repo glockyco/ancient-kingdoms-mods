@@ -55,7 +55,7 @@ export function mitigationCalculation(
     steps: [
       {
         name: "Reduction",
-        expression: `Your ${statName(id)} × 0.05% (5% per 100 points)`,
+        expression: `Your ${statName(id)} × 0.05%`,
         limit: "between 0% and 90%",
       },
       {
@@ -121,7 +121,7 @@ export function avoidanceCalculation(physical = false): Calculation {
         name: physical ? statName("block_chance") : "Resist contribution",
         expression: physical
           ? `Your character window's ${statName("block_chance")}`
-          : "0.05 percentage points per point of the matching resist",
+          : "Your Magic Resist, Fire Resist, Cold Resist, Poison Resist or Disease Resist × 0.05%, for that damage type",
       },
       {
         name: "Level contribution",
@@ -141,7 +141,7 @@ export function avoidanceCalculation(physical = false): Calculation {
         given: [
           physical
             ? `${formatStat("block_chance", 0.08)} ${statName("block_chance")}`
-            : "100 matching resist",
+            : "100 Fire Resist against a fire hit",
           "target 4 levels higher",
           `${formatStat("accuracy", 0.03)} attacker ${statName("accuracy")}`,
         ],
