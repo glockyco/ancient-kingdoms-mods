@@ -52,6 +52,7 @@ export type RecipeType = "Alchemy" | "Cooking" | "Crafting" | "Scribing";
 export type ObtainabilitySourceType =
   | "drop"
   | "vendor"
+  | "seasonal"
   | "quest"
   | "altar"
   | "recipe"

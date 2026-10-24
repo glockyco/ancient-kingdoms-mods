@@ -2,6 +2,7 @@ import type { AltarThresholds } from "$lib/calculation/altar";
 import type { ChestRewardRow } from "$lib/queries/chest-rewards";
 import type { CalculatedChestReward } from "$lib/calculation/chest-rewards";
 import type { FatecharmItem } from "$lib/utils/fatecharm";
+import type { Season } from "$lib/data/seasonal-events";
 
 /** Page-facing source and usage rows assembled from the canonical acquisition model. */
 
@@ -87,6 +88,19 @@ export interface VendorSource {
   required_reputation_tier: number | null;
   amount?: number;
   required_reputation_name?: string | null;
+}
+
+/**
+ * Item that repair merchants sell only during a seasonal event
+ */
+export interface SeasonalShopSource {
+  season: Season;
+  price: number;
+  currency_item_id: string | null;
+  currency_item_name: string | null;
+  /** Items one purchase delivers, when a pack opens on purchase. */
+  amount: number;
+  merchant_count: number;
 }
 
 /**
@@ -342,6 +356,7 @@ export interface ItemSources {
   chestItems: ChestItemSource[];
   merges: MergeSource[];
   treasureMaps: TreasureMapSource[];
+  seasonal: SeasonalShopSource[];
 }
 
 /**

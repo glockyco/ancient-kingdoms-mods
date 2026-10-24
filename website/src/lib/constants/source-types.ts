@@ -20,6 +20,8 @@ import Shovel from "@lucide/svelte/icons/shovel";
 import Sparkles from "@lucide/svelte/icons/sparkles";
 import Fish from "@lucide/svelte/icons/fish";
 import Backpack from "@lucide/svelte/icons/backpack";
+import PartyPopper from "@lucide/svelte/icons/party-popper";
+import { SEASONAL_EVENTS_HREF } from "$lib/data/seasonal-events";
 
 export interface SourceTypeConfig {
   icon: Component;
@@ -51,6 +53,7 @@ export type ItemSourceType =
   | "treasure_map"
   | "fishing"
   | "starter"
+  | "seasonal"
   | "special";
 
 export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
@@ -155,5 +158,12 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
     color: "text-purple-500",
     label: "Service",
     linkPrefix: "/npcs/",
+  },
+  // A seasonal source's id is its season's anchor on the Seasonal Events page.
+  seasonal: {
+    icon: PartyPopper,
+    color: "text-orange-500",
+    label: "Seasonal",
+    linkPrefix: `${SEASONAL_EVENTS_HREF}#`,
   },
 };

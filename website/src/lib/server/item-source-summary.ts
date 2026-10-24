@@ -7,6 +7,7 @@ import {
   loadItemSourceModel,
   sourceEntity,
 } from "./item-sources";
+import { SEASONS, type Season } from "$lib/data/seasonal-events";
 
 export interface ItemSourceSummary {
   item_id: string;
@@ -66,6 +67,10 @@ export function itemSourceSummariesFromModel(
         case "vendor":
           if (d.season === "none")
             add(method, "vendor", String(d.npc_id), name("npcs", d.npc_id));
+          else {
+            const season = SEASONS[d.season as Season];
+            add(method, "seasonal", season.anchor, season.name);
+          }
           break;
         case "quest_accept":
         case "quest_complete":

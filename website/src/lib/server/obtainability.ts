@@ -322,6 +322,7 @@ async function buildTree(
           "merge",
           "drop",
           "vendor",
+          "seasonal",
           "quest",
           "altar",
           "gather",

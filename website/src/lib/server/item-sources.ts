@@ -24,6 +24,7 @@ import {
 } from "$lib/calculation/chest-rewards";
 import { lowestCatchableSkillPercent } from "$lib/utils/fishing";
 import { monsterFatecharm } from "$lib/utils/fatecharm";
+import { SEASONS, type Season } from "$lib/data/seasonal-events";
 
 export async function loadItemSourceModel(
   db: Database.Database,
@@ -177,7 +178,10 @@ export function itemSourcesFromModel(
     chestItems: [],
     merges: [],
     treasureMaps: [],
+    seasonal: [],
   };
+  // One row per season and price: every repair merchant makes the same offer.
+  const seasonal = new Map<string, ItemSources["seasonal"][number]>();
   const view = projectItemSources(model, itemId);
   const methods = new Map(
     [
@@ -230,7 +234,23 @@ export function itemSourcesFromModel(
             ) ?? undefined;
       } else if (targetChance !== null) row.drop_rate = targetChance;
       result.monsters.push(row);
-    } else if (method.kind === "vendor" && detail.season === "none") {
+    } else if (method.kind === "vendor" && detail.season !== "none") {
+      const currency = inputs.find((input) => input.resource_kind === "item");
+      const gold = inputs.find((input) => input.resource_kind === "gold");
+      const row = {
+        season: detail.season as Season,
+        price: currency?.amount ?? gold?.amount ?? 0,
+        currency_item_id: currency?.item_id ?? null,
+        currency_item_name: currency
+          ? str(sourceEntity(model, "items", currency.item_id), "name")
+          : null,
+        amount: output?.amount_min ?? 1,
+      };
+      const key = JSON.stringify(row);
+      const existing = seasonal.get(key);
+      if (existing) existing.merchant_count++;
+      else seasonal.set(key, { ...row, merchant_count: 1 });
+    } else if (method.kind === "vendor") {
       const npc = sourceEntity(model, "npcs", detail.npc_id);
       if (!npc) continue;
       const currency = inputs.find((input) => input.resource_kind === "item");
@@ -616,6 +636,10 @@ export function itemSourcesFromModel(
           entries.length,
       });
   }
+  const seasonOrder = Object.keys(SEASONS);
+  result.seasonal = [...seasonal.values()].sort(
+    (a, b) => seasonOrder.indexOf(a.season) - seasonOrder.indexOf(b.season),
+  );
   for (const key of Object.keys(result) as (keyof ItemSources)[])
     (result[key] as unknown[]) = unique(result[key] as unknown[]);
   result.monsters.sort(

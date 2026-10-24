@@ -194,11 +194,7 @@ export const load: PageServerLoad = async ({
   const hasKnownSource =
     sourceView.hasKnownSource ||
     sourceView.inspection.parentAwards.length > 0 ||
-    sourceView.inspection.offeredAssets.some(
-      (method) =>
-        method.rooted &&
-        (method.kind !== "vendor" || method.detail.season === "none"),
-    );
+    sourceView.inspection.offeredAssets.some((method) => method.rooted);
   const hasMapLocation =
     (await getItemMapBounds(
       params.id,
