@@ -347,4 +347,9 @@ export const guideCoverage: Readonly<Record<string, GuideCoverage>> = {
     reviewedBodySha256:
       "cffaedeb765df3c692e0b726d2c4c9f432dc0ef4a7b066334c505256f0d16122",
   },
+  "world.regional-events": {
+    href: "/mechanics/regional-events#activities",
+    reviewedBodySha256:
+      "120fe7fd901f4b3b2b0526e4297a1da59884bd78874c1cd25d0c3f0afe6b0595",
+  },
 };

@@ -396,6 +396,14 @@ function monsterPayload(db, id, context) {
       spawns.map((spawn) => spawn.zone_id),
     ),
     skills: rowsByColumn(db, "monster_skills", "monster_id", id),
+    invasions: all(
+      db,
+      `SELECT ri.*, z.name AS zone_name FROM regional_invasions ri
+       JOIN regional_invasion_attackers ria ON ria.invasion_id = ri.id
+       JOIN zones z ON z.id = ri.zone_id
+       WHERE ria.monster_id = ? ORDER BY ri.id`,
+      id,
+    ),
     loot: context.fingerprint("monsters", { monsterIds: [id] }),
   };
 }
@@ -892,6 +900,22 @@ function addMechanicsHashes(db, addHash, context) {
           zones: tableRows(db, "zones"),
         };
         break;
+      case "regional-events": {
+        const attackers = tableRows(db, "regional_invasion_attackers");
+        const invasions = tableRows(db, "regional_invasions");
+        rows = {
+          settings: tableRows(db, "regional_event_settings"),
+          invasions,
+          attackers,
+          monsters: rowsByIds(
+            db,
+            "monsters",
+            attackers.map((attacker) => attacker.monster_id),
+          ),
+          zones: tableRows(db, "zones"),
+        };
+        break;
+      }
       case "reputation":
         rows = {
           tiers: tableRows(db, "reputation_tiers"),

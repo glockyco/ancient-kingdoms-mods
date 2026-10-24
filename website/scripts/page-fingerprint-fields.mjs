@@ -591,6 +591,22 @@ export const PAGE_FINGERPRINT_FIELDS = Object.freeze({
     "tooltip_html",
     "veteran_level_recommended",
   ],
+  regional_event_settings: [
+    "activity_duration_minutes",
+    "enabled",
+    "id",
+    "prosperity_duration_minutes",
+  ],
+  regional_invasion_attackers: ["invasion_id", "monster_id", "ordinal"],
+  regional_invasions: [
+    "city",
+    "city_name",
+    "health_multiplier",
+    "id",
+    "maximum_level",
+    "minimum_level",
+    "zone_id",
+  ],
   reputation_tiers: ["id", "is_hostile", "max_value", "min_value", "name"],
   scribing_recipes: ["id", "result_item_id"],
   scribing_tables: [

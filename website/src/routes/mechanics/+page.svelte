@@ -34,6 +34,7 @@
     "/mechanics/party": Users,
     "/mechanics/guilds": Castle,
     "/mechanics/world": Globe,
+    "/mechanics/regional-events": Globe,
     "/mechanics/monster-spawns": Skull,
     "/mechanics/reputation": Shield,
   };
@@ -41,7 +42,7 @@
 
 <Seo
   title="Game Mechanics - Ancient Kingdoms"
-  description="How Ancient Kingdoms works: character builds, combat, experience, death, Bard songs, mercenaries, crafting, parties, travel, monster spawns, and reputation."
+  description="How Ancient Kingdoms works: character builds, combat, experience, death, Bard songs, mercenaries, crafting, parties, travel, regional events, monster spawns, and reputation."
   path="/mechanics"
 />
 

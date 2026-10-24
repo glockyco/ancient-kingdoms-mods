@@ -891,6 +891,38 @@
       {/if}
     {/snippet}
   </EntityCombatSummary>
+
+  {#if data.regionalInvasions.length > 0}
+    <section>
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <MapPin class="h-5 w-5 text-emerald-500" />
+          City invasions
+        </h2>
+        <MechanicsLink section="regional-events#invasions"
+          >Invasion rules</MechanicsLink
+        >
+      </div>
+      <!-- Source: server-scripts/RegionalInvasions.cs:348-384 — invasion copies use the invasion's level range and health multiplier rather than the ordinary spawn settings. -->
+      <div class="space-y-2">
+        {#each data.regionalInvasions as invasion (invasion.id)}
+          <div class="rounded-md border bg-muted/30 p-3">
+            <span class="font-medium">{invasion.city_name}</span>
+            <span class="text-muted-foreground"> in </span>
+            <a
+              href="/zones/{invasion.zone_id}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >{invasion.zone_name}</a
+            >
+            <p class="mt-1 text-sm text-muted-foreground">
+              Level {invasion.minimum_level} to {invasion.maximum_level}. Health
+              ×{invasion.health_multiplier}.
+            </p>
+          </div>
+        {/each}
+      </div>
+    </section>
+  {/if}
   <!-- Spawns Section -->
   {#if hasAnySpawns}
     <section>

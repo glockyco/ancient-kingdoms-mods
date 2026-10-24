@@ -1,7 +1,7 @@
 /**
- * The game-mechanics reference pages in five groups of three, so every
- * column of the home page index ends level. The home page index, the site menu, and the /mechanics hub all
- * render this list, so a page registered here appears in each.
+ * The game-mechanics reference pages grouped into five menu columns.
+ * The home page index, the site menu, and the /mechanics hub render this list,
+ * so a page registered here appears in each.
  */
 export interface MechanicsPage {
   readonly title: string;
@@ -130,6 +130,13 @@ export const MECHANICS_GROUPS = [
         href: "/mechanics/world",
         description: "Game modes, maps, binding, travel, and portals",
         summary: "Binding, travel, and portals",
+      },
+      {
+        title: "Regional Events",
+        href: "/mechanics/regional-events",
+        description:
+          "Regional objectives, city invasions, rewards, and Prosperity",
+        summary: "Invasions and Prosperity",
       },
       {
         title: "Inventory",

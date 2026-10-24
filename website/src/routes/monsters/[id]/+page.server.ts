@@ -38,6 +38,10 @@ import {
   altarOutcomeSemantics,
   consolidateAltarTiers,
 } from "$lib/server/altar-tier-summaries";
+import {
+  getMonsterRegionalInvasions,
+  type RegionalInvasion,
+} from "$lib/queries/regional-events.server";
 
 export const prerender = true;
 
@@ -53,7 +57,7 @@ export const entries: EntryGenerator = () => {
 
 export const load: PageServerLoad = async ({
   params,
-}): Promise<MonsterDetailData> => {
+}): Promise<MonsterDetailData & { regionalInvasions: RegionalInvasion[] }> => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   // Get monster basic data with placeholder name
@@ -930,6 +934,7 @@ export const load: PageServerLoad = async ({
 
   return {
     monster,
+    regionalInvasions: getMonsterRegionalInvasions(params.id),
     factionIds: getFactionIdsByName(),
     description,
     drops,

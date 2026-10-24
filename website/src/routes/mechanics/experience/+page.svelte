@@ -958,6 +958,20 @@
                 >
                 <td class="p-2 text-right">100% more XP</td>
               </tr>
+              <!-- Source: server-scripts/Monster.cs:3205-3208,3242-3245; server-scripts/RegionalEvents.cs:188-195,363-375; server-scripts/RegionalEventProgress.cs:145-152 — Prosperity adds 15% monster XP in the region and its dungeons after the other multipliers, rounded down. -->
+              <tr class="hover:bg-muted/30">
+                <td class="p-2"
+                  ><a
+                    href="/mechanics/regional-events#prosperity"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Regional prosperity</a
+                  ></td
+                >
+                <td class="p-2 text-right"
+                  >15% more monster XP in the region and its dungeons, rounded
+                  down</td
+                >
+              </tr>
             </tbody>
           </table>
         </div>
@@ -965,6 +979,8 @@
         <p class="text-sm text-muted-foreground">
           Multiple Double XP buffs do not stack. Forgotten Altar monsters give
           40% more XP after Double XP, rounded to the nearest whole XP.
+          <!-- Source: server-scripts/Monster.cs:3205-3208,3242-3245; server-scripts/RegionalEventProgress.cs:145-152 — Prosperity multiplies the award after Double XP and the Forgotten Altar bonus, then floors it. -->
+          Prosperity applies last: multiply by 1.15 and round down.
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:640,826 — double XP applies to gathering -->
@@ -1195,6 +1211,17 @@
           </tr>
         </tbody>
       </table>
+      <!-- Source: server-scripts/GatherItem.cs:640-642,826-828; server-scripts/RegionalEvents.cs:363-375; server-scripts/RegionalEventProgress.cs:145-152 — Prosperity adds 15% gathering and fishing XP outdoors in its region, after Double XP, rounded down. -->
+      <p class="mt-3 text-sm text-muted-foreground">
+        <a
+          href="/mechanics/regional-events#prosperity"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Regional prosperity</a
+        >
+        gives 15% more gathering and fishing XP outdoors in that region only. Apply
+        Double XP first, then multiply by 1.15 and round down. Dungeon gathering and
+        fishing receive no Prosperity bonus.
+      </p>
       <p class="mt-3 text-sm text-muted-foreground">
         Each resource's tier is on its <a
           href="/gather-items"
