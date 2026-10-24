@@ -29,8 +29,7 @@
     <Card.Header>
       <Card.Title>Furniture and home workstations</Card.Title>
       <Card.Description
-        >Buy furniture for your account's house, then move it without another
-        purchase.</Card.Description
+        >Buy furniture for your account's house. Moving it costs no gold.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
@@ -59,10 +58,10 @@
       </ul>
       <!-- Source: server-scripts/CustomStrucUI.cs:71-84,220-226,261-313 and server-scripts/Player.cs:13445-13482 — movement repositions an owned structure without charging gold; confirmed removal deletes it without a refund. -->
       <ul class="list-disc space-y-1 pl-5">
-        <li>Move mode repositions owned furniture without buying it again.</li>
+        <li>Use Move mode to rearrange your furniture for free.</li>
         <li>
-          Remove mode destroys the selected furniture after confirmation without
-          refunding its price.
+          Remove mode destroys the selected furniture after you confirm. You get
+          no refund.
         </li>
       </ul>
       <!-- Source: server-scripts/HousingManager.cs:18-19 and server-scripts/CustomStrucUI.cs:57-68 and server-scripts/CraftingStation.cs:8-17,50-63 and server-scripts/Player.cs:13558-13575,13860-13901 — placed workstation structures retain their station ingredients and learned-recipe checks. -->
@@ -94,7 +93,7 @@
           Home workstations use the same ingredients and recipes as stations
           elsewhere.
         </li>
-        <li>An Alchemy Workbench still requires learned potion recipes.</li>
+        <li>An Alchemy Workbench requires learned potion recipes.</li>
       </ul>
       <!-- Source: server-scripts/Bookcase.cs:IsInRange,OnInteractServer; UIBooks.cs:ShowLibrary — a placed bookcase opens within 2 yd for the owning account and lists the character's learned books by name, without the learn button. -->
       <!-- Source: server-scripts/HousingManager.cs:strucItems — in the running 0.9.35.5 game, the Bookshelf is the only catalog structure whose prefab carries a Bookcase component. -->
