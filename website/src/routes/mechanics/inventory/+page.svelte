@@ -131,9 +131,8 @@
     <Card.Header>
       <Card.Title>Backpacks</Card.Title>
       <Card.Description>
-        Backpacks equip into nine dedicated backpack slots in the Combined
-        Backpack window. Each equipped bag unlocks backpack storage slots,
-        separate from the 24 base inventory slots.
+        Equip up to nine backpacks in the Combined Backpack window. Each bag
+        adds storage beyond your 24 base inventory slots.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-5">
@@ -152,14 +151,17 @@
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:604-618 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
-          <span class="block">Unique backpacks can only be equipped once.</span>
           <span class="block"
-            >Other backpacks can occupy multiple backpack slots.</span
+            >You can equip only one of each Unique backpack.</span
+          >
+          <span class="block"
+            >You can equip multiple copies of other backpacks.</span
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:589-605 — removal or downgrade is blocked if items would be locked away. -->Removing
-          or downgrading a bag fails if its stored items would lose their slots.
+          <!-- Source: server-scripts/PlayerInventory.cs:589-605 — removal or downgrade is blocked if items would be locked away. -->You
+          cannot remove or replace a bag with a smaller one if stored items
+          would lose their slots.
         </li>
         <!-- Source: server-scripts/PlayerInventory.cs:652-662,701-707,795-801 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
         <li>
