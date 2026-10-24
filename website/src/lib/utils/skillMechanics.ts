@@ -593,10 +593,17 @@ export function computeMechanicsSpec(
         bonusAttrKind: playerMercKind,
       });
     }
-    // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — other casters receive zero except pets using Charisma scaling. Only show this comparison beside a scaled caster.
+    // Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute,GetCharisma — any pet adds its own Charisma to a Charisma-scaled debuff. Monsters and NPCs add nothing.
+    const petScales = skill.scales_with_charisma;
+    for (const caster of otherCasters) {
+      if (caster.kind !== "monster" && petScales)
+        debuffPairs.push({ caster, bonusAttrKind: "cha" });
+    }
+    // A caster that adds nothing is shown only for comparison beside one that scales.
     if (debuffPairs.length > 0) {
       for (const caster of otherCasters) {
-        debuffPairs.push({ caster, bonusAttrKind: "none" });
+        if (caster.kind === "monster" || !petScales)
+          debuffPairs.push({ caster, bonusAttrKind: "none" });
       }
     }
   }

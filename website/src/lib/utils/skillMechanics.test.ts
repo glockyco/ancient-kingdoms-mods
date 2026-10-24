@@ -499,6 +499,23 @@ describe("effect caster dispatch", () => {
     ]);
   });
 
+  test("a companion pet scales a Charisma debuff with its own Charisma, a monster does not", () => {
+    const debuff = bardSkill({
+      skill_type: "target_debuff",
+      is_bard_song: false,
+      scales_with_charisma: true,
+      player_classes: [],
+      defense_bonus: { base_value: -50, bonus_per_level: 0 },
+    });
+    const companion = { ...bardMercenary, is_mercenary: false };
+    expect(
+      computeMechanicsSpec(debuff, [companion], true).debuffContexts,
+    ).toEqual([
+      { casters: [{ kind: "companion" }], bonusAttrKind: "cha" },
+      { casters: [{ kind: "monster" }], bonusAttrKind: "none" },
+    ]);
+  });
+
   test("scroll-only damage skills have a player context and procs respect equipment class restrictions", () => {
     const attack = bardSkill({
       skill_type: "target_projectile",
