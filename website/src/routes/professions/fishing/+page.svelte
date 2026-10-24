@@ -499,6 +499,15 @@
         </div>
       </div>
     </div>
+    <!-- Source: server-scripts/RegionalEvents.cs:RecordFish — a fish caught in the region during The Fishers' Request advances its goal. -->
+    <p class="mt-4 text-sm text-muted-foreground">
+      Each fish you catch also counts toward
+      <a
+        href="/mechanics/regional-events#regions"
+        class="text-blue-600 hover:underline dark:text-blue-400"
+        >The Fishers' Request</a
+      > while that regional event runs in your region.
+    </p>
   </section>
 
   <section id="calculator" class="rounded-lg border p-5">

@@ -180,6 +180,16 @@
       Eating food replaces an active food buff in the same category instead of
       stacking with it.
     </p>
+    <!-- Source: server-scripts/RegionalEvents.cs:RecordCooking; server-scripts/RegionalEventActivities.cs:IsCookingResult — a listed dish cooked at an oven in the requesting city advances its goal. -->
+    <p class="text-muted-foreground">
+      Cooking one of a city's listed dishes at an oven there counts toward that
+      city's
+      <a
+        href="/mechanics/regional-events#invasions"
+        class="text-blue-600 hover:underline dark:text-blue-400"
+        >cooking request</a
+      > while that regional event runs.
+    </p>
   </section>
 
   <!-- Station Locations -->

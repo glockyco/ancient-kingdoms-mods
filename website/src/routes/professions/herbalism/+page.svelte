@@ -145,6 +145,15 @@
       inventory space and at least a 10% success chance, even if you gather
       nothing.
     </p>
+    <!-- Source: server-scripts/RegionalEvents.cs:RecordGather — a plant gathered in the region during The Apothecaries' Call advances its goal. -->
+    <p class="text-muted-foreground">
+      Each plant you gather also counts toward
+      <a
+        href="/mechanics/regional-events#regions"
+        class="text-blue-600 hover:underline dark:text-blue-400"
+        >The Apothecaries' Call</a
+      > while that regional event runs in your region.
+    </p>
   </section>
 
   <!-- Calculator -->

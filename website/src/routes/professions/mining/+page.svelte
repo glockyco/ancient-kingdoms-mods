@@ -167,6 +167,15 @@
         </div>
       </li>
     </ol>
+    <!-- Source: server-scripts/RegionalEvents.cs:RecordGather — ore mined in the region during Fires of the Forge advances its goal. -->
+    <p class="text-sm text-muted-foreground">
+      Each ore you mine also counts toward
+      <a
+        href="/mechanics/regional-events#regions"
+        class="text-blue-600 hover:underline dark:text-blue-400"
+        >Fires of the Forge</a
+      > while that regional event runs in your region.
+    </p>
   </section>
 
   <section id="pickaxes" class="space-y-4">

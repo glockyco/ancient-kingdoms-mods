@@ -4389,6 +4389,9 @@
     "RegionalEventActivities.cs:FindCityDishes": {
       "span": 0
     },
+    "RegionalEventActivities.cs:IsCookingResult": {
+      "span": 0
+    },
     "RegionalEventProgress.cs:104-124": {
       "sha256": "5c9d6e9814cd41faff3a2222662ed9551cb70be86101d57070d7229c9f6682c3",
       "span": 21
@@ -4518,6 +4521,18 @@
       "span": 1
     },
     "RegionalEvents.cs:CombatRegion": {
+      "span": 0
+    },
+    "RegionalEvents.cs:RecordCooking": {
+      "span": 0
+    },
+    "RegionalEvents.cs:RecordFish": {
+      "span": 0
+    },
+    "RegionalEvents.cs:RecordGather": {
+      "span": 0
+    },
+    "RegionalEvents.cs:RecordHuntKill": {
       "span": 0
     },
     "RegionalEvents.cs:TryStart": {

@@ -102,6 +102,15 @@
         >Other creatures and Normal-quality drops get no bonus.</span
       >
     </p>
+    <!-- Source: server-scripts/RegionalEvents.cs:RecordHuntKill,AddHunter — a requested animal killed during A Regional Hunt advances its goal for each player who helped. -->
+    <p class="text-muted-foreground">
+      Each animal you help kill counts toward
+      <a
+        href="/mechanics/regional-events#regions"
+        class="text-blue-600 hover:underline dark:text-blue-400"
+        >A Regional Hunt</a
+      > when that regional event asks for that animal.
+    </p>
   </section>
 
   <!-- Calculator -->
