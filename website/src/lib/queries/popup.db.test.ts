@@ -177,7 +177,7 @@ describe("compact map popups on canonical acquisition", () => {
   test("quest objectives retain normalized counter, equipment and location roles", async () => {
     const rows = db
       .prepare(
-        "SELECT o.quest_id,o.kind,o.role,o.amount,q.remove_items_on_complete FROM quest_objectives o JOIN quests q ON q.id=o.quest_id WHERE o.withheld=0 AND o.kind!='brew' ORDER BY o.quest_id,o.ordinal",
+        "SELECT o.quest_id,o.kind,o.role,o.amount,q.remove_items_on_complete FROM quest_objectives o JOIN quests q ON q.id=o.quest_id WHERE o.withheld=0 AND o.kind!='brew' AND o.role!='tracking_location' ORDER BY o.quest_id,o.ordinal",
       )
       .all() as {
       quest_id: string;
@@ -212,10 +212,28 @@ describe("compact map popups on canonical acquisition", () => {
     }
   });
 
+  test("quest tracking markers are not listed as steps", async () => {
+    const rows = db
+      .prepare(
+        "SELECT o.quest_id,sum(o.role='location_visit' AND o.withheld=0) visits FROM quest_objectives o GROUP BY o.quest_id HAVING sum(o.role='tracking_location')>0",
+      )
+      .all() as { quest_id: string; visits: number }[];
+    expect(rows.length).toBeGreaterThan(0);
+    const popups = await loadQuestPopupDetailsBatch(
+      rows.map((row) => row.quest_id),
+    );
+    for (const row of rows)
+      expect(
+        popups
+          .get(row.quest_id)!
+          .objectives.filter((objective) => objective.type === "discover"),
+      ).toHaveLength(row.visits);
+  });
+
   test("quest discovery geometry converts once at the map boundary", async () => {
     const row = db
       .prepare(
-        "SELECT o.quest_id,l.position_x,l.position_y FROM quest_objective_locations l JOIN quest_objectives o ON o.id=l.id WHERE o.withheld=0 AND l.position_x IS NOT NULL AND l.position_y IS NOT NULL ORDER BY l.id LIMIT 1",
+        "SELECT o.quest_id,l.position_x,l.position_y FROM quest_objective_locations l JOIN quest_objectives o ON o.id=l.id WHERE o.withheld=0 AND o.role='location_visit' AND l.position_x IS NOT NULL AND l.position_y IS NOT NULL ORDER BY l.id LIMIT 1",
       )
       .get() as { quest_id: string; position_x: number; position_y: number };
     expect(row).toBeDefined();

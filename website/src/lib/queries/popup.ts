@@ -1371,6 +1371,8 @@ export async function loadQuestPopupDetailsBatch(
     (a, b) => Number(a.ordinal) - Number(b.ordinal),
   )) {
     const kind = String(objective.kind);
+    // Source: server-scripts/UIQuestTracking.cs:LateUpdate — questLocation and finishQuestLocation only place the tracker mark and arrow in the player's zone, so they are not quest steps.
+    if (objective.role === "tracking_location") continue;
     if (objective.withheld || kind === "brew") continue;
     const child = children[kind]?.get(objective.id);
     if (!child)

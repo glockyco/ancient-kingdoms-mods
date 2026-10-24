@@ -5270,6 +5270,9 @@
     "UINpcTrading.cs:Update": {
       "span": 0
     },
+    "UIQuestTracking.cs:LateUpdate": {
+      "span": 0
+    },
     "UIQuests.cs:137-153": {
       "sha256": "366afbbac58c54dcd25e9efdf8f1cfbf6453dfe2f6066b19894d86312d717c26",
       "span": 17
