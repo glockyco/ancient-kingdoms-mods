@@ -411,17 +411,17 @@ class AcquisitionRedactionTests(unittest.TestCase):
             "INSERT INTO quest_objectives(id,quest_id,ordinal,kind,role,amount) VALUES ('location','quest',0,'location','location_visit',NULL)"
         )
         self.conn.execute(
-            "INSERT INTO quest_objective_locations(id,zone_id,position_x,position_y,min_x,max_y) VALUES ('location','private',12,34,10,40)"
+            "INSERT INTO quest_objective_locations(id,zone_id,position_x,position_y,area_shape,area_paths) VALUES ('location','private',12,34,'polygon','[[[10,30],[14,30],[12,40]]]')"
         )
         config = RedactionConfig(suppress_position_zone_ids={"private"})
         geometry.run(self.conn, config)
         self.assertEqual(
             tuple(
                 self.conn.execute(
-                    "SELECT position_x,position_y,min_x,max_y FROM quest_objective_locations"
+                    "SELECT position_x,position_y,area_paths FROM quest_objective_locations"
                 ).fetchone()
             ),
-            (None, None, None, None),
+            (None, None, None),
         )
         rekey(self.conn)
         validate_semantics(self.conn, config)

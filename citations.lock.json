@@ -3853,6 +3853,9 @@
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
     },
+    "PlayerQuests.cs:OnTriggerEnter2D": {
+      "span": 0
+    },
     "PlayerQuests.cs:UserCode_CmdComplete__NetworkIdentity__Int32": {
       "span": 0
     },

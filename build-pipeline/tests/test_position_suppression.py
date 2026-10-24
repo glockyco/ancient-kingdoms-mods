@@ -122,8 +122,14 @@ class PositionSuppressionTests(unittest.TestCase):
                 (identity, ordinal),
             )
             self.conn.execute(
-                "INSERT INTO quest_objective_locations(id,zone_id,position_x,position_y,min_x,max_y) VALUES (?,?,?,?,?,?)",
-                (identity, zone, x, y, x - 1, y + 1),
+                "INSERT INTO quest_objective_locations(id,zone_id,position_x,position_y,area_shape,area_paths) VALUES (?,?,?,?,'polygon',?)",
+                (
+                    identity,
+                    zone,
+                    x,
+                    y,
+                    f"[[[{x - 1},{y}],[{x + 1},{y}],[{x},{y + 1}]]]",
+                ),
             )
         self.conn.commit()
 
@@ -131,14 +137,14 @@ class PositionSuppressionTests(unittest.TestCase):
 
         rows = list(
             self.conn.execute(
-                "SELECT d.zone_id,d.position_x,d.position_y,d.min_x,d.max_y,o.ordinal,o.amount FROM quest_objective_locations d JOIN quest_objectives o ON o.id=d.id ORDER BY o.ordinal"
+                "SELECT d.zone_id,d.position_x,d.position_y,d.area_paths,o.ordinal,o.amount FROM quest_objective_locations d JOIN quest_objectives o ON o.id=d.id ORDER BY o.ordinal"
             )
         )
         self.assertEqual(
             rows,
             [
-                (SUPPRESSED, None, None, None, None, 0, None),
-                (PUBLISHED, 3.0, 4.0, 2.0, 5.0, 1, None),
+                (SUPPRESSED, None, None, None, 0, None),
+                (PUBLISHED, 3.0, 4.0, "[[[2.0,4.0],[4.0,4.0],[3.0,5.0]]]", 1, None),
             ],
         )
 

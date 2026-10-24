@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace DataExporter.Models;
 
 public class Position
@@ -26,18 +28,14 @@ public class Point2
     }
 }
 
-public class BoundingBox
+/// <summary>
+/// The world-space shape of a trigger collider. A circle has a center and radius. A polygon lists
+/// its vertices in authored order, which also covers a box collider's four corners.
+/// </summary>
+public class TriggerArea
 {
-    public float min_x { get; set; }
-    public float min_y { get; set; }
-    public float max_x { get; set; }
-    public float max_y { get; set; }
-
-    public BoundingBox(float minX, float minY, float maxX, float maxY)
-    {
-        min_x = minX;
-        min_y = minY;
-        max_x = maxX;
-        max_y = maxY;
-    }
+    public string shape { get; set; }
+    public Point2 center { get; set; }
+    public float? radius { get; set; }
+    public List<Point2> points { get; set; }
 }

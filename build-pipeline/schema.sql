@@ -1794,10 +1794,9 @@ CREATE TABLE quest_objective_locations (
     position_x REAL,
     position_y REAL,
     position_z REAL,
-    min_x REAL,
-    min_y REAL,
-    max_x REAL,
-    max_y REAL,
+    area_shape TEXT CHECK (area_shape IN ('circle','polygon')),
+    area_radius REAL,                       -- circle radius around position_x/position_y
+    area_paths TEXT,                        -- JSON polygon rings: [[[x, y], ...]]
     tracking_quest_location TEXT
 );
 CREATE TABLE quest_predecessors (

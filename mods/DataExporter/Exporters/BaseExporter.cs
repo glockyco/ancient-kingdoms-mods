@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using DataExporter.Models;
 using Il2CppInterop.Runtime;
 using MelonLoader;
 using Newtonsoft.Json;
@@ -191,6 +192,67 @@ public abstract class BaseExporter
 
     private static ZoneBoundary ReadZoneBoundary(Collider2D collider)
     {
+        try
+        {
+            return new ZoneBoundary(ReadPolygonVertices(collider));
+        }
+        catch (ArgumentException error)
+        {
+            throw new InvalidOperationException($"Zone collider {collider.name}: invalid authored boundary. Reload World.", error);
+        }
+    }
+
+    /// <summary>
+    /// The world-space shape of a trigger collider. Circles keep their exact center and radius,
+    /// and boxes and polygons become their world-space vertices.
+    /// </summary>
+    protected static TriggerArea ReadTriggerArea(Collider2D collider)
+    {
+        var circle = collider.TryCast<CircleCollider2D>();
+        if (circle == null)
+        {
+            var vertices = ReadPolygonVertices(collider);
+            try
+            {
+                _ = new ZoneBoundary(vertices);
+            }
+            catch (ArgumentException error)
+            {
+                throw new InvalidOperationException($"Collider {collider.name}: invalid authored shape. Reload World.", error);
+            }
+            var points = new List<Point2>(vertices.Length);
+            foreach (var vertex in vertices)
+                points.Add(new Point2((float)vertex.X, (float)vertex.Y));
+            return new TriggerArea { shape = "polygon", points = points };
+        }
+        // Unity scales a circle collider by its larger absolute axis scale.
+        var scale = circle.transform.lossyScale;
+        var radius = circle.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y));
+        if (!(radius > 0))
+            throw new InvalidOperationException($"Collider {collider.name}: circle has no area. Reload World.");
+        var center = circle.transform.TransformPoint(new Vector3(circle.offset.x, circle.offset.y, 0f));
+        return new TriggerArea { shape = "circle", center = new Point2(center.x, center.y), radius = radius };
+    }
+
+    /// <summary>The middle of a trigger area's extent, used to place it in a zone.</summary>
+    protected static Point2 TriggerAreaCenter(TriggerArea area)
+    {
+        if (area.shape == "circle")
+            return area.center;
+        float minX = float.PositiveInfinity, minY = float.PositiveInfinity;
+        float maxX = float.NegativeInfinity, maxY = float.NegativeInfinity;
+        foreach (var point in area.points)
+        {
+            minX = Mathf.Min(minX, point.x);
+            minY = Mathf.Min(minY, point.y);
+            maxX = Mathf.Max(maxX, point.x);
+            maxY = Mathf.Max(maxY, point.y);
+        }
+        return new Point2((minX + maxX) / 2f, (minY + maxY) / 2f);
+    }
+
+    private static ZoneBoundary.Point[] ReadPolygonVertices(Collider2D collider)
+    {
         // Authored vertices exist before physics registers the collider. Transform
         // them once so all exporters use the same immutable World geometry.
         var matrix = collider.transform.localToWorldMatrix;
@@ -203,41 +265,30 @@ public abstract class BaseExporter
                 matrix.m10 * x + matrix.m11 * y + matrix.m13);
         }
 
-        ZoneBoundary.Point[] points;
         var box = collider.TryCast<BoxCollider2D>();
         var polygon = collider.TryCast<PolygonCollider2D>();
         if (box != null)
         {
             if (box.edgeRadius != 0)
-                throw new InvalidOperationException($"Zone collider {collider.name}: rounded boxes are unsupported. Reload World.");
+                throw new InvalidOperationException($"Collider {collider.name}: rounded boxes are unsupported. Reload World.");
             var half = box.size * 0.5f;
-            points = new[]
+            return new[]
             {
                 ToWorld(new Vector2(-half.x, -half.y)), ToWorld(new Vector2(half.x, -half.y)),
                 ToWorld(new Vector2(half.x, half.y)), ToWorld(new Vector2(-half.x, half.y))
             };
         }
-        else if (polygon != null)
+        if (polygon != null)
         {
             if (polygon.pathCount != 1)
-                throw new InvalidOperationException($"Zone collider {collider.name}: expected one configured polygon path. Reload World.");
+                throw new InvalidOperationException($"Collider {collider.name}: expected one configured polygon path. Reload World.");
             var path = polygon.GetPath(0);
-            points = new ZoneBoundary.Point[path.Length];
+            var points = new ZoneBoundary.Point[path.Length];
             for (var i = 0; i < path.Length; i++)
                 points[i] = ToWorld(path[i]);
+            return points;
         }
-        else
-        {
-            throw new InvalidOperationException($"Zone collider {collider.name}: unsupported configured shape {collider.GetIl2CppType().FullName}. Reload World.");
-        }
-        try
-        {
-            return new ZoneBoundary(points);
-        }
-        catch (ArgumentException error)
-        {
-            throw new InvalidOperationException($"Zone collider {collider.name}: invalid authored boundary. Reload World.", error);
-        }
+        throw new InvalidOperationException($"Collider {collider.name}: unsupported configured shape {collider.GetIl2CppType().FullName}. Reload World.");
     }
 
     /// <summary>Uses the captured authored boundary, including before physics starts.</summary>

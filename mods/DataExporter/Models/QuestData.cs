@@ -100,8 +100,10 @@ public class QuestData
     public string discovered_location { get; set; }
     public string discovered_location_zone_id { get; set; }
     public string discovered_location_sub_zone_id { get; set; }
+    /// <summary>The center of the trigger area.</summary>
     public Position discovered_location_position { get; set; }
-    public BoundingBox discovered_location_bounds { get; set; }
+    /// <summary>The trigger the player enters to complete the quest, the only shape the game checks.</summary>
+    public TriggerArea discovered_location_area { get; set; }
     public bool is_find_npc_quest { get; set; }
 
     // === EquipItemQuest fields (when quest_type = equip_item) ===

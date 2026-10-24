@@ -31,13 +31,26 @@ class Point2(BaseModel):
     y: float
 
 
-class BoundingBox(BaseModel):
-    """2D bounding box for collider bounds."""
+class TriggerArea(BaseModel):
+    """World-space shape of a trigger collider: a circle or a polygon."""
 
-    min_x: float
-    min_y: float
-    max_x: float
-    max_y: float
+    shape: Literal["circle", "polygon"]
+    center: Point2 | None = None
+    radius: float | None = None
+    points: list[Point2] | None = None
+
+    @model_validator(mode="after")
+    def _matches_shape(self) -> "TriggerArea":
+        if self.shape == "circle":
+            if self.center is None or self.radius is None or self.radius <= 0:
+                raise ValueError("a circle needs a center and a positive radius")
+            if self.points is not None:
+                raise ValueError("a circle has no vertices")
+        elif self.points is None or len(self.points) < 3:
+            raise ValueError("a polygon needs at least three vertices")
+        elif self.center is not None or self.radius is not None:
+            raise ValueError("a polygon has no center or radius")
+        return self
 
 
 class VisualAssetData(BaseModel):
@@ -764,10 +777,10 @@ class QuestData(BaseModel):
         None  # Sub-zone where discovery trigger is located
     )
     discovered_location_position: Position | None = (
-        None  # Position of discovery trigger
+        None  # Center of the discovery trigger
     )
-    discovered_location_bounds: BoundingBox | None = (
-        None  # Collider bounds of discovery area
+    discovered_location_area: TriggerArea | None = (
+        None  # Trigger shape the player enters to complete the quest
     )
     tracking_quest_location: str | None = None  # Location tracking text
 

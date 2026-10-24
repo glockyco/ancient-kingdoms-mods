@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DataExporter.Models;
 using Il2CppInterop.Runtime;
@@ -11,7 +12,7 @@ public class QuestLocationTriggerInfo
     public string ZoneId { get; set; }
     public string SubZoneId { get; set; }
     public Position Position { get; set; }
-    public BoundingBox Bounds { get; set; }
+    public TriggerArea Area { get; set; }
 }
 
 public class QuestExporter : BaseExporter
@@ -321,14 +322,16 @@ public class QuestExporter : BaseExporter
             questData.discovered_location_zone_id = triggerInfo.ZoneId;
             questData.discovered_location_sub_zone_id = triggerInfo.SubZoneId;
             questData.discovered_location_position = triggerInfo.Position;
-            questData.discovered_location_bounds = triggerInfo.Bounds;
+            questData.discovered_location_area = triggerInfo.Area;
         }
     }
 
     /// <summary>
     /// Builds a map of quest IDs to their discovery trigger info by finding all QuestLocation triggers in the scene.
     /// QuestLocation triggers are GameObjects tagged "QuestLocation" whose name matches the quest ID they complete.
-    /// Captures position and collider bounds for displaying discovery areas on the map.
+    /// The game completes the objective when the player enters the trigger's collider, so the collider's shape is the
+    /// discovery area, and its center places the area in a zone.
+    /// Source: server-scripts/PlayerQuests.cs:OnTriggerEnter2D
     /// </summary>
     private Dictionary<string, QuestLocationTriggerInfo> BuildQuestLocationTriggerMap()
     {
@@ -359,33 +362,25 @@ public class QuestExporter : BaseExporter
             if (string.IsNullOrEmpty(questId))
                 continue;
 
-            var pos = go.transform.position;
-            var zoneInfo = GetZoneInfoFromPosition(pos);
+            var colliders = go.GetComponents<Collider2D>();
+            if (colliders.Length != 1)
+                throw new InvalidOperationException($"QuestLocation trigger {go.name}: expected one collider, found {colliders.Length}. Reload World.");
+            var area = ReadTriggerArea(colliders[0]);
+            var center = TriggerAreaCenter(area);
+            var zoneInfo = GetZoneInfoFromPosition(new Vector3(center.x, center.y, 0f));
 
-            var triggerInfo = new QuestLocationTriggerInfo
+            map[questId] = new QuestLocationTriggerInfo
             {
                 ZoneId = zoneInfo.ZoneId,
                 SubZoneId = zoneInfo.SubZoneId,
-                Position = new Position(pos.x, pos.y, pos.z)
+                Position = new Position(center.x, center.y, go.transform.position.z),
+                Area = area
             };
 
-            // Try to get collider bounds for the discovery area
-            var collider = go.GetComponent<Collider2D>();
-            if (collider != null)
-            {
-                var bounds = collider.bounds;
-                triggerInfo.Bounds = new BoundingBox(
-                    bounds.min.x, bounds.min.y,
-                    bounds.max.x, bounds.max.y
-                );
-            }
-
-            map[questId] = triggerInfo;
-
-            var boundsStr = triggerInfo.Bounds != null
-                ? $"bounds: ({triggerInfo.Bounds.min_x:F1}, {triggerInfo.Bounds.min_y:F1}) to ({triggerInfo.Bounds.max_x:F1}, {triggerInfo.Bounds.max_y:F1})"
-                : "no collider";
-            Logger.Msg($"  QuestLocation trigger '{go.name}' -> zone: {zoneInfo.ZoneId}, pos: ({pos.x:F1}, {pos.y:F1}), {boundsStr}");
+            var shape = area.shape == "circle"
+                ? $"circle radius {area.radius:F1}"
+                : $"polygon with {area.points.Count} vertices";
+            Logger.Msg($"  QuestLocation trigger '{go.name}' -> zone: {zoneInfo.ZoneId}, center: ({center.x:F1}, {center.y:F1}), {shape}");
         }
 
         Logger.Msg($"Skipped {skippedNonQuestLocations} scene objects without the QuestLocation tag.");

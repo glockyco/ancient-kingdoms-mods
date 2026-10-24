@@ -761,7 +761,7 @@ class _Normalizer:
                 "zone_id": quest["discovered_location_zone_id"],
                 "sub_zone_id": quest["discovered_location_sub_zone_id"],
                 "position": quest["discovered_location_position"],
-                "bounds": quest["discovered_location_bounds"],
+                "area": quest["discovered_location_area"],
                 "discovered_location": quest["discovered_location"],
                 "tracking_quest_location": quest["tracking_quest_location"],
             }
@@ -815,10 +815,8 @@ class _Normalizer:
             )
             if objective_kind == "location":
                 assert location is not None
-                position, bounds = (
-                    location.get("position") or {},
-                    location.get("bounds") or {},
-                )
+                position = location.get("position") or {}
+                area = location.get("area")
                 _insert(
                     self.conn,
                     "quest_objective_locations",
@@ -829,10 +827,13 @@ class _Normalizer:
                     position_x=position.get("x"),
                     position_y=position.get("y"),
                     position_z=position.get("z"),
-                    min_x=bounds.get("min_x"),
-                    min_y=bounds.get("min_y"),
-                    max_x=bounds.get("max_x"),
-                    max_y=bounds.get("max_y"),
+                    area_shape=area["shape"] if area else None,
+                    area_radius=area["radius"] if area else None,
+                    area_paths=json.dumps(
+                        [[[point["x"], point["y"]] for point in area["points"]]]
+                    )
+                    if area and area["shape"] == "polygon"
+                    else None,
                     tracking_quest_location=location.get("tracking_quest_location"),
                 )
             else:

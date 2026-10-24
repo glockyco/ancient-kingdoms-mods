@@ -133,7 +133,7 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
             "discovered_location_zone_id",
             "discovered_location_sub_zone_id",
             "discovered_location_position",
-            "discovered_location_bounds",
+            "discovered_location_area",
             "tracking_quest_location",
             "zone_id_final_npc",
             "zone_id_quest_action",
