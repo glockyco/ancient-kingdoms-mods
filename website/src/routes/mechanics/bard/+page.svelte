@@ -37,7 +37,7 @@
       <Card.Title>Bard Songs and Moving Auras</Card.Title>
       <!-- Source: server-scripts/PlayerSkills.cs:CompleteBardSongCast; PlayerSkills.cs:1328-1380 — a selected song recasts and renews its active duration. -->
       <Card.Description>
-        A selected song repeats its cast and renews its own duration.
+        Your selected song recasts automatically, renewing its duration.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-5 text-sm text-muted-foreground">
@@ -50,14 +50,13 @@
       <p>
         Repetition stops if you die, are stunned or feared, start a trade, visit
         a barber, or unequip your instrument.<br />
-        Click a song's icon in your buff bar to stop it. This removes its effects
-        and stops it repeating.
+        Click a song's icon in your buff bar to remove its effects and stop it repeating.
       </p>
       <!-- Source: server-scripts/ScriptableSkill.cs:102-137, PlayerSkills.cs:CanContinueBardSong; PlayerSkills.cs:2331-2363 — Instrument requirements are checked before starting and during continued performance. -->
       <p>Bard songs require an equipped instrument.</p>
       <!-- Source: server-scripts/PlayerSkills.cs:1336-1380,1662-1677,1692-1704,1721-1733 — the default limit is two, an unlimited passive removes it, and at a limit a new song displaces the oldest refreshed entry. -->
       <p>
-        Two songs can remain active by default.<br />
+        You can keep two songs active at once by default.<br />
         A new song at the limit removes the least recently refreshed song and its
         effects.<br />
         <a
@@ -81,8 +80,8 @@
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:1336-1380,1598-1609,1620-1639,1721-1733 — changing the selected song does not remove earlier effects, but expiry or explicit removal does. -->
       <p>
-        Switching songs or having repetition interrupted does not end earlier
-        songs. They last until they expire, you stop them, or a new song
+        Earlier songs keep their effects when you switch songs or the repeating
+        cast stops. They end when they expire, you stop them, or a new song
         displaces them.
       </p>
 
@@ -149,8 +148,8 @@
       </p>
       <!-- Source: server-scripts/PlayerSkills.cs:BeginBardSong,CompleteBardSongCast; Skills.cs:ApplyFinishedCast — automatic repeats apply a fresh cast and clear attempted recipients. -->
       <p>
-        A resisted or removed aura is tried again at the song's next cast,
-        including an automatic repeat.
+        The song tries to apply a resisted or removed aura again on its next
+        cast, including an automatic repeat.
       </p>
       <!-- Source: server-scripts/BardSongSkill.cs:TryApplyAuraBuff,GetStackingStrength; website/data/compendium.db skills.buff_category — same-category songs compare speed, damage, haste and accuracy bonuses across Bards and mercenary versions, and an existing song of at least equal strength stays. Aegis Aria (category Ward) has none of those bonuses, so one already present always stays. -->
       <!-- Source: server-scripts/PlayerSkills.cs:RefreshBardSongAura; Skills.cs:AddOrRefreshBuff — an uncategorized song skips another Bard's copy between casts, and a fresh cast re-adds it by name, replacing that copy; songs with different names are added separately. -->
@@ -165,12 +164,12 @@
       <!-- Source: server-scripts/BardSongSkill.cs:26-31, Buff.cs:133-240 — Bard songs use Charisma scaling for eligible effect values. -->
       <!-- Source: server-scripts/Skills.cs:GetFinalHealOverTime and BuffSkill.cs:GetDebuffPowerAttribute — songs skip the Wisdom healing bonus and use Charisma before the Intelligence branch. -->
       <p>
-        Bard songs scale with <a
+        <a
           href="/mechanics/character#attributes"
           class="text-blue-600 dark:text-blue-400 hover:underline">Charisma</a
         >
-        alone, gaining 0.1% power per point above 0 up to a 200% bonus. Wisdom and
-        Intelligence leave them unchanged.<br />
+        increases song power by 0.1% per point above 0, up to a 200% bonus. Wisdom
+        and Intelligence do not strengthen songs.<br />
         <MechanicsLink section="combat#songs">Song Strength</MechanicsLink> shows
         which effects change and how they round.<br />
         See the <EntityLink href="/classes/bard" name="Bard class page" /> for skills
