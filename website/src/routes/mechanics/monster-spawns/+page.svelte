@@ -272,8 +272,9 @@
         </li>
         <li>
           <!-- Source: server-scripts/Player.cs:UserCode_CmdResetDungeon__Int32__Int64; Monster.cs:UpdateServer_DEAD — renewal clears saved and active deadlines without bypassing guards, chance or spawn windows. -->
-          For a dungeon boss, you can pay a Renewal Sage to end its respawn timer.
-          Its guards, spawn chance, and game-time window still apply. See
+          You can pay a Renewal Sage to end a dungeon boss's respawn timer. Renewal
+          does not kill its guards, guarantee its spawn roll, or let it appear outside
+          its game-time window. See
           <a
             href="#renewal-sages"
             class="text-blue-600 hover:underline dark:text-blue-400"
