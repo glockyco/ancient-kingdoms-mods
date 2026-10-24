@@ -636,16 +636,16 @@
             href="/mechanics/crafting#augments"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >Augment removal</a
-          > needs carried space for the recovered item.</span
+          > needs room in your inventory for the returned augment.</span
         >
       </p>
       <!-- Source: server-scripts/PlayerNpcTrading.cs:17,295-317,495-526 — sales enter a 20-stack player buyback list for 600 seconds; any trading NPC can sell the full stack back for the recorded payout if it fits. -->
       <p>
         <span class="block"
-          >Buyback holds up to 20 recent sold stacks for 10 minutes.</span
+          >You can buy back up to 20 recently sold stacks for 10 minutes.</span
         >
         <span class="block"
-          >Any trading merchant can return a stack for its recorded sale total.</span
+          >Any trading merchant can sell a stack back for the gold you received.</span
         >
         <span class="block">The entire stack must fit in inventory.</span>
         <span class="block">New sales push out the oldest entries.</span>
