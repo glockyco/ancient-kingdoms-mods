@@ -474,7 +474,7 @@ export const dispelCalculation: Calculation = {
     {
       name: "Cleanse Resist reduction",
       expression:
-        "50% of caster Accuracy for a single-target spell, 1 percentage point per scroll rank for a single-target scroll, or 0 for an area dispel",
+        "50% of caster Accuracy for a single-target spell, 1% per scroll rank for a single-target scroll, or 0 for an area dispel",
     },
     {
       name: "Buff removal chance",

@@ -20,8 +20,8 @@ export function slayerMasteryCalculation(): Calculation {
       {
         name: "Target contribution",
         expression:
-          "0.02 percentage points per kill of that target on your account",
-        limit: "at most 1 percentage point, reached at 50 kills",
+          "Adds 0.02% Slayer mastery per kill of that target on your account",
+        limit: "at most 1% per target, reached at 50 kills",
       },
       {
         name: "Slayer mastery",
