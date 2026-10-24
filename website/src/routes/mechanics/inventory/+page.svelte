@@ -319,13 +319,14 @@
       <p class="text-sm text-muted-foreground">
         <span class="block">Auto Stack checks the selected tab only.</span>
         <span class="block"
-          >It moves stackable carried items already present there.</span
+          >It deposits stackable items from your inventory only if that tab
+          already has the item.</span
         >
         <span class="block"
           >It fills matching stacks, then uses empty slots in that tab for any
           remainder.</span
         >
-        <span class="block">New item types and equipment stay carried.</span>
+        <span class="block">Other items stay in your inventory.</span>
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
