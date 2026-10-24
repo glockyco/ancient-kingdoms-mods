@@ -1246,34 +1246,33 @@
             started, though some monsters use a fixed point.</span
           >
           <span class="block"
-            >Beyond that limit, the monster attacks the reachable enemy inside
-            it with the highest
-            <MechanicsLink section="combat#threat">threat</MechanicsLink>.
-            Without one, it loses harmful effects and returns home with +3.5
-            Movement Speed.</span
+            >If its target moves beyond the limit, the monster switches to the
+            reachable enemy within the limit with the highest
+            <MechanicsLink section="combat#threat">threat</MechanicsLink>. If it
+            has no enemy to switch to, it loses harmful effects and returns home
+            with +3.5 Movement Speed.</span
           >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:Start,EventEntityTooFarToFollow — dungeon monsters that are neither bosses nor elites skip the anchor-distance check. -->
           <!-- Source: server-scripts/Monster.cs:EventTargetUnreachable,UpdateServer_MOVING — an unreachable target is removed from threat and cleared. -->
           <span class="block"
-            >Regular dungeon monsters have no chase-distance limit, but still
-            give up if they cannot reach you.</span
+            >Regular dungeon monsters have no chase-distance limit, but give up
+            if they cannot reach you.</span
           >
-          <span class="block"
-            >Bosses and elites still use their chase limit.</span
+          <span class="block">Dungeon bosses and elites have chase limits.</span
           >
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:OnAggro,EventEntityTooFarToFollow — returning non-dungeon-normal monsters require reachability and anchor distance within followDistance * 0.8; dungeon normal mobs skip this return-specific gate, not CanAttack or normal reachability. -->
           <span class="block"
-            >A returning monster re-engages only if it can reach you and you are
-            within 80% of its chase limit from where combat started (or its
-            fixed point). For a 30 yd limit, that is 24 yd.</span
+            >While returning home, a monster can only attack you again if it can
+            reach you and you are within 80% of its chase limit from where
+            combat started or its fixed point. For a 30 yd limit, that is 24 yd.</span
           >
           <span class="block"
-            >Regular dungeon monsters can re-engage at any distance if they can
-            reach and attack you.</span
+            >Regular dungeon monsters only need to be able to reach and attack
+            you, regardless of distance.</span
           >
         </li>
         <li>
