@@ -42,8 +42,9 @@
   <Topic id="casting">
     <!-- Source: server-scripts/PlayerSkills.cs:709-713,804-810,880-962 — learned status, readiness, resources, equipment and ammunition are checked. -->
     <p>
-      Casting requires a learned, ready skill, enough Mana or Rage, suitable
-      equipment, and ammunition for applicable projectiles.
+      You can use a skill once you have learned it and it is ready. You need
+      enough Mana or Rage to pay its cost, the equipment it requires, and
+      ammunition if it uses any.
     </p>
     <!-- Source: server-scripts/PlayerSkills.cs:911-942 — out-of-range and obscured targets can start navigation and queue the cast. -->
     <p>
