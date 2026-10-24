@@ -4378,6 +4378,10 @@
     "RegionalEventActivities.cs:TypicalAnimal": {
       "span": 0
     },
+    "RegionalEventProgress.cs:104-124": {
+      "sha256": "5c9d6e9814cd41faff3a2222662ed9551cb70be86101d57070d7229c9f6682c3",
+      "span": 21
+    },
     "RegionalEventProgress.cs:105-142": {
       "sha256": "7aa5d00cec9a76dd288b85485d1cabe4cf8edcd00b32f22dcdf42733fb5e011e",
       "span": 38
@@ -4478,6 +4482,10 @@
       "sha256": "5625c44b0d83a6e4169953fa4711bc068fab2af83a46419461a309e17c1e8319",
       "span": 8
     },
+    "RegionalEvents.cs:433-442": {
+      "sha256": "289a949e61517366e26a6e57e775fe0e96ab091c8890dd0817bd93f01a52df00",
+      "span": 10
+    },
     "RegionalEvents.cs:497-542": {
       "sha256": "e963006eed0edaf052574b9e4bade5c3b193c9fa3c10be157d01ff647f315609",
       "span": 46
@@ -4505,6 +4513,10 @@
     "RegionalInvasions.cs:216-245": {
       "sha256": "c071d92229d4be043fe9de634dc3b8c9955702a88db79e579396438600a086ee",
       "span": 30
+    },
+    "RegionalInvasions.cs:283-298": {
+      "sha256": "5cc1760f1ef2c2061070dd095b5903b9651ed20be69b30c94a884ca70aea0416",
+      "span": 16
     },
     "RegionalInvasions.cs:283-341": {
       "sha256": "79970a00595e2fe6ebf2db8d3a7ed72b2b776091259eaf0b723b17b4e7648c60",

@@ -96,10 +96,18 @@
                 >{data.settings.activity_duration_minutes} minutes</td
               ></tr
             >
+            <!-- Source: server-scripts/RegionalInvasions.cs:283-298; RegionalEvents.cs:433-442; RegionalEventProgress.cs:38-60,104-124 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
             <tr class="border-b"
-              ><td class="p-3">City invasion</td><td class="p-3"
-                >Up to 20 minutes to reach the region. The fight starts when a
-                level 35 or higher player arrives and lasts 10 minutes.</td
+              ><td class="p-3">City invasion, announced</td><td class="p-3"
+                >Up to 20 minutes. No invaders appear yet. The invasion starts
+                as soon as a level 35 or higher player is anywhere in the
+                invaded region. If none arrives within 20 minutes, the invasion
+                is called off.</td
+              ></tr
+            >
+            <tr class="border-b"
+              ><td class="p-3">City invasion, under attack</td><td class="p-3"
+                >10 minutes</td
               ></tr
             >
             <tr
