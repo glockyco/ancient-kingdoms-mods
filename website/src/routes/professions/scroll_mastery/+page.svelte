@@ -204,12 +204,12 @@
           <!-- Source: server-scripts/ScrollItem.cs:125 — RoundToInt rounds an exact half to the even rank. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             A scroll takes 1 second to cast its skill without teaching it.
-            Scaling scrolls cast at one rank per 5 percentage points of Scroll
-            Mastery, rounded, from rank 1 up to the skill's highest rank. At 37%
-            Scroll Mastery, they cast at rank 7. Exact halves go to the even
-            rank, so 12.5% Scroll Mastery casts at rank 2. Fixed scrolls cast at
-            rank 1. Successful completion consumes one charge unless the scroll
-            has infinite charges. Mastery gains also occur on completion.
+            Scaling scrolls cast at one rank per 5% Scroll Mastery, rounded,
+            from rank 1 up to the skill's highest rank. At 37% Scroll Mastery,
+            they cast at rank 7. Exact halves go to the even rank, so 12.5%
+            Scroll Mastery casts at rank 2. Fixed scrolls cast at rank 1.
+            Successful completion consumes one charge unless the scroll has
+            infinite charges. Mastery gains also occur on completion.
           </p>
           <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, a lost start target, another active skill, or an empty or changed slot. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">

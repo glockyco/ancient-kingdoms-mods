@@ -418,7 +418,7 @@
         <div>
           <p class="font-medium">Collect the mastery.</p>
           <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
-            Each credited kill adds 0.02 percentage points to
+            Each credited kill adds 0.02% to
             <a
               href="#mastery"
               class="text-blue-600 hover:underline dark:text-blue-400"
@@ -504,8 +504,8 @@
         <div class="mt-2 space-y-2 text-pretty text-muted-foreground">
           <p>
             At 10% Slayer, a boss or elite hit loses 1% of its damage, rounded
-            up. Each additional 10 percentage points of Slayer adds another 1%
-            reduction, up to 10%. Even a 10-damage hit loses 1 damage.
+            up. Each additional 10% Slayer adds another 1% reduction, up to 10%.
+            Even a 10-damage hit loses 1 damage.
           </p>
           <p>A mercenary or summon uses the Slayer mastery of its owner.</p>
         </div>
@@ -518,8 +518,8 @@
     <!-- Source: server-scripts/Database.cs:CalculateSlayerLevelForAccount -->
     <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
       The game adds the capped kills of every character on the account, then
-      stops Slayer at 100%. One target adds a maximum of 1 percentage point, so
-      100% needs kills from a minimum of 100 targets.
+      stops Slayer at 100%. One target adds at most 1% mastery, so 100% needs
+      kills from a minimum of 100 targets.
     </p>
 
     <!-- Source: server-scripts/Database.cs:3428-3436 — each target adds 0.02% per account kill up to 50 kills, and the total stops at 100%. -->

@@ -95,8 +95,8 @@
     <!-- Source: server-scripts/Monster.cs:3000-3001,3067-3072 — non-boss isHunt monsters add half the player's Hunting fraction to above-Normal item drop chances. -->
     <p class="text-muted-foreground">
       <span class="block"
-        >Against non-boss Hunting-journal creatures, each 10% Hunting adds 5
-        percentage points to the drop chance of items above Normal quality.</span
+        >Against non-boss Hunting-journal creatures, each 10% Hunting adds 5% to
+        the drop chance of items above Normal quality.</span
       >
       <span class="block"
         >Other creatures and Normal-quality drops get no bonus.</span

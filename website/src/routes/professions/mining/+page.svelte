@@ -220,10 +220,10 @@
   <section id="calculator" class="space-y-4">
     <h2 class="text-xl font-semibold">Success by skill</h2>
     <p class="max-w-2xl text-balance text-sm text-muted-foreground">
-      On Tier V ore, each pickaxe quality adds 5 percentage points to your
-      success chance. Each 1% Mining adds another 0.5 points. In the shaded
-      bands, the node still gives ore and <MechanicsLink
-        section="experience#gathering-xp">experience</MechanicsLink
+      On Tier V ore, each pickaxe quality adds 5% to your success chance. Each
+      1% Mining adds another 0.5% to that chance. In the shaded bands, the node
+      still gives ore and <MechanicsLink section="experience#gathering-xp"
+        >experience</MechanicsLink
       >, but no more Mining skill.
     </p>
 
