@@ -132,8 +132,8 @@
   <Topic id="mitigation">
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — stat reduction is clamped to 0–90% before prevented damage rounds up. -->
     <p>
-      A hit that lands loses 5% of its damage for every 100 points of the
-      matching defense, up to 90%.
+      A hit that lands loses 0.05% of its damage per point of the matching
+      defense (5% per 100 points), up to 90%.
     </p>
     <VariantPicker
       label="Your stat"

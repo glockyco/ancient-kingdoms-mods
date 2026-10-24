@@ -66,11 +66,11 @@
   </p>
   <!-- Source: server-scripts/Combat.cs:665-672,855-872,1550-1591 — Magic Resist reduces magic damage by 0.0005 per point, at most 90%, and adds 0.0005 per point to the resist chance. -->
   <p class="text-muted-foreground">
-    Every 100 Magic Resist reduces this damage by 5%, up to 90%, with the
-    reduction rounded up, and adds 5 percentage points to the chance to resist
-    it entirely. Each 1% of the caster's Accuracy subtracts 1 percentage point.
-    Level differences also apply. The final resist chance is limited to 0-90%.
-    See the <a
+    Each point of Magic Resist reduces this damage by 0.05% (5% per 100 points),
+    up to 90%, with the reduction rounded up, and adds 0.05 percentage points to
+    the chance to resist it entirely. Each 1% of the caster's Accuracy subtracts
+    1 percentage point. Level differences also apply. The final resist chance is
+    limited to 0-90%. See the <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#damage-pipeline">damage steps</a
     >,

@@ -1,14 +1,14 @@
 <!-- Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike) -->
 <!-- Source: server-scripts/TargetDamageSkill.cs:244,291 (ApplyDamage) -->
 <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,252-256 (Apply) -->
-<!-- Source: server-scripts/Combat.cs:DealDamageAt — Magic Resist reduces the converted hit by 5% per 100 points, at most 90%. -->
+<!-- Source: server-scripts/Combat.cs:DealDamageAt — Magic Resist reduces the converted hit by 0.0005 per point, at most 90%. -->
 <div class="space-y-1">
   <h3 class="font-semibold">Wild Strike</h3>
   <p class="text-muted-foreground">
     Your next melee auto attack (Swift Slash) or bow auto attack (Archer Shot)
     consumes the buff, deals 10% more damage per Wild Strike rank and becomes
-    Magic damage. Every 100 Magic Resist reduces the converted damage by 5%, up
-    to 90%, with the reduction rounded up. See
+    Magic damage. Each point of Magic Resist reduces the converted damage by
+    0.05% (5% per 100 points), up to 90%, with the reduction rounded up. See
     <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#wild-strike">Wild Strike</a
