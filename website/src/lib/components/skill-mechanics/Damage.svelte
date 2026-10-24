@@ -95,8 +95,9 @@
   {#if skill.is_manaburn_skill}
     <!-- Source: server-scripts/Combat.cs:711-714,847-886 — Mana Burn and Rageblow skip avoidance and mitigation, not variance, combat advantage, level adjustment or critical scaling. -->
     <p class="text-muted-foreground">
-      This skill bypasses avoidance, Armor Class and resistance. Other damage
-      modifiers still apply. See the <a
+      This skill bypasses avoidance, Armor Class and resistance. It still gets
+      random variance, Combat Advantage, the level adjustment and critical hits.
+      See the <a
         class="text-blue-600 dark:text-blue-400 hover:underline"
         href="/mechanics/combat#damage-pipeline">damage steps</a
       >.
