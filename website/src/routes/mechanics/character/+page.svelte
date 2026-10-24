@@ -362,7 +362,8 @@
             href="/skills/mystic_spark"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >Mystic Spark</a
-          > restores Mana equal to 35% of its eligible hit damage, rounded down.</span
+          > restores 35% of its hit damage as Mana. Damage beyond the target's remaining
+          Hit Points grants no Mana.</span
         >
         <span class="block"
           ><a
