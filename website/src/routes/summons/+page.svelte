@@ -66,7 +66,7 @@
   // Source: server-scripts/PetSkills.cs:RefreshSkillLevels; server-scripts/Buff.cs:91,240,254; the export's skills.json — each familiar's buff per rank and its maximum rank.
   const FAMILIAR_EFFECTS: Record<string, string> = {
     blue_fairy: "+2 Mana Regeneration per rank, up to rank 8",
-    red_fairy: "+1 percentage point of Accuracy per rank, up to rank 8",
+    red_fairy: "+1% Accuracy per rank, up to rank 8",
     arcane_fairy: "+1.5% Spell Power per rank, up to rank 10",
   };
 
