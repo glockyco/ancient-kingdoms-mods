@@ -661,7 +661,18 @@
           >Only repair merchants restore damaged equipment.</span
         >
         <span class="block"
-          >They repair equipped and carried gear and active mercenary equipment.</span
+          >They repair equipped and carried gear and active mercenary equipment,
+          one item at a time.</span
+        >
+      </p>
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:GetRepairAllEquipment,CalculateRepairAllPrice,UserCode_CmdRepairAll__UInt32__Int64 — Repair All covers the player's and active mercenaries' equipped slots, sums the single-item prices, and refuses while in combat. -->
+      <p>
+        <span class="block"
+          >Repair All fixes your equipped gear and your active mercenaries' gear
+          at once, for the total of the single repair prices.</span
+        >
+        <span class="block"
+          >It skips carried gear and does not work in combat.</span
         >
       </p>
       <Calculation calculation={repairCost()} />

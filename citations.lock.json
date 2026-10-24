@@ -3918,6 +3918,9 @@
     "PlayerNpcTrading.cs:CalculateSellItemPrice": {
       "span": 0
     },
+    "PlayerNpcTrading.cs:GetRepairAllEquipment": {
+      "span": 0
+    },
     "PlayerNpcTrading.cs:UserCode_CmdRepairItem__Int32__Int64__Boolean": {
       "span": 0
     },
