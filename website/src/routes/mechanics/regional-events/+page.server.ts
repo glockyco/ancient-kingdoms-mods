@@ -1,7 +1,9 @@
 import type { PageServerLoad } from "./$types";
-import { query } from "$lib/db.server";
 import {
+  getRegionalCookingDishes,
+  getRegionalEventRegions,
   getRegionalEventSettings,
+  getRegionalHuntTargets,
   getRegionalInvasions,
   getRegionalInvasionAttackers,
 } from "$lib/queries/regional-events.server";
@@ -10,17 +12,27 @@ export const prerender = true;
 
 export const load = (() => {
   const attackers = getRegionalInvasionAttackers();
+  const regions = getRegionalEventRegions();
+  const dishes = getRegionalCookingDishes();
   return {
     settings: getRegionalEventSettings(),
-    invasions: getRegionalInvasions().map((invasion) => ({
-      ...invasion,
-      attackers: attackers.filter(
-        (attacker) => attacker.invasion_id === invasion.id,
-      ),
-    })),
-    // Source: server-scripts/RegionalEvents.cs:497-551 — the standard regions are zones 1 through 5, and ore requests use zones 2, 3 and 5.
-    regions: query<{ id: string; name: string; zone_id: number }>(
-      "SELECT id, name, zone_id FROM zones WHERE zone_id BETWEEN 1 AND 5 ORDER BY zone_id",
-    ),
+    invasions: getRegionalInvasions().map((invasion) => {
+      const cookingRegion = regions.find(
+        (region) => region.cooking_city === invasion.city,
+      );
+      return {
+        ...invasion,
+        attackers: attackers.filter(
+          (attacker) => attacker.invasion_id === invasion.id,
+        ),
+        cookingDishes: cookingRegion
+          ? dishes.filter(
+              (dish) => dish.region_zone_id === cookingRegion.zone_id,
+            )
+          : [],
+      };
+    }),
+    regions,
+    huntTargets: getRegionalHuntTargets(),
   };
 }) satisfies PageServerLoad;

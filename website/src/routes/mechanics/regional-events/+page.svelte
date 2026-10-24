@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Check from "@lucide/svelte/icons/check";
   import ClipboardList from "@lucide/svelte/icons/clipboard-list";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Swords from "@lucide/svelte/icons/swords";
@@ -12,18 +13,40 @@
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import { MECHANICS_SECTIONS } from "$lib/data/mechanics-sections";
+  import {
+    hostsHerbRequests,
+    hostsOreRequests,
+    huntPlayers,
+    needsLevel35Player,
+  } from "$lib/data/regional-events";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 
-  // Source: server-scripts/RegionalEventActivities.cs:TypicalAnimal — the animal whose meat each city's cooking request uses.
-  const COOKING_ANIMALS: Record<string, string> = {
-    Elven: "Deer",
-    Dwarven: "Bison",
-    Milldenn: "Sabretooth",
-    DarkElven: "Magmadrake",
-    Felarii: "Panther",
-  };
+  const standardRegions = $derived(
+    data.regions.filter((region) => !needsLevel35Player(region.zone_number)),
+  );
+
+  // Source: server-scripts/RegionalEventText.cs:30-40 — the six activity titles.
+  const EVENTS = [
+    { name: "The Apothecaries' Call", counts: "Each plant you gather." },
+    { name: "Fires of the Forge", counts: "Each ore you mine." },
+    { name: "The Fishers' Request", counts: "Each fish you catch." },
+    {
+      name: "A Regional Hunt",
+      counts:
+        "Each requested animal you help kill, if you are nearby when it dies.",
+    },
+    {
+      name: "Cook for [city]",
+      counts:
+        "Each of the city's dishes you cook at an oven in the city, at any quality.",
+    },
+    {
+      name: "Defend [city]",
+      counts: "Each invader you help kill, if you are nearby when it dies.",
+    },
+  ];
 
   // Source: server-scripts/RegionalEventProgress.cs:38-60; RegionalEvents.cs:559 — an invasion waits 1200 seconds for a player, then its attack runs 600 seconds. Neither is a server setting.
   const INVASION_WARNING_MINUTES = 20;
@@ -99,6 +122,16 @@
   ]);
 </script>
 
+{#snippet hosts(available: boolean)}
+  <td class="p-3 text-center">
+    {#if available}
+      <Check class="inline size-4 text-emerald-500" aria-label="Yes" />
+    {:else}
+      <span aria-label="No">—</span>
+    {/if}
+  </td>
+{/snippet}
+
 <Seo
   title="Regional Event Mechanics - Ancient Kingdoms"
   description="Regional events (Dynamic Events) in Ancient Kingdoms: objectives, contribution rewards, city invasions, and the Prosperity experience bonus."
@@ -139,13 +172,13 @@
       <!-- Source: server-scripts/RegionalEvents.cs:497-542 — zones 1 through 5 are candidates unless occupied by the current event or Prosperity. Northern Wastes requires an online level 35 player and an invasion definition. -->
       <p>
         Events take place in
-        {#each data.regions as region, i (region.id)}{#if i > 0}{i ===
-            data.regions.length - 1
+        {#each standardRegions as region, i (region.zone_id)}{#if i > 0}{i ===
+            standardRegions.length - 1
               ? ", and "
               : ", "}{/if}<a
-            href="/zones/{region.id}"
+            href="/zones/{region.zone_id}"
             class="text-blue-600 hover:underline dark:text-blue-400"
-            >{region.name}</a
+            >{region.zone_name}</a
           >{/each}. Events in the
         <a
           href="/zones/northern_wastes"
@@ -225,73 +258,25 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-muted-foreground">
       <!-- Source: server-scripts/RegionalEventText.cs:30-40 — the six activity titles. -->
-      <!-- Source: server-scripts/RegionalEvents.cs:243-257,270-306,536-551 — gathering uses 5 yd, hunting uses 40 yd, fishing and cooking use 2.5 yd from the activity collider. Herbs exclude Northern Wastes. Ore uses zones 2, 3 and 5. -->
-      <!-- Source: server-scripts/RegionalEventActivities.cs:32-128,139-181,212-279 — fishing needs valid spots and fish, cooking needs city ovens and dishes using the requested animal, and hunting selects a viable wild animal population. -->
-      <!-- Source: server-scripts/RegionalEventActivities.cs:TypicalAnimal,MeatAnimal — each city's cooking request uses one animal's meat. -->
       <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse">
           <thead
             ><tr class="border-b"
               ><th class="p-3 text-left font-medium text-foreground">Event</th
-              ><th class="p-3 text-left font-medium text-foreground">Where</th
               ><th class="p-3 text-left font-medium text-foreground"
                 >What counts</th
               ></tr
             ></thead
           >
           <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
-            <tr class="border-b">
-              <td class="p-3 font-medium text-foreground"
-                >The Apothecaries' Call</td
-              >
-              <td class="p-3">Any event region except the Northern Wastes</td>
-              <td class="p-3">Each plant you gather.</td>
-            </tr>
-            <tr class="border-b">
-              <td class="p-3 font-medium text-foreground">Fires of the Forge</td
-              >
-              <td class="p-3"
-                >{#each data.regions.filter( (region) => [2, 3, 5].includes(region.zone_id) ) as region, i (region.id)}{i >
-                  0
-                    ? ", "
-                    : ""}<a
-                    href="/zones/{region.id}"
-                    class="text-blue-600 hover:underline dark:text-blue-400"
-                    >{region.name}</a
-                  >{/each}</td
-              >
-              <td class="p-3">Each ore you mine.</td>
-            </tr>
-            <tr class="border-b">
-              <td class="p-3 font-medium text-foreground"
-                >The Fishers' Request</td
-              >
-              <td class="p-3">A region with fishing spots</td>
-              <td class="p-3">Each fish you catch.</td>
-            </tr>
-            <tr class="border-b">
-              <td class="p-3 font-medium text-foreground">Cook for [city]</td>
-              <td class="p-3">An oven in the named city</td>
-              <td class="p-3"
-                >Each dish you cook with the city's animal meat, at any quality.
-                The animals are listed under City invasions.</td
-              >
-            </tr>
-            <tr class="border-b">
-              <td class="p-3 font-medium text-foreground">A Regional Hunt</td>
-              <td class="p-3">A region with plenty of one wild animal</td>
-              <td class="p-3"
-                >Each requested animal you help kill, if you are nearby when it
-                dies.</td
-              >
-            </tr>
-            <tr>
-              <td class="p-3 font-medium text-foreground">Defend [city]</td>
-              <td class="p-3">One of the cities under City invasions</td>
-              <td class="p-3"
-                >Each invader you help kill, if you are nearby when it dies.</td
-              >
-            </tr>
+            {#each EVENTS as event (event.name)}
+              <tr class="border-b last:border-0">
+                <td class="p-3 font-medium text-foreground sm:whitespace-nowrap"
+                  >{event.name}</td
+                >
+                <td class="p-3">{event.counts}</td>
+              </tr>
+            {/each}
           </tbody>
         </table>
       </div>
@@ -303,6 +288,77 @@
         everyone who helped. Invaders killed by townsfolk also count. Quest
         items do not count. You keep what you gather, catch, and cook.
       </p>
+    </Card.Content>
+  </Card.Root>
+
+  <Card.Root id="regions" class="bg-muted/30">
+    <Card.Header><Card.Title>Events by region</Card.Title></Card.Header>
+    <Card.Content class="space-y-4 text-muted-foreground">
+      <!-- Source: server-scripts/RegionalEvents.cs:243-257,270-306,536-551 — gathering uses 5 yd, hunting uses 40 yd, fishing and cooking use 2.5 yd from the activity collider. Herbs exclude Northern Wastes. Ore uses zones 2, 3 and 5. -->
+      <!-- Source: server-scripts/RegionalEventActivities.cs:Discover — fishing needs valid spots and fish, and cooking needs city ovens and dishes made from the city's animal meat. -->
+      <!-- Source: server-scripts/RegionalEventActivities.cs:60-82 — a hunt animal needs at least three always-respawning spawns, each supplying 1 + floor(half the event duration / (respawn + corpse time)) kills, summing to at least the goal. -->
+      <p>
+        A hunt asks for one of the region's animals. The game only picks an
+        animal whose spawns can supply the whole goal in half the event's time.
+        More players in the region raise the goal, so some animals are only
+        picked when fewer players are there.
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead
+            ><tr class="border-b"
+              ><th class="p-3 text-left font-medium text-foreground">Region</th
+              ><th class="p-3 text-center font-medium text-foreground"
+                >Plants</th
+              ><th class="p-3 text-center font-medium text-foreground">Ore</th
+              ><th class="p-3 text-center font-medium text-foreground">Fish</th
+              ><th class="p-3 text-left font-medium text-foreground">Hunt</th
+              ><th class="p-3 text-left font-medium text-foreground"
+                >Cook and defend</th
+              ></tr
+            ></thead
+          >
+          <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
+            {#each data.regions as region (region.zone_id)}
+              <tr class="border-b last:border-0">
+                <td class="p-3"
+                  ><a
+                    href="/zones/{region.zone_id}"
+                    class="whitespace-nowrap text-blue-600 hover:underline dark:text-blue-400"
+                    >{region.zone_name}</a
+                  >{#if needsLevel35Player(region.zone_number)}<span
+                      class="block text-xs"
+                      >Needs a level 35 or higher player online</span
+                    >{/if}</td
+                >
+                {@render hosts(hostsHerbRequests(region.zone_number))}
+                {@render hosts(hostsOreRequests(region.zone_number))}
+                {@render hosts(Boolean(region.fishing))}
+                <td class="p-3">
+                  {#each data.huntTargets.filter((target) => target.region_zone_id === region.zone_id) as target (target.monster_id)}
+                    {@const players = huntPlayers(target.max_players)}
+                    <span class="block whitespace-nowrap"
+                      ><a
+                        href="/monsters/{target.monster_id}"
+                        class="text-blue-600 hover:underline dark:text-blue-400"
+                        >{target.monster_name}</a
+                      >{#if players}<span class="ml-1 text-xs">({players})</span
+                        >{/if}</span
+                    >
+                  {/each}
+                </td>
+                <td class="p-3 whitespace-nowrap"
+                  >{#if region.cooking_city_name}<a
+                      href="#invasion-{region.cooking_city}"
+                      class="text-blue-600 hover:underline dark:text-blue-400"
+                      >{region.cooking_city_name}</a
+                    >{:else}—{/if}</td
+                >
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     </Card.Content>
   </Card.Root>
 
@@ -377,7 +433,10 @@
           >
           <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
             {#each data.invasions as invasion (invasion.id)}
-              <tr class="border-b last:border-0">
+              <tr
+                id="invasion-{invasion.city}"
+                class="scroll-mt-20 border-b last:border-0"
+              >
                 <td class="p-3"
                   ><span class="block font-medium text-foreground"
                     >{invasion.city_name}</span
@@ -406,8 +465,15 @@
                       </li>{/each}
                   </ul></td
                 >
-                <td class="p-3 whitespace-nowrap"
-                  >{COOKING_ANIMALS[invasion.city] ?? "None"} meat</td
+                <td class="p-3"
+                  >{#if invasion.cookingDishes.length > 0}<ul class="space-y-1">
+                      {#each invasion.cookingDishes as dish (dish.item_id)}<li>
+                          <EntityLink
+                            href="/items/{dish.item_id}"
+                            name={dish.item_name}
+                          />
+                        </li>{/each}
+                    </ul>{:else}None{/if}</td
                 >
               </tr>
             {/each}

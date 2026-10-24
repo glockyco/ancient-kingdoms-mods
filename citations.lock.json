@@ -4364,34 +4364,23 @@
       "sha256": "3e13b7703edced5f3016e98239a2d0b353d8a643e0e3de51f08fcf462931d42f",
       "span": 1
     },
-    "RegionalEventActivities.cs:139-181": {
-      "sha256": "a05a0784db39a671609ea3f45477ef299d970d89b64b7b0a7350dda151019e0e",
-      "span": 43
-    },
     "RegionalEventActivities.cs:150": {
       "sha256": "8091066850c40a0c8b12cd5418a32134c9d34dde8b1844fcf6ef63c73cc73071",
       "span": 1
-    },
-    "RegionalEventActivities.cs:212-279": {
-      "sha256": "801af8295ae3fbb5a491123e6f17365b3aed1069abfee874fad91d2d204c9e0b",
-      "span": 68
     },
     "RegionalEventActivities.cs:258": {
       "sha256": "583f8985ca44eaacfb1b9b1c78dad4706c3c7025fe377517641852fb36730b06",
       "span": 1
     },
-    "RegionalEventActivities.cs:32-128": {
-      "sha256": "fe94b26b1ae0781cd0d494a2f0ae5aca3b511fe71f88979e86aa95cfa9de5a2f",
-      "span": 97
-    },
     "RegionalEventActivities.cs:54": {
       "sha256": "cda22fe4315d32c46837ed9697eb487a382644ca517e32cf5fd2e03729a941dd",
       "span": 1
     },
-    "RegionalEventActivities.cs:Discover": {
-      "span": 0
+    "RegionalEventActivities.cs:60-82": {
+      "sha256": "fb0534fc00bf4ab6359fa961909301c22125ffddb1a8a775ea9d0f7893d2b788",
+      "span": 23
     },
-    "RegionalEventActivities.cs:TypicalAnimal": {
+    "RegionalEventActivities.cs:Discover": {
       "span": 0
     },
     "RegionalEventProgress.cs:104-124": {
@@ -4505,10 +4494,6 @@
     "RegionalEvents.cs:497-542": {
       "sha256": "e963006eed0edaf052574b9e4bade5c3b193c9fa3c10be157d01ff647f315609",
       "span": 46
-    },
-    "RegionalEvents.cs:497-551": {
-      "sha256": "75763d33808baaaad675b686c042e7a3b2ca1524363f2bbec9b9a886c4670646",
-      "span": 55
     },
     "RegionalEvents.cs:527-559": {
       "sha256": "e7516e1ae1e7df157065c0e5b0aafe78248e9fcbb1bd4c1f210b766d0ece44f5",

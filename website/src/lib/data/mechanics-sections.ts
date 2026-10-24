@@ -100,6 +100,7 @@ export const MECHANICS_SECTIONS: Record<MechanicsHref, readonly PageSection[]> =
     "/mechanics/regional-events": [
       { id: "availability", label: "When events happen" },
       { id: "activities", label: "What to do" },
+      { id: "regions", label: "Events by region" },
       { id: "rewards", label: "Goals and rewards" },
       { id: "prosperity", label: "Prosperity" },
       { id: "invasions", label: "City invasions" },
