@@ -560,8 +560,8 @@
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:239-265 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
-          items try base inventory slots first, then unlocked backpack storage
-          slots.
+          items go into base inventory slots first, then unlocked backpack
+          storage slots.
         </li>
         <li>
           <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1992-2006 — stack increases are clamped by target max stack. -->Matching
@@ -569,8 +569,8 @@
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:621-626 and 670-683 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
-          Shift while you drag a stack onto an empty slot. An amount picker
-          opens and moves the chosen amount into that slot.
+          Shift while you drag a stack onto an empty slot, then choose how many
+          items to move.
         </li>
         <!-- Source: server-scripts/PlayerInventory.cs:701-757,795-853,1914-1976 and server-scripts/PlayerBank.cs:53-72 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
         <li>
@@ -583,8 +583,9 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:685-688 — non-split, non-merge inventory drag swaps slots. -->Other
-          carried-item drags swap source and destination slots.
+          <!-- Source: server-scripts/PlayerInventory.cs:685-688 — non-split, non-merge inventory drag swaps slots. -->Dragging
+          an item between inventory slots swaps their contents unless you split
+          or merge a stack.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:OnDragAndClear_InventorySlot; ScriptableItem.cs:ToolTip — destruction checks destroyable; the tooltip tag is No-Destroy. -->
