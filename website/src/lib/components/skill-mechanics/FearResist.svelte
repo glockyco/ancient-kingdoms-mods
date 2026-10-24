@@ -17,7 +17,7 @@
         The affected character receives {formatStat(
           "fear_resist",
           atRank(skill.fear_resist_chance_bonus, skill.max_level),
-        ).replace("%", "")} percentage points of Fear Resist at rank
+        )} Fear Resist at rank
         {skill.max_level}{skill.scales_with_charisma
           ? ", before Charisma scaling"
           : ""}.
@@ -32,7 +32,7 @@
         >This skill adds at most {formatStat(
           "fear_resist",
           skill.fear_resist_chance_bonus_cap,
-        ).replace("%", "")} percentage points to that chance after Charisma scaling.</span
+        )} to that chance after Charisma scaling.</span
       >
     {/if}
     <span class="block"

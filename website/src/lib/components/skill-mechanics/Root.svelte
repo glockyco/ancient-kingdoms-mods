@@ -23,8 +23,8 @@
     {#if targetsMonsters}
       <span class="block"
         >Every 2 seconds, a rooted monster rolls to break free. Each point of
-        its Magic Resist adds 0.1 percentage points to that chance, which stays
-        between 5% and 95%.</span
+        its Magic Resist adds 0.1% to that chance, which stays between 5% and
+        95%.</span
       >
       <span class="block"
         >A rooted NPC has a 10% chance to break free every second.</span

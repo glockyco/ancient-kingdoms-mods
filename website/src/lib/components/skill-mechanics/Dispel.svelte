@@ -52,16 +52,16 @@
       {#if skill.is_scroll}
         <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetDebuffSkill.cs:Apply — scroll cast rank is rounded Scroll Mastery × 20; each rank reduces probIgnoreCleanse by 1 percentage point. -->
         <p class="text-muted-foreground">
-          The scroll lowers each buff's Cleanse Resist by 1 percentage point per
-          cast rank, up to {skill.max_level} percentage points at rank {skill.max_level}
+          The scroll subtracts 1% from each buff's Cleanse Resist per cast rank,
+          up to {skill.max_level}% at rank {skill.max_level}
           (see Scroll Mastery above). Accuracy helps the dispel land. Scroll Mastery
           helps it remove resistant buffs.
         </p>
       {:else}
         <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; Combat.cs:accuracy — removal subtracts half signed Accuracy from probIgnoreCleanse. -->
         <p class="text-muted-foreground">
-          Your reduction is half your Accuracy: 20% Accuracy lowers each buff's
-          Cleanse Resist by 10 percentage points. Negative Accuracy raises it.
+          Your reduction is half your Accuracy: 20% Accuracy subtracts 10% from
+          each buff's Cleanse Resist. Negative Accuracy adds to it.
         </p>
       {/if}
     {:else}

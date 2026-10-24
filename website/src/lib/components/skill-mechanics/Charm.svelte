@@ -16,9 +16,9 @@
     Charm uses the target's <a
       class="text-blue-600 dark:text-blue-400 hover:underline"
       href="/mechanics/combat#avoidance">Magic Resist roll</a
-    >, without Accuracy. Each level the target is above you adds 2.5 percentage
-    points to its chance to resist. Each point of your Charisma above 0 removes
-    0.02 percentage points. The final chance is between 0% and 95%.
+    >, without Accuracy. Each level the target is above you adds 2.5% to its
+    chance to resist. Each point of your Charisma above 0 subtracts 0.02% from
+    that chance. The final chance is between 0% and 95%.
   </p>
   <!-- Source: server-scripts/BardCharmSongSkill.cs:IsValidCharmTarget,GetCharmTarget,Apply — debuff immunity blocks charm, and recasts roll resistance against the active charm. -->
   <p class="text-muted-foreground">

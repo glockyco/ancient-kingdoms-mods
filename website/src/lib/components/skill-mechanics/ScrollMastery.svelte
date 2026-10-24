@@ -20,8 +20,8 @@
     >
   </h3>
   <p class="text-muted-foreground">
-    A scroll casts this skill at one rank per 5 percentage points of Scroll
-    Mastery, rounded, from rank 1 up to rank {skill.max_level}. At {formatPercent(
+    A scroll casts this skill at one rank per 5% Scroll Mastery, rounded, from
+    rank 1 up to rank {skill.max_level}. At {formatPercent(
       EXAMPLE_SCROLL_MASTERY,
       { decimals: 2, preserveNonzero: true },
     )} Scroll Mastery, it casts at rank {scrollRank(skill.max_level)}. The Rank

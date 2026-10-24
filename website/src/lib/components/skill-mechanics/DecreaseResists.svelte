@@ -2,6 +2,6 @@
 <div class="space-y-1">
   <h3 class="font-semibold">Resist Chance Reduction</h3>
   <p class="text-muted-foreground">
-    Lowers the target's chance to resist this skill by 30 percentage points.
+    Subtracts 30% from the target's chance to resist this skill.
   </p>
 </div>

@@ -14,8 +14,8 @@
     <span class="block">Bosses and elite monsters always resist sleep.</span>
     <span class="block"
       >Every 6 seconds, a sleeping monster, NPC or pet rolls to wake. Each point
-      of its Magic Resist adds 0.1 percentage points to that chance, which stays
-      between 5% and 95%.</span
+      of its Magic Resist adds 0.1% to that chance, which stays between 5% and
+      95%.</span
     >
   </p>
 </div>

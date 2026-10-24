@@ -15,11 +15,8 @@
   <h3 class="font-semibold">{statName("critical_resist")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
-      >The affected character receives {formatStat(
-        "critical_resist",
-        amount,
-      ).replace("%", "")}
-      percentage points of Critical Resist at rank {skill.max_level}{skill.scales_with_charisma
+      >The affected character receives {formatStat("critical_resist", amount)}
+      Critical Resist at rank {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
         : ""}, which reduces the extra damage from critical hits.</span
     >
@@ -34,8 +31,7 @@
       ordinary hit.</span
     >
     <span class="block"
-      >Each point of Dexterity above 0 adds 0.05 percentage points of Critical
-      Resist.</span
+      >Each point of Dexterity above 0 adds 0.05% Critical Resist.</span
     >
     <span class="block"
       >Gear and buffs can add more, up to a total of 100%.</span

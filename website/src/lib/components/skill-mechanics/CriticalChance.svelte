@@ -15,9 +15,9 @@
   <h3 class="font-semibold">{statName("critical_chance")}</h3>
   <p class="text-muted-foreground">
     <span class="block"
-      >{amount < 0 ? "Lowers" : "Raises"} the affected character's Critical Strike
-      by {formatStat("critical_chance", Math.abs(amount)).replace("%", "")} percentage
-      points at rank
+      >{amount < 0 ? "Subtracts" : "Adds"}
+      {formatStat("critical_chance", Math.abs(amount))}
+      {amount < 0 ? "from" : "to"} the affected character's Critical Strike at rank
       {skill.max_level}{skill.scales_with_charisma
         ? ", before Charisma scaling"
         : ""}. Total Critical Strike
