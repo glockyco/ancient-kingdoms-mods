@@ -3713,6 +3713,10 @@
       "sha256": "9f6fd27d2a8056dc39b378373f4928d2a9586a73a9556d52b0f231a3b4a04bee",
       "span": 12
     },
+    "PlayerInventory.cs:2244-2264": {
+      "sha256": "146a5dc7355bb7ec5d7e2bb77fd7a234579c897e82b500e5e69797808f07469f",
+      "span": 21
+    },
     "PlayerInventory.cs:255-281": {
       "sha256": "98ec203ff45627ab4c9b6302cde55ed8905b49be2cccf82867a9705c28515b25",
       "span": 27
@@ -3760,6 +3764,10 @@
     "PlayerInventory.cs:738-794": {
       "sha256": "dcda6e89ad54ac7bd3e769b94f6994eeec3d0a2d7d54179e3c12c4e16f59440f",
       "span": 57
+    },
+    "PlayerInventory.cs:808-829": {
+      "sha256": "a76b7a04108492bdd58ee7856202d4d4f3ba45148f1ca8291873a08eb8703862",
+      "span": 22
     },
     "PlayerInventory.cs:832-838": {
       "sha256": "3bbe16d77672ca7b860b4f359e6278e1a4d1ab70828bd1d3eedc795ef82ea058",
@@ -5068,6 +5076,10 @@
     },
     "UIBigBackpack.cs": {
       "span": 0
+    },
+    "UIBigBackpack.cs:317-329": {
+      "sha256": "6b2a53d35fc4b7a4046c2166c374af8b525e074a6abc5757ce78bce18b092ec1",
+      "span": 13
     },
     "UIBooks.cs:ShowLibrary": {
       "span": 0

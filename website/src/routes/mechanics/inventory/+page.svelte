@@ -159,6 +159,12 @@
           >
         </li>
         <li>
+          <!-- Source: server-scripts/UIBigBackpack.cs:317-329; server-scripts/PlayerInventory.cs:2244-2264,808-829 — clicking an equipped backpack moves it to the first empty base slot unless removal would lock occupied storage slots or all 24 base slots are full. -->
+          Click an equipped backpack in the Combined Backpack window to move it to
+          the first empty slot in your 24-slot base inventory. This is refused if
+          removing it would lock away stored items or no base slot is free.
+        </li>
+        <li>
           <!-- Source: server-scripts/PlayerInventory.cs:626-642 — removal or downgrade is blocked if items would be locked away. -->You
           cannot remove or replace a bag with a smaller one if stored items
           would lose their slots.
