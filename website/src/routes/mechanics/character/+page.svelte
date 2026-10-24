@@ -147,20 +147,20 @@
               <th class="p-2 font-medium text-foreground">Wisdom</th>
               <td class="p-2">
                 <span class="block"
-                  >Direct heals gain 0.4% per Wisdom point (1.2% for Rangers),
-                  up to a 500% bonus.</span
+                  >Wisdom increases direct healing by 0.4% per point, or 1.2%
+                  for Rangers, up to a 500% bonus.</span
                 >
                 <span class="block"
-                  >Protective buffs use Wisdom, or Intelligence when the skill
-                  scales with Intelligence. Each point of that attribute adds 2
-                  maximum Hit Points to buffs that raise maximum Hit Points and
-                  2 Ward to buffs that grant a ward.</span
+                  >Wisdom strengthens protective buffs unless the skill uses
+                  Intelligence. Each point adds 2 to the maximum Hit Points or
+                  Ward the buff grants.</span
                 >
                 <span class="block"
-                  >Armor Class and Magic Resist buffs each gain 15% of the
-                  selected attribute, rounded. With 100 points in that
-                  attribute, you receive 15 extra Armor Class or Magic Resist. A
-                  Ranger's targeted buffs count that attribute three times.</span
+                  >Wisdom also adds 15% of its value to Armor Class and Magic
+                  Resist buffs, rounded. With 100 Wisdom, you receive 15 extra
+                  Armor Class or Magic Resist. Intelligence does the same for
+                  buffs that use it. A Ranger's targeted buffs use triple Wisdom
+                  or Intelligence.</span
                 >
                 <!-- Source: server-scripts/BardSongSkill.cs:Apply and BardFinalCadenceSkill.cs:Apply — songs and Final Cadence scale with Charisma, not Wisdom. -->
                 <span class="block"
@@ -177,8 +177,8 @@
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Death Bloom</a
                   >
-                  healing scales with Intelligence instead. Scroll healing and buffs
-                  gain no attribute bonus, with one exception. The
+                  healing scales with Intelligence. Scroll healing and buffs normally
+                  gain no attribute bonus. The
                   <a
                     href="/items/runed_scroll_of_restoration"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -188,8 +188,8 @@
                     href="/skills/major_restoration"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                     >Major Restoration</a
-                  >) is an exception when healing a mercenary. It gains your
-                  Wisdom healing bonus, tripled for a Ranger.
+                  >) gains your Wisdom healing bonus when healing a mercenary,
+                  tripled for a Ranger.
                 </span>
                 <span class="block"
                   ><MechanicsLink section="combat#buffs"
