@@ -63,8 +63,8 @@
 
   <Topic id="buffs">
     <p>
-      A buff that is not a song adds part of the caster's buff attribute to each
-      of its effects. Which attribute depends on the caster.
+      Wisdom or Intelligence strengthens non-song buffs. The tables below show
+      which attribute the caster uses and how much it adds.
     </p>
     <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — players and mercenaries use Wisdom or Intelligence, Rangers triple it for targeted buffs, and other casters add nothing. -->
     <RefTable caption="Buff attribute by caster">
@@ -266,8 +266,8 @@
 
   <Topic id="debuffs">
     <p>
-      A debuff adds part of the caster's debuff attribute to each of its
-      effects. The debuff's type decides which attribute that is.
+      Your Strength, Dexterity or Intelligence strengthens your debuffs,
+      depending on their damage type. Bard debuff songs use song power.
     </p>
     <!-- Source: server-scripts/BuffSkill.cs:GetDebuffPowerAttribute — Charisma-scaled debuffs use Charisma, melee debuffs Strength, poison and disease debuffs that do not scale with Intelligence Dexterity, and others Intelligence; non-mercenary casters other than players add nothing. -->
     <RefTable caption="Debuff attribute by debuff type">
