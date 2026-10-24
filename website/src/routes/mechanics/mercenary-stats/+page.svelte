@@ -529,12 +529,12 @@
     <h2>Hiring odds &amp; cost</h2>
     <p class="sub">
       Choose a class, race, and recruiter, then set the lowest stats you would
-      accept. Compare the chance and expected cost before spending gold.
+      accept. The calculator shows your chance per hire and average gold cost.
       <!-- Source: server-scripts/UIMercenaries.cs:ButtonSummonMercenary; Player.cs:CmdBuyMercenary — hiring checks active limits below level 40 and the ten-mercenary roster cap. -->
       <span class="block">
         Each hire joins your party if there is room. Below level 40, dismiss an
-        active mercenary before hiring again if you are at your active limit. At
-        10 hired, delete one before the next hire.
+        active mercenary before hiring again if you are at your active limit. If
+        you already have 10 mercenaries, delete one before hiring another.
       </span>
     </p>
     <div class="cost-grid">
@@ -675,14 +675,14 @@
           <div id="c-chart">{@html chartSvg}</div>
           <p class="chart-cap">
             <span class="block"
-              >Expected gold needed to hire a mercenary meeting these stat
-              thresholds, including the chance of getting the chosen race.</span
+              >Average gold cost to get your chosen race with at least these
+              stats.</span
             >
             <span class="block"
               >Lower percentages demand stronger hires. At 25%, you accept only
-              the best quarter of each stat roll. The dot represents your
-              overall chance using equally strict stat requirements, so it may
-              not match your individual sliders.</span
+              the best quarter of each stat roll. The dot spreads your overall
+              stat-roll chance evenly across the rolls, so it may not line up
+              with any one slider.</span
             >
           </p>
         {/if}

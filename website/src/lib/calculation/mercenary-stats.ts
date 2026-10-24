@@ -193,7 +193,7 @@ export function mercenaryHiringOdds(
       {
         name: "Qualifying hire chance",
         expression:
-          "Chance of the chosen race × chance its stat rolls meet your thresholds",
+          "Chance of getting your chosen race × chance of meeting all your stat minimums",
       },
       { name: "Expected hires", expression: "1 ÷ qualifying hire chance" },
       {
@@ -201,11 +201,11 @@ export function mercenaryHiringOdds(
         expression: "Gold per hire ÷ qualifying hire chance",
       },
     ],
-    note: "Displayed chances and expectations are rounded. Expected hires and gold use the unrounded qualifying hire chance and do not guarantee a result within that many hires.",
+    note: "Expected hires and gold are averages, not guarantees. The calculator uses your unrounded chance per hire, then rounds the displayed chances and averages.",
     example: () => ({
       given: [
-        `${formatPercent(raceChance, { decimals: 2, preserveNonzero: true })} race chance`,
-        `${formatPercent(statChance, { decimals: 2, preserveNonzero: true })} chance of meeting the stat thresholds`,
+        `${formatPercent(raceChance, { decimals: 2, preserveNonzero: true })} chance of your chosen race`,
+        `${formatPercent(statChance, { decimals: 2, preserveNonzero: true })} chance of meeting all your stat minimums`,
         `${formatNumber(price)} gold per hire`,
       ],
       result:
