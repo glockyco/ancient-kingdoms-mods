@@ -39,7 +39,7 @@ The guide shows a separator between the two values, as the skill bar tooltip doe
 
 ## Cause
 
-`ScriptableSkill.NormalizeCooldownColumn` replaces the spaces before `{COOLDOWN}` with a TextMesh Pro position tag, at `server-scripts/ScriptableSkill.cs:331-334`:
+`ScriptableSkill.NormalizeCooldownColumn` replaces the spaces before `{COOLDOWN}` with a TextMesh Pro position tag, at `server-scripts/ScriptableSkill.cs:354-357`:
 
 ```csharp
 return CooldownColumnSpacing.Replace(template, "<pos=50%>{COOLDOWN}");
