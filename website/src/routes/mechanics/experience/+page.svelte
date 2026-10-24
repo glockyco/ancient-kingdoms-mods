@@ -1159,9 +1159,9 @@
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
         <!-- Source: server-scripts/GatherItem.cs:630-644,817-828 — qualifying resources and successful catch rolls award XP, other objects do not. -->
-        Experience for each successful gather of an herb, mineral, or radiant spark,
-        and each successful catch at a fishing spot. Resources that give only quest
-        items give no XP.
+        You earn XP each time you gather an herb, mineral, or radiant spark, or make
+        a successful catch at a fishing spot. Resources that give only quest items
+        give no XP.
       </Card.Description>
     </Card.Header>
     <Card.Content>
