@@ -30,7 +30,7 @@
       <Card.Title>Game modes and Hardcore</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UICharacterSelection.cs:160-211,284-331 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
+      <!-- Source: server-scripts/UICharacterSelection.cs:161-212,286-333 — modes 0, 1, and 2 select a local world, an online server list, or LAN hosting and IP joining. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -77,7 +77,7 @@
           >Hardcore starts unchecked for each new character.</span
         >
       </p>
-      <!-- Source: server-scripts/Player.cs:4143-4150,9938-9941 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
+      <!-- Source: server-scripts/Player.cs:4183-4190,10020-10023 — Hardcore death deletes the character instead of saving it for ordinary respawn. -->
       <p>
         <span class="block"
           >Hardcore death deletes that character instead of allowing a normal
@@ -97,7 +97,7 @@
       <Card.Title>Exploration and maps</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/ZoneTrigger.cs:120-123,139-185 — a named area is recorded on first entry; discovery awards 10 city, 25 other, or 150 dungeon XP and increases Exploring. -->
+      <!-- Source: server-scripts/ZoneTrigger.cs:120-123,139-193 — a named area is recorded on first entry; discovery awards 10 city, 25 other, or 150 dungeon XP and increases Exploring. -->
       <p>
         <span class="block"
           >Discovering a named area for the first time gives XP and advances
@@ -123,7 +123,7 @@
           > shows mapped places and entrances.</span
         >
       </p>
-      <!-- Source: server-scripts/Monster.cs:1198-1204,2228-2231 — some monsters only spawn within their configured in-game hour window. -->
+      <!-- Source: server-scripts/Monster.cs:1218-1224,2251-2254 — some monsters only spawn within their configured in-game hour window. -->
       <p>
         <span class="block"
           >Some monsters appear only during specific in-game hours.</span
@@ -134,7 +134,7 @@
           > for their timing rules.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMap.cs:176-192,454-471 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
+      <!-- Source: server-scripts/UIMap.cs:179-195,458-475 — Temple of Valaark replaces the standard map with a special image and hides the player marker. -->
       <p>
         <span class="block"
           ><a
@@ -170,7 +170,7 @@
           >Your notes appear on that zone's local map, not the world map.</span
         >
       </p>
-      <!-- Source: server-scripts/UIMapNotesController.cs:123-142 and server-scripts/UIMap.cs:176-192 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
+      <!-- Source: server-scripts/UIMapNotesController.cs:123-142 and server-scripts/UIMap.cs:179-195 — notes are disabled in Temple of Valaark, which replaces the normal map panel. -->
       <p>Temple of Valaark has no map notes.</p>
     </Card.Content>
   </Card.Root>
@@ -212,7 +212,7 @@
       <!-- Source: server-scripts/UsableItem.cs:30-39 — CanUse refuses an item below its minLevel. -->
       <!-- Source: the export's items.json — scroll_of_binding has level_required 30. -->
       <!-- Source: server-scripts/ScrollItem.cs:CheckCastTarget — a bind scroll is refused in a dungeon. -->
-      <!-- Source: server-scripts/PlayerSkills.cs:813-817 — a bind spell is refused in a dungeon. -->
+      <!-- Source: server-scripts/PlayerSkills.cs:814-818 — a bind spell is refused in a dungeon. -->
       <p>
         <span class="block"
           ><a
@@ -241,7 +241,7 @@
           Travel scrolls work in every other dungeon.</span
         >
       </p>
-      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14286-14298 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
+      <!-- Source: server-scripts/NpcTeleport.cs:21-40 and server-scripts/Player.cs:14399-14411 — a travel NPC confirms an offer with any gold price; paid travel checks available gold before charging. -->
       <p>
         <span class="block"
           >A <a
@@ -319,7 +319,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Player.cs:11311-11325,3619-3621, server-scripts/Skills.cs:1438-1458, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
+      <!-- Source: server-scripts/Player.cs:11418-11432,3632-3634, server-scripts/Skills.cs:1454-1474, and server-scripts/MountItem.cs:19-30 — portal travel strips invisibility buffs (including the exported invisible Resurrection Effects), dismounts players entering dungeons, and dungeons reject mounting. -->
       <p>
         <span class="block"
           >Passing through a portal ends invisibility, including Resurrection
@@ -336,7 +336,7 @@
       <Card.Title>Seasonal events</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Monster.cs:2217-2227 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
+      <!-- Source: server-scripts/EnviromentSystem.cs:156-161,172-199; server-scripts/Monster.cs:2240-2250 — Halloween uses UTC dates, checked hourly, and gates Halloween monsters. -->
       <p>
         <span class="font-medium text-foreground"
           >Halloween: October 19 through November 1, inclusive (UTC).</span
@@ -346,7 +346,7 @@
           >seasonal monster spawns</MechanicsLink
         >.
       </p>
-      <!-- Source: server-scripts/EnviromentSystem.cs:142-147,158-185; server-scripts/Npc.cs:331-345,792-799,1433-1439 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
+      <!-- Source: server-scripts/EnviromentSystem.cs:156-161,172-199; server-scripts/Npc.cs:334-348,795-802,1436-1442 — the Winter Festival uses UTC dates, checked hourly, and gates Winter Festival NPCs. -->
       <p>
         <span class="font-medium text-foreground"
           >Winter Festival: December 19 through January 6, inclusive (UTC).</span

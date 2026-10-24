@@ -35,7 +35,7 @@
     <Card.Content class="space-y-6 text-sm text-muted-foreground">
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">On death</h3>
-        <!-- Source: server-scripts/Experience.cs:Death; server-scripts/Player.cs:4108-4140 - death removes 10% of the bar requirement, rounded and limited to current XP, and one durability from every equipped item. -->
+        <!-- Source: server-scripts/Experience.cs:Death; server-scripts/Player.cs:4148-4180 — death removes 10% of the bar requirement, rounded and limited to current XP, and one durability from every equipped item. -->
         <p>
           <span class="block"
             >You lose 10% of the XP needed to fill your current experience bar,
@@ -50,7 +50,7 @@
             > for the loss calculation.</span
           >
         </p>
-        <!-- Source: server-scripts/Player.cs:4130-4137 — death removes an active pet. -->
+        <!-- Source: server-scripts/Player.cs:4170-4177 — death removes an active pet. -->
         <!-- Source: server-scripts/Player.cs:OnDeath — death dismounts the player. -->
         <!-- Source: server-scripts/Skills.cs:OnDeath; website/data/compendium.db:skills.reaper_form.remain_after_death — Bard songs stop; buffs marked to survive death stay, but Reaper Form is removed. -->
         <p>
@@ -85,7 +85,7 @@
 
       <div class="space-y-2">
         <h3 class="font-semibold text-foreground">Respawn and remains</h3>
-        <!-- Source: server-scripts/Player.cs:3593-3620 — respawn creates remains at the death site, moves the player to the bind point, and revives at half health. -->
+        <!-- Source: server-scripts/Player.cs:3606-3633 — respawn creates remains at the death site, moves the player to the bind point, and revives at half health. -->
         <!-- Source: server-scripts/Entity.cs:351-362 — Revive rounds the specified fraction of maximum health. -->
         <p>
           Respawning leaves your remains where you died and returns you to your
@@ -104,7 +104,7 @@
           >).
         </p>
         <!-- Source: server-scripts/PlayerDead.cs:8-8,82-95,132-137 — remains expire 900 seconds after creation or after use. -->
-        <!-- Source: server-scripts/Player.cs:4103-4106 — a new death destroys the prior remains. -->
+        <!-- Source: server-scripts/Player.cs:4143-4146 — a new death destroys the prior remains. -->
         <p>
           <span class="block"
             >Your remains last 15 minutes after you respawn, or until you die
@@ -128,7 +128,7 @@
             </thead>
             <tbody>
               <!-- Source: server-scripts/PlayerDead.cs:103-119 — only the character who died can collect unused remains. -->
-              <!-- Source: server-scripts/Player.cs:14533-14542 — collecting remains returns half the stored XP loss and destroys the remains. -->
+              <!-- Source: server-scripts/Player.cs:14646-14655 — collecting remains returns half the stored XP loss and destroys the remains. -->
               <tr class="border-b">
                 <th class="p-2 font-medium text-foreground"
                   >Collect your remains</th
@@ -142,7 +142,7 @@
                   >
                 </td>
               </tr>
-              <!-- Source: server-scripts/TargetHealSkill.cs:239-253 — Resurrection targets unused player remains after their owner respawns and passes the remains' coordinates to the player. -->
+              <!-- Source: server-scripts/TargetHealSkill.cs:256-270 — Resurrection targets unused player remains after their owner respawns and passes the remains' coordinates to the player. -->
               <!-- Source: server-scripts/Player.cs:UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity — accepting moves the player to remains, sets Health to 60% max Health and Mana to 20% max Health, leaves Rage unchanged, and returns 75% lost XP. -->
               <!-- Source: server-scripts/EnergyResource.cs:current — Mana is capped by maximum Mana. -->
               <tr>
@@ -165,7 +165,7 @@
           </table>
         </div>
         <Calculation calculation={deathRecovery()} />
-        <!-- Source: server-scripts/Player.cs:13370-13371; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
+        <!-- Source: server-scripts/Player.cs:13480-13481; server-scripts/EnergyResource.cs:21-35 — restored Mana uses maximum Health, capped by maximum Mana. -->
         <!-- Observed: docs/game-bugs/resurrection-restores-mana-from-maximum-health.md — both live resurrection trials restore Mana from maximum Health. -->
         <p>
           Rage is unchanged. The Mana amount uses maximum Hit Points because of
@@ -198,11 +198,11 @@
             >Scroll of Resurrection</a
           >.
         </p>
-        <!-- Source: server-scripts/Player.cs:13351-13381 — resurrection restores resources and XP without changing equipment durability. -->
+        <!-- Source: server-scripts/Player.cs:13461-13491 — resurrection restores resources and XP without changing equipment durability. -->
         <p>Resurrection does not repair your equipment.</p>
       </div>
 
-      <!-- Source: server-scripts/Player.cs:4143-4150,9938-9941 — Hardcore death deletes the character instead of saving the normal death state. -->
+      <!-- Source: server-scripts/Player.cs:4183-4190,10020-10023 — Hardcore death deletes the character instead of saving the normal death state. -->
       <p
         class="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-foreground"
       >

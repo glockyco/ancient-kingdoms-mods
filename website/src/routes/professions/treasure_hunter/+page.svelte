@@ -152,7 +152,7 @@
         <div class="text-sm text-muted-foreground">2</div>
         <div>
           <div>Open the map clue.</div>
-          <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/TreasureMapItem.cs:12-15; server-scripts/Player.cs:9981-9998 — using a treasure map opens its dig-site clue image. -->
+          <!-- Source: server-scripts/uMMORPG.Scripts.ScriptableItems/TreasureMapItem.cs:12-15; server-scripts/Player.cs:10063-10080 — using a treasure map opens its dig-site clue image. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Use the treasure map to see its dig-site clue.
           </p>
@@ -190,7 +190,7 @@
               imageAvailable={data.itemIconPaths[data.keyItems.shovel.id]}
             />.
           </div>
-          <!-- Source: server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — digging requires a matching map, a shovel, and room for the reward; success consumes the map and grants 0.5% skill until the 100% cap. -->
+          <!-- Source: server-scripts/TreasureLocation.cs:61-63,78-90,119-131,160-163 — digging requires a matching map, a shovel, and room for the reward; success consumes the map and grants 0.5% skill until the 100% cap. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Bring a Shovel and at least one free inventory slot. A successful
             dig awards the treasure and gives +0.5% Treasure Hunter until 100%.

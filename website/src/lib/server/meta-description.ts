@@ -316,12 +316,12 @@ function buffPhrase(
 }
 
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/PotionItem.cs:24-39,143-145 — non-bandage buff
+  // Source: server-scripts/PotionItem.cs:24-39,144-146 — non-bandage buff
   // levels can use Elixir Endurance; bandages return their base buff level.
-  // Source: server-scripts/Pet.cs:2140-2164 — mercenary utility potions
+  // Source: server-scripts/Pet.cs:2141-2165 — mercenary utility potions
   // resolve that level from the owner's veteran rank.
   const isBandage = item.cooldown_category === "Bandages";
-  // Source: server-scripts/PotionItem.cs:8-17,41-124 — health, mana, energy,
+  // Source: server-scripts/PotionItem.cs:8-17,41-125 — health, mana, energy,
   // pet-health, and experience usage values are applied on use.
   const restored: string[] = [];
   if (item.usage_health > 0)
@@ -354,7 +354,7 @@ function potionDescription(item: Item, ctx: ItemMetaContext): string {
     : item.usage_experience > 0
       ? "Scroll"
       : "Potion";
-  // Source: server-scripts/PotionItem.cs:138-142 — dungeon-disabled buffs
+  // Source: server-scripts/PotionItem.cs:139-143 — dungeon-disabled buffs
   // reject use before the buff is applied.
   const dungeon =
     !item.potion_buff_allow_dungeon && item.potion_buff_name
@@ -381,12 +381,12 @@ function foodDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function scrollDescription(item: Item): string {
-  // Source: server-scripts/ScrollItem.cs:11,39 — isRepairKit branches the scroll behaviour
+  // Source: server-scripts/ScrollItem.cs:11,39-41 — isRepairKit branches the scroll behaviour
   if (item.is_repair_kit) {
     const tier = quality(item);
     return `Repairs all equipped ${tier} or lower gear.`;
   }
-  // Source: server-scripts/ScrollItem.cs:125,117 — spell rank scales with player.scrollMasteryLevel
+  // Source: server-scripts/ScrollItem.cs:127,119 — spell rank scales with player.scrollMasteryLevel
   const skill = item.scroll_skill_name ?? "a spell";
   return `Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`;
 }
@@ -422,7 +422,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:5310-5345 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:5354-5389 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -453,12 +453,12 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(item: Item): string {
-  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,588-592.
+  // Source: server-scripts/MountItem.cs:8 and Player.cs:115-123,596-600.
   return `Mount with a speed of ${formatNumber(item.mount_speed, { decimals: 2 })}.${levelGate(item.level_required)} Cannot be mounted in dungeons or in combat.`;
 }
 
 function backpackDescription(item: Item): string {
-  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:203-214,604-618 (IsUniqueBackpackAlreadyEquipped)
+  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:219-230,641-655 (IsUniqueBackpackAlreadyEquipped)
   // — numSlots adds inventory capacity, and isUnique restricts duplicate equipped backpacks by nameItem.
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
@@ -492,7 +492,7 @@ function travelDescription(item: Item): string {
 }
 
 function treasureMapDescription(ctx: ItemMetaContext): string {
-  // Source: server-scripts/TreasureLocation.cs:117-129,158-161 grants rewardItem.
+  // Source: server-scripts/TreasureLocation.cs:119-131,160-163 grants rewardItem.
   const location = ctx.treasureLocation;
   const where = location ? ` in ${location.zone_name}` : "";
   const reward = location?.reward_name;
@@ -595,7 +595,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:13021-13025,11967-11982
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:13131-13135,12077-12092
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -810,7 +810,7 @@ export function monsterDescription(
         : ` Summoned by ${triggered.monster_name}${location}.`;
   }
 
-  // Source: server-scripts/Monster.cs:OnDeath - the respawn deadline follows corpse time plus the respawn timer.
+  // Source: server-scripts/Monster.cs:OnDeath — the respawn deadline follows corpse time plus the respawn timer.
   const respawn =
     monster.does_respawn === false
       ? " Does not respawn."
@@ -1624,7 +1624,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:UserCode_CmdUpgradeVeteran__Int32 — subtracts upgradeRequiredSkillPoints
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:7443-7453 and ScriptableSkill.cs:237-239
+  // Source: server-scripts/Player.cs:7521-7531 and ScriptableSkill.cs:433-435
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   // Veteran-tree skills with no player classes are mercenary-side veteran
@@ -1677,7 +1677,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:99; Player.cs:10712-10726,UpdateMercStatsByLevel — familiar level follows
+// Source: server-scripts/SummonSkill.cs:99; Player.cs:10818-10832,UpdateMercStatsByLevel — familiar level follows
 // summoning skill rank, companions match the summoner up to Level.max, and
 // mercenaries hire at player level and gain attributes per level.
 
@@ -1733,7 +1733,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return ` Summoned by a class skill. Its level matches yours, up to level ${input.level_max}.`;
     case "Mercenary":
-      // Source: server-scripts/Player.cs:10712-10726; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:10818-10832; Player.cs:UpdateMercStatsByLevel — hired at player level, gains attributes per level
       return " Hire one from any Mercenary Recruiter. Its level matches yours.";
   }
 }
@@ -1813,7 +1813,7 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // =============================================================================
 //
 // Role labels come from curated class metadata.
-// Source: server-scripts/Player.cs:1481-1507 — classes display Mana, Rage or Active Songs.
+// Source: server-scripts/Player.cs:1489-1515 — classes display Mana, Rage or Active Songs.
 
 interface ClassDescriptionInput {
   name: string;

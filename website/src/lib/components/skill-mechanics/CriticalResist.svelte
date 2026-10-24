@@ -10,7 +10,7 @@
   );
 </script>
 
-<!-- Source: server-scripts/Combat.cs:295-307 (criticalResist, clamped 0-1), 525-530 (ApplyCriticalResistToMultiplier), 865-880 (crit damage), Dexterity.cs:34-37 -->
+<!-- Source: server-scripts/Combat.cs:295-307 (criticalResist, clamped 0-1), 530-535 (ApplyCriticalResistToMultiplier), 912-927 (crit damage), Dexterity.cs:34-37 -->
 <div class="space-y-1">
   <h3 class="font-semibold">{statName("critical_resist")}</h3>
   <p class="text-muted-foreground">

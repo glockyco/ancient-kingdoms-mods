@@ -546,7 +546,7 @@
 
       {#if isBackpack && data.item.backpack_is_unique}
         <div>
-          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:604-618 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
+          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:641-655 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
           <div class={styles.label}>Unique</div>
           <div class={styles.value}>Yes</div>
         </div>
@@ -1100,7 +1100,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1822-1829 -->
+                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1830-1837 -->
                 <div class={styles.value}>
                   {formatGold(10000)}g + Token of Redemption
                 </div>
@@ -1836,7 +1836,7 @@
           <Card.Title level={2}>Mechanics</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-3 text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:4214-4244 — using the item summons the pet, or dismisses the one it already summoned. -->
+          <!-- Source: server-scripts/Player.cs:4254-4284 — using the item summons the pet, or dismisses the one it already summoned. -->
           <p>
             Use the whistle to summon the pet. Using it again dismisses that
             pet. Three pets can follow you at once.

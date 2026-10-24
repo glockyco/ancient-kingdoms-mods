@@ -160,7 +160,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UIFactions.cs:78,80,82,84,86-90,93-97,102-105,109-113,116-120,124-130,133-137,141-145,148-153 — adaptTextFaction maps standing to a tier label. -->
+      <!-- Source: server-scripts/UIFactions.cs:78,88,84,80,82,150-154,142-146,159-162,86,136-138,126-130,90,118-122,110-114,94-98,101-106 — adaptTextFaction maps standing to a tier label. -->
       <div class="overflow-x-auto">
         <div class="min-w-[640px]">
           <div
@@ -238,7 +238,7 @@
         toward the next tier, not your total reputation. It rounds down to whole
         points. A total of 15,000 reads Friendly 14,000 / 20,000.
       </p>
-      <!-- Source: server-scripts/Npc.cs:1734-1740; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
+      <!-- Source: server-scripts/Npc.cs:1742-1748; PlayerQuests.cs:131-143; ScriptableQuest.cs:43 — NPC services refuse standing strictly below −500, while quest requirements compare the named faction's raw value. -->
       <p>
         Quests may require reputation with a faction other than their quest
         giver's. See <a
@@ -259,7 +259,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:574-604 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
+      <!-- Source: server-scripts/Monster.cs:591-621 — GetFactionGain and GetFactionLoss calculate kill reputation. -->
       <p>
         Reputation gains depend on the monster's level, maximum Hit Points, and
         rank. Losses depend only on level and rank.
@@ -331,7 +331,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1584-1616 and 1631-1663 — party and solo faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1592-1624 and 1639-1671 — party and solo faction changes on an NPC death. -->
       <!-- Source: server-scripts/Npc.cs:OnDeath; website/data/compendium.db npcs.is_notable — Notable NPC kill changes use each NPC's faction lists. -->
       <ul class="list-disc space-y-2 pl-5">
         {#each data.notableNpcs as npc (npc.id)}
@@ -437,7 +437,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:13522-13526 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:13632-13636 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Click an animal within 3 yd to pet it. The same animal can grant
         reputation only once every 30 seconds.
@@ -485,7 +485,7 @@
           the quest up.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1734-1740 — faction values below -500 select the lowFactionMessages branch instead of services. -->
+          <!-- Source: server-scripts/Npc.cs:1742-1748 — faction values below -500 select the lowFactionMessages branch instead of services. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
           that faction refuse to talk to you, so you cannot shop, take quests, or
           use their services.
@@ -512,13 +512,13 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Player.cs:13522-13526, Monster.cs:3189-3201, Npc.cs:1638-1648, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:13632-13636, Monster.cs:3251-3263, Npc.cs:1646-1656, PlayerQuests.cs:440-443, GatherItem.cs:387-395 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:setFactionValue — setFactionValue assigns value directly to character_factions.value. -->
       <p>
         Your reputation can keep rising above Exalted or falling below Hated.
       </p>
-      <!-- Source: server-scripts/UIFactions.cs:84-105 — the Exalted readout clamps only the slider. -->
-      <!-- Source: server-scripts/UIFactions.cs:148-154 — the Hated readout floors the displayed number at 0. -->
+      <!-- Source: server-scripts/UIFactions.cs:80,158-162 — the Exalted readout clamps only the slider. -->
+      <!-- Source: server-scripts/UIFactions.cs:101-107 — the Hated readout floors the displayed number at 0. -->
       <p>
         <span class="block"
           >At Exalted, the faction panel shows "Max" and fills its slider even

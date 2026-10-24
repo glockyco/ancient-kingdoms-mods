@@ -5,9 +5,9 @@ creation takes both as independent strings and cross-checks neither, and no runt
 structure lists the races a class allows. The rule exists only in the character
 creator, which enables or disables one class button per race.
 
-- Source: server-scripts/UICharacterEditor.cs:1173-1811 - changeRace* methods
-- Source: server-scripts/UICharacterEditor.cs:RaceAllowsNecromancer - a switch on the selected race
-- Source: server-scripts/UICharacterEditor.cs:changeClassNecromancer - one changeClass method per class
+- Source: server-scripts/UICharacterEditor.cs:1173-1807 — one race selection method per race
+- Source: server-scripts/UICharacterEditor.cs:RaceAllowsNecromancer — a switch on the selected race
+- Source: server-scripts/UICharacterEditor.cs:changeClassNecromancer — one changeClass method per class
 
 The class list comes from the creator's `changeClass*` methods rather than from this
 module, so a class that a patch adds is checked instead of skipped.
@@ -33,12 +33,9 @@ _REFRESH_STATE = re.compile(r"Refresh(\w+)Availability\(\)")
 # The statements a decompiled `RaceAllows<Class>()` switch consists of. The reader
 # refuses any other statement rather than guessing what it does.
 _CASE_LABEL = re.compile(r'^case "([^"]+)":$')
-_ALLOW = "num = 0;"
-_REFUSE = "num = 1;"
-_DEFAULT_ALLOWS_ONE = re.compile(r'^num = \(\(!\(text == "([^"]+)"\)\) \? 1 : 0\);$')
-_IGNORED = frozenset(
-    {"{", "}", "string text = raceSelected;", "int num;", "switch (text)", "break;"}
-)
+_ALLOW = "return true;"
+_REFUSE = "return false;"
+_IGNORED = frozenset({"{", "}", "switch (raceSelected)"})
 
 
 class PairingUnreadableError(RuntimeError):
@@ -87,32 +84,31 @@ def _races_allowed(lines: list[str], class_name: str) -> frozenset[str]:
     body = [line.strip() for line in _member_body(lines, start)[1:]]
     allowed: set[str] = set()
     pending: list[str] = []
-    returns_allowed = False
+    pending_default = False
     for statement in body:
         if not statement or statement in _IGNORED:
             continue
         if statement == "default:":
-            pending = []
+            pending_default = True
         elif match := _CASE_LABEL.match(statement):
             pending.append(match.group(1))
         elif statement == _ALLOW:
+            # A default that returns true covers races no label names, and the
+            # creator has no race list to work them out from.
+            if pending_default:
+                raise PairingUnreadableError(
+                    f"RaceAllows{class_name} allows every race it does not name."
+                )
             allowed.update(pending)
             pending = []
         elif statement == _REFUSE:
             pending = []
-        elif match := _DEFAULT_ALLOWS_ONE.match(statement):
-            allowed.add(match.group(1))
-        elif statement == "return num == 0;":
-            returns_allowed = True
+            pending_default = False
         else:
             raise PairingUnreadableError(
                 f"RaceAllows{class_name} has a statement this reader does not know: "
                 f"{statement!r}"
             )
-    if not returns_allowed:
-        raise PairingUnreadableError(
-            f"RaceAllows{class_name} does not return num == 0."
-        )
     return frozenset(_race_name_identifier(name) for name in allowed)
 
 

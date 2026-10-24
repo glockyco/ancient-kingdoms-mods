@@ -951,7 +951,7 @@
       <Alert variant="info" class="mt-4">
         <Info />
         <div>
-          <!-- Source: server-scripts/UICharacterEditor.cs:1793-1809; UICharacterEditor.cs:changeClassDruid — selecting Fire Goblin while Druid is selected silently switches to Warrior; selecting Druid afterward restores it. -->
+          <!-- Source: server-scripts/UICharacterEditor.cs:1789-1805; UICharacterEditor.cs:changeClassDruid — selecting Fire Goblin while Druid is selected silently switches to Warrior; selecting Druid afterward restores it. -->
           <p class="font-medium">Fire Goblin class selection defect</p>
           <p>
             Selecting Fire Goblin while Druid is selected silently changes your

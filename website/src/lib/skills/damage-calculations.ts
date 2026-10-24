@@ -272,7 +272,7 @@ export function damageDeductions(
   ];
 }
 
-// Source: server-scripts/TargetDamageSkill.cs:156-242; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:94-114,156 — handler-specific character contribution and skill amount.
+// Source: server-scripts/TargetDamageSkill.cs:156-242; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:90-112; FrontalProjectilesSkill.cs:99-120,162 — handler-specific character contribution and skill amount.
 export function damageCalculation(
   skill: SkillDetailView,
   context: DamageContext,

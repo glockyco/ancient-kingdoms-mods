@@ -40,24 +40,20 @@ def creator(
     return "\n".join(parts)
 
 
-# The decompiled shape of the 0.9.35.0 Necromancer rule: case labels that allow,
-# and a default branch that allows one more race by comparison.
+# Same shape as the decompiled RaceAllowsNecromancer: case labels that return true,
+# then a default that returns false.
 RACE_ALLOWS_NECROMANCER = (
     "\tprivate bool RaceAllowsNecromancer()",
     "\t{",
-    "\t\tstring text = raceSelected;",
-    "\t\tint num;",
-    "\t\tswitch (text)",
+    "\t\tswitch (raceSelected)",
     "\t\t{",
-    "\t\tdefault:",
-    '\t\t\tnum = ((!(text == "Drassar")) ? 1 : 0);',
-    "\t\t\tbreak;",
     '\t\tcase "Human":',
     '\t\tcase "Dark Elf":',
-    "\t\t\tnum = 0;",
-    "\t\t\tbreak;",
+    '\t\tcase "Drassar":',
+    "\t\t\treturn true;",
+    "\t\tdefault:",
+    "\t\t\treturn false;",
     "\t\t}",
-    "\t\treturn num == 0;",
     "\t}",
 )
 
@@ -112,7 +108,7 @@ def test_a_refresh_call_applies_the_race_switch_of_its_class():
 def test_a_race_switch_with_an_unknown_statement_is_refused():
     """Guessing what an unfamiliar branch does would publish a rule the game lacks."""
     unfamiliar = tuple(
-        line.replace("num = 0;", "num = Allowed(text);")
+        line.replace("return true;", "return Allowed(raceSelected);")
         for line in RACE_ALLOWS_NECROMANCER
     )
     source = with_necromancer_refresh(
@@ -124,6 +120,24 @@ def test_a_race_switch_with_an_unknown_statement_is_refused():
     )
 
     with pytest.raises(PairingUnreadableError, match="Allowed"):
+        read_pairing(source)
+
+
+def test_a_race_switch_whose_default_allows_is_refused():
+    """The reader cannot name the races that an allowing default covers."""
+    permissive = tuple(
+        line.replace("return false;", "return true;")
+        for line in RACE_ALLOWS_NECROMANCER
+    )
+    source = with_necromancer_refresh(
+        creator(
+            ("Human", ALL_ENABLED),
+            classes=(*CLASS_NAMES, "Necromancer"),
+            extra=permissive,
+        )
+    )
+
+    with pytest.raises(PairingUnreadableError, match="every race"):
         read_pairing(source)
 
 

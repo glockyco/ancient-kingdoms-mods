@@ -222,7 +222,7 @@
     return 0;
   });
 
-  // Source: server-scripts/GatherItem.cs:343-365,698-705 — the game refuses attempts below these success floors.
+  // Source: server-scripts/GatherItem.cs:343-365,699-706 — the game refuses attempts below these success floors.
   const attemptFloor = $derived(
     resource.is_plant
       ? PROFESSION_MECHANICS.herbalism.success.floor

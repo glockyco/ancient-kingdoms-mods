@@ -12,7 +12,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
     },
     rules: [
       {
@@ -23,7 +23,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "You gain Rage when your auto attacks deal damage and when a single-target physical melee hit damages you.",
         source:
-          "Source: server-scripts/Combat.cs:1183-1197,1386-1410 — Rage gain from targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Combat.cs:1385-1398,1070-1089,1465-1470 — Rage gain from targeted physical melee hits and auto attacks",
         href: "/mechanics/combat#rage-generation",
         linkText: "Rage formulas",
       },
@@ -38,7 +38,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
     },
     rules: [
       {
@@ -51,7 +51,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Cleanse removes only poison and disease effects. A debuff with Cleanse Resist above 0% can need more than one cast. At 100% Cleanse Resist it cannot be cleansed.",
         source:
-          "Source: server-scripts/TargetBuffSkill.cs:137-161,321-340 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
+          "Source: server-scripts/TargetBuffSkill.cs:153-178,338-358 — matching debuff types and cleanse counters; server-scripts/BuffSkill.cs:GetCleanseCountersRemoved — resistance changes counters removed",
         href: "/mechanics/combat#cleanse",
         linkText: "Cleanse rules",
       },
@@ -66,13 +66,13 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
     },
     rules: [
       {
         text: "You cannot cast Spirit of Wolf in a dungeon, and entering a dungeon ends it.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:814-819,1052-1055; server-scripts/Player.cs:11318-11324 — dungeon casting restriction and buff removal",
+          "Source: server-scripts/PlayerSkills.cs:815-820,1065-1068; server-scripts/Player.cs:11425-11431 — dungeon casting restriction and buff removal",
       },
       {
         text: "Companion Spirit cannot summon its bear while you already have an active pet.",
@@ -92,7 +92,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your bow goes in the off-hand slot. Your main-hand weapon stays available for melee skills.",
       source:
-        "Source: server-scripts/ScriptableSkill.cs:120-143; server-scripts/PlayerEquipment.cs:856-900 — bow slot and main-hand weapon",
+        "Source: server-scripts/ScriptableSkill.cs:120-143; server-scripts/PlayerEquipment.cs:874-917 — bow slot and main-hand weapon",
     },
     rules: [
       {
@@ -118,7 +118,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a second weapon. Weapon skills still need a weapon in your main hand.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:790-795,834-839; server-scripts/ScriptableSkill.cs:139-143 — dual wield and main-hand check",
+        "Source: server-scripts/PlayerEquipment.cs:809-814,851-856; server-scripts/ScriptableSkill.cs:139-143 — dual wield and main-hand check",
     },
     rules: [
       {
@@ -129,7 +129,7 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
       {
         text: "Rage does not regenerate on its own. You gain it when your auto attacks deal damage and when a single-target physical melee hit damages you. Passive skills and buffs can add regeneration.",
         source:
-          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1183-1197,1386-1410 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
+          "Source: server-scripts/Energy.cs:17,41-51; server-scripts/Skills.cs:440-458; server-scripts/Combat.cs:1385-1398,1070-1089,1465-1470 — Rage recovery from passive skills and buffs; targeted physical melee hits and auto attacks",
         href: "/mechanics/character#resources",
         linkText: "Resource rules",
       },
@@ -144,25 +144,25 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-140 — shield slot and two-handed restriction",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-156 — shield slot and two-handed restriction",
     },
     rules: [
       {
         text: "Mystic Spark costs no Mana and gives back 35% of its damage as Mana, rounded down. Damage beyond the target's remaining Hit Points does not count.",
         source:
-          "Source: server-scripts/Combat.cs:1235-1244,1245-1294 — Mystic Spark caps mana return by target health and restores it before ward absorption",
+          "Source: server-scripts/Combat.cs:1117-1126,1127-1176 — Mystic Spark caps mana return by target health and restores it before ward absorption",
       },
       {
         text: "Mana Shield spends 1 Mana per damage point absorbed. Damage beyond your remaining Mana reaches your Hit Points and ends the shield.",
         source:
-          "Source: server-scripts/Combat.cs:1295-1325 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
+          "Source: server-scripts/Combat.cs:1177-1207 — mana.current >= num absorbs damage without removal; insufficient mana removes Mana Shield",
         href: "/skills/mana_shield",
         linkText: "Mana Shield",
       },
       {
         text: "Damaging a target that Enthrall put to sleep wakes it up.",
         source:
-          "Source: server-scripts/Combat.cs:773-776; server-scripts/Skills.cs:1622-1639 — damage ends movement-lock sleep effects",
+          "Source: server-scripts/Combat.cs:798-801; server-scripts/Skills.cs:1638-1655 — damage ends movement-lock sleep effects",
       },
     ],
   },
@@ -175,20 +175,20 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     equipment: {
       text: "Your off-hand holds your instrument. Songs need it, so you cannot use a two-handed weapon.",
       source:
-        "Source: server-scripts/ScriptableSkill.cs:130-138; server-scripts/EquipmentItem.cs:107-120,130-140 — instrument casting and two-handed restriction",
+        "Source: server-scripts/ScriptableSkill.cs:130-138; server-scripts/EquipmentItem.cs:115-133,142-156 — instrument casting and two-handed restriction",
     },
     rules: [
       {
         text: "You can keep two songs active at once. Polyphony removes this limit.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1662-1677 — base two-song limit plus passive slots, removed by an unlimited passive",
+          "Source: server-scripts/PlayerSkills.cs:1681-1696 — base two-song limit plus passive slots, removed by an unlimited passive",
         href: "/mechanics/bard#songs",
         linkText: "Song rules",
       },
       {
         text: "Without Polyphony, a new song replaces the oldest one when both slots are full.",
         source:
-          "Source: server-scripts/PlayerSkills.cs:1345-1379 — active songs refresh or displace the oldest while a limit applies",
+          "Source: server-scripts/PlayerSkills.cs:1364-1398 — active songs refresh or displace the oldest while a limit applies",
       },
       {
         text: "Virtuosity and Final Cadence need at least three active songs, so they require Polyphony.",
@@ -203,12 +203,12 @@ export const CLASS_GUIDES: Record<ClassName, ClassGuide> = {
     attributes: {
       text: "Intelligence adds 20 maximum Mana per point and 150% of your Intelligence as Spell Power, rounded. It also strengthens Bone Aegis's Ward, Mend Undead's Health Regeneration, Ossuary Bulwark's Armor Class, and Death Bloom's healing. Each tick of your damage-over-time spells gains 125% of your Intelligence as damage, rounded. Constitution adds 25 maximum Hit Points per point but no Health Regeneration.",
       source:
-        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:464-527; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
+        "Source: server-scripts/Intelligence.cs:21-39; server-scripts/Constitution.cs:13-25; server-scripts/BuffSkill.cs:467-530; server-scripts/Buff.cs:47-60,113-150; server-scripts/NecromancerDeathBloomSkill.cs:19-25,47-50 — Intelligence powers protective buffs, damage-over-time and Death Bloom; Constitution increases maximum health",
     },
     equipment: {
       text: "Your off-hand holds a shield. You cannot use a shield with a two-handed weapon.",
       source:
-        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:107-120,130-148 — Shield slot; two-handed restrictions and requiredClass check",
+        "Source: server-scripts/PlayerEquipment.cs:107-114; server-scripts/EquipmentItem.cs:115-133,142-164 — Shield slot; two-handed restrictions and requiredClass check",
     },
     rules: [
       {

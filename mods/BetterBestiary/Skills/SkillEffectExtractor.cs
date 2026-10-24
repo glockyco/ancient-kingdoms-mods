@@ -92,7 +92,7 @@ internal static class SkillEffectExtractor
 
     /// <summary>Mirror of the website's <c>monsterDamageStats</c>: the stats a monster's damage
     /// handler adds to the skill's listed damage.</summary>
-    // Source: server-scripts/TargetDamageSkill.cs:180-236; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:94-114 — monsters add Spell Power for elemental hits, plus Attack Power for magic weapon attacks, and Attack Power otherwise.
+    // Source: server-scripts/TargetDamageSkill.cs:180-236; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:90-112; FrontalProjectilesSkill.cs:99-120 — monsters add Spell Power for elemental hits, plus Attack Power for magic weapon attacks, and Attack Power otherwise.
     private static List<string> MonsterDamageTerms(ScriptableSkill skill, string skillType, string damageType)
     {
         var stats = new List<string>();

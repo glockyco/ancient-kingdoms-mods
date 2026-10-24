@@ -95,7 +95,7 @@
         Equipment and skills add Fear Resist up to 100%, which makes you immune.
         Fear dismounts a player.
       </li>
-      <!-- Source: server-scripts/Combat.cs:1115-1119; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
+      <!-- Source: server-scripts/Combat.cs:1310-1314; Monster.cs:speed; Npc.cs:speed — Necromancer-player fear sets fearSlowsMovement and halves positive Monster/Npc speed in FEAR. -->
       <li>
         A monster or NPC feared by a Necromancer player runs at half its
         Movement Speed.
@@ -166,7 +166,7 @@
     <!-- Source: server-scripts/Monster.cs:UpdateServer_IDLE; Pet.cs:UpdateServer_IDLE; Npc.cs:UpdateServer_IDLE — the at-most-−50 Sleep branch precedes the at-most-−10 Root branch. -->
     <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
     <!-- Source: server-scripts/Skills.cs:251-256 — damage-over-time recovery ticks call BreakMezz except NecromancerReaperFormSkill. -->
-    <!-- Source: server-scripts/Monster.cs:1542-1556 (monster self-break: magic resist roll every 6s) -->
+    <!-- Source: server-scripts/Monster.cs:1562-1576 (monster self-break: magic resist roll every 6s) -->
     <p>
       A debuff that brings Movement Speed to −50 or lower puts the target to
       sleep instead of rooting it.

@@ -7,8 +7,8 @@ Source references:
 - Source: server-scripts/Monster.cs:CalculateRewardExp — CalculateRewardExp (monster EXP)
 - Source: server-scripts/ZoneTrigger.cs:NewZoneDiscovered — zone discovery EXP
 - Source: server-scripts/GatherItem.cs:630-639 — gathering EXP by tier
-- Source: server-scripts/Player.cs:13886-13892 — crafting EXP by item quality
-- Source: server-scripts/Player.cs:12079-12086 — alchemy EXP by recipe tier
+- Source: server-scripts/Player.cs:13996-14002 — crafting EXP by item quality
+- Source: server-scripts/Player.cs:12189-12196 — alchemy EXP by recipe tier
 """
 
 import sqlite3
@@ -17,7 +17,7 @@ from rich.console import Console
 
 console = Console()
 
-# Source: server-scripts/ZoneTrigger.cs:167-175 - discovery checks the trigger name.
+# Source: server-scripts/ZoneTrigger.cs:168-184 — discovery checks the trigger name.
 CITY_NAMES = {
     "Alaenanore Village",
     "Thogh Maldur",

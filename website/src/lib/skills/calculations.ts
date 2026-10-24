@@ -231,7 +231,7 @@ export function bloodPactCalculation(skill: SkillDetailView): Calculation {
   };
 }
 
-// Source: server-scripts/PlayerSkills.cs:394-395,431-441 — channel duration is Max(0.05, castTime × (1 − spellHasteBonus)) for spells; pulse k lands at duration × (k + 1) / pulses, the last at cast end.
+// Source: server-scripts/PlayerSkills.cs:397-398,434-444 — channel duration is Max(0.05, castTime × (1 − spellHasteBonus)) for spells; pulse k lands at duration × (k + 1) / pulses, the last at cast end.
 export function channelCalculation(skill: SkillDetailView): Calculation {
   const pulses = skill.channel_pulses;
   const castTime = requireLinear(skill.cast_time, "cast_time", skill.id);

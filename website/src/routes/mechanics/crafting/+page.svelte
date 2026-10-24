@@ -80,7 +80,7 @@
           > requires a learned recipe and rolls for success.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:13860-13869,13935-13951 — equipment receives its maximum durability; pack recipes add the final item in the pack's final quantity. -->
+      <!-- Source: server-scripts/Player.cs:13970-13979,14048-14064 — equipment receives its maximum durability; pack recipes add the final item in the pack's final quantity. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Crafted equipment starts at its maximum durability.</li>
         <li>
@@ -88,7 +88,7 @@
           instead of giving you a pack to open.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:12780-12793 and server-scripts/UIJournal.cs:85-92,261-291 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
+      <!-- Source: server-scripts/Player.cs:12890-12903 and server-scripts/UIJournal.cs:86-93,262-292 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Your Crafting journal records successful crafts.</li>
         <li>
@@ -96,7 +96,7 @@
           successful crafts.
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:12895-12901 — after each result, Craft All crafts again while the station panel stays open. -->
+      <!-- Source: server-scripts/Player.cs:13005-13011 — after each result, Craft All crafts again while the station panel stays open. -->
       <!-- Source: server-scripts/UICraftingStation.cs:400-450 — a craft stops when no recipe matches the materials or the result does not fit in the inventory. -->
       <p>
         Craft All repeats while the station is open, until you run out of
@@ -113,7 +113,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UICraftingStation.cs:53-69,142-159,288-315 and server-scripts/Player.cs:13778-13820 — two station materials trigger attachment, equipment and augment must be in inventory, and the client checks defensive category compatibility. -->
+      <!-- Source: server-scripts/UICraftingStation.cs:53-69,142-159,288-315 and server-scripts/Player.cs:13888-13930 — two station materials trigger attachment, equipment and augment must be in inventory, and the client checks defensive category compatibility. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
           Put an augment and an equipment piece from your inventory into a
@@ -131,7 +131,7 @@
           >
         </li>
       </ul>
-      <!-- Source: server-scripts/Player.cs:13793-13820 and server-scripts/Inventory.cs:67-92 — attaching requires an unaugmented copy, consumes the loose augment, and returns the equipment with maximum durability. -->
+      <!-- Source: server-scripts/Player.cs:13903-13930 and server-scripts/Inventory.cs:67-92 — attaching requires an unaugmented copy, consumes the loose augment, and returns the equipment with maximum durability. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>Attaching consumes the augment.</li>
         <li>

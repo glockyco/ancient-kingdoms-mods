@@ -37,7 +37,7 @@
           {/if}
         </p>
         {#if skill.skill_type === "target_heal" && (skill.is_pet_skill || skill.is_mercenary_skill) && skill.heals_mana}
-          <!-- Source: server-scripts/TargetHealSkill.cs:155-158 — a critical pet heal rolls the resource multiplier independently of the Health multiplier. -->
+          <!-- Source: server-scripts/TargetHealSkill.cs:172-175 — a critical pet heal rolls the resource multiplier independently of the Health multiplier. -->
           <p class="text-muted-foreground">
             A critical pet heal also restores double Mana or Rage, or triple in
             10% of cases. Its triple-restoration roll is separate from the Hit

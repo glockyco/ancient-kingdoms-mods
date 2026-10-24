@@ -765,7 +765,7 @@ class _Normalizer:
                 "discovered_location": quest["discovered_location"],
                 "tracking_quest_location": quest["tracking_quest_location"],
             }
-            # Source: server-scripts/PlayerQuests.cs:338-339 - finding an NPC starts fulfilled.
+            # Source: server-scripts/PlayerQuests.cs:338-339 — finding an NPC starts fulfilled.
             find_npc = quest["is_find_npc_quest"]
             if not find_npc or any(declared_location.values()):
                 facts.append(

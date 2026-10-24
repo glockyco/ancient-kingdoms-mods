@@ -124,7 +124,7 @@ function playerDamageFormula(
   const type = skill.skill_type;
   const elemental =
     dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease";
-  // Source: server-scripts/FrontalProjectilesSkill.cs:94-108 — Ranger precedes damage type. Area damage has no class-specific or magic-weapon branch.
+  // Source: server-scripts/FrontalProjectilesSkill.cs:99-114 — Ranger precedes damage type. Area damage has no class-specific or magic-weapon branch.
   if (type === "frontal_projectiles") {
     if (cls === "ranger") return "ranged_player_frontal";
     if (dt === "Poison" && cls === "rogue") return "poison_rogue";
@@ -171,7 +171,7 @@ function mercDamageFormula(
   const type = skill.skill_type;
   const elemental =
     dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease";
-  // Source: server-scripts/AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:97-108 — neither handler gives a mercenary a class-specific Dexterity bonus.
+  // Source: server-scripts/AreaDamageSkill.cs:90-112; FrontalProjectilesSkill.cs:102-114 — neither handler gives a mercenary a class-specific Dexterity bonus.
   if (type === "area_damage") return elemental ? "magic_spell" : "normal";
   if (type === "frontal_projectiles")
     return elemental || dt === "Poison" ? "magic_spell" : "normal";
@@ -195,7 +195,7 @@ function mercDamageFormula(
   return typeMonster === "Rogue" ? "rogue_melee_merc" : "normal";
 }
 
-// Source: server-scripts/TargetDamageSkill.cs:180-215; TargetProjectileSkill.cs:184-191; AreaDamageSkill.cs:88-89; FrontalDamageSkill.cs:64-80; FrontalProjectilesSkill.cs:107-108 — each handler picks combat.magicDamage or combat.damage from damageType, and Poison lands on a different side per handler, independent of isSpell.
+// Source: server-scripts/TargetDamageSkill.cs:180-215; TargetProjectileSkill.cs:184-191; AreaDamageSkill.cs:93-95; FrontalDamageSkill.cs:64-80; FrontalProjectilesSkill.cs:112-114 — each handler picks combat.magicDamage or combat.damage from damageType, and Poison lands on a different side per handler, independent of isSpell.
 function otherDamageFormula(skill: DamageDispatchSkill): DamageFormulaKind {
   const dt = skill.damage_type;
   const elemental =
@@ -208,7 +208,7 @@ function otherDamageFormula(skill: DamageDispatchSkill): DamageFormulaKind {
   return elemental || poisonMagic ? "monster_magic" : "monster_melee";
 }
 
-// Source: server-scripts/TargetDamageSkill.cs:180-236; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:85-106; FrontalProjectilesSkill.cs:94-114; Dexterity.cs:GetRangedAttackBonusPerPoint,GetPoisonDamageBonusPerPoint — the stats each handler adds to listed damage; scrolls, Mana Burn and Final Cadence add none.
+// Source: server-scripts/TargetDamageSkill.cs:180-236; TargetProjectileSkill.cs:181-219; FrontalDamageSkill.cs:60-102; AreaDamageSkill.cs:90-112; FrontalProjectilesSkill.cs:99-120; Dexterity.cs:GetRangedAttackBonusPerPoint,GetPoisonDamageBonusPerPoint — the stats each handler adds to listed damage; scrolls, Mana Burn and Final Cadence add none.
 /** The stats a formula adds to the skill's listed damage, before handler-specific weapon deductions. */
 export function damageFormulaStats(
   skill: DamageDispatchSkill,
@@ -366,7 +366,7 @@ export function computeMechanicsSpec(
   }> = [];
 
   if (isHealSkill && !skill.is_necromancer_death_bloom) {
-    // Source: server-scripts/TargetHealSkill.cs:273-276; AreaHealSkill.cs:109-111 — target healing requires canHealOthers, area healing always rolls for critical healing.
+    // Source: server-scripts/TargetHealSkill.cs:290-293; AreaHealSkill.cs:109-111 — target healing requires canHealOthers, area healing always rolls for critical healing.
     const canCrit = skill.skill_type === "area_heal" || skill.can_heal_others;
 
     // Source: server-scripts/ScrollItem.cs:UseAfterCast; TargetHealSkill.cs:Apply — scrolls call Apply as a player; pet/mercenary restoration keeps the player's Wisdom bonus.
@@ -484,7 +484,7 @@ export function computeMechanicsSpec(
   // ---------- timing ----------
   // Populated for follow-up attacks and non-spell combat-pet skill 0.
   // Source: server-scripts/Skills.cs:1141-1159; Combat.cs:341-347 — followupDefaultAttack for a non-spell mercenary subtracts haste * cooldown (haste cap)
-  // Source: server-scripts/Player.cs:3443-3480 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
+  // Source: server-scripts/Player.cs:3456-3493 — GetSkillRefractoryPeriod returns 0.75 seconds for spells and computes weapon delay for other attacks
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ caster: Caster; model: TimingModel }> = [];
 
@@ -522,7 +522,7 @@ export function computeMechanicsSpec(
       });
     }
     if (hasMonsters) {
-      // Source: server-scripts/Monster.cs:2051-2057; Npc.cs:1304-1310 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
+      // Source: server-scripts/Monster.cs:2074-2080; Npc.cs:1307-1313 — spells call FinishCast, non-spells FinishCastMeleeAttackMonster.
       const model: TimingModel = isSpell ? "monster_spell" : "monster";
       timingPairs.push({ caster: { kind: "monster" }, model });
     }

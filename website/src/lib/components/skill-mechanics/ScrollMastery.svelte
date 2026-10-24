@@ -11,7 +11,7 @@
   const { skill } = $derived(mechanics);
 </script>
 
-<!-- Source: server-scripts/ScrollItem.cs:125 — a scroll casts at RoundToInt(scrollMasteryLevel × 20), clamped between 1 and the skill's maximum rank. -->
+<!-- Source: server-scripts/ScrollItem.cs:127 — a scroll casts at RoundToInt(scrollMasteryLevel × 20), clamped between 1 and the skill's maximum rank. -->
 <div class="space-y-1">
   <h3 class="font-semibold">
     <a

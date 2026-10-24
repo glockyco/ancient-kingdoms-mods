@@ -36,7 +36,7 @@
             )}
           />
           {#if skill.scales_with_charisma}
-            <!-- Source: server-scripts/BuffSkill.cs:485-490 — Charisma scaling precedes all other attribute branches. -->
+            <!-- Source: server-scripts/BuffSkill.cs:488-493 — Charisma scaling precedes all other attribute branches. -->
             <p class="text-muted-foreground">
               Songs scale with Charisma, not Wisdom or Intelligence.
             </p>

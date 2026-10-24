@@ -54,7 +54,7 @@
   }
 
   // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — isScribingTable craft path
-  // Source: server-scripts/ScrollItem.cs:108-124 — scroll use path
+  // Source: server-scripts/ScrollItem.cs:110-126 — scroll use path
   // Both paths share the same gain chance:
   //   Mathf.Lerp(0.9, 0.02, scrollMasteryLevel^2) > Random.value, only while level < 1.
   function getMasteryGainChance(): number {
@@ -65,7 +65,7 @@
   }
 
   // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — crafting: Random.Range(5, 10) / 10000f
-  // Source: server-scripts/ScrollItem.cs:110 — use: Random.Range(10, 20) / 10000f
+  // Source: server-scripts/ScrollItem.cs:112 — use: Random.Range(10, 20) / 10000f
   const CRAFT_MASTERY_GAIN_MIN = 0.05;
   const CRAFT_MASTERY_GAIN_MAX = 0.09;
   const USE_MASTERY_GAIN_MIN = 0.1;
@@ -186,7 +186,7 @@
         <div>
           <div>Craft scrolls.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:13596-13616,13655-13660; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
+            <!-- Source: server-scripts/Player.cs:13706-13726,13765-13770; server-scripts/Utils.cs:GetSuccessProbAlchemy; website/data/compendium.db:scribing_recipes — listed level-zero recipes succeed at 100%, grant player level × 100 XP, and double-XP doubles that XP. -->
             All current scroll recipes have 100% crafting success chance. Crafting
             grants
             <MechanicsLink section="experience#scribing-xp"
@@ -201,7 +201,7 @@
         <div>
           <div>Use scrolls.</div>
           <!-- Source: server-scripts/ScrollItem.cs:UseAfterCast — a valid scroll casts its skill at rank RoundToInt(scrollMasteryLevel × 20), clamped between 1 and the skill's maximum rank, and consumes one charge unless infiniteCharges is set. -->
-          <!-- Source: server-scripts/ScrollItem.cs:125 — RoundToInt rounds an exact half to the even rank. -->
+          <!-- Source: server-scripts/ScrollItem.cs:127 — RoundToInt rounds an exact half to the even rank. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             A scroll takes 1 second to cast its skill without teaching it.
             Scaling scrolls cast at one rank per 5% Scroll Mastery, rounded,
@@ -211,7 +211,7 @@
             Successful completion consumes one charge unless the scroll has
             infinite charges. Mastery gains also occur on completion.
           </p>
-          <!-- Source: server-scripts/ScrollItem.cs:7,13-16; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, a lost start target, another active skill, or an empty or changed slot. -->
+          <!-- Source: server-scripts/ScrollItem.cs:7,15-18; PlayerInventory.cs:UpdateScrollCast — scroll casting takes 1 second and cancels on movement, a lost start target, another active skill, or an empty or changed slot. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Interrupting the cast uses no charge and starts no item cooldown.
             See <MechanicsLink section="inventory#scroll-casting"
@@ -286,7 +286,7 @@
             Gain amount per increase
           </div>
           <div class="text-sm leading-6">
-            <!-- Source: server-scripts/Player.cs:13619; server-scripts/ScrollItem.cs:108 — crafting and use stop granting Scroll Mastery at the cap. -->
+            <!-- Source: server-scripts/Player.cs:13729; server-scripts/ScrollItem.cs:110 — crafting and use stop granting Scroll Mastery at the cap. -->
             {#if skillLevel >= 100}
               <div>No further skill gain</div>
             {:else}

@@ -6,7 +6,7 @@
   const { skill } = $derived(mechanics);
 </script>
 
-<!-- Source: server-scripts/TargetBuffSkill.cs:477-482 — alsoBuffActivePet copies a self-buff to the owned living non-familiar, non-mercenary active pet within castRange. -->
+<!-- Source: server-scripts/TargetBuffSkill.cs:496-501 — alsoBuffActivePet copies a self-buff to the owned living non-familiar, non-mercenary active pet within castRange. -->
 <div class="space-y-2">
   <h3 class="font-semibold">Companion Buff</h3>
   <p class="text-muted-foreground">

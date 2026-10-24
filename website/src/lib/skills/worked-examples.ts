@@ -36,7 +36,7 @@ export function drainMagnitude(value: LinearValue): LinearValue {
   };
 }
 
-// Source: server-scripts/Skills.cs:1647-1653 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
+// Source: server-scripts/Skills.cs:1663-1669 — Reaper Form drains RoundToInt(max(0, −rate) × maximum Health) each recovery tick.
 export function reaperDrain(rate: LinearValue, rank: number): number {
   const share = Math.max(0, -atRank(rate, rank));
   return iround(multiplyF32(MAX_HEALTH.value, share));
@@ -47,7 +47,7 @@ export function executeTick(bonus: LinearValue, rank: number): number {
   return damageOverTimeBonuses(EXAMPLE_HIT, 3, 0, atRank(bonus, rank)).total;
 }
 
-// Source: server-scripts/Combat.cs:1329-1344 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
+// Source: server-scripts/Combat.cs:1213-1228 — lifetap healing is FloorToInt(share × damage × (1 + summed bonuses)).
 export function lifetapFromHit(share: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, atRank(share, rank), 0);
 }
@@ -57,7 +57,7 @@ export function lifetapWithBonus(bonus: LinearValue, rank: number): number {
   return lifetapHeal(EXAMPLE_HIT, 1, atRank(bonus, rank));
 }
 
-// Source: server-scripts/Combat.cs:894-908 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
+// Source: server-scripts/Combat.cs:942-956 — each victim effect heals the attacker RoundToInt(share × damage after mitigation and critical hits).
 export function healOnHit(share: LinearValue, rank: number): number {
   return iround(multiplyF32(atRank(share, rank), EXAMPLE_HIT));
 }
@@ -67,7 +67,7 @@ export function wildStrikeHit(rank: number): number {
   return wildStrikeDamage(EXAMPLE_HIT, rank);
 }
 
-// Source: server-scripts/PlayerSkills.cs:1338,1679-1689 — learned song-duration bonuses add, then multiply the base duration.
+// Source: server-scripts/PlayerSkills.cs:1357,1698-1708 — learned song-duration bonuses add, then multiply the base duration.
 export function songDuration(baseSeconds: number, bonus: number): number {
   return multiplyF32(baseSeconds, addF32(1, bonus));
 }
@@ -77,7 +77,7 @@ export function passiveSongDuration(perRank: number, rank: number): number {
   return songDuration(EXAMPLE_SONG_SECONDS, multiplyF32(perRank, rank));
 }
 
-// Source: server-scripts/ScrollItem.cs:125 — a scroll casts at RoundToInt(mastery × 20), between rank 1 and the skill's maximum.
+// Source: server-scripts/ScrollItem.cs:127 — a scroll casts at RoundToInt(mastery × 20), between rank 1 and the skill's maximum.
 export function scrollRank(maxRank: number): number {
   return clamp(iround(multiplyF32(EXAMPLE_SCROLL_MASTERY, 20)), 1, maxRank);
 }

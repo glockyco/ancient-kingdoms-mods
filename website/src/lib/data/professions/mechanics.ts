@@ -123,7 +123,7 @@ export const PROFESSION_MECHANICS = {
   fishing: {
     capPercent: 100,
     payoff: { effect: "catch chance", source: "fishing spots" },
-    // Source: server-scripts/GatherItem.cs:698-705,799-808 — fishing requires a 20% spot chance and grants skill only on successful spots.
+    // Source: server-scripts/GatherItem.cs:699-706,800-809 — fishing requires a 20% spot chance and grants skill only on successful spots.
     success: { floor: 0.2, tiers: GATHERING_SUCCESS_TIERS },
     effortless: STANDARD_EFFORTLESS_THRESHOLDS,
     skillGain: {

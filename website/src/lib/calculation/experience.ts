@@ -50,7 +50,7 @@ export function levelExperience(costs: readonly number[]): Calculation {
   };
 }
 
-// Source: server-scripts/Experience.cs:45-53; server-scripts/PlayerSkills.cs:1823-1833 — the maximum-level bar grows with unspent veteran points plus learned base ranks.
+// Source: server-scripts/Experience.cs:45-53; server-scripts/PlayerSkills.cs:1842-1852 — the maximum-level bar grows with unspent veteran points plus learned base ranks.
 export function veteranExperience(): Calculation {
   return {
     note: TOTAL_VETERAN_POINTS_NOTE,
@@ -198,7 +198,7 @@ export function killExperience(): Calculation {
   };
 }
 
-// Source: server-scripts/Experience.cs:588-597; server-scripts/Player.cs:4138-4139 — round 10% of the bar requirement, then cap by current XP.
+// Source: server-scripts/Experience.cs:588-597; server-scripts/Player.cs:4178-4179 — round 10% of the bar requirement, then cap by current XP.
 export function deathExperience(): Calculation {
   return {
     steps: [

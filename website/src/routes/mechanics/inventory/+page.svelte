@@ -146,11 +146,11 @@
           >) or the skillbar button.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:559-565 — backpack slots reject non-backpack items. -->Backpack
+          <!-- Source: server-scripts/PlayerInventory.cs:587-593 — backpack slots reject non-backpack items. -->Backpack
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:604-618 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
+          <!-- Source: server-scripts/PlayerInventory.cs:641-655 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->
           <span class="block"
             >You can equip only one of each Unique backpack.</span
           >
@@ -159,11 +159,11 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:589-605 — removal or downgrade is blocked if items would be locked away. -->You
+          <!-- Source: server-scripts/PlayerInventory.cs:626-642 — removal or downgrade is blocked if items would be locked away. -->You
           cannot remove or replace a bag with a smaller one if stored items
           would lose their slots.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:652-662,701-707,795-801 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:689-699,738-744,832-838 — the bag drag handler blocks extended slots after the first; bank and house chest drags reject equipped bags. -->
         <li>
           <span class="block"
             >You cannot move an equipped bag directly to the bank or a house
@@ -291,8 +291,8 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:405 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:13694-13719 and 13729-13757 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:413 — characters start with one bank tab unlocked. -->
+        <!-- Source: server-scripts/Player.cs:13804-13829 and 13839-13867 — bank gold withdraw and deposit commands. -->
         <span class="block">New characters start with bank tab 1 unlocked.</span
         >
         <span class="block">Unlock additional tabs in order.</span>
@@ -303,7 +303,7 @@
           >Withdrawing transfers vault gold back to your character.</span
         >
       </p>
-      <!-- Source: server-scripts/Npc.cs:1729-1757 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
+      <!-- Source: server-scripts/Npc.cs:1737-1765 and server-scripts/UIBank.cs:83-99 — interacting with a nearby banker opens the bank, which requires the player to remain alive and out of combat. -->
       <p class="text-sm text-muted-foreground">
         Open the bank at a banker while alive and out of combat.
       </p>
@@ -315,7 +315,7 @@
         >
         <span class="block">Moving away or entering combat closes it.</span>
       </p>
-      <!-- Source: server-scripts/PlayerBank.cs:390-449 — Auto Stack moves carried stackable items only when the selected tab already contains that item, filling existing stacks before empty slots. -->
+      <!-- Source: server-scripts/PlayerBank.cs:397-456 — Auto Stack moves carried stackable items only when the selected tab already contains that item, filling existing stacks before empty slots. -->
       <p class="text-sm text-muted-foreground">
         <span class="block">Auto Stack checks the selected tab only.</span>
         <span class="block"
@@ -363,7 +363,7 @@
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Housing.cs:33-49 — entering an unowned house area opens the house purchase flow. -->
         <!-- Source: server-scripts/ChestHouse.cs:OnInteractClient and UserCode_CmdOpenChestHouse__NetworkIdentity__String — only the owning account can open house chest UI. -->
-        <!-- Source: server-scripts/UIChest.cs:42-56; server-scripts/PlayerChest.cs:259-290,309-318 — chest type selects a shared section and fixed 70-slot range. -->
+        <!-- Source: server-scripts/UIChest.cs:42-56; server-scripts/PlayerChest.cs:266-297,316-325 — chest type selects a shared section and fixed 70-slot range. -->
         <span class="block">Your account can own a house.</span>
         <span class="block"
           >A house claimed by another account cannot be purchased.</span
@@ -379,7 +379,7 @@
           >Additional chests of the same type open the same shared section.</span
         >
       </p>
-      <!-- Source: server-scripts/Housing.cs:33-49 and server-scripts/ChestHouse.cs:83-98,167-175 — the house claim and chest access compare account identity. -->
+      <!-- Source: server-scripts/Housing.cs:33-49 and server-scripts/ChestHouse.cs:84-99,167-175 — the house claim and chest access compare account identity. -->
       <p class="text-sm text-muted-foreground">
         <span class="block"
           >Only the owning account can access its house chests.</span
@@ -406,8 +406,8 @@
         </p>
         <p>
           <span class="block"
-            ><!-- Source: server-scripts/CustomStrucUI.cs:204-227 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 330-349 and Player.cs:13445-13457 — move mode hides the structure, then repositions the same one without charging gold. -->
+            ><!-- Source: server-scripts/CustomStrucUI.cs:211-234 — left click or F places the selected structure, or drops a moved one at the new spot. -->
+            <!-- Source: server-scripts/CustomStrucUI.cs:79-85, 337-356 and Player.cs:13555-13567 — move mode hides the structure, then repositions the same one without charging gold. -->
             Place the selected chest with left click or
             <kbd
               class="rounded border border-border bg-muted px-1.5 py-0.5 text-sm text-foreground"
@@ -422,8 +422,8 @@
           >
         </p>
         <p>
-          <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 261-279 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10556-10589 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:71-76 and 268-286 — remove mode destroys a selected structure. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:101-108 and Player.cs:10644-10677 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           <span class="block"
             >You can destroy an individual chest without receiving gold back.</span
           >
@@ -559,20 +559,20 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:239-265 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
+          <!-- Source: server-scripts/PlayerInventory.cs:255-281 — preferred slot order yields base slots first, then unlocked backpack extension slots. -->New
           items go into base inventory slots first, then unlocked backpack
           storage slots.
         </li>
         <li>
-          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1992-2006 — stack increases are clamped by target max stack. -->Matching
+          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:2029-2043 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:621-626 and 670-683 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
+          <!-- Source: server-scripts/PlayerInventory.cs:658-663 and 707-720 — a drag between two inventory slots with Shift held opens an amount picker when the source stack holds more than one item and the target slot is empty. PlayerInventory.cs:1717-1729 — the server validates and splits the requested amount. -->Hold
           Shift while you drag a stack onto an empty slot, then choose how many
           items to move.
         </li>
-        <!-- Source: server-scripts/PlayerInventory.cs:701-757,795-853,1914-1976 and server-scripts/PlayerBank.cs:53-72 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:738-794,832-890,1951-2013 and server-scripts/PlayerBank.cs:60-79 — splitting supports carried slots and transfers to or from bank and house chest slots. -->
         <li>
           <span class="block"
             >Splitting also works between inventory and bank or house chest
@@ -583,7 +583,7 @@
           >
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:685-688 — non-split, non-merge inventory drag swaps slots. -->Dragging
+          <!-- Source: server-scripts/PlayerInventory.cs:722-725 — non-split, non-merge inventory drag swaps slots. -->Dragging
           an item between inventory slots swaps their contents unless you split
           or merge a stack.
         </li>
@@ -731,7 +731,7 @@
     <Card.Header>
       <Card.Title>Equipment Templates</Card.Title>
       <Card.Description>
-        <!-- Source: server-scripts/PlayerEquipment.cs:32,42-47,396-398,1669-1691 — each character can use up to five equipment templates and switch between stored loadouts. -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:32,42-47,396-398,1686-1708 — each character can use up to five equipment templates and switch between stored loadouts. -->
         Store up to five gear loadouts per character and swap between them.
       </Card.Description>
     </Card.Header>
@@ -752,14 +752,14 @@
 
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:57-58,468-482,1670-1704 — template entries store an item hash and augment name, and switching applies all sixteen stored equipment slots. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:57-58,468-482,1687-1721 — template entries store an item hash and augment name, and switching applies all sixteen stored equipment slots. -->
           Switching applies saved choices to all 16 equipment slots.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerEquipment.cs:42-45,409-436 and server-scripts/Database.cs:3205-3207 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
           Template 1 starts out holding the gear your character was created with.
         </li>
-        <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1640-1655 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:455-482,1657-1672 — active template tracks equipment changes and unlocking copies current gear then activates the new template. -->
         <li>
           <span class="block"
             >Changing gear updates your active template automatically.</span
@@ -769,7 +769,7 @@
             the new template.</span
           >
         </li>
-        <!-- Source: server-scripts/PlayerEquipment.cs:526-565,596-605,679-685 and server-scripts/PlayerInventory.cs:239-265 — template selection searches equipped and carried slots, including unlocked backpack storage, for the saved item and augment pair. -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:526-565,596-605,679-685 and server-scripts/PlayerInventory.cs:255-281 — template selection searches equipped and carried slots, including unlocked backpack storage, for the saved item and augment pair. -->
         <li>
           <span class="block"
             >Switching uses equipped and carried gear, including unlocked
@@ -845,7 +845,7 @@
           ({Math.round(skill.break_armor_prob * 100)}%)
         {/each}.
       </p>
-      <!-- Source: server-scripts/Equipment.cs:6-58 and server-scripts/PlayerEquipment.cs:194-319,1614-1625 — gear at zero durability gives no equipment or attached augment attribute bonuses and no longer counts toward its armor set. -->
+      <!-- Source: server-scripts/Equipment.cs:6-58 and server-scripts/PlayerEquipment.cs:194-319,1631-1642 — gear at zero durability gives no equipment or attached augment attribute bonuses and no longer counts toward its armor set. -->
       <p>
         <span class="block"
           >At zero durability, gear stays equipped but provides no equipment or
@@ -853,7 +853,7 @@
         >
         <span class="block">It stops counting toward armor set bonuses.</span>
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:37-91 — a repair kit restores damaged equipped items up to its quality; targeting an owned mercenary redirects it, and no qualifying item leaves the kit unused. -->
+      <!-- Source: server-scripts/ScrollItem.cs:39-93 — a repair kit restores damaged equipped items up to its quality; targeting an owned mercenary redirects it, and no qualifying item leaves the kit unused. -->
       <p>
         <span class="block"
           >A <a
@@ -887,7 +887,7 @@
           >.</span
         >
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:48-82, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4602-4605 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
+      <!-- Source: server-scripts/ScrollItem.cs:50-84, server-scripts/PlayerNpcTrading.cs:28-42,413-441 and server-scripts/Player.cs:4642-4645 — kits act on equipped slots; repair merchants accept carried equipment, including broken pickaxes. -->
       <p>
         <span class="block">Kits do not repair inventory tools.</span>
         <span class="block"
@@ -922,7 +922,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerEquipment.cs:287-317,1614-1625 and server-scripts/MercenaryEquipment.cs:148-185 — three matching equipped working pieces give attributes; five give player skill levels; mercenaries apply only the three-piece attributes. -->
+      <!-- Source: server-scripts/PlayerEquipment.cs:287-317,1631-1642 and server-scripts/MercenaryEquipment.cs:148-185 — three matching equipped working pieces give attributes; five give player skill levels; mercenaries apply only the three-piece attributes. -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
@@ -946,7 +946,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/PlayerEquipment.cs:1580-1595,1614-1625 and server-scripts/EquipmentItem.cs:485-527 — set membership is by set name and durability must remain above zero. -->
+      <!-- Source: server-scripts/PlayerEquipment.cs:1597-1612,1631-1642 and server-scripts/EquipmentItem.cs:524-566 — set membership is by set name and durability must remain above zero. -->
       <p>
         <span class="block">The pieces must belong to the same named set.</span>
         <span class="block"
@@ -954,7 +954,7 @@
           bonuses.</span
         >
       </p>
-      <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241 and server-scripts/EquipmentItem.cs:525-527 — mercenary set processing has the three-piece attribute threshold but no five-piece skill threshold. -->
+      <!-- Source: server-scripts/MercenaryEquipment.cs:148-185,226-241 and server-scripts/EquipmentItem.cs:564-566 — mercenary set processing has the three-piece attribute threshold but no five-piece skill threshold. -->
       <p>
         <span class="block"
           >Mercenary armor sets grant only the three-piece attribute bonus.</span
@@ -979,7 +979,7 @@
       >
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PotionItem.cs:77-85,119-144, server-scripts/FoodItem.cs:14-35 and server-scripts/ScrollItem.cs:93-128 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
+      <!-- Source: server-scripts/PotionItem.cs:78-86,120-145, server-scripts/FoodItem.cs:14-36 and server-scripts/ScrollItem.cs:95-130 — potions restore resources or apply buffs, food and drink apply buffs, and spell scrolls invoke skills. -->
       <p>
         <span class="block">Potions restore resources or apply buffs.</span>
         <span class="block">Food and drink apply buffs.</span>
@@ -997,17 +997,17 @@
         and round to the nearest whole number. The minimum is rank 1 and the
         maximum is the skill's highest rank.
       </p>
-      <!-- Source: server-scripts/ScrollItem.cs:7,13-35,91-136; PlayerInventory.cs:StartScrollCast,UpdateScrollCast — ScrollItem casts for 1 second; UseAfterCast applies the effect, item cooldown and charge consumption only after successful completion. -->
+      <!-- Source: server-scripts/ScrollItem.cs:7,15-37,93-138; PlayerInventory.cs:StartScrollCast,UpdateScrollCast — ScrollItem casts for 1 second; UseAfterCast applies the effect, item cooldown and charge consumption only after successful completion. -->
       <p id="scroll-casting">
         All skill scrolls, the Scroll of Binding, and repair kits take 1 second
         to cast. Only a successful cast activates the effect, starts the item
         cooldown, removes invisibility, and spends a charge. Interrupted or
         failed casts spend no charge and start no item cooldown. Infinite-charge
         scrolls do not consume a charge.
-        <!-- Source: server-scripts/PlayerInventory.cs:108-113 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
+        <!-- Source: server-scripts/PlayerInventory.cs:127-132 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
         Starting a scroll cast cancels your current skill cast and clears queued skills.
       </p>
-      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3170-3228 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
+      <!-- Source: server-scripts/PlayerInventory.cs:UpdateScrollCast; Player.cs:3182-3240 — scroll casts cancel on an active skill, movement, a destroyed start target, changed or empty slot, death, stun, fear, cancel action or trade, and complete on the target saved when the cast began. -->
       <p>
         Moving, losing your target, starting a skill, changing or removing the
         casting item, stun, fear, death, trading, or cancelling the action

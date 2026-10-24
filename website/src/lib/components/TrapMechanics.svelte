@@ -18,7 +18,7 @@
   );
 </script>
 
-<!-- Source: server-scripts/Trap.cs:67-104,181-197 and server-scripts/Player.cs:HasDetectTraps — contact effects and player disarming.
+<!-- Source: server-scripts/Trap.cs:67-104,182-201 and server-scripts/Player.cs:HasDetectTraps — contact effects and player disarming.
      Source: server-scripts/TrapDetection.cs:Update — active Rogue and Bard mercenaries detect and disarm traps.
      Source: server-scripts/DangerousGround.cs:24-31 — area effect retrigger interval.
      Source: server-scripts/WallTrap.cs:24-31,34-66 — fire interval, overlap area, and direct damage. -->

@@ -718,7 +718,7 @@ export const load: PageServerLoad = async ({
       altarPlacements.length > 0 &&
       !hasOtherLootSpawns &&
       altarPlacements.every((p) => !p.is_final),
-    // Source: server-scripts/SummonSkillMonsters.cs:Apply - combat summons also have no loot.
+    // Source: server-scripts/SummonSkillMonsters.cs:Apply — combat summons also have no loot.
     only_lootless_spawns:
       !hasOtherLootSpawns &&
       (altarPlacements.length > 0 || combatSummoners.length > 0) &&

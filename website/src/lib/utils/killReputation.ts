@@ -47,8 +47,8 @@ interface NpcKillReputationInput {
  * Reputation changed per kill for a monster, formatted as a range across its
  * spawn levels (level_min..level_max).
  *
- * Source: server-scripts/Monster.cs:574-600 (formula),
- * 3153-3165 and 3189-3201 (party/solo reward application).
+ * Source: server-scripts/Monster.cs:591-617 (formula),
+ * 3214-3226 and 3251-3263 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
  * (boss 20 / elite 10 / normal 1); decrease subtracts level.current *
  * (boss 2 / elite 1 / normal 0.75).
@@ -103,7 +103,7 @@ export function monsterKillReputation(
 /**
  * Reputation changed per kill for an NPC.
  *
- * Source: server-scripts/Npc.cs:1584-1616 (party) / 1631-1663 (solo).
+ * Source: server-scripts/Npc.cs:1592-1624 (party) / 1639-1671 (solo).
  * Improve adds level.current * 1.5, multiplied by 60 for a notable NPC.
  * Decrease subtracts level.current * 5.
  */

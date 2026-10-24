@@ -175,7 +175,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       'Trade Magic-quality or better equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
     details: ["Broken equipment cannot be traded."],
   },
-  // Source: server-scripts/UIBank.cs:294-307; server-scripts/Player.cs:470 — tab costs use the unlocked count, which starts at one.
+  // Source: server-scripts/UIBank.cs:294-307; server-scripts/Player.cs:478 — tab costs use the unlocked count, which starts at one.
   is_bank: {
     description: "Gives you access to your bank.",
     details: [
@@ -198,7 +198,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       'The reset costs 10,000 gold and a <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>.',
     ],
   },
-  // Source: server-scripts/Player.cs:5178-5193,11217-11235 — reset clears the current specialization allocation and refuses curses or debuffs.
+  // Source: server-scripts/Player.cs:5222-5237,11323-11341 — reset clears the current specialization allocation and refuses curses or debuffs.
   is_reset_attributes: {
     description: "Resets attribute points for your current specialization.",
     details: [
@@ -210,7 +210,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_soul_binder: {
     description: "Sets your bind point to your current position.",
   },
-  // Source: server-scripts/Npc.cs:1759-1782 — the innkeeper offers a drink for 25 gold.
+  // Source: server-scripts/Npc.cs:1767-1790 — the innkeeper offers a drink for 25 gold.
   is_inkeeper: {
     description: "Serves you a random drink from its stock for 25 gold.",
   },
@@ -229,7 +229,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       "You can have 1 active mercenary at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+.",
     ],
   },
-  // Source: server-scripts/Npc.cs:1868-1882
+  // Source: server-scripts/Npc.cs:1876-1890
   is_priestess: {
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> in your inventory into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a> for 75 gold each.',

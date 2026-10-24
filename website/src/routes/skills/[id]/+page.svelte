@@ -488,7 +488,7 @@
           {/if}
         </dl>
         {#if losesVeteranPoints}
-          <!-- Source: server-scripts/PlayerSkills.cs:1823-1833,1887-1927,2538-2541 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
+          <!-- Source: server-scripts/PlayerSkills.cs:1842-1852,1906-1946,2575-2578 — upgrade pays the authored cost, progression and reset sum one point per learned rank. -->
           <!-- Runtime verification: docs/game-bugs/two-point-veteran-skills-lose-points-and-progression.md -->
           <p
             class="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
@@ -573,7 +573,7 @@
           {/if}
         </dl>
         {#if shortensCast || timingModels.has("player_auto") || hasteCooldownCasters}
-          <!-- Source: server-scripts/Skills.cs:924-933,1141-1173; Player.cs:3443-3480 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
+          <!-- Source: server-scripts/Skills.cs:924-933,1141-1173; Player.cs:3456-3493 — spell haste shortens casts, Haste shortens auto-attack waits and some cooldowns. -->
           <div class="mt-3 space-y-1 text-sm text-muted-foreground">
             {#if shortensCast && skill.cast_time}
               <!-- Source: server-scripts/Pet.cs:TryStartAttackIfInRange; server-scripts/BardMercenarySkills.cs:StartSongCast; Combat.cs:spellHaste — mercenary casts use the mercenary's own spell haste, bounded to −50%–50%. -->
@@ -1232,7 +1232,7 @@
             {/if}
             {#if skill.health_percent_per_second_bonus}
               <div>
-                <!-- Source: server-scripts/Skills.cs:1647-1653 — Reaper Form drains the caster's maximum Health each second. -->
+                <!-- Source: server-scripts/Skills.cs:1663-1669 — Reaper Form drains the caster's maximum Health each second. -->
                 <dt class="text-muted-foreground">
                   {skill.is_necromancer_reaper_form
                     ? "Self Health drain %/sec"

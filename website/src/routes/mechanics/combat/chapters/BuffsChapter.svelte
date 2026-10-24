@@ -110,7 +110,7 @@
         </tr>
       </tbody>
     </RefTable>
-    <!-- Source: server-scripts/Buff.cs:47-228; Wisdom.cs:116-127; Combat.cs:921-934 — positive non-song effects add the selected attribute, with per-effect rounding. -->
+    <!-- Source: server-scripts/Buff.cs:47-228; Wisdom.cs:116-127; Combat.cs:969-982 — positive non-song effects add the selected attribute, with per-effect rounding. -->
     <!-- Source: server-scripts/Buff.cs:damageBonus,magicDamageBonus — Leadership adds its stored buff attribute to both listed damage bonuses. -->
     <!-- Source: server-scripts/Buff.cs:healthMaxBonus; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — the calculated Health value is a maximum-Health bonus, while Ward uses the calculated value as its capacity. -->
     <RefTable caption="What the buff attribute adds to each effect">
@@ -309,8 +309,8 @@
       Players and mercenaries use their own attributes. Debuffs from monsters,
       NPCs, companions and familiars add nothing.
     </p>
-    <!-- Source: server-scripts/Buff.cs:69-228; BuffSkill.cs:485-527; Skills.cs:GetFinalDamageDoT — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
-    <!-- Source: server-scripts/BuffSkill.cs:14-31,520-527 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
+    <!-- Source: server-scripts/Buff.cs:69-228; BuffSkill.cs:488-530; Skills.cs:GetFinalDamageDoT — reductions use the selected debuff attribute, and physical ticks round their Strength addition. -->
+    <!-- Source: server-scripts/BuffSkill.cs:14-31,523-530 — damageOverTimeBonusPerIntelligencePoint defaults to 1.25 and each skill can override it, while scalesWithCharisma effects skip the separate addition. -->
     <RefTable caption="What the debuff attribute adds to each effect">
       <thead>
         <tr>
@@ -398,7 +398,7 @@
       cannot be cleansed. Each debuff starts with three layers and ends when the
       last one is removed.
     </p>
-    <!-- Source: server-scripts/Skills.cs:1828-1831 — ticks with two or one remaining layers deal 85% or 70%, rounded up. -->
+    <!-- Source: server-scripts/Skills.cs:1885-1888 — ticks with two or one remaining layers deal 85% or 70%, rounded up. -->
     <p>
       A debuff deals 85% of its <a href="#damage-over-time">damage over time</a>
       with two layers left and 70% with one, rounded up.

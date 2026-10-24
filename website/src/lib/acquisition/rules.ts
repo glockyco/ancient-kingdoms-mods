@@ -99,7 +99,7 @@ export function evaluateOutputQuantity(
       ? { kind: "exact", value: carried.amount }
       : { kind: "range", min: carried.amount, max: null };
   }
-  // Source: server-scripts/GatherItem.cs:446-454 - a successful Radiant roll replaces the configured gift amount with one unit.
+  // Source: server-scripts/GatherItem.cs:446-454 — a successful Radiant roll replaces the configured gift amount with one unit.
   if (output.yield_rule === "radiant") return { kind: "exact", value: 1 };
   if (output.amount_min === null || output.amount_max === null)
     return { kind: "unknown" };

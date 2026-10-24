@@ -693,7 +693,7 @@
           Resetting refunds only 1 of the 2 points.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:11132-11167; server-scripts/Npc.cs:1824-1842; server-scripts/PlayerSkills.cs:1887-1914 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
+          <!-- Source: server-scripts/Player.cs:11238-11273; server-scripts/Npc.cs:1832-1850; server-scripts/PlayerSkills.cs:1906-1933 — the paid veteran reset clears ranks and refunds one point per learned rank. -->
           {#if data.veteranMaster}
             <a
               href="/npcs/{data.veteranMaster.id}"
@@ -967,9 +967,9 @@
           40% more XP after Double XP, rounded to the nearest whole XP.
         </p>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
-        <!-- Source: server-scripts/GatherItem.cs:640,825 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:13647-13660 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:13655-13660 — double XP applies to scribing -->
+        <!-- Source: server-scripts/GatherItem.cs:640,826 — double XP applies to gathering -->
+        <!-- Source: server-scripts/Player.cs:13757-13770 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:13765-13770 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftAugment__NetworkIdentity__String__String — Double XP applies to attaching augments. -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
@@ -988,7 +988,7 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:3120-3148 — party kill XP award loop -->
+        <!-- Source: server-scripts/Monster.cs:3180-3209 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
         <!-- Source: server-scripts/Monster.cs:OnDeath, Experience.cs:CalculateExperienceShare — the kill passes 1.25f as bonusPercentagePerMember. -->
@@ -1036,7 +1036,7 @@
             </tbody>
           </table>
         </div>
-        <!-- Source: server-scripts/Monster.cs:3120-3148 — the award loop counts and pays party players in proximity, not their mercenaries. -->
+        <!-- Source: server-scripts/Monster.cs:3180-3209 — the award loop counts and pays party players in proximity, not their mercenaries. -->
         <p class="text-sm text-muted-foreground">
           Mercenaries take none of your kill XP and do not count toward party
           sharing.
@@ -1156,7 +1156,7 @@
     <Card.Header>
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
-        <!-- Source: server-scripts/GatherItem.cs:630-644,817-828 — qualifying resources and successful catch rolls award XP, other objects do not. -->
+        <!-- Source: server-scripts/GatherItem.cs:630-645,818-830 — qualifying resources and successful catch rolls award XP, other objects do not. -->
         You earn XP each time you gather an herb, mineral, or radiant spark, or make
         a successful catch at a fishing spot. Resources that give only quest items
         give no XP.
@@ -1164,7 +1164,7 @@
     </Card.Header>
     <Card.Content>
       <!-- Source: server-scripts/GatherItem.cs:630-639 — gathering XP by tier for non-quest plants, minerals, and sparks. -->
-      <!-- Source: server-scripts/GatherItem.cs:817-828 — levelItem selects 15 / 150 / 750 / 4000 / 10000 XP. -->
+      <!-- Source: server-scripts/GatherItem.cs:818-830 — levelItem selects 15 / 150 / 750 / 4000 / 10000 XP. -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1215,7 +1215,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13647-13654 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:13757-13764 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1280,8 +1280,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13886-13892 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:13902-13934 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:13996-14002 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:14012-14047 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1320,7 +1320,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13886-13892 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:13996-14002 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
