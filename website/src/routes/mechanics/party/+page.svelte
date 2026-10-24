@@ -204,8 +204,8 @@
       <!-- Source: server-scripts/ItemsRollSystem.cs:95-173 — eligible equipment can equip directly; otherwise inventory add is tried, followed by an empty bank slot and then an empty house-chest slot; no space loses the item. -->
       <p>
         <span class="block"
-          >If a won item needs inventory space after the roll and no longer
-          fits, the game tries an <a
+          >If you win an item that needs inventory space but your inventory is
+          full when the roll ends, the game tries an <a
             href="/mechanics/inventory#bank"
             class="text-blue-600 dark:text-blue-400 hover:underline"
             >empty bank slot</a
@@ -216,7 +216,9 @@
             >empty house-chest slot</a
           >.</span
         >
-        <span class="block">With neither available, the item is lost.</span>
+        <span class="block"
+          >You lose the item if neither has an empty slot.</span
+        >
       </p>
     </Card.Content>
   </Card.Root>
