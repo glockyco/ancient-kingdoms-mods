@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DataExporter.Models;
 using Il2CppInterop.Runtime;
@@ -209,28 +210,14 @@ public class TrapExporter : BaseExporter
 
     /// <summary>
     /// World-space rings of a trap's trigger collider. Trap and DangerousGround both require a
-    /// PolygonCollider2D, whose paths are the authoritative trigger shape; any other Collider2D
-    /// contributes its world bounds instead, because only the AABB is exposed for those shapes.
-    /// Returns null when the object carries no collider at all.
+    /// PolygonCollider2D, whose paths are the authoritative trigger shape.
+    /// Source: server-scripts/Trap.cs:7; server-scripts/DangerousGround.cs:5
     /// </summary>
     private static List<List<Point2>> GetColliderAreaPaths(GameObject gameObject)
     {
-        if (gameObject == null)
-            return null;
-
         var polygon = gameObject.GetComponent<PolygonCollider2D>();
         if (polygon == null)
-        {
-            var collider = gameObject.GetComponent<Collider2D>();
-            if (collider == null)
-                return null;
-
-            var bounds = collider.bounds;
-            return new List<List<Point2>>
-            {
-                RectanglePath(bounds.min.x, bounds.min.y, bounds.max.x, bounds.max.y)
-            };
-        }
+            throw new InvalidOperationException($"Trap {gameObject.name}: missing required polygon collider. Reload World.");
 
         var transform = polygon.transform;
         var offset = polygon.offset;

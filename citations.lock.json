@@ -939,6 +939,10 @@
       "sha256": "bef83485d18ff4a3730647e405ed8cb0dc99587524c98afa11bee824fc776e06",
       "span": 8
     },
+    "DangerousGround.cs:5": {
+      "sha256": "767b2a70dde09984308eabdcf5858134fa69b693cdb3ede0d913944fbc6d5c0a",
+      "span": 1
+    },
     "Database.cs:1145-1156": {
       "sha256": "48389840e1a88a3848db3a8ab50f58976967f5b9dd070e48a3ab9ebeb2d9183d",
       "span": 12
@@ -4848,6 +4852,10 @@
     "Trap.cs:67-104": {
       "sha256": "d0a2f94fe62d9aa925887eb604e03bd097865107183d2ce1d8db2fa086c268b9",
       "span": 38
+    },
+    "Trap.cs:7": {
+      "sha256": "767b2a70dde09984308eabdcf5858134fa69b693cdb3ede0d913944fbc6d5c0a",
+      "span": 1
     },
     "Trap.cs:OnInteractServer": {
       "span": 0
