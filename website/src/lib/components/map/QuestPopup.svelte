@@ -17,7 +17,7 @@
     onSelectNpc: (npcId: string) => void;
     onSelectMonster: (monsterId: string) => void;
     onSelectItem: (itemId: string) => void;
-    onDiscoveryLocationChange: (position: [number, number] | null) => void;
+    onDiscoveryAreaChange: (area: [number, number][] | null) => void;
     onSelectDiscovery: () => void;
     onHoverNpc?: (npcId: string | null) => void;
     onHoverMonster?: (monsterId: string | null) => void;
@@ -31,7 +31,7 @@
     onSelectNpc,
     onSelectMonster,
     onSelectItem,
-    onDiscoveryLocationChange,
+    onDiscoveryAreaChange,
     onSelectDiscovery,
     onHoverNpc,
     onHoverMonster,
@@ -45,7 +45,7 @@
 
   $effect(() => {
     let cancelled = false;
-    onDiscoveryLocationChange(null);
+    onDiscoveryAreaChange(null);
     isLoading = true;
     error = null;
     details = null;
@@ -71,9 +71,9 @@
         if (cancelled) return;
         itemIconPaths = paths;
         details = d;
-        onDiscoveryLocationChange(
+        onDiscoveryAreaChange(
           d?.objectives.find((objective) => objective.type === "discover")
-            ?.position ?? null,
+            ?.area ?? null,
         );
         if (!d) error = "Quest not found";
       })
@@ -86,7 +86,7 @@
       });
     return () => {
       cancelled = true;
-      onDiscoveryLocationChange(null);
+      onDiscoveryAreaChange(null);
     };
   });
 
@@ -281,7 +281,7 @@
                 {/if}
               {:else if obj.type === "discover"}
                 <span class="text-muted-foreground">Discover</span>
-                {#if obj.position}
+                {#if obj.area}
                   <button
                     type="button"
                     class="text-left text-blue-400 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"

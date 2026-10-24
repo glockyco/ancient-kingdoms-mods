@@ -59,14 +59,19 @@ The map canvas MUST show a clear focus indicator when it accepts keyboard input.
 
 ### Requirement: Map popups retain location and objective details
 
-Quest popups MUST display every required inventory item and identify discovery objectives by their place rather than their notification message. A discovery objective with exported coordinates MUST have a selectable map marker and a control that focuses it. NPC popups MUST display known sub-zones. Resource drop rows MUST display exported yield ranges beside their chances.
+Quest popups MUST display every required inventory item and identify discovery objectives by their place rather than their notification message. They MUST NOT list the zone-by-zone tracker marks that only guide the quest arrow. NPC popups MUST display known sub-zones. Resource drop rows MUST display exported yield ranges beside their chances.
 
 #### Scenario: Delivery quest requires an additional item
 
 - **WHEN** a quest has both gather items and secondary required items
 - **THEN** its map popup displays both sets
 
-#### Scenario: Discovery has a known location
+### Requirement: Discovery areas match the game's trigger
 
-- **WHEN** a selected quest has an exported discovery location
-- **THEN** its popup names the place and provides a control to focus its map marker
+A discovery objective with an exported trigger MUST draw the trigger's exact shape, the area the player enters to complete it, as a selectable map overlay with a control that focuses it.
+
+#### Scenario: Discovery has a known area
+
+- **WHEN** a selected quest has an exported discovery trigger
+- **THEN** its popup names the place and provides a control to focus the area
+- **AND** the map draws the trigger's circle or polygon rather than a point

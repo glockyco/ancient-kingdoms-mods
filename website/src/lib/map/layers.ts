@@ -299,7 +299,8 @@ export interface LayerContext {
   hoverSelectionData?: AnyMapEntity[];
   hoverZone?: ParentZoneBoundary | null;
   iconAtlas?: IconAtlasData;
-  discoveryPosition?: [number, number] | null;
+  /** Outline of the selected quest's discovery area, in map coordinates. */
+  discoveryArea?: [number, number][] | null;
 }
 
 // deck.gl layer constructors are supplied dynamically by the browser bundle.
@@ -322,7 +323,7 @@ export function createLayers(context: LayerContext): any[] {
     hoverSelectionData = EMPTY_SELECTION,
     hoverZone = null,
     iconAtlas,
-    discoveryPosition = null,
+    discoveryArea = null,
   } = context;
   const {
     ScatterplotLayer,
@@ -1150,16 +1151,17 @@ export function createLayers(context: LayerContext): any[] {
     filled: true,
     pickable: false,
   });
-  const discoveryLocationLayer = new ScatterplotLayer({
-    id: "quest-discovery-location",
-    data: discoveryPosition ? [discoveryPosition] : [],
-    getPosition: (position: [number, number]) => position,
-    getFillColor: [99, 102, 241, 220],
-    getLineColor: [255, 255, 255, 255],
-    getRadius: 10,
-    radiusUnits: "pixels",
+  const discoveryAreaLayer = new PolygonLayer({
+    id: "quest-discovery-area",
+    data: discoveryArea ? [discoveryArea] : [],
+    visible: discoveryArea !== null,
+    getPolygon: (ring: [number, number][]) => ring,
+    getFillColor: [99, 102, 241, 60],
+    getLineColor: [99, 102, 241, 230],
+    filled: true,
     stroked: true,
-    lineWidthMinPixels: 3,
+    lineWidthUnits: "pixels",
+    lineWidthMinPixels: 2,
     pickable: true,
     onClick: callbacks.onDiscoveryClick,
   });
@@ -1177,6 +1179,7 @@ export function createLayers(context: LayerContext): any[] {
     altarEventRadiusLayer,
     trapAreaHaloLayer,
     trapAreaLayer,
+    discoveryAreaLayer,
     relationArcsLayer,
     relationArcEndpointsLayer,
     portalArcsLayer,
@@ -1196,6 +1199,5 @@ export function createLayers(context: LayerContext): any[] {
     hoverHighlightOutlineLayer,
     hoverHighlightLayer,
     zoneHoverHighlightLayer,
-    discoveryLocationLayer,
   ];
 }

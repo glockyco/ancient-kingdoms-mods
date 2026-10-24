@@ -3,6 +3,7 @@ import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { AltarThresholds } from "$lib/calculation/altar";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import { monsterFatecharm, type FatecharmItem } from "$lib/utils/fatecharm";
+import { triggerAreaRing } from "$lib/map/trigger-area";
 import {
   loadBrowserAcquisition,
   itemMapLocations,
@@ -316,7 +317,8 @@ export interface QuestObjective {
   amount: number;
   quality?: number;
   tooltipHtml?: string | null;
-  position?: [number, number];
+  /** Outline of the area that completes a discovery, in map coordinates. */
+  area?: [number, number][];
   zoneName?: string | null;
 }
 
@@ -1424,12 +1426,7 @@ export async function loadQuestPopupDetailsBatch(
         subZone && subZone.name !== zone?.name
           ? String(zone?.name ?? "")
           : null,
-      position:
-        !objective.withheld &&
-        typeof child.position_x === "number" &&
-        typeof child.position_y === "number"
-          ? [child.position_x, -child.position_y]
-          : undefined,
+      area: objective.withheld ? undefined : triggerAreaRing(child),
     });
     objectivesByQuest.set(String(objective.quest_id), objectives);
   }

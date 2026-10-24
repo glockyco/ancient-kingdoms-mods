@@ -138,7 +138,7 @@
 
   // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
-  let discoveryPosition = $state<[number, number] | null>(null);
+  let discoveryArea = $state<[number, number][] | null>(null);
 
   // Selected zone (for zone popup display)
   let selectedZone = $state<ParentZoneBoundary | null>(null);
@@ -196,7 +196,7 @@
     selectedEntityId = null;
     selectedEntityType = null;
     highlightOverrideGroups = null;
-    discoveryPosition = null;
+    discoveryArea = null;
     // Clear hover state (link was clicked, no longer hovering)
     hoverEntityId = null;
     hoverEntityCategory = null;
@@ -464,7 +464,7 @@
       hoverSelectionData,
       hoverZone,
       iconAtlas: iconAtlas ?? undefined,
-      discoveryPosition,
+      discoveryArea,
     });
 
     deckInstance.setProps({ layers });
@@ -514,15 +514,15 @@
     applySelection(resolved);
   }
 
-  function handleDiscoveryLocationChange(position: [number, number] | null) {
-    discoveryPosition = position;
+  function handleDiscoveryAreaChange(area: [number, number][] | null) {
+    discoveryArea = area;
   }
 
   function handleFocusDiscovery() {
-    if (!deckInstance || !discoveryPosition) return;
-    const bounds = boundsFromPositions([discoveryPosition]);
-    if (bounds)
-      flyToBounds(deckInstance, bounds, { rightPadding: flyToRightPadding });
+    if (!deckInstance || !discoveryArea) return;
+    flyToBounds(deckInstance, boundsFromPolygon(discoveryArea), {
+      rightPadding: flyToRightPadding,
+    });
   }
 
   /**
@@ -1346,7 +1346,7 @@
           onSelectItem={handleSelectItem}
           onHoverNpc={handleHoverNpc}
           onHoverMonster={handleHoverMonster}
-          onDiscoveryLocationChange={handleDiscoveryLocationChange}
+          onDiscoveryAreaChange={handleDiscoveryAreaChange}
           onSelectDiscovery={handleFocusDiscovery}
         />
       {/if}
@@ -1432,7 +1432,7 @@
                 onSelectNpc={handleSelectNpc}
                 onSelectMonster={handleSelectMonster}
                 onSelectItem={handleSelectItem}
-                onDiscoveryLocationChange={handleDiscoveryLocationChange}
+                onDiscoveryAreaChange={handleDiscoveryAreaChange}
                 onSelectDiscovery={handleFocusDiscovery}
                 mode="drawer"
               />

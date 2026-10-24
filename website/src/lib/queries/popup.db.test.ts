@@ -230,20 +230,28 @@ describe("compact map popups on canonical acquisition", () => {
       ).toHaveLength(row.visits);
   });
 
-  test("quest discovery geometry converts once at the map boundary", async () => {
+  test("a circular discovery trigger becomes its outline in map coordinates", async () => {
     const row = db
       .prepare(
-        "SELECT o.quest_id,l.position_x,l.position_y FROM quest_objective_locations l JOIN quest_objectives o ON o.id=l.id WHERE o.withheld=0 AND o.role='location_visit' AND l.position_x IS NOT NULL AND l.position_y IS NOT NULL ORDER BY l.id LIMIT 1",
+        "SELECT o.quest_id,l.position_x,l.position_y,l.area_radius FROM quest_objective_locations l JOIN quest_objectives o ON o.id=l.id WHERE o.withheld=0 AND o.role='location_visit' AND l.area_shape='circle' AND l.position_x IS NOT NULL ORDER BY l.id LIMIT 1",
       )
-      .get() as { quest_id: string; position_x: number; position_y: number };
+      .get() as {
+      quest_id: string;
+      position_x: number;
+      position_y: number;
+      area_radius: number;
+    };
     expect(row).toBeDefined();
     const popup = await loadQuestPopupDetails(row.quest_id);
-    expect(popup!.objectives).toContainEqual(
-      expect.objectContaining({
-        type: "discover",
-        position: [row.position_x, -row.position_y],
-      }),
-    );
+    const area = popup!.objectives.find(
+      (objective) => objective.type === "discover",
+    )?.area;
+    expect(area!.length).toBeGreaterThanOrEqual(3);
+    for (const [x, y] of area!)
+      expect(Math.hypot(x - row.position_x, y + row.position_y)).toBeCloseTo(
+        row.area_radius,
+        6,
+      );
   });
 
   test("quest NPCs retain every exact offer and completion membership", async () => {

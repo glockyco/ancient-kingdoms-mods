@@ -109,6 +109,7 @@ describe("map golden invariants", () => {
       "altar-event-radius",
       "trap-area-halo",
       "trap-area",
+      "quest-discovery-area",
       "relation-arcs",
       "relation-arc-endpoints",
       "portal-arcs",
@@ -148,13 +149,16 @@ describe("map golden invariants", () => {
       "hover-highlight-outline",
       "hover-highlight",
       "zone-hover-highlight",
-      "quest-discovery-location",
     ]);
   });
 
-  test("discovery locations render as selectable point overlays", () => {
+  test("discovery areas render as selectable polygons below markers", () => {
     let focused = false;
-    const position: [number, number] = [10, -20];
+    const area: [number, number][] = [
+      [0, 0],
+      [10, 0],
+      [10, -10],
+    ];
     const layers = createLayers({
       filtered: emptyFilteredData,
       visibility: getDefaultLayerVisibility(),
@@ -168,12 +172,12 @@ describe("map golden invariants", () => {
       levelFilter: emptyLevelFilter,
       selectedPortalId: null,
       focusedZoneId: null,
-      discoveryPosition: position,
+      discoveryArea: area,
     });
     const discovery = layers.find(
-      (layer) => layer.id === "quest-discovery-location",
+      (layer) => layer.id === "quest-discovery-area",
     ) as StubLayer;
-    expect(discovery.props.data).toEqual([position]);
+    expect(discovery.props.data).toEqual([area]);
     discovery.props.onClick?.();
     expect(focused).toBe(true);
   });
