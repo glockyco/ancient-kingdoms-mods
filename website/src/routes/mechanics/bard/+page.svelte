@@ -316,7 +316,7 @@
       </p>
       <!-- Source: server-scripts/Monster.cs:EndBardCharm; PlayerSkills.cs:StopBardCharm; ZoneTrigger.cs:OnTriggerEnter2D; Player.cs:CmdPortalDestination — ordinary release is hostile within chase distance; zone and portal release is peaceful. -->
       <p>
-        Expiry or stopping the song makes the released monster attack you if you
+        When charm expires or you stop the song, the monster attacks you if you
         are alive and within its
         <a
           href="/mechanics/monster-spawns#leashing"
