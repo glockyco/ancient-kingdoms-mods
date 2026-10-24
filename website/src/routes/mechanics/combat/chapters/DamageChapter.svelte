@@ -34,8 +34,8 @@
       <!-- Source: server-scripts/Combat.cs:684-745 — positional and moving-player adjustments precede the block, miss or resist roll, which ends an avoided hit. -->
       <li>
         Roll to <a href="#avoidance">block, miss or resist</a>, adjusted by
-        <a href="#combat-advantage">Combat Advantage</a>. Avoiding the hit ends
-        it.
+        <a href="#combat-advantage">Combat Advantage</a>. A blocked, missed or
+        resisted hit stops here.
       </li>
     </ol>
 
@@ -54,11 +54,10 @@
       </li>
       <!-- Source: server-scripts/Combat.cs:794-801; Database.cs:CalculateSlayerLevelForAccount — at 10% mastery or more, Slayer reduces boss or elite damage to players and pets, using the player's mastery for pets. -->
       <li>
-        Once your <a href="/professions/slayer">Slayer</a> mastery reaches 10%, boss
-        and elite hits on players, mercenaries, companions and familiars lose 0.1%
-        of their damage per percentage point of mastery, up to 10% at 100% mastery,
-        with the damage prevented rounded up. Your mercenaries, companions and familiars
-        use your mastery.
+        From 10% <a href="/professions/slayer">Slayer</a> mastery, bosses and elites
+        deal 0.1% less damage to you and your mercenaries, companions and familiars
+        per 1% mastery, up to 10% less at 100%. Round the damage prevented up. Your
+        mercenaries, companions and familiars use your mastery.
       </li>
       <!-- Source: server-scripts/Combat.cs:DealDamageAt — Rampage adds 50–75% damage to monster/NPC non-spell hits below 10% Health. -->
       <li>
@@ -93,9 +92,10 @@
       <!-- Source: server-scripts/Combat.cs:1007-1018,1182-1235,1386-1409 — eligible dealt and received-hit Rage is granted before Ward and Mana Shield. -->
       <!-- Source: server-scripts/Combat.cs:1236-1244 — a Wizard's Mystic Spark restores 35% of the damage, counting at most the victim's current Health, rounded down. -->
       <li>
-        Grant eligible <a href="#rage-generation">Rage from hits</a>. A Wizard's
-        <a href="/skills/mystic_spark">Mystic Spark</a> restores Mana equal to 35%
-        of its damage, counting at most the target's current Hit Points, rounded down.
+        Warriors and Rogues gain <a href="#rage-generation">Rage from hits</a>.
+        A Wizard's <a href="/skills/mystic_spark">Mystic Spark</a> restores Mana equal
+        to 35% of its damage, counting at most the target's current Hit Points, rounded
+        down.
       </li>
       <!-- Source: server-scripts/Combat.cs:1245-1325 — Ward absorbs damage before Mana Shield. -->
       <li>

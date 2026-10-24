@@ -124,7 +124,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Slayer reduction",
       expression:
-        "At 10% Slayer mastery or more, reduce a boss or elite monster's damage to a player, mercenary, companion or familiar by 0.1% per percentage point of mastery, up to 10%. Mercenaries, companions and familiars use their owner's mastery",
+        "From 10% Slayer mastery, bosses and elites deal 0.1% less damage to you and your mercenaries, companions and familiars per 1% mastery, up to 10% less at 100%. Mercenaries, companions and familiars use their owner's mastery",
       rounding: "up",
     },
     {
@@ -136,7 +136,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Reduced damage",
       expression:
-        "Subtract damage prevented by the matching stat, as in Damage reduction",
+        "Subtract the damage Armor Class prevents from physical hits, or the damage Magic, Fire, Cold, Disease or Poison Resist prevents from its damage type, as in Damage reduction",
     },
     {
       name: statName("critical_resist"),
@@ -161,7 +161,7 @@ export const pipelineCalculation: Calculation = {
     {
       name: "Resource gains",
       expression:
-        "Grant eligible auto-attack Rage, received-hit Rage and Mystic Spark Mana before shields absorb the hit",
+        "Warriors and Rogues gain auto-attack and received-hit Rage. Mystic Spark restores Mana to its Wizard caster. These gains happen before shields absorb the hit",
     },
     {
       name: "Damage after shields",
