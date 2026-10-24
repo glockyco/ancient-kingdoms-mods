@@ -182,7 +182,7 @@ public class ProfessionExporter : BaseExporter
 
         UpdateIconsFromUI(professions);
 
-        WriteJson(professions, "professions.json");
+        WriteJson(ExportJson.SortedRows(professions, row => row.id, "professions"), "professions.json");
         Logger.Msg($"✓ Exported {professions.Count} professions");
     }
 

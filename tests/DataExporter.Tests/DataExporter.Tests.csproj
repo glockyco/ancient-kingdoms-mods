@@ -26,6 +26,7 @@
     <Compile Include="..\..\mods\DataExporter\PlacementIds.cs" Link="PlacementIds.cs" />
     <Compile Include="..\..\mods\DataExporter\RecipeDefinitionKeys.cs" Link="RecipeDefinitionKeys.cs" />
     <Compile Include="..\..\mods\DataExporter\ConfiguredValues.cs" Link="ConfiguredValues.cs" />
+    <Compile Include="..\..\mods\DataExporter\ExportJson.cs" Link="ExportJson.cs" />
     <Compile Include="..\..\mods\DataExporter\ZoneBoundary.cs" Link="ZoneBoundary.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\RecipeOfferData.cs" Link="Models\RecipeOfferData.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\MonsterData.cs" Link="Models\MonsterData.cs" />

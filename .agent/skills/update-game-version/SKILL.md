@@ -46,7 +46,7 @@ See `build-tool/Commands/CommandCatalog.cs` for the update, launch, build, deplo
 
 When an exporter reads a changed field, update its model, exporter, pipeline schema, and validation before generating new data. MelonLoader must regenerate IL2CPP assemblies after a Unity or metadata change.
 
-If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed. The export keeps the session it replaced, so compare the digests of the world map image, `zone_info.json`, and `zone_triggers.json` in the two sessions' manifests. Deployment copies Release DLLs but does not prune stale DLLs.
+If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed. The export keeps the session it replaced, and an unchanged game exports byte-identical files, so a digest that differs between the two sessions' manifests marks changed data. The world map image, `zone_info.json` and `zone_triggers.json` decide whether the map needs new screenshots. Deployment copies Release DLLs but does not prune stale DLLs.
 
 ## 4. Regenerate consumers
 

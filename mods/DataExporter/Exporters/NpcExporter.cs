@@ -297,7 +297,7 @@ public class NpcExporter : BaseExporter
 
         }
 
-        WriteJson(npcList, "npcs.json");
+        WriteJson(ExportJson.SortedRows(npcList, row => row.id, "npcs"), "npcs.json");
         WriteJson(spawnList, "npc_spawns.json");
         Logger.Msg($"✓ Exported {npcList.Count} canonical NPCs and {spawnList.Count} spawn points");
     }

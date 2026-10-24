@@ -96,7 +96,7 @@ public class MonsterExporter : BaseExporter
             if (!monstersByName.ContainsKey(definition.id))
                 monsterList.Add(definition);
 
-        WriteJson(monsterList, "monsters.json");
+        WriteJson(ExportJson.SortedRows(monsterList, row => row.id, "monsters"), "monsters.json");
         WriteJson(spawnList, "monster_spawns.json");
         Logger.Msg($"✓ Exported {monsterList.Count} canonical monsters and {spawnList.Count} spawn points");
     }

@@ -56,7 +56,7 @@ public class HouseExporter : BaseExporter
             });
         }
 
-        WriteJson(houses, "houses.json");
+        WriteJson(ExportJson.SortedRows(houses, row => row.id, "houses"), "houses.json");
         Logger.Msg($"✓ Exported {houses.Count} houses");
     }
 }

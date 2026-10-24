@@ -71,7 +71,7 @@ public class LuckTokenExporter : BaseExporter
             luckTokenList.Add(luckTokenData);
         }
 
-        WriteJson(luckTokenList, "luck_tokens.json");
+        WriteJson(ExportJson.SortedRows(luckTokenList, row => row.zone_id, "luck_tokens"), "luck_tokens.json");
         Logger.Msg($"✓ Exported {luckTokenList.Count} luck token configurations");
     }
 

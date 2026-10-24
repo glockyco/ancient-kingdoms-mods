@@ -66,7 +66,7 @@ public class ZoneTriggerExporter : BaseExporter
             zoneTriggerList.Add(zoneTriggerData);
         }
 
-        WriteJson(zoneTriggerList, "zone_triggers.json");
+        WriteJson(ExportJson.SortedRows(zoneTriggerList, row => row.id, "zone_triggers"), "zone_triggers.json");
         Logger.Msg($"✓ Exported {zoneTriggerList.Count} zone triggers");
     }
 

@@ -66,7 +66,7 @@ public class TreasureLocationExporter : BaseExporter
             Logger.Msg($"  Found treasure location for {mapId} in {zoneInfo.ZoneId} at ({location.transform.position.x:F1}, {location.transform.position.y:F1})");
         }
 
-        WriteJson(locationList, "treasure_locations.json");
+        WriteJson(ExportJson.SortedRows(locationList, row => row.id, "treasure_locations"), "treasure_locations.json");
         Logger.Msg($"✓ Exported {locationList.Count} treasure locations (skipped {templateCount} templates)");
     }
 }

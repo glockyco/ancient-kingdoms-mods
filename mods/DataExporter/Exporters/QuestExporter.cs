@@ -191,7 +191,7 @@ public class QuestExporter : BaseExporter
             questList.Add(questData);
         }
 
-        WriteJson(questList, "quests.json");
+        WriteJson(ExportJson.SortedRows(questList, row => row.id, "quests"), "quests.json");
         Logger.Msg($"✓ Exported {questList.Count} quests");
     }
 

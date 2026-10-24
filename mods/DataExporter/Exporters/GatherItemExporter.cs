@@ -175,7 +175,7 @@ public class GatherItemExporter : BaseExporter
         ExportResourceArtwork(records);
         ExportChestArtwork(records);
 
-        WriteJson(records.Select(record => record.Data).ToList(), "gather_items.json");
+        WriteJson(ExportJson.SortedRows(records.Select(record => record.Data), row => row.id, "gather_items"), "gather_items.json");
         Logger.Msg($"✓ Exported {records.Count} gather items ({templateCount} templates)");
     }
 

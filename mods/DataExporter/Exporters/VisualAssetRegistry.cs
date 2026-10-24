@@ -274,11 +274,9 @@ public class VisualAssetRegistry
 
     public void WriteManifest()
     {
-        var json = JsonConvert.SerializeObject(_assets, Formatting.Indented, new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Include
-        });
+        // Assets are registered in the order exporters meet them, which follows object enumeration.
+        var json = ExportJson.Serialize(ExportJson.SortedRows(
+            _assets, asset => $"{asset.domain}\n{asset.entity_id}\n{asset.kind}", "visual_assets"));
 
         Directory.CreateDirectory(ToWritablePath(_exportPath));
         File.WriteAllText(ToWritablePath($"{_exportPath}/visual_assets.json"), json);

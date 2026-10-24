@@ -50,9 +50,10 @@ public sealed class ConfiguredWorldSnapshot
             CaptureStations();
             CapturePortals();
             CaptureCatalog();
-            Values.Add("crafting_recipes", _crafting.Values.ToList());
-            Values.Add("alchemy_recipes", _alchemy.Values.ToList());
-            Values.Add("scribing_recipes", _scribing.Values.ToList());
+            // World objects enumerate in an order a new game build can change, so every captured list is sorted.
+            Values.Add("crafting_recipes", ExportJson.SortedRows(_crafting.Values, row => row.definition_key, "crafting_recipes"));
+            Values.Add("alchemy_recipes", ExportJson.SortedRows(_alchemy.Values, row => row.definition_key, "alchemy_recipes"));
+            Values.Add("scribing_recipes", ExportJson.SortedRows(_scribing.Values, row => row.definition_key, "scribing_recipes"));
         }
 
         private static IEnumerable<T> WorldObjects<T>() where T : Component
@@ -138,8 +139,8 @@ public sealed class ConfiguredWorldSnapshot
             }
             if (spawns.Count == 0)
                 throw new InvalidOperationException("World capture contains no authored monsters. Reload World.");
-            Values.Add("monster_spawns", spawns);
-            Values.Add("monster_definitions", definitions.Values.ToList());
+            Values.Add("monster_spawns", ExportJson.SortedRows(spawns, row => row.id, "monster_spawns"));
+            Values.Add("monster_definitions", ExportJson.SortedRows(definitions.Values, row => row.id, "monster_definitions"));
         }
 
         private List<RecipeOfferData> CraftingOffers(Il2Cpp.CraftingStation station, string context)
@@ -241,9 +242,9 @@ public sealed class ConfiguredWorldSnapshot
                     alchemy.Add(new AlchemyTableData { id = id, name = name, zone_id = zone.ZoneId,
                         sub_zone_id = zone.SubZoneId, position = Point(placed), recipe_offers = offers });
             }
-            Values.Add("crafting_stations", crafting);
-            Values.Add("alchemy_tables", alchemy);
-            Values.Add("scribing_tables", scribing);
+            Values.Add("crafting_stations", ExportJson.SortedRows(crafting, row => row.id, "crafting_stations"));
+            Values.Add("alchemy_tables", ExportJson.SortedRows(alchemy, row => row.id, "alchemy_tables"));
+            Values.Add("scribing_tables", ExportJson.SortedRows(scribing, row => row.id, "scribing_tables"));
         }
 
         private string RequiredMonster(Il2Cpp.Monster monster, string context)
@@ -293,7 +294,7 @@ public sealed class ConfiguredWorldSnapshot
                 portals.Add(Portal(portal.transform.position, portal.destination, true, portal.key,
                     portal.levelRequired, portal.itemLevelRequired, portal.orientation, portal.needMonsterDead, false, false));
             }
-            Values.Add("portals", portals);
+            Values.Add("portals", ExportJson.SortedRows(portals, row => row.id, "portals"));
         }
 
         private void CaptureNpcs()
@@ -335,7 +336,7 @@ public sealed class ConfiguredWorldSnapshot
                 _npcIds.Add(npc.GetInstanceID(), spawn.id);
                 spawns.Add(spawn);
             }
-            Values.Add("npc_spawns", spawns);
+            Values.Add("npc_spawns", ExportJson.SortedRows(spawns, row => row.id, "npc_spawns"));
         }
 
         private void CaptureSummonTriggers()
@@ -395,7 +396,7 @@ public sealed class ConfiguredWorldSnapshot
                 }
                 triggers.Add(row);
             }
-            Values.Add("summon_triggers", triggers);
+            Values.Add("summon_triggers", ExportJson.SortedRows(triggers, row => row.id, "summon_triggers"));
         }
 
         private static string ComponentPath<T>(Transform root, T component) where T : Component

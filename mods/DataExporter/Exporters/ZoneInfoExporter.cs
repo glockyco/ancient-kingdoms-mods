@@ -43,7 +43,8 @@ public class ZoneInfoExporter : BaseExporter
             zoneInfoList.Add(zoneInfoData);
         }
 
-        WriteJson(zoneInfoList, "zone_info.json");
+        // Zone ids are bytes, so three digits sort them numerically.
+        WriteJson(ExportJson.SortedRows(zoneInfoList, row => row.zone_id.ToString("D3"), "zone_info"), "zone_info.json");
         Logger.Msg($"✓ Exported {zoneInfoList.Count} zones from ZoneInfo");
     }
 }

@@ -204,7 +204,7 @@ public class PetExporter : BaseExporter
             }
         }
 
-        WriteJson(petList, "pets.json");
+        WriteJson(ExportJson.SortedRows(petList, row => row.id, "pets"), "pets.json");
         Logger.Msg($"✓ Exported {petList.Count} pets");
     }
 

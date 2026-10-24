@@ -134,7 +134,7 @@ public class SkillExporter : BaseExporter
             skillList.Add(skillData);
         }
 
-        WriteJson(skillList, "skills.json");
+        WriteJson(ExportJson.SortedRows(skillList, row => row.id, "skills"), "skills.json");
         Logger.Msg($"✓ Exported {skillList.Count} skills");
     }
 

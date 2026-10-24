@@ -145,14 +145,8 @@ public abstract class BaseExporter
 
     protected void WriteJson<T>(T data, string filename)
     {
-        var json = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Include
-        });
-
         var filePath = Path.Combine(ExportPath, filename);
-        File.WriteAllText(filePath, json);
+        File.WriteAllText(filePath, ExportJson.Serialize(data));
         Logger.Msg($"✓ Exported {filename}");
     }
 

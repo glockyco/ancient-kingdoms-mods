@@ -24,7 +24,7 @@ public class TrapExporter : BaseExporter
         ExportDangerousGround(traps);
         ExportWallTraps(traps);
 
-        WriteJson(traps, "traps.json");
+        WriteJson(ExportJson.SortedRows(traps, row => row.id, "traps"), "traps.json");
         Logger.Msg($"✓ Exported {traps.Count} traps total");
     }
 

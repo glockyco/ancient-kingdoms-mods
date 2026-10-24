@@ -50,7 +50,7 @@ public class AltarExporter : BaseExporter
                 altarList.Add(altarData);
         }
 
-        WriteJson(altarList, "altars.json");
+        WriteJson(ExportJson.SortedRows(altarList, row => row.id, "altars"), "altars.json");
         Logger.Msg($"✓ Exported {altarList.Count} altars");
     }
 

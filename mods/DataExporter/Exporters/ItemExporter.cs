@@ -217,7 +217,7 @@ public class ItemExporter : BaseExporter
             itemList.Add(itemData);
         }
 
-        WriteJson(itemList, "items.json");
+        WriteJson(ExportJson.SortedRows(itemList, row => row.id, "items"), "items.json");
         Logger.Msg($"✓ Exported {itemList.Count} items");
     }
 
