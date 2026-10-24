@@ -233,15 +233,15 @@
           >Bard mercenaries</a
         > receive no Melody bonus.
       </p>
-      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — enemies must be Monsters with nonempty aggroList and speed above -50, alive, non-hidden, same-zone, visible and attackable; Pet casts require IsEngagedWithParty. -->
+      <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — living, non-hidden, same-zone, visible and attackable monsters qualify without combat or party-target requirements. The IL compares speed with -50 and skips at or below it. -->
       <p>
-        Final Cadence hits nearby monsters already in combat, even with someone
-        outside your party. It does not hit
+        Final Cadence hits living, visible, non-hidden monsters you can attack
+        within cast range in the same zone, whether or not they are in combat.
+        It does not hit
         <a
           href="/mechanics/combat#sleep"
           class="text-blue-600 dark:text-blue-400 hover:underline">sleeping</a
-        > monsters. A Bard mercenary hits only monsters targeting you, your party,
-        or their companions or mercenaries.
+        > monsters. The same targeting rules apply to Bard mercenaries.
       </p>
     </Card.Content>
   </Card.Root>

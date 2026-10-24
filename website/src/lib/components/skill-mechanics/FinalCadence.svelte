@@ -41,24 +41,20 @@
       Melody counts your active songs when the cast finishes.
     </p>
   {/if}
-  <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,FindEnemies,IsEngagedWithParty — one roll covers all allied healing; sleeping monsters are excluded and Pet targets map to their owner. -->
+  <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,AddPlayerAndFollowers,AddFollower — one critical roll covers all allied healing. Eligible followers are companions and mercenaries, excluding familiars. -->
   <p class="text-muted-foreground">
     <span class="block"
       >Healing is critical for every ally or none. The chance is the {usedByBardMercenary
         ? "mercenary's"
         : "Bard's"} Critical Strike.</span
     >
+    <!-- Source: server-scripts/BardFinalCadenceSkill.cs:FindEnemies — living, non-hidden, same-zone, visible and attackable monsters qualify without combat or party-target requirements. The IL compares speed with -50 and skips at or below it. -->
     <span class="block"
-      >Damages visible monsters in range that are already fighting, but leaves
-      sleeping monsters alone.</span
+      >Damages living, visible, non-hidden monsters the caster can attack within
+      cast range in the same zone, whether or not they are fighting. Sleeping
+      monsters are excluded.</span
     >
     <span class="block">Final Cadence does not heal familiars.</span>
-    {#if usedByBardMercenary}
-      <span class="block"
-        >The mercenary damages only enemies that target you, any party member,
-        or one of their companions or mercenaries.</span
-      >
-    {/if}
   </p>
   <!-- Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies,AddHealingAggro — actual healing divided by six rounds up and adds threat to nearby monsters fighting the healed ally. -->
   <p class="text-muted-foreground">

@@ -20,7 +20,9 @@
       skill.duration_base,
       skill.duration_per_level,
     )}. A recipient loses the effect when it leaves range. When combat starts or
-    ends, the previous set stops renewing and lasts its remaining duration.
+    ends, the previous set stops renewing and lasts its remaining duration. A
+    song cast in progress finishes and pulses once, even if combat starts or
+    ends during the cast.
   </p>
   <p class="text-muted-foreground">
     <span class="block"
@@ -56,7 +58,12 @@
       >
       active.</span
     >
-    <span class="block">It starts one song at a time.</span>
+    <!-- Source: server-scripts/BardMercenarySkills.cs:LateUpdate,StartSongCast — casts finish across combat-mode transitions and pulse once. Each completed cast has a 1-second recovery, and active songs rotate by oldest cast time. -->
+    <span class="block"
+      >It casts one song at a time and waits 1 second after each cast before
+      starting the next. Once every song for the current combat mode is active,
+      it recasts the song it cast longest ago.</span
+    >
     <span class="block"
       >All song effects end immediately when you or the mercenary die, or when
       the mercenary is stunned, feared, or asleep.</span
