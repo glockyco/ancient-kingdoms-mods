@@ -189,20 +189,19 @@
   <Topic id="damage-shields">
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — non-spell TargetDamageSkill with base cast range below 1.5 triggers damage shields, except weapon procs and scrolls; each shield mitigates separately, then the summed whole-number damage varies within a rounded-up 10% limit. -->
     <p>
-      When an attacker hits you with a single-target skill that is not a spell
-      and has a base range below 1.5 yd, each of your damage shields deals its
-      own amount to the attacker. Weapon on-hit effects and scrolls do not set
-      them off.
+      Your damage shields hurt attackers who hit you with a non-spell,
+      single-target skill whose base range is below 1.5 yd. Weapon on-hit
+      effects and scrolls do not trigger them.
     </p>
     <ul>
       <li>
-        The attacker's defense against the shield's damage type reduces each
-        shield, as in <a href="#mitigation">Damage Reduction</a>. A shield
-        without a damage type is not reduced.
+        The attacker's Armor Class or resist reduces each shield's damage, as in <a
+          href="#mitigation">Damage Reduction</a
+        >. Shields without a damage type deal full damage.
       </li>
       <li>
-        The shields add together, and the total varies at random by up to 10%
-        either way, with the 10% rounded up. A 95-damage total deals 85 to 105.
+        The shields' combined damage varies randomly by up to 10% either way.
+        The variation limit rounds up: a 95-damage total deals 85 to 105.
       </li>
       <!-- Source: server-scripts/Combat.cs:DealDamageAt; Skills.cs:ApplyWardToDoTDamage — Mana Shield absorbs direct hits after Ward and ends only when remaining damage exceeds current Mana; ticks and Damage Shield bypass it. -->
       <li>Damage shield damage passes through Mana Shield.</li>
