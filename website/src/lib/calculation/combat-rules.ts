@@ -305,7 +305,7 @@ export const damageOverTimeCalculation: Calculation = {
     {
       name: "Reduced tick",
       expression:
-        "Flat tick − damage prevented by the matching stat, as in Damage reduction",
+        "Flat tick − damage prevented by Armor Class for physical damage, or by Magic, Fire, Cold, Disease or Poison Resist for its damage type, as in Damage reduction",
     },
     {
       name: "Tick after Cleanse",
