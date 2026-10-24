@@ -780,11 +780,11 @@
         </p>
         <!-- Source: server-scripts/Npc.cs:CalculateRewardExp,OnDeath — NPC base XP is rounded before halving and rounding again; sharing, level, dungeon, and Double XP rules follow. -->
         <p class="text-sm text-muted-foreground">
-          Hostile NPC XP starts at 15 XP and grows by 12% for each level above
-          1. The game rounds that amount, halves it, then rounds again to get
-          base XP. Level differences, dungeon kills, party sharing, and Double
-          XP change your reward just as they do for monsters. Forgotten Altars
-          give no bonus for NPC kills.
+          Hostile NPC XP starts at 15 XP and is multiplied by 112% for each
+          level above 1. The game rounds that amount, halves it, then rounds
+          again to get base XP. Level differences, dungeon kills, party sharing,
+          and Double XP change your reward just as they do for monsters.
+          Forgotten Altars give no bonus for NPC kills.
         </p>
         <!-- Source: server-scripts/PlayerParty.cs:GetMembersInProximity — party players observing the credited player and within 40 yd share rewards. -->
         <!-- Mirror.dll and Mirror.Components.dll in the server build of Steam build 25863605: NetworkServer.RebuildObserversCustom adds a player's own connection to its observers, so the credited player always counts. SpatialHashingInterestManagement (visRange 96 at runtime, 48-unit cells, 3×3 neighbourhood) makes every player closer than 40 yd an observer, rebuilt once per second. -->
