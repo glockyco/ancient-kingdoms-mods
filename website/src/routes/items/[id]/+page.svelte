@@ -448,6 +448,27 @@
   }
 </script>
 
+<!-- Source: server-scripts/RegionalEventActivities.cs:FindCityDishes,IsCookingResult — a dish counts when cooked at an oven in the requesting city, and dishes made from the city's animal meat or from another such dish count. -->
+{#snippet cookingRequests(role: "dish" | "meat")}
+  {#each data.regionalCooking.filter((request) => request.role === role) as request (request.region_zone_id)}
+    <p class="mt-3 text-sm text-muted-foreground">
+      {#if role === "dish"}
+        Cooking it at an oven in {request.city_name} counts toward the city's
+        <a
+          href="/mechanics/regional-events#invasion-{request.city}"
+          class={styles.link}>regional cooking request</a
+        >.
+      {:else}
+        Dishes made from it count toward {request.city_name}'s
+        <a
+          href="/mechanics/regional-events#invasion-{request.city}"
+          class={styles.link}>regional cooking request</a
+        >.
+      {/if}
+    </p>
+  {/each}
+{/snippet}
+
 <Seo
   title={data.title}
   description={data.description}
@@ -2138,6 +2159,7 @@
               </div>
             {/each}
           </div>
+          {@render cookingRequests("dish")}
         </Card.Content>
       </Card.Root>
     {/if}
@@ -2407,6 +2429,7 @@
               </div>
             {/each}
           </div>
+          {@render cookingRequests("meat")}
         </Card.Content>
       </Card.Root>
     {/if}

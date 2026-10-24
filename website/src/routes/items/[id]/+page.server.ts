@@ -22,6 +22,10 @@ import { getItemIconPaths } from "$lib/server/item-icon-paths";
 import { getItemMapBounds } from "$lib/queries/map-search";
 import { skillEffectInputs } from "$lib/skills/skillEffects.server";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+import {
+  getItemRegionalCooking,
+  type ItemRegionalCooking,
+} from "$lib/queries/regional-events.server";
 
 import { calculateChestRewards } from "$lib/calculation/chest-rewards";
 import {
@@ -61,6 +65,8 @@ export const load: PageServerLoad = async ({
     foodBuffUsesTavernSpirit: boolean;
     /** Effect summary of the potion or food buff at the rank the item applies. */
     consumableBuffEffect: string | null;
+    /** Cooking requests the item counts for as a dish, or feeds as meat. */
+    regionalCooking: ItemRegionalCooking[];
   }
 > => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
@@ -438,6 +444,7 @@ export const load: PageServerLoad = async ({
     maxLevel: progression.max_level,
     chestRewards,
     consumableBuffEffect,
+    regionalCooking: getItemRegionalCooking(item.id),
     description,
     title,
     sources,

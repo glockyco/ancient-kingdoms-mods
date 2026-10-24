@@ -147,6 +147,8 @@ export function getRegionalEventDungeons(): RegionalEventDungeon[] {
 export interface ItemRegionalCooking {
   region_zone_id: string;
   region_name: string;
+  /** The RegionalInvasionCity member, which anchors the city's invasion row. */
+  city: string;
   city_name: string;
   role: "dish" | "meat";
 }
@@ -155,7 +157,7 @@ export interface ItemRegionalCooking {
 export function getItemRegionalCooking(itemId: string): ItemRegionalCooking[] {
   return query<ItemRegionalCooking>(
     `SELECT r.zone_id AS region_zone_id, z.name AS region_name,
-            ri.city_name, x.role
+            ri.city, ri.city_name, x.role
      FROM (
        SELECT region_zone_id, 'dish' AS role FROM regional_event_cooking_dishes WHERE item_id = ?
        UNION ALL
