@@ -1000,10 +1000,10 @@
       <!-- Source: server-scripts/ScrollItem.cs:7,13-35,91-136; PlayerInventory.cs:StartScrollCast,UpdateScrollCast — ScrollItem casts for 1 second; UseAfterCast applies the effect, item cooldown and charge consumption only after successful completion. -->
       <p id="scroll-casting">
         All skill scrolls, the Scroll of Binding, and repair kits take 1 second
-        to cast. The effect, item cooldown, invisibility removal, and charge
-        consumption occur only when the cast completes successfully. Interrupted
-        or failed casts use no charge and start no item cooldown.
-        Infinite-charge scrolls do not consume a charge.
+        to cast. Only a successful cast activates the effect, starts the item
+        cooldown, removes invisibility, and spends a charge. Interrupted or
+        failed casts spend no charge and start no item cooldown. Infinite-charge
+        scrolls do not consume a charge.
         <!-- Source: server-scripts/PlayerInventory.cs:108-113 — starting a scroll cancels the current cast and clears pending and follow-up skill state. -->
         Starting a scroll cast cancels your current skill cast and clears queued skills.
       </p>
