@@ -84,7 +84,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Weapons",
       href: "/items?items.item_type=weapon",
-      count: 167,
+      count: 173,
       icon: {
         src: "/images/items/sunspear_of_the_citadel/icon.webp",
         width: 30,
@@ -94,7 +94,7 @@ export const HOME_SHOWCASE: HomeShowcase = {
     {
       label: "Equipment",
       href: "/items?items.item_type=equipment",
-      count: 771,
+      count: 776,
       icon: {
         src: "/images/items/dawnforged_chestplate/icon.webp",
         width: 30,
