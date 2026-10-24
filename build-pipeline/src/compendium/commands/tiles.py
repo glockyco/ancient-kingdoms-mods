@@ -193,7 +193,7 @@ def load_boss_spawn_validation_points(
             {
                 "monster_id": monster["id"],
                 "monster_name": monster.get("name", monster["id"]),
-                "zone_id": spawn.get("zone_id", "unknown"),
+                "zone_id": spawn["zone_id"],
                 "position_x": float(position["x"]),
                 # Exported Position.y is the game's horizontal Z axis.
                 "position_z": float(position["y"]),

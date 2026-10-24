@@ -43,10 +43,11 @@ public class LuckTokenExporter : BaseExporter
             if (bossToken == null)
                 continue;
 
+            var zone = RequiredZone(zoneId, $"Luck token {bossToken.name}");
             var luckTokenData = new LuckTokenData
             {
-                zone_id = GetZoneIdFromByte(zoneId),
-                zone_name = GetZoneNameFromByte(zoneId),
+                zone_id = SanitizeId(zone.name),
+                zone_name = zone.name,
                 boss_luck_token_id = SanitizeId(bossToken.name),
                 boss_luck_bonus = 0.05f,  // Legacy denormalized field kept for fatecharm relationship wiring; UI no longer displays this as a % bonus
                 fragment_drop_chance = 0.05f  // Hardcoded 5% in Monster.cs (Random.value > 0.95)
@@ -73,33 +74,5 @@ public class LuckTokenExporter : BaseExporter
 
         WriteJson(ExportJson.SortedRows(luckTokenList, row => row.zone_id, "luck_tokens"), "luck_tokens.json");
         Logger.Msg($"✓ Exported {luckTokenList.Count} luck token configurations");
-    }
-
-    private string GetZoneIdFromByte(int zoneId)
-    {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)zoneId))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[(byte)zoneId];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return SanitizeId(zone.name);
-            }
-        }
-
-        return "unknown";
-    }
-
-    private string GetZoneNameFromByte(int zoneId)
-    {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)zoneId))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[(byte)zoneId];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return zone.name;
-            }
-        }
-
-        return "Unknown";
     }
 }

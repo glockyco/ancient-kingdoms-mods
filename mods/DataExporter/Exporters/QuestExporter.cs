@@ -173,7 +173,7 @@ public class QuestExporter : BaseExporter
                             target_monster_id = null,
                             target_item_id = null,
                             amount = 1,
-                            zone_id = GetZoneIdFromByte((byte)loc.idZone),
+                            zone_id = RequiredZoneId(loc.idZone, $"Quest {questData.id} location"),
                             position = new Position(loc.location.x, loc.location.y, loc.location.z)
                         });
                     }

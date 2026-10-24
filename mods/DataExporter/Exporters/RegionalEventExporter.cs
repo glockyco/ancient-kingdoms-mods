@@ -66,7 +66,7 @@ public class RegionalEventExporter : BaseExporter
                 id = id,
                 city = definition.city.ToString(),
                 city_name = definition.cityName,
-                zone_id = ZoneId(definition.zone, id),
+                zone_id = RequiredZoneId(definition.zone, $"Regional invasion {id}"),
                 center = new Point2(definition.center.x, definition.center.y),
                 radius = definition.radius,
                 health_multiplier = definition.healthMultiplier,
@@ -109,7 +109,7 @@ public class RegionalEventExporter : BaseExporter
         var regions = new List<RegionalEventRegionData>();
         foreach (var zone in zones.Where(Il2Cpp.RegionalEvents.IsRegion))
         {
-            var zoneId = ZoneId(zone, $"region {zone}");
+            var zoneId = RequiredZoneId(zone, $"Regional event region {zone}");
             var region = new RegionalEventRegionData { zone_id = zoneId };
             var huntPlayers = new Dictionary<string, int>(StringComparer.Ordinal);
             for (var players = 1; players <= MaxCountedPlayers; players++)
@@ -137,12 +137,12 @@ public class RegionalEventExporter : BaseExporter
             byZoneId.Add(region.zone_id, region);
         foreach (var zone in zones)
         {
-            var info = Il2Cpp.ZoneInfo.zones[(byte)zone];
-            if (info == null || !info.isDungeon)
+            var info = RequiredZone(zone, $"Zone {zone}");
+            if (!info.isDungeon)
                 continue;
             var parent = Il2Cpp.RegionalEvents.CombatRegion(zone);
             if (Il2Cpp.RegionalEvents.IsRegion(parent))
-                byZoneId[ZoneId(parent, $"dungeon {zone}")].dungeon_zone_ids.Add(ZoneId(zone, $"dungeon {zone}"));
+                byZoneId[RequiredZoneId(parent, $"Dungeon {zone} region")].dungeon_zone_ids.Add(SanitizeId(info.name));
         }
         foreach (var region in regions)
             region.dungeon_zone_ids.Sort(StringComparer.Ordinal);
@@ -187,16 +187,5 @@ public class RegionalEventExporter : BaseExporter
         if (region.cooking_meat_ids.Count == 0)
             throw new InvalidOperationException($"Region {region.zone_id}: no item counts as {region.cooking_animal} meat.");
         region.cooking_meat_ids.Sort(StringComparer.Ordinal);
-    }
-
-    private static string ZoneId(int zone, string context)
-    {
-        if (zone < byte.MinValue || zone > byte.MaxValue
-            || Il2Cpp.ZoneInfo.zones == null || !Il2Cpp.ZoneInfo.zones.ContainsKey((byte)zone))
-            throw new InvalidOperationException($"Regional event {context} names unknown zone {zone}.");
-        var info = Il2Cpp.ZoneInfo.zones[(byte)zone];
-        if (info == null || string.IsNullOrEmpty(info.name))
-            throw new InvalidOperationException($"Regional event {context} names unnamed zone {zone}.");
-        return SanitizeId(info.name);
     }
 }

@@ -324,14 +324,11 @@ public sealed class ConfiguredWorldSnapshot
                 {
                     var destination = npc.teleport.destinationPosition;
                     var destinationZone = GetZoneInfoFromPosition(new Vector3(destination.x, destination.y, 0));
-                    if (destinationZone.ZoneId != "unknown")
-                    {
-                        spawn.teleport_zone_id = destinationZone.ZoneId;
-                        spawn.teleport_destination = new Position(destination.x, destination.y, 0);
-                        spawn.teleport_price = npc.teleport.priceTravel;
-                        spawn.teleport_message = string.IsNullOrEmpty(npc.teleport.messageText)
-                            ? null : npc.teleport.messageText;
-                    }
+                    spawn.teleport_zone_id = destinationZone.ZoneId;
+                    spawn.teleport_destination = new Position(destination.x, destination.y, 0);
+                    spawn.teleport_price = npc.teleport.priceTravel;
+                    spawn.teleport_message = string.IsNullOrEmpty(npc.teleport.messageText)
+                        ? null : npc.teleport.messageText;
                 }
                 _npcIds.Add(npc.GetInstanceID(), spawn.id);
                 spawns.Add(spawn);
@@ -386,14 +383,7 @@ public sealed class ConfiguredWorldSnapshot
                         throw new InvalidOperationException($"{row.id}: missing configured guard. Reload World.");
                     row.placeholder_monster_ids.Add(RequiredMonster(placeholder, row.id));
                 }
-                var first = trigger.placeHolders[0];
-                row.zone_id = "unknown";
-                if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)first.idZone))
-                {
-                    var zone = Il2Cpp.ZoneInfo.zones[(byte)first.idZone];
-                    if (zone != null && !string.IsNullOrEmpty(zone.name))
-                        row.zone_id = SanitizeId(zone.name);
-                }
+                row.zone_id = RequiredZoneId(trigger.placeHolders[0].idZone, $"{row.id} guard zone (reload World)");
                 triggers.Add(row);
             }
             Values.Add("summon_triggers", ExportJson.SortedRows(triggers, row => row.id, "summon_triggers"));

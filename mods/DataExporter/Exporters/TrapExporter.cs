@@ -55,7 +55,7 @@ public class TrapExporter : BaseExporter
 
             if (hasTeleport)
             {
-                teleportZoneId = GetZoneIdFromByte(trap.idZone);
+                teleportZoneId = RequiredZoneId(trap.idZone, $"Trap {trap.name} teleport");
                 teleportPosition = new Position(
                     trap.destination.position.x,
                     trap.destination.position.y,
@@ -123,7 +123,7 @@ public class TrapExporter : BaseExporter
 
             if (hasTeleport)
             {
-                teleportZoneId = GetZoneIdFromByte(ground.idZone);
+                teleportZoneId = RequiredZoneId(ground.idZone, $"Dangerous ground {ground.name} teleport");
                 teleportPosition = new Position(
                     ground.destination.position.x,
                     ground.destination.position.y,

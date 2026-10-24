@@ -1655,7 +1655,7 @@ class AltarData(BaseModel):
     id: str
     name: str
     type: str  # "forgotten" or "avatar"
-    zone_id: str = "unknown"
+    zone_id: str
     sub_zone_id: str | None = None
     position: Position
     min_level_required: int = 0

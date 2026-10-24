@@ -173,9 +173,7 @@ public abstract class BaseExporter
             var collider = trigger.GetComponent<Collider2D>();
             if (collider == null)
                 throw new InvalidOperationException($"Zone trigger {trigger.name}: missing configured collider. Reload World.");
-            var zoneId = GetZoneIdFromByte(trigger.idZone);
-            if (zoneId == "unknown")
-                throw new InvalidOperationException($"Zone trigger {trigger.name}: configured zone {trigger.idZone} has no public identity. Reload World.");
+            var zoneId = RequiredZoneId(trigger.idZone, $"Zone trigger {trigger.name} (reload World)");
             zones.Add((new ZoneInfo { ZoneId = zoneId, SubZoneId = GetSubZoneId(trigger) },
                 ReadZoneBoundary(collider)));
         }
@@ -319,20 +317,17 @@ public abstract class BaseExporter
         return $"zone_trigger_{SanitizeId(name)}";
     }
 
-    /// <summary>
-    /// Converts a byte zone ID to a sanitized string zone ID using ZoneInfo lookup.
-    /// </summary>
-    protected static string GetZoneIdFromByte(byte zoneId)
+    /// <summary>The game's zone for a zone number, or an error naming what referred to it.</summary>
+    protected static Il2Cpp.Zone RequiredZone(int zone, string context)
     {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return SanitizeId(zone.name);
-            }
-        }
-
-        return "unknown";
+        if (zone < byte.MinValue || zone > byte.MaxValue
+            || Il2Cpp.ZoneInfo.zones == null || !Il2Cpp.ZoneInfo.zones.ContainsKey((byte)zone))
+            throw new InvalidOperationException($"{context}: names unknown zone {zone}.");
+        var info = Il2Cpp.ZoneInfo.zones[(byte)zone];
+        if (info == null || string.IsNullOrEmpty(info.name))
+            throw new InvalidOperationException($"{context}: names unnamed zone {zone}.");
+        return info;
     }
+
+    protected static string RequiredZoneId(int zone, string context) => SanitizeId(RequiredZone(zone, context).name);
 }
