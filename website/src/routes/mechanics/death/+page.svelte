@@ -155,8 +155,9 @@
                     >Resurrection returns you to your remains after you respawn.</span
                   >
                   <span class="block"
-                    >Accepting replaces your current Hit Points and Mana with
-                    the calculated amounts below.</span
+                    >Accepting sets your Hit Points to 60% of maximum Hit Points
+                    and your Mana to 20% of maximum Hit Points, capped at
+                    maximum Mana.</span
                   >
                 </td>
               </tr>
@@ -198,7 +199,7 @@
           >.
         </p>
         <!-- Source: server-scripts/Player.cs:13351-13381 — resurrection restores resources and XP without changing equipment durability. -->
-        <p>Equipment keeps its current durability after Resurrection.</p>
+        <p>Resurrection does not repair your equipment.</p>
       </div>
 
       <!-- Source: server-scripts/Player.cs:4143-4150,9938-9941 — Hardcore death deletes the character instead of saving the normal death state. -->
