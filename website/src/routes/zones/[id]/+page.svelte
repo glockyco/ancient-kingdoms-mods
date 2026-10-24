@@ -46,6 +46,14 @@
   import Box from "@lucide/svelte/icons/box";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import CircleHelp from "@lucide/svelte/icons/circle-help";
+  import Megaphone from "@lucide/svelte/icons/megaphone";
+  import {
+    hostsHerbRequests,
+    hostsOreRequests,
+    huntPlayers,
+    needsLevel35Player,
+  } from "$lib/data/regional-events";
   import {
     formatDuration,
     formatPercent as formatFraction,
@@ -944,6 +952,107 @@
               {/each}
             </ul>
           </div>
+        {/if}
+      </div>
+    </section>
+  {/if}
+
+  {#if data.eventRegion || data.prosperityRegion}
+    <section>
+      <div class="mb-4 flex items-center gap-2">
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <Megaphone class="h-5 w-5 text-amber-500" />
+          Regional Events
+        </h2>
+        <a
+          href="/mechanics/regional-events"
+          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
+        >
+          <CircleHelp class="h-4 w-4" />
+          How regional events work
+        </a>
+      </div>
+      <div class="space-y-3 rounded-md border bg-muted/30 p-4">
+        {#if data.eventRegion}
+          {@const region = data.eventRegion}
+          <!-- Source: server-scripts/RegionalEvents.cs:TryStart; server-scripts/RegionalEventActivities.cs:Discover,AddAvailableKinds — herb, ore and invasion requests follow code rules, and fishing, hunting and cooking follow the region's discovered activities. -->
+          <p class="text-muted-foreground">
+            {#if needsLevel35Player(region.zoneNumber)}
+              While a level 35 or higher player is online, this region can host:
+            {:else}
+              This region can host:
+            {/if}
+          </p>
+          <ul class="list-disc space-y-1 pl-5">
+            {#if hostsHerbRequests(region.zoneNumber)}
+              <li>The Apothecaries' Call: gather plants</li>
+            {/if}
+            {#if hostsOreRequests(region.zoneNumber)}
+              <li>Fires of the Forge: mine ore</li>
+            {/if}
+            {#if region.fishing}
+              <li>The Fishers' Request: catch fish</li>
+            {/if}
+            {#if region.huntTargets.length > 0}
+              <li>
+                A Regional Hunt:
+                {#each region.huntTargets as target, i (target.id)}{i > 0
+                    ? ", "
+                    : ""}<a
+                    href="/monsters/{target.id}"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                    >{target.name}</a
+                  >{#if huntPlayers(target.maxPlayers)}<span
+                      class="ml-1 text-sm text-muted-foreground"
+                      >({huntPlayers(target.maxPlayers)})</span
+                    >{/if}{/each}
+              </li>
+            {/if}
+            {#if region.city && region.cityName}
+              <li>
+                Cook for {region.cityName} and Defend {region.cityName}: see the
+                <a
+                  href="/mechanics/regional-events#invasion-{region.city}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >dishes and invaders</a
+                >
+              </li>
+            {/if}
+          </ul>
+          {#if region.dungeons.length > 0}
+            <!-- Source: server-scripts/RegionalEvents.cs:CombatRegion — kills in a dungeon count for the region it leads out to. -->
+            <p class="text-muted-foreground">
+              Its <a
+                href="/mechanics/regional-events#prosperity"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >Prosperity</a
+              >
+              bonus also applies to monsters in
+              {#each region.dungeons as dungeon, i (dungeon.id)}{i > 0
+                  ? i === region.dungeons.length - 1
+                    ? ", and "
+                    : ", "
+                  : ""}<a
+                  href="/zones/{dungeon.id}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >{dungeon.name}</a
+                >{/each}.
+            </p>
+          {/if}
+        {:else if data.prosperityRegion}
+          <!-- Source: server-scripts/RegionalEvents.cs:CombatRegion; server-scripts/RegionalEventProgress.cs:145-152 — kills in a dungeon use its region's 15% Prosperity multiplier. -->
+          <p class="text-muted-foreground">
+            While <a
+              href="/zones/{data.prosperityRegion.id}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >{data.prosperityRegion.name}</a
+            >
+            <a
+              href="/mechanics/regional-events#prosperity"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >prospers</a
+            > after a regional event, monsters here give 15% more XP.
+          </p>
         {/if}
       </div>
     </section>

@@ -21,6 +21,10 @@ import { loadAcquisition } from "$lib/server/acquisition";
 import { loadAcquisitionItems } from "$lib/acquisition/items";
 import { projectProviderMethods } from "$lib/acquisition/projections";
 import { chestRewardFields } from "$lib/server/world-acquisition";
+import {
+  getProsperityRegion,
+  getZoneEventRegion,
+} from "$lib/queries/regional-events.server";
 
 export const prerender = true;
 
@@ -494,5 +498,7 @@ export const load: PageServerLoad = async ({
     connectedZones,
     subZones,
     renewalSage: renewalSage ?? null,
+    eventRegion: getZoneEventRegion(zone.id),
+    prosperityRegion: getProsperityRegion(zone.id),
   };
 };

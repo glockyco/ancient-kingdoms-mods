@@ -1,4 +1,5 @@
 import { query, queryOne } from "$lib/db.server";
+import type { ZoneEventRegion } from "$lib/types/zones";
 
 export interface RegionalEventSettings {
   enabled: number;
@@ -168,5 +169,39 @@ export function getItemRegionalCooking(itemId: string): ItemRegionalCooking[] {
      JOIN regional_invasions ri ON ri.city = r.cooking_city
      ORDER BY z.zone_id`,
     [itemId, itemId],
+  );
+}
+
+export function getZoneEventRegion(zoneId: string): ZoneEventRegion | null {
+  const region = getRegionalEventRegion(zoneId);
+  if (!region) return null;
+  return {
+    zoneNumber: region.zone_number,
+    fishing: Boolean(region.fishing),
+    city: region.cooking_city,
+    cityName: region.cooking_city_name,
+    huntTargets: query<{ id: string; name: string; maxPlayers: number }>(
+      `SELECT m.id, m.name, h.max_players AS maxPlayers
+       FROM regional_event_hunt_targets h JOIN monsters m ON m.id = h.monster_id
+       WHERE h.region_zone_id = ? ORDER BY m.name`,
+      [zoneId],
+    ),
+    dungeons: query<{ id: string; name: string }>(
+      `SELECT z.id, z.name FROM regional_event_dungeons d
+       JOIN zones z ON z.id = d.dungeon_zone_id
+       WHERE d.region_zone_id = ? ORDER BY z.name`,
+      [zoneId],
+    ),
+  };
+}
+
+export function getProsperityRegion(
+  dungeonZoneId: string,
+): { id: string; name: string } | null {
+  return queryOne<{ id: string; name: string }>(
+    `SELECT z.id, z.name FROM regional_event_dungeons d
+     JOIN zones z ON z.id = d.region_zone_id
+     WHERE d.dungeon_zone_id = ?`,
+    [dungeonZoneId],
   );
 }

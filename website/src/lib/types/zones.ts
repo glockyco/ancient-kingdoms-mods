@@ -182,6 +182,21 @@ export interface ZoneDetailData {
   connectedZones: ZoneConnection[];
   subZones: ZoneSubZone[];
   renewalSage: ZoneRenewalSage | null;
+  /** The events the zone hosts, when it is a regional event region. */
+  eventRegion: ZoneEventRegion | null;
+  /** The region whose Prosperity applies to kills here, for a dungeon. */
+  prosperityRegion: { id: string; name: string } | null;
+}
+
+export interface ZoneEventRegion {
+  /** The game's numeric zone, which the herb, ore and level 35 rules name. */
+  zoneNumber: number;
+  fishing: boolean;
+  /** The RegionalInvasionCity member, which anchors the city's invasion row. */
+  city: string | null;
+  cityName: string | null;
+  huntTargets: { id: string; name: string; maxPlayers: number }[];
+  dungeons: { id: string; name: string }[];
 }
 
 /**
