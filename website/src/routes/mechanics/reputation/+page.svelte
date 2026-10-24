@@ -340,7 +340,7 @@
               href="/npcs/{npc.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >{npc.name}</a
-            >, a Notable NPC, raises {#each npc.improveFactions as faction, i (faction.id)}{i ===
+            >, a Notable NPC, raises your reputation with {#each npc.improveFactions as faction, i (faction.id)}{i ===
               0
                 ? ""
                 : i === npc.improveFactions.length - 1
@@ -353,7 +353,7 @@
                 >{faction.name}</a
               >{/each}{#each npc.decreaseFactions as faction, i (faction.id)}{i ===
               0
-                ? " and lowers "
+                ? " and lowers your reputation with "
                 : i === npc.decreaseFactions.length - 1
                   ? npc.decreaseFactions.length > 2
                     ? ", and "
