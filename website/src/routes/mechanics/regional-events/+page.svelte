@@ -1,4 +1,10 @@
 <script lang="ts">
+  import ClipboardList from "@lucide/svelte/icons/clipboard-list";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Swords from "@lucide/svelte/icons/swords";
+  import TimerOff from "@lucide/svelte/icons/timer-off";
+  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
+  import type { Component } from "svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -18,6 +24,79 @@
     DarkElven: "Magmadrake",
     Felarii: "Panther",
   };
+
+  // Source: server-scripts/RegionalEventProgress.cs:38-60; RegionalEvents.cs:559 — an invasion waits 1200 seconds for a player, then its attack runs 600 seconds. Neither is a server setting.
+  const INVASION_WARNING_MINUTES = 20;
+  const INVASION_ATTACK_MINUTES = 10;
+
+  type StageTone = "neutral" | "warning" | "danger" | "success";
+
+  interface EventStage {
+    name: string;
+    icon: Component;
+    tone: StageTone;
+    minutes: number;
+    /** The stage ends early when its goal or trigger is reached. */
+    upTo: boolean;
+    text: string;
+  }
+
+  const MARKER_TONES: Record<StageTone, string> = {
+    neutral: "bg-muted text-foreground ring-border",
+    warning:
+      "bg-amber-500/15 text-amber-700 ring-amber-500/40 dark:text-amber-400",
+    danger: "bg-red-500/15 text-red-700 ring-red-500/40 dark:text-red-400",
+    success:
+      "bg-emerald-500/15 text-emerald-700 ring-emerald-500/40 dark:text-emerald-400",
+  };
+
+  const prosperityStage = $derived<EventStage>({
+    name: "Prosperity",
+    icon: Sparkles,
+    tone: "success",
+    minutes: data.settings.prosperity_duration_minutes,
+    upTo: false,
+    text: "Helpers get their reward. The whole region gets bonus XP.",
+  });
+
+  const eventLanes = $derived<{ title: string; stages: EventStage[] }[]>([
+    {
+      title: "Supply, hunting, and cooking requests",
+      stages: [
+        {
+          name: "Request",
+          icon: ClipboardList,
+          tone: "neutral",
+          minutes: data.settings.activity_duration_minutes,
+          upTo: true,
+          text: "Gather, fish, hunt, or cook until the goal is reached.",
+        },
+        prosperityStage,
+      ],
+    },
+    {
+      title: "City invasions",
+      stages: [
+        {
+          name: "Warning",
+          icon: TriangleAlert,
+          tone: "warning",
+          minutes: INVASION_WARNING_MINUTES,
+          upTo: true,
+          text: "No invaders yet. A level 35 or higher player entering the region starts the attack.",
+        },
+        {
+          name: "Attack",
+          icon: Swords,
+          tone: "danger",
+          minutes: INVASION_ATTACK_MINUTES,
+          upTo: true,
+          text: "Invaders attack the city in waves until the goal is reached.",
+        },
+        prosperityStage,
+      ],
+    },
+  ]);
 </script>
 
 <Seo
@@ -79,44 +158,60 @@
       </p>
       <!-- Source: server-scripts/RegionalEvents.cs:433-440,536-559; server-scripts/RegionalEventProgress.cs:38-60 — ordinary requests use the configured activity duration. Invasions wait 1200 seconds for a living level 35 participant in the region, then run for 600 seconds. -->
       <!-- Source: server-scripts/RegionalEventSettings.cs:6-10 — enabled state and activity and Prosperity durations are configured settings. -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead
-            ><tr class="border-b"
-              ><th class="p-3 text-left font-medium text-foreground">Event</th
-              ><th class="p-3 text-left font-medium text-foreground"
-                >Time limit</th
-              ></tr
-            ></thead
-          >
-          <tbody class="[&>tr:nth-child(odd)]:bg-muted/30">
-            <tr class="border-b"
-              ><td class="p-3">Supply request, hunt, or cooking request</td><td
-                class="p-3"
-                >{data.settings.activity_duration_minutes} minutes</td
-              ></tr
+      <!-- Source: server-scripts/RegionalInvasions.cs:283-298; RegionalEvents.cs:433-442; RegionalEventProgress.cs:38-60,104-124 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
+      <!-- Source: server-scripts/RegionalEventProgress.cs:72-101,105-142; server-scripts/RegionalEventText.cs:103 — reaching the goal starts Prosperity at once. An expired event pays nothing and has no penalty. -->
+      <div class="space-y-6 pt-2">
+        <h3 class="font-semibold text-foreground">How an event runs</h3>
+        <div class="space-y-8">
+          {#each eventLanes as lane (lane.title)}
+            <section
+              class="lg:grid lg:grid-cols-[12rem_repeat(3,minmax(0,1fr))]"
             >
-            <!-- Source: server-scripts/RegionalInvasions.cs:283-298; RegionalEvents.cs:433-442; RegionalEventProgress.cs:38-60,104-124 — no invaders spawn before the invasion starts. A living level 35 participant in the zone starts it, and an unstarted invasion expires after 1200 seconds. -->
-            <tr class="border-b"
-              ><td class="p-3">City invasion, announced</td><td class="p-3"
-                >Up to 20 minutes. No invaders appear yet. The invasion starts
-                as soon as a level 35 or higher player is anywhere in the
-                invaded region. If none arrives within 20 minutes, the invasion
-                is called off.</td
-              ></tr
-            >
-            <tr class="border-b"
-              ><td class="p-3">City invasion, under attack</td><td class="p-3"
-                >10 minutes</td
-              ></tr
-            >
-            <tr
-              ><td class="p-3">Prosperity</td><td class="p-3"
-                >{data.settings.prosperity_duration_minutes} minutes</td
-              ></tr
-            >
-          </tbody>
-        </table>
+              <h4
+                class="mb-4 text-sm font-semibold text-foreground lg:mb-0 lg:pt-2 lg:pr-6"
+              >
+                {lane.title}
+              </h4>
+              <ol class="lg:col-span-3 lg:grid lg:grid-cols-3">
+                {#each lane.stages as stage, i (stage.name)}
+                  <li
+                    class="relative flex gap-4 pb-6 last:pb-0 lg:block lg:pr-6 lg:pb-0"
+                  >
+                    {#if i < lane.stages.length - 1}
+                      <!-- Connector to the next stage: vertical below the marker when stacked, horizontal beside it in columns. -->
+                      <span
+                        aria-hidden="true"
+                        class="absolute top-11 bottom-2 left-[1.125rem] w-px bg-muted-foreground/40 lg:top-[1.125rem] lg:right-3 lg:bottom-auto lg:left-12 lg:h-px lg:w-auto"
+                      ></span>
+                    {/if}
+                    <span
+                      class="flex size-9 shrink-0 items-center justify-center rounded-full ring-1 ring-inset {MARKER_TONES[
+                        stage.tone
+                      ]}"
+                    >
+                      <stage.icon class="size-4" aria-hidden="true" />
+                    </span>
+                    <div class="min-w-0 pt-1.5 lg:mt-3 lg:pt-0">
+                      <p class="flex flex-wrap items-baseline gap-x-2">
+                        <span class="font-semibold text-foreground"
+                          >{stage.name}</span
+                        >
+                        <span class="text-sm tabular-nums"
+                          >{stage.upTo ? "up to " : ""}{stage.minutes} min</span
+                        >
+                      </p>
+                      <p class="mt-1 text-sm leading-relaxed">{stage.text}</p>
+                    </div>
+                  </li>
+                {/each}
+              </ol>
+            </section>
+          {/each}
+        </div>
+        <p class="flex items-start gap-2 text-sm">
+          <TimerOff class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          If a stage runs out of time, the event ends with no reward and no penalty.
+        </p>
       </div>
       {#if !data.settings.enabled}
         <p>Regional events are switched off in the exported server settings.</p>
@@ -238,8 +333,6 @@
         get 20 + 10 × your level in gold (520 at level 50) and 25% of a full
         level's XP. At level 50 this is Veteran XP.
       </p>
-      <!-- Source: server-scripts/RegionalEventProgress.cs:105-142; server-scripts/RegionalEventText.cs:103 — an expired event pays nothing and has no penalty. -->
-      <p>If time runs out, the event ends with no reward and no penalty.</p>
     </Card.Content>
   </Card.Root>
 

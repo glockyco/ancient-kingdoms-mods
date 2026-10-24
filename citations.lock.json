@@ -4506,6 +4506,10 @@
       "sha256": "0fa7f48a935317dbb7946d699c0de13e40a64ac96c02fa5fbbd7be0b4e298755",
       "span": 24
     },
+    "RegionalEvents.cs:559": {
+      "sha256": "1fa9250f7f75ec07bbaaa105f9c46be465ef55322d0cf0000ae20f82d0ee3166",
+      "span": 1
+    },
     "RegionalInvasions.cs:182-195": {
       "sha256": "66d28f83c9c85f681aba3fa0c3ccfcaab6e94773863b6e310fe1318f2742cca9",
       "span": 14
