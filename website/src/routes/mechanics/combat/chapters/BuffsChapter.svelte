@@ -63,8 +63,9 @@
 
   <Topic id="buffs">
     <p>
-      Wisdom or Intelligence strengthens non-song buffs. The tables below show
-      which attribute the caster uses and how much it adds.
+      Non-song buffs add part of an attribute from their caster to each effect.
+      The tables below show which attribute each caster uses and how much it
+      adds.
     </p>
     <!-- Source: server-scripts/BuffSkill.cs:GetBuffPowerAttribute; TargetBuffSkill.cs:Apply; AreaBuffSkill.cs:Apply — players and mercenaries use Wisdom or Intelligence, Rangers triple it for targeted buffs, and other casters add nothing. -->
     <RefTable caption="Buff attribute by caster">
