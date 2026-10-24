@@ -66,10 +66,10 @@
               <th class="p-2 font-medium text-foreground">Constitution</th>
               <td class="p-2">
                 <span class="block"
-                  >Each Constitution point adds 25 maximum Hit Points and 0.03
-                  percentage points of Block Chance. You receive Poison Resist
-                  equal to 25% of Constitution, rounded. With 100 Constitution,
-                  you receive 25 Poison Resist.</span
+                  >Each Constitution point adds 25 maximum Hit Points and 0.03%
+                  Block Chance. You receive Poison Resist equal to 25% of
+                  Constitution, rounded. With 100 Constitution, you receive 25
+                  Poison Resist.</span
                 >
                 <span class="block"
                   >It adds no Armor Class or Health Regeneration.</span
@@ -81,8 +81,8 @@
               <th class="p-2 font-medium text-foreground">Dexterity</th>
               <td class="p-2">
                 <span class="block"
-                  >Each point adds 0.05 percentage points of Accuracy and
-                  Critical Resist and 0.03 percentage points of Critical Strike.</span
+                  >Each point adds 0.05% Accuracy and Critical Resist and 0.03%
+                  Critical Strike.</span
                 >
                 <span class="block"
                   >Bow damage gains 150% of Dexterity, rounded. With 100

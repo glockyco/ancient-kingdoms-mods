@@ -240,9 +240,9 @@
       <a href="/skills/spellrend">Spellrend</a>,
       <a href="/skills/withering_hex">Withering Hex</a>,
       <a href="/skills/crippling_refrain">Crippling Refrain</a> and
-      <a href="/skills/refrain_of_frailty">Refrain of Frailty</a> lower the target's
-      chance to resist them by 30 percentage points, to at least 0%. Other debuffs
-      that lower resists get no such bonus.
+      <a href="/skills/refrain_of_frailty">Refrain of Frailty</a> subtract 30% from
+      the target's chance to resist them, to at least 0%. Other debuffs that lower
+      resists get no such bonus.
     </p>
     <!-- Source: server-scripts/TargetDebuffSkill.cs:Apply; AreaDebuffSkill.cs:Apply; BuffSkill.cs:IgnoreImmuneDebuff — on a boss, immunity lets through only debuffs that deal damage over time and change nothing else besides Movement Speed; on other monsters it lets through resistance-decrease skills. -->
     <p>

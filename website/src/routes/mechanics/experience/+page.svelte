@@ -936,9 +936,7 @@
             <tbody>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">Dungeon kill</td>
-                <td class="p-2 text-right"
-                  >Adds 10 percentage points to the level adjustment</td
-                >
+                <td class="p-2 text-right">Adds 10% to the level adjustment</td>
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2"

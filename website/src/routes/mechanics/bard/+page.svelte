@@ -281,8 +281,8 @@
       <!-- Source: server-scripts/Combat.cs:DealDamageAt; BardCharmSongSkill.cs:GetCharmedDamageMultiplier; uMMORPG.Scripts.PlayerAttributes/Charisma.cs:GetBardPowerMultiplier — the Charm multiplier applies to every damage type. -->
       <p>
         A charmed monster deals 45% of its usual damage.<br />
-        Each point of Charisma adds 0.045 percentage points to that share, up to 100%.
-        Negative Charisma counts as 0.
+        Each point of Charisma adds 0.045% to that share, up to 100%. Negative Charisma
+        counts as 0.
       </p>
       <!-- Source: server-scripts/Monster.cs:2479-2545,2567-2661 — the charmed creature follows its Bard when idle and finds reachable nearby monsters that threaten the Bard's group. -->
       <p>

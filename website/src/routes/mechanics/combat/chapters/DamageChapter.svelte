@@ -311,7 +311,7 @@
     <!-- Source: server-scripts/Combat.cs:criticalChance,DealDamageAt; Player.cs:isRadiantAetherActivated,TryConsumeRadiantAether — Critical Chance caps at 70%, interrupted gathering actions add 75 percentage points, and non-auto critical hits roll 15% to consume Radiant Aether from the first 24 inventory slots. -->
     <p>
       A hit that interrupts fishing, gathering, mining, digging or opening adds
-      75 percentage points to the critical chance after the 70% cap.
+      75% to the critical chance after the 70% cap.
     </p>
     <p>
       Carrying <a href="/items/radiant_aether">Radiant Aether</a> in your first 24
@@ -338,19 +338,17 @@
     <Formula calculation={advantageCalculation} />
     <!-- Source: server-scripts/Combat.cs:704-708 — against a moving player, stunChance gains Clamp(0.1 − 0.01 × level difference, 0.01, 0.1), capped at 1, and stunTime is at least 0.5 seconds. -->
     <p>
-      While you move, physical hits from attackers above level 5 get 10
-      percentage points more stun chance, minus 1 for each level you are above
-      the attacker, but at least 1. The total chance cannot exceed 100%, and the
-      stun lasts at least 0.5 seconds.
+      While you move, physical hits from attackers above level 5 add 10% to
+      their stun chance, minus 1% for each level you are above the attacker, but
+      at least 1%. The total chance cannot exceed 100%, and the stun lasts at
+      least 0.5 seconds.
     </p>
     <!-- Source: server-scripts/Combat.cs:DealDamageAt; PlayerSkills.cs:CmdUse — Fishing, Gathering, Mining, Digging and Opening occupy slots 19,22,23,26,27; hitting those casts cancels them and grants damage advantage plus 75 percentage points of Critical Chance. -->
     <p>
       A hit on a player who is fishing, gathering, mining, digging or opening
       something cancels that action and adds the from-behind damage bonus. It
-      also gains <a href="#critical-hits"
-        >75 percentage points of critical chance</a
-      >. Avoidance still follows the attack's position and the target's
-      movement.
+      also gains <a href="#critical-hits">75% critical chance</a>. Avoidance
+      still follows the attack's position and the target's movement.
     </p>
   </Topic>
 

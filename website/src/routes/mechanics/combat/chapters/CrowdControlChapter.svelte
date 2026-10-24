@@ -144,8 +144,8 @@
         <tr>
           <th scope="row">Monster</th>
           <td>
-            Every 2 seconds, 0.1 percentage points per point of Magic Resist,
-            between 5% and 95%. 100 Magic Resist gives 10%.
+            Every 2 seconds, each point of Magic Resist adds 0.1% to the chance
+            to break free, between 5% and 95%. 100 Magic Resist gives 10%.
           </td>
         </tr>
         <tr>

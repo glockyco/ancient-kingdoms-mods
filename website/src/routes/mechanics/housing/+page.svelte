@@ -209,11 +209,10 @@
           href="/items/fishermans_trousers"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >Fisherman's Trousers</a
-        > each add 2 percentage points to the chance of catching a fish listed for
-        that spot after a bite. Select their appearances in the wardrobe to receive
-        the bonus.
+        > each add 2% to the chance of catching a fish listed for that spot after
+        a bite. Select their appearances in the wardrobe to receive the bonus.
       </p>
-      <p>All three add 6 percentage points.</p>
+      <p>All three add 6% to the catch chance.</p>
       <p>
         See <a
           href="/professions/fishing"
