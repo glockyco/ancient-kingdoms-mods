@@ -1436,9 +1436,7 @@
                     >
                   {/each}
                   {#if hasScrollDispelScaling}
-                    <td class="py-1.5 px-2.5 text-right"
-                      >{level} percentage point{level === 1 ? "" : "s"}</td
-                    >
+                    <td class="py-1.5 px-2.5 text-right">{level}%</td>
                   {/if}
                 </tr>
               {/each}

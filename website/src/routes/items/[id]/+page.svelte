@@ -281,7 +281,7 @@
             zone_name: g.zone_name,
             is_radiant_spark: g.is_radiant_spark,
             rate_note: g.is_radiant_spark
-              ? "5% plus 0.2 percentage points per 1% Radiant Seeker (25% at 100%)"
+              ? "5% + 0.2% per 1% Radiant Seeker (25% at 100%)"
               : formatFishingSourceNote(
                   g.fishing_chance_min,
                   g.fishing_chance_max,

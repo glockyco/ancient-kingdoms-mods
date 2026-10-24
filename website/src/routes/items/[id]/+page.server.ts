@@ -134,7 +134,7 @@ export const load: PageServerLoad = async ({
     ? {
         title: "Fishing bonus",
         description_paragraphs: [
-          "Each Fisherman set piece adds 2 percentage points to the catch chance of every fish available at the Fishing Spot.",
+          "Each Fisherman set piece adds 2% to the catch chance of every fish available at the Fishing Spot.",
           "This bonus applies only after you get a bite. Bite chance is determined by your Fishing skill, the Fishing Spot tier, and your rod.",
         ],
         fishing_page_href: "/professions/fishing#calculator",
