@@ -960,16 +960,16 @@
         <!-- Source: server-scripts/Monster.cs:698-705 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
         <!-- Source: server-scripts/SummonMonster.cs:Update,AreAllPlaceholdersDead — checks the fixed placed group at one-second intervals; while the summon is dead the group must be observed with a living guard and then all dead. -->
         <!-- Source: server-scripts/Monster.cs:UpdateServer_DEAD — spawn rolls require an elapsed timer and current guard readiness; a configured arrival message is sent to the zone. -->
-        Only the specific guard group matters, not every monster of that type in the
-        zone. Kill them quickly enough to keep all dead at once. After the summoned
-        monster dies, at least one guard must be alive before you clear the group
-        again. Its timer and spawn chance still apply. Many summons announce their
-        arrival to the zone.
+        Kill the specific guard group listed below quickly enough that all are dead
+        at once. You do not need to kill every monster of that type in the zone. After
+        the summoned monster dies, at least one guard must be alive before you clear
+        the group again. The summon cannot appear until its timer ends and its spawn
+        roll succeeds. Many summons announce their arrival to the zone.
       </p>
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:2219-2224 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
-        A failed spawn roll means another full interval of waiting, then another chance
-        when all guards are dead together.
+        If the spawn roll fails, the summon waits another full interval before rolling
+        again. Its guard group must be dead together for that next roll.
       </p>
 
       <div class="space-y-4 text-sm">
