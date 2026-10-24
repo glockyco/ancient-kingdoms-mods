@@ -1413,7 +1413,7 @@
                 {#if hasScrollDispelScaling}
                   <th
                     class="py-2 px-2.5 font-medium text-muted-foreground text-right"
-                    >Cleanse Resist Reduction</th
+                    >Cleanse Resist Change</th
                   >
                 {/if}
               </tr>
@@ -1436,7 +1436,7 @@
                     >
                   {/each}
                   {#if hasScrollDispelScaling}
-                    <td class="py-1.5 px-2.5 text-right">{level}%</td>
+                    <td class="py-1.5 px-2.5 text-right">−{level}%</td>
                   {/if}
                 </tr>
               {/each}
