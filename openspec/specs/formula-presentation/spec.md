@@ -29,7 +29,7 @@ A rule that takes more than one operation SHALL use named steps when those steps
 
 ### Requirement: Units are the reader's units
 
-Multipliers and per-point coefficients SHALL be stated as percentages, such as "0.4% per point", not decimal fractions. A whole-number multiplier above 10 MAY be stated as a multiple, such as "× 20", where a percentage such as 2000% would be harder to read. A change to a chance SHALL be stated in percentage points. Durations SHALL use seconds below a minute and minutes and hours from a minute up. Distances SHALL be stated in yd, the unit the game's tooltips use for world distances. A skill's level SHALL be called its rank.
+Multipliers and per-point coefficients SHALL be stated as percentages, such as "0.4% per point", not decimal fractions. A whole-number multiplier above 10 MAY be stated as a multiple, such as "× 20", where a percentage such as 2000% would be harder to read. Durations SHALL use seconds below a minute and minutes and hours from a minute up. Distances SHALL be stated in yd, the unit the game's tooltips use for world distances. A skill's level SHALL be called its rank.
 
 #### Scenario: A coefficient is a fraction in the game code
 
@@ -40,6 +40,26 @@ Multipliers and per-point coefficients SHALL be stated as percentages, such as "
 
 - **WHEN** the game checks that a character is within 2 world units
 - **THEN** the page states 2 yd
+
+### Requirement: Additive percentage changes read as additive
+
+An additive change to a percentage SHALL NOT be readable as a relative change. It SHALL name the percentage stat it adds to, use an additive verb with the quantity it changes, appear in explicit arithmetic, or show the resulting value. It SHALL NOT use "raises by" or "lowers by" with a bare percentage. Percentage points SHALL be used only where the same passage also applies a relative change to that quantity, because only there does a reader need the distinction spelled out.
+
+#### Scenario: A stat adds to a percentage stat
+
+- **WHEN** each point of Dexterity adds 0.0005 to Accuracy
+- **THEN** the page states that each point adds 0.05% Accuracy
+
+#### Scenario: A stat adds to a chance
+
+- **WHEN** each point of Fire Resist adds 0.0005 to the chance to resist a fire hit
+- **THEN** the page states that each point adds 0.05% to the resist chance
+- **AND** it does not say that the point raises the chance by 0.05%
+
+#### Scenario: A passage mixes relative and additive changes
+
+- **WHEN** an avoidance chance is multiplied by 80% and then reduced by 0.25
+- **THEN** the subtraction is stated as 25 percentage points
 
 ### Requirement: Stats use the game's names
 

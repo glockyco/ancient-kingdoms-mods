@@ -69,4 +69,4 @@ The Slayer page SHALL show the 10% activation threshold, up to 10% damage reduct
 #### Scenario: Player inspects mastery
 
 - **WHEN** a player reads the Slayer mastery section
-- **THEN** the page says one target adds at most one percentage point and explains shared credit and account-wide mastery
+- **THEN** the page says one target adds at most 1% mastery and explains shared credit and account-wide mastery
