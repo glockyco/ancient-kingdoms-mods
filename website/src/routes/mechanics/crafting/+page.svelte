@@ -39,8 +39,8 @@
           Supply the materials and quantities listed in a station's recipe.
         </li>
         <li>
-          Extra materials are allowed, but if they match another recipe, the
-          recipe with the most materials takes priority.
+          You can add extra materials. If they match more than one recipe, the
+          station chooses the recipe with the longest ingredient list.
         </li>
       </ul>
       <p>
@@ -53,7 +53,7 @@
       <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — Craft Station crafting checks output capacity and ingredients, then produces non-food results without a success roll; cooking is a separate success check. -->
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          A craft needs every listed material and enough inventory space for its
+          You need every listed material and enough inventory space for the
           result.
         </li>
         <li>
@@ -90,7 +90,7 @@
       </ul>
       <!-- Source: server-scripts/Player.cs:12780-12793 and server-scripts/UIJournal.cs:85-92,261-291 and server-scripts/UICraftingDetail.cs:33-63 — successful crafts are recorded, and discovered entries display their ingredients and count. -->
       <ul class="list-disc space-y-1 pl-5">
-        <li>Successful crafts enter the Crafting journal.</li>
+        <li>Your Crafting journal records successful crafts.</li>
         <li>
           A discovered entry shows its material quantities and the number of
           successful crafts.
