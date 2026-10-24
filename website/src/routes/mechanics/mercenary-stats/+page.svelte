@@ -371,18 +371,19 @@
     <div class="howto-body">
       <p>
         Set your level and total veteran points to compare stats without gear.
-        The bonuses rolled when you hire do not change. Hit Points and Mana vary
-        separately, while Attack Power and Spell Power share one roll.
+        Each mercenary keeps the rolls from when you hired them. Maximum Hit
+        Points and maximum Mana roll separately. Attack Power and Spell Power
+        share one roll.
       </p>
       <p>
-        Hiring at a higher level offers better possible Attack Power and Spell
-        Power bonuses. Mercenaries still grow with later levels and veteran
-        points.
+        Hiring at a higher level gives you a chance at higher Attack Power and
+        Spell Power bonuses. Mercenaries gain stats as your level and total
+        veteran points rise.
       </p>
       <p>
-        If a recruiter cannot provide its preferred race for your class, it
-        hires a random available race. A "–" marks an unavailable class and race
-        combination. Drassar cannot be hired.
+        If a recruiter cannot hire its preferred race for your class, it picks a
+        random race available to that class. A dash marks an unavailable class
+        and race combination. Drassar cannot be hired.
       </p>
       <p>
         Warriors and Rogues use Rage, and Bards use songs instead of Mana. See <a
