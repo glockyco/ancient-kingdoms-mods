@@ -21,8 +21,8 @@
       your mercenaries from attacking friendly NPCs. An NPC without a faction
       always counts as friendly. A faction's NPC counts as friendly while your
       reputation is high enough that it would not attack you on sight. You can
-      always fight an NPC attacking you, a party member, or a companion or
-      mercenary belonging to you or a party member.
+      always fight an NPC that targets you, a party member, or a mercenary,
+      companion or familiar belonging to either.
     </p>
     <!-- Source: server-scripts/TargetHealSkill.cs:CorrectedTarget,83-135; PlayerSkills.cs:819-842 — heal targets depend on canHealSelf/canHealOthers; a selected monster can redirect a heal to its player or pet target; resurrection requires remains or a dead mercenary. -->
     <ul>

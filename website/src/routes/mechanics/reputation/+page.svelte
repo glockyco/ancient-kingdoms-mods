@@ -380,7 +380,7 @@
           href="/mechanics/combat#targets"
           class="text-blue-600 dark:text-blue-400 hover:underline">friendly</a
         > NPC. You can fight back without changing the setting if the NPC targets
-        you, a party member, or a summon belonging to either.
+        you, a party member, or a mercenary, companion or familiar belonging to either.
       </p>
     </Card.Content>
   </Card.Root>
