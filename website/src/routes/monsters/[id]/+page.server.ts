@@ -664,21 +664,27 @@ export const load: PageServerLoad = async ({
   }
 
   // Convert maps to arrays, filtering sub_zone_name based on criteria
-  spawns.regular = Array.from(regularByZone.values()).map((spawn) => {
-    const zoneSubZoneCount = subZoneCounts.get(spawn.zone_id) || 0;
-    const monsterSubZoneCount = spawn.sub_zone_ids.size;
-    // Only show sub-zone if zone has >1 sub-zones AND monster spawns in exactly 1
-    const showSubZone =
-      zoneSubZoneCount > 1 &&
-      monsterSubZoneCount === 1 &&
-      !spawn.sub_zone_ids.has(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { sub_zone_ids, ...rest } = spawn;
-    return {
-      ...rest,
-      sub_zone_name: showSubZone ? spawn.sub_zone_name : null,
-    };
-  });
+  // Most spawns first, as the Spawns table sorts, so the description names the main zone first.
+  spawns.regular = Array.from(regularByZone.values())
+    .sort(
+      (a, b) =>
+        b.spawn_count - a.spawn_count || a.zone_name.localeCompare(b.zone_name),
+    )
+    .map((spawn) => {
+      const zoneSubZoneCount = subZoneCounts.get(spawn.zone_id) || 0;
+      const monsterSubZoneCount = spawn.sub_zone_ids.size;
+      // Only show sub-zone if zone has >1 sub-zones AND monster spawns in exactly 1
+      const showSubZone =
+        zoneSubZoneCount > 1 &&
+        monsterSubZoneCount === 1 &&
+        !spawn.sub_zone_ids.has(null);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { sub_zone_ids, ...rest } = spawn;
+      return {
+        ...rest,
+        sub_zone_name: showSubZone ? spawn.sub_zone_name : null,
+      };
+    });
   spawns.summon = Array.from(summonByZone.values()).sort((a, b) =>
     a.zone_name.localeCompare(b.zone_name),
   );
@@ -764,7 +770,9 @@ export const load: PageServerLoad = async ({
     }))
     .sort(
       (a, b) =>
-        a.level - b.level || a.zone_names[0].localeCompare(b.zone_names[0]),
+        a.level - b.level ||
+        a.zone_names[0].localeCompare(b.zone_names[0]) ||
+        b.spawn_count - a.spawn_count,
     );
 
   const quests = db
