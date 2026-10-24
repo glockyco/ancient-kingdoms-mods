@@ -3483,6 +3483,9 @@
     "Player.cs:UserCode_CmdSpawnStruc__Int32__String__Vector3__Quaternion__Boolean": {
       "span": 0
     },
+    "Player.cs:UserCode_TargetCompletedQuest__Int32__Int64": {
+      "span": 0
+    },
     "Player.cs:UserCode_TargetRpcAddBlind": {
       "span": 0
     },
@@ -4010,6 +4013,9 @@
     "PlayerQuests.cs:50-51": {
       "sha256": "2bbdcc72ccadd04db76b8eee1a53a6fa0e2b5cabf516463d28c4e47b7c7c1f8e",
       "span": 2
+    },
+    "PlayerQuests.cs:CountComplete": {
+      "span": 0
     },
     "PlayerQuests.cs:OnTriggerEnter2D": {
       "span": 0

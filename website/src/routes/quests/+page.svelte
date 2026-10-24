@@ -363,6 +363,21 @@
             </p>
           </div>
         </li>
+        <!-- Source: server-scripts/Player.cs:UserCode_TargetCompletedQuest__Int32__Int64; server-scripts/PlayerQuests.cs:CountComplete,UserCode_CmdAccept__NetworkIdentity__Int32 — each turn-in checks the completed quests in the log against 10, 20, 30 and 50. Accepting a daily quest again replaces its old entry, so it counts once. -->
+        <li class="grid grid-cols-[1.5rem_1fr] gap-3 px-4 py-2.5">
+          <span class="text-sm tabular-nums text-muted-foreground">4</span>
+          <div>
+            <p class="font-medium">Turn in the quest.</p>
+            <p class="mt-0.5 text-pretty text-sm text-muted-foreground">
+              Your 10th, 20th, 30th, and 50th finished quests unlock the
+              <a
+                href="/achievements#quests"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >quest achievements</a
+              >. A daily quest counts once, however often you repeat it.
+            </p>
+          </div>
+        </li>
       </ol>
     </div>
   </section>
