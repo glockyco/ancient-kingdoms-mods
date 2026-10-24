@@ -48,7 +48,7 @@ export function finalCadenceMelody(): Calculation {
           `${songs} active songs`,
         ],
         // Source: server-scripts/BardFinalCadenceSkill.cs:HealNearbyAllies; Combat.cs:DealDamageAt — defenses modify damage and heals can crit before being capped by missing Health.
-        result: `${formatNumber(total)} damage before defenses, or ${formatNumber(total)} healing before critical heals, at most the target's missing Hit Points`,
+        result: `${formatNumber(total)} damage before defenses, or ${formatNumber(total)} healing before critical heals. Healing cannot exceed the target's missing Hit Points.`,
         working: [
           `Melody bonus: ${formatPercent(melodyBonus(songs), { decimals: 2, preserveNonzero: true })} for ${songs} active songs`,
           `Damage or healing: ${formatNumber(scaledAmount)} × ${formatPercent(multiplier, { decimals: 2, preserveNonzero: true })} = ${formatNumber(total)}, rounded`,
