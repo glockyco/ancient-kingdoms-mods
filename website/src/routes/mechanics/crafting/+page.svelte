@@ -135,14 +135,14 @@
       <ul class="list-disc space-y-1 pl-5">
         <li>Attaching consumes the augment.</li>
         <li>
-          The returned piece has full durability, even if it was damaged before
-          attachment.
+          Attaching an augment restores the equipment to full durability, even
+          if it was damaged.
         </li>
       </ul>
       <!-- Source: server-scripts/PlayerEquipment.cs:186-285 — equipment and attached augment attributes are applied only while the equipped piece has positive durability. -->
       <p>
-        Augment bonuses apply while the equipment is worn and has durability
-        above zero.
+        Augments grant their bonuses only while the equipment is worn and has
+        durability above zero.
       </p>
       <!-- Source: server-scripts/UINpcTrading.cs:249-266,314-331 and server-scripts/PlayerNpcTrading.cs:377-398 — the removal service lists carried and equipped items; its price depends on augment quality, and it needs space for the returned augment. -->
       <div class="space-y-2">
