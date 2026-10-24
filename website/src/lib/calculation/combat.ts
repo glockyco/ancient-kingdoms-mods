@@ -25,7 +25,10 @@ import {
   formatNumber as number,
   formatPercent as percent,
 } from "$lib/utils/format";
-import { formatSeconds as seconds } from "$lib/calculation/format";
+import {
+  formatPercent as rate,
+  formatSeconds as seconds,
+} from "$lib/calculation/format";
 
 const blockPerArmorClass = STATS.block_chance.perPointOf.find(
   (term) => term.stat === "armor_class",
@@ -41,9 +44,49 @@ const percentage = (
   max: 10,
 });
 
+// Source: server-scripts/Combat.cs:DealDamageAt,GetProbResistMagic — each Armor Class or resist point removes 0.0005 of a landed hit, at most 0.9, and adds 0.0005 to the resist chance; the level term is 0.005 per level within ±0.1; the avoidance chance stays within 0–0.9.
+/** Share of a landed hit that each point of Armor Class or the matching resist removes. */
+export const REDUCTION_PER_POINT = 0.0005;
+/** The largest share of a hit Armor Class or a resist can remove. */
+export const MAX_REDUCTION = 0.9;
+/** Chance to resist a hit or debuff that each point of the matching resist adds. */
+export const RESIST_CHANCE_PER_POINT = 0.0005;
+/** Avoidance chance added per level the target is above the attacker. */
+export const LEVEL_TERM_PER_LEVEL = 0.005;
+/** The largest avoidance change the level difference can make either way. */
+export const MAX_LEVEL_TERM = 0.1;
+/** The highest block, miss or resist chance. */
+export const MAX_AVOIDANCE = 0.9;
+
+/** The defense rates as the reader sees them, for prose that states them. */
+export const DEFENSE_RATES = {
+  reductionPerPoint: rate(REDUCTION_PER_POINT),
+  maxReduction: rate(MAX_REDUCTION),
+  pointsForMaxReduction: number(
+    Math.round(MAX_REDUCTION / REDUCTION_PER_POINT),
+  ),
+  resistChancePerPoint: rate(RESIST_CHANCE_PER_POINT),
+  levelTermPerLevel: rate(LEVEL_TERM_PER_LEVEL),
+  maxLevelTerm: rate(MAX_LEVEL_TERM),
+  maxAvoidance: rate(MAX_AVOIDANCE),
+};
+
+/** The avoidance chance a level difference adds, within its limits. */
+export function levelTerm(levelDifference: number) {
+  return clamp(
+    multiplyF32(levelDifference, LEVEL_TERM_PER_LEVEL),
+    f32(-MAX_LEVEL_TERM),
+    f32(MAX_LEVEL_TERM),
+  );
+}
+
 // Source: server-scripts/Combat.cs:DealDamageAt — stat reduction is clamped to 0–90% before prevented damage rounds up.
 export function mitigate(damage: number, stat: number) {
-  const share = clamp(multiplyF32(stat, 0.0005), 0, f32(0.9));
+  const share = clamp(
+    multiplyF32(stat, REDUCTION_PER_POINT),
+    0,
+    f32(MAX_REDUCTION),
+  );
   const prevented = ceilToInt(multiplyF32(damage, share));
   return { share, prevented, taken: damage - prevented };
 }
@@ -55,8 +98,8 @@ export function mitigationCalculation(
     steps: [
       {
         name: "Reduction",
-        expression: `Your ${statName(id)} × 0.05%`,
-        limit: "between 0% and 90%",
+        expression: `Your ${statName(id)} × ${DEFENSE_RATES.reductionPerPoint}`,
+        limit: `between 0% and ${DEFENSE_RATES.maxReduction}`,
       },
       {
         name: "Damage prevented",
@@ -83,7 +126,7 @@ export function mitigationCalculation(
         ],
         result: `You take ${number(result.taken)} of ${number(incomingDamage)} damage`,
         working: [
-          `Reduction: ${formatStat(id, statValue)} × 0.05% = ${percent(result.share, { decimals: 2, preserveNonzero: true })}`,
+          `Reduction: ${formatStat(id, statValue)} × ${DEFENSE_RATES.reductionPerPoint} = ${percent(result.share, { decimals: 2, preserveNonzero: true })}`,
           `Damage prevented: ${number(incomingDamage)} × ${percent(result.share, { decimals: 2, preserveNonzero: true })} = ${number(result.prevented)}, rounded up`,
           `Damage taken: ${number(incomingDamage)} − ${number(result.prevented)} = ${number(result.taken)}`,
         ],
@@ -93,16 +136,13 @@ export function mitigationCalculation(
 }
 
 // Source: server-scripts/Combat.cs:blockChance,GetProbResistMeleeDamage,GetProbResistMagic; UICharacterInfo.cs:Update — the window displays the capped Block Chance used by the hit roll, before level and Accuracy adjustments.
-export function avoidanceChance(
+function statAvoidance(
   stat: number,
-  levelDifference: number,
-  accuracy: number,
-  physical = false,
-  baseBlock = 0,
-  blockBonuses = 0,
+  physical: boolean,
+  baseBlock: number,
+  blockBonuses: number,
 ) {
-  const level = clamp(multiplyF32(levelDifference, 0.005), f32(-0.1), f32(0.1));
-  const statChance = physical
+  return physical
     ? clamp(
         addF32(
           baseBlock,
@@ -111,47 +151,81 @@ export function avoidanceChance(
         0,
         f32(STATS.block_chance.max!),
       )
-    : multiplyF32(stat, 0.0005);
-  return clamp(addF32(addF32(statChance, level), -accuracy), 0, f32(0.9));
+    : multiplyF32(stat, RESIST_CHANCE_PER_POINT);
+}
+export function avoidanceChance(
+  stat: number,
+  levelDifference: number,
+  accuracy: number,
+  physical = false,
+  baseBlock = 0,
+  blockBonuses = 0,
+) {
+  return clamp(
+    addF32(
+      addF32(
+        statAvoidance(stat, physical, baseBlock, blockBonuses),
+        levelTerm(levelDifference),
+      ),
+      -accuracy,
+    ),
+    0,
+    f32(MAX_AVOIDANCE),
+  );
 }
 export function avoidanceCalculation(physical = false): Calculation {
+  const stat = 100;
+  const levelDifference = 4;
+  const accuracy = 0.03;
+  const [baseBlock, blockBonuses] = [0.05, 0.02];
+  const chance = (value: number) =>
+    percent(value, { decimals: 2, preserveNonzero: true });
+  const avoidanceName = physical ? "Block or miss chance" : "Resist chance";
   return {
     steps: [
       {
         name: physical ? statName("block_chance") : "Resist contribution",
         expression: physical
           ? `Your character window's ${statName("block_chance")}`
-          : "Your Magic Resist, Fire Resist, Cold Resist, Poison Resist or Disease Resist × 0.05 percentage points, for that damage type",
+          : `Your Magic Resist, Fire Resist, Cold Resist, Poison Resist or Disease Resist for the hit's damage type × ${DEFENSE_RATES.resistChancePerPoint}`,
       },
       {
         name: "Level contribution",
-        expression:
-          "0.5 percentage points per level the target is above the attacker, or minus 0.5 per level below",
-        limit: "between −10 and +10 percentage points",
+        expression: `${DEFENSE_RATES.levelTermPerLevel} per level the target is above the attacker, or −${DEFENSE_RATES.levelTermPerLevel} per level below`,
+        limit: `between −${DEFENSE_RATES.maxLevelTerm} and +${DEFENSE_RATES.maxLevelTerm}`,
       },
       {
-        name: physical ? "Block or miss chance" : "Resist chance",
+        name: avoidanceName,
         expression: `${physical ? statName("block_chance") : "Resist contribution"} + level contribution − attacker ${statName("accuracy")}`,
-        limit: "between 0% and 90%",
+        limit: `between 0% and ${DEFENSE_RATES.maxAvoidance}`,
       },
     ],
     example: () => {
-      const result = avoidanceChance(100, 4, 0.03, physical, 0.05, 0.02);
+      const statChance = statAvoidance(stat, physical, baseBlock, blockBonuses);
+      const level = levelTerm(levelDifference);
+      const result = avoidanceChance(
+        stat,
+        levelDifference,
+        accuracy,
+        physical,
+        baseBlock,
+        blockBonuses,
+      );
       return {
         given: [
           physical
-            ? `${formatStat("block_chance", 0.08)} ${statName("block_chance")}`
-            : "100 Fire Resist against a fire hit",
-          "target 4 levels higher",
-          `${formatStat("accuracy", 0.03)} attacker ${statName("accuracy")}`,
+            ? `${formatStat("block_chance", statChance)} ${statName("block_chance")}`
+            : `${stat} Fire Resist against a fire hit`,
+          `target ${levelDifference} levels higher`,
+          `${formatStat("accuracy", accuracy)} attacker ${statName("accuracy")}`,
         ],
-        result: `${percent(result, { decimals: 2, preserveNonzero: true })} chance to ${physical ? "block or miss" : "resist"}`,
+        result: `${chance(result)} chance to ${physical ? "block or miss" : "resist"}`,
         working: [
           physical
-            ? `${statName("block_chance")}: ${formatStat("block_chance", 0.08)}`
-            : "Resist contribution: 100 × 0.05% = 5%",
-          "Level contribution: 4 × 0.5 percentage points = 2 percentage points",
-          `${physical ? "Block or miss chance" : "Resist chance"}: ${physical ? "8%" : "5%"} + 2% − 3% = ${percent(result, { decimals: 2, preserveNonzero: true })}`,
+            ? `${statName("block_chance")}: ${formatStat("block_chance", statChance)}`
+            : `Resist contribution: ${stat} × ${DEFENSE_RATES.resistChancePerPoint} = ${chance(statChance)}`,
+          `Level contribution: ${levelDifference} × ${DEFENSE_RATES.levelTermPerLevel} = ${chance(level)}`,
+          `${avoidanceName}: ${chance(statChance)} + ${chance(level)} − ${chance(accuracy)} = ${chance(result)}`,
         ],
       };
     },
