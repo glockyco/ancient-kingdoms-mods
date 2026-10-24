@@ -40,6 +40,8 @@
   import Gem from "@lucide/svelte/icons/gem";
   import CircleHelp from "@lucide/svelte/icons/circle-help";
   import MapPin from "@lucide/svelte/icons/map-pin";
+  import Megaphone from "@lucide/svelte/icons/megaphone";
+  import { huntPlayers } from "$lib/data/regional-events";
   import Scroll from "@lucide/svelte/icons/scroll";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Star from "@lucide/svelte/icons/star";
@@ -1444,37 +1446,56 @@
     </section>
   {/if}
 
-  {#if data.regionalInvasions.length > 0}
+  {#if data.regionalInvasions.length > 0 || data.regionalHunts.length > 0}
     <section>
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <div class="mb-4 flex items-center gap-2">
         <h2 class="flex items-center gap-2 text-xl font-semibold">
-          <MapPin class="h-5 w-5 text-emerald-500" />
-          City invasions
+          <Megaphone class="h-5 w-5 text-amber-500" />
+          Regional Events
         </h2>
-        <MechanicsLink section="regional-events#invasions"
-          >Invasion rules</MechanicsLink
+        <a
+          href="/mechanics/regional-events"
+          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
+          <CircleHelp class="h-4 w-4" />
+          How regional events work
+        </a>
       </div>
       <!-- Source: server-scripts/RegionalInvasions.cs:348-384 — invasion copies use the invasion's level range and health multiplier rather than the ordinary spawn settings. -->
-      <div class="space-y-2">
+      <!-- Source: server-scripts/RegionalEventActivities.cs:60-82 — a hunt can ask for this animal while its spawns can supply the goal. -->
+      <ul class="space-y-2 rounded-md border bg-muted/30 p-4">
         {#each data.regionalInvasions as invasion (invasion.id)}
-          <div class="rounded-md border bg-muted/30 p-3">
-            <span class="font-medium">{invasion.city_name}</span>
-            <span class="text-muted-foreground"> in </span>
+          <li>
+            Invades
+            <a
+              href="/mechanics/regional-events#invasion-{invasion.city}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >{invasion.city_name}</a
+            >
+            in
             <a
               href="/zones/{invasion.zone_id}"
               class="text-blue-600 hover:underline dark:text-blue-400"
               >{invasion.zone_name}</a
             >
-            <p class="mt-1 text-sm text-muted-foreground">
-              Invades at level {invasion.minimum_level} to {invasion.maximum_level}{invasion.health_multiplier ===
-              1
-                ? ""
-                : ` with ${invasion.health_multiplier} times its normal health`}.
-            </p>
-          </div>
+            at level {invasion.minimum_level} to {invasion.maximum_level}{invasion.health_multiplier ===
+            1
+              ? ""
+              : ` with ${invasion.health_multiplier} times its normal health`}.
+          </li>
         {/each}
-      </div>
+        {#each data.regionalHunts as hunt (hunt.region_zone_id)}
+          {@const players = huntPlayers(hunt.max_players)}
+          <li>
+            Can be the target of A Regional Hunt in
+            <a
+              href="/zones/{hunt.region_zone_id}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >{hunt.region_name}</a
+            >{players ? ` with ${players} in the region` : ""}.
+          </li>
+        {/each}
+      </ul>
     </section>
   {/if}
 

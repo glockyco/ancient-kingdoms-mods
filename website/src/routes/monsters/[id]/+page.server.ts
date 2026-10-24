@@ -40,7 +40,9 @@ import {
   consolidateAltarTiers,
 } from "$lib/server/altar-tier-summaries";
 import {
+  getMonsterRegionalHunts,
   getMonsterRegionalInvasions,
+  type RegionalHuntTarget,
   type RegionalInvasion,
 } from "$lib/queries/regional-events.server";
 import type { LinkedAchievement } from "$lib/types/achievements";
@@ -62,6 +64,7 @@ export const load: PageServerLoad = async ({
 }): Promise<
   MonsterDetailData & {
     regionalInvasions: RegionalInvasion[];
+    regionalHunts: RegionalHuntTarget[];
     achievements: LinkedAchievement[];
   }
 > => {
@@ -942,6 +945,7 @@ export const load: PageServerLoad = async ({
   return {
     monster,
     regionalInvasions: getMonsterRegionalInvasions(params.id),
+    regionalHunts: getMonsterRegionalHunts(params.id),
     achievements: getAchievementsLinkingTo(`/monsters/${params.id}`),
     factionIds: getFactionIdsByName(),
     description,

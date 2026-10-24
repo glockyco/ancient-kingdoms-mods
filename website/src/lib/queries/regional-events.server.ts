@@ -89,13 +89,6 @@ export interface RegionalHuntTarget {
   max_players: number;
 }
 
-export interface RegionalEventDungeon {
-  dungeon_zone_id: string;
-  dungeon_name: string;
-  region_zone_id: string;
-  region_name: string;
-}
-
 const REGION_SELECT = `
   SELECT r.zone_id, z.name AS zone_name, z.zone_id AS zone_number, r.fishing,
          r.cooking_city, ri.city_name AS cooking_city_name, r.cooking_animal
@@ -134,15 +127,19 @@ export function getRegionalHuntTargets(): RegionalHuntTarget[] {
   `);
 }
 
-export function getRegionalEventDungeons(): RegionalEventDungeon[] {
-  return query<RegionalEventDungeon>(`
-    SELECT d.dungeon_zone_id, dz.name AS dungeon_name,
-           d.region_zone_id, rz.name AS region_name
-    FROM regional_event_dungeons d
-    JOIN zones dz ON dz.id = d.dungeon_zone_id
-    JOIN zones rz ON rz.id = d.region_zone_id
-    ORDER BY rz.zone_id, dz.name
-  `);
+export function getMonsterRegionalHunts(
+  monsterId: string,
+): RegionalHuntTarget[] {
+  return query<RegionalHuntTarget>(
+    `SELECT h.region_zone_id, z.name AS region_name, h.monster_id,
+            m.name AS monster_name, h.max_players
+     FROM regional_event_hunt_targets h
+     JOIN zones z ON z.id = h.region_zone_id
+     JOIN monsters m ON m.id = h.monster_id
+     WHERE h.monster_id = ?
+     ORDER BY z.zone_id`,
+    [monsterId],
+  );
 }
 
 export interface ItemRegionalCooking {
