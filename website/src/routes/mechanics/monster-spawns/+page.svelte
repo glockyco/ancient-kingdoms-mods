@@ -666,8 +666,10 @@
       </p>
       <!-- Source: server-scripts/Player.cs:14610-14622; Monster.cs:2217-2237 — a zeroed respawn deadline does not bypass summon, chance, seasonal, or time-window spawn checks. -->
       <p class="text-sm text-muted-foreground">
-        Guard groups, spawn chances, seasonal events, and spawn windows still
-        decide whether a monster appears after renewal.
+        After renewal, summoned monsters need their guards dead together and
+        rare monsters must pass their spawn roll. Monsters with limited spawn
+        hours cannot appear outside those hours, and seasonal monsters need
+        their event to be active.
       </p>
 
       <p class="text-sm text-muted-foreground">
@@ -743,12 +745,11 @@
             <span class="absolute right-0">{formatDuration(420)}</span>
           </div>
           <p class="mt-1 text-muted-foreground">
-            You kill the rare at minute 0 and step out. Each renewal marks the
-            timer as due, and each step back inside fires one roll immediately.
-            Every roll has a 25% chance. The third roll succeeds in this
-            example, and the rare stands at its spawn point until you arrive.
-            Without a renewal, a failed roll waits a full roll interval before
-            the next roll.
+            You kill the rare at minute 0 and step out. Each renewal ends its
+            timer, so it rolls to spawn as soon as you re-enter. Every roll has
+            a 25% chance. The third roll succeeds in this example, and the rare
+            waits at its spawn point until you arrive. Without renewal, a failed
+            roll means waiting a full interval for another chance.
           </p>
         </div>
         <p class="text-muted-foreground">
