@@ -1254,8 +1254,8 @@
     <Card.Content>
       <!-- Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — isScribingTable overrides num5 = level.current * 100 -->
       <p class="text-sm text-muted-foreground">
-        Each successful craft awards 100 XP per character level before Double XP
-        buffs. At level 40, you receive 4,000 XP before those buffs.
+        Each successful craft gives 100 XP per character level: 4,000 XP at
+        level 40. Double XP buffs double that reward.
       </p>
       <p class="text-sm text-muted-foreground">
         Find scroll recipes in <a
