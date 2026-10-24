@@ -6,9 +6,12 @@
   import Topic from "$lib/components/reference/Topic.svelte";
   import VariantPicker from "$lib/components/reference/VariantPicker.svelte";
   import {
+    DEFENSE_RATES,
     avoidanceCalculation,
+    mitigate,
     mitigationCalculation,
   } from "$lib/calculation/combat";
+  import { formatPercent } from "$lib/calculation/format";
   import {
     COLD_RESIST,
     DEFENSE,
@@ -33,6 +36,8 @@
       DEFENSE_STATS[0],
   );
   let hitType = $state<"physical" | "other">("physical");
+  const reduction = (resist: number) =>
+    formatPercent(mitigate(1, resist).share);
 </script>
 
 <Chapter id="defense">
@@ -132,10 +137,11 @@
   <Topic id="mitigation">
     <!-- Source: server-scripts/Combat.cs:DealDamageAt — stat reduction is clamped to 0–90% before prevented damage rounds up. -->
     <p>
-      Armor Class reduces physical damage by 0.05% per point, and each resist
-      does the same for its damage type. 400 Fire Resist cuts fire damage by
-      20%, and 499 cuts it by 24.95%. The reduction stops at 90%, which takes
-      1800 points.
+      Armor Class reduces physical damage by {DEFENSE_RATES.reductionPerPoint} per
+      point, and each resist does the same for its damage type. 400 Fire Resist cuts
+      fire damage by {reduction(400)}, and 499 cuts it by {reduction(499)}. The
+      reduction stops at {DEFENSE_RATES.maxReduction}, which takes
+      {DEFENSE_RATES.pointsForMaxReduction} points.
     </p>
     <VariantPicker
       label="Your stat"
